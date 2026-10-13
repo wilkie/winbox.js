@@ -516,7 +516,18 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
 
     // No name is looked for as the number nought, as the TypeScript
     // engine's `findResource` takes a null key.
-    let name = name.cloned().unwrap_or(MenuName::Number(0));
+    let mut name = name.cloned().unwrap_or(MenuName::Number(0));
+
+    // Asked of the display driver's own instance, a number goes through the
+    // driver's `GetDriverResourceID` first, as `LoadBitmap(NULL, ...)`'s
+    // does (`USER.EXE` seg12 `02dc`-`031f`; `Display::resource_id`).
+    if let (MenuName::Number(id), Some(Object::Kept(kept))) =
+        (&name, system.handles.resolve(instance))
+        && system.kept[kept].module.name == "DISPLAY"
+    {
+        name = MenuName::Number(system.display.resource_number(*id));
+    }
+
     let Some(executable) = system.executable_of(instance) else {
         return 0;
     };

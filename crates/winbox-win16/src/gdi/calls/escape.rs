@@ -11,6 +11,16 @@
 //! * A memory device context's driver is GDI's own for bitmaps, and
 //!   answers nought to everything, `QUERYESCSUPPORT` too.
 //!
+//! **Read out** of GDI (`GDI.EXE` seg7 `0042`-`0526`): on a screen's
+//! context every escape goes to the driver's `Control`, whose answer is the
+//! answer -- but for 0Fh, which GDI answers nought, and 100h to `BFFh`,
+//! which GDI keeps for itself: it calls the driver for those only where a
+//! flag of the context's is set (byte 0Bh, bit 2, seg7 `04be`), and they
+//! answer nought here as before. So an escape a driver has not got answers what its `Control`
+//! does for one: nought on every driver but `8514.DRV`'s, which answers the
+//! escape's own number (seg1 `1b28`-`1b35`; `control_answers_number`),
+//! `MOUSETRAILS` among them.
+//!
 //! Not followed: what `GETCOLORTABLE` answers. A printer's device context
 //! takes its own escapes (`gdi/printing.rs`), which answer the call before
 //! the display's driver is asked.
@@ -52,8 +62,23 @@ pub fn escape(system: &System, hdc: u16, number: i16, input: u32) -> i16 {
         {
             system.display.mouse_trails
         }
-        _ => 0,
+        _ => driver_answer(system, number),
     }
+}
+
+/// What GDI passes back of the driver's `Control` for an escape it has not
+/// got.
+fn driver_answer(system: &System, number: i16) -> i16 {
+    let gdis = number == 0x0f || (0x100..=0xbff).contains(&number);
+
+    if gdis
+        || !system.display.control_answers_number
+        || system.display.escapes.contains_key(&number.to_string())
+    {
+        return 0;
+    }
+
+    number
 }
 
 #[cfg(test)]
@@ -86,6 +111,38 @@ mod tests {
 
             assert_eq!(escape(&system, hdc, QUERYESCSUPPORT, far), 1, "{display}");
             assert_eq!(escape(&system, hdc, 5, 0), 0, "{display}");
+        }
+    }
+
+    /// `8514.DRV`'s `Control` answers an escape it has not got with its
+    /// number, which GDI passes back but for 0Fh and 100h to `BFFh`; the
+    /// XGA's answers nought (seg1 `1b28`, `XGA.DRV` seg1 `132c`).
+    #[test]
+    fn the_8514_answers_an_escape_it_has_not_got_with_its_number() {
+        for display in ["8514", "8514s"] {
+            let mut system = system_on(display);
+            let hdc = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").expect("a context");
+            let far = system.scratch_word(MOUSETRAILS);
+
+            assert_eq!(
+                escape(&system, hdc, MOUSETRAILS, 0),
+                MOUSETRAILS,
+                "{display}"
+            );
+            assert_eq!(escape(&system, hdc, QUERYESCSUPPORT, far), 0, "{display}");
+            assert_eq!(escape(&system, hdc, 100, 0), 100, "{display}");
+            assert_eq!(escape(&system, hdc, -3, 0), -3, "{display}");
+            assert_eq!(escape(&system, hdc, 0x0f, 0), 0, "{display}");
+            assert_eq!(escape(&system, hdc, 0x100, 0), 0, "{display}");
+            assert_eq!(escape(&system, hdc, 0xc00, 0), 0xc00, "{display}");
+            assert_eq!(escape(&system, hdc, 5, 0), 0, "{display}");
+        }
+
+        for display in ["xga256", "xga256s", "xga640", "vga", "vga256"] {
+            let mut system = system_on(display);
+            let hdc = crate::gdi::dc::create_dc(&mut system, b"DISPLAY").expect("a context");
+
+            assert_eq!(escape(&system, hdc, 100, 0), 0, "{display}");
         }
     }
 

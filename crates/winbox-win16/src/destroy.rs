@@ -115,6 +115,24 @@ impl Engine {
     /// `WM_DESTROY` to it and what is under it, `WM_NCDESTROY` the other
     /// way, the window last. Whether it was a window.
     pub async fn destroy_window(&self, hwnd: u16) -> Result<bool, Stop> {
+        if self.system().window_index(hwnd).is_none() {
+            return Ok(false);
+        }
+
+        // A task locked by `LockMyTask` is let go by any window destroyed,
+        // before the hooks are asked (`USER.EXE` seg8 `0a3f`-`0a48`).
+        // **Recorded** by `sysdlg`: a system-modal dialog shown, which locks
+        // its task, destroyed without `EndDialog` leaves no task locked.
+        self.system().unlock_my_task();
+
+        // The computer-based training hooks asked first, `HCBT_DESTROYWND`
+        // and the window; non-nought in AX, nothing is destroyed and the
+        // answer is false (`USER.EXE` seg8 `0a4d`-`0a5d`; **recorded** by
+        // `cbthook`).
+        if self.ask_cbt(crate::hooks::HCBT_DESTROYWND, hwnd, 0).await? & 0xffff != 0 {
+            return Ok(false);
+        }
+
         let (index, owned) = {
             let system = self.system();
             let Some(index) = system.window_index(hwnd) else {
@@ -126,18 +144,6 @@ impl Engine {
                 system.windows_where(|other| other.owner == Some(index)),
             )
         };
-
-        // A task locked by `LockMyTask` is let go by any window destroyed
-        // (`USER.EXE` seg8 `0a3f`-`0a48`). **Recorded** by `sysdlg`: a
-        // system-modal dialog made shown, which locks its task, and destroyed
-        // without `EndDialog`, leaves no task locked.
-        {
-            let mut system = self.system();
-
-            if system.lock_my_task != 0 {
-                system.lock_my_task_to(0);
-            }
-        }
 
         self.system().forget_active_popup(hwnd);
 

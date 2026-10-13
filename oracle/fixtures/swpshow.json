@@ -1,0 +1,854 @@
+{
+  "probe": "swpshow",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "createA,0",
+      "result": "A,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,1",
+      "result": "A,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,2",
+      "result": "A,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createA,3",
+      "result": "A,001c,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,4",
+      "result": "A,0086,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,5",
+      "result": "A,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,6",
+      "result": "A,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,7",
+      "result": "A,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,8",
+      "result": "A,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createA,9",
+      "result": "A,0047,0,?#32771:20:20:300:200:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createA,10",
+      "result": "A,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "createA,11",
+      "result": "A,0003,0,2b0018"
+    },
+    {
+      "function": "msg",
+      "args": "createA,12",
+      "result": "A,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createA",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createA",
+      "result": "A"
+    },
+    {
+      "function": "msg",
+      "args": "createP,0",
+      "result": "P,0005,0,270076"
+    },
+    {
+      "function": "msg",
+      "args": "createP,1",
+      "result": "P,0003,0,280155"
+    },
+    {
+      "function": "state",
+      "args": "createP",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createP",
+      "result": "pA"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,0",
+      "result": "Q,0005,0,270076"
+    },
+    {
+      "function": "msg",
+      "args": "createQ,1",
+      "result": "Q,0003,0,780155"
+    },
+    {
+      "function": "state",
+      "args": "createQ",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createQ",
+      "result": "qpA"
+    },
+    {
+      "function": "msg",
+      "args": "createR,0",
+      "result": "R,0005,0,270076"
+    },
+    {
+      "function": "msg",
+      "args": "createR,1",
+      "result": "R,0003,0,c80155"
+    },
+    {
+      "function": "state",
+      "args": "createR",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createR",
+      "result": "rqpA"
+    },
+    {
+      "function": "msg",
+      "args": "createS,0",
+      "result": "S,0005,0,270076"
+    },
+    {
+      "function": "msg",
+      "args": "createS,1",
+      "result": "S,0003,0,2801e1"
+    },
+    {
+      "function": "state",
+      "args": "createS",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createS",
+      "result": "srqpA"
+    },
+    {
+      "function": "msg",
+      "args": "createT,0",
+      "result": "T,0005,0,270076"
+    },
+    {
+      "function": "msg",
+      "args": "createT,1",
+      "result": "T,0003,0,7801e1"
+    },
+    {
+      "function": "state",
+      "args": "createT",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createT",
+      "result": "tsrqpA"
+    },
+    {
+      "function": "msg",
+      "args": "showP,0",
+      "result": "P,0046,0,0:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "showP,1",
+      "result": "P,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showP,2",
+      "result": "P,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showP,3",
+      "result": "P,0047,0,0:340:20:120:60:1853"
+    },
+    {
+      "function": "msg",
+      "args": "showP,4",
+      "result": "P,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showP",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "showP",
+      "result": "PtsrqA"
+    },
+    {
+      "function": "msg",
+      "args": "showQ,0",
+      "result": "Q,0046,0,P:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "showQ,1",
+      "result": "Q,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showQ,2",
+      "result": "Q,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showQ,3",
+      "result": "Q,0047,0,P:340:100:120:60:1853"
+    },
+    {
+      "function": "msg",
+      "args": "showQ,4",
+      "result": "Q,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showQ",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "showQ",
+      "result": "PQtsrA"
+    },
+    {
+      "function": "msg",
+      "args": "showR,0",
+      "result": "R,0046,0,?1:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "showR,1",
+      "result": "R,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showR,2",
+      "result": "R,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showR,3",
+      "result": "R,0047,0,?1:340:180:120:60:1853"
+    },
+    {
+      "function": "msg",
+      "args": "showR,4",
+      "result": "R,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showR",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "showR",
+      "result": "PQtsAR"
+    },
+    {
+      "function": "msg",
+      "args": "showS,0",
+      "result": "S,0046,0,0:0:0:0:0:57"
+    },
+    {
+      "function": "msg",
+      "args": "showS,1",
+      "result": "S,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showS,2",
+      "result": "S,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showS,3",
+      "result": "S,0047,0,0:480:20:120:60:1857"
+    },
+    {
+      "function": "msg",
+      "args": "showS,4",
+      "result": "S,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showS",
+      "result": "focus=A,active=A,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "showS",
+      "result": "PQtSAR"
+    },
+    {
+      "function": "msg",
+      "args": "showT,0",
+      "result": "T,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "showT,1",
+      "result": "A,0086,0,T:0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,2",
+      "result": "A,0006,0,T:0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,3",
+      "result": "T,0046,0,?#32771:0:0:0:0:3"
+    },
+    {
+      "function": "msg",
+      "args": "showT,4",
+      "result": "T,0086,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,5",
+      "result": "T,0006,1,A:0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,6",
+      "result": "A,0008,T,0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,7",
+      "result": "T,0007,A,0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,8",
+      "result": "T,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,9",
+      "result": "T,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "showT,10",
+      "result": "T,0047,0,?#32771:480:100:120:60:1847"
+    },
+    {
+      "function": "msg",
+      "args": "showT,11",
+      "result": "T,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "showT",
+      "result": "focus=T,active=T,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "showT",
+      "result": "PQTSAR"
+    },
+    {
+      "function": "msg",
+      "args": "createB,0",
+      "result": "B,0018,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,1",
+      "result": "B,0009,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,2",
+      "result": "B,0046,0,?#32771:0:0:0:0:43"
+    },
+    {
+      "function": "msg",
+      "args": "createB,3",
+      "result": "T,0086,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,4",
+      "result": "T,0006,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,5",
+      "result": "B,0046,0,?#32771:0:0:0:0:3"
+    },
+    {
+      "function": "msg",
+      "args": "createB,6",
+      "result": "B,0086,1,T:0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,7",
+      "result": "B,0006,1,T:0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,8",
+      "result": "T,0008,B,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,9",
+      "result": "B,0007,T,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,10",
+      "result": "B,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,11",
+      "result": "B,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "createB,12",
+      "result": "B,0047,0,?#32771:60:240:300:200:1847"
+    },
+    {
+      "function": "msg",
+      "args": "createB,13",
+      "result": "B,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "createB,14",
+      "result": "B,0003,0,1070040"
+    },
+    {
+      "function": "msg",
+      "args": "createB,15",
+      "result": "B,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "createB",
+      "result": "focus=B,active=B,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "createB",
+      "result": "PQBTSAR"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,0",
+      "result": "B,0112,f020,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,1",
+      "result": "B,0008,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,2",
+      "result": "B,0046,0,R:21:408:36:36:170"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,3",
+      "result": "B,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,4",
+      "result": "B,0027,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,5",
+      "result": "B,0047,0,R:21:408:36:36:130"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,6",
+      "result": "B,0003,0,1980015"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,7",
+      "result": "B,0005,1,240024"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,8",
+      "result": "P,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,9",
+      "result": "P,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,10",
+      "result": "P,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,11",
+      "result": "P,0047,0,0:340:20:120:60:1897"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,12",
+      "result": "Q,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,13",
+      "result": "Q,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,14",
+      "result": "Q,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,15",
+      "result": "Q,0047,0,0:340:100:120:60:1897"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,16",
+      "result": "R,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,17",
+      "result": "R,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,18",
+      "result": "R,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,19",
+      "result": "R,0047,0,0:340:180:120:60:1897"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,20",
+      "result": "S,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,21",
+      "result": "S,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,22",
+      "result": "S,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,23",
+      "result": "S,0047,0,0:480:20:120:60:1897"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,24",
+      "result": "T,0018,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,25",
+      "result": "T,0009,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,26",
+      "result": "T,0046,0,0:0:0:0:0:97"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,27",
+      "result": "T,0047,0,0:480:100:120:60:1897"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,28",
+      "result": "B,0086,0,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,29",
+      "result": "B,0006,0,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,30",
+      "result": "A,0086,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,31",
+      "result": "A,0006,1,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,32",
+      "result": "A,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,33",
+      "result": "B,0046,0,?#32772:0:0:0:0:13"
+    },
+    {
+      "function": "msg",
+      "args": "minimizeB,34",
+      "result": "B,0026,1,0"
+    },
+    {
+      "function": "state",
+      "args": "minimizeB",
+      "result": "focus=A,active=A,iconic=1"
+    },
+    {
+      "function": "zorder",
+      "args": "minimizeB",
+      "result": "pqtsArB"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,0",
+      "result": "B,0046,0,?#32772:0:0:0:0:3"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,1",
+      "result": "A,0086,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,2",
+      "result": "A,0006,0,B:0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,3",
+      "result": "B,0046,0,?#32772:0:0:0:0:3"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,4",
+      "result": "B,0086,1,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,5",
+      "result": "B,0006,1,A:20"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,6",
+      "result": "A,0008,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,7",
+      "result": "B,0047,0,?#32772:21:408:36:36:1803"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,8",
+      "result": "B,0112,f120,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,9",
+      "result": "B,0013,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,10",
+      "result": "B,0046,0,?#32772:60:240:300:200:120"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,11",
+      "result": "B,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,12",
+      "result": "B,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,13",
+      "result": "B,0047,0,?#32772:60:240:300:200:124"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,14",
+      "result": "B,0003,0,1070040"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,15",
+      "result": "B,0005,0,ad0124"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,16",
+      "result": "P,0046,0,0:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,17",
+      "result": "P,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,18",
+      "result": "P,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,19",
+      "result": "P,0047,0,0:340:20:120:60:1857"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,20",
+      "result": "Q,0046,0,P:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,21",
+      "result": "Q,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,22",
+      "result": "Q,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,23",
+      "result": "Q,0047,0,P:340:100:120:60:1857"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,24",
+      "result": "R,0046,0,P:0:0:0:0:53"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,25",
+      "result": "R,0085,1,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,26",
+      "result": "R,0014,hdc,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,27",
+      "result": "R,0047,0,P:340:180:120:60:1853"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,28",
+      "result": "B,0007,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,29",
+      "result": "B,0006,1,0:0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,30",
+      "result": "P,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,31",
+      "result": "R,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,32",
+      "result": "Q,000f,0,0"
+    },
+    {
+      "function": "msg",
+      "args": "restoreB,33",
+      "result": "B,000f,0,0"
+    },
+    {
+      "function": "state",
+      "args": "restoreB",
+      "result": "focus=B,active=B,iconic=0"
+    },
+    {
+      "function": "zorder",
+      "args": "restoreB",
+      "result": "PRQBtsA"
+    }
+  ]
+}

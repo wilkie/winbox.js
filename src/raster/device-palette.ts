@@ -99,9 +99,18 @@ export class DevicePalette {
     this.#stale = true;
   }
 
+  /**
+   * Whether GDI has sent the driver the whole palette since the driver's
+   * `Enable`, as it does where a realization changes it: on the 8514/a the
+   * screen shows the static colours as `Enable` left them until then
+   * (`shown-colours.ts`).
+   */
+  rewritten = false;
+
   /** Its colours as it was made: the 256-colour display's, before any palette was realized. */
   reset() {
     this.#initial.forEach(([r, g, b], at) => this.recolour(at, r, g, b));
+    this.rewritten = false;
   }
 
   /** Whether the palette holds a colour exactly. */

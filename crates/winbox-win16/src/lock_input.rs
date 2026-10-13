@@ -51,6 +51,13 @@ impl System {
         }
     }
 
+    /// A task locked with `LockMyTask` let go, where one is.
+    pub(crate) fn unlock_my_task(&mut self) {
+        if self.lock_my_task != 0 {
+            self.lock_my_task_to(0);
+        }
+    }
+
     /// A look's flags, `PM_NOYIELD` added where the task has locked itself
     /// with `LockMyTask` (`USER.EXE` seg1 `245b`-`2462`; `gmhook`).
     pub(crate) fn look_flags(&self, flags: u16) -> u16 {

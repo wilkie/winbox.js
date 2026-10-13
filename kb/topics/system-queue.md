@@ -2,7 +2,7 @@
 kind: topic
 name: The system queue
 summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, makes a press a double click as it is taken, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
-probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, inpost, lockinp, hwhook, gmhook, tasklist, prtsc, hotkey, dblrect]
+probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, inpost, lockinp, hwhook, gmhook, tasklist, prtsc, hotkey, dblrect, sebhook]
 ---
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
@@ -168,6 +168,12 @@ The computer-based training hooks, `WH_CBT`, are told as a key or a mouse event 
 
 Both engines agree with all eleven records. Before, the CBT hooks were kept and never called.
 
+### While USER's system error box is up
+
+[[read out]] [[fn:USER.SysErrorBox]] sets the word at `0E0h` (`9350`-`9359`), makes the desktop window the system-modal window, and gives it the capture and the focus (`9392`-`93d3`); its loop takes each message with `PeekMessage` for the desktop window, `PM_REMOVE | PM_NOYIELD` (`9759`-`9768`). So while it is up the keyboard and mouse hooks are not called and the CBT hooks are told of nothing skipped (`32de`, `2e6e`), the journal hooks are not called (the system-modal window, `4e42`), and the message hooks are handed each message the box takes, as `PeekMessage` hands any ([[topic:hooks]]). The word is put back as the box goes (`9a79`).
+
+[[measured]] [[probe:sebhook]] puts in a keyboard, a mouse, a CBT and a message hook for its own task and a journal record hook, and calls `SysErrorBox`; Enter is pressed at the box from outside. While it is up only the message hook is called, with `WM_KEYDOWN` and `WM_KEYUP`, code nought; the box answers 1. X pressed through `KEYBD_EVENT` once it is gone: the journal hook, the keyboard hook, the CBT hook's `HCBT_KEYSKIPPED` and the message hook, for the press and for the release, as before it. Both engines agree with all three records. winbox.js's box takes the keyboard and the mouse from the page straight; it now hands each message to the message hooks before it reads it, a key's `lParam` as the key would have had, a press's the point.
+
 ### The hardware hooks
 
 [[read out]] An event that is neither a key -- `WM_KEYDOWN` to `WM_SYSKEYUP` -- nor the mouse's goes another way as the look comes to it (`2b53`-`2baa`). Such events are what a journal playback hook plays back, and what a driver puts in with `HARDWARE_EVENT` (`4d6c`: CX the message, AX and DX `paramL` and `paramH`, SI and DI the extra information, put in with no window). That entry reads the system queue's selector from DS as it is called (`4d84`), so it is for a caller whose DS is USER's segment 44, and no program calls it: nothing in the installation imports it.
@@ -259,8 +265,7 @@ While a window is system-modal, a key for a window outside it is passed over, le
 - A mouse event for a window outside the system-modal window (`2ee7`).
 - [[fn:USER.LockInput]] giving the desktop window to the locking task (seg8 `08c4`), and the words at `0DAh`, `1CAh`, `1CEh` and `0D0h` it keeps, puts back and partly clears: winbox.js keeps none of them.
 - With [[fn:USER.LockMyTask]], `GetMessage` does not yield before it looks at the timers (`254b`-`2552`); winbox.js's `GetMessage` yields as without.
-- [[fn:USER.SysErrorBox]]'s flag at `0E0h`, which keeps the keyboard and mouse hooks from being called, and the CBT hooks from being told of keys and clicks skipped (`32de`, `2e6e`).
-- `HARDWARE_EVENT`, which a driver calls with DS USER's own segment; winbox.js keeps it a stub, and has such events only from a journal playback hook. A window named by an event's extra information, and 1 for the focus, are not followed: played back, there is none.
+- `HARDWARE_EVENT`, which a driver calls with DS USER's own segment 44 (`4d84`); winbox.js keeps it a stub, and has such events only from a journal playback hook. A window named by an event's extra information, and 1 for the focus, are not followed: no recording can reach them. A playback hook's events have nought for extra information (`82e3`-`82e8`), and a program cannot call the entry with USER's segment 44 in DS, whose selector it has no way to name.
 - An event that is neither a key nor the mouse's where there is no active window: USER reads the window's queue from nought (`2bd5`); winbox.js hands the event over with no window.
 - A move due is put in as a look comes to the queue (`833d`), so a press made after that look is not added to one before the move. winbox.js keeps a move at the end of the queue as the one due, and adds a press to the one before it.
 - The time and the point of a mouse move are the cursor's as the move is put in at last, not as the mouse moved.

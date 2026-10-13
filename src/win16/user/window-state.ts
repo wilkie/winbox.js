@@ -2,7 +2,8 @@
 
 import { deliverActivation } from './activation.js';
 import { setFocus } from './dialogs.js';
-import { focusNothing } from './SetFocus.js';
+import { askCbt, askCbtCreate, HCBT_ACTIVATE, HCBT_MINMAX } from './hooks.js';
+import { focusNothing, setFocusNothing } from './SetFocus.js';
 import { FALSE, TRUE } from '../consts.js';
 import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
 import { askText } from './DefWindowProc.js';
@@ -13,6 +14,12 @@ import { eraseDue } from './erase.js';
 import { type Insert } from './desktop.js';
 import { GetSysModalWindow } from './userwin.js';
 import { GetWindowTask } from './window-queries.js';
+
+/** The commands `ShowWindow` minimizes or maximizes with, whatever the window is (`USER.EXE` seg14 `0c39`). */
+const MINMAX_COMMANDS = new Set([2, 3, 6, 7]);
+
+/** The commands that restore a window minimized or maximized, and only show one that is neither. */
+const RESTORING_COMMANDS = new Set([1, 4, 9]);
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -40,6 +47,19 @@ export async function showRaster(
     windowClass
       ? system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam)
       : Promise.resolve(0);
+
+  /* Minimized, maximized, or restored from either: the computer-based
+   * training hooks asked first, `HCBT_MINMAX`, the window and the command as
+   * `ShowWindow` was given it; non-nought in AX, nothing changes (`USER.EXE`
+   * seg14 `0c29`-`0c8d`, seg6 `1ad2`-`1af5`; **recorded** by `cbthook`). */
+  if (
+    MINMAX_COMMANDS.has(show) ||
+    (RESTORING_COMMANDS.has(show) && (shown.state === 'minimized' || shown.state === 'maximized'))
+  ) {
+    if ((await askCbt(system, HCBT_MINMAX, hwnd, show)).answer & 0xffff) {
+      return was ? TRUE : FALSE;
+    }
+  }
 
   /* An icon restored is asked first, and stays one if its window says no
    * (`iconclk`; the answer is documented, not recorded). */
@@ -199,7 +219,7 @@ export async function showRaster(
       if (shown.parent) {
         await setFocus(system, shown.parent.hwnd);
       } else {
-        await focusNothing(system);
+        await setFocusNothing(system);
       }
     }
   }
@@ -467,7 +487,10 @@ export async function showRaster(
   if (show === User.SW_MINIMIZE && minimizing && !shown.parent && shown.state === 'minimized') {
     const next = desktop.nextAfterMinimize(shown);
 
-    if (next && next !== shown) {
+    /* Made active as `ActivateWindow` makes one: the computer-based
+     * training hooks asked first (`activateWindow`; **recorded** by
+     * `cbthook`). */
+    if (next && next !== shown && !((await askActivate(system, next, 0)) & 0xffff)) {
       const nextFamily = familyOf(desktop, next);
       const nextAbove = above(desktop, next);
 
@@ -497,6 +520,10 @@ export async function showRaster(
           : undefined
       );
     }
+  }
+
+  if (shown.state === 'minimized') {
+    await titleMade(system, hwnd, window);
   }
 
   if (changes && !hiding && shown.state === 'minimized') {
@@ -663,6 +690,43 @@ export async function minimizeToBottom(
 }
 
 /**
+ * USER makes an icon's title with `CreateWindow` the first time the window
+ * is minimized, and keeps it, hidden, while the window is restored
+ * (`USER.EXE` seg1 `6ab8`): the computer-based training hooks are asked
+ * then, `HCBT_CREATEWND`, with its `CREATESTRUCT` -- class `#32772`, no
+ * name, `WS_POPUP`, at nought, nought, one by one, the window its parent,
+ * its instance the window's (`6afc`-`6b20`). **Recorded** by `cbthook`:
+ * asked as the window is first minimized, not as it is again. winbox.js
+ * makes the title again each time, and asks only the first. What a hook
+ * answers is not followed: Windows would take the title apart as it
+ * takes any window refused (`cbteat`).
+ */
+async function titleMade(system: any, hwnd: number, window: RasterWindow) {
+  const shown = window.window;
+
+  if (shown.iconTitle?.hwnd && !(shown as any).titleAsked) {
+    const words = (value: number, count: number) =>
+      Array.from({ length: count * 2 }, (_, index) => (value >>> (index * 8)) & 0xff);
+
+    (shown as any).titleAsked = true;
+    await askCbtCreate(system, shown.iconTitle.hwnd, [
+      ...words(0, 2),
+      ...words((window as any)._createStruct?.hInstance ?? 0, 1),
+      ...words(0, 1),
+      ...words(hwnd, 1),
+      ...words(1, 1),
+      ...words(1, 1),
+      ...words(0, 1),
+      ...words(0, 1),
+      ...words(0x80000000, 2),
+      ...words(0, 2),
+      ...words(0x8004, 2),
+      ...words(0, 2),
+    ]);
+  }
+}
+
+/**
  * An icon's title made and shown: its window asked for its text, 80
  * characters, as the title is made and again as it is drawn; and, when the
  * icon was not made active, the icon asked to go after its title, which it
@@ -670,6 +734,8 @@ export async function minimizeToBottom(
  */
 async function titleShown(system: any, hwnd: number, window: RasterWindow, activated: boolean) {
   const shown = window.window;
+
+  await titleMade(system, hwnd, window);
 
   await askText(system, hwnd, window, 0x50);
 
@@ -715,17 +781,24 @@ async function titleShown(system: any, hwnd: number, window: RasterWindow, activ
  * as another is destroyed (`uncover`: the window under one destroyed is
  * erased once).
  */
-export async function activateWindow(system: any, top: any, forFocus = false, whole = true) {
+export async function activateWindow(
+  system: any,
+  top: any,
+  forFocus = false,
+  whole = true,
+  mouse = 0
+) {
   const desktop = system.rasterDesktop;
 
   if (!desktop || desktop.activeTop === top) {
-    return;
+    return true;
   }
 
   /* Refused while a window is system modal and this is not it, unless the
    * running task is the system-modal window's (`USER.EXE` seg1 `3531`-
    * `354c`). **Recorded** by `sysdlg`: the program whose dialog is system
-   * modal makes its other window active with `SetActiveWindow`. */
+   * modal makes its other window active with `SetActiveWindow`. Before the
+   * hooks are asked. */
   const sysModal = GetSysModalWindow.call(system);
 
   if (
@@ -733,7 +806,11 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
     top.hwnd !== sysModal &&
     GetWindowTask.call(system, sysModal) !== (system.scheduler?.active ?? 0)
   ) {
-    return;
+    return false;
+  }
+
+  if ((await askActivate(system, top, mouse)) & 0xffff) {
+    return false;
   }
 
   const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
@@ -841,11 +918,32 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
         }
       : undefined
   );
+
+  return true;
+}
+
+/**
+ * The computer-based training hooks asked before a window at the top is
+ * made active, `HCBT_ACTIVATE`, the window and a `CBTACTIVATESTRUCT`:
+ * whether a press makes it active, and the window active now. What they
+ * answered; non-nought in AX, nothing changes (`USER.EXE` seg1 `3558`-
+ * `3582`; **recorded** by `cbthook`).
+ */
+export async function askActivate(system: any, top: any, mouse: number) {
+  const active = system.rasterDesktop?.activeTop?.hwnd ?? 0;
+  const asked = await askCbt(system, HCBT_ACTIVATE, top.hwnd ?? 0, [
+    mouse & 0xff,
+    (mouse >> 8) & 0xff,
+    active & 0xff,
+    (active >> 8) & 0xff,
+  ]);
+
+  return asked.answer;
 }
 
 /** `SetFocus`'s activation of the window at the top the focus goes into. */
 export async function activateForFocus(system: any, top: any) {
-  await activateWindow(system, top, true);
+  return activateWindow(system, top, true);
 }
 
 /**
@@ -1592,6 +1690,11 @@ export async function positionChanged(
     }
   }
 
+  /* Whether the windows so far lay where they were asked to go: while they
+   * do, the next asked to go somewhere is looked at as well (`USER.EXE`
+   * seg7 `0e09`-`0e38`). */
+  let inPlaceSoFar = true;
+
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
     const shown = window.window;
@@ -1642,6 +1745,8 @@ export async function positionChanged(
       (shown as any).frameRegion = (shown as any).needsNcPaint;
     }
 
+    const lay = !(flags & SWP_NOZORDER) && liesWhereAsked(window.desktop, shown, move.insert);
+
     /* Put where it was asked to go among its brothers (`mousemsg`,
      * `swporder`); a window shown comes to the front as it shows, and one
      * hidden stays where it is. */
@@ -1664,6 +1769,18 @@ export async function positionChanged(
        * `DestroyWindow` ask for another (`USER.EXE` seg14 `0dc2`, seg8
        * `0bb7`); `SetWindowPos` asks for none. */
       window.desktop.hide(shown, false);
+    } else if (
+      flags & SWP_SHOWWINDOW &&
+      !shown.visible &&
+      !shown.parent &&
+      flags & SWP_NOACTIVATE
+    ) {
+      /* Shown and not made active: `SetWindowPos` activates only the first
+       * window of its list without `SWP_NOACTIVATE` (`USER.EXE` seg7
+       * `0cda`-`0ce6`, `0260`-`026f`). It goes where it was asked among the
+       * others, or stays where it lay with `SWP_NOZORDER` (`swpshow`). */
+      reordered = window.desktop.reorder(shown, move.insert) || reordered;
+      window.desktop.showInPlace(shown);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
       /* Shown where it lies, with `SWP_NOZORDER` and `SWP_NOACTIVATE`, as
        * `ShowWindow` shows a window `ActivateWindow` made active hidden
@@ -1686,6 +1803,24 @@ export async function positionChanged(
       window.desktop.show(shown, false);
     }
 
+    /* A window at the top shown is due whole, its frame with it:
+     * `WM_NCPAINT` and `WM_ERASEBKGND` come before `WM_WINDOWPOSCHANGED`, as
+     * `ShowWindow` has them (`swpshow`). */
+    if (shown.visible && !visible && !shown.parent) {
+      (shown as any).needsNcPaint = true;
+      (shown as any).dirtyRect = undefined;
+    }
+
+    /* Already where it was asked to go, it is told so with `SWP_NOZORDER`
+     * (seg7 `0e09`-`0e38`, `1184`; `swpshow`: a window shown after the window
+     * it already lay after). */
+    let inPlace = 0;
+
+    if (!(flags & SWP_NOZORDER) && inPlaceSoFar) {
+      inPlaceSoFar = lay;
+      inPlace = lay ? SWP_NOZORDER : 0;
+    }
+
     /* What of the client area stayed as it was, said so (seg7 `0d66`,
      * `0fcf`, `0fe6`). */
     const clientNow = clientInParent(shown);
@@ -1701,7 +1836,7 @@ export async function positionChanged(
       moved,
       sized,
       showing: shown.visible !== visible || reordered || framed,
-      client,
+      client: client | inPlace,
     });
   }
 
@@ -1783,6 +1918,43 @@ export async function positionChanged(
   }
 
   system.rasterInput?.nudge();
+}
+
+/**
+ * Whether a window already lies where it is asked to go, as USER looks before
+ * it moves it (`USER.EXE` seg7 `1184`): at the bottom, the last of its
+ * brothers; at the top, the first, or for one not topmost the first after the
+ * last topmost window; after a window, right after it, topmost as that one
+ * is. One made topmost, or topmost no more, does not. An icon's title is not
+ * counted as a brother: winbox.js keeps it just in front of its icon, where
+ * Windows keeps it among the topmost windows (`swpshow`: an icon brought to
+ * `HWND_TOP` goes after its own title, `#32772`, and is not where it was
+ * asked to go).
+ */
+function liesWhereAsked(desktop: any, shown: any, to: Insert): boolean {
+  const brothers = desktop.windows.filter(
+    (other: any) => other.parent === shown.parent && !other.titleOf
+  );
+  const at = brothers.indexOf(shown);
+  const before = at > 0 ? brothers[at - 1] : null;
+  const topmost = !!shown.topmost;
+  const lastTopmost = () =>
+    brothers.filter((other: any) => other !== shown && other.topmost).pop() ?? null;
+
+  switch (to.to) {
+    case 'stay':
+      return true;
+    case 'bottom':
+      return at >= 0 && at === brothers.length - 1;
+    case 'top':
+      return shown.parent || topmost ? before === null : before === lastTopmost();
+    case 'topmost':
+      return topmost && before === null;
+    case 'notTopmost':
+      return !topmost;
+    case 'after':
+      return before === to.other && !!to.other.topmost === topmost;
+  }
 }
 
 /** The family brought up with a window told, each that moved among the windows. */

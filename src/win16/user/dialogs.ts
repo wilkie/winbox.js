@@ -16,7 +16,7 @@ import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
 import { nextMessage, SENT_ANSWERED } from './queue.js';
 import { noteTaken } from './queries.js';
-import { callMsgFilter, MSGF_DIALOGBOX } from './hooks.js';
+import { askCbt, callMsgFilter, HCBT_SETFOCUS, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { CTLCOLOR_DLG, defaultControlColour } from './ctlcolor.js';
@@ -1525,12 +1525,26 @@ export async function setFocus(system: any, hwnd: number) {
 
   const desktop = window.desktop;
 
+  /* The computer-based training hooks asked, `HCBT_SETFOCUS`, the window and
+   * the one that has the focus, unless it has it already; non-nought in AX,
+   * nothing changes and the answer is nought (`387f`-`3897`; **recorded** by
+   * `cbthook`). */
+  if (desktop.focus !== window.window) {
+    const asked = await askCbt(system, HCBT_SETFOCUS, hwnd, desktop.focus?.hwnd ?? 0);
+
+    if (asked.answer & 0xffff) {
+      return 0;
+    }
+  }
+
   /* The window at the top it is in made active first, if it is not
    * (`3899`-`38b2`; `comboact`) -- shown or hidden: nothing asks whether it
    * shows (`3514`). A dialog made hidden, as `DialogBox` and `MessageBox`
    * make one, is so made active as its first control is given the focus,
    * and the window it covers is told while its focus is still in it, keeps
-   * that, and has it back when the box is gone (`hidfocus`). */
+   * that, and has it back when the box is gone (`hidfocus`). An activation
+   * the computer-based training hooks refuse gives the focus to nothing,
+   * and the answer is nought (`38a6`). */
   let activated = false;
 
   if (desktop.focus !== window.window) {
@@ -1546,7 +1560,10 @@ export async function setFocus(system: any, hwnd: number) {
       !(top.style & (User.WS_MINIMIZE | User.WS_DISABLED)) &&
       top.state !== 'minimized'
     ) {
-      await activateForFocus(system, top);
+      if (!(await activateForFocus(system, top))) {
+        return 0;
+      }
+
       activated = true;
     }
   }

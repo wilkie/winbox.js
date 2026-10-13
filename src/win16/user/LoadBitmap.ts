@@ -8,6 +8,7 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { NULL } from '../consts.js';
 
 import { resourceBytes } from './resources.js';
+import { displayResourceNumber } from '../display-resource-id.js';
 
 /**
  * The **LoadBitmap** function loads the specified bitmap resource from the
@@ -105,7 +106,15 @@ export async function LoadBitmap(hinst, lpszBitmap) {
   }
 
   const module = this.handles.resolve(hinst);
-  const data = await resourceBytes(module?.executable, Executable.RESOURCES.Bitmap, lpszBitmap);
+
+  /* Asked of the display driver's own instance, a number goes through the
+   * driver's `GetDriverResourceID` first, as `LoadBitmap(NULL, ...)`'s does
+   * (`USER.EXE` seg12 `02dc`-`031f`; `display-resource-id.ts`). */
+  const named =
+    module?.name === 'DISPLAY' && typeof lpszBitmap === 'number' && lpszBitmap >>> 16 === 0
+      ? displayResourceNumber(this.display, lpszBitmap & 0xffff)
+      : lpszBitmap;
+  const data = await resourceBytes(module?.executable, Executable.RESOURCES.Bitmap, named);
 
   if (!data) {
     return NULL;

@@ -56,7 +56,8 @@ const KEPT: [any, 'fixed' | 'moveable'][] = [
 
 const quote = (text: string) => JSON.stringify(String(text));
 
-const modules = KEPT.map(([module, data]) => {
+/** A kept module as Rust source. */
+const kept = ([module, data]: [any, 'fixed' | 'moveable']) => {
   /* Each export's name, the bytes it pops, the bytes it answers in -- 0
    * where it leaves AX and DX -- and whether the TypeScript engine only
    * stubs it, answering nought. */
@@ -76,7 +77,17 @@ const modules = KEPT.map(([module, data]) => {
             ${exports.join(',\n            ')},
         ],
     }`;
-});
+};
+
+const modules = KEPT.map(kept);
+
+/* The display driver's module for each driver a display mode names, its
+ * own export table: \`KEPT\`'s is the default display's. */
+const drivers = [
+  ...new Map(
+    Object.values(DISPLAY_MODES).map((mode: any) => [mode.driverFile, displayDriverFor(mode)])
+  ).values(),
+].map((module) => kept([module, 'fixed']));
 
 const source = `//! The modules winbox.js keeps, written by \`scripts/rust/modules.ts\` from
 //! the TypeScript engine's export tables: do not edit by hand.
@@ -86,6 +97,12 @@ use crate::modules::{Export, Kept};
 /// In the order they are kept, which is the order their selectors are given.
 pub static KEPT: &[Kept] = &[
 ${modules.join(',\n')},
+];
+
+/// \`DISPLAY\` as each display driver is, by its file: each driver's own
+/// export table.
+pub static DISPLAY_DRIVERS: &[Kept] = &[
+${drivers.join(',\n')},
 ];
 `;
 

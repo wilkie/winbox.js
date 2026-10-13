@@ -1,0 +1,249 @@
+{
+  "probe": "cbthook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "case",
+      "args": "create",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "create",
+      "result": "c3:CbtProb/50,60,100,80/80800000/Pop/0/0,CbtProb81,CbtProb1,=made 50,60,150,140"
+    },
+    {
+      "function": "case",
+      "args": "createedit",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "createedit",
+      "result": "c3:CbtProb/50,60,100,80/80800000/Pop/0/0,CbtProb81,CbtProb1,=made 77,60,200,140"
+    },
+    {
+      "function": "case",
+      "args": "child",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "child",
+      "result": "c3:CbtProb/5,6,30,20/50000000/Kid/T/0,CbtProb81,CbtProb1,=made"
+    },
+    {
+      "function": "case",
+      "args": "destroy",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "destroy",
+      "result": "c4:P/0,c4:Q/0,Q2,Q82,P2,P82,=1"
+    },
+    {
+      "function": "case",
+      "args": "destroyeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "destroyeat",
+      "result": "c4:P/0,=0 1 1"
+    },
+    {
+      "function": "case",
+      "args": "activate",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "activate",
+      "result": "c5:U/0/T,T6:0/U,U6:1/T,c9:U/A/0,A8:U,U7:A,=T active U focus U"
+    },
+    {
+      "function": "case",
+      "args": "activateeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "activateeat",
+      "result": "c5:U/0/T,=T active T focus A"
+    },
+    {
+      "function": "case",
+      "args": "focus",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "focus",
+      "result": "c9:A/T/0,T8:A,A7:T,=T active T focus A"
+    },
+    {
+      "function": "case",
+      "args": "focuseat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "focuseat",
+      "result": "c9:A/T/0,=0 active T focus T"
+    },
+    {
+      "function": "case",
+      "args": "focusnull",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "focusnull",
+      "result": "c9:0/A/0,A8:0,=A active T focus 0"
+    },
+    {
+      "function": "case",
+      "args": "focusnulleat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "focusnulleat",
+      "result": "c9:0/A/0,=0 active T focus A"
+    },
+    {
+      "function": "case",
+      "args": "focusother",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "focusother",
+      "result": "c9:Q/A/0,c5:U/0/T,T6:0/U,U6:1/T,c9:U/A/0,A8:U,U7:A,U8:Q,Q7:U,=U active U focus Q"
+    },
+    {
+      "function": "case",
+      "args": "click",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "click",
+      "result": "c5:U/1/T,T6:0/U,U6:2/T,c9:U/A/0,A8:U,U7:A,=active U focus U"
+    },
+    {
+      "function": "case",
+      "args": "clickeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "clickeat",
+      "result": "c5:U/1/T,=active T focus A"
+    },
+    {
+      "function": "case",
+      "args": "minimize",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "minimize",
+      "result": "c1:T/6,c9:0/A/0,A8:0,c5:U/0/T,T6:0/U,U6:1/T,c9:U/0/0,U7:0,c3:#32772/0,0,1,1/80000000/#/T/0,=iconic 1 active U focus U"
+    },
+    {
+      "function": "case",
+      "args": "minimizeeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "minimizeeat",
+      "result": "c1:T/6,=iconic 0 active T focus A"
+    },
+    {
+      "function": "case",
+      "args": "maximize",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "maximize",
+      "result": "c1:T/3,restore,c1:T/9,=zoomed 1"
+    },
+    {
+      "function": "case",
+      "args": "syscmd",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "syscmd",
+      "result": "c8:f020/120034,c1:T/6,c9:0/A/0,A8:0,c5:U/0/T,T6:0/U,U6:1/T,c9:U/0/0,U7:0,=iconic 1"
+    },
+    {
+      "function": "case",
+      "args": "syscmdeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "syscmdeat",
+      "result": "c8:f020/120034,=iconic 0"
+    },
+    {
+      "function": "case",
+      "args": "move",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "move",
+      "result": "c8:f010/0,c0:T/58,40,358,240,=58,40,358,240"
+    },
+    {
+      "function": "case",
+      "args": "moveeat",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "moveeat",
+      "result": "c8:f010/0,c0:T/58,40,358,240,=40,40,340,240"
+    },
+    {
+      "function": "case",
+      "args": "movestill",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "movestill",
+      "result": "c8:f010/0,=40,40,340,240"
+    },
+    {
+      "function": "case",
+      "args": "queuesync",
+      "result": ""
+    },
+    {
+      "function": "cbt",
+      "args": "queuesync",
+      "result": "c8:f010/0,c2:0/0,=40,40,340,240"
+    },
+    {
+      "function": "unhooked",
+      "args": "",
+      "result": "1"
+    }
+  ]
+}

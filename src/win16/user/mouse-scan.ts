@@ -3,7 +3,7 @@
 import { SendMessage } from './SendMessage.js';
 import { queueOf } from './queue.js';
 import { deliverActivation } from './activation.js';
-import { bringingForward } from './window-state.js';
+import { askActivate, bringingForward } from './window-state.js';
 import { GetActiveWindow } from './placement.js';
 import { RasterWindow } from './raster-window.js';
 import { GetDoubleClickTime } from './misc.js';
@@ -640,7 +640,11 @@ export async function mouseTaken(system: any, msg: any, resolved: Resolved) {
     );
 
     if (asked >= 0 && asked <= MA_ACTIVATEANDEAT) {
-      if (!top.active) {
+      /* Made active as `ActivateWindow` makes one, by a press: the
+       * computer-based training hooks asked first, and one answering
+       * non-nought leaves it as it is (`activateWindow`; **recorded** by
+       * `cbthook`). */
+      if (!top.active && !((await askActivate(system, top, 1)) & 0xffff)) {
         const between = bringingForward(system, top);
 
         desktop.show(top);

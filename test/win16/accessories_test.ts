@@ -511,6 +511,36 @@ function fields(tree: any, window: string) {
       expect(formats).toContain(2);
     }, 300000);
 
+    /* The Windows Tutorial puts in a computer-based training hook, and its
+     * hook answers 1 to `HCBT_SYSCOMMAND` for `SC_NEXTWINDOW`,
+     * `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY` -- 30h less than
+     * `F160h` -- without passing them on (`WINTUTOR.EXE` seg5 `0973`, the
+     * hook at seg6 `167d`). `DefWindowProc` asks the hooks before any
+     * `SC_` command (`USER.EXE` seg1 `03de`-`03fd`; `cbthook`), so Control
+     * and Escape over the Tutorial start no Task List. Before, the hook was
+     * never called and the Task List came up over it. */
+    it("keeps the Task List from coming up over the Tutorial, as its hook asks", async () => {
+      const shownList: boolean[] = [];
+      const active: string[] = [];
+      const note = (win16: any) => {
+        active.push(win16.rasterDesktop.activeTop?.title ?? '');
+        shownList.push(
+          win16.rasterDesktop.windows.some((w: any) => w.visible && w.title === 'Task List')
+        );
+      };
+
+      await session(
+        'WINTUTOR.EXE',
+        [step('Shift_L', 3, note), step('Control_L+Escape', 3, note)],
+        undefined,
+        ['WINTUTOR.DAT']
+      );
+
+      expect(active[0]).toMatch(/Tutorial/);
+      expect(shownList).toEqual([false, false]);
+      expect(active[1]).toBe(active[0]);
+    }, 300000);
+
     /* Alt and Tab: `DefWindowProc`'s loop, which shows the program Tab
      * comes to in USER's switch window while Alt is held, and switches to it
      * as Alt is let go; Alt and Escape sends the active program to the back

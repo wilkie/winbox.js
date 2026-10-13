@@ -5,7 +5,7 @@ import { activateWindow, SetWindowPos, showRaster } from './window-state.js';
 import { eraseDue } from './erase.js';
 import { forgetActivePopup } from './enumerate.js';
 
-import { callHooks, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
+import { askCbt, callHooks, HCBT_DESTROYWND, HSHELL_WINDOWDESTROYED, WH_SHELL } from './hooks.js';
 import { deliverActivation } from './activation.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { TRUE, FALSE } from '../consts.js';
@@ -75,16 +75,23 @@ export async function DestroyWindow(hwnd) {
     return FALSE;
   }
 
-  const desktop = dialog.desktop;
-  const window = dialog.window;
-
-  /* A task locked by `LockMyTask` is let go by any window destroyed
-   * (`USER.EXE` seg8 `0a3f`-`0a48`). **Recorded** by `sysdlg`: a
+  /* A task locked by `LockMyTask` is let go by any window destroyed,
+   * before the hooks are asked (`USER.EXE` seg8 `0a3f`-`0a48`). **Recorded** by `sysdlg`: a
    * system-modal dialog made shown, which locks its task, and destroyed
    * without `EndDialog`, leaves no task locked. */
   if (this._lockMyTask) {
     LockMyTask.call(this, 0);
   }
+
+  /* The computer-based training hooks asked first, `HCBT_DESTROYWND` and the
+   * window; non-nought in AX, nothing is destroyed and the answer is nought
+   * (`USER.EXE` seg8 `0a4d`-`0a5d`; **recorded** by `cbthook`). */
+  if ((await askCbt(this, HCBT_DESTROYWND, hwnd, 0)).answer & 0xffff) {
+    return FALSE;
+  }
+
+  const desktop = dialog.desktop;
+  const window = dialog.window;
 
   forgetActivePopup(this, hwnd);
 

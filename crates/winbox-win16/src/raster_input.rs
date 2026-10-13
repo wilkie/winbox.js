@@ -495,7 +495,13 @@ impl System {
             if message != 0
                 && let Some(queue) = self.modal_input.as_mut()
             {
-                queue.push_back((message, u16::from(pointer.buttons), x, y));
+                queue.push_back((
+                    message,
+                    u16::from(pointer.buttons),
+                    x,
+                    y,
+                    u32::from(y as u16) << 16 | u32::from(x as u16),
+                ));
             }
 
             return;

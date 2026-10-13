@@ -671,6 +671,50 @@ impl Engine {
     /// (`hidfocus`). Then `WM_KILLFOCUS` to the window that had it, naming
     /// this one, then `WM_SETFOCUS` to this one. The window that had it.
     pub async fn set_focus(&self, hwnd: u16) -> Result<u16, Stop> {
+        let (index, had) = {
+            let system = self.system();
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(0);
+            };
+            let mut at = Some(index);
+
+            while let Some(window) = at {
+                let window = system.windows[window].as_ref().expect("a window");
+
+                if window.placement == Placement::Minimized
+                    || window.style & (WS_MINIMIZE | WS_DISABLED) != 0
+                {
+                    return Ok(0);
+                }
+
+                at = window.parent;
+            }
+
+            (index, system.focus)
+        };
+
+        // The computer-based training hooks asked, `HCBT_SETFOCUS`, the
+        // window and the one that has the focus, unless it has it already;
+        // non-nought in AX, nothing changes and the answer is nought
+        // (`387f`-`3897`; **recorded** by `cbthook`).
+        if had != Some(index) {
+            let had = {
+                let system = self.system();
+
+                had.and_then(|focus| system.windows[focus].as_ref())
+                    .map_or(0, |window| window.hwnd)
+            };
+
+            if self
+                .ask_cbt(crate::hooks::HCBT_SETFOCUS, hwnd, u32::from(had))
+                .await?
+                & 0xffff
+                != 0
+            {
+                return Ok(0);
+            }
+        }
+
         let inactive = {
             let system = self.system();
             let Some(index) = system.window_named(hwnd) else {
@@ -694,8 +738,12 @@ impl Engine {
                 .map(|_| top)
         };
 
-        if let Some(top) = inactive {
-            self.activate_for_focus(top).await?;
+        // An activation the computer-based training hooks refuse gives the
+        // focus to nothing, and the answer is nought (`38a6`).
+        if let Some(top) = inactive
+            && !self.activate_for_focus(top).await?
+        {
+            return Ok(0);
         }
 
         let (index, previous) = {
@@ -703,20 +751,6 @@ impl Engine {
             let Some(index) = system.window_named(hwnd) else {
                 return Ok(0);
             };
-            let mut at = Some(index);
-
-            while let Some(window) = at {
-                let window = system.windows[window].as_ref().expect("a window");
-
-                if window.placement == Placement::Minimized
-                    || window.style & (WS_MINIMIZE | WS_DISABLED) != 0
-                {
-                    return Ok(0);
-                }
-
-                at = window.parent;
-            }
-
             let previous = system
                 .focus
                 .and_then(|focus| system.windows[focus].as_ref())
@@ -785,6 +819,34 @@ impl Engine {
         Ok(())
     }
 
+    /// `SetFocus` with nought, as USER calls it itself too (`USER.EXE`
+    /// seg1 `381d`): the computer-based training hooks asked first,
+    /// `HCBT_SETFOCUS` with nought and the window that has the focus, if
+    /// any; non-nought in AX, nothing changes and the answer is nought
+    /// (`382f`-`3840`; **recorded** by `cbthook`, through `SetFocus` and as
+    /// a window with the focus in it is minimized).
+    pub async fn set_focus_nothing(&self) -> Result<u16, Stop> {
+        let had = {
+            let system = self.system();
+
+            system
+                .focus
+                .and_then(|focus| system.windows[focus].as_ref())
+                .map_or(0, |window| window.hwnd)
+        };
+
+        if self
+            .ask_cbt(crate::hooks::HCBT_SETFOCUS, 0, u32::from(had))
+            .await?
+            & 0xffff
+            != 0
+        {
+            return Ok(0);
+        }
+
+        self.focus_nothing().await
+    }
+
     /// The focus taken away: `WM_KILLFOCUS` to the window that had it,
     /// naming none, and the answer is that window (`activate`).
     pub async fn focus_nothing(&self) -> Result<u16, Stop> {
@@ -837,7 +899,7 @@ pub fn set_focus(engine: &Engine, mut args: Args) -> crate::call::Later<'_> {
         let previous = if window {
             engine.set_focus(hwnd).await?
         } else if hwnd == 0 && raster {
-            engine.focus_nothing().await?
+            engine.set_focus_nothing().await?
         } else {
             0
         };

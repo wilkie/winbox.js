@@ -51,6 +51,13 @@ const COLOR_BTNHIGHLIGHT = 20;
 const WHITE = 0xffffff;
 const BLACK = 0x000000;
 
+import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
+import { globalPointer } from '../kernel/GlobalLock.js';
+import { MSG } from '../user.js';
+import { GetDesktopWindow } from './GetDesktopWindow.js';
+import { GetTickCount } from './GetTickCount.js';
+import { callHooks, hasHooks, lookFlags, WH_GETMESSAGE } from './hooks.js';
+
 const VK_TAB = 0x09;
 const VK_RETURN = 0x0d;
 const VK_ESCAPE = 0x1b;
@@ -313,105 +320,196 @@ export async function sysErrorBox(system: any, text: string, caption: string, bu
     return slots.findIndex((button) => button && LABELS[button.id].mnemonic === letter);
   };
 
-  const result = await new Promise<number>((done) => {
-    input.modal = (message: number, wParam: number, x: number, y: number) => {
-      switch (message) {
-        case WM_LBUTTONDOWN: {
-          tracking = true;
+  /* What a message does to the box: the place chosen, or nought. */
+  const take = (message: number, wParam: number, x: number, y: number): number => {
+    switch (message) {
+      case WM_LBUTTONDOWN: {
+        tracking = true;
 
-          const hit = slots.findIndex((button) => inside(button, x, y));
+        const hit = slots.findIndex((button) => inside(button, x, y));
 
-          if (hit >= 0) {
-            if (focus >= 0 && hit !== focus) {
-              slots[focus]!.focus = false;
-              redraw(slots[focus]);
-            }
-
-            focus = hit;
-            slots[hit]!.focus = true;
-            press(hit, true);
+        if (hit >= 0) {
+          if (focus >= 0 && hit !== focus) {
+            slots[focus]!.focus = false;
+            redraw(slots[focus]);
           }
 
-          break;
+          focus = hit;
+          slots[hit]!.focus = true;
+          press(hit, true);
         }
 
-        case WM_MOUSEMOVE:
-          if (tracking) {
-            slots.forEach((button, slot) => press(slot, inside(button, x, y) && slot === focus));
-          }
+        break;
+      }
 
-          break;
-
-        case WM_LBUTTONUP: {
-          tracking = false;
-
-          const pressed = slots.findIndex((button) => button?.pressed);
-
-          if (pressed >= 0) {
-            done(pressed + 1);
-          }
-
-          break;
+      case WM_MOUSEMOVE:
+        if (tracking) {
+          slots.forEach((button, slot) => press(slot, inside(button, x, y) && slot === focus));
         }
 
-        case WM_KEYDOWN:
-          if (wParam === VK_RETURN || wParam === VK_SPACE) {
-            if (focus >= 0 && !keyDown) {
-              keyDown = true;
-              press(focus, true);
-            }
-          } else if (wParam === VK_TAB) {
-            if (focus >= 0) {
-              slots[focus]!.focus = false;
-              redraw(slots[focus]);
+        break;
 
-              do {
-                focus = (focus + 1) % 3;
-              } while (!slots[focus]);
+      case WM_LBUTTONUP: {
+        tracking = false;
 
-              slots[focus]!.focus = true;
-              redraw(slots[focus]);
-            }
-          } else if (wParam === VK_ESCAPE) {
-            const cancel = slots.findIndex((button) => button?.id === SEB_CANCEL);
+        const pressed = slots.findIndex((button) => button?.pressed);
 
-            if (cancel >= 0) {
-              done(cancel + 1);
-            }
-          } else {
-            const chosen = byLetter(wParam);
+        if (pressed >= 0) {
+          return pressed + 1;
+        }
 
-            if (chosen >= 0) {
-              done(chosen + 1);
-            }
+        break;
+      }
+
+      case WM_KEYDOWN:
+        if (wParam === VK_RETURN || wParam === VK_SPACE) {
+          if (focus >= 0 && !keyDown) {
+            keyDown = true;
+            press(focus, true);
           }
+        } else if (wParam === VK_TAB) {
+          if (focus >= 0) {
+            slots[focus]!.focus = false;
+            redraw(slots[focus]);
 
-          break;
+            do {
+              focus = (focus + 1) % 3;
+            } while (!slots[focus]);
 
-        case WM_SYSKEYDOWN: {
+            slots[focus]!.focus = true;
+            redraw(slots[focus]);
+          }
+        } else if (wParam === VK_ESCAPE) {
+          const cancel = slots.findIndex((button) => button?.id === SEB_CANCEL);
+
+          if (cancel >= 0) {
+            return cancel + 1;
+          }
+        } else {
           const chosen = byLetter(wParam);
 
           if (chosen >= 0) {
-            done(chosen + 1);
+            return chosen + 1;
           }
-
-          break;
         }
 
-        case WM_KEYUP:
-          if ((wParam === VK_RETURN || wParam === VK_SPACE) && keyDown && focus >= 0) {
-            done(focus + 1);
-          }
+        break;
 
-          break;
+      case WM_SYSKEYDOWN: {
+        const chosen = byLetter(wParam);
+
+        if (chosen >= 0) {
+          return chosen + 1;
+        }
+
+        break;
       }
-    };
-  });
+
+      case WM_KEYUP:
+        if ((wParam === VK_RETURN || wParam === VK_SPACE) && keyDown && focus >= 0) {
+          return focus + 1;
+        }
+
+        break;
+    }
+
+    return 0;
+  };
+
+  /* What the box takes, one message at a time: the mouse and the keyboard
+   * come to it as messages for the desktop window, which it makes the
+   * system-modal window and gives the capture and the focus (`9392`-`93d3`),
+   * and its look is `PeekMessage` for that window with `PM_REMOVE |
+   * PM_NOYIELD` (`9759`-`9768`). So the message hooks are handed each one as
+   * it is taken, with that look's flags, and the box reads it as they left
+   * it; the keyboard and mouse hooks, the computer-based training hooks'
+   * skipped keys and clicks, and the journal hooks are not called while it
+   * is up (`0E0h`, `32de`, `2e6e`; the system-modal window, `4e42`).
+   * **Recorded** by `sebhook`: Enter pressed at the box, the message hook
+   * is handed `WM_KEYDOWN` and `WM_KEYUP` and nothing else is called. */
+  const waiting: [number, number, number, number, number][] = [];
+  let wake: (() => void) | null = null;
+
+  input.modal = (message: number, wParam: number, x: number, y: number, lParam = 0) => {
+    waiting.push([message, wParam, x, y, lParam]);
+    wake?.();
+  };
+
+  let result = 0;
+
+  while (!result) {
+    if (!waiting.length) {
+      await new Promise<void>((resume) => (wake = resume));
+      wake = null;
+      continue;
+    }
+
+    const [taken, takenParam, x, y, lParam] = waiting.shift()!;
+    const { message, wParam } = await boxLook(system, taken, takenParam, x, y, lParam);
+
+    result = take(message, wParam, x, y);
+  }
 
   input.modal = null;
   desktop.redrawArea(...layout.box);
 
   return result;
+}
+
+/**
+ * The box's look at a message it takes (`USER.EXE` seg1 `9759`-`9768`):
+ * handed to the message hooks, where one is in, in a `MSG` for the desktop
+ * window -- its `lParam` the key's, or the point, the desktop's client area
+ * being the screen -- with the look's flags, `PM_REMOVE | PM_NOYIELD`; the
+ * message and its `wParam` as they left it.
+ */
+async function boxLook(
+  system: any,
+  message: number,
+  wParam: number,
+  x: number,
+  y: number,
+  lParam: number
+) {
+  if (!hasHooks(system, WH_GETMESSAGE)) {
+    return { message, wParam };
+  }
+
+  const msg: any = new MSG();
+  const mouse = message >= WM_MOUSEMOVE && message <= WM_LBUTTONUP;
+
+  msg.hwnd = GetDesktopWindow.call(system);
+  msg.message = message;
+  msg.wParam = wParam;
+  msg.lParam = mouse ? (((y & 0xffff) << 16) | (x & 0xffff)) >>> 0 : lParam >>> 0;
+  msg.time = GetTickCount.call(system);
+  msg.pt = { x, y };
+
+  system._boxMessage ??= globalPointer.call(system, GlobalAlloc.call(system, 0x42, 32));
+
+  const far = system._boxMessage >>> 0;
+  const core = system.machine.cpu.core;
+  const words = [
+    msg.hwnd,
+    message,
+    wParam,
+    msg.lParam & 0xffff,
+    (msg.lParam >>> 16) & 0xffff,
+    msg.time & 0xffff,
+    (msg.time >>> 16) & 0xffff,
+    x,
+    y,
+  ];
+
+  words.forEach((word, index) =>
+    core.write16(far >>> 16, ((far & 0xffff) + index * 2) & 0xffff, word & 0xffff)
+  );
+  await callHooks(system, WH_GETMESSAGE, 0, lookFlags(system, 3), far);
+
+  return {
+    message: core.read16(far >>> 16, ((far & 0xffff) + 2) & 0xffff),
+    wParam: core.read16(far >>> 16, ((far & 0xffff) + 4) & 0xffff),
+  };
 }
 
 /**

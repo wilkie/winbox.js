@@ -1,5 +1,6 @@
 'use strict';
 
+import { askCbt, HCBT_SYSCOMMAND } from './hooks.js';
 import { MessageBeep } from './enumerate.js';
 
 import { Brush } from '../../raster/brush.js';
@@ -526,6 +527,17 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
       return undefined;
 
     case User.WM_SYSCOMMAND:
+      /* The computer-based training hooks asked first, with the command
+       * less its low four bits and the `lParam`, 10000h made nought; one
+       * answering non-nought in AX, nothing is done (`USER.EXE` seg1
+       * `0337`-`0362`, `03de`-`03fd`). **Recorded** by `cbthook`. */
+      if (
+        (await askCbt(system, HCBT_SYSCOMMAND, wParam & 0xfff0, lParam === 0x10000 ? 0 : lParam))
+          .answer & 0xffff
+      ) {
+        return 0;
+      }
+
       switch (wParam & 0xfff0) {
         case SC_KEYMENU: {
           /* The menu the keys reach: that of the nearest window the window

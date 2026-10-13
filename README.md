@@ -98,7 +98,7 @@ Windows machine as it is.
 
 ```shell
 winbox-native PROGRAM.EXE --windows DIR [--drive DIR] [--path C:\FOLDER\PROGRAM.EXE]
-    [--display vga|ega|hercules|svga|vga256|8514|xga256] [--sound [--sound-dump FILE.wav]]
+    [--display vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640] [--sound [--sound-dump FILE.wav]]
     [--shot FILE [--shot-seconds N]]
 ```
 

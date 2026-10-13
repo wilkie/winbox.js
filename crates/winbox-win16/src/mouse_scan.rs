@@ -738,7 +738,11 @@ impl Engine {
                         .is_some_and(|window| !window.active)
                 };
 
-                if activate {
+                // Made active as `ActivateWindow` makes one, by a press: the
+                // computer-based training hooks asked first, and one
+                // answering non-nought leaves it as it is (`activate_window`;
+                // **recorded** by `cbthook`).
+                if activate && self.ask_activate(top, 1).await? as u16 == 0 {
                     let between = {
                         let mut system = self.system();
                         // Brought to the front between the two windows'

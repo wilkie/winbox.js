@@ -141,7 +141,8 @@ export class RasterInput {
    * of USER's own that lets no program run is up (`sys-error-box.ts`): each
    * message as it would be posted, with the point on the screen.
    */
-  modal: ((message: number, wParam: number, x: number, y: number) => void) | null = null;
+  modal: ((message: number, wParam: number, x: number, y: number, lParam?: number) => void) | null =
+    null;
 
   /** The character each virtual key typed last, for `TranslateMessage`. */
   readonly typed = new Map<number, number>();
@@ -474,8 +475,19 @@ export class RasterInput {
         ? User.WM_KEYDOWN
         : User.WM_KEYUP;
 
+    /* The repeat count, and bit 30 for a key that was already down; bit 31
+     * for a release; bit 29 while Alt is down; the scan code in bits 16 to
+     * 23, and bit 24 for an extended key. */
+    const lParam =
+      1 |
+      ((scan & 0xff) << 16) |
+      (extended ? 1 << 24 : 0) |
+      (repeat ? 1 << 30 : 0) |
+      (kind === 'up' ? (3 << 30) >>> 0 : 0) |
+      (alt ? 1 << 29 : 0);
+
     if (this.modal) {
-      this.modal(message, virtual, this.cursor.x, this.cursor.y);
+      this.modal(message, virtual, this.cursor.x, this.cursor.y, lParam >>> 0);
       return;
     }
 
@@ -497,17 +509,6 @@ export class RasterInput {
     if (kind === 'down' && typed !== undefined) {
       this.typed.set(virtual, typed);
     }
-
-    /* The repeat count, and bit 30 for a key that was already down; bit 31
-     * for a release; bit 29 while Alt is down; the scan code in bits 16 to
-     * 23, and bit 24 for an extended key. */
-    const lParam =
-      1 |
-      ((scan & 0xff) << 16) |
-      (extended ? 1 << 24 : 0) |
-      (repeat ? 1 << 30 : 0) |
-      (kind === 'up' ? (3 << 30) >>> 0 : 0) |
-      (alt ? 1 << 29 : 0);
 
     /* Into the system queue, for whichever window has the focus as it is
      * taken (`system-queue.ts`); the task whose window has it now woken to

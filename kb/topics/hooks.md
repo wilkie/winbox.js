@@ -1,16 +1,37 @@
 ---
 kind: topic
 name: Hooks and message filters
-summary: How Windows 3.1 calls the hooks a program puts in — the message filters, in what order and with what codes, through a modal dialog box, a menu and CallMsgFilter; the shell hook; and the window procedure hook MFC's programs rely on.
+summary: How Windows 3.1 calls the hooks a program puts in — the message filters, the system's and the task's, in what order and with what codes, through a modal dialog box, a menu, a scroll bar and CallMsgFilter; the computer-based training hooks and what each code lets them stop; the debugging hook; the shell hook; and the window procedure hook MFC's programs rely on.
 probes:
-  [hooks, shlhook, cwphook, jrnlrec, jrnlplay, inhook, alttab, gmhook, hwhook, dlgcode, sysdlg]
+  [
+    hooks,
+    shlhook,
+    cwphook,
+    jrnlrec,
+    jrnlplay,
+    inhook,
+    alttab,
+    gmhook,
+    hwhook,
+    sysfilt,
+    cbthook,
+    cbteat,
+    dbghook,
+    sebhook,
+    dlgcode,
+    sysdlg,
+  ]
 ---
 
-A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a CBT hook, `WH_CBT`, for `HCBT_SYSCOMMAND` alone; winbox.js calls its CBT hooks only as a key or a click leaves the system queue where a keyboard or mouse hook is in, which the Tutorial never has, and so calls the Tutorial's never. DDEML puts in a message hook, `WH_GETMESSAGE`, which USER calls with each message a program takes; no accessory loads DDEML. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
+A hook is a procedure a program puts in USER's way. USER calls it with a code, a `WPARAM` and an `LPARAM` before it does something. Nine of the accessories put in a **message filter**, `WH_MSGFILTER`. USER calls it with each message a dialog box's or a menu's own loop takes, before handling it. That is how a program sees F1 pressed in a dialog box it did not write, to open its help. Recorder puts in **journal hooks**, which see every key and every press of the mouse taken, and play them back in place of the keyboard and the mouse, and a **keyboard hook**, which sees each key a program takes; [[topic:system-queue]] has where USER calls them. The Windows Tutorial puts in a computer-based training hook, `WH_CBT`, which USER asks before it makes, destroys, activates, focuses, minimizes or moves a window, and before `DefWindowProc` carries out a system command; the Tutorial's refuses Alt and Tab and the Task List while it runs ([below](#the-computer-based-training-hooks)). DDEML puts in a message hook, `WH_GETMESSAGE`, which USER calls with each message a program takes; no accessory loads DDEML. Programs built with Microsoft's MFC put in a window procedure hook, and cannot open a window without it.
 
 ## How USER keeps them
 
-[[read out]] Each hook is a block of 14 bytes in USER's local heap (`USER.EXE` seg1 `7d77`-`7e35`): the next hook, the procedure, the kind, the task's queue for a hook put in for one task or nought, the module, and whether it is being called. The system's chains begin at `8A2h` of USER's data, a word for each kind from `WH_MSGFILTER`, -1, to `WH_SHELL`, 10; a task's at `52h` of its queue, called before the system's (`7ca2`, `7cbb`). A kind outside -1 to 10 is refused (`7d8f`). Putting in a journal hook, record or playback, makes the mouse move where it is (`7e4a`, the kinds' flags at `7c96`; [[topic:mouse-input]]), and a playback hook is counted at `7Eh` of USER's segment 44 (`7e45`). A hook taken out while it is being called has its procedure cleared, and is freed after (`7e9f`). USER's caller of hooks (`800d`) calls a debugging hook, `WH_DEBUG`, first, where one is in, and lets it stop the call.
+[[read out]] Each hook is a block of 14 bytes in USER's local heap (`USER.EXE` seg1 `7d77`-`7e35`): the next hook, the procedure, the kind, the task's queue for a hook put in for one task or nought, the module, and whether it is being called. The system's chains begin at `8A2h` of USER's data, a word for each kind from `WH_MSGFILTER`, -1, to `WH_SHELL`, 10; a task's at `52h` of its queue, called before the system's (`7ca2`, `7cbb`). A kind outside -1 to 10 is refused (`7d8f`). Putting in a journal hook, record or playback, makes the mouse move where it is (`7e4a`, the kinds' flags at `7c96`; [[topic:mouse-input]]), and a playback hook is counted at `7Eh` of USER's segment 44 (`7e45`). A hook taken out while it is being called has its procedure cleared, and is freed after (`7e9f`). USER's caller of hooks (`800d`) calls a debugging hook, `WH_DEBUG`, first, where one is in ([below](#the-debugging-hook)).
+
+- [[read out]] Each kind has flags at `7C96h` of the segment, a byte a kind from -1. Bit 0 lets a hook of the kind be put in for one task: every kind but the journal hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBACK`, and the system message filters, `WH_SYSMSGFILTER`. One of those asked for with a task is refused (`7db7`-`7dc4`). Bit 1 makes the mouse move as the hook is put in, the journal hooks'.
+- [[measured]] [[fn:USER.SetWindowsHookEx]] with `WH_SYSMSGFILTER` and the probe's own task answers nought; with no task, a handle ([[probe:sysfilt]]).
+- [[read out]] The task's chain of a kind comes before the system's: `7ca2` takes the task's where it has one, and the last of the task's goes on to the system's first (`7cbb`-`7cd3`).
 
 [[measured]] [[probe:hooks]] puts in three message filters: A and B with [[fn:USER.SetWindowsHook]], each passing on with [[fn:USER.DefHookProc]], and C with [[fn:USER.SetWindowsHookEx]], passing on with [[fn:USER.CallNextHookEx]]. Each notes what it is called with. The probe then runs a modal dialog box and a pop-up menu, each closed by an Escape posted from a timer, and calls [[fn:USER.CallMsgFilter]]. Last, it takes the hooks out one by one. winbox.js agrees with every record.
 
@@ -23,12 +44,64 @@ A hook is a procedure a program puts in USER's way. USER calls it with a code, a
 
 ## Where USER calls them
 
-- [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. [[read out]] It is [[fn:USER.IsDialogMessage]] that calls them, as `CallMsgFilter` does (`USER.EXE` seg25 `0c38`), and so in a program's own loop too: [[measured]] [[probe:dlgcode]] has them called with code 0 for each message handed to `IsDialogMessage`, one for a window outside the dialog too, and a message they take answered TRUE and not dispatched. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
+[[read out]] USER has one caller of the message filters (`80cd`). It calls none while a window is system-modal (`80d8`); else it calls the system message filters, `WH_SYSMSGFILTER`, and only where they answered nought in AX the task's, `WH_MSGFILTER` (`80e8`-`8103`). Its answer is that last chain's AX. Its callers are a dialog box's loop (seg25 `0c38`), a menu's (seg10 `0079`, `1ec9`), a scroll bar's (seg18 `15d2`), Alt and Tab's (seg23 `0a58`), and [[fn:USER.CallMsgFilter]] (`a85b`). No other code of USER calls it: the loop that moves and sizes a window calls no filter, nor does any loop of USER's give `MSGF_MESSAGEBOX`, 1, `MSGF_MOVE`, 3, or `MSGF_SIZE`, 4.
+
+[[measured]] [[probe:sysfilt]] puts in a system filter `S` and a filter for its own task `F`, both noting each call, and both passing on:
+
+- `CallMsgFilter` with code 77: `S` first, then `F`, and it answers nought. `S` answering 1: `F` is not called, and it answers 1. `F` answering 1: both are called, and it answers 1.
+- A modal dialog box closed by Escape posted from a timer: `S` and `F` each with `MSGF_DIALOGBOX`, 0, for the `WM_TIMER` and the `WM_KEYDOWN`, `S` first each time.
+- A message box closed the same way: the same, code 0. A message box is a dialog box to its loop.
+- A pop-up menu: `MSGF_MENU`, 2, for the `WM_MENUSELECT` as it starts, each message taken, and the `WM_MENUSELECT` as it ends.
+- A press and release on a scroll bar control's arrow through `MOUSE_EVENT`: `MSGF_SCROLLBAR`, 5, for the `WM_LBUTTONUP` its loop takes.
+- The window moved from the keyboard, the keys posted first: no filter is called.
+- `CallMsgFilter` while the window is system-modal: neither is called, and it answers nought; with no system-modal window again, both are.
+
+Both engines agree with all thirteen records. Before, the system filters were kept and never called, and the scroll bar's loop called no filter.
+
+- [[measured]] A modal dialog box's loop calls the filters with `MSGF_DIALOGBOX`, 0, for each message it takes: the timer's `WM_TIMER` and the posted `WM_KEYDOWN`. [[read out]] It is [[fn:USER.IsDialogMessage]] that calls them (`USER.EXE` seg25 `0c38`), and so in a program's own loop too: [[measured]] [[probe:dlgcode]] has them called with code 0 for each message handed to `IsDialogMessage`, one for a window outside the dialog too, and a message they take answered TRUE and not dispatched. No `WM_PAINT` is among them. The dialog box is painted as it is shown, not by its loop, and winbox.js now paints it and its controls then too.
 - [[measured]] A menu's loop calls them with `MSGF_MENU`, 2, for each message it takes, `WM_PAINT` included. It also calls them with a `WM_MENUSELECT` as the menu starts and as it ends.
 - [[measured]] Alt and Tab's loop calls them with `MSGF_NEXTWINDOW`, 6, for each message it looks at, before it takes it -- the keys, a move of the mouse, a press ([[probe:alttab]]). [[read out]] One they take it looks at again (`USER.EXE` seg23 `0a5d`; [[topic:task-list]]).
-- [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers whether one answered non-nought. [[read out]] While a window is system modal it calls none, and answers nought (seg1 `80d6`-`80dc`); [[measured]] [[probe:sysdlg]] has the filter called neither by `CallMsgFilter` nor by its system-modal dialog's loop.
+- [[measured]] `CallMsgFilter` calls them with the program's own message and code, and answers what the filter that ended the chain answered. [[measured]] [[probe:sysdlg]] has the filter called neither by `CallMsgFilter` nor by its system-modal dialog's loop.
 - [[read out]] A filter's answer is AX alone (`USER.EXE` seg1 `80f0`), whatever is left in DX. File Manager's filter answers `035F0000h` for a key it leaves alone; read as a long, every key in its Copy box was taken as filtered.
 - The mouse's moves are left out of the record, because they depend on where the pointer happens to be.
+
+## The computer-based training hooks
+
+[[read out]] USER asks the computer-based training hooks, `WH_CBT`, before it does each of these things, with a code, a `WPARAM` and an `LPARAM`; for most, a hook answering non-nought stops it. Each caller tests AX alone but `HCBT_MOVESIZE`'s, which tests DX and AX.
+
+| Code                 | When                                                                                                                                                                                               | `WPARAM`, `LPARAM`                                                                                                                                          | A non-nought answer                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| `HCBT_MOVESIZE`, 0   | The move or size loop let go elsewhere than it began (seg6 `11b1`-`11d6`)                                                                                                                          | The window; its new rectangle on the screen                                                                                                                 | It keeps the rectangle it began with (`1241`)         |
+| `HCBT_MINMAX`, 1     | A window minimized, maximized, or restored from either (seg6 `1ae0`-`1af5`): [[fn:USER.ShowWindow]] with 2, 3, 6 or 7, or with 1, 4 or 9 for a window minimized or maximized (seg14 `0c29`-`0c8d`) | The window; the command as `ShowWindow` was given it                                                                                                        | Nothing changes                                       |
+| `HCBT_QS`, 2         | The move or size loop takes `WM_QUEUESYNC`, which it looks for before the keys and the mouse (seg6 `1658`-`16b3`)                                                                                  | Nought, nought                                                                                                                                              | Not looked at                                         |
+| `HCBT_CREATEWND`, 3  | A window made, before it is sent anything (seg8 `0450`-`047d`)                                                                                                                                     | The window; a `CBT_CREATEWND`: a far pointer to the `CREATESTRUCT` -- `CreateWindow`'s own arguments on the stack -- and the window to put it after, nought | USER takes the window apart again (`073b`): see below |
+| `HCBT_DESTROYWND`, 4 | [[fn:USER.DestroyWindow]], once the window is known to be the caller's (seg8 `0a4d`-`0a5d`)                                                                                                        | The window; nought                                                                                                                                          | Nothing is destroyed, and it answers nought           |
+| `HCBT_ACTIVATE`, 5   | A window at the top about to be made active, USER's `ActivateWindow` (seg1 `3558`-`3582`)                                                                                                          | The window; a `CBTACTIVATESTRUCT`: whether a press made it active, and the window active now                                                                | Nothing changes                                       |
+| `HCBT_SYSCOMMAND`, 8 | `DefWindowProc` with `WM_SYSCOMMAND`, once it is not ignored for a capture, a window disabled, or a system-modal window (seg1 `032e`-`03fd`)                                                       | The command less its low four bits; the `lParam`, 10000h made nought (`0351`-`0362`)                                                                        | The command is not carried out                        |
+| `HCBT_SETFOCUS`, 9   | [[fn:USER.SetFocus]], with nought or with a window that has not the focus already (seg1 `382f`-`3897`), and as USER moves the focus itself                                                         | The window, or nought; the window that has the focus                                                                                                        | Nothing changes, and it answers nought                |
+
+The other two codes, `HCBT_CLICKSKIPPED` and `HCBT_KEYSKIPPED`, come from the system queue ([[topic:system-queue]]).
+
+[[measured]] [[probe:cbthook]] puts in a CBT hook for its own task, noting each call; in each case but the plain one it answers 1 for one code. `T` is an overlapped window with a child `A`, which has the focus, and `U` another overlapped window.
+
+- **Making a window.** A hidden pop-up: `HCBT_CREATEWND` with the window -- its class can be read already -- and its arguments, 50, 60, 100 by 80, `WS_POPUP | WS_BORDER`, its name, no parent and nought to go after; then `WM_NCCREATE` and `WM_CREATE`. The hook setting the `CREATESTRUCT`'s `x` to 77 and `cx` to 123: the window is made there and so wide. A child: its parent in the `CREATESTRUCT`.
+- **Destroying.** A pop-up `P` owning another, `Q`: `HCBT_DESTROYWND` for `P`, then for `Q`, then `Q`'s `WM_DESTROY` and `WM_NCDESTROY`, then `P`'s. Answering 1: only `P` is asked, `DestroyWindow` answers nought, and both are windows still.
+- **Activating.** [[fn:USER.SetActiveWindow]] with `U`: `HCBT_ACTIVATE` with `U`, nought for the mouse, and `T`; then the activation's messages, and `HCBT_SETFOCUS` as `DefWindowProc` gives `U` the focus. Answering 1: `T` stays active and `A` keeps the focus; `SetActiveWindow` answers `T` all the same. A press in `U`'s client area through `MOUSE_EVENT`: `HCBT_ACTIVATE` with 1 for the mouse, and `WA_CLICKACTIVE`; answering 1, `T` stays active.
+- **The focus.** `SetFocus(A)` from `T`: `HCBT_SETFOCUS` with `A` and `T` before `WM_KILLFOCUS`; answering 1, it answers nought and `T` keeps it. `SetFocus(NULL)`: the hook is asked with nought and `A`; answering 1, nothing changes. The focus given to a child of `U`, which is not active: `HCBT_SETFOCUS` for the child first, then `HCBT_ACTIVATE` for `U`, then `U`'s own `HCBT_SETFOCUS` from `DefWindowProc`.
+- **Minimizing.** `ShowWindow(T, SW_MINIMIZE)`: `HCBT_MINMAX` with `T` and 6; then, the focus in `T`, `HCBT_SETFOCUS` with nought -- USER takes the focus through `SetFocus` -- `HCBT_ACTIVATE` for `U`, and last `HCBT_CREATEWND` for the icon's title, class `#32772`, no name, `WS_POPUP`, at nought, nought, one by one, with `T` its parent (seg1 `6ab8`-`6b20`). Minimized again after a restore, the title is not made again. Answering 1 to `HCBT_MINMAX`: nothing changes. `SW_SHOWMAXIMIZED` and `SW_RESTORE` are asked with 3 and 9.
+- **System commands.** `WM_SYSCOMMAND` with `SC_MINIMIZE` and an `lParam` of 120034h: `HCBT_SYSCOMMAND` with F020h and 120034h, then the minimizing. Answering 1: the window is not minimized.
+- **Moving.** `SC_MOVE` from the keyboard, Right twice and Enter posted first: `HCBT_SYSCOMMAND`, then `HCBT_MOVESIZE` with `T` and its new rectangle, 18 pixels right. Answering 1: `T` stays where it was. Enter alone: no `HCBT_MOVESIZE`. `WM_QUEUESYNC` posted before: `HCBT_QS`.
+
+Both engines agree with all 47 records. Before, the hooks were asked only of keys and clicks skipped.
+
+- [[measured]] A hook refusing `HCBT_CREATEWND` brings Windows down: [[probe:cbteat]] writes its record before `CreateWindow` and none after, and the screen shows a general protection fault in `USER.EXE` at 0001:3AB0. USER takes the window apart there and sends it `WM_NCDESTROY` (seg8 `0c36`-`0c84`) through its procedure, which it has not been given yet: seg1 `3ab0` calls the window's procedure, nought ([[read out]]). winbox.js, which has no code of USER's to fault in, takes the window apart with no message, and `CreateWindow` answers nought, as USER means it to (seg8 `039d`).
+- [[read out]] The Windows Tutorial's hook (`WINTUTOR.EXE` seg6 `167d`, put in at seg5 `0973`) answers only `HCBT_SYSCOMMAND`, and passes nothing on: 1 for `SC_NEXTWINDOW`, `SC_PREVWINDOW` and `SC_TASKLIST` to `SC_HOTKEY`, and for every command in one state of its own. So Alt and Tab do not leave it, and Control and Escape bring up no Task List over it; both engines' sessions of the Tutorial hold to the last ([[topic:accessories]]).
+
+## The debugging hook
+
+[[read out]] Before each hook it calls, USER's caller of hooks looks for a debugging hook, `WH_DEBUG`, the task's (`[64h]` of its queue) or the system's (`[8B6h]`) (`8029`-`803b`). Where there is one, it calls that chain first (`803d`-`805f`) with code nought, the task the hook about to be called is for (`[2]` of its queue), and a `DEBUGHOOKINFO` on its stack: the hook's module, the caller's return address for the reserved field, and the `LPARAM`, `WPARAM` and code the hook is to have. A non-nought answer in DX and AX is the answer, and the hook is not called. The debugging hook is itself called through the same caller, which looks for a debugging hook before it calls it, and so on.
+
+[[measured]] [[probe:dbghook]] puts in a message filter for its own task and calls `CallMsgFilter`, which calls it; then puts in a debugging hook for its own task, which [[fn:USER.SetWindowsHookEx]] answers with a handle, and calls `CallMsgFilter` again. That call never comes back, and the debugging hook is never called: the screen shows a general protection fault in `KRNL386.EXE` at 0001:7DC4, the stack worn out by the caller calling itself. winbox.js keeps a debugging hook and never calls it.
 
 ## The shell hook
 
@@ -80,11 +153,13 @@ Both engines agree with all fourteen records. Before, the hooks were kept and ne
 
 ## Not yet followed
 
-- `WH_DEBUG` and `WH_SYSMSGFILTER`, and the CBT hooks' codes but `HCBT_KEYSKIPPED` and `HCBT_CLICKSKIPPED`. They are kept and passed on through, never called. [[read out]] USER's caller of hooks calls a `WH_DEBUG` hook first, where one is in (`800d`-`805f`).
+- The faults: a hook refusing `HCBT_CREATEWND`, and any hook called with a debugging hook in, end the program in Windows ([[probe:cbteat]], [[probe:dbghook]]). winbox.js takes the window apart and goes on, and never calls a debugging hook.
+- What a hook answers for an icon's title, and the title kept, hidden, while the window is restored: winbox.js makes it again, asking the hooks only the first time.
+- `HCBT_MINMAX` for a window made with `WS_MINIMIZE` or `WS_MAXIMIZE` (seg8 `0861`), and `HCBT_SETFOCUS` for USER's other moves of the focus through `SetFocus`, as for a window hidden (seg14 `0dd4`): only a window minimized with the focus in it is followed.
+- `DefWindowProc`'s system commands ignored while something has the capture, the window is disabled, or a window is system-modal (seg1 `037c`-`03db`): winbox.js asks the hooks and carries the command out.
 - The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
-- A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's.
-- The message boxes' and scroll bars' own loops, which call the filters with codes of their own.
+- A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's, called whichever task USER is working for.
 
 ## In winbox.js
 
-`src/win16/user/hooks.ts` keeps each kind's chain, newest first, and calls the filters for the loops in `dialogs.ts` and `menu-loop.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`.
+`src/win16/user/hooks.ts` keeps each kind's chain, newest first, and calls the filters, the system's first, for the loops in `dialogs.ts`, `menu-loop.ts`, `scroll-track.ts` and `switch-loop.ts`. `askCbt` and `askCbtCreate` ask the computer-based training hooks for `CreateWindow.ts`, `DestroyWindow.ts`, `SetFocus.ts`, `dialogs.ts`, `window-state.ts`, `mouse-scan.ts`, `track-loop.ts` and `DefWindowProc.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`, with `ask_cbt`, `ask_cbt_with` and `ask_cbt_create`.

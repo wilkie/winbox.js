@@ -33,6 +33,7 @@
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::Engine;
+use crate::hooks::MSGF_SCROLLBAR;
 use crate::messages::Param;
 use crate::queue::{Message, WM_SYSTIMER};
 use crate::system::System;
@@ -911,7 +912,10 @@ impl Engine {
     /// * **Let go.** `SB_ENDSCROLL`, after the part is drawn as it was.
     ///
     /// While it lasts, the mouse is the bar's, keys for the window are
-    /// dropped, and everything else is dispatched (seg18 `159c`).
+    /// dropped, and everything else is dispatched (seg18 `159c`). Each
+    /// message taken is first handed to the message filters with
+    /// `MSGF_SCROLLBAR`, and one they take is not looked at (seg18
+    /// `15cb`-`15d9`; **recorded** by `sysfilt`).
     ///
     /// **Recorded** by `sbtrack` on four displays: a control and a
     /// window's own bar pressed on each part and dragged, what the parent is
@@ -1079,6 +1083,11 @@ impl Engine {
                 let Some(message) = self.take_message().await? else {
                     break;
                 };
+
+                if self.message_filter(&message, MSGF_SCROLLBAR).await? {
+                    continue;
+                }
+
                 let (px, py) = (i32::from(message.pt.0), i32::from(message.pt.1));
 
                 self.sync_track(&press, &mut track);
@@ -1152,6 +1161,11 @@ impl Engine {
                 let Some(message) = self.take_message().await? else {
                     break;
                 };
+
+                if self.message_filter(&message, MSGF_SCROLLBAR).await? {
+                    continue;
+                }
+
                 let (px, py) = (i32::from(message.pt.0), i32::from(message.pt.1));
 
                 if is_mouse(message.message) {

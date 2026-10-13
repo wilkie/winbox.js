@@ -21,8 +21,13 @@
 //! (`gmhook`; `get_message_hook`); the hardware hooks, and the
 //! computer-based training hooks' `HCBT_KEYSKIPPED` and
 //! `HCBT_CLICKSKIPPED`, by the system queue (`system_queue.rs`; `hwhook`).
-//! Other kinds, and the computer-based training hooks' other codes, are
-//! kept and passed on through, and never called.
+//! The system message filters are called before the task's (`sysfilt`;
+//! `filters`), and the computer-based training hooks are asked before USER
+//! makes, destroys, activates, focuses, minimizes or moves a window and
+//! before `DefWindowProc` carries out a system command (`cbthook`;
+//! `ask_cbt`). A debugging hook is kept and passed on through, and never
+//! called: in Windows the first hook called after one is put in calls it
+//! for ever, and faults (`dbghook`).
 //!
 //! A hook's procedure may be a program's, at its far address, or one of
 //! winbox.js's own, as SHELL's shell hook is (`shell/shell_hook.rs`): the
@@ -42,7 +47,19 @@ use crate::system_queue::{WH_JOURNALPLAYBACK, WH_JOURNALRECORD};
 pub const WH_MSGFILTER: i16 = -1;
 pub const WH_GETMESSAGE: i16 = 3;
 pub const WH_CALLWNDPROC: i16 = 4;
+pub const WH_CBT: i16 = 5;
+pub const WH_SYSMSGFILTER: i16 = 6;
+pub const WH_DEBUG: i16 = 9;
 pub const WH_SHELL: i16 = 10;
+pub const MSGF_SCROLLBAR: i16 = 5;
+pub const HCBT_MOVESIZE: i16 = 0;
+pub const HCBT_MINMAX: i16 = 1;
+pub const HCBT_QS: i16 = 2;
+pub const HCBT_CREATEWND: i16 = 3;
+pub const HCBT_DESTROYWND: i16 = 4;
+pub const HCBT_ACTIVATE: i16 = 5;
+pub const HCBT_SYSCOMMAND: i16 = 8;
+pub const HCBT_SETFOCUS: i16 = 9;
 pub const HSHELL_WINDOWCREATED: u16 = 1;
 pub const HSHELL_WINDOWDESTROYED: u16 = 2;
 
@@ -275,6 +292,86 @@ impl Engine {
     }
 }
 
+impl Engine {
+    /// The computer-based training hooks asked before USER does something,
+    /// where one is in: what they answered, DX and AX. The callers each
+    /// test the answer as USER's caller of that code does.
+    pub(crate) async fn ask_cbt(&self, code: i16, wparam: u16, lparam: u32) -> Result<u32, Stop> {
+        if !self.system().has_hooks(WH_CBT) {
+            return Ok(0);
+        }
+
+        self.call_hooks(WH_CBT, code, wparam, lparam).await
+    }
+
+    /// As `ask_cbt`, with a structure of USER's own on the stack for the
+    /// `LPARAM`: the answer, and the structure as the hooks left it.
+    pub(crate) async fn ask_cbt_with(
+        &self,
+        code: i16,
+        wparam: u16,
+        structure: &[u8],
+    ) -> Result<(u32, Vec<u8>), Stop> {
+        if !self.system().has_hooks(WH_CBT) {
+            return Ok((0, structure.to_vec()));
+        }
+
+        self.call_hooks_with(WH_CBT, code, wparam, structure).await
+    }
+}
+
+impl Engine {
+    /// The computer-based training hooks asked as a window is made,
+    /// `HCBT_CREATEWND`: the window, and a `CBT_CREATEWND` -- a far pointer
+    /// to the `CREATESTRUCT`, `CreateWindow`'s own arguments on the stack in
+    /// Windows (`USER.EXE` seg8 `0459`-`045f`), and the window to put it
+    /// after, nought (`0467`). Both laid on the stack here, the structure
+    /// above. What they answered, the `CREATESTRUCT`'s bytes and the window
+    /// to put it after as they left them.
+    pub(crate) async fn ask_cbt_create(
+        &self,
+        hwnd: u16,
+        create: &[u8],
+    ) -> Result<(u32, Vec<u8>, u16), Stop> {
+        if !self.system().has_hooks(WH_CBT) {
+            return Ok((0, create.to_vec(), 0));
+        }
+
+        let (sp, lpcs, at, far) = {
+            let mut system = self.system();
+            let cpu = &mut system.cpu;
+            let sp = cpu.regs[SP];
+            let stack = cpu.segments[SS].base;
+            let selector = cpu.segments[SS].selector;
+
+            cpu.regs[SP] = sp.wrapping_sub((create.len() as u16 + 1) & !1);
+
+            let lpcs = cpu.regs[SP];
+
+            cpu.bus.write(stack + u32::from(lpcs), create);
+            cpu.regs[SP] = cpu.regs[SP].wrapping_sub(6);
+
+            let at = cpu.regs[SP];
+
+            for (index, word) in [lpcs, selector, 0].iter().enumerate() {
+                cpu.bus
+                    .write16(stack + u32::from(at.wrapping_add(index as u16 * 2)), *word);
+            }
+
+            (sp, lpcs, at, u32::from(selector) << 16 | u32::from(at))
+        };
+        let answer = self.call_hooks(WH_CBT, HCBT_CREATEWND, hwnd, far).await;
+        let mut system = self.system();
+        let cpu = &mut system.cpu;
+        let stack = cpu.segments[SS].base;
+        let left = cpu.bus.read(stack + u32::from(lpcs), create.len());
+        let after = cpu.bus.read16(stack + u32::from(at.wrapping_add(4)));
+
+        cpu.regs[SP] = sp;
+        Ok((answer?, left, after))
+    }
+}
+
 /// A hook put in; what to hand `DefHookProc`: its own handle.
 pub fn set_windows_hook(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let kind = args.signed(system);
@@ -283,14 +380,30 @@ pub fn set_windows_hook(system: &mut System, args: &mut Args) -> Result<Answer, 
     Ok(Answer::Dword(system.install(kind, HookProc::Far(proc))))
 }
 
-/// A hook put in, as `SetWindowsHook` does; the module and task it is for
-/// are not followed.
+/// A hook put in, as `SetWindowsHook` does, but a kind no task may have
+/// for itself asked for one; the module and task it is for are not
+/// followed beyond that.
 pub fn set_windows_hook_ex(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let kind = args.signed(system);
     let proc = args.dword(system);
 
     args.word(system);
-    args.word(system);
+
+    let task = args.word(system);
+
+    // A kind no task may have for itself -- the journal hooks and the
+    // system message filters -- asked for one task is refused (`USER.EXE`
+    // seg1 `7db7`-`7dc4`, the kinds' flags at `7c96`, bit 0 clear;
+    // **recorded** by `sysfilt`).
+    if task != 0
+        && matches!(
+            kind,
+            WH_JOURNALRECORD | WH_JOURNALPLAYBACK | WH_SYSMSGFILTER
+        )
+    {
+        return Ok(Answer::Dword(0));
+    }
+
     Ok(Answer::Dword(system.install(kind, HookProc::Far(proc))))
 }
 
@@ -378,17 +491,12 @@ pub fn def_hook_proc(engine: &Engine, mut args: Args) -> Later<'_> {
 
 impl Engine {
     /// `CallMsgFilter` with a message a program handed to USER, as
-    /// `IsDialogMessage` calls it (`USER.EXE` seg25 `0c38`): nothing while
-    /// a window is system modal; else the filters.
+    /// `IsDialogMessage` calls it (`USER.EXE` seg25 `0c38`): `filters`.
     pub(crate) async fn call_msg_filter(
         &self,
         message: &crate::queue::Message,
         code: i16,
     ) -> Result<bool, Stop> {
-        if self.system().sys_modal_window() != 0 {
-            return Ok(false);
-        }
-
         self.message_filter(message, code).await
     }
 
@@ -403,7 +511,7 @@ impl Engine {
             let mut guard = self.system();
             let system = &mut *guard;
 
-            if system.chain(WH_MSGFILTER).is_empty() {
+            if system.chain(WH_MSGFILTER).is_empty() && system.chain(WH_SYSMSGFILTER).is_empty() {
                 return Ok(false);
             }
 
@@ -436,10 +544,28 @@ impl Engine {
             far
         };
 
-        // A filter answers in AX alone, what is in DX besides is no answer
-        // (`USER.EXE` seg1 `80f0`): File Manager's leaves its own there,
-        // and every key in its Copy box was taken as filtered.
-        Ok(self.call_hooks(WH_MSGFILTER, code, 0, far).await? & 0xffff != 0)
+        Ok(self.filters(code, far).await? != 0)
+    }
+
+    /// USER's one caller of the message filters (`USER.EXE` seg1 `80cd`):
+    /// none while a window is system-modal (`80d8`); else the system's,
+    /// `WH_SYSMSGFILTER`, first, and the task's, `WH_MSGFILTER`, only where
+    /// the system's answered nought (`80e8`-`8103`). The answer is the last
+    /// chain's AX alone, whatever is left in DX (`80f0`): File Manager's
+    /// filter leaves its own there, and every key in its Copy box was taken
+    /// as filtered. **Recorded** by `sysfilt`.
+    async fn filters(&self, code: i16, far: u32) -> Result<u16, Stop> {
+        if self.system().sys_modal_window() != 0 {
+            return Ok(0);
+        }
+
+        let first = self.call_hooks(WH_SYSMSGFILTER, code, 0, far).await? as u16;
+
+        if first != 0 {
+            return Ok(first);
+        }
+
+        Ok(self.call_hooks(WH_MSGFILTER, code, 0, far).await? as u16)
     }
 }
 
@@ -447,26 +573,13 @@ impl Engine {
 /// answered non-nought.
 pub fn call_msg_filter(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (far, code, sys_modal) = {
+        let (far, code) = {
             let system = engine.system();
 
-            (
-                args.dword(&system),
-                args.signed(&system),
-                system.sys_modal_window(),
-            )
+            (args.dword(&system), args.signed(&system))
         };
-
-        // Nought, and no filter called, while a window is system modal
-        // (`USER.EXE` seg1 `80d6`-`80dc`). **Recorded** by `sysdlg`.
-        if sys_modal != 0 {
-            return Ok(Answer::Word(0));
-        }
-
-        let answer = engine.call_hooks(WH_MSGFILTER, code, 0, far).await?;
-
-        // In AX alone (`USER.EXE` seg1 `80f0`, `message_filter`).
-        Ok(Answer::Word(u16::from(answer & 0xffff != 0)))
+        // What the filter that ended it answered, in AX (`filters`).
+        Ok(Answer::Word(engine.filters(code, far).await?))
     })
 }
 

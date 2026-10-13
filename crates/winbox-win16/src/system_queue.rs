@@ -477,7 +477,7 @@ impl Engine {
     /// the stack below the caller's, as USER passes one of its own frame
     /// (`USER.EXE` seg1 `2c4d`, `2eb6`, `82d5`): what the hooks answered,
     /// and the structure as they left it.
-    async fn call_hooks_with(
+    pub(crate) async fn call_hooks_with(
         &self,
         kind: i16,
         code: i16,

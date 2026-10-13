@@ -260,7 +260,7 @@ fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
 }
 
 fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
-    let module = system.kept[kept].module;
+    let module = system.module_of(&system.kept[kept]);
     let ordinal = match name {
         Name::Text(text) => module.ordinal_of(text),
         Name::Number(number) => *number,
