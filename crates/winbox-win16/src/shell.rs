@@ -45,6 +45,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "FindExecutable" => Implementation::Sync(programs::find_executable),
         "ShellAbout" => Implementation::Async(about::shell_about),
         "ExtractIcon" => Implementation::Sync(programs::extract_icon),
+        "ExtractAssociatedIcon" => Implementation::Sync(programs::extract_associated_icon),
         "DoEnvironmentSubst" => Implementation::Sync(programs::do_environment_subst),
         "FindEnvironmentString" => Implementation::Sync(programs::find_environment_string),
         "RegisterShellHook" => Implementation::Sync(shell_hook::register_shell_hook),

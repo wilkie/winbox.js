@@ -7863,8 +7863,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DumpIcon",
                 pops: 16,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetInternalWindowPos",
@@ -14897,8 +14897,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ExtractAssociatedIcon",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DoEnvironmentSubst",

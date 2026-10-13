@@ -480,18 +480,110 @@ pub fn find_executable(system: &mut System, args: &mut Args) -> Result<Answer, S
 
     write_string(system, result, b"");
 
-    let command = match command_for(system, &file, &trim(&directory), "open", "") {
-        Ok(command) => command,
-        Err(error) => return Ok(Answer::Word(error)),
-    };
+    match program_for(system, &file, &trim(&directory)) {
+        Ok(program) => {
+            write_string(system, result, &bytes_of(&program));
+            Ok(Answer::Word(1000))
+        }
+        Err(error) => Ok(Answer::Word(error)),
+    }
+}
+
+/// The program `FindExecutable` names for a file, or its error.
+fn program_for(system: &mut System, file: &str, directory: &str) -> Result<String, u16> {
+    let command = command_for(system, file, directory, "open", "")?;
     let program = command.split(' ').next().unwrap_or_default();
 
     if program.is_empty() {
-        return Ok(Answer::Word(2));
+        return Err(2);
     }
 
-    write_string(system, result, &bytes_of(program));
-    Ok(Answer::Word(1000))
+    Ok(program.to_string())
+}
+
+/// Where a name's extension starts, after its last `.` that comes after its
+/// last `\`; none where it has none. **Read out**: `SHELL.DLL` seg10 `0884`.
+fn extension_of(name: &[u8]) -> Option<usize> {
+    for at in (0..=name.len()).rev() {
+        match name.get(at) {
+            Some(b'.') => return Some(at + 1),
+            Some(b'\\') => return None,
+            _ => {}
+        }
+    }
+
+    None
+}
+
+/// The icon for an item: the file's own, or its program's, or one of the
+/// caller's. **Read out** (`SHELL.DLL` seg10 `08dc`) and **recorded** by
+/// `associco`:
+///
+/// - `ExtractIcon` of the path at the index (seg10 `08ea`). An icon answers.
+/// - Answered 1 -- a file that is not a program -- the program
+///   `FindExecutable` names for it, the directory left out (`0944`): with
+///   none, the caller's icon 6 where the name has an extension, else its
+///   icon 2 (`0949`-`095d`). With one, that program written over the path,
+///   `.EXE` after it where it has no extension of its own (`0960`-`0988`),
+///   and `ExtractIcon` of it at the same index: 1 again is the caller's
+///   icon 6, nought its icon 2.
+/// - Answered nought -- no file, or no icon at that index -- the caller's
+///   icon 2 (`0904`).
+///
+/// The caller's icon is its module's resource, by number, loaded with
+/// `LoadIcon` from the instance passed; its module's path is written over
+/// the path (`GetModuleFileName`, 128 bytes) and the index set to 6 for
+/// icon 2, 1 for icon 6 (`090d`-`0924`, `09af`-`09cf`).
+pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+    let path = args.dword(system);
+    let index_at = args.dword(system);
+    let index = {
+        let bytes = system.read_far(index_at, 2);
+
+        u16::from_le_bytes([bytes[0], bytes[1]])
+    };
+    let caller = |system: &mut System, written: u16, id: u16| {
+        let mut name = system.path_of(instance).into_bytes();
+
+        name.truncate(0x7f);
+        write_string(system, path, &name);
+        system.write_far(index_at, &written.to_le_bytes());
+        Answer::Word(crate::icons::load_icon_named(system, instance, Ok(id)))
+    };
+    let read = |system: &System| text(&system.read_string(path));
+
+    let mut icon = extract_icon_of(system, &read(system), index as i16)?;
+
+    if icon == 1 {
+        let name = read(system);
+
+        let Ok(program) = program_for(system, &name, "") else {
+            return Ok(if extension_of(&bytes_of(&name)).is_none() {
+                caller(system, 6, 2)
+            } else {
+                caller(system, 1, 6)
+            });
+        };
+        let mut program = bytes_of(&program);
+
+        if extension_of(&program).is_none() {
+            program.extend_from_slice(b".EXE");
+        }
+
+        write_string(system, path, &program);
+        icon = extract_icon_of(system, &read(system), index as i16)?;
+
+        if icon == 1 {
+            return Ok(caller(system, 1, 6));
+        }
+    }
+
+    Ok(if icon == 0 {
+        caller(system, 6, 2)
+    } else {
+        Answer::Word(icon)
+    })
 }
 
 /// Opens a file with its program, or starts a program. **Read out** (seg4
@@ -618,8 +710,14 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let Some(name) = string_argument(system, far) else {
         return Ok(Answer::Word(0));
     };
-    let Some(handle) = system.files.open(&name) else {
-        return Ok(Answer::Word(0));
+
+    Ok(Answer::Word(extract_icon_of(system, &name, index)?))
+}
+
+/// `ExtractIcon` of a file by its name.
+fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, Stop> {
+    let Some(handle) = system.files.open(name) else {
+        return Ok(0);
     };
     let bytes = {
         let file = system.files.resolve(handle).expect("an open file");
@@ -631,7 +729,7 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 
     system.files.close(handle);
 
-    let none = Answer::Word(u16::from(index != -1));
+    let none = u16::from(index != -1);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
 
     if bytes.len() < 0x40 || bytes[0] != 0x4d || bytes[1] != 0x5a {
@@ -649,7 +747,7 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     }
 
     if word(ne + 0x24) == word(ne + 0x26) {
-        return Ok(Answer::Word(0));
+        return Ok(0);
     }
 
     let modern = word(ne + 0x3e) >= 0x300;
@@ -663,14 +761,14 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         .collect();
 
     if index == -1 {
-        return Ok(Answer::Word(groups.len() as u16));
+        return Ok(groups.len() as u16);
     }
 
     let Some(group) = usize::try_from(index)
         .ok()
         .and_then(|index| groups.get(index))
     else {
-        return Ok(Answer::Word(0));
+        return Ok(0);
     };
     let mut image = group.data;
 
@@ -682,7 +780,7 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
                 .find(|each| each.kind == RT_ICON && each.id == Some(entry.id))
         });
         let Some(icon) = icon else {
-            return Ok(Answer::Word(0));
+            return Ok(0);
         };
 
         image = icon.data;
@@ -691,7 +789,7 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let mut palette = system.palette();
     let icon = scale_icon(decode_icon(image, &mut palette), 32);
 
-    Ok(Answer::Word(system.icon_block(&icon)))
+    Ok(system.icon_block(&icon))
 }
 
 #[cfg(test)]

@@ -151,6 +151,7 @@ pub const AGREEING: &[&str] = &[
     "sebhook",
     "ddexact",
     "postend",
+    "associco",
 ];
 
 pub fn root() -> PathBuf {

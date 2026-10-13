@@ -5815,6 +5815,7 @@ const RUN_WHOLE = new Set<string>([
   'ddexact',
   'progdde',
   'postend',
+  'associco',
 ]);
 
 /**
