@@ -27,6 +27,7 @@ import { type SegmentHandler } from './emulator/split-block.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { oembinValues } from './win16/user/oembin.js';
+import { displayResourceNumber } from './win16/display-resource-id.js';
 import { RasterInput } from './win16/user/raster-input.js';
 import { RasterWindow } from './win16/user/raster-window.js';
 import { DesktopHandle } from './win16/user/desktop-handle.js';
@@ -434,16 +435,17 @@ export class Win16 {
     }
 
     /* USER's start-up read of the driver's `OEMBIN` 1, its metrics and
-     * default colours (`USER.EXE` seg3 `0c9f`; `oembin.ts`): the resource
-     * numbered 1, which is what every driver here answers for it --
-     * `SVGA256.DRV`, the one with a `GetDriverResourceID`, answers 1 at the
-     * 96 dots an inch its display runs at (seg1 `2d6e`). Without it the
+     * default colours (`USER.EXE` seg3 `0c9f`-`0e11`; `oembin.ts`): the
+     * resource the driver's `GetDriverResourceID` answers 1 with, where it
+     * has one, and else the one numbered 1 -- 2001 at the 8514/a's small
+     * fonts and the XGA's 640x480 (`display-resource-id.ts`). Without it the
      * recorded tables stand, which agree with it on every display. */
+    const number = displayResourceNumber(this._display, 1);
     const named = (entry: any) =>
       [entry.name, entry.id].some((name) => String(name ?? '').toUpperCase() === 'OEMBIN');
     const entry = (executable as any).resources
       ?.find(named)
-      ?.entries?.find((one: any) => one.id === 1);
+      ?.entries?.find((one: any) => one.id === number);
     const data = entry ? new Uint8Array(await (executable as any).readResource(entry)) : null;
     const taken = data && oembinValues(data);
 

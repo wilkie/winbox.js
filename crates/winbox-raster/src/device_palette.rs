@@ -70,6 +70,11 @@ pub struct DevicePalette {
     /// Each colour asked for, and the index it matched.
     found: HashMap<u32, usize>,
     stale: bool,
+    /// Whether GDI has sent the driver the whole palette since the
+    /// driver's `Enable`, as it does where a realization changes it: on
+    /// the 8514/a the screen shows the static colours as `Enable` left them
+    /// until then (`shown_colours` in `winbox-win16`'s `present.rs`).
+    pub rewritten: bool,
 }
 
 fn key([red, green, blue]: Rgb) -> u32 {
@@ -84,6 +89,7 @@ impl DevicePalette {
             used: None,
             found: HashMap::new(),
             stale: false,
+            rewritten: false,
         };
 
         palette.seed();
@@ -118,6 +124,8 @@ impl DevicePalette {
         for (index, colour) in self.initial.clone().into_iter().enumerate() {
             self.recolour(index, colour);
         }
+
+        self.rewritten = false;
     }
 
     pub fn holds(&self, colour: Rgb) -> bool {

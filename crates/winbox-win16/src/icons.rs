@@ -334,10 +334,15 @@ impl System {
             return;
         };
         let mut palette = self.palette();
+        let read = DriverResources::read(&driver, user.as_ref(), self.display.colors, &mut palette);
 
+        // By the numbers USER asks for them, through the driver's
+        // `GetDriverResourceID`: at the 8514/a's and the XGA's small fonts,
+        // the OEM bitmaps are 1966 to 1999 (`Display::resource_id`).
         self.driver = Some(DriverResources {
-            oem,
-            ..DriverResources::read(&driver, user.as_ref(), self.display.colors, &mut palette)
+            oem: self.display.as_asked(oem),
+            bitmap_sizes: self.display.as_asked(read.bitmap_sizes.clone()),
+            ..read
         });
     }
 

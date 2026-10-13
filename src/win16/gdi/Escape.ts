@@ -16,6 +16,16 @@ import { printerEscape } from './printing.js';
  * * A memory device context's driver is GDI's own for bitmaps, and answers
  *   nought to everything, `QUERYESCSUPPORT` too.
  *
+ * **Read out** of GDI (`GDI.EXE` seg7 `0042`-`0526`): on a screen's context
+ * every escape goes to the driver's `Control`, whose answer is the answer --
+ * but for 0Fh, which GDI answers nought, and 100h to BFFh, which GDI keeps
+ * for itself: it calls the driver for those only where a flag of the
+ * context's is set (byte 0Bh, bit 2, seg7 `04be`), and they answer nought
+ * here as before. So an escape a
+ * driver has not got answers what its `Control` does for one: nought on
+ * every driver but `8514.DRV`'s, which answers the escape's own number
+ * (seg1 `1b28`-`1b35`; `controlAnswersNumber`), `MOUSETRAILS` among them.
+ *
  * Not followed: what `GETCOLORTABLE` answers.
  *
  * @param {Types.HDC} hdc - The device context.
@@ -63,8 +73,21 @@ export function Escape(
     }
 
     case 39:
-      return display.escapes?.[39] ? (display.mouseTrails ?? 0) : 0;
+      if (display.escapes?.[39]) {
+        return display.mouseTrails ?? 0;
+      }
   }
 
-  return 0;
+  return driverAnswer(display, escape);
+}
+
+/** What GDI passes back of the driver's `Control` for an escape it has not got. */
+function driverAnswer(display: any, escape: number) {
+  const gdis = escape === 0x0f || (escape >= 0x100 && escape <= 0xbff);
+
+  if (gdis || !display.controlAnswersNumber || display.escapes?.[escape]) {
+    return 0;
+  }
+
+  return escape & 0xffff;
 }

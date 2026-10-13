@@ -47,7 +47,17 @@ function returnsFrom(path, length, entry) {
 
     const text = execFileSync(
       'ndisasm',
-      ['-b', '16', '-e', String(start), '-o', String(start), '-k', `${start + 1024},${length}`, path],
+      [
+        '-b',
+        '16',
+        '-e',
+        String(start),
+        '-o',
+        String(start),
+        '-k',
+        `${start + 1024},${length}`,
+        path,
+      ],
       { encoding: 'utf8', maxBuffer: 1 << 24 }
     );
 
@@ -110,7 +120,8 @@ function instructionAt(path, length, at) {
 
 /**
  * How many words of arguments a function takes off the stack itself before it
- * returns, where it does: some of USER and KERNEL is written by hand, and pops
+ * returns, where it does -- or, as a negative number, how many it puts there
+ * for another entry it goes on as: some of USER and KERNEL is written by hand, and pops
  * the caller's return address, pops its arguments, pushes the return address
  * back and returns by a bare `RETF` -- `IsWindow` does, and `PostQuitMessage`
  * calls a helper that does it for it. Followed symbolically, from the entry,
@@ -158,10 +169,21 @@ function poppedWords(path, length, entry) {
       registers.delete(HALVES[match[1]] ?? match[1]);
     }
 
+    /* The return address back on top: what is under it in place of the
+     * arguments taken off is what the function pushed for the one it goes
+     * on as -- `StrBlt`'s five words of nought, with which it goes on as
+     * `ExtTextOut` -- and the `RETF` reached takes those as well. */
     if (lifted && stack[0] === 'ip' && stack[1] === 'cs') {
-      const first = stack.find((value) => value.startsWith('arg'));
+      const rest = stack.slice(2);
+      const at = rest.findIndex((value) => value.startsWith('arg'));
 
-      return first ? Number(first.slice(3)) : 0;
+      if (at === -1) {
+        return 0;
+      }
+
+      const taken = Number(rest[at].slice(3));
+
+      return taken === 0 ? -at : taken;
     }
 
     at = next;
@@ -223,7 +245,7 @@ function validatedSize(path, length, entry) {
  * descent found no `RETF` or more than one size.
  */
 export function argumentSizes(file) {
-  const ne = readNE(join(SYSTEM, file));
+  const ne = readNE(resolve(SYSTEM, file));
   const scratch = mkdtempSync(join(tmpdir(), 'argsizes-'));
   const out = new Map();
 
@@ -251,7 +273,11 @@ export function argumentSizes(file) {
       }
 
       const path = paths.get(segment.number);
-      const validated = validatedSize(path, Math.max(segment.length, segment.minimum), entry.offset);
+      const validated = validatedSize(
+        path,
+        Math.max(segment.length, segment.minimum),
+        entry.offset
+      );
 
       if (validated !== null) {
         out.set(entry.ordinal, validated);
@@ -261,7 +287,9 @@ export function argumentSizes(file) {
       const sizes = returnsFrom(path, Math.max(segment.length, segment.minimum), entry.offset);
       const popped = poppedWords(path, Math.max(segment.length, segment.minimum), entry.offset);
 
-      out.set(entry.ordinal, sizes.size === 1 ? [...sizes][0] + popped * 2 : null);
+      const size = sizes.size === 1 ? [...sizes][0] + popped * 2 : null;
+
+      out.set(entry.ordinal, size === null || size >= 0 ? size : [...sizes][0]);
     }
   } finally {
     rmSync(scratch, { recursive: true, force: true });

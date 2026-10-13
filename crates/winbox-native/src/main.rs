@@ -4,7 +4,7 @@
 //! its canvas.
 //!
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
-//! vga|ega|hercules|svga|vga256|8514|xga256] [--resolution WxH] [--scale N]
+//! vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640] [--resolution WxH] [--scale N]
 //! [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]] [--sound [--sound-dump FILE.wav]]
 //! [--seamless [--seamless-shots DIR] [--script FILE]]`
 //!

@@ -13,6 +13,7 @@ import {
   type IconData,
 } from '../../raster/icon.js';
 import { resourcesOf, RT_BITMAP } from '../ne-resources.js';
+import { bitmapsAsAsked } from '../display-resource-id.js';
 
 const RT_ICON = 3;
 const RT_GROUP_ICON = 14;
@@ -63,12 +64,12 @@ export function driverResources(
   const depth = DevicePalette.depthOf(display);
   const palette = DevicePalette.forDisplay(display);
   const resources = resourcesOf(driver);
-  const oem = new Map<number, DeviceBitmap>();
+  const bitmaps = new Map<number, DeviceBitmap>();
   const icons = new Map<number, IconData>();
 
   for (const resource of resources) {
     if (resource.type === RT_BITMAP && resource.id !== null) {
-      oem.set(resource.id, dibToDevice(decodeDib(resource.data), depth, palette));
+      bitmaps.set(resource.id, dibToDevice(decodeDib(resource.data), depth, palette));
     }
   }
 
@@ -80,7 +81,12 @@ export function driverResources(
     }
   }
 
-  grayArrows(oem, palette);
+  grayArrows(bitmaps, palette);
+
+  /* By the numbers USER asks for them, through the driver's
+   * `GetDriverResourceID`: at the 8514/a's and the XGA's small fonts, the
+   * OEM bitmaps are 1966 to 1999. */
+  const oem = bitmapsAsAsked(display, bitmaps);
 
   const applicationIcon = user
     ? (iconOf(resourcesOf(user), OIC_WINLOGO, display, palette) ?? undefined)
@@ -160,8 +166,8 @@ export function scaleIcon(icon: IconData, size: number): IconData {
  * the order it loads them.
  */
 const STRIP_BEFORE = [
-  32754, 32753, 32752, 32751, 32750, 32749, 32748, 32747, 32739, 32738, 32746, 32745, 32744,
-  32743, 32742, 32741, 32740,
+  32754, 32753, 32752, 32751, 32750, 32749, 32748, 32747, 32739, 32738, 32746, 32745, 32744, 32743,
+  32742, 32741, 32740,
 ];
 
 /** The arrows, up, down, right and left, and their grayed ids. */
@@ -195,11 +201,18 @@ function grayArrows(oem: Map<number, DeviceBitmap>, palette: DevicePalette) {
       continue;
     }
 
-    const copy = new DeviceBitmap(source.width, source.height, source.depth, undefined, source.devicePalette);
+    const copy = new DeviceBitmap(
+      source.width,
+      source.height,
+      source.depth,
+      undefined,
+      source.devicePalette
+    );
 
     for (let row = 0; row < source.height; row++) {
       for (let column = 0; column < source.width; column++) {
-        const inside = row >= 1 && row < source.height - 1 && column >= 1 && column < source.width - 1;
+        const inside =
+          row >= 1 && row < source.height - 1 && column >= 1 && column < source.width - 1;
         const brushWhite = ((x + column + row) & 1) === 1;
 
         copy.put(column, row, inside && brushWhite ? white : (source.indexAt(column, row) ?? 0));

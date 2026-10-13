@@ -46,6 +46,21 @@ const MODULES: [any, string][] = [
   [Win87EM, 'WIN87EM.DLL'],
   [SystemDriver, 'SYSTEM.DRV'],
   [displayDriverFor(displayMode('vga')), 'VGA.DRV'],
+  ...(
+    [
+      ['ega', 'EGA.DRV'],
+      ['svga', 'SUPERVGA.DRV'],
+      ['hercules', 'HERCULES.DRV'],
+      ['vga256', 'SVGA256.DRV'],
+      ['8514', '8514.DRV'],
+      ['xga256', 'XGA.DRV'],
+    ] as const
+  )
+    .map(([mode, file]): [any, string] => [
+      displayDriverFor(displayMode(mode)),
+      join(ROOT, 'oracle', 'build', `drive-c-${mode}`, 'WINDOWS', 'SYSTEM', file),
+    ])
+    .filter(([, path]) => existsSync(path)),
 ];
 
 /**
@@ -71,7 +86,7 @@ const EXCEPTIONS: Record<string, number> = {
 
 (existsSync(SYSTEM) ? describe : describe.skip)('argument sizes', () => {
   for (const [module, file] of MODULES) {
-    it(`${module.name} takes what ${file} takes`, () => {
+    it(`${module.name} takes what ${file.split(/[\\/]/).pop()} takes`, () => {
       const sizes: Record<string, number | null> = JSON.parse(
         execFileSync('node', [SCRIPT, file, '--json'], { cwd: ROOT, encoding: 'utf8' })
       );

@@ -29,22 +29,12 @@ export class Presenter {
   readonly canvas: any;
   #pending = false;
 
-  /** Each palette index's colour as the canvas holds it: RGBA bytes, one word. */
-  readonly #lookup: Uint32Array;
+  readonly #display: any;
 
   constructor(bitmap: DeviceBitmap, canvas: any, display: any = null) {
     this.bitmap = bitmap;
     this.canvas = canvas;
-
-    /* As the screen shows them (`shown-colours.ts`). */
-    const colours = shownColours(display, bitmap.devicePalette.colours);
-    const bytes = new Uint8Array(colours.length * 4);
-
-    colours.forEach(([red, green, blue], index) => {
-      bytes.set([red, green, blue, 0xff], index * 4);
-    });
-
-    this.#lookup = new Uint32Array(bytes.buffer);
+    this.#display = display;
 
     bitmap.context.onDirty = () => this.schedule();
     bitmap.context.markRect(0, 0, bitmap.width, bitmap.height);
@@ -84,7 +74,7 @@ export class Presenter {
     const out = new Uint32Array(image.data.buffer);
     const indices = this.bitmap.indices;
     const stride = this.bitmap.width;
-    const lookup = this.#lookup;
+    const lookup = this.#lookup();
 
     for (let row = 0; row < height; row++) {
       const from = (dirty.top + row) * stride + dirty.left;
@@ -96,6 +86,24 @@ export class Presenter {
     }
 
     context.putImageData(image, dirty.left, dirty.top);
+  }
+
+  /**
+   * Each palette index's colour as the canvas holds it, RGBA bytes a word, as
+   * the screen shows it now (`shown-colours.ts`): made each frame, as a
+   * realized palette changes the entries and GDI's writing of them changes
+   * what the 8514/a shows of its statics.
+   */
+  #lookup() {
+    const palette = this.bitmap.devicePalette;
+    const colours = shownColours(this.#display, palette.colours, palette.rewritten);
+    const bytes = new Uint8Array(colours.length * 4);
+
+    colours.forEach(([red, green, blue], index) => {
+      bytes.set([red, green, blue, 0xff], index * 4);
+    });
+
+    return new Uint32Array(bytes.buffer);
   }
 
   /** Stops showing this bitmap: the window has a new one. */
