@@ -127,6 +127,18 @@ impl Engine {
             )
         };
 
+        // A task locked by `LockMyTask` is let go by any window destroyed
+        // (`USER.EXE` seg8 `0a3f`-`0a48`). **Recorded** by `sysdlg`: a
+        // system-modal dialog made shown, which locks its task, and destroyed
+        // without `EndDialog`, leaves no task locked.
+        {
+            let mut system = self.system();
+
+            if system.lock_my_task != 0 {
+                system.lock_my_task_to(0);
+            }
+        }
+
         self.system().forget_active_popup(hwnd);
 
         // A window at the top loses its hot key (`USER.EXE` seg8 `0e09`;
@@ -225,6 +237,13 @@ impl Engine {
         for &each in freed.iter().filter(|each| tree.contains(each)) {
             self.send_message(each, WM_NCDESTROY, 0, &mut Param::Value(0))
                 .await?;
+
+            // The system-modal window, gone, leaves none (seg8
+            // `0cbc`-`0cc3`).
+            if each != 0 && self.system().sys_modal == each {
+                self.set_sys_modal(0).await?;
+            }
+
             self.system().forget(each);
         }
 

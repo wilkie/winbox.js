@@ -532,7 +532,7 @@ impl Engine {
                 .as_ref()
                 .is_some_and(|window| window.parent.is_none());
 
-            if top && flags & SWP_NOZORDER == 0 && insert == Insert::Top {
+            if top && flags & SWP_NOZORDER == 0 && matches!(insert, Insert::Top | Insert::Topmost) {
                 system.family_of(index)
             } else {
                 vec![index]
@@ -543,10 +543,10 @@ impl Engine {
             .position(|&member| member == index)
             .unwrap_or(0);
 
-        self.ask_family(&family[..at]).await?;
+        self.ask_family(&family[..at], after).await?;
         self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
             .await?;
-        self.ask_family(&family[at + 1..]).await?;
+        self.ask_family(&family[at + 1..], hwnd).await?;
 
         let (asked, x, y, cx, cy, flags) = match &structure {
             Param::Struct(bytes) => {
@@ -655,7 +655,12 @@ impl Engine {
 
     /// The rest of a family brought to the front asked, neither sized,
     /// moved nor made active.
-    async fn ask_family(&self, members: &[usize]) -> Result<(), Stop> {
+    /// Each asked to go after the one asked before it, the first after
+    /// `first` (`sysdlg`: a dialog made topmost, its owner's other pop-up
+    /// after it and its owner after that).
+    async fn ask_family(&self, members: &[usize], first: u16) -> Result<(), Stop> {
+        let mut after = first;
+
         for &member in members {
             let hwnd = self.system().hwnd_of(member);
 
@@ -665,12 +670,13 @@ impl Engine {
                 0,
                 &mut Param::Struct(window_pos(
                     hwnd,
-                    0,
+                    after,
                     [0; 4],
                     SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE,
                 )),
             )
             .await?;
+            after = hwnd;
         }
 
         Ok(())
@@ -838,7 +844,16 @@ impl Engine {
                 // (`USER.EXE` seg14 `0dc2`, seg8 `0bb7`).
                 system.hide_with(change.index, false);
             } else if change.flags & SWP_SHOWWINDOW != 0 && !now {
-                system.show(change.index);
+                // Shown where it lies, with `SWP_NOZORDER` and
+                // `SWP_NOACTIVATE`, as `ShowWindow` shows a window
+                // `ActivateWindow` made active hidden (`sysdlg`).
+                if change.flags & (SWP_NOZORDER | SWP_NOACTIVATE) == SWP_NOZORDER | SWP_NOACTIVATE
+                    && parent.is_none()
+                {
+                    system.show_in_place(change.index);
+                } else {
+                    system.show(change.index);
+                }
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {
                 // Activated, and so brought to the top, unless asked not to be
                 // (`mousemv`); only what it uncovered of itself is due.

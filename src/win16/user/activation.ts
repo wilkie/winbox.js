@@ -4,6 +4,7 @@ import { noteActivation } from './screen-saver.js';
 
 import { User } from '../user.js';
 import { changeFocus } from './dialogs.js';
+import { topLevel } from './enumerate.js';
 import { focusNothing } from './SetFocus.js';
 
 /**
@@ -24,9 +25,8 @@ import { focusNothing } from './SetFocus.js';
  * * A window made active that was not yet at the front is put there
  *   between the two (`showseq`), `between`.
  *
- * Documented, not recorded: `WA_CLICKACTIVE` for a click; `WM_ACTIVATEAPP`
- * with 0, and the other task, to the window losing the activation to another
- * task; the high word of `lParam`, whether the window is minimized.
+ * Documented, not recorded: `WA_CLICKACTIVE` for a click; the high word of
+ * `lParam`, whether the window is minimized.
  */
 
 const WA_INACTIVE = 0;
@@ -47,6 +47,17 @@ async function send(system: any, hwnd: number, message: number, wParam: number, 
 
   if (windowClass) {
     await system.scheduler.callWndProc(windowClass, hwnd, message, wParam, lParam);
+  }
+}
+
+/** `WM_ACTIVATEAPP` to each window at the top of a task, front to back. */
+async function tellTask(system: any, task: number, active: number, other: number) {
+  for (const window of topLevel(system)) {
+    const hwnd = window.window.hwnd ?? 0;
+
+    if (hwnd && taskOf(system, hwnd) === task) {
+      await send(system, hwnd, WM_ACTIVATEAPP, active, other);
+    }
   }
 }
 
@@ -74,26 +85,35 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
      * notes the task apart from the window (seg1 `36b3`): a dialog with no
      * owner ended leaves no window active, and the window made active after
      * it, of the same task, is told nothing of its task (`enddlg`). */
-    const fromTask = fromHwnd
-      ? taskOf(system, fromHwnd)
-      : (desktop.activeTask ?? 0);
+    const fromTask = fromHwnd ? taskOf(system, fromHwnd) : (desktop.activeTask ?? 0);
     const toTask = taskOf(system, toHwnd);
 
     if (fromHwnd) {
       await send(system, fromHwnd, WM_NCACTIVATE, 0, (minimized(from) | toHwnd) >>> 0);
       await send(system, fromHwnd, User.WM_ACTIVATE, WA_INACTIVE, (minimized(from) | toHwnd) >>> 0);
-
-      if (fromTask !== toTask) {
-        await send(system, fromHwnd, WM_ACTIVATEAPP, 0, toTask);
-      }
     }
 
     /* What the window coming to the front is told as it is put there, when
      * that is still to be done: see `showRaster`. */
     await between?.();
 
+    /* The task changed, every window at the top of each task is told, front
+     * to back, hidden ones too: the task losing it with 0 and the other
+     * task, then the task gaining it with 1 and the task before, nought for
+     * none (`USER.EXE` seg1 `36b3`-`371c`, the windows enumerated by
+     * `6556`, each sent by `3452`). **Recorded** by `sysdlg`. */
     if ((!fromHwnd && !fromTask) || fromTask !== toTask) {
-      await send(system, toHwnd, WM_ACTIVATEAPP, 1, fromTask);
+      if (fromTask) {
+        await tellTask(system, fromTask, 0, toTask);
+      }
+
+      desktop.activeTask = toTask;
+      await tellTask(system, toTask, 1, fromTask);
+
+      /* Gone meanwhile, it is made active no further (`3729`). */
+      if (!system.handles.resolve(toHwnd)) {
+        return;
+      }
     }
 
     desktop.activeTask = toTask;

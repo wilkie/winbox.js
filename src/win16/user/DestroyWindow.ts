@@ -15,6 +15,8 @@ import { User } from '../user.js';
 import { killTimersOf } from './queue.js';
 import { forgetHotKey } from './task-list.js';
 import { RasterWindow } from './raster-window.js';
+import { LockMyTask } from './lock-input.js';
+import { SetSysModalWindow } from './userwin.js';
 
 /**
  * The **DestroyWindow** function destroys the specified window. The function
@@ -75,6 +77,14 @@ export async function DestroyWindow(hwnd) {
 
   const desktop = dialog.desktop;
   const window = dialog.window;
+
+  /* A task locked by `LockMyTask` is let go by any window destroyed
+   * (`USER.EXE` seg8 `0a3f`-`0a48`). **Recorded** by `sysdlg`: a
+   * system-modal dialog made shown, which locks its task, and destroyed
+   * without `EndDialog`, leaves no task locked. */
+  if (this._lockMyTask) {
+    LockMyTask.call(this, 0);
+  }
 
   forgetActivePopup(this, hwnd);
 
@@ -186,6 +196,11 @@ export async function DestroyWindow(hwnd) {
   for (const each of freed.filter((one) => tree.includes(one))) {
     await send(each, User.WM_NCDESTROY);
     killTimersOf(this, each);
+
+    /* The system-modal window, gone, leaves none (seg8 `0cbc`-`0cc3`). */
+    if ((this._sysModal ?? 0) === each) {
+      await SetSysModalWindow.call(this, 0);
+    }
 
     const gone = this.handles.resolve(each);
 

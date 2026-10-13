@@ -17,6 +17,9 @@ import {
 import { nextMessage, postMessage } from './queue.js';
 import { hitTest } from './raster-input.js';
 import { WM_SETCURSOR } from './set-cursor.js';
+
+const WM_ENTERMENULOOP = 0x0211;
+const WM_EXITMENULOOP = 0x0212;
 import { messageFilter, MSGF_MENU } from './hooks.js';
 import { RasterWindow } from './raster-window.js';
 
@@ -693,7 +696,12 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     done = true;
   };
 
-  /* Into the menu. */
+  /* Into the menu: its window told first, with whether the menu is
+   * `TrackPopupMenu`'s (`USER.EXE` seg17 `0161`, seg9 `0bf7`). **Recorded**
+   * by `syschar`: before `WM_INITMENU`, nought for a window's own menu, 1
+   * for a pop-up tracked. */
+  await send(WM_ENTERMENULOOP, start.kind === 'popup' ? 1 : 0, 0);
+
   const previousCapture = input?.capture ?? null;
   const previousKind = input?.captureKind ?? 'set';
 
@@ -867,6 +875,11 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
   }
 
   await send(User.WM_MENUSELECT, 0, 0xffff);
+
+  /* Out of the menu, its window told so, with the same word (seg10
+   * `119c`, seg9 `0d53`), before the command chosen. **Recorded** by
+   * `syschar`: after the last `WM_MENUSELECT`. */
+  await send(WM_EXITMENULOOP, start.kind === 'popup' ? 1 : 0, 0);
 
   /* The command chosen: posted to the window, from its bar or its system menu,
    * as `WM_COMMAND` or `WM_SYSCOMMAND`; sent, from `TrackPopupMenu`'s

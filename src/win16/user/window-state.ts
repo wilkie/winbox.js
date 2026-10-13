@@ -11,6 +11,8 @@ import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { eraseDue } from './erase.js';
 import { type Insert } from './desktop.js';
+import { GetSysModalWindow } from './userwin.js';
+import { GetWindowTask } from './window-queries.js';
 
 /**
  * `ShowWindow` on the raster desktop: showing, hiding, maximizing, minimizing
@@ -286,7 +288,15 @@ export async function showRaster(
     case User.SW_RESTORE:
       desktop.restore(shown);
       desktop.hideOwned(shown, false);
-      desktop.show(shown);
+
+      /* Made active hidden first, as for a class with `CS_SAVEBITS`, it is
+       * shown with `SWP_NOZORDER` where `ActivateWindow` put it (`sysdlg`:
+       * a system-modal dialog stays at the very front). */
+      if (flags & SWP_NOZORDER && !shown.parent && shown.active) {
+        desktop.showInPlace(shown);
+      } else {
+        desktop.show(shown);
+      }
       break;
 
     case SW_SHOWNOACTIVATE:
@@ -415,8 +425,15 @@ export async function showRaster(
       const parent = member.parent;
       const changed: any = new WINDOWPOS();
       const how = member === shown ? flags : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-      /* Not moved among its siblings after all: said so (`showseq`). */
+      /* Not moved among its siblings after all: said so (`showseq`) -- for
+       * the window shown; one of its family not moved is not told
+       * (`sysdlg`: an owned pop-up made shown over its owner at the front,
+       * the owner asked and not told). */
       const still = !(how & SWP_NOZORDER) && above(desktop, member) === aboveBefore.get(member);
+
+      if (still && member !== shown) {
+        continue;
+      }
       /* Maximized, what of its client area stayed as it was, said so, from
        * which `DefWindowProc` tells it it moved and was sized (seg7 `0fcf`,
        * `0fe6`, `11fc`-`1250`). */
@@ -705,25 +722,60 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
     return;
   }
 
+  /* Refused while a window is system modal and this is not it, unless the
+   * running task is the system-modal window's (`USER.EXE` seg1 `3531`-
+   * `354c`). **Recorded** by `sysdlg`: the program whose dialog is system
+   * modal makes its other window active with `SetActiveWindow`. */
+  const sysModal = GetSysModalWindow.call(system);
+
+  if (
+    sysModal &&
+    top.hwnd !== sysModal &&
+    GetWindowTask.call(system, sysModal) !== (system.scheduler?.active ?? 0)
+  ) {
+    return;
+  }
+
   const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
   const family = first !== top ? activationFamily(desktop, top) : [];
-  const before = new Map(family.map((member: any) => [member, above(desktop, member)]));
+  const orderBefore = desktop.windows.filter((other: any) => !other.parent && !other.titleOf);
+  /* The system-modal window goes to the very front, before the topmost
+   * windows too, and is asked to go after none. **Recorded** by `sysdlg`:
+   * a system-modal dialog made active as it is made is asked so, and once
+   * made topmost and shown is the first window that shows, so that made
+   * active again it is not brought up; a dialog not system modal is asked
+   * to go after USER's topmost `#32771`. */
+  const sysModalFront = !!sysModal && top.hwnd === sysModal;
 
-  if (top.visible && !whole) {
+  if (first === top) {
+    desktop.activateInPlace(top, whole);
+  } else if (top.visible && !whole) {
     desktop.show(top, false);
   } else {
-    desktop.activate(top);
+    desktop.activate(top, sysModalFront);
   }
 
   if (forFocus && desktop.pendingActivation) {
     desktop.pendingActivation.forFocus = true;
   }
 
+  /* **Recorded** by `sysdlg`: the first asked goes after the window it now
+   * lies after -- the last topmost, USER's own hidden `#32771` -- and the
+   * rest each after the one before, in the order they now lie; a window
+   * made active hidden is not told, nor, for the system-modal window, any
+   * of them (`enddlg`: an owner minimized is told). Each window
+   * told goes after the window it was asked to, and one hidden is told
+   * `SWP_NOREDRAW` as well (seg7 `0df5`-`0e05`). */
+  const shownBefore = top.visible;
+
+  family.sort((a: any, b: any) => desktop.windows.indexOf(a) - desktop.windows.indexOf(b));
+
   await deliverActivation(
     system,
     family.length
       ? async () => {
-          let after = insertAfter(desktop, family[0]);
+          let after = sysModalFront ? 0 : lyingAfter(desktop, family[0]);
+          const asked = new Map<any, number>();
 
           for (const member of family) {
             const place: any = new WINDOWPOS();
@@ -732,18 +784,47 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
             place.hwndInsertAfter = after;
             place.flags =
               member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+            asked.set(member, after);
             await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
             after = member.hwnd ?? 0;
           }
 
+          /* Each moved in turn after the window it was asked to go after, and
+           * told only where it did not lie there already -- one coming after
+           * a window of its family moved before it lies there by then
+           * (`sysdlg`: an owner made active as its dialog ends, the dialog
+           * moved behind USER's `#32771`, its other pop-up and it lie after
+           * it already, and only the dialog is told). */
+          const order = orderBefore.slice();
+          const moved = new Set<any>();
+
           for (const member of family) {
-            if (above(desktop, member) === before.get(member)) {
+            const wanted = asked.get(member) ?? 0;
+            const at = order.indexOf(member);
+            const lies = at > 0 ? (order[at - 1].hwnd ?? 0) : 0;
+
+            if (at < 0 || lies === wanted) {
+              continue;
+            }
+
+            moved.add(member);
+            order.splice(at, 1);
+            order.splice(
+              wanted ? order.findIndex((other: any) => other.hwnd === wanted) + 1 : 0,
+              0,
+              member
+            );
+          }
+
+          for (const member of family) {
+            if (sysModalFront || (member === top && !shownBefore) || !moved.has(member)) {
               continue;
             }
 
             const place: any = new WINDOWPOS();
 
             place.hwnd = member.hwnd;
+            place.hwndInsertAfter = asked.get(member) ?? 0;
             place.x = member.left;
             place.y = member.top;
             place.cx = member.width;
@@ -752,6 +833,7 @@ export async function activateWindow(system: any, top: any, forFocus = false, wh
               (member === top
                 ? SWP_NOSIZE | SWP_NOMOVE
                 : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE) |
+              (member.visible ? 0 : SWP_NOREDRAW) |
               SWP_NOCLIENTSIZE |
               SWP_NOCLIENTMOVE;
             await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
@@ -788,7 +870,8 @@ function activationFamily(desktop: any, shown: any) {
     return false;
   };
   const members = desktop.windows.filter(
-    (other: any) => !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
+    (other: any) =>
+      !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
   );
 
   return [...members, head];
@@ -918,6 +1001,14 @@ function above(desktop: any, shown: any) {
     .slice(0, Math.max(at, 0))
     .map((other: any) => other.id)
     .join(',');
+}
+
+/** The window at the top a window now lies after: none at the front. */
+function lyingAfter(desktop: any, shown: any) {
+  const at = desktop.windows.indexOf(shown);
+  const above = desktop.windows.slice(0, Math.max(at, 0)).filter((other: any) => !other.parent);
+
+  return above.length ? (above[above.length - 1].hwnd ?? 0) : 0;
 }
 
 /** The window a window at the top goes after: the last of those it goes below. */
@@ -1298,22 +1389,27 @@ export async function positionChanging(
    * neither sized, moved nor made active (`alttab`: a pop-up and its owner,
    * whichever of them is brought up). */
   const family =
-    !parent && !(flags & SWP_NOZORDER) && insert.to === 'top'
+    !parent && !(flags & SWP_NOZORDER) && (insert.to === 'top' || insert.to === 'topmost')
       ? familyOf(window.desktop, shown)
       : [shown];
   const at = family.indexOf(shown);
-  const askFamily = async (members: any[]) => {
+  /* Each asked to go after the one asked before it (`sysdlg`: a dialog made
+   * topmost, its owner's other pop-up after it and its owner after that). */
+  const askFamily = async (members: any[], first: number) => {
+    let after = first;
+
     for (const member of members) {
       const place: any = new WINDOWPOS();
 
       place.hwnd = member.hwnd;
-      place.hwndInsertAfter = 0;
+      place.hwndInsertAfter = after;
       place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
       await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+      after = member.hwnd ?? 0;
     }
   };
 
-  await askFamily(family.slice(0, at));
+  await askFamily(family.slice(0, at), hwndInsertAfter);
 
   if (windowClass) {
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [
@@ -1321,7 +1417,7 @@ export async function positionChanging(
     ]);
   }
 
-  await askFamily(family.slice(at + 1));
+  await askFamily(family.slice(at + 1), hwnd);
 
   /* As the window procedure left the structure: it may move the window
    * elsewhere, or keep it where it is (documented). Towers of the corpus
@@ -1569,7 +1665,19 @@ export async function positionChanged(
        * `0bb7`); `SetWindowPos` asks for none. */
       window.desktop.hide(shown, false);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
-      window.desktop.show(shown);
+      /* Shown where it lies, with `SWP_NOZORDER` and `SWP_NOACTIVATE`, as
+       * `ShowWindow` shows a window `ActivateWindow` made active hidden
+       * (`sysdlg`: a system-modal dialog shown so stays at the very front,
+       * and goes after USER's `#32771` only as its owner is made active
+       * again, told so). */
+      if (
+        (flags & (SWP_NOZORDER | SWP_NOACTIVATE)) === (SWP_NOZORDER | SWP_NOACTIVATE) &&
+        !shown.parent
+      ) {
+        window.desktop.showInPlace(shown);
+      } else {
+        window.desktop.show(shown);
+      }
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
       /* Activated, and so brought to the top, unless asked not to be: even
        * with its place in the order left alone, the window moved under the
@@ -1693,8 +1801,7 @@ async function tellFamily(system: any, members: any[], aboveBefore: Map<any, str
     place.y = parent ? member.top - parent.top - parent.client.top : member.top;
     place.cx = member.width;
     place.cy = member.height;
-    place.flags =
-      SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
+    place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
     await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
   }
 }

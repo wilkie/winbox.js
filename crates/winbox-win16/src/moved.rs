@@ -277,7 +277,11 @@ impl System {
             }
         }
 
-        let changed = self.z_order != order || self.shown(index).topmost != topmost;
+        // A hidden window made topmost where it lies is not moved
+        // (`sysdlg`: a system-modal dialog, at the front, hidden, is asked
+        // and not told).
+        let changed =
+            self.z_order != order || (self.shown(index).topmost != topmost && self.showing(index));
 
         if changed && self.showing(index) {
             self.own();

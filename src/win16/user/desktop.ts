@@ -1118,7 +1118,38 @@ export class Desktop {
    * is, no window that shows being above it (`3674`-`3697`), and the window
    * that was active is drawn inactive. A window that shows is shown.
    */
-  activate(window: DesktopWindow) {
+  /**
+   * A window at the top that is the first that shows made active where it
+   * lies: `ActivateWindow` brings nothing to the front then (`USER.EXE`
+   * seg1 `3674`-`3697`). **Recorded** by `sysdlg`: a dialog made active
+   * again over the dialog it ran ends, its owner's other windows are not
+   * moved. `whole`: it is due whole, as a window shown.
+   */
+  activateInPlace(window: DesktopWindow, whole: boolean) {
+    const was = this.active;
+    const wasTop = this.activeTop;
+
+    window.active = true;
+    this.onActivate?.(window);
+
+    if (was && was !== window) {
+      was.active = false;
+      this.paintFrame(was);
+    }
+
+    if (whole) {
+      this.#dueWhole(window);
+    } else {
+      this.paintFrame(window);
+    }
+
+    if (wasTop !== window) {
+      this.previousActive = wasTop;
+      this.pendingActivation ??= { from: wasTop, click: false };
+    }
+  }
+
+  activate(window: DesktopWindow, absolute = false) {
     if (window.visible || window.parent) {
       this.show(window);
       return;
@@ -1127,7 +1158,13 @@ export class Desktop {
     const was = this.active;
     const wasTop = this.activeTop;
 
-    this.#bringUp(window);
+    /* `absolute`: made active by USER's `ActivateWindow`, hidden, it goes to
+     * the very front, before the topmost windows too: `SetWindowPos` puts a
+     * hidden window brought to the top after none. **Recorded** by
+     * `sysdlg`: a dialog made active hidden is asked to go after none, and
+     * once made topmost and shown, is the first window that shows, so that
+     * made active again it is not brought up. */
+    this.#bringUp(window, absolute);
     window.active = true;
     this.onActivate?.(window);
 
@@ -1148,7 +1185,7 @@ export class Desktop {
    * (`owners`); and the window that owns it, with the rest that one owns,
    * beneath it (`showseq`). Answers what moved with it of its own.
    */
-  #bringUp(window: DesktopWindow) {
+  #bringUp(window: DesktopWindow, absolute = false) {
     const family = this.windows.filter(
       (other) =>
         this.#within(other, window) ||
@@ -1185,6 +1222,12 @@ export class Desktop {
                 other === head.iconTitle)
           );
 
+    const at = new Map<DesktopWindow, number>();
+
+    for (const member of owners) {
+      at.set(member, this.windows.indexOf(member));
+    }
+
     for (const member of owners) {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
@@ -1194,7 +1237,20 @@ export class Desktop {
       ...owners.filter((member) => this.#within(member, head)),
     ];
 
-    this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
+    /* `absolute`: the window, with what it owns, goes to the very front;
+     * its owner's family stays where it lay (`sysdlg`: the owner of a
+     * system-modal dialog made active, asked to go after it, is not moved,
+     * nor a system-modal dialog under the one run over it, which is moved
+     * and told as its owner is made active after). */
+    if (absolute) {
+      for (const member of owners) {
+        this.windows.splice(at.get(member) ?? this.windows.length, 0, member);
+      }
+
+      this.windows.splice(0, 0, ...ownedFirst);
+    } else {
+      this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
+    }
 
     return family;
   }
@@ -1839,8 +1895,10 @@ export class Desktop {
       }
     }
 
+    /* A hidden window made topmost where it lies is not moved (`sysdlg`:
+     * a system-modal dialog, at the front, hidden, is asked and not told). */
     const changed =
-      window.topmost !== topmost ||
+      (window.topmost !== topmost && this.#showing(window)) ||
       this.windows.length !== order.length ||
       this.windows.some((other, at) => other !== order[at]);
 
@@ -2394,7 +2452,11 @@ export class Desktop {
    * visible region of the whole window (`USER.EXE` seg23 `0290`-`02c3`).
    */
   paintFrameOver(window: DesktopWindow, lit: boolean) {
-    this.#frameOnto(this.#onScreen(window.left, window.top, window.width, window.height), window, lit);
+    this.#frameOnto(
+      this.#onScreen(window.left, window.top, window.width, window.height),
+      window,
+      lit
+    );
   }
 
   /** A view of the screen at a place, drawn wherever it is on the screen. */
@@ -3731,9 +3793,26 @@ export class Desktop {
       return 0;
     }
 
-    const at = this.windows.findIndex((other) => !other.topmost || other === window);
+    /* After the last topmost window and its children, whatever lies among
+     * them (`sysdlg`: with a hidden dialog made active at the very front and
+     * made topmost there, a window made active goes after USER's topmost
+     * `#32771`, the last of them). */
+    const topOf = (other: DesktopWindow) => {
+      while (other.parent) {
+        other = other.parent;
+      }
 
-    return at < 0 ? this.windows.length : at;
+      return other;
+    };
+    let at = 0;
+
+    this.windows.forEach((other, index) => {
+      if (other !== window && topOf(other) !== window && topOf(other).topmost) {
+        at = index + 1;
+      }
+    });
+
+    return at;
   }
 
   /**

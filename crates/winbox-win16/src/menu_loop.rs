@@ -33,6 +33,8 @@ const WM_SETCURSOR: u16 = 0x0020;
 const WM_COMMAND: u16 = 0x0111;
 const WM_SYSCOMMAND: u16 = 0x0112;
 const WM_INITMENU: u16 = 0x0116;
+const WM_ENTERMENULOOP: u16 = 0x0211;
+const WM_EXITMENULOOP: u16 = 0x0212;
 const WM_INITMENUPOPUP: u16 = 0x0117;
 const WM_MENUSELECT: u16 = 0x011f;
 const WM_ENTERIDLE: u16 = 0x0121;
@@ -907,7 +909,14 @@ impl Run<'_> {
         let engine = self.engine;
         let hwnd = self.hwnd;
 
-        // Into the menu.
+        // Into the menu: its window told first, with whether the menu is
+        // `TrackPopupMenu`'s (`USER.EXE` seg17 `0161`, seg9 `0bf7`).
+        // **Recorded** by `syschar`: before `WM_INITMENU`, nought for a
+        // window's own menu, 1 for a pop-up tracked.
+        let tracked = u16::from(matches!(self.start, MenuStart::Popup { .. }));
+
+        self.send(WM_ENTERMENULOOP, tracked, 0).await?;
+
         let previous_capture = {
             let mut system = engine.system();
             let previous = (system.capture, system.capture_kind);
@@ -1117,6 +1126,11 @@ impl Run<'_> {
         engine.system().nudge()?;
 
         self.send(WM_MENUSELECT, 0, 0xffff).await?;
+
+        // Out of the menu, its window told so, with the same word (seg10
+        // `119c`, seg9 `0d53`), before the command chosen. **Recorded** by
+        // `syschar`: after the last `WM_MENUSELECT`.
+        self.send(WM_EXITMENULOOP, tracked, 0).await?;
 
         // The command chosen: posted to the window, from its bar or its
         // system menu, as `WM_COMMAND` or `WM_SYSCOMMAND`; sent, from

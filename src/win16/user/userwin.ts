@@ -13,6 +13,7 @@ import { MenuData } from './menu-data.js';
 import { parseMenu } from './LoadMenu.js';
 import { OBM_CHECK } from './menus.js';
 import { RasterWindow } from './raster-window.js';
+import { GetWindowTask } from './window-queries.js';
 import { SetCursorPos, cursorBounds, cursorOf, heldIn } from './cursor-pos.js';
 
 /**
@@ -132,6 +133,15 @@ export function PostAppMessage(
 export async function SetSysModalWindow(this: any, hwnd: number) {
   const old = this._sysModal ?? 0;
   const code = hwnd ? HC_SYSMODALON : HC_SYSMODALOFF;
+
+  /* Refused, answering nought, while another task's window is system modal
+   * (`USER.EXE` seg1 `19e8`-`1a0a`): a window of the running task's queue
+   * may take its place, one of another's may not. */
+  const current = GetSysModalWindow.call(this);
+
+  if (hwnd && current && GetWindowTask.call(this, current) !== (this.scheduler?.active ?? 0)) {
+    return 0;
+  }
 
   for (const kind of [WH_JOURNALPLAYBACK, WH_JOURNALRECORD]) {
     if (hasHooks(this, kind)) {

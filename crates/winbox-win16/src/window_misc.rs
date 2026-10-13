@@ -474,6 +474,25 @@ impl crate::engine::Engine {
             HC_SYSMODALOFF, HC_SYSMODALON, WH_JOURNALPLAYBACK, WH_JOURNALRECORD,
         };
 
+        // Refused, answering nought, while another task's window is system
+        // modal (`USER.EXE` seg1 `19e8`-`1a0a`): a window of the running
+        // task's queue may take its place, one of another's may not.
+        {
+            let system = self.system();
+            let current = system.sys_modal_window();
+
+            if hwnd != 0
+                && current != 0
+                && system.window_named(current).is_some_and(|index| {
+                    system.windows[index]
+                        .as_ref()
+                        .is_some_and(|window| window.task != system.task_handle)
+                })
+            {
+                return Ok(0);
+            }
+        }
+
         let code = if hwnd == 0 {
             HC_SYSMODALOFF
         } else {

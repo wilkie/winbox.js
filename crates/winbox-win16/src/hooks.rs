@@ -377,6 +377,21 @@ pub fn def_hook_proc(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 impl Engine {
+    /// `CallMsgFilter` with a message a program handed to USER, as
+    /// `IsDialogMessage` calls it (`USER.EXE` seg25 `0c38`): nothing while
+    /// a window is system modal; else the filters.
+    pub(crate) async fn call_msg_filter(
+        &self,
+        message: &crate::queue::Message,
+        code: i16,
+    ) -> Result<bool, Stop> {
+        if self.system().sys_modal_window() != 0 {
+            return Ok(false);
+        }
+
+        self.message_filter(message, code).await
+    }
+
     /// The message filters called with a message a loop of USER's own took,
     /// in a block of USER's kept for it: whether one took it (`hooks`).
     pub(crate) async fn message_filter(
@@ -432,11 +447,22 @@ impl Engine {
 /// answered non-nought.
 pub fn call_msg_filter(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (far, code) = {
+        let (far, code, sys_modal) = {
             let system = engine.system();
 
-            (args.dword(&system), args.signed(&system))
+            (
+                args.dword(&system),
+                args.signed(&system),
+                system.sys_modal_window(),
+            )
         };
+
+        // Nought, and no filter called, while a window is system modal
+        // (`USER.EXE` seg1 `80d6`-`80dc`). **Recorded** by `sysdlg`.
+        if sys_modal != 0 {
+            return Ok(Answer::Word(0));
+        }
+
         let answer = engine.call_hooks(WH_MSGFILTER, code, 0, far).await?;
 
         // In AX alone (`USER.EXE` seg1 `80f0`, `message_filter`).

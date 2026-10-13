@@ -4,6 +4,7 @@ import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { INT, LPARAM, WPARAM } from '../types.js';
 import { segmentSelector } from '../selectors.js';
+import { GetSysModalWindow } from './userwin.js';
 
 /**
  * Hooks: procedures a program puts in USER's way, called with a code, a
@@ -351,8 +352,29 @@ export async function DefHookProc(
  * @returns {Types.BOOL} Whether a filter answered non-nought.
  */
 export async function CallMsgFilter(this: any, lpMsg: number, nCode: number) {
+  /* Nought, and no filter called, while a window is system modal (`USER.EXE`
+   * seg1 `80d6`-`80dc`). **Recorded** by `sysdlg`: in a system-modal
+   * dialog's tick the filter hears nothing. */
+  if (GetSysModalWindow.call(this)) {
+    return 0;
+  }
+
   /* In AX alone (`USER.EXE` seg1 `80f0`, `messageFilter`). */
   return (await callHooks(this, WH_MSGFILTER, (nCode << 16) >> 16, 0, lpMsg)) & 0xffff ? 1 : 0;
+}
+
+/**
+ * `CallMsgFilter` with a message a program handed to USER, as
+ * `IsDialogMessage` calls it (`USER.EXE` seg25 `0c38`): nothing while a
+ * window is system modal; else the filters, with the message written where
+ * they can read it.
+ */
+export async function callMsgFilter(system: any, msg: any, code: number) {
+  if (GetSysModalWindow.call(system)) {
+    return false;
+  }
+
+  return messageFilter(system, msg, code);
 }
 
 /**

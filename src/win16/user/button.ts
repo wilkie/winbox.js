@@ -103,6 +103,19 @@ const OWN_PRESS = 0x10;
 const CAPTURED = 0x20;
 /** The left button held down on it, the press followed. */
 const TRACKING = 0x40;
+/**
+ * The focus being given by the dialog manager, about to click the button
+ * itself: by its mnemonic, or by an arrow onto a push button (`USER.EXE`
+ * seg19 `0233`-`023d`, seg25 `0dcc`-`0dd6`). A radio button gaining the
+ * focus so does not tell its parent it was clicked (`1b13`).
+ */
+export const DIALOG_FOCUS = 0x80;
+/**
+ * The message the dialog manager sends a button to click it (`USER.EXE`
+ * seg19 `0251`, seg25 `0e19`), which the button answers by sending itself
+ * a press and a release at its corner (seg25 `1f3f`).
+ */
+export const BM_CLICK = 0x0463;
 
 const kindOf = (control: ControlState) => control.style & 0x0f;
 
@@ -233,6 +246,25 @@ export async function buttonMessage(
 
     case User.WM_SETFOCUS:
       await focused(system, window, control, kind);
+      break;
+
+    /* Clicked by the dialog manager (seg25 `1f3f`): pressed and let go at
+     * its corner, then, with no press followed, let go again as a key other
+     * than the Space bar lets it go (`1f5d`-`1f74`). **Recorded** by
+     * `dlgcode`: 463h, `WM_LBUTTONDOWN` and `WM_LBUTTONUP` at nought, with
+     * `BM_SETSTATE` in and out between, and the check and `BN_CLICKED` as a
+     * click gives them. */
+    case BM_CLICK:
+      await send(system, hwnd, User.WM_LBUTTONDOWN, 0, 0);
+      await send(system, hwnd, User.WM_LBUTTONUP, 0, 0);
+
+      if (
+        stillThere(system, hwnd, window) &&
+        !((control.state ?? 0) & TRACKING) &&
+        wParam !== VK_SPACE
+      ) {
+        await release(system, window, control, false);
+      }
       break;
 
     case User.WM_KILLFOCUS:
@@ -383,7 +415,7 @@ async function focused(system: any, window: RasterWindow, control: ControlState,
   }
 
   if (
-    !((control.state ?? 0) & OWN_PRESS) &&
+    !((control.state ?? 0) & (OWN_PRESS | DIALOG_FOCUS)) &&
     (kind === BS_RADIOBUTTON || kind === BS_AUTORADIOBUTTON) &&
     control.checked === 0
   ) {

@@ -16,7 +16,7 @@ import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
 import { nextMessage, SENT_ANSWERED } from './queue.js';
 import { noteTaken } from './queries.js';
-import { messageFilter, MSGF_DIALOGBOX } from './hooks.js';
+import { callMsgFilter, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { CTLCOLOR_DLG, defaultControlColour } from './ctlcolor.js';
@@ -26,13 +26,16 @@ import { UpdateWindow } from './UpdateWindow.js';
 import { resourceBytes } from './resources.js';
 import { ShowWindow } from './ShowWindow.js';
 import { TranslateMessage } from './TranslateMessage.js';
-import { clickControl } from './control-classes.js';
+import { ansiUpperByte } from './ansi.js';
+import { BM_CLICK, DIALOG_FOCUS } from './button.js';
 import { EnableWindow } from './window-queries.js';
 import { LoadMenu } from './LoadMenu.js';
 import { GetKeyState } from './accelerators.js';
 import { MessageBeep } from './enumerate.js';
 import { GetWindowLong } from './window-words.js';
 import { activateForFocus, activateWindow, SetWindowPos } from './window-state.js';
+import { GetSysModalWindow, SetSysModalWindow } from './userwin.js';
+import { LockMyTask } from './lock-input.js';
 import { postQuit } from './queue.js';
 
 /**
@@ -66,12 +69,15 @@ import { postQuit } from './queue.js';
 
 const DS_MODALFRAME = 0x80;
 const DS_NOIDLEMSG = 0x100;
+const DS_SYSMODAL = 0x02;
 const WM_CANCELMODE = 0x001f;
 const WM_SYSTIMER = 0x0118;
 const SWP_NOSIZE = 0x0001;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOZORDER = 0x0004;
 const SWP_NOACTIVATE = 0x0010;
+const SWP_NOREDRAW = 0x0008;
+const HWND_TOPMOST = 0xffff;
 const SWP_HIDEWINDOW = 0x0080;
 const WM_ENTERIDLE = 0x0121;
 const SM_CYDLGFRAME = 8;
@@ -119,6 +125,12 @@ const VK_LEFT = 0x25;
 const VK_UP = 0x26;
 const VK_RIGHT = 0x27;
 const VK_DOWN = 0x28;
+const VK_CANCEL = 0x03;
+const VK_EXECUTE = 0x2b;
+const DLGC_STATIC = 0x0100;
+const DLGC_BUTTON = 0x2000;
+const SS_NOPREFIX = 0x80;
+const BS_AUTORADIOBUTTON = 0x09;
 
 const DIALOG_CLASS = '#32770';
 
@@ -142,6 +154,8 @@ export interface DialogState {
   defId: number;
   /** Whether the owner was disabled before `DialogBox`, at 14h: 0 for a modeless dialog (seg24 `06d6`, seg25 `0797`). */
   ownerWasDisabled: boolean;
+  /** The window system modal before a system-modal dialog, at 1Ch, to be so again as it ends (seg24 `063e`, seg25 `25ee`). */
+  sysModalBefore: number;
   /** The control that had the focus as the dialog lost the activation, to have it again. */
   savedFocus?: number;
 }
@@ -271,7 +285,9 @@ export async function createDialog(
    * screen's with `DS_ABSALIGN` (documented). */
   const owner = hwndOwner ? system.handles.resolve(hwndOwner) : null;
   const origin =
-    owner instanceof RasterWindow && !(template.style & DS_ABSALIGN) ? owner.clientOrigin : { x: 0, y: 0 };
+    owner instanceof RasterWindow && !(template.style & DS_ABSALIGN)
+      ? owner.clientOrigin
+      : { x: 0, y: 0 };
   const client = {
     x: origin.x + across(template.x),
     y: origin.y + down(template.y),
@@ -279,7 +295,15 @@ export async function createDialog(
     height: down(template.cy),
   };
 
-  const style = template.style & ~WS_VISIBLE;
+  /* A dialog owned by the system-modal window is made system modal too
+   * (`USER.EXE` seg24 `011c`-`0148`: the owner at the top and the
+   * system-modal window or inside it). **Recorded** by `sysdlg`: a dialog
+   * run over a system-modal one is the system-modal window while it
+   * shows. */
+  const sysModal = GetSysModalWindow.call(system);
+  const ownedBySysModal =
+    owner instanceof RasterWindow && !owner.window.parent && sysModal && hwndOwner === sysModal;
+  let style = (ownedBySysModal ? template.style | DS_SYSMODAL : template.style) & ~WS_VISIBLE;
   const modalFrame = (template.style & DS_MODALFRAME) !== 0;
   const insets = desktop.frameInsets(style, modalFrame, template.menu !== null);
   const className = template.className ?? DIALOG_CLASS;
@@ -330,7 +354,10 @@ export async function createDialog(
   }
 
   /* The menu the template names, from the dialog's module (documented). */
-  const menu = template.menu !== null && template.menu !== '' ? await LoadMenu.call(system, hinst, template.menu) : 0;
+  const menu =
+    template.menu !== null && template.menu !== ''
+      ? await LoadMenu.call(system, hinst, template.menu)
+      : 0;
 
   /* A child dialog is made where its parent's client area puts it: the
    * place worked out on the screen, less that corner, which `CreateWindow`
@@ -357,6 +384,23 @@ export async function createDialog(
     return NULL;
   }
 
+  /* System modal as soon as it is a window, the window system modal before
+   * kept to be so again as it ends; refused -- another task's system-modal
+   * window up -- it is not system modal at all (seg24 `062d`-`064b`). The
+   * task is locked only as it shows. **Recorded** by `sysdlg`:
+   * `GetSysModalWindow` names the dialog in its `WM_INITDIALOG`, and
+   * `IsTaskLocked` names no task until it shows. */
+  let sysModalBefore = 0;
+
+  if (style & DS_SYSMODAL) {
+    sysModalBefore = await SetSysModalWindow.call(system, hwnd);
+
+    if (GetSysModalWindow.call(system) !== hwnd) {
+      style &= ~DS_SYSMODAL;
+      window.window.style = (window.window.style & ~DS_SYSMODAL) >>> 0;
+    }
+  }
+
   if (modalFrame) {
     window.window.modalFrame = true;
     desktop.place(
@@ -376,6 +420,7 @@ export async function createDialog(
     ended: false,
     defId: 1,
     ownerWasDisabled: false,
+    sysModalBefore,
   } satisfies DialogState;
 
   if (font) {
@@ -399,17 +444,24 @@ export async function createDialog(
       0
     );
 
-    if (child && font) {
+    if (!child) {
+      continue;
+    }
+
+    if (font) {
       await send(system, child, User.WM_SETFONT, font, 0);
     }
-  }
 
-  /* The template's default push button is the dialog's default, kept: as
-   * the focus moves the default with it, `DM_GETDEFID` still answers this
-   * one (`defpush`). */
-  (window as any).dialogState.defId =
-    controlsOf(system, hwnd).find((child: any) => isPush(child) && (child.style & 0x0f) === BS_DEFPUSHBUTTON)
-      ?.controlId ?? 1;
+    /* Each control asked what it is as it is made, and the last that
+     * answers `DLGC_DEFPUSHBUTTON` is the dialog's default, over the 1 it
+     * starts with (`USER.EXE` seg24 `08a9`-`08c2`). **Recorded** by
+     * `dlgcode`: a control of a program's own class answering so after a
+     * push button with `BS_DEFPUSHBUTTON` is `DM_GETDEFID`'s; the button keeps
+     * its outline. */
+    if ((await send(system, child, WM_GETDLGCODE, 0, 0)) & DLGC_DEFPUSHBUTTON) {
+      (window as any).dialogState.defId = item.id & 0xffff;
+    }
+  }
 
   const first = firstTabItem(system, hwnd);
   const answer = await send(system, hwnd, User.WM_INITDIALOG, first, param);
@@ -422,17 +474,25 @@ export async function createDialog(
    * made active, and the focus stays where it was. */
   const ended = () => (window as any).dialogState?.ended === true;
 
+  /* The focus given as the dialog manager gives it, and the default push
+   * button kept as it moves from the control `WM_INITDIALOG` was given --
+   * gone meanwhile, none -- to the first tab item now (`090e`-`093e`). */
   if (answer & 0xffff && !ended()) {
+    const given = system.handles.resolve(first) ? first : 0;
     const focus = firstTabItem(system, hwnd);
 
-    if (focus) {
-      await dlgSetFocus(system, focus);
-    }
+    await dlgSetFocus(system, focus);
+    await checkDefPush(system, hwnd, given, focus);
   }
 
   if (template.style & WS_VISIBLE && !ended() && !system.handles.resolve(hwnd)?.visible) {
     await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
     await updateDialog(system, hwnd);
+
+    /* Shown system modal, the task is locked (`0963`-`0976`). */
+    if (GetSysModalWindow.call(system) === hwnd) {
+      LockMyTask.call(system, 1);
+    }
   }
 
   return hwnd;
@@ -443,7 +503,10 @@ async function updateDialog(system: any, hwnd: number) {
   const shown = system.handles.resolve(hwnd);
 
   if (shown instanceof RasterWindow) {
-    for (const window of [shown.window, ...shown.desktop.windows.filter((w: any) => w.parent === shown.window)]) {
+    for (const window of [
+      shown.window,
+      ...shown.desktop.windows.filter((w: any) => w.parent === shown.window),
+    ]) {
       if (window.hwnd) {
         await UpdateWindow.call(system, window.hwnd);
       }
@@ -485,7 +548,8 @@ async function dialogBox(
   proc: any,
   param: number
 ) {
-  let owner = hwndOwner && system.handles.resolve(hwndOwner) instanceof RasterWindow ? hwndOwner : 0;
+  let owner =
+    hwndOwner && system.handles.resolve(hwndOwner) instanceof RasterWindow ? hwndOwner : 0;
   let ownerWasDisabled = false;
   let ownerWasActive = false;
 
@@ -585,12 +649,11 @@ async function runModal(
         break;
       }
 
-      /* The message filters first: one that takes the message ends it. */
-      if (!(await messageFilter(system, msg, MSGF_DIALOGBOX))) {
-        if (!(await IsDialogMessage.call(system, hwnd, msg))) {
-          TranslateMessage.call(system, msg);
-          await DispatchMessage.call(system, msg);
-        }
+      /* `IsDialogMessage` past its checks, which calls the message filters
+       * first (seg25 `07e4`, `0c38`). */
+      if (!(await IsDialogMessage.call(system, hwnd, msg))) {
+        TranslateMessage.call(system, msg);
+        await DispatchMessage.call(system, msg);
       }
 
       if (visible || (msg.message !== WM_SYSTIMER && msg.message !== User.WM_SYSKEYDOWN)) {
@@ -604,11 +667,35 @@ async function runModal(
 
     if (!visible) {
       visible = true;
+
+      /* System modal, it is put in front of all first, neither moved, sized,
+       * drawn nor made active (`0826`-`0839`, `HWND_TOPMOST` with 1Bh). */
+      if (GetSysModalWindow.call(system) === hwnd) {
+        await SetWindowPos.call(
+          system,
+          hwnd,
+          HWND_TOPMOST,
+          0,
+          0,
+          0,
+          0,
+          SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW | SWP_NOACTIVATE
+        );
+      }
+
       await ShowWindow.call(system, hwnd, User.SW_SHOWNORMAL);
 
       /* Painted as it shows, it and its controls, not by its loop:
        * `hooks` recorded no `WM_PAINT` among the messages the loop took. */
       await updateDialog(system, hwnd);
+
+      /* And the task locked while it shows (`084c`-`0854`). **Recorded** by
+       * `sysdlg`: `IsTaskLocked` names the program once the dialog shows,
+       * and another program posted a message answers it only once the
+       * dialog has ended. */
+      if (GetSysModalWindow.call(system) === hwnd) {
+        LockMyTask.call(system, 1);
+      }
     } else {
       if (owner && !system.handles.resolve(owner)) {
         owner = 0;
@@ -792,10 +879,13 @@ export async function EndDialog(this: any, hwndDlg: number, nResult: number) {
     return;
   }
 
+  /* The task let go first, whoever locked it (`2579`). */
+  LockMyTask.call(this, 0);
+
   const desktop = dialog.desktop;
   const wasActive = desktop.activeTop === dialog.window;
   const ownerWindow = dialog.window.parent ?? dialog.window.owner ?? null;
-  const owner = ownerWindow?.hwnd ?? 0;
+  let owner = ownerWindow?.hwnd ?? 0;
 
   if (owner && !state.ownerWasDisabled && this.handles.resolve(owner)) {
     await EnableWindow.call(this, owner, TRUE);
@@ -814,7 +904,32 @@ export async function EndDialog(this: any, hwndDlg: number, nResult: number) {
     await setFocus(this, hwndDlg);
   }
 
-  await SetWindowPos.call(this, hwndDlg, 0, 0, 0, 0, 0, SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE);
+  await SetWindowPos.call(
+    this,
+    hwndDlg,
+    0,
+    0,
+    0,
+    0,
+    0,
+    SWP_HIDEWINDOW | SWP_NOACTIVATE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE
+  );
+
+  /* System modal, it makes the window system modal before it so again --
+   * none, where that is gone -- and that window, not the owner, is made
+   * active (`25e8`-`260b`). **Recorded** by `sysdlg`: a dialog ended over
+   * a system-modal dialog gives the system modality and the activation
+   * back to it, and the task stays let go. */
+  if (GetSysModalWindow.call(this) === hwndDlg) {
+    const before =
+      state.sysModalBefore && this.handles.resolve(state.sysModalBefore) ? state.sysModalBefore : 0;
+
+    await SetSysModalWindow.call(this, before);
+
+    if (before) {
+      owner = before;
+    }
+  }
 
   const top = owner ? this.handles.resolve(owner) : null;
 
@@ -917,7 +1032,7 @@ export async function DefDlgProc(
       if (wParam & 0xffff) {
         await restoreFocus(this, hwnd, state);
       } else {
-        saveFocus(this, hwnd, state);
+        await saveFocus(this, hwnd, state);
       }
       return 0;
 
@@ -936,7 +1051,7 @@ export async function DefDlgProc(
     /* Hidden, it keeps its focus first (seg25 `05ab`). */
     case User.WM_SHOWWINDOW:
       if (!(wParam & 0xffff)) {
-        saveFocus(this, hwnd, state);
+        await saveFocus(this, hwnd, state);
       }
       break;
 
@@ -961,14 +1076,21 @@ export async function DefDlgProc(
      * value; a new default is not taken then (seg25 `06d7`, `06f0`;
      * `enddlg`). */
     case DM_GETDEFID: {
-      const id = state?.ended ? 0 : defaultId(this, hwnd);
+      const id = state?.ended ? 0 : (state?.defId ?? 0);
 
       return id ? ((DC_HASDEFID << 16) | id) >>> 0 : 0;
     }
 
+    /* The default push button kept as it moves from the control of the
+     * identifier before to the one given -- none for nought -- then the
+     * identifier taken (seg25 `06f0`-`0726`). */
     case DM_SETDEFID:
       if (state && !state.ended) {
-        state.defId = wParam;
+        const before = state.defId ? dlgItem(this, hwnd, state.defId) : 0;
+        const after = wParam & 0xffff ? dlgItem(this, hwnd, wParam & 0xffff) : 0;
+
+        await checkDefPush(this, hwnd, before, after);
+        state.defId = wParam & 0xffff;
       }
       return 1;
 
@@ -980,19 +1102,25 @@ export async function DefDlgProc(
       const focusWindow = this.rasterDesktop?.focus;
       const focus = focusWindow?.hwnd ?? 0;
       let target: number;
+      let from: number;
 
       if (lParam & 0xffff) {
         target = wParam & 0xffff;
+        from = focus || hwnd;
       } else if (!focus) {
         target = firstTabItem(this, hwnd);
+        from = hwnd;
       } else if (!within(this, hwnd, focusWindow)) {
         return 1;
       } else {
+        from = focus;
         target = nextTabItem(this, hwnd, focus, (wParam & 0xffff) !== 0);
       }
 
+      /* And the default push button kept as it moves (`060b`-`0615`). */
       if (target) {
         await dlgSetFocus(this, target);
+        await checkDefPush(this, hwnd, from, target);
       }
 
       return 1;
@@ -1004,13 +1132,17 @@ export async function DefDlgProc(
 
 /**
  * The focus kept as a dialog loses it (seg25 `03a8`): the window that has
- * it, if it is inside the dialog and nothing is kept already.
+ * it, if it is inside the dialog and nothing is kept already; and then
+ * every default push button made plain, from that control round
+ * (`03d3`, `0ab2`). **Recorded** by `dlgcode`: a modeless dialog covered by
+ * a modal one has each of its controls asked `WM_GETDLGCODE`.
  */
-function saveFocus(system: any, hwnd: number, state: DialogState | null) {
+async function saveFocus(system: any, hwnd: number, state: DialogState | null) {
   const focus = system.rasterDesktop?.focus;
 
   if (state && focus?.hwnd && !state.savedFocus && within(system, hwnd, focus)) {
     state.savedFocus = focus.hwnd;
+    await clearDefPush(system, hwnd, focus.hwnd);
   }
 }
 
@@ -1033,6 +1165,8 @@ async function restoreFocus(system: any, hwnd: number, state: DialogState | null
     return false;
   }
 
+  /* The default push button kept as the focus goes back (`0404`-`040c`). */
+  await checkDefPush(system, hwnd, system.rasterDesktop?.focus?.hwnd ?? 0, saved);
   await setFocus(system, saved);
 
   return true;
@@ -1068,22 +1202,14 @@ function dlgItem(system: any, hwnd: number, id: number) {
   return controlsOf(system, hwnd).find((child: any) => child.controlId === id)?.hwnd ?? 0;
 }
 
-/** The dialog's default button: set with `DM_SETDEFID`, else the default push button, else none. */
-function defaultId(system: any, hwnd: number) {
-  const state = stateOf(system, hwnd);
+/** A control's text, as the dialog manager reads it to find a mnemonic (seg19 `0101`). */
+function controlText(system: any, hwnd: number) {
+  const window = system.handles.resolve(hwnd);
 
-  if (state?.defId) {
-    return state.defId;
-  }
-
-  const button = controlsOf(system, hwnd).find(
-    (child: any) => child.control?.className === 'BUTTON' && (child.style & 0x0f) === 1
-  );
-
-  return button?.controlId ?? 0;
+  return window instanceof RasterWindow
+    ? String(window.window.control?.text ?? window.window.title ?? '')
+    : '';
 }
-
-const takesFocus = (child: any) => child.visible && !(child.style & WS_DISABLED);
 
 /**
  * The control a dialog's focus starts on (`USER.EXE` seg25 `0089`): the first
@@ -1094,7 +1220,8 @@ const takesFocus = (child: any) => child.visible && !(child.style & WS_DISABLED)
 export function firstTabItem(system: any, hwnd: number) {
   const controls = controlsOf(system, hwnd);
   const stop = controls.find(
-    (child: any) => child.style & WS_TABSTOP && child.style & 0x10000000 && !(child.style & 0x08000000)
+    (child: any) =>
+      child.style & WS_TABSTOP && child.style & 0x10000000 && !(child.style & 0x08000000)
   );
 
   return (stop ?? controls[0])?.hwnd ?? hwnd;
@@ -1122,78 +1249,153 @@ function childControl(system: any, hwnd: number, from: number) {
 }
 
 /**
- * The control with `WS_TABSTOP` after `from`'s control -- or before it,
- * `previous` -- wrapping; the first with none. `from` is taken to the
- * dialog's control it is in first, as `GetNextDlgTabItem` and
- * `GetNextDlgGroupItem` take it (`USER.EXE` seg19 `0a02`, `0a77`): Tab in a
- * combo box's edit control goes on from the combo box.
+ * The dialog's child after `from`, the first after the last, and the first
+ * for none (`USER.EXE` seg25 `0f70`): the order the children lie in.
  */
-export function nextTabItem(system: any, hwnd: number, from: number, previous: boolean) {
-  from = childControl(system, hwnd, from);
-
+function nextChild(system: any, hwnd: number, from: number) {
   const controls = controlsOf(system, hwnd);
-  const stops = controls.filter((child: any) => child.style & WS_TABSTOP);
-  const candidates = stops.length ? stops : controls;
-  const order = previous ? [...candidates].reverse() : candidates;
-  const at = order.findIndex((child: any) => child.hwnd === from);
+  const at = from ? controls.findIndex((child: any) => child.hwnd === from) : -1;
 
-  for (let step = 1; step <= order.length; step++) {
-    const child = order[(Math.max(at, -1) + step) % order.length];
+  return (at >= 0 && at + 1 < controls.length ? controls[at + 1] : controls[0])?.hwnd ?? 0;
+}
 
-    if (child && takesFocus(child)) {
-      return child.hwnd;
-    }
+/**
+ * The dialog's child before `from`, going round, and the last for none
+ * (seg25 `0f38`): the children walked from `from` until it comes again.
+ */
+function previousChild(system: any, hwnd: number, from: number) {
+  const controls = controlsOf(system, hwnd);
+  const at = from ? controls.findIndex((child: any) => child.hwnd === from) : -1;
+
+  if (!controls.length) {
+    return 0;
   }
 
-  return 0;
+  return (at > 0 ? controls[at - 1] : controls[controls.length - 1]).hwnd ?? 0;
+}
+
+const styleOf = (system: any, hwnd: number) => system.handles.resolve(hwnd)?.window?.style ?? 0;
+const grouped = (system: any, hwnd: number) => (styleOf(system, hwnd) & WS_GROUP) !== 0;
+
+/**
+ * The next control of `from`'s group (seg19 `09ab`): the next child, unless
+ * it starts a group, when the group goes round to its first -- the last
+ * child with `WS_GROUP` at or before `from`, going back round the dialog's
+ * children: a first control without `WS_GROUP` is in the group of the last
+ * control that has it.
+ */
+function groupNext(system: any, hwnd: number, from: number) {
+  const next = nextChild(system, hwnd, from);
+
+  if (!from || !grouped(system, next)) {
+    return next;
+  }
+
+  let at = from;
+
+  while (!grouped(system, at)) {
+    const before = previousChild(system, hwnd, at);
+
+    if (before === from) {
+      break;
+    }
+
+    at = before;
+  }
+
+  return at;
+}
+
+/**
+ * The control before `from` in its group (seg19 `096c`): the child before
+ * it, unless `from` starts the group, when the group's last -- the child
+ * before the next that starts a group.
+ */
+function groupPrevious(system: any, hwnd: number, from: number) {
+  if (!from || !grouped(system, from)) {
+    return previousChild(system, hwnd, from);
+  }
+
+  let at = from;
+
+  for (;;) {
+    const next = nextChild(system, hwnd, at);
+
+    if (grouped(system, next) || next === from) {
+      return at;
+    }
+
+    at = next;
+  }
+}
+
+/** Shown and not disabled, as the dialog manager asks of a control it moves to. */
+const reachable = (system: any, hwnd: number) => {
+  const style = styleOf(system, hwnd);
+
+  return !(style & WS_DISABLED) && system.handles.resolve(hwnd)?.window?.visible === true;
+};
+
+/**
+ * The control with `WS_TABSTOP` after `from`'s control -- or before it,
+ * `previous` -- shown and not disabled, going round (`USER.EXE` seg19
+ * `09ee`, `GetNextDlgTabItem`). `from` is taken to the dialog's control it
+ * is in first (`0a02`): Tab in a combo box's edit control goes on from the
+ * combo box. With none other, the round ends at `from`'s control, which is
+ * answered whatever it is; from no control, it starts after the last (or
+ * before the first).
+ */
+export function nextTabItem(system: any, hwnd: number, from: number, previous: boolean) {
+  const start = childControl(system, hwnd, from);
+  const end = start || (previous ? nextChild(system, hwnd, 0) : previousChild(system, hwnd, 0));
+  let at = start;
+
+  for (;;) {
+    at = previous ? previousChild(system, hwnd, at) : nextChild(system, hwnd, at);
+
+    if (!at || at === end) {
+      return at;
+    }
+
+    if (styleOf(system, at) & WS_TABSTOP && reachable(system, at)) {
+      return at;
+    }
+  }
 }
 
 export function GetNextDlgTabItem(this: any, hwndDlg: number, hwndCtl: number, fPrevious: number) {
   return nextTabItem(this, hwndDlg, hwndCtl, !!fPrevious);
 }
 
-/** The next control in `from`'s group -- the controls from one with `WS_GROUP` up to the next -- wrapping. */
+/**
+ * The next control in `from`'s group, or the one before, shown and not
+ * disabled (`USER.EXE` seg19 `0a5f`, `GetNextDlgGroupItem`), as
+ * `groupNext` and `groupPrevious` go round it; come back to `from`'s
+ * control, that one, whatever it is.
+ */
 export function GetNextDlgGroupItem(
   this: any,
   hwndDlg: number,
   hwndCtl: number,
   fPrevious: number
 ) {
-  hwndCtl = childControl(this, hwndDlg, hwndCtl);
+  const start = childControl(this, hwndDlg, hwndCtl);
+  let first = start;
+  let at = start;
 
-  const controls = controlsOf(this, hwndDlg);
-  const at = controls.findIndex((child: any) => child.hwnd === hwndCtl);
+  for (;;) {
+    at = fPrevious ? groupPrevious(this, hwndDlg, at) : groupNext(this, hwndDlg, at);
 
-  if (at < 0) {
-    return 0;
-  }
+    const round = at === first;
 
-  let start = at;
+    if (!first) {
+      first = at;
+    }
 
-  while (start > 0 && !(controls[start].style & WS_GROUP)) {
-    start--;
-  }
-
-  let end = at + 1;
-
-  while (end < controls.length && !(controls[end].style & WS_GROUP)) {
-    end++;
-  }
-
-  const group = controls.slice(start, end);
-  const inGroup = group.indexOf(controls[at]);
-
-  for (let step = 1; step <= group.length; step++) {
-    const index = fPrevious
-      ? (inGroup - step + group.length * 2) % group.length
-      : (inGroup + step) % group.length;
-
-    if (takesFocus(group[index])) {
-      return group[index].hwnd;
+    if (round || !at || reachable(this, at)) {
+      return at;
     }
   }
-
-  return hwndCtl;
 }
 
 /**
@@ -1207,8 +1409,6 @@ export function GetNextDlgGroupItem(
  * one.
  */
 export async function dlgSetFocus(system: any, hwnd: number) {
-  await moveDefault(system, hwnd);
-
   if ((await send(system, hwnd, WM_GETDLGCODE, 0, 0)) & DLGC_HASSETSEL) {
     const window = system.handles.resolve(hwnd);
     const instance = window?._createStruct?.hInstance ?? window?.data?.hInstance ?? 0;
@@ -1221,54 +1421,90 @@ export async function dlgSetFocus(system: any, hwnd: number) {
   return setFocus(system, hwnd);
 }
 
-/** A push button, default or not. */
-function isPush(child: any) {
-  const kind = child?.style & 0x0f;
+/**
+ * The dialog's default push button kept as the focus moves from `old` to
+ * `to` (`USER.EXE` seg25 `0b5b`), each asked with `WM_GETDLGCODE`, `to`
+ * first:
+ *
+ * * The same window: made the default if it answers
+ *   `DLGC_UNDEFPUSHBUTTON`; nothing else.
+ * * Otherwise, where either is a push button -- `old` asked first, `to`
+ *   only if `old` is not -- every control that answers
+ *   `DLGC_DEFPUSHBUTTON` is made plain (`0ab2`).
+ * * Then `to`, if it answers `DLGC_UNDEFPUSHBUTTON`, is made the default;
+ *   otherwise the control `DM_GETDEFID` names -- 1 where the dialog answers
+ *   none -- if it answers `DLGC_UNDEFPUSHBUTTON` and not
+ *   `DLGC_DEFPUSHBUTTON`, and is not disabled.
+ *
+ * `BM_SETSTYLE` with `BS_DEFPUSHBUTTON` or `BS_PUSHBUTTON`, drawn at once.
+ * **Recorded** by `defpush` and `dlgcode`: the dialog's first push button
+ * given the focus as it opens takes the default's outline, and the
+ * template's default keeps its own, the focus coming to the same window it
+ * was given to `WM_INITDIALOG`.
+ */
+export async function checkDefPush(system: any, hwnd: number, old: number, to: number) {
+  const code = to ? await send(system, to, WM_GETDLGCODE, 0, 0) : 0;
 
-  return child?.control?.className === 'BUTTON' && (kind === BS_PUSHBUTTON || kind === BS_DEFPUSHBUTTON);
+  if (old === to) {
+    if (code & DLGC_UNDEFPUSHBUTTON) {
+      await send(system, to, BM_SETSTYLE, BS_DEFPUSHBUTTON, 1);
+    }
+
+    return;
+  }
+
+  if (
+    (old &&
+      (await send(system, old, WM_GETDLGCODE, 0, 0)) &
+        (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)) ||
+    (to && code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON))
+  ) {
+    await clearDefPush(system, hwnd, to);
+  }
+
+  if (code & DLGC_UNDEFPUSHBUTTON) {
+    await send(system, to, BM_SETSTYLE, BS_DEFPUSHBUTTON, 1);
+    return;
+  }
+
+  const answer = await send(system, hwnd, DM_GETDEFID, 0, 0);
+  const id = answer >>> 16 === DC_HASDEFID ? answer & 0xffff : 1;
+  const button = dlgItem(system, hwnd, id);
+
+  if (button) {
+    const its = await send(system, button, WM_GETDLGCODE, 0, 0);
+
+    if (
+      !(its & DLGC_DEFPUSHBUTTON) &&
+      its & DLGC_UNDEFPUSHBUTTON &&
+      !(styleOf(system, button) & WS_DISABLED)
+    ) {
+      await send(system, button, BM_SETSTYLE, BS_DEFPUSHBUTTON, 1);
+    }
+  }
 }
 
 /**
- * The default push button following the focus the dialog manager moves, as
- * `defpush` records it: a push button given the focus becomes a default
- * push button, and the focus anywhere else gives the default back to the
- * dialog's own default (`DM_GETDEFID`). Any other default push button is
- * made plain -- but only when the focus came from inside the dialog: as the
- * dialog opens and its first button takes the focus, the template's default
- * keeps its outline too, and Windows shows both. A plain `SetFocus` moves
- * nothing. Refused: making the others plain on every move, which takes the
- * template's default's outline as the dialog opens.
+ * Every control that answers `DLGC_DEFPUSHBUTTON` made plain with
+ * `BM_SETSTYLE` (`USER.EXE` seg25 `0ab2`): each child asked, from the
+ * control `from` is in -- the first child for none -- round to it.
  */
-async function moveDefault(system: any, hwnd: number) {
-  const window = system.handles.resolve(hwnd);
+async function clearDefPush(system: any, hwnd: number, from: number) {
+  const start = (from && childControl(system, hwnd, from)) || nextChild(system, hwnd, 0);
 
-  if (!(window instanceof RasterWindow) || !window.window.parent) {
+  if (!start) {
     return;
   }
 
-  const dialog = window.window.parent;
+  let at = start;
 
-  if (!dialog.hwnd || !stateOf(system, dialog.hwnd)) {
-    return;
-  }
-
-  const controls = controlsOf(system, dialog.hwnd);
-  const target = isPush(window.window)
-    ? window.window
-    : controls.find((child: any) => child.controlId === defaultId(system, dialog.hwnd));
-  const old = window.desktop.focus;
-
-  if (old && old.parent === dialog) {
-    for (const child of controls) {
-      if (child !== target && isPush(child) && (child.style & 0x0f) === BS_DEFPUSHBUTTON) {
-        await send(system, child.hwnd, BM_SETSTYLE, BS_PUSHBUTTON, 1);
-      }
+  do {
+    if ((await send(system, at, WM_GETDLGCODE, 0, 0)) & DLGC_DEFPUSHBUTTON) {
+      await send(system, at, BM_SETSTYLE, BS_PUSHBUTTON, 1);
     }
-  }
 
-  if (target && isPush(target) && (target.style & 0x0f) === BS_PUSHBUTTON) {
-    await send(system, target.hwnd, BM_SETSTYLE, BS_DEFPUSHBUTTON, 1);
-  }
+    at = nextChild(system, hwnd, at);
+  } while (at && at !== start);
 }
 
 /** The focus moved to a window: `WM_KILLFOCUS` to the one losing it, `WM_SETFOCUS` to it. */
@@ -1373,12 +1609,31 @@ export async function changeFocus(system: any, hwnd: number) {
   }
 }
 
-/** A keyboard message a dialog handles itself: the focus moved, or a button pressed. */
+/**
+ * A message handed to a dialog: the keys and characters it takes itself,
+ * and the rest dispatched (`USER.EXE` seg25 `0c23`, behind the checks at
+ * `2804`). TRUE for every message it takes or dispatches; FALSE for one not
+ * for the dialog or a window inside it.
+ *
+ * * The message filters first, with `MSGF_DIALOGBOX`, as `CallMsgFilter`
+ *   calls them (`0c38`): a message a filter takes is answered TRUE, and
+ *   nothing more is done. **Recorded** by `dlgcode`: a filter is called with
+ *   every message handed over, one for a window outside the dialog too, in
+ *   a program's own loop as in `DialogBox`'s, and one it takes is not
+ *   dispatched.
+ * * `WM_KEYDOWN`, `WM_CHAR` and `WM_SYSCHAR` as below; a press of the left
+ *   button on a control keeps the default push button as the focus would
+ *   move to it, then is dispatched (`0e98`); anything else is dispatched.
+ */
 export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   const dialog = this.handles.resolve(hwndDlg);
 
   if (!(dialog instanceof RasterWindow)) {
     return FALSE;
+  }
+
+  if (await callMsgFilter(this, lpmsg, MSGF_DIALOGBOX)) {
+    return TRUE;
   }
 
   /* Only messages for the dialog or a window in it. */
@@ -1401,10 +1656,12 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
   }
 
   const message = lpmsg.message;
+  const hwnd = lpmsg.hwnd & 0xffff;
   /* The control is asked with the message, as a far pointer to it
-   * (`USER.EXE` seg25 `0cae`, `0ebc`): a multi-line edit control learns so
-   * that it is in a dialog. A copy, its point a `POINT` as the structure
-   * is written for a program's procedure: COMMDLG's lists are subclassed. */
+   * (`USER.EXE` seg25 `0cae`, `0db3`, `0ebc`): a multi-line edit control
+   * learns so that it is in a dialog. A copy, its point a `POINT` as the
+   * structure is written for a program's procedure: COMMDLG's lists are
+   * subclassed. */
   const asked = () => {
     const msg: any = new MSG();
     const pt: any = new POINT();
@@ -1421,208 +1678,406 @@ export async function IsDialogMessage(this: any, hwndDlg: number, lpmsg: any) {
     });
     return [msg];
   };
+  const dispatch = async () => {
+    TranslateMessage.call(this, lpmsg);
+    await DispatchMessage.call(this, lpmsg);
+
+    return TRUE;
+  };
+  const focus = () => this.rasterDesktop?.focus?.hwnd ?? 0;
 
   if (message === User.WM_KEYDOWN) {
-    const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
-    const code = focus ? await send(this, focus, WM_GETDLGCODE, lpmsg.wParam, asked()) : 0;
+    const code = await send(this, hwnd, WM_GETDLGCODE, lpmsg.wParam, asked());
 
-    if (!(code & DLGC_WANTALLKEYS)) {
-      switch (lpmsg.wParam) {
-        case VK_TAB:
-          if (!(code & DLGC_WANTTAB)) {
-            const shift = (this._keyStates?.[VK_SHIFT] ?? 0) & 0x80;
-            const next = nextTabItem(this, hwndDlg, focus, !!shift);
+    if (code & DLGC_WANTALLKEYS) {
+      return dispatch();
+    }
 
-            if (next) {
-              await dlgSetFocus(this, next);
-            }
+    switch (lpmsg.wParam & 0xffff) {
+      /* Tab, Shift held or not: the next tab item or the one before
+       * (`0d03`-`0d2a`). */
+      case VK_TAB: {
+        if (code & DLGC_WANTTAB) {
+          return dispatch();
+        }
 
-            return TRUE;
-          }
-          break;
+        const shift = (GetKeyState.call(this, VK_SHIFT) & 0x8000) !== 0;
+        const next = nextTabItem(this, hwndDlg, hwnd, shift);
 
-        case VK_RETURN: {
-          /* A push button with the focus is the one Enter presses. */
-          const id =
-            code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)
-              ? GetDlgCtrlID.call(this, focus)
-              : defaultId(this, hwndDlg) || IDOK;
-          const button = dlgItem(this, hwndDlg, id);
+        await dlgSetFocus(this, next);
+        await checkDefPush(this, hwndDlg, hwnd, next);
+        return TRUE;
+      }
 
-          await send(this, hwndDlg, User.WM_COMMAND, id, ((BN_CLICKED << 16) | button) >>> 0);
+      /* Enter, or Execute: the focus's own identifier where it answers
+       * `DLGC_DEFPUSHBUTTON`, else what `DM_GETDEFID` answers, else `IDOK`
+       * (`0d2d`-`0d68`). */
+      case VK_RETURN:
+      case VK_EXECUTE: {
+        const focused = focus();
+        const its = focused ? await send(this, focused, WM_GETDLGCODE, 0, 0) : 0;
+        let id = focused ? GetDlgCtrlID.call(this, focused) : 0;
+
+        if (!(its & DLGC_DEFPUSHBUTTON)) {
+          const answer = await send(this, hwndDlg, DM_GETDEFID, 0, 0);
+
+          id = answer >>> 16 === DC_HASDEFID ? answer & 0xffff : IDOK;
+        }
+
+        return command(this, hwndDlg, id);
+      }
+
+      /* Escape, or Ctrl and Break: `IDCANCEL` (`0d6b`). */
+      case VK_ESCAPE:
+      case VK_CANCEL:
+        return command(this, hwndDlg, IDCANCEL);
+
+      /* An arrow: the next control of the group, or the one before
+       * (`0d92`-`0e38`). */
+      case VK_LEFT:
+      case VK_UP:
+      case VK_RIGHT:
+      case VK_DOWN: {
+        if (code & DLGC_WANTARROWS) {
+          return dispatch();
+        }
+
+        const previous = lpmsg.wParam === VK_LEFT || lpmsg.wParam === VK_UP;
+        const next = GetNextDlgGroupItem.call(this, hwndDlg, hwnd, previous ? 1 : 0);
+        const its = await send(this, next, WM_GETDLGCODE, lpmsg.wParam, asked());
+
+        /* A push button is given the focus marked as the dialog manager's,
+         * as for a mnemonic. */
+        if (its & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)) {
+          await markedFocus(this, next);
+          await checkDefPush(this, hwndDlg, hwnd, next);
           return TRUE;
         }
 
-        case VK_ESCAPE: {
-          const button = dlgItem(this, hwndDlg, IDCANCEL);
+        /* A radio button: and an automatic one unchecked is clicked, with
+         * 463h (`0de6`-`0e27`). **Recorded** by `dlgcode`: the button tells
+         * its parent it was clicked as it gains the focus, then again as
+         * it is clicked. */
+        if (its & DLGC_RADIOBUTTON) {
+          await dlgSetFocus(this, next);
+          await checkDefPush(this, hwndDlg, hwnd, next);
 
-          await send(this, hwndDlg, User.WM_COMMAND, IDCANCEL, ((BN_CLICKED << 16) | button) >>> 0);
+          if (
+            (styleOf(this, next) & 0xdf) === BS_AUTORADIOBUTTON &&
+            !(await send(this, next, BM_GETCHECK, 0, 0))
+          ) {
+            await send(this, next, BM_CLICK, 1, 0);
+          }
+
           return TRUE;
         }
 
-        case VK_LEFT:
-        case VK_UP:
-        case VK_RIGHT:
-        case VK_DOWN:
-          if (!(code & DLGC_WANTARROWS)) {
-            const previous = lpmsg.wParam === VK_LEFT || lpmsg.wParam === VK_UP;
-            const next = GetNextDlgGroupItem.call(this, hwndDlg, focus, previous ? 1 : 0);
+        /* Static text is not moved to. */
+        if (its & DLGC_STATIC) {
+          return TRUE;
+        }
 
-            if (next && next !== focus) {
-              await dlgSetFocus(this, next);
-
-              /* A radio button reached tells its parent it was clicked as
-               * it gains the focus unchecked (`button.ts`); an automatic one
-               * unchecked is then clicked, pressed and let go at its corner
-               * (`USER.EXE` seg25 `0de6`-`0e27`, and `1f3f` for the message
-               * it sends itself). */
-              const code = await send(this, next, WM_GETDLGCODE, 0, 0);
-              const reached = this.handles.resolve(next);
-              const automatic =
-                reached instanceof RasterWindow && (reached.window.style & 0x0f) === 0x09;
-
-              if (
-                code & DLGC_RADIOBUTTON &&
-                automatic &&
-                (await send(this, next, BM_GETCHECK, 0, 0)) === 0
-              ) {
-                await send(this, next, User.WM_LBUTTONDOWN, 0, 0);
-                await send(this, next, User.WM_LBUTTONUP, 0, 0);
-              }
-            }
-
-            return TRUE;
-          }
-          break;
+        await dlgSetFocus(this, next);
+        await checkDefPush(this, hwndDlg, hwnd, next);
+        return TRUE;
       }
     }
+
+    return dispatch();
   }
 
-  /* A character typed with Alt (`USER.EXE` seg25 `0e48`): with no focus
-   * and Alt up, a beep -- or, for Enter in a dialog minimized,
-   * `DefWindowProc`'s -- and nothing more; a space is the dialog's own, for
-   * its system menu; anything else a mnemonic, as a character is. Alt is
-   * asked of the keyboard's state, not of the message (`0e4f`). **Recorded**
-   * by `syschar`: with no focus, a dialog posted Alt's bit and a letter
-   * takes it and is sent nothing. */
-  const focus = this.rasterDesktop?.focus?.hwnd ?? 0;
-
-  if (message === User.WM_SYSCHAR && !focus && !(GetKeyState.call(this, VK_MENU) & 0x8000)) {
-    if (lpmsg.wParam === VK_RETURN && dialog.window.state === 'minimized') {
-      await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
-    } else {
-      MessageBeep.call(this, 0);
+  /* A press on a control: the default push button kept as the focus would
+   * move to it, then the press dispatched (`0e98`-`0eb1`). */
+  if (message === User.WM_LBUTTONDOWN) {
+    if (hwnd !== hwndDlg && focus()) {
+      await checkDefPush(this, hwndDlg, focus(), hwnd);
     }
 
-    return TRUE;
+    return dispatch();
   }
 
-  if (message === User.WM_SYSCHAR && lpmsg.wParam === 0x20) {
-    await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
-    return TRUE;
-  }
+  /* `WM_SYSCHAR` (`0e48`-`0e78`): with no window focused, and Alt up by the
+   * keyboard's state (`GetKeyState`, not the message), a beep -- or, for
+   * Enter in a dialog minimized, `DefWindowProc`'s -- and nothing more;
+   * Alt and Space is the dialog's own `DefWindowProc`'s, for its system
+   * menu; anything else a mnemonic, as a character is. **Recorded** by
+   * `syschar`: with no focus, a dialog posted Alt's bit and a letter takes
+   * it and is sent nothing. */
+  if (message === User.WM_SYSCHAR) {
+    if (!focus() && !(GetKeyState.call(this, VK_MENU) & 0x8000)) {
+      if (lpmsg.wParam === VK_RETURN && dialog.window.state === 'minimized') {
+        await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+      } else {
+        MessageBeep.call(this, 0);
+      }
 
-  /* A mnemonic (`0eb4`-`0f2b`): a character for the dialog itself is taken
-   * and nothing done; a character the window it is for wants, asked with
-   * the message, is its own; a space is taken; then the control the
-   * character names. Named by none, it is the window's own where it wants
-   * every key; Alt's is the dialog's `DefWindowProc`'s, which opens its
-   * system menu's loop for the letter; a plain character beeps. **Recorded**
-   * by `syschar`: Alt and a letter no control has, in the edit control,
-   * sends the dialog -- not the control -- `SC_KEYMENU`; a letter a push
-   * button has not, with the button focused, reaches nothing. */
-  if (message === User.WM_SYSCHAR || message === User.WM_CHAR) {
-    if (lpmsg.hwnd === hwndDlg) {
       return TRUE;
     }
 
-    const code = await send(this, lpmsg.hwnd, WM_GETDLGCODE, lpmsg.wParam, asked());
-
-    if (!(message === User.WM_CHAR && code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS))) {
-      if (lpmsg.wParam === 0x20) {
-        return TRUE;
-      }
-
-      const hit = mnemonicTarget(this, hwndDlg, String.fromCharCode(lpmsg.wParam & 0xff));
-
-      if (hit) {
-        await takeMnemonic(this, hit);
-        return TRUE;
-      }
-
-      if (!(code & DLGC_WANTALLKEYS)) {
-        if (message === User.WM_SYSCHAR) {
-          await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
-        } else {
-          MessageBeep.call(this, 0);
-        }
-
-        return TRUE;
-      }
+    if (lpmsg.wParam === 0x20) {
+      await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+      return TRUE;
     }
   }
 
-  TranslateMessage.call(this, lpmsg);
-  await DispatchMessage.call(this, lpmsg);
+  /* A character (`0eb4`-`0f2b`): one for the dialog itself is taken and
+   * nothing done; one the window it is for wants, asked with the message,
+   * is its own; a space is taken; then the control the character names
+   * (seg19 `01a5`). Named by none, it is the window's own where it wants
+   * every key; Alt's is the dialog's `DefWindowProc`'s, which opens its
+   * system menu's loop for the letter; a plain character beeps. A control
+   * it names that is not a push button has the default push button kept as
+   * the focus moved to it. **Recorded** by `syschar` and `dlgcode`. */
+  if (message === User.WM_SYSCHAR || message === User.WM_CHAR) {
+    if (hwnd === hwndDlg) {
+      return TRUE;
+    }
 
+    const code = await send(this, hwnd, WM_GETDLGCODE, lpmsg.wParam, asked());
+
+    if (message === User.WM_CHAR && code & (DLGC_WANTCHARS | DLGC_WANTALLKEYS)) {
+      return dispatch();
+    }
+
+    if ((lpmsg.wParam & 0xff) === 0x20) {
+      return TRUE;
+    }
+
+    const taken = await takeMnemonic(this, hwndDlg, hwnd, lpmsg.wParam & 0xff);
+
+    if (!taken) {
+      if (code & DLGC_WANTALLKEYS) {
+        return dispatch();
+      }
+
+      if (message === User.WM_SYSCHAR) {
+        await DefWindowProc.call(this, hwndDlg, message, lpmsg.wParam, lpmsg.lParam);
+      } else {
+        MessageBeep.call(this, 0);
+      }
+
+      return TRUE;
+    }
+
+    if (taken !== 1) {
+      await checkDefPush(this, hwndDlg, hwnd, taken);
+    }
+
+    return TRUE;
+  }
+
+  return dispatch();
+}
+
+/**
+ * The command of Enter or Escape (seg25 `0d6b`, `0e3a`): `WM_COMMAND` to the
+ * dialog with the control of that identifier -- none, where it has none --
+ * or a beep for a control disabled.
+ */
+async function command(system: any, hwnd: number, id: number) {
+  const button = dlgItem(system, hwnd, id);
+
+  if (button && styleOf(system, button) & WS_DISABLED) {
+    MessageBeep.call(system, 0);
+    return TRUE;
+  }
+
+  await send(system, hwnd, User.WM_COMMAND, id, button & 0xffff);
   return TRUE;
 }
 
 /**
- * The control a mnemonic named, taken (`USER.EXE` seg19 `021f`-`02a0`): a
- * push button is pressed and let go and its command sent to its parent, the
- * focus left where it is -- `BM_SETSTATE`, a pause, `BM_SETSTATE` again, then
- * `WM_COMMAND` with `BN_CLICKED`; any other control given the focus, and a
- * button among them clicked. **Recorded** by `syschar`: Alt and G for `&Go`
- * with the focus in an edit control sends the dialog `WM_COMMAND` for the
- * button, and the edit control keeps the focus.
+ * The focus given by the dialog manager to a button it is about to click
+ * itself, marked so for the moment (`USER.EXE` seg19 `0233`-`023d`, seg25
+ * `0dcc`-`0dd6`): a radio button so gaining it does not tell its parent it
+ * was clicked.
  */
-async function takeMnemonic(system: any, hit: any) {
-  const code = await send(system, hit.hwnd, WM_GETDLGCODE, 0, 0);
+async function markedFocus(system: any, hwnd: number) {
+  const control = system.handles.resolve(hwnd)?.window?.control;
 
-  if (code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)) {
-    await send(system, hit.hwnd, BM_SETSTATE, 1, 0);
-    await send(system, hit.hwnd, BM_SETSTATE, 0, 0);
-
-    if (hit.parent?.hwnd) {
-      await send(system, hit.parent.hwnd, User.WM_COMMAND, hit.controlId, hit.hwnd & 0xffff);
-    }
-
-    return;
+  if (control) {
+    control.state = (control.state ?? 0) | DIALOG_FOCUS;
   }
 
-  await dlgSetFocus(system, hit.hwnd);
+  await dlgSetFocus(system, hwnd);
 
-  if (hit.control?.className === 'BUTTON') {
-    await clickControl(system, hit.hwnd);
+  if (control) {
+    control.state = (control.state ?? 0) & ~DIALOG_FOCUS;
   }
 }
 
-/** The control a mnemonic names: the one whose text has `&` before it, or the one after such static text. */
-function mnemonicTarget(system: any, hwnd: number, letter: string) {
-  const controls = controlsOf(system, hwnd);
-  const lower = letter.toLowerCase();
+/**
+ * Whether a control's text has the character as its mnemonic (`USER.EXE`
+ * seg19 `0000`, with no first-letter match and a prefix looked for): spaces
+ * at its start skipped, then the first `&` not doubled -- a doubled one
+ * passed over -- and the character after it, both made capitals.
+ */
+function hasMnemonic(text: string, letter: number) {
+  const upper = (code: number) => ansiUpperByte(code) & 0xff;
+  const wanted = upper(letter);
+  let at = 0;
 
-  for (const [index, child] of controls.entries()) {
-    const text = String(child.control?.text ?? child.title ?? '');
-    const at = text.search(/&[^&]/);
+  while (text.charCodeAt(at) === 0x20) {
+    at++;
+  }
 
-    if (at < 0 || text[at + 1].toLowerCase() !== lower || !takesFocus(child)) {
+  while (at < text.length) {
+    if (text.charCodeAt(at++) !== 0x26) {
       continue;
     }
 
-    if (child.control?.className === 'STATIC') {
-      return (
-        controls
-          .slice(index + 1)
-          .find((next: any) => takesFocus(next) && next.style & WS_TABSTOP) ?? null
-      );
+    if (text.charCodeAt(at) === 0x26) {
+      at++;
+      continue;
     }
 
-    return child;
+    return at < text.length && upper(text.charCodeAt(at)) === wanted;
   }
 
-  return null;
+  return false;
+}
+
+/**
+ * The control a character names, from the control `from` is in (`USER.EXE`
+ * seg19 `00a5`): first round its group with `GetNextDlgGroupItem`, up to
+ * sixty, back to `from`; then round all the dialog's children from it. Each
+ * is asked with `WM_GETDLGCODE` and nought: one that wants characters is
+ * passed over, and so is static text with `SS_NOPREFIX`; the others' text
+ * is read and looked at for the mnemonic. None, nought.
+ */
+async function findMnemonic(system: any, hwnd: number, from: number, letter: number) {
+  const names = async (control: number) => {
+    const code = await send(system, control, WM_GETDLGCODE, 0, 0);
+
+    if (code & DLGC_WANTCHARS) {
+      return false;
+    }
+
+    if (code & DLGC_STATIC && styleOf(system, control) & SS_NOPREFIX) {
+      return false;
+    }
+
+    return hasMnemonic(await controlText(system, control), letter);
+  };
+  let at = childControl(system, hwnd, from);
+
+  for (let count = 1; count <= 60; count++) {
+    const next = GetNextDlgGroupItem.call(system, hwnd, at, 0);
+
+    if (!next || next === from) {
+      break;
+    }
+
+    at = next;
+
+    if (await names(next)) {
+      return next;
+    }
+  }
+
+  const start = childControl(system, hwnd, from);
+
+  at = start;
+
+  do {
+    at = nextChild(system, hwnd, at);
+
+    if (!at) {
+      return 0;
+    }
+
+    if (await names(at)) {
+      return at;
+    }
+  } while (at !== start);
+
+  return 0;
+}
+
+/**
+ * The control a character names, taken (`USER.EXE` seg19 `01a5`-`02a0`):
+ * nought where none is found; 1 for a push button; else the control.
+ *
+ * * Static text named gives way to the next tab item after it, unless it
+ *   is disabled; a disabled control is passed over for the next named,
+ *   until the first disabled one comes round again.
+ * * A push button is pressed and let go with `BM_SETSTATE`, a pause
+ *   between, and its parent sent `WM_COMMAND` with `BN_CLICKED`; the focus
+ *   stays where it was.
+ * * A button of another kind is given the focus marked as the dialog
+ *   manager's, then clicked with 463h where no other control has the
+ *   mnemonic.
+ * * Anything else is given the focus.
+ *
+ * **Recorded** by `syschar`, and by `dlgcode`: Alt and C for a check box
+ * `&Check` with the focus in an edit control asks the controls of the edit
+ * control's group and the rest of the dialog, gives the box the focus,
+ * asks round again for another `&C`, finds none and sends the box 463h,
+ * which it answers with a press and a release: checked, and `BN_CLICKED`.
+ * Two check boxes `&Dup` have the focus moved to the first, then from it to
+ * the second, and neither is clicked.
+ */
+async function takeMnemonic(system: any, hwnd: number, from: number, letter: number) {
+  let at = from;
+  let firstDisabled = 0;
+  let code = 0;
+  let found = false;
+
+  for (let tries = 0; tries < 0x200; tries++) {
+    at = await findMnemonic(system, hwnd, at, letter);
+
+    if (!at) {
+      return 0;
+    }
+
+    code = await send(system, at, WM_GETDLGCODE, 0, 0);
+
+    if (code & DLGC_STATIC && !(styleOf(system, at) & WS_DISABLED)) {
+      at = nextTabItem(system, hwnd, at, false);
+      code = await send(system, at, WM_GETDLGCODE, 0, 0);
+    }
+
+    if (!(styleOf(system, at) & WS_DISABLED)) {
+      found = true;
+      break;
+    }
+
+    if (firstDisabled === at) {
+      return 0;
+    }
+
+    firstDisabled ||= at;
+  }
+
+  if (!found) {
+    return 0;
+  }
+
+  if (!(code & DLGC_BUTTON)) {
+    await dlgSetFocus(system, at);
+    return at;
+  }
+
+  if (code & (DLGC_DEFPUSHBUTTON | DLGC_UNDEFPUSHBUTTON)) {
+    const parent = system.handles.resolve(at)?.window?.parent?.hwnd ?? 0;
+
+    await send(system, at, BM_SETSTATE, 1, 0);
+    await send(system, at, BM_SETSTATE, 0, 0);
+
+    if (parent) {
+      await send(system, parent, User.WM_COMMAND, GetDlgCtrlID.call(system, at), at & 0xffff);
+    }
+
+    return 1;
+  }
+
+  await markedFocus(system, at);
+
+  if ((await findMnemonic(system, hwnd, at, letter)) === at) {
+    await send(system, at, BM_CLICK, 1, 0);
+  }
+
+  return at;
 }
 
 export function GetDlgCtrlID(this: any, hwnd: number) {

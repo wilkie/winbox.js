@@ -227,14 +227,30 @@ impl System {
             return 0;
         }
 
-        self.z_order
-            .iter()
-            .position(|&other| {
-                self.windows[other]
-                    .as_ref()
-                    .is_none_or(|other| !other.topmost)
-            })
-            .unwrap_or(self.z_order.len())
+        // After the last topmost window and its children, whatever lies
+        // among them, as `front_of` (`sysdlg`).
+        let top_of = |mut other: usize| {
+            while let Some(parent) = self.windows[other]
+                .as_ref()
+                .and_then(|window| window.parent)
+            {
+                other = parent;
+            }
+
+            other
+        };
+        let mut at = 0;
+
+        for (place, &other) in self.z_order.iter().enumerate() {
+            if self.windows[top_of(other)]
+                .as_ref()
+                .is_some_and(|window| window.topmost)
+            {
+                at = place + 1;
+            }
+        }
+
+        at
     }
 
     /// The `MINMAXINFO` a window is asked with: its reserved point, the

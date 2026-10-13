@@ -165,16 +165,34 @@ impl System {
     }
 
     /// Where a window at the top goes among the windows: at the front of its
-    /// kind, the topmost first.
+    /// kind, the topmost first -- after the last topmost window and its
+    /// children, whatever lies among them (`sysdlg`: with a system-modal
+    /// dialog made active at the very front and made topmost there, a
+    /// window made active goes after USER's topmost `#32771`, the last of
+    /// them).
     pub fn front_of(&self, index: usize) -> usize {
         if self.shown(index).topmost {
             return 0;
         }
 
-        self.z_order
-            .iter()
-            .position(|&other| other == index || !self.shown(other).topmost)
-            .unwrap_or(self.z_order.len())
+        let top_of = |mut other: usize| {
+            while let Some(parent) = self.shown(other).parent {
+                other = parent;
+            }
+
+            other
+        };
+        let mut at = 0;
+
+        for (place, &other) in self.z_order.iter().enumerate() {
+            let top = top_of(other);
+
+            if other != index && top != index && self.shown(top).topmost {
+                at = place + 1;
+            }
+        }
+
+        at
     }
 
     /// The windows `pick` takes, taken out of the order, as they lay.
@@ -435,7 +453,7 @@ impl System {
         let was_top = self.active_top();
         let shown_before = self.owners.clone();
 
-        let family = self.bring_up(index);
+        let family = self.bring_up(index, false);
         self.shown_mut(index).visible = true;
         self.set_active(index, true);
         self.note_active_popup(index);
@@ -508,7 +526,7 @@ impl System {
     /// with it, as they were; the windows it owns above it, in their order
     /// (`owners`); and the window that owns it, with the rest that one owns,
     /// beneath it (`showseq`). Answers what moved with it of its own.
-    fn bring_up(&mut self, index: usize) -> Vec<usize> {
+    fn bring_up(&mut self, index: usize, absolute: bool) -> Vec<usize> {
         let title = self.shown(index).icon_title;
         let family = self.take_out(|system, other| {
             system.within(other, index) || system.owned_within(other, index) || Some(other) == title
@@ -535,6 +553,15 @@ impl System {
             }
 
             head = owner;
+        }
+
+        // `absolute`: the window, with what it owns, goes to the very front;
+        // its owner's family stays where it lay (`sysdlg`: the owner of a
+        // system-modal dialog made active, asked to go after it, is not
+        // moved).
+        if absolute {
+            self.z_order.splice(0..0, owned_first);
+            return family;
         }
 
         let owners = if head == index {
@@ -574,7 +601,7 @@ impl System {
     /// shows is, no window that shows being above it (`3674`-`3697`), and the
     /// window that was active is drawn inactive. A window that shows is
     /// shown.
-    pub fn activate(&mut self, index: usize) {
+    pub fn activate(&mut self, index: usize, absolute: bool) {
         if self.shown(index).visible || self.shown(index).parent.is_some() {
             self.show(index);
             return;
@@ -583,7 +610,10 @@ impl System {
         let was = self.active_window();
         let was_top = self.active_top();
 
-        self.bring_up(index);
+        // `absolute`: made active by USER's `ActivateWindow` as the
+        // system-modal window, it goes to the very front, before the topmost
+        // windows too. **Recorded** by `sysdlg`.
+        self.bring_up(index, absolute);
         self.set_active(index, true);
         self.note_active_popup(index);
 
@@ -609,6 +639,38 @@ impl System {
             self.shown_mut(title).visible = true;
             self.own();
             self.paint_frame(title);
+        }
+    }
+
+    /// A window at the top that is the first that shows made active where
+    /// it lies: `ActivateWindow` brings nothing to the front then
+    /// (`USER.EXE` seg1 `3674`-`3697`). **Recorded** by `sysdlg`: a dialog
+    /// made active again over the dialog it ran ends, its owner's other
+    /// windows are not moved. `whole`: it is due whole, as a window shown.
+    pub fn activate_in_place(&mut self, index: usize, whole: bool) {
+        let was = self.active_window();
+        let was_top = self.active_top();
+
+        self.set_active(index, true);
+        self.note_active_popup(index);
+
+        if let Some(was) = was.filter(|&was| was != index) {
+            self.set_active(was, false);
+            self.paint_frame(was);
+        }
+
+        if whole {
+            self.due_whole(index);
+        } else {
+            self.paint_frame(index);
+        }
+
+        if was_top != Some(index) {
+            self.previous_active = was_top;
+
+            if self.pending_activation.is_none() {
+                self.pending_activation = Some((was_top, false));
+            }
         }
     }
 
@@ -817,7 +879,7 @@ impl System {
         let order = self.z_order.clone();
         let before = self.owners.clone();
 
-        self.bring_up(index);
+        self.bring_up(index, false);
         self.own();
 
         let changed = self.z_order != order;

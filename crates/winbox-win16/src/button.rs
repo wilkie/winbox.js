@@ -107,6 +107,15 @@ const OWN_PRESS: u8 = 0x10;
 const CAPTURED: u8 = 0x20;
 /// The left button held down on it, the press followed.
 const TRACKING: u8 = 0x40;
+/// The focus being given by the dialog manager, about to click the button
+/// itself: by its mnemonic, or by an arrow onto a push button (`USER.EXE`
+/// seg19 `0233`-`023d`, seg25 `0dcc`-`0dd6`). A radio button gaining the
+/// focus so does not tell its parent it was clicked (`1b13`).
+pub const DIALOG_FOCUS: u8 = 0x80;
+/// The message the dialog manager sends a button to click it (`USER.EXE`
+/// seg19 `0251`, seg25 `0e19`), which the button answers by sending itself
+/// a press and a release at its corner (seg25 `1f3f`).
+pub const BM_CLICK: u16 = 0x0463;
 
 impl ControlState {
     /// The button's kind, from the low bits of its style.
@@ -213,6 +222,27 @@ impl Engine {
                 self.button_release(hwnd, index, true).await?;
             }
             WM_SETFOCUS => self.button_focused(hwnd, index, kind).await?,
+            // Clicked by the dialog manager (seg25 `1f3f`): pressed and let
+            // go at its corner, then, with no press followed, let go again
+            // as a key other than the Space bar lets it go (`1f5d`-`1f74`).
+            // **Recorded** by `dlgcode`.
+            BM_CLICK => {
+                self.send_message(hwnd, WM_LBUTTONDOWN, 0, &mut Param::Value(0))
+                    .await?;
+                self.send_message(hwnd, WM_LBUTTONUP, 0, &mut Param::Value(0))
+                    .await?;
+
+                let tracking = {
+                    let mut system = self.system();
+
+                    (system.window_named(hwnd) == Some(index))
+                        .then(|| system.control_at(index).state & TRACKING != 0)
+                };
+
+                if tracking == Some(false) && wparam != VK_SPACE {
+                    self.button_release(hwnd, index, false).await?;
+                }
+            }
             WM_KILLFOCUS => self.button_unfocused(hwnd, index, state, kind).await?,
             // Enabled or disabled: drawn again at once, whole (seg25
             // `1bc9`, `1835`), not left to `WM_PAINT`.
@@ -378,7 +408,7 @@ impl Engine {
             (control.state, control.checked)
         };
 
-        if state & OWN_PRESS == 0
+        if state & (OWN_PRESS | DIALOG_FOCUS) == 0
             && matches!(kind, BS_RADIOBUTTON | BS_AUTORADIOBUTTON)
             && checked == 0
         {

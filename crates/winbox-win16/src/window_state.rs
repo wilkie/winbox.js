@@ -27,6 +27,7 @@ const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
 const SWP_NOZORDER: u16 = 0x0004;
 const SWP_NOACTIVATE: u16 = 0x0010;
+const SWP_NOREDRAW: u16 = 0x0008;
 const SWP_FRAMECHANGED: u16 = 0x0020;
 const SWP_SHOWWINDOW: u16 = 0x0040;
 const SWP_HIDEWINDOW: u16 = 0x0080;
@@ -85,12 +86,17 @@ pub enum Between {
     /// title -- brought to the front again, its family asked (`alttab`).
     Again,
     /// `ActivateWindow`'s bringing to the front (`activate_window`): the
-    /// family asked, whether or not it moved, and those of it that moved
-    /// since `before` told.
+    /// family asked, whether or not it moved, each after the one before --
+    /// the first after none for the system-modal window, `front` -- and
+    /// those of it that moved from `order_before`, the windows at the top as
+    /// they lay, told -- the window made active only where it showed,
+    /// `told`.
     Activate {
         family: Vec<usize>,
         shown: usize,
-        before: Vec<Vec<usize>>,
+        order_before: Vec<usize>,
+        front: bool,
+        told: bool,
     },
 }
 
@@ -335,6 +341,48 @@ impl System {
     }
 }
 
+impl System {
+    /// Which of a family brought up moves, each taken in turn after the
+    /// window it was asked to go after, from the windows at the top as they
+    /// lay: one that lies there already, by then, does not.
+    fn moved_in_turn(&self, family: &[usize], asked: &[u16], order_before: &[usize]) -> Vec<bool> {
+        let mut order = order_before.to_vec();
+
+        family
+            .iter()
+            .zip(asked)
+            .map(|(&member, &wanted)| {
+                let Some(at) = order.iter().position(|&other| other == member) else {
+                    return false;
+                };
+                let lies = if at > 0 {
+                    self.hwnd_of(order[at - 1])
+                } else {
+                    0
+                };
+
+                if lies == wanted {
+                    return false;
+                }
+
+                order.remove(at);
+
+                let to = if wanted == 0 {
+                    0
+                } else {
+                    order
+                        .iter()
+                        .position(|&other| self.hwnd_of(other) == wanted)
+                        .map_or(0, |at| at + 1)
+                };
+
+                order.insert(to, member);
+                true
+            })
+            .collect()
+    }
+}
+
 impl Engine {
     /// The messages of a change of active window, sent once the desktop has
     /// made it. **Recorded** by the `activate` probe: the window losing the
@@ -344,6 +392,38 @@ impl Engine {
     /// `WM_ACTIVATE`. Each names the other window in its `lParam`'s low
     /// word, and nought where there is none. A window made active that was
     /// not yet at the front is put there between the two (`showseq`).
+    /// `WM_ACTIVATEAPP` to each window at the top of a task, front to back.
+    async fn tell_task(&self, task: u16, active: u16, other: u16) -> Result<(), Stop> {
+        let windows: Vec<u16> = {
+            let system = self.system();
+
+            system
+                .top_level_hwnds()
+                .into_iter()
+                .filter(|&hwnd| {
+                    system
+                        .window_named(hwnd)
+                        .and_then(|index| system.windows[index].as_ref())
+                        .is_some_and(|window| window.task == task)
+                })
+                .collect()
+        };
+
+        for hwnd in windows {
+            if self.system().window_named(hwnd).is_some() {
+                self.send_message(
+                    hwnd,
+                    WM_ACTIVATEAPP,
+                    active,
+                    &mut Param::Value(u32::from(other)),
+                )
+                .await?;
+            }
+        }
+
+        Ok(())
+    }
+
     pub async fn deliver_activation(&self, between: Option<Between>) -> Result<(), Stop> {
         let (from, to, click, for_focus) = {
             let mut system = self.system();
@@ -407,30 +487,30 @@ impl Engine {
                     &mut Param::Value(other),
                 )
                 .await?;
-
-                if from_task != to_task {
-                    self.send_message(
-                        from_hwnd,
-                        WM_ACTIVATEAPP,
-                        0,
-                        &mut Param::Value(u32::from(to_task)),
-                    )
-                    .await?;
-                }
             }
 
             if let Some(between) = between {
                 self.between(between, to).await?;
             }
 
+            // The task changed, every window at the top of each task is
+            // told, front to back, hidden ones too: the task losing it with
+            // 0 and the other task, then the task gaining it with 1 and the
+            // task before, nought for none (`USER.EXE` seg1 `36b3`-`371c`,
+            // the windows enumerated by `6556`, each sent by `3452`).
+            // **Recorded** by `sysdlg`.
             if (from_hwnd == 0 && from_task == 0) || from_task != to_task {
-                self.send_message(
-                    to_hwnd,
-                    WM_ACTIVATEAPP,
-                    1,
-                    &mut Param::Value(u32::from(from_task)),
-                )
-                .await?;
+                if from_task != 0 {
+                    self.tell_task(from_task, 0, to_task).await?;
+                }
+
+                self.system().active_task = Some(to_task);
+                self.tell_task(to_task, 1, from_task).await?;
+
+                // Gone meanwhile, it is made active no further (`3729`).
+                if self.system().window_named(to_hwnd).is_none() {
+                    return Ok(());
+                }
             }
 
             self.system().active_task = Some(to_task);
@@ -556,37 +636,72 @@ impl Engine {
                 return Ok(());
             }
 
+            // Refused while a window is system modal and this is not it,
+            // unless the running task is the system-modal window's
+            // (`USER.EXE` seg1 `3531`-`354c`). **Recorded** by `sysdlg`: the
+            // program whose dialog is system modal makes its other window
+            // active with `SetActiveWindow`.
+            let sys_modal = system.sys_modal_window();
+            let top_hwnd = system.hwnd_of(top);
+
+            if sys_modal != 0
+                && top_hwnd != sys_modal
+                && system
+                    .window_named(sys_modal)
+                    .and_then(|index| system.windows[index].as_ref())
+                    .is_some_and(|window| window.task != system.task_handle)
+            {
+                return Ok(());
+            }
+
             let first = system.z_order.iter().copied().find(|&other| {
                 system.windows[other]
                     .as_ref()
                     .is_some_and(|window| window.parent.is_none() && window.visible)
             });
-            let family = if first == Some(top) {
+            let mut family = if first == Some(top) {
                 Vec::new()
             } else {
                 system.activation_family(top)
             };
-            let before: Vec<Vec<usize>> =
-                family.iter().map(|&member| system.above(member)).collect();
+            let order_before: Vec<usize> = system
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    system.windows[other]
+                        .as_ref()
+                        .is_some_and(|window| window.parent.is_none() && window.title_of.is_none())
+                })
+                .collect();
+            // The system-modal window goes to the very front, before the
+            // topmost windows too, and is asked to go after none.
+            // **Recorded** by `sysdlg`.
+            let front = sys_modal != 0 && top_hwnd == sys_modal;
+            let shown = system.windows[top]
+                .as_ref()
+                .is_some_and(|window| window.visible);
 
-            if !whole
-                && system.windows[top]
-                    .as_ref()
-                    .is_some_and(|window| window.visible)
-            {
+            if first == Some(top) {
+                system.activate_in_place(top, whole);
+            } else if !whole && shown {
                 system.show_with(top, false);
             } else {
-                system.activate(top);
+                system.activate(top, front);
             }
 
             if for_focus {
                 system.activating_for_focus = true;
             }
 
+            family.sort_by_key(|member| system.z_order.iter().position(|other| other == member));
+
             (!family.is_empty()).then_some(Between::Activate {
                 family,
                 shown: top,
-                before,
+                order_before,
+                front,
+                told: shown,
             })
         };
 
@@ -610,8 +725,13 @@ impl Engine {
             Between::Activate {
                 family,
                 shown,
-                before,
-            } => self.bring_forward(&family, shown, &before, true).await,
+                order_before,
+                front,
+                told,
+            } => {
+                self.bring_up_activated(&family, shown, &order_before, front, told)
+                    .await
+            }
             Between::Again => {
                 let family = {
                     let system = self.system();
@@ -636,6 +756,109 @@ impl Engine {
                 }
             }
         }
+    }
+
+    /// `ActivateWindow`'s family brought to the front (`activate_window`):
+    /// the first asked goes after the window it now lies after -- the last
+    /// topmost, USER's own hidden `#32771` -- and the rest each after the
+    /// one before; each then moved in turn after the window it was asked
+    /// to go after, and told only where it did not lie there already, one
+    /// coming after a window of its family moved before it lying there by
+    /// then. A window made active hidden is not told, nor, for the
+    /// system-modal window, any of them (`enddlg`: an owner minimized is
+    /// told); one told goes after the window it was asked to, and one
+    /// hidden is told `SWP_NOREDRAW` as well (seg7 `0df5`-`0e05`).
+    /// **Recorded** by `sysdlg`.
+    async fn bring_up_activated(
+        &self,
+        family: &[usize],
+        shown: usize,
+        order_before: &[usize],
+        front: bool,
+        told: bool,
+    ) -> Result<(), Stop> {
+        let mut after = if front {
+            0
+        } else {
+            let system = self.system();
+            let at = system
+                .z_order
+                .iter()
+                .position(|&other| other == family[0])
+                .unwrap_or(0);
+
+            system.z_order[..at]
+                .iter()
+                .copied()
+                .rfind(|&other| {
+                    system.windows[other]
+                        .as_ref()
+                        .is_some_and(|window| window.parent.is_none())
+                })
+                .map_or(0, |other| system.hwnd_of(other))
+        };
+        let mut asked = Vec::with_capacity(family.len());
+
+        for &member in family {
+            let hwnd = self.system().hwnd_of(member);
+            let flags = if member == shown {
+                SWP_NOSIZE | SWP_NOMOVE
+            } else {
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+            };
+
+            asked.push(after);
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(hwnd, after, [0, 0, 0, 0], flags)),
+            )
+            .await?;
+            after = hwnd;
+        }
+
+        if front {
+            return Ok(());
+        }
+
+        let moved = self.system().moved_in_turn(family, &asked, order_before);
+
+        for ((&member, moved), &wanted) in family.iter().zip(moved).zip(&asked) {
+            if !moved || (member == shown && !told) {
+                continue;
+            }
+
+            let (hwnd, place, visible) = {
+                let system = self.system();
+                let Some(window) = system.windows[member].as_ref() else {
+                    continue;
+                };
+
+                (
+                    window.hwnd,
+                    [window.left, window.top, window.width, window.height],
+                    window.visible,
+                )
+            };
+            let flags = if member == shown {
+                SWP_NOSIZE | SWP_NOMOVE
+            } else {
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
+            } | if visible { 0 } else { SWP_NOREDRAW }
+                | SWP_NOCLIENTSIZE
+                | SWP_NOCLIENTMOVE;
+
+            self.send_message(
+                hwnd,
+                WM_WINDOWPOSCHANGED,
+                0,
+                &mut Param::Struct(window_pos(hwnd, wanted, place, flags)),
+            )
+            .await?;
+        }
+
+        Ok(())
     }
 
     /// A window pressed brought to the front between the two windows'
@@ -1014,7 +1237,20 @@ impl Engine {
                 SW_SHOWNORMAL | SW_RESTORE => {
                     system.restore(index)?;
                     system.hide_owned(index, false);
-                    system.show(index);
+
+                    // Made active hidden first, as for a class with
+                    // `CS_SAVEBITS`, it is shown with `SWP_NOZORDER` where
+                    // `ActivateWindow` put it (`sysdlg`: a system-modal
+                    // dialog stays at the very front).
+                    let active = system.windows[index]
+                        .as_ref()
+                        .is_some_and(|window| window.active && window.parent.is_none());
+
+                    if flags & SWP_NOZORDER != 0 && active {
+                        system.show_in_place(index);
+                    } else {
+                        system.show(index);
+                    }
                 }
                 SW_SHOWNOACTIVATE => system.show_in_place(index),
                 SW_SHOWNA => system.show_on_top(index),
@@ -1148,8 +1384,17 @@ impl Engine {
                     } else {
                         SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE
                     };
-                    // Not moved among its siblings after all: said so.
+                    // Not moved among its siblings after all: said so
+                    // (`showseq`) -- for the window shown; one of its family
+                    // not moved is not told (`sysdlg`: an owned pop-up made
+                    // shown over its owner at the front, the owner asked and
+                    // not told).
                     let still = how & SWP_NOZORDER == 0 && system.above(member) == above_before[at];
+
+                    if still && member != index {
+                        continue;
+                    }
+
                     let (x, y) = match window
                         .parent
                         .and_then(|parent| system.windows[parent].as_ref())
