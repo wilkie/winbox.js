@@ -50,4 +50,4 @@ topics: [display-drivers]
 
 The answers come from the display mode chosen when the machine starts (`src/win16/display-modes.ts`). The four recorded modes match their fixtures.
 
-Two more modes, `8514` and `xga256`, are marked `read out`. Their answers are read out of `8514.DRV` and `XGA.DRV` as each driver's `Enable` leaves its table, because DOSBox runs neither card and so no record supports them. An index the table does not name returns 0. See [[topic:display-drivers]].
+Five more modes are marked `read out`: `8514` and `8514s`, the 8514/a at large and small fonts, and `xga256`, `xga256s` and `xga640`, the XGA at large and small fonts and at 640x480. Their answers are read out of `8514.DRV` and `XGA.DRV` as each driver's `Enable` leaves its table at that setting, because DOSBox runs neither card and so no record supports them. An index the table does not name returns 0. See [[topic:display-drivers]].

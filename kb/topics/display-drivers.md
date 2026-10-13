@@ -1,7 +1,7 @@
 ---
 kind: topic
 name: Display drivers
-summary: Which Windows 3.1 screen answers come from the installed display driver and which come from GDI, what four recorded drivers report, what the 8514/a's and the XGA's drivers were read out to report, and why every display-dependent fixture is recorded once for each display.
+summary: Which Windows 3.1 screen answers come from the installed display driver and which come from GDI, what four recorded drivers report, what the 8514/a's and the XGA's drivers were read out to report at each of Setup's settings for them, and why every display-dependent fixture is recorded once for each display.
 probes: [devcaps, dither, escapes]
 ---
 
@@ -69,7 +69,7 @@ A program reaches a driver's own functions through [[fn:GDI.Escape]], by number.
 
 ## The 8514/a and the XGA, read out
 
-Windows 3.1's own 256-colour drivers are each for one card: the Video 7's, the 8514/a's (`8514.DRV`) and the XGA's (`XGA.DRV`). DOSBox emulates none of those cards. Windows started on one stops while USER takes the display's resources, so nothing can be recorded on them. winbox.js has two modes for them, `8514` and `xga256`, marked `read out`: every number is read out of the driver, and none is recorded.
+Windows 3.1's own 256-colour drivers are each for one card: the Video 7's, the 8514/a's (`8514.DRV`) and the XGA's (`XGA.DRV`). DOSBox emulates none of those cards. Windows started on one stops while USER takes the display's resources, so nothing can be recorded on them. winbox.js has five modes for them, marked `read out`: every number is read out of the driver, and none is recorded. `8514` and `xga256` are the large-font settings; `8514s`, `xga256s` and `xga640` are Setup's other three (below).
 
 **The method.** A driver gives GDI a `GDIINFO` table from `Enable` when GDI asks for the device's information. `GetDeviceCaps` answers from that table, and its index is the byte offset of a word in it. Read the same way, `SVGA256.DRV`'s 640x480 table (file offset `4102h`) equals what [[probe:devcaps]] recorded on `vga256` in every field.
 
@@ -143,10 +143,10 @@ The VGA's, the Super VGA's, the EGA's and the Hercules's drivers each have one t
 [[read out]] Three monitors in the XGA's table have 1024x768:
 
 | Monitor | Millimetres | Pixels an inch |
-|---|---|---|
-| 9 | 360x270 | 73 |
-| 10 | 280x210 | 92 |
-| 11 | 252x190 | 104 |
+| ------- | ----------- | -------------- |
+| 9       | 360x270     | 73             |
+| 10      | 280x210     | 92             |
+| 11      | 252x190     | 104            |
 
 Each of the three has 1024x768 at 8 bits with a megabyte, 1024x768 at 4 bits with half a megabyte, and 640x480 at 4 bits with less. Monitors 13 and 14 have only 640x480. The 1024x768 modes are at 120 dots an inch, the 640x480 ones at 96.
 
@@ -155,25 +155,25 @@ Each of the three has 1024x768 at 8 bits with a megabyte, 1024x768 at 4 bits wit
 [[inferred]] winbox.js takes these assumptions, each the one a driver here would meet:
 
 - **A megabyte on the card.** That is the card with 256 colours.
-- **Large fonts.** That is Setup's "8514/a" and "XGA (Large fonts)".
+- **Large fonts**, for `8514` and `xga256`. That is Setup's "8514/a" and "XGA (Large fonts)". The other settings are modes of their own (below).
 - **For the XGA, monitor 10.** Of the three monitors with 1024x768, its 280x210 mm is the 8514/a's own size.
 - **Protected mode on a 486, `__WINFLAGS` 419h.** That is what winbox.js is, as `winflags` recorded. It is standard mode, not 386 enhanced mode. `8514.DRV` adds `RC_BIGFONT` on it. `XGA.DRV` tests `WF_CPU386`, which a 486's flags lack, so it does not.
 
-| Answer | `8514` | `xga256` |
-|---|---|---|
-| `HORZRES` x `VERTRES`, `HORZSIZE` x `VERTSIZE` | 1024x768, 280x210 | 1024x768, 280x210 |
-| `LOGPIXELSX` / `Y`, `ASPECTX` / `Y` / `XY` | 120 / 120, 10 / 10 / 14 | 120 / 120, 10 / 10 / 14 |
-| `BITSPIXEL` x `PLANES`, `NUMCOLORS` | 8x1, 20 | 8x1, 20 |
-| `SIZEPALETTE`, `NUMRESERVED`, `COLORRES` | 256, 20, 18 | 256, 20, 18 |
-| `NUMBRUSHES`, `NUMPENS` | -1, 20 | -1, 120 |
-| `RASTERCAPS` | 07D9h (2009) | 03D9h (985) |
-| `TEXTCAPS` | 2004h (8196) | 2204h (8708) |
-| `LINECAPS`, `POLYGONALCAPS`, `CURVECAPS`, `CLIPCAPS` | 2, 8Ah, 0, 1 | 2, 8Ah, 0, 1 |
-| `MM_LOMETRIC` window, viewport | 2800x2100, 1024x-768 | 254x254, 92x-92 |
-| `MM_HIMETRIC` | 28000x21000, 1024x-768 | 2540x2540, 92x-92 |
-| `MM_LOENGLISH` | 4375x4375, 4064x-4064 | 100x100, 92x-92 |
-| `MM_HIENGLISH` | 21875x21875, 2032x-2032 | 1000x1000, 92x-92 |
-| `MM_TWIPS` | 7875x7875, 508x-508 | 1440x1440, 92x-92 |
+| Answer                                               | `8514`                  | `xga256`                |
+| ---------------------------------------------------- | ----------------------- | ----------------------- |
+| `HORZRES` x `VERTRES`, `HORZSIZE` x `VERTSIZE`       | 1024x768, 280x210       | 1024x768, 280x210       |
+| `LOGPIXELSX` / `Y`, `ASPECTX` / `Y` / `XY`           | 120 / 120, 10 / 10 / 14 | 120 / 120, 10 / 10 / 14 |
+| `BITSPIXEL` x `PLANES`, `NUMCOLORS`                  | 8x1, 20                 | 8x1, 20                 |
+| `SIZEPALETTE`, `NUMRESERVED`, `COLORRES`             | 256, 20, 18             | 256, 20, 18             |
+| `NUMBRUSHES`, `NUMPENS`                              | -1, 20                  | -1, 120                 |
+| `RASTERCAPS`                                         | 07D9h (2009)            | 03D9h (985)             |
+| `TEXTCAPS`                                           | 2004h (8196)            | 2204h (8708)            |
+| `LINECAPS`, `POLYGONALCAPS`, `CURVECAPS`, `CLIPCAPS` | 2, 8Ah, 0, 1            | 2, 8Ah, 0, 1            |
+| `MM_LOMETRIC` window, viewport                       | 2800x2100, 1024x-768    | 254x254, 92x-92         |
+| `MM_HIMETRIC`                                        | 28000x21000, 1024x-768  | 2540x2540, 92x-92       |
+| `MM_LOENGLISH`                                       | 4375x4375, 4064x-4064   | 100x100, 92x-92         |
+| `MM_HIENGLISH`                                       | 21875x21875, 2032x-2032 | 1000x1000, 92x-92       |
+| `MM_TWIPS`                                           | 7875x7875, 508x-508     | 1440x1440, 92x-92       |
 
 [[documented]] Neither driver has `RC_STRETCHBLT` (800h), `RC_STRETCHDIB` (2000h) or `RC_OP_DX_OUTPUT` (4000h). The 8514/a's has no `TC_EA_DOUBLE`. Both have only `LC_POLYLINE` for lines, and `PC_RECTANGLE` and `PC_INTERIORS` besides `PC_SCANLINE`.
 
@@ -192,15 +192,15 @@ Each of the three has 1024x768 at 8 bits with a megabyte, 1024x768 at 4 bits wit
 
 [[read out]] The same sums give the recorded VGA, Super VGA, EGA and Hercules tables exactly. The 8514/a and the XGA have `OBM_CLOSE` 52x26, arrows 21x22, and `8514SYS.FON` 20 rows high with an average of 10. The sums give them these:
 
-| Metric | Value |
-|---|---|
-| Caption | 28 |
-| Menu | 26 |
-| Caption buttons | 26x26 |
-| Scroll bars | 21 wide, 22 high |
-| Thumbs | 22, 21 |
-| Smallest window | 136x34 |
-| Icon spacing | 93x78 |
+| Metric          | Value            |
+| --------------- | ---------------- |
+| Caption         | 28               |
+| Menu            | 26               |
+| Caption buttons | 26x26            |
+| Scroll bars     | 21 wide, 22 high |
+| Thumbs          | 22, 21           |
+| Smallest window | 136x34           |
+| Icon spacing    | 93x78            |
 
 [[read out]] **The default colours** are their `OEMBIN` 1's, the same in both drivers. Some are the palette's static colours: the desktop is `A0A0A4`, the caption and the selection `A4C8F0`, and the application workspace `FFFBF0`. The caption's text is black.
 
@@ -214,13 +214,96 @@ Setup's own installation cannot install them. With an 8514/a or an XGA named, Se
 - In `SYSTEM.INI`, it writes `[boot]`, `[boot.description]`, `[386Enh]` and the driver's own section: `[8514.DRV] dpi=120`, or `[XGA_Display] XGA_Resources=2`.
 - In `WIN.INI`, it writes the 120-dot fonts.
 
-The installations are `oracle/build/drive-c-8514` and `drive-c-xga256`. `record.mjs` refuses to record on them.
+The installations are `oracle/build/drive-c-8514` and `drive-c-xga256`, and for the settings below `drive-c-8514s`, `drive-c-xga256s` and `drive-c-xga640`. `record.mjs` refuses to record on them.
+
+### The other settings: small fonts and 640x480
+
+Setup offers three more settings for the two drivers. winbox.js has a mode for each, installed by Setup as the others are:
+
+| Mode      | Setup's choice              | What Setup writes                                         |
+| --------- | --------------------------- | --------------------------------------------------------- |
+| `8514s`   | "8514/a (Small fonts)"      | `[8514.DRV] dpi=96`, the VGA's fonts                      |
+| `xga256s` | "XGA (Small fonts)"         | `[XGA_Display] XGA_Resources=1`, the VGA's fonts          |
+| `xga640`  | "XGA (640x480, 256 colors)" | `XGA_Resolution=1` and `XGA_Resources=1`, the VGA's fonts |
+
+- [[read out]] **`8514s`.** `Enable` makes the dots an inch 96 and changes nothing else (`8514.DRV` seg6 `0297`, `0311`). Its `GetDriverResourceID` then moves `OEMBIN` 1 and 3 and the OEM bitmaps by 2000 (below).
+- [[read out]] **`xga256s`.** The driver reads `XGA_Resources` into `[1869h]` (`XGA.DRV` seg3 `072c`-`0743`), and only `GetDriverResourceID` reads it. The mode is still the monitor's, so the dots an inch stay 120.
+- [[read out]] **`xga640`.** `XGA_Resolution=1` sets `[1868h]` to nought (seg3 `06fc`-`0707`). `Enable` then makes the mode 640x480 at 8 bits and 96 dots an inch, whatever the monitor (seg3 `0c89`-`0cb4`). The millimetres and the mapping viewports stay the monitor's mode's: 280x210 and 92 for monitor 10.
+
+[[read out]] **`GetDriverResourceID`** adds 2000 to some numbers and answers every other as it is. It compares signed, so "above 7F87h" means 7F88h to 7FFFh: the OEM bitmaps 32734 to 32767, which are then found as 1966 to 1999 ([[topic:display-driver-resources]]).
+
+| Mode      | `OEMBIN` 1, 3 | OEM bitmaps        | Read at                                                                      |
+| --------- | ------------- | ------------------ | ---------------------------------------------------------------------------- |
+| `vga256`  | 1, 3          | large (the VGA's)  | `SVGA256.DRV` seg1 `2d6e`, which moves 1, 3 and the bitmaps only at 120 dots |
+| `8514`    | 1, 3          | 32734-32767, large | `8514.DRV` seg6 `02be`                                                       |
+| `8514s`   | 2001, 2003    | 1966-1999, small   | the same, `[1926h]` 1                                                        |
+| `xga256`  | 1, 3          | large              | `XGA.DRV` seg3 `008e`, `[1868h]` 3, `[1869h]` 2                              |
+| `xga256s` | 1, 3          | small              | `[1869h]` 1                                                                  |
+| `xga640`  | 2001, 2003    | small              | `[1868h]` 0                                                                  |
+
+- [[read out]] On a half-megabyte 8514/a, `OEMBIN` 1 is 2100, or 2101 at 96 dots, whatever the font size. At 16 colours (`[1868h]` 2) the XGA's moves only `OEMBIN` 1, and the bitmaps with `XGA_Resources=1`. winbox.js has neither card.
+- [[read out]] **The small bitmaps are the VGA's.** In both drivers, 1966 to 1999 have exactly the sizes of `VGA.DRV`'s 32734 to 32767: `OBM_CLOSE` 36x18, the arrows 17x17.
+- [[read out]] **The `OEMBIN`s.** The 8514/a's 2001 has thumbs of 17 and the large set's colours. Its 2003 is "FONTS" at the VGA's sizes, Terminal 12x8. The XGA's 2001 has the large thumbs, 22 and 21, with the same colours, so the XGA keeps the large thumbs at every setting.
+
+[[read out]] **The metrics** are USER's sums again. Setup gives all three the VGA's fonts (`VGASYS.FON`, `SSERIFE.FON`):
+
+| Metric                                | `8514s`   | `xga256s` | `xga640`  |
+| ------------------------------------- | --------- | --------- | --------- |
+| Caption, menu                         | 20, 18    | 20, 18    | 20, 18    |
+| Scroll bars, buttons, smallest window | the VGA's | the VGA's | the VGA's |
+| Thumbs                                | 17, 17    | 22, 21    | 22, 21    |
+| Icon spacing                          | 75x72     | 93x78     | 75x72     |
+| `LOGPIXELSX` / `Y`                    | 96        | 120       | 96        |
+
+- [[read out]] At 120 dots, the icon titles' 8 points is asked as -13. `SSERIFE.FON`'s 10-point face is 16 rows with 3 of internal leading, an em of exactly 13, so the spacing down is the large fonts' 78.
+- [[read out]] Every other `GetDeviceCaps` answer is the large-font mode's, except `xga640`'s size, 640x480.
+
+### The 8514/a's static colours on the screen
+
+[[read out]] `8514.DRV`'s `Enable` puts the twenty static colours into the DAC itself (seg1 `2ab7`-`2b26`). It writes a component of exactly 80h as BFh, but writes 808080 as it is. Its routine keeps the value it looks for and the value it writes in a register. On meeting 808080 it moves both down by one, to 7Fh and 80h, and no static colour after 808080 has 7Fh. The driver's `SetPalette` writes what it is given (seg9 `03d4`), so the BFh lasts only until GDI sends the statics again:
+
+- [[read out]] At start-up GDI reads the statics from the driver and sends only the 236 entries between them (`GDI.EXE` seg22 `05df`-`071a`).
+- [[read out]] Where a realization changes the system palette, GDI sends the whole palette from nought (seg22 `0e51`, `0fd3`). `SetSystemPaletteUse` with any use but `SYSPAL_NOSTATIC` does the same (seg22 `0a94`-`0af3`).
+
+Both engines show the statics this way: dark red as BF0000 until a realization changes the palette, and as 800000 after it. `GetSystemPaletteEntries` and the rest answer the entries. [[read out]] `XGA.DRV` copies its statics unchanged into the palette it programs (seg3 `0ea5`-`0ebf`).
+
+### An escape the driver has not got
+
+- [[read out]] **GDI passes the driver's answer back.** On a screen's context, `Escape` calls the driver's `Control` and answers what it answers (`GDI.EXE` seg7 `04f0`-`0526`). There are two exceptions. GDI answers escape 0Fh with nought itself (seg7 `008f`). Escapes 100h to BFFh are GDI's own: it answers 100h and 102h itself (seg7 `1c96`). For the rest it calls the driver only where a flag of the context's is set, bit 2 of its byte 0Bh, and otherwise answers nought (seg7 `044e`-`04c7`). Both engines answer nought to them, as before.
+- [[read out]] **`8514.DRV`'s `Control` answers an escape it has not got with the escape's own number** (seg1 `1b28`-`1b35`). So `MOUSETRAILS` answers 39. `XGA.DRV`'s answers nought (seg1 `132c`), as the recorded drivers' do.
+- [[read out]] `GETCOLORTABLE` on the 8514/a copies the static colour of that index from the driver's table of twenty and answers 1 (seg1 `1b5e`-`1b7d`). Index 20 answers nought. On the XGA it copies the system palette's entry (seg1 `1358`). Neither engine follows `GETCOLORTABLE`.
+
+### GDI's `DEFAULT_PALETTE`
+
+- [[read out]] **The same on every driver.** GDI makes the stock `DEFAULT_PALETTE` with `CreatePalette` from a `LOGPALETTE` of its own, in its code at seg2 `0000` (seg2 `03ac`). Its twenty colours are the ones [[probe:palette]] recorded, with `A6CAF0`. So the 8514/a and the XGA answer `A6CAF0` for its tenth entry, as `vga256` does.
+- [[read out]] **What it is drawn in is the driver's statics.** At start-up GDI maps the default palette's entries to the system palette's indices 0 to 9 and the last ten (seg22 `0731`-`0764`). Its tenth entry is drawn in index 9, which is `A4C8F0` on these two drivers.
+- [[read out]] **GDI reads the statics from the driver.** It calls `GetPalette` for the first ten and the last ten (seg22 `0645`, `067b`), and keeps the first seven's colours for itself (seg22 `0653`-`065e`).
+
+### The drivers' export tables
+
+[[read out]] In both engines, `DISPLAY`'s exports are each driver's own table, chosen by the file the display mode names (`display-driver.ts`, `Kept::display_driver`). `argument-sizes.mjs` reads the bytes each export takes out of `VGA.DRV`, `EGA.DRV`, `SUPERVGA.DRV`, `HERCULES.DRV`, `SVGA256.DRV`, `8514.DRV` and `XGA.DRV`, and a test holds the tables to it.
+
+- **`SVGA256.DRV`** has 1 to 28, with `StretchBlt` (27) and `StretchDIBits` (28). It also has 101 to 104, `GetDriverResourceID` (450), 500, `SetColorTranslate` (1000), and the cards' bank routines 2000 to 2023. It has none of 90 to 92 or 400 to 403.
+- **`8514.DRV`** has 1 to 28 (27 and 28 are spares), 92 and 101 to 104. Its routines for 8 and for 4 bits are 200 to 226, and its text is 240 and 241. It also has 450 and 500. Its 501 to 506 are places in its data segment and are left out.
+- **`XGA.DRV`** has the same 1 to 28, 92, 101 to 104, 450 and 500, and 501 to 548, which have no names.
+- [[read out]] **`StrBlt` takes 1Eh bytes, not 28h.** On every driver it pops the return address, pushes the five words `ExtTextOut` has that it has not, and goes on as `ExtTextOut`, whose `RETF 28h` takes those too (`VGA.DRV` seg2 `082c`, `HERCULES.DRV` seg1 `108c`, `8514.DRV` seg1 `1243`, `XGA.DRV` seg2 `1098`). `argument-sizes.mjs` now counts what a function pushes in place of the arguments it took. It found the same in KERNEL's `DeletePathName` (seg3 `04b6`), which takes 4 bytes and pushes one more word for the routine it shares.
+- `GetProcAddress` of ordinal 450 answers the entry where the driver has one, and both engines answer it as the driver does ([[topic:display-driver-resources]]).
+
+### `lineTie` and `boldOverhang`
+
+- [[read out]] **A solid line on the 8514/a's screen is the card's to draw.** The driver gives the coprocessor the line's start and its Bresenham terms (`8514.DRV` seg11 `03de`-`042c`): the axial step 2·minor, the diagonal step 2·minor − 2·major, and the count. It gives the error term as 2·minor − major, less one where the line runs towards greater x. Which way a tie then goes is the coprocessor's comparison, which is in the card, not in the driver.
+- [[read out]] **A line into a bitmap in memory is the VGA's arithmetic.** It is the driver's own routine (`MemoryPolyline8`, seg9 `0762`-`09d0`), and it works the line out as `VGA.DRV`'s does (`VGA.DRV` seg6 `02c9`-`03d9`, `0778`-`07b4`):
+  - It puts the end with the smaller x first.
+  - It marks a line that runs up, and a y-major one.
+  - It reflects a minor axis more than half the major, toggling the same bit the upward mark set.
+  - It rounds each step's minor coordinate, (2·minor·k + major − 1 + c) / (2·major), with c that bit.
+
+  The VGA's tie is recorded as `top` ([[probe:lines]]), so a line in a memory bitmap of the 8514/a's takes the tie the same way.
+
+- The XGA's lines, and either driver's text, which decides `boldOverhang`, are not read yet. Both modes carry the colour drivers' recorded `lineTie: 'top'` and `boldOverhang: 'byte'` for every surface.
 
 ### Not yet done
 
-- **The small-font and 640x480 settings**: "8514/a (Small fonts)", "XGA (Small fonts)" and "XGA (640x480, 256 colors)". At those settings each driver's `GetDriverResourceID` moves the OEM bitmaps, and some of `OEMBIN`, to their numbers plus 2000. Neither engine runs it yet; both take the resources by their own numbers.
-- **The stock `DEFAULT_PALETTE`** on these drivers is not read out. Both engines answer the twenty [[probe:palette]] recorded, with `A6CAF0`.
-- **What the screen shows of the statics.** `8514.DRV` puts a component of exactly 80h into the DAC as BFh, except in 808080 (seg1 `2ae9`). `SVGA256.DRV` puts it in as C0h, and only below index 10. These modes show the entries as they are.
-- **An escape `8514.DRV` has not got.** Its `Control` returns the escape's own number (seg1 `1b28`-`1b35`). Whether GDI passes that back is not read out, and both engines answer nought.
-- **`lineTie` and `boldOverhang`**, how each driver breaks a line's tie and draws a bold overhang, are the colour drivers' recorded choices, carried over and not read out.
-- **The drivers' export tables** are not checked against `DISPLAY`'s ordinals (`argument-sizes`).
+- **`lineTie` and `boldOverhang`** on the 8514/a and the XGA are the colour drivers' recorded choices. That is read out only for the 8514/a's lines into memory. On its screen the tie is the coprocessor's, which the driver does not hold. The XGA's lines and both drivers' text have not been read (above).
+- **`GETCOLORTABLE`** is read out on both drivers but followed by neither engine.
+- **Icons and cursors asked of the display's instance.** USER passes their groups' numbers through `GetDriverResourceID` too. No driver's icon or cursor group is numbered 1, 3 or above 7F87h, so both engines leave those numbers alone.
