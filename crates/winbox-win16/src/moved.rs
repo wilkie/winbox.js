@@ -228,6 +228,50 @@ impl System {
     /// A window put where `to` says among its brothers, its children with
     /// it; whether its place in the order, or whether it is topmost,
     /// changed. What it uncovers is due where it now shows.
+    /// Whether a window already lies where it is asked to go, as USER
+    /// looks before it moves it (`USER.EXE` seg7 `1184`): at the bottom,
+    /// the last of its brothers; at the top, the first, or for one not
+    /// topmost the first after the last topmost window; after a window,
+    /// right after it, topmost as that one is. One made topmost, or topmost
+    /// no more, does not. An icon's title is not counted as a brother:
+    /// winbox.js keeps it just in front of its icon, where Windows keeps it
+    /// among the topmost windows (`swpshow`: an icon brought to `HWND_TOP`
+    /// goes after its own title, `#32772`, and is not where it was asked to
+    /// go).
+    pub(crate) fn lies_where_asked(&self, index: usize, to: Insert) -> bool {
+        let shown = self.shown(index);
+        let (parent, topmost) = (shown.parent, shown.topmost);
+        let brothers: Vec<usize> = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&other| {
+                let window = self.shown(other);
+
+                window.parent == parent && window.title_of.is_none()
+            })
+            .collect();
+        let at = brothers.iter().position(|&other| other == index);
+        let before = at.and_then(|at| at.checked_sub(1)).map(|at| brothers[at]);
+        let last_topmost = || {
+            brothers
+                .iter()
+                .copied()
+                .filter(|&other| other != index && self.shown(other).topmost)
+                .last()
+        };
+
+        match to {
+            Insert::Stay => true,
+            Insert::Bottom => at.is_some_and(|at| at + 1 == brothers.len()),
+            Insert::Top if parent.is_some() || topmost => before.is_none(),
+            Insert::Top => before == last_topmost(),
+            Insert::Topmost => topmost && before.is_none(),
+            Insert::NotTopmost => !topmost,
+            Insert::After(other) => before == Some(other) && self.shown(other).topmost == topmost,
+        }
+    }
+
     pub(crate) fn reorder(&mut self, index: usize, to: Insert) -> bool {
         let parent = self.shown(index).parent;
         let order = self.z_order.clone();
