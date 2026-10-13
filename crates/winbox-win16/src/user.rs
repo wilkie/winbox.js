@@ -405,7 +405,14 @@ fn get_clipboard_format_name(system: &mut System, args: &mut Args) -> Result<Ans
 
 /// The message queue's size: always answered.
 fn set_message_queue(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
+    let size = args.word(system);
+
+    // A new queue of that many entries, what was posted to the old one
+    // lost (`USER.EXE` seg1 `56b0`, `5326`; `Queue::ring_make`).
+    if let Some(task) = system.task.as_mut() {
+        task.queue.ring_make(size);
+    }
+
     Ok(Answer::Word(1))
 }
 

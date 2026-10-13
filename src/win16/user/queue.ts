@@ -122,12 +122,10 @@ export function postMessage(
   const task = queueOf(system, hwnd);
 
   if (!task) {
-    return false;
+    return 0;
   }
 
-  postTo(system, task, message_(system, hwnd, message, wParam, lParam));
-
-  return true;
+  return postTo(system, task, message_(system, hwnd, message, wParam, lParam));
 }
 
 /**
@@ -154,7 +152,26 @@ function nextMark(system: any) {
  * `0F6h` of USER's segment 44 (`2430`-`2437`), and the task keeps the input
  * until it has taken it (`nextMessage`; `inpost`).
  */
-export function postTo(system: any, task: any, msg: any) {
+export function postTo(system: any, task: any, msg: any): number {
+  /* A message of the range USER coalesces, the same window's and message
+   * as the last posted, takes that one's place (seg1 `23e4`-`23ff`,
+   * `237c`). */
+  if (msg.message >= 0x390 && msg.message <= 0x3b0 && task._messages?.length) {
+    const last = task._messages[task._messages.length - 1];
+
+    if (last.hwnd === msg.hwnd && last.message === msg.message) {
+      task._messages.pop();
+    }
+  }
+
+  /* Its place in the task's ring, or nought where the ring is full and the
+   * message is lost (`5480`, `5502`; `dderaw`). */
+  const place = task.ringPlace ? task.ringPlace() : 1;
+
+  if (!place) {
+    return 0;
+  }
+
   msg.mark = nextMark(system);
 
   const lock = system._inputLock ?? null;
@@ -164,6 +181,8 @@ export function postTo(system: any, task: any, msg: any) {
   }
 
   task.push(msg);
+
+  return place;
 }
 
 /**

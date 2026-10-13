@@ -4,7 +4,7 @@ import { DesktopHandle } from './desktop-handle.js';
 import { segmentSelector } from '../selectors.js';
 import { parentOrOwner } from './window-queries.js';
 import { NULL } from '../consts.js';
-import { ddeParametersRefused } from './dde-parameters.js';
+import { ddeRefused } from './dde-checks.js';
 
 import { RasterWindow } from './raster-window.js';
 import { MenuData } from './menu-data.js';
@@ -391,8 +391,8 @@ export async function CallWindowProc(
   const proc = procOf(this, lpPrevWndFunc >>> 0);
 
   /* A DDE message whose parameters USER's validation refuses is not handed
-   * on (`dde-parameters.ts`). */
-  if (proc && ddeParametersRefused(this, message, wParam, lParam)) {
+   * on (`USER.EXE` seg1 `af70`; `dde-checks.ts`). */
+  if (proc && ddeRefused(this, message, wParam, lParam)) {
     return NULL;
   }
 

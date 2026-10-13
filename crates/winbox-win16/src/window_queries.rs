@@ -927,8 +927,8 @@ pub fn call_window_proc(engine: &Engine, mut args: Args) -> Later<'_> {
         }
 
         // A DDE message whose parameters USER's validation refuses is not
-        // handed on (`dde_parameters.rs`).
-        if crate::dde_parameters::refused(&engine.system(), message, wparam, lparam) {
+        // handed on (`USER.EXE` seg1 `a845`, `af70`; `dde_checks.rs`).
+        if engine.system().dde_refused(message, wparam, lparam) {
             return Ok(Answer::Dword(0));
         }
 

@@ -1,0 +1,859 @@
+{
+  "probe": "ddemgmt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeGetLastError",
+      "args": "0",
+      "result": "4003"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "ulRes=1",
+      "result": "4006,id=0"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "APPCMD_CLIENTONLY",
+      "result": "0,serial=2"
+    },
+    {
+      "function": "DdeGetLastError",
+      "args": "client,other serial",
+      "result": "0,4006"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "APPCLASS_MONITOR",
+      "result": "0,serial=3"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "another monitor",
+      "result": "0,made"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "another monitor",
+      "result": "0,made"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "another monitor",
+      "result": "0,made"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "another monitor",
+      "result": "4004,0"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "another monitor",
+      "result": "1"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "another monitor",
+      "result": "1"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "another monitor",
+      "result": "1"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "again,0",
+      "result": "0,same=1; C:none; S:none"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "client only,Mine,DNS_REGISTER",
+      "result": "0,err=4004; C:none; S:none"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "client only,Mine,DNS_REGISTER",
+      "result": "M:hsz:5:Mine:P|M:hsz:1:Mine:P|M:err:4004:P:cb=10"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "again,other serial",
+      "result": "4006; C:none; S:none"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "0,other serial",
+      "result": "0,0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Service,CP_WINANSI",
+      "result": "atom=1,high=0,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Service,CP_WINANSI",
+      "result": "M:hsz:5:Service:P|M:hsz:1:Service:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "SERVICE,0",
+      "result": "same=1,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "SERVICE,0",
+      "result": "M:hsz:5:Service:P|M:hsz:1:Service:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Service,GetKBCodePage",
+      "result": "same=1,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Service,GetKBCodePage",
+      "result": "M:hsz:5:Service:P|M:hsz:1:Service:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Paged,850",
+      "result": "0,err=4006; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Paged,850",
+      "result": "M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Paged,1200",
+      "result": "0,err=4006; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Paged,1200",
+      "result": "M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Paged,437",
+      "result": "made,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Paged,437",
+      "result": "M:hsz:5:Paged:P|M:hsz:1:Paged:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "Paged,-1",
+      "result": "0,err=4006; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle-monitor",
+      "args": "Paged,-1",
+      "result": "M:hsz:3:Paged:P|M:hsz:7:Paged:P|M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "empty",
+      "result": "0,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "null",
+      "result": "0,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service,null",
+      "result": "7,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service,4",
+      "result": "3,Ser; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "0,10",
+      "result": "0,; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service,40,1200",
+      "result": "0,err=4006; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString-monitor",
+      "args": "Service,40,1200",
+      "result": "M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service:12ab,40",
+      "result": "14,Service:(12ab); C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service:12ab,12",
+      "result": "7,Service; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryString",
+      "args": "Service:12ab,null",
+      "result": "14; C:none; S:none"
+    },
+    {
+      "function": "DdeCmpStringHandles",
+      "args": "Service,Zebra",
+      "result": "0,-1,1,1,-1,order=-1; C:none; S:none"
+    },
+    {
+      "function": "DdeCmpStringHandles-monitor",
+      "args": "Service,Zebra",
+      "result": "M:hsz:5:Zebra:P|M:hsz:1:Zebra:P"
+    },
+    {
+      "function": "DdeCmpStringHandles",
+      "args": "Service:1,Service",
+      "result": "1,-1; C:none; S:none"
+    },
+    {
+      "function": "DdeKeepStringHandle",
+      "args": "Counted",
+      "result": "keep=atom,there,free=1,there,free=1,gone; C:none; S:none"
+    },
+    {
+      "function": "DdeKeepStringHandle-monitor",
+      "args": "Counted",
+      "result": "M:hsz:5:Counted:P|M:hsz:1:Counted:P|M:hsz:2:Counted:P|M:hsz:6:Counted:P|M:hsz:3:Counted:P|M:hsz:7:Counted:P|M:hsz:3:Counted:P|M:hsz:7:Counted:P"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "0",
+      "result": "1,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeFreeStringHandle-monitor",
+      "args": "0",
+      "result": "M:hsz:3::P"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "other serial",
+      "result": "0,0; C:none; S:none"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "Service x3",
+      "result": "Service=there; C:none; S:none"
+    },
+    {
+      "function": "DdeFreeStringHandle-monitor",
+      "args": "Service x3",
+      "result": "M:hsz:3:Zebra:P|M:hsz:7:Zebra:P|M:hsz:3:Service:P|M:hsz:7:Service:P|M:hsz:3:Service:P|M:hsz:7:Service:P"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDEMGMTC.EXE",
+      "result": "started; C:none; S:initialize=0,serial=7"
+    },
+    {
+      "function": "WinExec-monitor",
+      "args": "DDEMGMTC.EXE",
+      "result": "M:hsz:5:MgmtSrv:?|M:hsz:1:MgmtSrv:?|M:hsz:5:Topic:?|M:hsz:1:Topic:?|M:hsz:5:Other:?|M:hsz:1:Other:?|M:hsz:5:Second:?|M:hsz:1:Second:?|M:hsz:5:Never:?|M:hsz:1:Never:?"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,before register",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,before register",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:err:400a:P:cb=10|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,MgmtSrv,DNS_REGISTER",
+      "result": "1; C:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0; S:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0=0|S:register(MgmtSrv)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,MgmtSrv,DNS_REGISTER",
+      "result": "M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:6:MgmtSrv:P|M:REGISTER:0:MgmtSrv:MgmtSrv:(frame)|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:6:MgmtSrv:P|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic",
+      "result": "cli2,err=0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv1:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli2:srv=srv1:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli2:srv=srv1:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv1:Topic:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "windows",
+      "args": "first conversation",
+      "result": "DMGClientClass,DMGClass,none,word4=1; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "first,QID_SYNC,58",
+      "result": "58,cb=58,user=0,partner=srv1,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "first,QID_SYNC,10",
+      "result": "10,cb=10,user=0,partner=0,svcPartner=-,svcReq=-,topic=-,item=-,fmt=21845,type=5555,status=5555,convst=21845,err=5555,list=0,cc=21845/21845/21845/21845/1431655765/1431655765; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "first,5,58",
+      "result": "0,err=4011; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo-monitor",
+      "args": "first,5,58",
+      "result": "M:err:4011:P:cb=10"
+    },
+    {
+      "function": "DdeSetUserHandle",
+      "args": "first,QID_SYNC;first,5",
+      "result": "1,err=0,0,err=4011; C:none; S:none"
+    },
+    {
+      "function": "DdeSetUserHandle-monitor",
+      "args": "first,QID_SYNC;first,5",
+      "result": "M:err:4011:P:cb=10"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "first,QID_SYNC,58,user",
+      "result": "58,cb=58,user=12345678,partner=srv1,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "server info",
+      "args": "",
+      "result": "0; C:none; S:info:server:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,context",
+      "result": "cli4,err=0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/1/44/850/9/119=1|S:CONNECT_CONFIRM:fmt=0:srv2:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/1/44/850/9/119"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,context",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli4:srv=srv3:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli4:srv=srv3:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv3:Topic:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "context,QID_SYNC,58",
+      "result": "58,cb=58,user=0,partner=srv3,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/1/44/850/9/119; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,context cb=12",
+      "result": "0,err=4006; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,context cb=12",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:err:4006:P:cb=10|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "context",
+      "result": "1; C:none; S:DISCONNECT:fmt=0:srv2:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "context",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli4:srv=srv3:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli4:srv=srv3:S:cb=26|M:cb:DISCONNECT:fmt=0:srv3:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "-,-",
+      "result": "cli6,err=0; C:none; S:WILDCONNECT:fmt=0:0:-:-:data=0:0:0:cc=yes=pairs|S:CONNECT_CONFIRM:fmt=0:srv3:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=-,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:DISCONNECT:fmt=0:srv4:-:-:data=0:0:0=0|S:CONNECT_CONFIRM:fmt=0:0:Other:MgmtSrv:data=0:0:0=0|S:info:confirm:0:err=400a"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "-,-",
+      "result": "M:cb:WILDCONNECT:fmt=0:0:-:-:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli6:srv=srv5:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli6:srv=srv5:P:cb=26|M:cb:CONNECT_CONFIRM:fmt=0:srv5:Topic:MgmtSrv:ret=0:S:cb=42|M:conv:1:MgmtSrv:Other:cli=cli6:srv=srv7:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:conv:0:MgmtSrv:Other:cli=cli6:srv=srv7:S:cb=26|M:cb:DISCONNECT:fmt=0:srv7:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Other:S|M:hsz:7:MgmtSrv:P|M:hsz:7:Other:P|M:err:400a:S:cb=10|M:cb:CONNECT_CONFIRM:fmt=0:0:Other:MgmtSrv:ret=0:S:cb=42"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "wild,QID_SYNC,58",
+      "result": "58,cb=58,user=0,partner=srv5,svcPartner=MgmtSrv,svcReq=-,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "wild",
+      "result": "1; C:none; S:DISCONNECT:fmt=0:srv3:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "wild",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli6:srv=srv5:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli6:srv=srv5:S:cb=26|M:cb:DISCONNECT:fmt=0:srv5:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,-",
+      "result": "cli9,err=0; C:none; S:WILDCONNECT:fmt=0:0:-:MgmtSrv:data=0:0:0:cc=yes=pairs|S:CONNECT_CONFIRM:fmt=0:srv5:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:DISCONNECT:fmt=0:srv6:-:-:data=0:0:0=0|S:CONNECT_CONFIRM:fmt=0:0:Other:MgmtSrv:data=0:0:0=0|S:info:confirm:0:err=400a"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,-",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:cb:WILDCONNECT:fmt=0:0:-:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli9:srv=srv8:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli9:srv=srv8:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv8:Topic:MgmtSrv:ret=0:S:cb=42|M:conv:1:MgmtSrv:Other:cli=cli9:srv=srv10:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:conv:0:MgmtSrv:Other:cli=cli9:srv=srv10:S:cb=26|M:cb:DISCONNECT:fmt=0:srv10:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Other:S|M:hsz:7:MgmtSrv:P|M:hsz:7:Other:P|M:err:400a:S:cb=10|M:cb:CONNECT_CONFIRM:fmt=0:0:Other:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "wild service",
+      "result": "1; C:none; S:DISCONNECT:fmt=0:srv5:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "wild service",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli9:srv=srv8:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli9:srv=srv8:S:cb=26|M:cb:DISCONNECT:fmt=0:srv8:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "-,-,none",
+      "result": "list14,err=0; C:none; S:WILDCONNECT:fmt=0:0:-:-:data=0:0:0:cc=yes=pairs|S:CONNECT_CONFIRM:fmt=0:srv7:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=-,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:CONNECT_CONFIRM:fmt=0:srv8:Other:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=-,topic=Other,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnectList-monitor",
+      "args": "-,-,none",
+      "result": "M:cb:WILDCONNECT:fmt=0:0:-:-:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli12:srv=srv11:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli12:srv=srv11:P:cb=26|M:cb:CONNECT_CONFIRM:fmt=0:srv11:Topic:MgmtSrv:ret=0:S:cb=42|M:conv:1:MgmtSrv:Other:cli=cli12:srv=srv13:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:conv:1:MgmtSrv:Other:cli=cli12:srv=srv13:P:cb=26|M:cb:CONNECT_CONFIRM:fmt=0:srv13:Other:MgmtSrv:ret=0:S:cb=42"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "cli12",
+      "result": "58,cb=58,user=0,partner=srv11,svcPartner=MgmtSrv,svcReq=-,topic=Topic,item=-,fmt=1,type=1062,status=55,convst=2,err=0,list=list14,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "cli15",
+      "result": "58,cb=58,user=0,partner=srv13,svcPartner=MgmtSrv,svcReq=-,topic=Other,item=-,fmt=1,type=1062,status=55,convst=2,err=0,list=list14,cc=0/0/0/0/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "-,-,list",
+      "result": "list20,err=0; C:none; S:WILDCONNECT:fmt=0:0:-:-:data=0:0:0:cc=yes=pairs|S:CONNECT_CONFIRM:fmt=0:srv9:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=-,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:CONNECT_CONFIRM:fmt=0:srv10:Other:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=-,topic=Other,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:DISCONNECT:fmt=0:srv9:-:-:data=0:0:0=0|S:DISCONNECT:fmt=0:srv10:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeConnectList-monitor",
+      "args": "-,-,list",
+      "result": "M:cb:WILDCONNECT:fmt=0:0:-:-:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli17:srv=srv16:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli17:srv=srv16:P:cb=26|M:cb:CONNECT_CONFIRM:fmt=0:srv16:Topic:MgmtSrv:ret=0:S:cb=42|M:conv:1:MgmtSrv:Other:cli=cli17:srv=srv18:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Other:S|M:conv:1:MgmtSrv:Other:cli=cli17:srv=srv18:P:cb=26|M:cb:CONNECT_CONFIRM:fmt=0:srv18:Other:MgmtSrv:ret=0:S:cb=42|M:conv:0:MgmtSrv:Topic:cli=cli17:srv=srv16:P:cb=26|M:conv:0:MgmtSrv:Other:cli=cli19:srv=srv18:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli17:srv=srv16:S:cb=26|M:cb:DISCONNECT:fmt=0:srv16:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:conv:0:MgmtSrv:Other:cli=cli19:srv=srv18:S:cb=26|M:cb:DISCONNECT:fmt=0:srv18:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Other:S|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Other:P"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "again",
+      "result": "cli15 cli12 ; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "again,bogus",
+      "result": "0,err=4006,old=gone; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryNextServer-monitor",
+      "args": "again,bogus",
+      "result": "M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "again",
+      "result": "1,err=0; C:none; S:DISCONNECT:fmt=0:srv8:-:-:data=0:0:0=0|S:DISCONNECT:fmt=0:srv7:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnectList-monitor",
+      "args": "again",
+      "result": "M:conv:0:MgmtSrv:Other:cli=cli15:srv=srv13:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli12:srv=srv11:P:cb=26|M:conv:0:MgmtSrv:Other:cli=cli15:srv=srv13:S:cb=26|M:cb:DISCONNECT:fmt=0:srv13:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Other:S|M:conv:0:MgmtSrv:Topic:cli=cli12:srv=srv11:S:cb=26|M:cb:DISCONNECT:fmt=0:srv11:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:Other:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "again,twice",
+      "result": "1,err=0,monitor=0; C:none; S:none"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "Nobody,-,none",
+      "result": "0,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeConnectList-monitor",
+      "args": "Nobody,-,none",
+      "result": "M:hsz:5:Nobody:P|M:hsz:1:Nobody:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,DNS_FILTEROFF",
+      "result": "0; C:none; S:filter(8)=0,err=0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "Unregd,Topic,filter off",
+      "result": "0,err=400a; C:none; S:CONNECT:fmt=0:0:Topic:Unregd:data=0:0:0:cc=16/0/0/1004/0/0=0"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "Unregd,Topic,filter off",
+      "result": "M:hsz:5:Unregd:P|M:hsz:1:Unregd:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:Unregd:ret=0:S:cb=42|M:err:400a:P:cb=10|M:hsz:3:Unregd:P|M:hsz:7:Unregd:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,DNS_FILTERON",
+      "result": "0; C:none; S:filter(4)=0,err=0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "Unregd,Topic,filter on",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "Unregd,Topic,filter on",
+      "result": "M:hsz:5:Unregd:P|M:hsz:1:Unregd:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:err:400a:P:cb=10|M:hsz:3:Unregd:P|M:hsz:7:Unregd:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "server self",
+      "args": "",
+      "result": "0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:1:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv11:Topic:MgmtSrv:data=0:0:1=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=101,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:self=cli12,err=0|S:info:self:58:user=0,partner=srv11,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=115,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:info:selfserver:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=101,convst=2,err=0,list=0,cc=16/0/0/1004/0/0|S:selfdisconnect=1|S:DISCONNECT:fmt=0:srv11:-:-:data=0:0:1=0"
+    },
+    {
+      "function": "server self-monitor",
+      "args": "",
+      "result": "M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli22:srv=srv21:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli22:srv=srv21:S:cb=26|M:hsz:6:MgmtSrv:S|M:cb:CONNECT_CONFIRM:fmt=0:srv21:Topic:MgmtSrv:ret=0:S:cb=42|M:conv:0:MgmtSrv:Topic:cli=cli22:srv=srv21:S:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli22:srv=srv21:S:cb=26|M:cb:DISCONNECT:fmt=0:srv21:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "first",
+      "result": "1,err=0,window; C:none; S:DISCONNECT:fmt=0:srv1:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "first",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli2:srv=srv1:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli2:srv=srv1:S:cb=26|M:cb:DISCONNECT:fmt=0:srv1:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "first,after",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo-monitor",
+      "args": "first,after",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "first,twice",
+      "result": "0,err=400a,monitor=0; C:none; S:none"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "first,twice",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,third",
+      "result": "cli24,err=0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv13:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,third",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli24:srv=srv23:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli24:srv=srv23:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv23:Topic:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "server disconnect",
+      "args": "third",
+      "result": "1; C:DISCONNECT:fmt=0:cli24:-:-:data=0:0:0|C:reconnect=cli26,err=0; S:disconnect(srv13)=1,err=0|S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv14:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "server disconnect-monitor",
+      "args": "third",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli24:srv=srv23:S:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli24:srv=srv23:P:cb=26|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli26:srv=srv25:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli26:srv=srv25:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv25:Topic:MgmtSrv:ret=0:S:cb=42|M:cb:DISCONNECT:fmt=0:cli24:-:-:ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "third,after",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo-monitor",
+      "args": "third,after",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "reconnected",
+      "result": "58,cb=58,user=0,partner=srv25,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeReconnect",
+      "args": "first,gone",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeReconnect-monitor",
+      "args": "first,gone",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeEnableCallback",
+      "args": "1;EC_QUERYWAITING;bogus;other serial",
+      "result": "0,err=4006;0,err=0;0,err=4006;0,err=0; C:none; S:none"
+    },
+    {
+      "function": "DdeEnableCallback-monitor",
+      "args": "1;EC_QUERYWAITING;bogus;other serial",
+      "result": "M:err:4006:P:cb=10|M:err:4006:P:cb=10"
+    },
+    {
+      "function": "DdeEnableCallback",
+      "args": "reconnected,EC_DISABLE",
+      "result": "1; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "reconnected,disabled",
+      "result": "58,cb=58,user=0,partner=srv25,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=1d,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeEnableCallback",
+      "args": "reconnected,EC_ENABLEONE",
+      "result": "1; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "reconnected,one",
+      "result": "58,cb=58,user=0,partner=srv25,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=95,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeEnableCallback",
+      "args": "0,EC_DISABLE",
+      "result": "1; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,disabled",
+      "result": "cli28,err=0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv15:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,disabled",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli28:srv=srv27:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli28:srv=srv27:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv27:Topic:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "disabled,new",
+      "result": "58,cb=58,user=0,partner=srv27,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=1d,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "reconnected,all disabled",
+      "result": "58,cb=58,user=0,partner=srv25,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=1d,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "DdeEnableCallback",
+      "args": "0,EC_ENABLEALL",
+      "result": "1; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "disabled,enabled",
+      "result": "58,cb=58,user=0,partner=srv27,svcPartner=MgmtSrv,svcReq=MgmtSrv,topic=Topic,item=-,fmt=1,type=1062,status=15,convst=2,err=0,list=0,cc=16/0/0/1004/0/0; C:none; S:none"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_DISABLE",
+      "result": "1; C:none; S:enable(8)=1,err=0"
+    },
+    {
+      "function": "server info",
+      "args": "disabled",
+      "result": "0; C:none; S:info:server:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=9,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_QUERYWAITING",
+      "result": "0; C:none; S:enable(2)=0,err=0"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_ENABLEALL",
+      "result": "1; C:none; S:enable(0)=1,err=0"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "disabled",
+      "result": "1; C:none; S:DISCONNECT:fmt=0:srv15:-:-:data=0:0:0=0"
+    },
+    {
+      "function": "DdeDisconnect-monitor",
+      "args": "disabled",
+      "result": "M:conv:0:MgmtSrv:Topic:cli=cli28:srv=srv27:P:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli28:srv=srv27:S:cb=26|M:cb:DISCONNECT:fmt=0:srv27:-:-:ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,Second,DNS_REGISTER",
+      "result": "1; C:REGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0|C:enable-inside=0,err=400d; S:REGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0=0|S:register(Second)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,Second,DNS_REGISTER",
+      "result": "M:hsz:6:Second:S|M:hsz:6:Second:S|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:S:cb=42|M:hsz:7:Second:S|M:hsz:6:Second:P|M:REGISTER:0:Second:Second:(frame)|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:6:Second:P|M:err:400d:P:cb=10|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,Second,DNS_UNREGISTER",
+      "result": "1; C:UNREGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0; S:UNREGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0=0|S:unregister(Second)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,Second,DNS_UNREGISTER",
+      "result": "M:hsz:6:Second:S|M:cb:UNREGISTER:fmt=0:0:Second:Second:(frame):ret=0:S:cb=42|M:hsz:7:Second:S|M:hsz:6:Second:P|M:UNREGISTER:0:Second:Second:(frame)|M:cb:UNREGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:6:Second:P|M:cb:UNREGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:7:Second:S"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,Never,DNS_UNREGISTER",
+      "result": "1; C:UNREGISTER:fmt=0:0:Never:Never:(frame):data=0:0:0; S:UNREGISTER:fmt=0:0:Never:Never:(frame):data=0:0:0=0|S:unregister(?)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,Never,DNS_UNREGISTER",
+      "result": "M:hsz:6:Never:S|M:cb:UNREGISTER:fmt=0:0:Never:Never:(frame):ret=0:S:cb=42|M:hsz:7:Never:S|M:hsz:6:Never:P|M:UNREGISTER:0:Never:Never:(frame)|M:cb:UNREGISTER:fmt=0:0:Never:Never:(frame):ret=0:P:cb=42|M:hsz:7:Never:P|M:hsz:6:Never:P|M:cb:UNREGISTER:fmt=0:0:Never:Never:(frame):ret=0:P:cb=42|M:hsz:7:Never:P|M:hsz:7:Never:S"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,Second,DNS_REGISTER",
+      "result": "1; C:REGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0|C:enable-inside=0,err=400d; S:REGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0=0|S:register(Second)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,Second,DNS_REGISTER",
+      "result": "M:hsz:6:Second:S|M:hsz:6:Second:S|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:S:cb=42|M:hsz:7:Second:S|M:hsz:6:Second:P|M:REGISTER:0:Second:Second:(frame)|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:6:Second:P|M:err:400d:P:cb=10|M:cb:REGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,0,DNS_UNREGISTER",
+      "result": "1; C:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0|C:UNREGISTER:fmt=0:0:Second:Second:(frame):data=0:0:0; S:unregister(all)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,0,DNS_UNREGISTER",
+      "result": "M:hsz:6:MgmtSrv:P|M:UNREGISTER:0:MgmtSrv:MgmtSrv:(frame)|M:cb:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:6:MgmtSrv:P|M:cb:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:S|M:hsz:6:Second:P|M:UNREGISTER:0:Second:Second:(frame)|M:cb:UNREGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:6:Second:P|M:cb:UNREGISTER:fmt=0:0:Second:Second:(frame):ret=0:P:cb=42|M:hsz:7:Second:P|M:hsz:7:Second:S"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,unregistered",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,unregistered",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:err:400a:P:cb=10|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "DdeNameService",
+      "args": "server,MgmtSrv,DNS_REGISTER",
+      "result": "1; C:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0; S:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0=0|S:register(MgmtSrv)=1,err=0"
+    },
+    {
+      "function": "DdeNameService-monitor",
+      "args": "server,MgmtSrv,DNS_REGISTER",
+      "result": "M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:S:cb=42|M:hsz:7:MgmtSrv:S|M:hsz:6:MgmtSrv:P|M:REGISTER:0:MgmtSrv:MgmtSrv:(frame)|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:6:MgmtSrv:P|M:cb:REGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,before end",
+      "result": "cli30,err=0; C:none; S:CONNECT:fmt=0:0:Topic:MgmtSrv:data=0:0:0:cc=16/0/0/1004/0/0=1|S:CONNECT_CONFIRM:fmt=0:srv16:Topic:MgmtSrv:data=0:0:0=0|S:info:confirm:58:user=0,partner=0,svcPartner=-,svcReq=MgmtSrv,topic=Topic,item=-,fmt=0,type=0,status=1,convst=2,err=0,list=0,cc=16/0/0/1004/0/0"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,before end",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:cb:CONNECT:fmt=0:0:Topic:MgmtSrv:ret=yes:S:cb=42|M:conv:1:MgmtSrv:Topic:cli=cli30:srv=srv29:S:cb=26|M:hsz:6:MgmtSrv:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:hsz:6:MgmtSrv:S|M:hsz:6:Topic:S|M:conv:1:MgmtSrv:Topic:cli=cli30:srv=srv29:P:cb=26|M:hsz:6:MgmtSrv:P|M:cb:CONNECT_CONFIRM:fmt=0:srv29:Topic:MgmtSrv:ret=0:S:cb=42|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "server uninitialize",
+      "args": "",
+      "result": "posted; C:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):data=0:0:0|C:DISCONNECT:fmt=0:cli26:-:-:data=0:0:0|C:DISCONNECT:fmt=0:cli30:-:-:data=0:0:0; S:uninitialize=1"
+    },
+    {
+      "function": "server uninitialize-monitor",
+      "args": "",
+      "result": "M:hsz:6:MgmtSrv:P|M:UNREGISTER:0:MgmtSrv:MgmtSrv:(frame)|M:cb:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:6:MgmtSrv:P|M:cb:UNREGISTER:fmt=0:0:MgmtSrv:MgmtSrv:(frame):ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:S|M:conv:0:MgmtSrv:Topic:cli=cli26:srv=srv25:S:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli30:srv=srv29:S:cb=26|M:conv:0:MgmtSrv:Topic:cli=cli26:srv=srv25:P:cb=26|M:cb:DISCONNECT:fmt=0:cli26:-:-:ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P|M:conv:0:MgmtSrv:Topic:cli=cli30:srv=srv29:P:cb=26|M:cb:DISCONNECT:fmt=0:cli30:-:-:ret=0:P:cb=42|M:hsz:7:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:7:Topic:P|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:7:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:7:Topic:S|M:hsz:4:MgmtSrv:S|M:hsz:7:MgmtSrv:S|M:hsz:4::S|M:hsz:7::S|M:hsz:4:Second:S|M:hsz:7:Second:S|M:hsz:4:Other:S|M:hsz:7:Other:S|M:hsz:4:Topic:S|M:hsz:7:Topic:S"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "before end,after",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo-monitor",
+      "args": "before end,after",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeQueryConvInfo",
+      "args": "reconnected,after end",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeQueryConvInfo-monitor",
+      "args": "reconnected,after end",
+      "result": "M:err:400a:P:cb=10|M:err:400a:P:cb=10"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MgmtSrv,Topic,after end",
+      "result": "0,err=400a; C:none; S:none"
+    },
+    {
+      "function": "DdeConnect-monitor",
+      "args": "MgmtSrv,Topic,after end",
+      "result": "M:hsz:5:MgmtSrv:P|M:hsz:1:MgmtSrv:P|M:hsz:5:Topic:P|M:hsz:1:Topic:P|M:err:400a:P:cb=10|M:hsz:3:MgmtSrv:P|M:hsz:7:MgmtSrv:P|M:hsz:3:Topic:P|M:hsz:7:Topic:P"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed; C:none; S:none"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "client",
+      "result": "1; C:none; S:none"
+    },
+    {
+      "function": "DdeUninitialize-monitor",
+      "args": "client",
+      "result": "M:hsz:4:Mine:P|M:hsz:7:Mine:P|M:hsz:4:Nobody:P|M:hsz:7:Nobody:P|M:hsz:4:Service:P|M:hsz:7:Service:P"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "client,twice",
+      "result": "0; C:none; S:none"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "monitor",
+      "result": "1"
+    }
+  ]
+}

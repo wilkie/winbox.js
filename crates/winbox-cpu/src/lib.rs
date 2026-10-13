@@ -335,6 +335,23 @@ impl<B: Bus> Cpu<B> {
         Ok(Some((access, granularity, limit)))
     }
 
+    /// What `LAR` answers of a selector: its access byte in the high byte,
+    /// or `None` where `LAR` would clear the zero flag. For the host, which
+    /// checks a handle as `LAR` does (USER's checks of a DDE message's
+    /// parameters, `USER.EXE` seg1 `aeb6`).
+    pub fn access_rights(&self, selector: u16) -> Option<u16> {
+        const SYSTEMS: [u8; 8] = [1, 2, 3, 4, 5, 9, 0xb, 0xc];
+
+        self.peek(selector)
+            .ok()
+            .flatten()
+            .filter(|&(access, _, _)| {
+                (access & 0x10 != 0 || SYSTEMS.contains(&(access & 0x0f)))
+                    && Self::visible(access, selector)
+            })
+            .map(|(access, _, _)| u16::from(access) << 8)
+    }
+
     /// Whether a descriptor may be looked at through a selector, the current
     /// privilege nought as the JavaScript core's 386 has it: a conforming
     /// code segment always, else one whose DPL is at least the selector's

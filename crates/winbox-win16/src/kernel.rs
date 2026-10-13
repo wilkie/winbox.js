@@ -362,6 +362,19 @@ fn lwrite(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         .resolve(usize::from(handle))
         .expect("an open file");
 
+    // Nought bytes is DOS's write with CX nought, which makes the file end
+    // where it is (`KRNL386.EXE` seg1 `0c42`, function 40h). Program
+    // Manager ends a group file it wrote again so (`PROGMAN.EXE` seg4
+    // `05e9`). **Recorded** by `progdde`: a group shorter than before has
+    // no bytes of the old one after its end.
+    if length == 0 {
+        if let Some(at) = file.seek(std::io::SeekFrom::Current(0)) {
+            file.truncate(at);
+        }
+
+        return Ok(Answer::Word(0));
+    }
+
     Ok(Answer::Word(file.write(&bytes) as u16))
 }
 

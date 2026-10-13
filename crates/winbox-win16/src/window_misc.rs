@@ -274,7 +274,10 @@ pub fn validate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 impl System {
     /// A window made the child of another, or of none: it and its children
     /// taken out and put above its new parent -- at the front of its kind
-    /// for none -- keeping its place in its parent's client area.
+    /// for none -- keeping its place in its parent's client area. It is
+    /// linked first among its new parent's children (`USER.EXE` seg14
+    /// `04ab`-`04b2`, after nought), as `GetWindow` with `GW_CHILD` then
+    /// finds it (`ddemgmt`).
     pub fn reparent(&mut self, index: usize, parent: Option<usize>) -> Result<(), Stop> {
         let origin_of = |system: &Self, of: Option<usize>| {
             of.and_then(|of| system.windows[of].as_ref())
@@ -305,7 +308,8 @@ impl System {
             Some(parent) => self
                 .z_order
                 .iter()
-                .position(|&other| other == parent)
+                .position(|&other| other != parent && self.within(other, parent))
+                .or_else(|| self.z_order.iter().position(|&other| other == parent))
                 .unwrap_or(0),
             None => self.front_of(index),
         };

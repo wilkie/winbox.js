@@ -200,6 +200,20 @@ static void layout(LPCSTR when, LPCSTR path)
         }
     }
 
+    /* And what follows the group's own bytes: the items' tags. */
+    if (got >= 8) {
+        BYTE tail[160];
+        int length;
+
+        _llseek(file, (LONG) * (WORD FAR *)(bytes + 6), 0);
+        length = _lread(file, tail, sizeof(tail));
+        lstrcat(probeResult, "|tags:");
+
+        for (j = 0; j < length; j++) {
+            wsprintf(probeResult + lstrlen(probeResult), "%02x", tail[j]);
+        }
+    }
+
     _lclose(file);
     probe("layout", when, probeResult);
 }

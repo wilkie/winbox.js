@@ -5560,6 +5560,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * records are rebuilt byte for byte from the drive image's `.TTF` files. See
    * `FONTS.md` section 8c.
    */
+  /* A task's blocks of global memory are freed as it ends, and a block of
+   * `GMEM_DDESHARE` -- the module's whose code allocated it
+   * (`KRNL386.EXE` seg1 `0d12`-`0d2a`) -- as the module's last instance ends.
+   * winbox.js frees neither: 5 of `ddeleft`'s 12 records, every one taken
+   * after a program ended. */
+  'ddeleft:owned': 'no global memory is freed as its task or module ends',
+  /* An atom deleted once more than it was added: KERNEL looks up the string
+   * its freed entry held and answers what was left in AX (seg1 `4a80`),
+   * which depends on what the local heap wrote over the freed entry.
+   * winbox.js keeps no heap for the atoms, and answers nought: 1 record,
+   * where Windows' freed entry still held the string. */
+  'ddeleft:DdeFreeStringHandle': 'an atom deleted once too often answers nought',
 };
 
 /**
@@ -5816,6 +5828,9 @@ const RUN_WHOLE = new Set<string>([
   'progdde',
   'postend',
   'associco',
+  'dderaw',
+  'ddemgmt',
+  'ddeleft',
 ]);
 
 /**

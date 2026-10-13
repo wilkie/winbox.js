@@ -44,6 +44,19 @@ export async function _lwrite(hf, hpvBuffer, cbBuffer) {
     bytes[index] = this.machine.memory.read8(address + index);
   }
 
+  /* Nought bytes is DOS's write with CX nought, which makes the file end
+   * where it is (`KRNL386.EXE` seg1 `0c42`, function 40h). Program Manager
+   * ends a group file it wrote again so (`PROGMAN.EXE` seg4 `05e9`).
+   * **Recorded** by `progdde`: a group shorter than before has no bytes of
+   * the old one after its end. */
+  if (!cbBuffer) {
+    if ((file as any).setSize && file.size !== file.position) {
+      await (file as any).setSize(file.position);
+    }
+
+    return 0;
+  }
+
   const written = await file.write(file.position, bytes);
   file.position += written;
 

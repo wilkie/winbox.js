@@ -99,8 +99,13 @@ impl Message {
     }
 }
 
+/// Where USER's ring of posted messages starts in its queue's segment, and
+/// the size of an entry (`USER.EXE` seg1 `535b`-`53eb`).
+const RING_START: u16 = 0x6e;
+const RING_ENTRY: u16 = 22;
+
 /// A task's message queue.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct Queue {
     /// What was posted to it. The mouse's and the keyboard's are the
     /// system queue's (`System::input`): what was posted comes first, and
@@ -116,9 +121,69 @@ pub struct Queue {
     /// What the task took last, at `16h` of its queue: the input's mark, or
     /// a posted message's (`System::post_to`; `inpost`).
     pub taken_mark: u32,
+    /// USER's ring of what is posted, as many entries as `SetMessageQueue`
+    /// made room for, eight unless it was called (`USER.EXE` seg1
+    /// `535b`-`53eb`): 22 bytes each, from 6Eh of the queue's segment.
+    pub ring_size: u16,
+    /// Where in the ring the oldest posted message is; the rest follow it
+    /// in order, wrapping at the end. Only places are kept: the messages
+    /// are `messages`.
+    pub ring_read: u16,
+}
+
+impl Default for Queue {
+    fn default() -> Self {
+        Self {
+            messages: VecDeque::new(),
+            quit_code: None,
+            changes: 0,
+            last_taken: None,
+            taken_mark: 0,
+            ring_size: 8,
+            ring_read: RING_START,
+        }
+    }
 }
 
 impl Queue {
+    /// The place in the ring `index` entries on from the oldest's.
+    fn ring_at(&self, index: usize) -> u16 {
+        let size = usize::from(self.ring_size.max(1));
+        let first = usize::from(self.ring_read.saturating_sub(RING_START) / RING_ENTRY);
+
+        RING_START + ((first + index) % size) as u16 * RING_ENTRY
+    }
+
+    /// Where a message posted now goes -- its offset in the ring's segment,
+    /// which `PostMessage` answers -- or nought, the ring full (`USER.EXE`
+    /// seg1 `5480`-`54db`, `5502`-`5529`).
+    pub fn ring_place(&self) -> u16 {
+        if self.messages.len() >= usize::from(self.ring_size) {
+            0
+        } else {
+            self.ring_at(self.messages.len())
+        }
+    }
+
+    /// A posted message taken, `index` from the oldest. USER closes the gap
+    /// (seg1 `55f9`-`5640`): where it lay at or after the oldest's place,
+    /// the ones before it move up a place and so does the oldest's; where
+    /// the ring had wrapped before it, the ones after it move down, and the
+    /// oldest stays.
+    fn ring_taken(&mut self, index: usize) {
+        if self.ring_at(index) >= self.ring_read {
+            self.ring_read = self.ring_at(1);
+        }
+    }
+
+    /// `SetMessageQueue`: a ring of another size, made anew, what was
+    /// posted lost with the old one (seg1 `56b0`, `5326`).
+    pub fn ring_make(&mut self, size: u16) {
+        self.messages.clear();
+        self.ring_size = size;
+        self.ring_read = RING_START;
+    }
+
     /// A message pushed: one posted, or with `input`, the mouse's or the
     /// keyboard's.
     pub fn push(&mut self, message: Message) {
@@ -131,7 +196,10 @@ impl Queue {
         let at = self.messages.iter().position(matches)?;
 
         if remove {
-            self.messages.remove(at)
+            let taken = self.messages.remove(at);
+
+            self.ring_taken(at);
+            taken
         } else {
             Some(self.messages[at])
         }
@@ -292,19 +360,25 @@ impl System {
     }
 
     /// A message posted to the queue of the task that made a window, or of
-    /// the running one. Whether there was a task to take it.
+    /// the running one. Whether there was a task to take it, and room.
     pub fn post_message(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> bool {
+        self.post_place(hwnd, message, wparam, lparam) != 0
+    }
+
+    /// `post_message`, answering the message's place in its task's ring,
+    /// as `PostMessage` does, or nought (`USER.EXE` seg1 `5480`; `dderaw`).
+    pub fn post_place(&mut self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> u16 {
         let made = self.message_now(hwnd, message, wparam, lparam);
         let Some(slot) = self.window_slot(hwnd).or_else(|| self.lone_slot()) else {
-            return false;
+            return 0;
         };
+        let place = self.post_to(slot, made);
 
-        if !self.post_to(slot, made) {
-            return false;
+        if place != 0 {
+            self.signal_slot(slot);
         }
 
-        self.signal_slot(slot);
-        true
+        place
     }
 
     /// A mark of its own for a posted message. USER marks one by its place
@@ -320,10 +394,29 @@ impl System {
     /// its mark kept with it: where that task holds the input, the message
     /// is marked as the last for it, at `0F6h` of USER's segment 44
     /// (`2430`-`2437`), and the task keeps the input until it has taken it
-    /// (`look`; `inpost`). Whether the task has a queue.
-    pub(crate) fn post_to(&mut self, slot: usize, mut made: Message) -> bool {
-        if self.queue_of(slot).is_none() {
-            return false;
+    /// (`look`; `inpost`). Its place in the task's ring; nought where the
+    /// task has no queue, or the ring is full and the message is lost
+    /// (`5480`, `5502`; `dderaw`). A message of the range USER coalesces,
+    /// the same window's and message as the last posted, takes that one's
+    /// place (`23e4`-`23ff`, `237c`).
+    pub(crate) fn post_to(&mut self, slot: usize, mut made: Message) -> u16 {
+        let Some(queue) = self.queue_of(slot) else {
+            return 0;
+        };
+
+        if (0x390..=0x3b0).contains(&made.message)
+            && queue
+                .messages
+                .back()
+                .is_some_and(|last| last.hwnd == made.hwnd && last.message == made.message)
+        {
+            queue.messages.pop_back();
+        }
+
+        let place = queue.ring_place();
+
+        if place == 0 {
+            return 0;
         }
 
         let mark = self.next_mark();
@@ -338,7 +431,7 @@ impl System {
             queue.push(made);
         }
 
-        true
+        place
     }
 
     /// What wakes the running task where it waits for a message.
@@ -1008,15 +1101,17 @@ pub fn post_message(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         return Ok(Answer::Word(system.post_broadcast(message, wparam, lparam)));
     }
 
-    // A DDE message whose parameters USER's validation refuses is not
-    // posted (`dde_parameters.rs`).
-    if crate::dde_parameters::refused(system, message, wparam, lparam) {
+    // USER's checks first: the window, and a DDE message's parameters
+    // (`USER.EXE` seg1 `af70`; `dde_checks.rs`).
+    if !system.is_window_handle(hwnd) || system.dde_refused(message, wparam, lparam) {
         return Ok(Answer::Word(0));
     }
 
-    Ok(Answer::Word(u16::from(
-        system.post_message(hwnd, message, wparam, lparam),
-    )))
+    // The message's place in the ring, as USER answers it (`5480`;
+    // `dderaw`).
+    Ok(Answer::Word(
+        system.post_place(hwnd, message, wparam, lparam),
+    ))
 }
 
 /// Not a message in the queue but a flag on it, with the exit code, as
@@ -1055,9 +1150,9 @@ pub fn send_message(engine: &Engine, mut args: Args) -> Later<'_> {
             ));
         }
 
-        // A DDE message whose parameters USER's validation refuses is not
-        // sent (`dde_parameters.rs`).
-        if crate::dde_parameters::refused(&engine.system(), message, wparam, lparam) {
+        // A DDE message's parameters checked, as USER's validation layer
+        // does (`USER.EXE` seg1 `af70`; `dde_checks.rs`).
+        if engine.system().dde_refused(message, wparam, lparam) {
             return Ok(Answer::Dword(0));
         }
 
@@ -1082,14 +1177,14 @@ pub fn dispatch_message(engine: &Engine, mut args: Args) -> Later<'_> {
 
         // A DDE message whose parameters USER's validation refuses is not
         // dispatched: one whose sender's window has gone since it was
-        // posted (`dde_parameters.rs`). USER's own loops dispatch without
-        // asking (`dispatch`).
-        if crate::dde_parameters::refused(
-            &engine.system(),
-            message.message,
-            message.wparam,
-            message.lparam,
-        ) {
+        // posted (`USER.EXE` seg1 `a727`, `af70`; `dde_checks.rs`).
+        // **Recorded** by `postend`, and so Program Manager's acknowledgement
+        // of `[ExitProgman]` never arrives (`progdde`). USER's own loops
+        // dispatch without asking (`dispatch`).
+        if engine
+            .system()
+            .dde_refused(message.message, message.wparam, message.lparam)
+        {
             return Ok(Answer::Dword(0));
         }
 

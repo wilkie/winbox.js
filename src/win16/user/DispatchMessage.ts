@@ -3,7 +3,7 @@
 import { User } from '../user.js';
 
 import { callTimerProc, timerProcOf } from './queue.js';
-import { ddeParametersRefused } from './dde-parameters.js';
+import { ddeRefused } from './dde-checks.js';
 import { WM_SYSTIMER } from './caret.js';
 
 /**
@@ -38,8 +38,8 @@ import { WM_SYSTIMER } from './caret.js';
 export async function DispatchMessage(lpmsg) {
   /* A DDE message whose parameters USER's validation refuses is not
    * dispatched: one whose sender's window has gone since it was posted
-   * (`dde-parameters.ts`). USER's own loops dispatch without asking. */
-  if (ddeParametersRefused(this, lpmsg.message, lpmsg.wParam, lpmsg.lParam)) {
+   * (`USER.EXE` seg1 `af70`; `dde-checks.ts`). USER's own loops dispatch without asking. */
+  if (ddeRefused(this, lpmsg.message, lpmsg.wParam, lpmsg.lParam)) {
     return 0;
   }
 

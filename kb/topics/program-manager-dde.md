@@ -148,7 +148,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 
 ## In winbox.js
 
-Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole. What they ask of USER for it — DDE messages refused by `DispatchMessage` once their sender's window has gone — is `dde-parameters.ts` and `dde_parameters.rs`.
+Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole. What they ask of USER for it — DDE messages refused by `DispatchMessage` once their sender's window has gone — is `dde-checks.ts` and `dde_checks.rs`.
 
 ## Not yet done
 

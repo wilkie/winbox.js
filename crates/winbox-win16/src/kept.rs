@@ -15337,8 +15337,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetKbCodePage",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetKeyNameText",
