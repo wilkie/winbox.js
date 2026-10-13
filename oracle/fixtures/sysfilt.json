@@ -1,0 +1,79 @@
+{
+  "probe": "sysfilt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "set",
+      "args": "task",
+      "result": "0"
+    },
+    {
+      "function": "set",
+      "args": "system",
+      "result": "handle"
+    },
+    {
+      "function": "filter",
+      "args": "direct",
+      "result": "S77:401,F77:401,=0"
+    },
+    {
+      "function": "filter",
+      "args": "syseat",
+      "result": "S77:401,=1"
+    },
+    {
+      "function": "filter",
+      "args": "taskeat",
+      "result": "S77:401,F77:401,=1"
+    },
+    {
+      "function": "filter",
+      "args": "dialog",
+      "result": "S0:113,F0:113,S0:100,F0:100,=7"
+    },
+    {
+      "function": "filter",
+      "args": "msgbox",
+      "result": "S0:113,F0:113,S0:100,F0:100,=2"
+    },
+    {
+      "function": "filter",
+      "args": "menu",
+      "result": "S2:11f,F2:11f,S2:113,F2:113,S2:100,F2:100,S2:11f,F2:11f,=1"
+    },
+    {
+      "function": "filter",
+      "args": "scroll",
+      "result": "S5:202,F5:202,=0"
+    },
+    {
+      "function": "filter",
+      "args": "move",
+      "result": "=49"
+    },
+    {
+      "function": "filter",
+      "args": "sysmodal",
+      "result": "=0"
+    },
+    {
+      "function": "filter",
+      "args": "after",
+      "result": "S77:401,F77:401,=0"
+    },
+    {
+      "function": "filter",
+      "args": "unhooked",
+      "result": "=0"
+    }
+  ]
+}
