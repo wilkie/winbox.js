@@ -585,27 +585,6 @@ impl Setup {
             }
         }
 
-        // The probe is Windows' shell, as the recorder makes it
-        // (`record.mjs`, `setShell`): `SYSTEM.INI`'s `shell=` names it.
-        // Program Manager started by a probe reads it, and is not the shell
-        // (`progdde`; `PROGMAN.EXE` seg3 `0b88`-`0c0a`).
-        let at = placed
-            .iter()
-            .position(|(path, _)| path == "WINDOWS\\SYSTEM.INI");
-        let text = match at {
-            Some(at) => Some(placed[at].1.clone()),
-            None => std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok(),
-        };
-
-        if let Some(text) = text {
-            let shell = set_shell(&text, &format!("{upper}.EXE"));
-
-            match at {
-                Some(at) => placed[at].1 = shell,
-                None => placed.push(("WINDOWS\\SYSTEM.INI".to_string(), shell)),
-            }
-        }
-
         Some(Self {
             system,
             upper,
@@ -653,6 +632,7 @@ pub fn run_setup<T>(
         std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
+    name_the_shell(&mut setup.placed, &setup.windows, &setup.upper);
 
     for (path, bytes) in &setup.placed {
         let to = path
@@ -776,6 +756,29 @@ pub fn run_in_memory(
         .unwrap_or_default();
 
     Some((stop, records_of(&output), system))
+}
+
+/// The probe is Windows' shell, as the recorder makes it (`record.mjs`,
+/// `setShell`): `SYSTEM.INI`'s `shell=` names it. Program Manager started
+/// by a probe reads it, and is not the shell (`progdde`; `PROGMAN.EXE` seg3
+/// `0b88`-`0c0a`).
+fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, windows: &Path, upper: &str) {
+    let at = placed
+        .iter()
+        .position(|(path, _)| path == "WINDOWS\\SYSTEM.INI");
+    let text = match at {
+        Some(at) => Some(placed[at].1.clone()),
+        None => std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok(),
+    };
+
+    if let Some(text) = text {
+        let shell = set_shell(&text, &format!("{upper}.EXE"));
+
+        match at {
+            Some(at) => placed[at].1 = shell,
+            None => placed.push(("WINDOWS\\SYSTEM.INI".to_string(), shell)),
+        }
+    }
 }
 
 /// `SYSTEM.INI` with its first `shell=` line naming a program instead, as

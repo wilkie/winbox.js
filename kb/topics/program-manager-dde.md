@@ -144,7 +144,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 ## What it writes
 
 - [[measured]] The group files and PROGMAN.INI's `[Groups]` and `Order=` change as each command above says, at once, before the acknowledgement.
-- [[measured]] `Order=` is written with a space before each number. Read back by another program straight after the first CreateGroup it was `2 3 1 4`, the file loaded again; after later ones it was ` 2 3 1 4 5 6 7`, the written buffer still held ([[topic:profile-files]]).
+- [[measured]] `Order=` is written with a space before each number. Read back by another program straight after the first CreateGroup it was `2 3 1 4`, the file loaded again; after later ones it was ` 2 3 1 4 5 6 7`, the written buffer still held. [[read out]] KERNEL drops a held profile when the file's DOS date and time have changed since it opened it ([[topic:profile-files]], [[probe:profhold]]), and DOS's clock steps every two seconds: under DOSBox, Program Manager's first rewrite came in a later step than its start-up write. The engines' virtual clock does not cross that step there, so these records are a known gap of time, not of the rule.
 
 ## In winbox.js
 
