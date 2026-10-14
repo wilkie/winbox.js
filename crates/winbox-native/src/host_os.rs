@@ -5,7 +5,9 @@
 //! forward without winit's `focus_window`, which presses Alt to be let
 //! (the emulated machine would be given that Alt), one program's windows
 //! laid in front of the host's others, each monitor's work area,
-//! and the host's own order of the windows, for `--seamless-shots`.
+//! and the host's own order of the windows, for `--seamless-shots`; the
+//! desktop window manager's transitions turned off for each window, and a
+//! window kept from the screen (cloaked) until its first pixels are in it.
 //! Elsewhere, what winit offers, or nothing.
 
 use winit::event_loop::ActiveEventLoop;
@@ -83,6 +85,53 @@ pub fn never_activated(window: &Window) {
 
     #[cfg(not(windows))]
     let _ = window;
+}
+
+/// The desktop window manager's transitions -- the scaling and fading in
+/// of a window shown, and out of one hidden, minimized or restored -- turned
+/// off for a window, before it is first shown. Windows 3.1 shows, hides,
+/// minimizes and restores a window at once; the transitions are the host's
+/// own, and winit has no call for them. The user's own setting of the
+/// host's animation is left as it is. On Windows, the call's `HRESULT`.
+pub fn no_transitions(window: &Window) -> Option<i32> {
+    #[cfg(windows)]
+    {
+        handle_of(window)
+            .map(|handle| windows::set_attribute(handle, windows::TRANSITIONS_OFF, true))
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = window;
+        None
+    }
+}
+
+/// A window kept from the screen, or let onto it: shown on the host but
+/// cloaked, it is drawn into as a shown window is, and the desktop window
+/// manager composes none of it. A window made is cloaked as it is first
+/// shown, its first pixels put in, and uncloaked after: shown at once, it
+/// could be composed before its pixels came, empty. On Windows, the call's
+/// `HRESULT`.
+pub fn cloak(window: &Window, cloaked: bool) -> Option<i32> {
+    #[cfg(windows)]
+    {
+        handle_of(window).map(|handle| windows::set_attribute(handle, windows::CLOAK, cloaked))
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = (window, cloaked);
+        None
+    }
+}
+
+/// What this thread drew through GDI -- softbuffer's copies into the
+/// windows -- carried out now, before a window cloaked is let onto the
+/// screen.
+pub fn flush_drawing() {
+    #[cfg(windows)]
+    windows::flush();
 }
 
 /// The host's windows stacked front to back as given, none activated.
@@ -166,7 +215,10 @@ pub fn host_says(window: &Window) -> HostSays {
 #[allow(unsafe_code)]
 mod windows {
     use windows_sys::Win32::Foundation::RECT;
-    use windows_sys::Win32::Graphics::Gdi::{GetMonitorInfoW, MONITORINFO};
+    use windows_sys::Win32::Graphics::Dwm::{
+        DWMWA_CLOAK, DWMWA_TRANSITIONS_FORCEDISABLED, DWMWINDOWATTRIBUTE, DwmSetWindowAttribute,
+    };
+    use windows_sys::Win32::Graphics::Gdi::{GdiFlush, GetMonitorInfoW, MONITORINFO};
     use windows_sys::Win32::UI::WindowsAndMessaging::{
         GW_HWNDNEXT, GW_OWNER, GWL_EXSTYLE, GetForegroundWindow, GetTopWindow, GetWindow,
         GetWindowLongPtrW, HWND_BOTTOM, HWND_TOP, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOOWNERZORDER,
@@ -175,6 +227,33 @@ mod windows {
     };
 
     use super::HostSays;
+
+    pub const TRANSITIONS_OFF: DWMWINDOWATTRIBUTE = DWMWA_TRANSITIONS_FORCEDISABLED;
+    pub const CLOAK: DWMWINDOWATTRIBUTE = DWMWA_CLOAK;
+
+    /// A desktop window manager's attribute of a window that is a `BOOL`,
+    /// set; its `HRESULT`.
+    pub fn set_attribute(handle: isize, attribute: DWMWINDOWATTRIBUTE, on: bool) -> i32 {
+        let value: i32 = on.into();
+
+        // SAFETY: the handle is a window of this thread's, living; the
+        // value is a BOOL, its size given, read during the call only.
+        unsafe {
+            DwmSetWindowAttribute(
+                handle,
+                attribute as u32,
+                (&raw const value).cast(),
+                size_of::<i32>() as u32,
+            )
+        }
+    }
+
+    pub fn flush() {
+        // SAFETY: carries out this thread's GDI calls batched; takes nothing.
+        unsafe {
+            GdiFlush();
+        }
+    }
 
     /// A monitor's work area, as the host has it.
     pub fn work_area(monitor: isize) -> Option<[i32; 4]> {

@@ -18,7 +18,7 @@ cpal = "0.18"
 # Seamless mode's calls winit has none for (`host_os.rs`): the version winit
 # itself uses.
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
+windows-sys = { version = "0.52", features = ["Win32_Foundation", "Win32_Graphics_Dwm", "Win32_Graphics_Gdi", "Win32_UI_WindowsAndMessaging"] }
 
 [lints]
 workspace = true

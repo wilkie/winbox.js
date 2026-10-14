@@ -556,6 +556,177 @@ pub fn fit(
     out
 }
 
+/// The host's windows of `plan.destroy` taken away at the start of a frame,
+/// and those taken away at its end. A window shown otherwise -- made again
+/// with another owner, or onto the task bar or off it -- goes at the start,
+/// before it is made again; so does one whose owner on the host does, which
+/// the host takes with it. A window no longer shown at all -- a menu closed
+/// -- goes at the end, after the windows behind it were shown what it
+/// uncovers, so that the host never shows the gap, nor its pixels still in
+/// its owner. Each part keeps `plan.destroy`'s order, owned before owners.
+pub fn destroy_order(made: &[Made], plan: &Plan) -> (Vec<usize>, Vec<usize>) {
+    let remade = |index: usize| plan.order.contains(&index);
+    let mut first: Vec<usize> = plan
+        .destroy
+        .iter()
+        .copied()
+        .filter(|&index| remade(index))
+        .collect();
+    // Owned, on the host, by one taken away first: taken with it.
+    let owner = |index: usize| {
+        made.iter()
+            .find(|one| one.index == index)
+            .and_then(|one| one.owner)
+    };
+    let mut grew = true;
+
+    while grew {
+        grew = false;
+
+        for &index in &plan.destroy {
+            if !first.contains(&index) && owner(index).is_some_and(|owner| first.contains(&owner)) {
+                first.push(index);
+                grew = true;
+            }
+        }
+    }
+
+    let first_ordered = plan
+        .destroy
+        .iter()
+        .copied()
+        .filter(|index| first.contains(index))
+        .collect();
+    let last = plan
+        .destroy
+        .iter()
+        .copied()
+        .filter(|index| !first.contains(index))
+        .collect();
+
+    (first_ordered, last)
+}
+
+/// The parts of window `index`'s rectangle, from its top left, that the
+/// host must not be shown yet: where a window in front of it in the
+/// emulated order (`tops`, front to back), shown and not minimized, has no
+/// window showing on the host (`on_host`). The emulated screen holds that
+/// window's pixels there -- a menu dropped in front of its owner -- and
+/// the host, showing only the owner's window, would show them inside it.
+pub fn masked(index: usize, tops: &[TopWindow], on_host: impl Fn(usize) -> bool) -> Vec<[i32; 4]> {
+    let Some(at) = tops.iter().position(|top| top.index == index) else {
+        return Vec::new();
+    };
+    let [left, top, width, height] = shown_rect(&tops[at]);
+
+    tops[..at]
+        .iter()
+        .filter(|above| {
+            wanted(above) && above.placement != Placement::Minimized && !on_host(above.index)
+        })
+        .filter_map(|above| {
+            let [l, t, w, h] = above.rect;
+            let (x0, y0) = (l.max(left), t.max(top));
+            let (x1, y1) = ((l + w).min(left + width), (t + h).min(top + height));
+
+            (x0 < x1 && y0 < y1).then_some([x0 - left, y0 - top, x1 - x0, y1 - y0])
+        })
+        .collect()
+}
+
+/// A window's pixels as the host is to be shown them: `cut` as the frame
+/// cut it, but where `masks` lie, what the host was shown before (`old`, the
+/// same size), which a window yet to show will cover. With nothing shown
+/// before, the cut is all there is.
+pub fn with_masks(width: usize, cut: &[u32], old: Option<&[u32]>, masks: &[[i32; 4]]) -> Vec<u32> {
+    let mut out = cut.to_vec();
+    let Some(old) = old.filter(|old| old.len() == cut.len()) else {
+        return out;
+    };
+
+    for &[left, top, w, h] in masks {
+        for row in top.max(0)..top + h {
+            for column in left.max(0)..(left + w).min(width as i32) {
+                let at = row as usize * width + column as usize;
+
+                if at < out.len() {
+                    out[at] = old[at];
+                }
+            }
+        }
+    }
+
+    out
+}
+
+/// The rectangle around every pixel that differs between what the host was
+/// shown (`old`) and what it is to be shown (`new`), `width` across, from
+/// the window's top left: `None` where none does, the whole where nothing
+/// of the same size was shown before.
+pub fn damage(width: usize, height: usize, old: &[u32], new: &[u32]) -> Option<[i32; 4]> {
+    if old.len() != new.len() || new.len() != width * height {
+        return Some([0, 0, width as i32, height as i32]);
+    }
+
+    let (mut x0, mut y0, mut x1, mut y1) = (width, height, 0, 0);
+
+    for row in 0..height {
+        let line = row * width..(row + 1) * width;
+        let (a, b) = (&old[line.clone()], &new[line]);
+
+        if a == b {
+            continue;
+        }
+
+        let first = a.iter().zip(b).position(|(a, b)| a != b).unwrap_or(0);
+        let last = width
+            - 1
+            - a.iter()
+                .rev()
+                .zip(b.iter().rev())
+                .position(|(a, b)| a != b)
+                .unwrap_or(0);
+
+        x0 = x0.min(first);
+        x1 = x1.max(last + 1);
+        y0 = y0.min(row);
+        y1 = row + 1;
+    }
+
+    (x1 > x0).then(|| [x0 as i32, y0 as i32, (x1 - x0) as i32, (y1 - y0) as i32])
+}
+
+/// A rectangle of a window's own pixels, `width` by `height`, on its host's
+/// window, `out_width` by `out_height`: every host's pixel that `fit` takes
+/// from inside it.
+pub fn damage_on_host(
+    rect: [i32; 4],
+    width: usize,
+    height: usize,
+    out_width: usize,
+    out_height: usize,
+) -> [u32; 4] {
+    let (width, height) = (width.max(1), height.max(1));
+    let [x, y, w, h] = rect.map(|n| n.max(0) as usize);
+    // The first host's pixel taking from column `x`, and the first past it.
+    let start = |at: usize, from: usize, to: usize| (at * to).div_ceil(from);
+    let (x0, x1) = (
+        start(x, width, out_width),
+        start(x + w, width, out_width).min(out_width),
+    );
+    let (y0, y1) = (
+        start(y, height, out_height),
+        start(y + h, height, out_height).min(out_height),
+    );
+
+    [
+        x0 as u32,
+        y0 as u32,
+        x1.saturating_sub(x0) as u32,
+        y1.saturating_sub(y0) as u32,
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1039,5 +1210,136 @@ mod tests {
         let out = fit(2, 1, &[1, 2], 4, 2);
 
         assert_eq!(out, vec![1, 1, 2, 2, 1, 1, 2, 2]);
+    }
+
+    /// Notepad's window, 2, with File's menu, 7, dropped in front of it:
+    /// USER's own window, owned on the host by the active window.
+    fn notepad_and_menu(menu_visible: bool) -> [TopWindow; 2] {
+        let mut main = top(2, None, true);
+        let mut menu = top(7, None, menu_visible);
+
+        main.rect = [100, 100, 400, 300];
+        main.active = true;
+        menu.rect = [104, 140, 120, 90];
+        menu.kind = TopKind::Menu;
+        [menu, main]
+    }
+
+    fn menu_made(index: usize, owner: usize) -> Made {
+        Made {
+            index,
+            owner: Some(owner),
+            kind: TopKind::Menu,
+            task_bar: false,
+        }
+    }
+
+    #[test]
+    fn a_menu_opened_is_made_and_its_owner_kept() {
+        let tops = notepad_and_menu(true);
+        let made = [made(2, None)];
+        let plan = plan(&made, &tops);
+
+        assert_eq!(plan.create, vec![menu_made(7, 2)]);
+        assert_eq!(destroy_order(&made, &plan), (Vec::new(), Vec::new()));
+    }
+
+    #[test]
+    fn a_menu_closed_is_taken_away_last() {
+        let tops = notepad_and_menu(false);
+        let made = [made(2, None), menu_made(7, 2)];
+        let plan = plan(&made, &tops);
+
+        assert_eq!(plan.destroy, vec![7]);
+        assert_eq!(destroy_order(&made, &plan), (Vec::new(), vec![7]));
+    }
+
+    #[test]
+    fn a_window_made_again_goes_first_with_what_it_owns() {
+        // The main window hidden: its dialog, 5, is made again owned by
+        // nothing; the dialog's menu, 9, closed as well, is owned on the
+        // host by the dialog, and goes with it.
+        let tops = [
+            top(9, None, false),
+            top(5, Some(2), true),
+            top(2, None, false),
+        ];
+        let made = [made(2, None), made(5, Some(2)), menu_made(9, 5)];
+        let plan = plan(&made, &tops);
+
+        assert_eq!(plan.destroy, vec![9, 5, 2]);
+        assert_eq!(destroy_order(&made, &plan), (vec![9, 5], vec![2]));
+    }
+
+    #[test]
+    fn a_window_in_front_not_yet_on_the_host_is_masked() {
+        let tops = notepad_and_menu(true);
+
+        // The menu's own window not showing: its rectangle, from the
+        // owner's top left, keeps what the owner showed before.
+        assert_eq!(masked(2, &tops, |index| index == 2), vec![[4, 40, 120, 90]]);
+        // Showing, nothing is masked: the host shows the menu over it.
+        assert!(masked(2, &tops, |_| true).is_empty());
+        // Nothing is in front of the menu.
+        assert!(masked(7, &tops, |_| false).is_empty());
+    }
+
+    #[test]
+    fn only_what_shows_in_front_and_overlaps_is_masked() {
+        let [mut menu, main] = notepad_and_menu(true);
+        let owner_only = |index: usize| index == 2;
+
+        // Past the owner's bottom right: cut to the owner.
+        menu.rect = [450, 380, 100, 100];
+        assert_eq!(
+            masked(2, &[menu.clone(), main.clone()], owner_only),
+            vec![[350, 280, 50, 20]]
+        );
+        // Clear of it.
+        menu.rect = [600, 100, 50, 50];
+        assert!(masked(2, &[menu.clone(), main.clone()], owner_only).is_empty());
+        // Hidden, or an icon, it covers nothing on the host.
+        menu.rect = [104, 140, 120, 90];
+        menu.visible = false;
+        assert!(masked(2, &[menu.clone(), main.clone()], owner_only).is_empty());
+        menu.visible = true;
+        menu.placement = Placement::Minimized;
+        assert!(masked(2, &[menu, main], owner_only).is_empty());
+    }
+
+    #[test]
+    fn a_mask_keeps_what_was_shown_before() {
+        // 3 by 2: the old pixels 0, the new 1, the middle column masked.
+        let masks = [[1, 0, 1, 2]];
+
+        assert_eq!(
+            with_masks(3, &[1; 6], Some(&[0; 6]), &masks),
+            vec![1, 0, 1, 1, 0, 1]
+        );
+        // Nothing shown before: the cut is all there is.
+        assert_eq!(with_masks(3, &[1; 6], None, &masks), vec![1; 6]);
+    }
+
+    #[test]
+    fn only_what_changed_is_shown_again() {
+        let old = [0; 12];
+        let mut new = old;
+
+        assert_eq!(damage(4, 3, &old, &new), None);
+        new[4 + 1] = 1;
+        new[2 * 4 + 2] = 1;
+        assert_eq!(damage(4, 3, &old, &new), Some([1, 1, 2, 2]));
+        // Nothing of the same size before: the whole.
+        assert_eq!(damage(4, 3, &[], &new), Some([0, 0, 4, 3]));
+    }
+
+    #[test]
+    fn what_changed_is_found_on_the_host() {
+        // At a scale of 2.
+        assert_eq!(damage_on_host([1, 1, 2, 1], 4, 2, 8, 4), [2, 2, 4, 2]);
+        // At the size the host's window has while it is stretched: `fit`
+        // takes columns 0, 0, 1, 2 for the host's 0 to 3.
+        assert_eq!(damage_on_host([1, 0, 1, 1], 3, 1, 4, 1), [2, 0, 1, 1]);
+        assert_eq!(damage_on_host([0, 0, 3, 1], 3, 1, 4, 1), [0, 0, 4, 1]);
     }
 }

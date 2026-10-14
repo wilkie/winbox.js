@@ -121,7 +121,7 @@ On Windows, give `--windows` a local copy of the installation. An installation r
 
 ```shell
 winbox-native PROGRAM.EXE --windows DIR --seamless [--scale N | --resolution WxH]
-    [--seamless-shots DIR [--shot-seconds N]] [--script FILE]
+    [--seamless-shots DIR [--shot-seconds N]] [--seamless-log FILE] [--script FILE]
 ```
 
 `--seamless` shows each of the program's windows as a window of the host's,
@@ -144,6 +144,8 @@ Windows first; on X it shows the windows, but USER's own loop moves them.
 `--seamless-shots` saves each window's pixels and a `windows.json` of where
 they are, and `--script` plays steps at set times; both are for trying it
 without a hand on the mouse (`crates/winbox-native/src/script.rs`).
+`--seamless-log` writes, frame by frame, which host windows were made,
+shown and taken away and which rectangles each was shown.
 
 ### Task running
 

@@ -34,7 +34,9 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use softbuffer::{Context, Surface};
+use std::num::NonZeroU32;
+
+use softbuffer::{Context, Rect, Surface};
 use winbox_win16::System;
 use winbox_win16::host::Host;
 use winbox_win16::seamless::{HTCAPTION, HostDrag, HostRequest, IconRgba, TopKind, TopWindow};
@@ -50,8 +52,8 @@ use crate::host_os;
 use crate::input::{Input, Inputs};
 use crate::script::{Script, Step};
 use crate::seamless::{
-    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, fit, host_switches, plan,
-    raised_group, shown_rect,
+    HostScreen, Made, Mapping, ScaleChoice, bounds, choose_scale, damage, damage_on_host,
+    destroy_order, fit, host_switches, masked, plan, raised_group, shown_rect, wanted, with_masks,
 };
 
 /// How long a minimize or restore the host made waits for the engine to
@@ -133,6 +135,11 @@ struct App {
     requests: Vec<HostRequest>,
     icons: Vec<(usize, IconRgba)>,
     closing: bool,
+    /// `--seamless-log`: what each frame did with the host's windows, and
+    /// the frames counted.
+    log: Option<std::fs::File>,
+    notes: Vec<String>,
+    frames: u64,
 }
 
 impl std::fmt::Debug for App {
@@ -160,6 +167,7 @@ impl Seamless {
         events: EventLoop<()>,
         screen: HostScreen,
         shots: Option<PathBuf>,
+        log: Option<PathBuf>,
         shot_seconds: u64,
         speaker: Option<crate::speaker::Speaker>,
         script: Script,
@@ -168,6 +176,11 @@ impl Seamless {
             events,
             app: App {
                 mapping: Some(screen.mapping),
+                log: log.and_then(|file| {
+                    std::fs::File::create(&file)
+                        .map_err(|error| eprintln!("seamless log, not written: {error}"))
+                        .ok()
+                }),
                 ..App::default()
             },
             shots,
@@ -314,6 +327,42 @@ impl App {
         self.tops.iter().find(|top| top.index == index)
     }
 
+    /// A line of `--seamless-log`, where it is kept.
+    fn note(&mut self, line: impl FnOnce() -> String) {
+        if self.log.is_some() {
+            self.notes.push(line());
+        }
+    }
+
+    /// The frame's lines written out.
+    fn write_notes(&mut self) {
+        use std::io::Write as _;
+
+        self.frames += 1;
+
+        let Some(log) = self.log.as_mut() else {
+            return;
+        };
+
+        for line in self.notes.drain(..) {
+            let _ = writeln!(log, "frame {}: {line}", self.frames);
+        }
+    }
+
+    /// A window the host shows now: its window made, shown and not
+    /// minimized there.
+    fn on_host(&self, index: usize) -> bool {
+        self.find(index)
+            .is_some_and(|at| self.shown[at].visible && !self.shown[at].minimized)
+    }
+
+    fn take_away(&mut self, index: usize, why: &str) {
+        if let Some(at) = self.find(index) {
+            drop(self.shown.remove(at));
+            self.note(|| format!("take away #{index} ({why})"));
+        }
+    }
+
     /// The window the host's drag has now, as a rectangle of the emulated
     /// screen.
     fn drag_moved(&mut self, at: usize) {
@@ -379,6 +428,26 @@ impl App {
             return;
         };
         let window = Rc::new(window);
+        // Shown, hidden, minimized and restored at once, as Windows 3.1
+        // does: none of the desktop window manager's transitions.
+        let transitions = host_os::no_transitions(&window);
+
+        if let Some(result) = transitions.filter(|&result| result != 0) {
+            eprintln!("seamless: the host's transitions left on for {title}: {result:#010x}");
+        }
+
+        self.note(|| {
+            format!(
+                "make #{} {:?} {:?} at {rect:?}, owner {:?}{}",
+                made.index,
+                top.kind,
+                top.caption,
+                made.owner.map(|owner| format!("#{owner}")),
+                transitions.map_or(String::new(), |result| format!(
+                    ", transitions off {result:#010x}"
+                ))
+            )
+        });
 
         // Windows draws its own cursor on the screen.
         window.set_cursor_visible(false);
@@ -415,11 +484,12 @@ impl App {
         };
         let made: Vec<Made> = self.shown.iter().map(|shown| shown.made).collect();
         let plan = plan(&made, &self.tops);
+        // A window shown otherwise is taken away now, to be made again; one
+        // no longer shown, at the end, once what it uncovers is shown.
+        let (first, last) = destroy_order(&made, &plan);
 
-        for index in &plan.destroy {
-            if let Some(at) = self.find(*index) {
-                drop(self.shown.remove(at));
-            }
+        for index in first {
+            self.take_away(index, "to be made again");
         }
 
         for made in plan.create {
@@ -447,9 +517,16 @@ impl App {
         }
 
         let engine_dragging = self.engine_dragging;
+        // The windows made this frame, shown cloaked: on the host, but kept
+        // from the screen until their first pixels are in them.
+        let mut fresh = Vec::new();
 
         for at in 0..self.shown.len() {
-            let Some(top) = self.top(self.shown[at].made.index).cloned() else {
+            let Some(top) = self
+                .top(self.shown[at].made.index)
+                .filter(|top| !last.contains(&top.index))
+                .cloned()
+            else {
                 continue;
             };
             let dragging = self.dragging == Some(top.index)
@@ -457,18 +534,21 @@ impl App {
             let shown = &mut self.shown[at];
 
             if !shown.visible {
+                let cloaked = host_os::cloak(&shown.window, true);
+
                 shown.window.set_visible(true);
                 shown.visible = true;
-
-                // The shell gives a window shown its button again; taken
-                // away once more, as winit took it when it was made.
-                #[cfg(windows)]
-                {
-                    use winit::platform::windows::WindowExtWindows;
-
-                    shown.window.set_skip_taskbar(!shown.made.task_bar);
-                }
+                fresh.push(top.index);
+                self.note(|| {
+                    format!(
+                        "show #{} cloaked{}",
+                        top.index,
+                        cloaked.map_or(String::new(), |result| format!(" {result:#010x}"))
+                    )
+                });
             }
+
+            let shown = &mut self.shown[at];
 
             if matches!(
                 top.kind,
@@ -614,7 +694,65 @@ impl App {
         self.active = active;
 
         self.start_drag();
-        self.present();
+
+        // The windows made: their first pixels put in while cloaked, then
+        // let onto the screen, already stacked. Only then are the windows
+        // behind them shown what changed, so that a menu's pixels, drawn
+        // into its owner's rectangle of the screen, never show inside the
+        // owner's window before the menu's own window shows them.
+        self.present(&fresh);
+        host_os::flush_drawing();
+
+        for &index in &fresh {
+            let Some(at) = self.find(index) else {
+                continue;
+            };
+            let shown = &self.shown[at];
+            let uncloaked = host_os::cloak(&shown.window, false);
+
+            // The shell gives a window shown its button again; taken away
+            // once more, as winit took it when it was made.
+            #[cfg(windows)]
+            {
+                use winit::platform::windows::WindowExtWindows;
+
+                shown.window.set_skip_taskbar(!shown.made.task_bar);
+            }
+
+            self.note(|| {
+                format!(
+                    "uncloak #{index}{}",
+                    uncloaked.map_or(String::new(), |result| format!(" {result:#010x}"))
+                )
+            });
+        }
+
+        // Front to back: a window moved or sized in front of another, as a
+        // menu moved from File to Edit, has its pixels before the one
+        // behind is shown what it covers.
+        let rest: Vec<usize> = self
+            .order
+            .iter()
+            .copied()
+            .chain(self.shown.iter().map(|shown| shown.made.index))
+            .filter(|index| !fresh.contains(index))
+            .fold(Vec::new(), |mut rest, index| {
+                if !rest.contains(&index) {
+                    rest.push(index);
+                }
+
+                rest
+            });
+
+        self.present(&rest);
+
+        // Taken away last, the windows behind already showing what it
+        // covered.
+        for index in last {
+            self.take_away(index, "no longer shown");
+        }
+
+        self.write_notes();
     }
 
     /// The drag the engine handed over, begun on the host -- or, from a
@@ -693,37 +831,61 @@ impl App {
         }
     }
 
-    /// Each window's rectangle of the screen put in its host's window,
-    /// where it changed.
-    fn present(&mut self) {
-        for shown in &mut self.shown {
-            if shown.minimized || self.dragging == Some(shown.made.index) {
+    /// The windows `which`, in its order, each shown its rectangle of the
+    /// screen, the part that changed. Where a window in front of it in the emulated
+    /// order shows on the host no window of its own yet, it keeps what it
+    /// showed before (`masked`): the host would show that window's pixels
+    /// inside this one.
+    fn present(&mut self, which: &[usize]) {
+        for &index in which {
+            let Some(at) = self.find(index) else {
+                continue;
+            };
+
+            if self.shown[at].minimized || self.dragging == Some(index) {
                 continue;
             }
 
-            let rect = shown.rect;
+            let rect = self.shown[at].rect;
+            let masks = masked(index, &self.tops, |other| self.on_host(other));
             // Its pixels as the frame cut them, at the rectangle it has now.
             let Some((_, _, cutout)) = self
                 .cuts
                 .iter()
-                .find(|(index, at, _)| *index == shown.made.index && *at == rect)
+                .find(|(one, at, _)| *one == index && *at == rect)
             else {
                 continue;
             };
+            let shown = &mut self.shown[at];
+            let (width, height) = (rect[2].max(0) as usize, rect[3].max(0) as usize);
             let size = shown.window.inner_size();
             let (out_width, out_height) = (size.width, size.height);
+            // What the host's window holds is of the same size: only the
+            // pixels that differ are shown again.
+            let same = shown.last_rect[2..] == rect[2..]
+                && shown.last_size == (out_width, out_height)
+                && shown.pixels.len() == cutout.len();
+            let pixels = with_masks(
+                width,
+                cutout,
+                same.then_some(shown.pixels.as_slice()),
+                &masks,
+            );
+            let changed = if same {
+                damage(width, height, &shown.pixels, &pixels)
+            } else {
+                Some([0, 0, rect[2], rect[3]])
+            };
 
-            if *cutout == shown.pixels
-                && rect == shown.last_rect
-                && (out_width, out_height) == shown.last_size
-            {
+            shown.last_rect = rect;
+
+            let Some(changed) = changed else {
                 continue;
-            }
-
+            };
             let (Some(surface), Some(w), Some(h)) = (
                 shown.surface.as_mut(),
-                std::num::NonZeroU32::new(out_width),
-                std::num::NonZeroU32::new(out_height),
+                NonZeroU32::new(out_width),
+                NonZeroU32::new(out_height),
             ) else {
                 continue;
             };
@@ -736,19 +898,38 @@ impl App {
                 continue;
             };
             let drawn = fit(
-                rect[2].max(0) as usize,
-                rect[3].max(0) as usize,
-                cutout,
+                width,
+                height,
+                &pixels,
                 out_width as usize,
                 out_height as usize,
             );
 
             buffer.copy_from_slice(&drawn);
 
-            if buffer.present().is_ok() {
-                shown.pixels.clone_from(cutout);
-                shown.last_rect = rect;
+            let [x, y, w, h] = damage_on_host(
+                changed,
+                width,
+                height,
+                out_width as usize,
+                out_height as usize,
+            );
+            let (Some(w), Some(h)) = (NonZeroU32::new(w), NonZeroU32::new(h)) else {
+                continue;
+            };
+
+            if buffer
+                .present_with_damage(&[Rect {
+                    x,
+                    y,
+                    width: w,
+                    height: h,
+                }])
+                .is_ok()
+            {
+                shown.pixels = pixels;
                 shown.last_size = (out_width, out_height);
+                self.note(|| format!("present #{index} {changed:?}, masked {masks:?}"));
             }
         }
     }
@@ -1056,16 +1237,14 @@ impl Host for Seamless {
         // Each shown window's rectangle of the screen, and no more of it:
         // the screen is the host's desktop. The cursor is drawn only while
         // the pointer is over one of the windows, or a button is held:
-        // elsewhere it is the host's.
+        // elsewhere it is the host's. A window to be made this frame is
+        // cut too: its first pixels are put in it before it shows.
         let cursor = app.hovered.is_some() || app.inputs.buttons != 0;
 
         app.cuts = app
             .tops
             .iter()
-            .filter(|top| {
-                top.placement != Placement::Minimized
-                    && app.shown.iter().any(|shown| shown.made.index == top.index)
-            })
+            .filter(|top| top.placement != Placement::Minimized && wanted(top))
             .map(|top| {
                 let rect = shown_rect(top);
 

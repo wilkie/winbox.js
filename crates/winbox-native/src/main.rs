@@ -6,7 +6,7 @@
 //! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
 //! vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640] [--resolution WxH] [--scale N]
 //! [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]] [--sound [--sound-dump FILE.wav]]
-//! [--seamless [--seamless-shots DIR] [--script FILE]]`
+//! [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]`
 //!
 //! Desktop mode, the default, shows the whole screen, desktop and all, in
 //! one window. `--seamless` shows each window at the top as a window of
@@ -25,7 +25,8 @@
 //! moves and sizes the windows; on X, USER's own loop does. `--seamless-shots` saves each
 //! host's window's pixels, from this program's own buffers, and a
 //! `windows.json` of where each is, `--shot-seconds` in and at a script's
-//! `shots`; `--script` plays steps at set times (`script.rs`).
+//! `shots`; `--seamless-log` writes what was done with the host's windows,
+//! frame by frame; `--script` plays steps at set times (`script.rs`).
 //!
 //! `--windows` is an installed Windows 3.1 directory, read and never
 //! written, beneath drive C: (`oracle/build/drive-c`): its display driver
@@ -96,6 +97,8 @@ struct Options {
     /// the one its scale is chosen to come nearest.
     resolution: Option<(i16, i16)>,
     seamless_shots: Option<PathBuf>,
+    /// What seamless mode did with the host's windows, frame by frame.
+    seamless_log: Option<PathBuf>,
     script: Option<PathBuf>,
 }
 
@@ -116,6 +119,7 @@ fn options() -> Options {
         scale: None,
         resolution: None,
         seamless_shots: None,
+        seamless_log: None,
         script: None,
     };
 
@@ -146,6 +150,7 @@ fn options() -> Options {
                 });
             }
             "--seamless-shots" => options.seamless_shots = arguments.next().map(PathBuf::from),
+            "--seamless-log" => options.seamless_log = arguments.next().map(PathBuf::from),
             "--script" => options.script = arguments.next().map(PathBuf::from),
             "--display" => {
                 if let Some(display) = arguments.next() {
@@ -158,7 +163,7 @@ fn options() -> Options {
 
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--script FILE]]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]"
         );
         std::process::exit(2);
     };
@@ -428,6 +433,7 @@ fn main() {
         scale,
         resolution,
         seamless_shots,
+        seamless_log,
         script,
     } = options();
     let bytes = std::fs::read(&file).expect("the program's file");
@@ -554,6 +560,7 @@ fn main() {
             events,
             host_screen,
             seamless_shots,
+            seamless_log,
             shot_seconds,
             sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
             script,
