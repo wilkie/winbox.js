@@ -263,6 +263,11 @@ impl System {
     }
 
     fn list_shape(&mut self, index: usize) -> Shape {
+        // Drawn at once only where it shows, its parents too, as
+        // `IsWindowVisible` says: a list in a dialog not yet shown draws
+        // nothing (**recorded** by `ofnopen`: COMMDLG's folders' list,
+        // filled in `WM_INITDIALOG`, asks for no `WM_DRAWITEM`).
+        let shows = self.shows(index);
         let window = self.control_window(index);
         let control = window.control.as_ref().expect("a control");
 
@@ -271,7 +276,7 @@ impl System {
             count: control.items.len() as i32,
             client_width: window.client_width(),
             client_height: window.client_height(),
-            visible: window.visible,
+            visible: shows,
         }
     }
 

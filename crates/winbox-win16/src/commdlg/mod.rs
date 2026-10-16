@@ -32,9 +32,15 @@
 //!    longer a stub there, and `tests::ours_agree` checks the two engines
 //!    answer the same exports.
 
-// The helpers below are for the dialogs, each used as one is made
-// WinBox's own.
-#![allow(dead_code)]
+mod api;
+mod file_command;
+pub mod file_dialogs;
+mod file_init;
+mod file_lists;
+mod file_ok;
+pub mod parse;
+mod pictures;
+pub mod resources;
 
 use crate::call::{Answer, Args, Implementation, Stop};
 use crate::engine::{Engine, GuestArg, Register};
@@ -50,6 +56,13 @@ pub const NAME: &str = "COMMDLG";
 pub(crate) fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "CommDlgExtendedError" => Implementation::Sync(comm_dlg_extended_error),
+        "GetFileTitle" => Implementation::Sync(parse::get_file_title),
+        "GetOpenFileName" => Implementation::Async(file_dialogs::get_open_file_name),
+        "GetSaveFileName" => Implementation::Async(file_dialogs::get_save_file_name),
+        "FileOpenDlgProc" => Implementation::Async(file_init::file_open_dlg_proc),
+        "FileSaveDlgProc" => Implementation::Async(file_init::file_save_dlg_proc),
+        "dwLBSubclass" => Implementation::Async(file_init::dw_lb_subclass),
+        "dwOKSubclass" => Implementation::Async(file_init::dw_ok_subclass),
         _ => return None,
     })
 }
@@ -149,6 +162,39 @@ pub(crate) async fn call_hook(
     Ok(answer as u16)
 }
 
+/// A hook called as `call_hook` calls one, its `lParam` a far pointer to a
+/// string laid out below the stack, as COMMDLG gives one of its own
+/// buffers: `SHAREVISTRING`'s path (seg2 `1e67`, `2c9f`).
+pub(crate) async fn call_hook_text(
+    engine: &Engine,
+    hook: u32,
+    hwnd: u16,
+    message: u16,
+    wparam: u16,
+    text: &[u8],
+) -> Result<u16, Stop> {
+    let ds = data_selector(&engine.system());
+    let mut bytes = text.to_vec();
+
+    bytes.push(0);
+
+    let answer = engine
+        .call_with(
+            hook,
+            &[
+                GuestArg::Word(hwnd),
+                GuestArg::Word(message),
+                GuestArg::Word(wparam),
+                GuestArg::Struct(bytes),
+            ],
+            &[Register::Segment(winbox_cpu::DS, ds)],
+        )
+        .await?
+        .0;
+
+    Ok(answer as u16)
+}
+
 /// The cursor while `COMMDLG` works: the hourglass, `busy`, or the arrow
 /// (entry 32, `COMMDLG.DLL` seg2 `08e2`): `SetCursor(LoadCursor(0,
 /// IDC_WAIT))` or `IDC_ARROW`. Nothing while its Open or Save dialog is
@@ -204,13 +250,15 @@ pub(crate) fn message(system: &mut System, name: &str) -> u16 {
 }
 
 /// What `COMMDLG` keeps of its own.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default, Clone)]
 pub struct State {
     /// What `CommDlgExtendedError` answers, while the file is not loaded.
     pub error: u32,
     /// Whether an Open or Save dialog is being made: no cursor is set
     /// (`[0CACh]`, `COMMDLG.DLL` seg2 `4354`).
     pub initialising: bool,
+    /// What the file boxes keep (`file_dialogs.rs`).
+    pub files: file_dialogs::Shared,
 }
 
 /// Where the loaded file keeps its extended error, as a far pointer: the

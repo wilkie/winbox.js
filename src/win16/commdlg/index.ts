@@ -3,8 +3,11 @@
 /** @namespace CommDlg */
 
 import { Module } from '../module.js';
-import { segmentSelector } from '../selectors.js';
-import { DWORD } from '../types.js';
+import { BOOL, DWORD, FARPTR, HWND, INT, LPARAM, LRESULT, UINT, WPARAM } from '../types.js';
+import { GetOpenFileName, GetSaveFileName } from './file-dialogs.js';
+import { FileOpenDlgProc, FileSaveDlgProc, dwLBSubclass, dwOKSubclass } from './file-init.js';
+import { procAddressOf, registerCommDlg } from './proc-address.js';
+import { GetFileTitle } from './parse-file.js';
 import { CommDlgExtendedError } from './state.js';
 
 /**
@@ -61,13 +64,13 @@ export class CommDlg extends Module {
     return [
       // 0 // "Common Windows Dialogs, Ver 3.10"
       null,
-      [CommDlg.stub, 'GetOpenFileName', 4],
-      [CommDlg.stub, 'GetSaveFileName', 4],
+      [GetOpenFileName, 'GetOpenFileName', 4, [FARPTR], BOOL],
+      [GetSaveFileName, 'GetSaveFileName', 4, [FARPTR], BOOL],
       [CommDlg.stub, 'unknown'],
       [CommDlg.stub, 'unknown'],
       [CommDlg.stub, 'ChooseColor', 4],
-      [CommDlg.stub, 'FileOpenDlgProc', 10],
-      [CommDlg.stub, 'FileSaveDlgProc', 10],
+      [FileOpenDlgProc, 'FileOpenDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
+      [FileSaveDlgProc, 'FileSaveDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [CommDlg.stub, 'ColorDlgProc', 10],
       [CommDlg.stub, 'LoadAlterBitmap', 10],
       // 10 //
@@ -89,12 +92,12 @@ export class CommDlg extends Module {
       [CommDlg.stub, 'unknown'],
       [CommDlg.stub, 'WantArrows', 10],
       [CommDlgExtendedError, 'CommDlgExtendedError', 0, [], DWORD],
-      [CommDlg.stub, 'GetFileTitle', 10],
+      [GetFileTitle, 'GetFileTitle', 10, [FARPTR, FARPTR, INT], INT],
       [CommDlg.stub, 'WEP', 2],
-      [CommDlg.stub, 'dwLBSubclass', 10],
+      [dwLBSubclass, 'dwLBSubclass', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       // 30 //
       [CommDlg.stub, 'dwUpArrowHack', 10],
-      [CommDlg.stub, 'dwOKSubclass', 10],
+      [dwOKSubclass, 'dwOKSubclass', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlg.stub, 'Unknown', 2],
       [CommDlg.stub, 'Unknown', 0],
       [CommDlg.stub, 'Unknown', 0],
@@ -125,9 +128,14 @@ export class CommDlg extends Module {
   }
 }
 
+/** COMMDLG's table, read once. */
+let table: any[] | null = null;
+
 /** Whether WinBox answers an ordinal of `COMMDLG`'s. */
 export function ours(ordinal: number) {
-  const entry = CommDlg.exports[ordinal];
+  table ??= CommDlg.exports;
+
+  const entry = table[ordinal];
 
   return !!entry && entry[0] !== CommDlg.stub;
 }
@@ -155,11 +163,7 @@ export function redirect(modules: any, loader: any, ordinal: number) {
  * an ordinal it does not answer.
  */
 export function procAddress(system: any, ordinal: number): number {
-  if (!ours(ordinal)) {
-    return 0;
-  }
-
-  const info = system._modules.load(CommDlg).lookup(ordinal);
-
-  return ((segmentSelector(info.segment) << 16) | info.offset) >>> 0;
+  return procAddressOf(system, ordinal);
 }
+
+registerCommDlg(CommDlg, ours);

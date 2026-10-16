@@ -75,7 +75,13 @@ import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { buildLines, mlEditMessage, mlPasteText, type LinesHost } from './mledit.js';
-import { clipboardCharacter, clipboardKey, editClipboard, WM_CLEAR, WM_CUT } from './edit-clipboard.js';
+import {
+  clipboardCharacter,
+  clipboardKey,
+  editClipboard,
+  WM_CLEAR,
+  WM_CUT,
+} from './edit-clipboard.js';
 import { keyState } from './accelerators.js';
 import { setFocus } from './dialogs.js';
 import { ReleaseCapture, SetCapture } from './SetCapture.js';
@@ -397,8 +403,13 @@ async function controlProc(
        * of them high until it is next sized. **Recorded** by `mldlg`: a list
        * box in a dialog in Helv 8, as Control Panel's Date & Time has for AM
        * and PM, answers `LB_GETITEMHEIGHT` 13, and moved 15 high stays so. */
-      if ((kind === 'LISTBOX' || kind === 'COMBOLBOX') && !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE))) {
-        listState(control).height = (control.font ? control.font.metrics : window.desktop.environment.font).height;
+      if (
+        (kind === 'LISTBOX' || kind === 'COMBOLBOX') &&
+        !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE))
+      ) {
+        listState(control).height = (
+          control.font ? control.font.metrics : window.desktop.environment.font
+        ).height;
       }
 
       if (lParam) {
@@ -487,14 +498,23 @@ async function controlProc(
 
   /* A press on a scroll bar control, once or twice alike: the focus, if it
    * takes it, then the press followed (`USER.EXE` seg18 `0b63`). */
-  if (kind === 'SCROLLBAR' && (message === User.WM_LBUTTONDOWN || message === User.WM_LBUTTONDBLCLK)) {
+  if (
+    kind === 'SCROLLBAR' &&
+    (message === User.WM_LBUTTONDOWN || message === User.WM_LBUTTONDBLCLK)
+  ) {
     if (window.window.style & User.WS_TABSTOP) {
       await setFocus(system, hwnd);
     }
 
     const origin = window.clientOrigin;
 
-    await trackScrollBar(system, hwnd, 0, origin.x + ((lParam << 16) >> 16), origin.y + (lParam >> 16));
+    await trackScrollBar(
+      system,
+      hwnd,
+      0,
+      origin.x + ((lParam << 16) >> 16),
+      origin.y + (lParam >> 16)
+    );
     return 0;
   }
 
@@ -556,22 +576,47 @@ const WM_KEYDOWN_ = 0x0100;
 const WM_CHAR_ = 0x0102;
 
 /** The messages whose `lParam` is a string for a list box that keeps strings. */
-const LIST_STRINGS = new Set([LB.ADDSTRING, LB.INSERTSTRING, LB.FINDSTRING, LB.FINDSTRINGEXACT, LB.SELECTSTRING]);
+const LIST_STRINGS = new Set([
+  LB.ADDSTRING,
+  LB.INSERTSTRING,
+  LB.FINDSTRING,
+  LB.FINDSTRINGEXACT,
+  LB.SELECTSTRING,
+]);
 
-async function listboxMessage(system: any, window: RasterWindow, control: ControlState, message: number, wParam: number, lParam: any) {
-  const strings = !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE)) || control.style & LBS_HASSTRINGS;
+async function listboxMessage(
+  system: any,
+  window: RasterWindow,
+  control: ControlState,
+  message: number,
+  wParam: number,
+  lParam: any
+) {
+  const strings =
+    !(control.style & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE)) ||
+    control.style & LBS_HASSTRINGS;
 
   /* A directory's entries, or one file's, added as `LB_ADDSTRING` adds, and
    * the drives appended as `LB_INSERTSTRING` at -1 appends (`dlgdir.ts`). */
   if (message === LB_DIR || message === LB_ADDFILE) {
     const host = listHost(system, window);
     const add = async (text: string, append: boolean) => {
-      const index = await listMessage(system, control, host, append ? LB.INSERTSTRING : LB.ADDSTRING, append ? 0xffff : 0, text);
+      const index = await listMessage(
+        system,
+        control,
+        host,
+        append ? LB.INSERTSTRING : LB.ADDSTRING,
+        append ? 0xffff : 0,
+        text
+      );
 
       return ((index & 0xffff) << 16) >> 16;
     };
     const spec = stringAt(system, lParam);
-    const answer = message === LB_DIR ? await fillDirectory(system, wParam, spec, add) : await addFile(system, spec, add);
+    const answer =
+      message === LB_DIR
+        ? await fillDirectory(system, wParam, spec, add)
+        : await addFile(system, spec, add);
 
     if ((control as any).invalid) {
       (control as any).invalid = false;
@@ -587,7 +632,14 @@ async function listboxMessage(system: any, window: RasterWindow, control: Contro
   }
 
   const argument = LIST_STRINGS.has(message) && strings ? stringAt(system, lParam) : lParam;
-  const answer: any = await listMessage(system, control, listHost(system, window), message, wParam, argument);
+  const answer: any = await listMessage(
+    system,
+    control,
+    listHost(system, window),
+    message,
+    wParam,
+    argument
+  );
 
   if ((control as any).invalid) {
     (control as any).invalid = false;
@@ -662,6 +714,17 @@ function ownerBlock(system: any) {
   return system._ownerBlock;
 }
 
+/** Whether a window and each it is in is visible, as `IsWindowVisible` answers. */
+function shows(shown: any) {
+  for (let window = shown; window; window = window.parent) {
+    if (!window.visible) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /** What a list box asks of the desktop and its parent. */
 function listHost(system: any, window: RasterWindow): ListHost {
   const desktop = window.desktop;
@@ -673,13 +736,20 @@ function listHost(system: any, window: RasterWindow): ListHost {
   return {
     clientWidth: () => shown.clientWidth,
     clientHeight: () => shown.clientHeight,
-    visible: () => shown.visible,
+    /* Drawn at once only where it shows, its parents too, as
+     * `IsWindowVisible` says: a list in a dialog not yet shown draws nothing
+     * (**recorded** by `ofnopen`: COMMDLG's folders' list, filled in
+     * `WM_INITDIALOG`, asks for no `WM_DRAWITEM`). */
+    visible: () => shows(shown),
     madeBefore310: () =>
       (system.handles.resolve(window.data?.hInstance ?? 0)?.executable?.neHeader
         ?.expectedWindowsVersion ?? 0x30a) < 0x30a,
     drawText: (index, top, fill, rows) => {
       const list = listState(control);
-      const selected = (control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL)) ? !!list.selected[index] : list.sel === index;
+      const selected =
+        control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL)
+          ? !!list.selected[index]
+          : list.sel === index;
       const whole = !!(control.style & (LBS_MULTIPLESEL | LBS_EXTENDEDSEL));
 
       /* A redraw of one item, as its selection changes, fills its whole row
@@ -715,7 +785,13 @@ function listHost(system: any, window: RasterWindow): ListHost {
       await sendParent(system, window, 0x002b, shown.controlId, far);
     },
     notify: async (code: number) => {
-      await sendParent(system, window, User.WM_COMMAND, shown.controlId, ((hwnd & 0xffff) | (code << 16)) >>> 0);
+      await sendParent(
+        system,
+        window,
+        User.WM_COMMAND,
+        shown.controlId,
+        ((hwnd & 0xffff) | (code << 16)) >>> 0
+      );
     },
     keyboardChange: () => {
       const combo = (control as any).comboHwnd;
@@ -786,12 +862,24 @@ function integralHeight(window: RasterWindow) {
   }
 
   if ((shown.height - 2 * border) % list.height) {
-    window.desktop.place(shown, shown.left, shown.top, shown.width, Math.trunc(shown.height / list.height) * list.height + 2 * border);
+    window.desktop.place(
+      shown,
+      shown.left,
+      shown.top,
+      shown.width,
+      Math.trunc(shown.height / list.height) * list.height + 2 * border
+    );
   }
 }
 
 /** A message to a control's parent, answered as its procedure answers. */
-export async function sendParent(system: any, window: RasterWindow, message: number, wParam: number, lParam: number) {
+export async function sendParent(
+  system: any,
+  window: RasterWindow,
+  message: number,
+  wParam: number,
+  lParam: number
+) {
   /* A combo box's list tells its combo box, wherever the list lies. */
   const combo = (window.window.control as any)?.comboHwnd;
 
@@ -803,7 +891,9 @@ export async function sendParent(system: any, window: RasterWindow, message: num
   const owner = parent?.hwnd ? system.handles.resolve(parent.hwnd) : null;
   const windowClass = owner && system.handles.retrieve(owner.options.windowClass);
 
-  return windowClass ? await system.scheduler.callWndProc(windowClass, parent!.hwnd, message, wParam, lParam) : 0;
+  return windowClass
+    ? await system.scheduler.callWndProc(windowClass, parent!.hwnd, message, wParam, lParam)
+    : 0;
 }
 
 /**
@@ -919,7 +1009,10 @@ function dialogMessage(system: any, lParam: any) {
 
   return {
     message: core.read16(segment, (offset + 2) & 0xffff),
-    lParam: (core.read16(segment, (offset + 6) & 0xffff) | (core.read16(segment, (offset + 8) & 0xffff) << 16)) >>> 0,
+    lParam:
+      (core.read16(segment, (offset + 6) & 0xffff) |
+        (core.read16(segment, (offset + 8) & 0xffff) << 16)) >>>
+      0,
   };
 }
 
@@ -1138,7 +1231,13 @@ function comboParts(system: any, window: RasterWindow) {
 async function comboNotify(system: any, window: RasterWindow, code: number) {
   const hwnd = window.window.hwnd;
 
-  await sendParent(system, window, User.WM_COMMAND, window.window.controlId, ((hwnd & 0xffff) | (code << 16)) >>> 0);
+  await sendParent(
+    system,
+    window,
+    User.WM_COMMAND,
+    window.window.controlId,
+    ((hwnd & 0xffff) | (code << 16)) >>> 0
+  );
 }
 
 /**
@@ -1171,10 +1270,18 @@ export async function initCombo(system: any, hwnd: number) {
   }
 
   shown.style &= ~(0x00800000 | 0x00200000 | 0x00100000);
+
+  /* In the window's style too, as `GetWindowLong` answers it (**recorded**
+   * by `ofnopen`: 50010243h for COMMDLG's types). */
+  if (!ownerDraw) {
+    shown.style |= CBS_HASSTRINGS;
+  }
   window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
 
   const type = original & 3 || CBS_SIMPLE;
-  const height = control.font ? control.font.metrics.height : window.desktop.environment.font.height;
+  const height = control.font
+    ? control.font.metrics.height
+    : window.desktop.environment.font.height;
   const systemHeight = window.desktop.environment.font.height;
   let fieldHeight = height + Math.trunc(Math.min(height, systemHeight) / 4) + 4;
 
@@ -1220,14 +1327,26 @@ export async function initCombo(system: any, hwnd: number) {
   (control as any).combo = combo;
   (control as any).cxSysChar = metrics.cxSysChar;
 
-
   const [ll, lt, lr, lb] = parts.list;
 
   /* `CBS_HASSTRINGS` is the combo box's by now where it is not owner-drawn,
    * and its list has strings too (`comboact`: `44a08041`). */
   const listed = ownerDraw ? original : original | CBS_HASSTRINGS;
 
-  combo.listBox = await CreateWindow.call(system, 'ComboLBox', '', listStyle(listed), ll + 1, lt + 1, lr - ll - 2, lb - lt - 2, hwnd, LIST_ID, 0, 0);
+  combo.listBox = await CreateWindow.call(
+    system,
+    'ComboLBox',
+    '',
+    listStyle(listed),
+    ll + 1,
+    lt + 1,
+    lr - ll - 2,
+    lb - lt - 2,
+    hwnd,
+    LIST_ID,
+    0,
+    0
+  );
 
   const list = system.handles.resolve(combo.listBox) as RasterWindow;
 
@@ -1236,7 +1355,20 @@ export async function initCombo(system: any, hwnd: number) {
   if (type !== CBS_DROPDOWNLIST) {
     const [fl, ft, fr, fb] = parts.field;
 
-    combo.edit = await CreateWindow.call(system, 'Edit', '', editStyle(original), fl, ft, fr - fl, fb - ft, hwnd, EDIT_ID, 0, 0);
+    combo.edit = await CreateWindow.call(
+      system,
+      'Edit',
+      '',
+      editStyle(original),
+      fl,
+      ft,
+      fr - fl,
+      fb - ft,
+      hwnd,
+      EDIT_ID,
+      0,
+      0
+    );
 
     const edit = system.handles.resolve(combo.edit) as RasterWindow;
 
@@ -1318,16 +1450,29 @@ async function dropDown(system: any, window: RasterWindow) {
     await SendMessage.call(system, combo.listBox, 0x0424, 0, 0);
   }
 
-  const field = combo.edit ? (system.handles.resolve(combo.edit) as RasterWindow).window : window.window;
+  const field = combo.edit
+    ? (system.handles.resolve(combo.edit) as RasterWindow).window
+    : window.window;
   const bottom = field.top + field.height;
   const height = list.window.height;
-  const x = field.left + (combo.type === CBS_DROPDOWNLIST ? 0 : (window.window.control as any).cxSysChar);
+  const x =
+    field.left + (combo.type === CBS_DROPDOWNLIST ? 0 : (window.window.control as any).cxSysChar);
   const screen = window.desktop.screen.height;
   const y = bottom - 1 + height <= screen ? bottom - 1 : Math.max(0, field.top + 1 - height);
 
   list.window.topmost = true;
   window.window.needsPaint = true;
-  await positionRaster(system, combo.listBox, list, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+  await positionRaster(
+    system,
+    combo.listBox,
+    list,
+    HWND_TOPMOST,
+    x,
+    y,
+    0,
+    0,
+    SWP_NOSIZE | SWP_NOACTIVATE
+  );
   await paintComboBox(system, window);
 
   if (system.handles.resolve(combo.listBox) === list) {
@@ -1483,7 +1628,13 @@ async function comboListKey(system: any, comboHwnd: number, vk: number, count: n
  * its list for F4 and for Alt and Down, and Down then moves its selection
  * with `CBN_SELCHANGE`, the list staying down.
  */
-async function comboEditKey(system: any, comboHwnd: number, message: number, vk: number, lParam: number) {
+async function comboEditKey(
+  system: any,
+  comboHwnd: number,
+  message: number,
+  vk: number,
+  lParam: number
+) {
   const window = system.handles.resolve(comboHwnd);
   const combo = window instanceof RasterWindow ? comboOf(window) : null;
 
@@ -1566,15 +1717,18 @@ async function comboLoseFocus(system: any, window: RasterWindow, to: number) {
 async function paintComboBox(system: any, window: RasterWindow) {
   const combo = comboOf(window);
 
-  if (!combo || !window.window.visible) {
+  if (!combo || !shows(window.window)) {
     return;
   }
 
   window.window.needsPaint = false;
 
   const text = combo.ownerDraw ? null : await selectedText(system, window);
-  const field = window.desktop.paintCombo(window.window, combo, combo.type === CBS_DROPDOWNLIST ? text ?? '' : null);
-
+  const field = window.desktop.paintCombo(
+    window.window,
+    combo,
+    combo.type === CBS_DROPDOWNLIST ? (text ?? '') : null
+  );
 
   if (!field) {
     return;
@@ -1589,7 +1743,7 @@ async function paintComboBox(system: any, window: RasterWindow) {
     const far = ownerBlock(system) + 32;
     const segment = (far >>> 16) & 0xffff;
     const offset = far & 0xffff;
-    const data = index >= 0 ? state.data[index] ?? 0 : 0xffffffff;
+    const data = index >= 0 ? (state.data[index] ?? 0) : 0xffffffff;
     const values = [
       3,
       window.window.controlId,
@@ -1608,7 +1762,15 @@ async function paintComboBox(system: any, window: RasterWindow) {
   }
 
   if (field.highlighted) {
-    window.desktop.focusRectangle(window.window, field.rc[0], field.rc[1], field.rc[2], field.rc[3], 14, 13);
+    window.desktop.focusRectangle(
+      window.window,
+      field.rc[0],
+      field.rc[1],
+      field.rc[2],
+      field.rc[3],
+      14,
+      13
+    );
   }
 }
 
@@ -1663,7 +1825,86 @@ export async function drawButtonItem(
 }
 
 /** A combo box's answer to a message, or `undefined` for one it leaves to the rest (seg33 `0029`). */
-async function comboMessage(system: any, window: RasterWindow, control: ControlState, message: number, wParam: number, lParam: any) {
+/**
+ * A combo box given a font (`USER.EXE` seg33 `0218`, seg34 `04b0`): kept,
+ * handed to its edit control and its list, its field made as high as the
+ * font makes it -- an owner-drawn one's kept -- its parts laid out again and
+ * the edit control moved to its field, the list put away, and, where
+ * `lParam` asks, painted again. **Recorded** by `ofnopen`: COMMDLG's types'
+ * combo box in Helv 8 answers `CB_GETITEMHEIGHT` 13 and is 20 high. As
+ * `combobox.rs`'s `combo_set_font`.
+ */
+async function comboSetFont(
+  system: any,
+  window: RasterWindow,
+  control: ControlState,
+  combo: ComboState,
+  font: number,
+  redraw: any
+) {
+  const { GetSystemMetrics } = await import('./GetSystemMetrics.js');
+
+  control.font = font ? { handle: font, ...fontOf(system, font) } : undefined;
+
+  if (combo.edit) {
+    await SendMessage.call(system, combo.edit, User.WM_SETFONT, font, 0);
+  }
+
+  await SendMessage.call(system, combo.listBox, User.WM_SETFONT, font, 0);
+
+  const shown = window.window;
+  let fieldHeight = combo.fieldHeight;
+
+  if (!combo.ownerDraw) {
+    const height = control.font
+      ? control.font.metrics.height
+      : window.desktop.environment.font.height;
+    const systemHeight = window.desktop.environment.font.height;
+
+    fieldHeight = height + Math.trunc(Math.min(height, systemHeight) / 4) + 4;
+  }
+
+  const metrics = {
+    cxVScroll: GetSystemMetrics.call(system, 2),
+    cxSysChar: (control as any).cxSysChar,
+    border: 1,
+  };
+  const parts = layout(combo.type, shown.width, combo.height, fieldHeight, metrics);
+
+  combo.fieldHeight = fieldHeight;
+  combo.field = parts.field;
+  combo.button = parts.button;
+  combo.list = parts.list;
+
+  if (combo.edit) {
+    const edit = system.handles.resolve(combo.edit);
+
+    if (edit instanceof RasterWindow) {
+      const [fl, ft, fr, fb] = parts.field;
+
+      edit.desktop.place(edit.window, shown.left + fl, shown.top + ft, fr - fl, fb - ft);
+    }
+  }
+
+  await closeUp(system, window, false, false);
+
+  if (combo.type !== CBS_SIMPLE) {
+    window.desktop.place(shown, shown.left, shown.top, shown.width, fieldHeight);
+  }
+
+  if (redraw) {
+    shown.needsPaint = true;
+  }
+}
+
+async function comboMessage(
+  system: any,
+  window: RasterWindow,
+  control: ControlState,
+  message: number,
+  wParam: number,
+  lParam: any
+) {
   const combo = comboOf(window);
 
   if (!combo) {
@@ -1678,6 +1919,10 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
   }
 
   switch (message) {
+    case User.WM_SETFONT:
+      await comboSetFont(system, window, control, combo, wParam, lParam);
+      return 0;
+
     case CB.SETCURSEL: {
       const answer = await SendMessage.call(system, list, 0x407, wParam, 0);
 
@@ -1714,16 +1959,24 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
       return combo.dropped ? 1 : 0;
 
     case CB.GETEDITSEL:
-      return combo.edit ? SendMessage.call(system, combo.edit, EM_GETSEL, wParam, lParam) : 0xffffffff;
+      return combo.edit
+        ? SendMessage.call(system, combo.edit, EM_GETSEL, wParam, lParam)
+        : 0xffffffff;
 
     case CB.SETEDITSEL:
-      return combo.edit ? (await SendMessage.call(system, combo.edit, EM_SETSEL, wParam, lParam), 1) : 0xffff;
+      return combo.edit
+        ? (await SendMessage.call(system, combo.edit, EM_SETSEL, wParam, lParam), 1)
+        : 0xffff;
 
     case CB.LIMITTEXT:
-      return combo.edit ? SendMessage.call(system, combo.edit, EM_LIMITTEXT, wParam, lParam) : 0xffff;
+      return combo.edit
+        ? SendMessage.call(system, combo.edit, EM_LIMITTEXT, wParam, lParam)
+        : 0xffff;
 
     case CB.GETITEMHEIGHT:
-      return signed(wParam) === -1 ? combo.fieldHeight : SendMessage.call(system, list, 0x422, wParam, 0);
+      return signed(wParam) === -1
+        ? combo.fieldHeight
+        : SendMessage.call(system, list, 0x422, wParam, 0);
 
     /* A drop-down list's text is its selection's, and cannot be set. */
     case User.WM_SETTEXT:
@@ -1745,7 +1998,9 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
     }
 
     case User.WM_GETTEXTLENGTH:
-      return combo.edit ? SendMessage.call(system, combo.edit, User.WM_GETTEXTLENGTH, 0, 0) : 0xffff;
+      return combo.edit
+        ? SendMessage.call(system, combo.edit, User.WM_GETTEXTLENGTH, 0, 0)
+        : 0xffff;
 
     case User.WM_SETFOCUS:
       if (combo.edit) {
@@ -1835,7 +2090,11 @@ async function comboMessage(system: any, window: RasterWindow, control: ControlS
         if (code === 0x100) {
           await comboGainFocus(system, window);
         } else if (code === 0x200) {
-          await comboLoseFocus(system, window, system._focusGoing ?? system.rasterDesktop?.focus?.hwnd ?? 0);
+          await comboLoseFocus(
+            system,
+            window,
+            system._focusGoing ?? system.rasterDesktop?.focus?.hwnd ?? 0
+          );
         } else if (!(combo as any).setting && code === 0x300) {
           await comboNotify(system, window, CBN_EDITCHANGE);
         } else if (!(combo as any).setting && code === 0x400) {

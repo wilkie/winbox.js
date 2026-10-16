@@ -8,7 +8,7 @@ import { MulDiv } from '../gdi/MulDiv.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { MSG, POINT, User, WNDCLASS } from '../user.js';
 
-import { CreateWindow } from './CreateWindow.js';
+import { CreateWindow, WS_EX_NOPARENTNOTIFY } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
 import { dispatchMessage } from './DispatchMessage.js';
@@ -441,7 +441,10 @@ export async function createDialog(
       hwnd,
       item.id,
       hinst,
-      0
+      0,
+      /* Each control made `WS_EX_NOPARENTNOTIFY` (`USER.EXE` seg24
+       * `082d`): the dialog is not told of it. */
+      WS_EX_NOPARENTNOTIFY
     );
 
     if (!child) {
@@ -515,7 +518,7 @@ async function updateDialog(system: any, hwnd: number) {
 }
 
 /** A template by name or number from a module's resources. */
-async function resourceTemplate(system: any, hinst: number, name: any) {
+export async function resourceTemplate(system: any, hinst: number, name: any) {
   const module = system.handles.resolve(hinst);
   const bytes = await resourceBytes(module?.executable, Executable.RESOURCES.Dialog, name);
 
@@ -523,7 +526,7 @@ async function resourceTemplate(system: any, hinst: number, name: any) {
 }
 
 /** A template in the program's memory, at a far address. */
-function memoryTemplate(system: any, far: number) {
+export function memoryTemplate(system: any, far: number) {
   const core = system.machine.cpu.core;
   const segment = (far >>> 16) & 0xffff;
   const offset = far & 0xffff;

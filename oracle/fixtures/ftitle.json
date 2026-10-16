@@ -1,0 +1,299 @@
+{
+  "probe": "ftitle",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "title",
+      "args": "C:\\DIR\\FILE.TXT",
+      "result": "0|FILE.TXT|C:\\DIR\\FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "FILE.TXT",
+      "result": "0|FILE.TXT|FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "file.txt",
+      "result": "0|file.txt|file.txt"
+    },
+    {
+      "function": "title",
+      "args": "C:FILE.TXT",
+      "result": "0|FILE.TXT|C:FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "\\FILE",
+      "result": "0|FILE|\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "FILE.",
+      "result": "0|FILE|FILE"
+    },
+    {
+      "function": "title",
+      "args": "FILE",
+      "result": "0|FILE|FILE"
+    },
+    {
+      "function": "title",
+      "args": ".TXT",
+      "result": "-3|untouched|.TXT"
+    },
+    {
+      "function": "title",
+      "args": "  LEAD.TXT",
+      "result": "0|LEAD.TXT|LEAD.TXT"
+    },
+    {
+      "function": "title",
+      "args": "TRAIL.TXT  ",
+      "result": "0|TRAIL.TXT|TRAIL.TXT"
+    },
+    {
+      "function": "title",
+      "args": "IN SIDE.TXT",
+      "result": "-7|untouched|IN SIDE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "",
+      "result": "-10|untouched|"
+    },
+    {
+      "function": "title",
+      "args": "   ",
+      "result": "-10|untouched|   "
+    },
+    {
+      "function": "title",
+      "args": "C:\\",
+      "result": "-1|untouched|C:\\"
+    },
+    {
+      "function": "title",
+      "args": "C:\\DIR\\",
+      "result": "-1|untouched|C:\\DIR\\"
+    },
+    {
+      "function": "title",
+      "args": "C:",
+      "result": "-1|untouched|C:"
+    },
+    {
+      "function": "title",
+      "args": "1:\\FILE",
+      "result": "-2|untouched|1:\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "C:\\DIR\\*.TXT",
+      "result": "-12|untouched|C:\\DIR\\*.TXT"
+    },
+    {
+      "function": "title",
+      "args": "FI?E.TXT",
+      "result": "-12|untouched|FI?E.TXT"
+    },
+    {
+      "function": "title",
+      "args": "C:\\D*R\\FILE.TXT",
+      "result": "-11|untouched|C:\\D*R\\FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "LONGFILENAME.TXT",
+      "result": "-9|untouched|LONGFILENAME.TXT"
+    },
+    {
+      "function": "title",
+      "args": "FILE.TEXT",
+      "result": "-8|untouched|FILE.TEXT"
+    },
+    {
+      "function": "title",
+      "args": "FILE.T.X",
+      "result": "-3|untouched|FILE.T.X"
+    },
+    {
+      "function": "title",
+      "args": "TOOLONGNAME",
+      "result": "-9|untouched|TOOLONGNAME"
+    },
+    {
+      "function": "title",
+      "args": "A+B.TXT",
+      "result": "-5|untouched|A+B.TXT"
+    },
+    {
+      "function": "title",
+      "args": "A,B",
+      "result": "-5|untouched|A,B"
+    },
+    {
+      "function": "title",
+      "args": "A;B",
+      "result": "-5|untouched|A;B"
+    },
+    {
+      "function": "title",
+      "args": "A=B",
+      "result": "-5|untouched|A=B"
+    },
+    {
+      "function": "title",
+      "args": "A[B]",
+      "result": "-5|untouched|A[B]"
+    },
+    {
+      "function": "title",
+      "args": "A|B",
+      "result": "-5|untouched|A|B"
+    },
+    {
+      "function": "title",
+      "args": "A\"B",
+      "result": "-5|untouched|A\"B"
+    },
+    {
+      "function": "title",
+      "args": "A<B>",
+      "result": "-5|untouched|A<B>"
+    },
+    {
+      "function": "title",
+      "args": "C:\\..\\FILE",
+      "result": "-3|untouched|C:\\..\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "..\\FILE.TXT",
+      "result": "0|FILE.TXT|..\\FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": ".\\FILE.TXT",
+      "result": "0|FILE.TXT|.\\FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "..",
+      "result": "-1|untouched|.."
+    },
+    {
+      "function": "title",
+      "args": ".",
+      "result": "-1|untouched|."
+    },
+    {
+      "function": "title",
+      "args": "\\.\\FILE",
+      "result": "0|FILE|\\.\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "\\..\\FILE",
+      "result": "-3|untouched|\\..\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "C:\\DIR\\\\FILE",
+      "result": "-6|untouched|C:\\DIR\\\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "C:/DIR/FILE.TXT",
+      "result": "0|FILE.TXT|C:/DIR/FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "\\\\SERVER\\SHARE\\FILE.TXT",
+      "result": "0|FILE.TXT|\\\\SERVER\\SHARE\\FILE.TXT"
+    },
+    {
+      "function": "title",
+      "args": "\\\\SERVER\\SHARE",
+      "result": "0|SHARE|\\\\SERVER\\SHARE"
+    },
+    {
+      "function": "title",
+      "args": "\\\\SERVER\\",
+      "result": "-13|untouched|\\\\SERVER\\"
+    },
+    {
+      "function": "title",
+      "args": "\\\\SERVERNAMEXX\\SHARE\\F",
+      "result": "-13|untouched|\\\\SERVERNAMEXX\\SHARE\\F"
+    },
+    {
+      "function": "title",
+      "args": "C:\\DIR.EXT\\FILE",
+      "result": "0|FILE|C:\\DIR.EXT\\FILE"
+    },
+    {
+      "function": "title",
+      "args": "éTé.TXT",
+      "result": "0|éTé.TXT|éTé.TXT"
+    },
+    {
+      "function": "title",
+      "args": "A\tB",
+      "result": "-5|untouched|A\tB"
+    },
+    {
+      "function": "title",
+      "args": "*.*",
+      "result": "-12|untouched|*.*"
+    },
+    {
+      "function": "title",
+      "args": "FILE.TXT;*.DOC",
+      "result": "-5|untouched|FILE.TXT;*.DOC"
+    },
+    {
+      "function": "size",
+      "args": "0",
+      "result": "9|untouched"
+    },
+    {
+      "function": "size",
+      "args": "1",
+      "result": "9|untouched"
+    },
+    {
+      "function": "size",
+      "args": "8",
+      "result": "9|untouched"
+    },
+    {
+      "function": "size",
+      "args": "9",
+      "result": "0|FILE.TXT"
+    },
+    {
+      "function": "size",
+      "args": "10",
+      "result": "0|FILE.TXT"
+    },
+    {
+      "function": "size",
+      "args": "64",
+      "result": "0|FILE.TXT"
+    },
+    {
+      "function": "error",
+      "args": "",
+      "result": "0"
+    }
+  ]
+}

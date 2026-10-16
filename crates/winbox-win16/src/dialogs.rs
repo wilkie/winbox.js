@@ -493,7 +493,11 @@ impl System {
     }
 
     /// A dialog's template from a module's resources, by name or number.
-    fn resource_template(&mut self, instance: u16, name: &MenuName) -> Option<DialogTemplate> {
+    pub(crate) fn resource_template(
+        &mut self,
+        instance: u16,
+        name: &MenuName,
+    ) -> Option<DialogTemplate> {
         let executable = self.executable_of(instance)?;
         let bytes = crate::resources::find_by(&executable, RT_DIALOG, name)?;
 
@@ -503,7 +507,7 @@ impl System {
     }
 
     /// A template in the program's memory, at a far address.
-    fn memory_template(&self, far: u32) -> DialogTemplate {
+    pub(crate) fn memory_template(&self, far: u32) -> DialogTemplate {
         let segment = far & 0xffff_0000;
         let offset = far & 0xffff;
 
@@ -754,9 +758,11 @@ impl Engine {
                 Named::Number(number) => format!("#{number}"),
                 Named::Text(text) => text.clone(),
             };
+            // Each control made `WS_EX_NOPARENTNOTIFY` (`USER.EXE` seg24
+            // `082d`): the dialog is not told of it.
             let control = self
                 .create_window(Creation {
-                    ex_style: 0,
+                    ex_style: crate::create::WS_EX_NOPARENTNOTIFY,
                     class: item.class_name.clone(),
                     class_far: 0,
                     name: WindowName::Own(text),

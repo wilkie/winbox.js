@@ -4,17 +4,17 @@
     "path": "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE"
   },
   "seconds": 8,
-  "calls": 329,
+  "calls": 333,
   "stepMarks": [
     {
       "calls": 236,
       "instructions": 5108,
-      "time": 3182
+      "time": 3026
     },
     {
       "calls": 236,
       "instructions": 5108,
-      "time": 3182,
+      "time": 3026,
       "key": "h",
       "code": "KeyH",
       "kind": "down"
@@ -22,7 +22,7 @@
     {
       "calls": 245,
       "instructions": 5396,
-      "time": 3183,
+      "time": 3027,
       "key": "h",
       "code": "KeyH",
       "kind": "up"
@@ -30,7 +30,7 @@
     {
       "calls": 249,
       "instructions": 5431,
-      "time": 3183,
+      "time": 3027,
       "key": "i",
       "code": "KeyI",
       "kind": "down"
@@ -38,7 +38,7 @@
     {
       "calls": 255,
       "instructions": 5489,
-      "time": 3183,
+      "time": 3027,
       "key": "i",
       "code": "KeyI",
       "kind": "up"
@@ -46,123 +46,123 @@
     {
       "calls": 266,
       "instructions": 5789,
-      "time": 4243
+      "time": 4033
     },
     {
       "calls": 266,
       "instructions": 5789,
-      "time": 4243,
+      "time": 4033,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "down"
     },
     {
-      "calls": 274,
-      "instructions": 5859,
-      "time": 4243,
+      "calls": 270,
+      "instructions": 5824,
+      "time": 4033,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "up"
     },
     {
-      "calls": 278,
+      "calls": 275,
       "instructions": 5988,
-      "time": 4243,
+      "time": 4033,
       "key": "f",
       "code": "KeyF",
       "kind": "down"
     },
     {
-      "calls": 278,
+      "calls": 275,
       "instructions": 5988,
-      "time": 4243,
+      "time": 4033,
       "key": "f",
       "code": "KeyF",
       "kind": "up"
     },
     {
-      "calls": 303,
-      "instructions": 6543,
-      "time": 5303
+      "calls": 301,
+      "instructions": 6648,
+      "time": 5059
     },
     {
-      "calls": 303,
-      "instructions": 6543,
-      "time": 5303,
+      "calls": 301,
+      "instructions": 6648,
+      "time": 5059,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "down"
     },
     {
-      "calls": 305,
-      "instructions": 6683,
-      "time": 5303,
+      "calls": 303,
+      "instructions": 6788,
+      "time": 5059,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "up"
     },
     {
-      "calls": 307,
-      "instructions": 6823,
-      "time": 6363
+      "calls": 306,
+      "instructions": 6998,
+      "time": 6085
     },
     {
-      "calls": 307,
-      "instructions": 6823,
-      "time": 6363,
+      "calls": 306,
+      "instructions": 6998,
+      "time": 6085,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "down"
     },
     {
-      "calls": 308,
-      "instructions": 6986,
-      "time": 6363,
+      "calls": 309,
+      "instructions": 7265,
+      "time": 6085,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "up"
     },
     {
-      "calls": 311,
-      "instructions": 7160,
-      "time": 7423
+      "calls": 312,
+      "instructions": 7475,
+      "time": 7111
     },
     {
-      "calls": 311,
-      "instructions": 7160,
-      "time": 7423,
+      "calls": 312,
+      "instructions": 7475,
+      "time": 7111,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 313,
-      "instructions": 7300,
-      "time": 7423,
-      "key": "Escape",
-      "code": "Escape",
-      "kind": "up"
-    },
-    {
-      "calls": 314,
-      "instructions": 7370,
-      "time": 7424,
-      "key": "Escape",
-      "code": "Escape",
-      "kind": "down"
-    },
-    {
-      "calls": 316,
+      "calls": 312,
       "instructions": 7485,
-      "time": 7424,
+      "time": 7111,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 329,
-      "instructions": 7637,
-      "time": 8483
+      "calls": 312,
+      "instructions": 7485,
+      "time": 7111,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "down"
+    },
+    {
+      "calls": 312,
+      "instructions": 7485,
+      "time": 7111,
+      "key": "Escape",
+      "code": "Escape",
+      "kind": "up"
+    },
+    {
+      "calls": 333,
+      "instructions": 7917,
+      "time": 8137
     }
   ],
   "trees": [

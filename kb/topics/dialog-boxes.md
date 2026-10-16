@@ -58,6 +58,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
 ## Controls
 
 - [[measured]] A control's rectangle is its template rectangle in pixels, measured from the dialog's client area.
+- [[read out]] Each control is made with `WS_EX_NOPARENTNOTIFY` (`USER.EXE` seg24 `082d`), so the dialog is not sent `WM_PARENTNOTIFY` as its controls are made or destroyed. [[measured]] [[probe:ofnopen]]'s hook is sent everything COMMDLG's Open box is sent before `WM_INITDIALOG`, and no `WM_PARENTNOTIFY` is among it.
 - [[measured]] A push button's text is centred down on the font's ascent, not on its height: floor((height − ascent) ÷ 2) − 1. That fits every push button recorded, in the System font on four displays and in bold MS Sans Serif.
 - [[refused]] Half of what the height leaves, and the height less its internal leading, both put the EGA's 18-pixel buttons in MS Sans Serif a row low.
 - [[measured]] The character after `&` is underlined a row below the font's ascent, the rule the menu bar uses. Under an emboldened font, whose text measures a pixel wider than it draws, the underline starts that overhang to the left.

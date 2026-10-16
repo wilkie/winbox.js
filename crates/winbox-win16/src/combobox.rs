@@ -82,6 +82,7 @@ const WM_SETTEXT: u16 = 0x000c;
 const WM_GETTEXT: u16 = 0x000d;
 const WM_GETTEXTLENGTH: u16 = 0x000e;
 const WM_SETFOCUS: u16 = 0x0007;
+const WM_SETFONT: u16 = 0x0030;
 const WM_KILLFOCUS: u16 = 0x0008;
 const WM_KEYDOWN: u16 = 0x0100;
 const WM_CHAR: u16 = 0x0102;
@@ -363,6 +364,12 @@ impl Engine {
             let window = system.control_window_mut(index);
 
             window.style &= !(WS_BORDER | WS_VSCROLL | WS_HSCROLL);
+
+            // In the window's style too, as `GetWindowLong` answers it
+            // (**recorded** by `ofnopen`: 50010243h for COMMDLG's types).
+            if !owner_draw {
+                window.style |= CBS_HASSTRINGS;
+            }
 
             let (left, top, width, height) = (window.left, window.top, window.width, window.height);
 
@@ -952,7 +959,7 @@ impl Engine {
                 return Ok(());
             };
 
-            if !system.control_window(index).visible {
+            if !system.shows(index) {
                 return Ok(());
             }
 
@@ -1035,6 +1042,90 @@ impl Engine {
         Ok(())
     }
 
+    /// A combo box given a font (`USER.EXE` seg33 `0218`, seg34 `04b0`):
+    /// kept, handed to its edit control and its list, its field made as
+    /// high as the font makes it -- an owner-drawn one's kept -- its parts
+    /// laid out again and the edit control moved to its field, the list put
+    /// away, and, where `lParam` asks, painted again. **Recorded** by
+    /// `ofnopen`: COMMDLG's types' combo box in Helv 8 answers
+    /// `CB_GETITEMHEIGHT` 13 and is 20 high.
+    async fn combo_set_font(
+        &self,
+        index: usize,
+        combo: ComboState,
+        font: u16,
+        redraw: u32,
+    ) -> Result<(), Stop> {
+        self.system().control_at(index).font = (font != 0).then_some(font);
+
+        if combo.edit != 0 {
+            self.send_message(combo.edit, WM_SETFONT, font, &mut Param::Value(0))
+                .await?;
+        }
+
+        self.send_message(combo.list_box, WM_SETFONT, font, &mut Param::Value(0))
+            .await?;
+
+        let (field, place) = {
+            let mut system = self.system();
+            let field_height = if combo.owner_draw {
+                combo.field_height
+            } else {
+                let height = system.control_font_height(index)?;
+                let system_height = system.system_control_font()?.height;
+
+                height + height.min(system_height) / 4 + 4
+            };
+            let cx_vscroll = system.metric(SM_CXVSCROLL);
+            let window = system.control_window(index);
+            let (left, top, width) = (window.left, window.top, window.width);
+            let (field, button, list) = layout(
+                combo.kind,
+                width,
+                combo.height,
+                field_height,
+                cx_vscroll,
+                combo.cx_sys_char,
+            );
+            let state = system.combo_mut(index);
+
+            state.field_height = field_height;
+            state.field = field;
+            state.button = button;
+            state.list = list;
+            (field, (left, top, width, field_height))
+        };
+
+        let edit = if combo.edit == 0 {
+            None
+        } else {
+            self.system().window_named(combo.edit)
+        };
+
+        if let Some(edit) = edit {
+            let [fl, ft, fr, fb] = field;
+            let (left, top, _, _) = place;
+
+            self.system()
+                .place_window(edit, left + fl, top + ft, fr - fl, fb - ft)?;
+        }
+
+        self.close_up(index, false, false).await?;
+
+        if combo.kind != CBS_SIMPLE {
+            let (left, top, width, height) = place;
+
+            self.system()
+                .place_window(index, left, top, width, height)?;
+        }
+
+        if redraw != 0 {
+            self.system().control_window_mut(index).needs_paint = true;
+        }
+
+        Ok(())
+    }
+
     /// A combo box's answer to a message, or `None` for one it leaves to
     /// the rest of its window procedure (seg33 `0029`), widened as a list
     /// box's are; `CB_GETEDITSEL`, item data and the dropped rectangle are
@@ -1083,6 +1174,10 @@ impl Engine {
         }
 
         Ok(Some(match message {
+            WM_SETFONT => {
+                self.combo_set_font(index, combo, wparam, value).await?;
+                0
+            }
             CB_SETCURSEL => {
                 let answer = self
                     .send_message(list, LB_SETCURSEL, wparam, &mut Param::Value(0))

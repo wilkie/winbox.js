@@ -17,6 +17,7 @@ import { forgetHotKey } from './task-list.js';
 import { RasterWindow } from './raster-window.js';
 import { LockMyTask } from './lock-input.js';
 import { SetSysModalWindow } from './userwin.js';
+import { WS_EX_NOPARENTNOTIFY } from './CreateWindow.js';
 
 /**
  * The **DestroyWindow** function destroys the specified window. The function
@@ -120,8 +121,9 @@ export async function DestroyWindow(hwnd) {
 
   gather(window);
 
-  /* A child tells its parent it is going. */
-  if (window.parent?.hwnd) {
+  /* A child tells its parent it is going, unless it was made
+   * `WS_EX_NOPARENTNOTIFY`, as a dialog's controls are. */
+  if (window.parent?.hwnd && !(window.exStyle & WS_EX_NOPARENTNOTIFY)) {
     await send(window.parent.hwnd, User.WM_PARENTNOTIFY, User.WM_DESTROY, hwnd & 0xffff);
   }
 

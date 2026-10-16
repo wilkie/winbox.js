@@ -181,6 +181,43 @@ export async function callHook(
 }
 
 /**
+ * A hook called as `callHook` calls one, its `lParam` a far pointer to a
+ * string laid out below the stack, as COMMDLG gives one of its own buffers:
+ * `SHAREVISTRING`'s path (seg2 `1e67`, `2c9f`).
+ */
+export async function callHookText(
+  system: any,
+  hook: number,
+  hwnd: number,
+  msg: number,
+  wParam: number,
+  bytes: number[]
+): Promise<number> {
+  const laid = [...bytes, 0];
+  const structure = {
+    structSize: (laid.length + 1) & ~1,
+    storeToMemory(memory: any, segment: number, offset: number) {
+      laid.forEach((byte, i) =>
+        memory.write8(((segment << 16) + ((offset + i) & 0xffff)) >>> 0, byte)
+      );
+    },
+    loadFromMemory() {},
+  };
+  const answer = await system.scheduler.callProc(
+    hook >>> 0,
+    [
+      [hwnd, HWND],
+      [msg, UINT],
+      [wParam, WPARAM],
+      [[structure], LPARAM],
+    ],
+    { ds: dataSelector(system) }
+  );
+
+  return answer & 0xffff;
+}
+
+/**
  * The cursor while `COMMDLG` works: the hourglass, `busy`, or the arrow
  * (entry 32, `COMMDLG.DLL` seg2 `08e2`): `SetCursor(LoadCursor(0,
  * IDC_WAIT))` or `IDC_ARROW`. Nothing while its Open or Save dialog is being

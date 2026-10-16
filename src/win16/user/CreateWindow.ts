@@ -46,6 +46,9 @@ import { RasterWindow } from './raster-window.js';
 /** A modal frame, as a dialog with `DS_MODALFRAME` has. */
 const WS_EX_DLGMODALFRAME = 0x0001;
 
+/** A child that tells its parent nothing of its making or going, as a dialog's controls are made (`USER.EXE` seg24 `082d`). */
+export const WS_EX_NOPARENTNOTIFY = 0x0004;
+
 export async function CreateWindow(
   lpszClassName,
   lpszWindowName,
@@ -508,7 +511,7 @@ export async function CreateWindow(
 
   /* A child's parent is told of it, the child's handle and identifier in
    * `lParam` (`showseq`). */
-  if (child && parentWindow instanceof RasterWindow) {
+  if (child && parentWindow instanceof RasterWindow && !(dwExStyle & WS_EX_NOPARENTNOTIFY)) {
     const parentClass = this.handles.retrieve(parentWindow.options.windowClass);
 
     await this.scheduler.callWndProc(
