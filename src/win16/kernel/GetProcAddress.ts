@@ -1,3 +1,4 @@
+import { redirect } from '../commdlg/index.js';
 import { exportedConstant } from '../linker.js';
 import { segmentSelector } from '../selectors.js';
 
@@ -11,7 +12,10 @@ export function GetProcAddress(hinst, lpszProcName) {
       lpszProcName instanceof String || typeof lpszProcName == 'string'
         ? loader.ordinalOf(String(lpszProcName))
         : lpszProcName & 0xffff;
-    const info = ordinal ? loader.lookup(ordinal) : null;
+    /* An export of `COMMDLG`'s WinBox answers: its stub (`commdlg/`). */
+    const info = ordinal
+      ? (redirect(this.modules, loader, ordinal) ?? loader.lookup(ordinal))
+      : null;
 
     return info && info.segment !== undefined
       ? ((segmentSelector(info.segment) << 16) | info.offset) >>> 0

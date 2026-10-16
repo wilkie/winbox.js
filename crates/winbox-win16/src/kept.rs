@@ -14444,13 +14444,13 @@ pub static KEPT: &[Kept] = &[
         exports: &[
             None,
             Some(Export {
-                name: "GetOpenFilename",
+                name: "GetOpenFileName",
                 pops: 4,
                 returns: 0,
                 stub: true,
             }),
             Some(Export {
-                name: "GetSaveFilename",
+                name: "GetSaveFileName",
                 pops: 4,
                 returns: 0,
                 stub: true,
@@ -14596,8 +14596,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "CommDlgExtendedError",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetFileTitle",
@@ -14606,7 +14606,7 @@ pub static KEPT: &[Kept] = &[
                 stub: true,
             }),
             Some(Export {
-                name: "unknown",
+                name: "WEP",
                 pops: 2,
                 returns: 0,
                 stub: true,

@@ -74,8 +74,9 @@ impl Module {
     }
 }
 
-/// Modules winbox.js has only as stubs: the file on the disk is used
-/// instead when there is one.
+/// Modules winbox.js keeps whose file on the disk is loaded beside them
+/// when there is one: the file's exports WinBox does not answer yet are
+/// the file's code (`commdlg/`).
 const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
 
 impl System {
@@ -173,6 +174,12 @@ impl System {
             }
 
             let Some((path, bytes)) = self.find_library(&name, beside) else {
+                // `COMMDLG` with no file: WinBox's, its messages registered
+                // as its file's entry point registers them (`commdlg/`).
+                if name.eq_ignore_ascii_case(crate::commdlg::NAME) {
+                    crate::commdlg::start(self);
+                }
+
                 continue;
             };
             let Ok(executable) = Executable::parse(bytes) else {

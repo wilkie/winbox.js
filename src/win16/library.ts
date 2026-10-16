@@ -1,6 +1,8 @@
 'use strict';
 
 import { Executable } from '../executable.js';
+import { CommDlg } from './commdlg/index.js';
+import { start as startCommDlg } from './commdlg/state.js';
 import { searchPlaces } from './kernel/search.js';
 import { Loader } from './loader.js';
 import { segmentSelector } from './selectors.js';
@@ -12,9 +14,8 @@ import { INT } from './types.js';
  * and its entry point runs before the program that needs it starts.
  *
  * A module winbox.js keeps itself -- KERNEL, USER, GDI and the rest -- is
- * used in place of the file of that name. A module it keeps only as names
- * with nothing behind them is not: `COMMDLG` is Windows' own, and its file is
- * loaded instead.
+ * used in place of the file of that name. `COMMDLG` is both: WinBox's own a
+ * function at a time, its file loaded beside it for the rest (`commdlg/`).
  */
 export class Library {
   declare executable: any;
@@ -40,7 +41,11 @@ export class Library {
   }
 }
 
-/** Modules winbox.js has only as stubs: the file on the disk is used instead when there is one. */
+/**
+ * Modules winbox.js keeps whose file on the disk is loaded beside them when
+ * there is one: the file's exports WinBox does not answer yet are the
+ * file's code (`commdlg/`).
+ */
 const STUBS_ONLY = new Set(['COMMDLG']);
 
 /** Whether a module is to be loaded from its file rather than taken from winbox.js. */
@@ -71,7 +76,9 @@ async function findIn(system: any, places: string[], file: string) {
       continue;
     }
 
-    const entry = entries.find((one: any) => String(one.name ?? '').toUpperCase() === file.toUpperCase());
+    const entry = entries.find(
+      (one: any) => String(one.name ?? '').toUpperCase() === file.toUpperCase()
+    );
 
     if (entry) {
       return { path: `${place.replace(/\\$/, '')}\\${String(entry.name).toUpperCase()}`, entry };
@@ -151,6 +158,12 @@ export async function loadLibrariesFor(
     const found = await findFile(system, name, beside);
 
     if (!found) {
+      /* `COMMDLG` with no file: WinBox's, its messages registered as its
+       * file's entry point registers them (`commdlg/`). */
+      if (name === 'COMMDLG') {
+        startCommDlg(system);
+      }
+
       continue;
     }
 
@@ -187,9 +200,13 @@ async function loadFound(
     const data = library.loader.segments[library.loader.ds - 1];
 
     if (data) {
-      const size = (data.minAllocation || 0x10000) + 2 + header.initialStackSize + header.initialLocalHeapSize;
+      const size =
+        (data.minAllocation || 0x10000) + 2 + header.initialStackSize + header.initialLocalHeapSize;
 
-      system.allocator.setSegmentSize(library.loader.translate(library.loader.ds), (size + 15) & ~15);
+      system.allocator.setSegmentSize(
+        library.loader.translate(library.loader.ds),
+        (size + 15) & ~15
+      );
 
       /* A moveable data segment's heap grows when a request does not fit, as
        * a program's does (see `Heap.grow`): `COMMDLG.DLL`'s heap of 400h
@@ -282,7 +299,9 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
 
     directoryFound = true;
 
-    const entry = entries.find((one: any) => String(one.name ?? '').toUpperCase() === name.toUpperCase());
+    const entry = entries.find(
+      (one: any) => String(one.name ?? '').toUpperCase() === name.toUpperCase()
+    );
 
     if (entry) {
       found = { path: `${place.replace(/\\$/, '')}\\${String(entry.name).toUpperCase()}`, entry };
@@ -291,6 +310,17 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   }
 
   if (!found) {
+    /* `COMMDLG` with no file: WinBox's, found by its file's name as the
+     * other modules it keeps are, its messages registered as its file's
+     * entry point registers them (`commdlg/`). */
+    const instance =
+      name.toUpperCase() === 'COMMDLG.DLL' ? system._modules.instanceFromPath(CommDlg.path) : 0;
+
+    if (instance) {
+      startCommDlg(system);
+      return instance;
+    }
+
     return slash >= 0 && !directoryFound ? 3 : 2;
   }
 
@@ -319,14 +349,27 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   /* Not a program: no new-format header. */
   const head = new Uint8Array(await found.entry.read(0, Math.min(found.entry.size, 0x40)));
   const at = head[0x3c] | (head[0x3d] << 8);
-  const signature = at + 2 <= found.entry.size ? new Uint8Array(await found.entry.read(at, 2)) : null;
+  const signature =
+    at + 2 <= found.entry.size ? new Uint8Array(await found.entry.read(at, 2)) : null;
 
-  if (head[0] !== 0x4d || head[1] !== 0x5a || !signature || signature[0] !== 0x4e || signature[1] !== 0x45) {
+  if (
+    head[0] !== 0x4d ||
+    head[1] !== 0x5a ||
+    !signature ||
+    signature[0] !== 0x4e ||
+    signature[1] !== 0x45
+  ) {
     return 20;
   }
 
   const order: Library[] = [];
-  const library = await loadFound(system, name.replace(/\.[^.]*$/, '').toUpperCase(), found, beside, order);
+  const library = await loadFound(
+    system,
+    name.replace(/\.[^.]*$/, '').toUpperCase(),
+    found,
+    beside,
+    order
+  );
 
   await system.startLibraries({ libraries: order });
 
@@ -342,7 +385,12 @@ function keptModule(system: any, file: string) {
       continue;
     }
 
-    if (String(module.path ?? '').split('\\').pop()!.toUpperCase() === wanted) {
+    if (
+      String(module.path ?? '')
+        .split('\\')
+        .pop()!
+        .toUpperCase() === wanted
+    ) {
       return module;
     }
   }
@@ -386,7 +434,9 @@ export async function freeLibrary(system: any, handle: number) {
   const info = ordinal ? library.loader.lookup(ordinal) : null;
 
   if (info && info.segment !== undefined && system.scheduler?.callProc) {
-    await system.scheduler.callProc(((segmentSelector(info.segment) << 16) | info.offset) >>> 0, [[0, INT]]);
+    await system.scheduler.callProc(((segmentSelector(info.segment) << 16) | info.offset) >>> 0, [
+      [0, INT],
+    ]);
   }
 
   system._modules.unregister(library.loader);

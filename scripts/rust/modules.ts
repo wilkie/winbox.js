@@ -17,7 +17,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 
 import Types from '../../src/win16/types.js';
 
-import { CommDlg } from '../../src/win16/commdlg.js';
+import { CommDlg } from '../../src/win16/commdlg/index.js';
 import { DEFAULT_DISPLAY_MODE, DISPLAY_MODES, displayMode } from '../../src/win16/display-modes.js';
 import { displayDriverFor } from '../../src/win16/display-driver.js';
 import { Gdi } from '../../src/win16/gdi.js';

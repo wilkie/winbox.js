@@ -419,6 +419,7 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         crate::wbsound::NAME => crate::wbsound::implementation(name),
         crate::wbmapper::NAME => crate::wbmapper::implementation(name),
         "SHELL" => crate::shell::implementation(name),
+        crate::commdlg::NAME => crate::commdlg::implementation(name),
         "DISPLAY" => crate::display::implementation(name),
         _ => None,
     }

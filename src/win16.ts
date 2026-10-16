@@ -57,7 +57,7 @@ import { WinG } from './win16/wing.js';
 import { SystemPalette } from './win16/gdi/system-palette.js';
 import { Sound } from './win16/sound.js';
 import { Win87EM } from './win16/win87em.js';
-import { CommDlg } from './win16/commdlg.js';
+import { CommDlg } from './win16/commdlg/index.js';
 import { SystemDriver } from './win16/system-driver.js';
 import { displayDriverFor } from './win16/display-driver.js';
 import { Keyboard } from './win16/keyboard.js';

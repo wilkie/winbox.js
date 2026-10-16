@@ -15,6 +15,7 @@ pub mod classes;
 pub mod clipboard;
 pub mod combobox;
 pub mod comm;
+pub mod commdlg;
 pub mod control_host;
 pub mod control_paint;
 pub mod control_pixels;
