@@ -19,7 +19,8 @@ use crate::system::{STEP, System};
 /// How many `MakeProcInstance` thunks a block holds.
 pub const THUNKS: usize = 512;
 
-/// Modules winbox.js has only as stubs.
+/// Modules winbox.js keeps whose file is loaded beside them when there is
+/// one (`commdlg/`).
 const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
 
 /// A string argument as the TypeScript engine reads one: nought for a null
@@ -244,19 +245,28 @@ fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
         Some(Object::Kept(kept)) => return kept_proc(system, kept, name),
         _ => None,
     };
-    let Some(module) = module else {
+    let Some(index) = module else {
         return 0;
     };
-    let module = &system.modules[module];
+    let module = &system.modules[index];
     let ordinal = match name {
         Name::Text(text) => module.executable.ordinal_of(text),
         Name::Number(number) => *number,
         Name::Null => 0,
     };
 
-    module.lookup(ordinal).map_or(0, |(segment, offset)| {
-        u32::from(segment_selector(segment)) << 16 | u32::from(offset)
-    })
+    // An export of `COMMDLG`'s WinBox answers: its stub (`commdlg/`).
+    if ordinal != 0
+        && let Some((segment, offset)) = crate::commdlg::redirect(system, index, ordinal)
+    {
+        return u32::from(segment_selector(segment)) << 16 | u32::from(offset);
+    }
+
+    system.modules[index]
+        .lookup(ordinal)
+        .map_or(0, |(segment, offset)| {
+            u32::from(segment_selector(segment)) << 16 | u32::from(offset)
+        })
 }
 
 fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
@@ -451,6 +461,16 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         }
 
         let Some((path, bytes)) = found else {
+            // `COMMDLG` with no file: WinBox's, found by its file's name as
+            // the other modules it keeps are, its messages registered as
+            // its file's entry point registers them (`commdlg/`).
+            if name.eq_ignore_ascii_case("COMMDLG.DLL")
+                && let Some(kept) = system.kept_named(crate::commdlg::NAME)
+            {
+                crate::commdlg::start(&mut system);
+                return Ok(system.kept[kept].instance());
+            }
+
             return Ok(if slash.is_some() && !folder_found {
                 3
             } else {

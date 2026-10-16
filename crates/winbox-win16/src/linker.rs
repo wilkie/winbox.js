@@ -134,14 +134,21 @@ impl System {
     /// What an import links to: a library's entry point, a kept module's
     /// stub, or KERNEL's number. `None` for a module not there.
     fn imported(&mut self, from: &str, target: &Target) -> Option<Value> {
-        if let Some(library) = self.module_named(from) {
-            let library = &self.modules[library];
+        if let Some(index) = self.module_named(from) {
+            let library = &self.modules[index];
             let ordinal = match target {
                 Target::ImportOrdinal { ordinal, .. } => *ordinal,
                 Target::ImportName { procedure, .. } => library.executable.ordinal_of(procedure),
                 _ => 0,
             };
-            let (segment, offset) = library.lookup(ordinal)?;
+
+            // An export of `COMMDLG`'s WinBox answers: its stub, not the
+            // file's entry (`commdlg/`).
+            if let Some((segment, offset)) = crate::commdlg::redirect(self, index, ordinal) {
+                return Some(Value::Place(segment, offset));
+            }
+
+            let (segment, offset) = self.modules[index].lookup(ordinal)?;
 
             return Some(Value::Place(segment, offset));
         }

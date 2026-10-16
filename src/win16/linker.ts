@@ -3,6 +3,7 @@
 import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
 import { winFlags } from './kernel/GetWinFlags.js';
+import { redirect } from './commdlg/index.js';
 
 /**
  * KERNEL's exports that are numbers rather than functions, which a program
@@ -164,7 +165,9 @@ export class Linker {
             const ordinal = relocation.ordinal || ordinalFor(module, relocation.procedure);
 
             if (ordinal) {
-              const info = module.lookup(ordinal);
+              /* An export of `COMMDLG`'s WinBox answers: its stub, not the
+               * file's entry (`commdlg/`). */
+              const info = redirect(this.modules, module, ordinal) ?? module.lookup(ordinal);
               const segment = info.segment;
               const offset = info.offset;
 

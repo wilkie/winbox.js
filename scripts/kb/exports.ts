@@ -10,7 +10,7 @@
  * means a page can never disagree with what the emulator actually links.
  */
 
-import { CommDlg } from '../../src/win16/commdlg.js';
+import { CommDlg } from '../../src/win16/commdlg/index.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { Kernel } from '../../src/win16/kernel.js';
 import { Keyboard } from '../../src/win16/keyboard.js';
