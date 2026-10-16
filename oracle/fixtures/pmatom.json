@@ -1,0 +1,514 @@
+{
+  "probe": "pmatom",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "start",
+      "result": "Progman=0;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "start",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "start",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "held",
+      "result": "0"
+    },
+    {
+      "function": "GlobalFindAtom",
+      "args": "Progman",
+      "result": "found"
+    },
+    {
+      "function": "count",
+      "args": "held",
+      "result": "Progman=1"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Atom Server",
+      "result": "found"
+    },
+    {
+      "function": "raw",
+      "args": "raw:control:Control,Topic",
+      "result": "C:Control:Topic:same:same;first=none"
+    },
+    {
+      "function": "count",
+      "args": "raw:control:Control,Topic",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "raw",
+      "args": "raw:controlin:Control,Topic",
+      "result": "C:Control:Topic:same:same:Control=2;Topic=2;first=none"
+    },
+    {
+      "function": "count",
+      "args": "raw:controlin:Control,Topic",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:control:Control,Topic",
+      "result": "0,conv,first=none"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:control:Control,Topic",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic:initialized",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic:handles",
+      "result": "Control=1;Topic=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:controlin:Control,Topic",
+      "result": "0,conv,first=none"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic:connected",
+      "result": "Control=3;Topic=2"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic:disconnected",
+      "result": "Control=1;Topic=1"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic:freed",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:controlin:Control,Topic",
+      "result": "Control=0;Topic=0"
+    },
+    {
+      "function": "raw",
+      "args": "raw:named:Progman,Progman",
+      "result": "C:Progman:Progman:same:same;first=both"
+    },
+    {
+      "function": "count",
+      "args": "raw:named:Progman,Progman",
+      "result": "Progman=1"
+    },
+    {
+      "function": "raw",
+      "args": "raw:namedin:Progman,Progman",
+      "result": "C:Progman:Progman:same:same:Progman=5;first=both"
+    },
+    {
+      "function": "count",
+      "args": "raw:namedin:Progman,Progman",
+      "result": "Progman=1"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman:initialized",
+      "result": "Progman=1"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman:handles",
+      "result": "Progman=2"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:namedin:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman:connected",
+      "result": "Progman=7"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman:disconnected",
+      "result": "Progman=4"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman:freed",
+      "result": "Progman=3"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:namedin:Progman,Progman",
+      "result": "Progman=3"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:named:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:named:Progman,Progman",
+      "result": "Progman=5"
+    },
+    {
+      "function": "count",
+      "args": "named",
+      "result": "Progman=5;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "named",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "named",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "WinExec",
+      "args": "PROGMAN.EXE",
+      "result": "1"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Progman",
+      "result": "found"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "Progman=5;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "raw",
+      "args": "raw:progman:Progman,Progman",
+      "result": "P:Progman:Progman:same:same;first=both"
+    },
+    {
+      "function": "count",
+      "args": "raw:progman:Progman,Progman",
+      "result": "Progman=5"
+    },
+    {
+      "function": "raw",
+      "args": "raw:progmanin:Progman,Progman",
+      "result": "P:Progman:Progman:same:same:Progman=9;first=both"
+    },
+    {
+      "function": "count",
+      "args": "raw:progmanin:Progman,Progman",
+      "result": "Progman=5"
+    },
+    {
+      "function": "raw",
+      "args": "raw:shell:Shell,AppProperties",
+      "result": "P:Shell:AppProperties:same:same;first=none"
+    },
+    {
+      "function": "count",
+      "args": "raw:shell:Shell,AppProperties",
+      "result": "Shell=0;AppProperties=0"
+    },
+    {
+      "function": "raw",
+      "args": "raw:shellin:Shell,AppProperties",
+      "result": "P:Shell:AppProperties:same:same:Shell=2;AppProperties=2;first=none"
+    },
+    {
+      "function": "count",
+      "args": "raw:shellin:Shell,AppProperties",
+      "result": "Shell=0;AppProperties=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman:initialized",
+      "result": "Progman=5"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman:handles",
+      "result": "Progman=6"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:progmanin:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman:connected",
+      "result": "Progman=11"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman:disconnected",
+      "result": "Progman=8"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman:freed",
+      "result": "Progman=7"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progmanin:Progman,Progman",
+      "result": "Progman=7"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:progman:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:progman:Progman,Progman",
+      "result": "Progman=9"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties:initialized",
+      "result": "Shell=0;AppProperties=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties:handles",
+      "result": "Shell=1;AppProperties=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:shellin:Shell,AppProperties",
+      "result": "0,conv,first=none"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties:connected",
+      "result": "Shell=3;AppProperties=2"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties:disconnected",
+      "result": "Shell=1;AppProperties=1"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties:freed",
+      "result": "Shell=0;AppProperties=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:shellin:Shell,AppProperties",
+      "result": "Shell=0;AppProperties=0"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "Progman=9;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "progman",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "raw",
+      "args": "raw:both:Progman,Progman",
+      "result": "P:Progman:Progman:same:same;C:Progman:Progman:same:same;first=both"
+    },
+    {
+      "function": "count",
+      "args": "raw:both:Progman,Progman",
+      "result": "Progman=9"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman:initialized",
+      "result": "Progman=9"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman:handles",
+      "result": "Progman=10"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:bothin:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman:connected",
+      "result": "Progman=15"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman:disconnected",
+      "result": "Progman=12"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman:freed",
+      "result": "Progman=11"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:bothin:Progman,Progman",
+      "result": "Progman=11"
+    },
+    {
+      "function": "count",
+      "args": "both",
+      "result": "Progman=11;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "both",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "both",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "count",
+      "args": "released",
+      "result": "Progman=10;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "released",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "released",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "clear",
+      "args": "Progman",
+      "result": "10"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman:initialized",
+      "result": "Progman=0"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman:handles",
+      "result": "Progman=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:stalein:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman:connected",
+      "result": "Progman=6"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman:disconnected",
+      "result": "Progman=3"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman:freed",
+      "result": "Progman=2"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stalein:Progman,Progman",
+      "result": "Progman=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "ddeml:stale:Progman,Progman",
+      "result": "0,conv,first=both"
+    },
+    {
+      "function": "count",
+      "args": "ddeml:stale:Progman,Progman",
+      "result": "Progman=2"
+    },
+    {
+      "function": "count",
+      "args": "end",
+      "result": "Progman=2;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "end",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "end",
+      "result": "AppProperties=0"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Progman",
+      "result": "gone"
+    },
+    {
+      "function": "count",
+      "args": "exited",
+      "result": "Progman=2;Control=0"
+    },
+    {
+      "function": "count",
+      "args": "exited",
+      "result": "Topic=0;Shell=0"
+    },
+    {
+      "function": "count",
+      "args": "exited",
+      "result": "AppProperties=0"
+    }
+  ]
+}

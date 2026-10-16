@@ -2,7 +2,7 @@
 kind: topic
 name: Program Manager's DDE interface
 summary: The DDE server installers drive in Windows 3.1's Program Manager — the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, and what it writes to its group files and PROGMAN.INI.
-probes: [progdde, postend]
+probes: [progdde, postend, pmatom]
 ---
 
 Installers tell Program Manager about the programs they put in by DDE: they connect to the service and topic `PROGMAN`, and send execute strings such as `[CreateGroup(Games)][AddItem(C:\GAMES\GAME.EXE,Game)]`. A WinBox stand-in for this service, for a launcher, is planned in [[guide:without-windows]]; this page is what it follows.
@@ -27,7 +27,10 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 | `Shell`, `AppProperties` | `Shell`, `AppProperties` |
 | none, `PROGMAN`          | none                     |
 
-- [[read out]] `WM_DDE_TERMINATE` is answered with a terminate sent back, whether or not there was a conversation (`145b`).
+- [[read out]] `WM_DDE_TERMINATE` is answered with a terminate sent back, whether or not there was a conversation (`145b`). It deletes no atom.
+- [[read out]] **The atoms**, as the protocol has them: for each pair it might answer, Program Manager adds both names (`0b2a`-`0b3f`) and compares the initiator's atoms with them; on a match it sends `WM_DDE_ACK` with them and keeps no count of its own, as they are the receiver's to delete (`0b64`-`0b73`), and otherwise deletes both (`0b7a`-`0b85`).
+- [[measured]] [[probe:pmatom]] counts them by name, deleting each until `GlobalFindAtom` no longer finds it and adding it back. A plain client sending `PROGMAN`, `PROGMAN` counted `Progman` 4 inside Program Manager's acknowledgement -- its own two and Program Manager's two -- and nought once it had deleted its own and the acknowledgement's; `Shell`, `AppProperties` 2 each, then nought. A server of the probe's own, answering the same names the same way, counted the same.
+- [[measured]] A DDEML client is another matter: each `DdeConnect` to Program Manager left two counts of `Progman` behind after `DdeDisconnect`, its string handle freed and its instance ended. That is DDEML's, by the atom's number and not by the server: it left the same two for the probe's own server answering `Progman`, and nothing for one answering another name ([[topic:dynamic-data-exchange]], [[fn:DDEML.DdeConnect]]).
 - [[read out]] `WM_DDE_ADVISE`, `WM_DDE_UNADVISE`, `WM_DDE_POKE` and a stray `WM_DDE_DATA` are answered with a negative acknowledgement naming the item; nothing they carry is freed (`153d`, `0000`-`0011`). [[measured]] A DDEML poke and advise start are refused with `DMLERR_NOTPROCESSED`.
 
 ## Execute strings
@@ -154,7 +157,7 @@ Program Manager is Microsoft's program, run from the installation, and both engi
 - `DispatchMessage` refusing a DDE message whose sender's window is gone ([[fn:USER.DispatchMessage]]), for `[ExitProgman]`.
 - `WM_MDINEXT` walking the children in the order they lie (`USER.EXE` seg15 `0c7f`): deleting the active group makes the one below it active, and `Order=` is written as Windows writes it.
 - `_lwrite` of nought bytes ending the file where it is, as DOS's write does: [[read out]] Program Manager writes a group file again and ends it so (seg4 `05e9`), and [[measured]] the probe's group file, recorded byte for byte in its header, items and tags, has nothing after its end.
-- [[read out]] Program Manager adds the two atoms it acknowledges an initiate with (seg7 `0b2a`-`0b3f`) and does not delete them (`0b64`-`0b73`); [[topic:dynamic-data-exchange]] has DDEML adding them once more for the service `Progman`.
+- The atoms of a connection, as above: [[probe:pmatom]] runs whole on both engines, Program Manager and `DDEML.DLL` being Microsoft's, and every record agrees, the two counts DDEML leaves for each connection included.
 
 ## Not yet done
 

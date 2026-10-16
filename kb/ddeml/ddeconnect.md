@@ -4,7 +4,7 @@ module: DDEML
 name: DdeConnect
 ordinal: 7
 summary: Starts a conversation with the first server that answers for a service and topic -- either may be nought, for any -- by sending WM_DDE_INITIATE to each window at the top in turn.
-probes: [ddemgmt]
+probes: [ddemgmt, pmatom]
 topics: [dynamic-data-exchange]
 ---
 
@@ -22,7 +22,7 @@ topics: [dynamic-data-exchange]
 - [[read out]] **Not a broadcast.** DDEML walks the windows at the top with [[fn:USER.EnumWindows]] and sends each `WM_DDE_INITIATE` (`INITENUM`, `DDEML.DLL` seg1 `6b8a`), and stops at the first to acknowledge (`6bd6`-`6be8`). Windows of other programs, DDEML's or not, are sent it in their turn; DDEML's own instances' `DMGClass` windows let it pass to `DefWindowProc`.
 - [[read out]] A second acknowledgement to the same client window, from a server that answered with more than one pair, is answered by sending its sender `WM_DDE_TERMINATE` from inside the acknowledgement (`7184`-`71a3`, `730c`).
 - [[read out]] A conversation with a DDEML server is `ST_ISLOCAL` (`70e6`-`70f4`), and its partner's handle is the server's `HCONV`; with another server, the partner's window alone.
-- [[read out]] For the service `Progman` DDEML adds a count to the acknowledgement's atoms, which Program Manager does not add (`7140`-`7150`).
+- [[read out]] Where a server not DDEML's acknowledges with the application atom whose number DDEML kept for `Progman` (DS `00A4`), DDEML adds a count to both of the acknowledgement's atoms (`7140`-`7150`), and the conversation's end deletes them only once. [[measured]] [[probe:pmatom]]: each connection to Program Manager, or to another server answering `Progman`, left two counts of `Progman` behind; Program Manager adds the atoms it answers with, as the protocol asks ([[topic:dynamic-data-exchange]], [[topic:program-manager-dde]]).
 - [[read out]] A service handle with a high word -- an instance's own name, as `XTYP_REGISTER` gives it -- is sent `WM_DDE_INITIATE` at that one window, the instance's `DMGFrame`, instead of at every window at the top (`0af9`, `6b13`-`6b35`). `DdeCreateStringHandle`'s handles have no high word.
 
 ## Inside Windows
