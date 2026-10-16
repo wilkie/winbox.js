@@ -744,6 +744,54 @@ impl System {
         Ok(())
     }
 
+    /// A drive's current directory as function 47h answers it: without
+    /// its drive and first backslash. A removable drive with no disk in it
+    /// answers as no drive, as DOSBox's floppy drive does (**recorded** by
+    /// `ofnopen`: COMMDLG cannot read drive A:).
+    pub(crate) fn directory_of(&self, letter: char) -> Result<String, u16> {
+        if !self.files.mounted(letter)
+            || (self.files.removable(letter) && self.files.allocation(letter).is_none())
+        {
+            return Err(ERROR_INVALID_DRIVE);
+        }
+
+        Ok(self.files.current(letter)[3..]
+            .trim_end_matches('\\')
+            .to_string())
+    }
+
+    /// A file's attributes, as function 4300h answers them; DOS's error
+    /// where it is not there.
+    pub(crate) fn attributes_of(&self, path: &str) -> Result<u8, u16> {
+        let (drive, parts, name) = resolve_file(&self.files, path);
+
+        if !self.files.is_directory(drive, &parts) {
+            return Err(ERROR_PATH_NOT_FOUND);
+        }
+
+        self.files
+            .lookup(drive, &parts, &name)
+            .map(|entry| entry.attributes)
+            .ok_or(ERROR_FILE_NOT_FOUND)
+    }
+
+    /// A drive's volume label, as DOS's search for one answers it: none
+    /// for a removable drive, `DOSBOX` for DOSBox's own drive Z:, and
+    /// `C_DRIVE` and the like for a folder it mounts, as DOSBox names
+    /// them. **Recorded** by `ofnopen`: COMMDLG's drives' list shows
+    /// `c: c_drive` and `z: dosbox`.
+    pub(crate) fn volume_label(&self, letter: char) -> Option<String> {
+        if !self.files.mounted(letter) || self.files.removable(letter) {
+            return None;
+        }
+
+        Some(if letter == 'Z' {
+            "DOSBOX".to_string()
+        } else {
+            format!("{letter}_DRIVE")
+        })
+    }
+
     fn file_attributes(&mut self) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
 
@@ -780,8 +828,7 @@ impl System {
     /// backslash, at DS:SI; AX 0100h, as DOS leaves it.
     fn current_directory(&mut self) -> Result<(), u16> {
         let letter = self.drive_letter(self.low(DX)).ok_or(ERROR_INVALID_DRIVE)?;
-        let current = self.files.current(letter);
-        let mut bytes = current[3..].trim_end_matches('\\').as_bytes().to_vec();
+        let mut bytes = self.directory_of(letter)?.into_bytes();
 
         bytes.push(0);
         self.write_far(self.pointer(DS, SI), &bytes);

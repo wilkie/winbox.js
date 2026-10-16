@@ -27,18 +27,21 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
   - 0Dh, with `CX` 0860h, answers a block device's parameters: its type, its cylinders, and the BIOS parameter block from its boot sector.
 
   A drive that is not there is error 0Fh. With no answer at all, the carry flag was whatever it happened to be, and File Manager read a parameter block nothing had written.
+
 - [[documented]] **`INT 25h` and `INT 26h`** read and write a volume's sectors by number. Unlike other interrupts, they return with the flags still on the stack, and the caller pops them. File Manager reads a drive's boot sector this way. With no handler, its pop took its own return address.
 - [[documented]] A drive that is not there answers 8002h to `INT 25h`, as DOSBox's does.
+
+- [[measured]] Function 47h, the current directory, fails on a removable drive with no disk in it: COMMDLG's Open box, changed to an empty `a:`, says it cannot read the drive ([[probe:ofnopen]]). [[inferred]] The engines answer error 0Fh, invalid drive, as for a drive that is not there; the box says the same for any error.
 
 ## Free space
 
 [[measured]] [[probe:diskfree]] asks function 36h about the current drive, A:, B:, C:, Z: and the number past Z:, with BX and CX set to 0B0Bh and 0C0Ch first, and function 1Ch about the same drives.
 
-| Drive | AX, sectors to a cluster | BX, free clusters | CX, bytes to a sector | DX, clusters |
-|---|---|---|---|---|
-| C:, and the current drive | 007Fh | 0FBFh | 0200h | 3FFFh |
-| Z: | 007Fh | 0000h | 0200h | 4081h |
-| A:, B:, past Z: | FFFFh | 0B0Bh, as it was | 0C0Ch, as it was | the drive, as it was |
+| Drive                     | AX, sectors to a cluster | BX, free clusters | CX, bytes to a sector | DX, clusters         |
+| ------------------------- | ------------------------ | ----------------- | --------------------- | -------------------- |
+| C:, and the current drive | 007Fh                    | 0FBFh             | 0200h                 | 3FFFh                |
+| Z:                        | 007Fh                    | 0000h             | 0200h                 | 4081h                |
+| A:, B:, past Z:           | FFFFh                    | 0B0Bh, as it was  | 0C0Ch, as it was      | the drive, as it was |
 
 - [[read out]] These are DOSBox's own figures, not the host's disk. DOSBox 0.74-3's `MOUNT` gives a folder mounted as a hard disk the fixed geometry "512,127,16383,4031" (`dos_programs.cpp`): 512 bytes to a sector, 127 sectors to a cluster, 16,383 clusters, 4,031 free. Its comment says "~1GB total size" and "~250MB total free size". `localDrive::AllocationInfo` answers what it was given (`drive_local.cpp`). Only `-freesize` or `-size` change it, and the oracle mounts C: with neither (`scripts/oracle/record.mjs`). A floppy mounted with `-t floppy` is "512,1,2880,2880", all of it free. Z:, DOSBox's own drive, is "512,127,16513,0" (`drive_virtual.cpp`).
 - [[measured]] A drive that is not there answers FFFFh in AX and leaves BX, CX and DX as they were. Under DOSBox, A: is not mounted, so it is not there, though [[fn:KERNEL.GetDriveType]] calls it removable.

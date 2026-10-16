@@ -4,6 +4,7 @@ import { copyFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { Loader } from '../../src/win16/loader.js';
 import { IMAGE, PROBES, outputOf, recordsFrom, runProbe } from './run-probe.js';
 
 /**
@@ -64,8 +65,14 @@ const showing = (win16: any) =>
     (window: any) => window.visible && window.control?.className === 'COMBOLBOX'
   );
 
-/** Notepad run, its File Open opened from the keyboard, then the steps: the tree after each. */
-async function opened(steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[]) {
+/**
+ * Notepad run, its File Open opened from the keyboard, then the steps: the
+ * tree after each. `without`, files taken off the drive first.
+ */
+async function opened(
+  steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[],
+  without: string[][] = []
+) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-filedlg-'));
 
   try {
@@ -77,6 +84,7 @@ async function opened(steps: { keys: string[]; seconds: number; then?: (win16: a
       keepCalls: 0,
       steps: [step('Alt_L;f'), step('o', 2), ...steps],
       trees: true,
+      without,
     });
 
     return ran.trees.slice(3);
@@ -96,6 +104,43 @@ async function opened(steps: { keys: string[]; seconds: number; then?: (win16: a
         step('Return', 2),
       ]);
 
+      expect(dialog(root)).toEqual({
+        name: '*.txt',
+        files: [],
+        dirs: ['C:\\', 'CORPUS', 'ORACLE', 'WINDOWS'],
+        directory: 'c:\\',
+        focus: 'dirs',
+      });
+      expect(dialog(windows)).toMatchObject({
+        files: ['BOOTLOG.TXT', 'SETUP.TXT'],
+        directory: 'c:\\windows',
+      });
+      expect(dialog(clicked)).toMatchObject({ name: 'setup.txt', focus: 'files' });
+      expect(dialog(done)).toBe(null);
+      expect(done.nodes.map((node: any) => node.name)).toContain('Notepad - SETUP.TXT');
+    }, 300000);
+
+    /* The same with no `COMMDLG.DLL` on the drive: the dialog is WinBox's
+     * own, its template and its code, and does all the same. Only the
+     * folders' and drives' pictures, which are the file's, are not drawn. */
+    it('does the same with no COMMDLG.DLL on the drive', async () => {
+      /* Whether COMMDLG is a file loaded, or WinBox's alone. */
+      let file = true;
+      const [root, windows, clicked, done] = await opened(
+        [
+          step(
+            'dblclick:300,141',
+            1,
+            (win16) => (file = win16._modules.fromName('COMMDLG') instanceof Loader)
+          ),
+          step('dblclick:300,189'),
+          step('click:110,152'),
+          step('Return', 2),
+        ],
+        [['WINDOWS', 'SYSTEM', 'COMMDLG.DLL']]
+      );
+
+      expect(file).toBe(false);
       expect(dialog(root)).toEqual({
         name: '*.txt',
         files: [],

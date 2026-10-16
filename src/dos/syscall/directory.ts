@@ -67,6 +67,41 @@ export async function chdir(this: any, path: string) {
 }
 
 /**
+ * A drive's current directory as function 47h answers it: without its
+ * drive and first backslash. A removable drive with no disk in it answers
+ * as no drive, as DOSBox's floppy drive does (**recorded** by `ofnopen`:
+ * COMMDLG cannot read drive A:). As `dos.rs`'s `directory_of`.
+ */
+export function directoryOf(dos: any, letter: string): string {
+  const fileSystem = dos.files.query(letter);
+
+  if (!fileSystem || (fileSystem.removable && !fileSystem.space)) {
+    throw ERROR_INVALID_DRIVE;
+  }
+
+  const current: string = dos.files._pwd[letter] ?? `${letter}:\\`;
+
+  return current.substring(3).replace(/\\$/, '');
+}
+
+/**
+ * A drive's volume label, as DOS's search for one answers it: none for a
+ * removable drive, `DOSBOX` for DOSBox's own drive Z:, and `C_DRIVE` and
+ * the like for a folder it mounts, as DOSBox names them. **Recorded** by
+ * `ofnopen`: COMMDLG's drives' list shows `c: c_drive` and `z: dosbox`. As
+ * `dos.rs`'s `volume_label`.
+ */
+export function volumeLabel(dos: any, letter: string): string | null {
+  const fileSystem = dos.files.query(letter);
+
+  if (!fileSystem || fileSystem.removable) {
+    return null;
+  }
+
+  return letter === 'Z' ? 'DOSBOX' : `${letter}_DRIVE`;
+}
+
+/**
  * Writes a drive's current directory (47h), 0 for the current drive and 1
  * for A:, at DS:SI: from the root, without the drive or the first `\`, and a
  * null.
@@ -74,12 +109,11 @@ export async function chdir(this: any, path: string) {
 export function getCurrentDirectory(this: any, drive: number, address: number) {
   const letter = drive === 0 ? this.files.drive : String.fromCharCode(0x40 + drive);
 
-  if (drive > 26 || !this.files.query(letter)) {
+  if (drive > 26) {
     throw ERROR_INVALID_DRIVE;
   }
 
-  const current: string = this.files._pwd[letter] ?? `${letter}:\\`;
-  const path = current.substring(3).replace(/\\$/, '');
+  const path = directoryOf(this, letter);
 
   for (let i = 0; i < path.length; i++) {
     this.machine.memory.write8(address + i, path.charCodeAt(i) & 0xff);

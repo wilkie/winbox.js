@@ -14,12 +14,12 @@ Today a run mounts an installed Windows 3.1 read-only beneath drive C: (`--windo
 
 These are Microsoft's own code, loaded from the installation when a program imports them or asks for them with [[fn:KERNEL.LoadLibrary]]:
 
-| Library                | Who needs it                                                                                                                                                                                                                                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **COMMDLG**            | 16 of the accessories, WinHelp, Program Manager's Browse, SETUP; in the corpus fibsw, hanoi, champ, wslam, wordsrch, SimTower and its EREG, and bg (through CTL3D). winbox.js keeps only COMMDLG's names, as stubs, and loads its file in their place. |
-| **DDEML**              | SETUP programs (caribb's), champ                                                                                                                                                                                                                       |
-| **VER**, **LZEXPAND**  | SETUP programs, Control Panel's MAIN.CPL and DRIVERS.CPL                                                                                                                                                                                               |
-| **OLECLI**, **OLESVR** | Cardfile and Write (objects in a document); Packager, Paintbrush and Sound Recorder (as servers)                                                                                                                                                       |
+| Library                | Who needs it                                                                                                                                                                                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **COMMDLG**            | 16 of the accessories, WinHelp, Program Manager's Browse, SETUP; in the corpus fibsw, hanoi, champ, wslam, wordsrch, SimTower and its EREG, and bg (through CTL3D). The file dialogs are WinBox's own, with or without the file; the rest is still the file's code ([[topic:common-dialogs]]). |
+| **DDEML**              | SETUP programs (caribb's), champ                                                                                                                                                                                                                                                               |
+| **VER**, **LZEXPAND**  | SETUP programs, Control Panel's MAIN.CPL and DRIVERS.CPL                                                                                                                                                                                                                                       |
+| **OLECLI**, **OLESVR** | Cardfile and Write (objects in a document); Packager, Paintbrush and Sound Recorder (as servers)                                                                                                                                                                                               |
 
 Programs that winbox.js starts are run from disk as well, as Windows would run them: TASKMAN, a screen saver, the accessories themselves, `.CPL` applets. Those are the user's programs, not part of the system.
 
@@ -87,7 +87,9 @@ COMMDLG is the largest piece of Microsoft's code that still runs. It is done as 
 - What the file dialogs ask of KERNEL and USER: the drive list, `DlgDirList`, the directory and file lists ([[topic:directory-lists]]), the path `OpenFile` leaves behind.
 - Behaviour the engines already follow for COMMDLG's sake: its owner-drawn lists, the combo box's extended UI, `CBN_SELENDOK` for a 3.10 instance, the bold MS Sans Serif 8 of the Find dialog, its hook thunks, `SetProp` A000h ([[topic:list-boxes]], [[topic:combo-boxes]], [[topic:standard-controls]]).
 
-**How it slots in.** The engines keep COMMDLG's export table already, every entry a stub, and load the file in its place (`STUBS_ONLY` in `crates/winbox-win16/src/loader.rs`, `modules_kernel.rs` and `src/win16/library.ts`). Taking COMMDLG off that list, and implementing its exports with a `COMMDLG` arm where calls are dispatched (`crates/winbox-win16/src/call.rs`), makes it WinBox's own. It can be done a function at a time: a function not yet followed stays Microsoft's while an installation is present.
+**How it slots in.** It is done a function at a time ([[topic:common-dialogs]]). With the file present, it is loaded as before, and each import of a function WinBox answers is linked to WinBox's code; a function not yet followed stays Microsoft's. Without the file, every function is WinBox's, and one not yet followed answers nought.
+
+**Where it stands.** `GetOpenFileName`, `GetSaveFileName`, `GetFileTitle` and `CommDlgExtendedError` are WinBox's own, recorded by `ofnopen`, `ofnerr` and `ftitle`. Notepad's Open runs with no `COMMDLG.DLL` on the drive. `FindText`, `ReplaceText`, `ChooseFont`, `ChooseColor` and `PrintDlg` are next.
 
 **Probes.** Each dialog is driven by a probe that records the messages, the controls, what the hook is sent, and what the call answers, on DOSBox. The accessories' sessions (Notepad's Open and Find, Write's Font, Paintbrush's Print) show the result as a user sees it.
 
@@ -111,4 +113,4 @@ A launcher, native and on the page, sits on top of steps 3 and 4. It shows the g
 
 ## Not yet done
 
-All of it. What winbox.js does today is in the first section.
+All of it but COMMDLG's file dialogs. What winbox.js does today is in the first section.

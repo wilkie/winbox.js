@@ -14446,14 +14446,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetOpenFileName",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetSaveFileName",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -14476,14 +14476,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FileOpenDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FileSaveDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ColorDlgProc",
@@ -14602,8 +14602,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetFileTitle",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "WEP",
@@ -14614,8 +14614,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "dwLBSubclass",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "dwUpArrowHack",
@@ -14626,8 +14626,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "dwOKSubclass",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",
