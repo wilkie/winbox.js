@@ -155,6 +155,7 @@ pub const AGREEING: &[&str] = &[
     "dderaw",
     "ddemgmt",
     "profhold",
+    "pmatom",
 ];
 
 pub fn root() -> PathBuf {

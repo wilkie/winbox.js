@@ -5841,6 +5841,7 @@ const RUN_WHOLE = new Set<string>([
   'ddemgmt',
   'ddeleft',
   'profhold',
+  'pmatom',
 ]);
 
 /**
