@@ -302,12 +302,6 @@ pub fn delete_dc(system: &mut System, hdc: u16) -> bool {
     true
 }
 
-pub(crate) fn delete_dc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-
-    Ok(Answer::Word(u16::from(delete_dc(system, hdc))))
-}
-
 /// A device context's state saved, to be put back by `RestoreDC`: the
 /// level saved, 1 for the first; nought for no device context.
 ///

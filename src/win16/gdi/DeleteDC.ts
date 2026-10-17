@@ -1,6 +1,7 @@
 'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
+import { deleteDriverDC } from './printer-driver.js';
 
 /**
  * The **DeleteDC** function deletes the given device context.
@@ -39,5 +40,12 @@ export function DeleteDC(hdc) {
   }
 
   this.handles.free(hdc);
+
+  /* A printer driver's from the drive: its `Disable` and its library let
+   * go with the last (`printer-driver.ts`). */
+  if (surface.driverDevice) {
+    return deleteDriverDC(this, surface).then(() => TRUE);
+  }
+
   return TRUE;
 }

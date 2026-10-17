@@ -114,14 +114,14 @@ impl System {
 
             while places
                 .iter()
-                .any(|&(_, _, offset)| self.handles.resolve(base + offset).is_some())
+                .any(|&(_, _, offset)| self.handles.resolve(base.wrapping_add(offset)).is_some())
             {
-                base += 0x10;
+                base = base.wrapping_add(0x10);
             }
 
             for &(type_index, entry_index, offset) in &places {
                 self.handles.alias_at(
-                    base + offset,
+                    base.wrapping_add(offset),
                     Object::Resource(owner, type_index, entry_index),
                 );
             }
@@ -132,7 +132,9 @@ impl System {
         places
             .iter()
             .find(|&&(type_index, entry_index, _)| (type_index, entry_index) == (kind, entry))
-            .map_or(0, |&(_, _, offset)| self.resource_bases[&owner] + offset)
+            .map_or(0, |&(_, _, offset)| {
+                self.resource_bases[&owner].wrapping_add(offset)
+            })
     }
 
     /// The resource a handle names: its owner, its file, and it.

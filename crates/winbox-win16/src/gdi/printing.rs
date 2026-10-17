@@ -297,22 +297,33 @@ async fn printer_escape(
 /// display's driver answers (`calls/escape.rs`).
 pub(crate) fn escape_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (hdc, number, count, input, printer) = {
+        let (hdc, number, count, input, output, printer, driver) = {
             let system = engine.system();
             let hdc = args.word(&system);
             let number = args.signed(&system);
             let count = args.signed(&system);
             let input = args.dword(&system);
-            let _output = args.dword(&system);
+            let output = args.dword(&system);
 
             (
                 hdc,
                 number,
                 count,
                 input,
+                output,
                 printer_of(&system, hdc).is_some(),
+                super::printer_driver::driver_dc_of(&system, hdc),
             )
         };
+
+        // A printer driver's from the drive: its `Control`
+        // (`printer_driver.rs`).
+        if let Some(dc) = driver {
+            return answer(
+                super::printer_driver::driver_escape(engine, hdc, dc, number, input, output)
+                    .await?,
+            );
+        }
 
         if printer {
             return answer(printer_escape(engine, hdc, number, count, input).await?);

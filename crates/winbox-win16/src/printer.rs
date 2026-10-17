@@ -204,6 +204,11 @@ pub struct Printed {
 #[derive(Debug, Clone, Default)]
 pub struct Printing {
     pub printers: HashMap<usize, Printer>,
+    /// The printer drivers GDI has loaded from the drive, and their
+    /// devices and contexts (`gdi/printer_driver.rs`).
+    pub drivers: crate::gdi::printer_driver::Drivers,
+    /// The environments GDI keeps for the ports (`gdi/environment.rs`).
+    pub environments: Vec<(Vec<u8>, u16)>,
     pub spooler: crate::gdi::spool_job::Spooler,
     pub printed: Vec<Printed>,
     /// The documents started, for the next one's serial.

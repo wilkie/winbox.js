@@ -1,5 +1,6 @@
 'use strict';
 
+import { driverEscape } from './printer-driver.js';
 import { printerEscape } from './printing.js';
 
 /**
@@ -42,12 +43,17 @@ export function Escape(
   nEscape: number,
   _cbInput: number,
   lpInData: number,
-  _lpOutData: number
+  lpOutData: number
 ) {
   const surface = this.handles.resolve(hdc);
 
   if (!surface || surface.memoryContext) {
     return 0;
+  }
+
+  /* A printer driver's from the drive: its `Control` (`printer-driver.ts`). */
+  if (surface.driverDevice) {
+    return driverEscape(this, hdc, surface, (nEscape << 16) >> 16, lpInData, lpOutData);
   }
 
   /* A printer's escapes for printing a document (`printing.ts`). */
