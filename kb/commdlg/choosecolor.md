@@ -7,7 +7,7 @@ summary: The Color dialog — 48 basic colours, 16 custom, and, opened out, a sp
 versions:
   '3.1': exact
 probes: [choosclr]
-topics: [common-dialogs]
+topics: [common-dialogs, choose-color]
 source: src/win16/commdlg/choose-color.ts
 ---
 
@@ -34,7 +34,8 @@ source: src/win16/commdlg/choose-color.ts
 
 - [[read out]] The dialog is `DialogBoxIndirectParam` on COMMDLG's instance with its procedure, `ColorDlgProc`, COMMDLG's export 8, and the structure as its parameter. An answer of -1 is nought, with `CDERR_DIALOGFAILURE` (`COMMDLG.DLL` seg1 `0fea`).
 - [[read out]] COMMDLG's template is its resource named by its string 303h, "ChooseColor": the dialog `CHOOSECOLOR`.
-- The rest, from the grids to the arithmetic, is in [[topic:common-dialogs]].
+- [[read out]] It takes the arguments as a program pushes them, one far pointer to the `CHOOSECOLOR`, and pops 4 bytes; it answers a `BOOL`.
+- The rest, from the grids to the arithmetic, is in [[topic:choose-color]]; the dialog's procedure is [[fn:COMMDLG.ColorDlgProc]].
 
 ## Inside Windows
 

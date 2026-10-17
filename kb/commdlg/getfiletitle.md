@@ -8,6 +8,7 @@ versions:
   '3.1': exact
 probes: [ftitle]
 source: src/win16/commdlg/parse-file.ts
+topics: [common-dialogs, file-dialogs]
 ---
 
 ## Observed behaviour
@@ -36,6 +37,11 @@ source: src/win16/commdlg/parse-file.ts
 - [[measured]] `.\FILE.TXT`, `..\FILE.TXT` and `\.\FILE` are titled `FILE.TXT` and `FILE`, but `\..\FILE` and `C:\..\FILE` are -3: a `..` is let be only at the start of a relative name.
 - [[measured]] `\\SERVER\SHARE` is titled `SHARE`.
 - [[measured]] `GetFileTitle` sets no extended error: [[fn:COMMDLG.CommDlgExtendedError]] answers nought after it.
+
+## Nuances
+
+- [[read out]] The arguments, as pushed: a far pointer to the name, a far pointer to the buffer for the title, and the buffer's size, a word; it pops 10 bytes and answers a signed word.
+- [[read out]] A buffer's size is compared as a signed word, so a size of 8000h or more is taken as negative and too small.
 
 ## Inside Windows
 

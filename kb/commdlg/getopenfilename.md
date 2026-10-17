@@ -8,6 +8,7 @@ versions:
   '3.1': partial
 probes: [ofnopen, ofnerr]
 source: src/win16/commdlg/file-dialogs.ts
+topics: [common-dialogs, file-dialogs]
 ---
 
 ## Observed behaviour
@@ -38,20 +39,27 @@ source: src/win16/commdlg/file-dialogs.ts
 - The flags after a call: `OFN_FILEMUSTEXIST` adds `OFN_PATHMUSTEXIST`; `OFN_CREATEPROMPT` adds both. 70000000h, COMMDLG's own bits, is cleared; 80000000h is kept.
 - Without `OFN_ENABLEHOOK`, a hook's pointer given is cleared in the structure.
 
+## Nuances
+
+- [[read out]] One far pointer to the `OPENFILENAME`, 4 bytes popped; the answer is a `BOOL`, 1 only where the box ended with 1 ([[topic:file-dialogs]] has the structure).
+- [[read out]] The size is checked before the hourglass is shown, so a refused size leaves the cursor alone; everything after it runs with the hourglass ([[fn:COMMDLG.Ordinal 32]]).
+- [[read out]] A template that cannot be locked answers nought with no error set: `LockResource` failing is not given a code (seg2 `0a2a` onwards).
+- [[read out]] The hook is called before `WM_INITDIALOG` through COMMDLG's data, where [[fn:COMMDLG.FindText]] and [[fn:COMMDLG.ChooseColor]] call theirs only once the dialog has its property ([[topic:common-dialogs]]).
+
 ## Inside Windows
 
 [[read out]] `COMMDLG.DLL` seg2:
 
 1. **The start** (`09eb`): the structure's size checked (`09fc`), the hourglass shown and the error cleared (`0a2a`). The template is the program's handle with `OFN_ENABLETEMPLATEHANDLE`, its named dialog with `OFN_ENABLETEMPLATE`, else COMMDLG's own 1536, or 1537 for `OFN_ALLOWMULTISELECT`. `SetErrorMode(8003h)` while the box is up. The hook is kept for what comes before `WM_INITDIALOG`. Then `DialogBoxIndirectParam` with COMMDLG's instance and `FileOpenDlgProc` (entry 6, `42a3`); `-1` is `CDERR_DIALOGFAILURE`. The answer is 1 where the box ended with 1.
-2. **The procedure** (`42a3`): the program's hook first; what it answers is not COMMDLG's to answer. The pictures are made again for `WM_SYSCOLORCHANGE` (`43ee`).
+2. **The procedure**, [[fn:COMMDLG.FileOpenDlgProc]] (`42a3`): the program's hook first; what it answers is not COMMDLG's to answer. The pictures are made again for `WM_SYSCOLORCHANGE` (`43ee`).
 3. **`WM_INITDIALOG`** (`1153`): a block of 40Dh bytes for the box; the name lowered and parsed (`1220`); the custom filter (`1587`) and the filter's types (`1646`, `469c`); the drives, the current one chosen, and the lists filled (`1818`); the folders' list and OK subclassed (`18ad`, `10a5`, `100f`); the hook sent `WM_INITDIALOG`.
 4. **The lists** (`039b`, `0180`): the files by DOS searches, one for each pattern between `;`s, the folders as a path down to the current one. The drives (`4827`), with their volume labels, from DOS.
 5. **OK** (`22e7`): the name parsed; a folder or a path before the name gone into (`25fc`); a wildcard made the files' pattern (`2860`); the default extension added where there is none (`29d7`); the file looked for with `OpenFile` and the flags' checks made ([[fn:COMMDLG.GetSaveFileName]]); `FILEOKSTRING` sent to the hook; the structure written (`2e90`).
-6. **The rows** (`4dcc`, `4e8a`): the folders' and drives' lists are owner-drawn, a picture from bitmap 576 beside each name.
+6. **The rows** (`4dcc`, `4e8a`): the folders' and drives' lists are owner-drawn, a picture from bitmap 576 beside each name ([[fn:COMMDLG.Ordinal 42]]).
 
 ## Implementation
 
-In both engines, a function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:common-dialogs]]):
+In both engines, a function at a time as the file runs it, each call into KERNEL, USER and GDI made as the file makes it ([[topic:file-dialogs]]):
 
 - `src/win16/commdlg/file-dialogs.ts` (the start), `file-init.ts` (the procedure, `WM_INITDIALOG`, the subclasses), `file-command.ts` (the controls), `file-ok.ts` (OK), `file-lists.ts` (the lists, the drives, the boxes, the rows), `pictures.ts`; the templates and strings in `file-open-dialog.ts`, `multi-file-open-dialog.ts` and `strings.ts`.
 - `crates/winbox-win16/src/commdlg/file_dialogs.rs`, `file_init.rs`, `file_command.rs`, `file_ok.rs`, `file_lists.rs`, `pictures.rs`, `resources.rs`.

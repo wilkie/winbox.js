@@ -8,6 +8,7 @@ versions:
   '3.1': exact
 probes: [ofnerr, ftitle]
 source: src/win16/commdlg/state.ts
+topics: [common-dialogs]
 ---
 
 ## Observed behaviour
@@ -21,6 +22,14 @@ source: src/win16/commdlg/state.ts
 - [[measured]] The error stays until a call changes it: read after a refused call and again after one that started, it is 1 and then nought. A call that starts clears it.
 - [[measured]] [[fn:COMMDLG.GetFileTitle]] sets no error ([[probe:ftitle]]).
 
+Every code COMMDLG sets, and which function sets it, is in the table of [[topic:common-dialogs]].
+
+## Nuances
+
+- [[read out]] It takes no arguments and answers a `DWORD`; every code COMMDLG sets fits the low word.
+- [[read out]] Not every function clears it as it starts: [[fn:COMMDLG.GetOpenFileName]] and [[fn:COMMDLG.GetSaveFileName]] do; [[fn:COMMDLG.FindText]] and [[fn:COMMDLG.ReplaceText]] clear it only once their checks pass (seg5 `0134`); [[fn:COMMDLG.ChooseColor]] never does, so after a successful Color dialog it still reads the last failure ([[probe:choosclr]]).
+- [[read out]] A wrong size is `CDERR_STRUCTSIZE` for every function but `ChooseColor`, which answers nought and leaves the error as it was.
+
 ## Inside Windows
 
 [[read out]] `COMMDLG.DLL` seg6 `01e7`: the entry loads COMMDLG's data segment and answers the doubleword at `[2CCh]`, `mov ax, [2CCh]; mov dx, [2CEh]` (`01f1`), and changes nothing. Each function stores its error there as it fails; [[fn:COMMDLG.GetOpenFileName]] and [[fn:COMMDLG.GetSaveFileName]] store nought as they start, once the structure's size is found right (seg2 `0a2a`).
@@ -33,7 +42,3 @@ There is one error, whichever code failed last ([[topic:common-dialogs]]):
 - Without the file, WinBox keeps its own.
 
 `CommDlgExtendedError`, `setError` and `error` in `src/win16/commdlg/state.ts`; `set_error` and `error` in `crates/winbox-win16/src/commdlg/mod.rs`.
-
-## Not yet done
-
-- The errors of `FindText`, `ReplaceText`, `ChooseColor`, `ChooseFont` and `PrintDlg` belong with their own pages.

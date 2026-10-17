@@ -12,7 +12,7 @@ source: src/win16/gdi/SetObjectOwner.ts
 ## Observed behaviour
 
 - [[read out]] In Windows 3.1's `GDI.EXE` (seg1 `76a2`) it sets up a frame, touches nothing, and returns with `retf 4`, taking its two words, the object and the owner, off the stack. It has no answer: `AX` is left holding GDI's own data segment, from its entry.
-- [[read out]] `COMMDLG.DLL` calls it (seg6 `0160`), for an object it keeps and an owner its caller names. It looks it up by ordinal with `GetProcAddress` rather than importing it, and only on Windows 3.10 or later: it compares the version with `30Ah` first.
+- [[read out]] `COMMDLG.DLL` calls it (seg6 `0160`), for an object its caller names, with COMMDLG's own instance as the owner ([[fn:COMMDLG.Ordinal 43]]). It looks it up by ordinal with `GetProcAddress` rather than importing it, and only on Windows 3.10 or later: it compares the version with `30Ah` first.
 - [[measured]] Every accessory that loads `COMMDLG.DLL` calls it once as it starts: 16 of the 25.
 
 ## Nuances

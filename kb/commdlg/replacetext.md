@@ -7,7 +7,7 @@ summary: Opens the modeless Replace dialog for a program's own window, which tel
 versions:
   '3.1': exact
 probes: [findrepl]
-topics: [common-dialogs]
+topics: [common-dialogs, find-and-replace]
 source: src/win16/commdlg/find-replace.ts
 ---
 
@@ -22,11 +22,11 @@ Nothing in the installation or the corpus uses it. [[probe:findrepl]] opens it a
 ## Nuances
 
 - [[read out]] It loads COMMDLG's string 40Dh, "Close", as it starts, and fails with `CDERR_LOADSTRFAILURE` without it (`COMMDLG.DLL` seg5 `0231`).
-- [[read out]] Its template is COMMDLG's dialog 1541, its procedure `ReplaceTextDlgProc`, export 14. The text to find is all that enables its buttons; the replacement may be empty.
+- [[read out]] Its template is COMMDLG's dialog 1541, its procedure [[fn:COMMDLG.ReplaceTextDlgProc]], export 14. The text to find is all that enables its buttons; the replacement may be empty.
 
 ## Inside Windows
 
-[[read out]] `COMMDLG.DLL` seg5 `019c`; the procedure seg5 `0582`. See [[topic:common-dialogs]].
+[[read out]] `COMMDLG.DLL` seg5 `019c`, `retf 4`, its checks in `FindText`'s order with the replacement's buffer beside the find buffer and the string 40Dh loaded after the hook is checked (seg5 `01c6` to `0357`); the procedure seg5 `0582`. See [[topic:find-and-replace]].
 
 ## Implementation
 
