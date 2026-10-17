@@ -1,0 +1,2074 @@
+{
+  "probe": "lbtext",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "extent",
+      "args": "regular",
+      "result": "52,13 one=6 widths=6,6 overhang=0 height=13 weight=400"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain size",
+      "result": "80x52"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 2",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 3",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 4",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 5",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 6",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 7",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 8",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 9",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 10",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 15",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 16",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 17",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 18",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 19",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 20",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 21",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 22",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 23",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 28",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 29",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 30",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 31",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 32",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 33",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 34",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 35",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 36",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 37",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 38",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 39",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 41",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 42",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 43",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 44",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 45",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 46",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 47",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 48",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 49",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular plain 51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner size",
+      "result": "80x28"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 2",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 3",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 4",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 5",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 6",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 7",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 8",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 9",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 10",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 15",
+      "result": "fff0000fffffffff0fffff0ffff0fffffffffff0f0ffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 16",
+      "result": "fff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 17",
+      "result": "fff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 18",
+      "result": "fff0fff0fff000ff0ff0000ffff0ff00ff000ff0f0ff000fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 19",
+      "result": "fff0000fff0fff0f0f0fff0ffff0ff0ffffff0f0f0f0fff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 20",
+      "result": "fff0fff0ff0fff0f0f0fff0ffff0ff0fff0000f0f0f0ffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 21",
+      "result": "fff0fff0ff0fff0f0f0fff0ffff0ff0ff0fff0f0f0f0ffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 22",
+      "result": "fff0fff0ff0fff0f0f0fff0ffff0ff0ff0fff0f0f0f0fff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 23",
+      "result": "fff0000ffff000ff0ff0000ffff0fff0ff0000f0f0ff000fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular owner 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list size",
+      "result": "80x18"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 2",
+      "result": "fffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 3",
+      "result": "fff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 4",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 5",
+      "result": "fffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 6",
+      "result": "fffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 7",
+      "result": "fffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 8",
+      "result": "fffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 9",
+      "result": "fffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 10",
+      "result": "fffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 15",
+      "result": "fff0000fffffffff0fffff0ffff0fffffffffff0f0ffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 16",
+      "result": "fff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "regular list 17",
+      "result": "fff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "bold",
+      "result": "62,13 one=8 widths=8,8 overhang=1 height=13 weight=700"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain size",
+      "result": "80x52"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 2",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 3",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 4",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 5",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 6",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 7",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 8",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 9",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 10",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 15",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 16",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 17",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 18",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 19",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 20",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 21",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 22",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 23",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 28",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 29",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 30",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 31",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 32",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 33",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 34",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 35",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 36",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 37",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 38",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 39",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 41",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 42",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 43",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 44",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 45",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 46",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 47",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 48",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 49",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold plain 51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner size",
+      "result": "80x28"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 2",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 3",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 4",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 5",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 6",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 7",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 8",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 9",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 10",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 15",
+      "result": "fff00000ffffffffff00fffff00fffff00fffffffffffff00f00ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 16",
+      "result": "fff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 17",
+      "result": "fff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 18",
+      "result": "fff00ff00fff0000ff00ff00000fffff00ff000ff0000ff00f00ff0000ffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 19",
+      "result": "fff00000fff00ff00f00f00ff00fffff00ff00ffffff00f00f00f00ff00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 20",
+      "result": "fff00ff00ff00ff00f00f00ff00fffff00ff00fff00000f00f00f00fffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 21",
+      "result": "fff00ff00ff00ff00f00f00ff00fffff00ff00ff00ff00f00f00f00fffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 22",
+      "result": "fff00ff00ff00ff00f00f00ff00fffff00ff00ff00ff00f00f00f00ff00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 23",
+      "result": "fff00000ffff0000ff00ff00000fffff00fff00ff00000f00f00ff0000ffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold owner 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list size",
+      "result": "80x18"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 2",
+      "result": "fffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 3",
+      "result": "fff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 4",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 5",
+      "result": "fffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 6",
+      "result": "fffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 7",
+      "result": "fffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 8",
+      "result": "fffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 9",
+      "result": "fffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 10",
+      "result": "fffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 15",
+      "result": "fff00000ffffffffff00fffff00fffff00fffffffffffff00f00ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 16",
+      "result": "fff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bold list 17",
+      "result": "fff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "italic",
+      "result": "58,13 one=12 widths=12,12 overhang=6 height=13 weight=400"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain size",
+      "result": "80x52"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 2",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 3",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 4",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 5",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 6",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 7",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 8",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 9",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 10",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 15",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 16",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 17",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 18",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 19",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 20",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 21",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 22",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 23",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 28",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 29",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 30",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 31",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 32",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 33",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 34",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 35",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 36",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 37",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 38",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 39",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 41",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 42",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 43",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 44",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 45",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 46",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 47",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 48",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 49",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic plain 51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner size",
+      "result": "80x28"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 2",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 3",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 4",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 5",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 6",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 7",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 8",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 9",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 10",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 15",
+      "result": "ffffffff0000fffffffff0fffff0ffff0fffffffffff0f0fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 16",
+      "result": "ffffffff0fff0ffffffff0fffff0ffff0ff0ffffffff0fffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 17",
+      "result": "fffffff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 18",
+      "result": "fffffff0fff0fff000ff0ff0000ffff0ff00ff000ff0f0ff000fffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 19",
+      "result": "ffffff0000fff0fff0f0f0fff0ffff0ff0ffffff0f0f0f0fff0fffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 20",
+      "result": "ffffff0fff0ff0fff0f0f0fff0ffff0ff0fff0000f0f0f0fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 21",
+      "result": "fffff0fff0ff0fff0f0f0fff0ffff0ff0ff0fff0f0f0f0ffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 22",
+      "result": "fffff0fff0ff0fff0f0f0fff0ffff0ff0ff0fff0f0f0f0fff0ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 23",
+      "result": "ffff0000ffff000ff0ff0000ffff0fff0ff0000f0f0ff000ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic owner 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list size",
+      "result": "80x18"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 2",
+      "result": "ffffffffff0ffff000ffff0ffff000ffff0fffffffff0f0fffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 3",
+      "result": "ffffffff000fff0fff0f000fff0fff0fff0fffffffff0fffffff0fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 4",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ffffffff0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 5",
+      "result": "fffffffff0fffffff0fff0fffffff0ffff0fff0fff0ff0ff0000ff000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 6",
+      "result": "ffffffff0ffffff0ffff0ffffff0fffff0fff0fff0ff0f0fff0f0fff0fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 7",
+      "result": "ffffffff0fffff0fffff0fffff0fffffff0f0f0f0fff0f0fff0f00000fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 8",
+      "result": "fffffff0ffff0ffffff0ffff0ffffffff0f0f0f0fff0f0fff0f0ffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 9",
+      "result": "fffffff0fff0fffffff0fff0ffffffffff0fff0ffff0f0fff0f0fff0ffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 10",
+      "result": "ffffff0fff00000fff0fff00000ffffff0fff0ffff0ff0000ff000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 15",
+      "result": "ffffffff0000fffffffff0fffff0ffff0fffffffffff0f0fffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 16",
+      "result": "ffffffff0fff0ffffffff0fffff0ffff0ff0ffffffff0fffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "italic list 17",
+      "result": "fffffff0fff0ffffffff0fffff0ffff0ff0ffffffff0ffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "extent",
+      "args": "bolditalic",
+      "result": "68,13 one=14 widths=14,14 overhang=7 height=13 weight=700"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain size",
+      "result": "80x52"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 2",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 3",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 4",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 5",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 6",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 7",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 8",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 9",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 10",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 15",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 16",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 17",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 18",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 19",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 20",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 21",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 22",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 23",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 28",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 29",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 30",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 31",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 32",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 33",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 34",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 35",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 36",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 37",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 38",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 39",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 41",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 42",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 43",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 44",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 45",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 46",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 47",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 48",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 49",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic plain 51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner size",
+      "result": "80x28"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 2",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 3",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 4",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 5",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 6",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 7",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 8",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 9",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 10",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 15",
+      "result": "ffffffff00000ffffffffff00fffff00fffff00fffffffffffff00f00fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 16",
+      "result": "ffffffff00ff00fffffffff00fffff00fffff00ff00fffffffff00ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 17",
+      "result": "fffffff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 18",
+      "result": "fffffff00ff00fff0000ff00ff00000fffff00ff000ff0000ff00f00ff0000ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 19",
+      "result": "ffffff00000fff00ff00f00f00ff00fffff00ff00ffffff00f00f00f00ff00ffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 20",
+      "result": "ffffff00ff00ff00ff00f00f00ff00fffff00ff00fff00000f00f00f00ffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 21",
+      "result": "fffff00ff00ff00ff00f00f00ff00fffff00ff00ff00ff00f00f00f00fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 22",
+      "result": "fffff00ff00ff00ff00f00f00ff00fffff00ff00ff00ff00f00f00f00ff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 23",
+      "result": "ffff00000ffff0000ff00ff00000fffff00fff00ff00000f00f00ff0000fffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic owner 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list size",
+      "result": "80x18"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 2",
+      "result": "ffffffffff00ffff0000ffff00ffff0000fffff00ffffffff00f00fffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 3",
+      "result": "ffffffff0000fff00ff00f0000fff00ff00ffff00ffffffff00ffffffff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 4",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00fffffffff00ffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 5",
+      "result": "fffffffff00fffffff00fff00fffffff00fffff00ff00ff00ff00ff00000ff0000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 6",
+      "result": "ffffffff00ffffff00ffff00ffffff00ffffff00ff00ff00ff00f00ff00f00ff00ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 7",
+      "result": "ffffffff00fffff00fffff00fffff00ffffffff00000000fff00f00ff00f000000ffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 8",
+      "result": "fffffff00ffff00ffffff00ffff00fffffffff00000000fff00f00ff00f00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 9",
+      "result": "fffffff00fff00fffffff00fff00fffffffffff00ff00ffff00f00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 10",
+      "result": "ffffff00fff000000fff00fff000000fffffff00ff00ffff00ff00000ff0000fffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 15",
+      "result": "ffffffff00000ffffffffff00fffff00fffff00fffffffffffff00f00fffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 16",
+      "result": "ffffffff00ff00fffffffff00fffff00fffff00ff00fffffffff00ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "bolditalic list 17",
+      "result": "fffffff00ff00fffffffff00fffff00fffff00ff00fffffffff00fffffffffffffffffffffffffff"
+    },
+    {
+      "function": "combo",
+      "args": "simple",
+      "result": "made=80x87 item=16 font=80x87 item=13,20 list=112,46 72x67 client=54x65"
+    },
+    {
+      "function": "combo",
+      "args": "simple-nointegral",
+      "result": "made=80x87 item=16 font=80x87 item=13,20 list=112,46 72x67 client=54x65"
+    },
+    {
+      "function": "combo",
+      "args": "dropdown",
+      "result": "made=80x24 item=16 font=80x20 item=13,20 dropped=104,27,184,114"
+    },
+    {
+      "function": "combo",
+      "args": "dropdownlist",
+      "result": "made=80x24 item=16 font=80x20 item=13,20 dropped=104,27,184,114"
+    }
+  ]
+}

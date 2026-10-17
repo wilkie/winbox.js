@@ -1309,8 +1309,8 @@
    },
    "pixels": {
     "total": 198,
-    "agreed": 48,
-    "disagreed": 150,
+    "agreed": 198,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1329,9 +1329,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "pixels": "the lists' text a pixel a character wider apart than Windows: the dialog's emboldened font in a list's DC, USER's and GDI's (150 of 201)"
-  }
+  "gaps": {}
  },
  "chfontpr": {
   "probe": "chfontpr",
@@ -1348,8 +1346,8 @@
    },
    "faces": {
     "total": 6,
-    "agreed": 4,
-    "disagreed": 2,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1362,40 +1360,34 @@
    },
    "result": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "sizes": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "state": {
     "total": 8,
-    "agreed": 5,
-    "disagreed": 3,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "styles": {
     "total": 6,
-    "agreed": 4,
-    "disagreed": 2,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "state": "the face the Font dialog starts on with the printer's fonts (3 of 8)",
-   "faces": "the face selected as the Font dialog starts with the printer's fonts (2 of 6)",
-   "styles": "the styles of the face wrongly selected with the printer's fonts (2 of 6)",
-   "sizes": "the sizes of the face wrongly selected with the printer's fonts (1 of 6)",
-   "result": "the font chosen from the face wrongly selected with the printer's fonts (1 of 3)"
-  }
+  "gaps": {}
  },
  "choosclr": {
   "probe": "choosclr",
@@ -8929,6 +8921,36 @@
    "answer": {
     "total": 21,
     "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "lbtext": {
+  "probe": "lbtext",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 412,
+  "functions": {
+   "combo": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "extent": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 404,
+    "agreed": 404,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

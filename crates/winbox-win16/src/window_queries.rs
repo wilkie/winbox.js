@@ -72,7 +72,7 @@ impl System {
     }
 
     /// A window's place and size, the desktop's the screen's.
-    fn place_of(&self, hwnd: u16) -> Option<(i32, i32, i32, i32)> {
+    pub(crate) fn place_of(&self, hwnd: u16) -> Option<(i32, i32, i32, i32)> {
         match self.named(hwnd) {
             Named::Desktop => Some((
                 0,
@@ -161,7 +161,7 @@ impl System {
 
 /// A rectangle written where a far pointer points, left, top, right and
 /// bottom.
-fn write_rect(system: &mut System, far: u32, [left, top, right, bottom]: [i32; 4]) {
+pub(crate) fn write_rect(system: &mut System, far: u32, [left, top, right, bottom]: [i32; 4]) {
     if far == 0 {
         return;
     }

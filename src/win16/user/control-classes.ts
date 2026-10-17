@@ -804,6 +804,14 @@ function listHost(system: any, window: RasterWindow): ListHost {
     scrollBar: (visible, position) => {
       const has = (shown.style & 0x00200000) !== 0;
 
+      /* Made with neither scroll bar, it never has one (seg38 `00ea` keeps
+       * whether `WS_VSCROLL` or `WS_HSCROLL` was given, seg43 `0019` leaves
+       * at once without). **Recorded** by `lbtext`: a list box of style
+       * nought, a row showing and two items, keeps its whole width. */
+      if (!(control.style & 0x00300000)) {
+        return;
+      }
+
       /* Kept, with its arrows turned off when there is nothing to scroll
        * (`USER.EXE` seg43 `0088`). */
       if (control.style & LBS_DISABLENOSCROLL) {
@@ -1693,7 +1701,15 @@ async function comboLoseFocus(system: any, window: RasterWindow, to: number) {
     return;
   }
 
-  for (let other = going?.window ?? null; other; other = other.parent) {
+  /* Its own is a child of its, by `IsChild` (seg33 `040e`, seg1 `1bd3`):
+   * its edit control or its list, not the combo box itself. The focus given
+   * to the combo box from its own edit control -- a mnemonic of the dialog's,
+   * `WM_NEXTDLGCTL` -- is lost, the text's selection taken away, and gained
+   * again as the combo box hands it back to its edit control, which selects
+   * all of the text. **Recorded** by `chfontpr`: Alt and F in the Font
+   * dialog's faces, then a name typed, replaces the name there; kept as its
+   * own, the engines ran the two names together. As `combobox.rs`. */
+  for (let other = going?.window?.parent ?? null; other; other = other.parent) {
     if (other === window.window) {
       return;
     }
@@ -1886,6 +1902,22 @@ async function comboSetFont(
     }
   }
 
+  /* The list moved to its place in the new layout, whatever the kind (seg34
+   * `0539`-`0552`, `MoveWindow` of `[si+1Eh]`), and so made a whole number of
+   * the new font's rows high, as a list box is on `WM_SIZE`. **Recorded** by
+   * `lbtext`: a simple combo box 87 high, given MS Sans Serif in bold, has
+   * its list 67 high, five rows of 13 inside its border, where the System
+   * font's rows had made it 50; `chfont3`: the Font dialog's styles' list
+   * shows all four. */
+  const list = system.handles.resolve(combo.listBox);
+
+  if (list instanceof RasterWindow) {
+    const [ll, lt, lr, lb] = parts.list;
+
+    list.desktop.place(list.window, shown.left + ll, shown.top + lt, lr - ll, lb - lt);
+    integralHeight(list);
+  }
+
   await closeUp(system, window, false, false);
 
   if (combo.type !== CBS_SIMPLE) {
@@ -1957,6 +1989,24 @@ async function comboMessage(
 
     case CB.GETDROPPEDSTATE:
       return combo.dropped ? 1 : 0;
+
+    /* The combo box's rectangle as it was made, its list's height and all,
+     * on the screen at the window's corner (seg33 `051b`): `CopyRect` of the
+     * rectangle kept as it was made, then `SetRect` from the window's corner
+     * by its size; 1. **Recorded** by `lbtext`: a drop-down 87 high, 20
+     * since its font, answers its corner and 87 down. As `combobox.rs`. */
+    case CB.GETDROPPEDCONTROLRECT: {
+      const core = system.machine.cpu.core;
+      const segment = (lParam >>> 16) & 0xffff;
+      const offset = lParam & 0xffff;
+      const x = window.x;
+      const y = window.y;
+
+      [x, y, x + window.window.width, y + combo.height].forEach((value, at) =>
+        core.write16(segment, offset + at * 2, value & 0xffff)
+      );
+      return 1;
+    }
 
     case CB.GETEDITSEL:
       return combo.edit

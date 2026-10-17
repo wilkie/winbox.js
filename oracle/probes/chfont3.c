@@ -2,10 +2,10 @@
  * COMMDLG's Font dialog, `ChooseFont`: the rows of its three lists as they
  * are drawn -- the faces' and sizes' owner-drawn rows, with the pictures of
  * the faces' types, and the styles' rows, which the list box draws itself.
- * Kept apart from `chfont2` because the rows' text is one of USER's and
- * GDI's own: each list draws its text a pixel a character wider apart on
- * the engines than Windows does, with Microsoft's COMMDLG.DLL as with
- * WinBox's own.
+ * Kept apart from `chfont2` because what the rows show is USER's and GDI's
+ * as much as COMMDLG's: the styles' list's height after the combo box is
+ * given the dialog's font, and the dialog's smeared MS Sans Serif drawn
+ * with `ExtTextOut` (`lbtext` takes both apart).
  *
  * * `pixels`: a list's client area read back a row at a time, each pixel a
  *   hex digit, the colour's index in a 4-bit DIB of the screen.
