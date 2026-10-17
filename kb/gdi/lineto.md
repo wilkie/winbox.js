@@ -6,7 +6,7 @@ ordinal: 19
 summary: Draws a line with the selected pen from the current position to a point, and makes that point the new current position.
 versions:
   '3.1': exact
-probes: [lines]
+probes: [lines, prdraw]
 topics: [line-drawing, display-drivers]
 ---
 
@@ -22,6 +22,10 @@ topics: [line-drawing, display-drivers]
 
 - [[measured]] Two calls in a row draw the same ink as each segment drawn alone. The eight `chain` records and eleven `poly` records agree with that on all four displays. A stroke font's glyph, handed to the driver as a single polyline, can break a tie differently. See [[topic:line-drawing]].
 - Not yet measured: pens wider than one pixel, dashed and dotted pen styles, raster operations other than the default, colour bitmaps, and the return value.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context a line goes as a polyline of two points (`GDI.EXE` seg21 `0726`). A line along an axis across the region's edge is cut to it first. [[measured]] [[probe:prdraw]]: a dashed line, and a line across a clip, through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

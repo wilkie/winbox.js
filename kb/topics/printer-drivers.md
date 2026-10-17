@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Printer drivers in GDI
-summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, the TrueType size a driver asks for, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
-probes: [pric, prdlg, prdoc]
+summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, fonts realized by the driver and by GDI's TrueType engine, a document's calls, the drawing handed to the driver, GDI's spooler, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
+probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote]
 ---
 
 A printer's driver is the user's own program, a library on the drive such as Windows' PostScript driver, `PSCRIPT.DRV`, or one a printer's maker shipped. GDI loads it by its name and calls its exports, as it calls any library's. winbox.js runs it the same way: the driver's code runs on the processor, and GDI calls its entry points where Windows' GDI does. This is unlike the display ([[topic:display-drivers]]), whose driver winbox.js never runs. winbox.js's own printer, `WBPRINT`, is a driver of winbox.js's and is not loaded from the drive ([[topic:printing]]).
@@ -58,13 +58,49 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 [[read out]] **Realizing a font** (seg3 `0a68`): GDI copies the logical font's `LOGFONT`, `lfClipPrecision`'s high bits left off, and asks the driver's `RealizeObject` for the size of its `FONTINFO` with nought for it; then realizes it into `GlobalAlloc(2042h)` 42h bytes larger, with a `TEXTXFORM` of its own (`0c08`-`0c66`). The driver maps the font itself. Only where it realizes none does GDI map the font among its own.
 
+[[read out]] **The size in the device's units** (seg3 `0b35`-`0b9c`). A font that is not a stock one (8000h in its type word) has its height and width mapped before the driver sees them. The window origin, and the origin moved by the width and the height, are taken to the device with `LPtoDP` (seg1 `52f5`; the origin is the context's word at 68h, which `GetWindowOrg` reads). The width is their distance across. The height is their distance down: negative for a negative height, and 1 where it comes to nought from a height that was not. So a font is realized again in each mapping mode it is used in. [[measured]] [[probe:prtabs]]: Helvetica 60 high measures 90 by 61 dots in `MM_TEXT`, and 89 by 60 tenths of a millimetre in `MM_LOMETRIC`, realized at 71 dots.
+
 [[read out]] **[[fn:GDI.GetTextMetrics]]** of a font the driver realized (seg3 `0222`): the height the `TEXTXFORM`'s; the ascent, descent and leadings the `FONTINFO`'s scaled to it; the average width the `TEXTXFORM`'s and the widest the `FONTINFO`'s scaled to it, a pixel more each where the `TEXTXFORM` asks GDI to embolden (200h); overhang, weight, italic, underline and strike-out the `TEXTXFORM`'s; the characters, character set and resolutions the `FONTINFO`'s; the pitch and family the `FONTINFO`'s with `TMPF_DEVICE` and its type's two low bits. `GetTextFace` (seg3 `0102`) answers the face the `FONTINFO`'s `dfFace` names.
 
-[[measured]] [[probe:pric]]: the PostScript driver's default font is Courier at 42 dots; Courier at -50, Helvetica bold at 50, Times at -100 and a nameless Swiss face (AvantGarde) answer as the driver realized them, and both engines agree. Arial at -40 is realized through GDI's TrueType engine with a `FONTINFO` to fill, which is not followed: the engines answer the driver's Helvetica.
+[[measured]] [[probe:pric]]: the PostScript driver's default font is Courier at 42 dots; Courier at -50, Helvetica bold at 50, Times at -100 and a nameless Swiss face (AvantGarde) answer as the driver realized them. Arial at -40 is realized through GDI's TrueType engine, with a `FONTINFO` for [[fn:GDI.EngineRealizeFont]] to fill from the face's `.FOT` stub. Both engines agree with all 200 records.
 
 [[read out]] **[[fn:GDI.EnumFonts]]** on a printer's context (seg5 `01a7`): first the driver's `EnumDFonts`, given the face asked for, GDI's procedure (`048a`) and GDI's frame. GDI's procedure makes a font not TrueType a device font — `DEVICE_FONTTYPE` added, `TMPF_DEVICE` and, but for a raster font, `TMPF_VECTOR` in its metrics — and calls the program's procedure with a `NEWTEXTMETRIC` copy. The driver's nought ends the walk; its answer stands where it handed any font on. Then GDI's own table: a raster font only where `dpText` has `TC_RA_ABLE` (`0316`); vector fonts always. GDI's TrueType fonts only with `TC_RA_ABLE` or bit 1 of `dpCaps1` (`06c0`). A driver that prints TrueType asks for them itself with [[fn:GDI.EngineEnumerateFont]] (seg5 `093c`): each at the resolution of the context being walked, or 300 dots an inch, typed `TRUETYPE_FONTTYPE` and `DEVICE_FONTTYPE`.
 
 [[measured]] [[probe:pric]]: every face, five TrueType (type 6, from the driver) then thirteen of the PostScript printer's own (type 2) then GDI's three vector fonts; and each face by name. Both engines agree with all of them. winbox.js calls GDI's procedure through a thunk of eight bytes, as it calls USER's own window procedures, popping fourteen bytes.
+
+## A document
+
+[[read out]] Of a document on a driver's DC, GDI does little itself (seg31):
+
+- [[fn:GDI.StartDoc]] (`0196`) gives the driver's `Control` `SETABORTPROC` with the DC, then `STARTDOC` with the document's name, and the `DOCINFO` as its output where the `GDIINFO` is newer than 300h.
+- [[fn:GDI.StartPage]] (`02ae`) only marks the DC and answers 1.
+- [[fn:GDI.EndPage]] (`02e0`) answers -1 on a DC not so marked. Otherwise it answers the escape `NEWFRAME`'s answer, or 1 where `NEXTBAND` has marked the DC as banding.
+- [[fn:GDI.EndDoc]] (`0234`) is `Control`'s `ENDDOC`. [[fn:GDI.AbortDoc]] is the escape `ABORTDOC`, and [[fn:GDI.SetAbortProc]] the escape `SETABORTPROC`.
+
+[[measured]] [[probe:prdoc]] prints a page of text, a rectangle, a line and an ellipse through the PostScript driver to a file, and records the PostScript it wrote. Its `EndPage` answers the driver's job, a block of 352 bytes. [[probe:prabort]] stops a document from its abort procedure, drops one partway, starts one on an information context, and prints one by the escapes, counting the abort procedure's calls. Both engines agree with all 223 and all 32 records.
+
+## Drawing
+
+[[read out]] GDI hands the driver what the program draws, with the objects the driver realized:
+
+- **The context** (seg1 `0192`-`0210`). `CreateDC` gives the driver's DC a `DRAWMODE` of `R2_COPYPEN` and `OPAQUE`. The background is white and the text black, each made physical by the driver's `ColorInfo` (seg1 `1526`) and kept in the `DRAWMODE`, as [[fn:GDI.SetBkColor]] and [[fn:GDI.SetTextColor]] keep them later (`1476`, `14dc`). The white brush and the black pen are realized. A hatched brush selected is selected again where the background's physical colour changes (`1556`-`1575`).
+- **Pens and brushes** go to the driver's `RealizeObject`, asked the size with nought for the object, then given a block that large (`26e5`, `256f`). A pen's width is made device units, `MulDiv` by the viewport's extent over the window's, and its height comes from the device's aspects (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it (`23a1`), and its origin goes as a fifth argument (`2304`).
+- **The visible region** of a driver's DC is its page, `dpHorzRes` by `dpVertRes`. A mapping mode's extents come from the `GDIINFO` (30h on).
+- **Figures** (seg25 `082f`). With the pen and the brush, a figure inside the region (seg18 `0000` answers 2) goes with no clip rectangle. Where the region is one rectangle that is the clip. Otherwise the figure goes once for each of the region's rectangles within its bounds, out by the pen's width. [[fn:GDI.Rectangle]] (`0093`) goes as `OS_RECTANGLE` where `dpPolygonalCaps` has `PC_RECTANGLE` and what the pen and brush need. The curves (seg9 `02c4`) bring the right and bottom in by one and go as `OS_ELLIPSE`, `OS_ARC`, `OS_CHORD`, `OS_PIE` or `OS_ROUNDRECT`, or `OS_CIRCLE` where the sides are as long by the aspects and the driver has `CC_CIRCLES`. A thin polyline goes as `OS_POLYLINE` with its bounds as the clip; a wide pen needs `LC_WIDE` and goes as a figure (seg21 `0726`). [[fn:GDI.Polygon]] closes the points and goes as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` (seg24 `0254`, `0396`).
+- **Text** goes to the driver's `ExtTextOut` ([[fn:GDI.ExtTextOut]]), and [[fn:GDI.GetTextExtent]] asks it the extent with its count negated. USER's [[fn:USER.TabbedTextOut]] draws each run with GDI's `ExtTextOut`.
+- **A DIB** goes to the driver's `StretchDIBits`, ordinal 28, where `dpRaster` has `RC_STRETCHDIB` (seg11 `1058`). It goes once for each of the region's rectangles within the destination, from the bottom up, and the answer is the source's height.
+
+[[measured]] [[probe:prdraw]]: dashed and wide pens, a hatched rectangle with no outline, a star filled both ways, an ellipse inside its frame, a circle, a round rectangle, a pie, an arc and a chord, a rectangle in `MM_LOMETRIC`, a rectangle and a line across a clip, text of colours and modes and in a font of its own, an opaque rectangle, and a DIB stretched ten times. Both engines agree with every line of the PostScript written, all 149 records. [[probe:prtabs]]: tabbed text and its extents, 88 records.
+
+## GDI's spooler
+
+[[read out]] A driver writes its output through GDI's spooler (seg28, seg29 and seg30): [[fn:GDI.OpenJob]], [[fn:GDI.StartSpoolPage]], [[fn:GDI.WriteSpool]], [[fn:GDI.EndSpoolPage]], [[fn:GDI.WriteDialog]], [[fn:GDI.CloseJob]] and [[fn:GDI.DeleteJob]]. A job is a block of 148h bytes, and its handle is answered shifted right a bit. It goes straight to a file or port, through the communications driver, through Print Manager, or through the network. Its 100h-byte buffer is written as it fills, and [[fn:GDI.QueryAbort]] is asked before each write. A port that does not answer puts up GDI's box, system-modal, after WIN.INI's timeouts.
+
+[[measured]] [[probe:prspool]] calls the spooler as a driver does, 33 records. [[probe:prlpt]] opens a job to `LPT1` with no printer on it, and Cancels GDI's box, 10 records. Both engines agree with all of them.
+
+## Notepad
+
+[[measured]] [[probe:prnote]] has Notepad print a note with `/p` to a file port, through the PostScript driver. Notepad makes the DC, measures a character, starts the document by the escapes, and prints each line, the header and the footer with [[fn:USER.TabbedTextOut]]. It counts the spaces that centre the header and footer by [[fn:GDI.GetTextExtent]]. Both engines agree with every line of the 11866 bytes written, all 198 records.
 
 ## The print dialogs
 
@@ -72,11 +108,16 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 ## In winbox.js
 
-`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices and make the contexts; `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before.
+`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices, make the contexts, realize fonts, and take a document's calls. `printer-output.ts` and `printer_output.rs` hand the drawing to the driver, and `spooler.ts` and `spooler.rs` are GDI's spooler. `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` are beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before. GDI's messages for the spooler's boxes are its own string table (`strings.ts`, `strings.rs`).
 
 ## Not yet done
 
-- GDI's own mapping where a driver realizes no font, a font realized in a mapping mode other than `MM_TEXT`, and the compatibility flags' changes to a driver's TrueType fonts.
-- Drawing and printing a document through the driver: `Output`, `ExtTextOut`, the realized pens and brushes, `ColorInfo`, and GDI's spooler (`OpenJob`, `WriteSpool`, `CloseJob`), which [[probe:prdoc]] records with the PostScript it writes.
-- Banding (`RC_BANDING`) and GDI's escapes 100h to BFFh on a printer.
-- A `FONTINFO` given to `EngineRealizeFont` to fill ([[probe:pric]]'s Arial), and the rest of the engine's exports.
+- GDI's own mapping where a driver realizes no font, GDI's own text and extents for such a font, and the compatibility flags' changes to a driver's TrueType fonts.
+- GDI's own drawing for a driver that cannot draw a figure (`OS_BEGINNSCAN`, scan lines), the wide frames GDI draws itself, plotters' pens and brushes, and arcs whose two points meet.
+- Text: alignments other than the top left, the current position, `lpDx`, justification's second call, rotation, a complex region, and the driver's `StrBlt`.
+- `BitBlt`, `SetDIBitsToDevice` and `StretchBlt` through the driver, and a DIB GDI must convert.
+- Banding (`RC_BANDING`, `NEXTBAND`'s metafile) and GDI's escapes 100h to BFFh on a printer. The PostScript driver does not band.
+- Print Manager's side of the spooler, the network's jobs, `FILE`'s "Print To File" box, and DOS's devices.
+- `GetTabbedTextExtent`, `DrawText` and `GrayString` on a driver's DC.
+- A Write session: `write /p` of a text file asks first whether to convert it.
+- The rest of the TrueType engine's exports, and its penalties among faces not named.

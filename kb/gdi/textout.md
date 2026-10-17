@@ -6,7 +6,7 @@ ordinal: 33
 summary: Draws a string at a point in the selected font, colours and alignment.
 versions:
   '3.1': exact
-probes: [glyphs, styles, smearrun, rotstyle, textbk]
+probes: [glyphs, styles, smearrun, rotstyle, textbk, prdraw, prdoc]
 topics: [synthetic-bold, turned-text, text-ground-and-rules]
 ---
 
@@ -16,6 +16,10 @@ topics: [synthetic-bold, turned-text, text-ground-and-rules]
 - [[measured]] The pen steps by each character's advance plus the character extra; the reference point is placed by the text alignment. See [[fonts:8p]].
 - [[measured]] In `OPAQUE` mode the ground is painted behind the text in the background colour. See [[topic:text-ground-and-rules]].
 - [[measured]] The selected brush plays no part. With the black stock brush selected and a white background, in both modes, MS Sans Serif, Arial and System at sixteen pixels come back exactly as with the white brush: 6 of 6 cells of [[probe:textbk]].
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context it is `ExtTextOut` with no options, rectangle or spacing (`GDI.EXE` seg1 `3884`), handed to the driver ([[fn:GDI.ExtTextOut]]). [[measured]] [[probe:prdoc]] and [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

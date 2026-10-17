@@ -171,6 +171,8 @@ pub const AGREEING: &[&str] = &[
     "prabort",
     "prdraw",
     "prlpt",
+    "prnote",
+    "prtabs",
     "chfont3",
     "chfontpr",
     "lbtext",
@@ -201,6 +203,7 @@ fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
 
     if [
         "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
+        "prnote", "prtabs",
     ]
     .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)

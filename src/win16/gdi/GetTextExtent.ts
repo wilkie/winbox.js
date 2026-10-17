@@ -38,6 +38,14 @@ export function GetTextExtent(hdc, lpszString, cbString) {
   // Get the surface instance
   const surface = this.handles.resolve(hdc);
 
+  /* A printer driver's from the drive measures it with its `ExtTextOut`
+   * (`GDI.EXE` seg1 `3ba3`). */
+  if (surface?.driverDevice) {
+    return import('./printer-output.js').then(({ driverTextExtent, farOf }) =>
+      driverTextExtent(this, surface, farOf(lpszString), cbString)
+    );
+  }
+
   // Draw the text
   const text = lpszString.slice(0, cbString);
   const metrics = surface.measureText(text);

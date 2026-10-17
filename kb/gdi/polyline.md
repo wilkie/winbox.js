@@ -6,7 +6,7 @@ ordinal: 37
 summary: Draws a chain of lines through a list of points with the selected pen, leaving the current position where it was.
 versions:
   '3.1': exact
-probes: [polyline]
+probes: [polyline, prdraw]
 source: src/win16/gdi/Polyline.ts
 topics: [line-drawing]
 ---
@@ -31,6 +31,10 @@ winbox.js agrees with all 27 records.
 ## Nuances
 
 - Not measured: pens wider than one pixel, where the joins between lines matter, and styled pens.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context (`GDI.EXE` seg21 `0726`), the points are mapped and their bounds, out by the pen's reach, are cut to the visible region. A thin pen goes to the driver as `OS_POLYLINE` with the bounds as the clip (`0801`). A wide pen needs `LC_WIDE` and goes as a figure (`10cd`). A null pen draws nothing. [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

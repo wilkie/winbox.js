@@ -6,7 +6,7 @@ ordinal: 45
 summary: Selects a pen, brush, font, bitmap or region into a device context and answers what it replaced.
 versions:
   '3.1': exact
-probes: [selbmp, selrgn, stockdel, patmono]
+probes: [selbmp, selrgn, stockdel, patmono, prdraw]
 source: src/win16/gdi/SelectObject.ts
 ---
 
@@ -22,6 +22,10 @@ source: src/win16/gdi/SelectObject.ts
 
 - Four Seasons' Visual Basic picture boxes select a memory context's first bitmap into the context [[fn:USER.BeginPaint]] gave them, select the answer back, and then draw their card with [[fn:GDI.StretchDIBits]]. Until [[probe:selbmp]], winbox.js let the paint context take the bitmap. The card was drawn into that bitmap, and the screen kept only the picture box's grey background.
 - Not yet measured: a printer's context and a metafile's.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context a pen or a brush is realized by the driver's `RealizeObject` (`GDI.EXE` seg1 `26e5`, `256f`). A pen's width is made device units, `MulDiv` by the viewport's extent over the window's (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it, and its origin goes as a fifth argument (`2304`, `23a1`). A font is realized as it is first drawn or measured with (seg3 `0a68`). [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

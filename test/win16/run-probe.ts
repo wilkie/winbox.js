@@ -113,6 +113,8 @@ const PRINTER_DRIVER = new Set([
   'prabort',
   'prdraw',
   'prlpt',
+  'prnote',
+  'prtabs',
 ]);
 
 /** An empty drive: only its root, with nothing in it; removable, with no disk, for A:. */

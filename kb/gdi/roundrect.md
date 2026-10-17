@@ -6,7 +6,7 @@ ordinal: 28
 summary: Draws a rectangle with rounded corners, each a quarter of an ellipse of the given size, its outline in the selected pen and its inside in the selected brush.
 versions:
   '3.1': exact
-probes: [curves, inframe, drawgaps]
+probes: [curves, inframe, drawgaps, prdraw]
 source: src/win16/gdi/RoundRect.ts
 topics: [ellipses, polygon-fill]
 ---
@@ -24,6 +24,10 @@ topics: [ellipses, polygon-fill]
 - [[measured]] A `PS_INSIDEFRAME` pen wider than a pixel keeps its frame inside the rectangle, and the inner corner is the corner less twice the pen. [[probe:inframe]] draws six such rounded rectangles. See [[topic:ellipses]].
 - [[measured]] A wide pen that leaves less than nothing of the inner corner, either way, has its inside filled as the inner rectangle, right and bottom edges and all ([[probe:drawgaps]], [[topic:ellipses]]).
 - Not yet measured: pens other than solid and inside frame, and the return value.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context it goes to the driver as `OS_ROUNDRECT` (`GDI.EXE` seg9 `02c4`). The corner is made a size again, no larger than the rectangle; with none it is a rectangle. [[measured]] [[probe:prdraw]], through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

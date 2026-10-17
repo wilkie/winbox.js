@@ -13900,6 +13900,36 @@
   },
   "gaps": {}
  },
+ "prabort": {
+  "probe": "prabort",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 32,
+  "functions": {
+   "call": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "calls": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "prdlg": {
   "probe": "prdlg",
   "display": "vgaprint",
@@ -14108,8 +14138,8 @@
   "functions": {
    "call": {
     "total": 10,
-    "agreed": 6,
-    "disagreed": 4,
+    "agreed": 10,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -14122,24 +14152,50 @@
    },
    "line": {
     "total": 211,
-    "agreed": 0,
-    "disagreed": 211,
+    "agreed": 211,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "size": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "call": "a document printed through a Windows printer driver, not followed (4 of 10)",
-   "size": "no PostScript written: printing through a Windows driver (1 of 1)",
-   "line": "no PostScript written: printing through a Windows driver (211 of 211)"
-  }
+  "gaps": {}
+ },
+ "prdraw": {
+  "probe": "prdraw",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 149,
+  "functions": {
+   "call": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 125,
+    "agreed": 125,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "pric": {
   "probe": "pric",
@@ -14170,8 +14226,8 @@
    },
    "face": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -14205,8 +14261,8 @@
    },
    "metrics": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -14218,10 +14274,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "metrics": "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
-   "face": "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)"
-  }
+  "gaps": {}
  },
  "printing": {
   "probe": "printing",
@@ -14260,6 +14313,80 @@
    "file": {
     "total": 2,
     "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prlpt": {
+  "probe": "prlpt",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 10,
+  "functions": {
+   "begin": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prnote": {
+  "probe": "prnote",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 198,
+  "functions": {
+   "ended": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 195,
+    "agreed": 195,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "started": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -14500,6 +14627,87 @@
   "gaps": {
    "files": "the DOS clock's two-second step not crossed where Windows crossed it"
   }
+ },
+ "prspool": {
+  "probe": "prspool",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 33,
+  "functions": {
+   "abort": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "head": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "message": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prtabs": {
+  "probe": "prtabs",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 88,
+  "functions": {
+   "call": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 70,
+    "agreed": 70,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "prtsc": {
   "probe": "prtsc",

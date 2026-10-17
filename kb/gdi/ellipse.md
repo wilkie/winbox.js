@@ -6,7 +6,7 @@ ordinal: 24
 summary: Draws an ellipse inside a rectangle, its outline in the selected pen and its inside in the selected brush.
 versions:
   '3.1': exact
-probes: [curves, inframe, drawgaps]
+probes: [curves, inframe, drawgaps, prdraw]
 source: src/win16/gdi/Ellipse.ts
 topics: [ellipses, polygon-fill, non-square-pixels]
 ---
@@ -24,6 +24,10 @@ topics: [ellipses, polygon-fill, non-square-pixels]
 - [[measured]] A `PS_INSIDEFRAME` pen wider than a pixel keeps its frame inside the rectangle: the outside is the thin ellipse, and the brush is the thin ellipse of the rectangle less the pen. In a colour the display lacks, the frame is a pattern. [[probe:inframe]] draws seven such ellipses and two coloured ones. See [[topic:ellipses]].
 - [[measured]] Under a mapping mode the pen's width is scaled from the window to the viewport, across ([[probe:drawgaps]]).
 - Not yet measured: pens other than solid and inside frame, and the return value.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context the curves go to the driver (`GDI.EXE` seg9 `02c4`). The corners are mapped and put in order, and the right and bottom are brought in by one. A driver whose `dpCurveCaps` has what the curve, the pen and the brush need is given `OS_ELLIPSE` with the corners, or `OS_CIRCLE` where the sides are as long by the aspects and it has `CC_CIRCLES` (`05ff`). [[measured]] [[probe:prdraw]]: an ellipse inside its frame and a circle through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

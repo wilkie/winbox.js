@@ -6,7 +6,7 @@ ordinal: 36
 summary: Fills a closed shape given as a list of points with the selected brush, then draws its outline with the selected pen.
 versions:
   '3.1': exact
-probes: [polyfill, fillext, metafile]
+probes: [polyfill, fillext, metafile, prdraw]
 source: src/win16/gdi/Polygon.ts
 topics: [polygon-fill, line-drawing, display-drivers]
 ---
@@ -23,6 +23,10 @@ topics: [polygon-fill, line-drawing, display-drivers]
 
 - [[measured]] Its points are mapped as any logical coordinates are: [[probe:metafile]] plays one with the viewport's origin moved, and it moves with it. winbox.js had drawn it where its points said on the device.
 - Recorded on a VGA only. Not yet measured: the other displays, a shape that is not convex (where the fill mode decides what is inside), shapes that cross the bitmap's edge, wide or styled pens, and the return value.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context (`GDI.EXE` seg24 `0254`, `0396`), the last point is left off where it is the first, and fewer than two draw nothing and answer 1. The points are mapped and closed, and go to the driver as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` where `dpPolygonalCaps` has `PC_POLYGON` or `PC_WINDPOLYGON`. [[measured]] [[probe:prdraw]] fills a star both ways through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
 
 ## Implementation
 

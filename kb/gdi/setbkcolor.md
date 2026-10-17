@@ -6,7 +6,7 @@ ordinal: 1
 summary: Sets a device context's background colour, and answers the one before exactly as it was given — a colour the display has not, or a palette's, as well.
 versions:
   '3.1': exact
-probes: [bkcolor]
+probes: [bkcolor, prdraw]
 source: src/win16/gdi/SetBkColor.ts
 topics: [standard-controls]
 ---
@@ -20,3 +20,7 @@ topics: [standard-controls]
 - [[fn:GDI.GetBkColor]] and [[fn:GDI.GetTextColor]] then answer white and black again.
 
 winbox.js had answered the colour before in its own form, -1 for white. It agrees with all 10 records now.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context (`GDI.EXE` seg1 `1476`), the driver's `ColorInfo` makes the colour physical, and GDI keeps that in the `DRAWMODE` (`1526`). A hatched brush selected is selected again where the physical colour changed, and so realized for it (`1556`-`1575`). `SetTextColor` keeps the text's the same way (`14dc`). [[measured]] [[probe:prdraw]]: text on grey and a hatched brush through the PostScript driver; both engines agree. See [[topic:printer-drivers]].

@@ -5860,6 +5860,8 @@ const RUN_WHOLE = new Set<string>([
   'prabort',
   'prdraw',
   'prlpt',
+  'prnote',
+  'prtabs',
   'lbtext',
 ]);
 

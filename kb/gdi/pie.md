@@ -6,7 +6,7 @@ ordinal: 26
 summary: Draws the wedge of an ellipse between two radials, filled with the brush and outlined with the pen.
 versions:
   '3.1': exact
-probes: [wedges, widepoly, inframe]
+probes: [wedges, widepoly, inframe, prdraw]
 source: src/win16/gdi/wedges.ts
 topics: [ellipses, polygon-fill]
 ---
@@ -19,3 +19,7 @@ topics: [ellipses, polygon-fill]
 
 - [[measured]] With a pen wider than a pixel, the outline back to the first point is swept by the pen, as [[topic:line-drawing]] describes. [[probe:widepoly]] records a pie with pens 3 and 6 wide.
 - [[measured]] A `PS_INSIDEFRAME` pen wider than a pixel draws the pie in the rectangle less half the pen, rounded down, on every side. In a colour the display lacks it is a pattern, where a `PS_SOLID` pen is one colour. [[probe:inframe]] draws five such pies and two chords.
+
+## On a printer driver's context
+
+[[read out]] On a printer driver's context it goes to the driver as `OS_PIE`, as `Arc` goes as `OS_ARC` and `Chord` as `OS_CHORD`, with the corners and the two points mapped (`GDI.EXE` seg9 `02c4`). [[measured]] [[probe:prdraw]] draws a pie, an arc and a chord through the PostScript driver; both engines agree. See [[topic:printer-drivers]].

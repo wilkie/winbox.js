@@ -12,6 +12,7 @@ import { freeLibrary } from '../library.js';
 import { DWORD, UINT } from '../types.js';
 import { stockHandle } from '../handle-manager.js';
 import { stockLogfont } from './GetObject.js';
+import { devicePoint, mappingOf } from './mapping.js';
 import { MulDiv } from './MulDiv.js';
 import { stockFontHandle } from './stock-fonts.js';
 
@@ -462,8 +463,10 @@ export async function deleteDriverDC(system: any, surface: any) {
     GlobalFree.call(system, pdevice.pdevice);
   }
 
-  for (const realized of surface.deviceFonts?.values() ?? []) {
-    GlobalFree.call(system, realized.handle);
+  for (const realizations of surface.deviceFonts?.values() ?? []) {
+    for (const realized of realizations.values()) {
+      GlobalFree.call(system, realized.handle);
+    }
   }
 
   driver.uses = Math.max(0, driver.uses - 1);
@@ -634,6 +637,27 @@ interface DeviceFont {
   xform: Uint8Array;
 }
 
+/**
+ * A made font's height and width in the device's units, as GDI takes them
+ * before the driver realizes it (`GDI.EXE` seg3 `0b35`-`0b9c`; a stock
+ * font, 8000h in its type word, keeps its own): the window origin and the
+ * origin moved by the width and the height mapped to the device (`LPtoDP`,
+ * seg1 `52f5`); the width their distance across; the height their distance
+ * down, negative for a negative height, and 1 where it comes to nought
+ * from a height that was not.
+ */
+function mappedSize(surface: any, logfont: any) {
+  const m = mappingOf(surface);
+  const [x1, y1] = devicePoint(surface, m.wox, m.woy);
+  const [x2, y2] = devicePoint(surface, m.wox + logfont.width, m.woy + logfont.height);
+  const down = Math.abs(y2 - y1);
+
+  return {
+    width: Math.abs(x2 - x1),
+    height: down === 0 ? (logfont.height ? 1 : 0) : logfont.height < 0 ? -down : down,
+  };
+}
+
 /** The `LOGFONT` a font object was made of, or a stock font's. */
 function logfontOf(system: any, font: any) {
   if (font?.logfont) {
@@ -656,9 +680,9 @@ function logfontOf(system: any, font: any) {
  * nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made, and
  * the font realized into it with a `TEXTXFORM` of GDI's (`0c08`-`0c66`);
  * the `TEXTXFORM`'s italic, underline and strike-out made nought or FFh.
- * Null where the driver realizes none, which GDI maps itself: not followed.
- * Not followed either: the height and width taken to the device's units in
- * a mapping mode other than `MM_TEXT`.
+ * A made font's height and width are first taken to the device's units
+ * (`mappedSize`), so it is realized again for each size they come to. Null
+ * where the driver realizes none, which GDI maps itself: not followed.
  */
 export async function deviceFont(system: any, surface: any): Promise<DeviceFont | null> {
   const pdevice: PDevice | null = surface.driverDevice;
@@ -668,18 +692,26 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
     return null;
   }
 
-  surface.deviceFonts ??= new Map<any, DeviceFont>();
+  const given = logfontOf(system, font);
 
-  const kept = surface.deviceFonts.get(font);
+  if (!given) {
+    return null;
+  }
+
+  const logfont = font.logfont ? { ...given, ...mappedSize(surface, given) } : given;
+  const key = `${logfont.height},${logfont.width}`;
+
+  surface.deviceFonts ??= new Map<any, Map<string, DeviceFont>>();
+
+  const kept = surface.deviceFonts.get(font)?.get(key);
 
   if (kept) {
     return kept;
   }
 
   const realize = proc(pdevice.driver, REALIZE_OBJECT);
-  const logfont = logfontOf(system, font);
 
-  if (!realize || !logfont) {
+  if (!realize) {
     return null;
   }
 
@@ -723,7 +755,7 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
   system._realizingFont = { surface };
 
   try {
-    return await realizeDeviceFont(system, surface, font, realize, realizeArgs, bytes);
+    return await realizeDeviceFont(system, surface, [font, key], realize, realizeArgs, bytes);
   } finally {
     system._realizingFont = before;
   }
@@ -732,7 +764,7 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
 async function realizeDeviceFont(
   system: any,
   surface: any,
-  font: any,
+  [font, key]: [any, string],
   realize: number,
   realizeArgs: (lf: number, info: number, xform: number) => [number, number][],
   bytes: Uint8Array
@@ -772,7 +804,11 @@ async function realizeDeviceFont(
 
   const realized = { handle, far, info, xform: xform.slice(0, 0x13) };
 
-  surface.deviceFonts.set(font, realized);
+  if (!surface.deviceFonts.has(font)) {
+    surface.deviceFonts.set(font, new Map());
+  }
+
+  surface.deviceFonts.get(font).set(key, realized);
   return realized;
 }
 

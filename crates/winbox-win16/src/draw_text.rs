@@ -21,6 +21,7 @@ use crate::gdi::GdiObject;
 use crate::gdi::bitmaps::create_bitmap;
 use crate::gdi::dc::{create_compatible_dc, dc_of, delete_dc, select_object, set_text_color};
 use crate::gdi::objects::delete_object;
+use crate::gdi::printer_output::{driver_ext_text_out, driver_text_extent, with_bytes, with_rect};
 use crate::gdi::text::{
     Text, get_text_extent, get_text_metrics, system_font_object, tab_average, text_argument,
 };
@@ -33,7 +34,7 @@ use crate::system::System;
 pub fn user_implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "DrawText" => Implementation::Sync(draw_text_call),
-        "TabbedTextOut" => Implementation::Sync(tabbed_text_out_call),
+        "TabbedTextOut" => Implementation::Async(tabbed_text_out_any),
         "GrayString" => Implementation::Async(gray_string),
         _ => return None,
     })
@@ -845,6 +846,228 @@ fn tabbed_text_out_call(system: &mut System, args: &mut Args) -> Result<Answer, 
         &stops,
         i64::from(origin),
     )?))
+}
+
+/// `TabbedTextOut` on a printer driver's context as USER draws it, and on
+/// any other as `tabbed_text_out` does.
+fn tabbed_text_out_any(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let dc = {
+            let system = engine.system();
+            let mut peek = args;
+
+            crate::gdi::printer_driver::driver_dc_of(&system, peek.word(&system))
+        };
+
+        let Some(dc) = dc else {
+            return tabbed_text_out_call(&mut engine.system(), &mut args);
+        };
+        let given = {
+            let system = engine.system();
+
+            args.word(&system);
+            Tabbed {
+                x: i32::from(args.signed(&system)),
+                y: i32::from(args.signed(&system)),
+                string: args.dword(&system),
+                count: args.signed(&system),
+                tab_count: args.signed(&system),
+                tabs: args.dword(&system),
+                origin: i32::from(args.signed(&system)),
+            }
+        };
+
+        Ok(Answer::Dword(
+            driver_tabbed_text_out(engine, dc, given).await?,
+        ))
+    })
+}
+
+/// What `TabbedTextOut` was given.
+#[derive(Debug, Clone, Copy)]
+struct Tabbed {
+    x: i32,
+    y: i32,
+    string: u32,
+    count: i16,
+    tab_count: i16,
+    tabs: u32,
+    origin: i32,
+}
+
+/// A far pointer moved on within its segment, as a 16-bit offset moves.
+fn far_add(far: u32, by: u16) -> u32 {
+    far & 0xffff_0000 | u32::from((far as u16).wrapping_add(by))
+}
+
+/// USER's average character width (`USER.EXE` seg2 `0410`, `03a4`), here
+/// on a printer driver's context: `tmAveCharWidth` for a fixed pitch; for a
+/// variable one, the extent of the 26 small and 26 capital letters over
+/// 26, plus one, halved.
+async fn driver_average(engine: &Engine, dc: usize) -> Result<i32, Stop> {
+    let Some(realized) = crate::gdi::printer_driver::device_font(engine, dc).await? else {
+        return Ok(0);
+    };
+    let metrics = crate::gdi::printer_driver::device_text_metrics(&realized);
+
+    if metrics.pitch_and_family & 1 == 0 {
+        return Ok(metrics.ave_char_width);
+    }
+
+    let letters = b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let extent = with_bytes(engine, letters, |far| async move {
+        driver_text_extent(engine, dc, far, 52).await
+    })
+    .await?;
+
+    Ok((i32::from(extent as u16) / 26 + 1) / 2)
+}
+
+/// `TabbedTextOut` on a printer driver's context, as USER draws it
+/// (`USER.EXE` seg6 `1f1d`, its body seg6 `0992`): opaque when the
+/// background mode is; the average character width (seg2 `0410`) and the
+/// height `GetTextExtent` answers for one character; the tab distance
+/// eight averages with no stops, the one stop's (1 for nought) with one,
+/// none with several. Each run up to a tab is measured with
+/// `GetTextExtent` and drawn with GDI's `ExtTextOut` at the pen, opaque if
+/// the mode is, its rectangle from where the last run's ended to where
+/// this one ends, the line's top to its height below it. A tab moves the
+/// pen to the next multiple of the distance past the run's end counted
+/// from the origin (unsigned), or with several stops to the first stop
+/// past it, and past the last to the next eighth-average stop, which then
+/// serves every tab after it. A tab that ends the string paints its gap,
+/// opaque whatever the mode, with an empty `ExtTextOut`. The answer is the
+/// width from the start to the last run's end, the height above it.
+#[allow(clippy::too_many_lines)]
+async fn driver_tabbed_text_out(engine: &Engine, dc: usize, given: Tabbed) -> Result<u32, Stop> {
+    let Tabbed {
+        x,
+        y,
+        mut string,
+        count,
+        tab_count,
+        tabs,
+        origin,
+    } = given;
+    let mut count = i32::from(count);
+
+    if string == 0 || count == 0 {
+        return Ok(0);
+    }
+
+    let opaque = engine.system().gdi.dcs[dc].state.back_mode == 2;
+    let average = driver_average(engine, dc).await?;
+    // The height of USER's "0" (seg45 `01f2`).
+    let zero = with_bytes(engine, b"0\0", |far| async move {
+        driver_text_extent(engine, dc, far, 1).await
+    })
+    .await?;
+    let line_height = i32::from((zero >> 16) as u16);
+    let tab_at = |system: &System, index: i32| -> i32 {
+        let bytes = system.read_far(far_add(tabs, (index * 2) as u16), 2);
+
+        i32::from(i16::from_le_bytes([bytes[0], bytes[1]]))
+    };
+    let tab_count = i32::from(tab_count);
+    let mut spacing = if tabs == 0 {
+        average * 8
+    } else if tab_count == 1 {
+        match tab_at(&engine.system(), 0) {
+            0 => 1,
+            stop => stop,
+        }
+    } else {
+        0
+    };
+    let mut rect = [x, y, 0, y + line_height];
+    let mut pen = x;
+    let mut height = line_height;
+
+    while count != 0 {
+        let run = {
+            let system = engine.system();
+            let mut run = 0;
+
+            while run < count && system.read_far(far_add(string, run as u16), 1)[0] != 9 {
+                run += 1;
+            }
+
+            run
+        };
+        let mut width = 0;
+
+        count -= run;
+
+        if run == 0 {
+            height = line_height;
+        } else {
+            let extent = driver_text_extent(engine, dc, string, run as u16).await?;
+
+            width = i32::from(extent as i16);
+            height = i32::from((extent >> 16) as u16);
+        }
+
+        rect[2] = pen + width;
+
+        let options = if opaque { 2 } else { 0 };
+
+        with_rect(engine, rect, |far| async move {
+            driver_ext_text_out(engine, dc, pen, y, options, far, string, run as u16).await
+        })
+        .await?;
+        rect[0] = rect[2];
+
+        if count == 0 {
+            return Ok(crate::gdi::pack(
+                i64::from(pen - x + width),
+                i64::from(height),
+            ));
+        }
+
+        if spacing != 0 {
+            // An unsigned division, a signed product, in sixteen bits.
+            let past = i32::from((width - origin + pen) as u16);
+            let times = past / i32::from(spacing as u16) + 1;
+
+            pen = i32::from((times * spacing + origin) as i16);
+        } else {
+            let system = engine.system();
+            let mut index = 0;
+
+            pen += width;
+
+            while index < tab_count && tab_at(&system, index) + origin <= pen {
+                index += 1;
+            }
+
+            if index < tab_count {
+                pen = tab_at(&system, index) + origin;
+            } else {
+                // No average is a division by nought in USER; the pen stays.
+                spacing = average * 8;
+
+                if spacing != 0 {
+                    pen = ((pen - origin) / spacing + 1) * spacing + origin;
+                }
+            }
+        }
+
+        string = far_add(string, run as u16 + 1);
+        count -= 1;
+
+        if count == 0 {
+            rect[2] = pen;
+
+            let (left, top) = (rect[0], rect[1]);
+
+            with_rect(engine, rect, |far| async move {
+                driver_ext_text_out(engine, dc, left, top, 2, far, string, 0).await
+            })
+            .await?;
+        }
+    }
+
+    Ok(crate::gdi::pack(i64::from(pen - x), i64::from(height)))
 }
 
 /// What `GrayString` sets up before it draws: the monochrome bitmap's

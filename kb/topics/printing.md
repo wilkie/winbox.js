@@ -2,7 +2,7 @@
 kind: topic
 name: Printing
 summary: What GDI does around any printer when a program prints a document — which calls succeed, what the calls out of order answer, when the abort procedure runs — recorded with Windows' own PostScript driver; and winbox.js's own printer, which hands documents on as PDFs.
-probes: [printing, prdoc]
+probes: [printing, prdoc, prabort, prnote]
 ---
 
 A program prints by asking WIN.INI for the default printer, making a device context for it with [fn:GDI.CreateDC], and drawing a document into it a page at a time. What the pages turn into is the driver's business. What GDI does around them is the same for any printer, and that is what winbox.js is held to.
@@ -23,10 +23,12 @@ A Windows printer driver on the drive, such as the PostScript driver, is loaded 
 
 ## Windows' printer drivers
 
-[[read out]] Of a document on a Windows driver's DC, GDI does little itself (`GDI.EXE` seg31): `StartDoc` gives the driver's `Control` `SETABORTPROC` with the DC, then `STARTDOC` with the document's name, and the `DOCINFO` as its output where the driver's `GDIINFO` is newer than 300h; `StartPage` only marks the DC and answers 1; `EndPage` answers -1 on a DC not so marked, else the escape `NEWFRAME`'s answer; `EndDoc` is `Control`'s `ENDDOC`; `AbortDoc` the escape `ABORTDOC`; `SetAbortProc` the escape `SETABORTPROC`. [[measured]] [[probe:prdoc]] prints a page of text, a rectangle, a line and an ellipse through the PostScript driver to a file, and records the 210 lines of PostScript it wrote; `EndPage` answered 1639. winbox.js does not yet draw or print through a Windows driver ([[topic:printer-drivers]]).
+[[read out]] Of a document on a Windows driver's DC, GDI does little itself (`GDI.EXE` seg31): `StartDoc` gives the driver's `Control` `SETABORTPROC` with the DC, then `STARTDOC` with the document's name, and the `DOCINFO` as its output where the driver's `GDIINFO` is newer than 300h; `StartPage` only marks the DC and answers 1; `EndPage` answers -1 on a DC not so marked, else the escape `NEWFRAME`'s answer; `EndDoc` is `Control`'s `ENDDOC`; `AbortDoc` the escape `ABORTDOC`; `SetAbortProc` the escape `SETABORTPROC`. The driver writes its output through GDI's spooler, which writes it to the port's file or device ([[fn:GDI.OpenJob]], [[fn:GDI.WriteSpool]]).
+
+[[measured]] [[probe:prdoc]] prints a page of text, a rectangle, a line and an ellipse through the PostScript driver to a file, and records every line of PostScript it wrote. Its `EndPage` answers the driver's job. [[probe:prabort]] covers the documents that do not go as planned. [[probe:prnote]] has Notepad print a note with `/p` through the driver. winbox.js runs the driver's code for all of it, drawing through the driver as GDI does, and both engines agree with every record ([[topic:printer-drivers]]).
 
 ## Not yet done
 
-- Print Manager and the spooler, and GDI's own spooling of a driver's output (`OpenJob`, `WriteSpool`, `CloseJob`).
-- Drawing and printing through a Windows printer driver ([[probe:prdoc]]).
+- Print Manager, and the spooler's jobs through it.
+- What a Windows driver's DC leaves to GDI's own drawing; see [[topic:printer-drivers]].
 - WinBox's own printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`).

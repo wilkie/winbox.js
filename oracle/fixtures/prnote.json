@@ -1,0 +1,1004 @@
+{
+  "probe": "prnote",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "started",
+      "args": "notepad",
+      "result": "1"
+    },
+    {
+      "function": "ended",
+      "args": "notepad",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "11866"
+    },
+    {
+      "function": "line",
+      "args": "0",
+      "result": "\u0004%!PS-Adobe-3.0"
+    },
+    {
+      "function": "line",
+      "args": "1",
+      "result": "%%Creator: Windows PSCRIPT"
+    },
+    {
+      "function": "line",
+      "args": "2",
+      "result": "%%Title: Notepad - NOTE.TXT"
+    },
+    {
+      "function": "line",
+      "args": "3",
+      "result": "%%BoundingBox: 18 9 593 784"
+    },
+    {
+      "function": "line",
+      "args": "4",
+      "result": "%%DocumentNeededResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "5",
+      "result": "%%DocumentSuppliedResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "6",
+      "result": "%%Pages: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "7",
+      "result": "%%BeginResource: procset Win35Dict 3 1"
+    },
+    {
+      "function": "line",
+      "args": "8",
+      "result": "/Win35Dict 290 dict def Win35Dict begin/bd{bind def}bind def/in{72"
+    },
+    {
+      "function": "line",
+      "args": "9",
+      "result": "mul}bd/ed{exch def}bd/ld{load def}bd/tr/translate ld/gs/gsave ld/gr"
+    },
+    {
+      "function": "line",
+      "args": "10",
+      "result": "/grestore ld/M/moveto ld/L/lineto ld/rmt/rmoveto ld/rlt/rlineto ld"
+    },
+    {
+      "function": "line",
+      "args": "11",
+      "result": "/rct/rcurveto ld/st/stroke ld/n/newpath ld/sm/setmatrix ld/cm/currentmatrix"
+    },
+    {
+      "function": "line",
+      "args": "12",
+      "result": "ld/cp/closepath ld/ARC/arcn ld/TR{65536 div}bd/lj/setlinejoin ld/lc"
+    },
+    {
+      "function": "line",
+      "args": "13",
+      "result": "/setlinecap ld/ml/setmiterlimit ld/sl/setlinewidth ld/scignore false"
+    },
+    {
+      "function": "line",
+      "args": "14",
+      "result": "def/sc{scignore{pop pop pop}{0 index 2 index eq 2 index 4 index eq"
+    },
+    {
+      "function": "line",
+      "args": "15",
+      "result": "and{pop pop 255 div setgray}{3{255 div 3 1 roll}repeat setrgbcolor}ifelse}ifelse}bd"
+    },
+    {
+      "function": "line",
+      "args": "16",
+      "result": "/FC{bR bG bB sc}bd/fC{/bB ed/bG ed/bR ed}bd/HC{hR hG hB sc}bd/hC{"
+    },
+    {
+      "function": "line",
+      "args": "17",
+      "result": "/hB ed/hG ed/hR ed}bd/PC{pR pG pB sc}bd/pC{/pB ed/pG ed/pR ed}bd/sM"
+    },
+    {
+      "function": "line",
+      "args": "18",
+      "result": "matrix def/PenW 1 def/iPen 5 def/mxF matrix def/mxE matrix def/mxUE"
+    },
+    {
+      "function": "line",
+      "args": "19",
+      "result": "matrix def/mxUF matrix def/fBE false def/iDevRes 72 0 matrix defaultmatrix"
+    },
+    {
+      "function": "line",
+      "args": "20",
+      "result": "dtransform dup mul exch dup mul add sqrt def/fPP false def/SS{fPP{"
+    },
+    {
+      "function": "line",
+      "args": "21",
+      "result": "/SV save def}{gs}ifelse}bd/RS{fPP{SV restore}{gr}ifelse}bd/EJ{gsave"
+    },
+    {
+      "function": "line",
+      "args": "22",
+      "result": "showpage grestore}bd/#C{userdict begin/#copies ed end}bd/FEbuf 2 string"
+    },
+    {
+      "function": "line",
+      "args": "23",
+      "result": "def/FEglyph(G  )def/FE{1 exch{dup 16 FEbuf cvrs FEglyph exch 1 exch"
+    },
+    {
+      "function": "line",
+      "args": "24",
+      "result": "putinterval 1 index exch FEglyph cvn put}for}bd/SM{/iRes ed/cyP ed"
+    },
+    {
+      "function": "line",
+      "args": "25",
+      "result": "/cxPg ed/cyM ed/cxM ed 72 100 div dup scale dup 0 ne{90 eq{cyM exch"
+    },
+    {
+      "function": "line",
+      "args": "26",
+      "result": "0 eq{cxM exch tr -90 rotate -1 1 scale}{cxM cxPg add exch tr +90 rotate}ifelse}{cyP"
+    },
+    {
+      "function": "line",
+      "args": "27",
+      "result": "cyM sub exch 0 ne{cxM exch tr -90 rotate}{cxM cxPg add exch tr -90"
+    },
+    {
+      "function": "line",
+      "args": "28",
+      "result": "rotate 1 -1 scale}ifelse}ifelse}{pop cyP cyM sub exch 0 ne{cxM cxPg"
+    },
+    {
+      "function": "line",
+      "args": "29",
+      "result": "add exch tr 180 rotate}{cxM exch tr 1 -1 scale}ifelse}ifelse 100 iRes"
+    },
+    {
+      "function": "line",
+      "args": "30",
+      "result": "div dup scale 0 0 transform .25 add round .25 sub exch .25 add round"
+    },
+    {
+      "function": "line",
+      "args": "31",
+      "result": ".25 sub exch itransform translate}bd/SJ{1 index 0 eq{pop pop/fBE false"
+    },
+    {
+      "function": "line",
+      "args": "32",
+      "result": "def}{1 index/Break ed div/dxBreak ed/fBE true def}ifelse}bd/ANSIVec["
+    },
+    {
+      "function": "line",
+      "args": "33",
+      "result": "16#0/grave 16#1/acute 16#2/circumflex 16#3/tilde 16#4/macron 16#5/breve"
+    },
+    {
+      "function": "line",
+      "args": "34",
+      "result": "16#6/dotaccent 16#7/dieresis 16#8/ring 16#9/cedilla 16#A/hungarumlaut"
+    },
+    {
+      "function": "line",
+      "args": "35",
+      "result": "16#B/ogonek 16#C/caron 16#D/dotlessi 16#27/quotesingle 16#60/grave"
+    },
+    {
+      "function": "line",
+      "args": "36",
+      "result": "16#7C/bar 16#82/quotesinglbase 16#83/florin 16#84/quotedblbase 16#85"
+    },
+    {
+      "function": "line",
+      "args": "37",
+      "result": "/ellipsis 16#86/dagger 16#87/daggerdbl 16#89/perthousand 16#8A/Scaron"
+    },
+    {
+      "function": "line",
+      "args": "38",
+      "result": "16#8B/guilsinglleft 16#8C/OE 16#91/quoteleft 16#92/quoteright 16#93"
+    },
+    {
+      "function": "line",
+      "args": "39",
+      "result": "/quotedblleft 16#94/quotedblright 16#95/bullet 16#96/endash 16#97"
+    },
+    {
+      "function": "line",
+      "args": "40",
+      "result": "/emdash 16#99/trademark 16#9A/scaron 16#9B/guilsinglright 16#9C/oe"
+    },
+    {
+      "function": "line",
+      "args": "41",
+      "result": "16#9F/Ydieresis 16#A0/space 16#A4/currency 16#A6/brokenbar 16#A7/section"
+    },
+    {
+      "function": "line",
+      "args": "42",
+      "result": "16#A8/dieresis 16#A9/copyright 16#AA/ordfeminine 16#AB/guillemotleft"
+    },
+    {
+      "function": "line",
+      "args": "43",
+      "result": "16#AC/logicalnot 16#AD/hyphen 16#AE/registered 16#AF/macron 16#B0/degree"
+    },
+    {
+      "function": "line",
+      "args": "44",
+      "result": "16#B1/plusminus 16#B2/twosuperior 16#B3/threesuperior 16#B4/acute 16#B5"
+    },
+    {
+      "function": "line",
+      "args": "45",
+      "result": "/mu 16#B6/paragraph 16#B7/periodcentered 16#B8/cedilla 16#B9/onesuperior"
+    },
+    {
+      "function": "line",
+      "args": "46",
+      "result": "16#BA/ordmasculine 16#BB/guillemotright 16#BC/onequarter 16#BD/onehalf"
+    },
+    {
+      "function": "line",
+      "args": "47",
+      "result": "16#BE/threequarters 16#BF/questiondown 16#C0/Agrave 16#C1/Aacute 16#C2"
+    },
+    {
+      "function": "line",
+      "args": "48",
+      "result": "/Acircumflex 16#C3/Atilde 16#C4/Adieresis 16#C5/Aring 16#C6/AE 16#C7"
+    },
+    {
+      "function": "line",
+      "args": "49",
+      "result": "/Ccedilla 16#C8/Egrave 16#C9/Eacute 16#CA/Ecircumflex 16#CB/Edieresis"
+    },
+    {
+      "function": "line",
+      "args": "50",
+      "result": "16#CC/Igrave 16#CD/Iacute 16#CE/Icircumflex 16#CF/Idieresis 16#D0/Eth"
+    },
+    {
+      "function": "line",
+      "args": "51",
+      "result": "16#D1/Ntilde 16#D2/Ograve 16#D3/Oacute 16#D4/Ocircumflex 16#D5/Otilde"
+    },
+    {
+      "function": "line",
+      "args": "52",
+      "result": "16#D6/Odieresis 16#D7/multiply 16#D8/Oslash 16#D9/Ugrave 16#DA/Uacute"
+    },
+    {
+      "function": "line",
+      "args": "53",
+      "result": "16#DB/Ucircumflex 16#DC/Udieresis 16#DD/Yacute 16#DE/Thorn 16#DF/germandbls"
+    },
+    {
+      "function": "line",
+      "args": "54",
+      "result": "16#E0/agrave 16#E1/aacute 16#E2/acircumflex 16#E3/atilde 16#E4/adieresis"
+    },
+    {
+      "function": "line",
+      "args": "55",
+      "result": "16#E5/aring 16#E6/ae 16#E7/ccedilla 16#E8/egrave 16#E9/eacute 16#EA"
+    },
+    {
+      "function": "line",
+      "args": "56",
+      "result": "/ecircumflex 16#EB/edieresis 16#EC/igrave 16#ED/iacute 16#EE/icircumflex"
+    },
+    {
+      "function": "line",
+      "args": "57",
+      "result": "16#EF/idieresis 16#F0/eth 16#F1/ntilde 16#F2/ograve 16#F3/oacute 16#F4"
+    },
+    {
+      "function": "line",
+      "args": "58",
+      "result": "/ocircumflex 16#F5/otilde 16#F6/odieresis 16#F7/divide 16#F8/oslash"
+    },
+    {
+      "function": "line",
+      "args": "59",
+      "result": "16#F9/ugrave 16#FA/uacute 16#FB/ucircumflex 16#FC/udieresis 16#FD/yacute"
+    },
+    {
+      "function": "line",
+      "args": "60",
+      "result": "16#FE/thorn 16#FF/ydieresis ] def/reencdict 12 dict def/IsChar{basefontdict"
+    },
+    {
+      "function": "line",
+      "args": "61",
+      "result": "/CharStrings get exch known}bd/MapCh{dup IsChar not{pop/bullet}if"
+    },
+    {
+      "function": "line",
+      "args": "62",
+      "result": "newfont/Encoding get 3 1 roll put}bd/MapDegree{16#b0/degree IsChar{"
+    },
+    {
+      "function": "line",
+      "args": "63",
+      "result": "/degree}{/ring}ifelse MapCh}bd/MapBB{16#a6/brokenbar IsChar{/brokenbar}{"
+    },
+    {
+      "function": "line",
+      "args": "64",
+      "result": "/bar}ifelse MapCh}bd/ANSIFont{reencdict begin/newfontname ed/basefontname"
+    },
+    {
+      "function": "line",
+      "args": "65",
+      "result": "ed FontDirectory newfontname known not{/basefontdict basefontname findfont"
+    },
+    {
+      "function": "line",
+      "args": "66",
+      "result": "def/newfont basefontdict maxlength dict def basefontdict{exch dup/FID"
+    },
+    {
+      "function": "line",
+      "args": "67",
+      "result": "ne{dup/Encoding eq{exch dup length array copy newfont 3 1 roll put}{exch"
+    },
+    {
+      "function": "line",
+      "args": "68",
+      "result": "newfont 3 1 roll put}ifelse}{pop pop}ifelse}forall newfont/FontName"
+    },
+    {
+      "function": "line",
+      "args": "69",
+      "result": "newfontname put 127 1 159{newfont/Encoding get exch/bullet put}for"
+    },
+    {
+      "function": "line",
+      "args": "70",
+      "result": "ANSIVec aload pop ANSIVec length 2 idiv{MapCh}repeat MapDegree MapBB"
+    },
+    {
+      "function": "line",
+      "args": "71",
+      "result": "newfontname newfont definefont pop}if newfontname end}bd/SB{FC/ULlen"
+    },
+    {
+      "function": "line",
+      "args": "72",
+      "result": "ed/str ed str length fBE not{dup 1 gt{1 sub}if}if/cbStr ed/dxGdi ed"
+    },
+    {
+      "function": "line",
+      "args": "73",
+      "result": "/y0 ed/x0 ed str stringwidth dup 0 ne{/y1 ed/x1 ed y1 y1 mul x1 x1"
+    },
+    {
+      "function": "line",
+      "args": "74",
+      "result": "mul add sqrt dxGdi exch div 1 sub dup x1 mul cbStr div exch y1 mul"
+    },
+    {
+      "function": "line",
+      "args": "75",
+      "result": "cbStr div}{exch abs neg dxGdi add cbStr div exch}ifelse/dyExtra ed"
+    },
+    {
+      "function": "line",
+      "args": "76",
+      "result": "/dxExtra ed x0 y0 M fBE{dxBreak 0 BCh dxExtra dyExtra str awidthshow}{dxExtra"
+    },
+    {
+      "function": "line",
+      "args": "77",
+      "result": "dyExtra str ashow}ifelse fUL{x0 y0 M dxUL dyUL rmt ULlen fBE{Break"
+    },
+    {
+      "function": "line",
+      "args": "78",
+      "result": "add}if 0 mxUE transform gs rlt cyUL sl [] 0 setdash st gr}if fSO{x0"
+    },
+    {
+      "function": "line",
+      "args": "79",
+      "result": "y0 M dxSO dySO rmt ULlen fBE{Break add}if 0 mxUE transform gs rlt cyUL"
+    },
+    {
+      "function": "line",
+      "args": "80",
+      "result": "sl [] 0 setdash st gr}if n/fBE false def}bd/font{/name ed/Ascent ed"
+    },
+    {
+      "function": "line",
+      "args": "81",
+      "result": "0 ne/fT3 ed 0 ne/fSO ed 0 ne/fUL ed/Sy ed/Sx ed 10.0 div/ori ed -10.0"
+    },
+    {
+      "function": "line",
+      "args": "82",
+      "result": "div/esc ed/BCh ed name findfont/xAscent 0 def/yAscent Ascent def/ULesc"
+    },
+    {
+      "function": "line",
+      "args": "83",
+      "result": "esc def ULesc mxUE rotate pop fT3{/esc 0 def xAscent yAscent mxUE transform"
+    },
+    {
+      "function": "line",
+      "args": "84",
+      "result": "/yAscent ed/xAscent ed}if [Sx 0 0 Sy neg xAscent yAscent] esc mxE"
+    },
+    {
+      "function": "line",
+      "args": "85",
+      "result": "rotate mxF concatmatrix makefont setfont [Sx 0 0 Sy neg 0 Ascent] mxUE"
+    },
+    {
+      "function": "line",
+      "args": "86",
+      "result": "mxUF concatmatrix pop fUL{currentfont dup/FontInfo get/UnderlinePosition"
+    },
+    {
+      "function": "line",
+      "args": "87",
+      "result": "known not{pop/Courier findfont}if/FontInfo get/UnderlinePosition get"
+    },
+    {
+      "function": "line",
+      "args": "88",
+      "result": "1000 div 0 exch mxUF transform/dyUL ed/dxUL ed}if fSO{0 .3 mxUF transform"
+    },
+    {
+      "function": "line",
+      "args": "89",
+      "result": "/dySO ed/dxSO ed}if fUL fSO or{currentfont dup/FontInfo get/UnderlineThickness"
+    },
+    {
+      "function": "line",
+      "args": "90",
+      "result": "known not{pop/Courier findfont}if/FontInfo get/UnderlineThickness get"
+    },
+    {
+      "function": "line",
+      "args": "91",
+      "result": "1000 div Sy mul/cyUL ed}if}bd/min{2 copy gt{exch}if pop}bd/max{2 copy"
+    },
+    {
+      "function": "line",
+      "args": "92",
+      "result": "lt{exch}if pop}bd/CP{/ft ed{{ft 0 eq{clip}{eoclip}ifelse}stopped{currentflat"
+    },
+    {
+      "function": "line",
+      "args": "93",
+      "result": "1 add setflat}{exit}ifelse}loop}bd/patfont 10 dict def patfont begin"
+    },
+    {
+      "function": "line",
+      "args": "94",
+      "result": "/FontType 3 def/FontMatrix [1 0 0 -1 0 0] def/FontBBox [0 0 16 16]"
+    },
+    {
+      "function": "line",
+      "args": "95",
+      "result": "def/Encoding StandardEncoding def/BuildChar{pop pop 16 0 0 0 16 16"
+    },
+    {
+      "function": "line",
+      "args": "96",
+      "result": "setcachedevice 16 16 false [1 0 0 1 .25 .25]{pat}imagemask}bd end/p{"
+    },
+    {
+      "function": "line",
+      "args": "97",
+      "result": "/pat 32 string def{}forall 0 1 7{dup 2 mul pat exch 3 index put dup"
+    },
+    {
+      "function": "line",
+      "args": "98",
+      "result": "2 mul 1 add pat exch 3 index put dup 2 mul 16 add pat exch 3 index"
+    },
+    {
+      "function": "line",
+      "args": "99",
+      "result": "put 2 mul 17 add pat exch 2 index put pop}for}bd/pfill{/PatFont patfont"
+    },
+    {
+      "function": "line",
+      "args": "100",
+      "result": "definefont setfont/ch(AAAA)def X0 64 X1{Y1 -16 Y0{1 index exch M ch"
+    },
+    {
+      "function": "line",
+      "args": "101",
+      "result": "show}for pop}for}bd/vert{X0 w X1{dup Y0 M Y1 L st}for}bd/horz{Y0 w"
+    },
+    {
+      "function": "line",
+      "args": "102",
+      "result": "Y1{dup X0 exch M X1 exch L st}for}bd/fdiag{X0 w X1{Y0 M X1 X0 sub dup"
+    },
+    {
+      "function": "line",
+      "args": "103",
+      "result": "rlt st}for Y0 w Y1{X0 exch M Y1 Y0 sub dup rlt st}for}bd/bdiag{X0 w"
+    },
+    {
+      "function": "line",
+      "args": "104",
+      "result": "X1{Y1 M X1 X0 sub dup neg rlt st}for Y0 w Y1{X0 exch M Y1 Y0 sub dup"
+    },
+    {
+      "function": "line",
+      "args": "105",
+      "result": "neg rlt st}for}bd/AU{1 add cvi 15 or}bd/AD{1 sub cvi -16 and}bd/SHR{pathbbox"
+    },
+    {
+      "function": "line",
+      "args": "106",
+      "result": "AU/Y1 ed AU/X1 ed AD/Y0 ed AD/X0 ed}bd/hfill{/w iRes 37.5 div round"
+    },
+    {
+      "function": "line",
+      "args": "107",
+      "result": "def 0.1 sl [] 0 setdash n dup 0 eq{horz}if dup 1 eq{vert}if dup 2 eq{fdiag}if"
+    },
+    {
+      "function": "line",
+      "args": "108",
+      "result": "dup 3 eq{bdiag}if dup 4 eq{horz vert}if 5 eq{fdiag bdiag}if}bd/F{/ft"
+    },
+    {
+      "function": "line",
+      "args": "109",
+      "result": "ed fm 256 and 0 ne{gs FC ft 0 eq{fill}{eofill}ifelse gr}if fm 1536"
+    },
+    {
+      "function": "line",
+      "args": "110",
+      "result": "and 0 ne{SHR gs HC ft CP fm 1024 and 0 ne{/Tmp save def pfill Tmp restore}{fm"
+    },
+    {
+      "function": "line",
+      "args": "111",
+      "result": "15 and hfill}ifelse gr}if}bd/S{PenW sl PC st}bd/m matrix def/GW{iRes"
+    },
+    {
+      "function": "line",
+      "args": "112",
+      "result": "12 div PenW add cvi}bd/DoW{iRes 50 div PenW add cvi}bd/DW{iRes 8 div"
+    },
+    {
+      "function": "line",
+      "args": "113",
+      "result": "PenW add cvi}bd/SP{/PenW ed/iPen ed iPen 0 eq iPen 6 eq or{[] 0 setdash}if"
+    },
+    {
+      "function": "line",
+      "args": "114",
+      "result": "iPen 1 eq{[DW GW] 0 setdash}if iPen 2 eq{[DoW GW] 0 setdash}if iPen"
+    },
+    {
+      "function": "line",
+      "args": "115",
+      "result": "3 eq{[DW GW DoW GW] 0 setdash}if iPen 4 eq{[DW GW DoW GW DoW GW] 0"
+    },
+    {
+      "function": "line",
+      "args": "116",
+      "result": "setdash}if}bd/E{m cm pop tr scale 1 0 moveto 0 0 1 0 360 arc cp m sm}bd"
+    },
+    {
+      "function": "line",
+      "args": "117",
+      "result": "/AG{/sy ed/sx ed sx div 4 1 roll sy div 4 1 roll sx div 4 1 roll sy"
+    },
+    {
+      "function": "line",
+      "args": "118",
+      "result": "div 4 1 roll atan/a2 ed atan/a1 ed sx sy scale a1 a2 ARC}def/A{m cm"
+    },
+    {
+      "function": "line",
+      "args": "119",
+      "result": "pop tr AG m sm}def/P{m cm pop tr 0 0 M AG cp m sm}def/RRect{n 4 copy"
+    },
+    {
+      "function": "line",
+      "args": "120",
+      "result": "M 3 1 roll exch L 4 2 roll L L cp}bd/RRCC{/r ed/y1 ed/x1 ed/y0 ed/x0"
+    },
+    {
+      "function": "line",
+      "args": "121",
+      "result": "ed x0 x1 add 2 div y0 M x1 y0 x1 y1 r arcto 4{pop}repeat x1 y1 x0 y1"
+    },
+    {
+      "function": "line",
+      "args": "122",
+      "result": "r arcto 4{pop}repeat x0 y1 x0 y0 r arcto 4{pop}repeat x0 y0 x1 y0 r"
+    },
+    {
+      "function": "line",
+      "args": "123",
+      "result": "arcto 4{pop}repeat cp}bd/RR{2 copy 0 eq exch 0 eq or{pop pop RRect}{2"
+    },
+    {
+      "function": "line",
+      "args": "124",
+      "result": "copy eq{pop RRCC}{m cm pop/y2 ed/x2 ed/ys y2 x2 div 1 max def/xs x2"
+    },
+    {
+      "function": "line",
+      "args": "125",
+      "result": "y2 div 1 max def/y1 exch ys div def/x1 exch xs div def/y0 exch ys div"
+    },
+    {
+      "function": "line",
+      "args": "126",
+      "result": "def/x0 exch xs div def/r2 x2 y2 min def xs ys scale x0 x1 add 2 div"
+    },
+    {
+      "function": "line",
+      "args": "127",
+      "result": "y0 M x1 y0 x1 y1 r2 arcto 4{pop}repeat x1 y1 x0 y1 r2 arcto 4{pop}repeat"
+    },
+    {
+      "function": "line",
+      "args": "128",
+      "result": "x0 y1 x0 y0 r2 arcto 4{pop}repeat x0 y0 x1 y0 r2 arcto 4{pop}repeat"
+    },
+    {
+      "function": "line",
+      "args": "129",
+      "result": "m sm cp}ifelse}ifelse}bd/PP{{rlt}repeat}bd/OB{gs 0 ne{7 3 roll/y ed"
+    },
+    {
+      "function": "line",
+      "args": "130",
+      "result": "/x ed x y translate ULesc rotate x neg y neg translate x y 7 -3 roll}if"
+    },
+    {
+      "function": "line",
+      "args": "131",
+      "result": "sc B fill gr}bd/B{M/dy ed/dx ed dx 0 rlt 0 dy rlt dx neg 0 rlt cp}bd"
+    },
+    {
+      "function": "line",
+      "args": "132",
+      "result": "/CB{B clip n}bd/ErrHandler{errordict dup maxlength exch length gt"
+    },
+    {
+      "function": "line",
+      "args": "133",
+      "result": "dup{errordict begin}if/errhelpdict 12 dict def errhelpdict begin/stackunderflow(operand stack underflow)def"
+    },
+    {
+      "function": "line",
+      "args": "134",
+      "result": "/undefined(this name is not defined in a dictionary)def/VMerror(you have used up all the printer's memory)def"
+    },
+    {
+      "function": "line",
+      "args": "135",
+      "result": "/typecheck(operator was expecting a different type of operand)def"
+    },
+    {
+      "function": "line",
+      "args": "136",
+      "result": "/ioerror(input/output error occured)def end{end}if errordict begin"
+    },
+    {
+      "function": "line",
+      "args": "137",
+      "result": "/handleerror{$error begin newerror{/newerror false def showpage 72"
+    },
+    {
+      "function": "line",
+      "args": "138",
+      "result": "72 scale/x .25 def/y 9.6 def/Helvetica findfont .2 scalefont setfont"
+    },
+    {
+      "function": "line",
+      "args": "139",
+      "result": "x y moveto(Offending Command = )show/command load{dup type/stringtype"
+    },
+    {
+      "function": "line",
+      "args": "140",
+      "result": "ne{(max err string)cvs}if show}exec/y y .2 sub def x y moveto(Error = )show"
+    },
+    {
+      "function": "line",
+      "args": "141",
+      "result": "errorname{dup type dup( max err string )cvs show( : )show/stringtype"
+    },
+    {
+      "function": "line",
+      "args": "142",
+      "result": "ne{( max err string )cvs}if show}exec errordict begin errhelpdict errorname"
+    },
+    {
+      "function": "line",
+      "args": "143",
+      "result": "known{x 1 add y .2 sub moveto errhelpdict errorname get show}if end"
+    },
+    {
+      "function": "line",
+      "args": "144",
+      "result": "/y y .4 sub def x y moveto(Stack =)show ostack{/y y .2 sub def x 1"
+    },
+    {
+      "function": "line",
+      "args": "145",
+      "result": "add y moveto dup type/stringtype ne{( max err string )cvs}if show}forall"
+    },
+    {
+      "function": "line",
+      "args": "146",
+      "result": "showpage}if end}def end}bd end"
+    },
+    {
+      "function": "line",
+      "args": "147",
+      "result": "%%EndResource"
+    },
+    {
+      "function": "line",
+      "args": "148",
+      "result": "/SVDoc save def"
+    },
+    {
+      "function": "line",
+      "args": "149",
+      "result": "%%EndProlog"
+    },
+    {
+      "function": "line",
+      "args": "150",
+      "result": "%%BeginSetup"
+    },
+    {
+      "function": "line",
+      "args": "151",
+      "result": "Win35Dict begin"
+    },
+    {
+      "function": "line",
+      "args": "152",
+      "result": "ErrHandler"
+    },
+    {
+      "function": "line",
+      "args": "153",
+      "result": "statusdict begin 0 setjobtimeout end"
+    },
+    {
+      "function": "line",
+      "args": "154",
+      "result": "statusdict begin statusdict /jobname (Notepad - NOTE.TXT) put end"
+    },
+    {
+      "function": "line",
+      "args": "155",
+      "result": "/oldDictCnt countdictstack def {}stopped "
+    },
+    {
+      "function": "line",
+      "args": "156",
+      "result": "{ countdictstack oldDictCnt lt { Win35Dict begin } "
+    },
+    {
+      "function": "line",
+      "args": "157",
+      "result": "{1 1 countdictstack oldDictCnt sub {pop end } for } ifelse } if "
+    },
+    {
+      "function": "line",
+      "args": "158",
+      "result": "/oldDictCnt countdictstack def {letter"
+    },
+    {
+      "function": "line",
+      "args": "159",
+      "result": "}stopped "
+    },
+    {
+      "function": "line",
+      "args": "160",
+      "result": "{ countdictstack oldDictCnt lt { Win35Dict begin } "
+    },
+    {
+      "function": "line",
+      "args": "161",
+      "result": "{1 1 countdictstack oldDictCnt sub {pop end } for } ifelse } if "
+    },
+    {
+      "function": "line",
+      "args": "162",
+      "result": "["
+    },
+    {
+      "function": "line",
+      "args": "163",
+      "result": "{mark 1.0 1.0 .98 .9 .82 .68 .56 .48 .28 .1 .06 .0 counttomark dup 3 add -1 roll exch 2 sub mul dup floor cvi dup 3 1 roll sub exch dup  3 add index exch 2 add index dup 4 1 roll sub mul add counttomark 1 add 1 roll  cleartomark } bind"
+    },
+    {
+      "function": "line",
+      "args": "164",
+      "result": "/exec load currenttransfer /exec load] cvx settransfer"
+    },
+    {
+      "function": "line",
+      "args": "165",
+      "result": "/setresolution where { pop 300 300 setresolution } if"
+    },
+    {
+      "function": "line",
+      "args": "166",
+      "result": "%%EndSetup"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "32 0 0 42 42 0 0 0 33 /Courier /font0 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "0 0 0 fC"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "225 33 1925 (                                   NOTE.TXT                                  ) 1925 SB"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "225 258 325 (A short note,) 325 SB"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "225 300 475 (printed by Notepad.) 475 SB"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "225 384 375 (The third line.) 375 SB"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "225 426 1025 (        Tabbed  across          the page.) 1025 SB"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "225 468 600 (A tab at the end        ) 600 SB"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "225 3114 1925 (                                   Page 1                                    ) 1925 SB"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "1 #C"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "statusdict begin /manualfeed false store end"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "EJ RS"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "%%PageTrailer"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "%%PageResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "%%Trailer"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "SVDoc restore"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "end"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "%%Pages: 1"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "%%DocumentNeededResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "%%EOF"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "\u0004"
+    }
+  ]
+}

@@ -1,0 +1,454 @@
+{
+  "probe": "prtabs",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "GetTextExtent none",
+      "result": "0 0"
+    },
+    {
+      "function": "call",
+      "args": "GetTextExtent Tab",
+      "result": "75 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut default",
+      "result": "800 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut one",
+      "result": "1300 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut nought",
+      "result": "479 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut several",
+      "result": "1300 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut ending",
+      "result": "300 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut opaque",
+      "result": "1300 42"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut opaque ending",
+      "result": "300 42"
+    },
+    {
+      "function": "call",
+      "args": "GetTextExtent Helvetica",
+      "result": "90 61"
+    },
+    {
+      "function": "call",
+      "args": "TabbedTextOut Helvetica",
+      "result": "999 61"
+    },
+    {
+      "function": "call",
+      "args": "GetTextExtent lometric",
+      "result": "89 60"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "12809"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "32 0 0 42 42 0 0 0 33 /Courier /font0 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "0 0 0 fC"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "300 300 75 (One) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "400 300 75 (Two) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "600 300 125 (Three) 125 SB"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "800 300 100 (Four) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "1000 300 100 (Five) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "300 400 75 (One) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "600 400 75 (Two) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "900 400 125 (Three) 125 SB"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "1200 400 100 (Four) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "1500 400 100 (Five) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "300 500 75 (One) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "376 500 75 (Two) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "452 500 125 (Three) 125 SB"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "578 500 100 (Four) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "679 500 100 (Five) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "300 600 75 (One) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "550 600 75 (Two) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": "1000 600 125 (Three) 125 SB"
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "1300 600 100 (Four) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": "1500 600 100 (Five) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "300 700 100 (Ends) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "199 41 400 700 255 255 255 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "195",
+      "result": "74 41 300 800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "196",
+      "result": "75 42 300 800 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "197",
+      "result": "300 800 75 (One) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "198",
+      "result": "299 41 375 800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "199",
+      "result": "75 42 600 800 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "200",
+      "result": "600 800 75 (Two) 75 SB"
+    },
+    {
+      "function": "line",
+      "args": "201",
+      "result": "349 41 675 800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "202",
+      "result": "125 42 900 800 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "203",
+      "result": "900 800 125 (Three) 125 SB"
+    },
+    {
+      "function": "line",
+      "args": "204",
+      "result": "274 41 1025 800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "205",
+      "result": "100 42 1200 800 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "206",
+      "result": "1200 800 100 (Four) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "207",
+      "result": "299 41 1300 800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "208",
+      "result": "100 42 1500 800 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "209",
+      "result": "1500 800 100 (Five) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "210",
+      "result": "99 41 300 900 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "211",
+      "result": "100 42 300 900 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "212",
+      "result": "300 900 100 (Ends) 100 SB"
+    },
+    {
+      "function": "line",
+      "args": "213",
+      "result": "199 41 400 900 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "214",
+      "result": "32 0 0 52 52 0 0 0 49 /Helvetica /font12 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "215",
+      "result": "300 1100 98 (One) 98 SB"
+    },
+    {
+      "function": "line",
+      "args": "216",
+      "result": "480 1100 99 (Two) 99 SB"
+    },
+    {
+      "function": "line",
+      "args": "217",
+      "result": "720 1100 136 (Three) 136 SB"
+    },
+    {
+      "function": "line",
+      "args": "218",
+      "result": "960 1100 107 (Four) 107 SB"
+    },
+    {
+      "function": "line",
+      "args": "219",
+      "result": "1200 1100 99 (Five) 99 SB"
+    },
+    {
+      "function": "line",
+      "args": "220",
+      "result": "1 #C"
+    },
+    {
+      "function": "line",
+      "args": "221",
+      "result": "statusdict begin /manualfeed false store end"
+    },
+    {
+      "function": "line",
+      "args": "222",
+      "result": "EJ RS"
+    },
+    {
+      "function": "line",
+      "args": "223",
+      "result": "%%PageTrailer"
+    },
+    {
+      "function": "line",
+      "args": "224",
+      "result": "%%PageResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "225",
+      "result": "%%+ font Helvetica"
+    },
+    {
+      "function": "line",
+      "args": "226",
+      "result": "%%Trailer"
+    },
+    {
+      "function": "line",
+      "args": "227",
+      "result": "SVDoc restore"
+    },
+    {
+      "function": "line",
+      "args": "228",
+      "result": "end"
+    },
+    {
+      "function": "line",
+      "args": "229",
+      "result": "%%Pages: 1"
+    },
+    {
+      "function": "line",
+      "args": "230",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1"
+    },
+    {
+      "function": "line",
+      "args": "231",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "232",
+      "result": "%%DocumentNeededResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "233",
+      "result": "%%+ font Helvetica"
+    },
+    {
+      "function": "line",
+      "args": "234",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "235",
+      "result": "%%EOF"
+    },
+    {
+      "function": "line",
+      "args": "236",
+      "result": "\u0004"
+    }
+  ]
+}

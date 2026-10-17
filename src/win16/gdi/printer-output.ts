@@ -5,7 +5,7 @@ import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { DWORD, UINT } from '../types.js';
 import { clipOf } from './clipping.js';
-import { devicePoint, mappingOf } from './mapping.js';
+import { devicePoint, mapped, mappingOf, scale } from './mapping.js';
 import { MulDiv } from './MulDiv.js';
 import { deviceFont, type PDevice } from './printer-driver.js';
 
@@ -50,6 +50,12 @@ const BS_HOLLOW = 1;
 /* The `DRAWMODE` and the `TEXTXFORM` in the context's block. */
 const DRAWMODE = 0;
 const TEXTXFORM = 0x20;
+const FT_ACCELERATOR = 0x0f;
+const DP_TEXT = 0x22;
+const DP_RASTER = 0x26;
+const RC_GDI20_OUTPUT = 0x10;
+const TC_EA_DOUBLE = 0x200;
+const TC_IA_ABLE = 0x400;
 const BLOCK_SIZE = 0x40;
 
 interface Realized {
@@ -118,6 +124,27 @@ async function onStack<T>(system: any, bytes: Uint8Array, body: (far: number) =>
   } finally {
     cpu.sp = saved;
   }
+}
+
+/** Bytes laid below the stack, given to `body` as a far pointer. */
+export async function onStackBytes<T>(
+  system: any,
+  bytes: Uint8Array,
+  body: (far: number) => Promise<T>
+) {
+  return onStack(system, bytes, body);
+}
+
+/**
+ * A `RECT` laid below the stack, as USER lays one on its own for GDI: given
+ * to `body` as a far pointer.
+ */
+export async function withRect<T>(
+  system: any,
+  rect: { left: number; top: number; right: number; bottom: number },
+  body: (far: number) => Promise<T>
+) {
+  return onStack(system, words(rect.left, rect.top, rect.right, rect.bottom), body);
 }
 
 function words(...values: number[]) {
@@ -1063,6 +1090,84 @@ export async function driverExtTextOut(
   );
 
   return 1;
+}
+
+/**
+ * `GetTextExtent` on a driver's context, for a font the driver realized
+ * (`GDI.EXE` seg1 `3c57`, `3ba3`): nought for no characters (`3c75`); else
+ * the driver's `ExtTextOut` (its `dpRaster` having
+ * `RC_GDI20_OUTPUT`) given no start, no clip, the string, its count
+ * negated, the realized `FONTINFO`, the `DRAWMODE`, the `TEXTXFORM` and no
+ * spacing, rectangle or options, which answers the extent, the height
+ * above the width. What the driver cannot simulate of the font's
+ * accelerators, `ftAccelerator` less `dpText`, adds to the width: one
+ * more than the count for `TC_EA_DOUBLE`, half the height less one for
+ * `TC_IA_ABLE`. Under a mapping mode each is scaled back to logical units.
+ * Not followed: the driver's `StrBlt` for one without `RC_GDI20_OUTPUT`,
+ * the justification, and GDI's own measure for a font it realized itself.
+ */
+export async function driverTextExtent(system: any, surface: any, lpString: number, count: number) {
+  if (!count) {
+    return 0;
+  }
+
+  const pdevice: PDevice = surface.driverDevice;
+  const procedure = proc(pdevice, EXT_TEXT_OUT);
+  const realized = await deviceFont(system, surface);
+
+  if (!procedure || !realized || !(caps(pdevice, DP_RASTER) & RC_GDI20_OUTPUT)) {
+    return 0;
+  }
+
+  const xformBytes = realized.xform;
+  const xformWord = (at: number) => xformBytes[at] | (xformBytes[at + 1] << 8);
+  const drawing = drawingOf(surface);
+  const xform = offsetBy(drawing.far, TEXTXFORM);
+
+  xformBytes.forEach((byte, at) =>
+    core(system).write8(xform >>> 16, ((xform & 0xffff) + at) & 0xffff, byte)
+  );
+
+  const answer = await callDriver(system, procedure, [
+    [pdevice.lpPDevice, DWORD],
+    [0, UINT],
+    [0, UINT],
+    [0, DWORD],
+    [lpString >>> 0, DWORD],
+    [-count & 0xffff, UINT],
+    [realized.far, DWORD],
+    [drawMode(system, surface), DWORD],
+    [xform, DWORD],
+    [0, DWORD],
+    [0, DWORD],
+    [0, UINT],
+  ]);
+
+  let width = answer & 0xffff;
+  let height = (answer >>> 16) & 0xffff;
+
+  const simulated = ~caps(pdevice, DP_TEXT) & xformWord(FT_ACCELERATOR);
+
+  if (simulated & TC_EA_DOUBLE) {
+    width = (width + 1 + count) & 0xffff;
+  }
+
+  if (simulated & TC_IA_ABLE) {
+    width = (width + ((xformWord(0) - 1) >>> 1)) & 0xffff;
+  }
+
+  const m = mapped(surface);
+
+  if (m) {
+    width = Math.abs(scale(signed(width), Math.abs(m.wex), Math.abs(m.vex))) & 0xffff;
+    height = Math.abs(scale(signed(height), Math.abs(m.wey), Math.abs(m.vey))) & 0xffff;
+  }
+
+  return (width | (height << 16)) >>> 0;
+}
+
+function signed(value: number) {
+  return (value << 16) >> 16;
 }
 
 /**

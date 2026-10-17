@@ -108,7 +108,7 @@ pub struct Drivers {
     /// gave it.
     pub abort: HashMap<usize, u32>,
     /// The fonts the drivers realized, by the context and the font object.
-    pub fonts: HashMap<(usize, usize), DeviceFont>,
+    pub fonts: HashMap<FontKey, DeviceFont>,
     /// The context and the call -- 1 for `EnumFontFamilies`, nought for
     /// `EnumFonts` -- whose fonts GDI is walking (`[064Eh]`, `[041Ch]`).
     pub walking: Option<(u16, u16)>,
@@ -555,12 +555,12 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
 
-        let realized: Vec<(usize, usize)> = system
+        let realized: Vec<FontKey> = system
             .printing
             .drivers
             .fonts
             .keys()
-            .filter(|(context, _)| *context == dc)
+            .filter(|(context, ..)| *context == dc)
             .copied()
             .collect();
 
@@ -900,6 +900,33 @@ pub struct DeviceFont {
     pub xform: Vec<u8>,
 }
 
+/// A font a driver realized for a context: the context, the font object,
+/// and the height and width it was realized at.
+pub type FontKey = (usize, usize, i16, i16);
+
+/// A made font's height and width in the device's units, as GDI takes them
+/// before the driver realizes it (`GDI.EXE` seg3 `0b35`-`0b9c`; a stock
+/// font, 8000h in its type word, keeps its own): the window origin and the
+/// origin moved by the width and the height mapped to the device
+/// (`LPtoDP`, seg1 `52f5`); the width their distance across; the height
+/// their distance down, negative for a negative height, and 1 where it
+/// comes to nought from a height that was not.
+fn mapped_size(system: &System, dc: usize, logfont: &LogFont) -> (i16, i16) {
+    let mapping = super::mapping::mapping_of(system, dc);
+    let (wox, woy) = (mapping.wox as i32, mapping.woy as i32);
+    let (height, width) = (i32::from(logfont.height), i32::from(logfont.width));
+    let (x1, y1) = super::draw::device_point(&mapping, wox, woy);
+    let (x2, y2) = super::draw::device_point(&mapping, wox + width, woy + height);
+    let across = (x2 - x1).abs();
+    let down = match (y2 - y1).abs() {
+        0 if height != 0 => 1,
+        down if height < 0 => -down,
+        down => down,
+    };
+
+    (down as i16, across as i16)
+}
+
 /// The `LOGFONT` a font object was made of, or a stock font's.
 fn logfont_of(system: &mut System, object: usize) -> Option<LogFont> {
     match &system.gdi.objects[object] {
@@ -960,17 +987,30 @@ fn logfont_given(logfont: &LogFont) -> Vec<u8> {
 /// nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made,
 /// and the font realized into it with a `TEXTXFORM` of GDI's
 /// (`0c08`-`0c66`); the `TEXTXFORM`'s italic, underline and strike-out made
-/// nought or `FFh`. None where the driver realizes none, which GDI maps
-/// itself: not followed. Not followed either: the height and width taken
-/// to the device's units in a mapping mode other than `MM_TEXT`.
+/// nought or `FFh`. A made font's height and width are first taken to the
+/// device's units (`mapped_size`), so it is realized again for each size
+/// they come to. None where the driver realizes none, which GDI maps
+/// itself: not followed.
 pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont>, Stop> {
-    let (realize, lp_pdevice, bytes, object) = {
+    let (realize, lp_pdevice, bytes, key) = {
         let mut system = engine.system();
         let Some(object) = system.gdi.dcs[dc].state.font else {
             return Ok(None);
         };
+        let Some(mut logfont) = logfont_of(&mut system, object) else {
+            return Ok(None);
+        };
 
-        if let Some(kept) = system.printing.drivers.fonts.get(&(dc, object)) {
+        if matches!(
+            system.gdi.objects[object],
+            GdiObject::Font(Font::Made { .. })
+        ) {
+            (logfont.height, logfont.width) = mapped_size(&system, dc, &logfont);
+        }
+
+        let key = (dc, object, logfont.height, logfont.width);
+
+        if let Some(kept) = system.printing.drivers.fonts.get(&key) {
             return Ok(Some(kept.clone()));
         }
 
@@ -979,11 +1019,8 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
         };
         let (driver, lp_pdevice) = (pdevice.driver.clone(), pdevice.lp_pdevice);
         let realize = proc_of(&system, &driver, REALIZE_OBJECT);
-        let Some(logfont) = logfont_of(&mut system, object) else {
-            return Ok(None);
-        };
 
-        (realize, lp_pdevice, logfont_given(&logfont), object)
+        (realize, lp_pdevice, logfont_given(&logfont), key)
     };
 
     if realize == 0 {
@@ -993,7 +1030,7 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
     // The context whose font is being realized, for GDI's TrueType engine
     // (`[064Eh]`, `engine_font.rs`).
     let before = engine.system().printing.drivers.realizing.replace(dc);
-    let realized = realize_device_font(engine, dc, object, realize, lp_pdevice, &bytes).await;
+    let realized = realize_device_font(engine, key, realize, lp_pdevice, &bytes).await;
 
     engine.system().printing.drivers.realizing = before;
     realized
@@ -1001,8 +1038,7 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
 
 async fn realize_device_font(
     engine: &Engine,
-    dc: usize,
-    object: usize,
+    key: FontKey,
     realize: u32,
     lp_pdevice: u32,
     bytes: &[u8],
@@ -1068,11 +1104,7 @@ async fn realize_device_font(
         xform,
     };
 
-    system
-        .printing
-        .drivers
-        .fonts
-        .insert((dc, object), realized.clone());
+    system.printing.drivers.fonts.insert(key, realized.clone());
     Ok(Some(realized))
 }
 

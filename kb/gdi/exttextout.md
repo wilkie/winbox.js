@@ -6,8 +6,8 @@ ordinal: 351
 summary: Draws a string with an optional opaque or clipping rectangle and an optional array of character distances.
 versions:
   '3.1': exact
-probes: [extout, rotstyle, clipedge, groundrn, smeargnd, lbtext]
-topics: [turned-text, text-ground-and-rules]
+probes: [extout, rotstyle, clipedge, groundrn, smeargnd, lbtext, prdraw, prtabs]
+topics: [turned-text, text-ground-and-rules, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -22,6 +22,14 @@ topics: [turned-text, text-ground-and-rules]
 
 - Both engines draw a run with options or an array a character at a time. Without an array each character had moved the pen by its own measure, a bold's overhang and a slant's included, so a smeared strike's characters stood a column further apart with `ETO_OPAQUE` than `TextOut` draws them, and an italic one's further still. The Font dialog's faces and sizes, drawn so by COMMDLG, showed it ([[probe:chfont3]], 90 of its 201 records). Each now moves it by its measure less the run's overhang.
 
+## On a printer driver's context
+
+[[read out]] For a font the driver realized, GDI hands the text to the driver's `ExtTextOut` (`GDI.EXE` seg1 `3162`, `397a`). It gives the driver the start mapped to the device, the visible region's rectangle as the clip where the region is one rectangle, the string and its count, the realized `FONTINFO`, the `DRAWMODE` with the physical colours, the `TEXTXFORM`, the rectangle GDI was given, mapped, and the options. The answer is 1. `TextOut` comes the same way, with no options, rectangle or spacing (seg1 `3884`).
+
+[[measured]] [[probe:prdraw]] draws text transparent and blue, opaque in a grey rectangle, and in a Helvetica of its own through the PostScript driver. [[probe:prtabs]] has USER draw tabbed text on it, opaque and transparent ([[fn:USER.TabbedTextOut]]). Both engines agree with every line of PostScript written.
+
 ## Implementation
+
+`driverExtTextOut` in `src/win16/gdi/printer-output.ts` and `driver_ext_text_out` in `crates/winbox-win16/src/gdi/printer_output.rs` draw on a printer driver's context. Not followed there: alignments other than the top left, the current position, the spacing given (`lpDx`), justification's second call, rotation, a complex region, and GDI's own text for a font it realized itself.
 
 Every recording of this call is replayed through it: the rectangle and the distances are placed in guest memory as a `RECT` and an array of words, as the probes passed them, and all of them agree. Until this knowledge base was built it returned `undefined` instead of 1 or 0: it imported its constants from a module that does not export them.

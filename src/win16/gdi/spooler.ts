@@ -26,12 +26,13 @@ import { HDC, INT } from '../types.js';
  * device context's abort procedure. The twin of
  * `crates/winbox-win16/src/gdi/spooler.rs`.
  *
- * **Read out** of `GDI.EXE` seg28, with seg29 (WIN.INI and the ports) and
- * seg7 `052d` (`QueryAbort`). A job is a block of 148h bytes,
- * `GlobalAlloc(3042h)`, and its handle is answered shifted right a bit;
- * each call takes it back and refuses one below 148h bytes with -3. An
- * answer from -5 to -1 given as a job is answered again as it is
- * (`05b1`). The job's words, as GDI keeps them:
+ * **Read out** of `GDI.EXE` seg28, with seg29 (WIN.INI and the ports),
+ * seg30 (the communications driver's ports) and seg7 `052d`
+ * (`QueryAbort`). A job is a block of 148h bytes, `GlobalAlloc(3042h)`,
+ * and its handle is answered shifted right a bit; each call takes it back
+ * and refuses one below 148h bytes with -3. An answer from -5 to -1 given
+ * as a job is answered again as it is (`05b1`). The job's words, as GDI
+ * keeps them:
  *
  * * 0: its state, the low byte (bit 0 a spooled job closed), and how it
  *   prints, the high: 40h straight to its port, 20h through Print
@@ -43,14 +44,15 @@ import { HDC, INT } from '../types.js';
  * * 110h: the bytes spooled; 118h: the program's PSP; 11Ah: the port's
  *   name, or the document's for Print Manager, 20h bytes.
  * * 13Ah on: each page's block. A job straight to its port has one, at
- *   13Ch: its file, a block of C2h bytes whose word 0 is the file's handle
- *   and 6 the bytes written, and whose `OFSTRUCT` is at 0Ah.
+ *   13Ch: its file, a block of C2h bytes whose word 0 is the file's
+ *   handle and 6 the bytes written, and whose `OFSTRUCT` is at 0Ah. The
+ *   communications driver's job has there a block of 8 bytes with the
+ *   port's id at 2.
  *
  * Not followed: Print Manager's side (a job to a port of `[PrinterPorts]`
- * with the spooler on, once Print Manager has its window), the
- * communications driver's ports, the network's, and the boxes a write that
- * fails puts up; nor the PSP GDI makes current around each file call, which
- * this DOS has not got.
+ * with the spooler on, once Print Manager has its window), the network's
+ * jobs, `FILE`'s "Print To File" box, DOS's devices, and the PSP GDI makes
+ * current around each file call, which this DOS has not got.
  */
 
 const JOB_SIZE = 0x148;
@@ -559,9 +561,9 @@ async function writeFailed(system: any, far: number, error: number, code: number
  * running. Else, with `DosPrint` not `yes`, a port the communications
  * driver opens goes through it. Any other job is straight to its port: a
  * file made empty at once (`OpenFile` with `OF_CREATE`, closed), or for
- * `FILE`, the name USER's box asks for (`GetFilePortName`). Each job
- * opened is broadcast, 40h with 2 and the job's handle in the high word,
- * 1 in the low.
+ * `FILE`, the name USER's box asks for (`GetFilePortName`, not followed:
+ * refused as a box cancelled). Each job opened is broadcast, 40h with 2
+ * and the job's handle in the high word, 1 in the low.
  */
 export async function OpenJob(this: any, lpOutput: number, lpTitle: number, hdc: number) {
   const system = this;

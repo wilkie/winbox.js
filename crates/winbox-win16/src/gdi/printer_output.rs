@@ -48,6 +48,12 @@ const BS_HOLLOW: u16 = 1;
 /// The `DRAWMODE` and the `TEXTXFORM` in the context's block.
 const DRAWMODE: u32 = 0;
 const TEXTXFORM: u32 = 0x20;
+const FT_ACCELERATOR: usize = 0x0f;
+const DP_TEXT: usize = 0x22;
+const DP_RASTER: usize = 0x26;
+const RC_GDI20_OUTPUT: u16 = 0x10;
+const TC_EA_DOUBLE: u16 = 0x200;
+const TC_IA_ABLE: u16 = 0x400;
 const BLOCK_SIZE: u32 = 0x40;
 
 /// A pen or a brush the driver realized: its block, and what it was
@@ -1342,6 +1348,161 @@ pub async fn driver_ext_text_out(
     Ok(1)
 }
 
+/// `GetTextExtent` on a driver's context, for a font the driver realized
+/// (`GDI.EXE` seg1 `3c57`, `3ba3`): nought for no characters (`3c75`);
+/// else the driver's `ExtTextOut` (its
+/// `dpRaster` having `RC_GDI20_OUTPUT`) given no start, no clip, the
+/// string, its count negated, the realized `FONTINFO`, the `DRAWMODE`, the
+/// `TEXTXFORM` and no spacing, rectangle or options, which answers the
+/// extent, the height above the width. What the driver cannot simulate of
+/// the font's accelerators, `ftAccelerator` less `dpText`, adds to the
+/// width: one more than the count for `TC_EA_DOUBLE`, half the height less
+/// one for `TC_IA_ABLE`. Under a mapping mode each is scaled back to
+/// logical units. Not followed: the driver's `StrBlt` for one without
+/// `RC_GDI20_OUTPUT`, the justification, and GDI's own measure for a font
+/// it realized itself.
+///
+/// # Errors
+///
+/// What the driver's code stops with.
+pub async fn driver_text_extent(
+    engine: &Engine,
+    dc: usize,
+    string: u32,
+    count: u16,
+) -> Result<u32, Stop> {
+    let (procedure, lp_pdevice) = proc(&engine.system(), dc, EXT_TEXT_OUT);
+
+    if count == 0 {
+        return Ok(0);
+    }
+
+    let Some(realized) = super::printer_driver::device_font(engine, dc).await? else {
+        return Ok(0);
+    };
+
+    if procedure == 0 || caps(&engine.system(), dc, DP_RASTER) & RC_GDI20_OUTPUT == 0 {
+        return Ok(0);
+    }
+
+    let xform_word = |at: usize| u16::from_le_bytes([realized.xform[at], realized.xform[at + 1]]);
+    let (mut width, mut height) = {
+        let (xform, mode) = {
+            let mut system = engine.system();
+            let block = system
+                .printing
+                .drivers
+                .drawing
+                .get(&dc)
+                .map_or(0, |drawing| drawing.far);
+            let xform = offset_by(block, TEXTXFORM);
+
+            system.write_far(xform, &realized.xform);
+            (xform, draw_mode(&mut system, dc))
+        };
+        let answer = call_driver(
+            engine,
+            procedure,
+            &[
+                GuestArg::Long(lp_pdevice),
+                GuestArg::Word(0),
+                GuestArg::Word(0),
+                GuestArg::Long(0),
+                GuestArg::Long(string),
+                GuestArg::Word(count.wrapping_neg()),
+                GuestArg::Long(realized.far),
+                GuestArg::Long(mode),
+                GuestArg::Long(xform),
+                GuestArg::Long(0),
+                GuestArg::Long(0),
+                GuestArg::Word(0),
+            ],
+        )
+        .await?;
+
+        (answer as u16, (answer >> 16) as u16)
+    };
+
+    let system = engine.system();
+    let simulated = !caps(&system, dc, DP_TEXT) & xform_word(FT_ACCELERATOR);
+
+    if simulated & TC_EA_DOUBLE != 0 {
+        width = width.wrapping_add(1).wrapping_add(count);
+    }
+
+    if simulated & TC_IA_ABLE != 0 {
+        width = width.wrapping_add(xform_word(0).wrapping_sub(1) >> 1);
+    }
+
+    let mapping = super::mapping::mapping_of(&system, dc);
+
+    if !mapping.is_identity() {
+        let scale = super::mapping::scale;
+
+        width = scale(
+            i64::from(width as i16),
+            mapping.wex.abs(),
+            mapping.vex.abs(),
+        )
+        .unsigned_abs() as u16;
+        height = scale(
+            i64::from(height as i16),
+            mapping.wey.abs(),
+            mapping.vey.abs(),
+        )
+        .unsigned_abs() as u16;
+    }
+
+    Ok(u32::from(width) | u32::from(height) << 16)
+}
+
+/// `GetTextExtent` on a driver's context, measured by the driver.
+fn get_text_extent_call(engine: &Engine, args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let Some(dc) = first(engine, &args).1 else {
+            return otherwise(engine, "GetTextExtent", args).await;
+        };
+        let (string, count) = {
+            let mut args = args;
+            let system = engine.system();
+
+            args.word(&system);
+            (args.dword(&system), args.word(&system))
+        };
+
+        Ok(Answer::Dword(
+            driver_text_extent(engine, dc, string, count).await?,
+        ))
+    })
+}
+
+/// A `RECT` laid below the stack, as USER lays one on its own for GDI,
+/// given to `body` as a far pointer.
+///
+/// # Errors
+///
+/// What `body` stops with.
+pub async fn with_rect<T, F: Future<Output = Result<T, Stop>>>(
+    engine: &Engine,
+    rect: [i32; 4],
+    body: impl FnOnce(u32) -> F,
+) -> Result<T, Stop> {
+    Ok(on_stack(engine, &words(&rect), body).await?.0)
+}
+
+/// Bytes laid below the stack, given to `body` as a far pointer.
+///
+/// # Errors
+///
+/// What `body` stops with.
+pub async fn with_bytes<T, F: Future<Output = Result<T, Stop>>>(
+    engine: &Engine,
+    bytes: &[u8],
+    body: impl FnOnce(u32) -> F,
+) -> Result<T, Stop> {
+    Ok(on_stack(engine, bytes, body).await?.0)
+}
+
 /// What `StretchDIBits` was given.
 #[derive(Debug, Clone, Copy)]
 pub struct Stretched {
@@ -1797,6 +1958,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "Polygon" => polygon_call,
         "TextOut" => text_out_call,
         "ExtTextOut" => ext_text_out_call,
+        "GetTextExtent" => get_text_extent_call,
         "StretchDIBits" => stretch_dibits_call,
         _ => return None,
     }))
