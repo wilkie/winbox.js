@@ -5604,6 +5604,22 @@ export const KNOWN_GAPS: Record<string, string> = {
     'PDERR_CREATEICFAILURE, and no DC for PD_RETURNDC or PD_RETURNIC: GDI makes no IC or DC for a printer driver (5 of 9)',
   'prdlg:devnames': "the Print dialog's DEVNAMES as left by a dialog that never came (2 of 9)",
   'prdlg:devmode': "the Print dialog's DEVMODE as left by a dialog that never came (2 of 9)",
+  /* The same for `prdlgx`, WinBox's own `PrintDlg` on the engines: its Print
+   * dialog's IC of the PostScript driver (`COMMDLG.DLL` seg3 `1631`), and
+   * the DC `PD_RETURNDC` asks for on `FILE:` (seg3 `3026`), are not made.
+   * Options... and the driver's own dialog, `WM_COMMAND` 3 and 4, and the
+   * program's Print Setup templates agree. */
+  'prdlgx:print':
+    "no Print dialog of the program's template: GDI's IC for a printer driver (23 of 23)",
+  'prdlgx:setup':
+    'no Print Setup opened again from the Print dialog: GDI makes no IC for a printer driver (20 of 140)',
+  'prdlgx:focus': "no Print dialog: GDI's IC for a printer driver (2 of 8)",
+  'prdlgx:result':
+    'PDERR_CREATEICFAILURE, and no DC on FILE: for PD_RETURNDC: GDI makes no IC or DC for a printer driver (5 of 9)',
+  'prdlgx:devnames': "the Print dialog's DEVNAMES as left by a dialog that never came (3 of 9)",
+  'prdlgx:devmode': "the Print dialog's DEVMODE as left by a dialog that never came (1 of 9)",
+  'prdlgx:dc':
+    "no DC of the PostScript driver on FILE: for PD_RETURNDC: GDI's DC for a printer driver (2 of 2)",
 };
 
 /**
@@ -5873,6 +5889,7 @@ const RUN_WHOLE = new Set<string>([
   'chfont',
   'prdlg',
   'chfont',
+  'prdlgx',
 ]);
 
 /**
@@ -5962,6 +5979,7 @@ const VIRTUAL_CLOCK = new Set([
   'choosclr',
   'prdlg',
   'chfont',
+  'prdlgx',
 ]);
 
 /**

@@ -1,0 +1,1034 @@
+{
+  "probe": "prdlgx",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "setup",
+      "args": "options-start caption",
+      "result": "Print Setup"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 432",
+      "result": "1100 Printer"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 422",
+      "result": "1111 &Default Printer"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 423",
+      "result": "1100 Specific &Printer:"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 470",
+      "result": "1100 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 430",
+      "result": "1100 Orientation"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "options-start 420",
+      "result": "1111 Po&rtrait"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 421",
+      "result": "1100 &Landscape"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 431",
+      "result": "1100 Paper"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 442",
+      "result": "1100 &Source:"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 400",
+      "result": "1101 &Options..."
+    },
+    {
+      "function": "setup",
+      "args": "options-start 40e",
+      "result": "0001 &Help"
+    },
+    {
+      "function": "setup",
+      "args": "options-start 500",
+      "result": "none"
+    },
+    {
+      "function": "focus",
+      "args": "options-start",
+      "result": "422"
+    },
+    {
+      "function": "box",
+      "args": "options 1",
+      "result": "Options | OK | Cancel | Ad&vanced... | &Send Header... | &Help | Print To | &Printer | Encapsulated PostScript &File | &Name: | Margins | &Default | &None | Sca&ling (%) | 100 | &Color | Send Header with &Each Job | Duplex Printing | N&one | &Long Edge | Sho&rt Edge"
+    },
+    {
+      "function": "setup",
+      "args": "options-after caption",
+      "result": "Print Setup"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 432",
+      "result": "1100 Printer"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 422",
+      "result": "1111 &Default Printer"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 423",
+      "result": "1100 Specific &Printer:"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 470",
+      "result": "1100 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 430",
+      "result": "1100 Orientation"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "options-after 420",
+      "result": "1111 Po&rtrait"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 421",
+      "result": "1100 &Landscape"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 431",
+      "result": "1100 Paper"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 442",
+      "result": "1100 &Source:"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 400",
+      "result": "1101 &Options..."
+    },
+    {
+      "function": "setup",
+      "args": "options-after 40e",
+      "result": "0001 &Help"
+    },
+    {
+      "function": "setup",
+      "args": "options-after 500",
+      "result": "none"
+    },
+    {
+      "function": "focus",
+      "args": "options-after",
+      "result": "1"
+    },
+    {
+      "function": "result",
+      "args": "options",
+      "result": "0,0 flags=40 from=65535 to=65535 copies=1 devmode=0 devnames=0 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "options",
+      "result": "none"
+    },
+    {
+      "function": "devmode",
+      "args": "options",
+      "result": "none"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed caption",
+      "result": "Print Setup"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 432",
+      "result": "1100 Printer"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 422",
+      "result": "1100 &Default Printer"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 423",
+      "result": "1111 Specific &Printer:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 470",
+      "result": "1100 Apple LaserWriter Plus on LPT2: [2:1] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 430",
+      "result": "1100 Orientation"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 420",
+      "result": "1111 Po&rtrait"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 421",
+      "result": "1100 &Landscape"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 431",
+      "result": "1100 Paper"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 442",
+      "result": "1100 &Source:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 400",
+      "result": "1101 &Options..."
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 40e",
+      "result": "0001 &Help"
+    },
+    {
+      "function": "setup",
+      "args": "commands-changed 500",
+      "result": "none"
+    },
+    {
+      "function": "focus",
+      "args": "commands-changed",
+      "result": "421"
+    },
+    {
+      "function": "command",
+      "args": "4",
+      "result": "0"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four caption",
+      "result": "Print Setup"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 432",
+      "result": "1100 Printer"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 422",
+      "result": "1111 &Default Printer"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 423",
+      "result": "1100 Specific &Printer:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 470",
+      "result": "1100 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 430",
+      "result": "0100 Orientation"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 43c",
+      "result": "1000 "
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 420",
+      "result": "0100 Po&rtrait"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 421",
+      "result": "0100 &Landscape"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 431",
+      "result": "0100 Paper"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 441",
+      "result": "0100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 471",
+      "result": "0101  [0:-1]"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 442",
+      "result": "0100 &Source:"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 472",
+      "result": "0101  [0:-1]"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 400",
+      "result": "1101 &Options..."
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 40e",
+      "result": "0001 &Help"
+    },
+    {
+      "function": "setup",
+      "args": "commands-four 500",
+      "result": "none"
+    },
+    {
+      "function": "focus",
+      "args": "commands-four",
+      "result": "0"
+    },
+    {
+      "function": "result",
+      "args": "commands",
+      "result": "7,0 flags=40 from=65535 to=65535 copies=1 devmode=0 devnames=0 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "commands",
+      "result": "none"
+    },
+    {
+      "function": "devmode",
+      "args": "commands",
+      "result": "none"
+    },
+    {
+      "function": "result",
+      "args": "print-command",
+      "result": "5,0 flags=0 from=65535 to=65535 copies=1 devmode=1 devnames=1 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "print-command",
+      "result": "1f,8,27,c001 pscript|Apple LaserWriter Plus|LPT1:"
+    },
+    {
+      "function": "devmode",
+      "args": "print-command",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=0 yres=0"
+    },
+    {
+      "function": "result",
+      "args": "to-file",
+      "result": "1,0 flags=120 from=65535 to=65535 copies=1 devmode=1 devnames=1 dc=1"
+    },
+    {
+      "function": "devnames",
+      "args": "to-file",
+      "result": "1f,8,27,8001 pscript|Apple LaserWriter Plus|LPT1:"
+    },
+    {
+      "function": "devmode",
+      "args": "to-file",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=300 yres=300"
+    },
+    {
+      "function": "dc",
+      "args": "to-file",
+      "result": "technology=2 horzres=2394"
+    },
+    {
+      "function": "result",
+      "args": "default-to-file",
+      "result": "1,0 flags=520 from=65535 to=65535 copies=1 devmode=1 devnames=1 dc=1"
+    },
+    {
+      "function": "devnames",
+      "args": "default-to-file",
+      "result": "1f,8,27,4001 pscript|Apple LaserWriter Plus|LPT1:"
+    },
+    {
+      "function": "devmode",
+      "args": "default-to-file",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=0 yres=0"
+    },
+    {
+      "function": "dc",
+      "args": "default-to-file",
+      "result": "technology=2 horzres=2394"
+    },
+    {
+      "function": "setup",
+      "args": "template caption",
+      "result": "Own Setup"
+    },
+    {
+      "function": "setup",
+      "args": "template 432",
+      "result": "1100 Which"
+    },
+    {
+      "function": "setup",
+      "args": "template 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "template 422",
+      "result": "1111 &Default"
+    },
+    {
+      "function": "setup",
+      "args": "template 423",
+      "result": "1100 &Specific:"
+    },
+    {
+      "function": "setup",
+      "args": "template 470",
+      "result": "1101 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "template 430",
+      "result": "1100 Turn"
+    },
+    {
+      "function": "setup",
+      "args": "template 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "template 420",
+      "result": "1111 &Up"
+    },
+    {
+      "function": "setup",
+      "args": "template 421",
+      "result": "1100 &Across"
+    },
+    {
+      "function": "setup",
+      "args": "template 431",
+      "result": "1100 Sheet"
+    },
+    {
+      "function": "setup",
+      "args": "template 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "template 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "template 442",
+      "result": "1100 &Tray:"
+    },
+    {
+      "function": "setup",
+      "args": "template 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "template 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "template 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "template 400",
+      "result": "none"
+    },
+    {
+      "function": "setup",
+      "args": "template 40e",
+      "result": "none"
+    },
+    {
+      "function": "setup",
+      "args": "template 500",
+      "result": "1100 Own text"
+    },
+    {
+      "function": "focus",
+      "args": "template",
+      "result": "422"
+    },
+    {
+      "function": "result",
+      "args": "setup-template",
+      "result": "1,0 flags=8040 from=65535 to=65535 copies=1 devmode=1 devnames=1 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "setup-template",
+      "result": "1f,8,27,1 pscript|Apple LaserWriter Plus|LPT1:"
+    },
+    {
+      "function": "devmode",
+      "args": "setup-template",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=0 yres=0"
+    },
+    {
+      "function": "print",
+      "args": "template caption",
+      "result": "Own Print"
+    },
+    {
+      "function": "print",
+      "args": "template 445",
+      "result": "1100 On:"
+    },
+    {
+      "function": "print",
+      "args": "template 440",
+      "result": "1100 Default Printer (Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "print",
+      "args": "template 430",
+      "result": "1100 Range"
+    },
+    {
+      "function": "print",
+      "args": "template 420",
+      "result": "1111 &Every page"
+    },
+    {
+      "function": "print",
+      "args": "template 421",
+      "result": "1100 &Chosen"
+    },
+    {
+      "function": "print",
+      "args": "template 422",
+      "result": "1100 &Some"
+    },
+    {
+      "function": "print",
+      "args": "template 441",
+      "result": "1100 &From:"
+    },
+    {
+      "function": "print",
+      "args": "template 480",
+      "result": "1101 "
+    },
+    {
+      "function": "print",
+      "args": "template 442",
+      "result": "1100 &To:"
+    },
+    {
+      "function": "print",
+      "args": "template 481",
+      "result": "1101 "
+    },
+    {
+      "function": "print",
+      "args": "template 443",
+      "result": "1100 &Kind:"
+    },
+    {
+      "function": "print",
+      "args": "template 470",
+      "result": "1101 300 dpi [1:0] |300 dpi"
+    },
+    {
+      "function": "print",
+      "args": "template 444",
+      "result": "1100 C&opies:"
+    },
+    {
+      "function": "print",
+      "args": "template 482",
+      "result": "1101 1"
+    },
+    {
+      "function": "print",
+      "args": "template 410",
+      "result": "none"
+    },
+    {
+      "function": "print",
+      "args": "template 411",
+      "result": "none"
+    },
+    {
+      "function": "print",
+      "args": "template 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "print",
+      "args": "template 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "print",
+      "args": "template 400",
+      "result": "none"
+    },
+    {
+      "function": "print",
+      "args": "template 40e",
+      "result": "none"
+    },
+    {
+      "function": "print",
+      "args": "template 500",
+      "result": "1100 Own text"
+    },
+    {
+      "function": "focus",
+      "args": "template",
+      "result": "420"
+    },
+    {
+      "function": "result",
+      "args": "print-template",
+      "result": "0,0 flags=4000 from=65535 to=65535 copies=1 devmode=1 devnames=0 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "print-template",
+      "result": "none"
+    },
+    {
+      "function": "devmode",
+      "args": "print-template",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=0 yres=0"
+    },
+    {
+      "function": "setup",
+      "args": "handle caption",
+      "result": "Own Setup"
+    },
+    {
+      "function": "setup",
+      "args": "handle 432",
+      "result": "1100 Which"
+    },
+    {
+      "function": "setup",
+      "args": "handle 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "setup",
+      "args": "handle 422",
+      "result": "1111 &Default"
+    },
+    {
+      "function": "setup",
+      "args": "handle 423",
+      "result": "1100 &Specific:"
+    },
+    {
+      "function": "setup",
+      "args": "handle 470",
+      "result": "1101 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "handle 430",
+      "result": "1100 Turn"
+    },
+    {
+      "function": "setup",
+      "args": "handle 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "handle 420",
+      "result": "1111 &Up"
+    },
+    {
+      "function": "setup",
+      "args": "handle 421",
+      "result": "1100 &Across"
+    },
+    {
+      "function": "setup",
+      "args": "handle 431",
+      "result": "1100 Sheet"
+    },
+    {
+      "function": "setup",
+      "args": "handle 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "handle 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "handle 442",
+      "result": "1100 &Tray:"
+    },
+    {
+      "function": "setup",
+      "args": "handle 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "handle 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "handle 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "handle 400",
+      "result": "none"
+    },
+    {
+      "function": "setup",
+      "args": "handle 40e",
+      "result": "none"
+    },
+    {
+      "function": "setup",
+      "args": "handle 500",
+      "result": "1100 Own text"
+    },
+    {
+      "function": "focus",
+      "args": "handle",
+      "result": "422"
+    },
+    {
+      "function": "result",
+      "args": "setup-handle",
+      "result": "0,0 flags=20040 from=65535 to=65535 copies=1 devmode=0 devnames=0 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "setup-handle",
+      "result": "none"
+    },
+    {
+      "function": "devmode",
+      "args": "setup-handle",
+      "result": "none"
+    },
+    {
+      "function": "template",
+      "args": "left",
+      "result": "1"
+    },
+    {
+      "function": "setup",
+      "args": "reopened caption",
+      "result": "Print Setup"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 432",
+      "result": "1100 Printer"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 440",
+      "result": "1100 (currently Apple LaserWriter Plus on LPT2:)"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 422",
+      "result": "1100 &Default Printer"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 423",
+      "result": "1111 Specific &Printer:"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 470",
+      "result": "1101 Apple LaserWriter Plus on LPT1: [2:0] |Apple LaserWriter Plus on LPT1: |Apple LaserWriter Plus on LPT2:"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 430",
+      "result": "1100 Orientation"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 43c",
+      "result": "1100 "
+    },
+    {
+      "function": "setup",
+      "args": "reopened 420",
+      "result": "1111 Po&rtrait"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 421",
+      "result": "1100 &Landscape"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 431",
+      "result": "1100 Paper"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 441",
+      "result": "1100 Si&ze:"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 471",
+      "result": "1101 Letter 8 1/2 x 11 in [7:0] |Letter 8 1/2 x 11 in |Letter Small 8 1/2 x 11 in |Legal 8 1/2 x 14 in |A4 210 x 297 mm |A4 Small 210 x 297 mm |B5 182 x 257 mm |Note 8 1/2 x 11 in"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 442",
+      "result": "1100 &Source:"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 472",
+      "result": "1101 Upper Tray [2:0] |Upper Tray |Manual Feed"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 1",
+      "result": "1101 OK"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 2",
+      "result": "1101 Cancel"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 400",
+      "result": "1101 &Options..."
+    },
+    {
+      "function": "setup",
+      "args": "reopened 40e",
+      "result": "0001 &Help"
+    },
+    {
+      "function": "setup",
+      "args": "reopened 500",
+      "result": "none"
+    },
+    {
+      "function": "focus",
+      "args": "reopened",
+      "result": "423"
+    },
+    {
+      "function": "print",
+      "args": "different-after 440",
+      "result": "Default Printer (Apple LaserWriter Plus on LPT1:)"
+    },
+    {
+      "function": "result",
+      "args": "different",
+      "result": "0,0 flags=0 from=65535 to=65535 copies=1 devmode=1 devnames=0 dc=0"
+    },
+    {
+      "function": "devnames",
+      "args": "different",
+      "result": "none"
+    },
+    {
+      "function": "devmode",
+      "args": "different",
+      "result": "Apple LaserWriter Plus spec=30a size=44 fields=5b1f orient=1 paper=1 copies=1 source=1 quality=0 yres=0"
+    }
+  ]
+}
