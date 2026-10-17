@@ -31,7 +31,8 @@ async function session(
   program: string,
   steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[],
   read?: string,
-  also: string[] = []
+  also: string[] = [],
+  without: string[][] = []
 ) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-accessories-'));
 
@@ -46,6 +47,7 @@ async function session(
       keepCalls: 0,
       steps,
       trees: true,
+      without,
     });
     let file: Buffer | null = null;
 
@@ -313,6 +315,40 @@ function fields(tree: any, window: string) {
      * too, and the letter typed after went to it, and nowhere. Then Escape
      * ends the box, which makes Notepad active again with the focus in its
      * text (`enddlg`), where the next letter goes. */
+    /* Notepad's Find with no `COMMDLG.DLL` on the drive: WinBox's own
+     * `FindText` and its dialog, the template its own, run whole -- the text
+     * found, and Escape ending the box. As `accessories.rs`'s
+     * `notepads_find_works_with_no_commdlg_file`. */
+    it("finds with Notepad's Find with no COMMDLG.DLL on the drive", async () => {
+      let found = false;
+      let gone = false;
+      const { trees } = await session(
+        'NOTEPAD.EXE',
+        [
+          step(typed('x\nabc')),
+          step('Up'),
+          step('Alt_L+s'),
+          step('f', 2),
+          step(typed('bc')),
+          step('Return', 2, (win16) => {
+            found = !win16.rasterDesktop.windows.some(
+              (w: any) => w.visible && /Cannot find/.test(w.title ?? '')
+            );
+          }),
+          step('Escape', 2, (win16) => {
+            gone = !win16.rasterDesktop.windows.some((w: any) => w.visible && w.title === 'Find');
+          }),
+        ],
+        undefined,
+        [],
+        [['WINDOWS', 'SYSTEM', 'COMMDLG.DLL']]
+      );
+
+      expect(fields(trees[4], 'Find')).toEqual(['bc']);
+      expect(found).toBe(true);
+      expect(gone).toBe(true);
+    }, 300000);
+
     it("presses Notepad's Find Next by its mnemonic, leaving the focus in its field", async () => {
       let active = '';
       let found = true;
@@ -519,7 +555,7 @@ function fields(tree: any, window: string) {
      * `SC_` command (`USER.EXE` seg1 `03de`-`03fd`; `cbthook`), so Control
      * and Escape over the Tutorial start no Task List. Before, the hook was
      * never called and the Task List came up over it. */
-    it("keeps the Task List from coming up over the Tutorial, as its hook asks", async () => {
+    it('keeps the Task List from coming up over the Tutorial, as its hook asks', async () => {
       const shownList: boolean[] = [];
       const active: string[] = [];
       const note = (win16: any) => {

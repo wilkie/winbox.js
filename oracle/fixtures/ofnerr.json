@@ -1,0 +1,294 @@
+{
+  "probe": "ofnerr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "struct",
+      "args": "0",
+      "result": "0|1|flags=0|file="
+    },
+    {
+      "function": "struct",
+      "args": "71",
+      "result": "0|1|flags=0|file="
+    },
+    {
+      "function": "struct",
+      "args": "73 save",
+      "result": "0|1|flags=0|file="
+    },
+    {
+      "function": "template",
+      "args": "no name",
+      "result": "0|3|flags=40|file="
+    },
+    {
+      "function": "template",
+      "args": "no instance",
+      "result": "0|4|flags=40|file="
+    },
+    {
+      "function": "template",
+      "args": "not found",
+      "result": "0|6|flags=40|file="
+    },
+    {
+      "function": "template",
+      "args": "1536 of the probe's",
+      "result": "0|6|flags=40|file="
+    },
+    {
+      "function": "hook",
+      "args": "none",
+      "result": "0|b|flags=20|file="
+    },
+    {
+      "function": "name",
+      "args": "A;B",
+      "result": "0|0|flags=20|file=a;b"
+    },
+    {
+      "function": "name novalidate",
+      "args": "A;B",
+      "result": "0|0|flags=120|file=A;B"
+    },
+    {
+      "function": "name",
+      "args": "IN SIDE",
+      "result": "0|3002|flags=20|file=in side"
+    },
+    {
+      "function": "name novalidate",
+      "args": "IN SIDE",
+      "result": "0|0|flags=120|file=IN SIDE"
+    },
+    {
+      "function": "name",
+      "args": "C:\\D*R\\X",
+      "result": "0|3002|flags=20|file=c:\\d*r\\x"
+    },
+    {
+      "function": "name novalidate",
+      "args": "C:\\D*R\\X",
+      "result": "0|0|flags=120|file=C:\\D*R\\X"
+    },
+    {
+      "function": "name",
+      "args": "FILE.TEXT",
+      "result": "0|3002|flags=20|file=file.text"
+    },
+    {
+      "function": "name novalidate",
+      "args": "FILE.TEXT",
+      "result": "0|0|flags=120|file=FILE.TEXT"
+    },
+    {
+      "function": "name",
+      "args": "1:\\X",
+      "result": "0|3002|flags=20|file=1:\\x"
+    },
+    {
+      "function": "name novalidate",
+      "args": "1:\\X",
+      "result": "0|0|flags=120|file=1:\\X"
+    },
+    {
+      "function": "name",
+      "args": "*.TXT;*.DOC",
+      "result": "0|0|flags=20|file=*.txt;*.doc"
+    },
+    {
+      "function": "name novalidate",
+      "args": "*.TXT;*.DOC",
+      "result": "0|0|flags=120|file=*.TXT;*.DOC"
+    },
+    {
+      "function": "name",
+      "args": "   ",
+      "result": "0|0|flags=20|file=   "
+    },
+    {
+      "function": "name novalidate",
+      "args": "   ",
+      "result": "0|0|flags=120|file=   "
+    },
+    {
+      "function": "name",
+      "args": "X.TXT",
+      "result": "0|0|flags=20|file=x.txt"
+    },
+    {
+      "function": "name novalidate",
+      "args": "X.TXT",
+      "result": "0|0|flags=120|file=X.TXT"
+    },
+    {
+      "function": "stale",
+      "args": "refused",
+      "result": "0|1|flags=0|file="
+    },
+    {
+      "function": "stale",
+      "args": "ended 1",
+      "result": "1|0|flags=20|file="
+    },
+    {
+      "function": "flags",
+      "args": "0",
+      "result": "0|0|flags=20|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "0",
+      "result": "0|0|flags=0|file="
+    },
+    {
+      "function": "hook after",
+      "args": "0",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "1",
+      "result": "0|0|flags=21|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "1",
+      "result": "0|0|flags=1|file="
+    },
+    {
+      "function": "hook after",
+      "args": "1",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "4",
+      "result": "0|0|flags=24|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "4",
+      "result": "0|0|flags=4|file="
+    },
+    {
+      "function": "hook after",
+      "args": "4",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "10",
+      "result": "0|0|flags=30|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "10",
+      "result": "0|0|flags=10|file="
+    },
+    {
+      "function": "hook after",
+      "args": "10",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "1000",
+      "result": "0|0|flags=1820|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "1000",
+      "result": "0|0|flags=1800|file="
+    },
+    {
+      "function": "hook after",
+      "args": "1000",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "2000",
+      "result": "0|0|flags=3820|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "2000",
+      "result": "0|0|flags=3800|file="
+    },
+    {
+      "function": "hook after",
+      "args": "2000",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "8",
+      "result": "0|0|flags=28|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "8",
+      "result": "0|0|flags=8|file="
+    },
+    {
+      "function": "hook after",
+      "args": "8",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "800",
+      "result": "0|0|flags=820|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "800",
+      "result": "0|0|flags=800|file="
+    },
+    {
+      "function": "hook after",
+      "args": "800",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "70000000",
+      "result": "0|0|flags=20|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "70000000",
+      "result": "0|0|flags=0|file="
+    },
+    {
+      "function": "hook after",
+      "args": "70000000",
+      "result": "cleared"
+    },
+    {
+      "function": "flags",
+      "args": "80000000",
+      "result": "0|0|flags=80000020|file="
+    },
+    {
+      "function": "flags without hook",
+      "args": "80000000",
+      "result": "0|0|flags=80000000|file="
+    },
+    {
+      "function": "hook after",
+      "args": "80000000",
+      "result": "cleared"
+    }
+  ]
+}

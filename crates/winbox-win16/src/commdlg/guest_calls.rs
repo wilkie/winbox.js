@@ -1,12 +1,10 @@
-//! COMMDLG's calls into USER, GDI and KERNEL made as COMMDLG makes them:
-//! the arguments pushed on the program's stack below where it is, each
-//! structure given as a far pointer to bytes laid out there too, and the
-//! export's own function run on them -- the very one a program's call
-//! reaches. What COMMDLG's code does is then followed call for call.
+//! What the Find, Replace and Color dialogs ask of COMMDLG's own, and
+//! their calls into USER, GDI and KERNEL in the shape they make them: each
+//! made through `api.rs`, which calls an export as a program's call reaches
+//! it, the arguments and structures laid below the stack.
 
-use winbox_cpu::{SP, SS};
-
-use crate::call::{Args, Implementation, Stop};
+use super::api::{Arg, api as call_api};
+use crate::call::Stop;
 use crate::engine::Engine;
 use crate::system::System;
 
@@ -51,72 +49,30 @@ pub(crate) async fn api(
     .0)
 }
 
-/// A call with structures: its answer and each structure as it was left.
+/// A call with structures, through `api.rs`: its answer and each structure
+/// as it was left.
 pub(crate) async fn call(engine: &Engine, call: Call<'_>) -> Result<(u32, Vec<Vec<u8>>), Stop> {
-    let implementation =
-        crate::call::implementation(call.module, call.name).ok_or(Stop::Missing {
-            module: call.module,
-            name: call.name,
-        })?;
-    let (arguments, saved, placed) = {
-        let mut system = engine.system();
-        let saved = system.cpu.regs[SP];
-        let base = system.cpu.segments[SS].base;
-        let selector = system.cpu.segments[SS].selector;
-        let mut at = saved;
-        let mut placed = Vec::new();
-
-        // The structures first, each on a word's boundary.
-        for bytes in &call.structs {
-            at = at.wrapping_sub((bytes.len() as u16 + 1) & !1);
-            system.write_far(u32::from(selector) << 16 | u32::from(at), bytes);
-            placed.push(at);
-        }
-
-        let words: Vec<u16> = call
-            .args
-            .iter()
-            .flat_map(|arg| match *arg {
-                A::W(word) => vec![word],
-                A::D(long) => vec![(long >> 16) as u16, long as u16],
-                A::S(index) => vec![selector, placed[index]],
-            })
-            .collect();
-        let top = at;
-
-        for word in &words {
-            at = at.wrapping_sub(2);
-            system.cpu.bus.write16(base + u32::from(at), *word);
-        }
-
-        // Below them, a return address.
-        system.cpu.regs[SP] = at.wrapping_sub(4);
-
-        (
-            Args::after_first(
-                words.first().copied().unwrap_or(0),
-                base,
-                u32::from(top) - 2,
-            ),
-            saved,
-            placed,
-        )
-    };
-    let answer = match implementation {
-        Implementation::Sync(answer) => answer(&mut engine.system(), &mut { arguments }),
-        Implementation::Async(answer) => answer(engine, arguments).await,
-    };
-    let mut system = engine.system();
-    let selector = system.cpu.segments[SS].selector;
-    let structs = call
-        .structs
+    let mut order = Vec::new();
+    let args: Vec<Arg> = call
+        .args
         .iter()
-        .zip(&placed)
-        .map(|(bytes, &at)| system.read_far(u32::from(selector) << 16 | u32::from(at), bytes.len()))
+        .map(|arg| match *arg {
+            A::W(word) => Arg::W(word),
+            A::D(long) => Arg::D(long),
+            A::S(index) => {
+                order.push(index);
+                Arg::B(call.structs[index].clone())
+            }
+        })
         .collect();
+    let called = call_api(engine, call.module, call.name, &args).await?;
+    let mut structs = call.structs.clone();
 
-    system.cpu.regs[SP] = saved;
-    Ok((answer?.value().unwrap_or(0), structs))
+    for (buffer, index) in called.buffers.into_iter().zip(order) {
+        structs[index] = buffer;
+    }
+
+    Ok((called.value, structs))
 }
 
 /// A rectangle as the four words of a `RECT`.
@@ -139,10 +95,7 @@ pub(crate) fn set_extended_error(system: &mut System, code: u32) {
 /// One of COMMDLG's strings, by its resource number: those its Find,
 /// Replace and Color dialogs load.
 pub(crate) fn string(id: u16) -> Option<Vec<u8>> {
-    match id {
-        0x40d => Some(b"Close".to_vec()),
-        _ => None,
-    }
+    super::resources::string(id).map(|text| text.as_bytes().to_vec())
 }
 
 /// A registered message by its name, registered now if it is not yet.

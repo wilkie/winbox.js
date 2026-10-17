@@ -32,6 +32,7 @@ pub const WS_THICKFRAME: u32 = 0x0004_0000;
 
 const WS_EX_DLGMODALFRAME: u32 = 0x0001;
 const WS_EX_TOPMOST: u32 = 0x0008;
+pub(crate) const WS_EX_NOPARENTNOTIFY: u32 = 0x0004;
 
 const SM_CXSCREEN: i16 = 0;
 const SM_CYSCREEN: i16 = 1;
@@ -887,8 +888,10 @@ impl Engine {
             _ => {}
         }
 
-        // A child's parent is told of it (`showseq`).
-        if child && made.parent != 0 {
+        // A child's parent is told of it (`showseq`), unless the child is
+        // made `WS_EX_NOPARENTNOTIFY`, as a dialog's controls are
+        // (**recorded** by `ofnopen`: COMMDLG's hook is sent none).
+        if child && made.parent != 0 && made.ex_style & WS_EX_NOPARENTNOTIFY == 0 {
             let lparam = u32::from(hwnd) | u32::from(made.menu) << 16;
 
             self.send_message(

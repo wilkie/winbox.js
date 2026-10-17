@@ -5,7 +5,7 @@
     "path": "C:\\CORPUS\\REVERSI\\REVERSI.EXE"
   },
   "seconds": 4.5,
-  "calls": 308,
+  "calls": 309,
   "stepMarks": [
     {
       "calls": 290,
@@ -50,8 +50,8 @@
       "kind": "up"
     },
     {
-      "calls": 308,
-      "instructions": 15420,
+      "calls": 309,
+      "instructions": 15484,
       "time": 4562
     }
   ],

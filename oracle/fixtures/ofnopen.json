@@ -1,0 +1,264 @@
+{
+  "probe": "ofnopen",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "registered",
+      "args": "",
+      "result": "11111,1"
+    },
+    {
+      "function": "before",
+      "args": "",
+      "result": "30 2c:460 31 2c:461 2c:471 2c:471 111:470:8000 111:480:400 111:480:300 2:470:2 111:480:400 111:480:300 111:471:8000 2:471:1 c"
+    },
+    {
+      "function": "initdialog",
+      "args": "",
+      "result": "focus=480,lParam=ofn"
+    },
+    {
+      "function": "dialog",
+      "args": "",
+      "result": "Probe's Open|462,218"
+    },
+    {
+      "function": "control",
+      "args": "442",
+      "result": "Static|50020000|11,10,144,25|File &Name:|01"
+    },
+    {
+      "function": "control",
+      "args": "480",
+      "result": "Edit|50010480|10,26,170,46|*.doc|01"
+    },
+    {
+      "function": "control",
+      "args": "460",
+      "result": "ListBox|50a11053|10,51,170,157||01"
+    },
+    {
+      "function": "control",
+      "args": "ffff",
+      "result": "Static|50020000|193,10,354,25|&Directories:|01"
+    },
+    {
+      "function": "control",
+      "args": "440",
+      "result": "Static|50020080|193,29,354,44|c:\\oracle\\ofn|01"
+    },
+    {
+      "function": "control",
+      "args": "461",
+      "result": "ListBox|50a11053|192,51,355,165||01"
+    },
+    {
+      "function": "control",
+      "args": "441",
+      "result": "Static|50020000|11,169,169,184|List Files of &Type:|01"
+    },
+    {
+      "function": "control",
+      "args": "470",
+      "result": "ComboBox|50010243|11,185,169,205|Documents|01"
+    },
+    {
+      "function": "control",
+      "args": "443",
+      "result": "Static|50020000|193,169,354,184|Dri&ves:|01"
+    },
+    {
+      "function": "control",
+      "args": "471",
+      "result": "ComboBox|50010353|193,185,354,207|c: c_drive|01"
+    },
+    {
+      "function": "control",
+      "args": "1",
+      "result": "Button|50030001|364,10,452,33|OK|01"
+    },
+    {
+      "function": "control",
+      "args": "2",
+      "result": "Button|50030000|364,39,452,62|Cancel|01"
+    },
+    {
+      "function": "control",
+      "args": "40e",
+      "result": "Button|50030000|364,75,452,98|&Help|01"
+    },
+    {
+      "function": "control",
+      "args": "410",
+      "result": "Button|50030003|364,111,452,131|&Read Only|01"
+    },
+    {
+      "function": "state",
+      "args": "initdialog",
+      "result": "focus=0,edit=*.doc,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "start",
+      "result": "111:480:100"
+    },
+    {
+      "function": "state",
+      "args": "start",
+      "result": "focus=480,edit=*.doc,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "type:*.doc",
+      "result": "111:480:400 111:480:300 111:1:0 111:480:400 111:480:300 111:471:8000 2:471:1"
+    },
+    {
+      "function": "state",
+      "args": "type:*.doc",
+      "result": "focus=480,edit=*.doc,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "type:sub",
+      "result": "111:480:400 111:480:300 111:1:0 111:480:400 111:480:300 111:470:8 111:471:8000 2:471:1 111:470:8000 111:480:400 111:480:300 2:470:2"
+    },
+    {
+      "function": "state",
+      "args": "type:sub",
+      "result": "focus=480,edit=*.doc,dir=c:\\oracle\\ofn\\sub,files(13,-1,0)=,dirs(16,3,0)=C:\\/ORACLE/OFN/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "type:..",
+      "result": "111:480:400 111:480:300 111:1:0 111:480:400 111:480:300 111:470:8 111:471:8000 2:471:1 111:470:8000 111:480:400 111:480:300 2:470:2"
+    },
+    {
+      "function": "state",
+      "args": "type:..",
+      "result": "focus=480,edit=*.doc,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "type:nosuch.txt",
+      "result": "111:480:400 111:480:300 111:1:0 111:480:200"
+    },
+    {
+      "function": "box",
+      "args": "type:nosuch.txt",
+      "result": "Probe's Open|OK||nosuch.txt\nCannot find this file.\n\nPlease verify that the correct path and filename are given."
+    },
+    {
+      "function": "hook",
+      "args": "ok",
+      "result": "111:480:100"
+    },
+    {
+      "function": "state",
+      "args": "ok",
+      "result": "focus=480,edit=nosuch.txt,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "type:c:\\oracle\\ofn\\sub\\e.txt;x",
+      "result": "111:480:400 111:480:300 111:1:0 111:480:200"
+    },
+    {
+      "function": "box",
+      "args": "type:c:\\oracle\\ofn\\sub\\e.txt;x",
+      "result": "Probe's Open|OK||c:\\oracle\\ofn\\sub\\e.txt;x\nThis filename is not valid."
+    },
+    {
+      "function": "hook",
+      "args": "ok",
+      "result": "111:480:100"
+    },
+    {
+      "function": "state",
+      "args": "ok",
+      "result": "focus=480,edit=c:\\oracle\\ofn\\sub\\e.txt;x,dir=c:\\oracle\\ofn,files(13,-1,0)=C.DOC,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,2)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "types:1",
+      "result": "111:470:1 2:470:1"
+    },
+    {
+      "function": "state",
+      "args": "types:1",
+      "result": "focus=480,edit=c:\\oracle\\ofn\\sub\\e.txt;x,dir=c:\\oracle\\ofn,files(13,-1,0)=A.TXT/B.TXT,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,1)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "file:1",
+      "result": "111:460:1 111:480:400 111:480:300 2:460:1"
+    },
+    {
+      "function": "state",
+      "args": "file:1",
+      "result": "focus=480,edit=b.txt,dir=c:\\oracle\\ofn,files(13,1,0)=A.TXT/B.TXT,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,1)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "dbldir:2",
+      "result": "111:461:2 2:461:2"
+    },
+    {
+      "function": "state",
+      "args": "dbldir:2",
+      "result": "focus=480,edit=b.txt,dir=c:\\oracle\\ofn,files(13,-1,0)=A.TXT/B.TXT,dirs(16,2,0)=C:\\/ORACLE/OFN/ANOTHER/SUB,types(13,1)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "dbldir:1",
+      "result": "111:461:2 2:461:1"
+    },
+    {
+      "function": "state",
+      "args": "dbldir:1",
+      "result": "focus=480,edit=b.txt,dir=c:\\oracle,files(13,-1,0)=,dirs(16,1,0)=C:\\/ORACLE/OFN,types(13,1)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "drive:0",
+      "result": "111:471:1 111:480:200"
+    },
+    {
+      "function": "box",
+      "args": "drive:0",
+      "result": "Probe's Open|&Retry|Cancel||Cannot read drive a:.\n\nPlease verify the drive door is closed and that the disk is formatted and free of errors."
+    },
+    {
+      "function": "hook",
+      "args": "ok",
+      "result": "111:480:100 2:471:1"
+    },
+    {
+      "function": "state",
+      "args": "ok",
+      "result": "focus=480,edit=b.txt,dir=c:\\oracle,files(13,-1,0)=,dirs(16,1,0)=C:\\/ORACLE/OFN,types(13,1)=Mine=5/Text (*.txt)=d/Documents=1d/All Files=2d,drives(16,22,1)=a:=3/c: c_drive=4/z: dosbox=4,flags=1830"
+    },
+    {
+      "function": "hook",
+      "args": "end",
+      "result": "111:480:400 111:480:300 111:1:0 1:0:ofn 111:480:200"
+    },
+    {
+      "function": "result",
+      "args": "",
+      "result": "1|0|file=C:\\ORACLE\\OFN\\A.TXT|title=A.TXT|offset=14|ext=16|index=1|flags=1830|custom=Mine,*.TXT"
+    },
+    {
+      "function": "cwd",
+      "args": "after",
+      "result": "C:\\ORACLE"
+    }
+  ]
+}

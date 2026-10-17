@@ -5843,6 +5843,10 @@ const RUN_WHOLE = new Set<string>([
   'profhold',
   'findrepl',
   'choosclr',
+  'ftitle',
+  'ofnerr',
+  'ofnopen',
+  'pmatom',
 ]);
 
 /**

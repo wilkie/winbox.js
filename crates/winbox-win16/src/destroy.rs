@@ -170,6 +170,7 @@ impl Engine {
             let system = self.system();
             let parent = system.windows[index]
                 .as_ref()
+                .filter(|window| window.ex_style & crate::create::WS_EX_NOPARENTNOTIFY == 0)
                 .and_then(|window| window.parent)
                 .and_then(|parent| system.windows[parent].as_ref())
                 .map(|parent| parent.hwnd);

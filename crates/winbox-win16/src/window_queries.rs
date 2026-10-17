@@ -414,6 +414,28 @@ pub fn is_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     )))
 }
 
+impl System {
+    /// Whether a window and each it is in is visible, as
+    /// `IsWindowVisible` answers.
+    pub(crate) fn shows(&self, index: usize) -> bool {
+        let mut at = Some(index);
+
+        while let Some(index) = at {
+            let Some(window) = self.windows.get(index).and_then(Option::as_ref) else {
+                return false;
+            };
+
+            if !window.visible {
+                return false;
+            }
+
+            at = window.parent;
+        }
+
+        true
+    }
+}
+
 /// Whether a window and each it is in is visible.
 pub fn is_window_visible(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);

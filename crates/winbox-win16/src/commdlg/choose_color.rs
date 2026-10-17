@@ -95,7 +95,7 @@ type Rect = [i16; 4];
 
 /// What COMMDLG keeps for its Color dialogs in its data: one memory DC and
 /// one spectrum for all, and the boxes' rectangles of the last measured.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct ColourGlobals {
     /// `[2C8h]`.
     memory_dc: u16,

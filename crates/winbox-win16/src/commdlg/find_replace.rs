@@ -61,10 +61,6 @@ const SW_SHOWNORMAL: u16 = 1;
 const SW_SHOW: u16 = 5;
 const RT_DIALOG: u32 = 5;
 
-/// COMMDLG's dialogs 1540 and 1541, Find and Replace.
-const FIND_DIALOG: u16 = 0x604;
-const REPLACE_DIALOG: u16 = 0x605;
-
 /// The structure's fields, by offset.
 const HWND_OWNER: u32 = 0x04;
 const H_INSTANCE: u32 = 0x06;
@@ -77,7 +73,7 @@ const HOOK: u32 = 0x1c;
 const TEMPLATE_NAME: u32 = 0x20;
 
 /// What COMMDLG keeps for its Find and Replace dialogs in its data.
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct FindGlobals {
     /// `[118h]`: the hook, from `FindText` until its dialog's
     /// `WM_INITDIALOG`.

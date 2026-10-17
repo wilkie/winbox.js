@@ -59,8 +59,9 @@ fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-/// A host's folder put on drive C: at `dos`, in the order of the names.
-fn hold(session: &mut Session, folder: &Path, dos: &str) {
+/// A host's folder put on drive C: at `dos`, in the order of the names,
+/// but for the files `without` names.
+fn hold(session: &mut Session, folder: &Path, dos: &str, without: &[&str]) {
     let mut entries: Vec<_> = std::fs::read_dir(folder).unwrap().flatten().collect();
 
     entries.sort_by_key(std::fs::DirEntry::file_name);
@@ -69,9 +70,13 @@ fn hold(session: &mut Session, folder: &Path, dos: &str) {
         let path = entry.path();
         let named = format!("{dos}\\{}", entry.file_name().to_string_lossy());
 
+        if without.contains(&named.as_str()) {
+            continue;
+        }
+
         if path.is_dir() {
             assert!(session.add_folder('C', &named, host_seconds()));
-            hold(session, &path, &named);
+            hold(session, &path, &named, without);
         } else {
             assert!(session.add_file('C', &named, std::fs::read(&path).unwrap(), host_seconds()));
         }
@@ -84,6 +89,11 @@ fn hold(session: &mut Session, folder: &Path, dos: &str) {
 /// its File Open dialog opened from the keyboard. None where the oracle's
 /// build is not here.
 fn opened() -> Option<Session> {
+    opened_without(&[])
+}
+
+/// As `opened`, with the files `without` names not put on the drive.
+fn opened_without(without: &[&str]) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
     let notepad = windows.join("WINDOWS/NOTEPAD.EXE");
 
@@ -104,7 +114,7 @@ fn opened() -> Option<Session> {
     .unwrap();
 
     session.stay_up();
-    hold(&mut session, &windows, "");
+    hold(&mut session, &windows, "", without);
 
     for folder in ["\\CORPUS", "\\CORPUS\\NOTEPAD", "\\ORACLE"] {
         assert!(session.add_folder('C', folder, 0));
@@ -221,7 +231,7 @@ fn media_player_with(name: &str, sound: Vec<u8>) -> Option<Session> {
     .unwrap();
 
     session.stay_up();
-    hold(&mut session, &windows, "");
+    hold(&mut session, &windows, "", &[]);
 
     for folder in ["\\CORPUS", "\\CORPUS\\MPLAYER", "\\ORACLE", "\\SOUNDS"] {
         assert!(session.add_folder('C', folder, 0));
@@ -416,6 +426,50 @@ fn a_directory_double_clicked_is_gone_into_and_a_file_clicked_is_opened() {
     assert_eq!(items(&session, LST1), ["BOOTLOG.TXT", "SETUP.TXT"]);
 
     // A file clicked gives the edit its name.
+    let (x, y) = row(&session, LST1, 1, 13);
+
+    click(&mut session, x, y, false);
+    assert_eq!(text(&session, EDT1), "setup.txt");
+
+    press(&mut session, "Enter", "Enter");
+    frames(&mut session, 100);
+    assert!(control(&session, LST1).is_none(), "the dialog is still up");
+    assert!(
+        session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title == "Notepad - SETUP.TXT")
+    );
+}
+
+/// The same with no `COMMDLG.DLL` on the drive: the dialog is WinBox's own,
+/// its template and its code, and does all the same. Only the folders' and
+/// drives' pictures, which are the file's, are not drawn. As the TypeScript
+/// engine's test.
+#[test]
+fn the_same_with_no_commdlg_dll_on_the_drive() {
+    let Some(mut session) = opened_without(&["\\WINDOWS\\SYSTEM\\COMMDLG.DLL"]) else {
+        return;
+    };
+
+    assert!(
+        session.system().module_named("COMMDLG").is_none(),
+        "COMMDLG is a file loaded"
+    );
+    assert_eq!(text(&session, STC1), "c:\\corpus\\notepad");
+    assert_eq!(items(&session, LST2), ["C:\\", "CORPUS", "NOTEPAD"]);
+
+    into(&mut session, "C:\\");
+    assert_eq!(
+        items(&session, LST2),
+        ["C:\\", "CORPUS", "ORACLE", "WINDOWS"]
+    );
+    into(&mut session, "WINDOWS");
+    assert_eq!(text(&session, STC1), "c:\\windows");
+    assert_eq!(items(&session, LST1), ["BOOTLOG.TXT", "SETUP.TXT"]);
+
     let (x, y) = row(&session, LST1, 1, 13);
 
     click(&mut session, x, y, false);

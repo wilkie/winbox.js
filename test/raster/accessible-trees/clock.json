@@ -4,17 +4,17 @@
     "path": "C:\\CORPUS\\CLOCK\\CLOCK.EXE"
   },
   "seconds": 7,
-  "calls": 678,
+  "calls": 659,
   "stepMarks": [
     {
       "calls": 557,
       "instructions": 3005919,
-      "time": 3250
+      "time": 3004
     },
     {
       "calls": 557,
       "instructions": 3005919,
-      "time": 3250,
+      "time": 3004,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "down"
@@ -22,7 +22,7 @@
     {
       "calls": 559,
       "instructions": 3005976,
-      "time": 3250,
+      "time": 3004,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "up"
@@ -30,7 +30,7 @@
     {
       "calls": 559,
       "instructions": 3005976,
-      "time": 3250,
+      "time": 3004,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "down"
@@ -38,112 +38,112 @@
     {
       "calls": 559,
       "instructions": 3005976,
-      "time": 3250,
+      "time": 3004,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "up"
     },
     {
-      "calls": 593,
-      "instructions": 3007621,
-      "time": 4601
+      "calls": 584,
+      "instructions": 3007341,
+      "time": 4006
     },
     {
-      "calls": 593,
-      "instructions": 3007621,
-      "time": 4601,
+      "calls": 584,
+      "instructions": 3007341,
+      "time": 4006,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 595,
-      "instructions": 3007901,
-      "time": 4601,
+      "calls": 585,
+      "instructions": 3007473,
+      "time": 4006,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 596,
-      "instructions": 3007972,
-      "time": 4601,
+      "calls": 585,
+      "instructions": 3007473,
+      "time": 4006,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 596,
-      "instructions": 3007972,
-      "time": 4601,
+      "calls": 585,
+      "instructions": 3007473,
+      "time": 4006,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 621,
-      "instructions": 3008739,
-      "time": 5951
+      "calls": 612,
+      "instructions": 3008332,
+      "time": 5008
     },
     {
-      "calls": 621,
-      "instructions": 3008739,
-      "time": 5951,
+      "calls": 612,
+      "instructions": 3008332,
+      "time": 5008,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "down"
     },
     {
-      "calls": 627,
-      "instructions": 3008970,
-      "time": 5951,
+      "calls": 616,
+      "instructions": 3008433,
+      "time": 5008,
       "key": " ",
       "code": "Space",
       "kind": "down",
       "alt": true
     },
     {
-      "calls": 627,
-      "instructions": 3008970,
-      "time": 5951,
+      "calls": 618,
+      "instructions": 3008471,
+      "time": 5008,
       "key": " ",
       "code": "Space",
       "kind": "up",
       "alt": true
     },
     {
-      "calls": 627,
-      "instructions": 3008970,
-      "time": 5951,
+      "calls": 618,
+      "instructions": 3008471,
+      "time": 5008,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "up"
     },
     {
-      "calls": 654,
-      "instructions": 3010334,
-      "time": 7301
+      "calls": 644,
+      "instructions": 3010060,
+      "time": 6018
     },
     {
-      "calls": 654,
-      "instructions": 3010334,
-      "time": 7301,
+      "calls": 644,
+      "instructions": 3010060,
+      "time": 6018,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 655,
-      "instructions": 3010467,
-      "time": 7301,
+      "calls": 646,
+      "instructions": 3010213,
+      "time": 6018,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 678,
-      "instructions": 3011486,
-      "time": 8651
+      "calls": 659,
+      "instructions": 3010932,
+      "time": 7020
     }
   ],
   "trees": [

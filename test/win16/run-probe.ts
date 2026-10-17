@@ -102,6 +102,17 @@ export class MemoryFile {
 /** Probes recorded with a printer installed (`--display vgaprint`). */
 const PRINTING = new Set(['printing']);
 
+/** An empty drive: only its root, with nothing in it; removable, with no disk, for A:. */
+function emptyDrive(removable: boolean) {
+  const root = {
+    info: { directory: true, name: '', attributes: 0x10 },
+    list: async () => [],
+    lookup: async () => null,
+  };
+
+  return { removable, open: async (parts: string[]) => (parts.length ? null : root) };
+}
+
 /** Loads the probe and runs it, collecting every API call it makes. */
 export async function runProbe(
   name = 'strings',
@@ -116,6 +127,9 @@ export async function runProbe(
      * say: a library it wants in `C:\WINDOWS\SYSTEM`, as Catz wants
      * CTL3DV2.DLL. */
     extras = [] as { parts: string[]; file: string }[],
+    /* Files taken off the drive before Windows starts, each by its parts:
+     * `COMMDLG.DLL`, for a session with WinBox's own alone. */
+    without = [] as string[][],
     virtual = false,
     keepCalls = Infinity,
     display = 'vga',
@@ -203,6 +217,10 @@ export async function runProbe(
   }
 
   await fileSystem.open(['ORACLE'], true);
+
+  for (const parts of without) {
+    await fileSystem.unlink(await fileSystem.open(parts.slice(0, -1)), parts[parts.length - 1]);
+  }
 
   /* A probe that prints, recorded with a printer installed: winbox.js's own
    * is installed into the copy, as Control Panel would write it into WIN.INI
@@ -371,6 +389,15 @@ export async function runProbe(
       }
     },
   });
+
+  /* The drives DOSBox gives the oracle's Windows beside C:: a floppy A:
+   * with nothing in it, and its own Z:, as the Rust engine's probes are run
+   * with them (`support/mod.rs`). COMMDLG lists all three (`ofnopen`). A
+   * program's session keeps C: alone, as the web engine's does. */
+  if (!program) {
+    win16.dos.files.mount('A', emptyDrive(true));
+    win16.dos.files.mount('Z', emptyDrive(false));
+  }
 
   const upper = name.toUpperCase();
 

@@ -5,7 +5,8 @@ import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
 import { RegisterWindowMessage } from '../user/RegisterWindowMessage.js';
-import { procAddress } from './index.js';
+import { procAddressOf } from './proc-address.js';
+import { COMMDLG_STRINGS } from './strings.js';
 import { callHook, instance, setError } from './state.js';
 
 /**
@@ -42,7 +43,10 @@ export function nextNumber(system: any) {
   return state.next;
 }
 
-export { callHook, instance, procAddress, setError };
+export { callHook, instance, setError };
+
+/** The far address of one of COMMDLG's exports, WinBox's own. */
+export const procAddress = procAddressOf;
 
 /** A registered message by its name, registered now if it is not yet. */
 export function registered(system: any, name: string): number {
@@ -51,7 +55,7 @@ export function registered(system: any, name: string): number {
 
 /** One of COMMDLG's strings, by its resource number: those its Find, Replace and Color dialogs load. */
 export function string(id: number): string | null {
-  return id === 0x40d ? 'Close' : null;
+  return COMMDLG_STRINGS.get(id) ?? null;
 }
 
 /** A far pointer `step` bytes further into its segment. */
