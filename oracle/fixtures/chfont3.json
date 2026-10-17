@@ -1,0 +1,1019 @@
+{
+  "probe": "chfont3",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "state",
+      "args": "drawn",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face=Arial style=Bold Italic size=12"
+    },
+    {
+      "function": "pixels",
+      "args": "faces size",
+      "result": "139x65"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 0",
+      "result": "4447777777744444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 1",
+      "result": "4447747747744444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 2",
+      "result": "44474477447444444444444ff44444444ff44444444ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 3",
+      "result": "44474470000000044444444ff444444444444444444ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 4",
+      "result": "4444447004004004444444ffff44444444444444444ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 5",
+      "result": "4444447044004404444444ffff444fff4ff44ffff44ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 6",
+      "result": "444444704400440444444ff44ff44ff44ff44444ff4ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 7",
+      "result": "444444774400444444444ff44ff44ff44ff44fffff4ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 8",
+      "result": "444477777700444444444ffffff44ff44ff4ff44ff4ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 9",
+      "result": "44444444440044444444ff4444ff4ff44ff4ff44ff4ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 10",
+      "result": "44444444440044444444ff4444ff4ff44ff44fffff4ff4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 11",
+      "result": "4444444400000044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 12",
+      "result": "4444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 13",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 14",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 15",
+      "result": "ffffffffffffffffffffff00000ffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 16",
+      "result": "fffffffffffffffffffff00fff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 17",
+      "result": "fffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 18",
+      "result": "fffffffffffffffffffff00fffffff0000ff00ff00f000f00ff0000ff000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 19",
+      "result": "fffffffffffffffffffff00ffffff00ff00f00ff00f00ff00f00ff00f00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 20",
+      "result": "fffffffffffffffffffff00ffffff00ff00f00ff00f00ff00f000000f00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 21",
+      "result": "fffffffffffffffffffff00ffffff00ff00f00ff00f00ff00f00fffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 22",
+      "result": "fffffffffffffffffffff00fff00f00ff00f00f000f00ff00f00ff00f00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 23",
+      "result": "ffffffffffffffffffffff00000fff0000fff00000f00ff00ff0000ff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 24",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 25",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 26",
+      "result": "fff77777777ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 27",
+      "result": "fff77f77f77ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 28",
+      "result": "fff7ff77ff7fffffffffff00000ffffffffffffffffffff00ffffffffffffffff00fff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 29",
+      "result": "fff7ff700000000ffffff00fff00fffffffffffffffffffffffffffffffffffff000ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 30",
+      "result": "ffffff700f00f00ffffff00ffffffffffffffffffffffffffffffffffffffffff000ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 31",
+      "result": "ffffff70ff00ff0ffffff00fffffff0000ff00ff00f000f00ff0000ff000fffff0000f00fff0000ff00f00f00ffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 32",
+      "result": "ffffff70ff00ff0ffffff00ffffff00ff00f00ff00f00ff00f00ff00f00ffffff0000f00ff00ff00f00f00f00ffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 33",
+      "result": "ffffff77ff00fffffffff00ffffff00ff00f00ff00f00ff00f000000f00ffffff00f0000ff000000f00000000ffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 34",
+      "result": "ffff77777700fffffffff00ffffff00ff00f00ff00f00ff00f00fffff00ffffff00ff000ff00fffff00000000ffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 35",
+      "result": "ffffffffff00fffffffff00fff00f00ff00f00f000f00ff00f00ff00f00ffffff00ff000ff00ff00ff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 36",
+      "result": "ffffffffff00ffffffffff00000fff0000fff00000f00ff00ff0000ff00ffffff00fff00fff0000fff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 37",
+      "result": "ffffffff000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 38",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 39",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 40",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 41",
+      "result": "fffffffffffffffffffff000000f00ffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 42",
+      "result": "fffffffffffffffffffff00fffffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 43",
+      "result": "fffffffffffffffffffff00fffffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 44",
+      "result": "fffffffffffffffffffff00fffff00f00f00ff0000fff00000ff000ff00f00ff000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 45",
+      "result": "fffffffffffffffffffff00000ff00f00f00f00ff00f00ff00f00f00f00f00f00f00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 46",
+      "result": "fffffffffffffffffffff00fffff00ff000ff000000f00ff00ff00fff00f00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 47",
+      "result": "fffffffffffffffffffff00fffff00ff000ff00fffff00ff00fff00ff00f00fff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 48",
+      "result": "fffffffffffffffffffff00fffff00f00f00f00ff00f00ff00f00f00ff000ff00f00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 49",
+      "result": "fffffffffffffffffffff00fffff00f00f00ff0000fff00000ff000fff00ffff000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 52",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 53",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 54",
+      "result": "fffffffffffffffffffff00ffff00fffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 55",
+      "result": "fffffffffffffffffffff00ffff00fffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 56",
+      "result": "fffffffffffffffffffff000ff000fffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 57",
+      "result": "fffffffffffffffffffff000ff000fff0000fff00000ff0000ff000f00000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 58",
+      "result": "fffffffffffffffffffff00000000ff00ff00f00ff00f00ff00f00ff000f00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 59",
+      "result": "fffffffffffffffffffff00000000ff00ff00f00ff00f000000f00ff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 60",
+      "result": "fffffffffffffffffffff00f00f00ff00ff00f00ff00f00fffff00ff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 61",
+      "result": "fffffffffffffffffffff00f00f00ff00ff00f00ff00f00ff00f00ff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 62",
+      "result": "fffffffffffffffffffff00ffff00fff0000fff00000ff0000ff00ff00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 63",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "faces 64",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles size",
+      "result": "86x65"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 2",
+      "result": "fff000000ffffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 3",
+      "result": "fff00fff00fffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 4",
+      "result": "fff00fff00fffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 5",
+      "result": "fff00fff00fff0000fff00000f00ff00f00ff0000ff000ffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 6",
+      "result": "fff000000fff00ff00f00ff00f00ff00f00fffff00f00fffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 7",
+      "result": "fff00fff00ff000000f00ff00f00ff00f00ff00000f00fffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 8",
+      "result": "fff00fff00ff00fffff00ff00f00ff00f00f00ff00f00fffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 9",
+      "result": "fff00fff00ff00ff00f00ff00f00f000f00f00ff00f00fffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 10",
+      "result": "fff00fff00fff0000fff00000ff00000f00ff00000f00fffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 11",
+      "result": "fffffffffffffffffffffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 12",
+      "result": "fffffffffffffffffff00000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 15",
+      "result": "fff00fffffffffffff00f00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 16",
+      "result": "fff00ff00fffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 17",
+      "result": "fff00ff00fffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 18",
+      "result": "fff00ff000ff0000ff00f00ff0000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 19",
+      "result": "fff00ff00ffffff00f00f00f00ff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 20",
+      "result": "fff00ff00fff00000f00f00f00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 21",
+      "result": "fff00ff00ff00ff00f00f00f00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 22",
+      "result": "fff00ff00ff00ff00f00f00f00ff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 23",
+      "result": "fff00fff00ff00000f00f00ff0000fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 25",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 26",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 27",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 28",
+      "result": "fff00000ffffffffff00fffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 29",
+      "result": "fff00ff00fffffffff00fffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 30",
+      "result": "fff00ff00fffffffff00fffff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 31",
+      "result": "fff00ff00fff0000ff00ff00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 32",
+      "result": "fff00000fff00ff00f00f00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 33",
+      "result": "fff00ff00ff00ff00f00f00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 34",
+      "result": "fff00ff00ff00ff00f00f00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 35",
+      "result": "fff00ff00ff00ff00f00f00ff00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 36",
+      "result": "fff00000ffff0000ff00ff00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 37",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 38",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 39",
+      "result": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 40",
+      "result": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 41",
+      "result": "444fffff4444444444ff44444ff44444ff4444444444444ff4ff4444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 42",
+      "result": "444ff44ff444444444ff44444ff44444ff44ff444444444ff4444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 43",
+      "result": "444ff44ff444444444ff44444ff44444ff44ff444444444ff4444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 44",
+      "result": "444ff44ff444ffff44ff44fffff44444ff44fff44ffff44ff4ff44ffff4444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 45",
+      "result": "444fffff444ff44ff4ff4ff44ff44444ff44ff444444ff4ff4ff4ff44ff444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 46",
+      "result": "444ff44ff44ff44ff4ff4ff44ff44444ff44ff444fffff4ff4ff4ff4444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 47",
+      "result": "444ff44ff44ff44ff4ff4ff44ff44444ff44ff44ff44ff4ff4ff4ff4444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 48",
+      "result": "444ff44ff44ff44ff4ff4ff44ff44444ff44ff44ff44ff4ff4ff4ff44ff444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 49",
+      "result": "444fffff4444ffff44ff44fffff44444ff444ff44fffff4ff4ff44ffff4444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 50",
+      "result": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 51",
+      "result": "44444444444444444444444444444444444444444444444444444444444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 52",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 53",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 54",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 55",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 56",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 57",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 58",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 59",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 60",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 61",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 62",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 63",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "styles 64",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes size",
+      "result": "30x65"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 0",
+      "result": "444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 1",
+      "result": "444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 2",
+      "result": "4444ff4444ffff4444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 3",
+      "result": "44ffff444ff44ff444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 4",
+      "result": "4444ff4444444ff444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 5",
+      "result": "4444ff4444444ff444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 6",
+      "result": "4444ff444444ff4444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 7",
+      "result": "4444ff44444ff44444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 8",
+      "result": "4444ff4444ff444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 9",
+      "result": "4444ff444ff4444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 10",
+      "result": "4444ff444ffffff444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 11",
+      "result": "444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 12",
+      "result": "444444444444444444444444444444"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 13",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 14",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 15",
+      "result": "ffff00ffffff00ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 16",
+      "result": "ff0000fffff000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 17",
+      "result": "ffff00fffff000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 18",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 19",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 20",
+      "result": "ffff00fff00f00ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 21",
+      "result": "ffff00fff000000fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 22",
+      "result": "ffff00ffffff00ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 23",
+      "result": "ffff00ffffff00ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 24",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 25",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 26",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 27",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 28",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 29",
+      "result": "ff0000fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 30",
+      "result": "ffff00fff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 31",
+      "result": "ffff00fff00fffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 32",
+      "result": "ffff00fff00000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 33",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 34",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 35",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 36",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 37",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 38",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 39",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 40",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 41",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 42",
+      "result": "ff0000fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 43",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 44",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 45",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 46",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 47",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 48",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 49",
+      "result": "ffff00ffff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 50",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 51",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 52",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 53",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 54",
+      "result": "fff0000fff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 55",
+      "result": "ff00ff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 56",
+      "result": "ffffff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 57",
+      "result": "ffffff00f00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 58",
+      "result": "fffff00ff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 59",
+      "result": "ffff00fff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 60",
+      "result": "fff00ffff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 61",
+      "result": "ff00fffff00ff00fffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 62",
+      "result": "ff000000ff0000ffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 63",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "pixels",
+      "args": "sizes 64",
+      "result": "ffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "result",
+      "args": "drawn",
+      "result": "0,0,0,149,800000,5555,,-16,0,0,0,700,1,0,0,0,0,0,0,0,Arial"
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "probe": "chfontpr",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "ic",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "state",
+      "args": "printer",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 caption=Font face= style=Regular size=10 desc="
+    },
+    {
+      "function": "faces",
+      "args": "printer",
+      "result": "sel=-1 n=18|Arial=4006|AvantGarde=4002|Bookman=4002|Courier=4002|Courier New=4006|Helvetica=4002|Helvetica-Narrow=4002|Modern=4000|NewCenturySchlbk=4002|Palatino=4002|Roman=4000|Script=4000|Symbol=4006|Times=4002|Times New Roman=4006|Wingdings=4006|ZapfChancery=4002|ZapfDingbats=4002"
+    },
+    {
+      "function": "styles",
+      "args": "printer",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "printer",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "state",
+      "args": "printer-courier",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 caption=Font face=Courier style=Regular size=10 desc=This is a printer font.  The closest matching Windows font will be used on your"
+    },
+    {
+      "function": "faces",
+      "args": "printer-courier",
+      "result": "sel=3 n=18|Arial=4006|AvantGarde=4002|Bookman=4002|Courier=4002|Courier New=4006|Helvetica=4002|Helvetica-Narrow=4002|Modern=4000|NewCenturySchlbk=4002|Palatino=4002|Roman=4000|Script=4000|Symbol=4006|Times=4002|Times New Roman=4006|Wingdings=4006|ZapfChancery=4002|ZapfDingbats=4002"
+    },
+    {
+      "function": "styles",
+      "args": "printer-courier",
+      "result": "sel=0 n=4|Regular=4402|Italic=4202|Bold=4102|Bold Italic=4302"
+    },
+    {
+      "function": "sizes",
+      "args": "printer-courier",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "result",
+      "args": "printer",
+      "result": "0,0,0,a,0,5555,,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "state",
+      "args": "both",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face= style=Regular size=10 desc="
+    },
+    {
+      "function": "faces",
+      "args": "both",
+      "result": "sel=-1 n=24|Arial=6006|AvantGarde=4002|Bookman=4002|Courier=6002|Courier New=6006|Fixedsys=2001|Helvetica=4002|Helvetica-Narrow=4002|Modern=6000|MS Sans Serif=2001|MS Serif=2001|NewCenturySchlbk=4002|Palatino=4002|Roman=6000|Script=6000|Small Fonts=2001|Symbol=6006|System=2001|Terminal=2001|Times=4002|Times New Roman=6006|Wingdings=6006|ZapfChancery=4002|ZapfDingbats=4002"
+    },
+    {
+      "function": "styles",
+      "args": "both",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "both",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "state",
+      "args": "both-truetype",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face=Arial style=Regular size=10 desc=This is a TrueType font. This same font will be used on both your printer and y"
+    },
+    {
+      "function": "state",
+      "args": "both-device",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face=Courier style=Regular size=10 desc=This is a printer font.  The closest matching Windows font will be used on your"
+    },
+    {
+      "function": "faces",
+      "args": "both-device",
+      "result": "sel=3 n=24|Arial=6006|AvantGarde=4002|Bookman=4002|Courier=6002|Courier New=6006|Fixedsys=2001|Helvetica=4002|Helvetica-Narrow=4002|Modern=6000|MS Sans Serif=2001|MS Serif=2001|NewCenturySchlbk=4002|Palatino=4002|Roman=6000|Script=6000|Small Fonts=2001|Symbol=6006|System=2001|Terminal=2001|Times=4002|Times New Roman=6006|Wingdings=6006|ZapfChancery=4002|ZapfDingbats=4002"
+    },
+    {
+      "function": "styles",
+      "args": "both-device",
+      "result": "sel=0 n=4|Regular=6402|Italic=6202|Bold=6102|Bold Italic=6302"
+    },
+    {
+      "function": "sizes",
+      "args": "both-device",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "state",
+      "args": "both-screen",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face=MS Serif style=Regular size=10 desc=This is a screen font.  The closest matching printer font will be used for prin"
+    },
+    {
+      "function": "faces",
+      "args": "both-screen",
+      "result": "sel=10 n=24|Arial=6006|AvantGarde=4002|Bookman=4002|Courier=6002|Courier New=6006|Fixedsys=2001|Helvetica=4002|Helvetica-Narrow=4002|Modern=6000|MS Sans Serif=2001|MS Serif=2001|NewCenturySchlbk=4002|Palatino=4002|Roman=6000|Script=6000|Small Fonts=2001|Symbol=6006|System=2001|Terminal=2001|Times=4002|Times New Roman=6006|Wingdings=6006|ZapfChancery=4002|ZapfDingbats=4002"
+    },
+    {
+      "function": "styles",
+      "args": "both-screen",
+      "result": "sel=0 n=4|Regular=2401|Italic=a601|Bold=a501|Bold Italic=a701"
+    },
+    {
+      "function": "sizes",
+      "args": "both-screen",
+      "result": "sel=3 n=8|6=6|7=7|8=8|10=a|12=c|14=e|18=12|24=18"
+    },
+    {
+      "function": "state",
+      "args": "both-simulated",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 caption=Font face=MS Serif style=Bold size=10 desc=This font style is imitated for the display. The closest matching style will be"
+    },
+    {
+      "function": "result",
+      "args": "both",
+      "result": "1,0,100,10b,0,a501,,-13,0,0,0,700,0,0,0,0,1,2,1,18,MS Serif"
+    },
+    {
+      "function": "state",
+      "args": "wysiwyg",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 caption=Font face= style=Regular size=10 desc="
+    },
+    {
+      "function": "faces",
+      "args": "wysiwyg",
+      "result": "sel=-1 n=8|Arial=6006|Courier New=6006|Modern=6000|Roman=6000|Script=6000|Symbol=6006|Times New Roman=6006|Wingdings=6006"
+    },
+    {
+      "function": "styles",
+      "args": "wysiwyg",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "wysiwyg",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "result",
+      "args": "wysiwyg",
+      "result": "0,0,0,2800b,0,5555,,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    }
+  ]
+}

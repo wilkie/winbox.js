@@ -1208,6 +1208,196 @@
   },
   "gaps": {}
  },
+ "chfont2": {
+  "probe": "chfont2",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 330,
+  "functions": {
+   "active": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "faces": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hook": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 298,
+    "agreed": 298,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "result": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sizes": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "styles": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "template": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "chfont3": {
+  "probe": "chfont3",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 201,
+  "functions": {
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 198,
+    "agreed": 48,
+    "disagreed": 150,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "result": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "pixels": "the lists' text a pixel a character wider apart than Windows: the dialog's emboldened font in a list's DC, USER's and GDI's (150 of 201)"
+  }
+ },
+ "chfontpr": {
+  "probe": "chfontpr",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 31,
+  "functions": {
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "faces": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ic": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "result": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sizes": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "styles": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "ic": "GDI makes no IC for a Windows printer driver (1 of 1)",
+   "state": "no Font dialog with the printer's fonts: GDI's IC for a printer driver (8 of 8)",
+   "faces": "no Font dialog with the printer's faces: GDI's IC for a printer driver (6 of 6)",
+   "styles": "no Font dialog with the printer's styles: GDI's IC for a printer driver (6 of 6)",
+   "sizes": "no Font dialog with the printer's sizes: GDI's IC for a printer driver (6 of 6)",
+   "result": "no ChooseFont with the printer: GDI's IC for a printer driver (3 of 3)"
+  }
+ },
  "choosclr": {
   "probe": "choosclr",
   "display": "vga",
