@@ -23,7 +23,13 @@ export function seek(handle, hi, lo, basis) {
   } else if (basis == 1) {
     file.position += position;
   } else if (basis == 2) {
-    file.position = file.size - position;
+    file.position = file.size + position;
+  }
+
+  /* Before the start: DOSBox's host seek fails, and it puts the file at its
+   * end instead (`localFile::Seek`); **recorded** by `lzfiles`. */
+  if ((file.position | 0) < 0) {
+    file.position = file.size;
   }
 
   let ret = file.position;

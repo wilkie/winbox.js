@@ -245,3 +245,11 @@ export async function fileStamp(this: any, handle: number) {
     ((date.year - 1980) << 9) | (date.month << 5) | date.day,
   ];
 }
+
+/**
+ * When a file open was last written, set (5701h): DOSBox says it set it
+ * and does nothing, whatever the handle -- "DOS:57:Set File Date Time
+ * Faked" (`dos.cpp`) -- the file keeping the host's stamp. As `dos.rs`.
+ * LZEXPAND's `LZCopy` sets its copy's so (`lzfiles`).
+ */
+export async function setFileStamp(this: any, _handle: number) {}

@@ -5,8 +5,6 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use std::io::SeekFrom;
-
 use crate::call::{Answer, Args, Stop};
 use crate::search::{directory_of, has_directory};
 use crate::system::System;
@@ -426,24 +424,23 @@ pub fn lread(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// A file's position moved, from its start, from where it is, or from its
-/// end, the offset added as DOS adds it -- the TypeScript engine takes it
-/// from the end: the new position, or `HFILE_ERROR`, as that engine
-/// answers it, a word.
+/// end, the offset added as DOS adds it: the new position, or
+/// `HFILE_ERROR` in both words, -1 (**recorded** by `lzfiles`: LZEXPAND's
+/// `LZSeek` answers KERNEL's answer for a DOS handle). A position before
+/// the start puts the file at its end, as DOSBox does (`dos_seek`).
 pub fn llseek(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = usize::from(args.word(system));
     let offset = args.dword(system) as i32;
     let origin = args.signed(system);
     let Some(file) = system.files.resolve(handle) else {
-        return Ok(Answer::Dword(u32::from(HFILE_ERROR)));
+        return Ok(Answer::Dword(u32::MAX));
     };
-    let to = match origin {
-        0 => SeekFrom::Start(u64::from(offset as u32)),
-        1 => SeekFrom::Current(i64::from(offset)),
-        2 => SeekFrom::End(i64::from(offset)),
-        _ => return Ok(Answer::Dword(u32::from(HFILE_ERROR))),
+    let basis = match origin {
+        0..=2 => origin as u8,
+        _ => return Ok(Answer::Dword(u32::MAX)),
     };
 
-    Ok(Answer::Dword(file.seek(to).unwrap_or(0) as u32))
+    Ok(Answer::Dword(crate::dos::dos_seek(file, offset, basis)))
 }
 
 /// Bytes read from a file, as many as 2 GB, across segments.
