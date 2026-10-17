@@ -4,6 +4,10 @@ import { TRUE, FALSE } from '../consts.js';
 
 import { BitmapFont } from '../../raster/bitmap-font.js';
 import { LogicalFont } from '../../raster/logical-font.js';
+/* `printer-driver.ts`, loaded when a printer driver's context first asks:
+ * imported at the top, it would load KERNEL's and USER's modules in the
+ * middle of GDI's. */
+const printerDriver = () => import('./printer-driver.js');
 
 /**
  * The **GetTextMetrics** function retrieves the metrics for the current font.
@@ -35,6 +39,21 @@ export function GetTextMetrics(hdc, lptm) {
 
   if (!surface) {
     return FALSE;
+  }
+
+  /* A printer driver's from the drive: the font as the driver realized it
+   * (`printer-driver.ts`). */
+  if (surface.driverDevice) {
+    return printerDriver().then(async ({ deviceFont, deviceTextMetrics }) => {
+      const realized = await deviceFont(this, surface);
+
+      if (!realized) {
+        return FALSE;
+      }
+
+      Object.assign(lptm, deviceTextMetrics(realized));
+      return TRUE;
+    });
   }
 
   // Get the current font

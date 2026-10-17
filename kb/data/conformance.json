@@ -7,8 +7,8 @@
   "functions": {
    "about": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1348,54 +1348,53 @@
    },
    "faces": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 4,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    },
    "ic": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "result": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "sizes": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 5,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "state": {
     "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
+    "agreed": 5,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    },
    "styles": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 4,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
   "gaps": {
-   "ic": "GDI makes no IC for a Windows printer driver (1 of 1)",
-   "state": "no Font dialog with the printer's fonts: GDI's IC for a printer driver (8 of 8)",
-   "faces": "no Font dialog with the printer's faces: GDI's IC for a printer driver (6 of 6)",
-   "styles": "no Font dialog with the printer's styles: GDI's IC for a printer driver (6 of 6)",
-   "sizes": "no Font dialog with the printer's sizes: GDI's IC for a printer driver (6 of 6)",
-   "result": "no ChooseFont with the printer: GDI's IC for a printer driver (3 of 3)"
+   "state": "the face the Font dialog starts on with the printer's fonts (3 of 8)",
+   "faces": "the face selected as the Font dialog starts with the printer's fonts (2 of 6)",
+   "styles": "the styles of the face wrongly selected with the printer's fonts (2 of 6)",
+   "sizes": "the sizes of the face wrongly selected with the printer's fonts (1 of 6)",
+   "result": "the font chosen from the face wrongly selected with the printer's fonts (1 of 3)"
   }
  },
  "choosclr": {
@@ -13992,6 +13991,129 @@
    }
   },
   "gaps": {}
+ },
+ "prdoc": {
+  "probe": "prdoc",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 223,
+  "functions": {
+   "call": {
+    "total": 10,
+    "agreed": 6,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 211,
+    "agreed": 0,
+    "disagreed": 211,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "call": "a document printed through a Windows printer driver, not followed (4 of 10)",
+   "size": "no PostScript written: printing through a Windows driver (1 of 1)",
+   "line": "no PostScript written: printing through a Windows driver (211 of 211)"
+  }
+ },
+ "pric": {
+  "probe": "pric",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 200,
+  "functions": {
+   "caps": {
+    "total": 68,
+    "agreed": 68,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "delete": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "escape": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "face": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "font": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fontname": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fonts": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ic": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "metrics": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "queryesc": {
+    "total": 60,
+    "agreed": 60,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "metrics": "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
+   "face": "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)"
+  }
  },
  "printing": {
   "probe": "printing",

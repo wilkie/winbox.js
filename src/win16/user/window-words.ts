@@ -49,7 +49,8 @@ const GCW_STYLE = -26;
 /**
  * An address for each of USER's own window procedures, which are functions
  * here: eight bytes of code of their own in a segment kept for them, `mov
- * ax, <index>`, `int 84h` and `retf 10`. A program handed one may read it --
+ * ax, <index>`, `int 84h` and `retf 10` (or as many bytes as the procedure
+ * takes). A program handed one may read it --
  * TC Invaders of the corpus looks at a window procedure's first byte -- or
  * call it, and the interrupt runs the function with the arguments on the
  * stack (see `userProcedureInvoke` in `win16.ts`).
@@ -68,7 +69,7 @@ function procedureSegment(system: any) {
   return system._procSegment;
 }
 
-export function procToken(system: any, proc: any) {
+export function procToken(system: any, proc: any, pops = 10) {
   if (typeof proc !== 'function') {
     return proc ?? 0;
   }
@@ -81,7 +82,7 @@ export function procToken(system: any, proc: any) {
   if (at < 0) {
     at = system._procTokens.push(proc) - 1;
 
-    const bytes = [0xb8, at & 0xff, (at >> 8) & 0xff, 0xcd, 0x84, 0xca, 0x0a, 0x00];
+    const bytes = [0xb8, at & 0xff, (at >> 8) & 0xff, 0xcd, 0x84, 0xca, pops & 0xff, pops >> 8];
 
     bytes.forEach((byte, offset) =>
       system.machine.memory.write8((index << 16) + at * SLOT + offset, byte)

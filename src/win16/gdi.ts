@@ -193,7 +193,7 @@ import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
-import { EngineRealizeFont } from './gdi/engine-font.js';
+import { EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
 import { GetEnvironment, SetEnvironment } from './gdi/environment.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
@@ -621,7 +621,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 300 //
-      [Gdi.stub, 'EngineEnumerateFont', 12],
+      [EngineEnumerateFont, 'EngineEnumerateFont', 12, [LPCSTR, FARPTR, DWORD], INT],
       [Gdi.stub, 'EngineDeleteFont', 4],
       [EngineRealizeFont, 'EngineRealizeFont', 12, [FARPTR, FARPTR, FARPTR], DWORD],
       [Gdi.stub, 'EngineGetCharWidth', 12],

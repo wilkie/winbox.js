@@ -1,6 +1,10 @@
 'use strict';
 
 import { LogicalFont } from '../../raster/logical-font.js';
+/* `printer-driver.ts`, loaded when a printer driver's context first asks:
+ * imported at the top, it would load KERNEL's and USER's modules in the
+ * middle of GDI's. */
+const printerDriver = () => import('./printer-driver.js');
 
 /**
  * The **GetTextFace** function copies the typeface name of the current font
@@ -32,14 +36,28 @@ export function GetTextFace(hdc, cbBuffer, lpFace) {
     return 0;
   }
 
+  /* A printer driver's from the drive: the face the driver realized
+   * (`printer-driver.ts`). */
+  if (surface.driverDevice) {
+    return printerDriver().then(async ({ deviceFace, deviceFont }) => {
+      const realized = await deviceFont(this, surface);
+
+      return realized ? writeFace(this, deviceFace(this, surface, realized), cbBuffer, lpFace) : 0;
+    });
+  }
+
   const font = surface.font;
 
   if (!(font instanceof LogicalFont)) {
     return 0;
   }
 
-  const face = font.face;
-  const cpu = this.machine.cpu.core;
+  return writeFace(this, font.face, cbBuffer, lpFace);
+}
+
+/** A face's name copied to the buffer, as much as fits with its nought: the bytes copied. */
+function writeFace(system: any, face: string, cbBuffer: number, lpFace: number) {
+  const cpu = system.machine.cpu.core;
 
   /* A face whose name GDI no longer has -- an outline face whose stub was
    * removed -- is an empty name, its nought written (**recorded** by

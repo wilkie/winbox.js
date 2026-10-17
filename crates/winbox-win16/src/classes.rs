@@ -28,6 +28,9 @@ pub enum HostProc {
     Control(String),
     /// The MDI client's (`mdi.rs`).
     MdiClient,
+    /// GDI's procedure for a printer driver's fonts, which takes fourteen
+    /// bytes of arguments (`gdi/printer_driver.rs`).
+    FontWalk,
 }
 
 /// A window procedure: a program's, by its far pointer, or USER's.
@@ -235,6 +238,12 @@ impl System {
             at
         } else {
             {
+                let pops = if host == HostProc::FontWalk {
+                    0x0e
+                } else {
+                    0x0a
+                };
+
                 self.proc_tokens.push(host);
 
                 let at = self.proc_tokens.len() - 1;
@@ -242,7 +251,7 @@ impl System {
 
                 self.cpu.bus.write(
                     ((index as u32) << 16) + u32::from(at as u16 * SLOT),
-                    &[0xb8, low, high, 0xcd, 0x84, 0xca, 0x0a, 0x00],
+                    &[0xb8, low, high, 0xcd, 0x84, 0xca, pops, 0x00],
                 );
                 at
             }

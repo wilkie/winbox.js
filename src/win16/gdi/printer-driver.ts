@@ -10,7 +10,10 @@ import { GetProcAddress } from '../kernel/GetProcAddress.js';
 import { LoadLibrary } from '../kernel/LoadLibrary.js';
 import { freeLibrary } from '../library.js';
 import { DWORD, UINT } from '../types.js';
-import { SYSTEM_FONT, stockFontHandle } from './stock-fonts.js';
+import { stockHandle } from '../handle-manager.js';
+import { stockLogfont } from './GetObject.js';
+import { MulDiv } from './MulDiv.js';
+import { stockFontHandle } from './stock-fonts.js';
 
 /**
  * A printer's driver from the drive -- the PostScript driver, or any other
@@ -78,6 +81,9 @@ export interface PDevice {
 }
 
 const ENABLE = 5;
+const REALIZE_OBJECT = 10;
+const OBJ_FONT = 3;
+const DEVICE_DEFAULT_FONT = 14;
 const DISABLE = 4;
 const CONTROL = 3;
 
@@ -412,7 +418,9 @@ export async function createDriverDC(
   surface.driverDevice = pdevice;
   surface.informationOnly = ic;
 
-  const font = system.fonts ? stockFontHandle(system, SYSTEM_FONT) : null;
+  /* A printer's context starts with `DEVICE_DEFAULT_FONT`, the display's
+   * with `SYSTEM_FONT` (seg1 `0217`-`0225`). */
+  const font = system.fonts ? stockFontHandle(system, DEVICE_DEFAULT_FONT) : null;
 
   if (font) {
     surface.font = system.handles.resolve(font);
@@ -441,6 +449,10 @@ export async function deleteDriverDC(system: any, surface: any) {
 
     driver.devices = driver.devices.filter((other) => other !== pdevice);
     GlobalFree.call(system, pdevice.pdevice);
+  }
+
+  for (const realized of surface.deviceFonts?.values() ?? []) {
+    GlobalFree.call(system, realized.handle);
   }
 
   driver.uses = Math.max(0, driver.uses - 1);
@@ -518,4 +530,343 @@ export async function driverEscape(
   }
 
   return call(escape, lpIn, lpOut);
+}
+
+/** A realized font of a driver's, as GDI keeps it: the `FONTINFO` and the `TEXTXFORM`. */
+interface DeviceFont {
+  handle: number;
+  far: number;
+  info: Uint8Array;
+  xform: Uint8Array;
+}
+
+/** The `LOGFONT` a font object was made of, or a stock font's. */
+function logfontOf(system: any, font: any) {
+  if (font?.logfont) {
+    return font.logfont;
+  }
+
+  for (let index = 10; index <= 16; index++) {
+    if (system.handles.resolve(stockHandle(index)) === font) {
+      return stockLogfont(system, stockHandle(index));
+    }
+  }
+
+  return null;
+}
+
+/**
+ * The logical font selected, realized by the driver (`GDI.EXE` seg3
+ * `0a68`): its `LOGFONT` copied, `lfClipPrecision`'s high bits left off,
+ * the driver's `RealizeObject` asked the size of its `FONTINFO` with
+ * nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made, and
+ * the font realized into it with a `TEXTXFORM` of GDI's (`0c08`-`0c66`);
+ * the `TEXTXFORM`'s italic, underline and strike-out made nought or FFh.
+ * Null where the driver realizes none, which GDI maps itself: not followed.
+ * Not followed either: the height and width taken to the device's units in
+ * a mapping mode other than `MM_TEXT`.
+ */
+export async function deviceFont(system: any, surface: any): Promise<DeviceFont | null> {
+  const pdevice: PDevice | null = surface.driverDevice;
+  const font = surface.font;
+
+  if (!pdevice || !font) {
+    return null;
+  }
+
+  surface.deviceFonts ??= new Map<any, DeviceFont>();
+
+  const kept = surface.deviceFonts.get(font);
+
+  if (kept) {
+    return kept;
+  }
+
+  const realize = proc(pdevice.driver, REALIZE_OBJECT);
+  const logfont = logfontOf(system, font);
+
+  if (!realize || !logfont) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(0x12 + 0x40);
+  const view = new DataView(bytes.buffer);
+
+  view.setInt16(0, logfont.height, true);
+  view.setInt16(2, logfont.width, true);
+  view.setInt16(4, logfont.escapement, true);
+  view.setInt16(6, logfont.orientation, true);
+  view.setInt16(8, logfont.weight, true);
+  bytes.set(
+    [
+      logfont.italic,
+      logfont.underline,
+      logfont.strikeout,
+      logfont.charset,
+      logfont.outPrecision,
+      logfont.clipPrecision & 0x0f,
+      logfont.quality,
+      logfont.pitchAndFamily,
+    ].map((value) => Number(value) & 0xff),
+    0x0a
+  );
+
+  for (let at = 0; at < Math.min(logfont.face.length, 0x3f); at++) {
+    bytes[0x12 + at] = logfont.face.charCodeAt(at) & 0xff;
+  }
+
+  const realizeArgs = (lf: number, info: number, xform: number): [number, number][] => [
+    [pdevice.lpPDevice, DWORD],
+    [OBJ_FONT, UINT],
+    [lf, DWORD],
+    [info, DWORD],
+    [xform, DWORD],
+  ];
+  const [size] = await onStack(
+    system,
+    bytes,
+    async (lf) => (await callDriver(system, realize, realizeArgs(lf, 0, 0))) & 0xffff
+  );
+
+  if (!size) {
+    return null;
+  }
+
+  const handle = GlobalAlloc.call(system, 0x2042, size + 0x42);
+
+  if (!handle) {
+    return null;
+  }
+
+  const far = GlobalLock.call(system, handle) >>> 0;
+  const [[, xform]] = await onStack(system, bytes, async (lf) =>
+    onStack(system, new Uint8Array(0x14), (xformFar) =>
+      callDriver(system, realize, realizeArgs(lf, far, xformFar))
+    )
+  );
+  const core = system.machine.cpu.core;
+  const info = new Uint8Array(size);
+
+  for (let at = 0; at < size; at++) {
+    info[at] = core.read8(far >>> 16, ((far & 0xffff) + at) & 0xffff);
+  }
+
+  for (let at = 0x0a; at <= 0x0c; at++) {
+    xform[at] = xform[at] ? 0xff : 0;
+  }
+
+  const realized = { handle, far, info, xform: xform.slice(0, 0x13) };
+
+  surface.deviceFonts.set(font, realized);
+  return realized;
+}
+
+/**
+ * `GetTextMetrics` of a font a driver realized (`GDI.EXE` seg3 `0222`):
+ * the height the `TEXTXFORM`'s, the ascent, descent and leadings the
+ * `FONTINFO`'s scaled to it; the average width the `TEXTXFORM`'s and the
+ * widest the `FONTINFO`'s scaled to it, each a pixel more where the
+ * `TEXTXFORM` asks for bold made by GDI (200h in its flags); the overhang,
+ * weight, italic, underline and strike-out the `TEXTXFORM`'s; the
+ * characters, the character set and the resolutions the `FONTINFO`'s; the
+ * pitch and family the `FONTINFO`'s with `TMPF_DEVICE` and its type's two
+ * low bits as `TMPF_VECTOR` and `TMPF_TRUETYPE`. Not followed: the other
+ * widths of a font GDI emboldens (byte 0Bh, bit 3, `02de`), and the
+ * metrics taken to logical units in a mapping mode other than `MM_TEXT`.
+ */
+export function deviceTextMetrics(realized: DeviceFont) {
+  const { info, xform } = realized;
+  const word = (bytes: Uint8Array, at: number) => ((bytes[at] | (bytes[at + 1] << 8)) << 16) >> 16;
+  const height = word(xform, 0);
+  const width = word(xform, 2);
+  const pixHeight = word(info, 0x16);
+  const ascent = word(info, 8);
+  const bold = word(xform, 0x0f) & 0x200 ? 1 : 0;
+  const first = info[0x1d];
+
+  return {
+    tmHeight: height,
+    tmAscent: MulDiv(ascent, height, pixHeight),
+    tmDescent: MulDiv(pixHeight - ascent, height, pixHeight),
+    tmInternalLeading: MulDiv(word(info, 0x0a), height, pixHeight),
+    tmExternalLeading: MulDiv(word(info, 0x0c), height, pixHeight),
+    tmAveCharWidth: bold + width,
+    tmMaxCharWidth: MulDiv(word(info, 0x1b), width, word(info, 0x19)) + bold,
+    tmWeight: word(xform, 8) & 0xffff,
+    tmItalic: xform[0x0a],
+    tmUnderlined: xform[0x0b],
+    tmStruckOut: xform[0x0c],
+    tmFirstChar: first,
+    tmLastChar: info[0x1e],
+    tmDefaultChar: (info[0x1f] + first) & 0xff,
+    tmBreakChar: (info[0x20] + first) & 0xff,
+    tmPitchAndFamily: (info[0x18] & 0xf1) | 8 | ((info[0] & 3) << 1),
+    tmCharSet: info[0x13],
+    tmOverhang: word(xform, 0x11),
+    tmDigitizedAspectX: word(info, 4),
+    tmDigitizedAspectY: word(info, 6),
+  };
+}
+
+/**
+ * `GetTextFace` of a font a driver realized (`GDI.EXE` seg3 `0102`): the
+ * face the `FONTINFO` names at its `dfFace`, or the logical font's own
+ * spelling where the two are one atom.
+ */
+export function deviceFace(system: any, surface: any, realized: DeviceFont) {
+  const { info, far } = realized;
+  const offset = info[0x27] | (info[0x28] << 8);
+  const face = readFar(system, ((far & 0xffff0000) | ((far + offset) & 0xffff)) >>> 0);
+  const logical = logfontOf(system, surface.font)?.face ?? '';
+
+  return logical && logical.toUpperCase() === face.toUpperCase() ? logical : face;
+}
+
+const ENUM_DFONTS = 6;
+
+/** A walk of a driver's fonts, as GDI's frame for its procedure keeps it (seg5 `01c5`). */
+interface FontWalk {
+  proc: any;
+  data: number;
+  found: boolean;
+  faceGiven: boolean;
+  compat: number;
+  textCaps: number;
+}
+
+/**
+ * GDI's procedure for a driver's fonts (`GDI.EXE` seg5 `048a`): with no
+ * face asked for and `TTOnly` on, a font not TrueType passes by, answering
+ * 1. Otherwise the walk has found one; a font not TrueType is a device
+ * font, `DEVICE_FONTTYPE` added and its `tmPitchAndFamily` given
+ * `TMPF_DEVICE` and, but for a raster font, `TMPF_VECTOR`, in the driver's
+ * own structure; its `TEXTMETRIC` copied with the five words of a
+ * `NEWTEXTMETRIC` after it nought. The program's procedure is called with
+ * the `LOGFONT`, the metrics, the type and its data, AX, DS and ES the
+ * stack's, and its answer is the answer. Not followed: the compatibility
+ * flags' changes to a TrueType font's type (`0542`-`0565`), and the sizes
+ * taken to logical units in a mapping mode other than `MM_TEXT` (`04b5`).
+ */
+async function fontCallback(
+  system: any,
+  lpLogFont: number,
+  lpTextMetric: number,
+  type: number,
+  id: number
+) {
+  const walk: FontWalk | undefined = system._fontWalks?.[id];
+  const core = system.machine.cpu.core;
+
+  if (!walk) {
+    return 0;
+  }
+
+  if (!walk.faceGiven && system.fonts?.trueTypeOnly && !(type & 4)) {
+    return 1;
+  }
+
+  walk.found = true;
+
+  let kind = type & 0xffff;
+  let metrics = lpTextMetric;
+
+  if (!(kind & 4)) {
+    kind |= 2;
+
+    const at = ((lpTextMetric & 0xffff) + 0x17) & 0xffff;
+    const pitch = core.read8(lpTextMetric >>> 16, at);
+
+    core.write8(lpTextMetric >>> 16, at, (pitch & 0xf1) | 8 | (kind & 1 ? 0 : 2));
+  }
+
+  const call = async (tm: number) => {
+    if (typeof walk.proc === 'function') {
+      return walk.proc(lpLogFont, tm, kind, walk.data);
+    }
+
+    return system.scheduler.callProc(
+      walk.proc,
+      [
+        [lpLogFont >>> 0, DWORD],
+        [tm >>> 0, DWORD],
+        [kind, UINT],
+        [walk.data >>> 0, DWORD],
+      ],
+      system.scheduler.stackRegisters()
+    );
+  };
+
+  if (kind & 4) {
+    return (await call(metrics)) & 0xffff;
+  }
+
+  const copy = new Uint8Array(31 + 10);
+
+  for (let at = 0; at < 31; at++) {
+    copy[at] = core.read8(lpTextMetric >>> 16, ((lpTextMetric & 0xffff) + at) & 0xffff);
+  }
+
+  const [answer] = await onStack(system, copy, async (far) => {
+    metrics = far;
+    return call(far);
+  });
+
+  return Number(answer) & 0xffff;
+}
+
+/**
+ * The driver's own fonts, before GDI's (`GDI.EXE` seg5 `01c5`-`021f`): its
+ * `EnumDFonts` given the `PDEVICE`, the face asked for, GDI's procedure
+ * and GDI's frame. Its answer, and whether any font came to GDI's
+ * procedure.
+ */
+export async function enumerateDeviceFonts(
+  system: any,
+  surface: any,
+  face: any,
+  callback: any,
+  data: number
+): Promise<{ answer: number; found: boolean }> {
+  const pdevice: PDevice = surface.driverDevice;
+  const enumerate = proc(pdevice.driver, ENUM_DFONTS);
+
+  if (!enumerate) {
+    return { answer: 1, found: false };
+  }
+
+  system._fontWalks ??= [];
+  /* USER's thunks, loaded when first wanted: imported at the top, USER's
+   * modules would load in the middle of GDI's. */
+  const { procToken } = await import('../user/window-words.js');
+
+  system._fontWalkThunk ??= procToken(
+    system,
+    (hwnd: number, message: number, wParam: number, lParam: number, above: number) =>
+      fontCallback(system, above, ((hwnd << 16) | message) >>> 0, wParam, lParam),
+    14
+  );
+
+  const walk: FontWalk = {
+    proc: callback,
+    data: data >>> 0,
+    found: false,
+    faceGiven: !!face,
+    compat: 0,
+    textCaps: pdevice.info[0x22] | (pdevice.info[0x23] << 8),
+  };
+  const id = system._fontWalks.push(walk) - 1;
+
+  try {
+    const answer =
+      (await callDriver(system, enumerate, [
+        [pdevice.lpPDevice, DWORD],
+        [farOf(face), DWORD],
+        [system._fontWalkThunk >>> 0, DWORD],
+        [id, DWORD],
+      ])) & 0xffff;
+
+    return { answer, found: walk.found };
+  } finally {
+    system._fontWalks.pop();
+  }
 }

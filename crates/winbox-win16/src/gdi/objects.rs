@@ -669,7 +669,7 @@ fn logfont_bytes(logfont: &LogFont) -> Vec<u8> {
 /// and its family with the pitch as a `LOGFONT` says it, 2 variable and 1
 /// fixed, where the header's low bit is set for variable. VGASYS is 16 by
 /// 7, bold; EGASYS 12 by 7; VGAFIX 15 by 8, regular; EGAFIX 10 by 8, bold.
-fn stock_logfont(system: &mut System, index: i16) -> Option<LogFont> {
+pub(crate) fn stock_logfont(system: &mut System, index: i16) -> Option<LogFont> {
     let fixed = |height, width, char_set, pitch_and_family, face: &str| LogFont {
         height,
         width,

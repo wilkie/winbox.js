@@ -213,13 +213,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetDIBits" => dib::get_dibits_call,
         "SetDIBits" => dib::set_dibits_call,
         _ => {
-            return draw::implementation(name)
+            return printer_driver::implementation(name)
+                .or_else(|| draw::implementation(name))
                 .or_else(|| text::implementation(name))
                 .or_else(|| text_out::implementation(name))
                 .or_else(|| calls::implementation(name))
                 .or_else(|| metafile::implementation(name))
                 .or_else(|| printing::implementation(name))
-                .or_else(|| printer_driver::implementation(name))
                 .or_else(|| environment::implementation(name))
                 .or_else(|| engine_font::implementation(name));
         }

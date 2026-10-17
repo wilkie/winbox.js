@@ -1,5 +1,9 @@
 'use strict';
 
+import { FARPTR, INT, LPARAM } from '../types.js';
+import { enumerateTrueType, placement } from './EnumFontFamilies.js';
+import { GetDeviceCaps } from './GetDeviceCaps.js';
+
 /**
  * GDI's TrueType engine as a printer driver asks it: `EngineRealizeFont`.
  * The twin of `crates/winbox-win16/src/gdi/engine_font.rs`.
@@ -45,3 +49,57 @@ export function EngineRealizeFont(
 
   return 0;
 }
+
+/**
+ * GDI's TrueType fonts for a printer driver's own walk of its fonts:
+ * `EngineEnumerateFont` (`GDI.EXE` seg5 `093c`, into `0697`). Each font of
+ * the TrueType directory, as `EnumFonts` gives it, at the resolution of
+ * the context GDI is walking the fonts of, or 300 dots an inch with none,
+ * typed `TRUETYPE_FONTTYPE` and `DEVICE_FONTTYPE`, to the driver's
+ * procedure with its data. With TrueType off, nothing, and 1 answered. The
+ * last answer; 1 for none.
+ */
+export async function EngineEnumerateFont(
+  this: any,
+  lpszFace: any,
+  lpFontFunc: number,
+  dwData: number
+) {
+  if (!this.fonts || this.fonts.trueTypeOff) {
+    return 1;
+  }
+
+  const walking = this._fontEnumeration;
+  const logX = walking ? GetDeviceCaps.call(this, walking.hdc, LOGPIXELSX) : 300;
+  const logY = walking ? GetDeviceCaps.call(this, walking.hdc, LOGPIXELSY) : 300;
+  const name = lpszFace ? String(lpszFace) : null;
+  const answer = await enumerateTrueType(
+    this,
+    logX,
+    logY,
+    name,
+    async (elf, ntm, type) => {
+      const result = await this.scheduler.callProc(
+        lpFontFunc >>> 0,
+        [
+          /* Where GDI's walk of its TrueType fonts puts them (seg5 `07f5`). */
+          [[elf, ...(placement(TRUETYPE_FONTTYPE)?.lf ?? [])], FARPTR],
+          [[ntm, ...(placement(TRUETYPE_FONTTYPE)?.tm ?? [])], FARPTR],
+          [type, INT],
+          [dwData >>> 0, LPARAM],
+        ],
+        this.scheduler.stackRegisters()
+      );
+
+      return ((result & 0xffff) << 16) >> 16;
+    },
+    DEVICE_FONTTYPE
+  );
+
+  return answer ?? 1;
+}
+
+const DEVICE_FONTTYPE = 2;
+const TRUETYPE_FONTTYPE = 4;
+const LOGPIXELSX = 88;
+const LOGPIXELSY = 90;

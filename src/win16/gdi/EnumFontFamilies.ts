@@ -4,6 +4,10 @@ import { gdiDataSelector } from './gdi-data.js';
 import { Struct, BYTE, CHARARRAY, DWORD, FARPTR, INT, UINT, LPARAM } from '../types.js';
 
 import { GetDeviceCaps } from './GetDeviceCaps.js';
+/* `printer-driver.ts`, loaded when a printer driver's context first asks:
+ * imported at the top, it would load KERNEL's and USER's modules in the
+ * middle of GDI's. */
+const printerDriver = () => import('./printer-driver.js');
 
 /**
  * The fonts a device context has, a family at a time, or a family's every
@@ -48,10 +52,11 @@ import { GetDeviceCaps } from './GetDeviceCaps.js';
  * The answer is the last callback's; a callback answering nought stops
  * everything at once. Nothing matched answers 1, as it starts.
  *
- * Not followed: the mapping mode, whose units GDI would turn the sizes
- * into; the device's own fonts, which the screen drivers have none of; a
- * device context whose aspect does not match a raster font's; and the
- * compatibility flags that change what an old program is told.
+ * A printer driver's own fonts come first, through its `EnumDFonts`
+ * (`printer-driver.ts`); the screen drivers have none. Not followed: the
+ * mapping mode, whose units GDI would turn the sizes into; a device context
+ * whose aspect does not match a raster font's; and the compatibility flags
+ * that change what an old program is told.
  */
 
 export class ENUMLOGFONT extends Struct {
@@ -112,6 +117,9 @@ const RASTER_FONTTYPE = 1;
 const TRUETYPE_FONTTYPE = 4;
 const LOGPIXELSX = 88;
 const LOGPIXELSY = 90;
+const TEXTCAPS = 34;
+const DPCAPS1 = 0x5e;
+const TC_RA_ABLE = 0x2000;
 
 type Emit = (elf: ENUMLOGFONT, ntm: NEWTEXTMETRIC, type: number) => Promise<number>;
 
@@ -183,9 +191,7 @@ function fromHeader(entry: any, face: string) {
  * rounded as a whole instead misses 30, and the realised font's metrics, which
  * `VDMX` settles, miss the EGA's ascent.
  */
-function fromOutline(system: any, hdc: number, resource: any, face: string) {
-  const logX = GetDeviceCaps.call(system, hdc, LOGPIXELSX);
-  const logY = GetDeviceCaps.call(system, hdc, LOGPIXELSY);
+function fromOutline(logX: number, logY: number, resource: any, face: string) {
   const round = (a: number, b: number, c: number) => Math.floor((a * b + (c >> 1)) / c);
   const emY = round(24, logY, 72);
   const emX = round(24, logX, 72);
@@ -242,16 +248,92 @@ function fromOutline(system: any, hdc: number, resource: any, face: string) {
   return { elf, ntm, type: TRUETYPE_FONTTYPE };
 }
 
-/** Walks the two tables, handing each font chosen to `emit`, as seg5 `01a7` does. */
-export async function enumerateFamilies(system: any, hdc: number, name: string | null, emit: Emit) {
+/**
+ * The TrueType directory walked at a resolution (seg5 `0697`, `070f`): a
+ * family's first file standing for it, or every file of the family named;
+ * each font handed to `emit` with its type and `extra` in it. The last
+ * answer, or `undefined` where none was handed on; nought stops at once.
+ */
+export async function enumerateTrueType(
+  system: any,
+  logX: number,
+  logY: number,
+  name: string | null,
+  emit: Emit,
+  extra = 0
+): Promise<number | undefined> {
+  const directory: any[] = system.fonts.trueTypeDirectory ?? [];
+  const families = new Set<string>();
+  let answer: number | undefined;
+
+  for (const resource of directory) {
+    if (name === null) {
+      if (families.has(resource.family.toUpperCase())) {
+        continue;
+      }
+
+      families.add(resource.family.toUpperCase());
+    } else if (!same(resource.family, name) && !same(resource.fullName, name)) {
+      continue;
+    }
+
+    const { elf, ntm, type } = fromOutline(logX, logY, resource, name ?? resource.family);
+
+    answer = await emit(elf, ntm, type | extra);
+
+    if (!answer) {
+      return 0;
+    }
+  }
+
+  return answer;
+}
+
+/**
+ * Walks the two tables, handing each font chosen to `emit`, as seg5 `01a7`
+ * does. A printer driver's context has the driver's own fonts first
+ * (`device`, `printer-driver.ts`): its answer stands where it handed any
+ * on, and its nought ends the walk. On such a context a raster font is
+ * shown only where the driver's `dpText` has `TC_RA_ABLE` (2000h, seg5
+ * `0316`), and the TrueType fonts only with that or bit 1 of `dpCaps1`
+ * (5Eh, `06c0`); every family skips the first table where `dpCaps1` has
+ * bit 1 and `dpText` not `TC_RA_ABLE` (`0251`).
+ */
+export async function enumerateFamilies(
+  system: any,
+  hdc: number,
+  name: string | null,
+  emit: Emit,
+  device: (() => Promise<{ answer: number; found: boolean }>) | null = null
+) {
   const fonts = system.fonts;
   const directory: any[] = fonts.trueTypeDirectory ?? [];
   const trueTypeNamed = (face: string) =>
     directory.some((resource) => same(resource.family, face) || same(resource.fullName, face));
+  const caps = (index: number) => GetDeviceCaps.call(system, hdc, index) & 0xffff;
+  const printer = !!device;
+  const rasterAble = !printer || (caps(TEXTCAPS) & TC_RA_ABLE) !== 0;
+  const trueTypeAble = !printer || rasterAble || (caps(DPCAPS1) & 2) !== 0;
   let result = 1;
 
-  if (name !== null && !fonts.listedEntries().some((entry: any) => same(entry.name, name)) && !trueTypeNamed(name)) {
-    return 1;
+  if (device) {
+    const { answer, found } = await device();
+
+    if (!answer) {
+      return 0;
+    }
+
+    if (found) {
+      result = answer;
+    }
+  }
+
+  if (
+    name !== null &&
+    !fonts.listedEntries().some((entry: any) => same(entry.name, name)) &&
+    !trueTypeNamed(name)
+  ) {
+    return result;
   }
 
   /* The raster and vector table. */
@@ -260,11 +342,17 @@ export async function enumerateFamilies(system: any, hdc: number, name: string |
   /* With `TTOnly` on, a walk of every font passes the raster and vector table
    * by (`GDI.EXE` seg5 `0249`); one of a face named does not (**recorded** by
    * `fontboot`). */
-  const strikes = name === null && fonts.trueTypeOnly ? [] : fonts.listedEntries();
+  const skipTable =
+    name === null && (fonts.trueTypeOnly || (printer && !rasterAble && (caps(DPCAPS1) & 2) !== 0));
+  const strikes = skipTable ? [] : fonts.listedEntries();
 
   for (const entry of strikes) {
     const face = entry.name;
     const raster = (entry.header.dfType & 1) === 0;
+
+    if (raster && !rasterAble) {
+      continue;
+    }
 
     if (name === null) {
       if (raster && trueTypeNamed(face)) {
@@ -290,32 +378,19 @@ export async function enumerateFamilies(system: any, hdc: number, name: string |
   }
 
   /* The TrueType directory. */
-  let called = false;
-  let answer = 1;
-  const families = new Set<string>();
-
-  for (const resource of directory) {
-    if (name === null) {
-      if (families.has(resource.family.toUpperCase())) {
-        continue;
-      }
-
-      families.add(resource.family.toUpperCase());
-    } else if (!same(resource.family, name) && !same(resource.fullName, name)) {
-      continue;
-    }
-
-    const { elf, ntm, type } = fromOutline(system, hdc, resource, name ?? resource.family);
-
-    called = true;
-    answer = await emit(elf, ntm, type);
-
-    if (!answer) {
-      return 0;
-    }
+  if (!trueTypeAble) {
+    return result;
   }
 
-  return called ? answer : result;
+  const answer = await enumerateTrueType(
+    system,
+    GetDeviceCaps.call(system, hdc, LOGPIXELSX),
+    GetDeviceCaps.call(system, hdc, LOGPIXELSY),
+    name,
+    emit
+  );
+
+  return answer === undefined ? result : answer;
 }
 
 export async function EnumFontFamilies(
@@ -323,28 +398,59 @@ export async function EnumFontFamilies(
   hdc: number,
   lpszFamily: any,
   lpEnumProc: any,
-  lParam: number
+  lParam: number,
+  families = 1
 ) {
   const name = lpszFamily ? String(lpszFamily) : null;
+  const surface = this.handles.resolve(hdc);
+  const device = surface?.driverDevice
+    ? async () =>
+        (await printerDriver()).enumerateDeviceFonts(this, surface, lpszFamily, lpEnumProc, lParam)
+    : null;
+  /* The context and the call GDI is walking, for a driver's
+   * `EngineEnumerateFont` (`[064Eh]`, `[041Ch]`, seg5 `01cd`, `01f4`),
+   * nought again after (`0407`). */
+  this._fontEnumeration = { hdc, families };
 
-  return enumerateFamilies(this, hdc, name, async (elf, ntm, type) => {
-    if (typeof lpEnumProc === 'function') {
-      return lpEnumProc(elf, ntm, type, lParam);
-    }
+  try {
+    return await walk.call(this, hdc, name, lpEnumProc, lParam, device);
+  } finally {
+    this._fontEnumeration = null;
+  }
+}
 
-    const answer = await this.scheduler.callProc(
-      lpEnumProc,
-      [
-        [[elf, ...(placement(type)?.lf ?? [])], FARPTR],
-        [[ntm, ...(placement(type)?.tm ?? [])], FARPTR],
-        [type, INT],
-        [lParam >>> 0, LPARAM],
-      ],
-      procedureRegisters(this, type)
-    );
+function walk(
+  this: any,
+  hdc: number,
+  name: string | null,
+  lpEnumProc: any,
+  lParam: number,
+  device: any
+) {
+  return enumerateFamilies(
+    this,
+    hdc,
+    name,
+    async (elf, ntm, type) => {
+      if (typeof lpEnumProc === 'function') {
+        return lpEnumProc(elf, ntm, type, lParam);
+      }
 
-    return ((answer & 0xffff) << 16) >> 16;
-  });
+      const answer = await this.scheduler.callProc(
+        lpEnumProc,
+        [
+          [[elf, ...(placement(type)?.lf ?? [])], FARPTR],
+          [[ntm, ...(placement(type)?.tm ?? [])], FARPTR],
+          [type, INT],
+          [lParam >>> 0, LPARAM],
+        ],
+        procedureRegisters(this, type)
+      );
+
+      return ((answer & 0xffff) << 16) >> 16;
+    },
+    device
+  );
 }
 
 /**
@@ -361,7 +467,7 @@ export async function EnumFontFamilies(
  * So a program's exported procedure given without `MakeProcInstance` finds
  * its own data for a TrueType font and not for GDI's others.
  */
-function placement(type: number) {
+export function placement(type: number) {
   if (type & DEVICE_FONTTYPE) {
     return null;
   }
@@ -397,5 +503,5 @@ export async function EnumFonts(
   lpFontFunc: any,
   lParam: number
 ) {
-  return EnumFontFamilies.call(this, hdc, lpszFace, lpFontFunc, lParam);
+  return EnumFontFamilies.call(this, hdc, lpszFace, lpFontFunc, lParam, 0);
 }

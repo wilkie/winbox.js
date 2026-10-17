@@ -52,7 +52,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetTextFace" => Implementation::Sync(get_text_face_call),
         "GetCharWidth" => Implementation::Sync(get_char_width_call),
         "SetTextJustification" => Implementation::Sync(set_text_justification_call),
-        "EnumFonts" | "EnumFontFamilies" => Implementation::Async(enumerate::enum_font_families),
+        "EnumFontFamilies" => Implementation::Async(enumerate::enum_font_families),
+        "EnumFonts" => Implementation::Async(enumerate::enum_fonts),
         "GetGlyphOutline" => Implementation::Sync(glyphs::get_glyph_outline_call),
         "AddFontResource" => Implementation::Sync(added::add_font_resource_call),
         "RemoveFontResource" => Implementation::Sync(added::remove_font_resource_call),
@@ -132,7 +133,7 @@ pub fn get_text_metrics(system: &mut System, hdc: u16) -> Result<Option<Option<T
 /// the program asked; nought for a handle that stands for nothing. A context
 /// with no font, or a handle that is no device context's, answers 1 and
 /// writes nothing, as the TypeScript engine's does.
-fn get_text_metrics_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_text_metrics_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);
     let Some(metrics) = get_text_metrics(system, hdc)? else {
@@ -480,7 +481,7 @@ pub fn get_text_face(system: &mut System, hdc: u16, size: i16, far: u32) -> Resu
     Ok(copied as u16)
 }
 
-fn get_text_face_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_text_face_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let size = args.signed(system);
     let far = args.dword(system);

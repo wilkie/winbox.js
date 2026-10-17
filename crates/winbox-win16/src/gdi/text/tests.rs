@@ -540,7 +540,7 @@ fn enumerates_the_fonts_as_windows_does() {
         return;
     };
     let screen = create_dc(&mut system, b"DISPLAY").unwrap();
-    let every = chosen(&mut system, screen, None);
+    let every = chosen(&mut system, screen, None, false);
     let mut checked = 0;
 
     for [function, args, result] in recorded("enumfam-vga") {
@@ -549,7 +549,9 @@ fn enumerates_the_fonts_as_windows_does() {
             "style" => {
                 let (name, at) = args.rsplit_once(',').unwrap();
 
-                described(&chosen(&mut system, screen, Some(name))[at.parse::<usize>().unwrap()])
+                described(
+                    &chosen(&mut system, screen, Some(name), false)[at.parse::<usize>().unwrap()],
+                )
             }
             _ => continue,
         };
@@ -559,5 +561,5 @@ fn enumerates_the_fonts_as_windows_does() {
     }
 
     assert!(checked > 60, "{checked}");
-    assert!(chosen(&mut system, screen, Some("Nowhere")).is_empty());
+    assert!(chosen(&mut system, screen, Some("Nowhere"), false).is_empty());
 }

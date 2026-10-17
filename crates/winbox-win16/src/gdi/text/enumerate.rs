@@ -24,9 +24,11 @@
 //!
 //! A TrueType font is told of from its stub alone, as GDI tells of one.
 //!
+//! A printer driver's own fonts come first, through its `EnumDFonts`
+//! (`printer_driver.rs`); the screen drivers have none.
+//!
 //! Not followed, as the TypeScript engine does not: the mapping mode, whose
-//! units GDI would turn the sizes into; the device's own fonts, which the
-//! screen drivers have none of; a device context whose aspect does not
+//! units GDI would turn the sizes into; a device context whose aspect does not
 //! match a raster font's; the compatibility flags that change what an old
 //! program is told; and, for `EnumFonts` (seg5 `05a7`), a TrueType style
 //! that duplicates another's, or is none of regular, bold and italic, which
@@ -50,6 +52,9 @@ const RASTER_FONTTYPE: u16 = 1;
 const TRUETYPE_FONTTYPE: u16 = 4;
 const LOGPIXELSX: i16 = 88;
 const LOGPIXELSY: i16 = 90;
+const TEXTCAPS: i16 = 34;
+const DPCAPS1: i16 = 0x5e;
+const TC_RA_ABLE: u16 = 0x2000;
 
 /// An `ENUMLOGFONT`'s size: a `LOGFONT`, the full name and the style.
 const ENUMLOGFONT_SIZE: usize = 50 + 64 + 32;
@@ -59,7 +64,7 @@ const NEWTEXTMETRIC_SIZE: usize = 31 + 4 + 6;
 /// A structure written over the bytes already where it goes, field by
 /// field, as the TypeScript engine writes one: a string field is its text
 /// and a nought, and the bytes after the nought are left as they were.
-pub(super) struct Fields(pub(super) Vec<u8>);
+pub(crate) struct Fields(pub(crate) Vec<u8>);
 
 impl Fields {
     fn byte(&mut self, at: usize, value: i32) -> &mut Self {
@@ -90,10 +95,10 @@ impl Fields {
 
 /// What a font is said to be: its `ENUMLOGFONT`, its `NEWTEXTMETRIC`, as
 /// field writes over what is there, and its type.
-pub(super) struct Told {
-    pub(super) logfont: Box<dyn Fn(&mut Fields)>,
-    pub(super) metric: Box<dyn Fn(&mut Fields)>,
-    pub(super) kind: u16,
+pub(crate) struct Told {
+    pub(crate) logfont: Box<dyn Fn(&mut Fields)>,
+    pub(crate) metric: Box<dyn Fn(&mut Fields)>,
+    pub(crate) kind: u16,
 }
 
 /// A name compared as GDI compares one, without regard to case.
@@ -207,9 +212,7 @@ fn mul_div(a: i32, b: i32, c: i32) -> i32 {
 /// em, the cell's height and the average width in font units. The type is
 /// 4. No font is realised. **Recorded** by `enumfam`, 76 of 76 on four
 /// displays.
-fn from_outline(system: &System, hdc: u16, resource: &FontResource, face: &str) -> Told {
-    let log_x = i32::from(get_device_caps(system, hdc, LOGPIXELSX));
-    let log_y = i32::from(get_device_caps(system, hdc, LOGPIXELSY));
+fn from_outline(log_x: i32, log_y: i32, resource: &FontResource, face: &str) -> Told {
     let em_y = mul_div(24, log_y, 72);
     let em_x = mul_div(24, log_x, 72);
     let units = if resource.size_em == 0 {
@@ -301,22 +304,73 @@ pub fn gdi_data_selector(system: &mut System) -> u16 {
     selector
 }
 
-/// Every font chosen, in the order the walk (seg5 `01a7`) chooses them.
-pub(super) fn chosen(system: &mut System, hdc: u16, name: Option<&str>) -> Vec<Told> {
+/// The TrueType directory walked at a resolution (seg5 `0697`, `070f`): a
+/// family's first file standing for it, or every file of the family named.
+pub(crate) fn true_type_chosen(
+    system: &mut System,
+    log_x: i32,
+    log_y: i32,
+    name: Option<&str>,
+) -> Vec<Told> {
+    let directory = system.fonts().true_type_directory.clone();
+    let mut families = HashSet::new();
+    let mut told = Vec::new();
+
+    for resource in &directory {
+        match name {
+            None => {
+                if !families.insert(resource.family.to_uppercase()) {
+                    continue;
+                }
+            }
+            Some(name) if !same(&resource.family, name) && !same(&resource.full_name, name) => {
+                continue;
+            }
+            Some(_) => {}
+        }
+
+        told.push(from_outline(
+            log_x,
+            log_y,
+            resource,
+            name.unwrap_or(&resource.family),
+        ));
+    }
+
+    told
+}
+
+/// Every font chosen, in the order the walk (seg5 `01a7`) chooses them. On
+/// a printer driver's context (`printer`) a raster font is shown only where
+/// the driver's `dpText` has `TC_RA_ABLE` (seg5 `0316`), and the TrueType
+/// fonts only with that or bit 1 of `dpCaps1` (`06c0`); every family skips
+/// the first table where `dpCaps1` has bit 1 and `dpText` not `TC_RA_ABLE`
+/// (`0251`).
+pub(super) fn chosen(
+    system: &mut System,
+    hdc: u16,
+    name: Option<&str>,
+    printer: bool,
+) -> Vec<Told> {
+    let caps = |system: &System, index: i16| get_device_caps(system, hdc, index);
+    let raster_able = !printer || caps(system, TEXTCAPS) & TC_RA_ABLE != 0;
+    let true_type_able = !printer || raster_able || caps(system, DPCAPS1) & 2 != 0;
+    let skip_table = printer && !raster_able && caps(system, DPCAPS1) & 2 != 0;
     let (strikes, directory) = {
         let fonts = system.fonts();
         // With `TTOnly` on, a walk of every font passes the raster and
         // vector table by (`GDI.EXE` seg5 `0249`); one of a face named does
         // not (**recorded** by `fontboot`).
-        let strikes: Vec<Rc<BitmapFontEntry>> = if name.is_none() && fonts.true_type_only {
-            Vec::new()
-        } else {
-            fonts
-                .listed_entries()
-                .iter()
-                .map(|strike| strike.entry.clone())
-                .collect()
-        };
+        let strikes: Vec<Rc<BitmapFontEntry>> =
+            if name.is_none() && (fonts.true_type_only || skip_table) {
+                Vec::new()
+            } else {
+                fonts
+                    .listed_entries()
+                    .iter()
+                    .map(|strike| strike.entry.clone())
+                    .collect()
+            };
 
         (strikes, fonts.true_type_directory.clone())
     };
@@ -341,6 +395,10 @@ pub(super) fn chosen(system: &mut System, hdc: u16, name: Option<&str>) -> Vec<T
         let face = entry.name();
         let raster = entry.header.kind & 1 == 0;
 
+        if raster && !raster_able {
+            continue;
+        }
+
         match name {
             None => {
                 if raster && true_type_named(face) {
@@ -359,27 +417,11 @@ pub(super) fn chosen(system: &mut System, hdc: u16, name: Option<&str>) -> Vec<T
     }
 
     // The TrueType directory.
-    let mut families = HashSet::new();
+    if true_type_able {
+        let log_x = i32::from(caps(system, LOGPIXELSX));
+        let log_y = i32::from(caps(system, LOGPIXELSY));
 
-    for resource in &directory {
-        match name {
-            None => {
-                if !families.insert(resource.family.to_uppercase()) {
-                    continue;
-                }
-            }
-            Some(name) if !same(&resource.family, name) && !same(&resource.full_name, name) => {
-                continue;
-            }
-            Some(_) => {}
-        }
-
-        told.push(from_outline(
-            system,
-            hdc,
-            resource,
-            name.unwrap_or(&resource.family),
-        ));
+        told.extend(true_type_chosen(system, log_x, log_y, name));
     }
 
     told
@@ -411,9 +453,19 @@ fn placement(kind: u16) -> (u16, u16) {
 ///
 /// A family name that cannot be read turns the call away, answering
 /// nought; a null one asks for every family.
-pub fn enum_font_families(engine: &Engine, mut args: Args) -> Later<'_> {
+pub fn enum_font_families(engine: &Engine, args: Args) -> Later<'_> {
+    enumerate(engine, args, 1)
+}
+
+/// `EnumFonts` (seg5 `05a7`): as `EnumFontFamilies`, GDI's flag for which
+/// it is nought.
+pub fn enum_fonts(engine: &Engine, args: Args) -> Later<'_> {
+    enumerate(engine, args, 0)
+}
+
+fn enumerate(engine: &Engine, mut args: Args, families: u16) -> Later<'_> {
     Box::pin(async move {
-        let (told, procedure, lparam) = {
+        let (told, procedure, lparam, driver, hdc, family) = {
             let mut system = engine.system();
             let hdc = args.word(&system);
             let family = args.dword(&system);
@@ -427,70 +479,120 @@ pub fn enum_font_families(engine: &Engine, mut args: Args) -> Later<'_> {
                 Text::Absent => Some((family & 0xffff).to_string()),
                 Text::Read(bytes) => Some(latin1(&bytes)),
             };
-            let told = chosen(&mut system, hdc, name.as_deref());
+            let driver = crate::gdi::printer_driver::driver_dc_of(&system, hdc);
+            let told = chosen(&mut system, hdc, name.as_deref(), driver.is_some());
 
-            (told, procedure, lparam)
+            (told, procedure, lparam, driver, hdc, family)
         };
-        let mut result: i16 = 1;
+        // The context and the call GDI is walking, for a driver's
+        // `EngineEnumerateFont` (`[064Eh]`, `[041Ch]`, seg5 `01cd`, `01f4`),
+        // nought again after (`0407`).
+        engine.system().printing.drivers.walking = Some((hdc, families));
 
-        for font in told {
-            let (logfont_at, metric_at) = placement(font.kind);
-            let (args, registers) = {
-                let mut system = engine.system();
-                let sp = system.cpu.regs[SP];
-                let sizes = [
-                    GuestArg::Placed(vec![0; ENUMLOGFONT_SIZE], logfont_at),
-                    GuestArg::Placed(vec![0; NEWTEXTMETRIC_SIZE], metric_at),
-                    GuestArg::Word(0),
-                    GuestArg::Long(0),
-                ];
-                let entry = placed_entry(sp, &sizes).unwrap_or(0);
-                let stack = system.cpu.segments[SS].selector;
-                let over = |at: u16, length: usize| {
-                    Fields(system.read_far(
-                        u32::from(stack) << 16 | u32::from(entry.wrapping_add(at)),
-                        length,
-                    ))
-                };
-                let mut logfont = over(logfont_at, ENUMLOGFONT_SIZE);
-                let mut metric = over(metric_at, NEWTEXTMETRIC_SIZE);
+        let answer = walk(engine, told, procedure, lparam, driver, family).await;
 
-                (font.logfont)(&mut logfont);
-                (font.metric)(&mut metric);
+        engine.system().printing.drivers.walking = None;
+        answer
+    })
+}
 
-                let registers = if font.kind & TRUETYPE_FONTTYPE != 0 {
-                    vec![
-                        Register::Word(AX, stack),
-                        Register::Segment(DS, stack),
-                        Register::Segment(ES, stack),
-                    ]
-                } else {
-                    vec![
-                        Register::Word(AX, entry.wrapping_add(metric_at)),
-                        Register::Segment(DS, gdi_data_selector(&mut system)),
-                        Register::Segment(ES, stack),
-                    ]
-                };
+/// The walk: a printer driver's own fonts first, its answer standing where
+/// it handed any on and its nought ending the walk; then each font chosen.
+async fn walk(
+    engine: &Engine,
+    told: Vec<Told>,
+    procedure: u32,
+    lparam: u32,
+    driver: Option<usize>,
+    family: u32,
+) -> Result<Answer, crate::call::Stop> {
+    let mut result: i16 = 1;
 
-                (
-                    vec![
-                        GuestArg::Placed(logfont.0, logfont_at),
-                        GuestArg::Placed(metric.0, metric_at),
-                        GuestArg::Word(font.kind),
-                        GuestArg::Long(lparam),
-                    ],
-                    registers,
-                )
-            };
-            let (answer, _) = engine.call_with(procedure, &args, &registers).await?;
+    if let Some(dc) = driver {
+        let (answer, found) = crate::gdi::printer_driver::enumerate_device_fonts(
+            engine, dc, family, procedure, lparam,
+        )
+        .await?;
 
-            result = answer as i16;
-
-            if result == 0 {
-                return Ok(Answer::Word(0));
-            }
+        if answer == 0 {
+            return Ok(Answer::Word(0));
         }
 
-        Ok(Answer::Word(result as u16))
-    })
+        if found {
+            result = answer as i16;
+        }
+    }
+
+    for font in told {
+        result = emit(engine, procedure, lparam, &font, font.kind).await?;
+
+        if result == 0 {
+            return Ok(Answer::Word(0));
+        }
+    }
+
+    Ok(Answer::Word(result as u16))
+}
+
+/// A font handed to a procedure, its structures where GDI puts them for
+/// its type `placed` (`placement`), with its type `kind`: the procedure's
+/// answer.
+pub(crate) async fn emit(
+    engine: &Engine,
+    procedure: u32,
+    lparam: u32,
+    font: &Told,
+    kind: u16,
+) -> Result<i16, crate::call::Stop> {
+    let (logfont_at, metric_at) = placement(font.kind | kind);
+    let (args, registers) = {
+        let mut system = engine.system();
+        let sp = system.cpu.regs[SP];
+        let sizes = [
+            GuestArg::Placed(vec![0; ENUMLOGFONT_SIZE], logfont_at),
+            GuestArg::Placed(vec![0; NEWTEXTMETRIC_SIZE], metric_at),
+            GuestArg::Word(0),
+            GuestArg::Long(0),
+        ];
+        let entry = placed_entry(sp, &sizes).unwrap_or(0);
+        let stack = system.cpu.segments[SS].selector;
+        let over = |at: u16, length: usize| {
+            Fields(system.read_far(
+                u32::from(stack) << 16 | u32::from(entry.wrapping_add(at)),
+                length,
+            ))
+        };
+        let mut logfont = over(logfont_at, ENUMLOGFONT_SIZE);
+        let mut metric = over(metric_at, NEWTEXTMETRIC_SIZE);
+
+        (font.logfont)(&mut logfont);
+        (font.metric)(&mut metric);
+
+        let registers = if font.kind & TRUETYPE_FONTTYPE != 0 {
+            vec![
+                Register::Word(AX, stack),
+                Register::Segment(DS, stack),
+                Register::Segment(ES, stack),
+            ]
+        } else {
+            vec![
+                Register::Word(AX, entry.wrapping_add(metric_at)),
+                Register::Segment(DS, gdi_data_selector(&mut system)),
+                Register::Segment(ES, stack),
+            ]
+        };
+
+        (
+            vec![
+                GuestArg::Placed(logfont.0, logfont_at),
+                GuestArg::Placed(metric.0, metric_at),
+                GuestArg::Word(kind),
+                GuestArg::Long(lparam),
+            ],
+            registers,
+        )
+    };
+    let (answer, _) = engine.call_with(procedure, &args, &registers).await?;
+
+    Ok(answer as i16)
 }

@@ -47,13 +47,20 @@ use winbox_machine::handle_for;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, GuestArg};
+use crate::fonts::LogFont;
+use crate::fonts::TextMetric;
 use crate::gdi::DcBitmap;
+use crate::gdi::objects::{Font, GdiObject};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
 const CONTROL: u16 = 3;
 const DISABLE: u16 = 4;
 const ENABLE: u16 = 5;
+const REALIZE_OBJECT: u16 = 10;
+const OBJ_FONT: u16 = 3;
+const ENUM_DFONTS: u16 = 6;
+const DEVICE_DEFAULT_FONT: i16 = 14;
 
 const GDIINFO_SIZE: u16 = 0x6e;
 const DC_SPDEVICE: u8 = 1;
@@ -100,6 +107,13 @@ pub struct Drivers {
     /// Each driver's device context's abort procedure, as `SETABORTPROC`
     /// gave it.
     pub abort: HashMap<usize, u32>,
+    /// The fonts the drivers realized, by the context and the font object.
+    pub fonts: HashMap<(usize, usize), DeviceFont>,
+    /// The context and the call -- 1 for `EnumFontFamilies`, nought for
+    /// `EnumFonts` -- whose fonts GDI is walking (`[064Eh]`, `[041Ch]`).
+    pub walking: Option<(u16, u16)>,
+    /// The walks of a driver's fonts under way, by their numbers.
+    pub walks: Vec<FontWalk>,
 }
 
 /// A name as GDI's atom keeps it: compared without case.
@@ -472,7 +486,15 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
         pdevice.count += 1;
     }
 
-    let font = system.system_font();
+    // A printer's context starts with `DEVICE_DEFAULT_FONT`, the display's
+    // with `SYSTEM_FONT` (seg1 `0217`-`0225`).
+    let font =
+        super::objects::stock_font_handle(&mut system, DEVICE_DEFAULT_FONT).and_then(|handle| {
+            match system.handles.resolve(handle) {
+                Some(Object::Gdi(object)) => Some(object),
+                _ => None,
+            }
+        });
     let placeholder = system.placeholder_bitmap();
     let index = system.new_dc(DcBitmap::Bitmap(placeholder), false);
 
@@ -490,6 +512,21 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
     let (id, name, last, disable, lp_pdevice) = {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
+
+        let realized: Vec<(usize, usize)> = system
+            .printing
+            .drivers
+            .fonts
+            .keys()
+            .filter(|(context, _)| *context == dc)
+            .copied()
+            .collect();
+
+        for key in realized {
+            if let Some(font) = system.printing.drivers.fonts.remove(&key) {
+                let _ = crate::memory::global_free(&mut system, &mut Args::repeat(font.handle));
+            }
+        }
 
         let Some(id) = system.printing.drivers.contexts.remove(&dc) else {
             return Ok(());
@@ -682,9 +719,460 @@ fn delete_dc_call(engine: &Engine, mut args: Args) -> Later<'_> {
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
+        "GetTextMetrics" => Implementation::Async(get_text_metrics_call),
+        "GetTextFace" => Implementation::Async(get_text_face_call),
         "CreateDC" => Implementation::Async(create_dc_call),
         "CreateIC" => Implementation::Async(create_ic_call),
         "DeleteDC" => Implementation::Async(delete_dc_call),
         _ => return None,
     })
+}
+
+/// A realized font of a driver's, as GDI keeps it: the `FONTINFO` and the
+/// `TEXTXFORM`.
+#[derive(Debug, Clone)]
+pub struct DeviceFont {
+    pub handle: u16,
+    pub far: u32,
+    pub info: Vec<u8>,
+    pub xform: Vec<u8>,
+}
+
+/// The `LOGFONT` a font object was made of, or a stock font's.
+fn logfont_of(system: &mut System, object: usize) -> Option<LogFont> {
+    match &system.gdi.objects[object] {
+        GdiObject::Font(Font::Made { logfont, .. }) => return Some(logfont.clone()),
+        GdiObject::Font(Font::Stock { .. }) => {}
+        _ => return None,
+    }
+
+    let index = (10..=16).find(|&index| {
+        matches!(
+            system.handles.resolve(super::objects::stock_handle(index)),
+            Some(Object::Gdi(other)) if other == object
+        )
+    })?;
+
+    super::objects::stock_logfont(system, index)
+}
+
+/// The `LOGFONT` given to the driver: five words, eight bytes, and room for
+/// a face of 3Fh bytes, as GDI copies it (`GDI.EXE` seg3 `0b01`).
+fn logfont_given(logfont: &LogFont) -> Vec<u8> {
+    let mut bytes = vec![0u8; 0x12 + 0x40];
+
+    for (at, value) in [
+        logfont.height,
+        logfont.width,
+        logfont.escapement,
+        logfont.orientation,
+        logfont.weight,
+    ]
+    .iter()
+    .enumerate()
+    {
+        bytes[at * 2..at * 2 + 2].copy_from_slice(&value.to_le_bytes());
+    }
+
+    bytes[0x0a..0x12].copy_from_slice(&[
+        logfont.italic,
+        logfont.underline,
+        logfont.strike_out,
+        logfont.char_set,
+        logfont.out_precision,
+        logfont.clip_precision & 0x0f,
+        logfont.quality,
+        logfont.pitch_and_family,
+    ]);
+
+    for (at, byte) in logfont.face_name.bytes().take(0x3f).enumerate() {
+        bytes[0x12 + at] = byte;
+    }
+
+    bytes
+}
+
+/// The logical font selected, realized by the driver (`GDI.EXE` seg3
+/// `0a68`): its `LOGFONT` copied, `lfClipPrecision`'s high bits left off,
+/// the driver's `RealizeObject` asked the size of its `FONTINFO` with
+/// nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made,
+/// and the font realized into it with a `TEXTXFORM` of GDI's
+/// (`0c08`-`0c66`); the `TEXTXFORM`'s italic, underline and strike-out made
+/// nought or `FFh`. None where the driver realizes none, which GDI maps
+/// itself: not followed. Not followed either: the height and width taken
+/// to the device's units in a mapping mode other than `MM_TEXT`.
+pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont>, Stop> {
+    let (realize, lp_pdevice, bytes, object) = {
+        let mut system = engine.system();
+        let Some(object) = system.gdi.dcs[dc].state.font else {
+            return Ok(None);
+        };
+
+        if let Some(kept) = system.printing.drivers.fonts.get(&(dc, object)) {
+            return Ok(Some(kept.clone()));
+        }
+
+        let Some(pdevice) = device_of(&system, dc) else {
+            return Ok(None);
+        };
+        let (driver, lp_pdevice) = (pdevice.driver.clone(), pdevice.lp_pdevice);
+        let realize = proc_of(&system, &driver, REALIZE_OBJECT);
+        let Some(logfont) = logfont_of(&mut system, object) else {
+            return Ok(None);
+        };
+
+        (realize, lp_pdevice, logfont_given(&logfont), object)
+    };
+
+    if realize == 0 {
+        return Ok(None);
+    }
+
+    let call = move |lf: u32, info: u32, xform: u32| {
+        [
+            GuestArg::Long(lp_pdevice),
+            GuestArg::Word(OBJ_FONT),
+            GuestArg::Long(lf),
+            GuestArg::Long(info),
+            GuestArg::Long(xform),
+        ]
+    };
+    let ((size, _), _) = on_stack(engine, &bytes, |lf| {
+        let args = call(lf, 0, 0);
+
+        async move { call_driver(engine, realize, &args).await }
+    })
+    .await?;
+    let size = size as u16;
+
+    if size == 0 {
+        return Ok(None);
+    }
+
+    let (handle, far) = {
+        let mut system = engine.system();
+        let system = &mut *system;
+        let Some(index) = system.global.allocate(
+            &mut system.cpu.bus,
+            &mut system.descriptors,
+            u32::from(size) + 0x42,
+            0x2042,
+        ) else {
+            return Ok(None);
+        };
+        let handle = handle_for(index);
+
+        (handle, system.global_pointer(handle))
+    };
+    let ((_, mut xform), _) = on_stack(engine, &bytes, |lf| async move {
+        on_stack(engine, &[0; 0x14], |xform| {
+            let args = call(lf, far, xform);
+
+            async move { call_driver(engine, realize, &args).await }
+        })
+        .await
+    })
+    .await?;
+    let mut system = engine.system();
+    let info = system.read_far(far, usize::from(size));
+
+    for byte in &mut xform[0x0a..=0x0c] {
+        *byte = if *byte != 0 { 0xff } else { 0 };
+    }
+
+    xform.truncate(0x13);
+
+    let realized = DeviceFont {
+        handle,
+        far,
+        info,
+        xform,
+    };
+
+    system
+        .printing
+        .drivers
+        .fonts
+        .insert((dc, object), realized.clone());
+    Ok(Some(realized))
+}
+
+/// `GetTextMetrics` of a font a driver realized (`GDI.EXE` seg3 `0222`):
+/// the height the `TEXTXFORM`'s, the ascent, descent and leadings the
+/// `FONTINFO`'s scaled to it; the average width the `TEXTXFORM`'s and the
+/// widest the `FONTINFO`'s scaled to it, each a pixel more where the
+/// `TEXTXFORM` asks for bold made by GDI (200h in its flags); the overhang,
+/// weight, italic, underline and strike-out the `TEXTXFORM`'s; the
+/// characters, the character set and the resolutions the `FONTINFO`'s; the
+/// pitch and family the `FONTINFO`'s with `TMPF_DEVICE` and its type's two
+/// low bits as `TMPF_VECTOR` and `TMPF_TRUETYPE`. Not followed: the other
+/// widths of a font GDI emboldens (byte 0Bh, bit 3, `02de`), and the
+/// metrics taken to logical units in a mapping mode other than `MM_TEXT`.
+pub fn device_text_metrics(realized: &DeviceFont) -> TextMetric {
+    let (info, xform) = (&realized.info, &realized.xform);
+    let word = |bytes: &[u8], at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
+    let height = word(xform, 0);
+    let width = word(xform, 2);
+    let pix_height = word(info, 0x16);
+    let ascent = word(info, 8);
+    let bold = i32::from(word(xform, 0x0f) & 0x200 != 0);
+    let first = info[0x1d];
+    let mul_div = super::calls::mul_div;
+
+    TextMetric {
+        height,
+        ascent: mul_div(ascent, height, pix_height),
+        descent: mul_div(pix_height - ascent, height, pix_height),
+        internal_leading: mul_div(word(info, 0x0a), height, pix_height),
+        external_leading: mul_div(word(info, 0x0c), height, pix_height),
+        ave_char_width: bold + width,
+        max_char_width: mul_div(word(info, 0x1b), width, word(info, 0x19)) + bold,
+        weight: word(xform, 8) & 0xffff,
+        italic: xform[0x0a],
+        underlined: xform[0x0b],
+        struck_out: xform[0x0c],
+        first_char: first,
+        last_char: info[0x1e],
+        default_char: info[0x1f].wrapping_add(first),
+        break_char: info[0x20].wrapping_add(first),
+        pitch_and_family: (info[0x18] & 0xf1) | 8 | ((info[0] & 3) << 1),
+        char_set: info[0x13],
+        overhang: word(xform, 0x11),
+        digitized_aspect_x: word(info, 4),
+        digitized_aspect_y: word(info, 6),
+    }
+}
+
+/// `GetTextFace` of a font a driver realized (`GDI.EXE` seg3 `0102`): the
+/// face the `FONTINFO` names at its `dfFace`, or the logical font's own
+/// spelling where the two are one atom.
+fn device_face(system: &mut System, dc: usize, realized: &DeviceFont) -> Vec<u8> {
+    let offset = u32::from(u16::from_le_bytes([
+        realized.info[0x27],
+        realized.info[0x28],
+    ]));
+    let far = (realized.far & 0xffff_0000) | (realized.far.wrapping_add(offset) & 0xffff);
+    let face = system.read_string(far);
+    let logical = system.gdi.dcs[dc]
+        .state
+        .font
+        .and_then(|object| logfont_of(system, object))
+        .map(|logfont| logfont.face_name.into_bytes())
+        .unwrap_or_default();
+
+    if !logical.is_empty() && logical.eq_ignore_ascii_case(&face) {
+        logical
+    } else {
+        face
+    }
+}
+
+fn get_text_metrics_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let mut original = args;
+        let (driver, far) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+            let far = args.dword(&system);
+
+            (driver_dc_of(&system, hdc), far)
+        };
+        let Some(dc) = driver else {
+            return super::text::get_text_metrics_call(&mut engine.system(), &mut original);
+        };
+        let Some(realized) = device_font(engine, dc).await? else {
+            return Ok(Answer::Word(0));
+        };
+
+        engine
+            .system()
+            .write_far(far, &device_text_metrics(&realized).bytes());
+        Ok(Answer::Word(1))
+    })
+}
+
+fn get_text_face_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let mut original = args;
+        let (driver, size, far) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+            let size = args.signed(&system);
+            let far = args.dword(&system);
+
+            (driver_dc_of(&system, hdc), size, far)
+        };
+        let Some(dc) = driver else {
+            return super::text::get_text_face_call(&mut engine.system(), &mut original);
+        };
+
+        if size <= 0 {
+            return Ok(Answer::Word(0));
+        }
+
+        let Some(realized) = device_font(engine, dc).await? else {
+            return Ok(Answer::Word(0));
+        };
+        let mut system = engine.system();
+        let face = device_face(&mut system, dc, &realized);
+        let copied = face.len().min(size as usize - 1);
+        let mut bytes = face[..copied].to_vec();
+
+        bytes.push(0);
+        system.write_far(far, &bytes);
+        Ok(Answer::Word(copied as u16))
+    })
+}
+
+/// A walk of a driver's fonts, as GDI's frame for its procedure keeps it
+/// (seg5 `01c5`).
+#[derive(Debug, Clone)]
+pub struct FontWalk {
+    pub procedure: u32,
+    pub data: u32,
+    pub found: bool,
+    pub face_given: bool,
+}
+
+/// GDI's procedure for a driver's fonts (`GDI.EXE` seg5 `048a`): with no
+/// face asked for and `TTOnly` on, a font not TrueType passes by, and 1 is
+/// answered. Otherwise the walk has found one; a font not TrueType is a device
+/// font, `DEVICE_FONTTYPE` added and its `tmPitchAndFamily` given
+/// `TMPF_DEVICE` and, but for a raster font, `TMPF_VECTOR`, in the driver's
+/// own structure; its `TEXTMETRIC` copied with the five words of a
+/// `NEWTEXTMETRIC` after it nought. The program's procedure is called with
+/// the `LOGFONT`, the metrics, the type and its data, AX, DS and ES the
+/// stack's, and its answer is the answer. Not followed: the compatibility
+/// flags' changes to a TrueType font's type (`0542`-`0565`), and the sizes
+/// taken to logical units in a mapping mode other than `MM_TEXT` (`04b5`).
+pub async fn font_callback(
+    engine: &Engine,
+    logfont: u32,
+    metrics: u32,
+    kind: u16,
+    id: u32,
+) -> Result<u16, Stop> {
+    let (walk, copy, kind) = {
+        let mut system = engine.system();
+        let Some(walk) = system.printing.drivers.walks.get(id as usize).cloned() else {
+            return Ok(0);
+        };
+
+        if !walk.face_given && system.fonts().true_type_only && kind & 4 == 0 {
+            return Ok(1);
+        }
+
+        system.printing.drivers.walks[id as usize].found = true;
+
+        let mut kind = kind;
+
+        if kind & 4 == 0 {
+            kind |= 2;
+
+            let at = (metrics & 0xffff_0000) | (metrics.wrapping_add(0x17) & 0xffff);
+            let pitch = system.read_far(at, 1)[0];
+            let vector = if kind & 1 == 0 { 2 } else { 0 };
+
+            system.write_far(at, &[(pitch & 0xf1) | 8 | vector]);
+        }
+
+        let copy = if kind & 4 == 0 {
+            let mut bytes = system.read_far(metrics, 31);
+
+            bytes.extend([0; 10]);
+            Some(bytes)
+        } else {
+            None
+        };
+
+        (walk, copy, kind)
+    };
+    let stack = engine.system().cpu.segments[SS].selector;
+    let registers = [
+        crate::engine::Register::Word(winbox_cpu::AX, stack),
+        crate::engine::Register::Segment(winbox_cpu::DS, stack),
+        crate::engine::Register::Segment(winbox_cpu::ES, stack),
+    ];
+    let call = |tm: u32| {
+        [
+            GuestArg::Long(logfont),
+            GuestArg::Long(tm),
+            GuestArg::Word(kind),
+            GuestArg::Long(walk.data),
+        ]
+    };
+    let answer = match copy {
+        None => {
+            engine
+                .call_with(walk.procedure, &call(metrics), &registers)
+                .await?
+                .0
+        }
+        Some(bytes) => {
+            on_stack(engine, &bytes, |far| {
+                let args = call(far);
+
+                async move { Ok(engine.call_with(walk.procedure, &args, &registers).await?.0) }
+            })
+            .await?
+            .0
+        }
+    };
+
+    Ok(answer as u16)
+}
+
+/// The driver's own fonts, before GDI's (`GDI.EXE` seg5 `01c5`-`021f`): its
+/// `EnumDFonts` given the `PDEVICE`, the face asked for, GDI's procedure
+/// and GDI's frame. Its answer, and whether any font came to GDI's
+/// procedure.
+pub async fn enumerate_device_fonts(
+    engine: &Engine,
+    dc: usize,
+    face: u32,
+    procedure: u32,
+    data: u32,
+) -> Result<(u16, bool), Stop> {
+    let (enumerate, lp_pdevice, thunk, id) = {
+        let mut system = engine.system();
+        let Some(pdevice) = device_of(&system, dc) else {
+            return Ok((1, false));
+        };
+        let (driver, lp_pdevice) = (pdevice.driver.clone(), pdevice.lp_pdevice);
+        let enumerate = proc_of(&system, &driver, ENUM_DFONTS);
+
+        if enumerate == 0 {
+            return Ok((1, false));
+        }
+
+        let thunk = system.proc_token(&crate::classes::WndProc::Host(
+            crate::classes::HostProc::FontWalk,
+        ));
+
+        system.printing.drivers.walks.push(FontWalk {
+            procedure,
+            data,
+            found: false,
+            face_given: face != 0,
+        });
+
+        let id = system.printing.drivers.walks.len() - 1;
+
+        (enumerate, lp_pdevice, thunk, id)
+    };
+    let answer = call_driver(
+        engine,
+        enumerate,
+        &[
+            GuestArg::Long(lp_pdevice),
+            GuestArg::Long(face),
+            GuestArg::Long(thunk),
+            GuestArg::Long(id as u32),
+        ],
+    )
+    .await;
+    let walk = engine.system().printing.drivers.walks.pop();
+    let (answer, _) = answer?;
+
+    Ok((answer as u16, walk.is_some_and(|walk| walk.found)))
 }

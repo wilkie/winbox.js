@@ -1130,7 +1130,10 @@ export class Win16 {
     this.scheduler.task.halt();
 
     const caller = this.scheduler.active;
-    const result = typeof proc === 'function' ? proc(hwnd, message, wParam, lParam) : 0;
+    /* A procedure of more arguments -- GDI's for a printer driver's fonts
+     * (`printer-driver.ts`) -- is given the doubleword above them too. */
+    const above = ((word(16) << 16) | word(14)) >>> 0;
+    const result = typeof proc === 'function' ? proc(hwnd, message, wParam, lParam, above) : 0;
 
     this.scheduler.interpretReturnValue(result, LRESULT, caller);
 

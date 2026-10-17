@@ -189,7 +189,7 @@ fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
 
     let driver = root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV");
 
-    if (probe == "prdlg" || probe == "chfontpr")
+    if ["prdlg", "chfontpr", "pric", "prdoc"].contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)
     {
         placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));

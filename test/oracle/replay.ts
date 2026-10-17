@@ -5593,19 +5593,34 @@ export const KNOWN_GAPS: Record<string, string> = {
   'chfont3:pixels':
     "the lists' text a pixel a character wider apart than Windows: the dialog's emboldened font in a list's DC, USER's and GDI's (150 of 201)",
   /* `chfontpr` gives the Font dialog the `vgaprint` installation's
-   * PostScript printer: `CreateIC("pscript", ...)`, which the engines' GDI
-   * does not make for a Windows printer driver (as `prdlg`), so the probe
-   * records that and runs none of the dialogs. */
-  'chfontpr:ic': 'GDI makes no IC for a Windows printer driver (1 of 1)',
-  'chfontpr:state':
-    "no Font dialog with the printer's fonts: GDI's IC for a printer driver (8 of 8)",
-  'chfontpr:faces':
-    "no Font dialog with the printer's faces: GDI's IC for a printer driver (6 of 6)",
-  'chfontpr:styles':
-    "no Font dialog with the printer's styles: GDI's IC for a printer driver (6 of 6)",
-  'chfontpr:sizes':
-    "no Font dialog with the printer's sizes: GDI's IC for a printer driver (6 of 6)",
-  'chfontpr:result': "no ChooseFont with the printer: GDI's IC for a printer driver (3 of 3)",
+   * PostScript printer, `CF_BOTH` and `CF_PRINTERFONTS`. The engines' GDI
+   * makes the printer's IC and walks its fonts through the driver
+   * (`printer-driver.ts`): the IC, the entry and every list of faces agree.
+   * Where the dialog starts on the printer's Courier, or the screen's MS
+   * Serif, the engines select the first face and the face's edit reads the
+   * two names run together ("Arialcourier"), so the styles, the sizes and
+   * the result follow Arial's. Both engines alike. */
+  'chfontpr:state': "the face the Font dialog starts on with the printer's fonts (3 of 8)",
+  'chfontpr:faces': "the face selected as the Font dialog starts with the printer's fonts (2 of 6)",
+  'chfontpr:styles': "the styles of the face wrongly selected with the printer's fonts (2 of 6)",
+  'chfontpr:sizes': "the sizes of the face wrongly selected with the printer's fonts (1 of 6)",
+  /* `pric` asks the PostScript driver's IC for Arial at 40 dots: the
+   * driver realizes a TrueType font through GDI's `EngineRealizeFont`, given
+   * a `FONTINFO` to fill (`GDI.EXE` seg3 `2841`, `22b3`), which the engines
+   * answer nought; the driver falls back on its Helvetica. */
+  'pric:metrics': "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
+  'pric:face': "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
+  /* `prdoc` prints a page through the PostScript driver to a file. The
+   * engines make the DC, but do not yet print a document through a Windows
+   * driver: StartDoc and the rest go to WinBox's own printer's code, which
+   * answers -1 for any other, and GDI's spooler (`OpenJob`, `WriteSpool`)
+   * and drawing through the driver's `Output` and `ExtTextOut` are not
+   * followed, so no PostScript is written. */
+  'prdoc:call': 'a document printed through a Windows printer driver, not followed (4 of 10)',
+  'prdoc:size': 'no PostScript written: printing through a Windows driver (1 of 1)',
+  'prdoc:line': 'no PostScript written: printing through a Windows driver (211 of 211)',
+  'chfontpr:result':
+    "the font chosen from the face wrongly selected with the printer's fonts (1 of 3)",
 };
 
 /**
@@ -5878,6 +5893,8 @@ const RUN_WHOLE = new Set<string>([
   'chfont2',
   'chfont3',
   'chfontpr',
+  'pric',
+  'prdoc',
 ]);
 
 /**

@@ -171,7 +171,7 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
  * for variable. VGASYS is 16 by 7, bold; EGASYS 12 by 7; VGAFIX 15 by 8,
  * regular; EGAFIX 10 by 8, bold.
  */
-function stockLogfont(context: any, handle: number) {
+export function stockLogfont(context: any, handle: number) {
   let index = 0;
 
   while (index <= 16 && stockHandle(index) !== handle) {

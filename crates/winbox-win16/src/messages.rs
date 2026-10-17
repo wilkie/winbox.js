@@ -243,6 +243,8 @@ impl Engine {
             HostProc::MdiClient => {
                 Box::pin(self.mdi_client_proc(hwnd, message, wparam, lparam)).await
             }
+            // Never a window's.
+            HostProc::FontWalk => Ok(0),
         }
     }
 

@@ -191,7 +191,7 @@ impl System {
 /// The procedure AX names, called with the window procedure's arguments.
 fn user_procedure(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (host, hwnd, message, wparam, lparam) = {
+        let (host, hwnd, message, wparam, lparam, above) = {
             let system = engine.system();
             let token = usize::from(system.cpu.regs[AX]);
 
@@ -201,11 +201,22 @@ fn user_procedure(engine: &Engine, mut args: Args) -> Later<'_> {
                 args.word(&system),
                 args.word(&system),
                 args.dword(&system),
+                // The doubleword above them, for GDI's procedure of a
+                // printer driver's fonts, which takes fourteen bytes.
+                args.above(&system, 10),
             )
         };
         let Some(host) = host else {
             return Ok(Answer::Dword(0));
         };
+
+        if host == crate::classes::HostProc::FontWalk {
+            let metrics = u32::from(hwnd) << 16 | u32::from(message);
+            let answer =
+                gdi::printer_driver::font_callback(engine, above, metrics, wparam, lparam).await?;
+
+            return Ok(Answer::Dword(u32::from(answer)));
+        }
         let answer = engine
             .host_proc(
                 &host,
