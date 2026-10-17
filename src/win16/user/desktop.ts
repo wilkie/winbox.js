@@ -490,64 +490,8 @@ export class Desktop {
         text.fillText(x, y, line);
       },
       label: (line, colour, x, y, grayed = false, fromText = false) => {
-        if (!bitmap) {
-          return;
-        }
-
-        const at = line.indexOf('&');
-        const plain = line.replace('&', '');
-        const width = text.measureText(plain).width;
-        const height = font.height;
-
-        /* What was there, to put back through a grayed label's gaps. */
-        const kept: (number | null)[] = [];
-
-        if (grayed) {
-          for (let row = 0; row < height; row++) {
-            for (let column = 0; column < width; column++) {
-              kept.push(bitmap.indexAt(x + column, y + row));
-            }
-          }
-        }
-
-        text.bitmap = bitmap;
-        text.textColor = colourOf(colour);
-        text.fillText(x, y, plain);
-
-        /* The mnemonic, underlined a row below the ascent. */
-        if (at >= 0 && at < plain.length) {
-          const under = x + text.measureText(plain.slice(0, at)).width;
-          const index = bitmap.devicePalette.index(
-            colour & 0xff,
-            (colour >> 8) & 0xff,
-            (colour >> 16) & 0xff
-          );
-          const across = text.measureText(plain[at]).width;
-
-          for (let column = 0; column < across; column++) {
-            bitmap.put(under + column, y + font.ascent + 1, index);
-          }
-
-          bitmap.context.markRect(under, y + font.ascent + 1, under + across, y + font.ascent + 2);
-        }
-
-        /* Grayed: only every other pixel, as `GrayString` draws through a gray brush. */
-        if (grayed) {
-          for (let row = 0; row < height; row++) {
-            for (let column = 0; column < width; column++) {
-              const px = x + column;
-              const py = y + row;
-              const was = kept[row * width + column];
-
-              /* A control's text is grayed from where the text starts, as
-               * `GrayString` draws it into a bitmap of its own (`btndis`). */
-              const parity = fromText ? (column + row) & 1 : (px + py) & 1;
-
-              if (parity === GRAY_PHASE && was !== null) {
-                bitmap.put(px, py, was);
-              }
-            }
-          }
+        if (bitmap) {
+          drawLabel(text, font, bitmap, line, colour, x, y, grayed, fromText);
         }
       },
     };
@@ -2729,6 +2673,26 @@ export class Desktop {
     return surface;
   }
 
+  /**
+   * A surface over a window's client area, as `GetDC` hands out while the
+   * window paints: drawn through all of the client area, not only what
+   * `BeginPaint` is painting (`choosclr`).
+   */
+  clientSurface(window: DesktopWindow) {
+    const surface: any = Surface.memory();
+
+    surface.bitmap = this.#view(
+      window,
+      window.client.left,
+      window.client.top,
+      window.clientWidth,
+      window.clientHeight,
+      false
+    );
+
+    return surface;
+  }
+
   /** A view of the screen over part of a window, drawn only where the window shows. */
   #view(
     window: DesktopWindow,
@@ -3452,6 +3416,16 @@ export class Desktop {
         text.textColor = colourOf(colour);
         text.fillText(x, y, line);
       };
+      /* Grayed in the control's own font, as `GrayString` draws it through
+       * the context's (`choosclr`, `findrepl`). */
+      environment.label = (
+        line: string,
+        colour: number,
+        x: number,
+        y: number,
+        grayed = false,
+        fromText = false
+      ) => drawLabel(text, own.metrics, bitmap, line, colour, x, y, grayed, fromText);
     }
 
     /* Text on the background colour, the cell it takes. */
@@ -4565,4 +4539,79 @@ function overlaps(a: DesktopWindow, b: DesktopWindow) {
 
 function colourOf(colorref: number) {
   return new Color(colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff);
+}
+
+/**
+ * A label, as the desktop and its controls draw one: its first `&` dropped
+ * and the character after it underlined a row below the ascent -- from the
+ * overhang of an emboldened font to the left, as `DrawText` measures it --
+ * and, grayed, what was there put back through every other pixel, as
+ * `GrayString` draws through a gray brush.
+ */
+function drawLabel(
+  text: any,
+  font: any,
+  bitmap: DeviceBitmap,
+  line: string,
+  colour: number,
+  x: number,
+  y: number,
+  grayed: boolean,
+  fromText: boolean
+) {
+  const at = line.indexOf('&');
+  const plain = line.replace('&', '');
+  const width = text.measureText(plain).width;
+  const height = font.height;
+
+  /* What was there, to put back through a grayed label's gaps. */
+  const kept: (number | null)[] = [];
+
+  if (grayed) {
+    for (let row = 0; row < height; row++) {
+      for (let column = 0; column < width; column++) {
+        kept.push(bitmap.indexAt(x + column, y + row));
+      }
+    }
+  }
+
+  text.bitmap = bitmap;
+  text.textColor = colourOf(colour);
+  text.fillText(x, y, plain);
+
+  /* The mnemonic, underlined a row below the ascent. */
+  if (at >= 0 && at < plain.length) {
+    const under = x + text.measureText(plain.slice(0, at)).width - (font.overhang ?? 0);
+    const index = bitmap.devicePalette.index(
+      colour & 0xff,
+      (colour >> 8) & 0xff,
+      (colour >> 16) & 0xff
+    );
+    const across = text.measureText(plain[at]).width;
+
+    for (let column = 0; column < across; column++) {
+      bitmap.put(under + column, y + font.ascent + 1, index);
+    }
+
+    bitmap.context.markRect(under, y + font.ascent + 1, under + across, y + font.ascent + 2);
+  }
+
+  /* Grayed: only every other pixel, as `GrayString` draws through a gray brush. */
+  if (grayed) {
+    for (let row = 0; row < height; row++) {
+      for (let column = 0; column < width; column++) {
+        const px = x + column;
+        const py = y + row;
+        const was = kept[row * width + column];
+
+        /* A control's text is grayed from where the text starts, as
+         * `GrayString` draws it into a bitmap of its own (`btndis`). */
+        const parity = fromText ? (column + row) & 1 : (px + py) & 1;
+
+        if (parity === GRAY_PHASE && was !== null) {
+          bitmap.put(px, py, was);
+        }
+      }
+    }
+  }
 }

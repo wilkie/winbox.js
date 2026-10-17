@@ -242,6 +242,13 @@ impl System {
     pub fn draw_target(&mut self, dc: usize) -> Option<DeviceBitmap> {
         match self.gdi.dcs[dc].bitmap {
             DcBitmap::Screen => Some(self.screen_bitmap()),
+            DcBitmap::Window(index) if self.gdi.dcs[dc].unclipped => {
+                let window = self.windows[index].as_ref()?;
+                let (left, top) = (window.client.left, window.client.top);
+                let (width, height) = (window.client_width(), window.client_height());
+
+                self.window_part(index, left, top, width, height, false)
+            }
             DcBitmap::Window(index) => self.window_view(index),
             DcBitmap::Whole(index) => {
                 let window = self.windows[index].as_ref()?;

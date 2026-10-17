@@ -70,10 +70,27 @@ export function GetDC(hwnd) {
     /* The window `LockWindowUpdate` locked draws where it does not show. */
     const locked = lockedSurface(this, hwnd);
 
-    surface = locked ?? dialog.surface;
+    /* While the window paints, a context of its own, which draws through
+     * the whole client area, not only what is being painted: USER's cache
+     * hands out another than `BeginPaint`'s (`choosclr`). */
+    const painting =
+      !locked &&
+      dialog.desktop &&
+      dialog.window &&
+      (dialog.window as any).paintClip &&
+      !(
+        (dialog.options?.windowClass
+          ? (this.handles.retrieve(dialog.options.windowClass)?.style ?? 0)
+          : 0) &
+        (CS_OWNDC | CS_CLASSDC)
+      )
+        ? dialog.desktop.clientSurface(dialog.window)
+        : null;
 
-    if (locked) {
-      (this._windowDCs ??= new WeakMap()).set(locked, hwnd);
+    surface = locked ?? painting ?? dialog.surface;
+
+    if (locked || painting) {
+      (this._windowDCs ??= new WeakMap()).set(locked ?? painting, hwnd);
     }
   }
 

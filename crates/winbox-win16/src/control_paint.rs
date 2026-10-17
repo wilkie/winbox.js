@@ -143,8 +143,6 @@ struct ControlEnv<'a> {
     bitmap: DeviceBitmap,
     width: i32,
     height: i32,
-    /// The System font, which a grayed label is always drawn in.
-    system_letters: Lettering,
     /// The control's own font, or the System font.
     letters: Lettering,
     own_font: bool,
@@ -195,13 +193,13 @@ impl ControlEnv<'_> {
             .text(self.paint.system, &self.bitmap, line, colour, x, y);
     }
 
-    /// A label grayed, as the desktop draws one: in the System font, its
+    /// A label grayed, as `GrayString` draws one: in the control's font, its
     /// first `&` dropped and the character after it underlined a row below
     /// the ascent, then what was there put back through every other pixel,
     /// as `GrayString` draws through a gray brush.
     fn gray_label(&self, line: &[u8], colour: u32, x: i32, y: i32) {
         let bitmap = &self.bitmap;
-        let letters = &self.system_letters;
+        let letters = &self.letters;
         let at = line.iter().position(|&byte| byte == b'&');
         let mut shown = line.to_vec();
 
@@ -220,7 +218,7 @@ impl ControlEnv<'_> {
 
         // The mnemonic, underlined a row below the ascent.
         if let Some(at) = at.filter(|&at| at < shown.len()) {
-            let under = x + letters.measure(&shown[..at]);
+            let under = x + letters.measure(&shown[..at]) - letters.overhang;
             let index = bitmap.device_palette.borrow_mut().index(
                 colour as u8,
                 (colour >> 8) as u8,
@@ -502,9 +500,9 @@ impl System {
             bitmap,
             width,
             height,
-            letters: own.clone().unwrap_or_else(|| system_letters.clone()),
+            letters: own.clone().unwrap_or(system_letters),
             own_font: own.is_some(),
-            system_letters,
+
             // Text on the background colour, unless the mode is
             // transparent; the brush filled, unless it is hollow
             // (`ctltrans`). BWCC answers both for the text on its panels.
@@ -533,8 +531,11 @@ impl System {
 
         match control.class_name.as_str() {
             "BUTTON" => match kind {
+                // A disabled default button is drawn as a plain one
+                // (`USER.EXE` seg25 `18bc`): COMMDLG's Find Next with
+                // nothing to find (`findrepl`).
                 BS_PUSHBUTTON | BS_DEFPUSHBUTTON => {
-                    push_button(&env, &control, kind == BS_DEFPUSHBUTTON);
+                    push_button(&env, &control, kind == BS_DEFPUSHBUTTON && !env.disabled);
                 }
                 BS_CHECKBOX | BS_AUTOCHECKBOX | BS_RADIOBUTTON | BS_AUTORADIOBUTTON | BS_3STATE
                 | BS_AUTO3STATE => check_box(&env, &control, kind),
@@ -896,8 +897,9 @@ fn caption_ground(env: &ControlEnv, control: &ControlState) -> Option<[i32; 4]> 
 /// its icon at its corner. The rectangles, 4 to 6, fill it with a system
 /// colour's brush: black is `COLOR_WINDOWFRAME`, grey `COLOR_BACKGROUND`
 /// and white `COLOR_WINDOW` (seg25 `2220`); the frames, 7 to 9, draw a line
-/// of the same round it (seg25 `2245`); 10 draws nothing. Not followed:
-/// `SS_SIMPLE`'s own path, which is drawn as one line.
+/// of the same round it (seg25 `2245`); 10 draws nothing; `SS_SIMPLE`, 11,
+/// fills nothing (seg25 `2265`). Not followed: `SS_SIMPLE`'s own text
+/// path, which is drawn as one line.
 fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> {
     let painter = env.painter();
     let (width, height) = (env.width, env.height);
@@ -912,7 +914,10 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
         return Ok(());
     }
 
-    let ground = kind <= SS_ICON || kind > SS_USERITEM;
+    // `SS_SIMPLE` fills nothing: it draws its line of text alone, with no
+    // `WM_CTLCOLOR` asked (seg25 `2135`, `2265`), so COMMDLG's Color draws
+    // its colours' boxes in two of them.
+    let ground = kind <= SS_ICON || kind == SS_LEFTNOWORDWRAP;
 
     if ground && !env.hollow {
         painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
@@ -945,6 +950,12 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
     let text = bytes_of(&control.text);
 
     if kind > SS_RIGHT && kind != SS_LEFTNOWORDWRAP {
+        // No text, no call that draws (seg25 `22d0`): not even the
+        // overhang's pixel of an emboldened font.
+        if text.is_empty() {
+            return Ok(());
+        }
+
         env.label(
             &text,
             COLOR_WINDOWTEXT,

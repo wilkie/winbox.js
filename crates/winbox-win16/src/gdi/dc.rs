@@ -94,6 +94,11 @@ pub struct Dc {
     pub palette: Option<usize>,
     /// One of WinG's, whose driver is WinG's own (`wing`).
     pub wing: bool,
+    /// A window's `GetDC` gave while the window was painting: drawn through
+    /// all of the client area, not only what `BeginPaint` is painting, as
+    /// USER's cache gives a context of its own then (`choosclr`, COMMDLG's
+    /// Color drawing its focus rectangle in `WM_PAINT`).
+    pub unclipped: bool,
 }
 
 impl System {
@@ -146,6 +151,7 @@ impl System {
             live: 0,
             palette: None,
             wing: false,
+            unclipped: false,
         });
         self.gdi.dcs.len() - 1
     }

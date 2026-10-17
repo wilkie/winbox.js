@@ -161,6 +161,35 @@ impl System {
         // (`user_calls/lock_update.rs`), and gives that context back as its
         // own.
         let locked = self.locked_dc(hwnd);
+
+        // While the window paints, a context of its own, which draws
+        // through the whole client area, not only what is being painted:
+        // USER's cache hands out another than `BeginPaint`'s (`choosclr`).
+        // A class's or a window's own context is the one context still,
+        // as Championship Slots' forms have it.
+        if let Surface::Window(index) = surface
+            && locked.is_none()
+            && self.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.paint_clip.is_some())
+            && self.windows[index]
+                .as_ref()
+                .and_then(|window| self.class_named(&window.class))
+                .map_or(0, |class| self.classes[class].style)
+                & (CS_OWNDC | CS_CLASSDC)
+                == 0
+        {
+            let dc = self.new_dc(DcBitmap::Window(index), false);
+            let font = self.system_font();
+
+            self.gdi.dcs[dc].state.font = font;
+            self.gdi.dcs[dc].unclipped = true;
+            self.reset_common(index, dc);
+            self.window_dcs.insert(dc, hwnd);
+
+            return self.handles.allocate(Kind::Dc, Object::Dc(dc)).unwrap_or(0);
+        }
+
         let Some(dc) = locked.or_else(|| self.dc_named(hwnd)) else {
             return 0;
         };

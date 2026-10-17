@@ -15,7 +15,15 @@ import { layoutText } from './DrawText.js';
  * box with a border and two items, and a horizontal scroll bar.
  */
 
-export const CONTROL_CLASSES = new Set(['BUTTON', 'STATIC', 'EDIT', 'LISTBOX', 'SCROLLBAR', 'COMBOBOX', 'COMBOLBOX']);
+export const CONTROL_CLASSES = new Set([
+  'BUTTON',
+  'STATIC',
+  'EDIT',
+  'LISTBOX',
+  'SCROLLBAR',
+  'COMBOBOX',
+  'COMBOLBOX',
+]);
 
 /**
  * The style each of USER's own classes is registered with, **read out** of
@@ -115,7 +123,13 @@ export interface ControlState {
   font?: {
     handle: number;
     font: any;
-    metrics: { height: number; ascent: number; overhang?: number; fixedPitch?: boolean; average?: number };
+    metrics: {
+      height: number;
+      ascent: number;
+      overhang?: number;
+      fixedPitch?: boolean;
+      average?: number;
+    };
   };
 
   /** An edit control's border, which it draws inside its client area rather than as a frame. */
@@ -182,8 +196,17 @@ export function paintControl(
 
   switch (control.className) {
     case 'BUTTON':
+      /* A disabled default button is drawn as a plain one (`USER.EXE` seg25
+       * `18bc`): COMMDLG's Find Next with nothing to find (`findrepl`). */
       if (kind === BS_PUSHBUTTON || kind === BS_DEFPUSHBUTTON) {
-        pushButton(painter, width, height, control, kind === BS_DEFPUSHBUTTON, environment);
+        pushButton(
+          painter,
+          width,
+          height,
+          control,
+          kind === BS_DEFPUSHBUTTON && !environment.disabled,
+          environment
+        );
       } else if (
         kind === BS_CHECKBOX ||
         kind === BS_AUTOCHECKBOX ||
@@ -231,7 +254,10 @@ export function paintControl(
         width,
         height,
         (control.style & SBS_VERT) !== 0,
-        (control as any).scroll && { ...(control as any).scroll, shaft: (control as any).shaft ?? null }
+        (control as any).scroll && {
+          ...(control as any).scroll,
+          shaft: (control as any).shaft ?? null,
+        }
       );
       break;
   }
@@ -247,8 +273,9 @@ export function paintControl(
  * corner. The rectangles, 4 to 6, fill it with a system colour's brush:
  * black is `COLOR_WINDOWFRAME`, grey `COLOR_BACKGROUND` and white
  * `COLOR_WINDOW` (seg25 `2220`); the frames, 7 to 9, draw a line of the
- * same round it (seg25 `2245`); 10 draws nothing. Not followed:
- * `SS_SIMPLE`'s own path, which is drawn as one line, and disabled text,
+ * same round it (seg25 `2245`); 10 draws nothing; `SS_SIMPLE`, 11, fills
+ * nothing (seg25 `2265`). Not followed: `SS_SIMPLE`'s own text path, which
+ * is drawn as one line, and disabled text,
  * which USER greys.
  */
 function staticControl(
@@ -270,7 +297,10 @@ function staticControl(
     return;
   }
 
-  const ground = type <= SS_ICON || type > SS_USERITEM;
+  /* `SS_SIMPLE` fills nothing: it draws its line of text alone, with no
+   * `WM_CTLCOLOR` asked (seg25 `2135`, `2265`), so COMMDLG's Color draws its
+   * colours' boxes in two of them. */
+  const ground = type <= SS_ICON || type === SS_LEFTNOWORDWRAP;
 
   /* A hollow brush from the parent fills nothing: the parent shows (`ctltrans`). */
   if (ground && !environment.hollow) {
@@ -313,7 +343,21 @@ function staticControl(
   }
 
   if (type > SS_RIGHT && type !== SS_LEFTNOWORDWRAP) {
-    label(painter, environment, control.text, COLOR_WINDOWTEXT, 0, 0, !(control.style & SS_NOPREFIX));
+    /* No text, no call that draws (seg25 `22d0`): not even the overhang's
+     * pixel of an emboldened font. */
+    if (!control.text) {
+      return;
+    }
+
+    label(
+      painter,
+      environment,
+      control.text,
+      COLOR_WINDOWTEXT,
+      0,
+      0,
+      !(control.style & SS_NOPREFIX)
+    );
     return;
   }
 
