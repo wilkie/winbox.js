@@ -1,38 +1,18 @@
 'use strict';
 
-import { FindResource } from '../kernel/FindResource.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
-import { LoadResource } from '../kernel/LoadResource.js';
-import { LockResource } from '../kernel/LockResource.js';
-import { DestroyWindow } from '../user/DestroyWindow.js';
-import {
-  CheckDlgButton,
-  CheckRadioButton,
-  GetDlgItemText,
-  IsDlgButtonChecked,
-  SetDlgItemText,
-} from '../user/dialog-items.js';
-import { CreateDialogIndirectParam } from '../user/dialogs.js';
-import { GetDlgItem } from '../user/GetDlgItem.js';
-import { GetProp, RemoveProp, SetProp } from '../user/props.js';
-import { SendDlgItemMessage } from '../user/SendDlgItemMessage.js';
-import { SendMessage } from '../user/SendMessage.js';
-import { SetWindowText } from '../user/SetWindowText.js';
-import { ShowWindow } from '../user/ShowWindow.js';
-import { UpdateWindow } from '../user/UpdateWindow.js';
-import { EnableWindow, IsWindow } from '../user/window-queries.js';
+import { type Arg, D, W, api, bytesOf, item } from './api.js';
 import {
   callHook,
   dword,
   freeTemplate,
   instance,
-  lpcstr,
   nextNumber,
   ownTemplate,
   procAddress,
   registered,
   setDword,
   setError,
+  setWindowText,
   stateOf,
   string,
   word,
@@ -44,8 +24,9 @@ import { FIND_TEMPLATE, REPLACE_TEMPLATE } from './templates.js';
  * and their procedures, `FindTextDlgProc` (13) and `ReplaceTextDlgProc`
  * (14), which USER calls at COMMDLG's own exports as it would Microsoft's.
  * **Read out** of `COMMDLG.DLL` seg5 and **recorded** by `findrepl`; each
- * step is COMMDLG's, at the address the comments give. The twin of
- * `crates/winbox-win16/src/commdlg/find_replace.rs`.
+ * step is COMMDLG's, at the address the comments give. Its calls into
+ * USER and KERNEL are made through `api.ts`, as a program makes them. The
+ * twin of `crates/winbox-win16/src/commdlg/find_replace.rs`.
  */
 
 const WM_CLOSE = 0x0010;
@@ -109,7 +90,15 @@ const REPLACE_LENGTH = 0x16;
 const HOOK = 0x1c;
 const TEMPLATE_NAME = 0x20;
 
-const item = (system: any, dialog: number, id: number) => GetDlgItem.call(system, dialog, id);
+/** A call's answer, DX:AX. */
+const call = async (system: any, module: string, name: string, args: Arg[]) =>
+  (await api(system, module, name, args)).value;
+
+const show = (system: any, hwnd: number, how: number) =>
+  call(system, 'USER', 'ShowWindow', [W(hwnd), W(how)]);
+
+const enable = (system: any, hwnd: number, on: number) =>
+  call(system, 'USER', 'EnableWindow', [W(hwnd), W(on)]);
 
 /** The two calls: Find, or Replace (seg5 `0000`, `019c`). */
 async function open(system: any, lpfr: number, replace: boolean): Promise<number> {
@@ -127,7 +116,7 @@ async function open(system: any, lpfr: number, replace: boolean): Promise<number
   }
 
   const owner = word(system, lpfr, HWND_OWNER);
-  const isWindow = !!IsWindow.call(system, owner);
+  const isWindow = !!(await call(system, 'USER', 'IsWindow', [W(owner)]));
 
   if (
     !isWindow ||
@@ -169,18 +158,18 @@ async function open(system: any, lpfr: number, replace: boolean): Promise<number
   let own = false;
 
   if (flags & FR_ENABLETEMPLATE) {
-    const found = FindResource.call(
-      system,
-      program,
-      lpcstr(system, dword(system, lpfr, TEMPLATE_NAME)),
-      RT_DIALOG
-    );
+    const found =
+      (await call(system, 'KERNEL', 'FindResource', [
+        W(program),
+        D(dword(system, lpfr, TEMPLATE_NAME)),
+        D(RT_DIALOG),
+      ])) & 0xffff;
 
     if (!found) {
       return fail(CDERR_FINDRESFAILURE);
     }
 
-    handle = await LoadResource.call(system, program, found);
+    handle = (await call(system, 'KERNEL', 'LoadResource', [W(program), W(found)])) & 0xffff;
 
     if (!handle) {
       return fail(CDERR_LOADRESFAILURE);
@@ -192,7 +181,7 @@ async function open(system: any, lpfr: number, replace: boolean): Promise<number
     own = true;
   }
 
-  const template = LockResource.call(system, handle) >>> 0;
+  const template = (await call(system, 'KERNEL', 'LockResource', [W(handle)])) >>> 0;
 
   if (!template) {
     return fail(CDERR_LOCKRESFAILURE);
@@ -201,19 +190,19 @@ async function open(system: any, lpfr: number, replace: boolean): Promise<number
   setError(system, 0);
   state.find.pendingHook = dword(system, lpfr, HOOK);
 
-  const dialog = await CreateDialogIndirectParam.call(
-    system,
-    instance(system),
-    template,
-    owner,
-    procAddress(system, replace ? 14 : 13),
-    lpfr
-  );
+  const dialog =
+    (await call(system, 'USER', 'CreateDialogIndirectParam', [
+      W(instance(system)),
+      D(template),
+      W(owner),
+      D(procAddress(system, replace ? 14 : 13)),
+      D(lpfr),
+    ])) & 0xffff;
 
-  GlobalUnlock.call(system, handle);
+  await call(system, 'KERNEL', 'GlobalUnlock', [W(handle)]);
 
   if (own) {
-    freeTemplate(system, handle);
+    await freeTemplate(system, handle);
   }
 
   if (!dialog) {
@@ -273,7 +262,7 @@ async function procedure(
   replace: boolean
 ): Promise<number> {
   const state = stateOf(system);
-  const handle = GetProp.call(system, dialog, 0xa000);
+  const handle = (await call(system, 'USER', 'GetProp', [W(dialog), D(0xa000)])) & 0xffff;
   let lpfr = state.find.structures.get(handle) ?? 0;
 
   /* Once the dialog has its property, the hook first, through the
@@ -310,12 +299,12 @@ async function procedure(
 
   switch (message) {
     case WM_CLOSE:
-      await SendMessage.call(system, dialog, WM_COMMAND, IDCANCEL, 0);
+      await call(system, 'USER', 'SendMessage', [W(dialog), W(WM_COMMAND), W(IDCANCEL), D(0)]);
       return 1;
     case WM_INITDIALOG: {
       const number = nextNumber(system);
 
-      SetProp.call(system, dialog, 0xa000, number);
+      await call(system, 'USER', 'SetProp', [W(dialog), D(0xa000), W(number)]);
       state.find.pendingHook = 0;
       state.find.structures.set(number, lParam);
       lpfr = lParam;
@@ -327,8 +316,8 @@ async function procedure(
           : 1;
 
       if (answer) {
-        await ShowWindow.call(system, dialog, replace ? SW_SHOW : SW_SHOWNORMAL);
-        await UpdateWindow.call(system, dialog);
+        await show(system, dialog, replace ? SW_SHOW : SW_SHOWNORMAL);
+        await call(system, 'USER', 'UpdateWindow', [W(dialog)]);
       }
 
       return answer;
@@ -360,22 +349,32 @@ async function command(
     await gather(system, dialog, lpfr, id === PSH_REPLACE ? FR_REPLACE : FR_REPLACEALL, false);
 
     if ((await tellOwner(system, lpfr)) >>> 0 === 1) {
-      await SetWindowText.call(system, item(system, dialog, IDCANCEL), string(0x40d) ?? '');
+      await setWindowText(
+        system,
+        await item(system, dialog, IDCANCEL),
+        bytesOf(string(0x40d) ?? '')
+      );
     }
   } else if (id === PSH_HELP) {
     const help = registered(system, 'commdlg_help');
     const owner = word(system, lpfr, HWND_OWNER);
 
     if (help && owner) {
-      await SendMessage.call(system, owner, help, dialog, lpfr);
+      await call(system, 'USER', 'SendMessage', [W(owner), W(help), W(dialog), D(lpfr)]);
     }
   } else if (id === EDT_FIND) {
     if (notification === EN_CHANGE) {
       const length =
-        (await SendDlgItemMessage.call(system, dialog, EDT_FIND, WM_GETTEXTLENGTH, 0, 0)) & 0xffff;
+        (await call(system, 'USER', 'SendDlgItemMessage', [
+          W(dialog),
+          W(EDT_FIND),
+          W(WM_GETTEXTLENGTH),
+          W(0),
+          D(0),
+        ])) & 0xffff;
 
       for (const each of replace ? [IDOK, PSH_REPLACE, PSH_REPLACE_ALL] : [IDOK]) {
-        await EnableWindow.call(system, item(system, dialog, each), length);
+        await enable(system, await item(system, dialog, each), length);
       }
     }
   } else {
@@ -387,13 +386,10 @@ async function command(
 
 /** The owner sent `FINDMSGSTRING`'s message: its answer. */
 async function tellOwner(system: any, lpfr: number) {
-  return SendMessage.call(
-    system,
-    word(system, lpfr, HWND_OWNER),
-    stateOf(system).find.findMessage,
-    0,
-    lpfr
-  );
+  const owner = word(system, lpfr, HWND_OWNER);
+  const message = stateOf(system).find.findMessage;
+
+  return call(system, 'USER', 'SendMessage', [W(owner), W(message), W(0), D(lpfr)]);
 }
 
 /** The dialog ended (seg5 `0831`): `FR_DIALOGTERM` told, its property taken -- its memory not freed -- and its window destroyed. */
@@ -401,27 +397,31 @@ async function end(system: any, dialog: number, lpfr: number) {
   setDword(system, lpfr, FLAGS, (dword(system, lpfr, FLAGS) & ~0x38) | 0x40);
   await tellOwner(system, lpfr);
 
-  const handle = RemoveProp.call(system, dialog, 0xa000);
+  const handle = (await call(system, 'USER', 'RemoveProp', [W(dialog), D(0xa000)])) & 0xffff;
 
   stateOf(system).find.structures.delete(handle);
-  await DestroyWindow.call(system, dialog);
+  await call(system, 'USER', 'DestroyWindow', [W(dialog)]);
 }
 
 /** The dialog set from the structure (seg5 `0870`). */
 async function start(system: any, dialog: number, lpfr: number, find: boolean) {
-  await SetDlgItemText.call(
-    system,
-    dialog,
-    EDT_FIND,
-    lpcstr(system, dword(system, lpfr, FIND_WHAT))
-  );
-  await SendMessage.call(system, dialog, WM_COMMAND, EDT_FIND, (EN_CHANGE << 16) >>> 0);
+  await call(system, 'USER', 'SetDlgItemText', [
+    W(dialog),
+    W(EDT_FIND),
+    D(dword(system, lpfr, FIND_WHAT)),
+  ]);
+  await call(system, 'USER', 'SendMessage', [
+    W(dialog),
+    W(WM_COMMAND),
+    W(EDT_FIND),
+    D((EN_CHANGE << 16) >>> 0),
+  ]);
 
   if (!(dword(system, lpfr, FLAGS) & FR_SHOWHELP)) {
-    const help = item(system, dialog, PSH_HELP);
+    const help = await item(system, dialog, PSH_HELP);
 
-    await ShowWindow.call(system, help, SW_HIDE);
-    await EnableWindow.call(system, help, 0);
+    await show(system, help, SW_HIDE);
+    await enable(system, help, 0);
   }
 
   /* Whole Word, then Match Case: hidden, disabled, checked. */
@@ -432,58 +432,62 @@ async function start(system: any, dialog: number, lpfr: number, find: boolean) {
     const flags = dword(system, lpfr, FLAGS);
 
     if (flags & hide) {
-      const control = item(system, dialog, id);
+      const control = await item(system, dialog, id);
 
-      await ShowWindow.call(system, control, SW_HIDE);
-      await EnableWindow.call(system, control, 0);
+      await show(system, control, SW_HIDE);
+      await enable(system, control, 0);
     } else if (flags & disable) {
-      await EnableWindow.call(system, item(system, dialog, id), 0);
+      await enable(system, await item(system, dialog, id), 0);
     }
 
-    await CheckDlgButton.call(system, dialog, id, flags & check ? 1 : 0);
+    await call(system, 'USER', 'CheckDlgButton', [W(dialog), W(id), W(flags & check ? 1 : 0)]);
   }
 
   const flags = dword(system, lpfr, FLAGS);
 
   if (flags & FR_HIDEUPDOWN) {
-    await ShowWindow.call(system, item(system, dialog, GRP_DIRECTION), SW_HIDE);
+    await show(system, await item(system, dialog, GRP_DIRECTION), SW_HIDE);
 
-    const up = item(system, dialog, RAD_UP);
+    const up = await item(system, dialog, RAD_UP);
 
-    await ShowWindow.call(system, up, SW_HIDE);
-    await EnableWindow.call(system, up, 0);
+    await show(system, up, SW_HIDE);
+    await enable(system, up, 0);
 
-    const down = item(system, dialog, RAD_DOWN);
+    const down = await item(system, dialog, RAD_DOWN);
 
-    await ShowWindow.call(system, down, SW_HIDE);
-    await EnableWindow.call(system, down, 0);
+    await show(system, down, SW_HIDE);
+    await enable(system, down, 0);
   } else if (flags & FR_NOUPDOWN) {
-    await EnableWindow.call(system, item(system, dialog, RAD_UP), 0);
-    await EnableWindow.call(system, item(system, dialog, RAD_DOWN), 0);
+    await enable(system, await item(system, dialog, RAD_UP), 0);
+    await enable(system, await item(system, dialog, RAD_DOWN), 0);
   }
 
   if (find) {
-    await CheckRadioButton.call(
-      system,
-      dialog,
-      RAD_UP,
-      RAD_DOWN,
-      flags & FR_DOWN ? RAD_DOWN : RAD_UP
-    );
+    await call(system, 'USER', 'CheckRadioButton', [
+      W(dialog),
+      W(RAD_UP),
+      W(RAD_DOWN),
+      W(flags & FR_DOWN ? RAD_DOWN : RAD_UP),
+    ]);
   } else {
-    await SetDlgItemText.call(
-      system,
-      dialog,
-      EDT_REPLACE,
-      lpcstr(system, dword(system, lpfr, REPLACE_WITH))
-    );
-    await SendMessage.call(system, dialog, WM_COMMAND, EDT_REPLACE, (EN_CHANGE << 16) >>> 0);
+    await call(system, 'USER', 'SetDlgItemText', [
+      W(dialog),
+      W(EDT_REPLACE),
+      D(dword(system, lpfr, REPLACE_WITH)),
+    ]);
+    await call(system, 'USER', 'SendMessage', [
+      W(dialog),
+      W(WM_COMMAND),
+      W(EDT_REPLACE),
+      D((EN_CHANGE << 16) >>> 0),
+    ]);
   }
 }
 
 /** The structure written as a search is asked for (seg5 `0a89`). */
 async function gather(system: any, dialog: number, lpfr: number, flag: number, find: boolean) {
-  const checked = async (id: number) => !!(await IsDlgButtonChecked.call(system, dialog, id));
+  const checked = async (id: number) =>
+    !!(await call(system, 'USER', 'IsDlgButtonChecked', [W(dialog), W(id)]));
   let flags = dword(system, lpfr, FLAGS) & ~0x3f;
 
   setDword(system, lpfr, FLAGS, flags);
@@ -499,26 +503,24 @@ async function gather(system: any, dialog: number, lpfr: number, flag: number, f
   }
 
   setDword(system, lpfr, FLAGS, flags | flag);
-  await GetDlgItemText.call(
-    system,
-    dialog,
-    EDT_FIND,
-    dword(system, lpfr, FIND_WHAT),
-    word(system, lpfr, FIND_LENGTH)
-  );
+  await call(system, 'USER', 'GetDlgItemText', [
+    W(dialog),
+    W(EDT_FIND),
+    D(dword(system, lpfr, FIND_WHAT)),
+    W(word(system, lpfr, FIND_LENGTH)),
+  ]);
 
   if (find) {
     if (await checked(RAD_UP)) {
       return;
     }
   } else {
-    await GetDlgItemText.call(
-      system,
-      dialog,
-      EDT_REPLACE,
-      dword(system, lpfr, REPLACE_WITH),
-      word(system, lpfr, REPLACE_LENGTH)
-    );
+    await call(system, 'USER', 'GetDlgItemText', [
+      W(dialog),
+      W(EDT_REPLACE),
+      D(dword(system, lpfr, REPLACE_WITH)),
+      W(word(system, lpfr, REPLACE_LENGTH)),
+    ]);
   }
 
   setDword(system, lpfr, FLAGS, dword(system, lpfr, FLAGS) | FR_DOWN);
