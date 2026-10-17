@@ -5620,6 +5620,31 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prdlgx:devmode': "the Print dialog's DEVMODE as left by a dialog that never came (1 of 9)",
   'prdlgx:dc':
     "no DC of the PostScript driver on FILE: for PD_RETURNDC: GDI's DC for a printer driver (2 of 2)",
+  /* `chfont3` reads back the Font dialog's three lists. The rows' pictures,
+   * colours and glyphs agree; each list's text is drawn a pixel a
+   * character wider apart than Windows draws it, the emboldened MS Sans
+   * Serif of the dialog given its extra column per character in a list's
+   * DC -- the faces' and sizes' rows, which COMMDLG draws with
+   * `ExtTextOut`, and the styles', which the list box draws itself. The
+   * engines do the same running Microsoft's COMMDLG.DLL: USER's and GDI's,
+   * not COMMDLG's. The colours' box, drawn with `TextOut` in its combo
+   * box's DC, agrees (`chfont2`). */
+  'chfont3:pixels':
+    "the lists' text a pixel a character wider apart than Windows: the dialog's emboldened font in a list's DC, USER's and GDI's (150 of 201)",
+  /* `chfontpr` gives the Font dialog the `vgaprint` installation's
+   * PostScript printer: `CreateIC("pscript", ...)`, which the engines' GDI
+   * does not make for a Windows printer driver (as `prdlg`), so the probe
+   * records that and runs none of the dialogs. */
+  'chfontpr:ic': 'GDI makes no IC for a Windows printer driver (1 of 1)',
+  'chfontpr:state':
+    "no Font dialog with the printer's fonts: GDI's IC for a printer driver (8 of 8)",
+  'chfontpr:faces':
+    "no Font dialog with the printer's faces: GDI's IC for a printer driver (6 of 6)",
+  'chfontpr:styles':
+    "no Font dialog with the printer's styles: GDI's IC for a printer driver (6 of 6)",
+  'chfontpr:sizes':
+    "no Font dialog with the printer's sizes: GDI's IC for a printer driver (6 of 6)",
+  'chfontpr:result': "no ChooseFont with the printer: GDI's IC for a printer driver (3 of 3)",
 };
 
 /**
@@ -5890,6 +5915,9 @@ const RUN_WHOLE = new Set<string>([
   'prdlg',
   'chfont',
   'prdlgx',
+  'chfont2',
+  'chfont3',
+  'chfontpr',
 ]);
 
 /**
@@ -5956,7 +5984,7 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `findrepl` and `choosclr` take a step at each of a timer's ticks, and
  * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`;
  * `prdlg` takes its steps and presses its keys the same way, and so
- * does `chfont`.
+ * do `chfont`, `chfont2`, `chfont3` and `chfontpr`.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5980,6 +6008,9 @@ const VIRTUAL_CLOCK = new Set([
   'prdlg',
   'chfont',
   'prdlgx',
+  'chfont2',
+  'chfont3',
+  'chfontpr',
 ]);
 
 /**

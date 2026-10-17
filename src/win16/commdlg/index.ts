@@ -13,6 +13,12 @@ import { FindText, FindTextDlgProc, ReplaceText, ReplaceTextDlgProc } from './fi
 import { EditIntegerOnly, PrintDlg, dwUpArrowHack } from './print-dlg.js';
 import { PrintDlgProc } from './print-proc.js';
 import { PrintSetupDlgProc } from './print-setup.js';
+import {
+  ChooseFont,
+  FontFamilyEnumProc,
+  FontStyleEnumProc,
+  FormatCharDlgProc,
+} from './choose-font.js';
 import { CommDlgExtendedError } from './state.js';
 
 /**
@@ -84,11 +90,11 @@ export class CommDlg extends Module {
       [ReplaceText, 'ReplaceText', 4, [FARPTR], HWND],
       [FindTextDlgProc, 'FindTextDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
       [ReplaceTextDlgProc, 'ReplaceTextDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
-      [CommDlg.stub, 'ChooseFont', 4],
-      [CommDlg.stub, 'FormatCharDlgProc', 10],
+      [ChooseFont, 'ChooseFont', 4, [FARPTR], BOOL],
+      [FormatCharDlgProc, 'FormatCharDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [CommDlg.stub, 'unknown'],
-      [CommDlg.stub, 'FontStyleEnumProc', 14],
-      [CommDlg.stub, 'FontFamilyEnumProc', 14],
+      [FontStyleEnumProc, 'FontStyleEnumProc', 14, [FARPTR, FARPTR, INT, LPARAM], INT],
+      [FontFamilyEnumProc, 'FontFamilyEnumProc', 14, [FARPTR, FARPTR, INT, LPARAM], INT],
       // 20 //
       [PrintDlg, 'PrintDlg', 4, [FARPTR], BOOL],
       [PrintDlgProc, 'PrintDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],

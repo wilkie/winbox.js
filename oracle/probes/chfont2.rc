@@ -1,0 +1,20 @@
+#include <windows.h>
+
+/* A program's own Font dialog: COMMDLG's controls for the face, style,
+ * size and sample, without Apply, Help, the effects or the colours. */
+FONTDLG DIALOG 13, 54, 200, 120
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Probe Font"
+FONT 8, "Helv"
+BEGIN
+  LTEXT "&Font:", 0x440, 6, 3, 40, 9
+  CONTROL "", 0x470, "COMBOBOX", 0x0b51 | WS_VSCROLL | WS_TABSTOP, 6, 13, 94, 54
+  LTEXT "Font St&yle:", 0x441, 108, 3, 44, 9
+  CONTROL "", 0x471, "COMBOBOX", 0x0801 | WS_VSCROLL | WS_TABSTOP, 108, 13, 64, 54
+  LTEXT "&Size:", 0x442, 6, 70, 30, 9
+  CONTROL "", 0x472, "COMBOBOX", 0x0b11 | WS_VSCROLL | WS_TABSTOP, 6, 80, 32, 36
+  DEFPUSHBUTTON "OK", IDOK, 150, 70, 40, 14, WS_GROUP
+  PUSHBUTTON "Cancel", IDCANCEL, 150, 88, 40, 14, WS_GROUP
+  GROUPBOX "Sample", 0x431, 44, 70, 100, 44, WS_GROUP
+  CTEXT "AaBbYyZz", 0x444, 48, 82, 92, 28, SS_NOPREFIX | NOT WS_VISIBLE
+END

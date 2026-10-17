@@ -1,8 +1,8 @@
 'use strict';
 
 /**
- * COMMDLG's dialogs for Find, Replace and Color, and the Color dialog's
- * basic colours: WinBox keeps them itself, as it keeps COMMDLG, and no
+ * COMMDLG's dialogs for Find, Replace, Color and Font, the Color dialog's
+ * basic colours, and the Font dialog's colours and pictures: WinBox keeps them itself, as it keeps COMMDLG, and no
  * Windows file is shipped. Made to match the Windows 3.1 the recordings are
  * made on, from its `COMMDLG.DLL`. The twin of
  * `crates/winbox-win16/src/commdlg/templates.rs`.
@@ -70,4 +70,56 @@ export const BASIC_COLOURS = [
   0x408000, 0xff0000, 0xa00000, 0x800080, 0xff0080, 0x000040, 0x004080, 0x004000, 0x404000,
   0x800000, 0x400000, 0x400040, 0x800040, 0x000000, 0x008080, 0x408080, 0x808080, 0x808040,
   0xc0c0c0, 0x400040, 0xffffff,
+];
+
+/** COMMDLG's dialog 1543, Font. */
+export const FONT_TEMPLATE = bytesOf(
+  'c000c880120d003600080193000000466f6e7400080048656c76000600030028' +
+    '0009004004000002508226466f6e743a000006000d005e0036007004510b2150' +
+    '8500006c0003002c00090041040000025082466f6e7420537426796c653a0000' +
+    '6c000d0040003600710401082150850000b30003001e00090042040000025082' +
+    '2653697a653a0000b3000d00200036007204110b2150850000da00060028000e' +
+    '00010001000350804f4b0000da00170028000e000200000003508043616e6365' +
+    '6c0000da00280028000e0002040000035080264170706c790000da0039002800' +
+    '0e000e0400000350802648656c70000006004800540022003004070002508045' +
+    '66666563747300000a00520031000a001004030001508053747269266b656f75' +
+    '7400000a005e0033000a001104030000508026556e6465726c696e6500000600' +
+    '6e001e0009004304000002508226436f6c6f723a000006007800540064007304' +
+    '5302a15085000062004800a00031003104070002508053616d706c6500006200' +
+    '7c00a00014004504810000508200006800510095002500440481000240824161' +
+    '426259795a7a00000000000000000000'
+);
+
+/**
+ * COMMDLG's bitmap 38, the Font dialog's pictures of a TrueType face and a
+ * printer's device face, each 20 by 12, plain above and selected below: a
+ * 4-bit DIB of 40 by 24, its blue and magenta made the window's colour and
+ * the highlight's as it is loaded (seg4 `26d9`).
+ */
+export const FONT_BITMAP = bytesOf(
+  '2800000028000000180000000100040000000000e00100000000000000000000' +
+    '0000000010000000000000000000800000800000008080008000000080008000' +
+    '8080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00' +
+    'ffff0000ffffff00dddddddd000000ddddddddd000000000000ddddddddddddd' +
+    'dd00dddddddddd07777777799770dddddddddddddd00dddddddddd0888888888' +
+    '8870dddddddd77777700ddddddddddd000000000000ddddddddddd77dd00dddd' +
+    'dddddddd07ffffff70dddddddddddd70dd00dd0ddddddddd0f000000f0dddddd' +
+    'dddddd70dd00dd0ddddddddd07ffffff70dddddddddddd700d00d00ddddddddd' +
+    '0f000000f0ddddddddd7dd700000000ddddddddd07ffffff70ddddddddd7dd77' +
+    'dd7ddddddddddddd0f000000f0ddddddddd77d77d77ddddddddddddd07ffffff' +
+    '70ddddddddd77777777ddddddddddddd0000000000ddddddcccccccc000000cc' +
+    'ccccccc000000000000ccccccccccccccc00cccccccccc07777777799770cccc' +
+    'cccccccccc00cccccccccc08888888888870cccccccc77777700ccccccccccc0' +
+    '00000000000ccccccccccc77cc00cccccccccccc07ffffff70cccccccccccc70' +
+    'cc00cc0ccccccccc0f000000f0cccccccccccc70cc00cc0ccccccccc07ffffff' +
+    '70cccccccccccc700c00c00ccccccccc0f000000f0ccccccccc7cc700000000c' +
+    'cccccccc07ffffff70ccccccccc7cc77cc7ccccccccccccc0f000000f0cccccc' +
+    'ccc77c77c77ccccccccccccc07ffffff70ccccccccc77777777ccccccccccccc' +
+    '0000000000cccccc'
+);
+
+/** The Font dialog's sixteen colours, the VGA's, in the order of their names, strings 410h to 41Fh (`[130h]` of COMMDLG's data, seg4 `1e11`). */
+export const FONT_COLOURS = [
+  0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0x808080, 0xc0c0c0,
+  0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
 ];

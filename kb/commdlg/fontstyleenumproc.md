@@ -5,9 +5,10 @@ name: FontStyleEnumProc
 ordinal: 18
 summary: The Font dialog's style enumeration procedure — given to GDI's EnumFontFamilies for the face chosen, it lists each style with a copy of its LOGFONT and its type, and the face's sizes: the sixteen standard ones for a scalable font, its own for a raster one.
 versions:
-  '3.1': stub
-probes: [chfont]
+  '3.1': exact
+probes: [chfont, chfont2]
 topics: [common-dialogs, choose-font, font-enumeration]
+source: src/win16/commdlg/choose-font.ts
 ---
 
 ## Observed behaviour
@@ -20,6 +21,7 @@ No program calls it. Each time the face changes, the Font dialog gives its far a
 - [[read out]] **The style** keeps the face's screen and printer bits (`18f0`). TrueType: named by `elfStyle`, at the `ENUMLOGFONT`'s 72h, typed `ITALIC_FONTTYPE` for `NTM_ITALIC`, `BOLD_FONTTYPE` for `NTM_BOLD` and `REGULAR_FONTTYPE` for neither (`18fd`). Another: "Bold Italic" for a weight of 700 or more and italic, "Bold", "Italic" or "Regular", with the matching type (`1944`).
 - [[read out]] Each style is added by `153e`: not where its name is listed already; inserted in order of weight, an italic after the upright of the same weight (`14bb`); and its data a copy of its `LOGFONT` in 50 bytes of COMMDLG's local memory as the low word, its type as the high word.
 - [[measured]] [[probe:chfont]] records Arial's styles, Regular 2404h, Italic 2204h, Bold 2104h and Bold Italic 2304h, with the sixteen sizes, and Courier's Regular 2401h with sizes 10, 12 and 15. Both engines agree.
+- [[measured]] [[probe:chfont2]] records MS Serif's raster sizes held to `CF_LIMITSIZE` of 8 to 12 -- 8, 10 and 12 -- and, with `CF_NOSIMULATIONS`, its Regular alone; and Wingdings' Bold, Italic and Bold Italic made from its Regular, A504h, A604h and A704h. [[probe:chfontpr]]: the PostScript printer's Courier has its own four, 4402h, 4202h, 4102h and 4302h, and the sixteen sizes.
 
 ## Nuances
 
@@ -32,4 +34,4 @@ No program calls it. Each time the face changes, the Font dialog gives its far a
 
 ## Implementation
 
-Not WinBox's own yet: ordinal 18 is a stub in `src/win16/commdlg/index.ts` (popping 14 bytes) with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's code runs it, through the engines' `EnumFontFamilies`.
+WinBox's own: `FontStyleEnumProc` in `src/win16/commdlg/choose-font.ts` and `font_style_enum_proc` in `crates/winbox-win16/src/commdlg/choose_font.rs`, handed to the engines' `EnumFontFamilies` at its stub's address. A style's copy of its `LOGFONT` is kept in WinBox's memory, the row's data's low word the number it is kept by, where COMMDLG puts the handle of 50 bytes of its local memory. It works with no `COMMDLG.DLL` on the drive.

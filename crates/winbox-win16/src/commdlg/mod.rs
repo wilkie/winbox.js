@@ -47,6 +47,7 @@ mod print_setup;
 pub mod resources;
 
 mod choose_color;
+mod choose_font;
 mod colour_math;
 mod find_replace;
 mod guest_calls;
@@ -85,6 +86,10 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "FileSaveDlgProc" => Implementation::Async(file_init::file_save_dlg_proc),
         "dwLBSubclass" => Implementation::Async(file_init::dw_lb_subclass),
         "dwOKSubclass" => Implementation::Async(file_init::dw_ok_subclass),
+        "ChooseFont" => Implementation::Async(choose_font::choose_font),
+        "FormatCharDlgProc" => Implementation::Async(choose_font::format_char_dlg_proc),
+        "FontStyleEnumProc" => Implementation::Async(choose_font::font_style_enum_proc),
+        "FontFamilyEnumProc" => Implementation::Async(choose_font::font_family_enum_proc),
         _ => return None,
     })
 }
@@ -294,6 +299,8 @@ pub struct State {
     pub(crate) find: find_replace::FindGlobals,
     /// What the Color dialog keeps (`choose_color.rs`).
     pub(crate) colour: choose_color::ColourGlobals,
+    /// What the Font dialog keeps (`choose_font.rs`).
+    pub(crate) font: choose_font::FontGlobals,
     /// What the file boxes keep (`file_dialogs.rs`).
     pub files: file_dialogs::Shared,
 }
