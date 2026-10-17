@@ -14470,8 +14470,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ChooseColor",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FileOpenDlgProc",
@@ -14488,8 +14488,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ColorDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LoadAlterBitmap",
@@ -14506,26 +14506,26 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FindText",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ReplaceText",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FindTextDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ReplaceTextDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ChooseFont",
@@ -14590,8 +14590,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "WantArrows",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "CommDlgExtendedError",

@@ -402,7 +402,7 @@ impl System {
 }
 
 /// The function that answers a module's export, if one does here.
-fn implementation(module: &str, name: &str) -> Option<Implementation> {
+pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {
         "KERNEL" => kernel::implementation(name),
         "USER" => user::implementation(name).or_else(|| crate::drivers::implementation(name)),

@@ -5841,6 +5841,8 @@ const RUN_WHOLE = new Set<string>([
   'ddemgmt',
   'ddeleft',
   'profhold',
+  'findrepl',
+  'choosclr',
 ]);
 
 /**
@@ -5904,6 +5906,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * waits out a transaction's ten seconds and says whether it did.
  * `profhold` waits for DOS's clock to step on its two seconds, between
  * writes whose files are stamped by it.
+ * `findrepl` and `choosclr` take a step at each of a timer's ticks, and
+ * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5922,14 +5926,19 @@ const VIRTUAL_CLOCK = new Set([
   'ddexact',
   'progdde',
   'profhold',
+  'findrepl',
+  'choosclr',
 ]);
 
 /**
  * Whole-run probes that run longer than the thirty seconds the others are
  * given: `spiidle` waits on the screen saver's look, every ten seconds of
- * USER's, for a minute and more of its virtual clock.
+ * USER's, for a minute and more of its virtual clock. `findrepl` and
+ * `choosclr` read their dialogs a pixel at a time with `GetPixel`, tens of
+ * thousands of calls, and `choosclr` draws its spectrum and bar again and
+ * again besides.
  */
-const SECONDS: Record<string, number> = { spiidle: 90 };
+const SECONDS: Record<string, number> = { spiidle: 90, findrepl: 60, choosclr: 400 };
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

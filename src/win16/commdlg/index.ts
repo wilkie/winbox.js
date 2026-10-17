@@ -4,7 +4,9 @@
 
 import { Module } from '../module.js';
 import { segmentSelector } from '../selectors.js';
-import { DWORD } from '../types.js';
+import { BOOL, DWORD, FARPTR, HWND, LPARAM, LRESULT, UINT, WPARAM } from '../types.js';
+import { ChooseColor, ColorDlgProc, WantArrows } from './choose-color.js';
+import { FindText, FindTextDlgProc, ReplaceText, ReplaceTextDlgProc } from './find-replace.js';
 import { CommDlgExtendedError } from './state.js';
 
 /**
@@ -65,17 +67,17 @@ export class CommDlg extends Module {
       [CommDlg.stub, 'GetSaveFileName', 4],
       [CommDlg.stub, 'unknown'],
       [CommDlg.stub, 'unknown'],
-      [CommDlg.stub, 'ChooseColor', 4],
+      [ChooseColor, 'ChooseColor', 4, [FARPTR], BOOL],
       [CommDlg.stub, 'FileOpenDlgProc', 10],
       [CommDlg.stub, 'FileSaveDlgProc', 10],
-      [CommDlg.stub, 'ColorDlgProc', 10],
+      [ColorDlgProc, 'ColorDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
       [CommDlg.stub, 'LoadAlterBitmap', 10],
       // 10 //
       [CommDlg.stub, 'unknown'],
-      [CommDlg.stub, 'FindText', 4],
-      [CommDlg.stub, 'ReplaceText', 4],
-      [CommDlg.stub, 'FindTextDlgProc', 10],
-      [CommDlg.stub, 'ReplaceTextDlgProc', 10],
+      [FindText, 'FindText', 4, [FARPTR], HWND],
+      [ReplaceText, 'ReplaceText', 4, [FARPTR], HWND],
+      [FindTextDlgProc, 'FindTextDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
+      [ReplaceTextDlgProc, 'ReplaceTextDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
       [CommDlg.stub, 'ChooseFont', 4],
       [CommDlg.stub, 'FormatCharDlgProc', 10],
       [CommDlg.stub, 'unknown'],
@@ -87,7 +89,7 @@ export class CommDlg extends Module {
       [CommDlg.stub, 'PrintSetupDlgProc', 10],
       [CommDlg.stub, 'EditIntegerOnly', 10],
       [CommDlg.stub, 'unknown'],
-      [CommDlg.stub, 'WantArrows', 10],
+      [WantArrows, 'WantArrows', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlgExtendedError, 'CommDlgExtendedError', 0, [], DWORD],
       [CommDlg.stub, 'GetFileTitle', 10],
       [CommDlg.stub, 'WEP', 2],

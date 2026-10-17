@@ -345,6 +345,8 @@ static void open(LPCSTR what, FINDPROC proc, DWORD flags, LPCSTR find, LPCSTR re
 
     initAt = initLog;
     *initAt = '\0';
+    hookAt = hookLog;
+    *hookAt = '\0';
     initing = TRUE;
     initParam = FALSE;
     dialog = proc(&fr);

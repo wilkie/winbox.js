@@ -36,6 +36,12 @@
 // WinBox's own.
 #![allow(dead_code)]
 
+mod choose_color;
+mod colour_math;
+mod find_replace;
+mod guest_calls;
+mod templates;
+
 use crate::call::{Answer, Args, Implementation, Stop};
 use crate::engine::{Engine, GuestArg, Register};
 use crate::modules::Kept;
@@ -50,6 +56,13 @@ pub const NAME: &str = "COMMDLG";
 pub(crate) fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "CommDlgExtendedError" => Implementation::Sync(comm_dlg_extended_error),
+        "ChooseColor" => Implementation::Async(choose_color::choose_color),
+        "ColorDlgProc" => Implementation::Async(choose_color::color_dlg_proc),
+        "FindText" => Implementation::Async(find_replace::find_text),
+        "ReplaceText" => Implementation::Async(find_replace::replace_text),
+        "FindTextDlgProc" => Implementation::Async(find_replace::find_text_dlg_proc),
+        "ReplaceTextDlgProc" => Implementation::Async(find_replace::replace_text_dlg_proc),
+        "WantArrows" => Implementation::Async(choose_color::want_arrows),
         _ => return None,
     })
 }
@@ -204,13 +217,20 @@ pub(crate) fn message(system: &mut System, name: &str) -> u16 {
 }
 
 /// What `COMMDLG` keeps of its own.
-#[derive(Debug, Default, Clone, Copy)]
+#[derive(Debug, Default)]
 pub struct State {
     /// What `CommDlgExtendedError` answers, while the file is not loaded.
     pub error: u32,
     /// Whether an Open or Save dialog is being made: no cursor is set
     /// (`[0CACh]`, `COMMDLG.DLL` seg2 `4354`).
     pub initialising: bool,
+    /// The last number put under a Find, Replace or Color dialog's
+    /// property A000h (`guest_calls::next_number`).
+    pub(crate) next: u16,
+    /// What the Find and Replace dialogs keep (`find_replace.rs`).
+    pub(crate) find: find_replace::FindGlobals,
+    /// What the Color dialog keeps (`choose_color.rs`).
+    pub(crate) colour: choose_color::ColourGlobals,
 }
 
 /// Where the loaded file keeps its extended error, as a far pointer: the

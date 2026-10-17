@@ -1473,3 +1473,44 @@ fn alt_and_tab_switch_programs_and_alt_and_escape_sends_one_back() {
     assert_eq!(first_word(&session), "Clock");
     assert_eq!(order_of(&session), ["Clock", "Calculator", "Notepad"]);
 }
+
+/// Notepad's Find with no `COMMDLG.DLL` on the drive: WinBox's own
+/// `FindText` and its dialog, the template its own, run whole -- the text
+/// found, and Escape ending the box.
+#[test]
+fn notepads_find_works_with_no_commdlg_file() {
+    let removed = [Change::Removed {
+        path: "WINDOWS\\SYSTEM\\COMMDLG.DLL".into(),
+    }];
+    let Some(mut session) = started_as("NOTEPAD.EXE", false, &[], &removed) else {
+        return;
+    };
+
+    type_text(&mut session, "x");
+    press(&mut session, None, "Enter", "Enter");
+    type_text(&mut session, "abc");
+    press(&mut session, None, "ArrowUp", "ArrowUp");
+    press(&mut session, Some("Alt"), "KeyS", "s");
+    press(&mut session, None, "KeyF", "f");
+    frames(&mut session, 40);
+    assert!(shown(&session, "Find").is_some(), "no Find box");
+    type_text(&mut session, "bc");
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 40);
+    assert!(
+        !session
+            .system()
+            .windows
+            .iter()
+            .flatten()
+            .any(|window| window.visible && window.title.contains("Cannot find")),
+        "Find Next found nothing"
+    );
+    assert_eq!(text_of(&session, "Find", 0x480), "bc");
+    press(&mut session, None, "Escape", "Escape");
+    frames(&mut session, 40);
+    assert!(
+        shown(&session, "Find").is_none(),
+        "the Find box is still up"
+    );
+}
