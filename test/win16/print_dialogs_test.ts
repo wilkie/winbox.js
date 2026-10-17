@@ -16,9 +16,9 @@ import { mergeIni, parsePreset } from './ini-preset.js';
 import { IMAGE, runProbe } from './run-probe.js';
 
 /**
- * COMMDLG's Print Setup dialog, as Windows' own programs open it: Notepad's
- * and Paintbrush's File menu's Print Setup..., with the printer the
- * `vgaprint` installation has -- an Apple LaserWriter Plus on `LPT1:` with
+ * COMMDLG's Print Setup and Print dialogs, as Windows' own programs open
+ * them: Notepad's, Write's and Paintbrush's Print Setup... and Write's
+ * Print..., with the printer the `vgaprint` installation has -- an Apple LaserWriter Plus on `LPT1:` with
  * Windows' PostScript driver -- put on the drive and in WIN.INI, as `prdlg`
  * writes it. Each is run with `COMMDLG.DLL` on the drive, where the
  * dialog's code is WinBox's own, and with none, where everything is. The
@@ -212,6 +212,44 @@ function expectFirst(shown: Map<number, Shown> | null) {
 
       expectFirst(first);
       expect(again!.get(0x421)!.checked).toBe(1);
+    }
+  }, 600000);
+
+  it("opens Write's Print Setup, with COMMDLG.DLL and without", async () => {
+    for (const without of [[], COMMDLG]) {
+      const { first, again } = await setupTwice('WRITE.EXE', without);
+
+      expectFirst(first);
+      expect(again!.get(0x421)!.checked).toBe(1);
+    }
+  }, 600000);
+
+  /* The Print dialog, from Write's File menu's Print... (Paintbrush's
+   * Print... is a dialog of its own): the printer's line, its one quality,
+   * the copies; then Cancel, which prints nothing. */
+  it("opens Write's Print dialog, with COMMDLG.DLL and without", async () => {
+    for (const without of [[], COMMDLG]) {
+      let shown: Map<number, Shown> | null = null;
+      let gone = false;
+
+      await session(
+        'WRITE.EXE',
+        [
+          step('Shift_L', 3),
+          step('Alt_L+f'),
+          step('p', 2, (win16) => (shown = dialog(win16, 'Print'))),
+          step('Escape', 2, (win16) => (gone = dialog(win16, 'Print') === null)),
+        ],
+        without
+      );
+
+      const controls = shown as Map<number, Shown> | null;
+
+      expect(controls).not.toBe(null);
+      expect(controls!.get(0x440)!.text).toBe('Default Printer (Apple LaserWriter Plus on LPT1:)');
+      expect(controls!.get(0x470)!.items).toEqual(['300 dpi']);
+      expect(controls!.get(0x482)!.text).toBe('1');
+      expect(gone).toBe(true);
     }
   }, 600000);
 });

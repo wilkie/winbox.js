@@ -1,5 +1,6 @@
-//! COMMDLG's Print Setup dialog, as Windows' own programs open it:
-//! Notepad's and Paintbrush's File menu's Print Setup..., with the printer
+//! COMMDLG's Print Setup and Print dialogs, as Windows' own programs open
+//! them: Notepad's, Write's and Paintbrush's Print Setup... and Write's
+//! Print..., with the printer
 //! the `vgaprint` installation has -- an `Apple LaserWriter Plus` on `LPT1:`
 //! with Windows' PostScript driver -- put on the drive and in `WIN.INI`, as
 //! `prdlg` writes it. Each is run with `COMMDLG.DLL` on the drive, where the
@@ -303,4 +304,46 @@ fn paintbrushs_print_setup_keeps_its_landscape() {
 #[test]
 fn paintbrushs_print_setup_works_with_no_commdlg_file() {
     setup_twice("PBRUSH.EXE", &[COMMDLG]);
+}
+
+#[test]
+fn writes_print_setup_keeps_its_landscape() {
+    setup_twice("WRITE.EXE", &[]);
+}
+
+#[test]
+fn writes_print_setup_works_with_no_commdlg_file() {
+    setup_twice("WRITE.EXE", &[COMMDLG]);
+}
+
+/// Write's Print dialog, from its File menu's Print... (Paintbrush's
+/// Print... is a dialog of its own): the printer's line, its one quality,
+/// the copies; then Cancel, which prints nothing.
+fn print_dialog(without: &[&str]) {
+    let Some(mut session) = started("WRITE.EXE", without) else {
+        return;
+    };
+
+    press(&mut session, true, "KeyF", "f");
+    press(&mut session, false, "KeyP", "p");
+    frames(&mut session, 60);
+    assert_eq!(
+        control(&session, "Print", 0x440).text,
+        "Default Printer (Apple LaserWriter Plus on LPT1:)"
+    );
+    assert_eq!(control(&session, "Print", 0x470).items, ["300 dpi"]);
+    assert_eq!(control(&session, "Print", 0x482).text, "1");
+    press(&mut session, false, "Escape", "Escape");
+    frames(&mut session, 60);
+    assert!(shown(&session, "Print").is_none(), "Print stays");
+}
+
+#[test]
+fn writes_print_dialog_shows_the_printer() {
+    print_dialog(&[]);
+}
+
+#[test]
+fn writes_print_dialog_works_with_no_commdlg_file() {
+    print_dialog(&[COMMDLG]);
 }
