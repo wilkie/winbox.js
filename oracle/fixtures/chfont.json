@@ -1,0 +1,484 @@
+{
+  "probe": "chfont",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "",
+      "result": "found"
+    },
+    {
+      "function": "error",
+      "args": "size",
+      "result": "0,1"
+    },
+    {
+      "function": "error",
+      "args": "nohook",
+      "result": "0,b"
+    },
+    {
+      "function": "error",
+      "args": "notemplate",
+      "result": "0,6"
+    },
+    {
+      "function": "error",
+      "args": "nohandle",
+      "result": "0,0"
+    },
+    {
+      "function": "error",
+      "args": "maxlessthanmin",
+      "result": "0,2002"
+    },
+    {
+      "function": "box",
+      "args": "nofonts",
+      "result": "dialog=0 caption=Fonts|OK||There are no fonts installed;\r\nRun Control Panel to install fonts."
+    },
+    {
+      "function": "error",
+      "args": "nofonts",
+      "result": "0,2001"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "screen",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=11 40e=11 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 face=Arial style=Bold size=12 desc= strike=0 under=1"
+    },
+    {
+      "function": "faces",
+      "args": "screen",
+      "result": "sel=0 n=15|Arial=2004|Courier=2001|Courier New=2004|Fixedsys=2001|Modern=2000|MS Sans Serif=2001|MS Serif=2001|Roman=2000|Script=2000|Small Fonts=2001|Symbol=2004|System=2001|Terminal=2001|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "screen",
+      "result": "sel=2 n=4|Regular=2404|Italic=2204|Bold=2104|Bold Italic=2304"
+    },
+    {
+      "function": "sizes",
+      "args": "screen",
+      "result": "sel=4 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "screen",
+      "result": "sel=1 n=16|Black=0|Maroon=80|Green=8000|Olive=8080|Navy=800000|Purple=800080|Teal=808000|Gray=808080|Silver=c0c0c0|Red=ff|Lime=ff00|Yellow=ffff|Blue=ff0000|Fuschia=ff00ff|Aqua=ffff00|White=ffffff"
+    },
+    {
+      "function": "help",
+      "args": "",
+      "result": "dialog=1,param=1"
+    },
+    {
+      "function": "hook",
+      "args": "apply",
+      "result": "code=0"
+    },
+    {
+      "function": "state",
+      "args": "style-down",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=11 40e=11 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 face=Arial style=Bold Italic size=12 desc= strike=0 under=1"
+    },
+    {
+      "function": "state",
+      "args": "size-typed",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=11 40e=11 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 face=Arial style=Bold Italic size=14 desc= strike=0 under=1"
+    },
+    {
+      "function": "state",
+      "args": "effects",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=11 40e=11 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=473 face=Arial style=Bold Italic size=14 desc= strike=1 under=1"
+    },
+    {
+      "function": "state",
+      "args": "face-down",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=11 40e=11 430=11 410=11 411=11 443=11 473=11 431=11 444=10 445=11 focus=3e9 face=Courier style=Bold Italic size=14 desc= strike=1 under=1"
+    },
+    {
+      "function": "faces",
+      "args": "face-down",
+      "result": "sel=1 n=15|Arial=2004|Courier=2001|Courier New=2004|Fixedsys=2001|Modern=2000|MS Sans Serif=2001|MS Serif=2001|Roman=2000|Script=2000|Small Fonts=2001|Symbol=2004|System=2001|Terminal=2001|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "face-down",
+      "result": "sel=3 n=4|Regular=2401|Italic=a601|Bold=a501|Bold Italic=a701"
+    },
+    {
+      "function": "sizes",
+      "args": "face-down",
+      "result": "sel=-1 n=3|10=a|12=c|15=f"
+    },
+    {
+      "function": "colors",
+      "args": "face-down",
+      "result": "sel=2 n=16|Black=0|Maroon=80|Green=8000|Olive=8080|Navy=800000|Purple=800080|Teal=808000|Gray=808080|Silver=c0c0c0|Red=ff|Lime=ff00|Yellow=ffff|Blue=ff0000|Fuschia=ff00ff|Aqua=ffff00|White=ffffff"
+    },
+    {
+      "function": "result",
+      "args": "screen",
+      "result": "1,0,140,34d,8000,a701,,-19,0,0,0,700,1,1,1,0,1,2,1,49,Courier"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "limit",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Bold Italic size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "limit",
+      "result": "sel=-1 n=9|Arial=2004|Courier=2001|Courier New=2004|Fixedsys=2001|MS Sans Serif=2001|MS Serif=2001|Small Fonts=2001|System=2001|Times New Roman=2004"
+    },
+    {
+      "function": "styles",
+      "args": "limit",
+      "result": "sel=3 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "limit",
+      "result": "sel=2 n=5|8=8|9=9|10=a|11=b|12=c"
+    },
+    {
+      "function": "colors",
+      "args": "limit",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "box",
+      "args": "limit",
+      "result": "dialog=0 caption=Font|OK||Size must be between 8 and 12 points."
+    },
+    {
+      "function": "state",
+      "args": "limit-refused",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Bold Italic size=20 desc= strike=0 under=0"
+    },
+    {
+      "function": "box",
+      "args": "limit-zero",
+      "result": "dialog=0 caption=Font|OK||Size must be between 8 and 12 points."
+    },
+    {
+      "function": "state",
+      "args": "limit-zero",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Bold Italic size=0 desc= strike=0 under=0"
+    },
+    {
+      "function": "result",
+      "args": "limit",
+      "result": "0,0,0,2489,0,5555,Bold Italic,-13,0,0,0,700,1,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "nosel",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style= size= desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "nosel",
+      "result": "sel=-1 n=5|Arial=2004|Courier New=2004|Symbol=2004|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "nosel",
+      "result": "sel=-1 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "nosel",
+      "result": "sel=-1 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "nosel",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "getlogfont",
+      "args": "nosel",
+      "result": "1,3c0049,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "state",
+      "args": "nosel-face",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face=Arial style= size= desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "nosel-face",
+      "result": "sel=0 n=5|Arial=2004|Courier New=2004|Symbol=2004|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "nosel-face",
+      "result": "sel=-1 n=4|Regular=2404|Italic=2204|Bold=2104|Bold Italic=2304"
+    },
+    {
+      "function": "sizes",
+      "args": "nosel-face",
+      "result": "sel=-1 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "nosel-face",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "getlogfont",
+      "args": "nosel-face",
+      "result": "1,340049,-13,0,0,0,400,0,0,0,0,0,0,0,0,Arial"
+    },
+    {
+      "function": "result",
+      "args": "nosel",
+      "result": "1,0,100,340049,0,written,,-13,0,0,0,400,0,0,0,0,0,0,0,0,Arial"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "scalable",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Regular size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "scalable",
+      "result": "sel=-1 n=1|Courier New=2004"
+    },
+    {
+      "function": "styles",
+      "args": "scalable",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "scalable",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "scalable",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "result",
+      "args": "scalable",
+      "result": "0,0,0,25809,0,5555,,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "force",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Regular size=12 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "force",
+      "result": "sel=-1 n=15|Arial=2004|Courier=2001|Courier New=2004|Fixedsys=2001|Modern=2000|MS Sans Serif=2001|MS Serif=2001|Roman=2000|Script=2000|Small Fonts=2001|Symbol=2004|System=2001|Terminal=2001|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "force",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "force",
+      "result": "sel=4 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "force",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "box",
+      "args": "force",
+      "result": "dialog=0 caption=Font|OK||Invalid font name.\nChoose a font from the list of fonts."
+    },
+    {
+      "function": "state",
+      "args": "force-refused",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Regular size=12 desc= strike=0 under=0"
+    },
+    {
+      "function": "result",
+      "args": "force",
+      "result": "0,0,120,90049,0,5555,,-16,0,0,0,400,0,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "both",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Regular size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "both",
+      "result": "sel=-1 n=8|Arial=6004|Courier New=6004|Modern=6000|Roman=6000|Script=6000|Symbol=6004|Times New Roman=6004|Wingdings=6004"
+    },
+    {
+      "function": "styles",
+      "args": "both",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "both",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "both",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "state",
+      "args": "both-style",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Italic size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "state",
+      "args": "both-first",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Italic size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "both-first",
+      "result": "sel=-1 n=8|Arial=6004|Courier New=6004|Modern=6000|Roman=6000|Script=6000|Symbol=6004|Times New Roman=6004|Wingdings=6004"
+    },
+    {
+      "function": "styles",
+      "args": "both-first",
+      "result": "sel=1 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "both-first",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "both-first",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "result",
+      "args": "both",
+      "result": "1,0,100,a800b,0,200,,-13,0,0,0,400,1,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "hook",
+      "args": "before",
+      "result": "30,2c,31,2c,31,2c,31,2c,31,2c,31,2c,31,19,19,19,19"
+    },
+    {
+      "function": "hook",
+      "args": "init",
+      "result": "param=1,owner=1,wait=1"
+    },
+    {
+      "function": "state",
+      "args": "plain",
+      "result": "440=11 470=11 441=11 471=11 442=11 472=11 1=11 2=11 402=00 40e=00 430=00 410=00 411=00 443=00 473=00 431=11 444=10 445=11 focus=3e9 face= style=Regular size=10 desc= strike=0 under=0"
+    },
+    {
+      "function": "faces",
+      "args": "plain",
+      "result": "sel=-1 n=15|Arial=2004|Courier=2001|Courier New=2004|Fixedsys=2001|Modern=2000|MS Sans Serif=2001|MS Serif=2001|Roman=2000|Script=2000|Small Fonts=2001|Symbol=2004|System=2001|Terminal=2001|Times New Roman=2004|Wingdings=2004"
+    },
+    {
+      "function": "styles",
+      "args": "plain",
+      "result": "sel=0 n=4|Regular=400|Italic=200|Bold=100|Bold Italic=300"
+    },
+    {
+      "function": "sizes",
+      "args": "plain",
+      "result": "sel=2 n=16|8=8|9=9|10=a|11=b|12=c|14=e|16=10|18=12|20=14|22=16|24=18|26=1a|28=1c|36=24|48=30|72=48"
+    },
+    {
+      "function": "colors",
+      "args": "plain",
+      "result": "sel=-1 n=0"
+    },
+    {
+      "function": "getlogfont",
+      "args": "plain",
+      "result": "1,80009,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    },
+    {
+      "function": "result",
+      "args": "plain",
+      "result": "0,0,0,80009,0,5555,,-13,0,0,0,400,0,0,0,0,0,0,0,0,"
+    }
+  ]
+}

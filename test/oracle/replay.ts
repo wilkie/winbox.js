@@ -5847,6 +5847,7 @@ const RUN_WHOLE = new Set<string>([
   'ofnerr',
   'ofnopen',
   'pmatom',
+  'chfont',
 ]);
 
 /**

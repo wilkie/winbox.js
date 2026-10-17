@@ -161,6 +161,7 @@ pub const AGREEING: &[&str] = &[
     "ofnerr",
     "ofnopen",
     "pmatom",
+    "chfont",
 ];
 
 pub fn root() -> PathBuf {
