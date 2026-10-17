@@ -58,6 +58,8 @@ import { SystemPalette } from './win16/gdi/system-palette.js';
 import { Sound } from './win16/sound.js';
 import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg/index.js';
+import { Ver } from './win16/ver/index.js';
+import { LzExpand } from './win16/lzexpand/index.js';
 import { SystemDriver } from './win16/system-driver.js';
 import { displayDriverFor } from './win16/display-driver.js';
 import { Keyboard } from './win16/keyboard.js';
@@ -207,6 +209,8 @@ export class Win16 {
     this.keep(Timer, 'fixed');
     this.keep(MciWave, 'fixed');
     this.keep(MciSeq, 'fixed');
+    this.keep(Ver, 'moveable');
+    this.keep(LzExpand, 'moveable');
 
     this._classes = {};
 

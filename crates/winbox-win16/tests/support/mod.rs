@@ -165,6 +165,9 @@ pub const AGREEING: &[&str] = &[
     "chfont2",
     "prdlg",
     "prdlgx",
+    "lzfiles",
+    "verinfo",
+    "verinst",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -481,6 +484,10 @@ pub struct Setup {
     pub windows: PathBuf,
     /// The files put on drive C:, by their paths there, with their bytes.
     pub placed: Vec<(String, Vec<u8>)>,
+    /// The installation's files taken off drive C: before the probe
+    /// starts, by their paths there: `VER.DLL`, for a run with WinBox's own
+    /// alone.
+    pub without: Vec<String>,
 }
 
 impl Setup {
@@ -623,6 +630,7 @@ impl Setup {
             bytes,
             windows,
             placed,
+            without: Vec::new(),
         })
     }
 
@@ -688,6 +696,13 @@ pub fn run_setup<T>(
         .files
         .mount('A', HostDrive::removable(drive.join("A")));
     setup.system.files.mount('C', c);
+
+    for path in &setup.without {
+        let mut parts: Vec<String> = path.split('\\').map(str::to_string).collect();
+        let name = parts.pop().unwrap_or_default();
+
+        setup.system.files.unlink('C', &parts, &name);
+    }
     setup
         .system
         .files

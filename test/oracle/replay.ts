@@ -5896,6 +5896,9 @@ const RUN_WHOLE = new Set<string>([
   'chfontpr',
   'pric',
   'prdoc',
+  'lzfiles',
+  'verinfo',
+  'verinst',
 ]);
 
 /**

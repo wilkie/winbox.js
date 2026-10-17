@@ -431,6 +431,8 @@ pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation>
         crate::wbmapper::NAME => crate::wbmapper::implementation(name),
         "SHELL" => crate::shell::implementation(name),
         crate::commdlg::NAME => crate::commdlg::implementation(name),
+        crate::ver::NAME => crate::ver::implementation(name),
+        crate::lzexpand::NAME => crate::lzexpand::implementation(name),
         "DISPLAY" => crate::display::implementation(name),
         _ => None,
     }

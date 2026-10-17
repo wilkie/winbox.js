@@ -1,4 +1,4 @@
-import { redirect } from '../commdlg/index.js';
+import { redirect } from '../own-modules.js';
 import { exportedConstant } from '../linker.js';
 import { segmentSelector } from '../selectors.js';
 
@@ -12,7 +12,8 @@ export function GetProcAddress(hinst, lpszProcName) {
       lpszProcName instanceof String || typeof lpszProcName == 'string'
         ? loader.ordinalOf(String(lpszProcName))
         : lpszProcName & 0xffff;
-    /* An export of `COMMDLG`'s WinBox answers: its stub (`commdlg/`). */
+    /* An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox answers: its
+     * stub (`own-modules.ts`). */
     const info = ordinal
       ? (redirect(this.modules, loader, ordinal) ?? loader.lookup(ordinal))
       : null;

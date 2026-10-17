@@ -2,6 +2,7 @@
 
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
+import { OWN_WITH_FILE, ownByFile, ownPath } from './own-modules.js';
 import { start as startCommDlg } from './commdlg/state.js';
 import { loaded as printLoaded } from './commdlg/print-dlg.js';
 import { searchPlaces } from './kernel/search.js';
@@ -45,9 +46,11 @@ export class Library {
 /**
  * Modules winbox.js keeps whose file on the disk is loaded beside them when
  * there is one: the file's exports WinBox does not answer yet are the
- * file's code (`commdlg/`).
+ * file's code (`commdlg/`, `own-modules.ts`). Read as it is asked, not as
+ * this module loads: `own-modules.ts` comes to this one through `COMMDLG`,
+ * and its names are not there yet.
  */
-const STUBS_ONLY = new Set(['COMMDLG']);
+const STUBS_ONLY = { has: (name: string) => OWN_WITH_FILE.includes(name) };
 
 /** Whether a module is to be loaded from its file rather than taken from winbox.js. */
 export function wantsFile(system: any, name: string) {
@@ -318,14 +321,19 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   }
 
   if (!found) {
-    /* `COMMDLG` with no file: WinBox's, found by its file's name as the
-     * other modules it keeps are, its messages registered as its file's
-     * entry point registers them (`commdlg/`). */
-    const instance =
-      name.toUpperCase() === 'COMMDLG.DLL' ? system._modules.instanceFromPath(CommDlg.path) : 0;
+    /* `COMMDLG`, `VER` or `LZEXPAND` with no file: WinBox's, found by its
+     * file's name as the other modules it keeps are; `COMMDLG`'s messages
+     * registered as its file's entry point registers them (`commdlg/`). */
+    const own = ownByFile(name);
+    const instance = own
+      ? system._modules.instanceFromPath(own === 'COMMDLG' ? CommDlg.path : ownPath(own))
+      : 0;
 
     if (instance) {
-      startCommDlg(system);
+      if (own === 'COMMDLG') {
+        startCommDlg(system);
+      }
+
       return instance;
     }
 

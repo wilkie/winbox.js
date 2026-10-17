@@ -325,6 +325,18 @@ export async function runProbe(
     );
   }
 
+  /* The probe itself on the drive, where it runs from, as the Rust engine's
+   * runs put it (`tests/support`): a probe that reads its own file finds
+   * it (`verinfo`, `verinst`). */
+  const own = join(PROBES, `${name.toUpperCase()}.EXE`);
+
+  if (installation && !program && existsSync(own)) {
+    await fileSystem.map(
+      [`${name.toUpperCase()}.EXE`],
+      new DataView(new Uint8Array(readFileSync(own)).buffer)
+    );
+  }
+
   /* And the program it starts. */
   const child = join(PROBES, `${name.toUpperCase()}C.EXE`);
 

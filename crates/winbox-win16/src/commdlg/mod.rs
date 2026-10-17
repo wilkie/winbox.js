@@ -32,7 +32,7 @@
 //!    longer a stub there, and `tests::ours_agree` checks the two engines
 //!    answer the same exports.
 
-mod api;
+pub(crate) mod api;
 mod file_command;
 pub mod file_dialogs;
 mod file_init;

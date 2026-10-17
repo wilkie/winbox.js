@@ -1674,3 +1674,72 @@ fn control_panels_fonts_removes_and_adds_a_truetype_font() {
     assert!(in_system(&session, "WINGDING.FOT"));
     assert!(fonts_listed(&session, "WINGDING.TTF"));
 }
+
+/// Control Panel's Fonts with no `VER.DLL` or `LZEXPAND.DLL` on the drive.
+/// `MAIN.CPL` imports both: it says what kind of font a file is by VER's
+/// `GetFileResource`, and reads font files through LZEXPAND. Both are
+/// WinBox's own (`ver/`, `lzexpand/`), and Fonts says the same, adds
+/// `DOSAPP.FON` and removes it, as with the files there.
+#[test]
+fn control_panels_fonts_with_winboxs_own_ver_and_lzexpand() {
+    let windows = root().join("oracle/build/drive-c");
+
+    if !windows.join("WINDOWS").join("CONTROL.EXE").is_file() {
+        return;
+    }
+
+    NOW.with(|now| now.set(0.0));
+
+    let mut session = Session::new(Made {
+        display: "vga",
+        coprocessor: true,
+        host: host_ms,
+        wall: || 0,
+        epoch_ms: EPOCH.with(Cell::get),
+    })
+    .unwrap();
+
+    session.stay_up();
+    hold(&mut session, &windows, "");
+    session.mark_planned();
+    assert!(session.remove('C', "WINDOWS\\SYSTEM\\VER.DLL"));
+    assert!(session.remove('C', "WINDOWS\\SYSTEM\\LZEXPAND.DLL"));
+    start(&mut session, "CONTROL.EXE");
+
+    click(&mut session, 91, 66, true);
+    frames(&mut session, 100);
+    // Courier 10,12,15 (VGA res), the fifth.
+    click(&mut session, 100, 143, false);
+    frames(&mut session, 60);
+    assert_eq!(
+        text_of(&session, "Fonts", 401),
+        "This is a screen or plotter font."
+    );
+    assert_eq!(
+        text_of(&session, "Fonts", 408),
+        "The size of the font on the disk is:  23 KB."
+    );
+
+    click_control(&mut session, "Fonts", 403);
+    frames(&mut session, 150);
+    click(&mut session, 150, 321, true);
+    frames(&mut session, 400);
+    choose_font_to_add(&mut session, 13);
+    click_control(&mut session, "Add Fonts", 1);
+    frames(&mut session, 300);
+    assert!(fonts_listed(&session, "DOSAPP.FON"));
+    click_control(&mut session, "Fonts", 404);
+    frames(&mut session, 100);
+    press(&mut session, None, "Enter", "Enter");
+    frames(&mut session, 200);
+    assert!(!fonts_listed(&session, "DOSAPP.FON"));
+
+    // Neither library was loaded from a file.
+    assert!(
+        !session
+            .system()
+            .modules
+            .iter()
+            .any(|module| module.name == "VER" || module.name == "LZEXPAND")
+    );
+}
