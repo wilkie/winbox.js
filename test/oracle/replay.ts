@@ -5872,6 +5872,7 @@ const RUN_WHOLE = new Set<string>([
   'pmatom',
   'chfont',
   'prdlg',
+  'chfont',
 ]);
 
 /**
@@ -5937,7 +5938,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * writes whose files are stamped by it.
  * `findrepl` and `choosclr` take a step at each of a timer's ticks, and
  * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`;
- * `prdlg` takes its steps and presses its keys the same way.
+ * `prdlg` takes its steps and presses its keys the same way, and so
+ * does `chfont`.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5959,6 +5961,7 @@ const VIRTUAL_CLOCK = new Set([
   'findrepl',
   'choosclr',
   'prdlg',
+  'chfont',
 ]);
 
 /**

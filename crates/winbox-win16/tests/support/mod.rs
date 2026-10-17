@@ -164,6 +164,38 @@ pub const AGREEING: &[&str] = &[
     "chfont",
 ];
 
+/// The files a probe that prints finds on its drive, as the TypeScript
+/// engine's run puts them (`run-probe.ts`).
+///
+/// * `printing` finds winbox.js's own printer installed in `WIN.INI`: on
+///   the VGA, where `vgaprint` recorded with Windows' PostScript driver.
+/// * A probe of COMMDLG's print dialogs, recorded on the installation with
+///   a printer (`vgaprint`), finds that printer's driver where Setup put it:
+///   the dialogs load it by name and ask it for its DEVMODE and what it can
+///   do. The probe writes the printer into `WIN.INI` itself (`prdlg.c`).
+fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
+    let mut placed = Vec::new();
+
+    if probe == "printing"
+        && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
+    {
+        placed.push((
+            "WINDOWS\\WIN.INI".to_string(),
+            winbox_win16::printer::install_printer(&text),
+        ));
+    }
+
+    let driver = root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV");
+
+    if probe == "prdlg"
+        && let Ok(bytes) = std::fs::read(driver)
+    {
+        placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));
+    }
+
+    placed
+}
+
 pub fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
@@ -553,31 +585,7 @@ impl Setup {
             }
         }
 
-        // A probe that prints finds winbox.js's own printer installed, as the
-        // TypeScript engine's run installs it (`run-probe.ts`): on the VGA,
-        // where `vgaprint` recorded with Windows' PostScript driver.
-        if probe == "printing"
-            && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
-        {
-            placed.push((
-                "WINDOWS\\WIN.INI".to_string(),
-                winbox_win16::printer::install_printer(&text),
-            ));
-        }
-
-        // A probe of COMMDLG's print dialogs, recorded on the installation
-        // with a printer (`vgaprint`), finds that printer's driver where
-        // Setup put it, as the TypeScript engine's run puts it
-        // (`run-probe.ts`): the dialogs load it by name and ask it for its
-        // DEVMODE and what it can do. The probe writes the printer into
-        // `WIN.INI` itself (`prdlg.c`).
-        if probe == "prdlg"
-            && let Ok(bytes) = std::fs::read(
-                root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV"),
-            )
-        {
-            placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));
-        }
+        placed.extend(printers(probe, &windows));
 
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
