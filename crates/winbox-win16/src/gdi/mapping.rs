@@ -242,16 +242,27 @@ pub fn set_map_mode(system: &mut System, hdc: u16, mode: i16) -> u16 {
         MM_TEXT => [1, 1, 1, 1],
         MM_ANISOTROPIC => [m.wex, m.wey, m.vex, m.vey],
         _ => {
-            // The fixed modes', from the display; `MM_ISOTROPIC` starts at
-            // `MM_LOMETRIC`'s.
+            // The fixed modes', from the display, or from a printer
+            // driver's `GDIINFO` (`dpMLoWin` at 30h on); `MM_ISOTROPIC`
+            // starts at `MM_LOMETRIC`'s.
             let fixed = if mode == MM_ISOTROPIC { 2 } else { mode };
 
-            system
-                .display
-                .caps
-                .mapping_extents
-                .get(fixed as usize - 2)
-                .map_or([1, 1, 1, 1], |extents| extents.map(i64::from))
+            match super::printer_driver::device_info(system, index) {
+                Some(info) => {
+                    let at = 0x30 + (fixed as usize - 2) * 8;
+                    let word = |step: usize| {
+                        i64::from(i16::from_le_bytes([info[at + step], info[at + step + 1]]))
+                    };
+
+                    [word(0), word(2), word(4), word(6)]
+                }
+                None => system
+                    .display
+                    .caps
+                    .mapping_extents
+                    .get(fixed as usize - 2)
+                    .map_or([1, 1, 1, 1], |extents| extents.map(i64::from)),
+            }
         }
     };
 

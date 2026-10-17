@@ -210,6 +210,9 @@ pub struct Printing {
     /// The environments GDI keeps for the ports (`gdi/environment.rs`).
     pub environments: Vec<(Vec<u8>, u16)>,
     pub spooler: crate::gdi::spool_job::Spooler,
+    /// What GDI's spooler read of WIN.INI as its first job opened
+    /// (`gdi/spooler.rs`).
+    pub spooling: Option<crate::gdi::spooler::Spooling>,
     pub printed: Vec<Printed>,
     /// The documents started, for the next one's serial.
     pub started: u32,

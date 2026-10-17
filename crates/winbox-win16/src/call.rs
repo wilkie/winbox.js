@@ -412,6 +412,85 @@ impl System {
     }
 }
 
+/// One of the modules' calls made from another's code, as a program makes
+/// it: each structure laid below the stack and given as a far pointer to
+/// it, the arguments pushed below them, the first first, under a return
+/// address, and the function answering it run on them; the stack as it was
+/// after. The twin of the TypeScript engine calling the function itself.
+/// Its answer, and each structure as the call left it.
+pub(crate) async fn call_named(
+    engine: &Engine,
+    module: &'static str,
+    name: &'static str,
+    args: &[crate::engine::GuestArg],
+) -> Result<(Answer, Vec<Vec<u8>>), Stop> {
+    use crate::engine::GuestArg;
+
+    let found = implementation(module, name).ok_or(Stop::Missing { module, name })?;
+    let (saved, mut given, placed) = {
+        let mut system = engine.system();
+        let stack = system.cpu.segments[SS].base;
+        let selector = u32::from(system.cpu.segments[SS].selector);
+        let saved = system.cpu.regs[SP];
+        let mut offset = saved;
+        let mut placed = Vec::new();
+        let mut words = Vec::new();
+
+        for arg in args {
+            match arg {
+                GuestArg::Word(word) => words.push(*word),
+                GuestArg::Long(long) => {
+                    words.push((long >> 16) as u16);
+                    words.push(*long as u16);
+                }
+                GuestArg::Struct(bytes) | GuestArg::Placed(bytes, _) => {
+                    offset = offset.wrapping_sub((bytes.len() as u16 + 1) & !1);
+                    system.cpu.bus.write(stack + u32::from(offset), bytes);
+                    placed.push((stack + u32::from(offset), bytes.len()));
+
+                    let far = selector << 16 | u32::from(offset);
+
+                    words.push((far >> 16) as u16);
+                    words.push(far as u16);
+                }
+            }
+        }
+
+        let top = offset.wrapping_sub(words.len() as u16 * 2);
+
+        for (index, word) in words.iter().enumerate() {
+            let at = top.wrapping_add(((words.len() - 1 - index) * 2) as u16);
+
+            system.cpu.bus.write16(stack + u32::from(at), *word);
+        }
+
+        system.cpu.regs[SP] = top.wrapping_sub(4);
+        (
+            saved,
+            Args {
+                stack,
+                at: u32::from(top) + words.len() as u32 * 2,
+                top: u32::from(top),
+                given: None,
+                first: None,
+            },
+            placed,
+        )
+    };
+    let answer = match found {
+        Implementation::Sync(answer) => answer(&mut engine.system(), &mut given),
+        Implementation::Async(answer) => answer(engine, given).await,
+    };
+    let mut system = engine.system();
+    let structures = placed
+        .iter()
+        .map(|&(at, length)| system.cpu.bus.read(at, length))
+        .collect();
+
+    system.cpu.regs[SP] = saved;
+    Ok((answer?, structures))
+}
+
 /// The function that answers a module's export, if one does here.
 pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {

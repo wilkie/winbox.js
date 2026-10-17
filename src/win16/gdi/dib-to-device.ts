@@ -220,6 +220,28 @@ export function StretchDIBits(
     return 0;
   }
 
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface.driverDevice) {
+    const signed = (value: number) => (value << 16) >> 16;
+
+    return import('./printer-output.js').then(({ driverStretchDIBits }) =>
+      driverStretchDIBits(this, surface, {
+        x: signed(xDest),
+        y: signed(yDest),
+        width: signed(cxDest),
+        height: signed(cyDest),
+        srcX: signed(xSrc),
+        srcY: signed(ySrc),
+        srcWidth: signed(cxSrc),
+        srcHeight: signed(cySrc),
+        bits: lpvBits,
+        info: lpbmi,
+        usage: _fuColorUse,
+        rop: dwRop,
+      })
+    );
+  }
+
   const dib = dibAt(this, surface, lpbmi, lpvBits);
 
   if (!dib) {

@@ -23,10 +23,13 @@ pub mod metafile;
 pub mod objects;
 pub mod palettes;
 pub mod printer_driver;
+pub mod printer_output;
 pub mod printing;
 pub mod regions;
 pub mod shapes;
 pub mod spool_job;
+pub mod spooler;
+pub mod strings;
 pub mod text;
 pub mod text_out;
 
@@ -105,9 +108,16 @@ pub struct DeviceCaps {
     pub mapping_extents: Vec<[i32; 4]>,
 }
 
+/// The function that answers a call of GDI's: a printer driver's
+/// context's through its driver (`printer_output.rs`), which hands any
+/// other context on to the rest.
+pub fn implementation(name: &str) -> Option<Implementation> {
+    printer_output::implementation(name).or_else(|| base_implementation(name))
+}
+
 // A table of every call answered here, one line each.
 #[allow(clippy::too_many_lines)]
-pub fn implementation(name: &str) -> Option<Implementation> {
+pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
     if name == "RealizePalette" {
         return Some(Implementation::Async(palettes::realize_palette));
     }
@@ -220,6 +230,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| calls::implementation(name))
                 .or_else(|| metafile::implementation(name))
                 .or_else(|| printing::implementation(name))
+                .or_else(|| spooler::implementation(name))
                 .or_else(|| environment::implementation(name))
                 .or_else(|| engine_font::implementation(name));
         }

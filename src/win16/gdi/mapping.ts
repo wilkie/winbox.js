@@ -172,8 +172,17 @@ function isotropic(m: Mapping, aspectX: number, aspectY: number): Mapping {
   return m;
 }
 
-/** The fixed modes' extents, from the display. */
-function extentsFor(system: any, mode: number) {
+/** The fixed modes' extents, from the display, or from a printer driver's `GDIINFO` (`dpMLoWin` at 30h on). */
+function extentsFor(system: any, mode: number, surface: any) {
+  const info: Uint8Array | undefined = surface?.device?.gdiInfo;
+
+  if (info) {
+    const at = 0x30 + (mode - 2) * 8;
+    const word = (offset: number) => ((info[offset] | (info[offset + 1] << 8)) << 16) >> 16;
+
+    return { wex: word(at), wey: word(at + 2), vex: word(at + 4), vey: word(at + 6) };
+  }
+
   const table = system.display?.mappingExtents;
   const [wex, wey, vex, vey] = table?.[mode - 2] ?? [1, 1, 1, 1];
 
@@ -202,7 +211,7 @@ export function SetMapMode(hdc, fnMapMode) {
       ? { wex: 1, wey: 1, vex: 1, vey: 1 }
       : mode === MM_ANISOTROPIC
         ? { wex: m.wex, wey: m.wey, vex: m.vex, vey: m.vey }
-        : extentsFor(this, mode === MM_ISOTROPIC ? 2 : mode);
+        : extentsFor(this, mode === MM_ISOTROPIC ? 2 : mode, surface);
 
   surface.mapping = { ...m, ...extents, mode };
 

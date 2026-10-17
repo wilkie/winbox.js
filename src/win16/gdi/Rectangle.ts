@@ -19,5 +19,14 @@ import { paintShape } from './Ellipse.js';
  * @returns {Types.BOOL} Whether there was a device context.
  */
 export function Rectangle(hdc, nLeftRect, nTopRect, nRightRect, nBottomRect) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    return import('./printer-output.js').then(({ driverRectangle }) =>
+      driverRectangle(this, surface, nLeftRect, nTopRect, nRightRect, nBottomRect)
+    );
+  }
+
   return paintShape(this, hdc, nLeftRect, nTopRect, nRightRect, nBottomRect, [0, 0]);
 }

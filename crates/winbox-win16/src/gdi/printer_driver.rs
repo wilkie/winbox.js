@@ -114,6 +114,16 @@ pub struct Drivers {
     pub walking: Option<(u16, u16)>,
     /// The walks of a driver's fonts under way, by their numbers.
     pub walks: Vec<FontWalk>,
+    /// The contexts `StartPage` has marked, and those `NEXTBAND` has
+    /// marked banding (the DC's byte 0Bh, bits 5 and 1).
+    pub pages: std::collections::HashSet<usize>,
+    pub banding: std::collections::HashSet<usize>,
+    /// What GDI keeps of each driver's context for drawing
+    /// (`printer_output.rs`).
+    pub drawing: HashMap<usize, super::printer_output::Drawing>,
+    /// The context whose font the driver is realizing, for GDI's TrueType
+    /// engine (`[064Eh]`, `engine_font.rs`).
+    pub realizing: Option<usize>,
 }
 
 /// A name as GDI's atom keeps it: compared without case.
@@ -155,6 +165,27 @@ pub fn driver_dc_of(system: &System, hdc: u16) -> Option<usize> {
         Object::Dc(index) if system.printing.drivers.contexts.contains_key(&index) => Some(index),
         _ => None,
     }
+}
+
+/// A driver's context's `GDIINFO`.
+pub fn device_info(system: &System, dc: usize) -> Option<&[u8]> {
+    device_of(system, dc).map(|pdevice| pdevice.info.as_slice())
+}
+
+/// A driver's context's driver's entry point by its ordinal, nought where
+/// it has none, and its `PDEVICE`.
+pub fn device_proc(system: &System, dc: usize, ordinal: u16) -> (u32, u32) {
+    device_of(system, dc).map_or((0, 0), |pdevice| {
+        (
+            proc_of(system, &pdevice.driver, ordinal),
+            pdevice.lp_pdevice,
+        )
+    })
+}
+
+/// The device a driver's context was made for, by its name.
+pub fn device_name(system: &System, dc: usize) -> Option<Vec<u8>> {
+    device_of(system, dc).map(|pdevice| pdevice.device.clone())
 }
 
 fn device_of(system: &System, dc: usize) -> Option<&PDevice> {
@@ -476,39 +507,50 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
             id
         }
     };
-    let mut system = engine.system();
+    let (hdc, index) = {
+        let mut system = engine.system();
 
-    if let Some(driver) = driver_named(&mut system, &name) {
-        driver.uses += 1;
-    }
+        if let Some(driver) = driver_named(&mut system, &name) {
+            driver.uses += 1;
+        }
 
-    if let Some(pdevice) = system.printing.drivers.devices.get_mut(&id) {
-        pdevice.count += 1;
-    }
+        if let Some(pdevice) = system.printing.drivers.devices.get_mut(&id) {
+            pdevice.count += 1;
+        }
 
-    // A printer's context starts with `DEVICE_DEFAULT_FONT`, the display's
-    // with `SYSTEM_FONT` (seg1 `0217`-`0225`).
-    let font =
-        super::objects::stock_font_handle(&mut system, DEVICE_DEFAULT_FONT).and_then(|handle| {
-            match system.handles.resolve(handle) {
+        // A printer's context starts with `DEVICE_DEFAULT_FONT`, the display's
+        // with `SYSTEM_FONT` (seg1 `0217`-`0225`).
+        let font = super::objects::stock_font_handle(&mut system, DEVICE_DEFAULT_FONT).and_then(
+            |handle| match system.handles.resolve(handle) {
                 Some(Object::Gdi(object)) => Some(object),
                 _ => None,
-            }
-        });
-    let placeholder = system.placeholder_bitmap();
-    let index = system.new_dc(DcBitmap::Bitmap(placeholder), false);
+            },
+        );
+        let placeholder = system.placeholder_bitmap();
+        let index = system.new_dc(DcBitmap::Bitmap(placeholder), false);
 
-    system.gdi.dcs[index].state.font = font;
-    system.printing.drivers.contexts.insert(index, id);
-    Ok(system
-        .handles
-        .allocate(Kind::Gdi, Object::Dc(index))
-        .unwrap_or(0))
+        system.gdi.dcs[index].state.font = font;
+        system.printing.drivers.contexts.insert(index, id);
+
+        let hdc = system
+            .handles
+            .allocate(Kind::Gdi, Object::Dc(index))
+            .unwrap_or(0);
+
+        (hdc, index)
+    };
+
+    // Its colours, brush and pen, through the driver (seg1
+    // `01cd`-`0210`).
+    super::printer_output::start_drawing(engine, index).await?;
+    Ok(hdc)
 }
 
 /// A DC of a driver from the drive deleted: `Disable` and `FreeLibrary` as
 /// the last goes.
 pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
+    super::printer_output::stop_drawing(engine, dc).await?;
+
     let (id, name, last, disable, lp_pdevice) = {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
@@ -648,6 +690,11 @@ pub async fn driver_escape(
         ]
     };
 
+    // `NEXTBAND` marks the DC as banding, which `EndPage` reads (`0137`).
+    if escape == 3 {
+        engine.system().printing.drivers.banding.insert(dc);
+    }
+
     if escape == 10 {
         // The driver given the DC, by a word of GDI's stack.
         on_stack(engine, &hdc.to_le_bytes(), |far| {
@@ -662,6 +709,121 @@ pub async fn driver_escape(
         call_driver(engine, control, &call(escape as u16, GuestArg::Long(input))).await?;
 
     Ok(answer as i16)
+}
+
+/// The driver's `Control` with an escape, its input and its output: its
+/// answer, signed.
+async fn control(
+    engine: &Engine,
+    dc: usize,
+    escape: u16,
+    input: u32,
+    output: u32,
+) -> Result<i16, Stop> {
+    let (procedure, lp_pdevice) = {
+        let system = engine.system();
+        let Some(pdevice) = device_of(&system, dc) else {
+            return Ok(0);
+        };
+
+        (
+            proc_of(&system, &pdevice.driver, CONTROL),
+            pdevice.lp_pdevice,
+        )
+    };
+
+    if procedure == 0 {
+        return Ok(0);
+    }
+
+    let (answer, _) = call_driver(
+        engine,
+        procedure,
+        &[
+            GuestArg::Long(lp_pdevice),
+            GuestArg::Word(escape),
+            GuestArg::Long(input),
+            GuestArg::Long(output),
+        ],
+    )
+    .await?;
+
+    Ok(answer as i16)
+}
+
+/// `StartDoc` on a driver's DC (`GDI.EXE` seg31 `0196`): the driver's
+/// `Control` given `SETABORTPROC` with the DC, by a word of GDI's stack,
+/// then `STARTDOC` with the document's name, and the `DOCINFO` as its
+/// output where the `GDIINFO` is newer than 300h. The answer is the
+/// driver's.
+pub async fn driver_start_doc(
+    engine: &Engine,
+    hdc: u16,
+    dc: usize,
+    info: u32,
+) -> Result<i16, Stop> {
+    let (name, version) = {
+        let system = engine.system();
+        let name = if info == 0 {
+            0
+        } else {
+            let bytes = system.read_far((info & 0xffff_0000) | (info.wrapping_add(2) & 0xffff), 4);
+
+            u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
+        };
+        let version = device_of(&system, dc).map_or(0, |pdevice| {
+            u16::from_le_bytes([pdevice.info[0], pdevice.info[1]])
+        });
+
+        (name, version)
+    };
+
+    on_stack(engine, &hdc.to_le_bytes(), |far| async move {
+        control(engine, dc, 9, far, 0).await
+    })
+    .await?;
+    control(engine, dc, 10, name, if version > 0x300 { info } else { 0 }).await
+}
+
+/// `StartPage` on a driver's DC (seg31 `02ae`): the DC marked, and 1.
+pub fn driver_start_page(system: &mut System, dc: usize) -> i16 {
+    system.printing.drivers.pages.insert(dc);
+    1
+}
+
+/// `EndPage` on a driver's DC (seg31 `02e0`): -1 on a DC `StartPage` has
+/// not marked; else the escape `NEWFRAME`'s answer, or 1 where `NEXTBAND`
+/// has marked it banding; both marks cleared.
+pub async fn driver_end_page(engine: &Engine, hdc: u16, dc: usize) -> Result<i16, Stop> {
+    let (started, banding) = {
+        let system = engine.system();
+
+        (
+            system.printing.drivers.pages.contains(&dc),
+            system.printing.drivers.banding.contains(&dc),
+        )
+    };
+
+    if !started {
+        return Ok(-1);
+    }
+
+    let answer = if banding {
+        1
+    } else {
+        driver_escape(engine, hdc, dc, 1, 0, 0).await?
+    };
+    let mut system = engine.system();
+
+    system.printing.drivers.pages.remove(&dc);
+    system.printing.drivers.banding.remove(&dc);
+    Ok(answer)
+}
+
+/// `EndDoc` on a driver's DC (seg31 `0234`): the driver's `Control` with
+/// `ENDDOC`.
+pub async fn driver_end_doc(engine: &Engine, dc: usize) -> Result<i16, Stop> {
+    control(engine, dc, 11, 0, 0).await
 }
 
 fn create_call(engine: &Engine, mut args: Args, ic: bool) -> Later<'_> {
@@ -828,6 +990,23 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
         return Ok(None);
     }
 
+    // The context whose font is being realized, for GDI's TrueType engine
+    // (`[064Eh]`, `engine_font.rs`).
+    let before = engine.system().printing.drivers.realizing.replace(dc);
+    let realized = realize_device_font(engine, dc, object, realize, lp_pdevice, &bytes).await;
+
+    engine.system().printing.drivers.realizing = before;
+    realized
+}
+
+async fn realize_device_font(
+    engine: &Engine,
+    dc: usize,
+    object: usize,
+    realize: u32,
+    lp_pdevice: u32,
+    bytes: &[u8],
+) -> Result<Option<DeviceFont>, Stop> {
     let call = move |lf: u32, info: u32, xform: u32| {
         [
             GuestArg::Long(lp_pdevice),
@@ -837,7 +1016,7 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
             GuestArg::Long(xform),
         ]
     };
-    let ((size, _), _) = on_stack(engine, &bytes, |lf| {
+    let ((size, _), _) = on_stack(engine, bytes, |lf| {
         let args = call(lf, 0, 0);
 
         async move { call_driver(engine, realize, &args).await }
@@ -864,7 +1043,7 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
 
         (handle, system.global_pointer(handle))
     };
-    let ((_, mut xform), _) = on_stack(engine, &bytes, |lf| async move {
+    let ((_, mut xform), _) = on_stack(engine, bytes, |lf| async move {
         on_stack(engine, &[0; 0x14], |xform| {
             let args = call(lf, far, xform);
 

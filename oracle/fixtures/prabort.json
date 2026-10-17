@@ -1,0 +1,174 @@
+{
+  "probe": "prabort",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "StartDoc stopped",
+      "result": "-1"
+    },
+    {
+      "function": "calls",
+      "args": "StartDoc stopped",
+      "result": "5,0,0"
+    },
+    {
+      "function": "call",
+      "args": "StartPage stopped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EndPage stopped",
+      "result": "-2"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc stopped",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "EndDoc stopped",
+      "result": "5,0,0"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC stopped",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "stopped",
+      "result": "none"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc dropped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartPage dropped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "TextOut dropped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "AbortDoc dropped",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "AbortDoc dropped",
+      "result": "45,0,0"
+    },
+    {
+      "function": "size",
+      "args": "dropped",
+      "result": "11365"
+    },
+    {
+      "function": "call",
+      "args": "EndPage dropped",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc dropped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC dropped",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "dropped deleted",
+      "result": "11365"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc ic",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc ic",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC ic",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Escape STARTDOC",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "STARTDOC",
+      "result": "43,0,0"
+    },
+    {
+      "function": "call",
+      "args": "Escape NEWFRAME",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "NEWFRAME",
+      "result": "43,0,0"
+    },
+    {
+      "function": "call",
+      "args": "TextOut",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Escape NEWFRAME again",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "NEWFRAME again",
+      "result": "44,0,0"
+    },
+    {
+      "function": "call",
+      "args": "Escape ENDDOC",
+      "result": "1"
+    },
+    {
+      "function": "calls",
+      "args": "ENDDOC",
+      "result": "46,0,0"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC escaped",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "escaped",
+      "result": "11636"
+    }
+  ]
+}

@@ -33,6 +33,14 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     return FALSE;
   }
 
+  /* A printer driver's from the drive draws it: `ExtTextOut` with no
+   * options, rectangle or spacing (`GDI.EXE` seg1 `3884`). */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(({ driverExtTextOut, farOf }) =>
+      driverExtTextOut(this, surface, nXStart, nYStart, 0, 0, farOf(lpszString), cbString)
+    );
+  }
+
   const text = lpszString.slice(0, cbString);
   const place = currentPositionText(
     surface,

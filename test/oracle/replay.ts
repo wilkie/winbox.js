@@ -5604,21 +5604,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'chfontpr:faces': "the face selected as the Font dialog starts with the printer's fonts (2 of 6)",
   'chfontpr:styles': "the styles of the face wrongly selected with the printer's fonts (2 of 6)",
   'chfontpr:sizes': "the sizes of the face wrongly selected with the printer's fonts (1 of 6)",
-  /* `pric` asks the PostScript driver's IC for Arial at 40 dots: the
-   * driver realizes a TrueType font through GDI's `EngineRealizeFont`, given
-   * a `FONTINFO` to fill (`GDI.EXE` seg3 `2841`, `22b3`), which the engines
-   * answer nought; the driver falls back on its Helvetica. */
-  'pric:metrics': "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
-  'pric:face': "TrueType realized for a printer driver by GDI's engine, not followed (1 of 6)",
-  /* `prdoc` prints a page through the PostScript driver to a file. The
-   * engines make the DC, but do not yet print a document through a Windows
-   * driver: StartDoc and the rest go to WinBox's own printer's code, which
-   * answers -1 for any other, and GDI's spooler (`OpenJob`, `WriteSpool`)
-   * and drawing through the driver's `Output` and `ExtTextOut` are not
-   * followed, so no PostScript is written. */
-  'prdoc:call': 'a document printed through a Windows printer driver, not followed (4 of 10)',
-  'prdoc:size': 'no PostScript written: printing through a Windows driver (1 of 1)',
-  'prdoc:line': 'no PostScript written: printing through a Windows driver (211 of 211)',
   'chfontpr:result':
     "the font chosen from the face wrongly selected with the printer's fonts (1 of 3)",
 };
@@ -5896,6 +5881,10 @@ const RUN_WHOLE = new Set<string>([
   'chfontpr',
   'pric',
   'prdoc',
+  'prspool',
+  'prabort',
+  'prdraw',
+  'prlpt',
 ]);
 
 /**

@@ -194,5 +194,21 @@ function runs(pixels: [number, number][]) {
  * @returns {Types.BOOL} Whether the ellipse was drawn.
  */
 export function Ellipse(hdc, nLeftRect, nTopRect, nRightRect, nBottomRect) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    return import('./printer-output.js').then(({ driverCurve }) =>
+      driverCurve(
+        this,
+        surface,
+        'ellipse',
+        [nLeftRect, nTopRect, nRightRect, nBottomRect],
+        [0, 0],
+        [0, 0]
+      )
+    );
+  }
+
   return paintShape(this, hdc, nLeftRect, nTopRect, nRightRect, nBottomRect, null);
 }

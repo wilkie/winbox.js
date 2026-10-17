@@ -116,6 +116,16 @@ import { EnumFontFamilies, EnumFonts } from './gdi/EnumFontFamilies.js';
 import { EnumObjects } from './gdi/EnumObjects.js';
 import { SetObjectOwner } from './gdi/SetObjectOwner.js';
 import { GetSpoolJob } from './gdi/GetSpoolJob.js';
+import {
+  CloseJob,
+  DeleteJob,
+  EndSpoolPage,
+  OpenJob,
+  QueryAbort,
+  StartSpoolPage,
+  WriteDialog,
+  WriteSpool,
+} from './gdi/spooler.js';
 import { GetCharWidth } from './gdi/GetCharWidth.js';
 import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
@@ -461,7 +471,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [CreateIC, 'CreateIC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
       [GetNearestColor, 'GetNearestColor', 6, [HDC, COLORREF], COLORREF],
-      [Gdi.stub, 'QueryAbort', 4],
+      [QueryAbort, 'QueryAbort', 4, [HDC, INT], BOOL],
       [CreateCompatibleBitmap, 'CreateDiscardableBitmap', 6, [HDC, INT, INT], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -555,14 +565,14 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 240 //
-      [Gdi.stub, 'OpenJob', 10],
-      [Gdi.stub, 'WriteSpool', 8],
-      [Gdi.stub, 'WriteDialog', 8],
-      [Gdi.stub, 'CloseJob', 2],
-      [Gdi.stub, 'DeleteJob', 4],
+      [OpenJob, 'OpenJob', 10, [FARPTR, FARPTR, HDC], INT],
+      [WriteSpool, 'WriteSpool', 8, [HANDLE, FARPTR, UINT], INT],
+      [WriteDialog, 'WriteDialog', 8, [HANDLE, FARPTR, UINT], INT],
+      [CloseJob, 'CloseJob', 2, [HANDLE], INT],
+      [DeleteJob, 'DeleteJob', 4, [HANDLE, UINT], INT],
       [GetSpoolJob, 'GetSpoolJob', 6, [UINT, LONG], LONG],
-      [Gdi.stub, 'StartSpoolPage', 2],
-      [Gdi.stub, 'EndSpoolPage', 2],
+      [StartSpoolPage, 'StartSpoolPage', 2, [HANDLE], INT],
+      [EndSpoolPage, 'EndSpoolPage', 2, [HANDLE], INT],
       [Gdi.stub, 'QueryJob', 4],
       [Gdi.stub, 'unknown'],
       // 250 //

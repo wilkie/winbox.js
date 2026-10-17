@@ -44,6 +44,14 @@ export function SaveDC(hdc) {
 
   const state: any = { x: surface.data?.x, y: surface.data?.y };
 
+  /* A printer driver's context keeps its realized pen and brush and its
+   * physical colours with the rest (`printer-output.ts`). */
+  if (surface.driverDrawing) {
+    const { pen, penWidth, penHeight, brush, bkColor, textColor } = surface.driverDrawing;
+
+    state.driverDrawing = { pen, penWidth, penHeight, brush, bkColor, textColor };
+  }
+
   for (const name of KEPT) {
     state[name] = surface[name];
   }
@@ -94,6 +102,10 @@ export function RestoreDC(hdc, nSavedDC) {
   if (surface.data) {
     surface.data.x = state.x;
     surface.data.y = state.y;
+  }
+
+  if (surface.driverDrawing && state.driverDrawing) {
+    Object.assign(surface.driverDrawing, state.driverDrawing);
   }
 
   return level;

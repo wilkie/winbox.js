@@ -38,6 +38,15 @@ pub struct FontResource {
     pub avg_width: u16,
     pub weight: u16,
     pub italic: u8,
+    /// `dfUnderline`, `dfStrikeOut`, and the first, last, default and break
+    /// characters, the last two from the first (`GDI.EXE` seg3 `220b`
+    /// copies them).
+    pub underline: u8,
+    pub strike_out: u8,
+    pub first_char: u8,
+    pub last_char: u8,
+    pub default_char: u8,
+    pub break_char: u8,
     /// The family, full and style names the stub carries past its entry.
     pub family: String,
     pub full_name: String,
@@ -194,6 +203,12 @@ pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
         avg_width: view.word(info + 91)?,
         weight: view.word(info + 83)?,
         italic: view.byte(info + 80)?,
+        underline: view.byte(info + 81)?,
+        strike_out: view.byte(info + 82)?,
+        first_char: view.byte(info + 95)?,
+        last_char: view.byte(info + 96)?,
+        default_char: view.byte(info + 97)?,
+        break_char: view.byte(info + 98)?,
         family: string(1),
         full_name: string(2),
         style: string(3),

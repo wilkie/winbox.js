@@ -6,7 +6,8 @@
  *
  * * `dc`: whether `CreateDC` of the driver, the device and the file gave a
  *   device context.
- * * `call`: each call's answer.
+ * * `call`: each call's answer; for `EndPage`, the size of the block its
+ *   answer names, which is the driver's job.
  * * `size`: the file's size once the document is done.
  * * `line`: each line the driver wrote, as it wrote it.
  */
@@ -82,6 +83,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     HDC dc;
     HPEN pen;
     HBRUSH brush;
+    int answer;
 
     probeOpen(OUTPUT);
     WriteProfileString("windows", "spooler", "no");
@@ -111,7 +113,18 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     SelectObject(dc, GetStockObject(WHITE_BRUSH));
     DeleteObject(pen);
     DeleteObject(brush);
-    exact("EndPage", EndPage(dc));
+    answer = EndPage(dc);
+
+    /* The PostScript driver answers the escape `NEWFRAME` with its job, the
+     * handle `OpenJob` gave it: the size of the block it names, shifted
+     * back left. */
+    if (answer > 0) {
+        wsprintf(probeResult, "job %ld", GlobalSize((HGLOBAL)(answer << 1)));
+        probe("call", "EndPage", probeResult);
+    } else {
+        exact("EndPage", answer);
+    }
+
     exact("EndDoc", EndDoc(dc));
     exact("DeleteDC", DeleteDC(dc));
 

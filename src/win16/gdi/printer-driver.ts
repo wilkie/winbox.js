@@ -426,7 +426,15 @@ export async function createDriverDC(
     surface.font = system.handles.resolve(font);
   }
 
-  return system.handles.allocateGDI(surface);
+  const hdc = system.handles.allocateGDI(surface);
+
+  /* Its colours, brush and pen, through the driver (seg1 `01cd`-`0210`):
+   * loaded when first wanted, as `printer-output.ts` imports this. */
+  const { startDrawing } = await import('./printer-output.js');
+
+  await startDrawing(system, surface);
+
+  return hdc;
 }
 
 /** A DC of a driver from the drive deleted: `Disable` and `FreeLibrary` as the last goes. */
@@ -434,6 +442,9 @@ export async function deleteDriverDC(system: any, surface: any) {
   const pdevice: PDevice = surface.driverDevice;
   const driver = pdevice.driver;
 
+  const { stopDrawing } = await import('./printer-output.js');
+
+  stopDrawing(system, surface);
   surface.driverDevice = null;
   pdevice.count = Math.max(0, pdevice.count - 1);
 
@@ -522,6 +533,11 @@ export async function driverEscape(
       [output >>> 0, DWORD],
     ])) & 0xffff;
 
+  /* `NEXTBAND` marks the DC as banding, which `EndPage` reads (`0137`). */
+  if (escape === 3) {
+    surface.banding = true;
+  }
+
   if (escape === 10) {
     /* The driver given the DC, by a word of GDI's stack. */
     await onStack(system, new Uint8Array([hdc & 0xff, (hdc >> 8) & 0xff]), (far) =>
@@ -530,6 +546,84 @@ export async function driverEscape(
   }
 
   return call(escape, lpIn, lpOut);
+}
+
+/** The driver's `Control` with an escape, its input and its output: its answer, signed. */
+async function control(
+  system: any,
+  pdevice: PDevice,
+  escape: number,
+  input: number,
+  output: number
+) {
+  const procedure = proc(pdevice.driver, CONTROL);
+
+  if (!procedure) {
+    return 0;
+  }
+
+  const answer = await callDriver(system, procedure, [
+    [pdevice.lpPDevice, DWORD],
+    [escape, UINT],
+    [input >>> 0, DWORD],
+    [output >>> 0, DWORD],
+  ]);
+
+  return ((answer & 0xffff) << 16) >> 16;
+}
+
+/**
+ * `StartDoc` on a driver's DC (`GDI.EXE` seg31 `0196`): the driver's
+ * `Control` given `SETABORTPROC` with the DC, by a word of GDI's stack,
+ * then `STARTDOC` with the document's name, and the `DOCINFO` as its
+ * output where the `GDIINFO` is newer than 300h. The answer is the
+ * driver's.
+ */
+export async function driverStartDoc(system: any, hdc: number, surface: any, lpdi: number) {
+  const pdevice: PDevice = surface.driverDevice;
+  const core = system.machine.cpu.core;
+  const name = lpdi
+    ? ((core.read16(lpdi >>> 16, ((lpdi & 0xffff) + 4) & 0xffff) << 16) |
+        core.read16(lpdi >>> 16, ((lpdi & 0xffff) + 2) & 0xffff)) >>>
+      0
+    : 0;
+  const version = pdevice.info[0] | (pdevice.info[1] << 8);
+
+  await onStack(system, new Uint8Array([hdc & 0xff, (hdc >> 8) & 0xff]), (far) =>
+    control(system, pdevice, 9, far, 0)
+  );
+
+  return control(system, pdevice, 10, name, version > 0x300 ? lpdi : 0);
+}
+
+/** `StartPage` on a driver's DC (seg31 `02ae`): the DC marked, and 1. */
+export function driverStartPage(surface: any) {
+  surface.pageStarted = true;
+
+  return 1;
+}
+
+/**
+ * `EndPage` on a driver's DC (seg31 `02e0`): -1 on a DC `StartPage` has
+ * not marked; else the escape `NEWFRAME`'s answer, or 1 where `NEXTBAND`
+ * has marked it banding; both marks cleared.
+ */
+export async function driverEndPage(system: any, hdc: number, surface: any) {
+  if (!surface.pageStarted) {
+    return -1;
+  }
+
+  const answer = surface.banding ? 1 : await driverEscape(system, hdc, surface, 1, 0, 0);
+
+  surface.pageStarted = false;
+  surface.banding = false;
+
+  return answer;
+}
+
+/** `EndDoc` on a driver's DC (seg31 `0234`): the driver's `Control` with `ENDDOC`. */
+export function driverEndDoc(system: any, surface: any) {
+  return control(system, surface.driverDevice, 11, 0, 0);
 }
 
 /** A realized font of a driver's, as GDI keeps it: the `FONTINFO` and the `TEXTXFORM`. */
@@ -622,6 +716,27 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
     [info, DWORD],
     [xform, DWORD],
   ];
+  /* The context whose font is being realized, for GDI's TrueType engine
+   * (`[064Eh]`, `engine-font.ts`). */
+  const before = system._realizingFont;
+
+  system._realizingFont = { surface };
+
+  try {
+    return await realizeDeviceFont(system, surface, font, realize, realizeArgs, bytes);
+  } finally {
+    system._realizingFont = before;
+  }
+}
+
+async function realizeDeviceFont(
+  system: any,
+  surface: any,
+  font: any,
+  realize: number,
+  realizeArgs: (lf: number, info: number, xform: number) => [number, number][],
+  bytes: Uint8Array
+): Promise<DeviceFont | null> {
   const [size] = await onStack(
     system,
     bytes,

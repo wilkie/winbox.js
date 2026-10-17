@@ -63,6 +63,16 @@ export function SetTextColor(hdc, color) {
 
   surface.textColor = realized;
 
+  /* A printer driver's from the drive is asked the physical colour
+   * (`GDI.EXE` seg1 `14dc`). */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(async ({ setDriverColor }) => {
+      await setDriverColor(this, surface, 'text', color >>> 0);
+
+      return colorrefOf(before, 0);
+    });
+  }
+
   return colorrefOf(before, 0);
 }
 

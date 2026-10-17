@@ -42,6 +42,22 @@ export function Polygon(hdc, lpPoints, nCount) {
   const signed = (word) => (word & 0x8000 ? word - 0x10000 : word);
   const points: number[][] = [];
 
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface.driverDevice) {
+    const logical: [number, number][] = [];
+
+    for (let index = 0; index < nCount; index++) {
+      logical.push([
+        signed(core.read16(segment, offset + index * 4)),
+        signed(core.read16(segment, offset + index * 4 + 2)),
+      ]);
+    }
+
+    return import('./printer-output.js').then(({ driverPolygon }) =>
+      driverPolygon(this, surface, logical)
+    );
+  }
+
   /* In device terms, where a mapping mode says otherwise, as `Polyline`'s
    * are (`metafile`: played with the viewport's origin moved). */
   const m = mapped(surface);

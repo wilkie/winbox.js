@@ -59,6 +59,16 @@ export function SetBkColor(hdc, clrref) {
   color.colorref = clrref >>> 0;
   surface.backcolor = color;
 
+  /* A printer driver's from the drive is asked the physical colour
+   * (`GDI.EXE` seg1 `1476`). */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(async ({ setDriverColor }) => {
+      await setDriverColor(this, surface, 'bk', clrref >>> 0);
+
+      return colorrefOf(old, 0xffffff);
+    });
+  }
+
   return colorrefOf(old, 0xffffff);
 }
 

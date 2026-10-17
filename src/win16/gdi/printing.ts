@@ -2,6 +2,13 @@
 
 import { clearPage, deliver, type PrintJob } from '../printer.js';
 import { HDC, INT } from '../types.js';
+import {
+  driverEndDoc,
+  driverEndPage,
+  driverEscape,
+  driverStartDoc,
+  driverStartPage,
+} from './printer-driver.js';
 
 /**
  * A document printed: `StartDoc`, `StartPage`, `EndPage`, `EndDoc`,
@@ -45,7 +52,24 @@ async function callAbort(system: any, hdc: number, surface: any) {
   }
 }
 
+/** A driver's from the drive, by its DC (`printer-driver.ts`). */
+function driverOf(system: any, hdc: number) {
+  const surface = system.handles.resolve(hdc);
+
+  return surface?.driverDevice ? surface : null;
+}
+
+/**
+ * On a driver's DC, the escape `SETABORTPROC` (`GDI.EXE` seg31 `033e`):
+ * the procedure kept, and its segment answered.
+ */
 export function SetAbortProc(this: any, hdc: number, lpAbortProc: number) {
+  const driver = driverOf(this, hdc);
+
+  if (driver) {
+    return driverEscape(this, hdc, driver, 9, lpAbortProc, 0);
+  }
+
   const surface = printerOf(this, hdc);
 
   if (!surface) {
@@ -71,6 +95,12 @@ function startDoc(system: any, surface: any, name: string) {
 }
 
 export function StartDoc(this: any, hdc: number, lpdi: number) {
+  const driver = driverOf(this, hdc);
+
+  if (driver) {
+    return driverStartDoc(this, hdc, driver, lpdi >>> 0);
+  }
+
   const surface = printerOf(this, hdc);
 
   if (!surface) {
@@ -104,6 +134,12 @@ export function StartDoc(this: any, hdc: number, lpdi: number) {
 
 /** Answers 1 whether or not a document is being printed (`printing`). */
 export function StartPage(this: any, hdc: number) {
+  const driver = driverOf(this, hdc);
+
+  if (driver) {
+    return driverStartPage(driver);
+  }
+
   const surface = printerOf(this, hdc);
 
   if (!surface) {
@@ -122,6 +158,12 @@ export function StartPage(this: any, hdc: number) {
 
 /** The page drawn, kept; -1 with no document (`printing`). */
 export async function EndPage(this: any, hdc: number) {
+  const driver = driverOf(this, hdc);
+
+  if (driver) {
+    return driverEndPage(this, hdc, driver);
+  }
+
   const surface = printerOf(this, hdc);
   const job: PrintJob | null = surface?.printer.job ?? null;
 
@@ -139,6 +181,12 @@ export async function EndPage(this: any, hdc: number) {
 
 /** The document handed on; 1 with none (`printing`). */
 export async function EndDoc(this: any, hdc: number) {
+  const driver = driverOf(this, hdc);
+
+  if (driver) {
+    return driverEndDoc(this, driver);
+  }
+
   const surface = printerOf(this, hdc);
   const job: PrintJob | null = surface?.printer.job ?? null;
 
@@ -165,6 +213,13 @@ export async function EndDoc(this: any, hdc: number) {
 
 /** The document dropped, nothing handed on. */
 export function AbortDoc(this: any, hdc: number) {
+  const driver = driverOf(this, hdc);
+
+  /* On a driver's DC, the escape `ABORTDOC` (seg31 `0273`). */
+  if (driver) {
+    return driverEscape(this, hdc, driver, 2, 0, 0);
+  }
+
   const surface = printerOf(this, hdc);
 
   if (!surface) {

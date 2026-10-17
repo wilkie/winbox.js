@@ -333,35 +333,94 @@ pub(crate) fn escape_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
-fn start_doc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-    let info = args.dword(system);
+/// A driver's from the drive, by its DC (`printer_driver.rs`).
+fn driver_of(system: &System, hdc: u16) -> Option<usize> {
+    super::printer_driver::driver_dc_of(system, hdc)
+}
 
-    answer(start_doc_info(system, hdc, info))
+fn start_doc_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, info, driver) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+            let info = args.dword(&system);
+
+            (hdc, info, driver_of(&system, hdc))
+        };
+
+        if let Some(dc) = driver {
+            return answer(super::printer_driver::driver_start_doc(engine, hdc, dc, info).await?);
+        }
+
+        answer(start_doc_info(&mut engine.system(), hdc, info))
+    })
 }
 
 fn start_page_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
 
+    if let Some(dc) = driver_of(system, hdc) {
+        return answer(super::printer_driver::driver_start_page(system, dc));
+    }
+
     answer(start_page(system, hdc))
 }
 
-fn abort_doc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
+/// On a driver's DC, the escape `ABORTDOC` (seg31 `0273`).
+fn abort_doc_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, driver) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
 
-    answer(abort_doc(system, hdc))
+            (hdc, driver_of(&system, hdc))
+        };
+
+        if let Some(dc) = driver {
+            return answer(
+                super::printer_driver::driver_escape(engine, hdc, dc, ABORTDOC, 0, 0).await?,
+            );
+        }
+
+        answer(abort_doc(&mut engine.system(), hdc))
+    })
 }
 
-fn set_abort_proc_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-    let procedure = args.dword(system);
+/// On a driver's DC, the escape `SETABORTPROC` (`GDI.EXE` seg31 `033e`):
+/// the procedure kept, and its segment answered.
+fn set_abort_proc_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, procedure, driver) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+            let procedure = args.dword(&system);
 
-    answer(set_abort_proc(system, hdc, procedure))
+            (hdc, procedure, driver_of(&system, hdc))
+        };
+
+        if let Some(dc) = driver {
+            return answer(
+                super::printer_driver::driver_escape(engine, hdc, dc, SETABORTPROC, procedure, 0)
+                    .await?,
+            );
+        }
+
+        answer(set_abort_proc(&mut engine.system(), hdc, procedure))
+    })
 }
 
 fn end_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let hdc = args.word(&engine.system());
+        let (hdc, driver) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+
+            (hdc, driver_of(&system, hdc))
+        };
+
+        if let Some(dc) = driver {
+            return answer(super::printer_driver::driver_end_page(engine, hdc, dc).await?);
+        }
 
         answer(end_page(engine, hdc).await?)
     })
@@ -369,7 +428,16 @@ fn end_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
 
 fn end_doc_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let hdc = args.word(&engine.system());
+        let (hdc, driver) = {
+            let system = engine.system();
+            let hdc = args.word(&system);
+
+            (hdc, driver_of(&system, hdc))
+        };
+
+        if let Some(dc) = driver {
+            return answer(super::printer_driver::driver_end_doc(engine, dc).await?);
+        }
 
         answer(end_doc(engine, hdc).await?)
     })
@@ -379,12 +447,12 @@ pub fn implementation(name: &str) -> Option<crate::call::Implementation> {
     use crate::call::Implementation::{Async, Sync};
 
     Some(match name {
-        "StartDoc" => Sync(start_doc_call),
+        "StartDoc" => Async(start_doc_call),
         "StartPage" => Sync(start_page_call),
         "EndPage" => Async(end_page_call),
         "EndDoc" => Async(end_doc_call),
-        "AbortDoc" => Sync(abort_doc_call),
-        "SetAbortProc" => Sync(set_abort_proc_call),
+        "AbortDoc" => Async(abort_doc_call),
+        "SetAbortProc" => Async(set_abort_proc_call),
         "GetSpoolJob" => Sync(super::spool_job::get_spool_job_call),
         _ => return None,
     })

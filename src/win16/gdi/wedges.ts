@@ -128,13 +128,46 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
 }
 
 export function Arc(this: any, hdc: number, ...args: number[]) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    const [l, t, r, b, x1, y1, x2, y2] = args.map((value) => (value << 16) >> 16);
+
+    return import('./printer-output.js').then(({ driverCurve }) =>
+      driverCurve(this, surface, 'arc', [l, t, r, b], [x1, y1], [x2, y2])
+    );
+  }
+
   return wedge.call(this, 'arc', hdc, args);
 }
 
 export function Chord(this: any, hdc: number, ...args: number[]) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    const [l, t, r, b, x1, y1, x2, y2] = args.map((value) => (value << 16) >> 16);
+
+    return import('./printer-output.js').then(({ driverCurve }) =>
+      driverCurve(this, surface, 'chord', [l, t, r, b], [x1, y1], [x2, y2])
+    );
+  }
+
   return wedge.call(this, 'chord', hdc, args);
 }
 
 export function Pie(this: any, hdc: number, ...args: number[]) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    const [l, t, r, b, x1, y1, x2, y2] = args.map((value) => (value << 16) >> 16);
+
+    return import('./printer-output.js').then(({ driverCurve }) =>
+      driverCurve(this, surface, 'pie', [l, t, r, b], [x1, y1], [x2, y2])
+    );
+  }
+
   return wedge.call(this, 'pie', hdc, args);
 }

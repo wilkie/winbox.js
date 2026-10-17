@@ -36,5 +36,21 @@ import { paintShape } from './Ellipse.js';
  * @returns {Types.BOOL} Whether the shape was drawn.
  */
 export function RoundRect(hdc, nLeftRect, nTopRect, nRightRect, nBottomRect, nWidth, nHeight) {
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface?.driverDevice) {
+    return import('./printer-output.js').then(({ driverCurve }) =>
+      driverCurve(
+        this,
+        surface,
+        'roundRect',
+        [nLeftRect, nTopRect, nRightRect, nBottomRect],
+        [(nWidth << 16) >> 16, (nHeight << 16) >> 16],
+        [0, 0]
+      )
+    );
+  }
+
   return paintShape(this, hdc, nLeftRect, nTopRect, nRightRect, nBottomRect, [nWidth, nHeight]);
 }

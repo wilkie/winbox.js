@@ -165,6 +165,12 @@ pub const AGREEING: &[&str] = &[
     "chfont2",
     "prdlg",
     "prdlgx",
+    "pric",
+    "prdoc",
+    "prspool",
+    "prabort",
+    "prdraw",
+    "prlpt",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -190,7 +196,10 @@ fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
 
     let driver = root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV");
 
-    if ["prdlg", "chfontpr", "prdlgx", "pric", "prdoc"].contains(&probe)
+    if [
+        "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
+    ]
+    .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)
     {
         placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));

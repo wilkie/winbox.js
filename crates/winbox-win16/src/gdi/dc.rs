@@ -57,6 +57,9 @@ pub struct DcState {
     /// The clip region, in the device context's own pixels, where one is
     /// set: drawing is kept inside it (`regions`).
     pub clip: Option<winbox_raster::ClipRegion>,
+    /// A printer driver's context's realized pen and brush and physical
+    /// colours (`printer_output.rs`).
+    pub driver: Option<super::printer_output::DriverState>,
 }
 
 /// The bitmap a device context draws into, as far as its state goes.
@@ -143,6 +146,7 @@ impl System {
                 position: (0, 0),
                 justification: None,
                 clip: None,
+                driver: None,
             },
             saved: Vec::new(),
             bitmap,

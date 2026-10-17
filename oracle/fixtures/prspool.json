@@ -1,0 +1,179 @@
+{
+  "probe": "prspool",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "open",
+      "args": "null",
+      "result": "-1"
+    },
+    {
+      "function": "open",
+      "args": "empty",
+      "result": "-1"
+    },
+    {
+      "function": "message",
+      "args": "2",
+      "result": "1,352"
+    },
+    {
+      "function": "open",
+      "args": "file",
+      "result": "block 352"
+    },
+    {
+      "function": "size",
+      "args": "opened",
+      "result": "0"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 7",
+      "result": "7"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 300",
+      "result": "300"
+    },
+    {
+      "function": "call",
+      "args": "EndSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteDialog",
+      "result": "0"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 7 again",
+      "result": "7"
+    },
+    {
+      "function": "message",
+      "args": "2",
+      "result": "2,0"
+    },
+    {
+      "function": "call",
+      "args": "CloseJob",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "closed",
+      "result": "314"
+    },
+    {
+      "function": "head",
+      "args": "closed",
+      "result": "68656c6c6f0d0a4142434445464748494a4b4c4d"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool closed",
+      "result": "-3"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage -2",
+      "result": "-2"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool -5",
+      "result": "-5"
+    },
+    {
+      "function": "call",
+      "args": "EndSpoolPage -1",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "CloseJob -4",
+      "result": "-4"
+    },
+    {
+      "function": "call",
+      "args": "DeleteJob -3",
+      "result": "-3"
+    },
+    {
+      "function": "call",
+      "args": "WriteDialog -1",
+      "result": "-1"
+    },
+    {
+      "function": "message",
+      "args": "2",
+      "result": "1,352"
+    },
+    {
+      "function": "open",
+      "args": "second",
+      "result": "block 352"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool second",
+      "result": "300"
+    },
+    {
+      "function": "call",
+      "args": "DeleteJob",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "deleted",
+      "result": "none"
+    },
+    {
+      "function": "call",
+      "args": "QueryAbort none",
+      "result": "0"
+    },
+    {
+      "function": "call",
+      "args": "QueryAbort screen",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "QueryAbort printer",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "SetAbortProc is segment",
+      "result": "1"
+    },
+    {
+      "function": "abort",
+      "args": "called",
+      "result": "7,1"
+    },
+    {
+      "function": "call",
+      "args": "QueryAbort set",
+      "result": "3"
+    }
+  ]
+}

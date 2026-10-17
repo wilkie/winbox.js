@@ -50,6 +50,22 @@ export function ExtTextOut(hdc, nXStart, nYStart, fuOptions, lpRect, lpszString,
     return FALSE;
   }
 
+  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(({ driverExtTextOut, farOf }) =>
+      driverExtTextOut(
+        this,
+        surface,
+        nXStart,
+        nYStart,
+        fuOptions,
+        lpRect >>> 0,
+        farOf(lpszString),
+        cbString
+      )
+    );
+  }
+
   const text = String(lpszString).slice(0, cbString);
   const core = this.machine.cpu.core;
 

@@ -536,6 +536,14 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// What can be drawn on at all: the bitmap, or nothing for the one a
 /// memory device context starts with.
 fn visible(system: &mut System, dc: usize) -> ClipRegion {
+    // A printer driver's context: its page, as the driver's `GDIINFO` has
+    // it (`printer_driver.rs`).
+    if let Some(info) = super::printer_driver::device_info(system, dc) {
+        let word = |at: usize| i32::from(i16::from_le_bytes([info[at], info[at + 1]]));
+
+        return ClipRegion::rect(0, 0, word(8), word(0x0a));
+    }
+
     if let DcBitmap::Bitmap(object) = system.gdi.dcs[dc].bitmap
         && matches!(&system.gdi.objects[object], GdiObject::Bitmap(bitmap) if bitmap.pixels.placeholder)
     {

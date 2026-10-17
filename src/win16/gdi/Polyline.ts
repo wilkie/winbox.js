@@ -35,6 +35,20 @@ export function Polyline(this: any, hdc: number, lpPoints: number, nCount: numbe
   const at = (index: number, half: number) =>
     signed(core.read16(segment, (offset + index * 4 + half * 2) & 0xffff));
   /* A pen wider than a pixel draws the chain as one, joined (`widelin`). */
+  /* A printer driver's from the drive draws it (`GDI.EXE` seg21 `0b9c`),
+   * the answer its `0726`'s. */
+  if (surface.driverDevice) {
+    const logical: [number, number][] = [];
+
+    for (let index = 0; index < nCount; index++) {
+      logical.push([at(index, 0), at(index, 1)]);
+    }
+
+    return import('./printer-output.js').then(({ driverPolyline }) =>
+      driverPolyline(this, surface, logical)
+    );
+  }
+
   const m = mapped(surface);
   const points: [number, number][] = [];
 

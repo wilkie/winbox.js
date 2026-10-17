@@ -34,6 +34,12 @@ import { deviceX, deviceY, logicalX, logicalY, mappingOf } from './mapping.js';
 function visible(surface: any) {
   const bitmap = surface.bitmap;
 
+  /* A printer driver's context: its page, as the driver's `GDIINFO` has it
+   * (`printer-driver.ts`). */
+  if (surface.driverDevice) {
+    return ClipRegion.rect(0, 0, surface.device?.width ?? 0, surface.device?.height ?? 0);
+  }
+
   if (bitmap instanceof DeviceBitmap && bitmap.placeholder) {
     return ClipRegion.EMPTY;
   }

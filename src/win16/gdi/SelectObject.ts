@@ -152,7 +152,26 @@ export function SelectObject(hdc, hgdiobj) {
     /* One deleted while it was selected answers the handle it had
      * (`stockdel`): the context holds the handle, not the object. */
     ret = handleHeld(this, surface.pen) || TRUE;
+
+    const before = surface.pen;
+
     surface.pen = item;
+
+    /* A printer driver's from the drive realizes it at once, and a pen it
+     * cannot leaves the one before selected and answers nought (`GDI.EXE`
+     * seg1 `1b9f`). */
+    if (surface.driverDevice) {
+      const answer = ret;
+
+      return import('./printer-output.js').then(async ({ realizePen }) => {
+        if (await realizePen(this, surface)) {
+          return answer;
+        }
+
+        surface.pen = before;
+        return NULL;
+      });
+    }
   } else if (this.handles.isFont(item)) {
     const previous = surface.font;
 
@@ -168,8 +187,24 @@ export function SelectObject(hdc, hgdiobj) {
     ret =
       handleHeld(this, surface.brush) ||
       (stock !== null && stock !== undefined ? GetStockObject.call(this, stock) : TRUE);
+    const before = surface.brush;
+
     surface.brush = item;
     realiseBrush(surface, item);
+
+    /* The same for a brush (seg1 `1b72`). */
+    if (surface.driverDevice) {
+      const answer = ret;
+
+      return import('./printer-output.js').then(async ({ realizeBrush }) => {
+        if (await realizeBrush(this, surface)) {
+          return answer;
+        }
+
+        surface.brush = before;
+        return NULL;
+      });
+    }
   } else {
     this.debug('SelectObject: unknown or invalid object handle');
   }

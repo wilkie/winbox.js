@@ -39,6 +39,13 @@ export interface FontResource {
   avgWidth: number;
   weight: number;
   italic: number;
+  /** `dfUnderline`, `dfStrikeOut`, and the first, last, default and break characters, the last two from the first (`GDI.EXE` seg3 `220b` copies them). */
+  underline: number;
+  strikeOut: number;
+  firstChar: number;
+  lastChar: number;
+  defaultChar: number;
+  breakChar: number;
   /** The family, full and style names the stub carries past its entry. */
   family: string;
   fullName: string;
@@ -144,6 +151,12 @@ export function readFontResource(bytes: Uint8Array): FontResource | null {
     avgWidth: view.getUint16(info + 91, true),
     weight: view.getUint16(info + 83, true),
     italic: bytes[info + 80],
+    underline: bytes[info + 81],
+    strikeOut: bytes[info + 82],
+    firstChar: bytes[info + 95],
+    lastChar: bytes[info + 96],
+    defaultChar: bytes[info + 97],
+    breakChar: bytes[info + 98],
     family: strings[1] ?? '',
     fullName: strings[2] ?? '',
     style: strings[3] ?? '',

@@ -48,6 +48,19 @@ export function LineTo(hdc, x, y) {
   surface.data.x = x;
   surface.data.y = y;
 
+  /* A printer driver's from the drive draws it, as a polyline of two
+   * points (`GDI.EXE` seg21 `0b06`), and `LineTo` answers 1. */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(async ({ driverPolyline }) => {
+      await driverPolyline(this, surface, [
+        [startX, startY],
+        [x, y],
+      ]);
+
+      return TRUE;
+    });
+  }
+
   // Draw the line, in device terms
   const [fromX, fromY] = mapped(surface) ? devicePoint(surface, startX, startY) : [startX, startY];
   const [toX, toY] = mapped(surface) ? devicePoint(surface, x, y) : [x, y];

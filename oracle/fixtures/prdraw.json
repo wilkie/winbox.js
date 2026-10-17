@@ -1,0 +1,759 @@
+{
+  "probe": "prdraw",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "LineTo dashed",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Polyline",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle hatched",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Polygon",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Polygon winding",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Ellipse inside",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Ellipse circle",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "RoundRect",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Pie",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Arc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Chord",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle lometric",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle clipped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "LineTo clipped",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "TextOut transparent",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "ExtTextOut opaque",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "TextOut font",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits",
+      "result": "8"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "13229"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "1 lc"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "1 lj"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "255 0 0 pC"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "1 1 SP"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "gs 1201 101 300 300 CB"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "300 300 M 1200 100 1 PP"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "gr"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "0 0 255 pC"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "0 3 SP"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "300 1200 M 200 -150 200 200 200 -100 3 PP"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "255 255 255 fC"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "0 128 0 hC"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "/fm 772 def"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "399 299 300 500 B"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "0 3 SP"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": "128 128 128 fC"
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "/fm 256 def"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "1300 1100 M 200 -400 -400 250 400 0 -400 -250 200 400 5 PP"
+    },
+    {
+      "function": "line",
+      "args": "195",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "196",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "197",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "198",
+      "result": "1300 1100 M 200 -400 -400 250 400 0 -400 -250 200 400 5 PP"
+    },
+    {
+      "function": "line",
+      "args": "199",
+      "result": "0 F"
+    },
+    {
+      "function": "line",
+      "args": "200",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "201",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "202",
+      "result": "0 0 0 pC"
+    },
+    {
+      "function": "line",
+      "args": "203",
+      "result": "6 20 SP"
+    },
+    {
+      "function": "line",
+      "args": "204",
+      "result": "189 139 999 649 E"
+    },
+    {
+      "function": "line",
+      "args": "205",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "206",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "207",
+      "result": "139 139 1449 649 E"
+    },
+    {
+      "function": "line",
+      "args": "208",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "209",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "210",
+      "result": "0 1 SP"
+    },
+    {
+      "function": "line",
+      "args": "211",
+      "result": "192 192 192 fC"
+    },
+    {
+      "function": "line",
+      "args": "212",
+      "result": "/fm 256 def"
+    },
+    {
+      "function": "line",
+      "args": "213",
+      "result": "300 1600 799 1899 50 30 RR"
+    },
+    {
+      "function": "line",
+      "args": "214",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "215",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "216",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "217",
+      "result": "0 0 1 -149 201 1 -199 200 150 1099 1749 P"
+    },
+    {
+      "function": "line",
+      "args": "218",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "219",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "220",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "221",
+      "result": "0 0 1 1 201 1 -199 200 150 1599 1749 A"
+    },
+    {
+      "function": "line",
+      "args": "222",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "223",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "224",
+      "result": "0 lc"
+    },
+    {
+      "function": "line",
+      "args": "225",
+      "result": "0 lj"
+    },
+    {
+      "function": "line",
+      "args": "226",
+      "result": "472 235 236 2008 B"
+    },
+    {
+      "function": "line",
+      "args": "227",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "228",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "229",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "230",
+      "result": "gs 600 300 600 2300 CB"
+    },
+    {
+      "function": "line",
+      "args": "231",
+      "result": "499 299 500 2200 B"
+    },
+    {
+      "function": "line",
+      "args": "232",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "233",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "234",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "235",
+      "result": "gr"
+    },
+    {
+      "function": "line",
+      "args": "236",
+      "result": "1 lc"
+    },
+    {
+      "function": "line",
+      "args": "237",
+      "result": "1 lj"
+    },
+    {
+      "function": "line",
+      "args": "238",
+      "result": "gs 600 1 600 2400 CB"
+    },
+    {
+      "function": "line",
+      "args": "239",
+      "result": "600 2400 M 600 0 1 PP"
+    },
+    {
+      "function": "line",
+      "args": "240",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "241",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "242",
+      "result": "gr"
+    },
+    {
+      "function": "line",
+      "args": "243",
+      "result": "32 0 0 42 42 0 0 0 33 /Courier /font0 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "244",
+      "result": "0 0 255 fC"
+    },
+    {
+      "function": "line",
+      "args": "245",
+      "result": "300 2700 275 (Transparent) 275 SB"
+    },
+    {
+      "function": "line",
+      "args": "246",
+      "result": "699 99 300 2800 192 192 192 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "247",
+      "result": "0 0 0 fC"
+    },
+    {
+      "function": "line",
+      "args": "248",
+      "result": "150 42 320 2820 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "249",
+      "result": "320 2820 150 (Opaque) 150 SB"
+    },
+    {
+      "function": "line",
+      "args": "250",
+      "result": "32 0 0 52 52 0 0 0 49 /Helvetica-Bold /font13 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "251",
+      "result": "228 60 1200 2700 255 255 255 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "252",
+      "result": "1200 2700 228 (Helvetica) 228 SB"
+    },
+    {
+      "function": "line",
+      "args": "253",
+      "result": "/bytestr 8 string def"
+    },
+    {
+      "function": "line",
+      "args": "254",
+      "result": "/pp 1 string def/s 1 string def/rn{currentfile s readhexstring{0 get}{pop"
+    },
+    {
+      "function": "line",
+      "args": "255",
+      "result": "exit}ifelse}def/unpack{/DC 0 def/BC 0 def{DC bytestr length ge{exit}if"
+    },
+    {
+      "function": "line",
+      "args": "256",
+      "result": "rn/BC exch def BC 127 le{/BC BC 1 add def DC 1 DC BC add 1 sub{bytestr"
+    },
+    {
+      "function": "line",
+      "args": "257",
+      "result": "exch rn put}for}{/BC BC 255 xor 2 add def rn/pp exch def DC 1 DC BC"
+    },
+    {
+      "function": "line",
+      "args": "258",
+      "result": "add 1 sub{bytestr exch pp put}for}ifelse/DC DC BC add def}loop bytestr}bd"
+    },
+    {
+      "function": "line",
+      "args": "259",
+      "result": "gs 80 80 1800 300 CB"
+    },
+    {
+      "function": "line",
+      "args": "260",
+      "result": "save 1800 300 translate 80 80 scale"
+    },
+    {
+      "function": "line",
+      "args": "261",
+      "result": "8 8 8"
+    },
+    {
+      "function": "line",
+      "args": "262",
+      "result": "[8 0 0 -8 0 8]"
+    },
+    {
+      "function": "line",
+      "args": "263",
+      "result": "{unpack} bind"
+    },
+    {
+      "function": "line",
+      "args": "264",
+      "result": "image"
+    },
+    {
+      "function": "line",
+      "args": "265",
+      "result": "ff00054ce296b2e24c"
+    },
+    {
+      "function": "line",
+      "args": "266",
+      "result": "ff1c0068ffff02960068"
+    },
+    {
+      "function": "line",
+      "args": "267",
+      "result": "024c0096ffe202b2684c"
+    },
+    {
+      "function": "line",
+      "args": "268",
+      "result": "01b21cffff0300964c68"
+    },
+    {
+      "function": "line",
+      "args": "269",
+      "result": "04e2001ce268ffb2004c"
+    },
+    {
+      "function": "line",
+      "args": "270",
+      "result": "03ff1c00ffff9601e268"
+    },
+    {
+      "function": "line",
+      "args": "271",
+      "result": "031c0068e2ffb201004c"
+    },
+    {
+      "function": "line",
+      "args": "272",
+      "result": "074c1c96ffe2961c68"
+    },
+    {
+      "function": "line",
+      "args": "273",
+      "result": "restore"
+    },
+    {
+      "function": "line",
+      "args": "274",
+      "result": "gr"
+    },
+    {
+      "function": "line",
+      "args": "275",
+      "result": "1 #C"
+    },
+    {
+      "function": "line",
+      "args": "276",
+      "result": "statusdict begin /manualfeed false store end"
+    },
+    {
+      "function": "line",
+      "args": "277",
+      "result": "EJ RS"
+    },
+    {
+      "function": "line",
+      "args": "278",
+      "result": "%%PageTrailer"
+    },
+    {
+      "function": "line",
+      "args": "279",
+      "result": "%%PageResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "280",
+      "result": "%%+ font Helvetica-Bold"
+    },
+    {
+      "function": "line",
+      "args": "281",
+      "result": "%%Trailer"
+    },
+    {
+      "function": "line",
+      "args": "282",
+      "result": "SVDoc restore"
+    },
+    {
+      "function": "line",
+      "args": "283",
+      "result": "end"
+    },
+    {
+      "function": "line",
+      "args": "284",
+      "result": "%%Pages: 1"
+    },
+    {
+      "function": "line",
+      "args": "285",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1"
+    },
+    {
+      "function": "line",
+      "args": "286",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "287",
+      "result": "%%DocumentNeededResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "288",
+      "result": "%%+ font Helvetica-Bold"
+    },
+    {
+      "function": "line",
+      "args": "289",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "290",
+      "result": "%%EOF"
+    },
+    {
+      "function": "line",
+      "args": "291",
+      "result": "\u0004"
+    }
+  ]
+}

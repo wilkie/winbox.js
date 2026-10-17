@@ -1,0 +1,64 @@
+{
+  "probe": "prlpt",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "begin",
+      "args": "",
+      "result": ""
+    },
+    {
+      "function": "open",
+      "args": "LPT1",
+      "result": "block 352"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "box",
+      "args": "title",
+      "result": "LPT1"
+    },
+    {
+      "function": "box",
+      "args": "4",
+      "result": "&Retry"
+    },
+    {
+      "function": "box",
+      "args": "2",
+      "result": "Cancel"
+    },
+    {
+      "function": "box",
+      "args": "-1",
+      "result": ""
+    },
+    {
+      "function": "box",
+      "args": "-1",
+      "result": "The printer on this port is offline or not selected.\n\nMake sure the printer is online and selected, and then resume the print queue."
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool",
+      "result": "-3"
+    },
+    {
+      "function": "call",
+      "args": "CloseJob",
+      "result": "1"
+    }
+  ]
+}
