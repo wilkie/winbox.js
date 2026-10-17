@@ -2,7 +2,7 @@
 kind: topic
 name: Combo boxes
 summary: How Windows 3.1's combo box is made of a field, a button and a list box, how it lays them out, drops its list down and puts it away, and how it talks to its parent and an owner that draws it — read out of USER.EXE and measured on four displays.
-probes: [combobox, comboact, comboesc]
+probes: [combobox, comboact, comboesc, lbtext]
 ---
 
 [[measured]] [[probe:combobox]] makes four combo boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -20,6 +20,7 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 - [[read out]] The field is the font's height, plus a quarter of the smaller of it and the System font's height, plus four borders (seg34 `02ac`). [[measured]] That is 24 on the VGA and 19 on the EGA.
 - [[read out]] An owner-drawn field's height is what the parent answers to `WM_MEASUREITEM` for item −1, plus six.
 - [[read out]] `WM_SETFONT` lays the combo box out again (`USER.EXE` seg33 `0218`, seg34 `04b0`): the font is handed to its edit control and its list, the field made as high as the font makes it (an owner-drawn one's is kept), the button and the list placed again, the edit control moved into the field, the list put away, and the whole painted again where `lParam` asks. [[measured]] [[probe:ofnopen]]: COMMDLG's types' combo box, in a dialog of Helv 8, answers `CB_GETITEMHEIGHT` 13 and is 20 high.
+  - [[read out]] The list is moved to its place in the new layout whatever the kind, with `MoveWindow` (seg34 `0539`-`0552`), so a list box that is not owner-drawn is made a whole number of the new font's rows high, as `WM_SIZE` makes it. [[measured]] [[probe:lbtext]]: a simple combo box 87 high, made in the System font and given MS Sans Serif in bold, has its list 67 high at the field's new bottom, five rows of 13 inside its border, with `CBS_NOINTEGRALHEIGHT` or without. Both engines had left the list where the System font put it, 50 high, three rows of 16, and the Font dialog's styles showed three of Arial's four with Bold Italic chosen, scrolled down a row ([[probe:chfont3]]).
 - [[measured]] A combo box that is not owner-drawn has `CBS_HASSTRINGS` in its style as `GetWindowLong` answers it, whether or not its template asked: [[probe:ofnopen]] reads 50010243h for COMMDLG's types.
 - [[read out]] The button is a scroll bar's width at the right. A drop-down list's field ends a border short of it, and a drop-down's edit control that and the System font's average width more.
 - [[read out]] The list goes from a border above the field's bottom to a border above the combo box's. A drop-down list's list is under all of it; the others' are indented by that average width. [[measured]] A drop-down's list stands 8 pixels in.
@@ -30,6 +31,7 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 
 - [[read out]] Dropping down (seg33 `0c36`) tells the parent `CBN_DROPDOWN`, then shows the list on top without making it active. The list goes a border above the field's bottom, or above the field where there is no room below.
 - [[read out]] Putting it away hides the list and tells the parent `CBN_CLOSEUP`, if it had been dropped.
+- [[read out]] `CB_GETDROPPEDCONTROLRECT` (412h) writes the rectangle the combo box was made with, its list's height and all, moved to the window's corner on the screen, and answers 1 (seg33 `051b`-`0552`). [[measured]] [[probe:lbtext]]: a drop-down and a drop-down list made 87 high at (100, 4) in a window's client area, 20 high since their font, answered (104, 27) to (184, 114). Both engines had handed the message to the list as `LB_GETSELITEMS`, its number in a list box.
 
 ## The list on the desktop
 
@@ -66,6 +68,7 @@ Through `SendMessage` it fills them, selects, keys and drops them down, and puts
 ## Notifications and focus
 
 - [[measured]] The focus arriving tells `CBN_SETFOCUS`, and leaving tells `CBN_KILLFOCUS`, after putting a dropped list away with `CBN_CLOSEUP`. The focus moving into a combo box's own edit control is not leaving it.
+- [[read out]] Its own is a child of its, by `IsChild` (seg33 `040e`, seg1 `1bd3`), not the combo box itself. Gaining the focus selects all of the edit control's text, and losing it takes the selection away (`115d`, `11b2`). So the focus given to the combo box from its own edit control -- by a mnemonic of the dialog's, which gives a control the focus with `SetFocus`, `EM_SETSEL` only to one answering `DLGC_HASSETSEL` (seg25 `0000`), which a combo box's 81h does not (seg33 `0212`) -- is lost and gained again as the combo box hands it back to its edit control, and the text is selected. [[measured]] [[probe:chfontpr]]: in the Font dialog, Alt and F with the focus in the faces' edit control, then "courier" typed, replaces "Arial" there. Both engines had taken the combo box for its own, kept the focus as it was without selecting, and ran the names together, "Arialcourier", with Microsoft's `COMMDLG.DLL` as with WinBox's.
 - [[measured]] Setting a drop-down's text tells its parent nothing.
 - [[read out]] The combo box tells its list it has the focus, and no longer, with messages 424h and 425h. [[measured]] A dropped list then shows the focus rectangle once its keys move its selection, and not before.
 

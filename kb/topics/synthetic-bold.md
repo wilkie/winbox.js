@@ -2,7 +2,7 @@
 kind: topic
 name: Synthetic bold
 summary: How Windows 3.1 makes a bold it has no file for — who smears the glyph, where the overhang is kept or cut, and what it costs every measurement.
-probes: [smearrun, smearmod, smeargnd, smearglf, simext, rotstyle]
+probes: [smearrun, smearmod, smeargnd, smearglf, simext, rotstyle, lbtext]
 ---
 
 A request heavier than the face it maps to is drawn by **smearing** the regular glyph one pixel to the right. Who does the smearing depends on the device and on whether the text is turned, and each choice changes what reaches the page and what `GetTextExtent` reports.
@@ -35,6 +35,8 @@ On a device without `TC_EA_DOUBLE` — a Hercules — and for **turned** text on
 ## What it costs a measurement
 
 - [[read out]] `GetTextExtent` adds `count + 1` for a double weight the device cannot do (seg1 `3cf3`), after any turned scaling. See [[topic:non-square-pixels]].
+- [[read out]] `GetCharWidth` carries the smear in every width: `VGA.DRV`'s adds two to each for a weight of 700 or more over a lighter strike, the smear's pixel and its overhang (seg1 `17f6`-`1815`), and GDI's adds two itself only for a device without `TC_EA_DOUBLE` (`GDI.EXE` seg3 `2167`). [[measured]] [[probe:lbtext]]: MS Sans Serif's 13-row strike asked bold answers 8 for '1' where it answers 6 plain, what a string of the one character measures. See [[fn:GDI.GetCharWidth]].
+- [[read out]] Without a width array, a strike's run is laid out by the driver with the bold pixel added to the character extra (`VGA.DRV` seg2 `0970`), whatever `ExtTextOut`'s options: each glyph a column wider and the overhang once. [[measured]] [[probe:lbtext]]: with `ETO_OPAQUE` and a rectangle it lies where `TextOut` lays it.
 - [[measured]] `GetGlyphOutline` is never smeared: every plain and smeared pair is byte for byte the same. The engine is not told about weight at all.
 
 The full derivation, with every refused alternative and its count, is in [[fonts:8u]].
