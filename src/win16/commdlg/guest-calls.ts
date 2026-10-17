@@ -1,17 +1,16 @@
 'use strict';
 
-import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
-import { GlobalFree } from '../kernel/GlobalFree.js';
-import { GlobalLock } from '../kernel/GlobalLock.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
-import { RegisterWindowMessage } from '../user/RegisterWindowMessage.js';
+import { D, W, api, text } from './api.js';
 import { procAddressOf } from './proc-address.js';
 import { COMMDLG_STRINGS } from './strings.js';
-import { callHook, instance, setError } from './state.js';
+import { callHook, instance, message, setError } from './state.js';
 
 /**
  * What the Find, Replace and Color dialogs ask of COMMDLG's own and of the
- * program's memory. The twin of `crates/winbox-win16/src/commdlg/guest_calls.rs`.
+ * program's memory, and their calls into USER, GDI and KERNEL in the shape
+ * they make them: each made through `api.ts`, which calls an export as a
+ * program's call reaches it, the arguments and structures laid below the
+ * stack. The twin of `crates/winbox-win16/src/commdlg/guest_calls.rs`.
  */
 
 /** What COMMDLG keeps for its Find, Replace and Color dialogs. */
@@ -50,7 +49,7 @@ export const procAddress = procAddressOf;
 
 /** A registered message by its name, registered now if it is not yet. */
 export function registered(system: any, name: string): number {
-  return RegisterWindowMessage.call(system, name);
+  return message(system, name);
 }
 
 /** One of COMMDLG's strings, by its resource number: those its Find, Replace and Color dialogs load. */
@@ -108,62 +107,30 @@ export function lpcstr(system: any, far: number): any {
   return out;
 }
 
-/**
- * Bytes laid on the program's stack below where it is, each block a far
- * pointer given to `body`, the stack kept below them while it runs: a call
- * with structures of COMMDLG's, as it passes them from its own stack. Its
- * answer and each block as it was left.
- */
-export async function withBlocks<T>(
-  system: any,
-  blocks: number[][],
-  body: (fars: number[]) => Promise<T> | T
-): Promise<[T, number[][]]> {
-  const core = system.machine.cpu.core;
-  const saved = core.sp;
-  const ss = core.ss;
-  const fars: number[] = [];
-  let sp = saved;
-
-  for (const block of blocks) {
-    sp = (sp - ((block.length + 1) & ~1)) & 0xffff;
-    block.forEach((byte, step) => core.write8(ss, (sp + step) & 0xffff, byte));
-    fars.push(((ss << 16) | sp) >>> 0);
-  }
-
-  core.sp = (sp - 4) & 0xffff;
-
-  try {
-    const answer = await body(fars);
-    const left = blocks.map((block, index) =>
-      block.map((_, step) => core.read8(ss, ((fars[index] & 0xffff) + step) & 0xffff))
-    );
-
-    return [answer, left];
-  } finally {
-    core.sp = saved;
-  }
+/** A window's text set from bytes of COMMDLG's own. */
+export async function setWindowText(system: any, hwnd: number, bytes: number[]) {
+  await api(system, 'USER', 'SetWindowText', [W(hwnd), text(bytes)]);
 }
 
 /** One of COMMDLG's templates put in global memory, as its resource is loaded: the handle. */
 export async function ownTemplate(system: any, bytes: Uint8Array): Promise<number> {
-  const handle = GlobalAlloc.call(system, 0x0002, bytes.length);
+  const handle = (await api(system, 'KERNEL', 'GlobalAlloc', [W(0x0002), D(bytes.length)])).value;
 
   if (!handle) {
     return 0;
   }
 
-  const far = GlobalLock.call(system, handle) >>> 0;
+  const far = (await api(system, 'KERNEL', 'GlobalLock', [W(handle)])).value >>> 0;
   const core = system.machine.cpu.core;
 
   bytes.forEach((byte, step) => core.write8(far >>> 16, at(far, step) & 0xffff, byte));
-  GlobalUnlock.call(system, handle);
+  await api(system, 'KERNEL', 'GlobalUnlock', [W(handle)]);
   return handle;
 }
 
 /** A template of COMMDLG's let go. */
-export function freeTemplate(system: any, handle: number) {
-  GlobalFree.call(system, handle);
+export async function freeTemplate(system: any, handle: number) {
+  await api(system, 'KERNEL', 'GlobalFree', [W(handle)]);
 }
 
 /** A hook called with a window message's four arguments. */

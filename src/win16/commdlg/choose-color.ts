@@ -1,69 +1,12 @@
 'use strict';
 
-import { BitBlt } from '../gdi/BitBlt.js';
-import { CreateCompatibleBitmap } from '../gdi/CreateCompatibleBitmap.js';
-import { CreateCompatibleDC } from '../gdi/CreateCompatibleDC.js';
-import { CreatePen } from '../gdi/CreatePen.js';
-import { CreateSolidBrush } from '../gdi/CreateSolidBrush.js';
-import { DeleteDC } from '../gdi/DeleteDC.js';
-import { DeleteObject } from '../gdi/DeleteObject.js';
-import { GetNearestColor } from '../gdi/GetNearestColor.js';
-import { GetStockObject } from '../gdi/GetStockObject.js';
-import { LineTo } from '../gdi/LineTo.js';
-import { MoveTo } from '../gdi/MoveTo.js';
-import { Polygon } from '../gdi/Polygon.js';
-import { Rectangle } from '../gdi/Rectangle.js';
-import { SelectObject } from '../gdi/SelectObject.js';
-import { FindResource } from '../kernel/FindResource.js';
-import { FreeResource } from '../kernel/FreeResource.js';
-import { GetModuleHandle } from '../kernel/GetModuleHandle.js';
-import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
-import { LoadResource } from '../kernel/LoadResource.js';
-import { LockResource } from '../kernel/LockResource.js';
-import { PAINTSTRUCT } from '../user.js';
-import { BeginPaint } from '../user/BeginPaint.js';
-import { ClientToScreen } from '../user/ClientToScreen.js';
-import { GetDlgItemInt, GetDlgItemText, SetDlgItemInt } from '../user/dialog-items.js';
-import { DialogBoxIndirectParam, EndDialog } from '../user/dialogs.js';
-import { DrawFocusRect } from '../user/DrawFocusRect.js';
-import { EndPaint } from '../user/EndPaint.js';
-import { FillRect } from '../user/FillRect.js';
-import { FrameRect } from '../user/FrameRect.js';
-import { GetDC } from '../user/GetDC.js';
-import { GetDlgItem } from '../user/GetDlgItem.js';
-import { GetFocus } from '../user/GetFocus.js';
-import { GetSysColor } from '../user/GetSysColor.js';
-import { GetSystemMetrics } from '../user/GetSystemMetrics.js';
-import { GetWindowRect } from '../user/GetWindowRect.js';
-import { InvalidateRect } from '../user/InvalidateRect.js';
-import { MoveWindow } from '../user/MoveWindow.js';
-import { GetProp, RemoveProp, SetProp } from '../user/props.js';
-import { ReleaseDC } from '../user/ReleaseDC.js';
-import { ScreenToClient } from '../user/ScreenToClient.js';
-import { SendDlgItemMessage } from '../user/SendDlgItemMessage.js';
-import { SendMessage } from '../user/SendMessage.js';
-import { SetCapture } from '../user/SetCapture.js';
-import { SetFocus } from '../user/SetFocus.js';
-import { ShowWindow } from '../user/ShowWindow.js';
-import { UpdateWindow } from '../user/UpdateWindow.js';
-import { ClipCursor } from '../user/userwin.js';
-import { ValidateRect } from '../user/ValidateRect.js';
-import { ChildWindowFromPoint } from '../user/window-from-point.js';
-import { EnableWindow, GetParent } from '../user/window-queries.js';
-import { SetWindowPos } from '../user/window-state.js';
-import {
-  CallWindowProc,
-  GetWindowLong,
-  GetWindowWord,
-  SetWindowLong,
-} from '../user/window-words.js';
+import { type Arg, B, D, W, api, buffer, bytesOf, item, rectBytes, rectOf, text } from './api.js';
 import { hlsToRgb, rgbToHls } from './colour-math.js';
 import {
   callHook,
   dword,
   freeTemplate,
   instance,
-  lpcstr,
   nextNumber,
   ownTemplate,
   procAddress,
@@ -71,7 +14,6 @@ import {
   setDword,
   setError,
   stateOf,
-  withBlocks,
   word,
 } from './guest-calls.js';
 import { waitCursor } from './state.js';
@@ -82,8 +24,10 @@ import { BASIC_COLOURS, COLOR_TEMPLATE } from './templates.js';
  * (8) and `WantArrows` (25), the procedure its two grids are subclassed
  * with. **Read out** of `COMMDLG.DLL` seg1 and **recorded** by `choosclr`;
  * each step is COMMDLG's, at the address the comments give. Its words are
- * kept as COMMDLG keeps them, signed or not as its code takes them. The twin
- * of `crates/winbox-win16/src/commdlg/choose_color.rs`.
+ * kept as COMMDLG keeps them, signed or not as its code takes them. Its calls
+ * into USER, GDI and KERNEL are made through `api.ts`, as a program makes
+ * them, its rectangles, points and `PAINTSTRUCT` laid out below the stack
+ * and read back. The twin of `crates/winbox-win16/src/commdlg/choose_color.rs`.
  */
 
 const WM_MOVE = 0x0003;
@@ -243,7 +187,6 @@ const copy = (dialog: Dialog): Dialog => ({
   colours: [...dialog.colours],
 });
 
-const rectOf = (r: Rect) => ({ left: r[0], top: r[1], right: r[2], bottom: r[3] });
 const inRect = (r: Rect, x: number, y: number) => x >= r[0] && x < r[2] && y >= r[1] && y < r[3];
 
 /** `IntersectRect`: the overlap, if any. */
@@ -258,70 +201,100 @@ function intersect(a: Rect, b: Rect): Rect | null {
   return r[0] < r[2] && r[1] < r[3] ? r : null;
 }
 
-const item = (system: any, dialog: number, id: number) => GetDlgItem.call(system, dialog, id);
-const metric = (system: any, index: number) => s16(GetSystemMetrics.call(system, index));
+/** A call's answer, DX:AX. */
+const call = async (system: any, module: string, name: string, args: Arg[]) =>
+  (await api(system, module, name, args)).value;
+
+const metric = async (system: any, index: number) =>
+  s16(await call(system, 'USER', 'GetSystemMetrics', [W(index)]));
+
+const enable = (system: any, hwnd: number, on: number) =>
+  call(system, 'USER', 'EnableWindow', [W(hwnd), W(on)]);
 
 /** A window's rectangle on the screen. */
-function windowRect(system: any, hwnd: number): Rect {
-  const r: any = { left: 0, top: 0, right: 0, bottom: 0 };
-
-  GetWindowRect.call(system, hwnd, r);
-  return [s16(r.left), s16(r.top), s16(r.right), s16(r.bottom)];
+async function windowRect(system: any, hwnd: number): Promise<Rect> {
+  return rectOf(
+    (await api(system, 'USER', 'GetWindowRect', [W(hwnd), B(rectBytes([0, 0, 0, 0]))])).buffers[0]
+  );
 }
 
 /** A rectangle's two corners each taken to a window's client area, as COMMDLG's two calls of `ScreenToClient` do. */
-function toClient(system: any, hwnd: number, r: Rect): Rect {
-  const a: any = { x: r[0], y: r[1] };
-  const b: any = { x: r[2], y: r[3] };
-
-  ScreenToClient.call(system, hwnd, a);
-  ScreenToClient.call(system, hwnd, b);
-  return [s16(a.x), s16(a.y), s16(b.x), s16(b.y)];
+async function toClient(system: any, hwnd: number, r: Rect): Promise<Rect> {
+  return corners(system, 'ScreenToClient', hwnd, r);
 }
 
-function toScreen(system: any, hwnd: number, r: Rect): Rect {
-  const a: any = { x: r[0], y: r[1] };
-  const b: any = { x: r[2], y: r[3] };
-
-  ClientToScreen.call(system, hwnd, a);
-  ClientToScreen.call(system, hwnd, b);
-  return [s16(a.x), s16(a.y), s16(b.x), s16(b.y)];
+async function toScreen(system: any, hwnd: number, r: Rect): Promise<Rect> {
+  return corners(system, 'ClientToScreen', hwnd, r);
 }
+
+/** A rectangle's two corners each given to `ScreenToClient` or `ClientToScreen`. */
+async function corners(system: any, name: string, hwnd: number, r: Rect): Promise<Rect> {
+  const out = [...r] as Rect;
+
+  for (let corner = 0; corner < 2; corner++) {
+    const point = B(rectBytes([r[corner * 2], r[corner * 2 + 1], 0, 0]));
+    const p = rectOf((await api(system, 'USER', name, [W(hwnd), point])).buffers[0]);
+
+    out[corner * 2] = p[0];
+    out[corner * 2 + 1] = p[1];
+  }
+
+  return out;
+}
+
+/** A call with one rectangle. */
+const withRect = (
+  system: any,
+  module: string,
+  name: string,
+  before: Arg[],
+  r: Rect,
+  after: Arg[]
+) => call(system, module, name, [...before, B(rectBytes(r)), ...after]);
 
 const invalidate = (system: any, hwnd: number, r: Rect) =>
-  InvalidateRect.call(system, hwnd, rectOf(r), 0);
-const validate = (system: any, hwnd: number, r: Rect) => ValidateRect.call(system, hwnd, rectOf(r));
+  withRect(system, 'USER', 'InvalidateRect', [W(hwnd)], r, [W(0)]);
+const validate = (system: any, hwnd: number, r: Rect) =>
+  withRect(system, 'USER', 'ValidateRect', [W(hwnd)], r, []);
 const fill = (system: any, hdc: number, r: Rect, brush: number) =>
-  FillRect.call(system, hdc, rectOf(r), brush);
-const brushOf = (system: any, colour: number) => CreateSolidBrush.call(system, colour >>> 0);
+  withRect(system, 'USER', 'FillRect', [W(hdc)], r, [W(brush)]);
+const brushOf = async (system: any, colour: number) =>
+  u16(await call(system, 'GDI', 'CreateSolidBrush', [D(colour)]));
+const deleteObject = (system: any, object: number) =>
+  call(system, 'GDI', 'DeleteObject', [W(object)]);
+const select = async (system: any, hdc: number, object: number) =>
+  u16(await call(system, 'GDI', 'SelectObject', [W(hdc), W(object)]));
+const stock = async (system: any, index: number) =>
+  u16(await call(system, 'GDI', 'GetStockObject', [W(index)]));
 const rectangle = (system: any, hdc: number, r: Rect) =>
-  Rectangle.call(system, hdc, r[0], r[1], r[2], r[3]);
-const nearest = (system: any, hdc: number, colour: number) =>
-  GetNearestColor.call(system, hdc, colour >>> 0) >>> 0;
+  call(system, 'GDI', 'Rectangle', [W(hdc), W(r[0]), W(r[1]), W(r[2]), W(r[3])]);
+const getDc = async (system: any, hwnd: number) =>
+  u16(await call(system, 'USER', 'GetDC', [W(hwnd)]));
+const releaseDc = (system: any, hwnd: number, hdc: number) =>
+  call(system, 'USER', 'ReleaseDC', [W(hwnd), W(hdc)]);
+const nearest = async (system: any, hdc: number, colour: number) =>
+  (await call(system, 'GDI', 'GetNearestColor', [W(hdc), D(colour)])) >>> 0;
+const windowColour = (system: any) => call(system, 'USER', 'GetSysColor', [W(COLOR_WINDOW)]);
+const getFocus = async (system: any) => u16(await call(system, 'USER', 'GetFocus', []));
 const setInt = (system: any, dialog: number, id: number, value: number) =>
-  SetDlgItemInt.call(system, dialog, id, value, 0);
+  call(system, 'USER', 'SetDlgItemInt', [W(dialog), W(id), W(value), W(0)]);
 
 /** `GetDlgItemInt` unsigned: the number and whether it was one. */
 async function getInt(system: any, dialog: number, id: number): Promise<[number, boolean]> {
-  const [value, [flag]] = await withBlocks(system, [[0, 0]], ([far]) =>
-    GetDlgItemInt.call(system, dialog, id, far, 0)
-  );
+  const called = await api(system, 'USER', 'GetDlgItemInt', [W(dialog), W(id), B([0, 0]), W(0)]);
+  const flag = called.buffers[0];
 
-  return [u16(value), flag[0] !== 0 || flag[1] !== 0];
+  return [u16(called.value), flag[0] !== 0 || flag[1] !== 0];
 }
 
 /** Whether a control's text is not empty: `GetDlgItemText` into two bytes. */
 async function hasText(system: any, dialog: number, id: number) {
-  const [count] = await withBlocks(system, [[0, 0]], ([far]) =>
-    GetDlgItemText.call(system, dialog, id, far, 2)
-  );
-
-  return !!count;
+  return !!(await call(system, 'USER', 'GetDlgItemText', [W(dialog), W(id), B([0, 0]), W(2)]));
 }
 
 /** The number put back and selected (`0ab4`, `2b78`). */
 const selectAll = (system: any, dialog: number, id: number) =>
-  SendDlgItemMessage.call(system, dialog, id, EM_SETSEL, 0, 0x7fff0000);
+  call(system, 'USER', 'SendDlgItemMessage', [W(dialog), W(id), W(EM_SETSEL), W(0), D(0x7fff0000)]);
 
 /**
  * The Color dialog, run to its end.
@@ -383,13 +356,14 @@ async function choose(system: any, lpcc: number): Promise<number> {
       return fail(CDERR_NOHINSTANCE);
     }
 
-    const found = FindResource.call(system, program, lpcstr(system, name), RT_DIALOG);
+    const found =
+      (await call(system, 'KERNEL', 'FindResource', [W(program), D(name), D(RT_DIALOG)])) & 0xffff;
 
     if (!found) {
       return fail(CDERR_FINDRESFAILURE);
     }
 
-    handle = await LoadResource.call(system, program, found);
+    handle = (await call(system, 'KERNEL', 'LoadResource', [W(program), W(found)])) & 0xffff;
 
     if (!handle) {
       return fail(CDERR_LOADRESFAILURE);
@@ -399,19 +373,18 @@ async function choose(system: any, lpcc: number): Promise<number> {
     own = true;
   }
 
-  if (!(LockResource.call(system, handle) >>> 0)) {
+  if (!(await call(system, 'KERNEL', 'LockResource', [W(handle)]))) {
     return fail(null);
   }
 
   let answer = u16(
-    await DialogBoxIndirectParam.call(
-      system,
-      instance(system),
-      handle,
-      word(system, lpcc, HWND_OWNER),
-      procAddress(system, 8),
-      lpcc
-    )
+    await call(system, 'USER', 'DialogBoxIndirectParam', [
+      W(instance(system)),
+      W(handle),
+      W(word(system, lpcc, HWND_OWNER)),
+      D(procAddress(system, 8)),
+      D(lpcc),
+    ])
   );
 
   if (answer === 0xffff) {
@@ -419,10 +392,10 @@ async function choose(system: any, lpcc: number): Promise<number> {
     answer = 0;
   }
 
-  GlobalUnlock.call(system, handle);
+  await call(system, 'KERNEL', 'GlobalUnlock', [W(handle)]);
 
   if (own) {
-    freeTemplate(system, handle);
+    await freeTemplate(system, handle);
   }
 
   globals(system).hook = 0;
@@ -441,7 +414,8 @@ export async function ColorDlgProc(
 }
 
 /** The dialog's number under its property: nought before it starts. */
-const numberOf = (system: any, hwnd: number) => GetProp.call(system, hwnd, 0xa000);
+const numberOf = async (system: any, hwnd: number) =>
+  u16(await call(system, 'USER', 'GetProp', [W(hwnd), D(0xa000)]));
 
 async function procedure(
   system: any,
@@ -450,7 +424,7 @@ async function procedure(
   wParam: number,
   lParam: number
 ): Promise<number> {
-  const id = numberOf(system, hwnd);
+  const id = await numberOf(system, hwnd);
 
   if (id) {
     const lpcc = get(system, id).lpcc;
@@ -478,17 +452,16 @@ async function procedure(
     case WM_MOVE: {
       const d = copy(get(system, id));
 
-      measure(system, d);
+      await measure(system, d);
       put(system, id, d);
       return 0;
     }
     case WM_PAINT: {
-      const ps: any = new PAINTSTRUCT();
-      const hdc = await BeginPaint.call(system, hwnd, ps);
-      const r = ps.rcPaint;
+      const ps = (await api(system, 'USER', 'BeginPaint', [W(hwnd), buffer(32)])).buffers[0];
+      const hdc = ps[0] | (ps[1] << 8);
 
-      await paint(system, hwnd, id, hdc, [s16(r.left), s16(r.top), s16(r.right), s16(r.bottom)]);
-      EndPaint.call(system, hwnd, ps);
+      await paint(system, hwnd, id, hdc, rectOf(ps.slice(4, 12)));
+      await call(system, 'USER', 'EndPaint', [W(hwnd), B(ps)]);
       break;
     }
     case WM_GETDLGCODE:
@@ -516,7 +489,7 @@ async function procedure(
       await waitCursor(system, false);
 
       if (answer) {
-        await ShowWindow.call(system, hwnd, SW_SHOWNORMAL);
+        await call(system, 'USER', 'ShowWindow', [W(hwnd), W(SW_SHOWNORMAL)]);
       }
 
       return answer;
@@ -533,27 +506,27 @@ async function procedure(
     case WM_LBUTTONUP:
       if (globals(system).tracking) {
         globals(system).tracking = false;
-        SetCapture.call(system, 0);
-        ClipCursor.call(system, null);
+        await call(system, 'USER', 'SetCapture', [W(0)]);
+        await call(system, 'USER', 'ClipCursor', [D(0)]);
 
         const d = copy(get(system, id));
 
         if (inRect(d.spectrum, x, y)) {
-          const hdc = GetDC.call(system, hwnd);
+          const hdc = await getDc(system, hwnd);
 
           d.x = u16(x);
           d.y = u16(y);
           put(system, id, d);
           await cross(system, hdc, d.x, d.y, d);
           await paintParts(system, d, hdc, d.bar);
-          ReleaseDC.call(system, hwnd, hdc);
-          validate(system, hwnd, d.spectrum);
+          await releaseDc(system, hwnd, hdc);
+          await validate(system, hwnd, d.spectrum);
         } else if (inRect(d.bar, x, y)) {
-          const hdc = GetDC.call(system, hwnd);
+          const hdc = await getDc(system, hwnd);
 
-          arrow(system, hdc, d);
-          ReleaseDC.call(system, hwnd, hdc);
-          validate(system, hwnd, d.bar);
+          await arrow(system, hdc, d);
+          await releaseDc(system, hwnd, hdc);
+          await validate(system, hwnd, d.bar);
         }
       }
 
@@ -592,11 +565,11 @@ async function procedure(
         await setHlsEdits(system, id, 0);
         await setRgbEdits(system, id, 0);
 
-        const hdc = GetDC.call(system, hwnd);
+        const hdc = await getDc(system, hwnd);
         const now = get(system, id);
 
         await paintParts(system, now, hdc, now.sample);
-        ReleaseDC.call(system, hwnd, hdc);
+        await releaseDc(system, hwnd, hdc);
       }
     }
   }
@@ -618,32 +591,40 @@ async function findColour(system: any, d: Dialog, rgb: number) {
 }
 
 /** A box's frame, black or the window's colour, a pixel outside it (`1023`). */
-function frame(system: any, hdc: number, index: number, black: boolean) {
+async function frame(system: any, hdc: number, index: number, black: boolean) {
   const b = globals(system).boxes[index];
-  const brush = brushOf(system, black ? 0 : GetSysColor.call(system, COLOR_WINDOW));
+  const brush = await brushOf(system, black ? 0 : await windowColour(system));
 
-  FrameRect.call(system, hdc, rectOf([b[0] - 1, b[1] - 1, b[2] + 1, b[3] + 1]), brush);
-  DeleteObject.call(system, brush);
+  await withRect(
+    system,
+    'USER',
+    'FrameRect',
+    [W(hdc)],
+    [b[0] - 1, b[1] - 1, b[2] + 1, b[3] + 1],
+    [W(brush)]
+  );
+  await deleteObject(system, brush);
 }
 
 /** A box chosen: its frame moved to it, and the colour taken (`1086`). */
 async function chooseBox(system: any, d: Dialog, index: number) {
-  const hdc = GetDC.call(system, d.hwnd);
+  const hdc = await getDc(system, d.hwnd);
 
-  frame(system, hdc, d.current, false);
-  frame(system, hdc, index, true);
-  ReleaseDC.call(system, d.hwnd, hdc);
+  await frame(system, hdc, d.current, false);
+  await frame(system, hdc, index, true);
+  await releaseDc(system, d.hwnd, hdc);
   d.rgb = d.colours[index];
 }
 
 /** The focus box moved within its grid (`10d9`): the old one's focus rectangle drawn over in the window's colour, the new one's drawn. */
 async function moveFocus(system: any, id: number, index: number) {
   const d = copy(get(system, id));
-  const pen = CreatePen.call(system, PS_SOLID, 1, GetSysColor.call(system, COLOR_WINDOW));
-  const hollow = GetStockObject.call(system, NULL_BRUSH);
-  const hdc = GetDC.call(system, d.hwnd);
-  const oldPen = SelectObject.call(system, hdc, pen);
-  const oldBrush = SelectObject.call(system, hdc, hollow);
+  const colour = await windowColour(system);
+  const pen = u16(await call(system, 'GDI', 'CreatePen', [W(PS_SOLID), W(1), D(colour)]));
+  const hollow = await stock(system, NULL_BRUSH);
+  const hdc = await getDc(system, d.hwnd);
+  const oldPen = await select(system, hdc, pen);
+  const oldBrush = await select(system, hdc, hollow);
   const custom = index >= 0x30;
   const old = custom ? d.custom : d.basic;
   const inflated = (i: number): Rect => {
@@ -652,7 +633,7 @@ async function moveFocus(system: any, id: number, index: number) {
     return [b[0] - 3, b[1] - 3, b[2] + 3, b[3] + 3];
   };
 
-  rectangle(system, hdc, inflated(old));
+  await rectangle(system, hdc, inflated(old));
 
   if (custom) {
     d.custom = index;
@@ -664,20 +645,22 @@ async function moveFocus(system: any, id: number, index: number) {
 
   const r = inflated(index);
 
-  rectangle(system, hdc, r);
-  DrawFocusRect.call(system, hdc, rectOf(r));
+  await rectangle(system, hdc, r);
+  await withRect(system, 'USER', 'DrawFocusRect', [W(hdc)], r, []);
 
-  const made = SelectObject.call(system, hdc, oldPen);
+  const made = await select(system, hdc, oldPen);
 
-  SelectObject.call(system, hdc, oldBrush);
-  ReleaseDC.call(system, d.hwnd, hdc);
-  DeleteObject.call(system, made);
+  await select(system, hdc, oldBrush);
+  await releaseDc(system, d.hwnd, hdc);
+  await deleteObject(system, made);
 }
 
 /** The keys of a grid (`11ff`): the box the focus moves to, if it moves to one not chosen in either grid. */
 async function key(system: any, id: number, vk: number): Promise<number | null> {
   const d = get(system, id);
-  const control = u16(GetWindowWord.call(system, GetFocus.call(system), GWW_ID));
+  const control = u16(
+    await call(system, 'USER', 'GetWindowWord', [W(await getFocus(system)), W(GWW_ID)])
+  );
   let i: number;
 
   if (control === ID_BASIC) {
@@ -734,13 +717,13 @@ async function key(system: any, id: number, vk: number): Promise<number | null> 
 
 /** Space on a grid: its focus box chosen (`0751`). */
 async function space(system: any, hwnd: number, id: number): Promise<number> {
-  const focus = GetFocus.call(system);
+  const focus = await getFocus(system);
   const d = copy(get(system, id));
   let index: number;
 
-  if (item(system, hwnd, ID_BASIC) === focus) {
+  if ((await item(system, hwnd, ID_BASIC)) === focus) {
     index = d.basic;
-  } else if (item(system, hwnd, ID_CUSTOM) === focus) {
+  } else if ((await item(system, hwnd, ID_CUSTOM)) === focus) {
     index = d.custom;
   } else {
     return 0;
@@ -766,45 +749,47 @@ async function space(system: any, hwnd: number, id: number): Promise<number> {
 }
 
 /** The rectangles measured (`1654`). */
-function measure(system: any, d: Dialog) {
+async function measure(system: any, d: Dialog) {
   const hwnd = d.hwnd;
-  const half = metric(system, SM_CXSIZE) >> 1;
-  const s = windowRect(system, item(system, hwnd, ID_SPECTRUM));
+  const half = (await metric(system, SM_CXSIZE)) >> 1;
+  const s = await windowRect(system, await item(system, hwnd, ID_SPECTRUM));
 
-  d.spectrum = toClient(system, hwnd, [s[0] + 1, s[1] + 1, s[2] - 1, s[3] - 1]);
+  d.spectrum = await toClient(system, hwnd, [s[0] + 1, s[1] + 1, s[2] - 1, s[3] - 1]);
 
-  const b = windowRect(system, item(system, hwnd, ID_LUMINOSITY));
+  const b = await windowRect(system, await item(system, hwnd, ID_LUMINOSITY));
 
   b[2] = s16(b[2] + half);
-  d.bar = toClient(system, hwnd, b);
+  d.bar = await toClient(system, hwnd, b);
   d.mark = [d.bar[2], d.bar[1], d.bar[2] + half, d.bar[3]];
   d.lumHeight = u16(d.bar[3] - d.bar[1]);
 
-  const c = windowRect(system, item(system, hwnd, ID_SAMPLE));
+  const c = await windowRect(system, await item(system, hwnd, ID_SAMPLE));
   const left = c[0] + 1;
   const middle = Math.trunc((c[2] + left) / 2);
 
-  d.colour = toClient(system, hwnd, [left, c[1] + 1, middle, c[3] - 1]);
-  d.solid = toClient(system, hwnd, [middle, c[1] + 1, c[2] - 1, c[3] - 1]);
+  d.colour = await toClient(system, hwnd, [left, c[1] + 1, middle, c[3] - 1]);
+  d.solid = await toClient(system, hwnd, [middle, c[1] + 1, c[2] - 1, c[3] - 1]);
   d.sample = [d.colour[0], d.colour[1], d.solid[2], d.solid[3]];
 }
 
 /** The display driver's colours, `OEMBIN` 2: how many, at most 48, and they; none without it. */
 async function displayColours(system: any): Promise<[number, number[]]> {
-  const module = GetModuleHandle.call(system, 'DISPLAY');
-  const found = FindResource.call(system, module, 2, 'OEMBIN');
+  const module = u16(await call(system, 'KERNEL', 'GetModuleHandle', [text(bytesOf('DISPLAY'))]));
+  const found = u16(
+    await call(system, 'KERNEL', 'FindResource', [W(module), D(2), text(bytesOf('OEMBIN'))])
+  );
 
   if (!found) {
     return [0, []];
   }
 
-  const loaded = await LoadResource.call(system, module, found);
+  const loaded = u16(await call(system, 'KERNEL', 'LoadResource', [W(module), W(found)]));
 
   if (!loaded) {
     return [0, []];
   }
 
-  const far = LockResource.call(system, loaded) >>> 0;
+  const far = (await call(system, 'KERNEL', 'LockResource', [W(loaded)])) >>> 0;
   let count = 0;
   const colours: number[] = [];
 
@@ -815,27 +800,31 @@ async function displayColours(system: any): Promise<[number, number[]]> {
       colours.push(dword(system, far, 2 + i * 4));
     }
 
-    GlobalUnlock.call(system, loaded);
+    await call(system, 'KERNEL', 'GlobalUnlock', [W(loaded)]);
   }
 
-  FreeResource.call(system, loaded);
+  await call(system, 'KERNEL', 'FreeResource', [W(loaded)]);
   return [count, colours];
 }
 
 /** The grids measured and subclassed, and the basic colours read (`139a`). */
 async function grids(system: any, d: Dialog) {
   const hwnd = d.hwnd;
-  const basic = item(system, hwnd, ID_BASIC);
-  const custom = item(system, hwnd, ID_CUSTOM);
+  const basic = await item(system, hwnd, ID_BASIC);
+  const custom = await item(system, hwnd, ID_CUSTOM);
   const g = globals(system);
 
-  g.staticProc = GetWindowLong.call(system, basic, GWL_WNDPROC) >>> 0;
+  g.staticProc = (await call(system, 'USER', 'GetWindowLong', [W(basic), W(GWL_WNDPROC)])) >>> 0;
 
   for (const grid of [basic, custom]) {
-    SetWindowLong.call(system, grid, GWL_WNDPROC, procAddress(system, 25));
+    await call(system, 'USER', 'SetWindowLong', [
+      W(grid),
+      W(GWL_WNDPROC),
+      D(procAddress(system, 25)),
+    ]);
   }
 
-  const r = toClient(system, hwnd, windowRect(system, basic));
+  const r = await toClient(system, hwnd, await windowRect(system, basic));
   let left = r[0] + 3;
   let top = r[1] + 3;
   const pitchW = Math.trunc((r[2] - 3 - left) / 8);
@@ -851,7 +840,7 @@ async function grids(system: any, d: Dialog) {
     d.colours[i] = i < count ? colours[i] : count !== 0 ? 0x00ffffff : BASIC_COLOURS[i];
   }
 
-  const c = toClient(system, hwnd, windowRect(system, custom));
+  const c = await toClient(system, hwnd, await windowRect(system, custom));
 
   left = c[0] + 3;
   top = c[1] + 3;
@@ -870,14 +859,14 @@ async function grids(system: any, d: Dialog) {
 
 /** `WM_INITDIALOG` (`17c5`). */
 async function start(system: any, hwnd: number, wParam: number, lpcc: number): Promise<number> {
-  const solidButton = item(system, hwnd, ID_SOLID);
+  const solidButton = await item(system, hwnd, ID_SOLID);
   const g = globals(system);
 
   if (!g.memoryDc) {
-    const hdc = GetDC.call(system, hwnd);
-    const memory = CreateCompatibleDC.call(system, hdc);
+    const hdc = await getDc(system, hwnd);
+    const memory = u16(await call(system, 'GDI', 'CreateCompatibleDC', [W(hdc)]));
 
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
     g.memoryDc = memory;
 
     if (!memory) {
@@ -887,14 +876,14 @@ async function start(system: any, hwnd: number, wParam: number, lpcc: number): P
 
   const id = nextNumber(system);
 
-  SetProp.call(system, hwnd, 0xa000, id);
+  await call(system, 'USER', 'SetProp', [W(hwnd), D(0xa000), W(id)]);
   g.hook = dword(system, lpcc, HOOK);
 
   const first = blank();
 
   first.hwnd = hwnd;
   first.lpcc = lpcc;
-  measure(system, first);
+  await measure(system, first);
 
   const flags = dword(system, lpcc, FLAGS);
 
@@ -902,7 +891,7 @@ async function start(system: any, hwnd: number, wParam: number, lpcc: number): P
   put(system, id, first);
 
   if (flags & (CC_FULLOPEN | CC_PREVENTFULLOPEN)) {
-    await EnableWindow.call(system, item(system, hwnd, ID_DEFINE), 0);
+    await enable(system, await item(system, hwnd, ID_DEFINE), 0);
   }
 
   if (flags & CC_FULLOPEN) {
@@ -920,35 +909,34 @@ async function start(system: any, hwnd: number, wParam: number, lpcc: number): P
     await setHlsEdits(system, id, 0);
   } else {
     for (let control = ID_HUE; control <= ID_BLUE; control++) {
-      await EnableWindow.call(system, item(system, hwnd, control), 0);
+      await enable(system, await item(system, hwnd, control), 0);
     }
 
     for (let control = ID_HUE_LABEL; control <= ID_BLUE_LABEL; control++) {
-      await EnableWindow.call(system, item(system, hwnd, control), 0);
+      await enable(system, await item(system, hwnd, control), 0);
     }
 
-    await EnableWindow.call(system, item(system, hwnd, ID_ADD), 0);
-    await EnableWindow.call(system, solidButton, 0);
+    await enable(system, await item(system, hwnd, ID_ADD), 0);
+    await enable(system, solidButton, 0);
 
     const d = copy(get(system, id));
 
     d.full = false;
 
-    const basic = windowRect(system, item(system, hwnd, ID_BASIC));
-    const spectrum = windowRect(system, item(system, hwnd, ID_SPECTRUM));
-    const w = windowRect(system, hwnd);
+    const basic = await windowRect(system, await item(system, hwnd, ID_BASIC));
+    const spectrum = await windowRect(system, await item(system, hwnd, ID_SPECTRUM));
+    const w = await windowRect(system, hwnd);
 
     d.window = w;
     put(system, id, d);
-    await MoveWindow.call(
-      system,
-      hwnd,
-      w[0],
-      w[1],
-      s16(Math.trunc((spectrum[0] + basic[2]) / 2) - w[0]),
-      s16(w[3] - w[1]),
-      0
-    );
+    await call(system, 'USER', 'MoveWindow', [
+      W(hwnd),
+      W(w[0]),
+      W(w[1]),
+      W(Math.trunc((spectrum[0] + basic[2]) / 2) - w[0]),
+      W(w[3] - w[1]),
+      W(0),
+    ]);
   }
 
   const d = copy(get(system, id));
@@ -975,15 +963,19 @@ async function start(system: any, hwnd: number, wParam: number, lpcc: number): P
   put(system, id, d);
 
   if (!(flags & CC_SHOWHELP)) {
-    const help = item(system, hwnd, PSH_HELP);
+    const help = await item(system, hwnd, PSH_HELP);
 
-    await EnableWindow.call(system, help, 0);
-    await ShowWindow.call(system, help, SW_HIDE);
+    await enable(system, help, 0);
+    await call(system, 'USER', 'ShowWindow', [W(help), W(SW_HIDE)]);
   }
 
-  const style = GetWindowLong.call(system, solidButton, GWL_STYLE) >>> 0;
+  const style = (await call(system, 'USER', 'GetWindowLong', [W(solidButton), W(GWL_STYLE)])) >>> 0;
 
-  SetWindowLong.call(system, solidButton, GWL_STYLE, (style & ~WS_TABSTOP) >>> 0);
+  await call(system, 'USER', 'SetWindowLong', [
+    W(solidButton),
+    W(GWL_STYLE),
+    D((style & ~WS_TABSTOP) >>> 0),
+  ]);
 
   if (flags & CC_ENABLEHOOK) {
     return callHook(system, dword(system, lpcc, HOOK), hwnd, WM_INITDIALOG, wParam, lpcc);
@@ -997,7 +989,7 @@ async function drawSpectrum(system: any, id: number) {
   const d = copy(get(system, id));
   const [h, l, s] = rgbToHls(d.rgb);
 
-  measure(system, d);
+  await measure(system, d);
   d.width = u16(d.spectrum[2] - d.spectrum[0]);
   d.height = u16(d.spectrum[3] - d.spectrum[1]);
   d.hue = h;
@@ -1013,8 +1005,10 @@ async function drawSpectrum(system: any, id: number) {
   let hdc = 0;
 
   if (!g.spectrum) {
-    hdc = GetDC.call(system, hwnd);
-    g.spectrum = CreateCompatibleBitmap.call(system, hdc, d.width, d.height);
+    hdc = await getDc(system, hwnd);
+    g.spectrum = u16(
+      await call(system, 'GDI', 'CreateCompatibleBitmap', [W(hdc), W(d.width), W(d.height)])
+    );
 
     if (!g.spectrum) {
       return false;
@@ -1022,7 +1016,7 @@ async function drawSpectrum(system: any, id: number) {
   }
 
   const memory = g.memoryDc;
-  const old = SelectObject.call(system, memory, g.spectrum);
+  const old = await select(system, memory, g.spectrum);
   let bottom = 0;
 
   for (let sat = 240; sat !== 0; sat -= 8) {
@@ -1037,20 +1031,20 @@ async function drawSpectrum(system: any, id: number) {
 
       right = s16(Math.floor(((hue + 4) * d.width) / 240));
 
-      const brush = brushOf(system, hlsToRgb(hue, 120, sat));
+      const brush = await brushOf(system, hlsToRgb(hue, 120, sat));
 
-      fill(system, memory, [left, top, right, bottom], brush);
-      DeleteObject.call(system, brush);
+      await fill(system, memory, [left, top, right, bottom], brush);
+      await deleteObject(system, brush);
     }
   }
 
-  SelectObject.call(system, memory, old);
+  await select(system, memory, old);
 
   if (hdc) {
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
   }
 
-  await UpdateWindow.call(system, hwnd);
+  await call(system, 'USER', 'UpdateWindow', [W(hwnd)]);
   return true;
 }
 
@@ -1149,17 +1143,17 @@ async function rgbChanged(system: any, id: number) {
   const hwnd = first.hwnd;
 
   if (first.lum !== l) {
-    const hdc = GetDC.call(system, hwnd);
+    const hdc = await getDc(system, hwnd);
 
-    eraseArrow(system, hdc, get(system, id));
+    await eraseArrow(system, hdc, get(system, id));
 
     const d = copy(get(system, id));
 
     d.lum = l;
     positions(d, ID_LUM);
     put(system, id, d);
-    arrow(system, hdc, d);
-    ReleaseDC.call(system, hwnd, hdc);
+    await arrow(system, hdc, d);
+    await releaseDc(system, hwnd, hdc);
   }
 
   const d = copy(get(system, id));
@@ -1170,46 +1164,46 @@ async function rgbChanged(system: any, id: number) {
     put(system, id, d);
     await invalidate(system, hwnd, d.bar);
 
-    const hdc = GetDC.call(system, hwnd);
+    const hdc = await getDc(system, hwnd);
 
-    eraseCross(system, hdc, d);
+    await eraseCross(system, hdc, d);
     positions(d, ID_HUE);
     positions(d, ID_SAT);
     put(system, id, d);
     await cross(system, hdc, d.x, d.y, d);
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
   }
 }
 
 /** The luminosity's mark (`1d0b`): a triangle, black-edged and white, pointing at the bar from its right. */
 async function arrow(system: any, hdc: number, d: Dialog) {
-  const c = metric(system, SM_CYCAPTION) >> 2;
+  const c = (await metric(system, SM_CYCAPTION)) >> 2;
   const y = s16(d.lumY);
   const points = [d.mark[0] + 2, y, d.mark[2] - 1, y - c, d.mark[2] - 1, y + c];
   const bytes = points.flatMap((value) => [value & 0xff, (value >> 8) & 0xff]);
-  const oldPen = SelectObject.call(system, hdc, GetStockObject.call(system, BLACK_PEN));
-  const oldBrush = SelectObject.call(system, hdc, GetStockObject.call(system, WHITE_BRUSH));
+  const oldPen = await select(system, hdc, await stock(system, BLACK_PEN));
+  const oldBrush = await select(system, hdc, await stock(system, WHITE_BRUSH));
 
-  await withBlocks(system, [bytes], ([far]) => Polygon.call(system, hdc, far, 3));
-  SelectObject.call(system, hdc, oldPen);
-  SelectObject.call(system, hdc, oldBrush);
+  await call(system, 'GDI', 'Polygon', [W(hdc), B(bytes), W(3)]);
+  await select(system, hdc, oldPen);
+  await select(system, hdc, oldBrush);
 }
 
 /** The mark taken away: filled with the window's colour (`1d96`). */
-function eraseArrow(system: any, hdc: number, d: Dialog) {
-  const brush = brushOf(system, nearest(system, hdc, GetSysColor.call(system, COLOR_WINDOW)));
-  const c = metric(system, SM_CYCAPTION) >> 2;
+async function eraseArrow(system: any, hdc: number, d: Dialog) {
+  const brush = await brushOf(system, await nearest(system, hdc, await windowColour(system)));
+  const c = (await metric(system, SM_CYCAPTION)) >> 2;
   const y = s16(d.lumY);
 
-  fill(system, hdc, [d.mark[0] + 1, y - c - 1, d.mark[2], y + c + 1], brush);
-  DeleteObject.call(system, brush);
+  await fill(system, hdc, [d.mark[0] + 1, y - c - 1, d.mark[2], y + c + 1], brush);
+  await deleteObject(system, brush);
 }
 
 /** The cross taken away: the spectrum copied back round it (`1dfd`). */
-function eraseCross(system: any, hdc: number, d: Dialog) {
+async function eraseCross(system: any, hdc: number, d: Dialog) {
   const r = d.spectrum;
-  const dy = u16(10 * metric(system, SM_CYBORDER));
-  const dx = u16(10 * metric(system, SM_CXBORDER));
+  const dy = u16(10 * (await metric(system, SM_CYBORDER)));
+  const dx = u16(10 * (await metric(system, SM_CXBORDER)));
   const below = (v: number, floor: number) => (v < u16(floor) ? u16(floor) : v);
   const above = (v: number, ceiling: number) => (v > u16(ceiling) ? u16(ceiling) : v);
   const top = below(u16(d.y - dy), r[1]);
@@ -1217,21 +1211,20 @@ function eraseCross(system: any, hdc: number, d: Dialog) {
   const left = below(u16(d.x - dx), r[0]);
   const right = above(u16(d.x + dx), r[2]);
   const g = globals(system);
-  const old = SelectObject.call(system, g.memoryDc, g.spectrum);
+  const old = await select(system, g.memoryDc, g.spectrum);
 
-  BitBlt.call(
-    system,
-    hdc,
-    s16(left),
-    s16(top),
-    s16(right - left),
-    s16(bottom - top),
-    g.memoryDc,
-    s16(left - u16(r[0])),
-    s16(top - u16(r[1])),
-    SRCCOPY
-  );
-  SelectObject.call(system, g.memoryDc, old);
+  await call(system, 'GDI', 'BitBlt', [
+    W(hdc),
+    W(left),
+    W(top),
+    W(right - left),
+    W(bottom - top),
+    W(g.memoryDc),
+    W(left - u16(r[0])),
+    W(top - u16(r[1])),
+    D(SRCCOPY),
+  ]);
+  await select(system, g.memoryDc, old);
 }
 
 /** The cross at a point (`1ec7`): four arms of three lines each, kept inside the spectrum, in the DC's pen. */
@@ -1239,8 +1232,8 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   const [left, top, right, bottom] = d.spectrum;
   const x = s16(px);
   const y = s16(py);
-  const a = s16(5 * metric(system, SM_CYBORDER));
-  const b = s16(5 * metric(system, SM_CXBORDER));
+  const a = s16(5 * (await metric(system, SM_CYBORDER)));
+  const b = s16(5 * (await metric(system, SM_CXBORDER)));
   const yUp2 = Math.max(y - 2 * a, top);
   const yDown2 = Math.min(y + 2 * a, bottom);
   const xLeft2 = Math.max(x - 2 * b, left);
@@ -1249,9 +1242,9 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   const yDown = Math.min(a + y, bottom);
   const xLeft = Math.max(x - b, left);
   const xRight = Math.min(b + x, right);
-  const line = (x0: number, y0: number, x1: number, y1: number) => {
-    MoveTo.call(system, hdc, x0, y0);
-    LineTo.call(system, hdc, x1, y1);
+  const line = async (x0: number, y0: number, x1: number, y1: number) => {
+    await call(system, 'GDI', 'MoveTo', [W(hdc), W(x0), W(y0)]);
+    await call(system, 'GDI', 'LineTo', [W(hdc), W(x1), W(y1)]);
   };
   const columns: [number, boolean][] = [
     [x - 1, x - 1 >= left],
@@ -1267,7 +1260,7 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   if (yUp > top) {
     for (const [column, shown] of columns) {
       if (shown) {
-        line(column, yUp, column, yUp2);
+        await line(column, yUp, column, yUp2);
       }
     }
   }
@@ -1275,7 +1268,7 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   if (bottom > yDown) {
     for (const [column, shown] of columns) {
       if (shown) {
-        line(column, yDown, column, yDown2);
+        await line(column, yDown, column, yDown2);
       }
     }
   }
@@ -1283,7 +1276,7 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   if (left < xLeft) {
     for (const [row, shown] of rows) {
       if (shown) {
-        line(xLeft, row, xLeft2, row);
+        await line(xLeft, row, xLeft2, row);
       }
     }
   }
@@ -1291,7 +1284,7 @@ async function cross(system: any, hdc: number, px: number, py: number, d: Dialog
   if (right > xRight) {
     for (const [row, shown] of rows) {
       if (shown) {
-        line(xRight, row, xRight2, row);
+        await line(xRight, row, xRight2, row);
       }
     }
   }
@@ -1305,23 +1298,22 @@ async function copySpectrum(system: any, hdc: number, area: Rect, d: Dialog) {
     return;
   }
 
-  const old = SelectObject.call(system, g.memoryDc, g.spectrum);
+  const old = await select(system, g.memoryDc, g.spectrum);
 
-  BitBlt.call(
-    system,
-    hdc,
-    area[0],
-    area[1],
-    area[2] - area[0],
-    area[3] - area[1],
-    g.memoryDc,
-    area[0] - d.spectrum[0],
-    area[1] - d.spectrum[1],
-    SRCCOPY
-  );
-  SelectObject.call(system, g.memoryDc, old);
+  await call(system, 'GDI', 'BitBlt', [
+    W(hdc),
+    W(area[0]),
+    W(area[1]),
+    W(area[2] - area[0]),
+    W(area[3] - area[1]),
+    W(g.memoryDc),
+    W(area[0] - d.spectrum[0]),
+    W(area[1] - d.spectrum[1]),
+    D(SRCCOPY),
+  ]);
+  await select(system, g.memoryDc, old);
   await cross(system, hdc, d.x, d.y, d);
-  await UpdateWindow.call(system, d.hwnd);
+  await call(system, 'USER', 'UpdateWindow', [W(d.hwnd)]);
 }
 
 /** The sample, the bar, its mark and the spectrum, each where it meets the area painted (`25e4`). */
@@ -1329,48 +1321,48 @@ async function paintParts(system: any, d: Dialog, hdc: number, area: Rect) {
   const colour = intersect(area, d.colour);
 
   if (colour) {
-    const brush = brushOf(system, d.rgb);
+    const brush = await brushOf(system, d.rgb);
 
-    fill(system, hdc, colour, brush);
-    DeleteObject.call(system, brush);
+    await fill(system, hdc, colour, brush);
+    await deleteObject(system, brush);
   }
 
   const solidPart = intersect(area, d.solid);
 
   if (solidPart) {
-    const brush = brushOf(system, nearest(system, hdc, d.rgb));
+    const brush = await brushOf(system, await nearest(system, hdc, d.rgb));
 
-    fill(system, hdc, solidPart, brush);
-    DeleteObject.call(system, brush);
+    await fill(system, hdc, solidPart, brush);
+    await deleteObject(system, brush);
   }
 
   if (intersect(area, d.bar)) {
     const bar = d.bar;
     const r: Rect = [bar[0], bar[3] - 4, bar[2], bar[3]];
-    let brush = brushOf(system, hlsToRgb(d.hue, 0, d.sat));
+    let brush = await brushOf(system, hlsToRgb(d.hue, 0, d.sat));
 
-    fill(system, hdc, r, brush);
-    DeleteObject.call(system, brush);
+    await fill(system, hdc, r, brush);
+    await deleteObject(system, brush);
 
     for (let lum = 8; lum < 240; lum += 8) {
       r[3] = r[1];
       r[1] = s16(Math.floor(u32((bar[3] + 4) * 240 - d.lumHeight * (lum + 8)) / 240));
-      brush = brushOf(system, hlsToRgb(d.hue, lum, d.sat));
-      fill(system, hdc, r, brush);
-      DeleteObject.call(system, brush);
+      brush = await brushOf(system, hlsToRgb(d.hue, lum, d.sat));
+      await fill(system, hdc, r, brush);
+      await deleteObject(system, brush);
     }
 
     r[3] = r[1];
     r[1] = bar[1];
-    brush = brushOf(system, hlsToRgb(d.hue, 240, d.sat));
-    fill(system, hdc, r, brush);
-    DeleteObject.call(system, brush);
+    brush = await brushOf(system, hlsToRgb(d.hue, 240, d.sat));
+    await fill(system, hdc, r, brush);
+    await deleteObject(system, brush);
 
     if (area[0] !== bar[0] || area[1] !== bar[1] || area[2] !== bar[2] || area[3] !== bar[3]) {
-      const old = SelectObject.call(system, hdc, GetStockObject.call(system, NULL_BRUSH));
+      const old = await select(system, hdc, await stock(system, NULL_BRUSH));
 
-      rectangle(system, hdc, [bar[0] - 1, bar[1] - 1, bar[2] + 1, bar[3] + 1]);
-      SelectObject.call(system, hdc, old);
+      await rectangle(system, hdc, [bar[0] - 1, bar[1] - 1, bar[2] + 1, bar[3] + 1]);
+      await select(system, hdc, old);
     }
   }
 
@@ -1386,21 +1378,21 @@ async function paintParts(system: any, d: Dialog, hdc: number, area: Rect) {
 }
 
 /** A box drawn: a rectangle in the DC's pen, filled with its colour, and the chosen one's frame (`1316`). */
-function drawBox(system: any, d: Dialog, hdc: number, index: number) {
+async function drawBox(system: any, d: Dialog, hdc: number, index: number) {
   const g = globals(system);
 
   if (index < 0x30 && index >= u16(g.count)) {
     return;
   }
 
-  const brush = brushOf(system, d.colours[index]);
-  const old = SelectObject.call(system, hdc, brush);
+  const brush = await brushOf(system, d.colours[index]);
+  const old = await select(system, hdc, brush);
 
-  rectangle(system, hdc, g.boxes[index] as Rect);
-  DeleteObject.call(system, SelectObject.call(system, hdc, old));
+  await rectangle(system, hdc, g.boxes[index] as Rect);
+  await deleteObject(system, await select(system, hdc, old));
 
   if (d.current === index) {
-    frame(system, hdc, index, true);
+    await frame(system, hdc, index, true);
   }
 }
 
@@ -1410,18 +1402,18 @@ async function paint(system: any, hwnd: number, id: number, hdc: number, area: R
   const count = u16(globals(system).count);
 
   for (let index = 0; index < count; index++) {
-    drawBox(system, d, hdc, index);
+    await drawBox(system, d, hdc, index);
   }
 
   for (let index = 0x30; index < 0x40; index++) {
-    drawBox(system, d, hdc, index);
+    await drawBox(system, d, hdc, index);
   }
 
-  const focus = GetFocus.call(system);
+  const focus = await getFocus(system);
 
-  if (item(system, hwnd, ID_BASIC) === focus) {
+  if ((await item(system, hwnd, ID_BASIC)) === focus) {
     await moveFocus(system, id, d.basic);
-  } else if (item(system, hwnd, ID_CUSTOM) === focus) {
+  } else if ((await item(system, hwnd, ID_CUSTOM)) === focus) {
     await moveFocus(system, id, d.custom);
   }
 
@@ -1441,10 +1433,10 @@ async function press(
 
   if (inRect(d.spectrum, x, y)) {
     if (message === WM_LBUTTONDOWN) {
-      const hdc = GetDC.call(system, hwnd);
+      const hdc = await getDc(system, hwnd);
 
-      eraseCross(system, hdc, d);
-      ReleaseDC.call(system, hwnd, hdc);
+      await eraseCross(system, hdc, d);
+      await releaseDc(system, hwnd, hdc);
     }
 
     let next = copy(get(system, id));
@@ -1462,24 +1454,24 @@ async function press(
     next.rgb = hlsToRgb(next.hue, next.lum, next.sat);
     put(system, id, next);
 
-    const hdc = GetDC.call(system, hwnd);
+    const hdc = await getDc(system, hwnd);
 
     await paintParts(system, next, hdc, next.bar);
     await paintParts(system, next, hdc, next.sample);
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
     await setRgbEdits(system, id, 0);
 
     if (!globals(system).tracking) {
-      capture(system, hwnd, next.spectrum);
+      await capture(system, hwnd, next.spectrum);
     }
 
     return 1;
   }
 
   if (inRect(d.bar, x, y) || inRect(d.mark, x, y)) {
-    const hdc = GetDC.call(system, hwnd);
+    const hdc = await getDc(system, hwnd);
 
-    eraseArrow(system, hdc, d);
+    await eraseArrow(system, hdc, d);
 
     let next = copy(get(system, id));
 
@@ -1493,30 +1485,35 @@ async function press(
     next.rgb = hlsToRgb(next.hue, next.lum, next.sat);
     put(system, id, next);
     await paintParts(system, next, hdc, next.sample);
-    ReleaseDC.call(system, hwnd, hdc);
-    validate(system, hwnd, next.mark);
-    validate(system, hwnd, next.sample);
+    await releaseDc(system, hwnd, hdc);
+    await validate(system, hwnd, next.mark);
+    await validate(system, hwnd, next.sample);
     await setRgbEdits(system, id, 0);
 
     if (!globals(system).tracking) {
-      capture(system, hwnd, next.mark);
+      await capture(system, hwnd, next.mark);
     }
 
     return 1;
   }
 
   /* A grid (`04db`). */
-  const child = ChildWindowFromPoint.call(system, hwnd, ((u16(y) << 16) | u16(x)) >>> 0);
+  const child = u16(
+    await call(system, 'USER', 'ChildWindowFromPoint', [
+      W(hwnd),
+      D(((u16(y) << 16) | u16(x)) >>> 0),
+    ])
+  );
   const boxes = globals(system).boxes;
   let area: Rect;
   let rows: number;
   let base: number;
 
-  if (child === item(system, hwnd, ID_BASIC)) {
+  if (child === (await item(system, hwnd, ID_BASIC))) {
     area = [boxes[0][0], boxes[0][1], boxes[0x2f][2] + 5, boxes[0x2f][3] + 5];
     rows = 6;
     base = 0;
-  } else if (child === item(system, hwnd, ID_CUSTOM)) {
+  } else if (child === (await item(system, hwnd, ID_CUSTOM))) {
     area = [boxes[0x30][0], boxes[0x30][1], boxes[0x3f][2] + 5, boxes[0x3f][3] + 5];
     rows = 2;
     base = 0x30;
@@ -1524,8 +1521,8 @@ async function press(
     return 0;
   }
 
-  if (GetFocus.call(system) !== child) {
-    await SetFocus.call(system, child);
+  if ((await getFocus(system)) !== child) {
+    await call(system, 'USER', 'SetFocus', [W(child)]);
   }
 
   const [pitchW, pitchH] = globals(system).pitch;
@@ -1566,7 +1563,7 @@ async function press(
     next.rgb = next.colours[next.current];
     put(system, id, next);
 
-    const hdc = GetDC.call(system, hwnd);
+    const hdc = await getDc(system, hwnd);
 
     if (next.full) {
       await rgbChanged(system, id);
@@ -1577,18 +1574,18 @@ async function press(
 
     const now = get(system, id);
 
-    drawBox(system, now, hdc, now.basic);
-    drawBox(system, now, hdc, now.custom);
-    ReleaseDC.call(system, hwnd, hdc);
+    await drawBox(system, now, hdc, now.basic);
+    await drawBox(system, now, hdc, now.custom);
+    await releaseDc(system, hwnd, hdc);
   }
 
   return 1;
 }
 
 /** The mouse captured and the cursor kept in a rectangle. */
-function capture(system: any, hwnd: number, r: Rect) {
-  SetCapture.call(system, hwnd);
-  ClipCursor.call(system, rectOf(toScreen(system, hwnd, r)));
+async function capture(system: any, hwnd: number, r: Rect) {
+  await call(system, 'USER', 'SetCapture', [W(hwnd)]);
+  await withRect(system, 'USER', 'ClipCursor', [], await toScreen(system, hwnd, r), []);
   globals(system).tracking = true;
 }
 
@@ -1596,14 +1593,14 @@ function capture(system: any, hwnd: number, r: Rect) {
 async function solid(system: any, id: number) {
   const first = get(system, id);
   const hwnd = first.hwnd;
-  const hdc = GetDC.call(system, hwnd);
+  const hdc = await getDc(system, hwnd);
 
-  eraseCross(system, hdc, first);
-  eraseArrow(system, hdc, first);
+  await eraseCross(system, hdc, first);
+  await eraseArrow(system, hdc, first);
 
   const d = copy(get(system, id));
 
-  d.rgb = nearest(system, hdc, d.rgb);
+  d.rgb = await nearest(system, hdc, d.rgb);
 
   const [h, l, s] = rgbToHls(d.rgb);
 
@@ -1614,7 +1611,7 @@ async function solid(system: any, id: number) {
   put(system, id, d);
   await cross(system, hdc, d.x, d.y, d);
   await arrow(system, hdc, d);
-  ReleaseDC.call(system, hwnd, hdc);
+  await releaseDc(system, hwnd, hdc);
   await setHlsEdits(system, id, 0);
   await setRgbEdits(system, id, 0);
   await invalidate(system, hwnd, d.sample);
@@ -1642,8 +1639,8 @@ async function command(
     if (control !== 3) {
       if (g.tracking) {
         g.tracking = false;
-        SetCapture.call(system, 0);
-        ClipCursor.call(system, null);
+        await call(system, 'USER', 'SetCapture', [W(0)]);
+        await call(system, 'USER', 'ClipCursor', [D(0)]);
       }
 
       const custom = dword(system, d.lpcc, CUST_COLORS);
@@ -1662,19 +1659,22 @@ async function command(
     }
 
     if (g.memoryDc) {
-      DeleteDC.call(system, g.memoryDc);
+      await call(system, 'GDI', 'DeleteDC', [W(g.memoryDc)]);
       g.memoryDc = 0;
     }
 
     if (g.spectrum) {
-      DeleteObject.call(system, g.spectrum);
+      await deleteObject(system, g.spectrum);
       g.spectrum = 0;
     }
 
-    RemoveProp.call(system, hwnd, 0xa000);
+    await call(system, 'USER', 'RemoveProp', [W(hwnd), D(0xa000)]);
     g.hook = dword(system, d.lpcc, HOOK);
     g.dialogs.delete(id);
-    await EndDialog.call(system, hwnd, control === 3 ? u16(lParam) : control === IDOK ? 1 : 0);
+    await call(system, 'USER', 'EndDialog', [
+      W(hwnd),
+      W(control === 3 ? u16(lParam) : control === IDOK ? 1 : 0),
+    ]);
   } else if (control === ID_HUE || control === ID_SAT || control === ID_LUM) {
     if (notification === EN_CHANGE) {
       await numberTyped(system, hwnd, id, control);
@@ -1712,7 +1712,7 @@ async function command(
     const owner = word(system, lpcc, HWND_OWNER);
 
     if (help && owner) {
-      await SendMessage.call(system, owner, help, hwnd, lpcc);
+      await call(system, 'USER', 'SendMessage', [W(owner), W(help), W(hwnd), D(lpcc)]);
     }
   }
 
@@ -1747,12 +1747,12 @@ async function numberTyped(system: any, hwnd: number, id: number, control: numbe
     return;
   }
 
-  const hdc = GetDC.call(system, hwnd);
+  const hdc = await getDc(system, hwnd);
 
   if (control === ID_LUM) {
-    eraseArrow(system, hdc, d);
+    await eraseArrow(system, hdc, d);
   } else {
-    eraseCross(system, hdc, d);
+    await eraseCross(system, hdc, d);
   }
 
   let next = copy(get(system, id));
@@ -1776,17 +1776,17 @@ async function numberTyped(system: any, hwnd: number, id: number, control: numbe
 
   if (control === ID_LUM) {
     await arrow(system, hdc, next);
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
   } else {
     positions(next, control);
     put(system, id, next);
     await cross(system, hdc, next.x, next.y, next);
-    ReleaseDC.call(system, hwnd, hdc);
+    await releaseDc(system, hwnd, hdc);
     await invalidate(system, hwnd, next.bar);
   }
 
   await invalidate(system, hwnd, next.sample);
-  await UpdateWindow.call(system, hwnd);
+  await call(system, 'USER', 'UpdateWindow', [W(hwnd)]);
 }
 
 /** Red, green or blue typed (`2ae3`). */
@@ -1828,24 +1828,32 @@ async function define(system: any, hwnd: number, id: number) {
   await drawSpectrum(system, id);
 
   for (let control = ID_HUE; control <= ID_BLUE; control++) {
-    await EnableWindow.call(system, item(system, hwnd, control), 1);
+    await enable(system, await item(system, hwnd, control), 1);
   }
 
   for (let control = ID_HUE_LABEL; control <= ID_BLUE_LABEL; control++) {
-    await EnableWindow.call(system, item(system, hwnd, control), 1);
+    await enable(system, await item(system, hwnd, control), 1);
   }
 
-  await EnableWindow.call(system, item(system, hwnd, ID_ADD), 1);
-  await EnableWindow.call(system, item(system, hwnd, ID_SOLID), 1);
-  await EnableWindow.call(system, item(system, hwnd, ID_DEFINE), 0);
+  await enable(system, await item(system, hwnd, ID_ADD), 1);
+  await enable(system, await item(system, hwnd, ID_SOLID), 1);
+  await enable(system, await item(system, hwnd, ID_DEFINE), 0);
 
-  const now = windowRect(system, hwnd);
+  const now = await windowRect(system, hwnd);
   const w = get(system, id).window;
 
-  await SetWindowPos.call(system, hwnd, 0, w[0], w[1], w[2] - w[0], w[3] - w[1], 0x16);
+  await call(system, 'USER', 'SetWindowPos', [
+    W(hwnd),
+    W(0),
+    W(w[0]),
+    W(w[1]),
+    W(w[2] - w[0]),
+    W(w[3] - w[1]),
+    W(0x16),
+  ]);
   await invalidate(system, hwnd, [w[0], now[1], now[0], now[3]]);
   await waitCursor(system, false);
-  await SetFocus.call(system, item(system, hwnd, ID_HUE));
+  await call(system, 'USER', 'SetFocus', [W(await item(system, hwnd, ID_HUE))]);
 
   const d = copy(get(system, id));
 
@@ -1871,33 +1879,43 @@ export async function WantArrows(
     case WM_GETDLGCODE:
       return 0x81;
     case WM_KEYDOWN:
-    case WM_CHAR:
-      return SendMessage.call(system, GetParent.call(system, hwnd), message, wParam, lParam >>> 0);
+    case WM_CHAR: {
+      const parent = u16(await call(system, 'USER', 'GetParent', [W(hwnd)]));
+
+      return call(system, 'USER', 'SendMessage', [W(parent), W(message), W(wParam), D(lParam)]);
+    }
     case WM_SETFOCUS:
     case WM_KILLFOCUS: {
-      const parent = GetParent.call(system, hwnd);
-      const id = numberOf(system, parent);
+      const parent = u16(await call(system, 'USER', 'GetParent', [W(hwnd)]));
+      const id = await numberOf(system, parent);
 
       if (!id) {
         break;
       }
 
       const d = get(system, id);
-      const index = u16(GetWindowWord.call(system, hwnd, GWW_ID)) === ID_BASIC ? d.basic : d.custom;
-      const hdc = GetDC.call(system, parent);
+      const control = u16(await call(system, 'USER', 'GetWindowWord', [W(hwnd), W(GWW_ID)]));
+      const index = control === ID_BASIC ? d.basic : d.custom;
+      const hdc = await getDc(system, parent);
       const b = globals(system).boxes[index];
 
-      DrawFocusRect.call(system, hdc, rectOf([b[0] - 3, b[1] - 3, b[2] + 3, b[3] + 3]));
-      return ReleaseDC.call(system, parent, hdc);
+      await withRect(
+        system,
+        'USER',
+        'DrawFocusRect',
+        [W(hdc)],
+        [b[0] - 3, b[1] - 3, b[2] + 3, b[3] + 3],
+        []
+      );
+      return await releaseDc(system, parent, hdc);
     }
   }
 
-  return CallWindowProc.call(
-    system,
-    globals(system).staticProc,
-    hwnd,
-    message,
-    wParam,
-    lParam >>> 0
-  );
+  return call(system, 'USER', 'CallWindowProc', [
+    D(globals(system).staticProc),
+    W(hwnd),
+    W(message),
+    W(wParam),
+    D(lParam),
+  ]);
 }

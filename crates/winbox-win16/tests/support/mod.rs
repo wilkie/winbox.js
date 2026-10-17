@@ -171,6 +171,9 @@ pub const AGREEING: &[&str] = &[
     "prabort",
     "prdraw",
     "prlpt",
+    "chfont3",
+    "chfontpr",
+    "lbtext",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

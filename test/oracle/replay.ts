@@ -5581,31 +5581,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
-  /* `chfont3` reads back the Font dialog's three lists. The rows' pictures,
-   * colours and glyphs agree; each list's text is drawn a pixel a
-   * character wider apart than Windows draws it, the emboldened MS Sans
-   * Serif of the dialog given its extra column per character in a list's
-   * DC -- the faces' and sizes' rows, which COMMDLG draws with
-   * `ExtTextOut`, and the styles', which the list box draws itself. The
-   * engines do the same running Microsoft's COMMDLG.DLL: USER's and GDI's,
-   * not COMMDLG's. The colours' box, drawn with `TextOut` in its combo
-   * box's DC, agrees (`chfont2`). */
-  'chfont3:pixels':
-    "the lists' text a pixel a character wider apart than Windows: the dialog's emboldened font in a list's DC, USER's and GDI's (150 of 201)",
-  /* `chfontpr` gives the Font dialog the `vgaprint` installation's
-   * PostScript printer, `CF_BOTH` and `CF_PRINTERFONTS`. The engines' GDI
-   * makes the printer's IC and walks its fonts through the driver
-   * (`printer-driver.ts`): the IC, the entry and every list of faces agree.
-   * Where the dialog starts on the printer's Courier, or the screen's MS
-   * Serif, the engines select the first face and the face's edit reads the
-   * two names run together ("Arialcourier"), so the styles, the sizes and
-   * the result follow Arial's. Both engines alike. */
-  'chfontpr:state': "the face the Font dialog starts on with the printer's fonts (3 of 8)",
-  'chfontpr:faces': "the face selected as the Font dialog starts with the printer's fonts (2 of 6)",
-  'chfontpr:styles': "the styles of the face wrongly selected with the printer's fonts (2 of 6)",
-  'chfontpr:sizes': "the sizes of the face wrongly selected with the printer's fonts (1 of 6)",
-  'chfontpr:result':
-    "the font chosen from the face wrongly selected with the printer's fonts (1 of 3)",
 };
 
 /**
@@ -5885,6 +5860,7 @@ const RUN_WHOLE = new Set<string>([
   'prabort',
   'prdraw',
   'prlpt',
+  'lbtext',
 ]);
 
 /**

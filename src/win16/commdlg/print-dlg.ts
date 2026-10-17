@@ -1197,7 +1197,7 @@ export async function letGo(system: any, handle: number, from: From) {
   if (from === 'named') {
     await call(system, 'KERNEL', 'FreeResource', [W(handle)]);
   } else if (from === 'own') {
-    freeTemplate(system, handle);
+    await freeTemplate(system, handle);
   }
 }
 
