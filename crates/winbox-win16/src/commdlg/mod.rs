@@ -40,6 +40,10 @@ mod file_lists;
 mod file_ok;
 pub mod parse;
 mod pictures;
+mod print_dlg;
+mod print_proc;
+mod print_resources;
+mod print_setup;
 pub mod resources;
 
 mod choose_color;
@@ -68,6 +72,11 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "ReplaceText" => Implementation::Async(find_replace::replace_text),
         "FindTextDlgProc" => Implementation::Async(find_replace::find_text_dlg_proc),
         "ReplaceTextDlgProc" => Implementation::Async(find_replace::replace_text_dlg_proc),
+        "PrintDlg" => Implementation::Async(print_dlg::print_dlg),
+        "PrintDlgProc" => Implementation::Async(print_proc::print_dlg_proc),
+        "PrintSetupDlgProc" => Implementation::Async(print_setup::print_setup_dlg_proc),
+        "EditIntegerOnly" => Implementation::Async(print_dlg::edit_integer_only),
+        "dwUpArrowHack" => Implementation::Async(print_dlg::dw_up_arrow_hack),
         "WantArrows" => Implementation::Async(choose_color::want_arrows),
         "GetFileTitle" => Implementation::Sync(parse::get_file_title),
         "GetOpenFileName" => Implementation::Async(file_dialogs::get_open_file_name),
@@ -256,6 +265,12 @@ pub(crate) fn start(system: &mut System) {
     }
 }
 
+/// `COMMDLG.DLL` loaded from its file afresh (`loader.rs`): what WinBox's
+/// print dialogs keep of the file's data as the file starts it.
+pub(crate) fn print_loaded(system: &mut System) {
+    print_dlg::loaded(system);
+}
+
 /// A message of `COMMDLG`'s by its name (`MESSAGES`), its number as its
 /// entry point registered it.
 pub(crate) fn message(system: &mut System, name: &str) -> u16 {
@@ -273,6 +288,8 @@ pub struct State {
     /// The last number put under a Find, Replace or Color dialog's
     /// property A000h (`guest_calls::next_number`).
     pub(crate) next: u16,
+    /// What the Print and Print Setup dialogs keep (`print_dlg.rs`).
+    pub(crate) print: print_dlg::PrintGlobals,
     /// What the Find and Replace dialogs keep (`find_replace.rs`).
     pub(crate) find: find_replace::FindGlobals,
     /// What the Color dialog keeps (`choose_color.rs`).

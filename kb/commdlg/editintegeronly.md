@@ -5,7 +5,7 @@ name: EditIntegerOnly
 ordinal: 23
 summary: The window procedure the Print dialog subclasses its From, To and Copies edits with, refusing any character but a digit or Backspace with a beep — exported so COMMDLG can pass it to SetWindowLong.
 versions:
-  '3.1': stub
+  '3.1': partial
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---

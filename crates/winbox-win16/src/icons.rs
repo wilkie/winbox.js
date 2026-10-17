@@ -831,6 +831,29 @@ pub fn dump_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(u32::from(picture) << 16 | u32::from(mask)))
 }
 
+/// An icon of a group a module keeps itself, not in a file: the member
+/// that fits the display, drawn `SM_CXICON` square, in a block of its own,
+/// as `LoadIcon` makes a module's (COMMDLG's portrait and landscape, which
+/// WinBox keeps). `image` gives an icon of the group by its number. Nought
+/// for none.
+pub(crate) fn icon_block_of(
+    system: &mut System,
+    group: &[u8],
+    image: impl Fn(u16) -> Option<Vec<u8>>,
+) -> u16 {
+    let colours = system.display.colors;
+    let Some(entry) = pick_icon(&icon_entries(group), ICON_SIZE, colours) else {
+        return 0;
+    };
+    let Some(bytes) = image(entry.id) else {
+        return 0;
+    };
+    let mut palette = system.palette();
+    let icon = scale_icon(decode_icon(&bytes, &mut palette), ICON_SIZE);
+
+    system.icon_block(&icon)
+}
+
 #[cfg(test)]
 mod tests {
     #[test]

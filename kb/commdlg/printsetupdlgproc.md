@@ -5,7 +5,7 @@ name: PrintSetupDlgProc
 ordinal: 22
 summary: The Print Setup dialog's procedure, which COMMDLG hands USER for its dialog 1539, from PrintDlg or from the Print dialog's Setup button — the printers from WIN.INI, the orientation, the paper sizes and sources the driver names — exported so COMMDLG can name it, not for programs to call.
 versions:
-  '3.1': stub
+  '3.1': partial
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---

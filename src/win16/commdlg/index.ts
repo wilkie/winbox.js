@@ -10,6 +10,9 @@ import { procAddressOf, registerCommDlg } from './proc-address.js';
 import { GetFileTitle } from './parse-file.js';
 import { ChooseColor, ColorDlgProc, WantArrows } from './choose-color.js';
 import { FindText, FindTextDlgProc, ReplaceText, ReplaceTextDlgProc } from './find-replace.js';
+import { EditIntegerOnly, PrintDlg, dwUpArrowHack } from './print-dlg.js';
+import { PrintDlgProc } from './print-proc.js';
+import { PrintSetupDlgProc } from './print-setup.js';
 import { CommDlgExtendedError } from './state.js';
 
 /**
@@ -87,10 +90,10 @@ export class CommDlg extends Module {
       [CommDlg.stub, 'FontStyleEnumProc', 14],
       [CommDlg.stub, 'FontFamilyEnumProc', 14],
       // 20 //
-      [CommDlg.stub, 'PrintDlg', 4],
-      [CommDlg.stub, 'PrintDlgProc', 10],
-      [CommDlg.stub, 'PrintSetupDlgProc', 10],
-      [CommDlg.stub, 'EditIntegerOnly', 10],
+      [PrintDlg, 'PrintDlg', 4, [FARPTR], BOOL],
+      [PrintDlgProc, 'PrintDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
+      [PrintSetupDlgProc, 'PrintSetupDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
+      [EditIntegerOnly, 'EditIntegerOnly', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlg.stub, 'unknown'],
       [WantArrows, 'WantArrows', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlgExtendedError, 'CommDlgExtendedError', 0, [], DWORD],
@@ -98,7 +101,7 @@ export class CommDlg extends Module {
       [CommDlg.stub, 'WEP', 2],
       [dwLBSubclass, 'dwLBSubclass', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       // 30 //
-      [CommDlg.stub, 'dwUpArrowHack', 10],
+      [dwUpArrowHack, 'dwUpArrowHack', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [dwOKSubclass, 'dwOKSubclass', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlg.stub, 'Unknown', 2],
       [CommDlg.stub, 'Unknown', 0],

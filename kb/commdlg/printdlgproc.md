@@ -5,7 +5,7 @@ name: PrintDlgProc
 ordinal: 21
 summary: The Print dialog's procedure, which COMMDLG hands USER for its dialog 1538 — the printer, the range, the copies, the quality and the checks of OK — exported so COMMDLG can name it, not for programs to call.
 versions:
-  '3.1': stub
+  '3.1': partial
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---

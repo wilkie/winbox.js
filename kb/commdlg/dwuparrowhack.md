@@ -5,7 +5,7 @@ name: dwUpArrowHack
 ordinal: 30
 summary: The window procedure Print Setup subclasses its printers' list with on Windows 3.10, so that Up or Left in the closed list moves to and checks Default Printer rather than choosing another printer — exported so COMMDLG can pass it to SetWindowLong.
 versions:
-  '3.1': stub
+  '3.1': partial
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---

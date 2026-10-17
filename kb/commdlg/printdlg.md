@@ -5,7 +5,7 @@ name: PrintDlg
 ordinal: 20
 summary: The Print dialog, or with PD_PRINTSETUP the Print Setup dialog, or with PD_RETURNDEFAULT no dialog at all — answering whether OK was pressed and handing back the printer as a DEVNAMES, its settings as the driver's DEVMODE, and a DC or IC where asked; read out of COMMDLG.DLL and recorded.
 versions:
-  '3.1': stub
+  '3.1': partial
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---
