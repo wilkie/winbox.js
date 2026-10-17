@@ -162,6 +162,7 @@ pub const AGREEING: &[&str] = &[
     "ofnopen",
     "pmatom",
     "chfont",
+    "chfont2",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -187,7 +188,7 @@ fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
 
     let driver = root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV");
 
-    if probe == "prdlg"
+    if (probe == "prdlg" || probe == "chfontpr")
         && let Ok(bytes) = std::fs::read(driver)
     {
         placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));
