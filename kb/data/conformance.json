@@ -7,8 +7,8 @@
   "functions": {
    "about": {
     "total": 4,
-    "agreed": 3,
-    "disagreed": 1,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -1355,36 +1355,36 @@
    },
    "ic": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "result": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
+    "agreed": 2,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "sizes": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 4,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    },
    "state": {
     "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
+    "agreed": 4,
+    "disagreed": 4,
     "unimplemented": 0,
     "unsupported": 0
    },
    "styles": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 3,
+    "disagreed": 3,
     "unimplemented": 0,
     "unsupported": 0
    }
@@ -13984,6 +13984,92 @@
     "unsupported": 0
    },
    "text": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prdlgx": {
+  "probe": "prdlgx",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 204,
+  "functions": {
+   "box": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "command": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dc": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "devmode": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "devnames": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "focus": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "print": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "result": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "setup": {
+    "total": 140,
+    "agreed": 140,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "template": {
     "total": 1,
     "agreed": 1,
     "disagreed": 0,

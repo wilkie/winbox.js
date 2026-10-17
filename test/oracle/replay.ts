@@ -5596,7 +5596,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * PostScript printer: `CreateIC("pscript", ...)`, which the engines' GDI
    * does not make for a Windows printer driver (as `prdlg`), so the probe
    * records that and runs none of the dialogs. */
-  'chfontpr:ic': 'GDI makes no IC for a Windows printer driver (1 of 1)',
   'chfontpr:state':
     "no Font dialog with the printer's fonts: GDI's IC for a printer driver (8 of 8)",
   'chfontpr:faces':
