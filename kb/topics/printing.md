@@ -2,7 +2,7 @@
 kind: topic
 name: Printing
 summary: What GDI does around any printer when a program prints a document — which calls succeed, what the calls out of order answer, when the abort procedure runs — recorded with Windows' own PostScript driver; and winbox.js's own printer, which hands documents on as PDFs.
-probes: [printing]
+probes: [printing, prdoc]
 ---
 
 A program prints by asking WIN.INI for the default printer, making a device context for it with [fn:GDI.CreateDC], and drawing a document into it a page at a time. What the pages turn into is the driver's business. What GDI does around them is the same for any printer, and that is what winbox.js is held to.
@@ -19,6 +19,14 @@ A program prints by asking WIN.INI for the default printer, making a device cont
 
 ## winbox.js's printer
 
-winbox.js has no Windows printer driver to run, and brings its own: a driver called `WBPRINT`, the device "WinBox Printer" (`src/win16/printer.ts`). It draws a page as a bitmap of US Letter at 300 dots an inch in the sixteen colours, with GDI's own drawing. [[fn:GDI.GetDeviceCaps]] answers its sizes for its device context. At the end of a document it hands the pages on as a PDF: into the file its port names, or, for a port that is a device such as `LPT1:`, to the page the emulator runs in (`onPrinted`). It calls the abort procedure as it writes each page and the document. It is installed as Setup installs a printer, by its entries in WIN.INI (`installPrinter`).
+A Windows printer driver on the drive, such as the PostScript driver, is loaded and run as Windows' GDI runs it ([[topic:printer-drivers]]). For a machine with none, winbox.js brings its own: a driver called `WBPRINT`, the device "WinBox Printer" (`src/win16/printer.ts`). It draws a page as a bitmap of US Letter at 300 dots an inch in the sixteen colours, with GDI's own drawing. [[fn:GDI.GetDeviceCaps]] answers its sizes for its device context. At the end of a document it hands the pages on as a PDF: into the file its port names, or, for a port that is a device such as `LPT1:`, to the page the emulator runs in (`onPrinted`). It calls the abort procedure as it writes each page and the document. It is installed as Setup installs a printer, by its entries in WIN.INI (`installPrinter`).
 
-Not yet done: Print Manager and the spooler, the printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`).
+## Windows' printer drivers
+
+[[read out]] Of a document on a Windows driver's DC, GDI does little itself (`GDI.EXE` seg31): `StartDoc` gives the driver's `Control` `SETABORTPROC` with the DC, then `STARTDOC` with the document's name, and the `DOCINFO` as its output where the driver's `GDIINFO` is newer than 300h; `StartPage` only marks the DC and answers 1; `EndPage` answers -1 on a DC not so marked, else the escape `NEWFRAME`'s answer; `EndDoc` is `Control`'s `ENDDOC`; `AbortDoc` the escape `ABORTDOC`; `SetAbortProc` the escape `SETABORTPROC`. [[measured]] [[probe:prdoc]] prints a page of text, a rectangle, a line and an ellipse through the PostScript driver to a file, and records the 210 lines of PostScript it wrote; `EndPage` answered 1639. winbox.js does not yet draw or print through a Windows driver ([[topic:printer-drivers]]).
+
+## Not yet done
+
+- Print Manager and the spooler, and GDI's own spooling of a driver's output (`OpenJob`, `WriteSpool`, `CloseJob`).
+- Drawing and printing through a Windows printer driver ([[probe:prdoc]]).
+- WinBox's own printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`).
