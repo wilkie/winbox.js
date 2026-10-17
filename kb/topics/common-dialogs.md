@@ -2,7 +2,7 @@
 kind: topic
 name: Common dialogs
 summary: COMMDLG, Windows 3.1's common dialogs, made WinBox's own a function at a time — what the library holds, how a call reaches WinBox's code or the file's, its registered messages, every extended error, hooks and templates, its resources — read out of COMMDLG.DLL.
-probes: [loadpath, ofnopen, ofnerr, ftitle, findrepl, choosclr]
+probes: [loadpath, ofnopen, ofnerr, ftitle, findrepl, choosclr, chfont]
 ---
 
 `COMMDLG.DLL` holds Windows 3.1's common dialogs: Open and Save As, Find and Replace, Color, Font and Print. Programs import it by name, or load it with [[fn:KERNEL.LoadLibrary]], as WinHelp does. WinBox makes it its own a function at a time. A function not yet made its own stays the file's code while the drive has `COMMDLG.DLL` ([[topic:dynamic-link-libraries]]).
@@ -46,10 +46,10 @@ Each dialog has a topic of its own:
 | 12      | [[fn:COMMDLG.ReplaceText]]          | the Replace dialog                                     | yes          |
 | 13      | [[fn:COMMDLG.FindTextDlgProc]]      | Find's procedure                                       | yes          |
 | 14      | [[fn:COMMDLG.ReplaceTextDlgProc]]   | Replace's procedure                                    | yes          |
-| 15      | [[fn:COMMDLG.ChooseFont]]           | the Font dialog                                        | no           |
-| 16      | [[fn:COMMDLG.FormatCharDlgProc]]    | Font's procedure                                       | no           |
-| 18      | [[fn:COMMDLG.FontStyleEnumProc]]    | Font's enumeration of a family's styles                | no           |
-| 19      | [[fn:COMMDLG.FontFamilyEnumProc]]   | Font's enumeration of the families                     | no           |
+| 15      | [[fn:COMMDLG.ChooseFont]]           | the Font dialog                                        | yes          |
+| 16      | [[fn:COMMDLG.FormatCharDlgProc]]    | Font's procedure                                       | yes          |
+| 18      | [[fn:COMMDLG.FontStyleEnumProc]]    | Font's enumeration of a family's styles                | yes          |
+| 19      | [[fn:COMMDLG.FontFamilyEnumProc]]   | Font's enumeration of the families                     | yes          |
 | 20      | [[fn:COMMDLG.PrintDlg]]             | the Print and Print Setup dialogs                      | no           |
 | 21      | [[fn:COMMDLG.PrintDlgProc]]         | Print's procedure                                      | no           |
 | 22      | [[fn:COMMDLG.PrintSetupDlgProc]]    | Print Setup's procedure                                | no           |
@@ -191,11 +191,11 @@ The registration point is one entry per export, in each engine:
 
 Helpers both engines keep for the dialogs: the far address of an export WinBox answers (`procAddress`, `proc_address`), the extended error (`setError`, `set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`callHook`, `call_hook`), the wait cursor (`waitCursor`, `wait_cursor`) and the registered messages (`message`).
 
-**How a dialog calls USER, GDI and KERNEL.** In Rust there is one way: each call is made as a program makes it, its arguments pushed below the stack and the function that answers a program's call run, through `api.rs` (`guest_calls.rs` gives Find, Replace and Color the shape the file dialogs have). In TypeScript there are two: the file dialogs go through `api.ts` in the same way, while Find, Replace and Color call the exports' functions directly, as SHELL's About box does. Both reach the same USER, so both show USER's quirks as COMMDLG's code would.
+**How a dialog calls USER, GDI and KERNEL.** In Rust there is one way: each call is made as a program makes it, its arguments pushed below the stack and the function that answers a program's call run, through `api.rs` (`guest_calls.rs` gives Find, Replace and Color the shape the file dialogs have). In TypeScript there are two: the file dialogs and Font go through `api.ts` in the same way, while Find, Replace and Color call the exports' functions directly, as SHELL's About box does. Both reach the same USER, so both show USER's quirks as COMMDLG's code would.
 
 ## Not yet done
 
-- `ChooseFont` and `PrintDlg`, with their procedures and enumeration procedures, are still the file's code, or stubs without the file ([[topic:choose-font]], [[topic:print-dialogs]]).
+- `PrintDlg`, with its procedures, is still the file's code, or stubs without the file ([[topic:print-dialogs]]).
 - `LoadAlterBitmap`, `WEP` and the unnamed entries are stubs; nothing outside COMMDLG calls them.
 - The memory device context `LibMain` makes and keeps (seg7 `01a1` to `0203`) is not made without the file.
-- The dialogs keep their data in WinBox's memory, not under the property A000h as COMMDLG keeps it ([[topic:file-dialogs]], [[topic:find-and-replace]], [[topic:choose-color]]).
+- The dialogs keep their data in WinBox's memory, not under the property A000h as COMMDLG keeps it ([[topic:file-dialogs]], [[topic:find-and-replace]], [[topic:choose-color]], [[topic:choose-font]]).

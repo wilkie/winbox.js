@@ -20009,6 +20009,10 @@ Not followed: an extra with a count of nought, which divides by nought in GDI; G
 - **At start-up** USER adds each `[fonts]` value, `.FON` put after one with no `.`, by `LoadLibrary`: a path outside the system directory is followed. A file the profiles do not name is not in either table and answers no request: Terminal at eight pixels in the OEM set is the twelve-row strike, though `DOSAPP.FON` has an eight.
 - **`[TrueType]`.** `TTEnable=0` leaves GDI no TrueType table: no family, a stub's add 0, `GetRasterizerCaps` 0. The strikes then compete for every name: Times New Roman at thirty is Fixedsys drawn twice, Arial at twenty MS Sans Serif's twenty. A name nothing is installed under competes the same way -- with TrueType on it is Times New Roman. `TTOnly=1` hides the raster and vector table from an enumeration of every family, and from nothing else.
 
+## 8z. Emboldened MS Sans Serif in a list's context (open)
+
+**Recorded** by `chfont3`, which reads back the rows of COMMDLG's Font dialog's three lists, and `chfont2`, which reads back its colours' box. The dialog's font is "Helv" 8 bold, MS Sans Serif's thirteen-pixel strike emboldened -- `SSERIFE.FON` has no bold strike. In the colours' box, drawn with `TextOut` in the combo box's context, the engines agree with Windows to the pixel. In the lists' rows -- the faces' and sizes', drawn by COMMDLG with `ExtTextOut`, and the styles', drawn by the list box itself -- the glyphs are Windows' to the pixel but each character stands a pixel further on than Windows puts it, the emboldening's extra column given once a character: 150 of 201 records. Microsoft's COMMDLG.DLL draws the same on the engines, so it is the list's context, USER's and GDI's, not COMMDLG's. Open; the knowledge base's `choose-font` topic holds it among what is not yet done.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
