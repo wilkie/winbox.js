@@ -1,6 +1,7 @@
 'use strict';
 
 import { Gdi } from '../gdi.js';
+import { driverCaps } from './printer-driver.js';
 
 /**
  * The **GetDeviceCaps** function retrieves device-specific information about a
@@ -32,8 +33,15 @@ import { Gdi } from '../gdi.js';
  *                     driver does not describe.
  */
 export function GetDeviceCaps(hdc, iCapability) {
-  /* A printer's own, from its driver (`printer.ts`); the display's else. */
-  const display = this.handles.resolve(hdc)?.device ?? this.display;
+  const surface = this.handles.resolve(hdc);
+
+  /* A printer driver's from the drive: its own `GDIINFO`. */
+  if (surface?.driverDevice) {
+    return driverCaps(surface, iCapability);
+  }
+
+  /* WinBox's own printer's (`printer.ts`); the display's else. */
+  const display = surface?.device ?? this.display;
 
   switch (iCapability) {
     case Gdi.DRIVERVERSION:

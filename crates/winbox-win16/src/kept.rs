@@ -2977,14 +2977,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetEnvironment",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetEnvironment",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetRgnBox",
@@ -3997,8 +3997,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EngineRealizeFont",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "EngineGetCharWidth",

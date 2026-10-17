@@ -7,8 +7,8 @@
   "functions": {
    "about": {
     "total": 4,
-    "agreed": 4,
-    "disagreed": 0,
+    "agreed": 3,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -13887,22 +13887,22 @@
   "functions": {
    "box": {
     "total": 13,
-    "agreed": 2,
-    "disagreed": 11,
+    "agreed": 13,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "devmode": {
     "total": 9,
-    "agreed": 7,
-    "disagreed": 2,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "devnames": {
     "total": 9,
-    "agreed": 7,
-    "disagreed": 2,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -13929,22 +13929,22 @@
    },
    "focus": {
     "total": 15,
-    "agreed": 8,
-    "disagreed": 7,
+    "agreed": 15,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "help": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "hook": {
     "total": 3,
-    "agreed": 1,
-    "disagreed": 2,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -13957,8 +13957,8 @@
    },
    "print": {
     "total": 140,
-    "agreed": 0,
-    "disagreed": 140,
+    "agreed": 140,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -13971,38 +13971,27 @@
    },
    "result": {
     "total": 9,
-    "agreed": 4,
-    "disagreed": 5,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "setup": {
     "total": 144,
-    "agreed": 123,
-    "disagreed": 21,
+    "agreed": 144,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "text": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "result": "PDERR_CREATEICFAILURE, and no DC for PD_RETURNDC or PD_RETURNIC: GDI makes no IC or DC for a printer driver (5 of 9)",
-   "devnames": "the Print dialog's DEVNAMES as left by a dialog that never came (2 of 9)",
-   "devmode": "the Print dialog's DEVMODE as left by a dialog that never came (2 of 9)",
-   "hook": "no Print dialog to give its hooks WM_INITDIALOG: GDI's IC for a printer driver (2 of 3)",
-   "print": "no Print dialog: GDI makes no IC for a Windows printer driver (140 of 140)",
-   "focus": "no Print dialog: GDI's IC for a printer driver (7 of 15)",
-   "text": "no Print dialog to type into: GDI's IC for a printer driver (1 of 1)",
-   "box": "no Print dialog, so none of its boxes: GDI's IC for a printer driver (11 of 13)",
-   "help": "no Print dialog to ask for Help: GDI's IC for a printer driver (1 of 2)",
-   "setup": "no Print Setup from the Print dialog: GDI makes no IC for a printer driver (21 of 144)"
-  }
+  "gaps": {}
  },
  "printing": {
   "probe": "printing",

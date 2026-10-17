@@ -193,6 +193,8 @@ import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
+import { EngineRealizeFont } from './gdi/engine-font.js';
+import { GetEnvironment, SetEnvironment } from './gdi/environment.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
@@ -434,8 +436,8 @@ export class Gdi extends Module {
       // 130 //
       [Gdi.stub, 'RestoreVisRgn', 2],
       [Gdi.stub, 'InquireVisRgn', 2],
-      [Gdi.stub, 'SetEnvironment', 10],
-      [Gdi.stub, 'GetEnvironment', 10],
+      [SetEnvironment, 'SetEnvironment', 10, [FARPTR, FARPTR, UINT], INT],
+      [GetEnvironment, 'GetEnvironment', 10, [FARPTR, FARPTR, UINT], INT],
       [GetRgnBox, 'GetRgnBox', 6, [HRGN, [RECT]], INT],
       [Gdi.stub, 'ScanLR', 12],
       [RemoveFontResource, 'RemoveFontResource', 4, [LPCSTR], BOOL],
@@ -621,7 +623,7 @@ export class Gdi extends Module {
       // 300 //
       [Gdi.stub, 'EngineEnumerateFont', 12],
       [Gdi.stub, 'EngineDeleteFont', 4],
-      [Gdi.stub, 'EngineRealizeFont', 12],
+      [EngineRealizeFont, 'EngineRealizeFont', 12, [FARPTR, FARPTR, FARPTR], DWORD],
       [Gdi.stub, 'EngineGetCharWidth', 12],
       [Gdi.stub, 'EngineSetFontContext', 6], // TODO: this errored by disassembler
       [Gdi.stub, 'EngineGetGlyphBmp', 22],

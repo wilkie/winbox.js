@@ -15,11 +15,14 @@ pub mod dc;
 pub mod ddb;
 pub mod dib;
 pub mod draw;
+pub mod engine_font;
+pub mod environment;
 pub mod heap;
 pub mod mapping;
 pub mod metafile;
 pub mod objects;
 pub mod palettes;
+pub mod printer_driver;
 pub mod printing;
 pub mod regions;
 pub mod shapes;
@@ -124,8 +127,6 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "IsGDIObject" => objects::is_gdi_object_call,
         "SetObjectOwner" => objects::set_object_owner,
         "CreateCompatibleDC" => dc::create_compatible_dc_call,
-        "CreateDC" | "CreateIC" => dc::create_dc_call,
-        "DeleteDC" => dc::delete_dc_call,
         "SaveDC" => dc::save_dc_call,
         "RestoreDC" => dc::restore_dc_call,
         "SelectObject" => dc::select_object_call,
@@ -217,7 +218,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| text_out::implementation(name))
                 .or_else(|| calls::implementation(name))
                 .or_else(|| metafile::implementation(name))
-                .or_else(|| printing::implementation(name));
+                .or_else(|| printing::implementation(name))
+                .or_else(|| printer_driver::implementation(name))
+                .or_else(|| environment::implementation(name))
+                .or_else(|| engine_font::implementation(name));
         }
     }))
 }
@@ -273,6 +277,11 @@ const COLORRES: i16 = 108;
 /// was possible; a printer's device context answers its own driver's
 /// (`printer.rs`).
 pub fn get_device_caps(system: &System, hdc: u16, capability: i16) -> u16 {
+    // A printer driver's from the drive: its own `GDIINFO`.
+    if let Some(dc) = printer_driver::driver_dc_of(system, hdc) {
+        return printer_driver::driver_caps(system, dc, capability);
+    }
+
     if crate::printer::printer_of(system, hdc).is_some() {
         return crate::printer::device_caps(capability) as u16;
     }
