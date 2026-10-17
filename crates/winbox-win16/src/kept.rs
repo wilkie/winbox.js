@@ -14530,14 +14530,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ChooseFont",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FormatCharDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -14548,14 +14548,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FontStyleEnumProc",
                 pops: 14,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FontFamilyEnumProc",
                 pops: 14,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "PrintDlg",
