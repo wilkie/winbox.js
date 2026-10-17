@@ -25,4 +25,4 @@ topics: [common-dialogs, print-dialogs]
 
 ## Implementation
 
-Not WinBox's own: ordinal 36 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping nothing, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive, the file's `WEP` calls the file's own entry.
+Not WinBox's own: ordinal 36 is a stub in WinBox's table (`src/win16/commdlg/index.ts`, named `Unknown`, popping nothing, as the entry's `retf` does), and the Rust engine has no arm for it (`crates/winbox-win16/src/commdlg/mod.rs`). With `COMMDLG.DLL` on the drive, the file's `WEP` calls the file's own entry, which frees the file's icons, not WinBox's. WinBox's print dialogs make their two icons once and keep them, as a module's icon stays loaded while the module is, so there is nothing for it to free ([[topic:print-dialogs]]).

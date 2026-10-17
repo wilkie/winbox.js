@@ -14560,26 +14560,26 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "PrintDlg",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "PrintDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "PrintSetupDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "EditIntegerOnly",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -14620,8 +14620,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "dwUpArrowHack",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "dwOKSubclass",

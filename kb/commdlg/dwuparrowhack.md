@@ -5,7 +5,7 @@ name: dwUpArrowHack
 ordinal: 30
 summary: The window procedure Print Setup subclasses its printers' list with on Windows 3.10, so that Up or Left in the closed list moves to and checks Default Printer rather than choosing another printer — exported so COMMDLG can pass it to SetWindowLong.
 versions:
-  '3.1': stub
+  '3.1': exact
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---
@@ -29,4 +29,4 @@ It is a window procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a doubleword
 
 ## Implementation
 
-Not WinBox's own yet: a stub in `src/win16/commdlg/index.ts`, popping 10 bytes, and no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive, the file's own procedure subclasses the list. [[measured]] Both engines agree with the probe's record of the key, running the file's code.
+WinBox's own: `dw_up_arrow_hack` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `dwUpArrowHack` in `src/win16/commdlg/print-dlg.ts`, put in place of the printers' combo box's procedure at its stub's address on 3.10, the combo box's own kept as COMMDLG keeps it. [[measured]] Both engines agree with [[probe:prdlg]]'s record of the key.

@@ -103,7 +103,7 @@ export class MemoryFile {
 const PRINTING = new Set(['printing']);
 
 /** Probes that load the `vgaprint` installation's printer driver. */
-const PRINTER_DRIVER = new Set(['prdlg', 'chfontpr', 'pric', 'prdoc']);
+const PRINTER_DRIVER = new Set(['prdlg', 'chfontpr', 'prdlgx', 'pric', 'prdoc']);
 
 /** An empty drive: only its root, with nothing in it; removable, with no disk, for A:. */
 function emptyDrive(removable: boolean) {

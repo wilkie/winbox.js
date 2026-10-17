@@ -260,6 +260,12 @@ impl System {
     ) -> usize {
         let library = self.place(executable, name, path);
 
+        // `COMMDLG.DLL` loaded afresh: its data as the file has it, which
+        // WinBox's print dialogs keep beside it (`commdlg/`).
+        if name.eq_ignore_ascii_case(crate::commdlg::NAME) {
+            crate::commdlg::print_loaded(self);
+        }
+
         // As the TypeScript engine numbers them: the instance from the
         // atoms' range, the module's handle from the modules'.
         self.modules[library].instance = self

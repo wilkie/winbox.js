@@ -5,8 +5,8 @@ name: PrintDlg
 ordinal: 20
 summary: The Print dialog, or with PD_PRINTSETUP the Print Setup dialog, or with PD_RETURNDEFAULT no dialog at all — answering whether OK was pressed and handing back the printer as a DEVNAMES, its settings as the driver's DEVMODE, and a DC or IC where asked; read out of COMMDLG.DLL and recorded.
 versions:
-  '3.1': stub
-probes: [prdlg]
+  '3.1': exact
+probes: [prdlg, prdlgx]
 topics: [common-dialogs, print-dialogs]
 ---
 
@@ -35,6 +35,7 @@ topics: [common-dialogs, print-dialogs]
 
 - [[measured]] Without a default printer and without `PD_NOWARNING`, both dialogs put up a box captioned "Print Setup", "No default printer / Use Control Panel to install and select a default printer", before failing.
 - [[measured]] A call that reaches a dialog leaves the error nought, whether OK or Cancel ends it.
+- [[measured]] [[probe:prdlgx]]: a dialog ended by a `WM_COMMAND` of 3 makes `PrintDlg` answer that message's `lParam`'s low word, 7 from Print Setup and 5 from the Print dialog. With `PD_RETURNDC` and Print to File checked, or `PD_RETURNDEFAULT | PD_RETURNDC | PD_PRINTTOFILE`, the DC is the driver's on `FILE:`. A program's templates, by name or by handle, are driven by their controls' ids, and a handle is left to the program.
 
 ## Nuances
 
@@ -50,4 +51,4 @@ topics: [common-dialogs, print-dialogs]
 
 ## Implementation
 
-Not WinBox's own yet: a stub in `src/win16/commdlg/index.ts` and no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive the file's code runs; without it, the call answers nought. [[measured]] Run whole with the file and the PostScript driver on the drive, both engines agree with 184 of [[probe:prdlg]]'s 376 records: every refusal, the no-printer cases, `PD_RETURNDEFAULT`'s DEVNAMES and DEVMODE, and Print Setup alone. The Print dialog fails on them with `PDERR_CREATEICFAILURE`, because their GDI makes no information context for a Windows printer driver, and `PD_RETURNDC` and `PD_RETURNIC` give no DC.
+WinBox's own, with `COMMDLG.DLL` on the drive or without it: `print_dlg` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `PrintDlg` in `src/win16/commdlg/print-dlg.ts`, each step of seg3 `0c94` followed, its calls into USER, GDI, KERNEL and the printer's driver made as COMMDLG makes them, its templates WinBox's own ([[topic:print-dialogs]]). [[measured]] Both engines agree with every record of [[probe:prdlg]], 376, and of [[probe:prdlgx]], 204, the printer's IC and DC made by GDI for the PostScript driver. Notepad's, Write's and Paintbrush's Print Setup and Write's Print dialog run with `COMMDLG.DLL` and without it.

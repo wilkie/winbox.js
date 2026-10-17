@@ -5,8 +5,8 @@ name: PrintDlgProc
 ordinal: 21
 summary: The Print dialog's procedure, which COMMDLG hands USER for its dialog 1538 — the printer, the range, the copies, the quality and the checks of OK — exported so COMMDLG can name it, not for programs to call.
 versions:
-  '3.1': stub
-probes: [prdlg]
+  '3.1': exact
+probes: [prdlg, prdlgx]
 topics: [common-dialogs, print-dialogs]
 ---
 
@@ -32,4 +32,4 @@ It is a dialog procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a word. [[fn
 
 ## Implementation
 
-Not WinBox's own yet: a stub in `src/win16/commdlg/index.ts`, popping 10 bytes, and no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive, the file's own procedure is what USER calls. [[measured]] On both engines the dialog does not come: the IC of the printer its `WM_INITDIALOG` asks GDI for is not made for a Windows printer driver, so its records are known gaps ([[topic:print-dialogs]]).
+WinBox's own: `print_dlg_proc` in `crates/winbox-win16/src/commdlg/print_proc.rs` and `PrintDlgProc` in `src/win16/commdlg/print-proc.ts`, handed to USER at its stub's address as COMMDLG hands its own export, each step of seg3 `371f` followed ([[topic:print-dialogs]]). [[measured]] Both engines agree with every record of the Print dialog in [[probe:prdlg]] and [[probe:prdlgx]]: its controls, its boxes, its hooks, Setup... and its loop, `WM_COMMAND` 3, a program's template, Print to File's DC.

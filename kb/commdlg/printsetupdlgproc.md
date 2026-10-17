@@ -5,8 +5,8 @@ name: PrintSetupDlgProc
 ordinal: 22
 summary: The Print Setup dialog's procedure, which COMMDLG hands USER for its dialog 1539, from PrintDlg or from the Print dialog's Setup button — the printers from WIN.INI, the orientation, the paper sizes and sources the driver names — exported so COMMDLG can name it, not for programs to call.
 versions:
-  '3.1': stub
-probes: [prdlg]
+  '3.1': exact
+probes: [prdlg, prdlgx]
 topics: [common-dialogs, print-dialogs]
 ---
 
@@ -19,6 +19,7 @@ It is a dialog procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a word. [[fn
 - [[measured]] The second printer chosen and Landscape, OK answered 1 with a DEVNAMES of `LPT2:`, `wDefault` nought, and the DEVMODE's `dmOrientation` 2. Opened from Print, its Landscape reached the Print dialog's DEVMODE.
 - [[measured]] Cancel answered nought and freed the DEVNAMES COMMDLG had made.
 - [[measured]] Help sent the owner `HELPMSGSTRING`'s message with the dialog and the structure.
+- [[measured]] [[probe:prdlgx]]: Options... ran the PostScript driver's own dialog, "Options", through its `ExtDeviceMode`; its OK left the lists as they were. A `WM_COMMAND` of 4 answered nought and took the structure's printer again, the orientation disabled and the paper's lists emptied where the structure had no DEVMODE; one of 3 ended the dialog with its `lParam`'s low word.
 
 ## Nuances
 
@@ -33,4 +34,4 @@ It is a dialog procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a word. [[fn
 
 ## Implementation
 
-Not WinBox's own yet: a stub in `src/win16/commdlg/index.ts`, popping 10 bytes, and no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive, the file's own procedure is what USER calls. [[measured]] Run whole with the PostScript driver on the drive, both engines agree with every record of Print Setup opened by `PrintDlg`; opened from the Print dialog it does not come, the Print dialog itself not coming ([[topic:print-dialogs]]).
+WinBox's own: `print_setup_dlg_proc` in `crates/winbox-win16/src/commdlg/print_setup.rs` and `PrintSetupDlgProc` in `src/win16/commdlg/print-setup.ts`, handed to USER at its stub's address, each step of seg3 `307a` followed; the driver's `ExtDeviceMode`, `DeviceCapabilities` and `AdvancedSetupDialog` called at the addresses `GetProcAddress` gives ([[topic:print-dialogs]]). [[measured]] Both engines agree with every record of Print Setup in [[probe:prdlg]] and [[probe:prdlgx]], opened by `PrintDlg` and from the Print dialog, the driver's own Options dialog among them. Notepad's, Write's and Paintbrush's Print Setup run with `COMMDLG.DLL` and without it.

@@ -3,6 +3,7 @@
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
 import { start as startCommDlg } from './commdlg/state.js';
+import { loaded as printLoaded } from './commdlg/print-dlg.js';
 import { searchPlaces } from './kernel/search.js';
 import { Loader } from './loader.js';
 import { segmentSelector } from './selectors.js';
@@ -190,6 +191,13 @@ async function loadFound(
     const library = new Library(executable, new Loader(executable, system._globalAllocator));
 
     await library.loader.parse();
+
+    /* `COMMDLG.DLL` loaded afresh: its data as the file has it, which
+     * WinBox's print dialogs keep beside it (`commdlg/`). */
+    if (name.toUpperCase() === 'COMMDLG') {
+      printLoaded(system);
+    }
+
     library.instance = system.handles.allocate(library);
     library.module = system.handles.alias(library);
 

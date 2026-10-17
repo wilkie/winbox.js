@@ -5,7 +5,7 @@ name: EditIntegerOnly
 ordinal: 23
 summary: The window procedure the Print dialog subclasses its From, To and Copies edits with, refusing any character but a digit or Backspace with a beep — exported so COMMDLG can pass it to SetWindowLong.
 versions:
-  '3.1': stub
+  '3.1': exact
 probes: [prdlg]
 topics: [common-dialogs, print-dialogs]
 ---
@@ -29,4 +29,4 @@ It is a window procedure, `(HWND, UINT, WPARAM, LPARAM)`, answering a doubleword
 
 ## Implementation
 
-Not WinBox's own yet: a stub in `src/win16/commdlg/index.ts`, popping 10 bytes, and no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive, the file's own procedure subclasses the edits. [[measured]] On the engines the Print dialog does not come yet ([[topic:print-dialogs]]), so its typed record is a known gap.
+WinBox's own: `edit_integer_only` in `crates/winbox-win16/src/commdlg/print_dlg.rs` and `EditIntegerOnly` in `src/win16/commdlg/print-dlg.ts`, put in place of the three edits' procedure at its stub's address, the From edit's own kept as COMMDLG keeps it. [[measured]] Both engines agree with [[probe:prdlg]]'s typed record.
