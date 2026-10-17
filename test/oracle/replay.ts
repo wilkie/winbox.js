@@ -5862,6 +5862,9 @@ const RUN_WHOLE = new Set<string>([
   'prlpt',
   'prnote',
   'prtabs',
+  'lzfiles',
+  'verinfo',
+  'verinst',
   'lbtext',
 ]);
 

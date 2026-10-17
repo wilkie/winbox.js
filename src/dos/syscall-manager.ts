@@ -9,6 +9,7 @@ import {
   deleteFile,
   fileAttributes,
   fileStamp,
+  setFileStamp,
   makeDirectory,
   removeDirectory,
   renameFile,
@@ -475,6 +476,10 @@ export class SyscallManager {
         true,
       ],
       // 0x5701: set time/date
+      // BX: handle, CX: time, DX: date
+      // DOSBox only says it set it ("DOS:57:Set File Date Time Faked",
+      // `dos.cpp`), the file keeping the host's stamp: so here.
+      0x5701: [setFileStamp, [[I286.REGISTER_BX, 2, Number]], [], true],
       // 0x58: get/set memory allocation strategy
       // 0x59: get extended error code
       // 0x5a: create unique file

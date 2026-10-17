@@ -18,6 +18,8 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import Types from '../../src/win16/types.js';
 
 import { CommDlg } from '../../src/win16/commdlg/index.js';
+import { LzExpand } from '../../src/win16/lzexpand/index.js';
+import { Ver } from '../../src/win16/ver/index.js';
 import { DEFAULT_DISPLAY_MODE, DISPLAY_MODES, displayMode } from '../../src/win16/display-modes.js';
 import { displayDriverFor } from '../../src/win16/display-driver.js';
 import { Gdi } from '../../src/win16/gdi.js';
@@ -52,6 +54,8 @@ const KEPT: [any, 'fixed' | 'moveable'][] = [
   [Timer, 'fixed'],
   [MciWave, 'fixed'],
   [MciSeq, 'fixed'],
+  [Ver, 'moveable'],
+  [LzExpand, 'moveable'],
 ];
 
 const quote = (text: string) => JSON.stringify(String(text));

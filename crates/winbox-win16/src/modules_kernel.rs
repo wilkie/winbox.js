@@ -20,8 +20,8 @@ use crate::system::{STEP, System};
 pub const THUNKS: usize = 512;
 
 /// Modules winbox.js keeps whose file is loaded beside them when there is
-/// one (`commdlg/`).
-const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
+/// one (`own_modules.rs`).
+const STUBS_ONLY: [&str; 3] = crate::own_modules::OWN_WITH_FILE;
 
 /// A string argument as the TypeScript engine reads one: nought for a null
 /// pointer, a number where its segment is nought, else the string.
@@ -255,9 +255,10 @@ fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
         Name::Null => 0,
     };
 
-    // An export of `COMMDLG`'s WinBox answers: its stub (`commdlg/`).
+    // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox answers: its
+    // stub (`own_modules.rs`).
     if ordinal != 0
-        && let Some((segment, offset)) = crate::commdlg::redirect(system, index, ordinal)
+        && let Some((segment, offset)) = crate::own_modules::redirect(system, index, ordinal)
     {
         return u32::from(segment_selector(segment)) << 16 | u32::from(offset);
     }
@@ -461,14 +462,10 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         }
 
         let Some((path, bytes)) = found else {
-            // `COMMDLG` with no file: WinBox's, found by its file's name as
-            // the other modules it keeps are, its messages registered as
-            // its file's entry point registers them (`commdlg/`).
-            if name.eq_ignore_ascii_case("COMMDLG.DLL")
-                && let Some(kept) = system.kept_named(crate::commdlg::NAME)
-            {
-                crate::commdlg::start(&mut system);
-                return Ok(system.kept[kept].instance());
+            // `COMMDLG`, `VER` or `LZEXPAND` with no file: WinBox's
+            // (`own_modules.rs`).
+            if let Some(instance) = crate::own_modules::without_file(&mut system, &name) {
+                return Ok(instance);
             }
 
             return Ok(if slash.is_some() && !folder_found {

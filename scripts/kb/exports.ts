@@ -14,11 +14,13 @@ import { CommDlg } from '../../src/win16/commdlg/index.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { Kernel } from '../../src/win16/kernel.js';
 import { Keyboard } from '../../src/win16/keyboard.js';
+import { LzExpand } from '../../src/win16/lzexpand/index.js';
 import { Shell } from '../../src/win16/shell.js';
 import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { MMSystem } from '../../src/win16/mmsystem.js';
 import { Sound } from '../../src/win16/sound.js';
 import { User } from '../../src/win16/user.js';
+import { Ver } from '../../src/win16/ver/index.js';
 import { Win87EM } from '../../src/win16/win87em.js';
 import { WinG } from '../../src/win16/wing.js';
 
@@ -68,6 +70,8 @@ const MODULES: [any, boolean][] = [
   [Shell, false],
   [MMSystem, false],
   [ToolHelp, false],
+  [Ver, false],
+  [LzExpand, false],
   [Win87EM, false],
   [WinG, true],
 ];

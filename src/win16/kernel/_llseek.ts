@@ -1,7 +1,6 @@
 'use strict';
 
 import { File } from '../../file-system.js';
-import { Kernel } from '../kernel.js';
 
 /**
  * The **_llseek** function repositions the pointer in a previously opened file.
@@ -44,27 +43,35 @@ import { Kernel } from '../kernel.js';
 export function _llseek(hf, lOffset, nOrigin) {
   const file = this.dos.files.resolve(hf);
 
+  /* An error is `HFILE_ERROR` in both words, -1 (**recorded** by `lzfiles`:
+   * LZEXPAND's `LZSeek` answers KERNEL's answer for a DOS handle). */
   if (!file || !(file instanceof File)) {
-    return Kernel.HFILE_ERROR;
+    return -1;
   }
+
+  let to: number;
 
   switch (nOrigin) {
     case 0:
-      file.position = lOffset;
+      to = lOffset | 0;
       break;
 
     case 1:
-      file.position += lOffset;
+      to = (file.position + lOffset) | 0;
       break;
 
     case 2:
-      file.position = file.size - lOffset;
+      to = (file.size + lOffset) | 0;
       break;
 
     default:
       // Unknown seek value, return error.
-      return Kernel.HFILE_ERROR;
+      return -1;
   }
+
+  /* Before the start: DOSBox's host seek fails, and it puts the file at its
+   * end instead (`localFile::Seek`); **recorded** by `lzfiles`. */
+  file.position = to < 0 ? file.size : to;
 
   return file.position;
 }

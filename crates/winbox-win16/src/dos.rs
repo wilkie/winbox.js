@@ -32,6 +32,23 @@ const SETTABLE: u8 = 0x27;
 /// Where the interrupt descriptor table is kept: see `task.rs`.
 const IDT: u32 = 0xffd << 16;
 
+/// A file's position moved as DOSBox moves it (`localFile::Seek`): from
+/// its start, where it is, or its end (`basis` 0, 1, 2); a position before
+/// the start fails on the host, and DOSBox puts the file at its end
+/// instead (**recorded** by `lzfiles`). The new position.
+pub(crate) fn dos_seek(file: &mut winbox_machine::OpenFile, offset: i32, basis: u8) -> u32 {
+    let current = file.seek(SeekFrom::Current(0)).unwrap_or(0) as i64;
+    let size = file.size() as i64;
+    let to = match basis {
+        0 => i64::from(offset),
+        1 => current + i64::from(offset),
+        _ => size + i64::from(offset),
+    };
+    let to = if to < 0 { size } else { to };
+
+    file.seek(SeekFrom::Start(to as u64)).unwrap_or(0) as u32
+}
+
 /// When a file was last written as a directory's entry keeps it: the time,
 /// hours, minutes and seconds halved, and the date, years from 1980, the
 /// month and the day.
@@ -732,12 +749,7 @@ impl System {
             i64::from((u32::from(self.cpu.regs[CX]) << 16 | u32::from(self.cpu.regs[DX])) as i32);
         let basis = self.low(AX);
         let file = self.files.resolve(handle).ok_or(ERROR_INVALID_HANDLE)?;
-        let to = match basis {
-            0 => SeekFrom::Start(u64::from(offset as u32)),
-            1 => SeekFrom::Current(offset),
-            _ => SeekFrom::End(offset),
-        };
-        let at = file.seek(to).unwrap_or(0) as u32;
+        let at = dos_seek(file, offset as i32, basis.min(2));
 
         self.cpu.regs[DX] = (at >> 16) as u16;
         self.cpu.regs[AX] = at as u16;

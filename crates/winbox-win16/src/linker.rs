@@ -142,9 +142,9 @@ impl System {
                 _ => 0,
             };
 
-            // An export of `COMMDLG`'s WinBox answers: its stub, not the
-            // file's entry (`commdlg/`).
-            if let Some((segment, offset)) = crate::commdlg::redirect(self, index, ordinal) {
+            // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox
+            // answers: its stub, not the file's entry (`own_modules.rs`).
+            if let Some((segment, offset)) = crate::own_modules::redirect(self, index, ordinal) {
                 return Some(Value::Place(segment, offset));
             }
 

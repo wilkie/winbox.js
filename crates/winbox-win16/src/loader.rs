@@ -76,8 +76,8 @@ impl Module {
 
 /// Modules winbox.js keeps whose file on the disk is loaded beside them
 /// when there is one: the file's exports WinBox does not answer yet are
-/// the file's code (`commdlg/`).
-const STUBS_ONLY: [&str; 1] = ["COMMDLG"];
+/// the file's code (`commdlg/`, `own_modules.rs`).
+const STUBS_ONLY: [&str; 3] = crate::own_modules::OWN_WITH_FILE;
 
 impl System {
     /// The module loaded from its file under a name, without regard to case.

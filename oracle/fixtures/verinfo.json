@@ -1,0 +1,1014 @@
+{
+  "probe": "verinfo",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL",
+      "result": "472|14ca0"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL",
+      "result": "1|472|52|VS_VERSION_INFO|d89d|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\USER.EXE",
+      "result": "480|40570"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\USER.EXE",
+      "result": "1|480|52|VS_VERSION_INFO|1713|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE",
+      "result": "484|35c90"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\GDI.EXE",
+      "result": "1|484|52|VS_VERSION_INFO|a827|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\KRNL386.EXE",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\SHELL.DLL",
+      "result": "464|9f50"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\SHELL.DLL",
+      "result": "1|464|52|VS_VERSION_INFO|8572|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL",
+      "result": "444|ef10"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\MMSYSTEM.DLL",
+      "result": "1|444|52|VS_VERSION_INFO|a3f0|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\VGASYS.FON",
+      "result": "480|1a90"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\VGASYS.FON",
+      "result": "1|480|52|VS_VERSION_INFO|93d1|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\SYSTEM.DRV",
+      "result": "480|720"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\SYSTEM\\SYSTEM.DRV",
+      "result": "1|480|52|VS_VERSION_INFO|4668|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\WIN87EM.DLL",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE",
+      "result": "476|7e00"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE",
+      "result": "1|476|52|VS_VERSION_INFO|586b|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE",
+      "result": "484|11340"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\PROGMAN.EXE",
+      "result": "1|484|52|VS_VERSION_INFO|310a|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\CALC.EXE",
+      "result": "476|a240"
+    },
+    {
+      "function": "info",
+      "args": "C:\\WINDOWS\\CALC.EXE",
+      "result": "1|476|52|VS_VERSION_INFO|d1f3|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\WIN.INI",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\ARIAL.TTF",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS\\SYSTEM\\NONE.DLL",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\WINDOWS",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "COMMDLG.DLL",
+      "result": "472|14ca0"
+    },
+    {
+      "function": "info",
+      "args": "COMMDLG.DLL",
+      "result": "1|472|52|VS_VERSION_INFO|d89d|cc"
+    },
+    {
+      "function": "size",
+      "args": "commdlg.dll",
+      "result": "472|14ca0"
+    },
+    {
+      "function": "info",
+      "args": "commdlg.dll",
+      "result": "1|472|52|VS_VERSION_INFO|d89d|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\ORACLE\\OWNCOPY.EXE",
+      "result": "0|2316"
+    },
+    {
+      "function": "size",
+      "args": "C:\\ORACLE\\VCOPY.DRV",
+      "result": "480|720"
+    },
+    {
+      "function": "info",
+      "args": "C:\\ORACLE\\VCOPY.DRV",
+      "result": "1|480|52|VS_VERSION_INFO|4668|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\ORACLE\\VCOPY.DR_",
+      "result": "480|720"
+    },
+    {
+      "function": "info",
+      "args": "C:\\ORACLE\\VCOPY.DR_",
+      "result": "1|480|52|VS_VERSION_INFO|4668|cc"
+    },
+    {
+      "function": "size",
+      "args": "C:\\ORACLE\\SHORT.EXE",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "size",
+      "args": "C:\\ORACLE\\MZONLY.EXE",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,0,472",
+      "result": "1|d801340056535f56|d89d|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,0,16",
+      "result": "1|d801340056535f56|ef2e|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,0,1000",
+      "result": "1|d801340056535f56|9cd9|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14ca0,16",
+      "result": "1|d801340056535f56|ef2e|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14ca0,1000",
+      "result": "1|d801340056535f56|f690|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14ca2,472",
+      "result": "1|340056535f564552|d376|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,40,16",
+      "result": "1|0e1fba0e00b409cd|5359|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,15d04,16",
+      "result": "0|cccccccccccccccc|0000|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,15c98,16",
+      "result": "0|0000000000000000|4444|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,15c98,8",
+      "result": "1|0000000000000000|0000|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14ca0,0",
+      "result": "1|cccccccccccccccc|0000|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\WIN.INI,0,16",
+      "result": "0|cccccccccccccccc|0000|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\WIN.INI,4,16",
+      "result": "1|646f77735d0d0a73|8121|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\WINDOWS\\SYSTEM\\NONE.DLL,4,16",
+      "result": "0|cccccccccccccccc|0000|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\ORACLE\\VCOPY.DRV,720,16",
+      "result": "1|e001340056535f56|ef32|cc"
+    },
+    {
+      "function": "getinfo",
+      "args": "C:\\ORACLE\\VCOPY.DRV,0,480",
+      "result": "1|e001340056535f56|4668|cc"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\",
+      "result": "1|20|52|½\u0004ïþ|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,",
+      "result": "1|20|52|½\u0004ïþ|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\\\",
+      "result": "1|20|52|½\u0004ïþ|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\VarFileInfo\\Translation",
+      "result": "1|468|4|0904e404|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,VarFileInfo\\Translation",
+      "result": "1|468|4|0904e404|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\varfileinfo\\translation",
+      "result": "1|468|4|0904e404|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\VarFileInfo\\Translation\\",
+      "result": "1|468|4|0904e404|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\\\VarFileInfo\\\\Translation",
+      "result": "1|468|4|0904e404|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\VarFileInfo",
+      "result": "1|452|0||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\VarFileInfo\\Trans",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo",
+      "result": "1|92|0||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4",
+      "result": "1|108|0||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904e4\\CompanyName",
+      "result": "1|124|23|Microsoft Corporation|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\FileVersion",
+      "result": "1|212|6|3.10|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\ProductName",
+      "result": "1|364|41|Microsoft® Windows(TM) Operating System|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\LegalCopyright",
+      "result": "1|272|39|Copyright © Microsoft Corp. 1991-1992|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\OriginalFilename",
+      "result": "1|336|12|COMMDLG.DLL|kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\Odd",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\Empty",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040704E4\\CompanyName",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040704E4\\FileVersion",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\None",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\None",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\StringFileInfo\\040904E4\\CompanyName\\More",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "commdlg,\\VS_VERSION_INFO",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "ownopen",
+      "args": "40",
+      "result": "1|0"
+    },
+    {
+      "function": "ownopen",
+      "args": "0",
+      "result": "1|0"
+    },
+    {
+      "function": "rsize",
+      "args": "self",
+      "result": "328|2316"
+    },
+    {
+      "function": "rsize",
+      "args": "own",
+      "result": "328|2316"
+    },
+    {
+      "function": "query",
+      "args": "own,\\",
+      "result": "1|20|52|bd04effe000001000200010004000300|kept"
+    },
+    {
+      "function": "query",
+      "args": "own,",
+      "result": "1|20|52|bd04effe000001000200010004000300|kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\\\",
+      "result": "1|20|52|bd04effe000001000200010004000300|kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\VarFileInfo\\Translation",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,VarFileInfo\\Translation",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\varfileinfo\\translation",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\VarFileInfo\\Translation\\",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\\\VarFileInfo\\\\Translation",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\VarFileInfo",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\VarFileInfo\\Trans",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo",
+      "result": "1|92|0||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4",
+      "result": "1|108|0||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904e4\\CompanyName",
+      "result": "1|124|15|WinBox probes|kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\FileVersion",
+      "result": "1|204|9|312e322e332e340010|kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\ProductName",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\LegalCopyright",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\OriginalFilename",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\Odd",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\Empty",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040704E4\\CompanyName",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040704E4\\FileVersion",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\None",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\None",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\StringFileInfo\\040904E4\\CompanyName\\More",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own,\\VS_VERSION_INFO",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "own2,\\",
+      "result": "1|20|52|bd04effe000001000900090009000900|kept"
+    },
+    {
+      "function": "query",
+      "args": "own2,\\VarFileInfo\\Translation",
+      "result": "1|104|4|\f\u0004|kept"
+    },
+    {
+      "function": "query",
+      "args": "own2,\\StringFileInfo",
+      "result": "0|-1|48879||kept"
+    },
+    {
+      "function": "query",
+      "args": "nolength",
+      "result": "1|468"
+    },
+    {
+      "function": "query",
+      "args": "four",
+      "result": "0|0"
+    },
+    {
+      "function": "query",
+      "args": "five",
+      "result": "1|52"
+    },
+    {
+      "function": "query",
+      "args": "short",
+      "result": "1|52"
+    },
+    {
+      "function": "query",
+      "args": "shortpath",
+      "result": "0|52"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,17",
+      "result": "128|13b20"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,17",
+      "result": "1|0b46696c6520457869737473"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,25",
+      "result": "1040|13c20"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,25",
+      "result": "1|044f70656e07536176652041"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,1",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,6,1",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,16,2",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,16,2",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,8010,1",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,8010,1",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,16,8001",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,16,8001",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,5,1536",
+      "result": "352|12e00"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,5,1536",
+      "result": "1|c000c8800e24001800080186"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,5,1",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,5,1",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,2,38",
+      "result": "592|12bb0"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,2,38",
+      "result": "1|280000002800000018000000"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14,528",
+      "result": "48|12130"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL,14,528",
+      "result": "1|000001000300202002000100"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,14,1",
+      "result": "48|5260"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,14,1",
+      "result": "1|000001000200202002000100"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,3,1",
+      "result": "304|5fe0"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,3,1",
+      "result": "1|280000002000000040000000"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,3,2",
+      "result": "752|6120"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,3,2",
+      "result": "1|280000002000000040000000"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,6,1",
+      "result": "304|5680"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\NOTEPAD.EXE,6,1",
+      "result": "1|004943616e6e6f74206f7065"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\ORACLE\\OWNCOPY.EXE,16,2",
+      "result": "108|245e"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\ORACLE\\OWNCOPY.EXE,16,2",
+      "result": "1|6c00340056535f5645525349"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\WINDOWS\\WIN.INI,16,1",
+      "result": "0|deadbeef"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\WINDOWS\\WIN.INI,16,1",
+      "result": "0|cccccccccccccccccccccccc"
+    },
+    {
+      "function": "rsize",
+      "args": "C:\\ORACLE\\VCOPY.DRV,16,1",
+      "result": "480|720"
+    },
+    {
+      "function": "rget",
+      "args": "C:\\ORACLE\\VCOPY.DRV,16,1",
+      "result": "1|e001340056535f5645525349"
+    },
+    {
+      "function": "rget",
+      "args": "at3c",
+      "result": "1|80000000cccc"
+    },
+    {
+      "function": "rget",
+      "args": "past",
+      "result": "0|cccccccccccccccccccc"
+    },
+    {
+      "function": "rget",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "lang",
+      "args": "409,100",
+      "result": "12|U.S. English"
+    },
+    {
+      "function": "lang",
+      "args": "409,5",
+      "result": "12|U.S."
+    },
+    {
+      "function": "lang",
+      "args": "409,1",
+      "result": "12|"
+    },
+    {
+      "function": "lang",
+      "args": "407,100",
+      "result": "6|German"
+    },
+    {
+      "function": "lang",
+      "args": "407,5",
+      "result": "6|Germ"
+    },
+    {
+      "function": "lang",
+      "args": "407,1",
+      "result": "6|"
+    },
+    {
+      "function": "lang",
+      "args": "40c,100",
+      "result": "6|French"
+    },
+    {
+      "function": "lang",
+      "args": "40c,5",
+      "result": "6|Fren"
+    },
+    {
+      "function": "lang",
+      "args": "40c,1",
+      "result": "6|"
+    },
+    {
+      "function": "lang",
+      "args": "411,100",
+      "result": "8|Japanese"
+    },
+    {
+      "function": "lang",
+      "args": "411,5",
+      "result": "8|Japa"
+    },
+    {
+      "function": "lang",
+      "args": "411,1",
+      "result": "8|"
+    },
+    {
+      "function": "lang",
+      "args": "804,100",
+      "result": "18|Simplified Chinese"
+    },
+    {
+      "function": "lang",
+      "args": "804,5",
+      "result": "18|Simp"
+    },
+    {
+      "function": "lang",
+      "args": "804,1",
+      "result": "18|"
+    },
+    {
+      "function": "lang",
+      "args": "809,100",
+      "result": "12|U.K. English"
+    },
+    {
+      "function": "lang",
+      "args": "809,5",
+      "result": "12|U.K."
+    },
+    {
+      "function": "lang",
+      "args": "809,1",
+      "result": "12|"
+    },
+    {
+      "function": "lang",
+      "args": "c0c,100",
+      "result": "15|Canadian French"
+    },
+    {
+      "function": "lang",
+      "args": "c0c,5",
+      "result": "15|Cana"
+    },
+    {
+      "function": "lang",
+      "args": "c0c,1",
+      "result": "15|"
+    },
+    {
+      "function": "lang",
+      "args": "100c,100",
+      "result": "12|Swiss French"
+    },
+    {
+      "function": "lang",
+      "args": "100c,5",
+      "result": "12|Swis"
+    },
+    {
+      "function": "lang",
+      "args": "100c,1",
+      "result": "12|"
+    },
+    {
+      "function": "lang",
+      "args": "41a,100",
+      "result": "22|Croato-Serbian (latin)"
+    },
+    {
+      "function": "lang",
+      "args": "41a,5",
+      "result": "22|Croa"
+    },
+    {
+      "function": "lang",
+      "args": "41a,1",
+      "result": "22|"
+    },
+    {
+      "function": "lang",
+      "args": "81a,100",
+      "result": "25|Serbo-Croatian (cyrillic)"
+    },
+    {
+      "function": "lang",
+      "args": "81a,5",
+      "result": "25|Serb"
+    },
+    {
+      "function": "lang",
+      "args": "81a,1",
+      "result": "25|"
+    },
+    {
+      "function": "lang",
+      "args": "421,100",
+      "result": "6|Bahasa"
+    },
+    {
+      "function": "lang",
+      "args": "421,5",
+      "result": "6|Baha"
+    },
+    {
+      "function": "lang",
+      "args": "421,1",
+      "result": "6|"
+    },
+    {
+      "function": "lang",
+      "args": "0,100",
+      "result": "16|Unknown Language"
+    },
+    {
+      "function": "lang",
+      "args": "0,5",
+      "result": "16|Unkn"
+    },
+    {
+      "function": "lang",
+      "args": "0,1",
+      "result": "16|"
+    },
+    {
+      "function": "lang",
+      "args": "400,100",
+      "result": "16|Unknown Language"
+    },
+    {
+      "function": "lang",
+      "args": "400,5",
+      "result": "16|Unkn"
+    },
+    {
+      "function": "lang",
+      "args": "400,1",
+      "result": "16|"
+    },
+    {
+      "function": "lang",
+      "args": "422,100",
+      "result": "16|Unknown Language"
+    },
+    {
+      "function": "lang",
+      "args": "422,5",
+      "result": "16|Unkn"
+    },
+    {
+      "function": "lang",
+      "args": "422,1",
+      "result": "16|"
+    },
+    {
+      "function": "lang",
+      "args": "9999,100",
+      "result": "16|Unknown Language"
+    },
+    {
+      "function": "lang",
+      "args": "9999,5",
+      "result": "16|Unkn"
+    },
+    {
+      "function": "lang",
+      "args": "9999,1",
+      "result": "16|"
+    },
+    {
+      "function": "lang",
+      "args": "10c,100",
+      "result": "16|Unknown Language"
+    },
+    {
+      "function": "lang",
+      "args": "10c,5",
+      "result": "16|Unkn"
+    },
+    {
+      "function": "lang",
+      "args": "10c,1",
+      "result": "16|"
+    }
+  ]
+}

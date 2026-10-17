@@ -47,7 +47,9 @@ async function session(
   steps: { keys: string[]; seconds: number; then?: (win16: any) => void }[],
   read?: string,
   also: string[] = [],
-  made: [string, Uint8Array][] = []
+  made: [string, Uint8Array][] = [],
+  /* Files of the installation taken off the drive first, by their parts. */
+  without: string[][] = []
 ) {
   const copied = mkdtempSync(join(tmpdir(), 'winbox-sweep-'));
 
@@ -66,6 +68,7 @@ async function session(
       keepCalls: 0,
       steps,
       trees: true,
+      without,
     });
     let file: Buffer | null = null;
 
@@ -329,6 +332,41 @@ const titles = (win16: any): string[] =>
           'Courier 10,12,15 (VGA res)',
         ])
       );
+    }, 300000);
+
+    /* The same with no `VER.DLL` or `LZEXPAND.DLL` on the drive. `MAIN.CPL`
+     * imports both: it says what kind of font a file is by VER's
+     * `GetFileResource`, and reads font files through LZEXPAND. Both are
+     * WinBox's own (`ver/`, `lzexpand/`), and Fonts says the same. */
+    it("shows the font chosen in Control Panel's Fonts with no VER.DLL or LZEXPAND.DLL", async () => {
+      let description = '';
+      let size = '';
+      let loaded = true;
+
+      await session(
+        'CONTROL.EXE',
+        [
+          step('dblclick:91,66', 3),
+          step('click:100,143', 2, (win16) => {
+            description = controlOf(win16, 'Fonts', 401)?.control?.text ?? '';
+            size = controlOf(win16, 'Fonts', 408)?.control?.text ?? '';
+            loaded = ['VER', 'LZEXPAND'].some(
+              (name) => win16._modules.fromName(name)?.constructor?.name === 'Loader'
+            );
+          }),
+        ],
+        undefined,
+        [],
+        [],
+        [
+          ['WINDOWS', 'SYSTEM', 'VER.DLL'],
+          ['WINDOWS', 'SYSTEM', 'LZEXPAND.DLL'],
+        ]
+      );
+
+      expect(loaded).toBe(false);
+      expect(description).toBe('This is a screen or plotter font.');
+      expect(size).toBe('The size of the font on the disk is:  23 KB.');
     }, 300000);
 
     /* Control Panel's Fonts' Add Fonts installs `DOSAPP.FON` from the system

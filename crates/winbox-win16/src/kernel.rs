@@ -432,9 +432,10 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         system.kept_named(&wanted).map(|kept| &system.kept[kept])
     };
 
-    // COMMDLG is kept only as names, until its file is loaded.
+    // COMMDLG, VER and LZEXPAND are kept only as names, until a file of
+    // theirs is loaded.
     Ok(Answer::Word(kept.map_or(0, |kept| {
-        if kept.module.name.eq_ignore_ascii_case("COMMDLG") {
+        if crate::own_modules::own_with_file(kept.module.name) {
             0
         } else {
             kept.handle()
