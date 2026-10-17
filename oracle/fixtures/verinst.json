@@ -1,0 +1,374 @@
+{
+  "probe": "verinst",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "install",
+      "args": "new,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "new",
+      "result": "A.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "same,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "same",
+      "result": "A.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "older,0,A.DLL,A.DLL,64",
+      "result": "7|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "older",
+      "result": "A.DLL:2304:5ad0 TEMP.000:2304:5ac8 | "
+    },
+    {
+      "function": "install",
+      "args": "force,1,A.DLL,A.DLL,64",
+      "result": "0|TEMP.000|64"
+    },
+    {
+      "function": "left",
+      "args": "force",
+      "result": "A.DLL:2304:5ac8 | "
+    },
+    {
+      "function": "install",
+      "args": "olderls,0,A.DLL,A.DLL,64",
+      "result": "7|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "olderls",
+      "result": "A.DLL:2304:5ac8 TEMP.000:2304:dac8 | "
+    },
+    {
+      "function": "install",
+      "args": "newer,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "newer",
+      "result": "A.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "type,0,A.DLL,A.DLL,64",
+      "result": "23|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "type",
+      "result": "A.DLL:2304:5ad0 TEMP.000:2304:5b50 | "
+    },
+    {
+      "function": "install",
+      "args": "lang,0,A.DLL,A.DLL,64",
+      "result": "b|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "lang",
+      "result": "A.DLL:2304:5ad0 TEMP.000:2304:5aa0 | "
+    },
+    {
+      "function": "install",
+      "args": "codepage,0,A.DLL,A.DLL,64",
+      "result": "b|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "codepage",
+      "result": "A.DLL:2304:5ad0 TEMP.000:2304:5adc | "
+    },
+    {
+      "function": "install",
+      "args": "cp0,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "cp0",
+      "result": "A.DLL:2304:5adc | "
+    },
+    {
+      "function": "install",
+      "args": "cp1200,0,A.DLL,A.DLL,64",
+      "result": "b|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "cp1200",
+      "result": "A.DLL:2304:5b1c TEMP.000:2304:5a78 | "
+    },
+    {
+      "function": "install",
+      "args": "noinfo,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "noinfo",
+      "result": "A.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "srcnoinfo,0,B.DLL,A.DLL,64",
+      "result": "7|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "srcnoinfo",
+      "result": "A.DLL:2304:5ad0 TEMP.000:22:5d36 | "
+    },
+    {
+      "function": "install",
+      "args": "nosrc,0,NONE.DLL,NONE.DLL,64",
+      "result": "10000||64"
+    },
+    {
+      "function": "left",
+      "args": "nosrc",
+      "result": "| "
+    },
+    {
+      "function": "install",
+      "args": "compressed,0,C.DLL,C.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "compressed",
+      "result": "C.DLL:2304:5a50 | "
+    },
+    {
+      "function": "install",
+      "args": "small,0,A.DLL,A.DLL,3",
+      "result": "40006||9"
+    },
+    {
+      "function": "left",
+      "args": "small",
+      "result": "A.DLL:2304:5ad8 C.DLL:2304:5a50 | "
+    },
+    {
+      "function": "install",
+      "args": "nine,0,A.DLL,A.DLL,9",
+      "result": "7|temp.000|9"
+    },
+    {
+      "function": "left",
+      "args": "nine",
+      "result": "A.DLL:2304:5ad8 C.DLL:2304:5a50 TEMP.000:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "eight,0,A.DLL,A.DLL,8",
+      "result": "40006||9"
+    },
+    {
+      "function": "left",
+      "args": "eight",
+      "result": "A.DLL:2304:5ad8 C.DLL:2304:5a50 TEMP.000:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "taken,0,A.DLL,A.DLL,64",
+      "result": "7|temp.002|9"
+    },
+    {
+      "function": "left",
+      "args": "taken",
+      "result": "A.DLL:2304:5ad8 TEMP.000:5:0540 TEMP.001:5:0540 TEMP.002:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "forcenone,1,A.DLL,A.DLL,64",
+      "result": "0|NONE.TMP|64"
+    },
+    {
+      "function": "left",
+      "args": "forcenone",
+      "result": "A.DLL:2304:5ad0 TEMP.000:5:0540 TEMP.001:5:0540 TEMP.002:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "curdir,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "curdir",
+      "result": "A.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "keepold,2,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "keepold",
+      "result": "A.DLL:2304:5ad0 | A.DLL:12:ca3f "
+    },
+    {
+      "function": "install",
+      "args": "curisdest,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "curisdest",
+      "result": "A.DLL:2304:5ad0 | A.DLL:12:ca3f "
+    },
+    {
+      "function": "install",
+      "args": "curlower,0,A.DLL,A.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "curlower",
+      "result": "A.DLL:2304:5ad0 | A.DLL:12:ca3f "
+    },
+    {
+      "function": "install",
+      "args": "rename,0,A.DLL,Z.DLL,64",
+      "result": "0||64"
+    },
+    {
+      "function": "left",
+      "args": "rename",
+      "result": "A.DLL:2304:5ad0 Z.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "install",
+      "args": "inuse,0,COMMDLG.DLL,COMMDLG.DLL,64",
+      "result": "80||64"
+    },
+    {
+      "function": "left",
+      "args": "inuse",
+      "result": "A.DLL:2304:5ad0 Z.DLL:2304:5ad0 | "
+    },
+    {
+      "function": "find",
+      "args": "inuse,0,COMMDLG.DLL",
+      "result": "3|C:\\WINDOWS\\SYSTEM|18|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "user,0,USER.EXE",
+      "result": "3|C:\\WINDOWS\\SYSTEM|18|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "user,1,USER.EXE",
+      "result": "2|C:\\WINDOWS\\SYSTEM|18|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "notepad,0,NOTEPAD.EXE",
+      "result": "0|C:\\WINDOWS|11|C:\\WINDOWS|11"
+    },
+    {
+      "function": "find",
+      "args": "notepad,1,NOTEPAD.EXE",
+      "result": "1|C:\\WINDOWS|11|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "notepadapp,0,NOTEPAD.EXE",
+      "result": "1|C:\\WINDOWS|11|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "a,0,A.DLL",
+      "result": "0|C:\\ORACLE\\VI\\DST|17|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "a,1,A.DLL",
+      "result": "1|C:\\ORACLE\\VI\\DST|17|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "lower,0,a.dll",
+      "result": "0|C:\\ORACLE\\VI\\DST|17|c:\\oracle\\vi\\dst|17"
+    },
+    {
+      "function": "find",
+      "args": "none,0,NONE.DLL",
+      "result": "1||1|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "none,1,NONE.DLL",
+      "result": "1||1|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "noapp,1,USER.EXE",
+      "result": "2|C:\\WINDOWS\\SYSTEM|18|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "nodest,0,USER.EXE",
+      "result": "2|C:\\WINDOWS\\SYSTEM|18|untouched|64"
+    },
+    {
+      "function": "find",
+      "args": "small,0,USER.EXE",
+      "result": "6|untouched|18|untouched|17"
+    },
+    {
+      "function": "find",
+      "args": "exact,0,USER.EXE",
+      "result": "3|C:\\WINDOWS\\SYSTEM|18|C:\\ORACLE\\VI\\DST|17"
+    },
+    {
+      "function": "find",
+      "args": "zero,0,NONE.DLL",
+      "result": "4|untouched|1|untouched|17"
+    },
+    {
+      "function": "find",
+      "args": "slash,0,A.DLL",
+      "result": "0|C:\\ORACLE\\VI\\DST|17|C:\\ORACLE\\VI\\DST|18"
+    },
+    {
+      "function": "find",
+      "args": "root,0,A.DLL",
+      "result": "1||1|C:|4"
+    },
+    {
+      "function": "find",
+      "args": "gdi,1,GDI.EXE",
+      "result": "2|C:\\WINDOWS\\SYSTEM|18|C:\\WINDOWS\\SYSTEM|18"
+    },
+    {
+      "function": "find",
+      "args": "cwd,0,HERE.DLL",
+      "result": "1|C:\\ORACLE\\VI\\CUR|17|C:\\ORACLE\\VI\\DST|17"
+    }
+  ]
+}

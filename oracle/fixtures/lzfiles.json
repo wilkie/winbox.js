@@ -1,0 +1,604 @@
+{
+  "probe": "lzfiles",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\TEXT.TXT"
+    },
+    {
+      "function": "name",
+      "args": "c:\\oracle\\lz\\text.tx_",
+      "result": "1|c:\\oracle\\lz\\text.txt"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\LOW.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\LOW.TXT"
+    },
+    {
+      "function": "name",
+      "args": "c:\\oracle\\lz\\low.tx_",
+      "result": "1|c:\\oracle\\lz\\low.txt"
+    },
+    {
+      "function": "name",
+      "args": "1:\\ORACLE\\LZ\\LOW.TX_",
+      "result": "-1|untouched"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\NOEXT._",
+      "result": "1|C:\\ORACLE\\LZ\\NOEXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\ODD.X_",
+      "result": "1|C:\\ORACLE\\LZ\\ODD.XY"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\DIGIT.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\DIGIT.TX1"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\BIG.DA_",
+      "result": "1|C:\\ORACLE\\LZ\\BIG.DAT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\ALGB.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\ALGB.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\BADSIG.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\BADSIG.TX_"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\CUT.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\CUT.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT",
+      "result": "1|C:\\ORACLE\\LZ\\PLAIN.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\SMALL.TXT",
+      "result": "1|C:\\ORACLE\\LZ\\SMALL.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\EMPTY.TXT",
+      "result": "1|C:\\ORACLE\\LZ\\EMPTY.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\HEAD.TX_",
+      "result": "1|C:\\ORACLE\\LZ\\HEAD.TXT"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\LZ\\NONE.TX_",
+      "result": "-1|untouched"
+    },
+    {
+      "function": "name",
+      "args": "C:\\ORACLE\\NOWHERE\\X.TX_",
+      "result": "-1|untouched"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_,0000",
+      "result": "lz0|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,0000",
+      "result": "lz1|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,0040",
+      "result": "lz2|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,0020",
+      "result": "lz3|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,4000",
+      "result": "6|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_,0002",
+      "result": "6|29|0|C:\\ORACLE\\LZ\\TEXT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT,0000",
+      "result": "6|30|0|C:\\ORACLE\\LZ\\PLAIN.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TX,0000",
+      "result": "-1|204|2|C:\\ORACLE\\LZ\\PLAIN.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\SMALL.TXT,0000",
+      "result": "6|30|0|C:\\ORACLE\\LZ\\SMALL.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\EMPTY.TXT,0000",
+      "result": "6|30|0|C:\\ORACLE\\LZ\\EMPTY.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\ALGB.TXT,0000",
+      "result": "-8|29|0|C:\\ORACLE\\LZ\\ALGB.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\BADSIG.TX_,0000",
+      "result": "6|31|0|C:\\ORACLE\\LZ\\BADSIG.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\NOEXT,0000",
+      "result": "lz4|28|0|C:\\ORACLE\\LZ\\NOEXT._"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\NONE.TXT,0000",
+      "result": "-1|204|2|C:\\ORACLE\\LZ\\NONE.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\NOWHERE\\NONE.TXT,0000",
+      "result": "-1|204|3|C:\\ORACLE\\NOWHERE\\NONE.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\DIGIT.TXX,0000",
+      "result": "lz5|30|0|C:\\ORACLE\\LZ\\DIGIT.TX_"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\NEW.TXT,1000",
+      "result": "6|28|0|C:\\ORACLE\\LZ\\NEW.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\NEW.TXT,0200",
+      "result": "6|28|0|C:\\ORACLE\\LZ\\NEW.TXT"
+    },
+    {
+      "function": "open",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,0100",
+      "result": "0|29|0|C:\\ORACLE\\LZ\\TEXT.TXT"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,1",
+      "result": "20000|20000|20000|39c9|1x20000 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,7",
+      "result": "20000|20000|20000|f0f1|7x2857 1x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,100",
+      "result": "20000|20000|20000|8aac|100x200 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,1024",
+      "result": "20000|20000|20000|bc0c|1024x19 544x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,1025",
+      "result": "20000|20000|20000|1594|1025x19 525x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,4096",
+      "result": "20000|20000|20000|7dae|4096x4 3616x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,30000",
+      "result": "20000|20000|20000|52f0|20000x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,512",
+      "result": "3000|3000|3000|4c20|512x5 440x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\RUNS.BIN,100",
+      "result": "756|756|756|fb9a|100x7 56x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\LIT.DAT,64",
+      "result": "700|700|700|e31f|64x10 60x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT,600",
+      "result": "1500|1500|1500|0de2|600x2 300x1 0x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\CUT.TXT,100",
+      "result": "900|900|3000|3ec5|100x9 -3x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\CUT.TXT,3000",
+      "result": "0|0|3000|0000|-3x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\HEAD.TXT,50",
+      "result": "0|0|3000|0000|-3x1"
+    },
+    {
+      "function": "read",
+      "args": "C:\\ORACLE\\LZ\\BADSIG.TX_,100",
+      "result": "728|1|3000|1144|100x7 28x1 0x1"
+    },
+    {
+      "function": "seek",
+      "args": "0,1,10",
+      "result": "0|10|10|0d0a7468"
+    },
+    {
+      "function": "seek",
+      "args": "15000,0,100",
+      "result": "15000|100|100|696e646f"
+    },
+    {
+      "function": "seek",
+      "args": "0,1,100",
+      "result": "15100|100|100|67207175"
+    },
+    {
+      "function": "seek",
+      "args": "100,0,100",
+      "result": "100|100|100|7773206c"
+    },
+    {
+      "function": "seek",
+      "args": "-50,1,100",
+      "result": "150|100|100|78207175"
+    },
+    {
+      "function": "seek",
+      "args": "-100,2,200",
+      "result": "19900|100|100|200d0a66"
+    },
+    {
+      "function": "seek",
+      "args": "0,2,10",
+      "result": "20000|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "10,2,10",
+      "result": "20010|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "19999,0,10",
+      "result": "19999|1|1|78000000"
+    },
+    {
+      "function": "seek",
+      "args": "5000,0,2000",
+      "result": "5000|2000|2000|6c617a79"
+    },
+    {
+      "function": "seek",
+      "args": "4000,0,2000",
+      "result": "4000|2000|2000|646f6720"
+    },
+    {
+      "function": "seek",
+      "args": "6990,0,20",
+      "result": "6990|20|20|20746865"
+    },
+    {
+      "function": "seek",
+      "args": "7000,0,20",
+      "result": "7000|20|20|726f776e"
+    },
+    {
+      "function": "seek",
+      "args": "-1,0,10",
+      "result": "-7|10|0|0d0a6272"
+    },
+    {
+      "function": "seek",
+      "args": "-30000,1,10",
+      "result": "-7|10|0|69636b20"
+    },
+    {
+      "function": "seek",
+      "args": "0,3,10",
+      "result": "-7|10|0|67206f76"
+    },
+    {
+      "function": "seek",
+      "args": "0,-1,10",
+      "result": "-7|10|0|72207468"
+    },
+    {
+      "function": "seek",
+      "args": "12345,0,-1",
+      "result": "12345|0|0|00207468"
+    },
+    {
+      "function": "seek",
+      "args": "12,0,0",
+      "result": "12|0|0|00207468"
+    },
+    {
+      "function": "seek",
+      "args": "70000,0,10",
+      "result": "70000|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "0,1,10",
+      "result": "0|10|10|666f7820"
+    },
+    {
+      "function": "seek",
+      "args": "700,0,100",
+      "result": "700|100|100|20717569"
+    },
+    {
+      "function": "seek",
+      "args": "-10,2,100",
+      "result": "1490|10|10|20202020"
+    },
+    {
+      "function": "seek",
+      "args": "0,2,10",
+      "result": "1500|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "2000,0,10",
+      "result": "2000|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "-1,0,10",
+      "result": "1500|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "0,3,10",
+      "result": "-1|0|0|00000000"
+    },
+    {
+      "function": "seek",
+      "args": "5,0,-1",
+      "result": "5|0|0|00000000"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_",
+      "result": "6|lz4|14"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT",
+      "result": "6|6|0"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\SMALL.TXT",
+      "result": "6|6|0"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\EMPTY.TXT",
+      "result": "6|6|0"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\ALGB.TX_",
+      "result": "6|-8|14"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\BADSIG.TX_",
+      "result": "6|6|0"
+    },
+    {
+      "function": "init",
+      "args": "C:\\ORACLE\\LZ\\HEAD.TX_",
+      "result": "6|lz5|14"
+    },
+    {
+      "function": "init",
+      "args": "40",
+      "result": "-1"
+    },
+    {
+      "function": "init",
+      "args": "lz",
+      "result": "-1"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_,0,0",
+      "result": "6|3000|3000|3000|fff5"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\BIG.DA_,0,0",
+      "result": "6|20000|20000|20000|52f0"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\RUNS.BI_,0,1",
+      "result": "6|756|756|756|011f"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\LIT.DA_,0,0",
+      "result": "6|700|700|700|c8d9"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT,0,0",
+      "result": "6|1500|1500|1500|bbeb"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\SMALL.TXT,0,0",
+      "result": "6|5|5|0|055c"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\EMPTY.TXT,0,0",
+      "result": "6|0|0|0|0000"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\CUT.TX_,0,0",
+      "result": "6|-3|0|0|0000"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\ALGB.TX_,0,0",
+      "result": "6|-8|0|0|0000"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\HEAD.TX_,0,0",
+      "result": "6|-3|0|0|0000"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\BADSIG.TX_,0,0",
+      "result": "6|728|728|0|29db"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TXT,1,0",
+      "result": "lz7|3000|3000|3000|fff5"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\BIG.DAT,2,1",
+      "result": "lz8|20000|20000|20000|52f0"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\PLAIN.TXT,1,0",
+      "result": "6|1500|1500|1500|bbeb"
+    },
+    {
+      "function": "copy",
+      "args": "badout",
+      "result": "-2"
+    },
+    {
+      "function": "copy",
+      "args": "lz15",
+      "result": "-1"
+    },
+    {
+      "function": "copy",
+      "args": "45",
+      "result": "-1"
+    },
+    {
+      "function": "handles",
+      "args": "18",
+      "result": "409 40a 40b 40c 40d 40e 40f 400 401 402 403 404 405 406 407 408 fffb fffb "
+    },
+    {
+      "function": "handles",
+      "args": "again",
+      "result": "40c 402 "
+    },
+    {
+      "function": "handles",
+      "args": "after",
+      "result": "403"
+    },
+    {
+      "function": "bad",
+      "args": "fffb",
+      "result": "-1|-1"
+    },
+    {
+      "function": "bad",
+      "args": "40f",
+      "result": "-6|-6"
+    },
+    {
+      "function": "bad",
+      "args": "410",
+      "result": "-1|-1"
+    },
+    {
+      "function": "bad",
+      "args": "7fff",
+      "result": "-1|-1"
+    },
+    {
+      "function": "bad",
+      "args": "32",
+      "result": "-1|-1"
+    },
+    {
+      "function": "start",
+      "args": "twice",
+      "result": "1|1"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\TEXT.TX_,0,0",
+      "result": "6|3000|3000|3000|fff5"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\RUNS.BI_,0,0",
+      "result": "6|756|756|756|011f"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\ORACLE\\LZ\\LIT.DA_,0,0",
+      "result": "6|700|700|700|c8d9"
+    }
+  ]
+}
