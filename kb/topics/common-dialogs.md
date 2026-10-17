@@ -191,7 +191,7 @@ The registration point is one entry per export, in each engine:
 
 Helpers both engines keep for the dialogs: the far address of an export WinBox answers (`procAddress`, `proc_address`), the extended error (`setError`, `set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`callHook`, `call_hook`), the wait cursor (`waitCursor`, `wait_cursor`) and the registered messages (`message`).
 
-**How a dialog calls USER, GDI and KERNEL.** In Rust there is one way: each call is made as a program makes it, its arguments pushed below the stack and the function that answers a program's call run, through `api.rs` (`guest_calls.rs` gives Find, Replace and Color the shape the file dialogs have). In TypeScript there are two: the file dialogs, Font and Print go through `api.ts` in the same way, while Find, Replace and Color call the exports' functions directly, as SHELL's About box does. Both reach the same USER, so both show USER's quirks as COMMDLG's code would.
+**How a dialog calls USER, GDI and KERNEL.** Both engines make every call as a program makes it: its arguments pushed below the stack, its structures and strings laid out below them and read back after, and the function that answers a program's call run, through `api.ts` and `api.rs` (`guest-calls.ts` and `guest_calls.rs` give Find, Replace and Color the shape the file dialogs have). So the two engines make the same calls in the same order, and both show USER's quirks as COMMDLG's code would.
 
 ## Not yet done
 

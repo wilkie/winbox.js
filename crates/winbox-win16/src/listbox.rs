@@ -98,6 +98,7 @@ const VK_RIGHT: u16 = 0x27;
 const VK_DOWN: u16 = 0x28;
 
 const WS_VSCROLL: u32 = 0x0020_0000;
+const WS_HSCROLL: u32 = 0x0010_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
 
 /// What a list box keeps beyond its strings, which are the control's
@@ -370,6 +371,15 @@ impl System {
             )
         };
         let has = style & WS_VSCROLL != 0;
+
+        // Made with neither scroll bar, it never has one (seg38 `00ea`
+        // keeps whether `WS_VSCROLL` or `WS_HSCROLL` was given, seg43
+        // `0019` leaves at once without). **Recorded** by `lbtext`: a list
+        // box of style nought, a row showing and two items, keeps its whole
+        // width.
+        if own & (WS_VSCROLL | WS_HSCROLL) == 0 {
+            return Ok(());
+        }
 
         if own & LBS_DISABLENOSCROLL != 0 {
             let flags = if visible { 0 } else { 3 };

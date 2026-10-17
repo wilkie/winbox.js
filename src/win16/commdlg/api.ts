@@ -231,6 +231,19 @@ export async function listText(
   return stringOf(await sendItemBytes(system, dialog, id, message, index, buffer(256)));
 }
 
+/** A rectangle, or a point, as the little-endian words of a `RECT` or `POINT`. */
+export const rectBytes = (sides: number[]) =>
+  sides.flatMap((side) => [side & 0xff, (side >> 8) & 0xff]);
+
+/** The four signed words of a `RECT`. */
+export const rectOf = (bytes: number[]): [number, number, number, number] =>
+  [0, 1, 2, 3].map((i) => ((bytes[i * 2] | (bytes[i * 2 + 1] << 8)) << 16) >> 16) as [
+    number,
+    number,
+    number,
+    number,
+  ];
+
 /** A string's bytes, a character to a byte. */
 export const bytesOf = (value: string) => Array.from(value, (c) => c.charCodeAt(0) & 0xff);
 

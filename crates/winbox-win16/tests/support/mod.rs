@@ -168,6 +168,9 @@ pub const AGREEING: &[&str] = &[
     "lzfiles",
     "verinfo",
     "verinst",
+    "chfont3",
+    "chfontpr",
+    "lbtext",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

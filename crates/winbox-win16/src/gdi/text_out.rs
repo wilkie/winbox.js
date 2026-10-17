@@ -554,8 +554,13 @@ impl Writer {
     ///
     /// The characters are drawn one at a time, each aligned again by its
     /// own width as the TypeScript engine aligns it, and without an array
-    /// each moves the pen by its own measure, a bold's or a slant's overhang
-    /// included.
+    /// each moves the pen by its own measure less the run's overhang -- the
+    /// advance a whole run gives it. `VGA.DRV`'s `StrBlt` lays a smeared
+    /// font's glyphs out with no array by adding its bold pixel to the
+    /// character extra (seg2 `0970`), a column a glyph, and the overhang
+    /// once, past the run. **Recorded** by `lbtext`: MS Sans Serif asked
+    /// bold, through `ExtTextOut` with `ETO_OPAQUE`, is laid out as
+    /// `TextOut` lays it, in a window's DC and an owner-drawn list's.
     pub(crate) fn ext_text(
         &mut self,
         x: i64,
@@ -602,6 +607,11 @@ impl Writer {
             );
         }
 
+        let overhang = match dx {
+            Some(_) => 0,
+            None => self.measure(&[])?.0,
+        };
+
         self.run_only = true;
 
         let mut pen = x;
@@ -618,7 +628,7 @@ impl Writer {
                 Some(dx) => Ok(dx.get(index).copied().unwrap_or(0) + self.char_extra),
                 None => self
                     .measure(&[code])
-                    .map(|(width, _)| width + self.char_extra),
+                    .map(|(width, _)| width - overhang + self.char_extra),
             };
 
             match along {

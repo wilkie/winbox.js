@@ -103,7 +103,7 @@ The Color dialog showed three of USER's ways that the engines did not follow:
 ## In WinBox
 
 - `src/win16/commdlg/choose-color.ts`, `colour-math.ts` and `guest-calls.ts`; `crates/winbox-win16/src/commdlg/choose_color.rs`, `colour_math.rs` and `guest_calls.rs`. The procedure and `WantArrows` are `COMMDLG`'s exports 8 and 25, given to USER and to `SetWindowLong` at their stubs' addresses.
-- In Rust, each call the dialog makes into USER, GDI and KERNEL is made as a program makes it, through `api.rs`. In TypeScript it calls the exports' functions directly ([[topic:common-dialogs]]).
+- Each call the dialog makes into USER, GDI and KERNEL is made as a program makes it, through `api.ts` and `api.rs`, in the same order in both engines ([[topic:common-dialogs]]).
 - The template and the 48 basic colours are `COMMDLG`'s, kept as WinBox's own (`templates.ts`, `templates.rs`).
 - [[measured]] [[probe:choosclr]], 4,011 of 4,011 records, agrees in both engines, run whole.
 

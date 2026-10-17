@@ -66,13 +66,30 @@ export function GetCharWidth(hdc, wFirstChar, wLastChar, lpBuffer) {
    */
   const horizontal = font instanceof LogicalFont ? (font.widthScale ?? 1) : 1;
 
+  /* And a strike's simulations on top, each width alike. The display
+   * driver's `GetCharWidth` adds two to each where the text transform asks
+   * for a weight of 700 or more over a strike lighter than that -- the
+   * smear's pixel and its overhang (`VGA.DRV` seg1 `17f6`-`1815`, `18af`);
+   * GDI's then adds a slant's overhang, half the height less one, where the
+   * device cannot slant (`GDI.EXE` seg3 `216f`-`218e`; the VGA's `TEXTCAPS`
+   * lacks `TC_IA_ABLE`). **Recorded** by `lbtext`: MS Sans Serif at 11
+   * points' 13 rows answers 6 for '1', 8 in bold, 12 in italic and 14 in
+   * both -- each what a string of the one character measures. */
+  const strike = font instanceof LogicalFont && !outline && !font.isVector ? font : null;
+  const simulated = strike
+    ? (strike.emboldens ? 2 : 0) +
+      (strike.style.italic
+        ? Math.floor((strike.entry.header.dfPixHeight * strike.scale - 1) / 2)
+        : 0)
+    : 0;
+
   for (let code = wFirstChar; code <= wLastChar; code++) {
     cpu.write16(
       segment,
       offset,
       outline
         ? outline.outlineAdvance(code)
-        : Math.round(entry.characterEntryFor(code).width * horizontal)
+        : Math.round(entry.characterEntryFor(code).width * horizontal) + simulated
     );
     offset += 2;
   }

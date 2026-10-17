@@ -18223,6 +18223,19 @@ background mode is 2) GDI sums the same widths into the text's box and
 passes it as the opaque rectangle with `ETO_OPAQUE` (`63b9`–`64d2`). That is
 the rectangle `0744` stops at.
 
+**And the widths a program asks for carry it.** `VGA.DRV`'s `GetCharWidth`
+(seg1 `17dc`) adds **two** to every width where `txfWeight` is at least 700
+and the font's `dfWeight` below it (`17f6`-`1815`, added at `18af`): the
+smear's pixel and its overhang. GDI's `GetCharWidth` (seg3 `2098`) adds two
+itself only where the device lacks `TC_EA_DOUBLE`, and a slant's half height
+less one where it lacks `TC_IA_ABLE` (`2148`-`218e`), which the VGA does. So
+MS Sans Serif's 13-row strike answers 6 for '1' plain, 8 bold, 12 italic and
+14 both -- what `GetTextExtent` answers for the one character (`lbtext`).
+Without an array the driver lays a strike's run out as `0970` says whatever
+`ExtTextOut`'s options are, so `ETO_OPAQUE` and a rectangle lay a smeared
+string out exactly as `TextOut` does (`lbtext`); drawing such a run a glyph
+at a time, each glyph's pen moves by its measure less the run's overhang.
+
 The same test explains the Hercules. Its `TEXTCAPS` lacks `TC_EA_DOUBLE`,
 so its widths get no bold pixel and its driver no double-weight request. The
 accelerator bit the driver cannot do is left for GDI (`35a9`–`3748`, into

@@ -905,6 +905,16 @@ impl Engine {
     }
 
     /// The focus leaving for a window not its own (seg33 `11b2`).
+    ///
+    /// Its own is a child of its, by `IsChild` (seg33 `040e`, seg1
+    /// `1bd3`): its edit control or its list, not the combo box itself.
+    /// The focus given to the combo box from its own edit control -- a
+    /// mnemonic of the dialog's, `WM_NEXTDLGCTL` -- is lost, the text's
+    /// selection taken away, and gained again as the combo box hands it
+    /// back to its edit control, which selects all of the text.
+    /// **Recorded** by `chfontpr`: Alt and F in the Font dialog's faces,
+    /// then a name typed, replaces the name there; kept as its own, the
+    /// engines ran the two names together.
     async fn combo_lose_focus(&self, index: usize, to: u16) -> Result<(), Stop> {
         let Some(combo) = self.system().combo_of(index) else {
             return Ok(());
@@ -916,7 +926,10 @@ impl Engine {
 
         {
             let system = self.system();
-            let mut other = system.window_named(to);
+            let mut other = system
+                .window_named(to)
+                .and_then(|at| system.windows[at].as_ref())
+                .and_then(|window| window.parent);
 
             while let Some(at) = other {
                 if at == index {
@@ -1066,7 +1079,7 @@ impl Engine {
         self.send_message(combo.list_box, WM_SETFONT, font, &mut Param::Value(0))
             .await?;
 
-        let (field, place) = {
+        let (field, list, place) = {
             let mut system = self.system();
             let field_height = if combo.owner_draw {
                 combo.field_height
@@ -1093,7 +1106,7 @@ impl Engine {
             state.field = field;
             state.button = button;
             state.list = list;
-            (field, (left, top, width, field_height))
+            (field, list, (left, top, width, field_height))
         };
 
         let edit = if combo.edit == 0 {
@@ -1108,6 +1121,24 @@ impl Engine {
 
             self.system()
                 .place_window(edit, left + fl, top + ft, fr - fl, fb - ft)?;
+        }
+
+        // The list moved to its place in the new layout, whatever the kind
+        // (seg34 `0539`-`0552`, `MoveWindow` of `[si+1Eh]`), and so made a
+        // whole number of the new font's rows high, as a list box is on
+        // `WM_SIZE`. **Recorded** by `lbtext`: a simple combo box 87 high,
+        // given MS Sans Serif in bold, has its list 67 high, five rows of
+        // 13 inside its border, where the System font's rows had made it
+        // 50; `chfont3`: the Font dialog's styles' list shows all four.
+        let list_index = self.system().window_named(combo.list_box);
+
+        if let Some(list_index) = list_index {
+            let [ll, lt, lr, lb] = list;
+            let (left, top, _, _) = place;
+            let mut system = self.system();
+
+            system.place_window(list_index, left + ll, top + lt, lr - ll, lb - lt)?;
+            system.integral_height(list_index)?;
         }
 
         self.close_up(index, false, false).await?;
@@ -1215,6 +1246,27 @@ impl Engine {
                 1
             }
             CB_GETDROPPEDSTATE => u32::from(combo.dropped),
+            // The combo box's rectangle as it was made, its list's height
+            // and all, on the screen at the window's corner (seg33 `051b`):
+            // `CopyRect` of the rectangle kept as it was made, then
+            // `SetRect` from the window's corner by its size; 1.
+            // **Recorded** by `lbtext`: a drop-down 87 high, 20 since its
+            // font, answers its corner and 87 down.
+            CB_GETDROPPEDCONTROLRECT => {
+                let mut system = self.system();
+
+                if let (Param::Value(far), Some((left, top, width, _))) =
+                    (&*lparam, system.place_of(hwnd))
+                {
+                    crate::window_queries::write_rect(
+                        &mut system,
+                        *far,
+                        [left, top, left + width, top + combo.height],
+                    );
+                }
+
+                1
+            }
             CB_GETEDITSEL => {
                 if combo.edit == 0 {
                     0xffff_ffff

@@ -1351,6 +1351,16 @@ export class Surface {
       this.context.fillRect(x + box.left, y, box.right - box.left, box.height);
     }
 
+    /* Without an array, each character moves the pen by its own measure
+     * less the run's overhang -- the advance a whole run gives it.
+     * `VGA.DRV`'s `StrBlt` lays a smeared font's glyphs out with no array by
+     * adding its bold pixel to the character extra (seg2 `0970`), a column a
+     * glyph, and the overhang once, past the run. **Recorded** by `lbtext`:
+     * MS Sans Serif asked bold, through `ExtTextOut` with `ETO_OPAQUE`, is
+     * laid out as `TextOut` lays it, in a window's DC and an owner-drawn
+     * list's. */
+    const overhang = dx ? 0 : this._font.measure('').width;
+
     this._runOnly = true;
 
     let pen = x;
@@ -1359,7 +1369,7 @@ export class Surface {
       this.fillText(pen, y, characters[index]);
       pen += dx
         ? dx[index] + this.charExtra
-        : this._font.measure(characters[index]).width + this.charExtra;
+        : this._font.measure(characters[index]).width - overhang + this.charExtra;
     }
 
     this._runOnly = false;

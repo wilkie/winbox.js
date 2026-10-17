@@ -2,7 +2,7 @@
 kind: topic
 name: List boxes
 summary: How Windows 3.1's list box sizes itself, sorts and finds its items, draws and moves its selection and focus, scrolls, and talks to an owner that draws its items — read out of USER.EXE and measured on four displays.
-probes: [listbox, filedlg, mldlg]
+probes: [listbox, filedlg, mldlg, lbtext]
 ---
 
 [[measured]] [[probe:listbox]] makes three list boxes in the System font and records them on the VGA, Super VGA, EGA and Hercules:
@@ -33,6 +33,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 ## Drawing
 
+- [[measured]] [[probe:lbtext]]: MS Sans Serif asked bold, the regular strike the display driver smears, is laid out in a list box's rows as in a window's DC: drawn by the list box itself, or by its owner with `ExtTextOut`, `ETO_OPAQUE` and the row's rectangle, as COMMDLG draws its Font dialog's faces and sizes. The list's DC is no different; the engines' `ExtTextOut` had laid each smeared glyph a column further on than `TextOut` (see [[fn:GDI.ExtTextOut]]).
 - [[read out]] Each row's text is two pixels in. A selected row is filled in the highlight colour, its text in the highlight text colour. Painting draws an unselected item's text on its own cell over what the erase left; redrawing one item as its selection changes fills its whole row first (seg35 `069a`, `1096`).
 - [[read out]] Scrolling moves what shows by whole rows, as `ScrollWindow` does, and draws only the rows it uncovers (seg35 `16f9`).
 - [[measured]] While the list box has the focus, a dotted rectangle is inverted over the caret's row, even with nothing selected. Its pixels are those whose client coordinates add to an odd number. A corner, on two sides, is inverted twice and shows unchanged.
@@ -42,6 +43,7 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 - [[measured]] Down, Page Down and End move the selection and scroll just enough to show it. A typed character finds the next item it begins, after the caret. A click selects the row under it.
 - [[read out]] A page is a row less than show. The first arrow pressed with nothing selected selects the caret's item.
+- [[read out]] A list box made with neither `WS_VSCROLL` nor `WS_HSCROLL` never has a scroll bar: making it keeps whether it was given either (seg38 `00ea`), and the scroll bar's update leaves at once without (seg43 `0019`). [[measured]] [[probe:lbtext]]: a list box of style nought, one row showing and two items, keeps its whole width. Both engines had shown it a scroll bar.
 - [[read out]] The scroll bar shows while the list is scrolled or does not fit. Its position is the top over the furthest the top can go, as a percentage rounded as `MulDiv` rounds, in the window's range of 0 to 100. [[measured]] Tops of 5, 6, 9 and 3 of 14 items with 5 showing give 56, 67, 100 and 33.
 
 ## Notifications

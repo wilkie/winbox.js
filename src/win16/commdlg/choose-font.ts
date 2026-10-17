@@ -1,6 +1,6 @@
 'use strict';
 
-import { Arg, B, D, W, api, buffer, stringOf, text } from './api.js';
+import { Arg, B, D, W, api, buffer, rectBytes, rectOf, stringOf, text } from './api.js';
 import {
   callHook,
   instance,
@@ -311,11 +311,6 @@ function format(textBytes: number[], numbers: number[]): number[] {
 }
 
 const digits = (value: number) => Array.from(String(s16(value)), (c) => c.charCodeAt(0));
-
-const rectBytes = (r: Rect) => r.flatMap((side) => [side & 0xff, (side >> 8) & 0xff]);
-
-const rectOf = (b: number[]): Rect =>
-  [0, 1, 2, 3].map((i) => s16(b[i * 2] | (b[i * 2 + 1] << 8))) as Rect;
 
 const lfWord = (lf: number[], step: number) => lf[step] | (lf[step + 1] << 8);
 
@@ -1270,7 +1265,7 @@ async function choose(system: any, lpcf: number) {
 
   /* The template let go unless it was the program's handle (`0147`). */
   if (own) {
-    freeTemplate(system, handle);
+    await freeTemplate(system, handle);
   } else if (!(flags & CF_ENABLETEMPLATEHANDLE)) {
     await call(system, 'KERNEL', 'FreeResource', [W(handle)]);
   }
