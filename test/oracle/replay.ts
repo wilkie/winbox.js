@@ -5581,6 +5581,29 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
+  /* COMMDLG's Print dialog asks GDI for an information context of the
+   * printer as it starts (`COMMDLG.DLL` seg3 `1631`), and `PD_RETURNDC` and
+   * `PD_RETURNIC` ask for a device context (seg3 `3026`, `3068`). The
+   * engines' GDI makes contexts for the display and for WinBox's own
+   * printer, not for a Windows printer driver such as `vgaprint`'s
+   * PostScript driver, which the run puts on the drive and COMMDLG loads
+   * and asks for its DEVMODE as Windows does: `CreateIC` answers nought, the
+   * dialog ends with PDERR_CREATEICFAILURE (seg3 `172b`), and the steps of
+   * the Print dialog, Setup from it, and its boxes never come. Print Setup
+   * alone, every refusal and the driver's own answers agree. */
+  'prdlg:print': 'no Print dialog: GDI makes no IC for a Windows printer driver (140 of 140)',
+  'prdlg:setup':
+    'no Print Setup from the Print dialog: GDI makes no IC for a printer driver (21 of 144)',
+  'prdlg:box': "no Print dialog, so none of its boxes: GDI's IC for a printer driver (11 of 13)",
+  'prdlg:focus': "no Print dialog: GDI's IC for a printer driver (7 of 15)",
+  'prdlg:help': "no Print dialog to ask for Help: GDI's IC for a printer driver (1 of 2)",
+  'prdlg:hook':
+    "no Print dialog to give its hooks WM_INITDIALOG: GDI's IC for a printer driver (2 of 3)",
+  'prdlg:text': "no Print dialog to type into: GDI's IC for a printer driver (1 of 1)",
+  'prdlg:result':
+    'PDERR_CREATEICFAILURE, and no DC for PD_RETURNDC or PD_RETURNIC: GDI makes no IC or DC for a printer driver (5 of 9)',
+  'prdlg:devnames': "the Print dialog's DEVNAMES as left by a dialog that never came (2 of 9)",
+  'prdlg:devmode': "the Print dialog's DEVMODE as left by a dialog that never came (2 of 9)",
 };
 
 /**
@@ -5848,6 +5871,7 @@ const RUN_WHOLE = new Set<string>([
   'ofnopen',
   'pmatom',
   'chfont',
+  'prdlg',
 ]);
 
 /**
@@ -5912,7 +5936,8 @@ const BOX_KEYS: Record<string, string[][]> = {
  * `profhold` waits for DOS's clock to step on its two seconds, between
  * writes whose files are stamped by it.
  * `findrepl` and `choosclr` take a step at each of a timer's ticks, and
- * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`.
+ * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`;
+ * `prdlg` takes its steps and presses its keys the same way.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5933,6 +5958,7 @@ const VIRTUAL_CLOCK = new Set([
   'profhold',
   'findrepl',
   'choosclr',
+  'prdlg',
 ]);
 
 /**

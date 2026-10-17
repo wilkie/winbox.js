@@ -102,6 +102,9 @@ export class MemoryFile {
 /** Probes recorded with a printer installed (`--display vgaprint`). */
 const PRINTING = new Set(['printing']);
 
+/** Probes that load the `vgaprint` installation's printer driver. */
+const PRINTER_DRIVER = new Set(['prdlg']);
+
 /** An empty drive: only its root, with nothing in it; removable, with no disk, for A:. */
 function emptyDrive(removable: boolean) {
   const root = {
@@ -296,6 +299,29 @@ export async function runProbe(
     await fileSystem.map(
       ['WINDOWS', `${name.toUpperCase()}D.DLL`],
       new DataView(new Uint8Array(readFileSync(library)).buffer)
+    );
+  }
+
+  /* A probe of COMMDLG's print dialogs, recorded on the installation with a
+   * printer (`vgaprint`), finds that printer's driver where Setup put it:
+   * the dialogs load it by name and ask it for its DEVMODE and what it can
+   * do. The probe writes the printer into WIN.INI itself (`prdlg.c`). */
+  const printerDriver = join(
+    __dirname,
+    '..',
+    '..',
+    'oracle',
+    'build',
+    'drive-c-vgaprint',
+    'WINDOWS',
+    'SYSTEM',
+    'PSCRIPT.DRV'
+  );
+
+  if (installation && PRINTER_DRIVER.has(name) && existsSync(printerDriver)) {
+    await fileSystem.map(
+      ['WINDOWS', 'SYSTEM', 'PSCRIPT.DRV'],
+      new DataView(new Uint8Array(readFileSync(printerDriver)).buffer)
     );
   }
 

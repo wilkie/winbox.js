@@ -565,6 +565,20 @@ impl Setup {
             ));
         }
 
+        // A probe of COMMDLG's print dialogs, recorded on the installation
+        // with a printer (`vgaprint`), finds that printer's driver where
+        // Setup put it, as the TypeScript engine's run puts it
+        // (`run-probe.ts`): the dialogs load it by name and ask it for its
+        // DEVMODE and what it can do. The probe writes the printer into
+        // `WIN.INI` itself (`prdlg.c`).
+        if probe == "prdlg"
+            && let Ok(bytes) = std::fs::read(
+                root().join("oracle/build/drive-c-vgaprint/WINDOWS/SYSTEM/PSCRIPT.DRV"),
+            )
+        {
+            placed.push(("WINDOWS\\SYSTEM\\PSCRIPT.DRV".to_string(), bytes));
+        }
+
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
         // `[drivers]` in their place, as the card they recorded: the Sound
