@@ -70,7 +70,7 @@
 use winbox_cpu::{AX, DS, DX, ES, SS};
 use winbox_machine::{handle_for, index_for};
 
-use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::call::{Answer, Args, Async, Implementation, Later, Stop};
 use crate::engine::{Engine, GuestArg, Register};
 use crate::fonts::LogFont;
 use crate::handles::{Kind, Object};
@@ -296,8 +296,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "CreateMetafile" => Implementation::Sync(create_metafile_call),
         "CloseMetafile" => Implementation::Sync(close_metafile_call),
-        "PlayMetafile" => Implementation::Sync(play_metafile_call),
-        "PlayMetafileRecord" => Implementation::Sync(play_metafile_record_call),
+        "PlayMetafile" => Implementation::Async(play_metafile),
+        "PlayMetafileRecord" => Implementation::Async(play_metafile_record),
         "EnumMetafile" => Implementation::Async(enum_metafile),
         "GetMetafileBits" => Implementation::Sync(get_metafile_bits_call),
         "SetMetafileBits" | "SetMetafileBitsBetter" => Implementation::Sync(set_metafile_bits_call),
@@ -1005,10 +1005,128 @@ fn logfont_of(system: &System, far: u32, size: u32) -> LogFont {
 }
 
 /// Plays one record at `far` into a device context, its objects in
-/// `table`. Calls given only numbers are made again from the record's
+/// `table`, as `PlayMetaFileRecord` plays it (`GDI.EXE` seg19 `0826`): a
+/// call given only numbers is made through the function's own entry, its
+/// address asked of GDI by its ordinal and kept (`096c`-`09be`), with the
+/// record's words copied to the stack as its arguments (`13de`, `1c4b`-
+/// `1c6f`); the rest are made by the function a program calls. So on a
+/// printer driver's context each reaches the driver as a program's call
+/// does: a colour its `ColorInfo`, a pen or brush its `RealizeObject`, a
+/// figure its `Output` and text its `ExtTextOut`.
+async fn play_record(engine: &Engine, hdc: u16, far: u32, table: &mut Table) -> Result<(), Stop> {
+    let (function, driver) = {
+        let system = engine.system();
+
+        (
+            word_in(&system, far, 4),
+            super::printer_output::driver_of(&system, hdc),
+        )
+    };
+
+    if let Some(dc) = driver
+        && play_on_driver(engine, dc, hdc, far, function, table).await?
+    {
+        return Ok(());
+    }
+
+    let waiting = play_at_once(&mut engine.system(), hdc, far, table)?;
+
+    if let Some((answer, args)) = waiting {
+        answer(engine, args).await?;
+    }
+
+    Ok(())
+}
+
+/// A record whose call a printer driver's context answers through its
+/// driver, taken apart as `play_at_once` takes it and made so; false for
+/// any other, which is played as on any context.
+async fn play_on_driver(
+    engine: &Engine,
+    dc: usize,
+    hdc: u16,
+    far: u32,
+    function: u16,
+    table: &Table,
+) -> Result<bool, Stop> {
+    use super::printer_output as output;
+
+    let word = |at: u32| word_in(&engine.system(), far, at);
+    let signed = |at: u32| i32::from(word(at) as i16);
+
+    match function {
+        META_SELECTOBJECT => {
+            let slot = usize::from(word(6));
+            let handle = table.get(&engine.system(), slot);
+
+            output::select_object(engine, dc, hdc, handle).await?;
+        }
+        META_TEXTOUT => {
+            let count = word(6);
+            let after = 8 + ((u32::from(count) + 1) & !1);
+
+            output::driver_ext_text_out(
+                engine,
+                dc,
+                signed(after + 2),
+                signed(after),
+                0,
+                0,
+                far_at(far, 8),
+                count,
+            )
+            .await?;
+        }
+        META_EXTTEXTOUT => {
+            let count = word(10);
+            let options = word(12);
+            let has_rect = options & (ETO_OPAQUE | ETO_CLIPPED) != 0;
+            let start = 14 + if has_rect { 8 } else { 0 };
+            let rect = if has_rect { far_at(far, 14) } else { 0 };
+
+            output::driver_ext_text_out(
+                engine,
+                dc,
+                signed(8),
+                signed(6),
+                options,
+                rect,
+                far_at(far, start),
+                count,
+            )
+            .await?;
+        }
+        META_POLYGON | META_POLYLINE => {
+            let count = word(6) as i16;
+
+            if count >= 2 {
+                let points = output::points_at(&engine.system(), far_at(far, 8), count);
+
+                if function == META_POLYGON {
+                    output::driver_polygon(engine, dc, &points).await?;
+                } else {
+                    output::driver_polyline(engine, dc, &points).await?;
+                }
+            }
+        }
+        _ => return Ok(false),
+    }
+
+    Ok(true)
+}
+
+/// Plays one record at `far` into a device context at once, its objects
+/// in `table`. Calls given only numbers are made again from the record's
 /// words, as their stack was; the rest are taken apart as `record` put
 /// them together. A record of a function not known here is passed over.
-fn play_record(system: &mut System, hdc: u16, far: u32, table: &mut Table) -> Result<(), Stop> {
+/// A call given only numbers whose function takes its time is handed back
+/// with its arguments, to be made.
+fn play_at_once(
+    system: &mut System,
+    hdc: u16,
+    far: u32,
+    table: &mut Table,
+) -> Result<Option<(Async, Args)>, Stop> {
     let byte = |system: &System, at: u32| byte_in(system, far, at);
     let word = |system: &System, at: u32| word_in(system, far, at);
     let signed = |system: &System, at: u32| word_in(system, far, at) as i16;
@@ -1110,42 +1228,46 @@ fn play_record(system: &mut System, hdc: u16, far: u32, table: &mut Table) -> Re
                 super::shapes::polyline(system, hdc, points, count);
             }
         }
-        _ => play_by_stack(system, hdc, far, function)?,
+        _ => return play_by_stack(system, hdc, far, function),
     }
 
-    Ok(())
+    Ok(None)
 }
 
 /// A call given only numbers made again: its words are its stack, less the
-/// device context, read by the function as it reads its own.
-fn play_by_stack(system: &mut System, hdc: u16, far: u32, function: u16) -> Result<(), Stop> {
+/// device context, read by the function as it reads its own. One that
+/// answers at once is made here; one that takes its time -- a colour,
+/// which a printer driver's context asks its driver -- is handed back with
+/// its arguments, to be made.
+fn play_by_stack(
+    system: &mut System,
+    hdc: u16,
+    far: u32,
+    function: u16,
+) -> Result<Option<(Async, Args)>, Stop> {
     let Some(export) = Kept::named("GDI").and_then(|gdi| gdi.export(function & 0xff)) else {
-        return Ok(());
+        return Ok(None);
     };
 
     if !BY_STACK.contains(&export.name) {
-        return Ok(());
+        return Ok(None);
     }
 
-    let answer = match super::implementation(export.name) {
-        Some(Implementation::Sync(answer)) => answer,
-        Some(Implementation::Async(_)) => {
-            return Err(Stop::Unsupported(
-                "a metafile's record of a call that waits",
-            ));
-        }
-        None => {
-            return Err(Stop::Missing {
-                module: "GDI",
-                name: export.name,
-            });
-        }
-    };
     let base = system.base_of((far >> 16) as u16);
     let at = (far & 0xffff) + 6 + u32::from(export.pops).saturating_sub(2);
+    let mut args = Args::after_first(hdc, base, at);
 
-    answer(system, &mut Args::after_first(hdc, base, at))?;
-    Ok(())
+    match super::implementation(export.name) {
+        Some(Implementation::Sync(answer)) => {
+            answer(system, &mut args)?;
+            Ok(None)
+        }
+        Some(Implementation::Async(answer)) => Ok(Some((answer, args))),
+        None => Err(Stop::Missing {
+            module: "GDI",
+            name: export.name,
+        }),
+    }
 }
 
 /// A metafile's device context: in memory, or on disk where it is given a
@@ -1224,47 +1346,66 @@ fn close_metafile_call(system: &mut System, args: &mut Args) -> Result<Answer, S
 
 /// Plays a metafile into a device context; the objects it made are
 /// deleted after.
-fn play_metafile_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-    let hmf = args.word(system);
-    let Some(opened) = open_metafile(system, hmf)? else {
-        return Ok(Answer::Word(0));
-    };
-    let mut table = Table::Own(vec![0; usize::from(opened.objects)]);
+fn play_metafile(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, opened, records) = {
+            let mut system = engine.system();
+            let hdc = args.word(&system);
+            let hmf = args.word(&system);
+            let Some(opened) = open_metafile(&mut system, hmf)? else {
+                return Ok(Answer::Word(0));
+            };
+            let records = opened.records(&system);
 
-    for at in opened.records(system) {
-        play_record(system, hdc, far_at(opened.far, at), &mut table)?;
-    }
+            (hdc, opened, records)
+        };
+        let mut table = Table::Own(vec![0; usize::from(opened.objects)]);
 
-    opened.done(system);
-
-    if let Table::Own(handles) = table {
-        for handle in handles.into_iter().filter(|&handle| handle != 0) {
-            super::objects::delete_object(system, handle);
+        for at in records {
+            play_record(engine, hdc, far_at(opened.far, at), &mut table).await?;
         }
-    }
 
-    Ok(Answer::Word(1))
+        let mut system = engine.system();
+
+        opened.done(&mut system);
+
+        if let Table::Own(handles) = table {
+            for handle in handles.into_iter().filter(|&handle| handle != 0) {
+                super::objects::delete_object(&mut system, handle);
+            }
+        }
+
+        Ok(Answer::Word(1))
+    })
 }
 
 /// Plays one record, its objects in a program's handle table.
-fn play_metafile_record_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hdc = args.word(system);
-    let table = args.dword(system);
-    let record = args.dword(system);
-    let count = args.word(system);
+fn play_metafile_record(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hdc, table, record, count) = {
+            let system = engine.system();
 
-    play_record(
-        system,
-        hdc,
-        record,
-        &mut Table::Program {
-            far: table,
-            size: count,
-        },
-    )?;
+            (
+                args.word(&system),
+                args.dword(&system),
+                args.dword(&system),
+                args.word(&system),
+            )
+        };
 
-    Ok(Answer::Nothing)
+        play_record(
+            engine,
+            hdc,
+            record,
+            &mut Table::Program {
+                far: table,
+                size: count,
+            },
+        )
+        .await?;
+
+        Ok(Answer::Nothing)
+    })
 }
 
 /// Calls a procedure with each record of a metafile but the last, a handle
@@ -1457,19 +1598,13 @@ mod tests {
     }
 
     #[test]
-    fn plays_each_call_kept_by_its_stack_at_once_but_chord() {
+    fn plays_each_call_kept_by_its_stack_but_chord() {
         let gdi = Kept::named("GDI").unwrap();
 
         // `Chord`'s ordinal is past a byte: never kept by its stack.
         for name in BY_STACK.iter().filter(|&&name| name != "Chord") {
             assert!(gdi.ordinal_of(name) < 0x100, "{name}");
-            assert!(
-                matches!(
-                    super::super::implementation(name),
-                    Some(Implementation::Sync(_))
-                ),
-                "{name}"
-            );
+            assert!(super::super::implementation(name).is_some(), "{name}");
         }
     }
 

@@ -9,7 +9,6 @@
 //! of global memory of the context's own, and given to the driver by far
 //! pointers as GDI gives its own.
 
-use std::collections::HashMap;
 use std::future::Future;
 
 use winbox_cpu::{SP, SS};
@@ -87,7 +86,9 @@ pub struct DriverState {
 pub struct Drawing {
     pub handle: u16,
     pub far: u32,
-    pub realized: HashMap<usize, Vec<Realized>>,
+    /// By object, in the order each was first realized: let go in that
+    /// order, as the TypeScript engine's `Map` keeps them.
+    pub realized: Vec<(usize, Vec<Realized>)>,
 }
 
 type Rect = [i32; 4];
@@ -191,7 +192,7 @@ pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
             Drawing {
                 handle,
                 far,
-                realized: HashMap::new(),
+                realized: Vec::new(),
             },
         );
         system.gdi.dcs[dc].state.driver = Some(DriverState {
@@ -234,8 +235,10 @@ pub async fn stop_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
         return Ok(());
     };
 
-    for realized in drawing.realized.values().flatten() {
-        kernel(engine, "GlobalFree", &[GuestArg::Word(realized.handle)]).await?;
+    for (_, list) in &drawing.realized {
+        for realized in list {
+            kernel(engine, "GlobalFree", &[GuestArg::Word(realized.handle)]).await?;
+        }
     }
 
     if drawing.handle != 0 {
@@ -333,7 +336,8 @@ async fn realize_object(
         .drivers
         .drawing
         .get(&dc)
-        .and_then(|drawing| drawing.realized.get(&object))
+        .and_then(|drawing| drawing.realized.iter().find(|(of, _)| *of == object))
+        .map(|(_, list)| list)
         .and_then(|list| list.iter().find(|each| each.key == key).cloned());
 
     if kept.is_some() {
@@ -394,11 +398,10 @@ async fn realize_object(
     let realized = Realized { handle, far, key };
 
     if let Some(drawing) = engine.system().printing.drivers.drawing.get_mut(&dc) {
-        drawing
-            .realized
-            .entry(object)
-            .or_default()
-            .insert(0, realized.clone());
+        match drawing.realized.iter_mut().find(|(of, _)| *of == object) {
+            Some((_, list)) => list.insert(0, realized.clone()),
+            None => drawing.realized.push((object, vec![realized.clone()])),
+        }
     }
 
     Ok(Some(realized))
@@ -1599,7 +1602,7 @@ pub async fn driver_stretch_dibits(
 }
 
 /// The points a program gave, `count` of them at a far pointer.
-fn points_at(system: &System, far: u32, count: i16) -> Vec<(i32, i32)> {
+pub(super) fn points_at(system: &System, far: u32, count: i16) -> Vec<(i32, i32)> {
     let count = usize::try_from(count).unwrap_or(0);
     let bytes = system.read_far(far, count * 4);
 
@@ -1623,7 +1626,7 @@ async fn otherwise(engine: &Engine, name: &str, mut args: Args) -> Result<Answer
     }
 }
 
-fn driver_of(system: &System, hdc: u16) -> Option<usize> {
+pub(super) fn driver_of(system: &System, hdc: u16) -> Option<usize> {
     super::printer_driver::driver_dc_of(system, hdc)
 }
 
@@ -1653,49 +1656,60 @@ fn select_object_call(engine: &Engine, args: Args) -> Later<'_> {
         let Some(dc) = driver else {
             return otherwise(engine, "SelectObject", args).await;
         };
-        let (before, kind) = {
+        let handle = {
             let mut peek = args;
             let system = engine.system();
 
             peek.word(&system);
-
-            let handle = peek.word(&system);
-            let kind = match system.gdi_object_of(handle) {
-                Some((_, GdiObject::Pen(_))) => Some(true),
-                Some((_, GdiObject::Brush(_))) => Some(false),
-                _ => None,
-            };
-            let state = &system.gdi.dcs[dc].state;
-
-            ((state.pen, state.brush), kind)
-        };
-        let answer = otherwise(engine, "SelectObject", args).await?;
-
-        // A printer driver's from the drive realizes it at once, and a pen
-        // or brush it cannot leaves the one before selected and answers
-        // nought (`GDI.EXE` seg1 `1b9f`, `1b72`).
-        let realized = match kind {
-            Some(true) => realize_pen(engine, dc).await?,
-            Some(false) => realize_brush(engine, dc).await?,
-            None => return Ok(answer),
+            peek.word(&system)
         };
 
-        if !realized {
-            let mut system = engine.system();
-            let state = &mut system.gdi.dcs[dc].state;
+        Ok(Answer::Word(select_object(engine, dc, hdc, handle).await?))
+    })
+}
 
-            if kind == Some(true) {
-                state.pen = before.0;
-            } else {
-                state.brush = before.1;
-            }
+/// `SelectObject` on a driver's context, as a metafile's record played
+/// makes it too: selected as on any context, then a pen or brush realized
+/// by the driver at once. One it cannot leaves the one before selected
+/// and answers nought (`GDI.EXE` seg1 `1b9f`, `1b72`).
+pub(super) async fn select_object(
+    engine: &Engine,
+    dc: usize,
+    hdc: u16,
+    handle: u16,
+) -> Result<u16, Stop> {
+    let (before, kind) = {
+        let system = engine.system();
+        let kind = match system.gdi_object_of(handle) {
+            Some((_, GdiObject::Pen(_))) => Some(true),
+            Some((_, GdiObject::Brush(_))) => Some(false),
+            _ => None,
+        };
+        let state = &system.gdi.dcs[dc].state;
 
-            return Ok(Answer::Word(0));
+        ((state.pen, state.brush), kind)
+    };
+    let answer = super::dc::select_object(&mut engine.system(), hdc, handle);
+    let realized = match kind {
+        Some(true) => realize_pen(engine, dc).await?,
+        Some(false) => realize_brush(engine, dc).await?,
+        None => return Ok(answer),
+    };
+
+    if !realized {
+        let mut system = engine.system();
+        let state = &mut system.gdi.dcs[dc].state;
+
+        if kind == Some(true) {
+            state.pen = before.0;
+        } else {
+            state.brush = before.1;
         }
 
-        let _ = hdc;
-        Ok(answer)
-    })
+        return Ok(0);
+    }
+
+    Ok(answer)
 }
 
 fn colour_call(engine: &Engine, args: Args, background: bool) -> Later<'_> {

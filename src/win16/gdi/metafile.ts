@@ -661,8 +661,19 @@ async function playRecord(system: any, hdc: number, far: number, table: Table) {
   const fn = word(4);
   const exports = gdiExports();
   const call = (name: string, ...args: any[]) => gdiCall(system, name, args);
-  const text = (at: number, count: number) =>
-    String.fromCharCode(...Array.from({ length: count }, (_, index) => byte(at + index)));
+  /* The record's text, where it is as well, as a program's string is given
+   * (`read-arguments.ts`): a printer driver's context hands the driver its
+   * address (`printer-output.ts`, `farOf`). */
+  const text = (at: number, count: number) => {
+    const from = farAt(far, at);
+    const string: any = new String(
+      String.fromCharCode(...Array.from({ length: count }, (_, index) => byte(at + index)))
+    );
+
+    string.segment = (from >>> 16) & 0xffff;
+    string.offset = from & 0xffff;
+    return string;
+  };
   const place = (handle: number) => {
     let slot = 0;
 

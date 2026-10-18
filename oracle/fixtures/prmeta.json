@@ -1,0 +1,574 @@
+{
+  "probe": "prmeta",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1"
+    },
+    {
+      "function": "color",
+      "args": "before",
+      "result": "0 ffffff"
+    },
+    {
+      "function": "call",
+      "args": "PlayMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "color",
+      "args": "played",
+      "result": "ff ffff"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EnumMetaFile",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "played",
+      "result": "17"
+    },
+    {
+      "function": "color",
+      "args": "enumerated",
+      "result": "ff ffff"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "12523"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "0 lc"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "0 lj"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "255 0 0 pC"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "0 3 SP"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "192 192 192 fC"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "0 128 0 hC"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "/fm 773 def"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "399 299 300 300 B"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "1 lc"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "1 lj"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "199 149 999 449 E"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "300 800 M 900 100 1 PP"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "300 1200 M 300 150 300 -100 2 PP"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "1100 1100 M 0 -200 -400 0 400 200 3 PP"
+    },
+    {
+      "function": "line",
+      "args": "195",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "196",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "197",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "198",
+      "result": "32 0 0 42 42 0 0 0 33 /Courier /font0 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "199",
+      "result": "0 0 255 fC"
+    },
+    {
+      "function": "line",
+      "args": "200",
+      "result": "150 42 300 1500 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "201",
+      "result": "300 1500 150 (Played) 150 SB"
+    },
+    {
+      "function": "line",
+      "args": "202",
+      "result": "699 99 300 1700 255 255 0 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "203",
+      "result": "255 0 0 fC"
+    },
+    {
+      "function": "line",
+      "args": "204",
+      "result": "150 42 320 1720 255 255 0 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "205",
+      "result": "320 1720 150 (Opaque) 150 SB"
+    },
+    {
+      "function": "line",
+      "args": "206",
+      "result": "1 #C"
+    },
+    {
+      "function": "line",
+      "args": "207",
+      "result": "statusdict begin /manualfeed false store end"
+    },
+    {
+      "function": "line",
+      "args": "208",
+      "result": "EJ RS"
+    },
+    {
+      "function": "line",
+      "args": "209",
+      "result": "%%PageTrailer"
+    },
+    {
+      "function": "line",
+      "args": "210",
+      "result": "%%PageResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "211",
+      "result": "%%Page: 2 2"
+    },
+    {
+      "function": "line",
+      "args": "212",
+      "result": "%%PageResources: (atend)"
+    },
+    {
+      "function": "line",
+      "args": "213",
+      "result": "SS"
+    },
+    {
+      "function": "line",
+      "args": "214",
+      "result": "0 0 25 11 798 1100 300 SM"
+    },
+    {
+      "function": "line",
+      "args": "215",
+      "result": "0 lc"
+    },
+    {
+      "function": "line",
+      "args": "216",
+      "result": "0 lj"
+    },
+    {
+      "function": "line",
+      "args": "217",
+      "result": "255 0 0 pC"
+    },
+    {
+      "function": "line",
+      "args": "218",
+      "result": "0 3 SP"
+    },
+    {
+      "function": "line",
+      "args": "219",
+      "result": "192 192 192 fC"
+    },
+    {
+      "function": "line",
+      "args": "220",
+      "result": "0 128 0 hC"
+    },
+    {
+      "function": "line",
+      "args": "221",
+      "result": "/fm 773 def"
+    },
+    {
+      "function": "line",
+      "args": "222",
+      "result": "399 299 300 300 B"
+    },
+    {
+      "function": "line",
+      "args": "223",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "224",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "225",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "226",
+      "result": "1 lc"
+    },
+    {
+      "function": "line",
+      "args": "227",
+      "result": "1 lj"
+    },
+    {
+      "function": "line",
+      "args": "228",
+      "result": "199 149 999 449 E"
+    },
+    {
+      "function": "line",
+      "args": "229",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "230",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "231",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "232",
+      "result": "300 800 M 900 100 1 PP"
+    },
+    {
+      "function": "line",
+      "args": "233",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "234",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "235",
+      "result": "300 1200 M 300 150 300 -100 2 PP"
+    },
+    {
+      "function": "line",
+      "args": "236",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "237",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "238",
+      "result": "1100 1100 M 0 -200 -400 0 400 200 3 PP"
+    },
+    {
+      "function": "line",
+      "args": "239",
+      "result": "1 F"
+    },
+    {
+      "function": "line",
+      "args": "240",
+      "result": "S"
+    },
+    {
+      "function": "line",
+      "args": "241",
+      "result": "n"
+    },
+    {
+      "function": "line",
+      "args": "242",
+      "result": "32 0 0 42 42 0 0 0 33 /Courier /font0 ANSIFont font"
+    },
+    {
+      "function": "line",
+      "args": "243",
+      "result": "0 0 255 fC"
+    },
+    {
+      "function": "line",
+      "args": "244",
+      "result": "150 42 300 1500 192 192 192 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "245",
+      "result": "300 1500 150 (Played) 150 SB"
+    },
+    {
+      "function": "line",
+      "args": "246",
+      "result": "699 99 300 1700 255 255 0 0 OB"
+    },
+    {
+      "function": "line",
+      "args": "247",
+      "result": "255 0 0 fC"
+    },
+    {
+      "function": "line",
+      "args": "248",
+      "result": "150 42 320 1720 255 255 0 1 OB"
+    },
+    {
+      "function": "line",
+      "args": "249",
+      "result": "320 1720 150 (Opaque) 150 SB"
+    },
+    {
+      "function": "line",
+      "args": "250",
+      "result": "1 #C"
+    },
+    {
+      "function": "line",
+      "args": "251",
+      "result": "statusdict begin /manualfeed false store end"
+    },
+    {
+      "function": "line",
+      "args": "252",
+      "result": "EJ RS"
+    },
+    {
+      "function": "line",
+      "args": "253",
+      "result": "%%PageTrailer"
+    },
+    {
+      "function": "line",
+      "args": "254",
+      "result": "%%PageResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "255",
+      "result": "%%Trailer"
+    },
+    {
+      "function": "line",
+      "args": "256",
+      "result": "SVDoc restore"
+    },
+    {
+      "function": "line",
+      "args": "257",
+      "result": "end"
+    },
+    {
+      "function": "line",
+      "args": "258",
+      "result": "%%Pages: 2"
+    },
+    {
+      "function": "line",
+      "args": "259",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1"
+    },
+    {
+      "function": "line",
+      "args": "260",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "261",
+      "result": "%%DocumentNeededResources: font Courier"
+    },
+    {
+      "function": "line",
+      "args": "262",
+      "result": ""
+    },
+    {
+      "function": "line",
+      "args": "263",
+      "result": "%%EOF"
+    },
+    {
+      "function": "line",
+      "args": "264",
+      "result": "\u0004"
+    }
+  ]
+}

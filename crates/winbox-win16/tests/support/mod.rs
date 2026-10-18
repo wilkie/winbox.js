@@ -184,6 +184,7 @@ pub const AGREEING: &[&str] = &[
     "ddeterm",
     "ddelist",
     "ddenest",
+    "prmeta",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -211,7 +212,7 @@ fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
 
     if [
         "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
-        "prnote", "prtabs",
+        "prnote", "prtabs", "prmeta",
     ]
     .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)

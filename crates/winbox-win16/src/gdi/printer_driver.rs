@@ -107,8 +107,10 @@ pub struct Drivers {
     /// Each driver's device context's abort procedure, as `SETABORTPROC`
     /// gave it.
     pub abort: HashMap<usize, u32>,
-    /// The fonts the drivers realized, by the context and the font object.
-    pub fonts: HashMap<FontKey, DeviceFont>,
+    /// The fonts the drivers realized, by the context and the font object,
+    /// in the order they were realized: let go in that order, as the
+    /// TypeScript engine's `Map`s keep them.
+    pub fonts: Vec<(FontKey, DeviceFont)>,
     /// The context and the call -- 1 for `EnumFontFamilies`, nought for
     /// `EnumFonts` -- whose fonts GDI is walking (`[064Eh]`, `[041Ch]`).
     pub walking: Option<(u16, u16)>,
@@ -555,17 +557,31 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
 
-        let realized: Vec<FontKey> = system
-            .printing
-            .drivers
-            .fonts
-            .keys()
-            .filter(|(context, ..)| *context == dc)
-            .copied()
-            .collect();
+        // Let go font object by font object, each in the order the first
+        // of its sizes was realized, as the TypeScript engine's `Map` of
+        // maps walks them.
+        let mut realized: Vec<(FontKey, DeviceFont)> = Vec::new();
 
-        for key in realized {
-            if let Some(font) = system.printing.drivers.fonts.remove(&key) {
+        system.printing.drivers.fonts.retain(|(key, font)| {
+            let mine = key.0 == dc;
+
+            if mine {
+                realized.push((*key, font.clone()));
+            }
+
+            !mine
+        });
+
+        let mut objects: Vec<usize> = Vec::new();
+
+        for ((_, object, ..), _) in &realized {
+            if !objects.contains(object) {
+                objects.push(*object);
+            }
+        }
+
+        for object in objects {
+            for (_, font) in realized.iter().filter(|((_, of, ..), _)| *of == object) {
                 let _ = crate::memory::global_free(&mut system, &mut Args::repeat(font.handle));
             }
         }
@@ -1010,7 +1026,13 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
 
         let key = (dc, object, logfont.height, logfont.width);
 
-        if let Some(kept) = system.printing.drivers.fonts.get(&key) {
+        if let Some((_, kept)) = system
+            .printing
+            .drivers
+            .fonts
+            .iter()
+            .find(|(held, _)| *held == key)
+        {
             return Ok(Some(kept.clone()));
         }
 
@@ -1104,7 +1126,13 @@ async fn realize_device_font(
         xform,
     };
 
-    system.printing.drivers.fonts.insert(key, realized.clone());
+    let fonts = &mut system.printing.drivers.fonts;
+
+    match fonts.iter_mut().find(|(held, _)| *held == key) {
+        Some((_, held)) => *held = realized.clone(),
+        None => fonts.push((key, realized.clone())),
+    }
+
     Ok(Some(realized))
 }
 

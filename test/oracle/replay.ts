@@ -5882,6 +5882,7 @@ const RUN_WHOLE = new Set<string>([
   'ddelist',
   'ddenest',
   'ddeheap',
+  'prmeta',
 ]);
 
 /**
