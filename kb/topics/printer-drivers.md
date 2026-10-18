@@ -2,7 +2,7 @@
 kind: topic
 name: Printer drivers in GDI
 summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, fonts realized by the driver and by GDI's TrueType engine, a document's calls, the drawing handed to the driver, GDI's spooler, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
-probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote]
+probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta]
 ---
 
 A printer's driver is the user's own program, a library on the drive such as Windows' PostScript driver, `PSCRIPT.DRV`, or one a printer's maker shipped. GDI loads it by its name and calls its exports, as it calls any library's. winbox.js runs it the same way: the driver's code runs on the processor, and GDI calls its entry points where Windows' GDI does. This is unlike the display ([[topic:display-drivers]]), whose driver winbox.js never runs. winbox.js's own printer, `WBPRINT`, is a driver of winbox.js's and is not loaded from the drive ([[topic:printing]]).
@@ -92,6 +92,8 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 [[measured]] [[probe:prdraw]]: dashed and wide pens, a hatched rectangle with no outline, a star filled both ways, an ellipse inside its frame, a circle, a round rectangle, a pie, an arc and a chord, a rectangle in `MM_LOMETRIC`, a rectangle and a line across a clip, text of colours and modes and in a font of its own, an opaque rectangle, and a DIB stretched ten times. Both engines agree with every line of the PostScript written, all 149 records. [[probe:prtabs]]: tabbed text and its extents, 88 records.
 
+[[read out]] **A metafile played** on a driver's context reaches the driver record by record, as the calls it keeps would: `PlayMetaFileRecord` (seg19 `0826`) makes each through the function's own entry ([[topic:metafiles]]). [[measured]] [[probe:prmeta]] plays one with colours, a pen, a brush, figures and text, whole and then a record at a time; both pages are written alike, and both engines agree with all 112 records.
+
 ## GDI's spooler
 
 [[read out]] A driver writes its output through GDI's spooler (seg28, seg29 and seg30): [[fn:GDI.OpenJob]], [[fn:GDI.StartSpoolPage]], [[fn:GDI.WriteSpool]], [[fn:GDI.EndSpoolPage]], [[fn:GDI.WriteDialog]], [[fn:GDI.CloseJob]] and [[fn:GDI.DeleteJob]]. A job is a block of 148h bytes, and its handle is answered shifted right a bit. It goes straight to a file or port, through the communications driver, through Print Manager, or through the network. Its 100h-byte buffer is written as it fills, and [[fn:GDI.QueryAbort]] is asked before each write. A port that does not answer puts up GDI's box, system-modal, after WIN.INI's timeouts.
@@ -108,7 +110,7 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 ## In winbox.js
 
-`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices, make the contexts, realize fonts, and take a document's calls. `printer-output.ts` and `printer_output.rs` hand the drawing to the driver, and `spooler.ts` and `spooler.rs` are GDI's spooler. `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` are beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before. GDI's messages for the spooler's boxes are its own string table (`strings.ts`, `strings.rs`).
+`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices, make the contexts, realize fonts, and take a document's calls. `printer-output.ts` and `printer_output.rs` hand the drawing to the driver, and `spooler.ts` and `spooler.rs` are GDI's spooler. `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` are beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before. GDI's messages for the spooler's boxes are its own string table (`strings.ts`, `strings.rs`). Each engine keeps what it realized for a context, and the fonts the drivers realized, in the order they were realized, and lets them go in that order, so a run's handles do not depend on a hash's order.
 
 ## Not yet done
 

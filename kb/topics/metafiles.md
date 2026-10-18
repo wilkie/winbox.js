@@ -2,7 +2,7 @@
 kind: topic
 name: Metafiles
 summary: What Windows 3.1 keeps when a program draws into a metafile — the header, each record's number and words, how objects are made and selected — and how the metafile plays back, as the metafile probe recorded them byte for byte.
-probes: [metafile, diskmeta]
+probes: [metafile, diskmeta, prmeta]
 ---
 
 A metafile is a picture kept as the GDI calls that drew it, to be played again. A program makes one with [[fn:GDI.CreateMetafile]], draws into the device context it gives, and has the metafile from [[fn:GDI.CloseMetafile]]. [[measured]] [[probe:metafile]] draws 24 calls into a memory metafile. It dumps its bytes, plays it whole with [[fn:GDI.PlayMetafile]], and plays it again a record at a time through [[fn:GDI.EnumMetafile]] and [[fn:GDI.PlayMetafileRecord]]. winbox.js agrees with all 112 records.
@@ -29,6 +29,8 @@ A metafile is a picture kept as the GDI calls that drew it, to be played again. 
 - A metafile's handle is the global block of its bytes. [[fn:GDI.GetMetafileBits]] and [[fn:GDI.SetMetafileBits]] give the same handle back. The block holds more than the metafile.
 - `EnumMetafile` calls its procedure with each record but the last, a handle table as large as the header says, and that count.
 - `PlayMetafile` does not put the device context back. The mode, the colours and the clip a metafile set are left set: played a second time, a metafile that ends in `R2_NOT` draws inverted ([[fn:GDI.SetROP2]]).
+- **Each record is made by the function itself.** [[read out]] `PlayMetaFileRecord` (`GDI.EXE` seg19 `0826`) makes a call given only numbers through the function's own entry: it asks GDI for the address by the record's ordinal and keeps it, at `DS:0187h` and four bytes on for each ordinal (`096c`-`09be`), copies the record's words onto the stack as the arguments (`13de`, then `1c4b`-`1c6b`), and calls it far (`1c6f`). The calls given a pointer are taken apart and made as a program makes them. So played on a printer driver's context, each reaches the driver as a program's call does: a colour goes through the driver's `ColorInfo`, a pen or brush through its `RealizeObject`, a figure through its `Output` and text through its `ExtTextOut` ([[topic:printer-drivers]]).
+- [[measured]] [[probe:prmeta]] plays a metafile with colours, a mode, a pen and a brush, figures and text onto a PostScript page, once whole with `PlayMetafile` and once a record at a time through `EnumMetafile` and `PlayMetafileRecord`. Both pages hold the same lines, as the same calls made on the context draw them: the colours as `fC` and `pC`, the text's own colour before its string. Afterwards the context keeps the colours the metafile set.
 
 ## On disk
 
@@ -42,4 +44,4 @@ A metafile is a picture kept as the GDI calls that drew it, to be played again. 
 
 ## In winbox.js
 
-`src/win16/gdi/metafile.ts`. A GDI call whose device context is a metafile's is kept as a record where it is dispatched, in `syscallInvoke`, not drawn. The calls measured, and those given only numbers that the rule covers, are kept. A metafile on disk is written when it is closed. To be played or copied, it is read into a block of its own. Not yet done: bitmaps, regions, palettes and `PolyPolygon` in a metafile. A call into a metafile that is not kept answers nought.
+`src/win16/gdi/metafile.ts`. A GDI call whose device context is a metafile's is kept as a record where it is dispatched, in `syscallInvoke`, not drawn. The calls measured, and those given only numbers that the rule covers, are kept. A metafile on disk is written when it is closed. To be played or copied, it is read into a block of its own. A record is played through the function a program calls, so a printer driver's context hands it to its driver; in the Rust engine (`crates/winbox-win16/src/gdi/metafile.rs`) playing waits where that function waits, and a record a driver's context draws is handed to `printer_output.rs`. A record's text is given with its address, as a program's string is, for the driver. Not yet done: bitmaps, regions, palettes and `PolyPolygon` in a metafile. A call into a metafile that is not kept answers nought.
