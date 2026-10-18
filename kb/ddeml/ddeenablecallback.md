@@ -4,7 +4,10 @@ module: DDEML
 name: DdeEnableCallback
 ordinal: 26
 summary: Holds back an instance's or a conversation's callbacks, lets one through or all of them, or asks whether any are waiting.
+versions:
+  '3.1': exact
 probes: [ddemgmt, ddefail]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -29,4 +32,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation.
+WinBox's own: `enableCallback` in `src/win16/ddeml/instance.ts` and `enable_callback` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The command is sent to each conversation as `WM_USER + CFh`, and the queue run at once by `WM_USER + CCh` to the instance's window. Both engines agree with [[probe:ddemgmt]] and [[probe:ddefail]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

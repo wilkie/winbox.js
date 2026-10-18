@@ -50,6 +50,7 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 ## In winbox.js
 
 `Scheduler` in `src/win16/scheduler.ts` keeps one task's state in the processor at a time:
+
 - `release` gives the processor up and keeps the task's registers, flags and floating-point unit;
 - `acquire` takes it back;
 - the tasks waiting are granted it in turn.
@@ -59,6 +60,7 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 `nextMessage` in `src/win16/user/queue.ts` gives the processor up while it waits. [[fn:USER.PeekMessage]] that finds nothing gives it up too, unless `PM_NOYIELD`, in both engines. [[read out]] Once the others have run, it answers what was sent it, and looks again at everything only where a timer of its own is due (`USER.EXE` seg1 `254b`-`2573`): what was posted or put in meanwhile waits for its next look ([[probe:tasklist]]; [[topic:system-queue]]). It then gives the processor up a second time before answering nothing (`25df`), which winbox.js does not follow. The Rust engine's answered nothing at once, from before it ran more than one program, and a program that polls never let the others run: Notepad started beside Terminal, which polls its port, never showed its window until a key was pressed. It gives a task only its own windows' paints and timers, and it answers messages sent from other tasks first. `sendAcross` hands a window procedure to its task and puts that task first in line; `takeSent` hands the processor back to the sender with each answer (`handBack`). An API call's answer goes to the task that made the call, taken before the call runs: a call that gives the processor up on its way, or a program's exit, leaves another task running by the time it answers. `WinExec` is in `src/win16/kernel/WinExec.ts`.
 
 Not followed:
+
 - a DOS program;
 
 [[fn:SHELL.ShellExecute]] starts what it finds through `WinExec` ([[topic:programs-and-their-files]]).

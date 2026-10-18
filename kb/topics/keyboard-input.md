@@ -10,22 +10,23 @@ A Windows program sees a key as a **virtual key**, a byte from `KEYBOARD.DRV`, i
 - [[documented]] Letters and digits are their own capital letter and digit, `41h`–`5Ah` and `30h`–`39h`. Named keys such as Enter, the arrows and the function keys have fixed virtual keys.
 - [[read out]] The keys that are neither come from the US keyboard driver's table of one virtual key for each scan code, at offset `12EEh` of `KEYBOARD.DRV`. Read at the scan codes those keys send, the table gives:
 
-  | Key | Scan code | Virtual key |
-  | --- | --- | --- |
-  | `-` | 0Ch | BDh |
-  | `=` | 0Dh | BBh |
-  | `[` | 1Ah | DBh |
-  | `]` | 1Bh | DDh |
-  | `;` | 27h | BAh |
-  | `'` | 28h | DEh |
-  | `` ` `` | 29h | C0h |
-  | `\` | 2Bh | DCh |
-  | `,` | 33h | BCh |
-  | `.` | 34h | BEh |
-  | `/` | 35h | BFh |
-  | the 102nd key | 56h | E2h |
+  | Key           | Scan code | Virtual key |
+  | ------------- | --------- | ----------- |
+  | `-`           | 0Ch       | BDh         |
+  | `=`           | 0Dh       | BBh         |
+  | `[`           | 1Ah       | DBh         |
+  | `]`           | 1Bh       | DDh         |
+  | `;`           | 27h       | BAh         |
+  | `'`           | 28h       | DEh         |
+  | `` ` ``       | 29h       | C0h         |
+  | `\`           | 2Bh       | DCh         |
+  | `,`           | 33h       | BCh         |
+  | `.`           | 34h       | BEh         |
+  | `/`           | 35h       | BFh         |
+  | the 102nd key | 56h       | E2h         |
 
   The same table gives both Shift keys `10h` and Control `11h`.
+
 - [[measured]] Calculator takes its keys through an accelerator table. Before these were mapped, `=` sent no message at all. So `+`, which is Shift and `=`, did nothing, and typing `12+3=` left 123 on the display. Now it gives 15.
 
 ## Accelerators
@@ -43,16 +44,16 @@ The system menu is the window's own where it has one. A window with none and `WS
 
 What is sent (`08f5`-`0953`):
 
-| The command | Sent |
-|---|---|
-| found grayed | nothing |
-| found, while any window has the mouse captured (`[110h]`, `SetCapture`'s) | nothing |
-| found, the window disabled | nothing |
-| found in the bar, the window minimized | nothing |
-| found in the system menu, the window minimized | `WM_SYSCOMMAND` |
-| found in the bar | `WM_COMMAND` |
-| found in the system menu | `WM_SYSCOMMAND` |
-| in no menu, whatever the window | `WM_COMMAND` |
+| The command                                                               | Sent            |
+| ------------------------------------------------------------------------- | --------------- |
+| found grayed                                                              | nothing         |
+| found, while any window has the mouse captured (`[110h]`, `SetCapture`'s) | nothing         |
+| found, the window disabled                                                | nothing         |
+| found in the bar, the window minimized                                    | nothing         |
+| found in the system menu, the window minimized                            | `WM_SYSCOMMAND` |
+| found in the bar                                                          | `WM_COMMAND`    |
+| found in the system menu                                                  | `WM_SYSCOMMAND` |
+| in no menu, whatever the window                                           | `WM_COMMAND`    |
 
 Either goes straight to the window's procedure, with the command in `wParam` and 1 in the high word of `lParam`. An entry whose command is nought skips the menus and sends `WM_COMMAND` with nought. Nothing on the bar is flashed: USER 3.1 has no code for it here.
 

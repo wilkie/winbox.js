@@ -33,7 +33,7 @@ The desktop window's procedure (seg1 `9e6b`) hands a double click on it, `WM_LBU
 
 `TASKMAN.EXE` is read out here too (its seg1). It runs no second copy. It reads an x and a y from its command line, and shows its dialog box 10, "Task List", with [[fn:USER.DialogBox]]:
 
-- **Its place.** For (0, 0), the middle of the screen. Otherwise across at x less half the dialog's *height*, and down at y less twice `SM_CYCAPTION`, each kept on the screen.
+- **Its place.** For (0, 0), the middle of the screen. Otherwise across at x less half the dialog's _height_, and down at y less twice `SM_CYCAPTION`, each kept on the screen.
 - **Its list**, `100`, not sorted: each window at the top shown, owned by none and with a caption, front to back as [[fn:USER.GetWindow]] goes, the dialog itself left out. Each item's data is the window's handle. The first is selected. The dialog is made topmost.
 - **Switch To**, `IDOK`, or a double click in the list: the dialog ended, then the window chosen, or the pop-up it last had active ([[fn:USER.GetLastActivePopup]]), switched to with [[fn:USER.SwitchToThisWindow]] as by Alt and Tab, unless it is disabled, when a beep sounds.
 - **End Task**, `101`: the dialog ended; the window switched to as Switch To would, unless [[fn:KERNEL.IsWinOldApTask]] says its task runs a DOS program; then `WM_CLOSE` posted to it, unless it is disabled.

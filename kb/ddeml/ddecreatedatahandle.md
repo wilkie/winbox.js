@@ -4,7 +4,10 @@ module: DDEML
 name: DdeCreateDataHandle
 ordinal: 14
 summary: Makes a DDEML data handle — a GMEM_DDESHARE block with DDE's header when an item is given — copying the caller's bytes in at an offset.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/data.ts
 topics: [ddeml-transactions]
 ---
 
@@ -29,4 +32,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation; `GlobalSize`'s rounding to 32 bytes is theirs, and agrees.
+WinBox's own: `createDataHandle` in `src/win16/ddeml/data.ts` and `create_data_handle` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The block is `GMEM_DDESHARE` with DDE's header where there is an item (`make`, seg1 `63c6`), and the handle six bytes of the instance's heap. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

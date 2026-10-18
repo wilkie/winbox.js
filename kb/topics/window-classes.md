@@ -19,15 +19,15 @@ A window class is registered by an instance and found by its name. [[probe:class
 - [[measured]] For a program's class, what it was registered with: its style, its procedure, its class and window extra bytes, its instance, icon, cursor and brush, and its menu's name. The class's name is the pointer that was passed in.
 - [[measured]] For USER's classes, no icon, no brush and no menu, a cursor, USER's instance, and their own style and window extra bytes:
 
-  | class | style | window bytes |
-  |---|---|---|
-  | `Button` | `8Bh` | 3 |
-  | `Edit` | `88h` | 6 |
-  | `Static` | `80h` | 6 |
-  | `ListBox` | `88h` | 2 |
-  | `ScrollBar` | `8Bh` | 10 |
-  | `ComboBox` | `88h` | 2 |
-  | dialogs, `8002h` | `2808h` | 30 |
+  | class            | style   | window bytes |
+  | ---------------- | ------- | ------------ |
+  | `Button`         | `8Bh`   | 3            |
+  | `Edit`           | `88h`   | 6            |
+  | `Static`         | `80h`   | 6            |
+  | `ListBox`        | `88h`   | 2            |
+  | `ScrollBar`      | `8Bh`   | 10           |
+  | `ComboBox`       | `88h`   | 2            |
+  | dialogs, `8002h` | `2808h` | 30           |
 
 - [[read out]] These are the styles USER registers its classes with: `USER.EXE` seg3 fills a `WNDCLASS` for each and calls `RegisterClass` (`Button` at `15fa`, `Static` `165b`, the dialogs' `1547`, `Edit` `16bc`, `ListBox` `171d`, `ScrollBar` `177e`, `ComboLBox` `1809`, `ComboBox` `186a`, `MDIClient` `1595`). Two are not answered above: `ComboLBox`, a combo box's list, `808h` (`CS_SAVEBITS` and `CS_DBLCLKS`) with 2 window bytes, and `MDIClient`, no style, with 10h. Every class but `Static` and `MDIClient` has `CS_DBLCLKS`, so its windows are sent double clicks ([[topic:hit-testing]]). winbox.js once registered its own with no style, and no list box was sent `WM_LBUTTONDBLCLK`: no directory of the Open dialog's could be gone into ([[topic:list-boxes]]).
 

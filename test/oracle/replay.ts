@@ -5876,6 +5876,7 @@ const RUN_WHOLE = new Set<string>([
   'verinfo',
   'verinst',
   'lbtext',
+  'ddeinst',
   'ddefail',
   'ddemon',
   'ddeterm',

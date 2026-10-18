@@ -4,7 +4,10 @@ module: DDEML
 name: DdeConnectList
 ordinal: 4
 summary: Starts a conversation with every server that answers for a service and topic, as a list -- and, given an old list, keeps its conversations and drops the new ones they duplicate.
+versions:
+  '3.1': exact
 probes: [ddemgmt, ddelist]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -25,4 +28,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation. The order in which a list gives its conversations comes from where [[fn:USER.SetParent]] links a window among its new siblings: first, as winbox.js now does in both engines (`USER.EXE` seg14 `04ab`-`04b2`).
+WinBox's own: `connectList` in `src/win16/ddeml/conv.ts` and `connect_list` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The list is a `DMGHoldingClass` window; conversations of an old list are moved into the new one with [[fn:USER.SetParent]], duplicates of the same server task, service and topic ended. Both engines agree with [[probe:ddemgmt]] and [[probe:ddelist]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

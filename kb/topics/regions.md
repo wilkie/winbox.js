@@ -30,6 +30,7 @@ Every call that makes or changes a region answers its kind: 1 for an empty regio
 ## Combining
 
 [[fn:GDI.CombineRgn]] makes its first region from the other two:
+
 - `RGN_AND` keeps the pixels in both.
 - `RGN_OR` keeps the pixels in either.
 - `RGN_XOR` keeps the pixels in one only.

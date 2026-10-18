@@ -4,7 +4,10 @@ module: DDEML
 name: CONVLISTWNDPROC
 ordinal: 32
 summary: The window procedure of class DMGHoldingClass: a conversation list, and the parent of an instance's server conversations.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -20,4 +23,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `convlistProc` in `src/win16/ddeml/conv.ts` and `convlist_proc` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGHoldingClass`. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

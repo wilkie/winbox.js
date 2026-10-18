@@ -179,6 +179,7 @@ pub const AGREEING: &[&str] = &[
     "chfont3",
     "chfontpr",
     "lbtext",
+    "ddeinst",
     "ddefail",
     "ddemon",
     "ddeterm",

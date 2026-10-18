@@ -18,6 +18,7 @@ A metafile is a picture kept as the GDI calls that drew it, to be played again. 
   - `ExtTextOut`: y, x, the count, the options, the rectangle, then the text.
 
   The function's high byte is still the words the call pushed: `Polygon` is 0324h, `ExtTextOut` 0A32h.
+
 - **An object selected** is first made in the lowest free place of the metafile's handle table. A pen is made by `CreatePenIndirect`, 02FAh, with its `LOGPEN`; a brush by `CreateBrushIndirect`, 02FCh, with its `LOGBRUSH`. A font is made by `CreateFontIndirect`, 02FBh, with its `LOGFONT`, keeping its face name, its nought and two bytes more, to a word. The two bytes are whatever was in GDI's memory. Then `SelectObject`, 012Dh, names its place. A stock object is made too: the black pen, with its width nought.
 - **An object deleted** with [[fn:GDI.DeleteObject]], a call that is given no device context, is still taken out of a metafile that holds it: 01F0h with its place, which is then free.
 - **The end** is a record of three words.

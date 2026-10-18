@@ -2,7 +2,23 @@
 kind: topic
 name: Maximize, minimize, move and size
 summary: What Windows 3.1 does to a window it maximizes, minimizes, restores, moves and sizes — where it puts it, what it draws, and the standard icons — measured on four displays and replayed through the exports.
-probes: [sizing, icons, usedef, movedef, defer, minsize, minmax, menuflag, iconkid, iconclk, capdbl, titledis, cardview, notepos]
+probes:
+  [
+    sizing,
+    icons,
+    usedef,
+    movedef,
+    defer,
+    minsize,
+    minmax,
+    menuflag,
+    iconkid,
+    iconclk,
+    capdbl,
+    titledis,
+    cardview,
+    notepos,
+  ]
 ---
 
 A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` moves it between these states when the user clicks a caption box or picks the system menu's commands. [[measured]] [[probe:sizing]] takes one ordinary window, the size and place of [[probe:chrome]]'s, through each state. At each step it records the window's rectangle and its client area's, [[fn:USER.IsIconic]] and [[fn:USER.IsZoomed]], and it reads back the screen maximized and minimized. [[probe:icons]] records the standard icons drawn, and what a window whose class has no icon shows when it is minimized. Both were recorded on the VGA, the Super VGA, the EGA and the Hercules, and winbox.js agrees with every record of both on all four displays.
@@ -28,7 +44,7 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
   - It answers `WM_CLOSE` with nought and does nothing else (`6dd9`). So Alt+F4 never closes a title.
   - Made active, it makes the icon active instead (`6cf4`).
   - Everything else goes to `DefWindowProc`.
-  No probe records this yet. winbox.js had made a title active when it was pressed, as it does any window. Alt+F4 then closed the title and left its icon naming a destroyed window, and the Rust engine stopped on that.
+    No probe records this yet. winbox.js had made a title active when it was pressed, as it does any window. Alt+F4 then closed the title and left its icon naming a destroyed window, and the Rust engine stopped on that.
 - [[read out]] **A title is disabled with its icon.** [[fn:USER.EnableWindow]] sets or clears `WS_DISABLED` on the title as it does on the window (`USER.EXE` seg1 `6f8c`-`6f8f`, `6fac`-`6faf`). [[measured]] [[probe:titledis]] minimizes a window P and presses its icon's title, then disables P, as a message box or dialog box it owns disables it, and presses the title and the icon again. Enabled, the press on the title reaches P as a press on its icon, and its system menu comes up. Disabled, `WindowFromPoint` names the title, which is disabled too, and P is sent nothing at all. A press on P's disabled icon itself sends P only `WM_SETCURSOR`, with `HTERROR` and the mouse message, for each move, press and release.
   winbox.js had left the title enabled. A random run minimized Notepad with a letter typed and closed it from its icon's system menu, so that it asked whether to save. Each press on the title then opened the icon's system menu again inside the box, and each C closed the window again, each time deeper on Notepad's stack. The stack ran over Notepad's data, and the Save As box called a hook from what had been its structure, a general protection fault. It did not send the `WM_SETCURSOR`s either, the one as the system menu comes up and those on the disabled icon ([[topic:cursor]]). winbox.js agrees with all 13 records.
 - [[measured]] A window whose class names `IDI_APPLICATION` for its icon shows USER's own icon group 32647 when it is minimized, not the driver's `IDI_APPLICATION`. That is the Windows flag. A window whose class has no icon is not drawn by USER at all: it is erased with its class's background and painted like any other window, so [[probe:icons]]'s bare window shows as a white square.
@@ -36,7 +52,7 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[read out]] **How an icon is painted** (seg1 `4487`, `787e`, `7a83`). A minimized window whose class has an icon gets `WM_PAINTICON`, with a `wParam` of 1, where another window gets `WM_PAINT`. `BeginPaint` sends it `WM_ICONERASEBKGND` in place of `WM_ERASEBKGND`. `DefWindowProc` handles both (seg1 `580f`, `5881`):
   - `WM_PAINTICON`: the class's icon, drawn in the middle of the window's client area, which for an icon is all of it.
   - `WM_ICONERASEBKGND`: for a child, the parent's class brush, and nothing when the parent has none. For a top-level window, the wallpaper, or without one the desktop's brush.
-  So Program Manager's groups, which pass both messages on, show their class's icon on the MDI client's background.
+    So Program Manager's groups, which pass both messages on, show their class's icon on the MDI client's background.
 - [[measured]] **An icon is its own window's**, whatever children the window has. [[probe:iconkid]] minimizes a window whose client area a child fills, as a game's or an MFC program's is. The child stays visible to [[fn:USER.IsWindowVisible]], but it is not sent `WM_PAINT`. [[fn:USER.WindowFromPoint]] at the icon's middle answers the minimized window, not the child. `DefWindowProc` answers `WM_NCHITTEST` there with `HTCAPTION`, and `WM_NCLBUTTONDBLCLK` with `HTCAPTION` restores the window. winbox.js had let such a child keep the icon's pixels. A press on the icon went to the child as a press in a client area, and the child painted itself into the icon, so an icon like that could not be restored with the mouse. winbox.js agrees with all 6 records.
 - [[measured]] **The mouse on an icon.** [[probe:iconclk]] puts presses in through [[fn:USER.Mouse_Event]], as the mouse driver does, so that Windows' own loops take them. It logs what a minimized window `P` is sent, with another window active at first:
   - A press and release where it was: `WM_NCLBUTTONDOWN` with `HTCAPTION`, then `P` is made active (`WA_CLICKACTIVE`), then `WM_SYSCOMMAND` with `SC_MOVE` plus `HTCAPTION` and the point. The move loop ends with the icon where it was, and `WM_SYSCOMMAND` with `SC_KEYMENU` and a space follows, as Alt and Space would send it. So the icon's system menu opens. With `P` already active, the same without the activation.
@@ -116,6 +132,7 @@ The same sequence is [[fn:USER.SetWindowPos]]'s for one window. Before this, win
 ## Where a window goes by default
 
 [[probe:usedef]] makes windows at the top with `CW_USEDEFAULT` for their place, their size or both, on the VGA and the EGA. [[measured]]
+
 - **The place** is a step of a cascade from the screen's corner: (0, 0) for the first window placed so, then 22 across and 22 down for each after on the VGA, 22 and 20 on the EGA. Every window placed by default takes a step, whatever size it asked for. [[inferred]] The step is `SM_CXSIZE` and `SM_CYSIZE` with a frame each, which fits both displays; `SM_CYCAPTION` and two borders fits the downward step as well.
 - **The size** reaches to the same corner whatever the place: (636, 408) on the VGA, (636, 284) on the EGA, where the icons are laid out from, the screen's height less `SM_CYICONSPACING`. A window at (30, 40) is 606 by 368. [[inferred]] The right edge is the screen's width less `SM_CXFRAME`.
 - **A pop-up** asked for no place or size is at (0, 0), nought by nought.

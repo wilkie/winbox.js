@@ -73,6 +73,7 @@ A program reaches the serial and parallel ports through USER: [[fn:USER.OpenComm
 Its ports have nothing connected. A byte sent goes nowhere, one character time after the last, at the port's baud rate. The line under them is an interface, `SerialLine`, so that a port could one day be the browser's.
 
 Not followed:
+
 - the 16550's FIFO;
 - the 200 ms `SetCommState` spends reading and dropping what arrives;
 - the waits on a handshake line, and on a busy printer, which are answered at once since nothing will change;

@@ -2,7 +2,24 @@
 kind: topic
 name: The system queue
 summary: How Windows 3.1 keeps the keyboard's and the mouse's input in one queue for every program, gives each event its window only as a program takes it, makes a press a double click as it is taken, and hands it to the journal, keyboard and mouse hooks on the way -- read out of USER and recorded with keys and clicks put in faster than they were taken.
-probes: [sysq, jrnlrec, jrnlplay, inhook, keyrep, inlock, inpost, lockinp, hwhook, gmhook, tasklist, prtsc, hotkey, dblrect, sebhook]
+probes:
+  [
+    sysq,
+    jrnlrec,
+    jrnlplay,
+    inhook,
+    keyrep,
+    inlock,
+    inpost,
+    lockinp,
+    hwhook,
+    gmhook,
+    tasklist,
+    prtsc,
+    hotkey,
+    dblrect,
+    sebhook,
+  ]
 ---
 
 The keyboard and the mouse do not post their messages to a window. Their drivers hand each key and each press to USER, which puts it at the end of one queue for the whole system. A program takes it from there with [[fn:USER.GetMessage]] or [[fn:USER.PeekMessage]], and only then is it given a window: the window with the focus at that moment, for a key, or the window under the point at that moment, for the mouse. So a key pressed before a click that moves the focus, and taken after it, goes where the focus went.
@@ -15,14 +32,14 @@ Everything here is [[read out]] of `USER.EXE` unless marked; the offsets are seg
 
 An entry of the queue holds:
 
-| Field | A key | The mouse |
-| --- | --- | --- |
-| extra information | SI and DI as the driver called | SI and DI |
-| message | `WM_KEYDOWN`, `WM_KEYUP`, `WM_SYSKEYDOWN` or `WM_SYSKEYUP` | `WM_MOUSEMOVE`, or a button's press or release in its client form |
-| `paramL` | the virtual key, and the scan code in the high byte (`4b87`) | x on the screen |
-| `paramH` | the repeat count, and 8000h for an extended key, bit 0 of BH (`4c00`) | y on the screen |
-| time | `GetSystemMsecCount` as it is put in (`54b7`) | the same |
-| point | the cursor (`54cd`) | the cursor |
+| Field             | A key                                                                 | The mouse                                                         |
+| ----------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| extra information | SI and DI as the driver called                                        | SI and DI                                                         |
+| message           | `WM_KEYDOWN`, `WM_KEYUP`, `WM_SYSKEYDOWN` or `WM_SYSKEYUP`            | `WM_MOUSEMOVE`, or a button's press or release in its client form |
+| `paramL`          | the virtual key, and the scan code in the high byte (`4b87`)          | x on the screen                                                   |
+| `paramH`          | the repeat count, and 8000h for an extended key, bit 0 of BH (`4c00`) | y on the screen                                                   |
+| time              | `GetSystemMsecCount` as it is put in (`54b7`)                         | the same                                                          |
+| point             | the cursor (`54cd`)                                                   | the cursor                                                        |
 
 A key is made a system key as it is put in, by the keys held then ([[fn:USER.Keybd_Event]]): Alt down and Control not. F10 is not; it is made one as it is taken.
 

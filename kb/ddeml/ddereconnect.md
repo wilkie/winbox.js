@@ -4,7 +4,10 @@ module: DDEML
 name: DdeReconnect
 ordinal: 37
 summary: Starts a client conversation again with the window it was made through, its advise loops started again, where the server ended it.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -22,4 +25,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation.
+WinBox's own: `reconnect` in `src/win16/ddeml/conv.ts` and `reconnect` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The new conversation is made through the window the old one was made through; its advise links are started again asynchronously. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

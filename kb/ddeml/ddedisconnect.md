@@ -4,7 +4,10 @@ module: DDEML
 name: DdeDisconnect
 ordinal: 8
 summary: Ends a conversation, from either side: the other side is called back XTYP_DISCONNECT, this side is not, and the conversation is gone once both have answered.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -27,4 +30,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation, over winbox.js's own posting across tasks; all of [[probe:ddemgmt]]'s records agree in both engines.
+WinBox's own: `disconnect` in `src/win16/ddeml/conv.ts` and `disconnect` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Inside a callback it posts the conversation `WM_USER + CEh`; otherwise it ends it at once (`terminate`, seg1 `4f9e`). Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

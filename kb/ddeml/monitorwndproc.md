@@ -4,7 +4,10 @@ module: DDEML
 name: MONITORWNDPROC
 ordinal: 33
 summary: The window procedure of a monitor instance's window, class DMGMonitorClass: each notice sent it becomes an XTYP_MONITOR callback.
+versions:
+  '3.1': exact
 probes: [ddemgmt, ddemon]
+source: src/win16/ddeml/monitor.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -16,4 +19,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `monitorProc` in `src/win16/ddeml/monitor.ts` and `monitor_proc` in `crates/winbox-win16/src/ddeml/monitor.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGMonitorClass`; each notice is the `GMEM_DDESHARE` block `send_notice` (`sendNotice`), seg1 `3524`, sends. Both engines agree with [[probe:ddemgmt]] and [[probe:ddemon]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

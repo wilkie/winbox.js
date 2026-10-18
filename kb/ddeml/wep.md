@@ -4,6 +4,9 @@ module: DDEML
 name: WEP
 ordinal: 1
 summary: DDEML's exit procedure, called as the library is freed: it answers 1.
+versions:
+  '3.1': unrecorded
+source: src/win16/ddeml/exports.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -14,4 +17,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `WEP` in `src/win16/ddeml/exports.ts` and `wep` in `crates/winbox-win16/src/ddeml/mod.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It answers 1. The library's entry's work -- its data and its local heap, its instance at `[16h]` -- is done the first time any export is called, on WinBox's own data segment for the module. Not yet recorded.

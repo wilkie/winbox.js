@@ -35,6 +35,7 @@ Every accessory's **Help > About** calls [[fn:SHELL.ShellAbout]] with its own na
 `src/win16/shell/about.ts` is `ShellAbout`. The dialog template and SHELL's strings are winbox.js's own: `about-dialog.ts` and `strings.ts` beside it are generated from the installation by `scripts/oracle/dialog-template.mjs` and `scripts/oracle/strings-table.mjs`. The logo is read from the installation's `SHELL.DLL` when it is wanted, as the display's artwork is.
 
 Not followed:
+
 - winbox.js keeps no heaps for USER and GDI, so `GetFreeSystemResources` answers the recorded 88, 88 and 96. The figures do not fall as windows and objects are made.
 - `GetFreeSpace` answers 16 MB.
 - The credits hidden behind a double click are not shown.

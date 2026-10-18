@@ -21,7 +21,7 @@ pub const THUNKS: usize = 512;
 
 /// Modules winbox.js keeps whose file is loaded beside them when there is
 /// one (`own_modules.rs`).
-const STUBS_ONLY: [&str; 3] = crate::own_modules::OWN_WITH_FILE;
+const STUBS_ONLY: [&str; 4] = crate::own_modules::OWN_WITH_FILE;
 
 /// A string argument as the TypeScript engine reads one: nought for a null
 /// pointer, a number where its segment is nought, else the string.

@@ -10,7 +10,7 @@ Dynamic data exchange is two programs passing messages between their windows. Th
 - **The protocol**, which USER barely knows about: a program sends and posts the messages itself, adds and deletes the atoms, and allocates and frees the memory, by rules each side must keep.
 - **DDEML**, the DDE Management Library, `DDEML.DLL`: an API (`DdeInitialize`, `DdeConnect`, `DdeClientTransaction` and the rest) that speaks the protocol for a program through hidden windows of its own, and calls the program back.
 
-winbox.js runs Microsoft's `DDEML.DLL` from the installation, in both engines, on top of its own USER and KERNEL: what DDEML does depends on the atoms, windows, messages, hooks and timers underneath being Windows'. This page is what DDEML needs from them and how DDEML works, read out so that it can one day be WinBox's own ([[guide:without-windows]]).
+DDEML is WinBox's own in both engines, followed from this page's read-out, on top of WinBox's USER and KERNEL: what DDEML does depends on the atoms, windows, messages, hooks and timers underneath being Windows'. This page is what DDEML needs from them and how DDEML works ([[guide:without-windows]]).
 
 Transactions -- `DdeClientTransaction` and every `XTYP_` a server is asked, the data handles, `DdePostAdvise` -- are on [[topic:ddeml-transactions]], and Program Manager's DDE interface on [[topic:program-manager-dde]].
 
@@ -56,7 +56,7 @@ USER does not route DDE. It only checks the parameters, and the rest is `SendMes
 `DDEML.DLL` is three segments: code (seg1, 7532h bytes), the library's entry and `WEP` (seg2), and its data (seg3), whose local heap holds the instances. Its imports are KERNEL, USER, GDI and KEYBOARD.
 
 - [[read out]] It refuses to load outside protected mode (`GetWinFlags`, seg2 `000a`). `WEP` answers 1 (seg2 `002c`).
-- [[read out]] **The first `DdeInitialize`** since `DDEML.DLL` was loaded (seg1 `00b4`; the word at DS `0018` it tests is set there, `0146`, and nowhere else) reads `[DDEML]` `ShutdownTimeout=` (3000 ms unless set) and `ShutdownRetryTimeout=` (30000 ms) from `WIN.INI`, adds the global atom `Progman` and keeps its number at DS `00A4` (`0134`-`013d`), registers its classes (`62e0`) and adds two atoms of its own, `Who` and `Made me?`, out of a string kept XORed with 25h (`5990`).
+- [[read out]] **The first `DdeInitialize`** since `DDEML.DLL` was loaded (seg1 `00b4`; the word at DS `0018` it tests is set there, `0146`, and nowhere else) reads `[DDEML]` `ShutdownTimeout=` (3000 ms unless set) and `ShutdownRetryTimeout=` (30000 ms) from `WIN.INI`, adds the global atom `Progman` and keeps its number at DS `00A4` (`0134`-`013d`), registers its classes (`62e0`) and adds two atoms of its own, `Who` and `Made me?`, out of a string kept each byte XOR 25h (`5990`).
 - [[read out]] **The classes**, registered with DDEML's instance, style nought, no background (`62e0`-`63c4`):
 
 | Class             | Procedure         | Extra bytes | What its windows are                                                             |
@@ -159,9 +159,9 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - [[measured]] `MF_HSZ_INFO` tells more than the four `MH_` actions: 5 as DDEML adds an atom (`2f26`), 6 as it adds a count to one (`2e18`), 7 as it deletes one (`2ddc`). Making a string handle was 5 then `MH_CREATE`; freeing it `MH_DELETE` then 7; keeping it `MH_KEEP` then 6; the instance's end `MH_CLEANUP` then 7 for each left. `MONERRSTRUCT` was 10 bytes, `MONCONVSTRUCT` 26, `MONCBSTRUCT` 42.
 - [[measured]] [[probe:ddemon]], two monitors, one taking every kind, the other `MF_LINKS` and `MF_ERRORS` alone: each was handed only its kinds, and both were called back `XTYP_REGISTER` and `XTYP_UNREGISTER` for the server's name, the second string its instance's own (`MAKELONG(atom, frame)`); the first was also told of those callbacks, its own among them, with `MF_CALLBACKS`. `MF_CONV` told the server's side of a conversation as it acknowledged, the client's as it took the acknowledgement, and the end of each. `MONLINKSTRUCT` was 36 bytes, a link told by both sides, made and ended; a warm link still open was ended by `DdeDisconnect`, the client's side told first. The transactions as a monitor sees them are on [[topic:ddeml-transactions]].
 
-## In winbox.js
+## In WinBox
 
-`DDEML.DLL` is loaded from the installation as Windows loads it, in both engines; winbox.js has no export table of its own for it, so each function's page shows it as a stub. What its probes needed of USER and KERNEL, winbox.js does as Windows does: [[probe:dderaw]], [[probe:ddemgmt]], [[probe:pmatom]], [[probe:ddemon]], [[probe:ddeterm]], [[probe:ddelist]] and [[probe:ddefail]] agree with Windows in every record, in both engines. For them, winbox.js took on:
+DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), every export, kept as COMMDLG, VER and LZEXPAND are: with `DDEML.DLL` on the drive, each import of an export is linked to WinBox's stub and `GetProcAddress` answers the stub; with none, WinBox's is found by the file's name. Each routine of seg1 is followed as read out, on guest memory laid out as the file lays it out -- the instances in DDEML's own local heap, each instance's handles, conversations, links and queued callbacks in its heap of 4 KB, the queues of posts and asynchronous transactions in heaps of their own, the data in `GMEM_DDESHARE` blocks -- and each call into KERNEL, USER, GDI and KEYBOARD made as the file makes it, so the atoms counted, the windows made, the timers, messages and monitors' notices are the file's. Its data segment's initial bytes and `TermDialog`'s template are WinBox's own data. [[probe:ddemgmt]], [[probe:pmatom]], [[probe:ddemon]], [[probe:ddeterm]], [[probe:ddelist]] and [[probe:ddefail]] agree with Windows in every record, in both engines, with the file and without it; so does [[probe:dderaw]], plain DDE. What the probes needed of USER and KERNEL, WinBox does as Windows does, as it did when Microsoft's DDEML ran on it:
 
 - USER's checks of a DDE message's parameters (`src/win16/user/dde-checks.ts`, `crates/winbox-win16/src/dde_checks.rs`).
 - A task's queue as USER's ring: `PostMessage` answering the place, eight entries, a full ring refusing, `SetMessageQueue` making it anew (`Task.ringPlace` in `src/win16/task.ts`, `Queue::ring_place` in `crates/winbox-win16/src/queue.rs`).
@@ -169,7 +169,7 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - [[fn:USER.SetParent]] linking the window first among its new parent's children (`USER.EXE` seg14 `04ab`-`04b2`): DDEML moves a list's conversations one by one into the new list, and the last moved is the first.
 - `GetKbCodePage` answering 437, the word the US keyboard driver keeps at seg10 `06fc` (seg10 `083e`), which DDEML compares a code page with.
 
-[[probe:ddeleft]] has two known gaps: winbox.js frees no block as its task or module ends, and an atom deleted once too often answers nought.
+[[probe:ddeleft]] has two known gaps, the same with WinBox's DDEML as with Microsoft's: winbox.js frees no block as its task or module ends, and an atom deleted once too often answers nought.
 
 ## Not yet done
 
@@ -178,4 +178,3 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - USER's checks of the other messages' parameters (seg1 `afc2`-`b388`, and `af84` for the controls'): only the DDE rows are followed.
 - **The request in which an instance's heap is full** ([[probe:ddeheap]], 2 records): winbox.js's local blocks have a header of two bytes, KERNEL's arena four, so its heap holds more.
 - Atom numbers where a deleted atom's place in USER's table is taken: winbox.js gives a deleted atom's number to the next string added ([[topic:atoms]]), Windows the place in its heap that fits. Whether DDEML's `Progman` test holds after the atom was gone can differ: a first draft of [[probe:pmatom]], whose first instance ended before the connections, saw the test fail under Windows, the number taken by another name, and hold in winbox.js. Not recorded in the probe as it stands.
-- DDEML as WinBox's own: the read-out above and its recordings are what it would follow ([[guide:without-windows]]).

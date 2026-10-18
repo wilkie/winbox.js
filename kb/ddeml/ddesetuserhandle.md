@@ -4,7 +4,10 @@ module: DDEML
 name: DdeSetUserHandle
 ordinal: 10
 summary: Keeps a double word of the program's with a conversation, or with one of a client's asynchronous transactions, for DdeQueryConvInfo's hUser.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -20,4 +23,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation.
+WinBox's own: `setUserHandle` in `src/win16/ddeml/conv.ts` and `set_user_handle` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The handle is kept in the conversation's state, or an asynchronous transaction's record, as the file keeps it. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

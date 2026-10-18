@@ -1,0 +1,44 @@
+{
+  "probe": "ddeinst",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "clientonly",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "execute",
+      "args": "CreateGroup,AddItem,AddItem,ShowGroup",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "WinBox Games",
+      "result": "text:\"WinBox Games\",C:\\WINDOWS\\WINBOXGA.GRP,2,1\r\n\"Minesweeper\",\"C:\\WINDOWS\\WINMINE.EXE\",C:\\WINDOWS,,96,0,6,0,0\r\n\"Solitaire\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,21,0,6,0,0\r\n"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "PROGMAN",
+      "result": "1"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "",
+      "result": "1"
+    }
+  ]
+}

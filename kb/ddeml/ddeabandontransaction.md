@@ -4,7 +4,10 @@ module: DDEML
 name: DdeAbandonTransaction
 ordinal: 12
 summary: Forgets an asynchronous transaction, or all of a conversation's or an instance's, so that its answer, if it comes, is thrown away.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/xact.ts
 topics: [ddeml-transactions]
 ---
 
@@ -28,4 +31,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation.
+WinBox's own: `abandon` in `src/win16/ddeml/xact.ts` and `abandon` in `crates/winbox-win16/src/ddeml/xact.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each transaction is taken out of the conversation's queue by its identifier, its item's atom deleted (`abandonOne`, `abandon_one`, seg1 `1cb6`). Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

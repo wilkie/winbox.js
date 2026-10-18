@@ -4,7 +4,10 @@ module: DDEML
 name: DdePostAdvise
 ordinal: 13
 summary: Tells DDEML that a server's item has changed, so that every advise link on it is served — hot links with the data the server's XTYP_ADVREQ callback gives, warm links with a notice only.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/xact.ts
 topics: [ddeml-transactions]
 ---
 
@@ -30,4 +33,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation.
+WinBox's own: `postAdvise` in `src/win16/ddeml/xact.ts` and `post_advise` in `crates/winbox-win16/src/ddeml/xact.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It walks the instance's links as `2720` walks them; a hot link is asked `XTYP_ADVREQ` at once (`adviseRequest`, `advise_request`, seg1 `3e64`). Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

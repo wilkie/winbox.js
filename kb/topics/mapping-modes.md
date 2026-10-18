@@ -8,6 +8,7 @@ probes: [mapmode, exfuncs]
 A program gives GDI coordinates in its own units, **logical**, and the device context turns them into pixels, **device**. On each axis, device = (logical − window origin) × viewport extent ÷ window extent + viewport origin. The mapping mode ([[fn:GDI.SetMapMode]]) picks the extents. The origins are the program's to move ([[fn:GDI.SetWindowOrg]], [[fn:GDI.SetViewportOrg]]), and in two of the modes so are the extents ([[fn:GDI.SetWindowExt]], [[fn:GDI.SetViewportExt]]). Paintbrush moves its window origin to scroll its picture.
 
 [[measured]] [[probe:mapmode]] records, on the VGA, the EGA, the Super VGA and the Hercules:
+
 - every mode's origins and extents;
 - what each origin and extent call answers;
 - 150 points through [[fn:GDI.LPtoDP]] and [[fn:GDI.DPtoLP]];

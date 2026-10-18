@@ -4,7 +4,10 @@ module: DDEML
 name: DdeFreeDataHandle
 ordinal: 19
 summary: Frees a data handle the application holds; a handle handed to a callback is DDEML's and is left alone.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/data.ts
 topics: [ddeml-transactions]
 ---
 
@@ -25,4 +28,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation.
+WinBox's own: `freeDataHandle` in `src/win16/ddeml/data.ts` and `free_data_handle` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. A handle handed to a callback, flagged 4000h, is left; any other is let go (`free`, `free_value`, seg1 `64c4`) and its six bytes freed. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

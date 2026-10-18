@@ -59,6 +59,7 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
   - the text, a moveable block of 20h noughts.
 
   A multi-line control's line starts follow at `WM_CREATE` (seg31 `010d`). Everything is freed at `WM_NCDESTROY`, the text by whichever handle the control has then (seg27 `01d6`).
+
 - [[read out]] A dialog's edit control without `DS_LOCALEDIT` gets a heap of its own instead, in a 256-byte global block per dialog (seg24 `0337`).
 - [[read out]] While typing, the text block grows to hold what is typed and 20h more. When more than 20h is spare after a deletion, it shrinks to the text and 10h (seg26 `05c4`, `0841`). The text is not kept ended with a nought.
 - [[read out]] `EM_GETHANDLE` ends the text with a nought and answers the block's handle (seg30 `247c`). A single-line control answers 0.
@@ -76,7 +77,7 @@ Through `SendMessage` it types into them, presses Enter, Backspace and the keys 
 - [[read out]] A double click selects a word as the single-line control does ([[topic:edit-controls]]). It looks back first unless the caret is at the start of its line. The caret goes to the word's end, on the line that end is on (seg30 `1a08`).
   - [[measured]] Past the end of a wrapped line, the caret is at the end of that line. A double click there selects "brown ", the word before the wrap, and the caret goes to the start of the next line.
   - [[measured]] At the start of the next line, at the same index, it selects "fox ".
-  - [[measured]] At the start of an empty line, it selects the line's CR LF. At the start of "  indented", it skips the blanks and selects "indented".
+  - [[measured]] At the start of an empty line, it selects the line's CR LF. At the start of " indented", it skips the blanks and selects "indented".
 
 ## Undo
 
