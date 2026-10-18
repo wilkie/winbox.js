@@ -1,0 +1,224 @@
+{
+  "probe": "ddemon",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "monitor,all",
+      "result": "0|none"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "monitor,links",
+      "result": "0|none"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "client",
+      "result": "0|none"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDEMONC.EXE",
+      "result": "started|M:hsz:5:MONSRV:?|M:hsz:1:MONSRV:?|M:hsz:5:MTOPIC:?|M:hsz:1:MTOPIC:?|M:hsz:6:MONSRV:?|M:hsz:6:MONSRV:P|N:REGISTER:MONSRV:MONSRV:(own)|M:cb:REGISTER:0:MONSRV:MONSRV:(own):0:P|M:hsz:7:MONSRV:P|M:hsz:6:MONSRV:P|M:REGISTER:MONSRV:MONSRV:(own)|M:cb:REGISTER:0:MONSRV:MONSRV:(own):0:P|M:hsz:7:MONSRV:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "MONSRV,MTOPIC",
+      "result": "made|M:hsz:5:MONSRV:P|M:hsz:1:MONSRV:P|M:hsz:5:MTOPIC:P|M:hsz:1:MTOPIC:P"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "MONSRV,MTOPIC",
+      "result": "conv,0|M:send:3e0:#32771/P:DMGClientClass/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DdeMonS/S:DMGClientClass/P:MONSRV,MTOPIC:S:cb=18|M:send:3e0:DMGFrame/S:DMGClientClass/P:MONSRV,MTOPIC:S:cb=18|M:cb:CONNECT:0:MTOPIC:MONSRV:yes:S|M:conv:1:MONSRV:MTOPIC:S|M:hsz:6:MONSRV:S|M:hsz:6:MONSRV:S|M:hsz:6:MTOPIC:S|M:hsz:6:MONSRV:S|M:hsz:6:MTOPIC:S|M:send:3e4:DMGClientClass/P:DMGServerClass/S:MONSRV,MTOPIC:P:cb=18|M:conv:1:MONSRV:MTOPIC:P|M:hsz:6:MONSRV:P|M:cb:CONFIRM:0:MTOPIC:MONSRV:0:S"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "request,alpha",
+      "result": "made|M:hsz:5:alpha:P|M:hsz:1:alpha:P"
+    },
+    {
+      "function": "xact",
+      "args": "request,alpha",
+      "result": "h,0|M:hsz:6:alpha:P|M:post:3e6:DMGServerClass/S:DMGClientClass/P:1,alpha:S:cb=18|M:cb:REQUEST:1:MTOPIC:alpha:yes:S|M:post:3e5:DMGClientClass/P:DMGServerClass/S:blk,alpha:P:cb=18"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "request,alpha",
+      "result": "freed|M:hsz:3:alpha:P|M:hsz:7:alpha:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "request,nak",
+      "result": "made|M:hsz:5:nak:P|M:hsz:1:nak:P"
+    },
+    {
+      "function": "xact",
+      "args": "request,nak",
+      "result": "0,4009|M:hsz:6:nak:P|M:post:3e6:DMGServerClass/S:DMGClientClass/P:1,nak:S:cb=18|M:cb:REQUEST:1:MTOPIC:nak:0:S|M:post:3e4:DMGClientClass/P:DMGServerClass/S:0,nak:P:cb=18"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "request,nak",
+      "result": "freed|M:hsz:3:nak:P|M:hsz:7:nak:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "poke,alpha",
+      "result": "made|M:hsz:5:alpha:P|M:hsz:1:alpha:P"
+    },
+    {
+      "function": "xact",
+      "args": "poke,alpha",
+      "result": "1,0|M:post:3e7:DMGServerClass/S:DMGClientClass/P:blk,alpha:S:cb=18|M:cb:POKE:1:MTOPIC:alpha:yes:S|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,alpha:P:cb=18"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "poke,alpha",
+      "result": "freed|M:hsz:3:alpha:P|M:hsz:7:alpha:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "execute",
+      "result": "none|none"
+    },
+    {
+      "function": "xact",
+      "args": "execute",
+      "result": "1,0|M:post:3e8:DMGServerClass/S:DMGClientClass/P:0,blk:S:cb=18|M:cb:EXECUTE:0:MTOPIC:-:yes:S|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,blk:P:cb=18"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "advstart,alpha",
+      "result": "made|M:hsz:5:alpha:P|M:hsz:1:alpha:P"
+    },
+    {
+      "function": "xact",
+      "args": "advstart,alpha",
+      "result": "1,0|M:post:3e2:DMGServerClass/S:DMGClientClass/P:blk,alpha:S:cb=18|M:cb:ADVSTART:1:MTOPIC:alpha:yes:S|M:hsz:6:alpha:S|N:link:1:MONSRV:MTOPIC:alpha:1:srv=1:warm=0:S:cb=36|M:link:1:MONSRV:MTOPIC:alpha:1:srv=1:warm=0:S:cb=36|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,alpha:P:cb=18|M:hsz:6:alpha:P|N:link:1:MONSRV:MTOPIC:alpha:1:srv=0:warm=0:P:cb=36|M:link:1:MONSRV:MTOPIC:alpha:1:srv=0:warm=0:P:cb=36"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "advstart,alpha",
+      "result": "freed|M:hsz:3:alpha:P|M:hsz:7:alpha:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "advstart,beta,warm",
+      "result": "made|M:hsz:5:beta:P|M:hsz:1:beta:P"
+    },
+    {
+      "function": "xact",
+      "args": "advstart,beta,warm",
+      "result": "1,0|M:post:3e2:DMGServerClass/S:DMGClientClass/P:blk,beta:S:cb=18|M:cb:ADVSTART:1:MTOPIC:beta:yes:S|M:hsz:6:beta:S|N:link:1:MONSRV:MTOPIC:beta:1:srv=1:warm=16384:S:cb=36|M:link:1:MONSRV:MTOPIC:beta:1:srv=1:warm=16384:S:cb=36|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,beta:P:cb=18|M:hsz:6:beta:P|N:link:1:MONSRV:MTOPIC:beta:1:srv=0:warm=4:P:cb=36|M:link:1:MONSRV:MTOPIC:beta:1:srv=0:warm=4:P:cb=36"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "advstart,beta,warm",
+      "result": "freed|M:hsz:3:beta:P|M:hsz:7:beta:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "execute,advise",
+      "result": "none|none"
+    },
+    {
+      "function": "xact",
+      "args": "execute,advise",
+      "result": "1,0|M:post:3e8:DMGServerClass/S:DMGClientClass/P:0,blk:S:cb=18|M:cb:EXECUTE:0:MTOPIC:-:yes:S|M:hsz:5:alpha:S|M:hsz:1:alpha:S|M:cb:ADVREQ:1:MTOPIC:alpha:yes:S|M:hsz:6:alpha:S|M:hsz:3:alpha:S|M:hsz:7:alpha:S|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,blk:P:cb=18|M:post:3e5:DMGClientClass/P:DMGServerClass/S:blk,alpha:P:cb=18|C:ADVDATA:MTOPIC:alpha|M:cb:ADVDATA:1:MTOPIC:alpha:yes:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "advstop,alpha",
+      "result": "made|M:hsz:5:alpha:P|M:hsz:1:alpha:P"
+    },
+    {
+      "function": "xact",
+      "args": "advstop,alpha",
+      "result": "1,0|M:post:3e3:DMGServerClass/S:DMGClientClass/P:1,alpha:S:cb=18|N:link:0:MONSRV:MTOPIC:alpha:1:srv=1:warm=0:S:cb=36|M:link:0:MONSRV:MTOPIC:alpha:1:srv=1:warm=0:S:cb=36|M:hsz:7:alpha:S|M:cb:ADVSTOP:1:MTOPIC:alpha:0:S|M:post:3e4:DMGClientClass/P:DMGServerClass/S:8000,alpha:P:cb=18|M:hsz:7:alpha:P|N:link:0:MONSRV:MTOPIC:alpha:1:srv=0:warm=0:P:cb=36|M:link:0:MONSRV:MTOPIC:alpha:1:srv=0:warm=0:P:cb=36"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "advstop,alpha",
+      "result": "freed|M:hsz:3:alpha:P|M:hsz:7:alpha:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "request,async",
+      "result": "made|M:hsz:5:gamma:P|M:hsz:1:gamma:P"
+    },
+    {
+      "function": "xact",
+      "args": "request,async",
+      "result": "1,0|M:hsz:6:gamma:P|M:hsz:6:gamma:P|M:post:3e6:DMGServerClass/S:DMGClientClass/P:1,gamma:S:cb=18|M:cb:REQUEST:1:MTOPIC:gamma:yes:S|M:post:3e5:DMGClientClass/P:DMGServerClass/S:blk,gamma:P:cb=18|C:COMPLETE:MTOPIC:gamma|M:cb:COMPLETE:1:MTOPIC:gamma:0:P|M:hsz:7:gamma:P"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "request,async",
+      "result": "freed|M:hsz:3:gamma:P|M:hsz:7:gamma:P"
+    },
+    {
+      "function": "DdeCreateStringHandle",
+      "args": "request,noitem",
+      "result": "none|none"
+    },
+    {
+      "function": "xact",
+      "args": "request,noitem",
+      "result": "0,4006|N:err:4006:P|M:err:4006:P"
+    },
+    {
+      "function": "raw",
+      "args": "initiate",
+      "result": "partner|M:send:3e0:DdeMonS/S:mine/P:MONSRV,MTOPIC:S:cb=18|M:send:3e0:DMGFrame/S:mine/P:MONSRV,MTOPIC:S:cb=18|M:cb:CONNECT:0:MTOPIC:MONSRV:yes:S|M:conv:1:MONSRV:MTOPIC:S|M:hsz:6:MONSRV:S|M:hsz:6:MONSRV:S|M:hsz:6:MTOPIC:S|M:hsz:6:MONSRV:S|M:hsz:6:MTOPIC:S|M:send:3e4:mine/P:DMGServerClass/S:MONSRV,MTOPIC:P:cb=18|M:cb:CONFIRM:0:MTOPIC:MONSRV:0:S|M:send:3e0:DMGClass/S:mine/P:MONSRV,MTOPIC:S:cb=18|M:send:3e0:DMGFrame/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DMGClass/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DMGMonitorClass/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DMGClass/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DMGMonitorClass/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:DMGClass/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:mine/P:mine/P:MONSRV,MTOPIC:P:cb=18|M:send:3e0:#42/P:mine/P:MONSRV,MTOPIC:P:cb=18"
+    },
+    {
+      "function": "raw",
+      "args": "request",
+      "result": "posted|M:post:3e6:DMGServerClass/S:mine/P:1,alpha:S:cb=18|M:cb:REQUEST:1:MTOPIC:alpha:yes:S|M:post:3e5:mine/P:DMGServerClass/S:blk,alpha:P:cb=18"
+    },
+    {
+      "function": "raw",
+      "args": "terminate",
+      "result": "posted|M:post:3e1:DMGServerClass/S:mine/P:0:S:cb=18|M:conv:0:MONSRV:MTOPIC:S|M:cb:DISCONNECT:0:-:-:0:S|M:hsz:7:MONSRV:S|M:hsz:7:MONSRV:S|M:hsz:7:MTOPIC:S|M:post:3e1:mine/P:gone/?:0:P:cb=18"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "conv",
+      "result": "1|M:conv:0:MONSRV:MTOPIC:P|N:link:0:MONSRV:MTOPIC:beta:1:srv=0:warm=16384:P:cb=36|M:link:0:MONSRV:MTOPIC:beta:1:srv=0:warm=16384:P:cb=36|M:hsz:7:beta:P|M:post:3e1:DMGServerClass/S:DMGClientClass/P:0:S:cb=18|M:conv:0:MONSRV:MTOPIC:S|M:cb:DISCONNECT:0:-:-:0:S|N:link:0:MONSRV:MTOPIC:beta:1:srv=1:warm=16384:S:cb=36|M:link:0:MONSRV:MTOPIC:beta:1:srv=1:warm=16384:S:cb=36|M:hsz:7:beta:S|M:hsz:7:MONSRV:S|M:hsz:7:MONSRV:S|M:hsz:7:MTOPIC:S|M:post:3e1:DMGClientClass/P:gone/?:0:P:cb=18|M:hsz:7:MONSRV:P|M:hsz:7:MONSRV:P|M:hsz:7:MTOPIC:P"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "MONSRV,MTOPIC",
+      "result": "freed|M:hsz:3:MONSRV:P|M:hsz:7:MONSRV:P|M:hsz:3:MTOPIC:P|M:hsz:7:MTOPIC:P"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed|M:hsz:6:MONSRV:P|N:UNREGISTER:MONSRV:MONSRV:(own)|M:cb:UNREGISTER:0:MONSRV:MONSRV:(own):0:P|M:hsz:7:MONSRV:P|M:hsz:6:MONSRV:P|M:UNREGISTER:MONSRV:MONSRV:(own)|M:cb:UNREGISTER:0:MONSRV:MONSRV:(own):0:P|M:hsz:7:MONSRV:P|M:hsz:7:MONSRV:S|M:hsz:3:MONSRV:S|M:hsz:7:MONSRV:S|M:hsz:3:MTOPIC:S|M:hsz:7:MTOPIC:S"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "client",
+      "result": "1|none"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "monitor,links",
+      "result": "1|none"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "monitor,all",
+      "result": "1"
+    }
+  ]
+}

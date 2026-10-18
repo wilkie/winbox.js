@@ -2,10 +2,10 @@
 kind: topic
 name: DDEML transactions and data handles
 summary: How Windows 3.1's DDEML carries a transaction — what DdeClientTransaction sends for each kind and waits for, its modal loop and time-outs, the errors and the status it leaves, asynchronous transactions and abandoning them, the server's callbacks and how their answers become acknowledgements, advise links hot, warm and acknowledged with DdePostAdvise, blocked callbacks — and the data handles over the shared memory DDE posts.
-probes: [ddexact]
+probes: [ddexact, ddefail, ddenest, ddeheap, ddemon]
 ---
 
-`DDEML.DLL` is Microsoft's library; WinBox's own DDEML follows this page in both engines, with or without the file on the drive. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each.
+`DDEML.DLL` is Microsoft's library; WinBox's own DDEML follows this page in both engines, with or without the file on the drive. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each. [[probe:ddefail]] holds a server's `CBF_FAIL_` and `CBF_SKIP_` flags and `EC_ENABLEONE`, [[probe:ddenest]] transactions nested and a time-out past FFFFh milliseconds, [[probe:ddeheap]] an instance's heap filled, and [[probe:ddemon]] what monitors are told.
 
 Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML (`DdeInitialize`, string handles, `DdeConnect` and the rest, its windows and hooks) is on [[topic:dynamic-data-exchange]].
 
@@ -33,7 +33,7 @@ Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML 
 - [[read out]] `XTYP_ADVSTART | XTYPF_NODATA | XTYPF_ACKREQ`, `103Ch`, goes past the item's check (`130a` jumps to `13d0`), so it is sent with no item. [[measured]] The server's callback is handed an `XTYP_ADVSTART` for item nought, and the link is made.
 - [[read out]] The advise's options word is the type's flags moved to the top: `XTYPF_NODATA` becomes `fDeferUpd` (4000h), `XTYPF_ACKREQ` becomes `fAckReq` (8000h), and 2000h is set as well (`38dc`-`38f2`). The block is `GMEM_DDESHARE` (`5b0c`).
 - [[read out]] The conversation must be idle, in state 2 `XST_CONNECTED`, or the call answers nought with `DMLERR_SERVER_DIED` (`367d`-`368a`). [[measured]] A second synchronous request on the same conversation, made by a window procedure that the first's modal loop dispatched, answers nought with 400Eh.
-- [[read out]] For a conversation inside one DDEML, the client checks the server instance's `CBF_FAIL_*` flags itself and answers `DMLERR_NOTPROCESSED` without sending (`129a`-`12c2`).
+- [[read out]] For a conversation inside one DDEML, the client checks the server instance's `CBF_FAIL_*` flags itself, by the same table as the callback's (below), and answers nought without sending (`129a`-`12c2`). The `DMLERR_NOTPROCESSED` it sets there goes to the instance in a word of its stack frame not yet given a value, `[bp-0Ch]`, which is set only after, at `1304`: not to the client's. [[measured]] [[probe:ddefail]]: a request, a poke, an execute and an advise start that the server's flags failed each answered nought, `DdeGetLastError` nought, `pdwResult` left AAAAAAAAh, and the server's callback heard nothing. An advise stop is in no flag: it was sent, and with no link made answered `DMLERR_NOTPROCESSED`, AAAA0000h.
 - [[read out]] When the server's window is gone the call answers `DMLERR_SERVER_DIED`, and when `PostMessage` fails, `DMLERR_POSTMSG_FAILED` (`39eb`-`3a34`).
 - [[read out]] A poke's or execute's data handle that DDEML did not get to send is freed unless it is the application's (`12c5`-`12f7`).
 
@@ -41,8 +41,9 @@ Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML 
 
 [[read out]] A transaction with a time-out is waited for in a loop of DDEML's (`59cc`):
 
-- No instance may already be waiting: if any instance has a window at its offset `28h`, the call answers `DMLERR_REENTRANCY` (`59d7`-`59f2`).
-- `SetTimer(conversation window, 1, time-out)`, at most FFFFh milliseconds at a time; a longer time-out is waited in FFFFh pieces (`5a07`-`5a71`). A `SetTimer` that fails is `DMLERR_SYS_ERROR`.
+- No instance of the calling task may already be waiting: if any instance whose task is the caller's (the walk at `20a0`) has a window at its offset `28h`, the call answers nought with `DMLERR_REENTRANCY`, set in the calling instance (`59d7`-`59f2`). The loop is entered after the message is sent (`3886`), so the transaction has gone to the server all the same.
+- [[measured]] [[probe:ddenest]]: while instance A waited on a request, a message A's loop dispatched made a synchronous request of a second instance, B: it answered nought with 400Dh in B, A's own error untouched, and the server was handed the request. So was a synchronous request on A's second conversation. B's asynchronous request went through, and completed. A synchronous request made meanwhile by another task's instance, the server's own client of itself, was answered with its data.
+- `SetTimer(conversation window, 1, time-out)`, at most FFFFh milliseconds at a time; a longer time-out is waited in FFFFh pieces, each tick of timer 1 taking 10000h off what is left and setting the timer to the rest once it is less (`5a07`-`5a71`, `5ab2`-`5abc`). A `SetTimer` that fails is `DMLERR_SYS_ERROR`. [[measured]] [[probe:ddenest]]: a request the server blocked, with a time-out of 10000h + 500 ms, answered `DMLERR_DATAACKTIMEOUT` after no less than that by `GetTickCount` (but for two of its ticks) and less than a second and a half more.
 - `GetMessage`, then `CallMsgFilter(MSGF_DDEMGR)`, and `DispatchMessage` unless the filter took it (`5a7e`-`5aa4`). There is no `TranslateMessage`.
 - The loop ends when the instance's offset `3Ah` is set: 1 by the timer (`4760`), 80h by the answer (`48ca`), 2 by the conversation ending (`4fb9`, `50e4`) or the instance going (`0527`).
 - Then `KillTimer`, and every `WM_TIMER` left for the conversation's window taken out (`5abe`-`5adf`), and DDEML's message 4CCh posted to the instance's window, so that callbacks queued while it waited run (`5ae7`-`5af0`).
@@ -110,11 +111,13 @@ All from [[probe:ddexact]], the server answering by the item's name:
 - [[read out]] An advise start answered with anything but nought makes a link, kept once for each window, topic, item and format (`261a`), and is acknowledged 8000h; nought is a negative acknowledgement (`40b0`-`4170`). [[measured]] Starting the same link twice is acknowledged twice, the callback called both times.
 - [[read out]] `XTYP_ADVSTOP`'s acknowledgement comes after the last link it ends, and its `dwData2`'s low word is the item's atom (`3cdf`-`3d15`). The callback's answer is not looked at.
 - [[read out]] The application's `CBF_FAIL_*` and `CBF_SKIP_*` flags are looked up in a table by type (`5838`-`585d`); a filtered type answers nought without calling the application, so a filtered request, poke or execute is acknowledged negatively. `XTYP_ADVREQ`, `XTYP_ADVSTOP`, `XTYP_ADVDATA`, `XTYP_XACT_COMPLETE` and the errors cannot be filtered.
+- [[measured]] [[probe:ddefail]], a plain client of a server whose flags were changed by calling [[fn:DDEML.DdeInitialize]] again: `CBF_FAIL_REQUESTS` answered a request with `WM_DDE_ACK` status nought, `CBF_FAIL_POKES` a poke, `CBF_FAIL_EXECUTES` an execute (with the commands' block), `CBF_FAIL_ADVISES` an advise, each without the callback, while the other kinds were served; the flags took effect on the conversation already open. With `CBF_FAIL_ADVISES` no link was made, so the unadvise after was refused too. `CBF_FAIL_ALLSVRXACTIONS` failed all of them -- and connections, its bits taking in `CBF_FAIL_CONNECTIONS` and `CBF_FAIL_SELFCONNECTIONS`; a conversation already open still ended with `XTYP_DISCONNECT`.
 
 ### Blocking: CBR_BLOCK
 
 - [[read out]] A callback that answers `CBR_BLOCK` for a type without `XTYPF_NOBLOCK` blocks the conversation: the transaction stays first in the queue and the conversation is marked `ST_BLOCKED` (`4f43`-`4f5d`). Transactions of other conversations still run; those of the blocked one wait behind it, in order (`4eeb`).
 - [[read out]] [[fn:DDEML.DdeEnableCallback]] with `EC_ENABLEALL` or `EC_ENABLEONE` clears the mark and runs the queue at once, inside the call (`1eaa`-`1eb4`); `EC_ENABLEONE` lets one transaction through and blocks again (`4ef4`-`4efe`).
+- [[measured]] [[probe:ddefail]]: three asynchronous requests to a server that had called `EC_DISABLE` for its instance waited, `EC_QUERYWAITING` answering TRUE. Each `EC_ENABLEONE` -- for the instance, then for the conversation -- had the callback handed one, the first, then the second, inside the call, the client's completion following; `EC_QUERYWAITING` was still TRUE after each, and `EC_ENABLEALL` let the last through, after which it was FALSE. A request answered `CBR_BLOCK` and another behind it: `EC_ENABLEONE` handed the blocked one to the callback again, answered, and the second still waited until `EC_ENABLEALL`. With only the conversation disabled, `EC_ENABLEONE` for the instance let one of its transactions through.
 - [[measured]] A request blocked so times the client out (`DMLERR_DATAACKTIMEOUT`); a second request on the same conversation is not seen by the server and times out too. Enabled again from a second conversation, the server's callback is handed the first request again, then the second, in order, and its answers go to a client that has stopped waiting: the client's next request on the conversation is answered normally.
 - [[measured]] A poke blocked and then abandoned by the client, when released, reaches the server's callback with an item whose name `DdeQueryString` cannot give: an empty string. [[inferred]] Abandoning deletes the item's atom (`1d44`-`1d4b`), and the queued transaction held no reference of its own.
 
@@ -151,17 +154,26 @@ The calls: [[fn:DDEML.DdeCreateDataHandle]], [[fn:DDEML.DdeAddData]], [[fn:DDEML
 - An execute acknowledged 8000h with its own block in `lParam`'s high word, and the block left alone.
 - An advise with `fAckReq` acknowledged 8000h; its data came with A000h headers, as above. An unadvise brought `XTYP_ADVSTOP` to the server and 8000h back. A terminate brought `XTYP_DISCONNECT` to the server and a terminate back.
 
+## What a monitor sees of a transaction
+
+[[measured]] [[probe:ddemon]], a monitor taking every kind of notice ([[topic:dynamic-data-exchange]]), watching a client and a server in two programs:
+
+- A synchronous request: the client's `WM_DDE_REQUEST` told as the server's task took it (`MF_POSTMSGS`, the format and the item's name), the server's `MF_CALLBACKS` notice of `XTYP_REQUEST` with its answer, then its `WM_DDE_DATA` as the client took it. A request the server answered nought came back as `WM_DDE_ACK` with status nought; the client's `DMLERR_NOTPROCESSED` was told to no monitor.
+- A poke and an execute: the message, the callback, the acknowledgement 8000h -- an execute's with the commands' block.
+- An advise start: the callback, then the server's link (`MF_LINKS`, `fServer` 1) before its acknowledgement, and the client's link (`fServer` 0) after it. A warm link's `fNoData` was 4000h on the server's side, the bit of the `DDEADVISE` options, and 4, `XTYPF_NODATA`, on the client's. `XTYP_ADVREQ` from `DdePostAdvise`, the data posted, and the client's `XTYP_ADVDATA`. An advise stop: both links ended, the server's first, then the callback.
+- A request with no item: `MF_ERRORS`, 4006h, the client's task, to both monitors.
+- An asynchronous request: its completion's `XTYP_XACT_COMPLETE` told with `MF_CALLBACKS` as the client was called back.
+
 ## Inside DDEML
 
 - [[read out]] A request for the topic "Who" and item "Made me?" in `CF_TEXT` is answered by DDEML itself, before the application's callback, with the text "DDEML - By Sanford Alyn Staab", the strings kept each byte XOR 25h in DDEML's data (`5860`-`5897`, decoded at `5990`).
 
 ## In WinBox
 
-DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), every export, kept as COMMDLG, VER and LZEXPAND are: with `DDEML.DLL` on the drive, each import of an export is linked to WinBox's stub and `GetProcAddress` answers the stub; with none, WinBox's is found by the file's name. Each routine of seg1 above is followed as read out, on guest memory laid out as the file lays it out -- the instances in DDEML's own local heap, each instance's handles, conversations, links and queued callbacks in its heap of 4 KB, the queues of posts and asynchronous transactions in heaps of their own, the data in `GMEM_DDESHARE` blocks -- and each call into KERNEL and USER made as the file makes it, so the atoms counted, the windows made, the timers and the messages are the file's. [[probe:ddexact]] holds all of it to Windows' answers in both engines, with the file and without it, as it held what Microsoft's DDEML asked of their KERNEL and USER before. Program Manager's DDE is on [[topic:program-manager-dde]].
+DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), every export, kept as COMMDLG, VER and LZEXPAND are: with `DDEML.DLL` on the drive, each import of an export is linked to WinBox's stub and `GetProcAddress` answers the stub; with none, WinBox's is found by the file's name. Each routine of seg1 is followed as read out, on guest memory laid out as the file lays it out -- the instances in DDEML's own local heap, each instance's handles, conversations, links and queued callbacks in its heap of 4 KB, the queues of posts and asynchronous transactions in heaps of their own, the data in `GMEM_DDESHARE` blocks -- and each call into KERNEL, USER, GDI and KEYBOARD made as the file makes it, so the atoms counted, the windows made, the timers, messages and monitors' notices are the file's. Its data segment's initial bytes and `TermDialog`'s template are WinBox's own data. [[probe:ddexact]], [[probe:ddefail]], [[probe:ddenest]] and [[probe:ddemon]] agree with Windows in every record, in both engines, with the file and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`); [[probe:ddeheap]] does but for KERNEL's two records of a local block's header. The errors a transaction sets in the instance a stale word of its frame names (`129a`-`12c2`) WinBox sets in no instance. Program Manager's DDE is on [[topic:program-manager-dde]].
 
 ## Not yet done
 
-- `XTYP_ERROR`: an instance's heap of 4 KB is a global block, and WinBox's local heaps in global blocks grow with the block, so DDEML's never fills and the callback is never made.
-- `CBF_FAIL_*` on a server, measured; `EC_ENABLEONE`, measured; a time-out longer than FFFFh milliseconds; the monitors' view of transactions.
-- The `DMLERR_REENTRANCY` of a second instance waiting, measured: the probe's nested request met the conversation's own check first.
 - The 4CCh queue's timing against other messages, beyond the orders recorded here.
+- Where the `DMLERR_NOTPROCESSED` of a transaction a local server's flags fail goes: to the instance an unset word of the stack names, which no probe has seen.
+- A time-out's length to the millisecond: [[probe:ddenest]] holds it to two of `GetTickCount`'s ticks, where both engines, held to the millisecond, came short of the 66,036 asked (66,021 in one run of the Rust engine's): a timer's period against `GetTickCount`, which Windows' recording, held to the same, did not come short of.

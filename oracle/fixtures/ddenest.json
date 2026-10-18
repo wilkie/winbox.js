@@ -1,0 +1,79 @@
+{
+  "probe": "ddenest",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "A,B",
+      "result": "0,0"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDENESTC.EXE",
+      "result": "started"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "A,A,B",
+      "result": "1,1,1"
+    },
+    {
+      "function": "xact",
+      "args": "A,block,nested",
+      "result": "0,4002|C:B-sync:0,400d|C:A-err:0|C:B-async:1,0|C:A-second:0,400d|C:complete:B|S:request:block|S:request:alpha|S:request:beta|S:request:gamma"
+    },
+    {
+      "function": "server enable",
+      "args": "",
+      "result": "posted|S:request:block"
+    },
+    {
+      "function": "xact",
+      "args": "A,block,server's own",
+      "result": "0,4002|S:request:block|S:request:alpha|S:own:h,0"
+    },
+    {
+      "function": "server enable",
+      "args": "",
+      "result": "posted|S:request:block"
+    },
+    {
+      "function": "xact",
+      "args": "A,block,10000h+500",
+      "result": "0,4002,ok|S:request:block"
+    },
+    {
+      "function": "server enable",
+      "args": "",
+      "result": "posted|S:request:block"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "A,A,B",
+      "result": "1,1,1"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "A",
+      "result": "1"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "B",
+      "result": "1"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed"
+    }
+  ]
+}

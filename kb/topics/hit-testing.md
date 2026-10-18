@@ -62,12 +62,12 @@ The capture has kinds (`28cd`, the kind kept at `10e`):
 
 What the answer does (`29c4`):
 
-| Answer | The window at the top | The press |
-|---|---|---|
-| 0, `MA_ACTIVATE` | made active | handed over |
-| `MA_ACTIVATEANDEAT`, 2 | made active | thrown away |
-| `MA_NOACTIVATE`, 3 | left | handed over |
-| `MA_NOACTIVATEANDEAT`, 4 | left | thrown away |
+| Answer                   | The window at the top | The press   |
+| ------------------------ | --------------------- | ----------- |
+| 0, `MA_ACTIVATE`         | made active           | handed over |
+| `MA_ACTIVATEANDEAT`, 2   | made active           | thrown away |
+| `MA_NOACTIVATE`, 3       | left                  | handed over |
+| `MA_NOACTIVATEANDEAT`, 4 | left                  | thrown away |
 
 Made active by a press in the client area, it is told `WA_CLICKACTIVE`; by a press off it, `WA_ACTIVE` (`29d9`, `377e`). A press thrown away is gone, but the release that follows it is handed over.
 

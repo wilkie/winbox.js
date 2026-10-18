@@ -23,9 +23,17 @@ const PROBE_GAPS: Record<string, string[]> = {
   ddeleft: ['owned', 'DdeFreeStringHandle'],
   progdde: ['files'],
   ddeinst: [],
+  ddefail: [],
+  ddemon: [],
+  ddeterm: [],
+  ddelist: [],
+  ddenest: [],
+  ddeheap: ['requests', 'server'],
 };
 /** As `replay.ts`'s `VIRTUAL_CLOCK`: these run on the instructions' clock. */
-const VIRTUAL = new Set(['ddexact', 'progdde']);
+const VIRTUAL = new Set(['ddexact', 'progdde', 'ddeterm', 'ddenest']);
+/** As `replay.ts`'s `SECONDS`. */
+const SECONDS: Record<string, number> = { ddenest: 100 };
 const FILES = [['WINDOWS', 'SYSTEM', 'DDEML.DLL']];
 
 /** What the oracle recorded, as `function(args) = result` lines, but the gaps. */
@@ -48,10 +56,17 @@ describe('DDEML, WinBox own', () => {
       const test = ready(probe) ? it : it.skip;
 
       test(`${probe} agrees ${without ? 'with no DDEML.DLL' : 'with the file'}`, async () => {
-        const { fileSystem, win16 } = await runProbe(probe, 4000, false, true, 30, {
-          without: without ? FILES : [],
-          virtual: VIRTUAL.has(probe),
-        });
+        const { fileSystem, win16 } = await runProbe(
+          probe,
+          4000,
+          false,
+          true,
+          SECONDS[probe] ?? 30,
+          {
+            without: without ? FILES : [],
+            virtual: VIRTUAL.has(probe),
+          }
+        );
         const written = recordsFrom((await outputOf(fileSystem, probe)) ?? '').filter(
           (line: string) => !PROBE_GAPS[probe].some((name) => line.startsWith(`${name}(`))
         );

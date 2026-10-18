@@ -6,7 +6,6 @@ import { copyValue, free as freeValue, freeBlock, giveAway, make, prepare, wrap 
 import {
   DMLERR_INVALIDPARAMETER,
   DMLERR_MEMORY_ERROR,
-  DMLERR_NO_CONV_ESTABLISHED,
   callback,
   convValid,
   errorEach,
@@ -73,31 +72,32 @@ async function transactionBody(d: Dd, params: number): Promise<number> {
   let proceed = false;
   let conv = 0;
 
-  if (!(await convValid(d, hconv))) {
-    await errorEach(d, DMLERR_INVALIDPARAMETER);
-  } else {
+  if (await convValid(d, hconv)) {
     conv = await d.windowLong(hwnd, 0);
 
     const instance = d.r16(conv);
 
     d.si16(instance, 0x2a, 0);
 
-    if ((d.r8(plus(conv, 0x20)) & 1) === 0) {
-      await setError(d, instance, DMLERR_NO_CONV_ESTABLISHED);
-    } else if ((d.r8(plus(conv, 0x20)) & 4) === 0) {
-      proceed = true;
-    } else {
-      const server = await d.windowLong(d.r16(plus(conv, 0xa)), 0);
-
-      if (server === 0) {
-        await onTerminate(d, conv, d.r16(plus(conv, 0xa)), hwnd);
-        await setError(d, instance, DMLERR_NO_CONV_ESTABLISHED);
-      } else if ((filter(d, kind) & d.i32(d.r16(server), 0x1a)) >>> 0 !== 0) {
-        await setError(d, instance, DMLERR_NOTPROCESSED);
-      } else {
+    /* The errors of a conversation not connected, of a partner gone, and of
+     * a type the server's flags fail are set in the instance a word of the
+     * file's frame names before it is given a value (`[bp-0Ch]`, set at
+     * `1304`): in no instance a program can ask (`ddefail`). */
+    if (d.r8(plus(conv, 0x20)) & 1) {
+      if ((d.r8(plus(conv, 0x20)) & 4) === 0) {
         proceed = true;
+      } else {
+        const server = await d.windowLong(d.r16(plus(conv, 0xa)), 0);
+
+        if (server === 0) {
+          await onTerminate(d, conv, d.r16(plus(conv, 0xa)), hwnd);
+        } else {
+          proceed = (filter(d, kind) & d.i32(d.r16(server), 0x1a)) >>> 0 === 0;
+        }
       }
     }
+  } else {
+    await errorEach(d, DMLERR_INVALIDPARAMETER);
   }
 
   if (!proceed) {

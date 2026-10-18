@@ -19,6 +19,7 @@ USER has four calls that pass a program's procedure one thing at a time. [[probe
   - the menus' `#32768`, below it.
 
   The probe is the shell, so all three are its task's.
+
 - [[measured]] [[probe:hidwnd]] walks the windows at the top with [[fn:USER.GetWindow]], before the probe makes a window and after. The three are there from the start, all hidden, at the screen's corner, with no title and no owner:
   - `#32771` is a disabled pop-up, `8C000000h`, 10 by 10, and topmost: its extended style is `WS_EX_TOPMOST`. A window made after it still lies below it.
   - `#42` has a caption, `04C00000h`, 102 by 26.

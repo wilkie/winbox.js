@@ -18,6 +18,12 @@ const PROBES: &[(&str, &[&str])] = &[
     ("ddeleft", &["owned", "DdeFreeStringHandle"]),
     ("progdde", &["files"]),
     ("ddeinst", &[]),
+    ("ddefail", &[]),
+    ("ddemon", &[]),
+    ("ddeterm", &[]),
+    ("ddelist", &[]),
+    ("ddenest", &[]),
+    ("ddeheap", &["requests", "server"]),
 ];
 
 /// A probe run, with or without `DDEML.DLL` on the drive: how it stopped,

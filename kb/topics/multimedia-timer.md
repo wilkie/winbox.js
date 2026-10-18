@@ -28,6 +28,7 @@ MMSYSTEM keeps a clock to the millisecond, and it calls a program back on time w
 The procedure is called from the timer's interrupt, between two of whatever program's instructions. The probe's procedure loads its own data segment and does not check its stack, because the stack is not the program's. With the usual check, Windows hung.
 
 winbox.js calls such a procedure at one of two points:
+
 - Between two slices of the running task's instructions.
 - Inside the API, straight after a task that waits for a message wakes. The event wakes it.
 

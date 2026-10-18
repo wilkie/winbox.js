@@ -1,0 +1,194 @@
+{
+  "probe": "ddelist",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "client",
+      "result": "0,,Progman=1"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDELISTC.EXE",
+      "result": "started"
+    },
+    {
+      "function": "count",
+      "args": "once",
+      "result": "before,LISTSRV=1,LTOPIC=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "once",
+      "result": "conv,0[0:0,st=11,cs=2,list=0],LISTSRV=3,LTOPIC=2|S:init:A:0|S:ack:A"
+    },
+    {
+      "function": "after",
+      "args": "once",
+      "result": "C:none[0:0,st=11,cs=2,list=0],LISTSRV=3,LTOPIC=2"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "once",
+      "result": "1,LISTSRV=1,LTOPIC=1|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "twice",
+      "result": "before,LISTSRV=1,LTOPIC=1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "twice",
+      "result": "conv,0[0:0,st=11,cs=2,list=0],LISTSRV=3,LTOPIC=2|S:init:A:0|S:ack:A|S:ack:B|S:term:B:sent:DMGClientClass"
+    },
+    {
+      "function": "after",
+      "args": "twice",
+      "result": "C:none[0:0,st=11,cs=2,list=0],LISTSRV=3,LTOPIC=2"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "twice",
+      "result": "1,LISTSRV=1,LTOPIC=1|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "once",
+      "result": "before,LISTSRV=1,LTOPIC=1"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "once",
+      "result": "list,0,LISTSRV=3,LTOPIC=2|S:init:A:0|S:ack:A"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "once",
+      "result": "C:none[0:0,st=51,cs=2,list=1],LISTSRV=3,LTOPIC=2"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "once",
+      "result": "1,LISTSRV=1,LTOPIC=1|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "twice",
+      "result": "before,LISTSRV=1,LTOPIC=1"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "twice",
+      "result": "list,0,LISTSRV=5,LTOPIC=3|S:init:A:0|S:ack:A|S:ack:B|S:term:B:sent:DMGClientClass|S:init:A:1|S:ack:A"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "twice",
+      "result": "C:none[0:0,st=51,cs=2,list=1][0:0,st=51,cs=2,list=1],LISTSRV=5,LTOPIC=3"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "twice",
+      "result": "1,LISTSRV=1,LTOPIC=1|S:term:A:posted:DMGClientClass|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "Progman,once",
+      "result": "before,Progman=3"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "Progman,once",
+      "result": "conv,0[0:0,st=11,cs=2,list=0],Progman=8|S:init:A:0|S:ack:A"
+    },
+    {
+      "function": "after",
+      "args": "Progman,once",
+      "result": "C:none[0:0,st=11,cs=2,list=0],Progman=8"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "Progman,once",
+      "result": "1,Progman=5|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "Progman,twice",
+      "result": "before,Progman=5"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "Progman,twice",
+      "result": "conv,0[0:0,st=11,cs=2,list=0],Progman=10|S:init:A:0|S:ack:A|S:ack:B|S:term:B:sent:DMGClientClass"
+    },
+    {
+      "function": "after",
+      "args": "Progman,twice",
+      "result": "C:none[0:0,st=11,cs=2,list=0],Progman=10"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "Progman,twice",
+      "result": "1,Progman=7|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "Progman,once",
+      "result": "before,Progman=7"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "Progman,once",
+      "result": "list,0,Progman=12|S:init:A:0|S:ack:A"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "Progman,once",
+      "result": "C:none[0:0,st=51,cs=2,list=1],Progman=12"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "Progman,once",
+      "result": "1,Progman=9|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "count",
+      "args": "Progman,twice",
+      "result": "before,Progman=9"
+    },
+    {
+      "function": "DdeConnectList",
+      "args": "Progman,twice",
+      "result": "list,0,Progman=21|S:init:A:0|S:ack:A|S:ack:B|S:term:B:sent:DMGClientClass|S:init:A:1|S:ack:A"
+    },
+    {
+      "function": "DdeQueryNextServer",
+      "args": "Progman,twice",
+      "result": "C:none[0:0,st=51,cs=2,list=1][0:0,st=51,cs=2,list=1],Progman=21"
+    },
+    {
+      "function": "DdeDisconnectList",
+      "args": "Progman,twice",
+      "result": "1,Progman=15|S:term:A:posted:DMGClientClass|S:term:A:posted:DMGClientClass"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "client",
+      "result": "1,Progman=12"
+    }
+  ]
+}

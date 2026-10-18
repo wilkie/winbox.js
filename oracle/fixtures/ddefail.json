@@ -1,0 +1,569 @@
+{
+  "probe": "ddefail",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "client",
+      "result": "0"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDEFAILC.EXE",
+      "result": "started"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "FAILSRV,FTOPIC",
+      "result": "conv,0|S:connect:0:FTOPIC:FAILSRV:-:1:0|S:confirm:0:FTOPIC:FAILSRV:-:0:0"
+    },
+    {
+      "function": "raw-initiate",
+      "args": "none",
+      "result": "partner|S:connect:0:FTOPIC:FAILSRV:-:0:0|C:raw-ack-init:FTOPIC|S:confirm:0:FTOPIC:FAILSRV:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "none,request",
+      "result": "h,0,aaaaaaaa|S:request:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "none,poke",
+      "result": "1,0,aaaa8000|S:poke:1:FTOPIC:alpha:poked:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "none,execute",
+      "result": "1,0,aaaa8000|S:execute:0:FTOPIC:0:[run]:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "none,advstart",
+      "result": "1,0,aaaa8000|S:advstart:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "none,advstop",
+      "result": "1,0,aaaa8000|S:advstop:1:FTOPIC:alpha:-:0:eeee"
+    },
+    {
+      "function": "raw",
+      "args": "none,request",
+      "result": "posted|S:request:1:FTOPIC:alpha:-:0:0|C:raw-data:alpha:3000:alpha-data"
+    },
+    {
+      "function": "raw",
+      "args": "none,poke",
+      "result": "posted|S:poke:1:FTOPIC:alpha:raw-p:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "none,execute",
+      "result": "posted|S:execute:0:FTOPIC:0:[raw]:0:0|C:raw-ack:8000:commands"
+    },
+    {
+      "function": "raw",
+      "args": "none,advise",
+      "result": "posted|S:advstart:1:FTOPIC:alpha:-:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "none,unadvise",
+      "result": "posted|S:advstop:1:FTOPIC:alpha:-:0:eeee|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_REQUESTS",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_REQUESTS,request",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_REQUESTS,poke",
+      "result": "1,0,aaaa8000|S:poke:1:FTOPIC:alpha:poked:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_REQUESTS,execute",
+      "result": "1,0,aaaa8000|S:execute:0:FTOPIC:0:[run]:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_REQUESTS,advstart",
+      "result": "1,0,aaaa8000|S:advstart:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_REQUESTS,advstop",
+      "result": "1,0,aaaa8000|S:advstop:1:FTOPIC:alpha:-:0:eeee"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_REQUESTS,request",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_REQUESTS,poke",
+      "result": "posted|S:poke:1:FTOPIC:alpha:raw-p:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_REQUESTS,execute",
+      "result": "posted|S:execute:0:FTOPIC:0:[raw]:0:0|C:raw-ack:8000:commands"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_REQUESTS,advise",
+      "result": "posted|S:advstart:1:FTOPIC:alpha:-:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_REQUESTS,unadvise",
+      "result": "posted|S:advstop:1:FTOPIC:alpha:-:0:eeee|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_POKES",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_POKES,request",
+      "result": "h,0,aaaaaaaa|S:request:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_POKES,poke",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_POKES,execute",
+      "result": "1,0,aaaa8000|S:execute:0:FTOPIC:0:[run]:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_POKES,advstart",
+      "result": "1,0,aaaa8000|S:advstart:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_POKES,advstop",
+      "result": "1,0,aaaa8000|S:advstop:1:FTOPIC:alpha:-:0:eeee"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_POKES,request",
+      "result": "posted|S:request:1:FTOPIC:alpha:-:0:0|C:raw-data:alpha:3000:alpha-data"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_POKES,poke",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_POKES,execute",
+      "result": "posted|S:execute:0:FTOPIC:0:[raw]:0:0|C:raw-ack:8000:commands"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_POKES,advise",
+      "result": "posted|S:advstart:1:FTOPIC:alpha:-:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_POKES,unadvise",
+      "result": "posted|S:advstop:1:FTOPIC:alpha:-:0:eeee|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_EXECUTES",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_EXECUTES,request",
+      "result": "h,0,aaaaaaaa|S:request:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_EXECUTES,poke",
+      "result": "1,0,aaaa8000|S:poke:1:FTOPIC:alpha:poked:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_EXECUTES,execute",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_EXECUTES,advstart",
+      "result": "1,0,aaaa8000|S:advstart:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_EXECUTES,advstop",
+      "result": "1,0,aaaa8000|S:advstop:1:FTOPIC:alpha:-:0:eeee"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_EXECUTES,request",
+      "result": "posted|S:request:1:FTOPIC:alpha:-:0:0|C:raw-data:alpha:3000:alpha-data"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_EXECUTES,poke",
+      "result": "posted|S:poke:1:FTOPIC:alpha:raw-p:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_EXECUTES,execute",
+      "result": "posted|C:raw-ack:0:commands"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_EXECUTES,advise",
+      "result": "posted|S:advstart:1:FTOPIC:alpha:-:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_EXECUTES,unadvise",
+      "result": "posted|S:advstop:1:FTOPIC:alpha:-:0:eeee|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_ADVISES",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ADVISES,request",
+      "result": "h,0,aaaaaaaa|S:request:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ADVISES,poke",
+      "result": "1,0,aaaa8000|S:poke:1:FTOPIC:alpha:poked:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ADVISES,execute",
+      "result": "1,0,aaaa8000|S:execute:0:FTOPIC:0:[run]:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ADVISES,advstart",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ADVISES,advstop",
+      "result": "0,4009,aaaa0000"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ADVISES,request",
+      "result": "posted|S:request:1:FTOPIC:alpha:-:0:0|C:raw-data:alpha:3000:alpha-data"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ADVISES,poke",
+      "result": "posted|S:poke:1:FTOPIC:alpha:raw-p:0:0|C:raw-ack:8000:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ADVISES,execute",
+      "result": "posted|S:execute:0:FTOPIC:0:[raw]:0:0|C:raw-ack:8000:commands"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ADVISES,advise",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ADVISES,unadvise",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_ALLSVRXACTIONS",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,request",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,poke",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,execute",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,advstart",
+      "result": "0,0,aaaaaaaa"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,advstop",
+      "result": "0,4009,aaaa0000"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,request",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,poke",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,execute",
+      "result": "posted|C:raw-ack:0:commands"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,advise",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw",
+      "args": "CBF_FAIL_ALLSVRXACTIONS,unadvise",
+      "result": "posted|C:raw-ack:0:alpha"
+    },
+    {
+      "function": "raw-terminate",
+      "args": "all failed",
+      "result": "posted|S:disconnect:0:0:0:-:0:0|C:raw-terminate"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "CBF_FAIL_ALLSVRXACTIONS",
+      "result": "0,400a"
+    },
+    {
+      "function": "raw-initiate",
+      "args": "CBF_FAIL_ALLSVRXACTIONS",
+      "result": "none"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_SKIP_ALLNOTIFICATIONS",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "CBF_SKIP_ALLNOTIFICATIONS",
+      "result": "conv,0|S:connect:0:FTOPIC:FAILSRV:-:1:0"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "CBF_SKIP_ALLNOTIFICATIONS",
+      "result": "1"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_CONNECTIONS",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "CBF_FAIL_CONNECTIONS",
+      "result": "0,400a"
+    },
+    {
+      "function": "raw-initiate",
+      "args": "CBF_FAIL_CONNECTIONS",
+      "result": "none"
+    },
+    {
+      "function": "xact",
+      "args": "CBF_FAIL_CONNECTIONS,request",
+      "result": "h,0,aaaaaaaa|S:request:1:FTOPIC:alpha:-:0:0"
+    },
+    {
+      "function": "server self",
+      "args": "CBF_FAIL_CONNECTIONS",
+      "result": "0"
+    },
+    {
+      "function": "server flags",
+      "args": "CBF_FAIL_SELFCONNECTIONS",
+      "result": "0"
+    },
+    {
+      "function": "server self",
+      "args": "CBF_FAIL_SELFCONNECTIONS",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "CBF_FAIL_SELFCONNECTIONS",
+      "result": "conv,0|S:connect:0:FTOPIC:FAILSRV:-:1:0|S:confirm:0:FTOPIC:FAILSRV:-:0:0"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "CBF_FAIL_SELFCONNECTIONS",
+      "result": "1|S:disconnect:0:0:0:-:0:0"
+    },
+    {
+      "function": "server flags",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "server self",
+      "args": "0",
+      "result": "1|S:connect:0:FTOPIC:FAILSRV:-:1:1|S:confirm:0:FTOPIC:FAILSRV:-:0:1|S:disconnect:0:0:0:-:0:1"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_DISABLE",
+      "result": "1"
+    },
+    {
+      "function": "xact",
+      "args": "disabled,alpha",
+      "result": "1,0,id1"
+    },
+    {
+      "function": "xact",
+      "args": "disabled,beta",
+      "result": "1,0,id2"
+    },
+    {
+      "function": "xact",
+      "args": "disabled,gamma",
+      "result": "1,0,id3"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_QUERYWAITING",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_ENABLEONE",
+      "result": "1|S:request:1:FTOPIC:alpha:-:0:0|C:complete:1:FTOPIC:alpha:alpha-data:id1:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_QUERYWAITING,after one",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_ENABLEONE,conv",
+      "result": "1|S:request:1:FTOPIC:beta:-:0:0|C:complete:1:FTOPIC:beta:beta-data:id2:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_QUERYWAITING,conv",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_ENABLEALL",
+      "result": "1|S:request:1:FTOPIC:gamma:-:0:0|C:complete:1:FTOPIC:gamma:gamma-data:id3:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_QUERYWAITING,after all",
+      "result": "0"
+    },
+    {
+      "function": "xact",
+      "args": "blocked,block",
+      "result": "1,0,id4|S:request:1:FTOPIC:block:-:0:0"
+    },
+    {
+      "function": "xact",
+      "args": "blocked,delta",
+      "result": "1,0,id5"
+    },
+    {
+      "function": "server enable",
+      "args": "block,EC_QUERYWAITING",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "block,EC_ENABLEONE",
+      "result": "1|S:request:1:FTOPIC:block:-:0:0|C:complete:1:FTOPIC:block:block-data:id4:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "block,EC_QUERYWAITING,after one",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "block,EC_ENABLEALL",
+      "result": "1|S:request:1:FTOPIC:delta:-:0:0|C:complete:1:FTOPIC:delta:delta-data:id5:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "EC_DISABLE,conv",
+      "result": "1"
+    },
+    {
+      "function": "xact",
+      "args": "conv disabled,eps",
+      "result": "1,0,id6"
+    },
+    {
+      "function": "xact",
+      "args": "conv disabled,zeta",
+      "result": "1,0,id7"
+    },
+    {
+      "function": "server enable",
+      "args": "conv,EC_ENABLEONE,all",
+      "result": "1|S:request:1:FTOPIC:eps:-:0:0|C:complete:1:FTOPIC:eps:eps-data:id6:0:conv"
+    },
+    {
+      "function": "server enable",
+      "args": "conv,EC_QUERYWAITING",
+      "result": "1"
+    },
+    {
+      "function": "server enable",
+      "args": "conv,EC_ENABLEALL",
+      "result": "1|S:request:1:FTOPIC:zeta:-:0:0|C:complete:1:FTOPIC:zeta:zeta-data:id7:0:conv"
+    },
+    {
+      "function": "DdeDisconnect",
+      "args": "conv",
+      "result": "1|S:disconnect:0:0:0:-:0:0"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed"
+    }
+  ]
+}

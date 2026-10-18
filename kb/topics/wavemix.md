@@ -42,7 +42,7 @@ A session is a block of its local heap, marked `5432h` at its start and at `8Ch`
 
 [[read out]] With no `WaveBlockLen`, the block is measured (seg1 `3284`). Under Windows NT (`GetWinFlags` with 4000h) it is worked out from the rate instead. Elsewhere WaveMix opens the device with `CALLBACK_FUNCTION`, `FIGUREPROC`. It prepares 512 headers of 16 bytes of silence, pauses the device, and writes them, all 512 unless one is done first. It restarts the device and spins until `FIGUREPROC` has counted an `MM_WOM_DONE`. The count is how many 16-byte headers the driver finished in one go, at its first interrupt; eight bytes for each is the block, held to 512 to 4,096. Then it resets the device, unprepares the headers and closes it. These are the 512 prepares and writes a program using WaveMix is first seen to make. The spin is in the foreground with interrupts on: it ends only because the driver calls back from its interrupt. A driver that finished headers only when asked would hang it.
 
-[[read out]] `WaveMixGetInfo` takes a structure of 20 bytes, its size first; of any other size it answers 20 and copies nothing. Else it copies its own: version 2, the date "Oct  6 1994", formats `FFFh`.
+[[read out]] `WaveMixGetInfo` takes a structure of 20 bytes, its size first; of any other size it answers 20 and copies nothing. Else it copies its own: version 2, the date "Oct 6 1994", formats `FFFh`.
 
 ## Channels and waves
 

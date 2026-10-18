@@ -9,8 +9,8 @@ use super::conv::{on_terminate, post_dde};
 use super::core::{Cmp, Dd, R, hi, lo, long, plus};
 use super::data;
 use super::instance::{
-    self, DMLERR_INVALIDPARAMETER, DMLERR_MEMORY_ERROR, DMLERR_NO_CONV_ESTABLISHED, conv_valid,
-    error_each, instance_of, queue_callback,
+    self, DMLERR_INVALIDPARAMETER, DMLERR_MEMORY_ERROR, conv_valid, error_each, instance_of,
+    queue_callback,
 };
 use super::monitor::{add_count, conv_of, delete_atom, link_notice, set_error};
 use super::{D_ARRAY_SENT, D_MONITORS};
@@ -71,20 +71,22 @@ async fn transaction_body(d: &Dd<'_>, params: u32) -> R<u32> {
         let instance = d.r16(conv);
         d.si16(instance, 0x2a, 0);
 
-        if d.r8(plus(conv, 0x20)) & 1 == 0 {
-            set_error(d, instance, DMLERR_NO_CONV_ESTABLISHED).await?;
-        } else if d.r8(plus(conv, 0x20)) & 4 == 0 {
-            proceed = true;
-        } else {
-            let server = d.window_long(d.r16(plus(conv, 0xa)), 0).await?;
-
-            if server == 0 {
-                on_terminate(d, conv, d.r16(plus(conv, 0xa)), hwnd).await?;
-                set_error(d, instance, DMLERR_NO_CONV_ESTABLISHED).await?;
-            } else if filter(d, kind) & d.i32(d.r16(server), 0x1a) != 0 {
-                set_error(d, instance, DMLERR_NOTPROCESSED).await?;
-            } else {
+        // The errors of a conversation not connected, of a partner gone,
+        // and of a type the server's flags fail (`DMLERR_NO_CONV_ESTABLISHED`,
+        // `DMLERR_NOTPROCESSED`) are set in the instance a word of the
+        // file's frame names before it is given a value (`[bp-0Ch]`, set at
+        // `1304`): in no instance a program can ask (`ddefail`).
+        if d.r8(plus(conv, 0x20)) & 1 != 0 {
+            if d.r8(plus(conv, 0x20)) & 4 == 0 {
                 proceed = true;
+            } else {
+                let server = d.window_long(d.r16(plus(conv, 0xa)), 0).await?;
+
+                if server == 0 {
+                    on_terminate(d, conv, d.r16(plus(conv, 0xa)), hwnd).await?;
+                } else {
+                    proceed = filter(d, kind) & d.i32(d.r16(server), 0x1a) == 0;
+                }
             }
         }
     } else {

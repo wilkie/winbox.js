@@ -6,7 +6,7 @@ ordinal: 26
 summary: Holds back an instance's or a conversation's callbacks, lets one through or all of them, or asks whether any are waiting.
 versions:
   '3.1': exact
-probes: [ddemgmt]
+probes: [ddemgmt, ddefail]
 source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
@@ -19,6 +19,8 @@ topics: [dynamic-data-exchange]
 - [[measured]] `XTYP_CONNECT` still reached a server whose callbacks were disabled: connecting is not held back.
 - [[measured]] A command of 1 answered FALSE and `DMLERR_INVALIDPARAMETER`; so did a conversation that is not one. An id whose serial is not the instance's answered FALSE and set nothing.
 - [[measured]] Enabling inside a callback answered FALSE and `DMLERR_REENTRANCY`, 400Dh.
+- [[measured]] [[probe:ddefail]], a server with three requests waiting behind `EC_DISABLE`: `EC_QUERYWAITING` answered TRUE; `EC_ENABLEONE`, for the instance or for the conversation, had its callback handed one request, the first waiting, inside the call, and `EC_QUERYWAITING` was TRUE still; `EC_ENABLEALL` let the rest through, and then it answered FALSE.
+- [[measured]] A request the callback answered `CBR_BLOCK`, another behind it: `EC_ENABLEONE` handed the blocked request to the callback again and left the second waiting; `EC_ENABLEALL` let it through. With only the conversation disabled, `EC_ENABLEONE` for the whole instance let one of its requests through.
 
 ## Nuances
 
@@ -30,4 +32,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `enableCallback` in `src/win16/ddeml/instance.ts` and `enable_callback` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The command is sent to each conversation as `WM_USER + CFh`, and the queue run at once by `WM_USER + CCh` to the instance's window. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `enableCallback` in `src/win16/ddeml/instance.ts` and `enable_callback` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The command is sent to each conversation as `WM_USER + CFh`, and the queue run at once by `WM_USER + CCh` to the instance's window. Both engines agree with [[probe:ddemgmt]] and [[probe:ddefail]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

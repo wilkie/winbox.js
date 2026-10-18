@@ -6,6 +6,7 @@ probes: [shell2, shellex]
 ---
 
 Program Manager and File Manager ask SHELL three things about files:
+
 - which program opens a file;
 - what icons a program has;
 - what a command line becomes once its variables are filled in.
@@ -56,4 +57,5 @@ The result is cut at its first space. [[measured]] So `WIN.INI` and text files a
 ## In winbox.js
 
 `src/win16/shell/programs.ts` has these calls. `FindEnvironmentString`, the lookup `DoEnvironmentSubst` uses, is exported too. Not followed:
+
 - icons from `.ICO` files, and from Win32 programs through `W32SYS.DLL`.

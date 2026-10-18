@@ -23,6 +23,7 @@ Nothing of Windows' own can see these boxes: they have no window, and no program
   > If you choose Close, your application will terminate.
 
   It has two buttons: Close on the left, with the focus, and Ignore on the right.
+
 - [[measured]] **Ignore** steps over the instruction. The program goes on, with its window still there. [[read out]] The step is the instruction's whole length, prefixes and all: 2 for `mov es, ax`.
 - [[measured]] **Close** goes on to the second box.
 
@@ -34,6 +35,7 @@ Nothing of Windows' own can see these boxes: they have no window, and no program
   > module FAULTC.EXE at 0001:001D.
 
   It has one button, Close, in the middle.
+
 - [[read out]] The first number is which of the module's segments the code was in, counted from 1; the second is where the instruction began. Both are four hexadecimal digits. The text KERNEL builds goes on to a blank line and `Choose close. FAULTC will close.`, which USER never shows: its box shows three lines at most.
 - [[read out]] A program that has set `SEM_NOGPFAULTERRORBOX` with [[fn:KERNEL.SetErrorMode]] is shown no second box.
 - [[measured]] After Close, the program has ended: its window is gone, and [[fn:KERNEL.GetModuleUsage]] of its instance answers nought. [[read out]] KERNEL ends it as a program returning to DOS does, with exit code FFh.
@@ -49,6 +51,7 @@ Nothing of Windows' own can see these boxes: they have no window, and no program
 - There are three places for buttons, each a quarter of the way along and `2 cyC` above the bottom; a place with no button stays empty. A button is `2 cyC` high and wide enough for Ignore with a digit to spare on each side and `2 cyC` more. It has round corners and a three-dimensional face; the button with the focus has a frame two pixels thick and a dotted rectangle around its label.
 
 How it is answered:
+
 - [[measured]] Enter chooses the button with the focus. Tab moves the focus, and the thick frame with it, to the next button: [[read out]] always onwards, whatever Shift says.
 - [[read out]] A press and release of the mouse on a button chooses it. Space is as Enter. A button's letter, with Alt or without, chooses it at once. Escape chooses Cancel, if there is one.
 - [[read out]] It answers the place chosen, 1 to 3. Nothing under it is kept: what it covered is drawn again once it goes.

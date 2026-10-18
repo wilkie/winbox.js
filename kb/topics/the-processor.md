@@ -15,6 +15,7 @@ Each test is the part's whole state before one instruction and after it. The ins
 [[measured]] With I/O instructions and HLT set aside, winbox.js agrees with 91,537 of 91,600 of the 386's tests. I/O and HLT read the bus, which the harness does not model, and in a Windows program they are privileged anyway.
 
 The 63 tests that still disagree fall into two groups:
+
 - the flags a signed divide error leaves in the frame it pushes: IDIV only, about 4% of its errors (98 of the 2,500 tests of a byte's, 101 of a word's). They follow the 386's microcode, which divides differently from the 286's that winbox.js's model was fitted to. No program is likely to read them;
 - the fetch of the test's own HALT past CS's limit.
 

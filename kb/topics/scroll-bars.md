@@ -81,6 +81,7 @@ A window with `WS_VSCROLL` or `WS_HSCROLL` has scroll bars in its frame. Each ha
   - the window's own bar arrives as `WM_SYSCOMMAND` F077h first.
 
   Each pressed part matches pixel for pixel, as does the bar once let go.
+
 - [[measured]] The first `SB_THUMBTRACK` of a drag comes before the outline is drawn: the parent finds the bar as it was.
 
 ## Shown and hidden

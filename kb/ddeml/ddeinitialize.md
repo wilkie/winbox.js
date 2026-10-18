@@ -6,7 +6,7 @@ ordinal: 2
 summary: Makes a program a DDEML instance -- a client, a server or a monitor -- with its callback and the flags that keep callbacks away; or, given the instance's own id again, changes those flags.
 versions:
   '3.1': exact
-probes: [ddemgmt]
+probes: [ddemgmt, ddefail, ddeterm]
 source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
@@ -18,6 +18,8 @@ topics: [dynamic-data-exchange]
 - [[measured]] Four monitors, `APPCLASS_MONITOR`, may be at once; the fifth answers `DMLERR_DLL_USAGE`, 4004h.
 - [[measured]] Called again with the instance's own id it answers nought and keeps the id. With an id whose serial is not the instance's it answers 4006h.
 - [[measured]] An instance made with no `APPCMD_` flags still filters: until its server registers a name, no client's `DdeConnect` reaches it ([[fn:DDEML.DdeNameService]]).
+- [[measured]] [[probe:ddefail]]: a server calling it again with new `CBF_` flags answered nought, and the flags held at once, for the conversations already open too: `CBF_FAIL_REQUESTS` and the rest failed their kind, `CBF_FAIL_CONNECTIONS` new connections, `CBF_FAIL_SELFCONNECTIONS` its own alone, `CBF_SKIP_ALLNOTIFICATIONS` its `XTYP_CONNECT_CONFIRM` and `XTYP_DISCONNECT`.
+- [[measured]] [[probe:ddeterm]]: `ShutdownTimeout` and `ShutdownRetryTimeout` written to `WIN.INI` by the program before its first call were the times [[fn:DDEML.DdeUninitialize]] then waited.
 
 ## Nuances
 
@@ -38,4 +40,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-WinBox's own: `initialize` in `src/win16/ddeml/instance.ts` and `initialize` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The first call reads `WIN.INI`'s time-outs, adds `Progman`, `Who` and `Made me?` and registers the six classes, each window procedure WinBox's own export; the instance is 3Ch bytes of DDEML's local heap, its own heap a global block of 4 KB, its windows USER's. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
+WinBox's own: `initialize` in `src/win16/ddeml/instance.ts` and `initialize` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The first call reads `WIN.INI`'s time-outs, adds `Progman`, `Who` and `Made me?` and registers the six classes, each window procedure WinBox's own export; the instance is 3Ch bytes of DDEML's local heap, its own heap a global block of 4 KB, its windows USER's. Both engines agree with [[probe:ddemgmt]], [[probe:ddefail]] and [[probe:ddeterm]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

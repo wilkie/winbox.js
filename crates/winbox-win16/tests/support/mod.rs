@@ -180,6 +180,11 @@ pub const AGREEING: &[&str] = &[
     "chfontpr",
     "lbtext",
     "ddeinst",
+    "ddefail",
+    "ddemon",
+    "ddeterm",
+    "ddelist",
+    "ddenest",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

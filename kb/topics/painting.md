@@ -3,7 +3,22 @@ kind: topic
 name: Painting and erasing
 summary: When Windows 3.1 erases a window's background and when it leaves it, what BeginPaint's fErase and rcPaint say, and how a change of system colours is drawn — read out of USER.EXE and recorded, down to the Tutorial's first screen.
 probes:
-  [nobrush, uncover, uncovr2, swpbits, swporder, syncpnt, menubits, menuinv, menucar, syscol, tutor, tnrwrap, showseq, updrgn]
+  [
+    nobrush,
+    uncover,
+    uncovr2,
+    swpbits,
+    swporder,
+    syncpnt,
+    menubits,
+    menuinv,
+    menucar,
+    syscol,
+    tutor,
+    tnrwrap,
+    showseq,
+    updrgn,
+  ]
 ---
 
 A window is drawn in two steps. Its background is erased with `WM_ERASEBKGND`, then it paints itself when it takes `WM_PAINT`. USER decides when the first happens, and what [[fn:USER.BeginPaint]] tells the program about it. [[read out]] Only one place in `USER.EXE` sends `WM_ERASEBKGND` (seg1 `7a83`). It sends `WM_ICONERASEBKGND` instead to a minimized window whose class has an icon.

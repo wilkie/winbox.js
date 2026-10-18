@@ -46,6 +46,7 @@ A program lists the files on a disk with `DlgDirList`, or by sending `LB_DIR` to
   - a drive's letter between dashes in brackets, `[-c-]`.
 
   Every entry is lowercased, and a name goes through `OemToAnsi` first (seg37 `0a7d`).
+
 - [[read out]] The answer is the list's count less one, or `LB_ERRSPACE`. `LB_ADDFILE` (417h) adds one file's entry and answers its index.
 
 ## DlgDirList
@@ -72,6 +73,7 @@ A program lists the files on a disk with `DlgDirList`, or by sending `LB_DIR` to
   - a local heap that grows ([[topic:dynamic-link-libraries]]).
 
   With them it opens the way Windows draws it: the files of the type chosen, the directories from the root down to the current one, the drives, and the file name selected.
+
 - [[read out]] The dialog manager selects a control's text whenever it moves the focus there (seg25 `0000`): the first control when a dialog is made, Tab, the arrows, a mnemonic, `WM_NEXTDLGCTL`. A control that answers `DLGC_HASSETSEL` is sent `EM_SETSEL` before it gets the focus, from 0 to FFFEh for a program made for Windows 3 and to 7FFFh for an older one. Restoring the focus a dialog had when it was last active does not select anything.
 
 ## Not yet done

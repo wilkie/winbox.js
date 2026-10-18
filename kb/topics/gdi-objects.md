@@ -6,6 +6,7 @@ probes: [gdiobj, gdinum, stockdel]
 ---
 
 A program is given handles to GDI's objects and nothing more. Some go looking anyway. Bubble Girl of the corpus brings an engine, `KNPS.DLL`, that draws into its bitmaps' bits itself, the way games did before WinG:
+
 - It asks TOOLHELP's [[fn:TOOLHELP.SystemHeapInfo]] for GDI's data segment, and reads the bitmap's object there by its handle.
 - It follows a handle from the object to the display driver's header for the bitmap, and a far pointer from there to the bits.
 - It checks what it finds: the object's type, that the pointer can be read, and that the height is the one it asked for.
@@ -38,19 +39,19 @@ If the checks fail, it falls back on the DIB driver, which the installation does
 
 The global block starts with 20h bytes of the display driver's header:
 
-| offset | what | 20 by 3 | 704 by 480 |
-|---|---|---|---|
-| 0 | nought | 0 | 0 |
-| 2 | width | 14h | 2C0h |
-| 4 | height | 3 | 1E0h |
-| 6 | bytes of a plane's row, rounded to a word | 4 | 58h |
-| 8 | planes (a byte) | 4 | 4 |
-| 9 | bits a pixel (a byte) | 1 | 1 |
-| 0Ah | far pointer to the bits | the block, at 20h | a block of their own, at 0 |
-| 0Eh | bytes of a plane, a row's by the height (a double word) | 0Ch | A500h |
-| 16h | step from one of the bits' selectors to the next | 0 | 8 |
-| 18h | rows that fit in 64 KiB | 1000h | BAh |
-| 1Ah | bytes left after them | 0 | 40h |
+| offset | what                                                    | 20 by 3           | 704 by 480                 |
+| ------ | ------------------------------------------------------- | ----------------- | -------------------------- |
+| 0      | nought                                                  | 0                 | 0                          |
+| 2      | width                                                   | 14h               | 2C0h                       |
+| 4      | height                                                  | 3                 | 1E0h                       |
+| 6      | bytes of a plane's row, rounded to a word               | 4                 | 58h                        |
+| 8      | planes (a byte)                                         | 4                 | 4                          |
+| 9      | bits a pixel (a byte)                                   | 1                 | 1                          |
+| 0Ah    | far pointer to the bits                                 | the block, at 20h | a block of their own, at 0 |
+| 0Eh    | bytes of a plane, a row's by the height (a double word) | 0Ch               | A500h                      |
+| 16h    | step from one of the bits' selectors to the next        | 0                 | 8                          |
+| 18h    | rows that fit in 64 KiB                                 | 1000h             | BAh                        |
+| 1Ah    | bytes left after them                                   | 0                 | 40h                        |
 
 - The pointer to the bits is nought until the bitmap is first selected into a device context.
 - When the bits fit in 64 KiB after the header, they follow it in the same block. The block is then at least a byte more, rounded to 32: 60h for 20 by 3 and 89C0h for 320 by 220. Bitmaps 16 wide and 1 to 4 high bound the extra: at least 1 and at most 8. Every size is the same for any of those, since the header and the bits are always a multiple of eight.
