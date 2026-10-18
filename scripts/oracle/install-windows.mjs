@@ -68,6 +68,9 @@ export const DISPLAYS = {
     profile: 'hercules',
     machine: 'hercules',
     description: 'Hercules, 720x348, monochrome',
+    /* On DOSBox's Hercules, Setup stops at "Your system has a CGA monitor"
+     * and waits for ENTER=Continue, answer file or not: what it is given. */
+    keys: ['Return'],
   },
   /* The VGA with a printer, for what printing does: Setup's own answer puts
    * the PostScript driver in, as it would for anyone who named one. The
@@ -402,12 +405,57 @@ async function install(display, drive) {
     ].join('\n')
   );
 
+  if (DISPLAYS[display].keys) {
+    await runPressing(config, DISPLAYS[display].keys);
+    return;
+  }
+
   /* Setup draws a full-screen installer either way, so it renders into
    * nothing rather than onto a display nobody is watching.
    */
   await run('dosbox', ['-conf', config, '-exit'], {
     env: { ...process.env, SDL_VIDEODRIVER: 'dummy', SDL_AUDIODRIVER: 'dummy' },
   });
+}
+
+/**
+ * DOSBox run on a virtual X display, and keys pressed once Setup has had
+ * time to come up -- for a Setup that stops to ask, which a dummy display
+ * can't answer. Given up on after ten minutes, as `verify` then says.
+ */
+async function runPressing(config, pressed) {
+  const display = ':96';
+  // Without GLX, as `record.mjs` runs it: DOSBox's window fails on it.
+  const xvfb = spawn('Xvfb', [display, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+  const pause = (seconds) => new Promise((done) => setTimeout(done, seconds * 1000));
+
+  try {
+    await pause(1);
+
+    const dosbox = spawn('dosbox', ['-conf', config, '-exit'], {
+      stdio: 'ignore',
+      env: {
+        ...process.env,
+        DISPLAY: display,
+        SDL_VIDEODRIVER: 'x11',
+        SDL_AUDIODRIVER: 'dummy',
+        SDL_VIDEO_WINDOW_POS: '0,0',
+      },
+    });
+
+    await pause(6);
+    await run('python3', [join(ROOT, 'scripts', 'oracle', 'xkeys.py'), display, ...pressed]);
+
+    for (let waited = 0; dosbox.exitCode === null && waited < 600; waited++) {
+      await pause(1);
+    }
+
+    dosbox.kill('SIGKILL');
+  } finally {
+    xvfb.kill('SIGKILL');
+  }
 }
 
 /**

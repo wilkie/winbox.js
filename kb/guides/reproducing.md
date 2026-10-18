@@ -21,6 +21,7 @@ A probe's C source says how it turned each call into a record. The source is sho
 - Node 22 and pnpm, and `pnpm install` in a clone of the repository.
 - `dosbox`, which installs Windows and runs the probes under it.
 - `mtools` and `dosfstools`, which build the drive image the replay reads fonts from.
+- `Xvfb` and Python 3, for the installs where keys are pressed on a virtual display: Enter at the Hercules Setup's monitor prompt, and the sound drivers added through Control Panel.
 - `ndisasm`, from NASM, only to check a Read out claim.
 
 The Windows media is not in the repository and is never published. `node scripts/oracle/fetch-windows.mjs` downloads a distribution from WinWorld's library; the default is the retail 3.5-inch set, version 3.10.103, which is what every recording here was made with. `--list` shows the other editions. The compiler, Open Watcom V2 at a pinned release, comes from `node scripts/oracle/fetch-toolchain.mjs`. Both land in `oracle/.cache/`, and nothing under it or under `oracle/build/` is committed.
