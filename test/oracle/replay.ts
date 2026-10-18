@@ -5581,6 +5581,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
+  /* DDEML keeps each transaction a server's callbacks have not taken in its
+   * instance's own local heap, 2Eh bytes asked of `LocalAlloc` each
+   * (`DDEML.DLL` seg1 `22de`). KERNEL's local arena puts a header of four
+   * bytes before each block, rounded to four: 52 bytes, and the heap,
+   * grown to 64 KiB, was full at the 1,247th request. winbox.js keeps a
+   * header of two (`global-and-local-memory` in the knowledge base): 50 bytes, full at
+   * the 1,302nd. 2 of `ddeheap`'s 6 records: the count, in the server's
+   * XTYP_ERROR line and in its last; what XTYP_ERROR carries agrees. */
+  'ddeheap:requests': "a local block's header of two bytes where KERNEL's arena has four",
+  'ddeheap:server': "a local block's header of two bytes where KERNEL's arena has four",
 };
 
 /**
@@ -5871,6 +5881,7 @@ const RUN_WHOLE = new Set<string>([
   'ddeterm',
   'ddelist',
   'ddenest',
+  'ddeheap',
 ]);
 
 /**
