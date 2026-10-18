@@ -4,7 +4,7 @@ module: DDEML
 name: DdeEnableCallback
 ordinal: 26
 summary: Holds back an instance's or a conversation's callbacks, lets one through or all of them, or asks whether any are waiting.
-probes: [ddemgmt]
+probes: [ddemgmt, ddefail]
 topics: [dynamic-data-exchange]
 ---
 
@@ -16,6 +16,8 @@ topics: [dynamic-data-exchange]
 - [[measured]] `XTYP_CONNECT` still reached a server whose callbacks were disabled: connecting is not held back.
 - [[measured]] A command of 1 answered FALSE and `DMLERR_INVALIDPARAMETER`; so did a conversation that is not one. An id whose serial is not the instance's answered FALSE and set nothing.
 - [[measured]] Enabling inside a callback answered FALSE and `DMLERR_REENTRANCY`, 400Dh.
+- [[measured]] [[probe:ddefail]], a server with three requests waiting behind `EC_DISABLE`: `EC_QUERYWAITING` answered TRUE; `EC_ENABLEONE`, for the instance or for the conversation, had its callback handed one request, the first waiting, inside the call, and `EC_QUERYWAITING` was TRUE still; `EC_ENABLEALL` let the rest through, and then it answered FALSE.
+- [[measured]] A request the callback answered `CBR_BLOCK`, another behind it: `EC_ENABLEONE` handed the blocked request to the callback again and left the second waiting; `EC_ENABLEALL` let it through. With only the conversation disabled, `EC_ENABLEONE` for the whole instance let one of its requests through.
 
 ## Nuances
 

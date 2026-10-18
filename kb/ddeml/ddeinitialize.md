@@ -4,7 +4,7 @@ module: DDEML
 name: DdeInitialize
 ordinal: 2
 summary: Makes a program a DDEML instance -- a client, a server or a monitor -- with its callback and the flags that keep callbacks away; or, given the instance's own id again, changes those flags.
-probes: [ddemgmt]
+probes: [ddemgmt, ddefail, ddeterm]
 topics: [dynamic-data-exchange]
 ---
 
@@ -15,6 +15,8 @@ topics: [dynamic-data-exchange]
 - [[measured]] Four monitors, `APPCLASS_MONITOR`, may be at once; the fifth answers `DMLERR_DLL_USAGE`, 4004h.
 - [[measured]] Called again with the instance's own id it answers nought and keeps the id. With an id whose serial is not the instance's it answers 4006h.
 - [[measured]] An instance made with no `APPCMD_` flags still filters: until its server registers a name, no client's `DdeConnect` reaches it ([[fn:DDEML.DdeNameService]]).
+- [[measured]] [[probe:ddefail]]: a server calling it again with new `CBF_` flags answered nought, and the flags held at once, for the conversations already open too: `CBF_FAIL_REQUESTS` and the rest failed their kind, `CBF_FAIL_CONNECTIONS` new connections, `CBF_FAIL_SELFCONNECTIONS` its own alone, `CBF_SKIP_ALLNOTIFICATIONS` its `XTYP_CONNECT_CONFIRM` and `XTYP_DISCONNECT`.
+- [[measured]] [[probe:ddeterm]]: `ShutdownTimeout` and `ShutdownRetryTimeout` written to `WIN.INI` by the program before its first call were the times [[fn:DDEML.DdeUninitialize]] then waited.
 
 ## Nuances
 

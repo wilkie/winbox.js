@@ -4,7 +4,7 @@ module: DDEML
 name: DdeClientTransaction
 ordinal: 11
 summary: Sends a request, poke, execute, advise start or advise stop on a conversation, and waits for its answer in a modal loop or, with TIMEOUT_ASYNC, answers at once and reports the outcome to the callback later.
-probes: [ddexact, progdde]
+probes: [ddexact, progdde, ddefail, ddenest]
 topics: [ddeml-transactions, program-manager-dde]
 ---
 
@@ -18,13 +18,16 @@ topics: [ddeml-transactions, program-manager-dde]
 - [[measured]] No item for a request, no format for a request or a poke, or an unknown type: nought and `DMLERR_INVALIDPARAMETER`, and nothing sent.
 - [[measured]] Inside its wait, the program's own posted messages and timers are dispatched, and a `WM_QUIT` is taken and lost.
 - [[measured]] A synchronous transaction on a conversation already waiting on one answers nought with `DMLERR_SERVER_DIED` (400Eh).
+- [[measured]] [[probe:ddenest]]: one made by a second instance of the same task, or on another conversation of the same instance, while a first waits, is sent and then answers nought with `DMLERR_REENTRANCY` (400Dh); an asynchronous one goes through; another task's synchronous one meanwhile is answered.
+- [[measured]] A time-out of 10000h + 500 ms is waited whole: the request answered `DMLERR_DATAACKTIMEOUT` after 66 seconds, not after 500 ms or 65.5.
+- [[measured]] [[probe:ddefail]]: a request, poke, execute or advise start that the server's `CBF_FAIL_` flags fail answers nought with no error and `pdwResult` untouched, and nothing is sent.
 
 ## Nuances
 
 - [[read out]] `XTYP_ADVSTART | XTYPF_NODATA | XTYPF_ACKREQ` is not checked for an item (`DDEML.DLL` seg1 `130a`); [[measured]] it is sent with item nought and the server makes the link.
 - [[read out]] `cbData` of -1 means `pData` is a data handle, which DDEML then owns; one it could not send is freed unless it is `HDATA_APPOWNED` (`12c5`-`12f7`, `1340`-`1363`).
 - [[measured]] An execute given an item and a format is made into a block with DDE's header, and the server reads the command from the header: an empty string.
-- [[read out]] For a conversation within one DDEML, a server that fails the type with `CBF_FAIL_*` is answered `DMLERR_NOTPROCESSED` without a message (`129a`-`12c2`).
+- [[read out]] For a conversation within one DDEML, a server that fails the type with `CBF_FAIL_*` is answered nought without a message (`129a`-`12c2`). The `DMLERR_NOTPROCESSED` set there is set in the instance a word of the stack frame names before it is given a value (`[bp-0Ch]`, set at `1304`), not in the caller's.
 - [[measured]] Program Manager's `[ExitProgman(0)]` is carried out, but its acknowledgement never comes: the call waits out its whole time-out and answers `DMLERR_EXECACKTIMEOUT` ([[topic:program-manager-dde]]).
 
 ## Inside Windows

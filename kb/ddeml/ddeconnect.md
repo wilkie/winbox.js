@@ -4,7 +4,7 @@ module: DDEML
 name: DdeConnect
 ordinal: 7
 summary: Starts a conversation with the first server that answers for a service and topic -- either may be nought, for any -- by sending WM_DDE_INITIATE to each window at the top in turn.
-probes: [ddemgmt, pmatom]
+probes: [ddemgmt, pmatom, ddelist]
 topics: [dynamic-data-exchange]
 ---
 
@@ -16,6 +16,7 @@ topics: [dynamic-data-exchange]
 - [[measured]] With nought for the service and topic the server was called back `XTYP_WILDCONNECT`, both handles nought; with a service and no topic, `XTYP_WILDCONNECT` with the service. It answered two pairs. The client's conversation was the first; the server's for the second was ended at once -- `XTYP_DISCONNECT` -- and then confirmed, `XTYP_CONNECT_CONFIRM` with no conversation.
 - [[measured]] A server's instance connecting to its own service was called back `XTYP_CONNECT` and `XTYP_CONNECT_CONFIRM` with `dwData2` 1, and both conversations had `ST_ISSELF`.
 - [[measured]] The conversation is a `DMGClientClass` window, a child of the instance's `DMGClass` window at the top, and the handle's high word is its window word 4.
+- [[measured]] [[probe:ddelist]]: a plain server acknowledging from two windows inside one `WM_DDE_INITIATE`: the second was sent `WM_DDE_TERMINATE` from inside its acknowledgement, the conversation was with the first, and the atoms were left as for one acknowledgement, `Progman`'s too. Its `hConvPartner` was nought.
 
 ## Nuances
 
