@@ -4,7 +4,10 @@ module: DDEML
 name: DdeGetData
 ordinal: 16
 summary: Copies a data handle's bytes, from an offset, into the caller's buffer, or with no buffer answers the handle's size.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/data.ts
 topics: [ddeml-transactions]
 ---
 
@@ -26,4 +29,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation.
+WinBox's own: `getData` in `src/win16/ddeml/data.ts` and `get_data` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Sizes are `GlobalSize`'s, less the header. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

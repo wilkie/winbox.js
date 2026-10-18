@@ -60,6 +60,7 @@ import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg/index.js';
 import { Ver } from './win16/ver/index.js';
 import { LzExpand } from './win16/lzexpand/index.js';
+import { Ddeml } from './win16/ddeml/index.js';
 import { SystemDriver } from './win16/system-driver.js';
 import { displayDriverFor } from './win16/display-driver.js';
 import { Keyboard } from './win16/keyboard.js';
@@ -211,6 +212,7 @@ export class Win16 {
     this.keep(MciSeq, 'fixed');
     this.keep(Ver, 'moveable');
     this.keep(LzExpand, 'moveable');
+    this.keep(Ddeml, 'moveable');
 
     this._classes = {};
 

@@ -4,7 +4,10 @@ module: DDEML
 name: DdeCmpStringHandles
 ordinal: 36
 summary: Compares two string handles as numbers, -1, 0 or 1: the same string is the same atom, whatever its capitals.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange, atoms]
 ---
 
@@ -19,4 +22,4 @@ topics: [dynamic-data-exchange, atoms]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation.
+WinBox's own: `cmpStringHandles` in `src/win16/ddeml/instance.ts` and `cmp_string_handles` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The two are compared as unsigned doublewords. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

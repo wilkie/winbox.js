@@ -4,7 +4,10 @@ module: DDEML
 name: DdeConnect
 ordinal: 7
 summary: Starts a conversation with the first server that answers for a service and topic -- either may be nought, for any -- by sending WM_DDE_INITIATE to each window at the top in turn.
+versions:
+  '3.1': exact
 probes: [ddemgmt, pmatom]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -31,4 +34,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation. Its connection rests on winbox.js's own `EnumWindows`, `SendMessage` across tasks, `GetWindowLong` of a window procedure and the atoms; all of [[probe:ddemgmt]]'s records agree in both engines.
+WinBox's own: `connect` in `src/win16/ddeml/conv.ts` and `connect` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The conversation is made by `connectOne` (`connect_one`), seg1 `6a68`, and `WM_DDE_INITIATE` sent through [[fn:USER.EnumWindows]] and WinBox's own `INITENUM`; the acknowledgement's atoms, `Progman`'s two counts with them, are counted as `709c` counts them. Both engines agree with [[probe:ddemgmt]] and [[probe:pmatom]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

@@ -4,13 +4,17 @@ module: DDEML
 name: DdeClientTransaction
 ordinal: 11
 summary: Sends a request, poke, execute, advise start or advise stop on a conversation, and waits for its answer in a modal loop or, with TIMEOUT_ASYNC, answers at once and reports the outcome to the callback later.
+versions:
+  '3.1': exact
 probes: [ddexact, progdde]
+records: [xact, request, transaction, execute]
+source: src/win16/ddeml/xact.ts
 topics: [ddeml-transactions, program-manager-dde]
 ---
 
 ## Observed behaviour
 
-[[probe:ddexact]] makes every kind of transaction against a DDEML server of its own, synchronously and asynchronously; [[probe:progdde]] sends Program Manager its execute strings and requests through it. Both engines run Microsoft's DDEML for it, and agree with all 92 records of [[probe:ddexact]].
+[[probe:ddexact]] makes every kind of transaction against a DDEML server of its own, synchronously and asynchronously; [[probe:progdde]] sends Program Manager its execute strings and requests through it. Both engines agree with all 92 records of [[probe:ddexact]], WinBox's own DDEML answering.
 
 - [[measured]] A request answers a data handle; a poke, an execute, an advise start or stop answers 1; anything refused, busy or timed out answers nought, with the reason in [[fn:DDEML.DdeGetLastError]]: `DMLERR_NOTPROCESSED`, `DMLERR_BUSY`, `DMLERR_DATAACKTIMEOUT` and the like. The table is on [[topic:ddeml-transactions]].
 - [[measured]] `pdwResult` gets the acknowledgement's status in its low word, and its high word is left as it was: AAAAAAAAh becomes AAAA8000h for a poke acknowledged. A request answered with data does not write it.
@@ -34,4 +38,4 @@ topics: [ddeml-transactions, program-manager-dde]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation. [[topic:ddeml-transactions]] holds what a reimplementation follows.
+WinBox's own: `clientTransaction` in `src/win16/ddeml/xact.ts` and `client_transaction` in `crates/winbox-win16/src/ddeml/xact.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Its parameters are laid out below the stack as the file's frame holds them, for the conversation to point to; a synchronous transaction waits in `modalLoop` (`modal_loop`), seg1 `59cc`, on the conversation's timer 1, and an asynchronous one takes a record of the conversation's queue. Both engines agree with [[probe:ddexact]] and [[probe:progdde]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

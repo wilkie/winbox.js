@@ -2,7 +2,7 @@
 kind: topic
 name: Program Manager's DDE interface
 summary: The DDE server installers drive in Windows 3.1's Program Manager — the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, and what it writes to its group files and PROGMAN.INI.
-probes: [progdde, postend, pmatom]
+probes: [progdde, postend, pmatom, ddeinst]
 ---
 
 Installers tell Program Manager about the programs they put in by DDE: they connect to the service and topic `PROGMAN`, and send execute strings such as `[CreateGroup(Games)][AddItem(C:\GAMES\GAME.EXE,Game)]`. A WinBox stand-in for this service, for a launcher, is planned in [[guide:without-windows]]; this page is what it follows.
@@ -157,7 +157,9 @@ Program Manager is Microsoft's program, run from the installation, and both engi
 - `DispatchMessage` refusing a DDE message whose sender's window is gone ([[fn:USER.DispatchMessage]]), for `[ExitProgman]`.
 - `WM_MDINEXT` walking the children in the order they lie (`USER.EXE` seg15 `0c7f`): deleting the active group makes the one below it active, and `Order=` is written as Windows writes it.
 - `_lwrite` of nought bytes ending the file where it is, as DOS's write does: [[read out]] Program Manager writes a group file again and ends it so (seg4 `05e9`), and [[measured]] the probe's group file, recorded byte for byte in its header, items and tags, has nothing after its end.
-- The atoms of a connection, as above: [[probe:pmatom]] runs whole on both engines, Program Manager and `DDEML.DLL` being Microsoft's, and every record agrees, the two counts DDEML leaves for each connection included.
+- The atoms of a connection, as above: [[probe:pmatom]] runs whole on both engines, Program Manager Microsoft's and DDEML WinBox's own, and every record agrees, the two counts DDEML leaves for each connection included.
+
+DDEML is WinBox's own ([[topic:dynamic-data-exchange]]): [[probe:progdde]]'s execute strings and requests reach Program Manager through it, with `DDEML.DLL` on the drive and with none, in both engines (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`). [[probe:ddeinst]] is an installer's last step on its own: Program Manager started if it is not running, one execute string -- `[CreateGroup(WinBox Games)]`, two `[AddItem]`s, `[ShowGroup]` -- and the group's text asked for. [[measured]] It was answered 8000h, and the group's text named `C:\WINDOWS\WINBOXGA.GRP`, its two items placed at 21,0 and 96,0, newest first, each with icon index 6 and no icon path. A session in each engine (`crates/winbox-web/tests/program_manager_dde.rs`, and `ddeinst` in `test/win16/ddeml_test.ts`) runs it beside Program Manager, with the file and with none: the group's window shows, and its file holds the two items.
 
 ## Not yet done
 

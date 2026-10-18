@@ -4,6 +4,9 @@ module: DDEML
 name: DDESENDHOOKPROC
 ordinal: 34
 summary: DDEML's WH_CALLWNDPROC hook, put in with the first monitor: each DDE message sent, told to the monitors as MF_SENDMSGS.
+versions:
+  '3.1': unrecorded
+source: src/win16/ddeml/monitor.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -15,4 +18,4 @@ Not yet recorded: [[probe:ddemgmt]]'s monitor does not ask for `MF_SENDMSGS`.
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `sendHook` in `src/win16/ddeml/monitor.ts` and `send_hook` in `crates/winbox-win16/src/ddeml/monitor.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, put in by [[fn:USER.SetWindowsHook]] as the first monitor is made. Not yet recorded.

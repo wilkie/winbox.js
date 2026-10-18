@@ -5,7 +5,7 @@ summary: How Windows 3.1's DDEML carries a transaction — what DdeClientTransac
 probes: [ddexact]
 ---
 
-`DDEML.DLL` is Microsoft's library, and both engines load it from the installation and run it on their own USER and KERNEL, as they run COMMDLG. This page states what it does, so that it can be followed later as WinBox's own. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each.
+`DDEML.DLL` is Microsoft's library; WinBox's own DDEML follows this page in both engines, with or without the file on the drive. [[probe:ddexact]] is a client and a server (`DDEXACTC.EXE`), two programs, which talk through DDEML and also by plain `WM_DDE_*` messages. Both engines run it whole, and all 92 of its records agree with Windows on each.
 
 Everything read out here is `DDEML.DLL` segment 1. The connection side of DDEML (`DdeInitialize`, string handles, `DdeConnect` and the rest, its windows and hooks) is on [[topic:dynamic-data-exchange]].
 
@@ -153,15 +153,15 @@ The calls: [[fn:DDEML.DdeCreateDataHandle]], [[fn:DDEML.DdeAddData]], [[fn:DDEML
 
 ## Inside DDEML
 
-- [[read out]] A request for the topic "Who" and item "Made me?" in `CF_TEXT` is answered by DDEML itself, before the application's callback, with the text "DDEML - By Sanford Alyn Staab", the strings kept XORed with 25h in DDEML's data (`5860`-`5897`, decoded at `5990`).
+- [[read out]] A request for the topic "Who" and item "Made me?" in `CF_TEXT` is answered by DDEML itself, before the application's callback, with the text "DDEML - By Sanford Alyn Staab", the strings kept each byte XOR 25h in DDEML's data (`5860`-`5897`, decoded at `5990`).
 
-## In winbox.js
+## In WinBox
 
-DDEML is not reimplemented: both engines load `DDEML.DLL` from the installation, and [[probe:ddexact]] holds what it asks of their KERNEL and USER — global atoms, `GMEM_DDESHARE` blocks, messages posted and sent between two programs, timers, a modal loop with `CallMsgFilter`, `GlobalSize`'s rounding — to Windows' answers. Program Manager's DDE is on [[topic:program-manager-dde]].
+DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), every export, kept as COMMDLG, VER and LZEXPAND are: with `DDEML.DLL` on the drive, each import of an export is linked to WinBox's stub and `GetProcAddress` answers the stub; with none, WinBox's is found by the file's name. Each routine of seg1 above is followed as read out, on guest memory laid out as the file lays it out -- the instances in DDEML's own local heap, each instance's handles, conversations, links and queued callbacks in its heap of 4 KB, the queues of posts and asynchronous transactions in heaps of their own, the data in `GMEM_DDESHARE` blocks -- and each call into KERNEL and USER made as the file makes it, so the atoms counted, the windows made, the timers and the messages are the file's. [[probe:ddexact]] holds all of it to Windows' answers in both engines, with the file and without it, as it held what Microsoft's DDEML asked of their KERNEL and USER before. Program Manager's DDE is on [[topic:program-manager-dde]].
 
 ## Not yet done
 
-- DDEML as WinBox's own, followed from this page in both engines.
+- `XTYP_ERROR`: an instance's heap of 4 KB is a global block, and WinBox's local heaps in global blocks grow with the block, so DDEML's never fills and the callback is never made.
 - `CBF_FAIL_*` on a server, measured; `EC_ENABLEONE`, measured; a time-out longer than FFFFh milliseconds; the monitors' view of transactions.
 - The `DMLERR_REENTRANCY` of a second instance waiting, measured: the probe's nested request met the conversation's own check first.
 - The 4CCh queue's timing against other messages, beyond the orders recorded here.

@@ -4,7 +4,10 @@ module: DDEML
 name: DdeGetLastError
 ordinal: 20
 summary: The last DMLERR_ code an instance's calls set, cleared as it is read.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -38,4 +41,4 @@ The codes of transactions are on the knowledge base's page of DDEML transactions
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation.
+WinBox's own: `getLastError` in `src/win16/ddeml/instance.ts` and `get_last_error` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The error is the instance's word 2Ah, cleared as it is read. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

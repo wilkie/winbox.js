@@ -4,7 +4,10 @@ module: DDEML
 name: DdeAddData
 ordinal: 15
 summary: Writes bytes into a data handle at an offset, growing its block when they go past the end.
+versions:
+  '3.1': exact
 probes: [ddexact]
+source: src/win16/ddeml/data.ts
 topics: [ddeml-transactions]
 ---
 
@@ -26,4 +29,4 @@ topics: [ddeml-transactions]
 
 ## Implementation
 
-Not WinBox's own: both engines run `DDEML.DLL` from the installation.
+WinBox's own: `addData` in `src/win16/ddeml/data.ts` and `add_data` in `crates/winbox-win16/src/ddeml/data.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. A block grown by `GlobalReAlloc`, or a new one where that fails, is put in the old one's place in the instance's handles. Both engines agree with [[probe:ddexact]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

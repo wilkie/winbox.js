@@ -4,7 +4,10 @@ module: DDEML
 name: DdeQueryNextServer
 ordinal: 5
 summary: The conversations of a list one by one, in the order of its window's children; nought after the last.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -20,4 +23,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation, over winbox.js's own `GetWindow`; the order rests on where `CreateWindow` and [[fn:USER.SetParent]] link a child among its siblings.
+WinBox's own: `queryNextServer` in `src/win16/ddeml/conv.ts` and `query_next_server` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It walks the list's children with [[fn:USER.GetWindow]], as the file does. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

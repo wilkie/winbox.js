@@ -4,7 +4,10 @@ module: DDEML
 name: DdeQueryConvInfo
 ordinal: 9
 summary: What a conversation is -- its partner, names, state, flags, last error, list and CONVCONTEXT -- or, for a client's asynchronous transaction, that transaction's; copied as far as the CONVINFO's cb says.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/conv.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -45,4 +48,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; all of [[probe:ddemgmt]]'s records agree in both engines.
+WinBox's own: `queryConvInfo` in `src/win16/ddeml/conv.ts` and `query_conv_info` in `crates/winbox-win16/src/ddeml/conv.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The `CONVINFO` is laid out from the conversation's 42h bytes, or an asynchronous transaction's record, and copied for as many bytes as the caller's `cb` asks. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

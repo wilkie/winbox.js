@@ -4,7 +4,10 @@ module: DDEML
 name: DdeNameService
 ordinal: 27
 summary: Registers or unregisters a server's service name, telling every DDEML instance with XTYP_REGISTER or XTYP_UNREGISTER, and turns the filter of WM_DDE_INITIATE by registered names on and off.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -32,4 +35,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation. Its notices are `SendMessage` across tasks, which winbox.js does as Windows does: all of [[probe:ddemgmt]]'s records agree in both engines.
+WinBox's own: `nameService` in `src/win16/ddeml/instance.ts` and `name_service` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. Each instance is sent `WM_USER + C8h` or `C9h` to its window, which calls back `XTYP_REGISTER` or `XTYP_UNREGISTER`. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

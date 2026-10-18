@@ -4,7 +4,10 @@ module: DDEML
 name: DdeInitialize
 ordinal: 2
 summary: Makes a program a DDEML instance -- a client, a server or a monitor -- with its callback and the flags that keep callbacks away; or, given the instance's own id again, changes those flags.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -35,4 +38,4 @@ topics: [dynamic-data-exchange]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation. What it needs underneath -- `CreateWindow` of classes registered by a DLL, `GetProfileString`, `GlobalAddAtom`, `SetWindowsHook` -- is winbox.js's own, and agrees with all of [[probe:ddemgmt]]'s records in both engines.
+WinBox's own: `initialize` in `src/win16/ddeml/instance.ts` and `initialize` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The first call reads `WIN.INI`'s time-outs, adds `Progman`, `Who` and `Made me?` and registers the six classes, each window procedure WinBox's own export; the instance is 3Ch bytes of DDEML's local heap, its own heap a global block of 4 KB, its windows USER's. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

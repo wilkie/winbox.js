@@ -512,6 +512,7 @@ pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation>
         crate::commdlg::NAME => crate::commdlg::implementation(name),
         crate::ver::NAME => crate::ver::implementation(name),
         crate::lzexpand::NAME => crate::lzexpand::implementation(name),
+        crate::ddeml::NAME => crate::ddeml::implementation(name),
         "DISPLAY" => crate::display::implementation(name),
         _ => None,
     }

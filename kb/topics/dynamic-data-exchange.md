@@ -10,7 +10,7 @@ Dynamic data exchange is two programs passing messages between their windows. Th
 - **The protocol**, which USER barely knows about: a program sends and posts the messages itself, adds and deletes the atoms, and allocates and frees the memory, by rules each side must keep.
 - **DDEML**, the DDE Management Library, `DDEML.DLL`: an API (`DdeInitialize`, `DdeConnect`, `DdeClientTransaction` and the rest) that speaks the protocol for a program through hidden windows of its own, and calls the program back.
 
-winbox.js runs Microsoft's `DDEML.DLL` from the installation, in both engines, on top of its own USER and KERNEL: what DDEML does depends on the atoms, windows, messages, hooks and timers underneath being Windows'. This page is what DDEML needs from them and how DDEML works, read out so that it can one day be WinBox's own ([[guide:without-windows]]).
+DDEML is WinBox's own in both engines, followed from this page's read-out, on top of WinBox's USER and KERNEL: what DDEML does depends on the atoms, windows, messages, hooks and timers underneath being Windows'. This page is what DDEML needs from them and how DDEML works ([[guide:without-windows]]).
 
 Transactions -- `DdeClientTransaction` and every `XTYP_` a server is asked, the data handles, `DdePostAdvise` -- are on [[topic:ddeml-transactions]], and Program Manager's DDE interface on [[topic:program-manager-dde]].
 
@@ -141,9 +141,9 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - [[read out]] A monitor is `APPCLASS_MONITOR`, at most four at a time (`0055`, `DMLERR_DLL_USAGE`), its flags forced to `CBF_FAIL_ALLSVRXACTIONS | CBF_SKIP_CONNECT_CONFIRMS | CBF_SKIP_DISCONNECTS` (`0062`). It is still called back `XTYP_REGISTER` and `XTYP_UNREGISTER`. Each notice is a block of `GMEM_DDESHARE` (`5b0c`) sent to every monitor whose `MF_` flags take it (`3524`), and handed to its callback as `XTYP_MONITOR`, `dwData2` the `MF_` flag (`3636`).
 - [[measured]] `MF_HSZ_INFO` tells more than the four `MH_` actions: 5 as DDEML adds an atom (`2f26`), 6 as it adds a count to one (`2e18`), 7 as it deletes one (`2ddc`). Making a string handle was 5 then `MH_CREATE`; freeing it `MH_DELETE` then 7; keeping it `MH_KEEP` then 6; the instance's end `MH_CLEANUP` then 7 for each left. `MONERRSTRUCT` was 10 bytes, `MONCONVSTRUCT` 26, `MONCBSTRUCT` 42.
 
-## In winbox.js
+## In WinBox
 
-`DDEML.DLL` is loaded from the installation as Windows loads it, in both engines; winbox.js has no export table of its own for it, so each function's page shows it as a stub. What its probes needed of USER and KERNEL, winbox.js does as Windows does: [[probe:dderaw]], [[probe:ddemgmt]] and [[probe:pmatom]] agree with Windows in every record, in both engines. For them, winbox.js took on:
+DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), every export, with or without `DDEML.DLL` on the drive: with the file, each import of an export is linked to WinBox's stub and `GetProcAddress` answers it; with none, WinBox's is found by the file's name. Its windows are USER's, of its six classes, whose procedures are its own exports; its instances and conversations are where the file keeps them, its string handles USER's atoms, its time-outs USER's timers, its notices to the monitors `GMEM_DDESHARE` blocks. Its data segment's initial bytes and `TermDialog`'s template are WinBox's own data. [[probe:ddemgmt]], [[probe:pmatom]] and [[probe:ddexact]] agree with Windows in every record, in both engines, with the file and without it. What its probes needed of USER and KERNEL, WinBox does as Windows does, as it did when Microsoft's DDEML ran on it:
 
 - USER's checks of a DDE message's parameters (`src/win16/user/dde-checks.ts`, `crates/winbox-win16/src/dde_checks.rs`).
 - A task's queue as USER's ring: `PostMessage` answering the place, eight entries, a full ring refusing, `SetMessageQueue` making it anew (`Task.ringPlace` in `src/win16/task.ts`, `Queue::ring_place` in `crates/winbox-win16/src/queue.rs`).
@@ -151,7 +151,7 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - [[fn:USER.SetParent]] linking the window first among its new parent's children (`USER.EXE` seg14 `04ab`-`04b2`): DDEML moves a list's conversations one by one into the new list, and the last moved is the first.
 - `GetKbCodePage` answering 437, the word the US keyboard driver keeps at seg10 `06fc` (seg10 `083e`), which DDEML compares a code page with.
 
-[[probe:ddeleft]] has two known gaps: winbox.js frees no block as its task or module ends, and an atom deleted once too often answers nought.
+[[probe:ddeleft]] has two known gaps, the same with WinBox's DDEML as with Microsoft's: WinBox frees no block as its task or module ends, and an atom deleted once too often answers nought.
 
 ## Not yet done
 
@@ -164,4 +164,3 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - A second acknowledgement of `Progman` to a client that is not making a list, whose atoms DDEML does not delete (`71f3`-`71fc`): `DdeConnect` stops at the first, so [[probe:pmatom]] could not reach it.
 - Atom numbers where a deleted atom's place in USER's table is taken: winbox.js gives a deleted atom's number to the next string added ([[topic:atoms]]), Windows the place in its heap that fits. Whether DDEML's `Progman` test holds after the atom was gone can differ: a first draft of [[probe:pmatom]], whose first instance ended before the connections, saw the test fail under Windows, the number taken by another name, and hold in winbox.js. Not recorded in the probe as it stands.
 - The conversation list's handling of a server that is not DDEML's, answered by terminating and initiating again to the same window (`71bb`-`71ff`): read out, not recorded.
-- DDEML as WinBox's own: the read-out above and its recordings are what it would follow ([[guide:without-windows]]).

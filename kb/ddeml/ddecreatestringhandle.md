@@ -4,7 +4,10 @@ module: DDEML
 name: DdeCreateStringHandle
 ordinal: 21
 summary: A string handle for a name -- a global atom, counted for the instance -- in the Windows character set or the keyboard's code page.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange, atoms]
 ---
 
@@ -28,4 +31,4 @@ topics: [dynamic-data-exchange, atoms]
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation, over winbox.js's own atoms. For it winbox.js's `GetKbCodePage` answers 437, the US driver's ([[topic:dynamic-data-exchange]]).
+WinBox's own: `createStringHandle` in `src/win16/ddeml/instance.ts` and `create_string_handle` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. The handle is USER's global atom, kept in the instance's array of string handles, told to the monitors as the file tells them. Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).

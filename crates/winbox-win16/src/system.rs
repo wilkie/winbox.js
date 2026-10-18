@@ -358,6 +358,8 @@ pub struct System {
     pub commdlg: crate::commdlg::State,
     /// What `LZEXPAND` keeps of its own (`lzexpand/`).
     pub lzexpand: crate::lzexpand::State,
+    /// What `DDEML` keeps of its own (`ddeml/`).
+    pub ddeml: crate::ddeml::State,
     /// What `SwapMouseButton` was last given.
     pub swap_buttons: Option<u16>,
     /// USER's settings, once read from `WIN.INI` (`system_parameters.rs`).
@@ -567,6 +569,7 @@ impl System {
             registered_messages: HashMap::new(),
             commdlg: crate::commdlg::State::default(),
             lzexpand: crate::lzexpand::State::default(),
+            ddeml: crate::ddeml::State::default(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
             atoms: crate::atoms::Atoms::default(),

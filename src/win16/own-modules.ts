@@ -1,19 +1,21 @@
 'use strict';
 
 import { redirect as commdlgRedirect } from './commdlg/index.js';
+import { Ddeml } from './ddeml/index.js';
 import { LzExpand } from './lzexpand/index.js';
 import { Ver } from './ver/index.js';
 
 /**
  * The libraries WinBox keeps whose file is loaded beside them when there is
  * one, each import of an export WinBox answers linked to WinBox's stub
- * (`linker.ts`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`)
- * and `LZEXPAND` (`lzexpand/`). As `crates/winbox-win16/src/own_modules.rs`.
+ * (`linker.ts`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
+ * `LZEXPAND` (`lzexpand/`) and `DDEML` (`ddeml/`). As
+ * `crates/winbox-win16/src/own_modules.rs`.
  */
-const OTHERS: Record<string, any> = { VER: Ver, LZEXPAND: LzExpand };
+const OTHERS: Record<string, any> = { VER: Ver, LZEXPAND: LzExpand, DDEML: Ddeml };
 
 /** The names of those libraries. */
-export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND'];
+export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND', 'DDEML'];
 
 /** Whether WinBox answers an ordinal of one of `OTHERS`. */
 function answered(module: any, ordinal: number) {

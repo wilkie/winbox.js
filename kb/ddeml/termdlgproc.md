@@ -4,6 +4,9 @@ module: DDEML
 name: TERMDLGPROC
 ordinal: 39
 summary: The dialog procedure of DDEML's TermDialog, which DdeUninitialize shows when a partner does not answer its WM_DDE_TERMINATE in time.
+versions:
+  '3.1': unrecorded
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -15,4 +18,4 @@ Not yet recorded.
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `termDlgProc` in `src/win16/ddeml/instance.ts` and `term_dlg_proc` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure `DialogBoxIndirect` is given with DDEML's `TermDialog` template, kept as WinBox's own data (`resources.ts`, `resources.rs`). Not yet recorded.

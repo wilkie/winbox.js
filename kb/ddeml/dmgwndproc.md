@@ -4,7 +4,10 @@ module: DDEML
 name: DMGWNDPROC
 ordinal: 31
 summary: The window procedure of an instance's own window, class DMGClass: names registered and unregistered, and callbacks waiting.
+versions:
+  '3.1': exact
 probes: [ddemgmt]
+source: src/win16/ddeml/instance.ts
 topics: [dynamic-data-exchange]
 ---
 
@@ -23,4 +26,4 @@ It does not answer `WM_DDE_INITIATE`: [[fn:DDEML.SUBFRAMEWNDPROC]] does.
 
 ## Implementation
 
-DDEML is Microsoft's `DDEML.DLL`, loaded from the installation; this is its own, internal to it.
+WinBox's own: `dmgProc` in `src/win16/ddeml/instance.ts` and `dmg_proc` in `crates/winbox-win16/src/ddeml/instance.rs` follow `DDEML.DLL` as read out above, on guest memory laid out as the file lays it out and USER's and KERNEL's calls made as it makes them. It is WinBox's own export, the procedure of the `DMGClass`; `WM_USER + CCh` runs the queue (`runQueue`, `run_queue`, seg1 `4e66`). Both engines agree with [[probe:ddemgmt]], with `DDEML.DLL` on the drive and without it (`test/win16/ddeml_test.ts`, `crates/winbox-win16/tests/ddeml.rs`).
