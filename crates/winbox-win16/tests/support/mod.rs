@@ -182,6 +182,7 @@ pub const AGREEING: &[&str] = &[
     "ddefail",
     "ddemon",
     "ddeterm",
+    "ddelist",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

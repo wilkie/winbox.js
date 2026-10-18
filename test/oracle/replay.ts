@@ -5869,6 +5869,7 @@ const RUN_WHOLE = new Set<string>([
   'ddefail',
   'ddemon',
   'ddeterm',
+  'ddelist',
 ]);
 
 /**
