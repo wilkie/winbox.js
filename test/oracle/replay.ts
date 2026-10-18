@@ -5870,6 +5870,7 @@ const RUN_WHOLE = new Set<string>([
   'ddemon',
   'ddeterm',
   'ddelist',
+  'ddenest',
 ]);
 
 /**
@@ -5939,7 +5940,9 @@ const BOX_KEYS: Record<string, string[][]> = {
  * do `chfont`, `chfont2`, `chfont3` and `chfontpr`.
  * `ddeterm` waits out `DdeUninitialize`'s `ShutdownTimeout` and
  * `ShutdownRetryTimeout`, a second and two, and says whether its dialog
- * came within a second and a half of each.
+ * came within a second and a half of each. `ddenest` lets synchronous
+ * transactions time out, one after 10000h + 500 milliseconds, and says
+ * whether that came within a second and a half.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5967,6 +5970,7 @@ const VIRTUAL_CLOCK = new Set([
   'chfont3',
   'chfontpr',
   'ddeterm',
+  'ddenest',
 ]);
 
 /**
@@ -5975,9 +5979,10 @@ const VIRTUAL_CLOCK = new Set([
  * USER's, for a minute and more of its virtual clock. `findrepl` and
  * `choosclr` read their dialogs a pixel at a time with `GetPixel`, tens of
  * thousands of calls, and `choosclr` draws its spectrum and bar again and
- * again besides.
+ * again besides. `ddenest` waits out a transaction's time-out of 10000h +
+ * 500 milliseconds beside its other steps.
  */
-const SECONDS: Record<string, number> = { spiidle: 90, findrepl: 60, choosclr: 400 };
+const SECONDS: Record<string, number> = { spiidle: 90, findrepl: 60, choosclr: 400, ddenest: 100 };
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
