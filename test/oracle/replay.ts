@@ -5868,6 +5868,7 @@ const RUN_WHOLE = new Set<string>([
   'lbtext',
   'ddefail',
   'ddemon',
+  'ddeterm',
 ]);
 
 /**
@@ -5935,6 +5936,9 @@ const BOX_KEYS: Record<string, string[][]> = {
  * press their keys and the mouse through `KEYBD_EVENT` and `MOUSE_EVENT`;
  * `prdlg` takes its steps and presses its keys the same way, and so
  * do `chfont`, `chfont2`, `chfont3` and `chfontpr`.
+ * `ddeterm` waits out `DdeUninitialize`'s `ShutdownTimeout` and
+ * `ShutdownRetryTimeout`, a second and two, and says whether its dialog
+ * came within a second and a half of each.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5961,6 +5965,7 @@ const VIRTUAL_CLOCK = new Set([
   'chfont2',
   'chfont3',
   'chfontpr',
+  'ddeterm',
 ]);
 
 /**

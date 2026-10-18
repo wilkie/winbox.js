@@ -1,0 +1,94 @@
+{
+  "probe": "ddeterm",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "WriteProfileString",
+      "args": "DDEML,1000,2000",
+      "result": "1,1"
+    },
+    {
+      "function": "WinExec",
+      "args": "DDETERMC.EXE",
+      "result": "started"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "first",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "first",
+      "result": "conv,0|S:initiate"
+    },
+    {
+      "function": "TermDialog",
+      "args": "first",
+      "result": "ok,Windows DDE,owner=none,active=1,style=94c800c2,152,31,479,283|Static:101:An application using DDE did not respond to the system's exit command.:0|Static:102:Choose Retry to attempt to close the application and return to Windows.:0|Static:103:Choose Continue to repeatedly attempt to close the application and return to Windows.:0|Static:104:Choose Close to exit the application that is not responding.  You may lose any unsaved information in this application.:0|Button:4:Retry:1|Button:5:Continue:0|Button:3:Close:0|Static:108:*:0|Static:109:*:0|Static:110:*:0"
+    },
+    {
+      "function": "TermDialog",
+      "args": "after IDCANCEL",
+      "result": "there"
+    },
+    {
+      "function": "TermDialog",
+      "args": "after Retry",
+      "result": "ok,Windows DDE,owner=none,active=1,style=94c800c2,152,31,479,283|Static:101:An application using DDE did not respond to the system's exit command.:0|Static:102:Choose Retry to attempt to close the application and return to Windows.:0|Static:103:Choose Continue to repeatedly attempt to close the application and return to Windows.:0|Static:104:Choose Close to exit the application that is not responding.  You may lose any unsaved information in this application.:0|Button:4:Retry:1|Button:5:Continue:0|Button:3:Close:0|Static:108:*:0|Static:109:*:0|Static:110:*:0"
+    },
+    {
+      "function": "TermDialog",
+      "args": "after Continue",
+      "result": "none in 4 s"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "first",
+      "result": "1,none|S:terminate:kept|S:answer"
+    },
+    {
+      "function": "after",
+      "args": "first",
+      "result": "conv gone"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "second",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "second",
+      "result": "conv,0|S:initiate"
+    },
+    {
+      "function": "TermDialog",
+      "args": "second instance",
+      "result": "ok,Windows DDE,owner=none,active=1,style=94c800c2,152,31,479,283|Static:101:An application using DDE did not respond to the system's exit command.:0|Static:102:Choose Retry to attempt to close the application and return to Windows.:0|Static:103:Choose Continue to repeatedly attempt to close the application and return to Windows.:0|Static:104:Choose Close to exit the application that is not responding.  You may lose any unsaved information in this application.:0|Button:4:Retry:1|Button:5:Continue:0|Button:3:Close:0|Static:108:*:0|Static:109:*:0|Static:110:*:0"
+    },
+    {
+      "function": "DdeUninitialize",
+      "args": "second",
+      "result": "1,none,conv gone|S:terminate:kept"
+    },
+    {
+      "function": "server answers",
+      "args": "second",
+      "result": "posted|S:answer:gone"
+    },
+    {
+      "function": "server closed",
+      "args": "",
+      "result": "closed"
+    }
+  ]
+}
