@@ -23,6 +23,7 @@ pub mod metafile;
 pub mod objects;
 pub mod palettes;
 pub mod printer_bands;
+pub mod printer_blits;
 pub mod printer_driver;
 pub mod printer_output;
 pub mod printing;
@@ -113,7 +114,9 @@ pub struct DeviceCaps {
 /// context's through its driver (`printer_output.rs`), which hands any
 /// other context on to the rest.
 pub fn implementation(name: &str) -> Option<Implementation> {
-    printer_output::implementation(name).or_else(|| base_implementation(name))
+    printer_blits::implementation(name)
+        .or_else(|| printer_output::implementation(name))
+        .or_else(|| base_implementation(name))
 }
 
 // A table of every call answered here, one line each.
@@ -291,6 +294,13 @@ const COLORRES: i16 = 108;
 pub fn get_device_caps(system: &System, hdc: u16, capability: i16) -> u16 {
     // A printer driver's from the drive: its own `GDIINFO`.
     if let Some(dc) = printer_driver::driver_dc_of(system, hdc) {
+        return printer_driver::driver_caps(system, dc, capability);
+    }
+
+    // A memory context made compatible with one: the same.
+    if let Some(crate::handles::Object::Dc(dc)) = system.handles.resolve(hdc)
+        && system.printing.drivers.compatible.contains_key(&dc)
+    {
         return printer_driver::driver_caps(system, dc, capability);
     }
 

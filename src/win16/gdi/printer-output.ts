@@ -103,11 +103,11 @@ function offsetBy(far: number, at: number) {
   return ((far & 0xffff0000) | ((far + at) & 0xffff)) >>> 0;
 }
 
-function proc(pdevice: PDevice, ordinal: number) {
+export function proc(pdevice: PDevice, ordinal: number) {
   return pdevice.driver.procs[ordinal - 1] ?? 0;
 }
 
-async function callDriver(system: any, procedure: number, args: [number, number][]) {
+export async function callDriver(system: any, procedure: number, args: [number, number][]) {
   return Number((await system.scheduler.callProc(procedure, args)) ?? 0) >>> 0;
 }
 
@@ -151,7 +151,7 @@ export async function withRect<T>(
   return onStack(system, words(rect.left, rect.top, rect.right, rect.bottom), body);
 }
 
-function words(...values: number[]) {
+export function words(...values: number[]) {
   const bytes = new Uint8Array(values.length * 2);
 
   values.forEach((value, at) => {
@@ -184,7 +184,7 @@ function objectKey(system: any, object: any, stock: number) {
   return handleHeld(system, object) ?? object;
 }
 
-function drawingOf(surface: any): DriverDrawing {
+export function drawingOf(surface: any): DriverDrawing {
   return surface.driverDrawing;
 }
 
@@ -221,7 +221,11 @@ export async function startDrawing(system: any, surface: any) {
   drawing.textColor = await colorInfo(system, surface, 0);
   await realizeBrush(system, surface);
   await realizePen(system, surface);
-  await deviceFont(system, surface);
+
+  /* A memory context's font is the device's, realized already. */
+  if (surface.driverDevice) {
+    await deviceFont(system, surface);
+  }
 }
 
 /**
@@ -248,7 +252,7 @@ export function stopDrawing(system: any, surface: any) {
  * which GDI keeps in the `DRAWMODE`.
  */
 async function colorInfo(system: any, surface: any, rgb: number) {
-  const pdevice: PDevice = surface.driverDevice;
+  const pdevice: PDevice = surface.driverDevice ?? surface.compatibleDevice;
   const procedure = proc(pdevice, COLOR_INFO);
   let physical = 0;
 
@@ -317,8 +321,11 @@ async function realizeObject(
   logical: Uint8Array,
   fifth: (out: number) => number
 ): Promise<Realized | null> {
-  const pdevice: PDevice = surface.driverDevice;
-  const kept = pdevice.realized.get(object)?.find((each) => each.key === key);
+  const pdevice: PDevice = surface.driverDevice ?? surface.compatibleDevice;
+  /* A memory context's are kept apart, by the device's number and one
+   * (seg1 `0151`, `3e64`). */
+  const cache = surface.driverDevice ? pdevice.realized : pdevice.memoryRealized;
+  const kept = cache.get(object)?.find((each) => each.key === key);
 
   if (kept) {
     return kept;
@@ -375,7 +382,7 @@ async function realizeObject(
     serial: (system._realizedSerial = (system._realizedSerial ?? 0) + 1),
   };
 
-  pdevice.realized.set(object, [realized, ...(pdevice.realized.get(object) ?? [])]);
+  cache.set(object, [realized, ...(cache.get(object) ?? [])]);
   return realized;
 }
 
@@ -391,11 +398,13 @@ export async function deleteDriverObject(system: any, handle: number, style: num
   const found: { pdevice: PDevice; realized: Realized }[] = [];
 
   for (const pdevice of driverDevices(system)) {
-    for (const realized of pdevice.realized.get(handle) ?? []) {
-      found.push({ pdevice, realized });
-    }
+    for (const cache of [pdevice.realized, pdevice.memoryRealized]) {
+      for (const realized of cache.get(handle) ?? []) {
+        found.push({ pdevice, realized });
+      }
 
-    pdevice.realized.delete(handle);
+      cache.delete(handle);
+    }
   }
 
   found.sort((a, b) => b.realized.serial - a.realized.serial);
@@ -425,7 +434,7 @@ export async function deleteDriverObject(system: any, handle: number, style: num
  */
 export async function realizePen(system: any, surface: any) {
   const drawing = drawingOf(surface);
-  const pdevice: PDevice = surface.driverDevice;
+  const pdevice: PDevice = surface.driverDevice ?? surface.compatibleDevice;
   const logpen = surface.pen?.logpen ?? { style: PS_SOLID, width: 0, y: 0, color: 0 };
   const m = mappingOf(surface);
   const width = Math.abs(MulDiv(logpen.width, m.vex, m.wex));
@@ -496,7 +505,7 @@ export async function realizeBrush(system: any, surface: any) {
 }
 
 /** The `DRAWMODE` as the context has it now. */
-function drawMode(system: any, surface: any) {
+export function drawMode(system: any, surface: any) {
   const drawing = drawingOf(surface);
   const far = offsetBy(drawing.far, DRAWMODE);
 
@@ -669,7 +678,7 @@ function brushStyle(surface: any) {
   return surface.brush?.logbrush?.style ?? 0;
 }
 
-function caps(pdevice: PDevice, at: number) {
+export function caps(pdevice: PDevice, at: number) {
   return pdevice.info[at] | (pdevice.info[at + 1] << 8);
 }
 

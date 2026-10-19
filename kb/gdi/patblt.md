@@ -6,7 +6,7 @@ ordinal: 29
 summary: Fills a rectangle of a device context with the selected brush, or with white or black, under a raster operation.
 versions:
   '3.1': exact
-probes: [bitbits, dither, drawgaps, patrops, patmono]
+probes: [bitbits, dither, drawgaps, patrops, patmono, prblt]
 source: src/win16/gdi/PatBlt.ts
 ---
 
@@ -31,3 +31,7 @@ source: src/win16/gdi/PatBlt.ts
 ## Implementation
 
 A fill into a bitmap selected into a surface goes to the surface's pixels, where text and lines are drawn and [[fn:GDI.GetBitmapBits]] reads, and to the bitmap's own bits as well. Before [[probe:bitbits]], a monochrome bitmap's fill went only to its own bits, apart from everything drawn over it.
+
+## On a printer's context
+
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].

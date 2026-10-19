@@ -85,6 +85,8 @@ export interface PDevice {
    * `2335`): shared by the contexts on it, let go as it goes (`4460`).
    */
   realized: Map<any, any[]>;
+  /** The same for the memory contexts made compatible with its contexts. */
+  memoryRealized: Map<any, any[]>;
 }
 
 /**
@@ -387,6 +389,7 @@ async function enableDevice(
     lpPDevice,
     count: 0,
     realized: new Map(),
+    memoryRealized: new Map(),
   };
 }
 
@@ -580,13 +583,15 @@ export async function deleteDriverDC(system: any, surface: any) {
   if (gone) {
     GlobalFree.call(system, pdevice.pdevice);
 
-    for (const list of pdevice.realized.values()) {
-      for (const realized of list) {
-        GlobalFree.call(system, realized.handle);
+    for (const cache of [pdevice.realized, pdevice.memoryRealized]) {
+      for (const list of cache.values()) {
+        for (const realized of list) {
+          GlobalFree.call(system, realized.handle);
+        }
       }
-    }
 
-    pdevice.realized.clear();
+      cache.clear();
+    }
     await releaseFonts(system, { device: pdevice });
   }
 }

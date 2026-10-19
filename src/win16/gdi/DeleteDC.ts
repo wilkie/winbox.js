@@ -47,5 +47,14 @@ export function DeleteDC(hdc) {
     return deleteDriverDC(this, surface).then(() => TRUE);
   }
 
+  /* A memory context made compatible with one: its drawing block let go;
+   * what was realized for it stays with the device. */
+  if (surface.compatibleDevice) {
+    return import('./printer-output.js').then(({ stopDrawing }) => {
+      stopDrawing(this, surface);
+      return TRUE;
+    });
+  }
+
   return TRUE;
 }

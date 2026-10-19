@@ -1,0 +1,1199 @@
+{
+  "probe": "prblt",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC X",
+      "result": "1"
+    },
+    {
+      "function": "driver",
+      "args": "0",
+      "result": "Enable 1 X LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "1",
+      "result": "Enable 0 X LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "2",
+      "result": "RealizeObject brush 0 FFFFFF 0 size"
+    },
+    {
+      "function": "driver",
+      "args": "3",
+      "result": "RealizeObject brush 0 FFFFFF 0"
+    },
+    {
+      "function": "driver",
+      "args": "4",
+      "result": "RealizeObject pen 0 0 000000 size"
+    },
+    {
+      "function": "driver",
+      "args": "5",
+      "result": "RealizeObject pen 0 0 000000"
+    },
+    {
+      "function": "driver",
+      "args": "6",
+      "result": "RealizeObject font 0 0 0 \"\" size"
+    },
+    {
+      "function": "driver",
+      "args": "7",
+      "result": "RealizeObject font 0 0 0 \"\""
+    },
+    {
+      "function": "call",
+      "args": "CreateCompatibleDC",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "memory BITSPIXEL",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "memory TECHNOLOGY",
+      "result": "2",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject bitmap",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "8",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "9",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "10",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "11",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X BitBlt",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "12",
+      "result": "BitBlt 1 5,6 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X BitBlt part",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "13",
+      "result": "BitBlt 1 30,6 bitmap 0 16 8 2 1 1 4,2 8x4 00660046 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X BitBlt from the display's",
+      "result": "0",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X PatBlt",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "14",
+      "result": "BitBlt 1 40,20 none 10x10 00F00021 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X BitBlt clipped",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "15",
+      "result": "BitBlt 1 5,30 bitmap 0 16 8 2 1 1 0,0 5x8 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X BitBlt around a hole",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "16",
+      "result": "BitBlt 1 5,34 bitmap 0 16 8 2 1 1 0,4 16x4 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "17",
+      "result": "BitBlt 1 12,30 bitmap 0 16 8 2 1 1 7,0 9x4 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "18",
+      "result": "BitBlt 1 5,30 bitmap 0 16 8 2 1 1 0,0 3x4 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC memory",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC X",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "19",
+      "result": "Disable 1 font0=160",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "20",
+      "result": "WEP font0=160",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC XSD",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "21",
+      "result": "Enable 1 XSD LPT1: 0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "22",
+      "result": "Enable 0 XSD LPT1: 0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "23",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "24",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "25",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "26",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "27",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "28",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "CreateCompatibleDC",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "memory BITSPIXEL",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "memory TECHNOLOGY",
+      "result": "2",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "SelectObject bitmap",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "29",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "30",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "31",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "32",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD BitBlt",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "33",
+      "result": "BitBlt 1 5,6 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD BitBlt part",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "34",
+      "result": "BitBlt 1 30,6 bitmap 0 16 8 2 1 1 4,2 8x4 00660046 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD BitBlt from the display's",
+      "result": "0",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD PatBlt",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "35",
+      "result": "BitBlt 1 40,20 none 10x10 00F00021 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD BitBlt clipped",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "36",
+      "result": "BitBlt 1 5,30 bitmap 0 16 8 2 1 1 0,0 5x8 00CC0020 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD BitBlt around a hole",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "37",
+      "result": "BitBlt 1 5,34 bitmap 0 16 8 2 1 1 0,4 16x4 00CC0020 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "38",
+      "result": "BitBlt 1 12,30 bitmap 0 16 8 2 1 1 7,0 9x4 00CC0020 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "39",
+      "result": "BitBlt 1 5,30 bitmap 0 16 8 2 1 1 0,0 3x4 00CC0020 brush 1 mode 1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD StretchBlt",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "40",
+      "result": "StretchBlt 1 30,30 32x16 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 clip 30,30,62,46",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD StretchBlt flipped",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "41",
+      "result": "StretchBlt 1 31,30 32x16 bitmap 0 16 8 2 1 1 16,0 -16x8 00CC0020 brush 1 mode 1 clip 31,30,63,46",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD SetDIBitsToDevice",
+      "result": "8",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "42",
+      "result": "DIBToDevice 1 2,2 0 8 dib 8 8 1 4 bits 00 translate 0 mode 1 clip 2,2,10,10",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "XSD StretchDIBits",
+      "result": "8",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "43",
+      "result": "StretchDIBits 1 0 40,2 16x16 0,0 8x8 00CC0020 dib 8 8 1 4 bits 00 translate 0 brush 1 mode 1 clip 40,2,56,18",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC memory",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC XSD",
+      "result": "1",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "44",
+      "result": "Disable 1 font0=160",
+      "section": "XSD"
+    },
+    {
+      "function": "driver",
+      "args": "45",
+      "result": "WEP font0=160",
+      "section": "XSD"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC pscript",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "pscript memory BITSPIXEL",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "pscript BitBlt",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "pscript StretchBlt",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "pscript PatBlt",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "pscript SetDIBitsToDevice",
+      "result": "8",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "job 352",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC pscript",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "12619",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "gs 16 8 300 300 CB",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "15 7 301 301 255 255 255 0 OB",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "/bytestr 2 string def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "/pp 1 string def/s 1 string def/rn{currentfile s readhexstring{0 get}{pop",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "exit}ifelse}def/unpack{/DC 0 def/BC 0 def{DC bytestr length ge{exit}if",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "rn/BC exch def BC 127 le{/BC BC 1 add def DC 1 DC BC add 1 sub{bytestr",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "exch rn put}for}{/BC BC 255 xor 2 add def rn/pp exch def DC 1 DC BC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "add 1 sub{bytestr exch pp put}for}ifelse/DC DC BC add def}loop bytestr}bd",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "0 0 0 sc",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "save 300 300 translate 16 8 scale",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "%%BeginData: 9 ASCII Lines",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "16 8 false [16 0 0 8 0 0] {unpack} bind imagemask",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "%%EndData",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": "restore",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "gr",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "gs 160 80 300 400 CB",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "195",
+      "result": "159 79 301 401 255 255 255 0 OB",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "196",
+      "result": "/bytestr 2 string def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "197",
+      "result": "0 0 0 sc",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "198",
+      "result": "save 300 400 translate 160 80 scale",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "199",
+      "result": "%%BeginData: 9 ASCII Lines",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "200",
+      "result": "16 8 false [16 0 0 8 0 0] {unpack} bind imagemask",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "201",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "202",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "203",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "204",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "205",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "206",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "207",
+      "result": "01aa00",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "208",
+      "result": "015500",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "209",
+      "result": "%%EndData",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "210",
+      "result": "restore",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "211",
+      "result": "gr",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "212",
+      "result": "255 255 255 fC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "213",
+      "result": "/fm 256 def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "214",
+      "result": "99 99 600 300 B",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "215",
+      "result": "1 F",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "216",
+      "result": "n",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "217",
+      "result": "/bytestr 8 string def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "218",
+      "result": "gs 8 8 300 600 CB",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "219",
+      "result": "save 300 600 translate 8 8 scale",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "220",
+      "result": "8 8 8",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "221",
+      "result": "[8 0 0 -8 0 8]",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "222",
+      "result": "{unpack} bind",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "223",
+      "result": "image",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "224",
+      "result": "ff00054ce296b2e24c",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "225",
+      "result": "ff1c0068ffff02960068",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "226",
+      "result": "024c0096ffe202b2684c",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "227",
+      "result": "01b21cffff0300964c68",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "228",
+      "result": "04e2001ce268ffb2004c",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "229",
+      "result": "03ff1c00ffff9601e268",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "230",
+      "result": "031c0068e2ffb201004c",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "231",
+      "result": "074c1c96ffe2961c68",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "232",
+      "result": "restore",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "233",
+      "result": "gr",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "234",
+      "result": "1 #C",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "235",
+      "result": "statusdict begin /manualfeed false store end",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "236",
+      "result": "EJ RS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "237",
+      "result": "%%PageTrailer",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "238",
+      "result": "%%PageResources: ",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "239",
+      "result": "%%Trailer",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "240",
+      "result": "SVDoc restore",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "241",
+      "result": "end",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "242",
+      "result": "%%Pages: 1",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "243",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "244",
+      "result": "",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "245",
+      "result": "%%DocumentNeededResources: ",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "246",
+      "result": "%%EOF",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "46",
+      "result": "Enable 1 X LPT1: 0",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "47",
+      "result": "Enable 0 X LPT1: 0",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "48",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "49",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "50",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "51",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "52",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "53",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "pscript"
+    },
+    {
+      "function": "fallback",
+      "args": "CreateCompatibleDC",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "memory BITSPIXEL",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "memory TECHNOLOGY",
+      "result": "2",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "SelectObject bitmap",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "54",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "55",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "56",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "57",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "X StretchBlt",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "58",
+      "result": "BitBlt 1 30,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "X StretchBlt flipped",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "59",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "60",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "61",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "62",
+      "result": "BitBlt 1 31,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "X SetDIBitsToDevice",
+      "result": "8",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "63",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "X StretchDIBits",
+      "result": "8",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "64",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "65",
+      "result": "BitBlt 1 40,2 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "DeleteDC memory",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "66",
+      "result": "Disable 1 font0=160",
+      "section": "X"
+    },
+    {
+      "function": "fallback",
+      "args": "67",
+      "result": "WEP font0=160",
+      "section": "X"
+    }
+  ]
+}

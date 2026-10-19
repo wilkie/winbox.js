@@ -6,9 +6,9 @@ ordinal: 443
 summary: Draws some of a device-independent bitmap's scan lines straight onto a device, at their place in a rectangle of it.
 versions:
   '3.1': exact
-probes: [dibdev]
+probes: [dibdev, prblt]
 source: src/win16/gdi/dib-to-device.ts
-topics: [painting]
+topics: [painting, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -33,3 +33,7 @@ winbox.js agrees with all 36 records.
 ## Implementation
 
 `src/win16/gdi/dib-to-device.ts` reads the header, colour table and scan lines into a bitmap of the destination's format with the same code as [[fn:GDI.CreateDIBitmap]], and copies the scan lines in range with the raster-operation engine.
+
+## On a printer's context
+
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].

@@ -78,7 +78,9 @@ export function DeleteObject(handle) {
   if (
     style &&
     (this._printerDrivers?.drivers ?? []).some((driver: any) =>
-      driver.devices.some((pdevice: any) => pdevice.realized.has(handle))
+      driver.devices.some(
+        (pdevice: any) => pdevice.realized.has(handle) || pdevice.memoryRealized.has(handle)
+      )
     )
   ) {
     return import('./printer-output.js').then(async ({ deleteDriverObject }) => {

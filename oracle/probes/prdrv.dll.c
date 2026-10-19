@@ -394,8 +394,14 @@ BOOL FAR PASCAL _export BitBlt(PDEV FAR *dest, WORD x, WORD y, LPVOID source, WO
 {
     wsprintf(text, "BitBlt %d %d,%d", dest->number, x, y);
     deviceText(source);
-    wsprintf(text + lstrlen(text), " %d,%d %dx%d %08lX brush %d mode %d", sx, sy, width, height,
-             rop, brush != NULL, drawMode != NULL);
+
+    /* Without a source, its corner is whatever GDI's stack held. */
+    if (source) {
+        wsprintf(text + lstrlen(text), " %d,%d", sx, sy);
+    }
+
+    wsprintf(text + lstrlen(text), " %dx%d %08lX brush %d mode %d", width, height, rop,
+             brush != NULL, drawMode != NULL);
     append();
     return 1;
 }

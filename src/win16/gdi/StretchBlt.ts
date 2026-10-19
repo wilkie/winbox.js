@@ -86,6 +86,29 @@ export function StretchBlt(
 
   const source = hdcSrc ? this.handles.resolve(hdcSrc) : null;
 
+  /* A printer's driver from the drive that can stretch draws it
+   * (`printer-blits.ts`); where it cannot, GDI's own stretching is not
+   * followed, and the context's own surface takes it as before. */
+  if (destination.driverDevice && source) {
+    const signed = (value: number) => (value << 16) >> 16;
+    const args = [nXDest, nYDest, nWidthDest, nHeightDest, nXSrc, nYSrc, nWidthSrc, nHeightSrc].map(
+      signed
+    );
+
+    return import('./printer-blits.js').then(async ({ driverStretchBlt }) => {
+      const answer = await driverStretchBlt(
+        this,
+        destination,
+        { x: args[0], y: args[1], width: args[2], height: args[3] },
+        source,
+        { x: args[4], y: args[5], width: args[6], height: args[7] },
+        dwRop >>> 0
+      );
+
+      return answer ?? TRUE;
+    });
+  }
+
   /* Both rectangles in device terms: each corner mapped (seg1 `312c`). */
   if (mapped(destination)) {
     ({

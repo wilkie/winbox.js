@@ -28,6 +28,12 @@ export function CreateCompatibleDC(hdc) {
 
   /* Not the display's: its driver is GDI's own for bitmaps (see `Escape`). */
   surface.memoryContext = true;
+
+  /* One made compatible with a printer's context is of its driver: it
+   * answers the printer's `GetDeviceCaps`, and its bitmap can be given to
+   * the driver (`printer-blits.ts`). */
+  const given = hdc ? this.handles.resolve(hdc) : null;
+
   const font = this.fonts ? stockFontHandle(this, SYSTEM_FONT) : null;
 
   if (font) {
@@ -35,5 +41,18 @@ export function CreateCompatibleDC(hdc) {
   }
 
   /* Its handle GDI's, from those its objects have (`gdinum`). */
-  return this.handles.allocateGDI(surface);
+  const handle = this.handles.allocateGDI(surface);
+
+  if (given?.driverDevice || given?.compatibleDevice) {
+    surface.compatibleDevice = given.driverDevice ?? given.compatibleDevice;
+
+    /* Its colours, brush and pen made by the driver as a printer's
+     * context's are, for the memory context (seg1 `0078`, `01cd`-`0210`). */
+    return import('./printer-output.js').then(async ({ startDrawing }) => {
+      await startDrawing(this, surface);
+      return handle;
+    });
+  }
+
+  return handle;
 }

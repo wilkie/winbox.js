@@ -6,9 +6,9 @@ ordinal: 35
 summary: Copies a rectangle of pixels into a rectangle of another size, stretching or shrinking it, and mirroring it where an extent is negative.
 versions:
   '3.1': exact
-probes: [stretch]
+probes: [stretch, prblt]
 source: src/win16/gdi/StretchBlt.ts
-topics: [accessories]
+topics: [accessories, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -34,3 +34,7 @@ topics: [accessories]
 ## Implementation
 
 `src/raster/stretch.ts` has the column and row rules, which USER's scroll bar arrows share. `StretchBlt` copies the source rectangle into a bitmap of its own format, builds the stretched bitmap in the destination's size by those rules and the stretch mode, and hands it to the same raster-operation engine as [[fn:GDI.BitBlt]], so the brush and the conversions between monochrome and colour are the same.
+
+## On a printer's context
+
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].

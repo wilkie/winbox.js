@@ -111,7 +111,7 @@ fn write32(system: &mut System, far: u32, at: u32, value: u32) {
     system.write_far(offset_by(far, at), &value.to_le_bytes());
 }
 
-fn words(values: &[i32]) -> Vec<u8> {
+pub(super) fn words(values: &[i32]) -> Vec<u8> {
     values
         .iter()
         .flat_map(|&value| (value as u16).to_le_bytes())
@@ -123,11 +123,30 @@ fn caps(system: &System, dc: usize, at: usize) -> u16 {
         .map_or(0, |info| u16::from_le_bytes([info[at], info[at + 1]]))
 }
 
-fn proc(system: &System, dc: usize, ordinal: u16) -> (u32, u32) {
+pub(super) fn proc(system: &System, dc: usize, ordinal: u16) -> (u32, u32) {
+    // A memory context made compatible with a driver's: its device's.
+    if let Some(id) = system.printing.drivers.compatible.get(&dc) {
+        return system
+            .printing
+            .drivers
+            .devices
+            .get(id)
+            .map_or((0, 0), |pdevice| {
+                (
+                    super::printer_driver::proc_named(system, &pdevice.driver, ordinal),
+                    pdevice.lp_pdevice,
+                )
+            });
+    }
+
     super::printer_driver::device_proc(system, dc, ordinal)
 }
 
-async fn call_driver(engine: &Engine, procedure: u32, args: &[GuestArg]) -> Result<u32, Stop> {
+pub(super) async fn call_driver(
+    engine: &Engine,
+    procedure: u32,
+    args: &[GuestArg],
+) -> Result<u32, Stop> {
     let (answer, _) = engine.call_with(procedure, args, &[]).await?;
 
     Ok(answer)
@@ -136,7 +155,7 @@ async fn call_driver(engine: &Engine, procedure: u32, args: &[GuestArg]) -> Resu
 /// Bytes laid below the stack for a call, as GDI lays its own on its
 /// stack: given to `body` as a far pointer; its answer, and the bytes as
 /// they were left.
-async fn on_stack<T, F: Future<Output = Result<T, Stop>>>(
+pub(super) async fn on_stack<T, F: Future<Output = Result<T, Stop>>>(
     engine: &Engine,
     bytes: &[u8],
     body: impl FnOnce(u32) -> F,
@@ -159,7 +178,11 @@ async fn on_stack<T, F: Future<Output = Result<T, Stop>>>(
     Ok((answer?, left))
 }
 
-async fn kernel(engine: &Engine, name: &'static str, args: &[GuestArg]) -> Result<u32, Stop> {
+pub(super) async fn kernel(
+    engine: &Engine,
+    name: &'static str,
+    args: &[GuestArg],
+) -> Result<u32, Stop> {
     let (answer, _) = call_named(engine, "KERNEL", name, args).await?;
 
     Ok(answer.value().unwrap_or(0))
@@ -186,12 +209,30 @@ fn object_key(system: &mut System, object: usize) -> usize {
 
 /// The device a driver's context was made for.
 fn device_mut(system: &mut System, dc: usize) -> Option<&mut super::printer_driver::PDevice> {
-    let id = *system.printing.drivers.contexts.get(&dc)?;
+    let id = *system
+        .printing
+        .drivers
+        .contexts
+        .get(&dc)
+        .or_else(|| system.printing.drivers.compatible.get(&dc))?;
 
     system.printing.drivers.devices.get_mut(&id)
 }
 
-fn state(system: &System, dc: usize) -> Option<&DriverState> {
+/// The pens and brushes realized for a context's device: a memory
+/// context's kept apart, by the device's number and one (seg1 `0151`).
+fn cache_mut(system: &mut System, dc: usize) -> Option<&mut Vec<(usize, Vec<Realized>)>> {
+    let memory = system.printing.drivers.compatible.contains_key(&dc);
+    let pdevice = device_mut(system, dc)?;
+
+    Some(if memory {
+        &mut pdevice.memory_realized
+    } else {
+        &mut pdevice.realized
+    })
+}
+
+pub(super) fn state(system: &System, dc: usize) -> Option<&DriverState> {
     system.gdi.dcs[dc].state.driver.as_ref()
 }
 
@@ -258,7 +299,18 @@ pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
 
     realize_brush(engine, dc).await?;
     realize_pen(engine, dc).await?;
-    super::printer_driver::device_font(engine, dc).await?;
+
+    // A memory context's font is the device's, realized already.
+    if !engine
+        .system()
+        .printing
+        .drivers
+        .compatible
+        .contains_key(&dc)
+    {
+        super::printer_driver::device_font(engine, dc).await?;
+    }
+
     Ok(())
 }
 
@@ -359,8 +411,8 @@ async fn realize_object(
     fifth: impl Fn(u32) -> u32,
 ) -> Result<Option<Realized>, Stop> {
     let object = object_key(&mut engine.system(), object);
-    let kept = device_mut(&mut engine.system(), dc)
-        .and_then(|pdevice| pdevice.realized.iter().find(|(of, _)| *of == object))
+    let kept = cache_mut(&mut engine.system(), dc)
+        .and_then(|cache| cache.iter().find(|(of, _)| *of == object))
         .map(|(_, list)| list)
         .and_then(|list| list.iter().find(|each| each.key == key).cloned());
 
@@ -432,10 +484,10 @@ async fn realize_object(
         serial,
     };
 
-    if let Some(pdevice) = device_mut(&mut engine.system(), dc) {
-        match pdevice.realized.iter_mut().find(|(of, _)| *of == object) {
+    if let Some(cache) = cache_mut(&mut engine.system(), dc) {
+        match cache.iter_mut().find(|(of, _)| *of == object) {
             Some((_, list)) => list.insert(0, realized.clone()),
-            None => pdevice.realized.push((object, vec![realized.clone()])),
+            None => cache.push((object, vec![realized.clone()])),
         }
     }
 
@@ -563,7 +615,7 @@ pub async fn realize_brush(engine: &Engine, dc: usize) -> Result<bool, Stop> {
 }
 
 /// The `DRAWMODE` as the context has it now.
-fn draw_mode(system: &mut System, dc: usize) -> u32 {
+pub(super) fn draw_mode(system: &mut System, dc: usize) -> u32 {
     let Some(far) = system
         .printing
         .drivers
@@ -798,7 +850,7 @@ fn pen_size(system: &System, dc: usize) -> (i32, i32) {
     state(system, dc).map_or((1, 1), |driver| (driver.pen_width, driver.pen_height))
 }
 
-fn device_point(system: &System, dc: usize, x: i32, y: i32) -> (i32, i32) {
+pub(super) fn device_point(system: &System, dc: usize, x: i32, y: i32) -> (i32, i32) {
     super::draw::device_point(&super::mapping::mapping_of(system, dc), x, y)
 }
 
@@ -1653,7 +1705,7 @@ pub(super) fn points_at(system: &System, far: u32, count: i16) -> Vec<(i32, i32)
 }
 
 /// The call as the rest of GDI answers it, for a context not a driver's.
-async fn otherwise(engine: &Engine, name: &str, mut args: Args) -> Result<Answer, Stop> {
+pub(super) async fn otherwise(engine: &Engine, name: &str, mut args: Args) -> Result<Answer, Stop> {
     match super::base_implementation(name) {
         Some(Implementation::Sync(answer)) => answer(&mut engine.system(), &mut args),
         Some(Implementation::Async(answer)) => answer(engine, args).await,
@@ -1724,10 +1776,8 @@ async fn delete_realized(engine: &Engine, handle: u16) -> Result<(), Stop> {
     };
 
     match kind {
-        GdiObject::Font(_) => {
-            if super::printer_driver::driver_realized(&engine.system(), object) {
-                super::printer_driver::delete_driver_fonts(engine, object).await?;
-            }
+        GdiObject::Font(_) if super::printer_driver::driver_realized(&engine.system(), object) => {
+            super::printer_driver::delete_driver_fonts(engine, object).await?;
         }
         GdiObject::Pen(_) => delete_driver_object(engine, object, OBJ_PEN).await?,
         GdiObject::Brush(_) => delete_driver_object(engine, object, OBJ_BRUSH).await?,
@@ -1753,22 +1803,28 @@ async fn delete_driver_object(engine: &Engine, object: usize, style: u16) -> Res
             let Some(pdevice) = system.printing.drivers.devices.get_mut(&id) else {
                 continue;
             };
-            let Some(at) = pdevice.realized.iter().position(|(of, _)| *of == object) else {
-                continue;
-            };
-            let (_, list) = pdevice.realized.remove(at);
+            let mut lists = Vec::new();
+
+            for cache in [&mut pdevice.realized, &mut pdevice.memory_realized] {
+                if let Some(at) = cache.iter().position(|(of, _)| *of == object) {
+                    lists.push(cache.remove(at).1);
+                }
+            }
+
             let lp_pdevice = pdevice.lp_pdevice;
             let driver = pdevice.driver.clone();
             let procedure = super::printer_driver::proc_named(&system, &driver, REALIZE_OBJECT);
 
             found.extend(
-                list.into_iter()
+                lists
+                    .into_iter()
+                    .flatten()
                     .map(|realized| (procedure, lp_pdevice, realized)),
             );
         }
     }
 
-    found.sort_by(|a, b| b.2.serial.cmp(&a.2.serial));
+    found.sort_by_key(|found| std::cmp::Reverse(found.2.serial));
 
     for (procedure, lp_pdevice, realized) in found {
         if procedure != 0 {

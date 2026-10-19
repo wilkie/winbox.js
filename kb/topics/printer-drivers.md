@@ -2,7 +2,22 @@
 kind: topic
 name: Printer drivers in GDI
 summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, fonts realized by the driver and by GDI's TrueType engine, a document's calls, the drawing handed to the driver, GDI's spooler, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
-probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta, prdrv, prband]
+probes:
+  [
+    pric,
+    prdlg,
+    prdoc,
+    prdraw,
+    prspool,
+    prabort,
+    prlpt,
+    prtabs,
+    prnote,
+    prmeta,
+    prdrv,
+    prband,
+    prblt,
+  ]
 ---
 
 A printer's driver is the user's own program, a library on the drive such as Windows' PostScript driver, `PSCRIPT.DRV`, or one a printer's maker shipped. GDI loads it by its name and calls its exports, as it calls any library's. winbox.js runs it the same way: the driver's code runs on the processor, and GDI calls its entry points where Windows' GDI does. This is unlike the display ([[topic:display-drivers]]), whose driver winbox.js never runs. winbox.js's own printer, `WBPRINT`, is a driver of winbox.js's and is not loaded from the drive ([[topic:printing]]).
@@ -100,8 +115,14 @@ A device shared by contexts keeps all of it until the last goes. [[measured]] Ea
 - **Figures** (seg25 `082f`). With the pen and the brush, a figure inside the region (seg18 `0000` answers 2) goes with no clip rectangle. Where the region is one rectangle that is the clip. Otherwise the figure goes once for each of the region's rectangles within its bounds, out by the pen's width. [[fn:GDI.Rectangle]] (`0093`) goes as `OS_RECTANGLE` where `dpPolygonalCaps` has `PC_RECTANGLE` and what the pen and brush need. The curves (seg9 `02c4`) bring the right and bottom in by one and go as `OS_ELLIPSE`, `OS_ARC`, `OS_CHORD`, `OS_PIE` or `OS_ROUNDRECT`, or `OS_CIRCLE` where the sides are as long by the aspects and the driver has `CC_CIRCLES`. A thin polyline goes as `OS_POLYLINE` with its bounds as the clip; a wide pen needs `LC_WIDE` and goes as a figure (seg21 `0726`). [[fn:GDI.Polygon]] closes the points and goes as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` (seg24 `0254`, `0396`).
 - **Text** goes to the driver's `ExtTextOut` ([[fn:GDI.ExtTextOut]]), and [[fn:GDI.GetTextExtent]] asks it the extent with its count negated. USER's [[fn:USER.TabbedTextOut]] draws each run with GDI's `ExtTextOut`.
 - **A DIB** goes to the driver's `StretchDIBits`, ordinal 28, where `dpRaster` has `RC_STRETCHDIB` (seg11 `1058`). It goes once for each of the region's rectangles within the destination, from the bottom up, and the answer is the source's height.
+- **[[fn:GDI.BitBlt]] and [[fn:GDI.PatBlt]]** go to the driver's `BitBlt`, ordinal 1 (seg1 `305b`, `2d0d`). Both rectangles are taken to the device; an empty one answers 1. A raster operation that does not read its source takes none (`2fbf`). A source must be of the same driver: a driver's context, or a memory context made compatible with one. Where either is a device and their drivers differ, the answer is nought (`2e06`-`2e10`), so a bitmap of a memory context made compatible with the display cannot be copied to a printer. The driver is called once for each of the visible region's rectangles within the destination, from the bottom up where the source lies above it and from the right where it lies to the left (`2da8`). Each call gives the rectangle's corner, the source's `BITMAP` and its corner moved as far, the extent, the raster operation, the realized brush and the `DRAWMODE` (`2e92`). The answer is 1.
+- **[[fn:GDI.StretchBlt]]** of extents alike, neither turned over, is a `BitBlt` (seg1 `30bc`). Where `dpRaster` has `RC_STRETCHBLT` (seg32 `05fa`), the driver's `StretchBlt`, ordinal 27, is called once for each of the visible region's rectangles within the destination, with that rectangle as its clip (`0687`). A destination given the wrong way round starts a pixel on from its far edge (`11bb`), and the flip is made the source's: its corner moves to its far edge and its extent goes negative (`0658`). A driver's answer below nought leaves the rest to GDI.
+- **[[fn:GDI.SetDIBitsToDevice]]**, where `dpRaster` has `RC_DIBTODEV`, goes to the driver's `DIBToDevice`, ordinal 21 (seg11 `0b13`). The driver is given the destination's corner less the source's x, moved down by the source's y and the height less the DIB's height (`0c61`-`0c78`). It also gets the first scan and the count, the visible region's rectangle as the clip, the `DRAWMODE`, the bits, the `BITMAPINFO` and no translation (`0cac`). The answer is the driver's.
+- **A memory context** made compatible with a printer's context is of its driver. [[fn:GDI.GetDeviceCaps]] answers the printer's `GDIINFO`, and `CreateCompatibleDC` has the driver realize its white brush and black pen again. Those are kept apart from the device's, by the device's number and one (seg1 `0151`). Its font is the device's, found realized already (`3e64`).
 
 [[measured]] [[probe:prdraw]]: dashed and wide pens, a hatched rectangle with no outline, a star filled both ways, an ellipse inside its frame, a circle, a round rectangle, a pie, an arc and a chord, a rectangle in `MM_LOMETRIC`, a rectangle and a line across a clip, text of colours and modes and in a font of its own, an opaque rectangle, and a DIB stretched ten times. Both engines agree with every line of the PostScript written, all 149 records. [[probe:prtabs]]: tabbed text and its extents, 88 records.
+
+[[measured]] [[probe:prblt]], with the probe's own driver on a device that can only `BitBlt`, then on one that can also stretch and take DIBs. A memory context made compatible with the printer's answers its `TECHNOLOGY`, 2, and its driver realizes a brush and a pen for it. A bitmap copied, in part and under a clip of one rectangle and around a hole, reaches the driver's `BitBlt` with its `BITMAP`, rectangle by rectangle from the bottom up and from the right. A bitmap of a memory context compatible with the display is refused with nought, and `PatBlt` goes with no source. A stretch and a flipped stretch reach `StretchBlt`, a DIB `DIBToDevice` and `StretchDIBits`. With the PostScript driver, a bitmap copied and stretched and a DIB set are written as `imagemask` and `image`. Both engines agree with every record but those of the probe's last part, which are held apart.
 
 [[read out]] **A metafile played** on a driver's context reaches the driver record by record, as the calls it keeps would: `PlayMetaFileRecord` (seg19 `0826`) makes each through the function's own entry ([[topic:metafiles]]). [[measured]] [[probe:prmeta]] plays one with colours, a pen, a brush, figures and text, whole and then a record at a time; both pages are written alike, and both engines agree with all 112 records.
 
@@ -151,7 +172,7 @@ Both engines agree with all 174 records.
 - GDI's own mapping where a driver realizes no font, GDI's own text and extents for such a font, and the compatibility flags' changes to a driver's TrueType fonts.
 - GDI's own drawing for a driver that cannot draw a figure (`OS_BEGINNSCAN`, scan lines), the wide frames GDI draws itself, plotters' pens and brushes, and arcs whose two points meet.
 - Text: alignments other than the top left, the current position, `lpDx`, justification's second call, rotation, a complex region, and the driver's `StrBlt`.
-- `BitBlt`, `SetDIBitsToDevice` and `StretchBlt` through the driver, and a DIB GDI must convert.
+- What GDI draws itself for a driver without `RC_STRETCHBLT`, `RC_DIBTODEV` or `RC_STRETCHDIB`: it stretches into bitmaps of its own and copies them with the driver's `BitBlt` (seg32 `0690` on, seg11 `0ce9` on; [[probe:prblt]]'s last part, held apart). A stretch that comes to a copy but for a pixel (seg32 `04fb`), a DIB whose colours GDI converts first, a memory context's own drawing through its printer's driver, and the count a memory context keeps on its device.
 - GDI's escapes 100h to BFFh on a printer, and the escapes GDI keeps in a banding driver's metafile (25, 200h on, seg7 `0172`, `0469`). `RC_SCALING`'s shifts of a band (`0211`). The temporary file GDI keeps a banding driver's page in; winbox.js keeps it in memory.
 - The `Ex` calls (`MoveToEx`, `SetWindowOrgEx` and the rest) on a banding driver's context while its page is kept, and drawing USER does on one, which winbox.js makes without the dispatcher.
 - Print Manager's side of the spooler, the network's jobs, `FILE`'s "Print To File" box, and DOS's devices.

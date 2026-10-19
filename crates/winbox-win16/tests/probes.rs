@@ -25,6 +25,26 @@ fn probes_agree_with_windows() {
     }
 }
 
+/// `prblt`, held to Windows but for its last part, where GDI stretches
+/// and draws DIBs itself for a driver that can only `BitBlt`, which is not
+/// followed: as `test/oracle/replay.ts`'s `KNOWN_GAPS` has it
+/// (`prblt:fallback`).
+#[test]
+fn printer_blits_agree_but_for_gdis_own_stretching() {
+    let (Some((stop, records)), Some(windows)) = (run("prblt"), recorded("prblt")) else {
+        return;
+    };
+    let kept = |records: Vec<[String; 3]>| -> Vec<[String; 3]> {
+        records
+            .into_iter()
+            .filter(|[function, ..]| function != "fallback")
+            .collect()
+    };
+
+    assert_eq!(stop, Stop::Ended);
+    assert_eq!(kept(records), kept(windows));
+}
+
 /// How many records of each probe the TypeScript engine agrees with
 /// Windows on, from the knowledge base's conformance data.
 fn typescript_agreed() -> std::collections::HashMap<String, u64> {

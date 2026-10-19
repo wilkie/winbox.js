@@ -40,6 +40,11 @@ export function GetDeviceCaps(hdc, iCapability) {
     return driverCaps(surface, iCapability);
   }
 
+  /* A memory context made compatible with one: the same (seg1 `44a6`). */
+  if (surface?.compatibleDevice) {
+    return driverCaps({ driverDevice: surface.compatibleDevice }, iCapability);
+  }
+
   /* WinBox's own printer's (`printer.ts`); the display's else. */
   const display = surface?.device ?? this.display;
 

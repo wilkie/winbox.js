@@ -32,6 +32,28 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
     return FALSE;
   }
 
+  /* A printer's driver from the drive draws it, its `BitBlt` with no
+   * source (`GDI.EXE` seg1 `2ca6`; `printer-blits.ts`). */
+  if (surface.driverDevice) {
+    const signed = (value: number) => (value << 16) >> 16;
+
+    return import('./printer-blits.js').then(({ driverBitBlt }) =>
+      driverBitBlt(
+        this,
+        surface,
+        {
+          x: signed(nLeftRect),
+          y: signed(nTopRect),
+          width: signed(nwidth),
+          height: signed(nheight),
+        },
+        null,
+        { x: 0, y: 0 },
+        fdwRop >>> 0
+      )
+    );
+  }
+
   /* In device terms, in order, where a mapping mode says otherwise. */
   if (mapped(surface)) {
     const rect = deviceRect(surface, nLeftRect, nTopRect, nLeftRect + nwidth, nTopRect + nheight);

@@ -160,6 +160,29 @@ pub(crate) fn recording(
     Some((index, how, hdc))
 }
 
+/// A call kept in the metafile, and, for one that is not made too, its
+/// answer the record's and the current position moved for `LineTo`:
+/// whether it is answered so.
+pub(crate) fn keep(
+    system: &mut System,
+    (meta, how, hdc): (usize, Banding, u16),
+    ordinal: u16,
+    export: Export,
+    stack: u32,
+    sp: u32,
+) -> bool {
+    super::metafile::record_call(system, meta, ordinal, export, stack, sp);
+
+    if how == Banding::Position {
+        let read = |at: u32| system.cpu.bus.read16(stack + (at & 0xffff));
+        let (x, y) = (read(sp + 6) as i16, read(sp + 4) as i16);
+
+        super::dc::move_to(system, hdc, x, y);
+    }
+
+    how != Banding::Both
+}
+
 const NEWFRAME: u16 = 1;
 const ABORTDOC: u16 = 2;
 const NEXTBAND: u16 = 3;

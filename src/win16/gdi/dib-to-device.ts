@@ -155,6 +155,31 @@ export function SetDIBitsToDevice(
     return -1;
   }
 
+  /* A printer's driver from the drive that takes DIBs draws it
+   * (`printer-blits.ts`); where it cannot, GDI's own drawing is not
+   * followed, and nothing is drawn. */
+  if (surface.driverDevice) {
+    const signed = (value: number) => (value << 16) >> 16;
+
+    return import('./printer-blits.js').then(async ({ driverDIBToDevice }) => {
+      const answer = await driverDIBToDevice(this, surface, {
+        x: signed(xDest),
+        y: signed(yDest),
+        width: signed(cx),
+        height: signed(cy),
+        srcX: signed(xSrc),
+        srcY: signed(ySrc),
+        start: uStartScan & 0xffff,
+        count: cScanLines & 0xffff,
+        bits: lpvBits,
+        info: lpbmi,
+        usage: fuColorUse,
+      });
+
+      return answer ?? 0;
+    });
+  }
+
   const dib = dibAt(this, surface, lpbmi, lpvBits, cScanLines, fuColorUse);
 
   if (!dib) {

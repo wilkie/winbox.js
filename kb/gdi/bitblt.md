@@ -6,9 +6,9 @@ ordinal: 34
 summary: Copies a rectangle of pixels from one device context to another, combining source, destination and brush under a raster operation.
 versions:
   '3.1': exact
-probes: [bitblt, bitbits]
+probes: [bitblt, bitbits, prblt]
 source: src/win16/gdi/BitBlt.ts
-topics: [display-drivers]
+topics: [display-drivers, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -30,3 +30,7 @@ topics: [display-drivers]
 A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`src/raster/raster-op.ts`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
 
 A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. Not yet handled: a source overlapping the destination, and the 256-colour index order, which is not recorded.
+
+## On a printer's context
+
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].

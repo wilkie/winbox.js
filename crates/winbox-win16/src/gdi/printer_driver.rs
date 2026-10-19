@@ -98,6 +98,9 @@ pub struct PDevice {
     /// `2335`): shared by the contexts on it, let go as it goes (`4460`).
     /// In the order each object was first realized.
     pub realized: Vec<(usize, Vec<super::printer_output::Realized>)>,
+    /// The same for the memory contexts made compatible with its contexts,
+    /// kept by the device's number and one (seg1 `0151`, `3e64`).
+    pub memory_realized: Vec<(usize, Vec<super::printer_output::Realized>)>,
 }
 
 /// What GDI keeps of the drivers it has loaded from the drive.
@@ -129,6 +132,9 @@ pub struct Drivers {
     /// GDI's side of the contexts of drivers that band, by the context's
     /// index (`printer_bands.rs`).
     pub bands: HashMap<usize, super::printer_bands::Bands>,
+    /// The memory contexts made compatible with a driver's context, by
+    /// their index: the device (`printer_blits.rs`).
+    pub compatible: HashMap<usize, u32>,
     /// What GDI keeps of each driver's context for drawing
     /// (`printer_output.rs`).
     pub drawing: HashMap<usize, super::printer_output::Drawing>,
@@ -449,6 +455,7 @@ async fn enable_device(
         lp_pdevice,
         count: 0,
         realized: Vec::new(),
+        memory_realized: Vec::new(),
     }))
 }
 
@@ -643,7 +650,7 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
             if let Some(pdevice) = system.printing.drivers.devices.remove(&id) {
                 let _ = crate::memory::global_free(&mut system, &mut Args::repeat(pdevice.pdevice));
 
-                for (_, list) in &pdevice.realized {
+                for (_, list) in pdevice.realized.iter().chain(&pdevice.memory_realized) {
                     for realized in list {
                         let _ = crate::memory::global_free(
                             &mut system,
@@ -750,7 +757,13 @@ pub async fn delete_driver_fonts(engine: &Engine, object: usize) -> Result<(), S
 /// `GDIINFO`, nought past 6Ch, or past 66h for a `GDIINFO` older than 300h
 /// (seg1 `44a6`).
 pub fn driver_caps(system: &System, dc: usize, index: i16) -> u16 {
-    let Some(pdevice) = device_of(system, dc) else {
+    // A memory context made compatible with one: the same (seg1 `44a6`).
+    let pdevice = device_of(system, dc).or_else(|| {
+        let id = system.printing.drivers.compatible.get(&dc)?;
+
+        system.printing.drivers.devices.get(id)
+    });
+    let Some(pdevice) = pdevice else {
         return 0;
     };
     let info = &pdevice.info;
@@ -1006,10 +1019,29 @@ fn delete_dc_call(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (hdc, driver_dc_of(&system, hdc))
         };
+        let compatible = {
+            let system = engine.system();
+
+            match system.handles.resolve(hdc) {
+                Some(Object::Dc(index))
+                    if system.printing.drivers.compatible.contains_key(&index) =>
+                {
+                    Some(index)
+                }
+                _ => None,
+            }
+        };
         let deleted = super::dc::delete_dc(&mut engine.system(), hdc);
 
         if let Some(dc) = driver {
             delete_driver_dc(engine, dc).await?;
+        }
+
+        // A memory context made compatible with one: its drawing block let
+        // go; what was realized for it stays with the device.
+        if let Some(dc) = compatible {
+            super::printer_output::stop_drawing(engine, dc).await?;
+            engine.system().printing.drivers.compatible.remove(&dc);
         }
 
         Ok(Answer::Word(u16::from(deleted)))
