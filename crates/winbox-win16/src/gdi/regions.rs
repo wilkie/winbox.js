@@ -535,7 +535,23 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 /// What can be drawn on at all: the bitmap, or nothing for the one a
 /// memory device context starts with.
+/// What is visible: the area, and on a context of a driver that bands, no
+/// more than the band (`printer_bands.rs`, `IntersectVisRect`).
 fn visible(system: &mut System, dc: usize) -> ClipRegion {
+    let shown = area(system, dc);
+
+    match super::printer_bands::band_of(system, dc) {
+        Some([left, top, right, bottom]) => {
+            shown.intersect(&ClipRegion::rect(left, top, right, bottom))
+        }
+        None => shown,
+    }
+}
+
+/// What can be drawn on, as a clip region starts: the bitmap, or nothing
+/// for the one a memory device context starts with; a printer driver's
+/// page.
+fn area(system: &mut System, dc: usize) -> ClipRegion {
     // A printer driver's context: its page, as the driver's `GDIINFO` has
     // it (`printer_driver.rs`).
     if let Some(info) = super::printer_driver::device_info(system, dc) {
@@ -573,7 +589,7 @@ pub(crate) fn narrow(
 ) -> u16 {
     let region = match system.gdi.dcs[dc].state.clip.clone() {
         Some(clip) => clip,
-        None => visible(system, dc),
+        None => area(system, dc),
     };
 
     system.gdi.dcs[dc].state.clip = Some(how(&region));

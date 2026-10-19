@@ -1294,16 +1294,43 @@ fn create_metafile_call(system: &mut System, args: &mut Args) -> Result<Answer, 
         meta.path = Some(path);
     }
 
+    Ok(Answer::Word(begin(system, meta)))
+}
+
+fn begin(system: &mut System, meta: Recording) -> u16 {
     system.gdi.metafiles.push(Some(meta));
 
     let index = system.gdi.metafiles.len() - 1;
 
-    Ok(Answer::Word(
-        system
-            .handles
-            .allocate(Kind::Atom, Object::Metafile(index))
-            .unwrap_or(0),
-    ))
+    system
+        .handles
+        .allocate(Kind::Atom, Object::Metafile(index))
+        .unwrap_or(0)
+}
+
+/// A metafile begun in memory, as `CreateMetaFile` of no file begins one:
+/// its device context.
+pub(crate) fn create_in_memory(system: &mut System) -> u16 {
+    begin(
+        system,
+        Recording {
+            largest: 3,
+            ..Recording::default()
+        },
+    )
+}
+
+/// `CloseMetaFile`: the metafile's handle, or nought.
+pub(crate) fn close(system: &mut System, hdc: u16) -> u16 {
+    let mut args = Args::repeat(hdc);
+
+    close_metafile_call(system, &mut args).map_or(0, |answer| answer.value().unwrap_or(0) as u16)
+}
+
+/// `DeleteMetaFile`.
+pub(crate) fn delete(system: &mut System, hmf: u16) {
+    let mut args = Args::repeat(hmf);
+    let _ = delete_metafile_call(system, &mut args);
 }
 
 /// The metafile a device context recorded, ended: its header, its records
@@ -1348,35 +1375,44 @@ fn close_metafile_call(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// deleted after.
 fn play_metafile(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (hdc, opened, records) = {
-            let mut system = engine.system();
-            let hdc = args.word(&system);
-            let hmf = args.word(&system);
-            let Some(opened) = open_metafile(&mut system, hmf)? else {
-                return Ok(Answer::Word(0));
-            };
-            let records = opened.records(&system);
+        let (hdc, hmf) = {
+            let system = engine.system();
 
-            (hdc, opened, records)
+            (args.word(&system), args.word(&system))
         };
-        let mut table = Table::Own(vec![0; usize::from(opened.objects)]);
 
-        for at in records {
-            play_record(engine, hdc, far_at(opened.far, at), &mut table).await?;
-        }
-
-        let mut system = engine.system();
-
-        opened.done(&mut system);
-
-        if let Table::Own(handles) = table {
-            for handle in handles.into_iter().filter(|&handle| handle != 0) {
-                super::objects::delete_object(&mut system, handle);
-            }
-        }
-
-        Ok(Answer::Word(1))
+        Ok(Answer::Word(u16::from(play(engine, hdc, hmf).await?)))
     })
+}
+
+/// `PlayMetaFile`: whether it played. The objects it made are deleted
+/// after, as a program deletes them -- given back to a printer's driver
+/// that realized them (`printer_output.rs`).
+pub(crate) async fn play(engine: &Engine, hdc: u16, hmf: u16) -> Result<bool, Stop> {
+    let (opened, records) = {
+        let mut system = engine.system();
+        let Some(opened) = open_metafile(&mut system, hmf)? else {
+            return Ok(false);
+        };
+        let records = opened.records(&system);
+
+        (opened, records)
+    };
+    let mut table = Table::Own(vec![0; usize::from(opened.objects)]);
+
+    for at in records {
+        play_record(engine, hdc, far_at(opened.far, at), &mut table).await?;
+    }
+
+    opened.done(&mut engine.system());
+
+    if let Table::Own(handles) = table {
+        for handle in handles.into_iter().filter(|&handle| handle != 0) {
+            super::printer_output::delete_object(engine, handle).await?;
+        }
+    }
+
+    Ok(true)
 }
 
 /// Plays one record, its objects in a program's handle table.

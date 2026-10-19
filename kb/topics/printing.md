@@ -31,4 +31,4 @@ A Windows printer driver on the drive, such as the PostScript driver, is loaded 
 
 - Print Manager, and the spooler's jobs through it.
 - What a Windows driver's DC leaves to GDI's own drawing; see [[topic:printer-drivers]].
-- WinBox's own printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`).
+- WinBox's own printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`); a driver from the drive that bands is [[topic:printer-drivers]]'s.

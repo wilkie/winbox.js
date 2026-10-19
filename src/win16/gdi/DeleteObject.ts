@@ -71,6 +71,22 @@ export function DeleteObject(handle) {
     });
   }
 
+  /* So a pen or a brush a printer's driver realized (`GDI.EXE` seg1 `1a2a`;
+   * `printer-output.ts`). */
+  const style = this.handles.isPen(item) ? 1 : this.handles.isBrush(item) ? 2 : 0;
+
+  if (
+    style &&
+    (this._printerDrivers?.drivers ?? []).some((driver: any) =>
+      driver.devices.some((pdevice: any) => pdevice.realized.has(handle))
+    )
+  ) {
+    return import('./printer-output.js').then(async ({ deleteDriverObject }) => {
+      await deleteDriverObject(this, handle, style);
+      return deleted(this, handle, item);
+    });
+  }
+
   return deleted(this, handle, item);
 }
 

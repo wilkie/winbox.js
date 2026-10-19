@@ -2,7 +2,7 @@
 kind: topic
 name: Printer drivers in GDI
 summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, fonts realized by the driver and by GDI's TrueType engine, a document's calls, the drawing handed to the driver, GDI's spooler, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
-probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta, prdrv]
+probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta, prdrv, prband]
 ---
 
 A printer's driver is the user's own program, a library on the drive such as Windows' PostScript driver, `PSCRIPT.DRV`, or one a printer's maker shipped. GDI loads it by its name and calls its exports, as it calls any library's. winbox.js runs it the same way: the driver's code runs on the processor, and GDI calls its entry points where Windows' GDI does. This is unlike the display ([[topic:display-drivers]]), whose driver winbox.js never runs. winbox.js's own printer, `WBPRINT`, is a driver of winbox.js's and is not loaded from the drive ([[topic:printing]]).
@@ -19,7 +19,7 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 4. **The device.** Each driver keeps the devices it has enabled, by the device's and the port's names (seg1 `0333`). A context on a device already enabled shares it, as the `GDIINFO`'s `dpDCManage` (5Ch) lets: bit 0 gives every context a device of its own, bit 2 shares the first whatever the names, and bit 1 refuses a second context.
 5. **Enable, for the information.** A new device: GDI's 7Eh bytes are given to the driver's `Enable` with a style of 1 (8001h for an IC), the program's device, port and `DEVMODE` (seg1 `03af`, `04ca`). The answer is the bytes written: at least 6Eh where the table's version is 300h or more, else exactly 68h. Words 60h to 66h all nought are made B505h, 0, B505h, 0 (`0592`).
 6. **Enable, for the device.** The `PDEVICE` is `GlobalAlloc(2002h, dpDEVICEsize)` (`03f5`), given to `Enable` with a style of nought (8000h for an IC, `046f`). Nought refuses the context.
-7. A driver whose `dpRaster` has `RC_BANDING` has the drawing on its DC kept in a metafile for its bands (`042d`).
+7. A driver whose `dpRaster` has `RC_BANDING` has the drawing on its DC kept in a metafile for its bands (`042d`), on a device newly enabled and not for an IC. See Bands below.
 8. The context's colours, brush and pen are made (below, under Drawing), and then its font is realized (`022e`). A pen, brush or font already realized for the device is not realized again: a second context on a shared device realizes nothing.
 
 [[measured]] [[probe:prdrv]] brings a driver of its own, which logs each call GDI makes to it. `CreateDC` called its `Enable` for the information and for the device, then `RealizeObject` for the white brush, the black pen and the default font, each asked its size first. The default font's `LOGFONT` is all nought, its face empty. A second context on a device it shares called nothing.
@@ -105,6 +105,27 @@ A device shared by contexts keeps all of it until the last goes. [[measured]] Ea
 
 [[read out]] **A metafile played** on a driver's context reaches the driver record by record, as the calls it keeps would: `PlayMetaFileRecord` (seg19 `0826`) makes each through the function's own entry ([[topic:metafiles]]). [[measured]] [[probe:prmeta]] plays one with colours, a pen, a brush, figures and text, whole and then a record at a time; both pages are written alike, and both engines agree with all 112 records.
 
+## Bands
+
+[[read out]] A driver that bands (`RC_BANDING` in `dpRaster`) is given the page a band at a time. GDI does it one of two ways (`GDI.EXE` seg7 `0042`-`0526`, seg1 `042d`):
+
+- **GDI keeps the page.** `CreateDC` makes a metafile, keeps it on the context, saves the context with [[fn:GDI.SaveDC]] and marks it with a type of its own, 4F50h (seg1 `025b`-`0264`). While the context is so, each call that draws is kept in the metafile and not drawn (seg20 `2596`, from each function): [[fn:GDI.Rectangle]], [[fn:GDI.BitBlt]], [[fn:GDI.ExtTextOut]] and the rest. A call that sets the context's state is kept and made as well: the colours, modes, mapping, clip rectangles, [[fn:GDI.SelectObject]], `SaveDC` and `RestoreDC`, [[fn:GDI.MoveTo]]. [[fn:GDI.LineTo]] is kept, and moves the current position (seg21 `0b47`). [[fn:GDI.OffsetClipRgn]] is kept only.
+- **`NEWFRAME`**, as [[fn:GDI.EndPage]] sends it, plays the page (seg7 `01b7`). The context is made the type that draws, 4F4Fh, and restored to its first saved level, and the metafile closed. Then for each band: the context saved and its visible region saved (`SaveVisRgn`), the driver's `Control` asked `NEXTBAND`, the visible region narrowed to the band (`IntersectVisRect`), the clip region dropped, the metafile played, and the context and its region restored. An empty band ends it. The metafile is deleted and a new one made, the context restored and saved again, and it records again; then `NEWFRAME` goes to the driver. A band the driver refuses with nought or less, or a metafile that will not play, ends the page so too, but gives the driver `ABORTDOC`, and the escape answers the refusal (`028d`).
+- **The program bands**, with `NEXTBAND` of its own (`0303`). The first of a page throws the kept page away, restores and saves the context, and the context draws from then. Each gives the driver `NEXTBAND` and narrows the visible region to the band it gives. An empty band makes a metafile again, restores and saves the context, and it records again.
+- `ABORTDOC` restores the context and makes its metafile anew (`018c`); `ENDDOC` widens the visible region back (`0152`); [[fn:GDI.DeleteDC]] closes and deletes the metafile (seg1 `089b`).
+
+So each page starts from the context as it was saved: what the program set on one page is gone on the next. [[fn:GDI.SaveDC]] saves the whole of GDI's context, its marks among it (seg1 `0a84`), so [[fn:GDI.RestoreDC]] takes back `StartPage`'s and `NEXTBAND`'s marks too.
+
+A driver that does not band is given `NEXTBAND` as any escape.
+
+[[measured]] [[probe:prband]]. The PostScript driver does not band: its `RASTERCAPS` is 10777, without `RC_BANDING`, and `QUERYESCSUPPORT` answers 1 for `NEXTBAND` and nought for `BANDINFO`. Its `NEXTBAND` gives the whole page, 2550 by 3300, then an empty band, each answered with its job. With the probe's own driver as a device that bands, two bands of its page:
+
+- the program's own `NEXTBAND`s give each band, and each figure reaches the driver's `Output` with the band as its clip. A colour set and a rectangle drawn before the first `NEXTBAND` are lost;
+- a page drawn and ended with `EndPage` calls nothing of the driver's until `EndPage`, but to realize a brush selected. Then each band gets every figure, clipped to the band. The brush the metafile made is realized in each band and deleted after it, with `RealizeObject`'s -2. After the page, the text colour and the current position are the context's first again;
+- a page aborted gives the driver only `ABORTDOC`, and a context deleted with a page kept gives it nothing but `Disable`.
+
+Both engines agree with all 174 records.
+
 ## GDI's spooler
 
 [[read out]] A driver writes its output through GDI's spooler (seg28, seg29 and seg30): [[fn:GDI.OpenJob]], [[fn:GDI.StartSpoolPage]], [[fn:GDI.WriteSpool]], [[fn:GDI.EndSpoolPage]], [[fn:GDI.WriteDialog]], [[fn:GDI.CloseJob]] and [[fn:GDI.DeleteJob]]. A job is a block of 148h bytes, and its handle is answered shifted right a bit. It goes straight to a file or port, through the communications driver, through Print Manager, or through the network. Its 100h-byte buffer is written as it fills, and [[fn:GDI.QueryAbort]] is asked before each write. A port that does not answer puts up GDI's box, system-modal, after WIN.INI's timeouts.
@@ -131,7 +152,8 @@ A device shared by contexts keeps all of it until the last goes. [[measured]] Ea
 - GDI's own drawing for a driver that cannot draw a figure (`OS_BEGINNSCAN`, scan lines), the wide frames GDI draws itself, plotters' pens and brushes, and arcs whose two points meet.
 - Text: alignments other than the top left, the current position, `lpDx`, justification's second call, rotation, a complex region, and the driver's `StrBlt`.
 - `BitBlt`, `SetDIBitsToDevice` and `StretchBlt` through the driver, and a DIB GDI must convert.
-- Banding (`RC_BANDING`, `NEXTBAND`'s metafile) and GDI's escapes 100h to BFFh on a printer. The PostScript driver does not band.
+- GDI's escapes 100h to BFFh on a printer, and the escapes GDI keeps in a banding driver's metafile (25, 200h on, seg7 `0172`, `0469`). `RC_SCALING`'s shifts of a band (`0211`). The temporary file GDI keeps a banding driver's page in; winbox.js keeps it in memory.
+- The `Ex` calls (`MoveToEx`, `SetWindowOrgEx` and the rest) on a banding driver's context while its page is kept, and drawing USER does on one, which winbox.js makes without the dispatcher.
 - Print Manager's side of the spooler, the network's jobs, `FILE`'s "Print To File" box, and DOS's devices.
 - `GetTabbedTextExtent`, `DrawText` and `GrayString` on a driver's DC.
 - A Write session: `write /p` of a text file asks first whether to convert it.

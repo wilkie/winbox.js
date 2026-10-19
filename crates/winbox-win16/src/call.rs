@@ -299,6 +299,10 @@ impl System {
         // A call into a metafile's device context is kept as a record, not
         // answered by its function (`gdi/metafile.rs`).
         let metafile = gdi::metafile::recording(self, module.name, export, stack, sp);
+        // So a call on a context of a printer's driver that bands, while GDI
+        // keeps its page in a metafile: one that sets the context's state is
+        // made as well (`gdi/printer_bands.rs`).
+        let banding = gdi::printer_bands::recording(self, module.name, export, stack, sp);
         // A function the TypeScript engine only stubs is answered as its
         // stub answers: nought, in the bytes it answers in, or nothing.
         let implementation = match implementation(module.name, export.name) {
@@ -353,6 +357,25 @@ impl System {
             }
 
             return Ok(None);
+        }
+
+        if let Some((meta, how, hdc)) = banding {
+            gdi::metafile::record_call(self, meta, ordinal, export, stack, sp);
+
+            if how != gdi::printer_bands::Banding::Both {
+                if how == gdi::printer_bands::Banding::Position {
+                    let read = |at: u32| self.cpu.bus.read16(stack + (at & 0xffff));
+                    let (x, y) = (read(sp + 6) as i16, read(sp + 4) as i16);
+
+                    gdi::dc::move_to(self, hdc, x, y);
+                }
+
+                if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
+                    log[at].answered = true;
+                }
+
+                return Ok(None);
+            }
         }
 
         // GDI's segment as the program last read it let go, and the bitmaps

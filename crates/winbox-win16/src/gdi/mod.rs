@@ -22,6 +22,7 @@ pub mod mapping;
 pub mod metafile;
 pub mod objects;
 pub mod palettes;
+pub mod printer_bands;
 pub mod printer_driver;
 pub mod printer_output;
 pub mod printing;

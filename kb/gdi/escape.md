@@ -6,7 +6,7 @@ ordinal: 38
 summary: Asks a device's driver to do one of its own functions, by number; a printer's go to its driver's Control, but for those GDI keeps.
 versions:
   '3.1': partial
-probes: [pric, escapes, printing, prdoc, prabort]
+probes: [pric, escapes, printing, prdoc, prabort, prband]
 source: src/win16/gdi/Escape.ts
 topics: [printer-drivers]
 ---
@@ -24,4 +24,4 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`driverEscape` in `src/win16/gdi/printer-driver.ts` and `driver_escape` in `crates/winbox-win16/src/gdi/printer_driver.rs`, for a driver from the drive. `NEXTBAND` marks the context as banding, which [[fn:GDI.EndPage]] reads. Not followed: GDI's own escapes 100h to BFFh, and the metafile GDI keeps for a banding driver's bands.
+`driverEscape` in `src/win16/gdi/printer-driver.ts` and `driver_escape` in `crates/winbox-win16/src/gdi/printer_driver.rs`, for a driver from the drive. `NEXTBAND` marks the context as banding, which [[fn:GDI.EndPage]] reads. On the context of a driver that bands, `NEWFRAME`, `NEXTBAND`, `ABORTDOC` and `ENDDOC` are GDI's first (`printer-bands.ts`, `printer_bands.rs`; [[topic:printer-drivers]]). Not followed: GDI's own escapes 100h to BFFh, and the escapes GDI keeps in a banding driver's metafile.

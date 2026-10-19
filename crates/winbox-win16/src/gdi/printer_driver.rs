@@ -63,6 +63,8 @@ const ENUM_DFONTS: u16 = 6;
 const DEVICE_DEFAULT_FONT: i16 = 14;
 
 const GDIINFO_SIZE: u16 = 0x6e;
+const DP_RASTER: usize = 0x26;
+const RC_BANDING: u16 = 2;
 const DC_SPDEVICE: u8 = 1;
 const DC_1PDEVICE: u8 = 2;
 const DC_IGNOREDFNP: u8 = 4;
@@ -121,10 +123,12 @@ pub struct Drivers {
     pub walking: Option<(u16, u16)>,
     /// The walks of a driver's fonts under way, by their numbers.
     pub walks: Vec<FontWalk>,
-    /// The contexts `StartPage` has marked, and those `NEXTBAND` has
-    /// marked banding (the DC's byte 0Bh, bits 5 and 1).
-    pub pages: std::collections::HashSet<usize>,
-    pub banding: std::collections::HashSet<usize>,
+    /// The order pens and brushes were realized in
+    /// (`printer_output.rs`, `Realized::serial`).
+    pub serial: u64,
+    /// GDI's side of the contexts of drivers that band, by the context's
+    /// index (`printer_bands.rs`).
+    pub bands: HashMap<usize, super::printer_bands::Bands>,
     /// What GDI keeps of each driver's context for drawing
     /// (`printer_output.rs`).
     pub drawing: HashMap<usize, super::printer_output::Drawing>,
@@ -210,6 +214,11 @@ fn driver_named<'a>(system: &'a mut System, name: &[u8]) -> Option<&'a mut Drive
         .find(|driver| driver.name == name)
 }
 
+/// A driver's entry point by its ordinal, nought where it has none.
+pub(super) fn proc_named(system: &System, driver: &[u8], ordinal: u16) -> u32 {
+    proc_of(system, driver, ordinal)
+}
+
 fn proc_of(system: &System, driver: &[u8], ordinal: u16) -> u32 {
     system
         .printing
@@ -224,7 +233,7 @@ fn proc_of(system: &System, driver: &[u8], ordinal: u16) -> u32 {
 /// Bytes laid below the stack for a call, given to `body` as a far
 /// pointer, the stack kept below them while it runs: its answer, and the
 /// bytes as they were left.
-async fn on_stack<T, F: Future<Output = Result<T, Stop>>>(
+pub(super) async fn on_stack<T, F: Future<Output = Result<T, Stop>>>(
     engine: &Engine,
     bytes: &[u8],
     body: impl FnOnce(u32) -> F,
@@ -471,6 +480,7 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
         return Ok(0);
     };
     let shared = shared_device(&engine.system(), &name, &device, &port);
+    let fresh = matches!(shared, Ok(None));
     let id = match shared {
         Err(()) => {
             if loaded {
@@ -551,6 +561,19 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
     // Its colours, brush and pen, through the driver (seg1
     // `01cd`-`0210`).
     super::printer_output::start_drawing(engine, index).await?;
+
+    // A driver that bands has the context's drawing kept in a metafile, on
+    // a device newly enabled, not an IC (seg1 `042d`, `025b`;
+    // `printer_bands.rs`).
+    let mut system = engine.system();
+    let bands = device_of(&system, index).is_some_and(|pdevice| {
+        u16::from_le_bytes([pdevice.info[DP_RASTER], pdevice.info[DP_RASTER + 1]]) & RC_BANDING != 0
+    });
+
+    if fresh && !ic && bands {
+        super::printer_bands::start_bands(&mut system, hdc, index);
+    }
+
     Ok(hdc)
 }
 
@@ -562,6 +585,7 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
 /// (`09ea`, `4460`), and its fonts (`09ef`, seg6 `0387`), not by the
 /// driver. A device shared keeps them for the contexts left on it.
 pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
+    super::printer_bands::stop_bands(&mut engine.system(), dc);
     super::printer_output::stop_drawing(engine, dc).await?;
 
     let (id, name, gone, disable, lp_pdevice) = {
@@ -791,8 +815,18 @@ pub async fn driver_escape(
     };
 
     // `NEXTBAND` marks the DC as banding, which `EndPage` reads (`0137`).
-    if escape == 3 {
-        engine.system().printing.drivers.banding.insert(dc);
+    if escape == 3
+        && let Some(driver) = engine.system().gdi.dcs[dc].state.driver.as_mut()
+    {
+        driver.banding = true;
+    }
+
+    // A driver that bands: GDI's own escapes for its bands
+    // (`printer_bands.rs`).
+    if let Some(answer) =
+        super::printer_bands::band_escape(engine, hdc, dc, escape as u16, input, output).await?
+    {
+        return Ok(answer);
     }
 
     if escape == 10 {
@@ -813,7 +847,7 @@ pub async fn driver_escape(
 
 /// The driver's `Control` with an escape, its input and its output: its
 /// answer, signed.
-async fn control(
+pub(super) async fn control(
     engine: &Engine,
     dc: usize,
     escape: u16,
@@ -887,7 +921,10 @@ pub async fn driver_start_doc(
 
 /// `StartPage` on a driver's DC (seg31 `02ae`): the DC marked, and 1.
 pub fn driver_start_page(system: &mut System, dc: usize) -> i16 {
-    system.printing.drivers.pages.insert(dc);
+    if let Some(driver) = system.gdi.dcs[dc].state.driver.as_mut() {
+        driver.page_started = true;
+    }
+
     1
 }
 
@@ -895,14 +932,13 @@ pub fn driver_start_page(system: &mut System, dc: usize) -> i16 {
 /// not marked; else the escape `NEWFRAME`'s answer, or 1 where `NEXTBAND`
 /// has marked it banding; both marks cleared.
 pub async fn driver_end_page(engine: &Engine, hdc: u16, dc: usize) -> Result<i16, Stop> {
-    let (started, banding) = {
-        let system = engine.system();
-
-        (
-            system.printing.drivers.pages.contains(&dc),
-            system.printing.drivers.banding.contains(&dc),
-        )
-    };
+    let (started, banding) = engine.system().gdi.dcs[dc]
+        .state
+        .driver
+        .as_ref()
+        .map_or((false, false), |driver| {
+            (driver.page_started, driver.banding)
+        });
 
     if !started {
         return Ok(-1);
@@ -913,10 +949,11 @@ pub async fn driver_end_page(engine: &Engine, hdc: u16, dc: usize) -> Result<i16
     } else {
         driver_escape(engine, hdc, dc, 1, 0, 0).await?
     };
-    let mut system = engine.system();
+    if let Some(driver) = engine.system().gdi.dcs[dc].state.driver.as_mut() {
+        driver.page_started = false;
+        driver.banding = false;
+    }
 
-    system.printing.drivers.pages.remove(&dc);
-    system.printing.drivers.banding.remove(&dc);
     Ok(answer)
 }
 

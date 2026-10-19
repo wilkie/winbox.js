@@ -107,6 +107,8 @@ const DISABLE = 4;
 const CONTROL = 3;
 
 const GDIINFO_SIZE = 0x6e;
+const DP_RASTER = 0x26;
+const RC_BANDING = 2;
 const DC_SPDEVICE = 1;
 const DC_1PDEVICE = 2;
 const DC_IGNOREDFNP = 4;
@@ -162,6 +164,11 @@ async function releaseFonts(system: any, which: { device?: PDevice; font?: any }
       fonts[at] = last;
     }
   }
+}
+
+/** Every device the drivers have enabled. */
+export function driverDevices(system: any): PDevice[] {
+  return (system._printerDrivers?.drivers ?? []).flatMap((driver: Driver) => driver.devices);
 }
 
 /**
@@ -458,6 +465,7 @@ export async function createDriverDC(
 
   const shared = sharedDevice(driver, device, port);
   let pdevice = shared || null;
+  const fresh = !shared;
 
   if (shared === false) {
     if (loaded) {
@@ -511,7 +519,20 @@ export async function createDriverDC(
 
   await startDrawing(system, surface);
 
+  /* A driver that bands has the context's drawing kept in a metafile, on
+   * a device newly enabled, not an IC (seg1 `042d`, `025b`;
+   * `printer-bands.ts`). */
+  if (fresh && !ic && word(pdevice.info, DP_RASTER) & RC_BANDING) {
+    const { startBands } = await import('./printer-bands.js');
+
+    await startBands(system, hdc, surface);
+  }
+
   return hdc;
+}
+
+function word(info: Uint8Array, at: number) {
+  return info[at] | (info[at + 1] << 8);
 }
 
 /**
@@ -528,7 +549,9 @@ export async function deleteDriverDC(system: any, surface: any) {
   const driver = pdevice.driver;
 
   const { stopDrawing } = await import('./printer-output.js');
+  const { stopBands } = await import('./printer-bands.js');
 
+  await stopBands(system, surface);
   stopDrawing(system, surface);
   surface.driverDevice = null;
   pdevice.count = Math.max(0, pdevice.count - 1);
@@ -631,6 +654,17 @@ export async function driverEscape(
   /* `NEXTBAND` marks the DC as banding, which `EndPage` reads (`0137`). */
   if (escape === 3) {
     surface.banding = true;
+  }
+
+  /* A driver that bands: GDI's own escapes for its bands
+   * (`printer-bands.ts`). */
+  if (surface.band) {
+    const { bandEscape } = await import('./printer-bands.js');
+    const answer = await bandEscape(system, hdc, surface, escape, lpIn, lpOut);
+
+    if (answer !== null) {
+      return answer;
+    }
   }
 
   if (escape === 10) {

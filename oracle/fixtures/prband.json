@@ -1,0 +1,1058 @@
+{
+  "probe": "prband",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "QUERYESCSUPPORT NEXTBAND",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "QUERYESCSUPPORT BANDINFO",
+      "result": "0",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "RASTERCAPS",
+      "result": "10777",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "band",
+      "args": "pscript 0",
+      "result": "job 352 0,0,2550,3300",
+      "section": "pscript"
+    },
+    {
+      "function": "band",
+      "args": "pscript 1",
+      "result": "job 352 0,0,0,0",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "band",
+      "args": "pscript page 0",
+      "result": "job 352 0,0,2550,3300",
+      "section": "pscript"
+    },
+    {
+      "function": "band",
+      "args": "pscript page 1",
+      "result": "job 352 0,0,0,0",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "pscript"
+    },
+    {
+      "function": "size",
+      "args": "document",
+      "result": "11647",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "167",
+      "result": "%%Page: 1 1",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "168",
+      "result": "%%PageResources: (atend)",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "169",
+      "result": "SS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "170",
+      "result": "0 0 25 11 798 1100 300 SM",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "171",
+      "result": "0 lc",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "172",
+      "result": "0 lj",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "173",
+      "result": "0 0 0 pC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "174",
+      "result": "0 1 SP",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "175",
+      "result": "255 255 255 fC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "176",
+      "result": "/fm 256 def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "177",
+      "result": "599 399 300 300 B",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "178",
+      "result": "1 F",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "179",
+      "result": "S",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "180",
+      "result": "n",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "181",
+      "result": "1 #C",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "182",
+      "result": "statusdict begin /manualfeed false store end",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "183",
+      "result": "EJ RS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "184",
+      "result": "%%PageTrailer",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "185",
+      "result": "%%PageResources: ",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "186",
+      "result": "%%Page: 2 2",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "187",
+      "result": "%%PageResources: (atend)",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "188",
+      "result": "SS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "189",
+      "result": "0 0 25 11 798 1100 300 SM",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "190",
+      "result": "0 0 0 pC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "191",
+      "result": "0 1 SP",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "192",
+      "result": "255 255 255 fC",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "193",
+      "result": "/fm 256 def",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "194",
+      "result": "599 399 400 400 B",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "195",
+      "result": "1 F",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "196",
+      "result": "S",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "197",
+      "result": "n",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "198",
+      "result": "1 #C",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "199",
+      "result": "statusdict begin /manualfeed false store end",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "200",
+      "result": "EJ RS",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "201",
+      "result": "%%PageTrailer",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "202",
+      "result": "%%PageResources: ",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "203",
+      "result": "%%Trailer",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "204",
+      "result": "SVDoc restore",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "205",
+      "result": "end",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "206",
+      "result": "%%Pages: 2",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "207",
+      "result": "%%DocumentSuppliedResources: procset Win35Dict 3 1",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "208",
+      "result": "",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "209",
+      "result": "%%DocumentNeededResources: ",
+      "section": "pscript"
+    },
+    {
+      "function": "line",
+      "args": "210",
+      "result": "%%EOF",
+      "section": "pscript"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "RASTERCAPS",
+      "result": "16",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "0",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "1",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "2",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "3",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "4",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "5",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "6",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "7",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "8",
+      "result": "Control 1 9",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "9",
+      "result": "Control 1 10",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain 0",
+      "result": "1 0,0,64,24",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "10",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "11",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain 1",
+      "result": "1 0,24,64,48",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "12",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "13",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain 2",
+      "result": "1 0,0,0,0",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain page 0",
+      "result": "1 0,0,64,24",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "14",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "15",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "16",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain page 1",
+      "result": "1 0,24,64,48",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "17",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "18",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1",
+      "section": "plain"
+    },
+    {
+      "function": "band",
+      "args": "plain page 2",
+      "result": "1 0,0,0,0",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "19",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "20",
+      "result": "Control 1 11",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "21",
+      "result": "Disable 1 font0=160",
+      "section": "plain"
+    },
+    {
+      "function": "driver",
+      "args": "22",
+      "result": "WEP font0=160",
+      "section": "plain"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1",
+      "section": "band"
+    },
+    {
+      "function": "call",
+      "args": "RASTERCAPS",
+      "result": "18",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "23",
+      "result": "Enable 1 Band LPT1: 0",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "24",
+      "result": "Enable 0 Band LPT1: 0",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "25",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "26",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "27",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "28",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "29",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "30",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "band"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "31",
+      "result": "Control 1 9",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "32",
+      "result": "Control 1 10",
+      "section": "band"
+    },
+    {
+      "function": "band",
+      "args": "band 0",
+      "result": "1 0,0,64,24",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "33",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "34",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1 clip 0,0,64,24",
+      "section": "band"
+    },
+    {
+      "function": "band",
+      "args": "band 1",
+      "result": "1 0,24,64,48",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "35",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "band"
+    },
+    {
+      "function": "driver",
+      "args": "36",
+      "result": "Output 1 6 2 10,10 50,40 pen 1 brush 1 mode 1 clip 0,24,64,48",
+      "section": "band"
+    },
+    {
+      "function": "band",
+      "args": "band 2",
+      "result": "1 0,0,0,0",
+      "section": "band"
+    },
+    {
+      "function": "call",
+      "args": "GetTextColor after bands",
+      "result": "0",
+      "section": "band"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "GetTextColor",
+      "result": "16711680",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "LineTo",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "GetCurrentPosition",
+      "result": "63,47",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "Ellipse",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle clipped",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "37",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "38",
+      "result": "RealizeObject brush 0 808080 0 size",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "39",
+      "result": "RealizeObject brush 0 808080 0",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "EndPage",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "40",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "41",
+      "result": "Output 1 6 2 5,5 60,45 pen 1 brush 1 mode 1 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "42",
+      "result": "Output 1 18 2 0,0 63,47 pen 1 brush 0 mode 1 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "43",
+      "result": "RealizeObject brush 0 808080 0 size",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "44",
+      "result": "RealizeObject brush 0 808080 0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "45",
+      "result": "Output 1 55 2 10,10 29,29 pen 1 brush 1 mode 1 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "46",
+      "result": "Output 1 6 2 20,20 50,30 pen 1 brush 1 mode 1 clip 0,0,32,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "47",
+      "result": "RealizeObject -2 delete",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "48",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "49",
+      "result": "Output 1 6 2 5,5 60,45 pen 1 brush 1 mode 1 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "50",
+      "result": "Output 1 18 2 0,0 63,47 pen 1 brush 0 mode 1 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "51",
+      "result": "RealizeObject brush 0 808080 0 size",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "52",
+      "result": "RealizeObject brush 0 808080 0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "53",
+      "result": "Output 1 55 2 10,10 29,29 pen 1 brush 1 mode 1 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "54",
+      "result": "Output 1 6 2 20,20 50,30 pen 1 brush 1 mode 1 clip 0,24,32,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "55",
+      "result": "RealizeObject -2 delete",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "56",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "57",
+      "result": "Control 1 1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "GetTextColor after page",
+      "result": "0",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "GetCurrentPosition after page",
+      "result": "0,0",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "StartPage second",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "Rectangle second",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "EndPage second",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "58",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "59",
+      "result": "Output 1 6 2 20,20 40,40 pen 1 brush 1 mode 1 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "60",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "61",
+      "result": "Output 1 6 2 20,20 40,40 pen 1 brush 1 mode 1 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "62",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "63",
+      "result": "Control 1 1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "Escape NEWFRAME",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "64",
+      "result": "Control 1 3 clip 0,0,64,24",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "65",
+      "result": "Control 1 3 clip 0,24,64,48",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "66",
+      "result": "Control 1 3 clip 0,0,0,0",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "67",
+      "result": "Control 1 1",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "EndDoc",
+      "result": "1",
+      "section": "pages"
+    },
+    {
+      "function": "driver",
+      "args": "68",
+      "result": "Control 1 11",
+      "section": "pages"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "abort"
+    },
+    {
+      "function": "call",
+      "args": "StartPage",
+      "result": "1",
+      "section": "abort"
+    },
+    {
+      "function": "call",
+      "args": "AbortDoc",
+      "result": "1",
+      "section": "abort"
+    },
+    {
+      "function": "driver",
+      "args": "69",
+      "result": "Control 1 9",
+      "section": "abort"
+    },
+    {
+      "function": "driver",
+      "args": "70",
+      "result": "Control 1 10",
+      "section": "abort"
+    },
+    {
+      "function": "driver",
+      "args": "71",
+      "result": "Control 1 2",
+      "section": "abort"
+    },
+    {
+      "function": "call",
+      "args": "StartDoc",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "72",
+      "result": "Control 1 9",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "73",
+      "result": "Control 1 10",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "74",
+      "result": "Disable 1 font0=160",
+      "section": "deleted"
+    },
+    {
+      "function": "driver",
+      "args": "75",
+      "result": "WEP font0=160",
+      "section": "deleted"
+    }
+  ]
+}

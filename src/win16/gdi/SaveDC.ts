@@ -18,6 +18,8 @@ const KEPT = [
   'clipRegion',
   'mapping',
   'justification',
+  'pageStarted',
+  'banding',
 ];
 
 /**

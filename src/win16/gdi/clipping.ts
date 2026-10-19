@@ -30,8 +30,11 @@ import { deviceX, deviceY, logicalX, logicalY, mappingOf } from './mapping.js';
  * inside what is to be painted, and `OffsetClipRgn` with no region.
  */
 
-/** What can be drawn on at all: the bitmap, or nothing for the one a memory device context starts with. */
-function visible(surface: any) {
+/**
+ * What can be drawn on, as a clip region starts: the bitmap, or nothing for
+ * the one a memory device context starts with; a printer driver's page.
+ */
+function area(surface: any) {
   const bitmap = surface.bitmap;
 
   /* A printer driver's context: its page, as the driver's `GDIINFO` has it
@@ -47,6 +50,17 @@ function visible(surface: any) {
   return ClipRegion.rect(0, 0, surface.width || 0, surface.height || 0);
 }
 
+/**
+ * What is visible: the area, and on a context of a driver that bands, no
+ * more than the band (`printer-bands.ts`, `IntersectVisRect`).
+ */
+function visible(surface: any) {
+  const shown = area(surface);
+  const band = surface.band?.rect;
+
+  return band ? shown.intersect(ClipRegion.rect(band[0], band[1], band[2], band[3])) : shown;
+}
+
 /** The region drawing is kept to: the clip region within what is visible. */
 export function clipOf(surface: any) {
   const shown = visible(surface);
@@ -56,7 +70,7 @@ export function clipOf(surface: any) {
 
 /** Narrows the clip region, and answers the kind that is left. */
 export function narrow(surface: any, how: (region: ClipRegion) => ClipRegion) {
-  surface.clipRegion = how(surface.clipRegion ?? visible(surface));
+  surface.clipRegion = how(surface.clipRegion ?? area(surface));
 
   return clipOf(surface).kind;
 }

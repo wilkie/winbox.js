@@ -75,6 +75,8 @@ import { Shell } from './win16/shell.js';
 // Other useful types
 import { UINT, LRESULT, HDC } from './win16/types.js';
 import { MetafileDC, recordCall } from './win16/gdi/metafile.js';
+import { bandingCall } from './win16/gdi/printer-bands.js';
+import { MoveTo } from './win16/gdi/MoveTo.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
@@ -1268,6 +1270,37 @@ export class Win16 {
         caller
       );
       return false;
+    }
+
+    /* A context of a printer's driver that bands, while GDI keeps its page
+     * in a metafile: a call that draws kept there, one that sets the
+     * context's state kept and made, `LineTo` kept and the position moved
+     * (`printer-bands.ts`). */
+    const banding = metafile?.band?.recording ? bandingCall(called) : null;
+
+    if (banding) {
+      const pop = functionDefinition[2] || 0;
+      const core = this._machine.cpu.core;
+      const stack = Array.from({ length: Math.max(pop - 2, 0) }, (_, at) =>
+        core.read8(core.ss, (core.sp + 4 + at) & 0xffff)
+      );
+      const kept = recordCall(
+        this,
+        this.handles.resolve(metafile.band.meta),
+        ip,
+        called,
+        args,
+        stack
+      );
+
+      if (banding !== 'both') {
+        if (banding === 'position') {
+          MoveTo.call(this, args[0], args[1], args[2]);
+        }
+
+        this.scheduler.interpretReturnValue(kept, returnType, caller);
+        return false;
+      }
     }
 
     /* A bitmap whose bits a program draws into itself is made to agree with

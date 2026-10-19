@@ -5885,6 +5885,7 @@ const RUN_WHOLE = new Set<string>([
   'ddeheap',
   'prmeta',
   'prdrv',
+  'prband',
 ]);
 
 /**

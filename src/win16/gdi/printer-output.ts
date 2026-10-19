@@ -67,6 +67,8 @@ interface Realized {
   far: number;
   /** What it was realized for: a pen's width; a hatched brush's background, a brush's origin. */
   key: string;
+  /** The order realizations were made in, which GDI deletes them in, newest first. */
+  serial: number;
 }
 
 /** What GDI keeps of a driver's context for drawing. */
@@ -366,10 +368,53 @@ async function realizeObject(
     return null;
   }
 
-  const realized = { handle, far, key };
+  const realized = {
+    handle,
+    far,
+    key,
+    serial: (system._realizedSerial = (system._realizedSerial ?? 0) + 1),
+  };
 
   pdevice.realized.set(object, [realized, ...(pdevice.realized.get(object) ?? [])]);
   return realized;
+}
+
+/**
+ * A pen or brush deleted, as GDI deletes one (`GDI.EXE` seg1 `1a2a`): each
+ * realization of it, the newest first, given back to its device's driver,
+ * whose `RealizeObject` is called with -`OBJ_PEN` or -`OBJ_BRUSH`, the
+ * realized object as the object in, and no object out or `TEXTXFORM`;
+ * then let go (`1aa1`).
+ */
+export async function deleteDriverObject(system: any, handle: number, style: number) {
+  const { driverDevices } = await import('./printer-driver.js');
+  const found: { pdevice: PDevice; realized: Realized }[] = [];
+
+  for (const pdevice of driverDevices(system)) {
+    for (const realized of pdevice.realized.get(handle) ?? []) {
+      found.push({ pdevice, realized });
+    }
+
+    pdevice.realized.delete(handle);
+  }
+
+  found.sort((a, b) => b.realized.serial - a.realized.serial);
+
+  for (const { pdevice, realized } of found) {
+    const procedure = proc(pdevice, REALIZE_OBJECT);
+
+    if (procedure) {
+      await callDriver(system, procedure, [
+        [pdevice.lpPDevice, DWORD],
+        [-style & 0xffff, UINT],
+        [realized.far, DWORD],
+        [0, DWORD],
+        [0, DWORD],
+      ]);
+    }
+
+    GlobalFree.call(system, realized.handle);
+  }
 }
 
 /**

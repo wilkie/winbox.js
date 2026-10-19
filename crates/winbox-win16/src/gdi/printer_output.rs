@@ -64,6 +64,9 @@ pub struct Realized {
     pub handle: u16,
     pub far: u32,
     pub key: Vec<i32>,
+    /// The order realizations were made in, which GDI deletes them in,
+    /// newest first.
+    pub serial: u64,
 }
 
 /// What `SaveDC` keeps of a driver's context with the rest: the realized
@@ -78,6 +81,11 @@ pub struct DriverState {
     pub brush: Option<Realized>,
     pub bk_color: u32,
     pub text_color: u32,
+    /// The DC's byte 0Bh, bits 5 and 1: `StartPage` has marked it, and
+    /// `NEXTBAND` has marked it banding. GDI saves and restores them with
+    /// the rest of the DC (seg1 `0a84`, `06e2`).
+    pub page_started: bool,
+    pub banding: bool,
 }
 
 /// What GDI keeps of a driver's context for drawing: the block standing
@@ -224,6 +232,8 @@ pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
             brush: None,
             bk_color: 0,
             text_color: 0,
+            page_started: false,
+            banding: false,
         });
     }
 
@@ -409,7 +419,18 @@ async fn realize_object(
         return Ok(None);
     }
 
-    let realized = Realized { handle, far, key };
+    let serial = {
+        let mut system = engine.system();
+
+        system.printing.drivers.serial += 1;
+        system.printing.drivers.serial
+    };
+    let realized = Realized {
+        handle,
+        far,
+        key,
+        serial,
+    };
 
     if let Some(pdevice) = device_mut(&mut engine.system(), dc) {
         match pdevice.realized.iter_mut().find(|(of, _)| *of == object) {
@@ -1664,32 +1685,111 @@ fn read_words(engine: &Engine, args: &mut Args, count: usize) -> Vec<i32> {
         .collect()
 }
 
-/// `DeleteObject` of a font a printer's driver realized: deleted by the
-/// driver first, then freed (`GDI.EXE` seg6 `0362`, `04bd`;
-/// `printer_driver.rs`), then deleted as any object is. A stock object is
-/// not deleted at all.
+/// `DeleteObject` of a font, pen or brush a printer's driver realized:
+/// each realization given back to its driver first, then freed (`GDI.EXE`
+/// seg6 `0362`, `04bd`, `printer_driver.rs`; seg1 `1a2a`), then deleted as
+/// any object is. A stock object is not deleted at all.
 fn delete_object_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
-        let object = {
+        let handle = {
             let system = engine.system();
             let mut peek = args;
-            let handle = peek.word(&system);
 
-            system
-                .gdi_object_of(handle)
-                .map(|(object, _)| object)
-                .filter(|&object| {
-                    !super::objects::is_stock(&system, handle, object)
-                        && super::printer_driver::driver_realized(&system, object)
-                })
+            peek.word(&system)
         };
 
-        if let Some(object) = object {
-            super::printer_driver::delete_driver_fonts(engine, object).await?;
-        }
-
+        delete_realized(engine, handle).await?;
         otherwise(engine, "DeleteObject", args).await
     })
+}
+
+/// An object deleted, as a program deletes it: what the drivers realized of
+/// it given back first.
+pub(super) async fn delete_object(engine: &Engine, handle: u16) -> Result<bool, Stop> {
+    delete_realized(engine, handle).await?;
+    Ok(super::objects::delete_object(&mut engine.system(), handle))
+}
+
+async fn delete_realized(engine: &Engine, handle: u16) -> Result<(), Stop> {
+    let found = {
+        let system = engine.system();
+
+        system
+            .gdi_object_of(handle)
+            .map(|(object, kind)| (object, kind.clone()))
+            .filter(|&(object, _)| !super::objects::is_stock(&system, handle, object))
+    };
+    let Some((object, kind)) = found else {
+        return Ok(());
+    };
+
+    match kind {
+        GdiObject::Font(_) => {
+            if super::printer_driver::driver_realized(&engine.system(), object) {
+                super::printer_driver::delete_driver_fonts(engine, object).await?;
+            }
+        }
+        GdiObject::Pen(_) => delete_driver_object(engine, object, OBJ_PEN).await?,
+        GdiObject::Brush(_) => delete_driver_object(engine, object, OBJ_BRUSH).await?,
+        _ => {}
+    }
+
+    Ok(())
+}
+
+/// A pen or brush deleted, as GDI deletes one (`GDI.EXE` seg1 `1a2a`):
+/// each realization of it, the newest first, given back to its device's
+/// driver, whose `RealizeObject` is called with -`OBJ_PEN` or
+/// -`OBJ_BRUSH`, the realized object as the object in, and no object out
+/// or `TEXTXFORM`; then let go (`1aa1`).
+async fn delete_driver_object(engine: &Engine, object: usize, style: u16) -> Result<(), Stop> {
+    let mut found: Vec<(u32, u32, Realized)> = Vec::new();
+
+    {
+        let mut system = engine.system();
+        let ids: Vec<u32> = system.printing.drivers.devices.keys().copied().collect();
+
+        for id in ids {
+            let Some(pdevice) = system.printing.drivers.devices.get_mut(&id) else {
+                continue;
+            };
+            let Some(at) = pdevice.realized.iter().position(|(of, _)| *of == object) else {
+                continue;
+            };
+            let (_, list) = pdevice.realized.remove(at);
+            let lp_pdevice = pdevice.lp_pdevice;
+            let driver = pdevice.driver.clone();
+            let procedure = super::printer_driver::proc_named(&system, &driver, REALIZE_OBJECT);
+
+            found.extend(
+                list.into_iter()
+                    .map(|realized| (procedure, lp_pdevice, realized)),
+            );
+        }
+    }
+
+    found.sort_by(|a, b| b.2.serial.cmp(&a.2.serial));
+
+    for (procedure, lp_pdevice, realized) in found {
+        if procedure != 0 {
+            call_driver(
+                engine,
+                procedure,
+                &[
+                    GuestArg::Long(lp_pdevice),
+                    GuestArg::Word(style.wrapping_neg()),
+                    GuestArg::Long(realized.far),
+                    GuestArg::Long(0),
+                    GuestArg::Long(0),
+                ],
+            )
+            .await?;
+        }
+
+        kernel(engine, "GlobalFree", &[GuestArg::Word(realized.handle)]).await?;
+    }
+
+    Ok(())
 }
 
 fn select_object_call(engine: &Engine, args: Args) -> Later<'_> {
