@@ -15,6 +15,7 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       input: {
+        'make-assets': 'scripts/assets/make-assets.mjs',
         'known-media': 'scripts/assets/known-media.mjs',
       },
     },
