@@ -50,7 +50,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LocalCompact" => Implementation::Sync(memory::local_compact),
         "LocalShrink" => Implementation::Sync(memory::local_shrink),
         "LocalHandle" => Implementation::Sync(memory::local_handle),
-        "LocalFlags" => Implementation::Sync(memory::local_nought),
+        "LocalFlags" => Implementation::Sync(memory::local_flags),
         "OutputDebugString" | "FatalAppExit" => Implementation::Sync(nothing_shown),
         "IsDBCSLeadByte" => Implementation::Sync(is_dbcs_lead_byte),
         "FatalExit" => Implementation::Async(fatal_exit),
@@ -150,9 +150,38 @@ fn init_task(engine: &Engine, _: Args) -> Later<'_> {
             .map(|task| task.libraries.clone())
             .unwrap_or_default();
 
+        if !task_heap(&mut engine.system()) {
+            return Ok(Answer::Word(0));
+        }
+
         start_libraries(engine, &libraries).await?;
         init_task_registers(&mut engine.system())
     })
+}
+
+/// The task's local heap, made as KERNEL's `InitTask` makes it, before the
+/// libraries start (`KRNL386.EXE` seg2 `26b2`-`26c5`): `LocalInit` of DS
+/// with a start of nought and the size in CX, the heap's size the task
+/// started with, unless that is nought. So the heap is at the end of the
+/// data segment, ending a byte short of its size -- after the program's
+/// own start-up has grown the segment, as a Visual Basic program's does.
+/// Whether it was made, or none was asked for; where it cannot be made, `InitTask`
+/// fails, answering nought. As `initTask`'s.
+fn task_heap(system: &mut System) -> bool {
+    let size = system.cpu.regs[CX];
+
+    if size == 0 {
+        return true;
+    }
+
+    let Some(program) = system.task.as_ref().map(|task| task.program) else {
+        return true;
+    };
+    let Some(data) = system.modules[program].data() else {
+        return true;
+    };
+
+    system.local_init(data, 0, u32::from(size))
 }
 
 /// The entry point of each library the task loaded that has not run yet,

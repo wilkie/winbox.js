@@ -775,27 +775,8 @@ export class Win16 {
 
     console.log('WE NEED:', this._linker.requirementsFor(task));
 
-    // Gather the initial data segment
-    const dataSegment = loader.segments[loader.ds - 1];
-
-    // Allocate a heap to the data segment (after data and before stack)
-    /* The stack and the heap follow the data at a word boundary. A data
-     * segment of an odd length -- Character Map's is 1,303 bytes -- would
-     * otherwise put the stack on an odd address, and a program that runs on
-     * Windows never has one there. Whether Windows rounds to a word or to a
-     * paragraph is not recorded: every probe's data segment is a multiple of
-     * sixteen. */
-    const heapStart = dataTop(dataSegment) + executable.neHeader.initialStackSize;
-    const heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
-    LocalInit.bind(this)(segmentSelector(loader.translate(loader.ds)), heapStart, heapEnd);
-
-    /* A moveable data segment's heap grows when a request does not fit; see
-     * `Heap.grow`. */
-    const heap = this.allocator.heapOf(loader.translate(loader.ds));
-
-    if (heap) {
-      heap.growable = !!dataSegment.movable;
-    }
+    /* Its local heap is made as it calls `InitTask`, at the end of its data
+     * segment (`initTask`). */
 
     const handle = this.handles.allocate(task);
     return handle;
@@ -991,10 +972,25 @@ export class Win16 {
     // Get data segment
     const taskHandle = this.scheduler.active;
     const task = this.handles.resolve(taskHandle);
+    const loader = task.loader;
+
+    /* The task's local heap, made as KERNEL's `InitTask` makes it, before
+     * the libraries start (`KRNL386.EXE` seg2 `26b2`-`26c5`): `LocalInit`
+     * of DS with a start of nought and the size in CX, the heap's size the
+     * task started with, unless that is nought. So the heap is at the end of
+     * the data segment, ending a byte short of its size -- after the
+     * program's own start-up has grown the segment, as a Visual Basic
+     * program's does. Where it cannot be made, `InitTask` fails, answering
+     * nought. */
+    const heapSize = this._machine.cpu.core.cx & 0xffff;
+
+    if (heapSize) {
+      if (!LocalInit.call(this, segmentSelector(loader.translate(loader.ds)), 0, heapSize)) {
+        return 0;
+      }
+    }
 
     await this.startLibraries(task);
-
-    const loader = task.loader;
 
     /* The stack's three words in the data segment's header, as KRNL386.EXE
      * seg2 `268d` writes them: its bottom and the lowest it has reached are

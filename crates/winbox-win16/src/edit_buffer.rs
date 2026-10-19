@@ -118,9 +118,11 @@ impl System {
             return;
         };
 
+        let memory = &mut self.cpu.bus;
+
         for block in [buffer.text, buffer.lines, buffer.widths, buffer.data] {
-            if block != 0 && heap.size_of(block) != 0 {
-                heap.free(block);
+            if block != 0 && heap.size_of(memory, block) != 0 {
+                heap.free(memory, block);
             }
         }
     }
@@ -141,7 +143,7 @@ impl System {
             return 0;
         }
 
-        if heap.size_of(buffer.text) <= text.len() as u32 {
+        if heap.size_of(&self.cpu.bus, buffer.text) <= text.len() as u32 {
             heap.reallocate(
                 &mut self.cpu.bus,
                 buffer.text,
@@ -151,7 +153,7 @@ impl System {
             );
         }
 
-        let at = heap.resolve(buffer.text);
+        let at = heap.resolve(&self.cpu.bus, buffer.text);
 
         self.follow_growth(segment);
 
@@ -185,7 +187,7 @@ impl System {
             return 0;
         }
 
-        u32::from(buffer.selector) << 16 | heap.resolve(u32::from(handle)) & 0xffff
+        u32::from(buffer.selector) << 16 | heap.resolve(&self.cpu.bus, u32::from(handle)) & 0xffff
     }
 
     /// `EM_SETHANDLE`: the block taken as the text, read to its nought, and
@@ -197,8 +199,8 @@ impl System {
 
         buffer.text = u32::from(handle);
 
-        let size = heap.size_of(u32::from(handle));
-        let at = heap.resolve(u32::from(handle));
+        let size = heap.size_of(&self.cpu.bus, u32::from(handle));
+        let at = heap.resolve(&self.cpu.bus, u32::from(handle));
         let mut text = Vec::new();
 
         for step in 0..size {

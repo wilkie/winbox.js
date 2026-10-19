@@ -190,6 +190,14 @@ pub fn local_handle_delta(system: &mut System, args: &mut Args) -> Result<Answer
     let delta = args.word(system);
     let ds = system.cpu.segments[DS].selector;
 
+    // Kept in the heap's information, where its handle tables are made by
+    // it (`KRNL386.EXE` seg2 `2a0c`, `LocalHeap::local_handle_delta`).
+    if let Some(heap) = system.heaps.get(&winbox_machine::index_for(ds)) {
+        return Ok(Answer::Word(
+            heap.local_handle_delta(&mut system.cpu.bus, delta),
+        ));
+    }
+
     if delta != 0 {
         system.handle_deltas.insert(ds, delta);
     }

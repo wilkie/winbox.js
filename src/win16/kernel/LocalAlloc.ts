@@ -2,8 +2,6 @@
 
 import { NULL } from '../consts.js';
 
-import { Kernel } from '../kernel.js';
-
 /**
  * The **LocalAlloc** function allocates the specified number of bytes from the
  * local heap.
@@ -64,45 +62,16 @@ import { Kernel } from '../kernel.js';
  *                         allocated local memory object, if the function is
  *                         successful. Otherwise it is NULL.
  */
-export function LocalAlloc(fuAllocFlags, fuAlloc) {
-  // LocalAlloc allocates to the heap of the current segment selected via DS.
-  const segment = this.machine.cpu.core.ds >> 3;
+export function LocalAlloc(this: any, fuAllocFlags: number, fuAlloc: number) {
+  /* The heap of the current data segment, as KERNEL finds it by DS. */
+  const heap = this.allocator.heapOf(this.machine.cpu.core.ds >> 3);
 
-  // We can negotiate flags.
-  // TODO: flags
-  const options: any = {};
-
-  if (fuAllocFlags & Kernel.LMEM_MOVEABLE) {
-    options.movable = true;
-  }
-
-  if (fuAllocFlags & Kernel.LMEM_NOCOMPACT) {
-    options.noCompact = true;
-  }
-
-  if (fuAllocFlags & Kernel.LMEM_NODISCARD) {
-    options.noDiscard = true;
-  }
-
-  if (fuAllocFlags & Kernel.LMEM_ZEROINIT) {
-    options.zeroInit = true;
-  }
-
-  if (fuAllocFlags & Kernel.LMEM_DISCARDABLE) {
-    options.discardable = true;
-  }
-
-  // Get the local heap.
-  const heap = this.allocator.heapOf(segment);
   if (!heap) {
-    // No heap initialized
     return NULL;
   }
 
-  const handle = heap.allocate(fuAlloc, options);
-  if (handle === null) {
-    return NULL;
-  }
-
-  return handle;
+  /* As KERNEL makes it (`KRNL386.EXE` seg1 `8ab6`, `Heap.localAlloc`): a
+   * moveable block's handle an entry of the heap's handle tables, its block
+   * at the top of the last free block it fits. */
+  return heap.localAlloc(fuAllocFlags & 0xffff, fuAlloc & 0xffff);
 }

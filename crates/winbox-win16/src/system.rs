@@ -96,9 +96,6 @@ pub struct System {
     pub kept: Vec<KeptModule>,
     /// The modules loaded from their files.
     pub modules: Vec<Module>,
-    /// The data segments whose heap grows, once it is made: a moveable
-    /// library's.
-    pub growable: HashSet<usize>,
     /// Whether the machine has a coprocessor: what `__WINFLAGS` says, and
     /// which OS fixups apply.
     pub coprocessor: bool,
@@ -131,7 +128,8 @@ pub struct System {
     pub call_marks: crate::call_marks::CallMarks,
     /// The time a message made now is given, where it is to be another's.
     pub message_time: Option<u32>,
-    /// The segments whose heap grows the `GlobalAlloc` block it is in.
+    /// The segments whose heap grows them: a block of `GlobalAlloc`'s, or a
+    /// segment a module was loaded into.
     pub heap_blocks: HashSet<usize>,
     /// How the task wants errors handled (`SetErrorMode`).
     pub error_mode: u16,
@@ -460,7 +458,6 @@ impl System {
             heaps: HashMap::new(),
             kept: Vec::new(),
             modules: Vec::new(),
-            growable: HashSet::new(),
             coprocessor: true,
             files: Files::new(),
             task: None,

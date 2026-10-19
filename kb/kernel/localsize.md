@@ -24,4 +24,4 @@ topics: [global-and-local-memory]
 
 ## Implementation
 
-`Heap#sizeOf` accepts a handle or a pointer: a handle is recognised because the heap remembers handing it out, and it is followed to the block it points at. The size reported is the size the block was allocated with, so the rounding happens once, in `Heap.blockFor`.
+`Heap.localSize` (`LocalHeap::local_size`) answers as KERNEL does (`KRNL386.EXE` seg1 `8cef`): a value with bit 1 set is a handle, followed to its block unless it is free or discarded; any other is a fixed block's pointer. The size is the next arena's address less the block's, read from the arenas in the segment ([[topic:global-and-local-memory]]).

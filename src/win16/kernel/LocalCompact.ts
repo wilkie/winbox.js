@@ -33,16 +33,15 @@ import { indexFor } from '../selectors.js';
  *                       system can generate if it removes all discardable
  *                       objects.
  */
-export function LocalCompact(this: any, _uMinFree: number) {
-  /* The largest free block of the heap in DS, which nothing here ever needs
-   * to move blocks to make (documented). Bago asks before it reads its
-   * dictionary, and read only part of it when this answered nothing. */
+export function LocalCompact(this: any, uMinFree: number) {
   const heap = this.allocator?.heapOf?.(indexFor(this.machine.cpu.core.ds));
 
-  /* Less six, the arena of a moveable block, where there is any (`KRNL386.EXE`
-   * seg1 `8d9c`-`8da3`; see `Heap.HEADER`). So it is never the heap's whole
-   * size, which `LocalShrink` answers (`minis3`). */
-  const largest = heap ? heap.largestFree() : 0;
-
-  return largest ? Math.min(Math.max(0, largest - 6), 0xffff) : 0;
+  /* The heap compacted for the bytes asked, its moveable unlocked blocks
+   * moved together and its discardable ones discarded where that is still
+   * not enough, and its largest free block less six, the arena of a
+   * moveable block (`KRNL386.EXE` seg1 `8d85`-`8da3`, `Heap.localCompact`).
+   * So it is never the heap's whole size, which `LocalShrink` answers
+   * (`minis3`). Bago asks before it reads its dictionary, and read only
+   * part of it when this answered nothing. */
+  return heap ? heap.localCompact(uMinFree & 0xffff) : 0;
 }

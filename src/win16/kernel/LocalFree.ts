@@ -1,7 +1,5 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
 /**
  * The **LocalFree** function frees the given local memory object (if the
  * object is not locked) and invalidates its handle.
@@ -26,19 +24,15 @@ import { NULL } from '../consts.js';
  * @returns {number} The return value is `NULL` if the function is successful.
  *                   Otherwise, it is equal to the `hloc` parameter.
  */
-export function LocalFree(hloc) {
-  // LocalFree deallocates from the heap of the current segment selected via DS.
-  const segment = this.machine.cpu.core.ds >> 3;
+export function LocalFree(this: any, hloc: number) {
+  const heap = this.allocator.heapOf(this.machine.cpu.core.ds >> 3);
 
-  // Get the local heap
-  const heap = this.allocator.heapOf(segment);
   if (!heap) {
     // No heap initialized
     return hloc;
   }
 
-  // Free the memory object from the heap
-  heap.free(hloc);
-
-  return NULL;
+  /* As KERNEL frees it (`KRNL386.EXE` seg1 `8cc7`, `Heap.localFree`): the
+   * block, and the handle given back to its table, nought answered. */
+  return heap.localFree(hloc & 0xffff);
 }

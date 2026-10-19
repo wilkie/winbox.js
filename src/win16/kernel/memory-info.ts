@@ -21,6 +21,13 @@ export function GlobalCompact(this: any, _dwMinFree: number) {
  */
 export function LocalHandleDelta(this: any, wDelta: number) {
   const ds = this.machine.cpu.core.ds & 0xffff;
+  const heap = this.allocator?.heapOf?.(ds >> 3);
+
+  /* Kept in the heap's information, where its handle tables are made by
+   * it (`KRNL386.EXE` seg2 `2a0c`, `Heap.localHandleDelta`). */
+  if (heap) {
+    return heap.localHandleDelta(wDelta & 0xffff);
+  }
 
   this._handleDeltas ??= new Map<number, number>();
 

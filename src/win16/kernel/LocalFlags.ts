@@ -1,27 +1,18 @@
 'use strict';
 
 /**
- * The **LocalFlags** function retrieves information about the given local
- * memory object.
+ * A local block's flags and lock count, as `Heap.localFlags` answers them
+ * (`KRNL386.EXE` seg1 `8d06`): for a moveable block's handle, its flags in
+ * the high byte -- `LMEM_DISCARDED`, 40h, and its discard level -- and its
+ * lock count in the low; nought for a fixed block, and with no heap in the
+ * current data segment.
  *
- * To retrieve the lock count from the return value, use the LMEM_LOCKCOUNT
- * mask.
+ * @param {Types.HLOCAL} hloc - The block.
  *
- * **See also**:
- * {@link Kernel.LocalAlloc LocalAlloc}
- *
- * @static
- * @function LocalFlags
- * @memberof Kernel
- *
- * @param {Types.HLOCAL} hloc - Identifies the local memory object.
- *
- * @returns {Types.UINT} The low-order byte of the return value contains the
- *                       lock count of the object; the high-order byte contains
- *                       either LMEM_DISCARDABLE (object has been marked as
- *                       discardable) or LMEM_DISCARDED (object has been
- *                       discarded).
+ * @returns {Types.UINT} Its flags and lock count.
  */
-export function LocalFlags(hloc) {
-  this.debug('LocalFlags:', hloc);
+export function LocalFlags(this: any, hloc: number) {
+  const heap = this.allocator.heapOf(this.machine.cpu.core.ds >> 3);
+
+  return heap ? heap.localFlags(hloc & 0xffff) : 0;
 }

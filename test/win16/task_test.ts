@@ -40,12 +40,11 @@ describe('a task environment', () => {
 
 describe('a local heap out of room', () => {
   /* `localgro`'s heap: 1,024 bytes at the end of a data segment of 12,160,
-   * as `LocalInit` with a start of nought lays it (`Heap.layout`). */
+   * as `LocalInit` with a start of nought lays it (`Heap.init`). */
   const localgro = () => {
-    const layout = Heap.layout(12160 - 1 - 1024, 12160 - 1)!;
-    const heap = new Heap(layout.last - layout.free);
+    const heap = new Heap();
 
-    heap.offset = layout.free;
+    expect(heap.init(12160 - 1 - 1024, 12160 - 1)).toBe(true);
     heap.segmentSize = 12160;
     heap.growable = true;
 
@@ -88,9 +87,10 @@ describe('a local heap out of room', () => {
   });
 
   it('gives a free block whole where 16 bytes or less would be left', () => {
-    const heap = new Heap(52 + 16);
+    /* A free block of 52 and 16 bytes, from 13Ch to its last arena. */
+    const heap = new Heap();
 
-    heap.offset = 0x100;
+    expect(heap.init(0x100, 0x13c + 52 + 16 + 0xa)).toBe(true);
 
     const block = heap.allocate(0x2e);
 
@@ -99,10 +99,30 @@ describe('a local heap out of room', () => {
   });
 
   it('does not grow a heap that may not', () => {
-    const heap = new Heap(64);
+    const heap = new Heap();
 
-    expect(heap.allocate(100)).toBeNull();
-    expect(heap.byteLength).toBe(64);
+    expect(heap.init(0x10, 0x100)).toBe(true);
+    expect(heap.allocate(0x100)).toBeNull();
+    expect(heap.byteLength).toBe(0xee);
+  });
+
+  it("keeps a moveable block's handle in a table of 32, the block at the top (lheapseg)", () => {
+    const heap = new Heap();
+
+    expect(heap.init(0x10, 0x820)).toBe(true);
+
+    const first = heap.localAlloc(2, 49);
+    const second = heap.localAlloc(2, 49);
+
+    /* The table a fixed block at the bottom of the free block, its entries
+     * from two bytes in; the block under the last arena. */
+    expect([first, second]).toEqual([0x52, 0x56]);
+    expect(heap.read16(first)).toBe(0x814 - 0x38 + 6);
+    expect(heap.localHandle(heap.read16(first))).toBe(first);
+    expect(heap.localHandle(first)).toBe(0);
+    expect(heap.localFree(first)).toBe(0);
+    expect(heap.localSize(first)).toBe(0);
+    expect(heap.localAlloc(2, 8)).toBe(first);
   });
 });
 

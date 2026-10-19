@@ -335,46 +335,32 @@ export class Allocator {
   }
 
   /**
-   * Allocates a section of an allocated segment to form a local heap.
+   * A local heap made in a segment, as `LocalInit` makes one (`Heap.init`):
+   * its arenas, its information and DS:6 written in the segment, from
+   * `start` to `end`. Null where the segment has one, or the heap does not
+   * fit.
    *
-   * @param {number} segment - The segment selector index.
-   * @param {number} start - The starting byte of that segment for the heap.
-   * @param {number} size - The maximum size of this heap.
+   * @param {number} segment - The segment's descriptor index.
+   * @param {number} start - Where the heap starts in the segment.
+   * @param {number} end - Where it ends.
    */
-  heapInitialize(segment, start, size) {
-    // We cannot create a heap if this segment already has one
-    if (this._heaps[segment]) {
-      console.log('segment already has a heap allocated');
+  heapInitialize(segment, start, end) {
+    if (this._heaps[segment] || end > 0xffff) {
       return null;
     }
 
-    // The size has to fit
-    if (start + size > 0xffff) {
-      console.log('requested heap size does not fit', size);
-      return null;
-    }
+    const heap = new Heap();
 
-    /*
-        let segmentSize = this.memory.sizeOf(segment);
-
-        // We need to allocate some space to memory to pad to the heap.
-        if (segmentSize < start) {
-            this.memory.allocate(segment, start - segmentSize);
-        }
-        else if (segmentSize > start) {
-            throw "Overlapping heap and data segment???"
-            return null;
-        }*/
-
-    // Let us create our heap, which brings its own storage with it
-    const heap = new Heap(size);
-    this._heaps[segment] = heap;
     heap.segment = segment;
-    heap.offset = start;
     heap.mirror = { memory: this._memory, base: segment << 16 };
 
-    // Return the heap instance
-    return this._heaps[segment];
+    if (!heap.init(start, end)) {
+      return null;
+    }
+
+    this._heaps[segment] = heap;
+
+    return heap;
   }
 
   /**

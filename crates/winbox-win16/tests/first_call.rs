@@ -94,12 +94,9 @@ fn runs_a_program_to_its_first_call() {
     assert_eq!(cpu.bus.read16((2 << 16) + 0x40c), 5);
     assert_eq!(cpu.bus.read16((2 << 16) + 0x40e), segment_selector(1));
     assert_eq!((cpu.regs[BX], cpu.regs[CX]), (0x400, 0x100));
-    // The local heap after the stack, from 410h to 510h, laid out as
-    // `LocalInit` lays it (`LocalHeap::layout`): its blocks from past
-    // KERNEL's first arena and its own, 44Ch, to its last arena, 504h.
-    let heap = &system.heaps[&2];
-
-    assert_eq!((heap.offset(), heap.size()), (0x44c, 0x504 - 0x44c));
+    // No local heap yet: `InitTask` makes it, of the size in CX
+    // (`KRNL386.EXE` seg2 `26b2`).
+    assert!(!system.heaps.contains_key(&2));
 }
 
 /// Where the TypeScript engine has them, from descriptor 4: each handle 32

@@ -5245,13 +5245,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
-  /* `LocalHandle` answers a block's pointer as Windows does -- a moveable
-   * block's handle, a fixed block's pointer itself -- and tells any other
-   * value by bit 1, set only in a moveable block's pointer, now that blocks
-   * have KERNEL's arenas before them (`lochand`; `KRNL386.EXE` seg1 `8d6a`).
-   * But a handle is a word of a two-byte slot here, not an entry of
-   * KERNEL's handle tables, and a discarded block's last pointer is still
-   * known as its handle's: two records. */
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
    * is made active, and where the focus goes, agree (`state`); the messages
    * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
@@ -5273,8 +5266,6 @@ export const KNOWN_GAPS: Record<string, string> = {
     'a window minimized and restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 71 records',
   'swpshow:zorder':
     'an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records',
-  'lochand:handle':
-    "LocalHandle of a handle itself and of a discarded block's last pointer follow KERNEL's handle tables, which winbox.js's heap does not keep, two records",
 
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
@@ -5289,11 +5280,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'segreg:fs':
     'FS comes back from GlobalReAlloc reaching linear nought in Windows; winbox.js leaves it holding the block, one record',
 
-  /* A block given where a freed one was holds what it held, as in Windows,
-   * but Windows' heap writes four bytes of its own into a freed block, its
-   * free list, which winbox.js's heap does not keep (`lzero`). */
-  'lzero:plain':
-    "a block given where a freed one was holds the freed one's bytes, as in Windows, but for the four of Windows' free list, which winbox.js's heap does not keep",
   /* A program's first blocks, asked for without GMEM_ZEROINIT, hold what
    * Windows' memory held before -- in the recording, 3,869 of 4,096 bytes
    * and 7,415 and 6,673 of 8,448 are not nought (`gfresh`). That is the
@@ -5307,20 +5293,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * of 1 KiB, where winbox.js's own hold fewer and it gives 8,084. */
   'gcycle:hold':
     "blocks freed are given again, as in Windows, but how many fit at once follows the selectors Windows' own modules hold, which are not modelled",
-
-  /* A local heap made in a block of `GlobalAlloc`'s grows, as Windows' does,
-   * to the same 80 blocks and the same `LocalReAlloc`; but where each block
-   * lands, the handles given out and the sizes grown through follow Windows'
-   * handle tables, 32 handles of four bytes in a block of the heap made as
-   * the first is wanted (`KRNL386.EXE` seg1 `8a41`), and its moveable blocks
-   * at the top of a free block, which winbox.js's heap does not keep
-   * (`lheapseg`). */
-  'lheapseg:alloc':
-    "the heap grows, but its handles and the points it grows at follow Windows' handle tables and moveable blocks placed at the top, which are not modelled",
-  'lheapseg:count':
-    "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled",
-  'lheapseg:realloc':
-    "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled",
 
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
@@ -5887,6 +5859,7 @@ const RUN_WHOLE = new Set<string>([
   'prblt',
   'ddehsz',
   'ddewep',
+  'localgro',
 ]);
 
 /**

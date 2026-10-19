@@ -1,7 +1,6 @@
 'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
-import { Heap } from '../heap.js';
 
 /**
  * The **LocalInit** function initializes a local heap in the specified segment.
@@ -56,34 +55,28 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     return FALSE;
   }
 
-  /* KERNEL's arenas laid from the start to the end (`Heap.layout`): the
-   * blocks go between the free block and the last arena. */
-  const layout = Heap.layout(uStartAddr, uEndAddr);
-
-  if (!layout) {
-    return FALSE;
-  }
-
-  const heap = this.allocator.heapInitialize(segment, layout.free, layout.last - layout.free);
+  /* KERNEL's arenas laid from the start to the end, in the segment
+   * (`Heap.init`): the blocks go between the free block and the last
+   * arena. */
+  const heap = this.allocator.heapInitialize(segment, uStartAddr, uEndAddr);
 
   if (heap) {
-    /* A heap in a block of `GlobalAlloc`'s grows too, the block with it,
-     * fixed or moveable, as the Visual Basic runtime's does (`lheapseg`). */
-    const block = this.allocator._objects?.[segment];
+    /* Its growth goes by the segment's size, `GlobalSize`'s: a block of
+     * `GlobalAlloc`'s, or a segment a module was loaded into; for any other,
+     * the heap's end stands for it (`Heap.segmentSize`). */
+    const size = this.allocator.sizeOf(segment);
 
-    /* Its growth goes by the segment's size, `GlobalSize`'s, for a block of
-     * `GlobalAlloc`'s; a data segment's is not kept, and the heap's end
-     * stands for it (`Heap.segmentSize`). */
-    heap.segmentSize = block ? block.size : uEndAddr + 1;
+    heap.segmentSize = size || uEndAddr + 1;
 
-    if (this._growable?.has(segment)) {
-      heap.growable = true;
-    }
-
-    if (block) {
+    /* KERNEL's own notify procedure grows the segment of a heap out of room
+     * by `GlobalReAlloc`, whatever the segment (`KRNL386.EXE` seg1 `8de2`):
+     * a block of `GlobalAlloc`'s, fixed or moveable, as the Visual Basic
+     * runtime's is (`lheapseg`); a program's data segment, fixed, as
+     * `localgro`'s is, or moveable; a library's. The segment follows. */
+    if (size) {
       heap.growable = true;
       heap.onGrow = (end: number) => {
-        if (end > block.size) {
+        if (end !== this.allocator.sizeOf(segment)) {
           this.allocator.resize(segment, end);
         }
       };

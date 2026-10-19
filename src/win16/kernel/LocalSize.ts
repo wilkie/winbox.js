@@ -26,15 +26,14 @@
  *                       if the specified handle is invalid or the object has been
  *                       discarded.
  */
-export function LocalSize(hloc) {
-  // LocalSize reads the heap of the current segment selected via DS.
-  const segment = this.machine.cpu.core.ds >> 3;
+export function LocalSize(this: any, hloc: number) {
+  const heap = this.allocator.heapOf(this.machine.cpu.core.ds >> 3);
 
-  const heap = this.allocator.heapOf(segment);
   if (!heap) {
     // No heap initialized
     return 0;
   }
 
-  return heap.sizeOf(hloc);
+  /* The next arena less the block's address (`KRNL386.EXE` seg1 `8cef`). */
+  return heap.localSize(hloc & 0xffff);
 }

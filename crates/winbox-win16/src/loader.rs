@@ -135,23 +135,8 @@ impl System {
 
         self.load_libraries_for(program, beside.as_deref(), &mut order);
 
-        let module = &self.modules[program];
-        let header = &module.executable.header;
-
-        if let Some(data) = module.data() {
-            let start = module.data_top() + u32::from(header.initial_stack_size);
-            let end = start + u32::from(header.initial_heap_size);
-            let movable =
-                module.executable.segments[usize::from(header.auto_data_segment) - 1].movable();
-
-            // A moveable data segment's heap grows when a request does not fit.
-            if self.local_init(data, start, end)
-                && let Some(heap) = self.heaps.get_mut(&data)
-            {
-                heap.growable = movable;
-            }
-        }
-
+        // Its local heap is made as it calls `InitTask`, at the end of its
+        // data segment (`kernel::task_heap`).
         let handle = self
             .handles
             .allocate(Kind::Instance, Object::Task(program))
@@ -292,8 +277,8 @@ impl System {
         let header = &self.modules[library].executable.header;
 
         // The data segment KERNEL allocates: its minimum allocation (64K for
-        // none) and two bytes, its stack and its heap, in paragraphs. A
-        // moveable one's heap grows (`Heap.grow`).
+        // none) and two bytes, its stack and its heap, in paragraphs. Its
+        // heap grows with it when a request does not fit (`local_init`).
         if let Some(data) = self.modules[library].data() {
             let segment = &self.modules[library].executable.segments
                 [usize::from(header.auto_data_segment) - 1];
@@ -305,10 +290,6 @@ impl System {
                 + 2
                 + u32::from(header.initial_stack_size)
                 + u32::from(header.initial_heap_size);
-
-            if segment.movable() {
-                self.growable.insert(data);
-            }
 
             self.global.set_segment_size(data, (size + 15) & !15);
         }

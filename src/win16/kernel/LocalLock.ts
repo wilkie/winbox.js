@@ -1,17 +1,18 @@
 'use strict';
 
 /**
- * A local block's address in the current data segment: what a moveable
- * block's handle holds, or a fixed block's pointer as it is. A discarded
- * block, or a handle this heap did not give out, is NULL. Blocks here do not
- * move while a program holds their address, so no lock count is kept.
+ * A local block's address in the current data segment, as KERNEL gives it
+ * (`KRNL386.EXE` seg1 `8d1f`, `Heap.localLock`): a fixed block's pointer as
+ * it is; for a moveable block's handle, its lock count up -- a locked
+ * block is not moved -- and the address it holds, NULL for a discarded
+ * block. NULL with no heap there.
  */
 export function LocalLock(this: any, hloc: number) {
   const heap = this.allocator.heapOf(this.machine.cpu.core.ds >> 3);
 
-  if (!heap || !hloc) {
+  if (!heap) {
     return 0;
   }
 
-  return heap.sizeOf(hloc) ? heap.resolve(hloc) : 0;
+  return heap.localLock(hloc & 0xffff);
 }

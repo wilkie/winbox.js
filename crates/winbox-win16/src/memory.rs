@@ -5,7 +5,7 @@
 #![allow(clippy::unnecessary_wraps)]
 
 use winbox_cpu::DS;
-use winbox_machine::{LocalHeap, LocalOptions, handle_for, index_for, segment_selector};
+use winbox_machine::{LocalHeap, handle_for, index_for, segment_selector};
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;
@@ -14,9 +14,6 @@ const GMEM_MOVEABLE: u16 = 0x0002;
 const GMEM_ZEROINIT: u16 = 0x0040;
 const GMEM_MODIFY: u16 = 0x0080;
 const GMEM_DISCARDABLE: u16 = 0x0100;
-const LMEM_MOVEABLE: u16 = 0x0002;
-const LMEM_ZEROINIT: u16 = 0x0040;
-const LMEM_MODIFY: u16 = 0x0080;
 
 /// A selector of a handle: the same descriptor, at a program's privilege.
 fn selector_for(handle: u16) -> u16 {
@@ -27,9 +24,9 @@ impl System {
     /// A local heap made in a segment, as `LocalInit` makes one: a start
     /// of nought puts it at the segment's end, as big as `end` says, ending
     /// a byte short of the segment's size, 64K or more counting as `FFFFh`
-    /// (`KRNL386.EXE` seg2 `28c7`); its arenas laid out as KERNEL lays them
-    /// (`LocalHeap::layout`). None where the segment has one, or the heap
-    /// does not fit.
+    /// (`KRNL386.EXE` seg2 `28c7`); its arenas, its information and DS:6
+    /// written in the segment as KERNEL writes them (`LocalHeap::init`).
+    /// None where the segment has one, or the heap does not fit.
     pub fn local_init(&mut self, index: usize, start: u32, end: u32) -> bool {
         let (start, end) = if start == 0 {
             let size = match self.global.size_of(index) {
@@ -49,27 +46,28 @@ impl System {
             return false;
         }
 
-        // KERNEL's arenas laid from the start to the end: the blocks go
-        // between the free block and the last arena.
-        let Some((_, free, last)) = LocalHeap::layout(start, end) else {
+        // KERNEL's arenas laid from the start to the end, in the segment:
+        // the blocks go between the free block and the last arena.
+        let mut heap = LocalHeap::new(index);
+
+        if !heap.init(&mut self.cpu.bus, start, end) {
             return false;
-        };
+        }
 
-        let mut heap = LocalHeap::new(index, free, last - free);
+        // Its growth goes by the segment's size, `GlobalSize`'s: a block of
+        // `GlobalAlloc`'s, or a segment a module was loaded into; for any
+        // other, the heap's end stands for it (`LocalHeap::segment_size`).
+        let size = self.global.size_of(index);
 
-        heap.growable = self.growable.contains(&index);
+        heap.set_segment_size(if size == 0 { end + 1 } else { size });
 
-        // Its growth goes by the segment's size, `GlobalSize`'s, for a block
-        // of `GlobalAlloc`'s; a data segment's is not kept, and the heap's
-        // end stands for it (`LocalHeap::segment_size`).
-        heap.set_segment_size(match self.global.block(index) {
-            Some(_) => self.global.size_of(index),
-            None => end + 1,
-        });
-
-        // A heap in a block of `GlobalAlloc`'s grows, and the block with it
-        // (`lheapseg`).
-        if self.global.block(index).is_some() {
+        // KERNEL's own notify procedure grows the segment of a heap out of
+        // room by `GlobalReAlloc`, whatever the segment (`KRNL386.EXE` seg1
+        // `8de2`): a block of `GlobalAlloc`'s, fixed or moveable, as the
+        // Visual Basic runtime's is (`lheapseg`); a program's data segment,
+        // fixed, as `localgro`'s is, or moveable; a library's. The segment
+        // follows.
+        if size != 0 {
             heap.growable = true;
             self.heap_blocks.insert(index);
         }
@@ -78,13 +76,14 @@ impl System {
         true
     }
 
-    /// The block a heap is in grown to the heap's end, if it grew past it.
+    /// The block a heap is in grown, or shrunk, to the heap's end, where
+    /// it grew or shrank.
     pub(crate) fn follow_growth(&mut self, index: usize) {
         let Some(end) = self.heaps.get_mut(&index).and_then(LocalHeap::take_growth) else {
             return;
         };
 
-        if self.heap_blocks.contains(&index) && end > self.global.size_of(index) {
+        if self.heap_blocks.contains(&index) && end != self.global.size_of(index) {
             self.global
                 .resize(&mut self.cpu.bus, &mut self.descriptors, index, end);
         }
@@ -455,23 +454,25 @@ pub fn local_init(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     Ok(Answer::Word(u16::from(made)))
 }
 
+/// `LocalAlloc`, as KERNEL makes a block (`KRNL386.EXE` seg1 `8ab6`,
+/// `LocalHeap::local_alloc`): a moveable block's handle an entry of the
+/// heap's handle tables, its block at the top of the last free block it
+/// fits.
 pub fn local_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let flags = args.word(system);
     let size = args.word(system);
     let index = system.data_heap();
-    let options = LocalOptions {
-        movable: flags & LMEM_MOVEABLE != 0,
-        zero_init: flags & LMEM_ZEROINIT != 0,
-    };
     let Some(heap) = system.heaps.get_mut(&index) else {
         return Ok(Answer::Word(0));
     };
-    let block = heap.allocate(&mut system.cpu.bus, u32::from(size), options);
+    let block = heap.local_alloc(&mut system.cpu.bus, flags, size);
 
     system.follow_growth(index);
-    Ok(Answer::Word(block.map_or(0, |block| block as u16)))
+    Ok(Answer::Word(block))
 }
 
+/// `LocalFree` (seg1 `8cc7`): the block, and its handle given back to its
+/// table; nought.
 pub fn local_free(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let index = system.data_heap();
@@ -479,37 +480,55 @@ pub fn local_free(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
         return Ok(Answer::Word(handle));
     };
 
-    heap.free(u32::from(handle));
-    Ok(Answer::Word(0))
+    Ok(Answer::Word(heap.local_free(&mut system.cpu.bus, handle)))
 }
 
+/// `LocalLock` (seg1 `8d1f`): a fixed block's pointer as it is; a moveable
+/// block's lock count up -- a locked block is not moved -- and its address.
 pub fn local_lock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let handle = u32::from(args.word(system));
+    let handle = args.word(system);
     let index = system.data_heap();
 
     Ok(Answer::Word(match system.heaps.get(&index) {
-        Some(heap) if handle != 0 && heap.size_of(handle) != 0 => heap.resolve(handle) as u16,
-        _ => 0,
+        Some(heap) => heap.local_lock(&mut system.cpu.bus, handle),
+        None => 0,
     }))
 }
 
+/// `LocalUnlock` (seg1 `8d43`): a moveable block's lock count down, and
+/// what is left.
 pub fn local_unlock(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Word(0))
-}
-
-pub fn local_size(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let handle = u32::from(args.word(system));
+    let handle = args.word(system);
     let index = system.data_heap();
 
-    Ok(Answer::Word(
-        system
-            .heaps
-            .get(&index)
-            .map_or(0, |heap| heap.size_of(handle) as u16),
-    ))
+    Ok(Answer::Word(match system.heaps.get(&index) {
+        Some(heap) => heap.local_unlock(&mut system.cpu.bus, handle),
+        None => 0,
+    }))
 }
 
+/// `LocalSize` (seg1 `8cef`): the next arena less the block's address.
+pub fn local_size(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = args.word(system);
+    let index = system.data_heap();
+
+    Ok(Answer::Word(system.heaps.get(&index).map_or(0, |heap| {
+        heap.local_size(&system.cpu.bus, handle)
+    })))
+}
+
+/// `LocalFlags` (seg1 `8d06`): a handle's flags in the high byte, its
+/// lock count in the low; nought for a fixed block.
+pub fn local_flags(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = args.word(system);
+    let index = system.data_heap();
+
+    Ok(Answer::Word(system.heaps.get(&index).map_or(0, |heap| {
+        heap.local_flags(&system.cpu.bus, handle)
+    })))
+}
+
+/// `LocalReAlloc` (seg1 `8b4b`, `LocalHeap::local_realloc`).
 pub fn local_realloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let size = args.word(system);
@@ -518,83 +537,62 @@ pub fn local_realloc(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let Some(heap) = system.heaps.get_mut(&index) else {
         return Ok(Answer::Word(0));
     };
-
-    if handle == 0 {
-        return Ok(Answer::Word(0));
-    }
-
-    if flags & LMEM_MODIFY != 0 {
-        return Ok(Answer::Word(handle));
-    }
-
-    let block = heap.reallocate(
-        &mut system.cpu.bus,
-        u32::from(handle),
-        u32::from(size),
-        flags & LMEM_MOVEABLE != 0,
-        flags & LMEM_ZEROINIT != 0,
-    );
+    let block = heap.local_realloc(&mut system.cpu.bus, handle, size, flags);
 
     system.follow_growth(index);
-    Ok(Answer::Word(block.map_or(0, |block| block as u16)))
+    Ok(Answer::Word(block))
 }
 
-/// The largest free block of the heap in DS, less the four bytes Windows
-/// keeps before every block.
+/// `LocalCompact` (seg1 `8d85`): the heap in DS compacted for the bytes
+/// asked -- its moveable unlocked blocks moved together, and its
+/// discardable ones discarded where that is still not enough -- and its
+/// largest free block less six, the arena of a moveable block.
 pub fn local_compact(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-
+    let wanted = args.word(system);
     let index = system.data_heap();
 
-    // Less six, the arena of a moveable block, where there is any
-    // (`KRNL386.EXE` seg1 `8d9c`-`8da3`; `LocalHeap::MOVEABLE_HEADER`).
-    Ok(Answer::Word(system.heaps.get(&index).map_or(0, |heap| {
-        heap.largest_free().saturating_sub(6).min(0xffff) as u16
-    })))
+    Ok(Answer::Word(match system.heaps.get(&index) {
+        Some(heap) => heap.local_compact(&mut system.cpu.bus, wanted),
+        None => 0,
+    }))
 }
 
-/// Shrinks a local heap as far as what is in it allows. **Read out of
-/// `KRNL386.EXE`**: it answers the heap's span, from its first arena to
-/// past its last, which is not what `LocalCompact` answers -- **recorded**
-/// by `minis3` for the caller's own heap. A segment of nought is the
-/// caller's data segment. These heaps do not shrink; it answers the heap's
-/// size.
+/// Shrinks a local heap as far as what is in it allows, as KERNEL does it
+/// (`KRNL386.EXE` seg1 `8db0`, `9093`; `LocalHeap::local_shrink`): it
+/// answers the heap's span, from its first arena to past its last, which
+/// is not what `LocalCompact` answers -- **recorded** by `minis3` for the
+/// caller's own heap. A segment of nought is the caller's data segment.
 pub fn local_shrink(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let segment = args.word(system);
-    let _size = args.word(system);
+    let size = args.word(system);
     let index = if segment == 0 {
         system.data_heap()
     } else {
         index_for(segment)
     };
+    let Some(heap) = system.heaps.get_mut(&index) else {
+        return Ok(Answer::Word(0));
+    };
+    let span = heap.local_shrink(&mut system.cpu.bus, size);
 
-    Ok(Answer::Word(
-        system
-            .heaps
-            .get(&index)
-            .map_or(0, |heap| heap.size() as u16),
-    ))
+    system.follow_growth(index);
+    Ok(Answer::Word(span))
 }
 
-/// `LocalHandle`: the handle of the block in DS a pointer points at, as
-/// `LocalHeap::handle_of` finds it; with no heap there, the value as it is
-/// where bit 1 is clear, else nought (`KRNL386.EXE` seg1 `8d6a`). Windows
-/// Help hands its macros' buttons over by the handle of a block it holds
-/// only by its pointer: answered nought, "Unable to add button."
+/// `LocalHandle` (seg1 `8d6a`, `LocalHeap::local_handle`): a value with
+/// bit 1 clear as it is; one with it set, the handle in the word before
+/// it, if that handle holds the value; else nought. With no heap there,
+/// the value as it is where bit 1 is clear, else nought. Windows Help hands
+/// its macros' buttons over by the handle of a block it holds only by its
+/// pointer: answered nought, "Unable to add button."
 pub fn local_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let value = u32::from(args.word(system));
+    let value = args.word(system);
     let index = system.data_heap();
     let handle = match system.heaps.get(&index) {
-        Some(heap) => heap.handle_of(value),
+        Some(heap) => heap.local_handle(&system.cpu.bus, value),
         None if value & 2 == 0 => value,
         None => 0,
     };
 
-    Ok(Answer::Word(handle as u16))
-}
-
-/// `LocalFlags`, which the TypeScript engine answers with nothing, nought.
-pub fn local_nought(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Word(0))
+    Ok(Answer::Word(handle))
 }

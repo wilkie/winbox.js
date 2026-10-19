@@ -6,7 +6,7 @@ ordinal: 5
 summary: Takes a block from the local heap of the current data segment, returning a handle for a moveable block and a near pointer for a fixed one.
 versions:
   '3.1': exact
-probes: [memory]
+probes: [memory, lheapseg]
 topics: [global-and-local-memory]
 ---
 
@@ -20,8 +20,9 @@ topics: [global-and-local-memory]
 
 - [[documented]] The block comes from the local heap of whatever data segment `DS` names at the time of the call.
 - A heap that is full grows, its segment or block with it ([[topic:global-and-local-memory]], [[probe:localgro]], [[probe:lheapseg]]).
-- Not yet measured: a request for zero bytes, `LMEM_DISCARDABLE`, `LMEM_ZEROINIT` contents, and the handle and pointer values themselves.
+- [[read out]] A moveable block's handle is an entry of one of the heap's handle tables, a fixed block of 32 entries made when a handle is wanted and none is free; the block itself goes at the top of the last free block it fits, a fixed one at the bottom of the first (`KRNL386.EXE` seg1 `8ab6`, `9283`). A moveable block of nought bytes is a handle standing for a discarded block; a fixed one is refused. [[measured]] [[probe:lheapseg]] records the handles and where the heap grows ([[topic:global-and-local-memory]]).
+- Not yet measured: `LMEM_DISCARDABLE`, and `LMEM_ZEROINIT` contents.
 
 ## Implementation
 
-`LocalAlloc` finds the heap belonging to `DS >> 3` and asks it for `Heap.blockFor(request, moveable)` bytes, which is the formula above. A request for zero bytes is refused with `NULL`, which no recording yet supports or contradicts. The flags beyond moveable are passed along but not acted on.
+`LocalAlloc` finds the heap belonging to `DS >> 3` and asks it, `Heap.localAlloc` (`LocalHeap::local_alloc`), which follows KERNEL's routine: the handle from the tables, the block rounded as above and placed, the heap compacted and grown where it does not fit. The heap is kept in the segment, as KERNEL keeps it.
