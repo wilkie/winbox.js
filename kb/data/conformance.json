@@ -2776,15 +2776,15 @@
    },
    "requests": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "server": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -2803,10 +2803,23 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "requests": "a local block's header of two bytes where KERNEL's arena has four",
-   "server": "a local block's header of two bytes where KERNEL's arena has four"
-  }
+  "gaps": {}
+ },
+ "ddehsz": {
+  "probe": "ddehsz",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 10,
+  "functions": {
+   "DdeFreeStringHandle": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "ddeinst": {
   "probe": "ddeinst",
@@ -3610,6 +3623,45 @@
    }
   },
   "gaps": {}
+ },
+ "ddewep": {
+  "probe": "ddewep",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "FreeLibrary": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "LoadLibrary": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "WEP": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "WEP": "a library's instance is not its data segment's handle in winbox.js"
+  }
  },
  "ddexact": {
   "probe": "ddexact",
@@ -9487,9 +9539,9 @@
    }
   },
   "gaps": {
-   "alloc": "the heap grows, but its handles and the points it grows at follow Windows' handle tables and block headers, which are not modelled",
-   "count": "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
-   "realloc": "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled"
+   "alloc": "the heap grows, but its handles and the points it grows at follow Windows' handle tables and moveable blocks placed at the top, which are not modelled",
+   "count": "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled",
+   "realloc": "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled"
   }
  },
  "lines-ega": {
@@ -10068,15 +10120,15 @@
   "functions": {
    "bits": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "handle": {
     "total": 11,
-    "agreed": 7,
-    "disagreed": 4,
+    "agreed": 9,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -10089,8 +10141,7 @@
    }
   },
   "gaps": {
-   "bits": "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
-   "handle": "LocalHandle of a value no block starts at goes by bit 1 of it, which winbox.js's heap layout does not match KERNEL's, four records"
+   "handle": "LocalHandle of a handle itself and of a discarded block's last pointer follow KERNEL's handle tables, which winbox.js's heap does not keep, two records"
   }
  },
  "lockinp": {
