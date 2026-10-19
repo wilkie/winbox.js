@@ -131,9 +131,15 @@ async function buildLibrary(name) {
     ['-bt=windows', '-bd', '-zu', '-ml', '-zW', '-q', '-w4', `-fo=${object}`, source],
     BUILD
   );
+  /* A library whose entry points must be given ordinals -- a printer's
+   * driver, which GDI asks for by number -- names them in `<name>.dll.lnk`,
+   * the linker's own `export` directives. */
+  const directives = join(PROBES, `${name}.dll.lnk`);
+  const exports = (await stat(directives).catch(() => null)) ? [`@${directives}`] : [];
+
   await run(
     'wlink',
-    ['system', 'windows_dll', 'option', 'quiet', 'name', library, 'file', object],
+    ['system', 'windows_dll', 'option', 'quiet', 'name', library, 'file', object, ...exports],
     BUILD
   );
   await rm(object, { force: true });

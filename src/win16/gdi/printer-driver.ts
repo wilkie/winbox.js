@@ -53,9 +53,9 @@ import { stockFontHandle } from './stock-fonts.js';
  *   kept in a metafile for its bands (`042d`): not followed here.
  *
  * `DeleteDC` (seg1 `082e`): the device's count taken down, and at nought
- * `Disable` given its `PDEVICE` (`0906`), which is freed with its
- * `GDIINFO`; the driver's count taken down, and at nought `FreeLibrary`
- * (`0947`).
+ * `Disable` given its `PDEVICE` (`0906`); the driver's count taken down,
+ * and at nought `FreeLibrary` (`0947`); then the device's `PDEVICE`
+ * freed with what was realized for it (`09dd`-`09ef`).
  */
 
 /** A driver GDI has loaded. */
@@ -79,6 +79,24 @@ export interface PDevice {
   lpPDevice: number;
   /** The DCs and ICs made on it. */
   count: number;
+  /**
+   * Each pen and brush realized for the device, by its object, as GDI
+   * keeps its realized objects by the device's number (seg1 `26be`,
+   * `2335`): shared by the contexts on it, let go as it goes (`4460`).
+   */
+  realized: Map<any, any[]>;
+}
+
+/**
+ * A font a driver realized, as GDI's table of realized fonts holds it
+ * (`[036Ah]`, 1Ch bytes each): the device it was realized for, the font
+ * object, the size it was realized at, and the `FONTINFO` and `TEXTXFORM`.
+ */
+interface FontEntry {
+  device: PDevice;
+  font: any;
+  key: string;
+  realized: DeviceFont;
 }
 
 const ENABLE = 5;
@@ -93,8 +111,65 @@ const DC_SPDEVICE = 1;
 const DC_1PDEVICE = 2;
 const DC_IGNOREDFNP = 4;
 
-function stateOf(system: any): { drivers: Driver[]; nullPort: string | null } {
-  return (system._printerDrivers ??= { drivers: [], nullPort: null });
+function stateOf(system: any): {
+  drivers: Driver[];
+  nullPort: string | null;
+  fonts: FontEntry[];
+} {
+  return (system._printerDrivers ??= { drivers: [], nullPort: null, fonts: [] });
+}
+
+/**
+ * The fonts realized for a device let go, or those of a font object, as
+ * GDI walks its table of them (`GDI.EXE` seg6 `01fa`): from the first, an
+ * entry let go taking the last one's place, which is looked at next. A
+ * font object's are deleted by the driver first, its `RealizeObject` given
+ * -`OBJ_FONT` and the `FONTINFO` as both objects (`04bd`); a device's are
+ * not, the driver having gone (mode 3, `0272`). Each `FONTINFO` is then
+ * freed.
+ */
+async function releaseFonts(system: any, which: { device?: PDevice; font?: any }) {
+  const fonts = stateOf(system).fonts;
+  let at = 0;
+
+  while (at < fonts.length) {
+    const entry = fonts[at];
+
+    if (which.device ? entry.device !== which.device : entry.font !== which.font) {
+      at++;
+      continue;
+    }
+
+    if (which.font) {
+      const realize = proc(entry.device.driver, REALIZE_OBJECT);
+
+      if (realize) {
+        await callDriver(system, realize, [
+          [entry.device.lpPDevice, DWORD],
+          [-OBJ_FONT & 0xffff, UINT],
+          [entry.realized.far, DWORD],
+          [entry.realized.far, DWORD],
+          [0, DWORD],
+        ]);
+      }
+    }
+
+    GlobalFree.call(system, entry.realized.handle);
+
+    const last = fonts.pop()!;
+
+    if (at < fonts.length) {
+      fonts[at] = last;
+    }
+  }
+}
+
+/**
+ * A font object deleted: what the drivers realized of it deleted by them
+ * and freed (`GDI.EXE` seg6 `0362`, mode 2).
+ */
+export async function deleteDriverFonts(system: any, font: any) {
+  await releaseFonts(system, { font });
 }
 
 /** A name as GDI's atom keeps it: compared without case. */
@@ -304,6 +379,7 @@ async function enableDevice(
     pdevice,
     lpPDevice,
     count: 0,
+    realized: new Map(),
   };
 }
 
@@ -438,7 +514,15 @@ export async function createDriverDC(
   return hdc;
 }
 
-/** A DC of a driver from the drive deleted: `Disable` and `FreeLibrary` as the last goes. */
+/**
+ * A DC of a driver from the drive deleted (`GDI.EXE` seg1 `082e`): the
+ * device's count taken down, and at nought the driver's `Disable` given the
+ * `PDEVICE` (`0906`); the driver's count taken down, and at nought
+ * `FreeLibrary` (`0947`); then, the device gone, its `PDEVICE` freed
+ * (`09dd`), and what was realized for it let go -- its pens and brushes
+ * (`09ea`, `4460`), and its fonts (`09ef`, seg6 `0387`), not by the
+ * driver. A device shared keeps them for the contexts left on it.
+ */
 export async function deleteDriverDC(system: any, surface: any) {
   const pdevice: PDevice = surface.driverDevice;
   const driver = pdevice.driver;
@@ -449,7 +533,9 @@ export async function deleteDriverDC(system: any, surface: any) {
   surface.driverDevice = null;
   pdevice.count = Math.max(0, pdevice.count - 1);
 
-  if (!pdevice.count) {
+  const gone = !pdevice.count;
+
+  if (gone) {
     const disable = proc(driver, DISABLE);
 
     if (disable) {
@@ -460,19 +546,25 @@ export async function deleteDriverDC(system: any, surface: any) {
     }
 
     driver.devices = driver.devices.filter((other) => other !== pdevice);
-    GlobalFree.call(system, pdevice.pdevice);
-  }
-
-  for (const realizations of surface.deviceFonts?.values() ?? []) {
-    for (const realized of realizations.values()) {
-      GlobalFree.call(system, realized.handle);
-    }
   }
 
   driver.uses = Math.max(0, driver.uses - 1);
 
   if (!driver.uses) {
     await dropDriver(system, driver);
+  }
+
+  if (gone) {
+    GlobalFree.call(system, pdevice.pdevice);
+
+    for (const list of pdevice.realized.values()) {
+      for (const realized of list) {
+        GlobalFree.call(system, realized.handle);
+      }
+    }
+
+    pdevice.realized.clear();
+    await releaseFonts(system, { device: pdevice });
   }
 }
 
@@ -701,12 +793,14 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
   const logfont = font.logfont ? { ...given, ...mappedSize(surface, given) } : given;
   const key = `${logfont.height},${logfont.width}`;
 
-  surface.deviceFonts ??= new Map<any, Map<string, DeviceFont>>();
-
-  const kept = surface.deviceFonts.get(font)?.get(key);
+  /* GDI's table of realized fonts, by the device, the font and the size
+   * (seg1 `3e86`): a device's contexts share what was realized for it. */
+  const kept = stateOf(system).fonts.find(
+    (entry) => entry.device === pdevice && entry.font === font && entry.key === key
+  );
 
   if (kept) {
-    return kept;
+    return kept.realized;
   }
 
   const realize = proc(pdevice.driver, REALIZE_OBJECT);
@@ -804,11 +898,7 @@ async function realizeDeviceFont(
 
   const realized = { handle, far, info, xform: xform.slice(0, 0x13) };
 
-  if (!surface.deviceFonts.has(font)) {
-    surface.deviceFonts.set(font, new Map());
-  }
-
-  surface.deviceFonts.get(font).set(key, realized);
+  stateOf(system).fonts.push({ device: surface.driverDevice, font, key, realized });
   return realized;
 }
 

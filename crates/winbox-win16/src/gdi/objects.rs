@@ -556,7 +556,7 @@ pub(crate) fn create_pen_indirect(system: &mut System, args: &mut Args) -> Resul
 /// same handle of: one of `GetStockObject`'s, or a memory device context's
 /// first bitmap, which in Windows is the one stock bitmap every memory
 /// context starts with.
-fn is_stock(system: &System, handle: u16, object: usize) -> bool {
+pub(crate) fn is_stock(system: &System, handle: u16, object: usize) -> bool {
     (0..=16).any(|index| stock_handle(index) == handle)
         || matches!(&system.gdi.objects[object], GdiObject::Bitmap(bitmap) if bitmap.pixels.placeholder)
 }

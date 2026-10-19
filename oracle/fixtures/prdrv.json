@@ -1,0 +1,494 @@
+{
+  "probe": "prdrv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "0",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "1",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "2",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "3",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "4",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "5",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "6",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "7",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "GetTextMetrics",
+      "result": "1",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "tmHeight",
+      "result": "10",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "8",
+      "result": "RealizeObject font 20 0 400 \"Probe\" size",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "9",
+      "result": "RealizeObject font 20 0 400 \"Probe\"",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "10",
+      "result": "Report realized font0=160 font1=160",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "11",
+      "result": "RealizeObject -3 delete",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "12",
+      "result": "Report font deleted font0=160 font1=0",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "deleted",
+      "result": "unloaded",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "13",
+      "result": "Disable 1 font0=160 font1=0",
+      "section": "own"
+    },
+    {
+      "function": "driver",
+      "args": "14",
+      "result": "WEP font0=160 font1=0",
+      "section": "own"
+    },
+    {
+      "function": "call",
+      "args": "GetTextMetrics",
+      "result": "1",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "15",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "16",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "17",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "18",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "19",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "20",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "21",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "22",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "23",
+      "result": "RealizeObject font 20 0 400 \"Probe\" size",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "24",
+      "result": "RealizeObject font 20 0 400 \"Probe\"",
+      "section": "kept"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "25",
+      "result": "Disable 1 font0=160 font1=160",
+      "section": "kept"
+    },
+    {
+      "function": "driver",
+      "args": "26",
+      "result": "WEP font0=160 font1=160",
+      "section": "kept"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "kept"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC first",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "27",
+      "result": "Enable 1 Shared M LPT1: 0",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "28",
+      "result": "Enable 0 Shared M LPT1: 0",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "29",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "30",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "31",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "32",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "33",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "34",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC second",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "GetTextMetrics first",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "35",
+      "result": "RealizeObject font 20 0 400 \"Probe\" size",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "36",
+      "result": "RealizeObject font 20 0 400 \"Probe\"",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "GetTextMetrics second",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "37",
+      "result": "Report both realized font0=160 font1=160",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC first",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "38",
+      "result": "Report first deleted font0=160 font1=160",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC second",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "39",
+      "result": "Disable 1 font0=160 font1=160",
+      "section": "shared"
+    },
+    {
+      "function": "driver",
+      "args": "40",
+      "result": "WEP font0=160 font1=160",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "DeleteObject",
+      "result": "1",
+      "section": "shared"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC both",
+      "result": "1",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "41",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "42",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "43",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "44",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "45",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "46",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "47",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "48",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "49",
+      "result": "Enable 1 Plain LPT1: 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "50",
+      "result": "Enable 0 Plain LPT1: 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "51",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "52",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "53",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "54",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "55",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "56",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "two"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC first",
+      "result": "1",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "57",
+      "result": "Disable 1 font0=160 font1=160",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "58",
+      "result": "Report first deleted font0=0 font1=160",
+      "section": "two"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC second",
+      "result": "1",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "59",
+      "result": "Disable 2 font0=0 font1=160",
+      "section": "two"
+    },
+    {
+      "function": "driver",
+      "args": "60",
+      "result": "WEP font0=0 font1=160",
+      "section": "two"
+    }
+  ]
+}

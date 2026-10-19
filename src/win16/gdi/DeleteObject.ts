@@ -59,24 +59,41 @@ export function DeleteObject(handle) {
     return TRUE;
   }
 
+  /* A font a printer's driver realized is deleted by the driver first,
+   * then freed (`GDI.EXE` seg6 `0362`, `04bd`; `printer-driver.ts`). */
+  if (
+    this.handles.isFont(item) &&
+    this._printerDrivers?.fonts.some((entry: any) => entry.font === item)
+  ) {
+    return import('./printer-driver.js').then(async ({ deleteDriverFonts }) => {
+      await deleteDriverFonts(this, item);
+      return deleted(this, handle, item);
+    });
+  }
+
+  return deleted(this, handle, item);
+}
+
+/** An object that is not a stock one let go. */
+function deleted(system: any, handle: number, item: any) {
   /* A font's realised fonts leave GDI's cache (`GDI.EXE` seg6 `0362`). */
-  if (this.handles.isFont(item)) {
-    this.fonts?.release(item);
+  if (system.handles.isFont(item)) {
+    system.fonts?.release(item);
   }
 
   /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`). */
-  forgetBitmap(this, item);
+  forgetBitmap(system, item);
 
   /* Out of any metafile being recorded that holds it, by a record of its
    * own (`metafile`). */
-  forgetInMetafiles(this, handle);
+  forgetInMetafiles(system, handle);
 
-  this.handles.free(handle);
+  system.handles.free(handle);
 
   /* An object selected into a device context is deleted all the same
    * (`stockdel`); the context keeps its handle, which `SelectObject` gives
    * back when something else is selected (`handleHeld`). */
-  (this.deletedHandles ??= new WeakMap()).set(item, handle);
+  (system.deletedHandles ??= new WeakMap()).set(item, handle);
   return TRUE;
 }
 

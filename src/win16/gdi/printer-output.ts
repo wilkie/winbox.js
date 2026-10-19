@@ -5,6 +5,8 @@ import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { DWORD, UINT } from '../types.js';
 import { clipOf } from './clipping.js';
+import { handleHeld } from './DeleteObject.js';
+import { GetStockObject } from './GetStockObject.js';
 import { devicePoint, mapped, mappingOf, scale } from './mapping.js';
 import { MulDiv } from './MulDiv.js';
 import { deviceFont, type PDevice } from './printer-driver.js';
@@ -46,6 +48,8 @@ const PS_SOLID = 0;
 const PS_NULL = 5;
 const PS_INSIDEFRAME = 6;
 const BS_HOLLOW = 1;
+const WHITE_BRUSH = 0;
+const BLACK_PEN = 7;
 
 /* The `DRAWMODE` and the `TEXTXFORM` in the context's block. */
 const DRAWMODE = 0;
@@ -78,8 +82,6 @@ export interface DriverDrawing {
   /** The physical colours `ColorInfo` gave, as the `DRAWMODE` keeps them. */
   bkColor: number;
   textColor: number;
-  /** Each pen and brush realized, as GDI keeps them on the object for the device (seg1 `26be`, `2335`). */
-  realized: Map<any, Realized[]>;
 }
 
 function core(system: any) {
@@ -167,15 +169,29 @@ export function farOf(arg: any) {
   return Number(arg ?? 0) >>> 0;
 }
 
+/**
+ * What a pen or brush is realized for a device by: its handle, a stock
+ * object's for one a context starts with, as a context starts with the
+ * stock objects themselves.
+ */
+function objectKey(system: any, object: any, stock: number) {
+  if (!object || (object.stock !== undefined && object.stock !== null)) {
+    return GetStockObject.call(system, object?.stock ?? stock);
+  }
+
+  return handleHeld(system, object) ?? object;
+}
+
 function drawingOf(surface: any): DriverDrawing {
   return surface.driverDrawing;
 }
 
 /**
  * A driver's context made ready to draw on, as GDI's `CreateDC` makes it
- * (`GDI.EXE` seg1 `0192`-`0210`): the `DRAWMODE`'s `R2_COPYPEN` and
+ * (`GDI.EXE` seg1 `0192`-`0231`): the `DRAWMODE`'s `R2_COPYPEN` and
  * `OPAQUE`; the background white and the text black, each through the
- * driver's `ColorInfo`; the white brush and the black pen realized.
+ * driver's `ColorInfo`; the white brush, the black pen and the font
+ * realized (`022e`), unless realized for the device already.
  */
 export async function startDrawing(system: any, surface: any) {
   const handle = GlobalAlloc.call(system, 0x2042, BLOCK_SIZE);
@@ -189,7 +205,6 @@ export async function startDrawing(system: any, surface: any) {
     brush: null,
     bkColor: 0,
     textColor: 0,
-    realized: new Map(),
   };
 
   surface.driverDrawing = drawing;
@@ -204,20 +219,18 @@ export async function startDrawing(system: any, surface: any) {
   drawing.textColor = await colorInfo(system, surface, 0);
   await realizeBrush(system, surface);
   await realizePen(system, surface);
+  await deviceFont(system, surface);
 }
 
-/** The context's drawing block let go, with what was realized for it. */
+/**
+ * The context's drawing block let go. What was realized stays with the
+ * device (`printer-driver.ts`, `deleteDriverDC`).
+ */
 export function stopDrawing(system: any, surface: any) {
   const drawing = drawingOf(surface);
 
   if (!drawing) {
     return;
-  }
-
-  for (const list of drawing.realized.values()) {
-    for (const realized of list) {
-      GlobalFree.call(system, realized.handle);
-    }
   }
 
   if (drawing.handle) {
@@ -303,8 +316,7 @@ async function realizeObject(
   fifth: (out: number) => number
 ): Promise<Realized | null> {
   const pdevice: PDevice = surface.driverDevice;
-  const drawing = drawingOf(surface);
-  const kept = drawing.realized.get(object)?.find((each) => each.key === key);
+  const kept = pdevice.realized.get(object)?.find((each) => each.key === key);
 
   if (kept) {
     return kept;
@@ -356,7 +368,7 @@ async function realizeObject(
 
   const realized = { handle, far, key };
 
-  drawing.realized.set(object, [realized, ...(drawing.realized.get(object) ?? [])]);
+  pdevice.realized.set(object, [realized, ...(pdevice.realized.get(object) ?? [])]);
   return realized;
 }
 
@@ -364,7 +376,7 @@ async function realizeObject(
  * The selected pen realized (seg1 `2640`): its `LOGPEN` with the width
  * made device units, `MulDiv` by the viewport's extent over the window's,
  * its size; the height the width by the device's aspects. GDI keeps a pen
- * realized for each device and width; here one for the context.
+ * realized for each device and width, as here.
  */
 export async function realizePen(system: any, surface: any) {
   const drawing = drawingOf(surface);
@@ -378,7 +390,7 @@ export async function realizePen(system: any, surface: any) {
   const realized = await realizeObject(
     system,
     surface,
-    surface.pen ?? 'pen',
+    objectKey(system, surface.pen?.logpen ? surface.pen : null, BLACK_PEN),
     `${width}`,
     OBJ_PEN,
     words(logpen.style, width, logpen.y, logpen.color & 0xffff, logpen.color >>> 16),
@@ -415,7 +427,7 @@ export async function realizeBrush(system: any, surface: any) {
   const realized = await realizeObject(
     system,
     surface,
-    surface.brush ?? 'brush',
+    objectKey(system, surface.brush, WHITE_BRUSH),
     key,
     OBJ_BRUSH,
     /* The `LOGBRUSH`, and after it the background's physical colour (`23a1`). */

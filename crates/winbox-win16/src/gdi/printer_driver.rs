@@ -35,9 +35,9 @@
 //!   kept in a metafile for its bands (`042d`): not followed here.
 //!
 //! `DeleteDC` (seg1 `082e`): the device's count taken down, and at nought
-//! `Disable` given its `PDEVICE` (`0906`), which is freed with its
-//! `GDIINFO`; the driver's count taken down, and at nought `FreeLibrary`
-//! (`0947`).
+//! `Disable` given its `PDEVICE` (`0906`); the driver's count taken down,
+//! and at nought `FreeLibrary` (`0947`); then the device's `PDEVICE`
+//! freed with what was realized for it (`09dd`-`09ef`).
 
 use std::collections::HashMap;
 use std::future::Future;
@@ -91,6 +91,11 @@ pub struct PDevice {
     pub lp_pdevice: u32,
     /// The DCs and ICs made on it.
     pub count: u32,
+    /// Each pen and brush realized for the device, by its object, as GDI
+    /// keeps its realized objects by the device's number (seg1 `26be`,
+    /// `2335`): shared by the contexts on it, let go as it goes (`4460`).
+    /// In the order each object was first realized.
+    pub realized: Vec<(usize, Vec<super::printer_output::Realized>)>,
 }
 
 /// What GDI keeps of the drivers it has loaded from the drive.
@@ -107,9 +112,9 @@ pub struct Drivers {
     /// Each driver's device context's abort procedure, as `SETABORTPROC`
     /// gave it.
     pub abort: HashMap<usize, u32>,
-    /// The fonts the drivers realized, by the context and the font object,
-    /// in the order they were realized: let go in that order, as the
-    /// TypeScript engine's `Map`s keep them.
+    /// The fonts the drivers realized, as GDI's table of them holds them
+    /// (`[036Ah]`, 1Ch bytes each), by the device, the font object and the
+    /// size: one let go takes the last one's place (seg6 `01fa`).
     pub fonts: Vec<(FontKey, DeviceFont)>,
     /// The context and the call -- 1 for `EnumFontFamilies`, nought for
     /// `EnumFonts` -- whose fonts GDI is walking (`[064Eh]`, `[041Ch]`).
@@ -434,6 +439,7 @@ async fn enable_device(
         pdevice,
         lp_pdevice,
         count: 0,
+        realized: Vec::new(),
     }))
 }
 
@@ -548,43 +554,19 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
     Ok(hdc)
 }
 
-/// A DC of a driver from the drive deleted: `Disable` and `FreeLibrary` as
-/// the last goes.
+/// A DC of a driver from the drive deleted (`GDI.EXE` seg1 `082e`): the
+/// device's count taken down, and at nought the driver's `Disable` given
+/// the `PDEVICE` (`0906`); the driver's count taken down, and at nought
+/// `FreeLibrary` (`0947`); then, the device gone, its `PDEVICE` freed
+/// (`09dd`), and what was realized for it let go -- its pens and brushes
+/// (`09ea`, `4460`), and its fonts (`09ef`, seg6 `0387`), not by the
+/// driver. A device shared keeps them for the contexts left on it.
 pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
     super::printer_output::stop_drawing(engine, dc).await?;
 
-    let (id, name, last, disable, lp_pdevice) = {
+    let (id, name, gone, disable, lp_pdevice) = {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
-
-        // Let go font object by font object, each in the order the first
-        // of its sizes was realized, as the TypeScript engine's `Map` of
-        // maps walks them.
-        let mut realized: Vec<(FontKey, DeviceFont)> = Vec::new();
-
-        system.printing.drivers.fonts.retain(|(key, font)| {
-            let mine = key.0 == dc;
-
-            if mine {
-                realized.push((*key, font.clone()));
-            }
-
-            !mine
-        });
-
-        let mut objects: Vec<usize> = Vec::new();
-
-        for ((_, object, ..), _) in &realized {
-            if !objects.contains(object) {
-                objects.push(*object);
-            }
-        }
-
-        for object in objects {
-            for (_, font) in realized.iter().filter(|((_, of, ..), _)| *of == object) {
-                let _ = crate::memory::global_free(&mut system, &mut Args::repeat(font.handle));
-            }
-        }
 
         let Some(id) = system.printing.drivers.contexts.remove(&dc) else {
             return Ok(());
@@ -595,30 +577,25 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
 
         pdevice.count = pdevice.count.saturating_sub(1);
 
-        let (last, name, lp_pdevice) = (
+        let (gone, name, lp_pdevice) = (
             pdevice.count == 0,
             pdevice.driver.clone(),
             pdevice.lp_pdevice,
         );
         let disable = proc_of(&system, &name, DISABLE);
 
-        (id, name, last, disable, lp_pdevice)
+        (id, name, gone, disable, lp_pdevice)
     };
 
-    if last {
+    if gone {
         if disable != 0 {
             call_driver(engine, disable, &[GuestArg::Long(lp_pdevice)]).await?;
         }
 
         let mut system = engine.system();
-        let pdevice = system.printing.drivers.devices.remove(&id);
 
         if let Some(driver) = driver_named(&mut system, &name) {
             driver.devices.retain(|&other| other != id);
-        }
-
-        if let Some(pdevice) = pdevice {
-            let _ = crate::memory::global_free(&mut system, &mut Args::repeat(pdevice.pdevice));
         }
     }
 
@@ -635,7 +612,114 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
         drop_driver(engine, &name).await?;
     }
 
+    if gone {
+        {
+            let mut system = engine.system();
+
+            if let Some(pdevice) = system.printing.drivers.devices.remove(&id) {
+                let _ = crate::memory::global_free(&mut system, &mut Args::repeat(pdevice.pdevice));
+
+                for (_, list) in &pdevice.realized {
+                    for realized in list {
+                        let _ = crate::memory::global_free(
+                            &mut system,
+                            &mut Args::repeat(realized.handle),
+                        );
+                    }
+                }
+            }
+        }
+
+        release_fonts(engine, Release::Device(id)).await?;
+    }
+
     Ok(())
+}
+
+/// Which realized fonts to let go: a device's, or a font object's.
+#[derive(Clone, Copy)]
+enum Release {
+    Device(u32),
+    Font(usize),
+}
+
+/// The fonts realized for a device let go, or those of a font object, as
+/// GDI walks its table of them (`GDI.EXE` seg6 `01fa`): from the first, an
+/// entry let go taking the last one's place, which is looked at next. A
+/// font object's are deleted by the driver first, its `RealizeObject` given
+/// -`OBJ_FONT` and the `FONTINFO` as both objects (`04bd`); a device's are
+/// not, the driver having gone (mode 3, `0272`). Each `FONTINFO` is then
+/// freed.
+async fn release_fonts(engine: &Engine, which: Release) -> Result<(), Stop> {
+    let mut at = 0;
+
+    loop {
+        let (realize, lp_pdevice, font) = {
+            let system = engine.system();
+            let fonts = &system.printing.drivers.fonts;
+            let Some(((id, object, ..), font)) = fonts.get(at) else {
+                return Ok(());
+            };
+            let matches = match which {
+                Release::Device(device) => *id == device,
+                Release::Font(of) => *object == of,
+            };
+
+            if !matches {
+                at += 1;
+                continue;
+            }
+
+            let pdevice = system.printing.drivers.devices.get(id);
+            let realize = match (which, pdevice) {
+                (Release::Font(_), Some(pdevice)) => {
+                    proc_of(&system, &pdevice.driver, REALIZE_OBJECT)
+                }
+                _ => 0,
+            };
+
+            (
+                realize,
+                pdevice.map_or(0, |pdevice| pdevice.lp_pdevice),
+                font.clone(),
+            )
+        };
+
+        if realize != 0 {
+            call_driver(
+                engine,
+                realize,
+                &[
+                    GuestArg::Long(lp_pdevice),
+                    GuestArg::Word(OBJ_FONT.wrapping_neg()),
+                    GuestArg::Long(font.far),
+                    GuestArg::Long(font.far),
+                    GuestArg::Long(0),
+                ],
+            )
+            .await?;
+        }
+
+        let mut system = engine.system();
+        let _ = crate::memory::global_free(&mut system, &mut Args::repeat(font.handle));
+        system.printing.drivers.fonts.swap_remove(at);
+    }
+}
+
+/// Whether a driver realized a font object, for some device.
+pub fn driver_realized(system: &System, object: usize) -> bool {
+    system
+        .printing
+        .drivers
+        .fonts
+        .iter()
+        .any(|((_, of, ..), _)| *of == object)
+}
+
+/// A font object deleted: what the drivers realized of it deleted by them
+/// and freed (`GDI.EXE` seg6 `0362`, mode 2).
+pub async fn delete_driver_fonts(engine: &Engine, object: usize) -> Result<(), Stop> {
+    release_fonts(engine, Release::Font(object)).await
 }
 
 /// `GetDeviceCaps` of a driver's DC: the word at the index's offset in its
@@ -916,9 +1000,9 @@ pub struct DeviceFont {
     pub xform: Vec<u8>,
 }
 
-/// A font a driver realized for a context: the context, the font object,
-/// and the height and width it was realized at.
-pub type FontKey = (usize, usize, i16, i16);
+/// A font a driver realized for a device: the device's number, the font
+/// object, and the height and width it was realized at.
+pub type FontKey = (u32, usize, i16, i16);
 
 /// A made font's height and width in the device's units, as GDI takes them
 /// before the driver realizes it (`GDI.EXE` seg3 `0b35`-`0b9c`; a stock
@@ -1024,7 +1108,13 @@ pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont
             (logfont.height, logfont.width) = mapped_size(&system, dc, &logfont);
         }
 
-        let key = (dc, object, logfont.height, logfont.width);
+        let Some(&id) = system.printing.drivers.contexts.get(&dc) else {
+            return Ok(None);
+        };
+        // GDI's table of realized fonts, by the device, the font and the
+        // size (seg1 `3e86`): a device's contexts share what was realized
+        // for it.
+        let key = (id, object, logfont.height, logfont.width);
 
         if let Some((_, kept)) = system
             .printing

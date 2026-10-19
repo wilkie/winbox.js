@@ -54,6 +54,7 @@ const RC_GDI20_OUTPUT: u16 = 0x10;
 const TC_EA_DOUBLE: u16 = 0x200;
 const TC_IA_ABLE: u16 = 0x400;
 const BLOCK_SIZE: u32 = 0x40;
+const BLACK_PEN: i16 = 7;
 
 /// A pen or a brush the driver realized: its block, and what it was
 /// realized for -- a pen's width; a hatched brush's background, a brush's
@@ -80,15 +81,12 @@ pub struct DriverState {
 }
 
 /// What GDI keeps of a driver's context for drawing: the block standing
-/// for its heap, and each pen and brush realized, as GDI keeps them on the
-/// object for the device (seg1 `26be`, `2335`).
+/// for its heap. The pens and brushes realized are the device's
+/// (`PDevice::realized`).
 #[derive(Debug, Clone, Default)]
 pub struct Drawing {
     pub handle: u16,
     pub far: u32,
-    /// By object, in the order each was first realized: let go in that
-    /// order, as the TypeScript engine's `Map` keeps them.
-    pub realized: Vec<(usize, Vec<Realized>)>,
 }
 
 type Rect = [i32; 4];
@@ -159,6 +157,32 @@ async fn kernel(engine: &Engine, name: &'static str, args: &[GuestArg]) -> Resul
     Ok(answer.value().unwrap_or(0))
 }
 
+/// What a pen or brush is realized for a device by: the object, a stock
+/// object's for one a context starts with, as a context starts with the
+/// stock objects themselves.
+fn object_key(system: &mut System, object: usize) -> usize {
+    let stock = match &system.gdi.objects[object] {
+        GdiObject::Brush(brush) => brush.stock,
+        GdiObject::Pen(pen) if pen.logpen.is_none() => Some(BLACK_PEN),
+        _ => None,
+    };
+    let Some(index) = stock else {
+        return object;
+    };
+    let handle = super::objects::get_stock_object(system, index);
+
+    system
+        .gdi_object_of(handle)
+        .map_or(object, |(stock, _)| stock)
+}
+
+/// The device a driver's context was made for.
+fn device_mut(system: &mut System, dc: usize) -> Option<&mut super::printer_driver::PDevice> {
+    let id = *system.printing.drivers.contexts.get(&dc)?;
+
+    system.printing.drivers.devices.get_mut(&id)
+}
+
 fn state(system: &System, dc: usize) -> Option<&DriverState> {
     system.gdi.dcs[dc].state.driver.as_ref()
 }
@@ -168,9 +192,10 @@ fn state_mut(system: &mut System, dc: usize) -> Option<&mut DriverState> {
 }
 
 /// A driver's context made ready to draw on, as GDI's `CreateDC` makes it
-/// (`GDI.EXE` seg1 `0192`-`0210`): the `DRAWMODE`'s `R2_COPYPEN` and
+/// (`GDI.EXE` seg1 `0192`-`0231`): the `DRAWMODE`'s `R2_COPYPEN` and
 /// `OPAQUE`; the background white and the text black, each through the
-/// driver's `ColorInfo`; the white brush and the black pen realized.
+/// driver's `ColorInfo`; the white brush, the black pen and the font
+/// realized (`022e`), unless realized for the device already.
 pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
     let handle = kernel(
         engine,
@@ -187,14 +212,11 @@ pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
     {
         let mut system = engine.system();
 
-        system.printing.drivers.drawing.insert(
-            dc,
-            Drawing {
-                handle,
-                far,
-                realized: Vec::new(),
-            },
-        );
+        system
+            .printing
+            .drivers
+            .drawing
+            .insert(dc, Drawing { handle, far });
         system.gdi.dcs[dc].state.driver = Some(DriverState {
             pen: None,
             pen_width: 1,
@@ -226,20 +248,16 @@ pub async fn start_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
 
     realize_brush(engine, dc).await?;
     realize_pen(engine, dc).await?;
+    super::printer_driver::device_font(engine, dc).await?;
     Ok(())
 }
 
-/// The context's drawing block let go, with what was realized for it.
+/// The context's drawing block let go. What was realized stays with the
+/// device (`printer_driver.rs`, `delete_driver_dc`).
 pub async fn stop_drawing(engine: &Engine, dc: usize) -> Result<(), Stop> {
     let Some(drawing) = engine.system().printing.drivers.drawing.remove(&dc) else {
         return Ok(());
     };
-
-    for (_, list) in &drawing.realized {
-        for realized in list {
-            kernel(engine, "GlobalFree", &[GuestArg::Word(realized.handle)]).await?;
-        }
-    }
 
     if drawing.handle != 0 {
         kernel(engine, "GlobalFree", &[GuestArg::Word(drawing.handle)]).await?;
@@ -330,13 +348,9 @@ async fn realize_object(
     logical: &[u8],
     fifth: impl Fn(u32) -> u32,
 ) -> Result<Option<Realized>, Stop> {
-    let kept = engine
-        .system()
-        .printing
-        .drivers
-        .drawing
-        .get(&dc)
-        .and_then(|drawing| drawing.realized.iter().find(|(of, _)| *of == object))
+    let object = object_key(&mut engine.system(), object);
+    let kept = device_mut(&mut engine.system(), dc)
+        .and_then(|pdevice| pdevice.realized.iter().find(|(of, _)| *of == object))
         .map(|(_, list)| list)
         .and_then(|list| list.iter().find(|each| each.key == key).cloned());
 
@@ -397,10 +411,10 @@ async fn realize_object(
 
     let realized = Realized { handle, far, key };
 
-    if let Some(drawing) = engine.system().printing.drivers.drawing.get_mut(&dc) {
-        match drawing.realized.iter_mut().find(|(of, _)| *of == object) {
+    if let Some(pdevice) = device_mut(&mut engine.system(), dc) {
+        match pdevice.realized.iter_mut().find(|(of, _)| *of == object) {
             Some((_, list)) => list.insert(0, realized.clone()),
-            None => drawing.realized.push((object, vec![realized.clone()])),
+            None => pdevice.realized.push((object, vec![realized.clone()])),
         }
     }
 
@@ -1650,6 +1664,34 @@ fn read_words(engine: &Engine, args: &mut Args, count: usize) -> Vec<i32> {
         .collect()
 }
 
+/// `DeleteObject` of a font a printer's driver realized: deleted by the
+/// driver first, then freed (`GDI.EXE` seg6 `0362`, `04bd`;
+/// `printer_driver.rs`), then deleted as any object is. A stock object is
+/// not deleted at all.
+fn delete_object_call(engine: &Engine, args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let object = {
+            let system = engine.system();
+            let mut peek = args;
+            let handle = peek.word(&system);
+
+            system
+                .gdi_object_of(handle)
+                .map(|(object, _)| object)
+                .filter(|&object| {
+                    !super::objects::is_stock(&system, handle, object)
+                        && super::printer_driver::driver_realized(&system, object)
+                })
+        };
+
+        if let Some(object) = object {
+            super::printer_driver::delete_driver_fonts(engine, object).await?;
+        }
+
+        otherwise(engine, "DeleteObject", args).await
+    })
+}
+
 fn select_object_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hdc, driver) = first(engine, &args);
@@ -1974,6 +2016,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ExtTextOut" => ext_text_out_call,
         "GetTextExtent" => get_text_extent_call,
         "StretchDIBits" => stretch_dibits_call,
+        "DeleteObject" => delete_object_call,
         _ => return None,
     }))
 }

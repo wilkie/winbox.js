@@ -2,7 +2,7 @@
 kind: topic
 name: Printer drivers in GDI
 summary: How Windows 3.1's GDI loads a printer's driver from the drive and runs it — CreateDC and CreateIC, the driver's Enable, the GDIINFO GetDeviceCaps reads, the device shared between contexts, Escape through Control, the environment GDI keeps for a port, fonts realized by the driver and by GDI's TrueType engine, a document's calls, the drawing handed to the driver, GDI's spooler, and DeleteDC's Disable and FreeLibrary — read out of GDI.EXE and recorded with the PostScript driver.
-probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta]
+probes: [pric, prdlg, prdoc, prdraw, prspool, prabort, prlpt, prtabs, prnote, prmeta, prdrv]
 ---
 
 A printer's driver is the user's own program, a library on the drive such as Windows' PostScript driver, `PSCRIPT.DRV`, or one a printer's maker shipped. GDI loads it by its name and calls its exports, as it calls any library's. winbox.js runs it the same way: the driver's code runs on the processor, and GDI calls its entry points where Windows' GDI does. This is unlike the display ([[topic:display-drivers]]), whose driver winbox.js never runs. winbox.js's own printer, `WBPRINT`, is a driver of winbox.js's and is not loaded from the drive ([[topic:printing]]).
@@ -20,6 +20,9 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 5. **Enable, for the information.** A new device: GDI's 7Eh bytes are given to the driver's `Enable` with a style of 1 (8001h for an IC), the program's device, port and `DEVMODE` (seg1 `03af`, `04ca`). The answer is the bytes written: at least 6Eh where the table's version is 300h or more, else exactly 68h. Words 60h to 66h all nought are made B505h, 0, B505h, 0 (`0592`).
 6. **Enable, for the device.** The `PDEVICE` is `GlobalAlloc(2002h, dpDEVICEsize)` (`03f5`), given to `Enable` with a style of nought (8000h for an IC, `046f`). Nought refuses the context.
 7. A driver whose `dpRaster` has `RC_BANDING` has the drawing on its DC kept in a metafile for its bands (`042d`).
+8. The context's colours, brush and pen are made (below, under Drawing), and then its font is realized (`022e`). A pen, brush or font already realized for the device is not realized again: a second context on a shared device realizes nothing.
+
+[[measured]] [[probe:prdrv]] brings a driver of its own, which logs each call GDI makes to it. `CreateDC` called its `Enable` for the information and for the device, then `RealizeObject` for the white brush, the black pen and the default font, each asked its size first. The default font's `LOGFONT` is all nought, its face empty. A second context on a device it shares called nothing.
 
 [[measured]] [[probe:pric]]: `CreateIC` of `pscript`, the Apple LaserWriter Plus and `LPT1:` gave an IC; the same again, and on `LPT2:`, gave more.
 
@@ -50,13 +53,21 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 ## Deleting
 
-[[read out]] [[fn:GDI.DeleteDC]] (seg1 `082e`): the device's count taken down, and at nought the driver's `Disable` given the `PDEVICE` (`0906`), which is freed with its table; the driver's count taken down, and at nought `FreeLibrary` (`0947`). [[measured]] Each of [[probe:pric]]'s three ICs answered 1, and one deleted twice nought.
+[[read out]] [[fn:GDI.DeleteDC]] (seg1 `082e`):
+
+1. The device's count is taken down, and at nought the driver's `Disable` is given the `PDEVICE` (`0906`), and the device leaves the driver's list.
+2. The driver's count is taken down, and at nought it is freed with `FreeLibrary` (`0947`).
+3. Where the device went, its `PDEVICE` is freed (`09dd`), and then what was realized for it. Its pens and brushes are GDI's blocks kept by the device's number (`09ea`, seg1 `4460`). Its fonts are entries in GDI's table of realized fonts (`09ef`, seg6 `0387`), each `FONTINFO` given to `EngineDeleteFont` and freed (seg6 `0272`). The driver is not called for either; it has gone.
+
+A device shared by contexts keeps all of it until the last goes. [[measured]] Each of [[probe:pric]]'s three ICs answered 1, and one deleted twice nought. [[probe:prdrv]]'s driver asks, at its `Disable` and as its library is freed, whether each `FONTINFO` it realized is still there. Both times they were, and after the deletion they were gone. Of two contexts sharing a device, deleting the first called nothing of the driver's.
+
+[[read out]] **A font deleted** while its device lives is given back to the driver (seg6 `0362`, `04bd`). The driver's `RealizeObject` is called with -`OBJ_FONT`, the `FONTINFO` as both objects and no `TEXTXFORM`, and then the block is freed ([[fn:GDI.DeleteObject]]). GDI walks its table from the first entry; an entry let go takes the last one's place, and that is looked at next (seg6 `01fa`). [[measured]] [[probe:prdrv]]: a font deleted so, then a context deleted with its own default font still realized.
 
 ## Fonts
 
 [[read out]] A printer's context starts with `DEVICE_DEFAULT_FONT` selected, where the display's starts with `SYSTEM_FONT` (seg1 `0217`-`0225`).
 
-[[read out]] **Realizing a font** (seg3 `0a68`): GDI copies the logical font's `LOGFONT`, `lfClipPrecision`'s high bits left off, and asks the driver's `RealizeObject` for the size of its `FONTINFO` with nought for it; then realizes it into `GlobalAlloc(2042h)` 42h bytes larger, with a `TEXTXFORM` of its own (`0c08`-`0c66`). The driver maps the font itself. Only where it realizes none does GDI map the font among its own.
+[[read out]] **Realizing a font** (seg3 `0a68`). GDI first looks in its table of realized fonts, by the device's number, the font object and the context's extents (seg1 `3e86`): a font realized for one context serves every context on the device. Otherwise GDI copies the logical font's `LOGFONT`, `lfClipPrecision`'s high bits left off, and asks the driver's `RealizeObject` for the size of its `FONTINFO` with nought for it; then realizes it into `GlobalAlloc(2042h)` 42h bytes larger, with a `TEXTXFORM` of its own (`0c08`-`0c66`). The driver maps the font itself. Only where it realizes none does GDI map the font among its own.
 
 [[read out]] **The size in the device's units** (seg3 `0b35`-`0b9c`). A font that is not a stock one (8000h in its type word) has its height and width mapped before the driver sees them. The window origin, and the origin moved by the width and the height, are taken to the device with `LPtoDP` (seg1 `52f5`; the origin is the context's word at 68h, which `GetWindowOrg` reads). The width is their distance across. The height is their distance down: negative for a negative height, and 1 where it comes to nought from a height that was not. So a font is realized again in each mapping mode it is used in. [[measured]] [[probe:prtabs]]: Helvetica 60 high measures 90 by 61 dots in `MM_TEXT`, and 89 by 60 tenths of a millimetre in `MM_LOMETRIC`, realized at 71 dots.
 
@@ -84,7 +95,7 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 [[read out]] GDI hands the driver what the program draws, with the objects the driver realized:
 
 - **The context** (seg1 `0192`-`0210`). `CreateDC` gives the driver's DC a `DRAWMODE` of `R2_COPYPEN` and `OPAQUE`. The background is white and the text black, each made physical by the driver's `ColorInfo` (seg1 `1526`) and kept in the `DRAWMODE`, as [[fn:GDI.SetBkColor]] and [[fn:GDI.SetTextColor]] keep them later (`1476`, `14dc`). The white brush and the black pen are realized. A hatched brush selected is selected again where the background's physical colour changes (`1556`-`1575`).
-- **Pens and brushes** go to the driver's `RealizeObject`, asked the size with nought for the object, then given a block that large (`26e5`, `256f`). A pen's width is made device units, `MulDiv` by the viewport's extent over the window's, and its height comes from the device's aspects (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it (`23a1`), and its origin goes as a fifth argument (`2304`).
+- **Pens and brushes** go to the driver's `RealizeObject`, asked the size with nought for the object, then given a block that large (`26e5`, `256f`). What is realized is kept for the device, and a context on the same device uses it without asking the driver again. A pen's width is made device units, `MulDiv` by the viewport's extent over the window's, and its height comes from the device's aspects (`2640`). A brush's `LOGBRUSH` has the background's physical colour after it (`23a1`), and its origin goes as a fifth argument (`2304`).
 - **The visible region** of a driver's DC is its page, `dpHorzRes` by `dpVertRes`. A mapping mode's extents come from the `GDIINFO` (30h on).
 - **Figures** (seg25 `082f`). With the pen and the brush, a figure inside the region (seg18 `0000` answers 2) goes with no clip rectangle. Where the region is one rectangle that is the clip. Otherwise the figure goes once for each of the region's rectangles within its bounds, out by the pen's width. [[fn:GDI.Rectangle]] (`0093`) goes as `OS_RECTANGLE` where `dpPolygonalCaps` has `PC_RECTANGLE` and what the pen and brush need. The curves (seg9 `02c4`) bring the right and bottom in by one and go as `OS_ELLIPSE`, `OS_ARC`, `OS_CHORD`, `OS_PIE` or `OS_ROUNDRECT`, or `OS_CIRCLE` where the sides are as long by the aspects and the driver has `CC_CIRCLES`. A thin polyline goes as `OS_POLYLINE` with its bounds as the clip; a wide pen needs `LC_WIDE` and goes as a figure (seg21 `0726`). [[fn:GDI.Polygon]] closes the points and goes as `OS_ALTPOLYGON` or `OS_WINDPOLYGON` (seg24 `0254`, `0396`).
 - **Text** goes to the driver's `ExtTextOut` ([[fn:GDI.ExtTextOut]]), and [[fn:GDI.GetTextExtent]] asks it the extent with its count negated. USER's [[fn:USER.TabbedTextOut]] draws each run with GDI's `ExtTextOut`.
@@ -110,7 +121,9 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 
 ## In winbox.js
 
-`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices, make the contexts, realize fonts, and take a document's calls. `printer-output.ts` and `printer_output.rs` hand the drawing to the driver, and `spooler.ts` and `spooler.rs` are GDI's spooler. `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` are beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before. GDI's messages for the spooler's boxes are its own string table (`strings.ts`, `strings.rs`). Each engine keeps what it realized for a context, and the fonts the drivers realized, in the order they were realized, and lets them go in that order, so a run's handles do not depend on a hash's order.
+`src/win16/gdi/printer-driver.ts` and `crates/winbox-win16/src/gdi/printer_driver.rs` keep the drivers and devices, make the contexts, realize fonts, and take a document's calls. `printer-output.ts` and `printer_output.rs` hand the drawing to the driver, and `spooler.ts` and `spooler.rs` are GDI's spooler. `environment.ts`/`environment.rs` and `engine-font.ts`/`engine_font.rs` are beside them. The `GDIINFO` GDI keeps in its heap is laid below the stack for the call to `Enable`. `DISPLAY` and `WBPRINT` are kept as before. GDI's messages for the spooler's boxes are its own string table (`strings.ts`, `strings.rs`). Each engine keeps the pens and brushes realized for a device on the device, in the order each object was first realized, and the fonts in one table like GDI's, let go as GDI walks it, so a run's handles do not depend on a hash's order. A context starts with the stock pen and brush, and what is realized is keyed by the stock objects, as Windows' contexts start with the stock objects themselves.
+
+[[probe:prdrv]] brings a printer's driver of its own, `prdrv.dll.c`, built with its entry points at GDI's ordinals by the linker's `export` directives in `prdrv.dll.lnk`. The probe copies it to `PRDRVD.DRV`, since GDI loads a driver by its name and `.DRV`. It logs every call GDI makes to it to a file, which outlives the driver, and the probe reads that back as records. Both engines run it as they run the PostScript driver.
 
 ## Not yet done
 
