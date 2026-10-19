@@ -39,39 +39,63 @@ describe('a task environment', () => {
 });
 
 describe('a local heap out of room', () => {
-  const growable = (size: number) => {
-    const heap = new Heap(size);
+  /* `localgro`'s heap: 1,024 bytes at the end of a data segment of 12,160,
+   * as `LocalInit` with a start of nought lays it (`Heap.layout`). */
+  const localgro = () => {
+    const layout = Heap.layout(12160 - 1 - 1024, 12160 - 1)!;
+    const heap = new Heap(layout.last - layout.free);
 
-    heap.offset = 0x2000;
+    heap.offset = layout.free;
+    heap.segmentSize = 12160;
     heap.growable = true;
 
     return heap;
   };
 
-  it('grows by the request and 544, rounded up to 32', () => {
-    for (const [request, growth] of [
-      [1000, 1568],
-      [3072, 3616],
-      [4096, 4640],
-    ]) {
-      const heap = growable(16);
-
-      expect(heap.allocate(request)).not.toBeNull();
-      expect(heap.byteLength - 16).toBe(growth);
-    }
+  it("lays the heap out as LocalInit does, KERNEL's arenas before the blocks and after", () => {
+    expect(Heap.layout(12160 - 1 - 1024, 12160 - 1)).toEqual({
+      first: 0x2b80,
+      free: 0x2bbc,
+      last: 0x2f74,
+    });
+    // DDEML's instance heap: `LocalInit(segment, 0, 0FFFh)` in a block of 1000h.
+    expect(Heap.layout(0, 0xfff)).toEqual({ first: 0xc, free: 0x48, last: 0xff4 });
   });
 
-  it('grows to 64K when that is enough, and fails with nothing grown when it is not', () => {
-    // A growth past 64K, where 64K is still enough for the block.
-    const heap = growable(56000);
+  it('grows as localgro recorded, block by block, and to no more than 65,312 there', () => {
+    const heap = localgro();
+    const sizes = [1000, 1000, 1000, 3072, ...Array(12).fill(4096)];
+    const recorded = [
+      [0x2bc0, 13728],
+      [0x2fac, 13728],
+      [0x3398, 15296],
+      [0x3784, 18912],
+      [0x4388, 23552],
+      [0x538c, 28192],
+      [0x6390, 32832],
+      [0x7394, 37472],
+      [0x8398, 42112],
+      [0x939c, 42112],
+      [0xa3a0, 46752],
+      [0xb3a4, 51392],
+      [0xc3a8, 56032],
+      [0xd3ac, 60672],
+      [0xe3b0, 65312],
+      [0, 65312],
+    ];
 
-    expect(heap.allocate(57000)).not.toBeNull();
-    expect(heap.byteLength + heap.offset).toBe(0x10000);
+    expect(sizes.map((size) => [heap.allocate(size) ?? 0, heap.segmentSize])).toEqual(recorded);
+  });
 
-    const before = heap.byteLength;
+  it('gives a free block whole where 16 bytes or less would be left', () => {
+    const heap = new Heap(52 + 16);
 
-    expect(heap.allocate(4000)).toBeNull();
-    expect(heap.byteLength).toBe(before);
+    heap.offset = 0x100;
+
+    const block = heap.allocate(0x2e);
+
+    expect(heap.sizeOf(block)).toBe(0x30 + 16);
+    expect(heap.allocate(1)).toBeNull();
   });
 
   it('does not grow a heap that may not', () => {

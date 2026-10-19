@@ -27,8 +27,9 @@ impl System {
     /// A local heap made in a segment, as `LocalInit` makes one: a start
     /// of nought puts it at the segment's end, as big as `end` says, ending
     /// a byte short of the segment's size, 64K or more counting as `FFFFh`
-    /// (`KRNL386.EXE` seg2 `28c7`); a start under 16 is 16. None where the
-    /// segment has one, or the heap does not fit.
+    /// (`KRNL386.EXE` seg2 `28c7`); its arenas laid out as KERNEL lays them
+    /// (`LocalHeap::layout`). None where the segment has one, or the heap
+    /// does not fit.
     pub fn local_init(&mut self, index: usize, start: u32, end: u32) -> bool {
         let (start, end) = if start == 0 {
             let size = match self.global.size_of(index) {
@@ -40,21 +41,31 @@ impl System {
         } else {
             (start, end)
         };
-        let start = start.max(16);
-
         if self.heaps.contains_key(&index) {
             return false;
         }
 
-        if end < start || end > 0xffff {
+        if end > 0xffff {
             return false;
         }
 
-        let size = end - start;
+        // KERNEL's arenas laid from the start to the end: the blocks go
+        // between the free block and the last arena.
+        let Some((_, free, last)) = LocalHeap::layout(start, end) else {
+            return false;
+        };
 
-        let mut heap = LocalHeap::new(index, start, size);
+        let mut heap = LocalHeap::new(index, free, last - free);
 
         heap.growable = self.growable.contains(&index);
+
+        // Its growth goes by the segment's size, `GlobalSize`'s, for a block
+        // of `GlobalAlloc`'s; a data segment's is not kept, and the heap's
+        // end stands for it (`LocalHeap::segment_size`).
+        heap.set_segment_size(match self.global.block(index) {
+            Some(_) => self.global.size_of(index),
+            None => end + 1,
+        });
 
         // A heap in a block of `GlobalAlloc`'s grows, and the block with it
         // (`lheapseg`).
@@ -535,8 +546,10 @@ pub fn local_compact(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 
     let index = system.data_heap();
 
+    // Less six, the arena of a moveable block, where there is any
+    // (`KRNL386.EXE` seg1 `8d9c`-`8da3`; `LocalHeap::MOVEABLE_HEADER`).
     Ok(Answer::Word(system.heaps.get(&index).map_or(0, |heap| {
-        heap.largest_free().saturating_sub(4).min(0xffff) as u16
+        heap.largest_free().saturating_sub(6).min(0xffff) as u16
     })))
 }
 

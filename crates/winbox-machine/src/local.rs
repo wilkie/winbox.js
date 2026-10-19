@@ -8,9 +8,13 @@
 //! * A block is four-byte units, never under eight bytes, a moveable one
 //!   spending two on its handle's link: 15 to 18 bytes asked for are 18
 //!   (`memory`).
-//! * A heap out of room grows -- a moveable data segment's -- by the
-//!   request and 544 more, rounded up to 32, to 64 KiB at most
-//!   (`localgro`).
+//! * Each block has KERNEL's arena of four bytes before it, six for a
+//!   moveable one, and a free block that would keep too little to be one
+//!   is given whole (read out; `ddeheap`).
+//! * `LocalInit` lays its own arenas out before the blocks and after them
+//!   (`LocalHeap::layout`).
+//! * A heap out of room grows -- a moveable data segment's -- as KERNEL's
+//!   default `LocalNotify` grows it (`LocalHeap::grow`; `localgro`).
 //! * `LocalReAlloc` of a moveable block keeps it where it is when it
 //!   shrinks, its leftover freed only at 20 bytes or more, and when it
 //!   grows into free space before the next block (`localre`).
@@ -23,13 +27,14 @@ use crate::Memory;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Allocation {
-    /// Where its span starts: a data block's size word, or a handle.
+    /// Where its span starts: a data block's arena, or a handle.
     start: u32,
-    /// The bytes it takes: a data block's and its size word, or a handle's
-    /// two.
+    /// The bytes it takes: a data block's and its arena, or a handle's two.
     span: u32,
     /// A data block's bytes; `None` for a handle's slot.
     data: Option<u32>,
+    /// Its arena's bytes before its data: `HEADER` or `MOVEABLE_HEADER`.
+    header: u32,
 }
 
 /// A local heap.
@@ -46,8 +51,11 @@ pub struct LocalHeap {
     allocations: Vec<Allocation>,
     /// Each handle's word, as the heap last wrote it.
     handles: HashMap<u32, u16>,
-    /// The heap's end when it last grew, for its segment's block to follow.
+    /// The segment's size when it last grew, for its block to follow.
     grown: Option<u32>,
+    /// The size of the segment the heap is in, as `GlobalSize` answers it,
+    /// where it is known (`LocalHeap::segment_size`).
+    segment_size: Option<u32>,
 }
 
 /// What a block is asked for with.
@@ -69,7 +77,52 @@ impl LocalHeap {
             allocations: Vec::new(),
             handles: HashMap::new(),
             grown: None,
+            segment_size: None,
         }
+    }
+
+    /// The bytes of a block's arena before its own: KERNEL's four, the
+    /// previous arena's address with the block's flags in its low bits and
+    /// the next's (`KRNL386.EXE` seg2 `2962`-`2992`, seg1 `930b`-`9331`),
+    /// the block's bytes after them (`932c`-`932f`) -- and for a moveable
+    /// block, its handle's address after those (`92d7`, `8b0f`), six. A
+    /// fixed block of 2Eh bytes, as DDEML asks for each transaction it
+    /// keeps, takes 52 (`ddeheap`).
+    pub const HEADER: u32 = 4;
+    pub const MOVEABLE_HEADER: u32 = 6;
+
+    /// Where `LocalInit` lays a heap from `start` to `end` out
+    /// (`KRNL386.EXE` seg2 `28e3`-`2957`): its first arena at `start`, at
+    /// least 0Ah and rounded up to four; then an arena of the heap's own,
+    /// four bytes and the 2Ah of its information; the free block after
+    /// that, at a four-byte boundary; and the last arena ten bytes short of
+    /// `end`, rounded down to four. The blocks go between the free block's
+    /// start and the last arena: `(first, free, last)`, or `None` where they
+    /// do not fit.
+    pub fn layout(start: u32, end: u32) -> Option<(u32, u32, u32)> {
+        let align = |at: u32| (at.max(0xa) + 3) & !3;
+        let first = align(start);
+        let info = align(first + 0xa);
+
+        if info >= end {
+            return None;
+        }
+
+        let free = align(info + 4 + 0x2a);
+        let last = end.wrapping_sub(0xa) & !3;
+
+        (last > free && last <= end).then_some((first, free, last))
+    }
+
+    /// The size of the segment the heap is in, as `GlobalSize` would answer
+    /// it, which its growth goes by: where nothing has said, what its last
+    /// arena's place makes it, ten bytes and a rounding past it.
+    pub fn segment_size(&self) -> u32 {
+        self.segment_size.unwrap_or(self.offset + self.size + 12)
+    }
+
+    pub fn set_segment_size(&mut self, size: u32) {
+        self.segment_size = Some(size);
     }
 
     pub fn offset(&self) -> u32 {
@@ -80,7 +133,7 @@ impl LocalHeap {
         self.size
     }
 
-    /// The heap's end, if it grew since this was last asked.
+    /// The segment's size, if the heap grew since this was last asked.
     pub fn take_growth(&mut self) -> Option<u32> {
         self.grown.take()
     }
@@ -132,72 +185,122 @@ impl LocalHeap {
         (space >= size && last != 0).then_some(last)
     }
 
-    /// The heap grown for a request that does not fit, if it may: where
-    /// the block goes.
-    fn grow(&mut self, request: u32, needed: u32) -> Option<u32> {
+    /// Grows a heap that is out of room, as KERNEL's default `LocalNotify`
+    /// grows one (`KRNL386.EXE` seg1 `8de2`), and answers whether it grew.
+    /// Read out: refused when the segment's size, less the largest free
+    /// block, with the block and 18h, passes 64 KiB (`8e0a`-`8e1c`);
+    /// otherwise the segment is given the block and 218h more (`8e1e`, 200h
+    /// of them the heap's own, set by `LocalInit`, seg2 `2933`), and no
+    /// more than `FFF0h` (`8e2c`-`8e36`), by `GlobalReAlloc`, which rounds up
+    /// to 32 bytes; and the heap's last arena moved to ten bytes short of
+    /// its end, at a four-byte boundary, 64 KiB counting as `FFFFh`
+    /// (`8e5c`-`8e6b`). Measured by `localgro`: a data segment of 12,160
+    /// bytes grew by 1,568 for 1,000 bytes asked for (a block of 1,004).
+    fn grow(&mut self, needed: u32) -> bool {
         if !self.growable {
-            return None;
+            return false;
         }
 
-        let limit = 0x10000 - self.offset;
-        let size = (self.size + (((request + 544 + 31) >> 5) << 5)).min(limit);
+        let size = self.segment_size();
 
-        if size <= self.size {
-            return None;
+        if (size + needed + 0x18).saturating_sub(self.largest_free()) > 0xffff {
+            return false;
         }
 
-        let previous = self.size;
+        let asked = (size + needed + 0x218).min(0xfff0);
+        let grown = ((asked + 31) & !31).min(0x10000);
+        let last = (grown.min(0xffff) - 0xa) & !3;
 
-        self.size = size;
+        if last <= self.offset + self.size {
+            return false;
+        }
 
-        let Some(address) = self.find(needed) else {
-            self.size = previous;
-            return None;
-        };
-
-        self.grown = Some(self.offset + size);
-        Some(address)
+        self.segment_size = Some(grown);
+        self.size = last - self.offset;
+        self.grown = Some(grown);
+        true
     }
 
-    fn place(&mut self, request: u32, needed: u32) -> Option<u32> {
-        self.find(needed).or_else(|| self.grow(request, needed))
+    /// Where a block of `needed` bytes, its arena and all, goes: the first
+    /// gap it fits, else after the heap has grown for it, if it may.
+    fn place(&mut self, needed: u32) -> Option<u32> {
+        loop {
+            if let Some(address) = self.find(needed) {
+                return Some(address);
+            }
+
+            if !self.grow(needed) {
+                return None;
+            }
+        }
+    }
+
+    /// The free bytes from an address to the next block, or to the heap's
+    /// end.
+    fn gap_at(&self, address: u32) -> u32 {
+        self.allocations
+            .iter()
+            .find(|allocation| allocation.start >= address)
+            .map_or(self.size + self.offset, |next| next.start)
+            .saturating_sub(address)
     }
 
     /// A handle's slot: two bytes of the heap, where room is found.
     fn allocate_handle(&mut self) -> Option<u32> {
-        let at = self.place(2, 2)?;
+        let at = self.place(2)?;
 
         self.allocations.push(Allocation {
             start: at,
             span: 2,
             data: None,
+            header: 0,
         });
         self.sort();
         self.handles.insert(at, 0);
         Some(at)
     }
 
-    /// A block of `length` bytes placed: its address, or its handle for a
-    /// moveable one; `None` where there is no room.
-    fn insert(&mut self, memory: &mut Memory, length: u32, options: Options) -> Option<u32> {
+    /// A block of `length` bytes placed, with an arena of `header` bytes:
+    /// its address, or its handle for a moveable one; `None` where there is
+    /// no room. A free block that would keep too little to be one is given
+    /// whole: a fixed block's where 16 bytes or less would be left, a
+    /// moveable one's where less than 16 (`KRNL386.EXE` seg1 `92a4`-`92b5`,
+    /// `92f9`-`9308`); its bytes are the block's, `LocalSize` and all. After
+    /// each growth of a heap DDEML fills with blocks of 52, what was left
+    /// past the last of them is lost so (`ddeheap`).
+    fn insert(
+        &mut self,
+        memory: &mut Memory,
+        length: u32,
+        options: Options,
+        header: u32,
+    ) -> Option<u32> {
         if length == 0 {
             return None;
         }
 
-        let needed = length + 2;
-        let start = self.place(length, needed)?;
+        let needed = length + header;
+        let start = self.place(needed)?;
+        let left = self.gap_at(start) - needed;
+        let whole = if header == Self::MOVEABLE_HEADER {
+            left < 16
+        } else {
+            left <= 16
+        };
+        let extra = if whole { left } else { 0 };
 
         self.allocations.push(Allocation {
             start,
-            span: needed,
-            data: Some(length),
+            span: needed + extra,
+            data: Some(length + extra),
+            header,
         });
         self.sort();
 
-        let address = start + 2;
+        let address = start + header;
 
         if options.zero_init {
-            self.write_bytes(memory, address, &vec![0; length as usize]);
+            self.write_bytes(memory, address, &vec![0; (length + extra) as usize]);
         }
 
         if options.movable {
@@ -228,7 +331,18 @@ impl LocalHeap {
             return Some(handle);
         }
 
-        self.insert(memory, Self::block_for(size, options.movable), options)
+        let header = if options.movable {
+            Self::MOVEABLE_HEADER
+        } else {
+            Self::HEADER
+        };
+
+        self.insert(
+            memory,
+            Self::block_for(size, options.movable),
+            options,
+            header,
+        )
     }
 
     /// Whether a value is a handle this heap gave out.
@@ -270,33 +384,38 @@ impl LocalHeap {
     }
 
     fn allocation_at(&self, address: u32) -> Option<usize> {
-        self.allocations
-            .iter()
-            .position(|allocation| allocation.start + 2 == address && allocation.data.is_some())
+        self.allocations.iter().position(|allocation| {
+            allocation.data.is_some() && allocation.start + allocation.header == address
+        })
     }
 
     /// The size of the block behind a handle or a pointer, nought for none.
     pub fn size_of(&self, value: u32) -> u32 {
         let address = self.resolve(value);
 
-        self.allocations
-            .iter()
-            .find(|allocation| allocation.start + 2 == address)
-            .map_or(0, |allocation| allocation.data.unwrap_or(2))
+        self.allocation_at(address)
+            .and_then(|index| self.allocations[index].data)
+            .unwrap_or(0)
     }
 
     /// A block freed, its handle with it.
     pub fn free(&mut self, value: u32) {
-        let start = if let Some(pointer) = self.handles.remove(&value) {
-            self.free(u32::from(pointer));
-            value
-        } else {
-            value.wrapping_sub(2)
-        };
+        if let Some(pointer) = self.handles.remove(&value) {
+            self.release(u32::from(pointer));
 
-        if let Some(index) = self.allocations.iter().position(|a| a.start == start) {
-            self.allocations.remove(index);
+            // And the handle's own slot.
+            if let Some(index) = self
+                .allocations
+                .iter()
+                .position(|a| a.start == value && a.data.is_none())
+            {
+                self.allocations.remove(index);
+            }
+
+            return;
         }
+
+        self.release(value);
     }
 
     /// The largest space between blocks, or after the last: what
@@ -325,6 +444,11 @@ impl LocalHeap {
         zero_init: bool,
     ) -> Option<u32> {
         let handle = self.is_handle(value).then_some(value);
+        let header = if handle.is_some() {
+            Self::MOVEABLE_HEADER
+        } else {
+            Self::HEADER
+        };
         let address = self.resolve(value);
         let allocation = if address == 0 {
             None
@@ -367,10 +491,11 @@ impl LocalHeap {
             self.release(address);
         }
 
-        let Some(placed) = self.insert(memory, length, Options::default()) else {
+        let Some(placed) = self.insert(memory, length, Options::default(), header) else {
             // The old bytes put back where they will go.
             if !old.is_empty()
-                && let Some(again) = self.insert(memory, old.len() as u32, Options::default())
+                && let Some(again) =
+                    self.insert(memory, old.len() as u32, Options::default(), header)
             {
                 self.write_bytes(memory, again, &old);
 
@@ -406,13 +531,18 @@ impl LocalHeap {
             return false;
         }
 
-        let Allocation { start, span, data } = self.allocations[index];
-        let wanted = ((size + 2 + 3) & !3).max(12);
+        let Allocation {
+            start,
+            span,
+            data,
+            header,
+        } = self.allocations[index];
+        let wanted = ((size + header + 3) & !3).max(header + 10);
 
         if wanted <= span {
             if span - wanted >= 20 {
                 self.allocations[index].span = wanted;
-                self.allocations[index].data = Some(wanted - 2);
+                self.allocations[index].data = Some(wanted - header);
             }
 
             return true;
@@ -426,13 +556,13 @@ impl LocalHeap {
         let was = data.unwrap_or(0);
 
         self.allocations[index].span = wanted;
-        self.allocations[index].data = Some(wanted - 2);
+        self.allocations[index].data = Some(wanted - header);
 
         if zero_init {
             self.write_bytes(
                 memory,
-                start + 2 + was,
-                &vec![0; (wanted - 2 - was) as usize],
+                start + header + was,
+                &vec![0; (wanted - header - was) as usize],
             );
         }
 
@@ -462,24 +592,74 @@ mod tests {
     }
 
     #[test]
-    fn grows_by_the_request_and_544() {
+    fn lays_the_heap_out_as_local_init_does() {
+        assert_eq!(
+            LocalHeap::layout(12160 - 1 - 1024, 12160 - 1),
+            Some((0x2b80, 0x2bbc, 0x2f74))
+        );
+        // DDEML's instance heap: `LocalInit(segment, 0, 0FFFh)` in a block
+        // of 1000h.
+        assert_eq!(LocalHeap::layout(0, 0xfff), Some((0xc, 0x48, 0xff4)));
+    }
+
+    #[test]
+    fn grows_as_localgro_recorded() {
+        // `localgro`'s heap: 1,024 bytes at the end of a data segment of
+        // 12,160, as `LocalInit` with a start of nought lays it.
         let mut memory = Memory::new();
-        let mut heap = LocalHeap::new(100, 0x10, 1024);
+        let (_, free, last) = LocalHeap::layout(12160 - 1 - 1024, 12160 - 1).unwrap();
+        let mut heap = LocalHeap::new(100, free, last - free);
 
         heap.growable = true;
+        heap.set_segment_size(12160);
 
+        let sizes = [1000, 1000, 1000, 3072]
+            .into_iter()
+            .chain(std::iter::repeat_n(4096, 12));
+        let made: Vec<(u32, u32)> = sizes
+            .map(|size| {
+                let block = heap
+                    .allocate(&mut memory, size, Options::default())
+                    .unwrap_or(0);
+
+                (block, heap.segment_size())
+            })
+            .collect();
+
+        assert_eq!(
+            made,
+            [
+                (0x2bc0, 13728),
+                (0x2fac, 13728),
+                (0x3398, 15296),
+                (0x3784, 18912),
+                (0x4388, 23552),
+                (0x538c, 28192),
+                (0x6390, 32832),
+                (0x7394, 37472),
+                (0x8398, 42112),
+                (0x939c, 42112),
+                (0xa3a0, 46752),
+                (0xb3a4, 51392),
+                (0xc3a8, 56032),
+                (0xd3ac, 60672),
+                (0xe3b0, 65312),
+                (0, 65312),
+            ]
+        );
+        assert_eq!(heap.take_growth(), Some(65312));
+    }
+
+    #[test]
+    fn gives_a_free_block_whole_where_16_bytes_or_less_would_be_left() {
+        let mut memory = Memory::new();
+        let mut heap = LocalHeap::new(100, 0x100, 52 + 16);
         let block = heap
-            .allocate(&mut memory, 1000, Options::default())
+            .allocate(&mut memory, 0x2e, Options::default())
             .unwrap();
 
-        assert_eq!(block, 0x12);
-        assert!(
-            heap.allocate(&mut memory, 1000, Options::default())
-                .is_some()
-        );
-        // 1,000 + 544, rounded up to 32: 1,568 more.
-        assert_eq!(heap.size(), 1024 + 1568);
-        assert_eq!(heap.take_growth(), Some(0x10 + 1024 + 1568));
+        assert_eq!(heap.size_of(block), 0x30 + 16);
+        assert!(heap.allocate(&mut memory, 1, Options::default()).is_none());
     }
 
     #[test]

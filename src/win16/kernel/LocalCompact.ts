@@ -39,8 +39,10 @@ export function LocalCompact(this: any, _uMinFree: number) {
    * dictionary, and read only part of it when this answered nothing. */
   const heap = this.allocator?.heapOf?.(indexFor(this.machine.cpu.core.ds));
 
-  /* Less the four bytes Windows keeps before every block of a local heap
-   * (see `global-and-local-memory` in the knowledge base): the most a request can have. So it
-   * is never the heap's whole size, which `LocalShrink` answers (`minis3`). */
-  return heap ? Math.min(Math.max(0, heap.largestFree() - 4), 0xffff) : 0;
+  /* Less six, the arena of a moveable block, where there is any (`KRNL386.EXE`
+   * seg1 `8d9c`-`8da3`; see `Heap.HEADER`). So it is never the heap's whole
+   * size, which `LocalShrink` answers (`minis3`). */
+  const largest = heap ? heap.largestFree() : 0;
+
+  return largest ? Math.min(Math.max(0, largest - 6), 0xffff) : 0;
 }

@@ -2,7 +2,8 @@
 kind: topic
 name: Dynamic data exchange
 summary: How Windows 3.1's programs talk by DDE — the WM_DDE_ messages, their atoms and shared memory, and what USER does with them — and how DDEML.DLL is built on top, its instances, windows, hooks, timers and conversations, read out of the binaries and recorded between two programs.
-probes: [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail]
+probes:
+  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail]
 ---
 
 Dynamic data exchange is two programs passing messages between their windows. The messages are `WM_DDE_*`, 3E0h to 3E8h, and what they carry is atoms for names and blocks of global memory for data. Windows 3.1 has two layers of it:
@@ -117,7 +118,7 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - The count of callbacks under way, at 2Eh, is up while the callback runs; DDEML's own calls that would make another callback read it (`DdeEnableCallback`, `DdeDisconnect`).
 - Each callback is told to the monitors with `MF_CALLBACKS`, the answer with it, but for `XTYP_MONITOR` itself (`58f8`-`5935`).
 - **`XTYP_ERROR`** is called back only when an instance's own heap of 4 KB is full (`61a8`, from `628a`): DDEML frees the 256 bytes it keeps against that (an instance's 36h), sets `DMLERR_LOW_MEMORY`, calls back `XTYP_ERROR` with 4007h in `dwData1`, and posts its window `WM_USER + D0h`, which keeps 256 bytes again once there are (`5728`-`5741`). The heap is a moveable block with `LocalInit` (`6118`), so `LocalAlloc` grows it to 64 KiB first.
-- [[measured]] [[probe:ddeheap]]: a server whose callbacks were disabled, posted one plain `WM_DDE_REQUEST` after another, each kept in its queue, was called back `XTYP_ERROR` in the 1,247th request, `dwData1` 4007h, `dwData2` nought, `DdeGetLastError` 4007h inside the callback. Twenty more requests after it brought nothing back, no acknowledgement, and left the server's last error `DMLERR_MEMORY_ERROR`, 4008h. winbox.js was called back in the 1,302nd: its local blocks take a header of two bytes where KERNEL's arena takes four ([[topic:global-and-local-memory]]).
+- [[measured]] [[probe:ddeheap]]: a server whose callbacks were disabled, posted one plain `WM_DDE_REQUEST` after another, each kept in its queue, was called back `XTYP_ERROR` in the 1,247th request, `dwData1` 4007h, `dwData2` nought, `DdeGetLastError` 4007h inside the callback. Twenty more requests after it brought nothing back, no acknowledgement, and left the server's last error `DMLERR_MEMORY_ERROR`, 4008h. Both engines are called back in the 1,247th too. Each request's block is 2Eh bytes, 52 with KERNEL's arena of four, and the heap grows to 65,504 bytes. After each growth, room too small to split is given to the last block whole ([[topic:global-and-local-memory]]). With a header of two bytes, as winbox.js had before, it was the 1,302nd.
 
 ### Timers and modal loops
 
@@ -176,5 +177,4 @@ DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), ev
 - **Freeing a task's memory as it ends**, and a module's `GMEM_DDESHARE` blocks as its last instance ends ([[probe:ddeleft]], 5 records): neither engine knows a block's owner.
 - **An atom deleted once too often**: the answer depends on KERNEL's local heap in USER's data segment, which winbox.js does not keep ([[probe:ddeleft]], 1 record).
 - USER's checks of the other messages' parameters (seg1 `afc2`-`b388`, and `af84` for the controls'): only the DDE rows are followed.
-- **The request in which an instance's heap is full** ([[probe:ddeheap]], 2 records): winbox.js's local blocks have a header of two bytes, KERNEL's arena four, so its heap holds more.
 - Atom numbers where a deleted atom's place in USER's table is taken: winbox.js gives a deleted atom's number to the next string added ([[topic:atoms]]), Windows the place in its heap that fits. Whether DDEML's `Progman` test holds after the atom was gone can differ: a first draft of [[probe:pmatom]], whose first instance ended before the connections, saw the test fail under Windows, the number taken by another name, and hold in winbox.js. Not recorded in the probe as it stands.
