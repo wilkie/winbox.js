@@ -30,7 +30,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const FIXTURE = join(__dirname, '..', '..', 'oracle', 'fixtures', 'font.json');
+const FIXTURE = join(__dirname, '..', '..', 'oracle', 'fixtures', 'font-vga.json');
 
 /** Every recorded cell height for one face, by the height asked for. */
 function heightsOf(face: string) {
