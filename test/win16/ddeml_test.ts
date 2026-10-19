@@ -72,6 +72,20 @@ describe('DDEML, WinBox own', () => {
       const test = ready(probe) ? it : it.skip;
 
       test(`${probe} agrees ${without ? 'with no DDEML.DLL' : 'with the file'}`, async () => {
+        /* Which of Program Manager's windows were shown as the installer ran,
+         * looked at before each call it made: its frame, and the group it was
+         * told to make and show. */
+        const shown = new Set<string>();
+        const watch =
+          probe === 'ddeinst'
+            ? (_call: any, _count: number, system: any) => {
+                for (const window of system.rasterDesktop?.windows ?? []) {
+                  if (window.visible) {
+                    shown.add(window.title);
+                  }
+                }
+              }
+            : null;
         const { fileSystem, win16 } = await runProbe(
           probe,
           4000,
@@ -81,6 +95,7 @@ describe('DDEML, WinBox own', () => {
           {
             without: without ? FILES : [],
             virtual: VIRTUAL.has(probe),
+            watch,
           }
         );
         const gaps = gapsOf(probe, without);
@@ -97,9 +112,18 @@ describe('DDEML, WinBox own', () => {
 
         if (probe === 'ddeinst') {
           /* An installer's session: Program Manager, started by it, made the
-           * group it was told of through WinBox's DDEML -- its
-           * file with the two items, its line in PROGMAN.INI. As
-           * `crates/winbox-web/tests/program_manager_dde.rs`. */
+           * group it was told of through WinBox's DDEML -- its window shown,
+           * its file with the two items, its line in PROGMAN.INI. As
+           * `crates/winbox-web/tests/program_manager_dde.rs`, which looks for
+           * the same two windows. Read out of `PROGMAN.EXE`: its frame, of
+           * class `Progman` and titled "Program Manager", is the window that
+           * answers DDE (seg2 `228c`-`2296`, seg7 `1416`); `[CreateGroup]`
+           * makes the group's window and makes it the current group (seg7
+           * `036f`, seg4 `2662`-`2826`), and `[ShowGroup]` shows it with
+           * `ShowWindow` (seg7 `0821`). */
+          expect(shown.has('Program Manager')).toBe(true);
+          expect(shown.has('WinBox Games')).toBe(true);
+
           const read = async (parts: string[]) => {
             const opened = await fileSystem.open(parts);
 
