@@ -39,6 +39,11 @@ pub struct KeptModule {
     pub data: usize,
     /// Its stubs' segment's descriptor, once a program links to it.
     pub stubs: Option<usize>,
+    /// For one of WinBox's own libraries that has a file, used with no
+    /// file: its count, as its file's would be, and what its file would
+    /// have brought (`own_modules::use_own`).
+    pub usage: u32,
+    pub brought: Vec<crate::loader::Held>,
 }
 
 impl KeptModule {
@@ -838,6 +843,8 @@ impl System {
             database,
             data,
             stubs: None,
+            usage: 0,
+            brought: Vec::new(),
         });
     }
 

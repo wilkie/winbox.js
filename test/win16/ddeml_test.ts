@@ -34,12 +34,11 @@ const PROBE_GAPS: Record<string, string[]> = {
 };
 /**
  * The records more that do not agree with no `DDEML.DLL` on the drive:
- * WinBox's own DDEML, with no file, is no library that is loaded and let
- * go, so `GetModuleHandle` finds no `DDEML` while a program that imports it
- * runs, and nothing lets its data go when that program ends (`ddewep`). As
- * `crates/winbox-win16/tests/ddeml.rs`'s `WITHOUT_FILE`.
+ * none. WinBox's own DDEML, with no file, is counted as its file would be
+ * (`library.ts`'s `useOwn`). As `crates/winbox-win16/tests/ddeml.rs`'s
+ * `WITHOUT_FILE`.
  */
-const WITHOUT_GAPS: Record<string, string[]> = { ddewep: ['state', 'LoadLibrary'] };
+const WITHOUT_GAPS: Record<string, string[]> = {};
 /** As `replay.ts`'s `VIRTUAL_CLOCK`: these run on the instructions' clock. */
 const VIRTUAL = new Set(['ddexact', 'progdde', 'ddeterm', 'ddenest']);
 /** As `replay.ts`'s `SECONDS`. */

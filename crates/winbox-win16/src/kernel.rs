@@ -389,8 +389,8 @@ fn lclose(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// A module's handle by its name, or by its file's name where the name has
-/// a dot; nought for one not loaded, or one winbox.js keeps only as names
-/// until its file is loaded.
+/// a dot; nought for one not loaded, or one of WinBox's own libraries
+/// that has a file while it is not in use.
 fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name = args.dword(system);
 
@@ -432,10 +432,12 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         system.kept_named(&wanted).map(|kept| &system.kept[kept])
     };
 
-    // COMMDLG, VER and LZEXPAND are kept only as names, until a file of
-    // theirs is loaded.
+    // COMMDLG, VER, LZEXPAND and DDEML are there only while in use: their
+    // file's, or counted as their file would be with no file
+    // (`own_modules::use_own`): DDEML while a program that imports it runs
+    // (**recorded** by `ddewep`).
     Ok(Answer::Word(kept.map_or(0, |kept| {
-        if crate::own_modules::own_with_file(kept.module.name) {
+        if crate::own_modules::own_with_file(kept.module.name) && kept.usage == 0 {
             0
         } else {
             kept.handle()

@@ -14,6 +14,7 @@ use crate::engine::Engine;
 use crate::handles::Object;
 use crate::kernel::start_libraries;
 use crate::linker::kernel_constant;
+use crate::loader::Held;
 use crate::system::{STEP, System};
 
 /// How many `MakeProcInstance` thunks a block holds.
@@ -100,6 +101,12 @@ pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, 
 
     Ok(Answer::Word(match system.handles.resolve(handle) {
         Some(Object::Library(module)) => system.modules[module].usage as u16,
+        // One of WinBox's own with no file: counted as its file would be.
+        Some(Object::Kept(kept))
+            if crate::own_modules::own_with_file(system.kept[kept].module.name) =>
+        {
+            system.kept[kept].usage as u16
+        }
         Some(Object::Task(program)) => system.running_instances(program) as u16,
         // Anything else it can name, 1, as the TypeScript engine answers.
         Some(_) => 1,
@@ -383,7 +390,7 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         .flatten()
         .max();
     let name = slash.map_or(text, |at| &text[at + 1..]).to_string();
-    let found = {
+    let found: (Result<usize, u16>, Vec<usize>) = 'found: {
         let mut system = engine.system();
         let file_of = |path: &str| path.rsplit('\\').next().unwrap_or("").to_ascii_uppercase();
 
@@ -427,24 +434,7 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
 
             path.rsplit_once('\\').map(|(folder, _)| folder.to_string())
         });
-        let places: Vec<String> = match slash {
-            Some(at) => {
-                let end = if text.as_bytes()[at] == b':' {
-                    at + 1
-                } else {
-                    at
-                };
-
-                vec![if end == 0 {
-                    "\\".to_string()
-                } else {
-                    text[..end].to_string()
-                }]
-            }
-            // A name alone, where KERNEL looks (`search.rs`), the task's
-            // program's directory fourth (`search`).
-            None => system.search_places(beside.as_deref(), None),
-        };
+        let places = library_places(&system, text, slash, beside.as_deref());
         let mut folder_found = false;
         let mut found = None;
 
@@ -462,17 +452,18 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         }
 
         let Some((path, bytes)) = found else {
-            // `COMMDLG`, `VER` or `LZEXPAND` with no file: WinBox's
-            // (`own_modules.rs`).
-            if let Some(instance) = crate::own_modules::without_file(&mut system, &name) {
-                return Ok(instance);
+            // `COMMDLG`, `VER`, `LZEXPAND` or `DDEML` with no file:
+            // WinBox's, counted as its file would be (`own_modules.rs`).
+            match crate::own_modules::without_file(&mut system, &name, beside.as_deref()) {
+                Some((instance, order)) => break 'found (Err(instance), order),
+                None => {
+                    return Ok(if slash.is_some() && !folder_found {
+                        3
+                    } else {
+                        2
+                    });
+                }
             }
-
-            return Ok(if slash.is_some() && !folder_found {
-                3
-            } else {
-                2
-            });
         };
 
         // Already loaded from this file: the same handle, counted once more.
@@ -498,11 +489,43 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
         let mut order = Vec::new();
         let library = system.load_found(executable, &base, &path, beside.as_deref(), &mut order);
 
-        (library, order)
+        (Ok(library), order)
     };
 
     start_libraries(engine, &found.1).await?;
-    Ok(engine.system().modules[found.0].instance)
+    // A library loaded from its file, or one of WinBox's own with no file
+    // by its instance.
+    Ok(match found.0 {
+        Ok(library) => engine.system().modules[library].instance,
+        Err(instance) => instance,
+    })
+}
+
+/// Where `LoadLibrary` looks for a file: the directory a name gives, or for
+/// a name alone where KERNEL looks (`search.rs`), the task's program's
+/// directory fourth (`search`).
+fn library_places(
+    system: &System,
+    text: &str,
+    slash: Option<usize>,
+    beside: Option<&str>,
+) -> Vec<String> {
+    match slash {
+        Some(at) => {
+            let end = if text.as_bytes()[at] == b':' {
+                at + 1
+            } else {
+                at
+            };
+
+            vec![if end == 0 {
+                "\\".to_string()
+            } else {
+                text[..end].to_string()
+            }]
+        }
+        None => system.search_places(beside, None),
+    }
 }
 
 /// A library let go, as `FreeLibrary` does. **Recorded** by `freelib`:
@@ -525,6 +548,25 @@ pub fn free_library(engine: &Engine, mut args: Args) -> Later<'_> {
 }
 
 pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<(), Stop> {
+    // One of WinBox's own with no file, by its instance or its module's
+    // handle: counted down as its file would be.
+    let own = {
+        let mut system = engine.system();
+
+        match system.handles.resolve(handle) {
+            Some(Object::Kept(kept))
+                if crate::own_modules::own_with_file(system.kept[kept].module.name) =>
+            {
+                Some(crate::own_modules::release_own(&mut system, kept))
+            }
+            _ => None,
+        }
+    };
+
+    if let Some(brought) = own {
+        return let_go(engine, brought).await;
+    }
+
     let (wep, brought) = {
         let mut system = engine.system();
         let Some(Object::Library(library)) = system.handles.resolve(handle) else {
@@ -551,10 +593,6 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
             u32::from(segment_selector(segment)) << 16 | u32::from(offset)
         });
         let brought = module.brought.clone();
-        let brought: Vec<u16> = brought
-            .iter()
-            .map(|&other| system.modules[other].instance)
-            .collect();
 
         (wep, brought)
     };
@@ -583,8 +621,24 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
         system.handles.free(module_handle);
     }
 
-    for other in brought {
-        Box::pin(free_library_handle(engine, other)).await?;
+    let_go(engine, brought).await
+}
+
+/// The modules a library held, let go as `FreeLibrary` lets one go.
+async fn let_go(engine: &Engine, brought: Vec<Held>) -> Result<(), Stop> {
+    for held in brought {
+        match held {
+            Held::Library(other) => {
+                let instance = engine.system().modules[other].instance;
+
+                Box::pin(free_library_handle(engine, instance)).await?;
+            }
+            Held::Own(kept) => {
+                let more = crate::own_modules::release_own(&mut engine.system(), kept);
+
+                Box::pin(let_go(engine, more)).await?;
+            }
+        }
     }
 
     Ok(())
@@ -598,8 +652,17 @@ impl System {
     /// it started, is found again from its file as the program starts next
     /// time. Not followed: the `WEP` of one going, which would be called
     /// with the task already ended. As `releaseLibraries`.
-    pub(crate) fn release_libraries(&mut self, libraries: &[usize]) {
-        for &library in libraries {
+    pub(crate) fn release_libraries(&mut self, libraries: &[Held]) {
+        for &held in libraries {
+            let library = match held {
+                Held::Library(library) => library,
+                Held::Own(kept) => {
+                    let more = crate::own_modules::release_own(self, kept);
+
+                    self.release_libraries(&more);
+                    continue;
+                }
+            };
             let module = &mut self.modules[library];
 
             if module.usage == 0 {

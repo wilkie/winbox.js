@@ -24,7 +24,7 @@ pub struct Module {
     /// Its count, as `GetModuleUsage` answers it: a load or an import each.
     pub usage: u32,
     /// The libraries it counted when it was loaded, to be let go with it.
-    pub brought: Vec<usize>,
+    pub brought: Vec<Held>,
     /// A library's instance, as `LoadLibrary` answers it and its entry
     /// point is given it, and its module's handle: another number, for the
     /// same library. Nought for a program.
@@ -72,6 +72,17 @@ impl Module {
 
         (segment.length.max(u32::from(segment.min_allocation)) + 1) & !1
     }
+}
+
+/// What a program or a library holds of the modules it imported, to let
+/// go with it: a library loaded from its file, by its index among the
+/// modules; or one of WinBox's own whose file is not there, by its index
+/// among the kept modules (`own_modules::use_own`). As `library.ts`'s
+/// `Held`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Held {
+    Library(usize),
+    Own(usize),
 }
 
 /// Modules winbox.js keeps whose file on the disk is loaded beside them
@@ -160,36 +171,43 @@ impl System {
         order: &mut Vec<usize>,
     ) {
         for name in Self::import_names(&self.modules[module].executable) {
-            if let Some(already) = self.module_named(&name)
-                && already != module
-                && self.modules[already].executable.header.library()
-            {
-                self.modules[already].usage += 1;
-                self.modules[module].brought.push(already);
-                continue;
+            if let Some(held) = self.import_one(&name, Some(module), beside, order) {
+                self.modules[module].brought.push(held);
             }
-
-            if !self.wants_file(&name) {
-                continue;
-            }
-
-            let Some((path, bytes)) = self.find_library(&name, beside) else {
-                // `COMMDLG` with no file: WinBox's, its messages registered
-                // as its file's entry point registers them (`commdlg/`).
-                if name.eq_ignore_ascii_case(crate::commdlg::NAME) {
-                    crate::commdlg::start(self);
-                }
-
-                continue;
-            };
-            let Ok(executable) = Executable::parse(bytes) else {
-                continue;
-            };
-
-            let library = self.load_found(executable, &name, &path, beside, order);
-
-            self.modules[module].brought.push(library);
         }
+    }
+
+    /// A module imported by its name, loaded or counted as KERNEL loads an
+    /// import: what the importer then holds of it. As `importOne`.
+    pub(crate) fn import_one(
+        &mut self,
+        name: &str,
+        importer: Option<usize>,
+        beside: Option<&str>,
+        order: &mut Vec<usize>,
+    ) -> Option<Held> {
+        if let Some(already) = self.module_named(name)
+            && Some(already) != importer
+            && self.modules[already].executable.header.library()
+        {
+            self.modules[already].usage += 1;
+            return Some(Held::Library(already));
+        }
+
+        if !self.wants_file(name) {
+            return None;
+        }
+
+        let Some((path, bytes)) = self.find_library(name, beside) else {
+            // One of WinBox's own with no file, counted as its file would
+            // be (`own_modules::use_own`).
+            return crate::own_modules::use_own(self, name, beside, order);
+        };
+        let executable = Executable::parse(bytes).ok()?;
+
+        Some(Held::Library(
+            self.load_found(executable, name, &path, beside, order),
+        ))
     }
 
     /// A library a module imports, found by its name with `.DLL` added

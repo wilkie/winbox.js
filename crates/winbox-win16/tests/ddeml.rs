@@ -29,11 +29,9 @@ const PROBES: &[(&str, &[&str])] = &[
 ];
 
 /// The records more that do not agree with no `DDEML.DLL` on the drive, as
-/// `test/win16/ddeml_test.ts`'s `WITHOUT_GAPS`: WinBox's own DDEML, with no
-/// file, is no library that is loaded and let go, so `GetModuleHandle`
-/// finds no `DDEML` while a program that imports it runs, and nothing lets
-/// its data go when that program ends (`ddewep`).
-const WITHOUT_FILE: &[(&str, &[&str])] = &[("ddewep", &["state", "LoadLibrary"])];
+/// `test/win16/ddeml_test.ts`'s `WITHOUT_GAPS`: none. WinBox's own DDEML,
+/// with no file, is counted as its file would be (`own_modules::use_own`).
+const WITHOUT_FILE: &[(&str, &[&str])] = &[];
 
 /// A probe run, with or without `DDEML.DLL` on the drive: how it stopped,
 /// its records, and whether a library named `DDEML` was loaded from a file.

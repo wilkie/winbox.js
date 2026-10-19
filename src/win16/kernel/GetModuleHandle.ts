@@ -1,6 +1,6 @@
 'use strict';
 
-import { wantsFile } from '../library.js';
+import { ownInUse, wantsFile } from '../library.js';
 
 /**
  * The handle of a module the system has. **Recorded** by the `freelib` probe
@@ -25,9 +25,11 @@ export function GetModuleHandle(this: any, lpszModule: any) {
 
   const module = name.includes('.') ? this.modules.fromFileName(name) : this.modules.fromName(name);
 
-  /* A module winbox.js keeps only as names, until its file is loaded, is not
-   * loaded: `COMMDLG` is not there until something needs it. */
-  if (!module || wantsFile(this, module.name)) {
+  /* One of WinBox's own libraries that has a file, `COMMDLG` or `DDEML`, is
+   * there only while it is in use, its file's or counted as its file would
+   * be with no file (`library.ts`): `DDEML` while a program that imports it
+   * runs (**recorded** by `ddewep`). */
+  if (!module || (wantsFile(this, module.name) && !ownInUse(this, module.name))) {
     return 0;
   }
 

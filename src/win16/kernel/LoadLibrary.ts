@@ -1,6 +1,7 @@
 'use strict';
 
-import { freeLibrary, Library, loadLibrary } from '../library.js';
+import { OWN_WITH_FILE } from '../own-modules.js';
+import { freeLibrary, Library, loadLibrary, ownUsage, wantsFile } from '../library.js';
 
 /**
  * A library loaded by a program: its instance handle, or an error number
@@ -38,6 +39,15 @@ export function GetModuleUsage(this: any, hinst: number) {
 
   if (item instanceof Library) {
     return item.usage;
+  }
+
+  /* One of WinBox's own with no file: counted as its file would be. */
+  if (
+    item &&
+    OWN_WITH_FILE.includes(String(item.name).toUpperCase()) &&
+    wantsFile(this, item.name)
+  ) {
+    return ownUsage(this, item.name);
   }
 
   /* A program's: its instances running (`tasks2`), nought once the last has

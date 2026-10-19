@@ -5,6 +5,7 @@
 //! `src/win16/own-modules.ts`.
 
 use crate::call::Implementation;
+use crate::loader::Held;
 use crate::modules::Kept;
 use crate::system::{STEP, System};
 
@@ -32,18 +33,94 @@ pub(crate) fn by_file(file: &str) -> Option<&'static str> {
 }
 
 /// One of these loaded by its file's name with no file there: WinBox's,
-/// found by its file's name as the other modules it keeps are, its
-/// instance; `COMMDLG`'s messages registered as its file's entry point
-/// registers them (`commdlg/`).
-pub(crate) fn without_file(system: &mut System, file: &str) -> Option<u16> {
+/// found by its file's name as the other modules it keeps are, counted as
+/// its file would be (`use_own`): its instance, and the libraries whose
+/// entry points are to run.
+pub(crate) fn without_file(
+    system: &mut System,
+    file: &str,
+    beside: Option<&str>,
+) -> Option<(u16, Vec<usize>)> {
     let own = by_file(file)?;
     let kept = system.kept_named(own)?;
+    let mut order = Vec::new();
 
-    if own == crate::commdlg::NAME {
+    use_own(system, own, beside, &mut order);
+    Some((system.kept[kept].instance(), order))
+}
+
+/// The modules each of these libraries' files imports that are not among
+/// those winbox.js keeps alone, from each file's module reference table:
+/// `VER.DLL` imports `LZEXPAND`, beside KERNEL, USER and KEYBOARD.
+/// `COMMDLG.DLL`, `DDEML.DLL` and `LZEXPAND.DLL` import only KERNEL, GDI,
+/// USER and KEYBOARD. As `library.ts`'s `OWN_IMPORTS`.
+const OWN_IMPORTS: [(&str, &[&str]); 1] = [(crate::ver::NAME, &[crate::lzexpand::NAME])];
+
+/// One of these with no file on the drive, loaded by an import or by
+/// `LoadLibrary`: counted as its file would be, each import and each load
+/// once more, each `FreeLibrary` and each importer's end once less, and
+/// `GetModuleHandle` finding it while the count is not nought
+/// (`kb/guides/without-windows.md`; **recorded** with the file by
+/// `ddewep`). Loaded afresh, it brings what its file imports, and
+/// `COMMDLG`'s data is the file's as it starts, its messages registered as
+/// its file's entry point registers them (`commdlg/`). What the importer
+/// holds of it; none for a name that is not one of these. As `useOwn`.
+pub(crate) fn use_own(
+    system: &mut System,
+    name: &str,
+    beside: Option<&str>,
+    order: &mut Vec<usize>,
+) -> Option<Held> {
+    if !own_with_file(name) {
+        return None;
+    }
+
+    let kept = system.kept_named(name)?;
+
+    system.kept[kept].usage += 1;
+
+    if system.kept[kept].usage > 1 {
+        return Some(Held::Own(kept));
+    }
+
+    let own = system.kept[kept].module.name;
+
+    for (importer, imports) in OWN_IMPORTS {
+        if importer.eq_ignore_ascii_case(own) {
+            for other in imports {
+                if let Some(held) = system.import_one(other, None, beside, order) {
+                    system.kept[kept].brought.push(held);
+                }
+            }
+        }
+    }
+
+    if own.eq_ignore_ascii_case(crate::commdlg::NAME) {
+        crate::commdlg::print_loaded(system);
         crate::commdlg::start(system);
     }
 
-    Some(system.kept[kept].instance())
+    Some(Held::Own(kept))
+}
+
+/// One of these with no file let go once: what its file would have
+/// brought, once the count reaches nought and its data goes as the file's
+/// goes (`freed_named`); else nothing. As `releaseOwn`.
+pub(crate) fn release_own(system: &mut System, kept: usize) -> Vec<Held> {
+    if system.kept[kept].usage == 0 {
+        return Vec::new();
+    }
+
+    system.kept[kept].usage -= 1;
+
+    if system.kept[kept].usage > 0 {
+        return Vec::new();
+    }
+
+    let name = system.kept[kept].module.name;
+
+    freed_named(system, name);
+    std::mem::take(&mut system.kept[kept].brought)
 }
 
 /// The function that answers an export of `VER`'s, `LZEXPAND`'s or
@@ -87,10 +164,14 @@ pub(crate) fn redirect(system: &mut System, module: usize, ordinal: u16) -> Opti
 /// it its data segment, which WinBox's own stands for. DDEML's starts again
 /// from its file's data when loaded again (`ddewep`). As `ownFreed`.
 pub(crate) fn freed(system: &mut System, library: usize) {
-    if system.modules[library]
-        .name
-        .eq_ignore_ascii_case(crate::ddeml::NAME)
-    {
+    let name = system.modules[library].name.clone();
+
+    freed_named(system, &name);
+}
+
+/// One of these let go, by its name, with its file or without.
+fn freed_named(system: &mut System, name: &str) {
+    if name.eq_ignore_ascii_case(crate::ddeml::NAME) {
         crate::ddeml::freed(system);
     }
 }

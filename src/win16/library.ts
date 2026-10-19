@@ -31,7 +31,7 @@ export class Library {
   /** Its count, as `GetModuleUsage` answers it: a load or an import each. */
   usage = 1;
   /** The libraries it counted when it was loaded, to be let go with it. */
-  brought: Library[] = [];
+  brought: Held[] = [];
 
   constructor(executable: any, loader: any) {
     this.executable = executable;
@@ -133,6 +133,109 @@ export async function missingLibrary(system: any, executable: any, beside: strin
 }
 
 /**
+ * What a program or a library holds of the modules it imported, to let go
+ * with it: a library loaded from its file, or the name of one of WinBox's
+ * own whose file is not there (`OwnUse`).
+ */
+export type Held = Library | string;
+
+/**
+ * One of WinBox's own libraries that has a file -- `COMMDLG`, `VER`,
+ * `LZEXPAND`, `DDEML` -- used with no file on the drive, counted as its file
+ * would be: each import and each `LoadLibrary` once more, each `FreeLibrary`
+ * and each importer's end once less, `GetModuleHandle` finding it while the
+ * count is not nought (`kb/guides/without-windows.md`). At nought its data
+ * goes as the file's would (`ownFreed`), and what its file would have
+ * brought is let go. **Recorded** with the file by `ddewep`.
+ */
+interface OwnUse {
+  count: number;
+  brought: Held[];
+}
+
+/**
+ * The modules each of those libraries' files imports that are not among
+ * those winbox.js keeps alone, from each file's module reference table:
+ * `VER.DLL` imports `LZEXPAND`, beside KERNEL, USER and KEYBOARD.
+ * `COMMDLG.DLL`, `DDEML.DLL` and `LZEXPAND.DLL` import only KERNEL, GDI,
+ * USER and KEYBOARD.
+ */
+const OWN_IMPORTS: Record<string, string[]> = { VER: ['LZEXPAND'] };
+
+/** Whether one of WinBox's own libraries with no file is in use, counted as its file would be. */
+export function ownInUse(system: any, name: string) {
+  return (system._ownUses?.[String(name).toUpperCase()]?.count ?? 0) > 0;
+}
+
+/** The count of one of WinBox's own libraries with no file, as `GetModuleUsage` answers it. */
+export function ownUsage(system: any, name: string): number {
+  return system._ownUses?.[String(name).toUpperCase()]?.count ?? 0;
+}
+
+/**
+ * One of WinBox's own libraries with no file, loaded: counted once more,
+ * and `held` holds it. Loaded afresh, it brings what its file imports, and
+ * `COMMDLG`'s data is the file's as it starts, its messages registered as
+ * its file's entry point registers them (`commdlg/`).
+ */
+async function useOwn(
+  system: any,
+  name: string,
+  beside: string | null,
+  order: Library[],
+  held: Held[]
+) {
+  const uses: Record<string, OwnUse> = (system._ownUses ??= {});
+  const use = uses[name];
+
+  held.push(name);
+
+  if (use?.count) {
+    use.count++;
+    return;
+  }
+
+  const fresh: OwnUse = { count: 1, brought: [] };
+
+  uses[name] = fresh;
+
+  for (const other of OWN_IMPORTS[name] ?? []) {
+    await importOne(system, other, beside, order, fresh.brought);
+  }
+
+  if (name === 'COMMDLG') {
+    printLoaded(system);
+    startCommDlg(system);
+  }
+}
+
+/**
+ * One of WinBox's own libraries with no file let go once: what its file
+ * would have brought, once the count reaches nought and its data goes, as
+ * the file's goes (`ownFreed`); else nothing.
+ */
+function releaseOwn(system: any, name: string): Held[] {
+  const use: OwnUse | undefined = system._ownUses?.[name];
+
+  if (!use?.count) {
+    return [];
+  }
+
+  use.count--;
+
+  if (use.count > 0) {
+    return [];
+  }
+
+  const brought = use.brought;
+
+  use.brought = [];
+  ownFreed(system, name);
+
+  return brought;
+}
+
+/**
  * Loads the libraries a module imports that are to come from their files,
  * and theirs, each once: placed, registered under its name, and linked, in
  * the order their entry points are to run -- a library before the ones that
@@ -143,38 +246,48 @@ export async function loadLibrariesFor(
   loader: any,
   beside: string | null,
   order: Library[] = [],
-  brought: Library[] = []
+  brought: Held[] = []
 ) {
   for (const name of importNames(loader)) {
-    /* A library already loaded from its file is counted once more. */
-    const already = libraryNamed(system, name);
-
-    if (already) {
-      already.usage++;
-      brought.push(already);
-      continue;
-    }
-
-    if (!wantsFile(system, name)) {
-      continue;
-    }
-
-    const found = await findFile(system, name, beside);
-
-    if (!found) {
-      /* `COMMDLG` with no file: WinBox's, its messages registered as its
-       * file's entry point registers them (`commdlg/`). */
-      if (name === 'COMMDLG') {
-        startCommDlg(system);
-      }
-
-      continue;
-    }
-
-    brought.push(await loadFound(system, name, found, beside, order));
+    await importOne(system, name, beside, order, brought);
   }
 
   return order;
+}
+
+/** A module imported by its name, loaded or counted as KERNEL loads an import, and held by `brought`. */
+async function importOne(
+  system: any,
+  name: string,
+  beside: string | null,
+  order: Library[],
+  brought: Held[]
+) {
+  /* A library already loaded from its file is counted once more. */
+  const already = libraryNamed(system, name);
+
+  if (already) {
+    already.usage++;
+    brought.push(already);
+    return;
+  }
+
+  if (!wantsFile(system, name)) {
+    return;
+  }
+
+  const found = await findFile(system, name, beside);
+
+  if (!found) {
+    /* One of WinBox's own with no file, counted as its file would be. */
+    if (OWN_WITH_FILE.includes(name)) {
+      await useOwn(system, name, beside, order, brought);
+    }
+
+    return;
+  }
+
+  brought.push(await loadFound(system, name, found, beside, order));
 }
 
 /** A library read from its file, placed, registered and linked, its own imports first; added to `order`. */
@@ -351,9 +464,10 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
       : 0;
 
     if (instance) {
-      if (own === 'COMMDLG') {
-        startCommDlg(system);
-      }
+      const order: Library[] = [];
+
+      await useOwn(system, own!, beside, order, []);
+      await system.startLibraries({ libraries: order });
 
       return instance;
     }
@@ -457,6 +571,18 @@ function libraryNamed(system: any, name: string): Library | null {
 export async function freeLibrary(system: any, handle: number) {
   const library = system.handles.resolve(handle);
 
+  /* One of WinBox's own with no file, by its instance or its module's
+   * handle: counted down as its file would be. */
+  const own = String(library?.name ?? '').toUpperCase();
+
+  if (!(library instanceof Library) && OWN_WITH_FILE.includes(own) && wantsFile(system, own)) {
+    for (const other of releaseOwn(system, own)) {
+      await letGo(system, other);
+    }
+
+    return;
+  }
+
   if (!(library instanceof Library) || library.usage <= 0) {
     return;
   }
@@ -482,8 +608,21 @@ export async function freeLibrary(system: any, handle: number) {
   ownFreed(system, library.loader?.name);
 
   for (const other of library.brought) {
-    await freeLibrary(system, other.instance);
+    await letGo(system, other);
   }
+}
+
+/** A module a library held, let go as `FreeLibrary` lets one go. */
+async function letGo(system: any, held: Held) {
+  if (typeof held === 'string') {
+    for (const other of releaseOwn(system, held)) {
+      await letGo(system, other);
+    }
+
+    return;
+  }
+
+  await freeLibrary(system, held.instance);
 }
 
 /**
@@ -495,8 +634,13 @@ export async function freeLibrary(system: any, handle: number) {
  * followed: the `WEP` of one going, which would be called with the task
  * already ended.
  */
-export function releaseLibraries(system: any, libraries: Library[]) {
+export function releaseLibraries(system: any, libraries: Held[]) {
   for (const library of libraries) {
+    if (typeof library === 'string') {
+      releaseLibraries(system, releaseOwn(system, library));
+      continue;
+    }
+
     if (library.usage <= 0) {
       continue;
     }
