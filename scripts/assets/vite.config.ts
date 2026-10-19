@@ -17,6 +17,7 @@ export default defineConfig({
       input: {
         'make-assets': 'scripts/assets/make-assets.mjs',
         'known-media': 'scripts/assets/known-media.mjs',
+        'survey-installs': 'scripts/assets/survey-installs.mjs',
       },
     },
   },

@@ -1,0 +1,3712 @@
+{
+  "about": "What Windows 3.1's Setup put on C: for each display, read off the oracle's installations and grounded in SETUP.INF: written by scripts/assets/survey-installs.mjs, never by hand.",
+  "displays": {
+    "8514": {
+      "drive": "drive-c-8514",
+      "profile": "8514",
+      "driver": "8514.DRV",
+      "changed": "Setup run again on the VGA's installation, 8514/a chosen (install-windows.mjs, changeDisplay): the order of SYSTEM.INI's lines and the VGA's files it left are that run's",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/8514FIX.FON",
+          "SETUP.INF [fixedfonts] 2:8514fix.fon,\"8514/a (1024x768) resolution Fixed System Font\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/8514OEM.FON",
+          "SETUP.INF [oemfonts] 2:8514oem.fon,\"8514/a (1024x768) resolution Terminal Font (USA/Europe)\", \"100,120,120\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/8514SYS.FON",
+          "SETUP.INF [sysfonts] 1:8514sys.fon,\"8514/a (1024x768) resolution System Font\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/COURF.FON",
+          "SETUP.INF [fonts] 5:COURF.FON, \"Courier 10,12,15 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFF.FON",
+          "SETUP.INF [fonts] 5:SERIFF.FON, \"MS Serif 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SMALLF.FON",
+          "SETUP.INF [fonts] 5:SMALLF.FON, \"Small Fonts (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFF.FON",
+          "SETUP.INF [fonts] 5:SSERIFF.FON, \"MS Sans Serif 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLF.FON",
+          "SETUP.INF [fonts] 5:SYMBOLF.FON, \"Symbol 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1 -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI 8514", "WINDOWS/SYSTEM.INI": "SYSTEM.INI 8514" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "vga": {
+      "drive": "drive-c",
+      "profile": "vga",
+      "driver": "VGA.DRV",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI vga", "WINDOWS/SYSTEM.INI": "SYSTEM.INI vga" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "svga": {
+      "drive": "drive-c-svga",
+      "profile": "svga",
+      "driver": "SUPERVGA.DRV",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI vga", "WINDOWS/SYSTEM.INI": "SYSTEM.INI svga" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "ega": {
+      "drive": "drive-c-ega",
+      "profile": "egahires",
+      "driver": "EGA.DRV",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALB.FON",
+          "SETUP.INF [fonts] 5:ARIALB.FON, \"Arial 8,10 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURB.FON",
+          "SETUP.INF [fonts] 5:COURB.FON, \"Courier 8,10,12,15 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/EGAFIX.FON",
+          "SETUP.INF [fixedfonts] 1:egafix.fon,\"EGA (640x350) resolution Fixed System Font\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/EGAOEM.FON",
+          "SETUP.INF [oemfonts] 1:egaoem.fon,\"EGA (640x350) resolution Terminal Font (USA/Europe)\", \"133,96,72\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/EGASYS.FON",
+          "SETUP.INF [sysfonts] 1:egasys.fon,\"EGA (640x350) resolution System Font\", \"133,96,72\""
+        ],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFB.FON",
+          "SETUP.INF [fonts] 5:SERIFB.FON, \"MS Serif 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLB.FON",
+          "SETUP.INF [fonts] 5:SMALLB.FON, \"Small Fonts (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFB.FON",
+          "SETUP.INF [fonts] 5:SSERIFB.FON, \"MS Sans Serif 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLB.FON",
+          "SETUP.INF [fonts] 5:SYMBOLB.FON, \"Symbol 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESB.FON",
+          "SETUP.INF [fonts] 5:TIMESB.FON, \"Times New Roman 8,10 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI ega", "WINDOWS/SYSTEM.INI": "SYSTEM.INI ega" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "hercules": {
+      "drive": "drive-c-hercules",
+      "profile": "hercules",
+      "driver": "HERCULES.DRV",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALB.FON",
+          "SETUP.INF [fonts] 5:ARIALB.FON, \"Arial 8,10 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURB.FON",
+          "SETUP.INF [fonts] 5:COURB.FON, \"Courier 8,10,12,15 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        [
+          "WINDOWS/SYSTEM/EGAFIX.FON",
+          "SETUP.INF [fixedfonts] 1:egafix.fon,\"EGA (640x350) resolution Fixed System Font\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/EGAOEM.FON",
+          "SETUP.INF [oemfonts] 1:egaoem.fon,\"EGA (640x350) resolution Terminal Font (USA/Europe)\", \"133,96,72\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/EGASYS.FON",
+          "SETUP.INF [sysfonts] 1:egasys.fon,\"EGA (640x350) resolution System Font\", \"133,96,72\""
+        ],
+        ["WINDOWS/SYSTEM/HERCWOA.FON", "SETUP.INF [herc.3gr] 2:HERCWOA.FON,2:HERC850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFB.FON",
+          "SETUP.INF [fonts] 5:SERIFB.FON, \"MS Serif 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLB.FON",
+          "SETUP.INF [fonts] 5:SMALLB.FON, \"Small Fonts (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFB.FON",
+          "SETUP.INF [fonts] 5:SSERIFB.FON, \"MS Sans Serif 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLB.FON",
+          "SETUP.INF [fonts] 5:SYMBOLB.FON, \"Symbol 8,10,12,14,18,24 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESB.FON",
+          "SETUP.INF [fonts] 5:TIMESB.FON, \"Times New Roman 8,10 (EGA res)\", \"133,96,72\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI ega", "WINDOWS/SYSTEM.INI": "SYSTEM.INI hercules" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "vga256": {
+      "drive": "drive-c-vga256",
+      "profile": "8et4480",
+      "oem": true,
+      "driver": "SVGA256.DRV",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": {
+        "WINDOWS/WIN.INI": "WIN.INI vga256",
+        "WINDOWS/SYSTEM.INI": "SYSTEM.INI vga256"
+      },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "xga256": {
+      "drive": "drive-c-xga256",
+      "profile": "xgalg",
+      "driver": "XGA.DRV",
+      "changed": "Setup run again on the VGA's installation, XGA (Large fonts) chosen (install-windows.mjs, changeDisplay): the order of SYSTEM.INI's lines and the VGA's files it left are that run's",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/8514FIX.FON",
+          "SETUP.INF [fixedfonts] 2:8514fix.fon,\"8514/a (1024x768) resolution Fixed System Font\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/8514OEM.FON",
+          "SETUP.INF [oemfonts] 2:8514oem.fon,\"8514/a (1024x768) resolution Terminal Font (USA/Europe)\", \"100,120,120\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/8514SYS.FON",
+          "SETUP.INF [sysfonts] 1:8514sys.fon,\"8514/a (1024x768) resolution System Font\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/COURF.FON",
+          "SETUP.INF [fonts] 5:COURF.FON, \"Courier 10,12,15 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFF.FON",
+          "SETUP.INF [fonts] 5:SERIFF.FON, \"MS Serif 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SMALLF.FON",
+          "SETUP.INF [fonts] 5:SMALLF.FON, \"Small Fonts (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFF.FON",
+          "SETUP.INF [fonts] 5:SSERIFF.FON, \"MS Sans Serif 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLF.FON",
+          "SETUP.INF [fonts] 5:SYMBOLF.FON, \"Symbol 8,10,12,14,18,24 (8514/a res)\", \"100,120,120\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1 -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\" -- left by the VGA's installation the display was changed from"
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI 8514", "WINDOWS/SYSTEM.INI": "SYSTEM.INI xga256" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "8514s": {
+      "drive": "drive-c-8514s",
+      "profile": "8514s",
+      "driver": "8514.DRV",
+      "changed": "Setup run again on the VGA's installation, 8514/a (Small fonts) chosen (install-windows.mjs, changeDisplay): the order of SYSTEM.INI's lines and the VGA's files it left are that run's",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI 8514s", "WINDOWS/SYSTEM.INI": "SYSTEM.INI 8514s" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "xga256s": {
+      "drive": "drive-c-xga256s",
+      "profile": "xgasm",
+      "driver": "XGA.DRV",
+      "changed": "Setup run again on the VGA's installation, XGA (Small fonts) chosen (install-windows.mjs, changeDisplay): the order of SYSTEM.INI's lines and the VGA's files it left are that run's",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": {
+        "WINDOWS/WIN.INI": "WIN.INI 8514s",
+        "WINDOWS/SYSTEM.INI": "SYSTEM.INI xga256s"
+      },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    },
+    "xga640": {
+      "drive": "drive-c-xga640",
+      "profile": "xgalo",
+      "driver": "XGA.DRV",
+      "changed": "Setup run again on the VGA's installation, XGA (640x480, 256 colors) chosen (install-windows.mjs, changeDisplay): the order of SYSTEM.INI's lines and the VGA's files it left are that run's",
+      "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+      "files": [
+        [
+          "WINDOWS/SYSTEM/ARIAL.FOT",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIAL.TTF",
+          "SETUP.INF [ttfonts] 5:ARIAL.FOT, \"Arial (TrueType)\", 5:arial.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBD.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBD.FOT, \"Arial Bold (TrueType)\", 5:arialbd.ttf, \"Arial0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALBI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALBI.FOT, \"Arial Bold Italic (TrueType)\", 5:arialbi.ttf, \"Arial1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.FOT",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ARIALI.TTF",
+          "SETUP.INF [ttfonts] 5:ARIALI.FOT, \"Arial Italic (TrueType)\", 5:ariali.ttf, \"Arial1000\""
+        ],
+        ["WINDOWS/SYSTEM/CGA40WOA.FON", "SETUP.INF [vga.3gr] 2:CGA40WOA.FON,2:CGA40850.FON"],
+        ["WINDOWS/SYSTEM/CGA80WOA.FON", "SETUP.INF [vga.3gr] 2:CGA80WOA.FON,2:CGA80850.FON"],
+        [
+          "WINDOWS/SYSTEM/COUR.FOT",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COUR.TTF",
+          "SETUP.INF [ttfonts] 5:COUR.FOT, \"Courier New (TrueType)\", 5:cour.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.FOT",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBD.TTF",
+          "SETUP.INF [ttfonts] 5:COURBD.FOT, \"Courier New Bold (TrueType)\", 5:courbd.ttf, \"Courier0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.FOT",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURBI.TTF",
+          "SETUP.INF [ttfonts] 6:COURBI.FOT, \"Courier New Bold Italic (TrueType)\", 5:courbi.ttf, \"Courier1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURE.FON",
+          "SETUP.INF [fonts] 5:COURE.FON, \"Courier 10,12,15 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.FOT",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/COURI.TTF",
+          "SETUP.INF [ttfonts] 5:COURI.FOT, \"Courier New Italic (TrueType)\", 5:couri.ttf, \"Courier1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/DOSAPP.FON",
+          "SETUP.INF [codepages] 437 = , , 2:dosapp.fon, \"English (437)\""
+        ],
+        ["WINDOWS/SYSTEM/EGA40WOA.FON", "SETUP.INF [vga.3gr] 2:EGA40WOA.FON,2:EGA40850.FON"],
+        ["WINDOWS/SYSTEM/EGA80WOA.FON", "SETUP.INF [vga.3gr] 2:EGA80WOA.FON,2:EGA80850.FON"],
+        ["WINDOWS/SYSTEM/MIDIMAP.CFG", "SETUP.INF [win.other] 4:MIDIMAP.CFG"],
+        [
+          "WINDOWS/SYSTEM/MODERN.FON",
+          "SETUP.INF [fonts] 5:MODERN.FON, \"Modern (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/ROMAN.FON",
+          "SETUP.INF [fonts] 5:ROMAN.FON, \"Roman (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SCRIPT.FON",
+          "SETUP.INF [fonts] 5:SCRIPT.FON, \"Script (Plotter)\", \"CONTINUOUSSCALING\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SERIFE.FON",
+          "SETUP.INF [fonts] 5:SERIFE.FON, \"MS Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        ["WINDOWS/SYSTEM/SETUP.REG", "SETUP.INF [win.other] 5:SETUP.REG"],
+        [
+          "WINDOWS/SYSTEM/SMALLE.FON",
+          "SETUP.INF [fonts] 5:SMALLE.FON, \"Small Fonts (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SSERIFE.FON",
+          "SETUP.INF [fonts] 5:SSERIFE.FON, \"MS Sans Serif 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.FOT",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOL.TTF",
+          "SETUP.INF [ttfonts] 6:SYMBOL.FOT, \"Symbol (TrueType)\", 6:symbol.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/SYMBOLE.FON",
+          "SETUP.INF [fonts] 5:SYMBOLE.FON, \"Symbol 8,10,12,14,18,24 (VGA res)\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.FOT",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMES.TTF",
+          "SETUP.INF [ttfonts] 5:TIMES.FOT, \"Times New Roman (TrueType)\", 5:times.ttf, \"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBD.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBD.FOT, \"Times New Roman Bold (TrueType)\", 5:timesbd.ttf, \"Times New Roman0100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESBI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESBI.FOT, \"Times New Roman Bold Italic (TrueType)\", 5:timesbi.ttf, \"Times New Roman1100\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.FOT",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/TIMESI.TTF",
+          "SETUP.INF [ttfonts] 5:TIMESI.FOT, \"Times New Roman Italic (TrueType)\", 5:timesi.ttf, \"Times New Roman1000\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAFIX.FON",
+          "SETUP.INF [fixedfonts] 2:vgafix.fon,\"VGA (640x480) resolution Fixed System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/VGAOEM.FON",
+          "SETUP.INF [oemfonts] 2:vgaoem.fon,\"VGA (640x480) resolution Terminal Font (USA/Europe)\", \"100,96,96\",1"
+        ],
+        [
+          "WINDOWS/SYSTEM/VGASYS.FON",
+          "SETUP.INF [sysfonts] 1:vgasys.fon,\"VGA (640x480) resolution System Font\", \"100,96,96\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.FOT",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ],
+        [
+          "WINDOWS/SYSTEM/WINGDING.TTF",
+          "SETUP.INF [ttfonts] 6:WINGDING.FOT,\"WingDings (TrueType)\", 6:wingding.ttf,\"\""
+        ]
+      ],
+      "profiles": { "WINDOWS/WIN.INI": "WIN.INI 8514s", "WINDOWS/SYSTEM.INI": "SYSTEM.INI xga640" },
+      "registry": {
+        "path": "WINDOWS/REG.DAT",
+        "script": "SETUP.REG",
+        "ground": "SETUP.INF [data] register = \"regedit /s /u setup.reg\""
+      }
+    }
+  },
+  "profiles": {
+    "WIN.INI 8514": {
+      "end": "\r\n",
+      "lines": [
+        ["[windows]", "WIN.SRC"],
+        ["spooler=yes", "oracle"],
+        ["load=", "WIN.SRC"],
+        ["run=", "WIN.SRC"],
+        ["Beep=yes", "WIN.SRC"],
+        ["NullPort=None", "WIN.SRC"],
+        ["device=", "WIN.SRC"],
+        ["BorderWidth=3", "WIN.SRC"],
+        ["CursorBlinkRate=530", "WIN.SRC"],
+        ["DoubleClickSpeed=452", "WIN.SRC"],
+        ["Programs=com exe bat pif", "WIN.SRC"],
+        ["Documents=", "WIN.SRC"],
+        ["DeviceNotSelectedTimeout=15", "WIN.SRC"],
+        ["TransmissionRetryTimeout=45", "WIN.SRC"],
+        ["KeyboardDelay=2", "WIN.SRC"],
+        ["KeyboardSpeed=31", "WIN.SRC"],
+        ["ScreenSaveActive=0", "WIN.SRC"],
+        ["ScreenSaveTimeOut=120", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Desktop]", "WIN.SRC"],
+        ["Pattern=(None)", "WIN.SRC"],
+        ["Wallpaper=(None)", "WIN.SRC"],
+        ["GridGranularity=0", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Extensions]", "WIN.SRC"],
+        ["cal=calendar.exe ^.cal", "WIN.SRC"],
+        ["crd=cardfile.exe ^.crd", "WIN.SRC"],
+        ["trm=terminal.exe ^.trm", "WIN.SRC"],
+        ["txt=notepad.exe ^.txt", "WIN.SRC"],
+        ["ini=notepad.exe ^.ini", "WIN.SRC"],
+        ["pcx=pbrush.exe ^.pcx", "WIN.SRC"],
+        ["bmp=pbrush.exe ^.bmp", "WIN.SRC"],
+        ["wri=write.exe ^.wri", "WIN.SRC"],
+        ["rec=recorder.exe ^.rec", "WIN.SRC"],
+        ["hlp=winhelp.exe ^.hlp", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[intl]", "WIN.SRC"],
+        ["sLanguage=enu", "WIN.SRC"],
+        ["sCountry=United States", "WIN.SRC"],
+        ["iCountry=1", "WIN.SRC"],
+        ["iDate=0", "WIN.SRC"],
+        ["iTime=0", "WIN.SRC"],
+        ["iTLZero=0", "WIN.SRC"],
+        ["iCurrency=0", "WIN.SRC"],
+        ["iCurrDigits=2", "WIN.SRC"],
+        ["iNegCurr=0", "WIN.SRC"],
+        ["iLzero=1", "WIN.SRC"],
+        ["iDigits=2", "WIN.SRC"],
+        ["iMeasure=1", "WIN.SRC"],
+        ["s1159=AM", "WIN.SRC"],
+        ["s2359=PM", "WIN.SRC"],
+        ["sCurrency=$", "WIN.SRC"],
+        ["sThousand=,", "WIN.SRC"],
+        ["sDecimal=.", "WIN.SRC"],
+        ["sDate=/", "WIN.SRC"],
+        ["sTime=:", "WIN.SRC"],
+        ["sList=,", "WIN.SRC"],
+        ["sShortDate=M/d/yy", "WIN.SRC"],
+        ["sLongDate=dddd, MMMM dd, yyyy", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[ports]", "WIN.SRC"],
+        ["; A line with [filename].PRN followed by an equal sign causes", "WIN.SRC"],
+        ["; [filename] to appear in the Control Panel's Printer Configuration dialog", "WIN.SRC"],
+        ["; box. A printer connected to [filename] directs its output into this file.", "WIN.SRC"],
+        ["LPT1:=", "WIN.SRC"],
+        ["LPT2:=", "WIN.SRC"],
+        ["LPT3:=", "WIN.SRC"],
+        ["COM1:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM2:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM3:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM4:=9600,n,8,1,x", "WIN.SRC"],
+        ["EPT:=", "WIN.SRC"],
+        ["FILE:=", "WIN.SRC"],
+        ["LPT1.DOS=", "WIN.SRC"],
+        ["LPT2.DOS=", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[FontSubstitutes]", "WIN.SRC"],
+        ["Helv=MS Sans Serif", "SETUP.INF [ini.upd.31]"],
+        ["Tms Rmn=MS Serif", "SETUP.INF [ini.upd.31]"],
+        ["Times=Times New Roman", "SETUP.INF [ini.upd.31]"],
+        ["Helvetica=Arial", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[TrueType]", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Sounds]", "WIN.SRC"],
+        ["SystemDefault=ding.wav, Default Beep", "SETUP.INF [ini.upd.31]"],
+        ["SystemExclamation=chord.wav, Exclamation", "SETUP.INF [ini.upd.31]"],
+        ["SystemStart=tada.wav, Windows Start", "SETUP.INF [ini.upd.31]"],
+        ["SystemExit=chimes.wav, Windows Exit", "SETUP.INF [ini.upd.31]"],
+        ["SystemHand=chord.wav, Critical Stop", "SETUP.INF [ini.upd.31]"],
+        ["SystemQuestion=chord.wav, Question", "SETUP.INF [ini.upd.31]"],
+        ["SystemAsterisk=chord.wav, Asterisk", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci extensions]", "WIN.SRC"],
+        ["wav=waveaudio", "SETUP.INF [ini.upd.31]"],
+        ["mid=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["rmi=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Compatibility]", "WIN.SRC"],
+        ["NOTSHELL=0x0001", "SETUP.INF [ini.upd.31]"],
+        ["WPWINFIL=0x0006", "SETUP.INF [ini.upd.31]"],
+        ["CCMAIL=0x0008", "SETUP.INF [ini.upd.31]"],
+        ["AMIPRO=0x0010", "SETUP.INF [ini.upd.31]"],
+        ["REM=0x8022", "SETUP.INF [ini.upd.31]"],
+        ["PIXIE=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["CP=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["JW=0x42080", "SETUP.INF [ini.upd.31]"],
+        ["TME=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["VB=0x0200", "SETUP.INF [ini.upd.31]"],
+        ["WIN2WRS=0x1210", "SETUP.INF [ini.upd.31]"],
+        ["PACKRAT=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["VISION=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["MCOURIER=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["_BNOTES=0x24000", "SETUP.INF [ini.upd.31]"],
+        ["MILESV3=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["PM4=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DESIGNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLANNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DRAW=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["WINSIM=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["CHARISMA=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PR2=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLUS=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["ED=0x00010000", "SETUP.INF [ini.upd.31]"],
+        ["APORIA=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["EXCEL=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["GUIDE=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["NETSET2=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["W4GL=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["W4GLR=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["TURBOTAX=0x00080000", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Microsoft Word 2.0]", "WIN.SRC"],
+        ["HPDSKJET=+1", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[fonts]", "oracle"],
+        ["Modern (Plotter)=MODERN.FON", "SETUP.INF [fonts] MODERN.FON"],
+        ["Script (Plotter)=SCRIPT.FON", "SETUP.INF [fonts] SCRIPT.FON"],
+        ["Roman (Plotter)=ROMAN.FON", "SETUP.INF [fonts] ROMAN.FON"],
+        ["Small Fonts (8514/a res)=SMALLF.FON", "SETUP.INF [fonts] SMALLF.FON"],
+        ["Symbol 8,10,12,14,18,24 (8514/a res)=SYMBOLF.FON", "SETUP.INF [fonts] SYMBOLF.FON"],
+        ["MS Serif 8,10,12,14,18,24 (8514/a res)=SERIFF.FON", "SETUP.INF [fonts] SERIFF.FON"],
+        ["Courier 10,12,15 (8514/a res)=COURF.FON", "SETUP.INF [fonts] COURF.FON"],
+        [
+          "MS Sans Serif 8,10,12,14,18,24 (8514/a res)=SSERIFF.FON",
+          "SETUP.INF [fonts] SSERIFF.FON"
+        ],
+        ["Arial (TrueType)=ARIAL.FOT", "SETUP.INF [ttfonts] ARIAL.FOT"],
+        ["Arial Bold (TrueType)=ARIALBD.FOT", "SETUP.INF [ttfonts] ARIALBD.FOT"],
+        ["Arial Bold Italic (TrueType)=ARIALBI.FOT", "SETUP.INF [ttfonts] ARIALBI.FOT"],
+        ["Arial Italic (TrueType)=ARIALI.FOT", "SETUP.INF [ttfonts] ARIALI.FOT"],
+        ["Courier New (TrueType)=COUR.FOT", "SETUP.INF [ttfonts] COUR.FOT"],
+        ["Courier New Bold (TrueType)=COURBD.FOT", "SETUP.INF [ttfonts] COURBD.FOT"],
+        ["Courier New Italic (TrueType)=COURI.FOT", "SETUP.INF [ttfonts] COURI.FOT"],
+        ["Times New Roman (TrueType)=TIMES.FOT", "SETUP.INF [ttfonts] TIMES.FOT"],
+        ["Times New Roman Bold (TrueType)=TIMESBD.FOT", "SETUP.INF [ttfonts] TIMESBD.FOT"],
+        ["Times New Roman Bold Italic (TrueType)=TIMESBI.FOT", "SETUP.INF [ttfonts] TIMESBI.FOT"],
+        ["Times New Roman Italic (TrueType)=TIMESI.FOT", "SETUP.INF [ttfonts] TIMESI.FOT"],
+        ["Courier New Bold Italic (TrueType)=COURBI.FOT", "SETUP.INF [ttfonts] COURBI.FOT"],
+        ["WingDings (TrueType)=WINGDING.FOT", "SETUP.INF [ttfonts] WINGDING.FOT"],
+        ["Symbol (TrueType)=SYMBOL.FOT", "SETUP.INF [ttfonts] SYMBOL.FOT"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[embedding]", "oracle"],
+        ["SoundRec=Sound,Sound,SoundRec.exe,picture", "oracle"],
+        ["Package=Package,Package,packager.exe,picture", "oracle"],
+        ["PBrush=Paintbrush Picture,Paintbrush Picture,pbrush.exe,picture", "oracle"]
+      ]
+    },
+    "SYSTEM.INI 8514": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["386grabber=vgadib.3gr", "SETUP.INF [display] 8514"],
+        ["oemfonts.fon=8514oem.fon", "SETUP.INF [oemfonts] 8514OEM.FON \"100,120,120\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] 8514"],
+        ["fixedfon.fon=8514fix.fon", "SETUP.INF [fixedfonts] 8514FIX.FON \"100,120,120\""],
+        ["fonts.fon=8514sys.fon", "SETUP.INF [sysfonts] 8514SYS.FON \"100,120,120\""],
+        ["display.drv=8514.drv", "SETUP.INF [display] 8514"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        ["aspect=100,120,120", "SETUP.INF [display] 8514"],
+        ["display.drv=8514/a", "SETUP.INF [display] 8514"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["display=vdd8514.386", "SETUP.INF [display] 8514"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[8514.DRV]", "SETUP.INF [8514]"],
+        ["dpi=120", "SETUP.INF [8514]"]
+      ]
+    },
+    "WIN.INI vga": {
+      "end": "\r\n",
+      "lines": [
+        ["[windows]", "WIN.SRC"],
+        ["spooler=yes", "oracle"],
+        ["load=", "WIN.SRC"],
+        ["run=", "WIN.SRC"],
+        ["Beep=yes", "WIN.SRC"],
+        ["NullPort=None", "WIN.SRC"],
+        ["device=", "WIN.SRC"],
+        ["BorderWidth=3", "WIN.SRC"],
+        ["CursorBlinkRate=530", "WIN.SRC"],
+        ["DoubleClickSpeed=452", "WIN.SRC"],
+        ["Programs=com exe bat pif", "WIN.SRC"],
+        ["Documents=", "WIN.SRC"],
+        ["DeviceNotSelectedTimeout=15", "WIN.SRC"],
+        ["TransmissionRetryTimeout=45", "WIN.SRC"],
+        ["KeyboardDelay=2", "WIN.SRC"],
+        ["KeyboardSpeed=31", "WIN.SRC"],
+        ["ScreenSaveActive=0", "WIN.SRC"],
+        ["ScreenSaveTimeOut=120", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Desktop]", "WIN.SRC"],
+        ["Pattern=(None)", "WIN.SRC"],
+        ["Wallpaper=(None)", "WIN.SRC"],
+        ["GridGranularity=0", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Extensions]", "WIN.SRC"],
+        ["cal=calendar.exe ^.cal", "WIN.SRC"],
+        ["crd=cardfile.exe ^.crd", "WIN.SRC"],
+        ["trm=terminal.exe ^.trm", "WIN.SRC"],
+        ["txt=notepad.exe ^.txt", "WIN.SRC"],
+        ["ini=notepad.exe ^.ini", "WIN.SRC"],
+        ["pcx=pbrush.exe ^.pcx", "WIN.SRC"],
+        ["bmp=pbrush.exe ^.bmp", "WIN.SRC"],
+        ["wri=write.exe ^.wri", "WIN.SRC"],
+        ["rec=recorder.exe ^.rec", "WIN.SRC"],
+        ["hlp=winhelp.exe ^.hlp", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[intl]", "WIN.SRC"],
+        ["sLanguage=enu", "WIN.SRC"],
+        ["sCountry=United States", "WIN.SRC"],
+        ["iCountry=1", "WIN.SRC"],
+        ["iDate=0", "WIN.SRC"],
+        ["iTime=0", "WIN.SRC"],
+        ["iTLZero=0", "WIN.SRC"],
+        ["iCurrency=0", "WIN.SRC"],
+        ["iCurrDigits=2", "WIN.SRC"],
+        ["iNegCurr=0", "WIN.SRC"],
+        ["iLzero=1", "WIN.SRC"],
+        ["iDigits=2", "WIN.SRC"],
+        ["iMeasure=1", "WIN.SRC"],
+        ["s1159=AM", "WIN.SRC"],
+        ["s2359=PM", "WIN.SRC"],
+        ["sCurrency=$", "WIN.SRC"],
+        ["sThousand=,", "WIN.SRC"],
+        ["sDecimal=.", "WIN.SRC"],
+        ["sDate=/", "WIN.SRC"],
+        ["sTime=:", "WIN.SRC"],
+        ["sList=,", "WIN.SRC"],
+        ["sShortDate=M/d/yy", "WIN.SRC"],
+        ["sLongDate=dddd, MMMM dd, yyyy", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[ports]", "WIN.SRC"],
+        ["; A line with [filename].PRN followed by an equal sign causes", "WIN.SRC"],
+        ["; [filename] to appear in the Control Panel's Printer Configuration dialog", "WIN.SRC"],
+        ["; box. A printer connected to [filename] directs its output into this file.", "WIN.SRC"],
+        ["LPT1:=", "WIN.SRC"],
+        ["LPT2:=", "WIN.SRC"],
+        ["LPT3:=", "WIN.SRC"],
+        ["COM1:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM2:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM3:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM4:=9600,n,8,1,x", "WIN.SRC"],
+        ["EPT:=", "WIN.SRC"],
+        ["FILE:=", "WIN.SRC"],
+        ["LPT1.DOS=", "WIN.SRC"],
+        ["LPT2.DOS=", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[FontSubstitutes]", "WIN.SRC"],
+        ["Helv=MS Sans Serif", "SETUP.INF [ini.upd.31]"],
+        ["Tms Rmn=MS Serif", "SETUP.INF [ini.upd.31]"],
+        ["Times=Times New Roman", "SETUP.INF [ini.upd.31]"],
+        ["Helvetica=Arial", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[TrueType]", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Sounds]", "WIN.SRC"],
+        ["SystemDefault=ding.wav, Default Beep", "SETUP.INF [ini.upd.31]"],
+        ["SystemExclamation=chord.wav, Exclamation", "SETUP.INF [ini.upd.31]"],
+        ["SystemStart=tada.wav, Windows Start", "SETUP.INF [ini.upd.31]"],
+        ["SystemExit=chimes.wav, Windows Exit", "SETUP.INF [ini.upd.31]"],
+        ["SystemHand=chord.wav, Critical Stop", "SETUP.INF [ini.upd.31]"],
+        ["SystemQuestion=chord.wav, Question", "SETUP.INF [ini.upd.31]"],
+        ["SystemAsterisk=chord.wav, Asterisk", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci extensions]", "WIN.SRC"],
+        ["wav=waveaudio", "SETUP.INF [ini.upd.31]"],
+        ["mid=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["rmi=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Compatibility]", "WIN.SRC"],
+        ["NOTSHELL=0x0001", "SETUP.INF [ini.upd.31]"],
+        ["WPWINFIL=0x0006", "SETUP.INF [ini.upd.31]"],
+        ["CCMAIL=0x0008", "SETUP.INF [ini.upd.31]"],
+        ["AMIPRO=0x0010", "SETUP.INF [ini.upd.31]"],
+        ["REM=0x8022", "SETUP.INF [ini.upd.31]"],
+        ["PIXIE=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["CP=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["JW=0x42080", "SETUP.INF [ini.upd.31]"],
+        ["TME=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["VB=0x0200", "SETUP.INF [ini.upd.31]"],
+        ["WIN2WRS=0x1210", "SETUP.INF [ini.upd.31]"],
+        ["PACKRAT=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["VISION=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["MCOURIER=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["_BNOTES=0x24000", "SETUP.INF [ini.upd.31]"],
+        ["MILESV3=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["PM4=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DESIGNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLANNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DRAW=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["WINSIM=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["CHARISMA=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PR2=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLUS=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["ED=0x00010000", "SETUP.INF [ini.upd.31]"],
+        ["APORIA=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["EXCEL=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["GUIDE=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["NETSET2=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["W4GL=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["W4GLR=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["TURBOTAX=0x00080000", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Microsoft Word 2.0]", "WIN.SRC"],
+        ["HPDSKJET=+1", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[fonts]", "oracle"],
+        ["Arial (TrueType)=ARIAL.FOT", "SETUP.INF [ttfonts] ARIAL.FOT"],
+        ["Arial Bold (TrueType)=ARIALBD.FOT", "SETUP.INF [ttfonts] ARIALBD.FOT"],
+        ["Arial Bold Italic (TrueType)=ARIALBI.FOT", "SETUP.INF [ttfonts] ARIALBI.FOT"],
+        ["Arial Italic (TrueType)=ARIALI.FOT", "SETUP.INF [ttfonts] ARIALI.FOT"],
+        ["Courier New (TrueType)=COUR.FOT", "SETUP.INF [ttfonts] COUR.FOT"],
+        ["Courier New Bold (TrueType)=COURBD.FOT", "SETUP.INF [ttfonts] COURBD.FOT"],
+        ["Courier New Italic (TrueType)=COURI.FOT", "SETUP.INF [ttfonts] COURI.FOT"],
+        ["Times New Roman (TrueType)=TIMES.FOT", "SETUP.INF [ttfonts] TIMES.FOT"],
+        ["Times New Roman Bold (TrueType)=TIMESBD.FOT", "SETUP.INF [ttfonts] TIMESBD.FOT"],
+        ["Times New Roman Bold Italic (TrueType)=TIMESBI.FOT", "SETUP.INF [ttfonts] TIMESBI.FOT"],
+        ["Times New Roman Italic (TrueType)=TIMESI.FOT", "SETUP.INF [ttfonts] TIMESI.FOT"],
+        ["Courier New Bold Italic (TrueType)=COURBI.FOT", "SETUP.INF [ttfonts] COURBI.FOT"],
+        ["WingDings (TrueType)=WINGDING.FOT", "SETUP.INF [ttfonts] WINGDING.FOT"],
+        ["MS Sans Serif 8,10,12,14,18,24 (VGA res)=SSERIFE.FON", "SETUP.INF [fonts] SSERIFE.FON"],
+        ["Courier 10,12,15 (VGA res)=COURE.FON", "SETUP.INF [fonts] COURE.FON"],
+        ["MS Serif 8,10,12,14,18,24 (VGA res)=SERIFE.FON", "SETUP.INF [fonts] SERIFE.FON"],
+        ["Symbol 8,10,12,14,18,24 (VGA res)=SYMBOLE.FON", "SETUP.INF [fonts] SYMBOLE.FON"],
+        ["Roman (Plotter)=ROMAN.FON", "SETUP.INF [fonts] ROMAN.FON"],
+        ["Script (Plotter)=SCRIPT.FON", "SETUP.INF [fonts] SCRIPT.FON"],
+        ["Modern (Plotter)=MODERN.FON", "SETUP.INF [fonts] MODERN.FON"],
+        ["Small Fonts (VGA res)=SMALLE.FON", "SETUP.INF [fonts] SMALLE.FON"],
+        ["Symbol (TrueType)=SYMBOL.FOT", "SETUP.INF [ttfonts] SYMBOL.FOT"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[embedding]", "oracle"],
+        ["SoundRec=Sound,Sound,SoundRec.exe,picture", "oracle"],
+        ["Package=Package,Package,packager.exe,picture", "oracle"],
+        ["PBrush=Paintbrush Picture,Paintbrush Picture,pbrush.exe,picture", "oracle"]
+      ]
+    },
+    "SYSTEM.INI vga": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["386grabber=vga.3gr", "SETUP.INF [display] vga"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] vga"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=vga.drv", "SETUP.INF [display] vga"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["aspect=100,96,96", "SETUP.INF [display] vga"],
+        ["display.drv=VGA", "SETUP.INF [display] vga"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["display=*vddvga", "SETUP.INF [display] vga"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"]
+      ]
+    },
+    "SYSTEM.INI svga": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["386grabber=vga.3gr", "SETUP.INF [display] svga"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] svga"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=supervga.drv", "SETUP.INF [display] svga"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["aspect=100,96,96", "SETUP.INF [display] svga"],
+        ["display.drv=Super VGA (800x600, 16 colors)", "SETUP.INF [display] svga"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["display=*vddvga", "SETUP.INF [display] svga"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [VGA.3GR]"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[display]", "oracle"],
+        ["svgamode=106", "oracle"]
+      ]
+    },
+    "WIN.INI ega": {
+      "end": "\r\n",
+      "lines": [
+        ["[windows]", "WIN.SRC"],
+        ["spooler=yes", "oracle"],
+        ["load=", "WIN.SRC"],
+        ["run=", "WIN.SRC"],
+        ["Beep=yes", "WIN.SRC"],
+        ["NullPort=None", "WIN.SRC"],
+        ["device=", "WIN.SRC"],
+        ["BorderWidth=3", "WIN.SRC"],
+        ["CursorBlinkRate=530", "WIN.SRC"],
+        ["DoubleClickSpeed=452", "WIN.SRC"],
+        ["Programs=com exe bat pif", "WIN.SRC"],
+        ["Documents=", "WIN.SRC"],
+        ["DeviceNotSelectedTimeout=15", "WIN.SRC"],
+        ["TransmissionRetryTimeout=45", "WIN.SRC"],
+        ["KeyboardDelay=2", "WIN.SRC"],
+        ["KeyboardSpeed=31", "WIN.SRC"],
+        ["ScreenSaveActive=0", "WIN.SRC"],
+        ["ScreenSaveTimeOut=120", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Desktop]", "WIN.SRC"],
+        ["Pattern=(None)", "WIN.SRC"],
+        ["Wallpaper=(None)", "WIN.SRC"],
+        ["GridGranularity=0", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Extensions]", "WIN.SRC"],
+        ["cal=calendar.exe ^.cal", "WIN.SRC"],
+        ["crd=cardfile.exe ^.crd", "WIN.SRC"],
+        ["trm=terminal.exe ^.trm", "WIN.SRC"],
+        ["txt=notepad.exe ^.txt", "WIN.SRC"],
+        ["ini=notepad.exe ^.ini", "WIN.SRC"],
+        ["pcx=pbrush.exe ^.pcx", "WIN.SRC"],
+        ["bmp=pbrush.exe ^.bmp", "WIN.SRC"],
+        ["wri=write.exe ^.wri", "WIN.SRC"],
+        ["rec=recorder.exe ^.rec", "WIN.SRC"],
+        ["hlp=winhelp.exe ^.hlp", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[intl]", "WIN.SRC"],
+        ["sLanguage=enu", "WIN.SRC"],
+        ["sCountry=United States", "WIN.SRC"],
+        ["iCountry=1", "WIN.SRC"],
+        ["iDate=0", "WIN.SRC"],
+        ["iTime=0", "WIN.SRC"],
+        ["iTLZero=0", "WIN.SRC"],
+        ["iCurrency=0", "WIN.SRC"],
+        ["iCurrDigits=2", "WIN.SRC"],
+        ["iNegCurr=0", "WIN.SRC"],
+        ["iLzero=1", "WIN.SRC"],
+        ["iDigits=2", "WIN.SRC"],
+        ["iMeasure=1", "WIN.SRC"],
+        ["s1159=AM", "WIN.SRC"],
+        ["s2359=PM", "WIN.SRC"],
+        ["sCurrency=$", "WIN.SRC"],
+        ["sThousand=,", "WIN.SRC"],
+        ["sDecimal=.", "WIN.SRC"],
+        ["sDate=/", "WIN.SRC"],
+        ["sTime=:", "WIN.SRC"],
+        ["sList=,", "WIN.SRC"],
+        ["sShortDate=M/d/yy", "WIN.SRC"],
+        ["sLongDate=dddd, MMMM dd, yyyy", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[ports]", "WIN.SRC"],
+        ["; A line with [filename].PRN followed by an equal sign causes", "WIN.SRC"],
+        ["; [filename] to appear in the Control Panel's Printer Configuration dialog", "WIN.SRC"],
+        ["; box. A printer connected to [filename] directs its output into this file.", "WIN.SRC"],
+        ["LPT1:=", "WIN.SRC"],
+        ["LPT2:=", "WIN.SRC"],
+        ["LPT3:=", "WIN.SRC"],
+        ["COM1:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM2:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM3:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM4:=9600,n,8,1,x", "WIN.SRC"],
+        ["EPT:=", "WIN.SRC"],
+        ["FILE:=", "WIN.SRC"],
+        ["LPT1.DOS=", "WIN.SRC"],
+        ["LPT2.DOS=", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[FontSubstitutes]", "WIN.SRC"],
+        ["Helv=MS Sans Serif", "SETUP.INF [ini.upd.31]"],
+        ["Tms Rmn=MS Serif", "SETUP.INF [ini.upd.31]"],
+        ["Times=Times New Roman", "SETUP.INF [ini.upd.31]"],
+        ["Helvetica=Arial", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[TrueType]", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Sounds]", "WIN.SRC"],
+        ["SystemDefault=ding.wav, Default Beep", "SETUP.INF [ini.upd.31]"],
+        ["SystemExclamation=chord.wav, Exclamation", "SETUP.INF [ini.upd.31]"],
+        ["SystemStart=tada.wav, Windows Start", "SETUP.INF [ini.upd.31]"],
+        ["SystemExit=chimes.wav, Windows Exit", "SETUP.INF [ini.upd.31]"],
+        ["SystemHand=chord.wav, Critical Stop", "SETUP.INF [ini.upd.31]"],
+        ["SystemQuestion=chord.wav, Question", "SETUP.INF [ini.upd.31]"],
+        ["SystemAsterisk=chord.wav, Asterisk", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci extensions]", "WIN.SRC"],
+        ["wav=waveaudio", "SETUP.INF [ini.upd.31]"],
+        ["mid=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["rmi=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Compatibility]", "WIN.SRC"],
+        ["NOTSHELL=0x0001", "SETUP.INF [ini.upd.31]"],
+        ["WPWINFIL=0x0006", "SETUP.INF [ini.upd.31]"],
+        ["CCMAIL=0x0008", "SETUP.INF [ini.upd.31]"],
+        ["AMIPRO=0x0010", "SETUP.INF [ini.upd.31]"],
+        ["REM=0x8022", "SETUP.INF [ini.upd.31]"],
+        ["PIXIE=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["CP=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["JW=0x42080", "SETUP.INF [ini.upd.31]"],
+        ["TME=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["VB=0x0200", "SETUP.INF [ini.upd.31]"],
+        ["WIN2WRS=0x1210", "SETUP.INF [ini.upd.31]"],
+        ["PACKRAT=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["VISION=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["MCOURIER=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["_BNOTES=0x24000", "SETUP.INF [ini.upd.31]"],
+        ["MILESV3=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["PM4=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DESIGNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLANNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DRAW=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["WINSIM=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["CHARISMA=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PR2=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLUS=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["ED=0x00010000", "SETUP.INF [ini.upd.31]"],
+        ["APORIA=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["EXCEL=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["GUIDE=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["NETSET2=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["W4GL=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["W4GLR=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["TURBOTAX=0x00080000", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Microsoft Word 2.0]", "WIN.SRC"],
+        ["HPDSKJET=+1", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[fonts]", "oracle"],
+        ["Arial (TrueType)=ARIAL.FOT", "SETUP.INF [ttfonts] ARIAL.FOT"],
+        ["Arial Bold (TrueType)=ARIALBD.FOT", "SETUP.INF [ttfonts] ARIALBD.FOT"],
+        ["Arial Bold Italic (TrueType)=ARIALBI.FOT", "SETUP.INF [ttfonts] ARIALBI.FOT"],
+        ["Arial Italic (TrueType)=ARIALI.FOT", "SETUP.INF [ttfonts] ARIALI.FOT"],
+        ["Courier New (TrueType)=COUR.FOT", "SETUP.INF [ttfonts] COUR.FOT"],
+        ["Courier New Bold (TrueType)=COURBD.FOT", "SETUP.INF [ttfonts] COURBD.FOT"],
+        ["Courier New Italic (TrueType)=COURI.FOT", "SETUP.INF [ttfonts] COURI.FOT"],
+        ["Times New Roman (TrueType)=TIMES.FOT", "SETUP.INF [ttfonts] TIMES.FOT"],
+        ["Times New Roman Bold (TrueType)=TIMESBD.FOT", "SETUP.INF [ttfonts] TIMESBD.FOT"],
+        ["Times New Roman Bold Italic (TrueType)=TIMESBI.FOT", "SETUP.INF [ttfonts] TIMESBI.FOT"],
+        ["Times New Roman Italic (TrueType)=TIMESI.FOT", "SETUP.INF [ttfonts] TIMESI.FOT"],
+        ["Courier New Bold Italic (TrueType)=COURBI.FOT", "SETUP.INF [ttfonts] COURBI.FOT"],
+        ["WingDings (TrueType)=WINGDING.FOT", "SETUP.INF [ttfonts] WINGDING.FOT"],
+        ["MS Sans Serif 8,10,12,14,18,24 (EGA res)=SSERIFB.FON", "SETUP.INF [fonts] SSERIFB.FON"],
+        ["Courier 8,10,12,15 (EGA res)=COURB.FON", "SETUP.INF [fonts] COURB.FON"],
+        ["MS Serif 8,10,12,14,18,24 (EGA res)=SERIFB.FON", "SETUP.INF [fonts] SERIFB.FON"],
+        ["Arial 8,10 (EGA res)=ARIALB.FON", "SETUP.INF [fonts] ARIALB.FON"],
+        ["Times New Roman 8,10 (EGA res)=TIMESB.FON", "SETUP.INF [fonts] TIMESB.FON"],
+        ["Symbol 8,10,12,14,18,24 (EGA res)=SYMBOLB.FON", "SETUP.INF [fonts] SYMBOLB.FON"],
+        ["Roman (Plotter)=ROMAN.FON", "SETUP.INF [fonts] ROMAN.FON"],
+        ["Script (Plotter)=SCRIPT.FON", "SETUP.INF [fonts] SCRIPT.FON"],
+        ["Modern (Plotter)=MODERN.FON", "SETUP.INF [fonts] MODERN.FON"],
+        ["Small Fonts (EGA res)=SMALLB.FON", "SETUP.INF [fonts] SMALLB.FON"],
+        ["Symbol (TrueType)=SYMBOL.FOT", "SETUP.INF [ttfonts] SYMBOL.FOT"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[embedding]", "oracle"],
+        ["SoundRec=Sound,Sound,SoundRec.exe,picture", "oracle"],
+        ["Package=Package,Package,packager.exe,picture", "oracle"],
+        ["PBrush=Paintbrush Picture,Paintbrush Picture,pbrush.exe,picture", "oracle"]
+      ]
+    },
+    "SYSTEM.INI ega": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["386grabber=ega.3gr", "SETUP.INF [display] egahires"],
+        ["oemfonts.fon=egaoem.fon", "SETUP.INF [oemfonts] EGAOEM.FON \"133,96,72\""],
+        ["286grabber=egacolor.2gr", "SETUP.INF [display] egahires"],
+        ["fixedfon.fon=egafix.fon", "SETUP.INF [fixedfonts] EGAFIX.FON \"133,96,72\""],
+        ["fonts.fon=egasys.fon", "SETUP.INF [sysfonts] EGASYS.FON \"133,96,72\""],
+        ["display.drv=ega.drv", "SETUP.INF [display] egahires"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["aspect=133,96,72", "SETUP.INF [display] egahires"],
+        ["display.drv=EGA", "SETUP.INF [display] egahires"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["display=vddega.386", "SETUP.INF [display] egahires"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [EGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [EGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [EGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [EGA.3GR]"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"]
+      ]
+    },
+    "SYSTEM.INI hercules": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["386grabber=herc.3gr", "SETUP.INF [display] hercules"],
+        ["oemfonts.fon=egaoem.fon", "SETUP.INF [oemfonts] EGAOEM.FON \"133,96,72\""],
+        ["286grabber=hercules.2gr", "SETUP.INF [display] hercules"],
+        ["fixedfon.fon=egafix.fon", "SETUP.INF [fixedfonts] EGAFIX.FON \"133,96,72\""],
+        ["fonts.fon=egasys.fon", "SETUP.INF [sysfonts] EGASYS.FON \"133,96,72\""],
+        ["display.drv=hercules.drv", "SETUP.INF [display] hercules"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["aspect=133,96,72", "SETUP.INF [display] hercules"],
+        ["display.drv=Hercules Monochrome", "SETUP.INF [display] hercules"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["MessageBackColor=0", "oracle"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["display=vddherc.386", "SETUP.INF [display] hercules"],
+        ["HERCWOA.FON=HERCWOA.FON", "SETUP.INF [HERC.3GR]"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"]
+      ]
+    },
+    "WIN.INI vga256": {
+      "end": "\r\n",
+      "lines": [
+        ["[windows]", "WIN.SRC"],
+        ["spooler=yes", "oracle"],
+        ["load=", "WIN.SRC"],
+        ["run=", "WIN.SRC"],
+        ["Beep=yes", "WIN.SRC"],
+        ["NullPort=None", "WIN.SRC"],
+        ["device=", "WIN.SRC"],
+        ["BorderWidth=3", "WIN.SRC"],
+        ["CursorBlinkRate=530", "WIN.SRC"],
+        ["DoubleClickSpeed=452", "WIN.SRC"],
+        ["Programs=com exe bat pif", "WIN.SRC"],
+        ["Documents=", "WIN.SRC"],
+        ["DeviceNotSelectedTimeout=15", "WIN.SRC"],
+        ["TransmissionRetryTimeout=45", "WIN.SRC"],
+        ["KeyboardDelay=2", "WIN.SRC"],
+        ["KeyboardSpeed=31", "WIN.SRC"],
+        ["ScreenSaveActive=0", "WIN.SRC"],
+        ["ScreenSaveTimeOut=120", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Desktop]", "WIN.SRC"],
+        ["Pattern=(None)", "WIN.SRC"],
+        ["Wallpaper=(None)", "WIN.SRC"],
+        ["GridGranularity=0", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Extensions]", "WIN.SRC"],
+        ["cal=calendar.exe ^.cal", "WIN.SRC"],
+        ["crd=cardfile.exe ^.crd", "WIN.SRC"],
+        ["trm=terminal.exe ^.trm", "WIN.SRC"],
+        ["txt=notepad.exe ^.txt", "WIN.SRC"],
+        ["ini=notepad.exe ^.ini", "WIN.SRC"],
+        ["pcx=pbrush.exe ^.pcx", "WIN.SRC"],
+        ["bmp=pbrush.exe ^.bmp", "WIN.SRC"],
+        ["wri=write.exe ^.wri", "WIN.SRC"],
+        ["rec=recorder.exe ^.rec", "WIN.SRC"],
+        ["hlp=winhelp.exe ^.hlp", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[intl]", "WIN.SRC"],
+        ["sLanguage=enu", "WIN.SRC"],
+        ["sCountry=United States", "WIN.SRC"],
+        ["iCountry=1", "WIN.SRC"],
+        ["iDate=0", "WIN.SRC"],
+        ["iTime=0", "WIN.SRC"],
+        ["iTLZero=0", "WIN.SRC"],
+        ["iCurrency=0", "WIN.SRC"],
+        ["iCurrDigits=2", "WIN.SRC"],
+        ["iNegCurr=0", "WIN.SRC"],
+        ["iLzero=1", "WIN.SRC"],
+        ["iDigits=2", "WIN.SRC"],
+        ["iMeasure=1", "WIN.SRC"],
+        ["s1159=AM", "WIN.SRC"],
+        ["s2359=PM", "WIN.SRC"],
+        ["sCurrency=$", "WIN.SRC"],
+        ["sThousand=,", "WIN.SRC"],
+        ["sDecimal=.", "WIN.SRC"],
+        ["sDate=/", "WIN.SRC"],
+        ["sTime=:", "WIN.SRC"],
+        ["sList=,", "WIN.SRC"],
+        ["sShortDate=M/d/yy", "WIN.SRC"],
+        ["sLongDate=dddd, MMMM dd, yyyy", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[ports]", "WIN.SRC"],
+        ["; A line with [filename].PRN followed by an equal sign causes", "WIN.SRC"],
+        ["; [filename] to appear in the Control Panel's Printer Configuration dialog", "WIN.SRC"],
+        ["; box. A printer connected to [filename] directs its output into this file.", "WIN.SRC"],
+        ["LPT1:=", "WIN.SRC"],
+        ["LPT2:=", "WIN.SRC"],
+        ["LPT3:=", "WIN.SRC"],
+        ["COM1:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM2:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM3:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM4:=9600,n,8,1,x", "WIN.SRC"],
+        ["EPT:=", "WIN.SRC"],
+        ["FILE:=", "WIN.SRC"],
+        ["LPT1.DOS=", "WIN.SRC"],
+        ["LPT2.DOS=", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[FontSubstitutes]", "WIN.SRC"],
+        ["Helv=MS Sans Serif", "SETUP.INF [ini.upd.31]"],
+        ["Tms Rmn=MS Serif", "SETUP.INF [ini.upd.31]"],
+        ["Times=Times New Roman", "SETUP.INF [ini.upd.31]"],
+        ["Helvetica=Arial", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[TrueType]", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Sounds]", "WIN.SRC"],
+        ["SystemDefault=ding.wav, Default Beep", "SETUP.INF [ini.upd.31]"],
+        ["SystemExclamation=chord.wav, Exclamation", "SETUP.INF [ini.upd.31]"],
+        ["SystemStart=tada.wav, Windows Start", "SETUP.INF [ini.upd.31]"],
+        ["SystemExit=chimes.wav, Windows Exit", "SETUP.INF [ini.upd.31]"],
+        ["SystemHand=chord.wav, Critical Stop", "SETUP.INF [ini.upd.31]"],
+        ["SystemQuestion=chord.wav, Question", "SETUP.INF [ini.upd.31]"],
+        ["SystemAsterisk=chord.wav, Asterisk", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci extensions]", "WIN.SRC"],
+        ["wav=waveaudio", "SETUP.INF [ini.upd.31]"],
+        ["mid=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["rmi=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Compatibility]", "WIN.SRC"],
+        ["NOTSHELL=0x0001", "SETUP.INF [ini.upd.31]"],
+        ["WPWINFIL=0x0006", "SETUP.INF [ini.upd.31]"],
+        ["CCMAIL=0x0008", "SETUP.INF [ini.upd.31]"],
+        ["AMIPRO=0x0010", "SETUP.INF [ini.upd.31]"],
+        ["REM=0x8022", "SETUP.INF [ini.upd.31]"],
+        ["PIXIE=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["CP=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["JW=0x42080", "SETUP.INF [ini.upd.31]"],
+        ["TME=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["VB=0x0200", "SETUP.INF [ini.upd.31]"],
+        ["WIN2WRS=0x1210", "SETUP.INF [ini.upd.31]"],
+        ["PACKRAT=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["VISION=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["MCOURIER=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["_BNOTES=0x24000", "SETUP.INF [ini.upd.31]"],
+        ["MILESV3=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["PM4=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DESIGNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLANNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DRAW=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["WINSIM=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["CHARISMA=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PR2=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLUS=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["ED=0x00010000", "SETUP.INF [ini.upd.31]"],
+        ["APORIA=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["EXCEL=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["GUIDE=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["NETSET2=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["W4GL=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["W4GLR=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["TURBOTAX=0x00080000", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Microsoft Word 2.0]", "WIN.SRC"],
+        ["HPDSKJET=+1", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[fonts]", "oracle"],
+        ["Arial (TrueType)=ARIAL.FOT", "SETUP.INF [ttfonts] ARIAL.FOT"],
+        ["Arial Bold (TrueType)=ARIALBD.FOT", "SETUP.INF [ttfonts] ARIALBD.FOT"],
+        ["Arial Bold Italic (TrueType)=ARIALBI.FOT", "SETUP.INF [ttfonts] ARIALBI.FOT"],
+        ["Arial Italic (TrueType)=ARIALI.FOT", "SETUP.INF [ttfonts] ARIALI.FOT"],
+        ["Courier New (TrueType)=COUR.FOT", "SETUP.INF [ttfonts] COUR.FOT"],
+        ["Courier New Bold (TrueType)=COURBD.FOT", "SETUP.INF [ttfonts] COURBD.FOT"],
+        ["Courier New Italic (TrueType)=COURI.FOT", "SETUP.INF [ttfonts] COURI.FOT"],
+        ["Times New Roman (TrueType)=TIMES.FOT", "SETUP.INF [ttfonts] TIMES.FOT"],
+        ["Times New Roman Bold (TrueType)=TIMESBD.FOT", "SETUP.INF [ttfonts] TIMESBD.FOT"],
+        ["Times New Roman Bold Italic (TrueType)=TIMESBI.FOT", "SETUP.INF [ttfonts] TIMESBI.FOT"],
+        ["Times New Roman Italic (TrueType)=TIMESI.FOT", "SETUP.INF [ttfonts] TIMESI.FOT"],
+        ["Courier New Bold Italic (TrueType)=COURBI.FOT", "SETUP.INF [ttfonts] COURBI.FOT"],
+        ["WingDings (TrueType)=WINGDING.FOT", "SETUP.INF [ttfonts] WINGDING.FOT"],
+        ["MS Sans Serif 8,10,12,14,18,24 (VGA res)=SSERIFE.FON", "SETUP.INF [fonts] SSERIFE.FON"],
+        ["Courier 10,12,15 (VGA res)=COURE.FON", "SETUP.INF [fonts] COURE.FON"],
+        ["MS Serif 8,10,12,14,18,24 (VGA res)=SERIFE.FON", "SETUP.INF [fonts] SERIFE.FON"],
+        ["Symbol 8,10,12,14,18,24 (VGA res)=SYMBOLE.FON", "SETUP.INF [fonts] SYMBOLE.FON"],
+        ["Roman (Plotter)=ROMAN.FON", "SETUP.INF [fonts] ROMAN.FON"],
+        ["Script (Plotter)=SCRIPT.FON", "SETUP.INF [fonts] SCRIPT.FON"],
+        ["Modern (Plotter)=MODERN.FON", "SETUP.INF [fonts] MODERN.FON"],
+        ["Small Fonts (VGA res)=SMALLE.FON", "SETUP.INF [fonts] SMALLE.FON"],
+        ["Symbol (TrueType)=SYMBOL.FOT", "SETUP.INF [ttfonts] SYMBOL.FOT"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[embedding]", "oracle"],
+        ["SoundRec=Sound,Sound,SoundRec.exe,picture", "oracle"],
+        ["Package=Package,Package,packager.exe,picture", "oracle"],
+        ["PBrush=Paintbrush Picture,Paintbrush Picture,pbrush.exe,picture", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[WinG]", "oracle"],
+        [
+          "svga256.drv640x480x8(0,12)v4.0.0.52490-5D41-1.0.0.37=ECHGECHGECHGECHGHDHFDDHGDDHGDDHGZZZZZZZZZZZZZZZZFDFFDDFFDDFFDDFF0F",
+          "oracle"
+        ]
+      ]
+    },
+    "SYSTEM.INI vga256": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["386grabber=svga256.3gr", "OEMSETUP.INF [display] 8et4480"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "OEMSETUP.INF [display] 8et4480"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=svga256.drv", "OEMSETUP.INF [display] 8et4480"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["aspect=100,96,96", "OEMSETUP.INF [display] 8et4480"],
+        ["display.drv=ET4000  640x480 256 colors", "OEMSETUP.INF [display] 8et4480"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["device=C:\\WINDOWS\\SYSTEM\\dva.386", "oracle"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["display=vddtli4.386", "OEMSETUP.INF [display] 8et4480"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "OEMSETUP.INF [SVGA256.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "OEMSETUP.INF [SVGA256.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "OEMSETUP.INF [SVGA256.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "OEMSETUP.INF [SVGA256.3GR]"],
+        ["SysVMIn2ndBank=FALSE", "OEMSETUP.INF [svga640]"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[svga256.drv]", "OEMSETUP.INF [svga640]"],
+        ["resolution=1", "OEMSETUP.INF [svga640]"],
+        ["svgamode=46", "oracle"],
+        ["ChipSet=Tseng ET4000", "oracle"],
+        ["LatchCapable=Yes", "oracle"]
+      ]
+    },
+    "SYSTEM.INI xga256": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["386grabber=v7vga.3gr", "SETUP.INF [display] xgalg"],
+        ["oemfonts.fon=8514oem.fon", "SETUP.INF [oemfonts] 8514OEM.FON \"100,120,120\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] xgalg"],
+        ["fixedfon.fon=8514fix.fon", "SETUP.INF [fixedfonts] 8514FIX.FON \"100,120,120\""],
+        ["fonts.fon=8514sys.fon", "SETUP.INF [sysfonts] 8514SYS.FON \"100,120,120\""],
+        ["display.drv=xga.drv", "SETUP.INF [display] xgalg"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        ["aspect=100,120,120", "SETUP.INF [display] xgalg"],
+        ["display.drv=XGA (Large fonts)", "SETUP.INF [display] xgalg"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["display=vddxga.386", "SETUP.INF [display] xgalg"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[XGA_Display]", "SETUP.INF [xgalg]"],
+        ["XGA_Resources=2", "SETUP.INF [xgalg]"]
+      ]
+    },
+    "WIN.INI 8514s": {
+      "end": "\r\n",
+      "lines": [
+        ["[windows]", "WIN.SRC"],
+        ["spooler=yes", "oracle"],
+        ["load=", "WIN.SRC"],
+        ["run=", "WIN.SRC"],
+        ["Beep=yes", "WIN.SRC"],
+        ["NullPort=None", "WIN.SRC"],
+        ["device=", "WIN.SRC"],
+        ["BorderWidth=3", "WIN.SRC"],
+        ["CursorBlinkRate=530", "WIN.SRC"],
+        ["DoubleClickSpeed=452", "WIN.SRC"],
+        ["Programs=com exe bat pif", "WIN.SRC"],
+        ["Documents=", "WIN.SRC"],
+        ["DeviceNotSelectedTimeout=15", "WIN.SRC"],
+        ["TransmissionRetryTimeout=45", "WIN.SRC"],
+        ["KeyboardDelay=2", "WIN.SRC"],
+        ["KeyboardSpeed=31", "WIN.SRC"],
+        ["ScreenSaveActive=0", "WIN.SRC"],
+        ["ScreenSaveTimeOut=120", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Desktop]", "WIN.SRC"],
+        ["Pattern=(None)", "WIN.SRC"],
+        ["Wallpaper=(None)", "WIN.SRC"],
+        ["GridGranularity=0", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Extensions]", "WIN.SRC"],
+        ["cal=calendar.exe ^.cal", "WIN.SRC"],
+        ["crd=cardfile.exe ^.crd", "WIN.SRC"],
+        ["trm=terminal.exe ^.trm", "WIN.SRC"],
+        ["txt=notepad.exe ^.txt", "WIN.SRC"],
+        ["ini=notepad.exe ^.ini", "WIN.SRC"],
+        ["pcx=pbrush.exe ^.pcx", "WIN.SRC"],
+        ["bmp=pbrush.exe ^.bmp", "WIN.SRC"],
+        ["wri=write.exe ^.wri", "WIN.SRC"],
+        ["rec=recorder.exe ^.rec", "WIN.SRC"],
+        ["hlp=winhelp.exe ^.hlp", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[intl]", "WIN.SRC"],
+        ["sLanguage=enu", "WIN.SRC"],
+        ["sCountry=United States", "WIN.SRC"],
+        ["iCountry=1", "WIN.SRC"],
+        ["iDate=0", "WIN.SRC"],
+        ["iTime=0", "WIN.SRC"],
+        ["iTLZero=0", "WIN.SRC"],
+        ["iCurrency=0", "WIN.SRC"],
+        ["iCurrDigits=2", "WIN.SRC"],
+        ["iNegCurr=0", "WIN.SRC"],
+        ["iLzero=1", "WIN.SRC"],
+        ["iDigits=2", "WIN.SRC"],
+        ["iMeasure=1", "WIN.SRC"],
+        ["s1159=AM", "WIN.SRC"],
+        ["s2359=PM", "WIN.SRC"],
+        ["sCurrency=$", "WIN.SRC"],
+        ["sThousand=,", "WIN.SRC"],
+        ["sDecimal=.", "WIN.SRC"],
+        ["sDate=/", "WIN.SRC"],
+        ["sTime=:", "WIN.SRC"],
+        ["sList=,", "WIN.SRC"],
+        ["sShortDate=M/d/yy", "WIN.SRC"],
+        ["sLongDate=dddd, MMMM dd, yyyy", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[ports]", "WIN.SRC"],
+        ["; A line with [filename].PRN followed by an equal sign causes", "WIN.SRC"],
+        ["; [filename] to appear in the Control Panel's Printer Configuration dialog", "WIN.SRC"],
+        ["; box. A printer connected to [filename] directs its output into this file.", "WIN.SRC"],
+        ["LPT1:=", "WIN.SRC"],
+        ["LPT2:=", "WIN.SRC"],
+        ["LPT3:=", "WIN.SRC"],
+        ["COM1:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM2:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM3:=9600,n,8,1,x", "WIN.SRC"],
+        ["COM4:=9600,n,8,1,x", "WIN.SRC"],
+        ["EPT:=", "WIN.SRC"],
+        ["FILE:=", "WIN.SRC"],
+        ["LPT1.DOS=", "WIN.SRC"],
+        ["LPT2.DOS=", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[FontSubstitutes]", "WIN.SRC"],
+        ["Helv=MS Sans Serif", "SETUP.INF [ini.upd.31]"],
+        ["Tms Rmn=MS Serif", "SETUP.INF [ini.upd.31]"],
+        ["Times=Times New Roman", "SETUP.INF [ini.upd.31]"],
+        ["Helvetica=Arial", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[TrueType]", "WIN.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Sounds]", "WIN.SRC"],
+        ["SystemDefault=ding.wav, Default Beep", "SETUP.INF [ini.upd.31]"],
+        ["SystemExclamation=chord.wav, Exclamation", "SETUP.INF [ini.upd.31]"],
+        ["SystemStart=tada.wav, Windows Start", "SETUP.INF [ini.upd.31]"],
+        ["SystemExit=chimes.wav, Windows Exit", "SETUP.INF [ini.upd.31]"],
+        ["SystemHand=chord.wav, Critical Stop", "SETUP.INF [ini.upd.31]"],
+        ["SystemQuestion=chord.wav, Question", "SETUP.INF [ini.upd.31]"],
+        ["SystemAsterisk=chord.wav, Asterisk", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci extensions]", "WIN.SRC"],
+        ["wav=waveaudio", "SETUP.INF [ini.upd.31]"],
+        ["mid=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["rmi=sequencer", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Compatibility]", "WIN.SRC"],
+        ["NOTSHELL=0x0001", "SETUP.INF [ini.upd.31]"],
+        ["WPWINFIL=0x0006", "SETUP.INF [ini.upd.31]"],
+        ["CCMAIL=0x0008", "SETUP.INF [ini.upd.31]"],
+        ["AMIPRO=0x0010", "SETUP.INF [ini.upd.31]"],
+        ["REM=0x8022", "SETUP.INF [ini.upd.31]"],
+        ["PIXIE=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["CP=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["JW=0x42080", "SETUP.INF [ini.upd.31]"],
+        ["TME=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["VB=0x0200", "SETUP.INF [ini.upd.31]"],
+        ["WIN2WRS=0x1210", "SETUP.INF [ini.upd.31]"],
+        ["PACKRAT=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["VISION=0x0040", "SETUP.INF [ini.upd.31]"],
+        ["MCOURIER=0x0800", "SETUP.INF [ini.upd.31]"],
+        ["_BNOTES=0x24000", "SETUP.INF [ini.upd.31]"],
+        ["MILESV3=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["PM4=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DESIGNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLANNER=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["DRAW=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["WINSIM=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["CHARISMA=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PR2=0x2000", "SETUP.INF [ini.upd.31]"],
+        ["PLUS=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["ED=0x00010000", "SETUP.INF [ini.upd.31]"],
+        ["APORIA=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["EXCEL=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["GUIDE=0x1000", "SETUP.INF [ini.upd.31]"],
+        ["NETSET2=0x0100", "SETUP.INF [ini.upd.31]"],
+        ["W4GL=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["W4GLR=0x4000", "SETUP.INF [ini.upd.31]"],
+        ["TURBOTAX=0x00080000", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[Microsoft Word 2.0]", "WIN.SRC"],
+        ["HPDSKJET=+1", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[fonts]", "oracle"],
+        ["Modern (Plotter)=MODERN.FON", "SETUP.INF [fonts] MODERN.FON"],
+        ["Script (Plotter)=SCRIPT.FON", "SETUP.INF [fonts] SCRIPT.FON"],
+        ["Roman (Plotter)=ROMAN.FON", "SETUP.INF [fonts] ROMAN.FON"],
+        ["Small Fonts (VGA res)=SMALLE.FON", "SETUP.INF [fonts] SMALLE.FON"],
+        ["Symbol 8,10,12,14,18,24 (VGA res)=SYMBOLE.FON", "SETUP.INF [fonts] SYMBOLE.FON"],
+        ["MS Serif 8,10,12,14,18,24 (VGA res)=SERIFE.FON", "SETUP.INF [fonts] SERIFE.FON"],
+        ["Courier 10,12,15 (VGA res)=COURE.FON", "SETUP.INF [fonts] COURE.FON"],
+        ["MS Sans Serif 8,10,12,14,18,24 (VGA res)=SSERIFE.FON", "SETUP.INF [fonts] SSERIFE.FON"],
+        ["Arial (TrueType)=ARIAL.FOT", "SETUP.INF [ttfonts] ARIAL.FOT"],
+        ["Arial Bold (TrueType)=ARIALBD.FOT", "SETUP.INF [ttfonts] ARIALBD.FOT"],
+        ["Arial Bold Italic (TrueType)=ARIALBI.FOT", "SETUP.INF [ttfonts] ARIALBI.FOT"],
+        ["Arial Italic (TrueType)=ARIALI.FOT", "SETUP.INF [ttfonts] ARIALI.FOT"],
+        ["Courier New (TrueType)=COUR.FOT", "SETUP.INF [ttfonts] COUR.FOT"],
+        ["Courier New Bold (TrueType)=COURBD.FOT", "SETUP.INF [ttfonts] COURBD.FOT"],
+        ["Courier New Italic (TrueType)=COURI.FOT", "SETUP.INF [ttfonts] COURI.FOT"],
+        ["Times New Roman (TrueType)=TIMES.FOT", "SETUP.INF [ttfonts] TIMES.FOT"],
+        ["Times New Roman Bold (TrueType)=TIMESBD.FOT", "SETUP.INF [ttfonts] TIMESBD.FOT"],
+        ["Times New Roman Bold Italic (TrueType)=TIMESBI.FOT", "SETUP.INF [ttfonts] TIMESBI.FOT"],
+        ["Times New Roman Italic (TrueType)=TIMESI.FOT", "SETUP.INF [ttfonts] TIMESI.FOT"],
+        ["Courier New Bold Italic (TrueType)=COURBI.FOT", "SETUP.INF [ttfonts] COURBI.FOT"],
+        ["WingDings (TrueType)=WINGDING.FOT", "SETUP.INF [ttfonts] WINGDING.FOT"],
+        ["Symbol (TrueType)=SYMBOL.FOT", "SETUP.INF [ttfonts] SYMBOL.FOT"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[embedding]", "oracle"],
+        ["SoundRec=Sound,Sound,SoundRec.exe,picture", "oracle"],
+        ["Package=Package,Package,packager.exe,picture", "oracle"],
+        ["PBrush=Paintbrush Picture,Paintbrush Picture,pbrush.exe,picture", "oracle"]
+      ]
+    },
+    "SYSTEM.INI 8514s": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["386grabber=vgadib.3gr", "SETUP.INF [display] 8514s"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] 8514s"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=8514.drv", "SETUP.INF [display] 8514s"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        ["aspect=100,96,96", "SETUP.INF [display] 8514s"],
+        ["display.drv=8514/a (Small fonts)", "SETUP.INF [display] 8514s"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["display=vdd8514.386", "SETUP.INF [display] 8514s"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [VGADIB.3GR]"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[8514.DRV]", "SETUP.INF [8514s]"],
+        ["dpi=96", "SETUP.INF [8514s]"]
+      ]
+    },
+    "SYSTEM.INI xga256s": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["386grabber=v7vga.3gr", "SETUP.INF [display] xgasm"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] xgasm"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=xga.drv", "SETUP.INF [display] xgasm"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        ["aspect=100,96,96", "SETUP.INF [display] xgasm"],
+        ["display.drv=XGA (Small fonts)", "SETUP.INF [display] xgasm"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["display=vddxga.386", "SETUP.INF [display] xgasm"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[XGA_Display]", "SETUP.INF [xgasm]"],
+        ["XGA_Resources=1", "SETUP.INF [xgasm]"]
+      ]
+    },
+    "SYSTEM.INI xga640": {
+      "end": "\r\n",
+      "lines": [
+        ["[boot]           ", "SYSTEM.SRC"],
+        ["386grabber=v7vga.3gr", "SETUP.INF [display] xgalo"],
+        ["oemfonts.fon=vgaoem.fon", "SETUP.INF [oemfonts] VGAOEM.FON \"100,96,96\""],
+        ["286grabber=vgacolor.2gr", "SETUP.INF [display] xgalo"],
+        ["fixedfon.fon=vgafix.fon", "SETUP.INF [fixedfonts] VGAFIX.FON \"100,96,96\""],
+        ["fonts.fon=vgasys.fon", "SETUP.INF [sysfonts] VGASYS.FON \"100,96,96\""],
+        ["display.drv=xga.drv", "SETUP.INF [display] xgalo"],
+        ["shell=progman.exe", "oracle"],
+        ["mouse.drv=mouse.drv", "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"],
+        ["network.drv=", "SYSTEM.SRC"],
+        ["language.dll=", "SYSTEM.SRC"],
+        ["sound.drv=mmsound.drv", "oracle"],
+        ["comm.drv=comm.drv", "oracle"],
+        ["keyboard.drv=keyboard.drv", "oracle"],
+        ["system.drv=system.drv", "oracle"],
+        ["drivers=mmsystem.dll", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[keyboard]", "SYSTEM.SRC"],
+        ["subtype=", "SYSTEM.SRC"],
+        ["type=4", "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"],
+        ["keyboard.dll=", "SYSTEM.SRC"],
+        ["oemansi.bin=", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[boot.description]", "SYSTEM.SRC"],
+        ["aspect=100,96,96", "SETUP.INF [display] xgalo"],
+        ["display.drv=XGA (640x480, 256 colors)", "SETUP.INF [display] xgalo"],
+        [
+          "keyboard.typ=Enhanced 101 or 102 key US and Non US keyboards",
+          "SETUP.INF [keyboard.types] t4s0enha, the oracle's answer"
+        ],
+        [
+          "mouse.drv=Microsoft, or IBM PS/2",
+          "SETUP.INF [pointing.device] ps2mouse, the oracle's answer"
+        ],
+        ["network.drv=No Network Installed", "SETUP.INF [network] nonet, the oracle's answer"],
+        ["language.dll=English (American)", "SETUP.INF [language] enu, the oracle's answer"],
+        ["system.drv=MS-DOS System", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["codepage=437", "SETUP.INF [codepages] 437"],
+        ["woafont.fon=English (437)", "SETUP.INF [codepages] 437"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[386Enh]", "SYSTEM.SRC"],
+        ["display=vddxga.386", "SETUP.INF [display] xgalo"],
+        ["EGA80WOA.FON=EGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["EGA40WOA.FON=EGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA80WOA.FON=CGA80WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["CGA40WOA.FON=CGA40WOA.FON", "SETUP.INF [V7VGA.3GR]"],
+        ["mouse=*vmd", "SYSTEM.SRC"],
+        ["network=*dosnet,*vnetbios", "oracle"],
+        ["ebios=*ebios", "SETUP.INF [machine] ibm_compatible, the oracle's answer"],
+        ["woafont=dosapp.fon", "SETUP.INF [codepages] 437"],
+        ["keyboard=*vkd", "SETUP.INF [ini.upd.31]"],
+        ["device=vtdapi.386", "SETUP.INF [ini.upd.31]"],
+        ["device=*vpicd", "SETUP.INF [ini.upd.31]"],
+        ["device=*vtd", "SYSTEM.SRC"],
+        ["device=*reboot", "SYSTEM.SRC"],
+        ["device=*vdmad", "SETUP.INF [ini.upd.31]"],
+        ["device=*vsd", "SYSTEM.SRC"],
+        ["device=*v86mmgr", "SYSTEM.SRC"],
+        ["device=*pageswap", "SYSTEM.SRC"],
+        ["device=*dosmgr", "SYSTEM.SRC"],
+        ["device=*vmpoll", "SYSTEM.SRC"],
+        ["device=*wshell", "SYSTEM.SRC"],
+        ["device=*BLOCKDEV", "SYSTEM.SRC"],
+        ["device=*PAGEFILE", "SYSTEM.SRC"],
+        ["device=*vfd", "SYSTEM.SRC"],
+        ["device=*parity", "SYSTEM.SRC"],
+        ["device=*biosxlat", "SYSTEM.SRC"],
+        ["device=*vcd", "SYSTEM.SRC"],
+        ["device=*vmcpd", "SYSTEM.SRC"],
+        ["device=*combuff", "SYSTEM.SRC"],
+        ["device=*cdpscsi", "SYSTEM.SRC"],
+        ["local=CON", "SYSTEM.SRC"],
+        ["FileSysChange=off", "SYSTEM.SRC"],
+        ["PagingFile=C:\\WINDOWS\\WIN386.SWP", "oracle"],
+        ["MaxPagingFileSize=61440", "oracle"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[standard]", "SYSTEM.SRC"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[NonWindowsApp]", "SYSTEM.SRC"],
+        ["localtsrs=dosedit,ced", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[mci]", "SYSTEM.SRC"],
+        ["WaveAudio=mciwave.drv", "SETUP.INF [ini.upd.31]"],
+        ["Sequencer=mciseq.drv", "SETUP.INF [ini.upd.31]"],
+        ["CDAudio=mcicda.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[drivers]", "SYSTEM.SRC"],
+        ["timer=timer.drv", "SETUP.INF [ini.upd.31]"],
+        ["midimapper=midimap.drv", "SETUP.INF [ini.upd.31]"],
+        ["", "layout: the blank line Setup leaves between sections"],
+        ["[XGA_Display]", "SETUP.INF [xgalo]"],
+        ["XGA_Resources=1", "SETUP.INF [xgalo]"],
+        ["XGA_Resolution=1", "SETUP.INF [xgalo]"]
+      ]
+    }
+  }
+}

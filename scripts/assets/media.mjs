@@ -8,6 +8,8 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
+import prettier from 'prettier';
+
 export const ROOT = process.cwd();
 export const CACHE = join(ROOT, 'oracle', '.cache');
 export const FLOPPIES = join(CACHE, 'floppies');
@@ -64,4 +66,11 @@ export async function inputsOf(paths, base) {
       bytes: new Uint8Array(await readFile(path)),
     }))
   );
+}
+
+/** JSON as the repository keeps it: through Prettier, with the repository's settings. */
+export async function formatted(path, value) {
+  const options = (await prettier.resolveConfig(path)) ?? {};
+
+  return prettier.format(JSON.stringify(value), { ...options, filepath: path });
 }

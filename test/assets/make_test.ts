@@ -57,6 +57,8 @@ function inputs(): AssetInput[] {
 
 const INPUTS = inputs();
 const withMedia = INPUTS.length >= 6 ? it : it.skip;
+/* The Driver Library's 256-colour driver, where `fetch-svga256.mjs` fetched it. */
+const SVGA = INPUTS.some((input) => /SVGA256\.DRV$/i.test(input.name));
 const DRIVES = existsSync(BUILD)
   ? readdirSync(BUILD).filter((name) => name.startsWith('drive-c'))
   : [];
@@ -150,18 +152,20 @@ describe('the asset bundle', () => {
 
     expect(manifest.id).toBe(sha256(new TextEncoder().encode(hashes.join('\n'))));
     expect(manifest.sources.every((source) => source.known)).toBe(true);
-    expect(manifest.displays).toEqual([
-      '8514',
-      '8514s',
-      'ega',
-      'hercules',
-      'svga',
-      'vga',
-      'vga256',
-      'xga256',
-      'xga256s',
-      'xga640',
-    ]);
+    expect(manifest.displays).toEqual(
+      [
+        '8514',
+        '8514s',
+        'ega',
+        'hercules',
+        'svga',
+        'vga',
+        'vga256',
+        'xga256',
+        'xga256s',
+        'xga640',
+      ].filter((display) => SVGA || display !== 'vga256')
+    );
   });
 
   withMedia('is the same bundle made twice', async () => {
@@ -206,17 +210,19 @@ describe('the asset bundle', () => {
       const { files } = await bundle();
       const modules = files.filter((file) => file.path.startsWith('modules/'));
 
-      expect(modules.map((file) => file.path.slice('modules/'.length))).toEqual([
-        '8514.DRV',
-        'EGA.DRV',
-        'HERCULES.DRV',
-        'SHELL.DLL',
-        'SUPERVGA.DRV',
-        'SVGA256.DRV',
-        'USER.EXE',
-        'VGA.DRV',
-        'XGA.DRV',
-      ]);
+      expect(modules.map((file) => file.path.slice('modules/'.length))).toEqual(
+        [
+          '8514.DRV',
+          'EGA.DRV',
+          'HERCULES.DRV',
+          'SHELL.DLL',
+          'SUPERVGA.DRV',
+          'SVGA256.DRV',
+          'USER.EXE',
+          'VGA.DRV',
+          'XGA.DRV',
+        ].filter((name) => SVGA || name !== 'SVGA256.DRV')
+      );
 
       for (const file of modules) {
         const name = file.path.slice('modules/'.length);

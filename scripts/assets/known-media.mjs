@@ -19,7 +19,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 
 import { readFat12 } from '../../src/file-systems/fat12.ts';
-import { driverFiles, findImages, ROOT, SVGA256 } from './media.mjs';
+import { driverFiles, findImages, formatted, ROOT, SVGA256 } from './media.mjs';
 
 const hash = (data) => createHash('sha256').update(data).digest('hex');
 
@@ -64,7 +64,7 @@ async function main() {
 
   const out = join(ROOT, 'scripts', 'assets', 'known-media.json');
 
-  await writeFile(out, `${JSON.stringify(known, null, 2)}\n`);
+  await writeFile(out, await formatted(out, known));
   console.log(`${disks.length + driver.length} files -> ${out}`);
 }
 

@@ -31,6 +31,7 @@ import { diskFile, readInf, section, type Inf } from './setup-inf.js';
 import { expandSzdd, expandedName, isSzdd } from './szdd.js';
 import { zeroSegments } from './ne.js';
 import { writeStoredZip } from './zip.js';
+import setup from '../../crates/winbox-win16/data/setup.json';
 
 export const FORMAT = 1;
 
@@ -98,24 +99,14 @@ export interface Made {
 }
 
 /**
- * The display modes and the `SETUP.INF` profiles the oracle installed them
- * with (`scripts/oracle/install-windows.mjs`, `DISPLAYS`): the profile
- * itself, or for a display changed afterwards the profile of the
- * description it was changed to. The 256-colour one is the Driver
- * Library's, from its own `OEMSETUP.INF`.
+ * The display modes, and the `SETUP.INF` profile Setup installed each with
+ * on the oracle (`setup.json`, from `scripts/assets/survey-installs.mjs`):
+ * the 256-colour one is the Driver Library's, from its own `OEMSETUP.INF`.
  */
-export const DISPLAY_PROFILES: Record<string, { profile: string; oem?: boolean }> = {
-  vga: { profile: 'vga' },
-  svga: { profile: 'svga' },
-  ega: { profile: 'egahires' },
-  hercules: { profile: 'hercules' },
-  vga256: { profile: '8et4480', oem: true },
-  8514: { profile: '8514' },
-  '8514s': { profile: '8514s' },
-  xga256: { profile: 'xgalg' },
-  xga256s: { profile: 'xgasm' },
-  xga640: { profile: 'xgalo' },
-};
+const DISPLAY_PROFILES = setup.displays as unknown as Record<
+  string,
+  { profile: string; oem?: boolean }
+>;
 
 /** The data files of `[win.other]` the bundle keeps; the rest there is code. */
 const OTHER_DATA = ['MIDIMAP.CFG', 'SETUP.REG'];
