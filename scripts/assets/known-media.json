@@ -1,0 +1,3039 @@
+{
+  "about": "The files of the media the oracle was installed from, by sha256: written by scripts/assets/known-media.mjs.",
+  "media": [
+    {
+      "id": "win31-retail-3.5",
+      "label": "Microsoft Windows 3.1 (3.10.103), retail, six 3.5\" 1.44 MB disks",
+      "files": [
+        {
+          "disk": "disk1",
+          "name": "8514.DR_",
+          "size": 50425,
+          "sha256": "4d9fac06ab21ff8a8c9767f44af062e9ba9ab1bbe659186061147e0c3c90360d"
+        },
+        {
+          "disk": "disk1",
+          "name": "8514SYS.FO_",
+          "size": 3633,
+          "sha256": "c98a1d68907c08f6fab2a2b9214c1301c4a4474bc0be66b9f39d61304be35563"
+        },
+        {
+          "disk": "disk1",
+          "name": "APP850.FO_",
+          "size": 16663,
+          "sha256": "c9b1004c920d88486be3bdfddf39279473528ec50bcfe1e4d737ff9acb99b1e5"
+        },
+        {
+          "disk": "disk1",
+          "name": "COMM.DR_",
+          "size": 7157,
+          "sha256": "0951aaa0e6fe849a22b96f95936c909c238aeec76b503dbe6eeca55de90103be"
+        },
+        {
+          "disk": "disk1",
+          "name": "CPWIN386.CP_",
+          "size": 48841,
+          "sha256": "5c1dbf2e62e3e9d2a52a202d955082ef259c5dbbb8fb3a69ed71b84807562c63"
+        },
+        {
+          "disk": "disk1",
+          "name": "DISK1",
+          "size": 8,
+          "sha256": "2854a0436e7139e7e1e80375a25c3bde1c032ab73bdfd572dd67c95458fad0f8"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGA.3G_",
+          "size": 9460,
+          "sha256": "2b8970f871991de26fd7232c814d4322eaac086f3b2e69acb01849ee63688781"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGA.DR_",
+          "size": 43319,
+          "sha256": "733edf95f8c310ded770f2ed7cf68352e5852250864cf222b43b81ae82f621f4"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGACOLOR.2G_",
+          "size": 2729,
+          "sha256": "06767b5ae2115f8330c8f6248553ffe0007a209bf5da6d2eb856fbfa11285445"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGAFIX.FO_",
+          "size": 2534,
+          "sha256": "6da2d35f2708949367f79dec3fdf3b499280e72f406df6db3903e6ce279c97e9"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGALOGO.LG_",
+          "size": 1105,
+          "sha256": "8f7e9a9127bece37ab5edb0292834b8438ed9672ddb3c00b75203cea9c482441"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGALOGO.RL_",
+          "size": 5125,
+          "sha256": "a734bca83a9c41f4fd3a0853ca392bf9ad5f1196cc37efe3405f9d9da04c1980"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGAOEM.FO_",
+          "size": 3027,
+          "sha256": "ae858f4af9cf686bb051f50db54fb7038f5132b00acfdcf91c126a364f14c454"
+        },
+        {
+          "disk": "disk1",
+          "name": "EGASYS.FO_",
+          "size": 2879,
+          "sha256": "3f3ef15c98ebee28e8ba9ca62c3306336f624cfbf2262f9e096724c0c26ea581"
+        },
+        {
+          "disk": "disk1",
+          "name": "GDI.EX_",
+          "size": 167674,
+          "sha256": "65301ebb8bd82a78be187745264e37c8b3b06fa6b5b712204da088cb10a7b060"
+        },
+        {
+          "disk": "disk1",
+          "name": "HERCLOGO.RL_",
+          "size": 4690,
+          "sha256": "3764adbbc4f9dd650bd0eedc798882fa6d9fcb1bc3cd3a7a83ecac7d8d1e7fda"
+        },
+        {
+          "disk": "disk1",
+          "name": "HERCULES.2G_",
+          "size": 1809,
+          "sha256": "0f095916ff6423e4a83d8a571b539d61671e18d98171479a386a0d953fce91a9"
+        },
+        {
+          "disk": "disk1",
+          "name": "HPEBIOS.38_",
+          "size": 2108,
+          "sha256": "deb524b021068cad75b3723534e83a7c36a5c5037553548e77b2dd1a09d0fef5"
+        },
+        {
+          "disk": "disk1",
+          "name": "KBDHP.DR_",
+          "size": 6835,
+          "sha256": "2606749afd42de71f7673957bc5387b8393f7567b86362b8edb9691e6f78ebc7"
+        },
+        {
+          "disk": "disk1",
+          "name": "MMSOUND.DR_",
+          "size": 2829,
+          "sha256": "102b204e8c005338661251a1dbf8f7ca8574574fe8496b3b093a593e3018bf78"
+        },
+        {
+          "disk": "disk1",
+          "name": "MSCVMD.38_",
+          "size": 3257,
+          "sha256": "ede30aec36b1e9360a123b8b5c38b81b856efadab72f294cd5f522e1a8060a9c"
+        },
+        {
+          "disk": "disk1",
+          "name": "MSNET.DR_",
+          "size": 4619,
+          "sha256": "e1ddf17cfedeadfc65a0e7b6e1411a314827cfb454b91965b80917a3a6d770b6"
+        },
+        {
+          "disk": "disk1",
+          "name": "OLIGRAB.2G_",
+          "size": 2618,
+          "sha256": "6df5c2579a59e5be2dd801a45e233b86c856bb44132913d0b6e2e47c8a2ce88b"
+        },
+        {
+          "disk": "disk1",
+          "name": "PMSPL20.DL_",
+          "size": 22506,
+          "sha256": "8fb504d34a3a8dcc401d8af9d1f3e1090921ab4fad1a35397a951f4520f74d4f"
+        },
+        {
+          "disk": "disk1",
+          "name": "SETUP.EXE",
+          "size": 422080,
+          "sha256": "dd5a9288a0267d0476da5b7697963708b27611b10134410496025d6e4f1fd7cb"
+        },
+        {
+          "disk": "disk1",
+          "name": "SETUP.HL_",
+          "size": 33683,
+          "sha256": "b9bc61f37e7ac4a51e0a4787dcb82770dc8276313c2df4d473e88ffc0d407abb"
+        },
+        {
+          "disk": "disk1",
+          "name": "SETUP.INF",
+          "size": 59118,
+          "sha256": "6ec98d9a1ea4d679a675a7620a38b2371c67cc47e85ad012f895747d3ca8f790"
+        },
+        {
+          "disk": "disk1",
+          "name": "SETUP.SHH",
+          "size": 6525,
+          "sha256": "1e09146c9785f3d1b4e855e19fce8b15777728d3554ccad31bd5f15de0f4b676"
+        },
+        {
+          "disk": "disk1",
+          "name": "SETUP.TXT",
+          "size": 41724,
+          "sha256": "8fcfaeb2d613b47039073474a07dd2560875477ae091f86affbb19533181f8b1"
+        },
+        {
+          "disk": "disk1",
+          "name": "SYSTEM.DR_",
+          "size": 1780,
+          "sha256": "b62fadd496874c80fc6fa370c90da4c12df8c5756fab1207c06e66165006da75"
+        },
+        {
+          "disk": "disk1",
+          "name": "SYSTEM.SR_",
+          "size": 642,
+          "sha256": "8a00070ff9f3613c84d7fdbbd516ab85734b2108ab6174db9fa7c44a19a148f7"
+        },
+        {
+          "disk": "disk1",
+          "name": "TIGA.DR_",
+          "size": 38829,
+          "sha256": "796ee6561aba107b5ef5594e4068171c719849bbd05284dfc3033008bbab8d3c"
+        },
+        {
+          "disk": "disk1",
+          "name": "V7VDD.38_",
+          "size": 19315,
+          "sha256": "6bddbc83ff302c552ad8d0ac0f0aa95509ebe2e322e3c3375c7fa5f9010f8322"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDD8514.38_",
+          "size": 27808,
+          "sha256": "28c4bb7dad2ebd9c8d2afbbefbccdc1ee6d5ccf0ca4478590ffca1abed8c2d84"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDDCT441.38_",
+          "size": 18366,
+          "sha256": "fe8262db1693bc5d2c36d2ddbfc7f7f7362711c2f77a3867899b0efae909a2a5"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDDEGA.38_",
+          "size": 19421,
+          "sha256": "6bba7b57c7ed8249d4226415357b7ff2ab069f97e44920e450b711bdda5ef93f"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDDTIGA.38_",
+          "size": 27647,
+          "sha256": "f67267a4998eba70a8ffa5cf954acb794bcad889b34d870d519283b6d26c0149"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDDVGA30.38_",
+          "size": 19651,
+          "sha256": "e2fe26d305bdad5f10184c1f61198637428fddd418fc75dccdf4ddfd015d69d6"
+        },
+        {
+          "disk": "disk1",
+          "name": "VDDXGA.38_",
+          "size": 20367,
+          "sha256": "f5655ad675d4ac1766d1f7384116e6ced502d6392a5c10c068f6163e3d78884d"
+        },
+        {
+          "disk": "disk1",
+          "name": "VGA.3G_",
+          "size": 11256,
+          "sha256": "def4ce22d37319a09189bb2001a84a0b8f16bc6cc3385790c7f7caa46ac408e9"
+        },
+        {
+          "disk": "disk1",
+          "name": "VGASYS.FO_",
+          "size": 3111,
+          "sha256": "f04a771bebfc3b6ae29c232ad222224f6e03fe0f7aee64456936628ded7787c4"
+        },
+        {
+          "disk": "disk1",
+          "name": "WIN.CN_",
+          "size": 10101,
+          "sha256": "90a7c3439e9919d40a551f36a71851da564f85c903a959b97498abf8920ff06c"
+        },
+        {
+          "disk": "disk1",
+          "name": "WIN.SR_",
+          "size": 1666,
+          "sha256": "2fa403599d41f0e2b93932318e359efbf3c82e953bea56a173c80ef6137d93bc"
+        },
+        {
+          "disk": "disk1",
+          "name": "WINHELP.EX_",
+          "size": 163861,
+          "sha256": "4364208abbf603a092ed6c12a1baca3f4190c6eb41117bb24455d1e0166fa2fe"
+        },
+        {
+          "disk": "disk1",
+          "name": "XGA.DR_",
+          "size": 55181,
+          "sha256": "72ed28a545c926718f05c5dd81039d22ecf90f19a9a2ff108321e29c6fb17795"
+        },
+        {
+          "disk": "disk1",
+          "name": "XMSMMGR.EXE",
+          "size": 14144,
+          "sha256": "0615bf1d7e98968a31b94b7247aa07437399b646145cba5fabd5bdd0b888adfd"
+        },
+        {
+          "disk": "disk2",
+          "name": "386MAX.VX_",
+          "size": 20237,
+          "sha256": "64bd8b91f7972852a41519318c54ead9feb1a25b8917b3bcb596c63bd1b812f2"
+        },
+        {
+          "disk": "disk2",
+          "name": "8514FIX.FO_",
+          "size": 3646,
+          "sha256": "d4c9e900a061b7df33f0fed681351cb59204e483aebd3aca74097d3469c57195"
+        },
+        {
+          "disk": "disk2",
+          "name": "8514OEM.FO_",
+          "size": 4237,
+          "sha256": "bd34591502d98662b4a2b9a839a2d25d9a655c4ec1e21df267e32d50b0bb830e"
+        },
+        {
+          "disk": "disk2",
+          "name": "BANINST.38_",
+          "size": 992,
+          "sha256": "473fcd854dcdfd0686ef00bc013e844ae6d23eee63640221e60888cff790655f"
+        },
+        {
+          "disk": "disk2",
+          "name": "BLUEMAX.VX_",
+          "size": 20270,
+          "sha256": "f70c8d6d00a525797a0391b7487a9298f9b7ec7b8cc3ea096adc2ff052499815"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGA.2G_",
+          "size": 1768,
+          "sha256": "f3161d8a609e498b970eaff0ef257bf2c26e175f1a203ff2c168d88a502f4d5d"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGA40850.FO_",
+          "size": 3729,
+          "sha256": "b9d5772a43ed33002946227a72a90a37ff88a5a7cc7bde507b6ca43b7219ebd7"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGA40WOA.FO_",
+          "size": 3563,
+          "sha256": "e21c1dea185276053f07089aa8ea86831b03fc503cd15877195aede1ebea74f5"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGA80850.FO_",
+          "size": 3049,
+          "sha256": "f4bf4141d49c263bc594556f348a795c471177612ae7e84ff8f5e3b157a04d3b"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGA80WOA.FO_",
+          "size": 3039,
+          "sha256": "f281d59c822b529200a8ad55801d31f6ba9a28c5df2e46cd358e2efaef3f8cc1"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGALOGO.LG_",
+          "size": 902,
+          "sha256": "b821b2333a24b902749e7a104713ba8cd01f56b0e2dad4e61207e6553510b229"
+        },
+        {
+          "disk": "disk2",
+          "name": "CGALOGO.RL_",
+          "size": 3815,
+          "sha256": "601ed142e9983b8816b3b73045e3bc9266dee305aca647662764abcf40c1f78e"
+        },
+        {
+          "disk": "disk2",
+          "name": "CONTROL.HL_",
+          "size": 95210,
+          "sha256": "e1fa53312c7bced428c74af3ff6e5ce84bca1a459cfd4088bf0e629dc608b8ef"
+        },
+        {
+          "disk": "disk2",
+          "name": "DECNB.38_",
+          "size": 4860,
+          "sha256": "e346320bffec683b058d4836663046910c03d6159a3f1e6cebf5f892013044db"
+        },
+        {
+          "disk": "disk2",
+          "name": "DECNET.38_",
+          "size": 5817,
+          "sha256": "4224704039679a546db029adbf5eccfee42e5fda304749911fbe8d020d3fa002"
+        },
+        {
+          "disk": "disk2",
+          "name": "DISK2",
+          "size": 8,
+          "sha256": "8f53c3259a91caac3c04bccf129e29dd199babe506e4cb2a903f3a0f13e5fcdd"
+        },
+        {
+          "disk": "disk2",
+          "name": "DOSAPP.FO_",
+          "size": 16721,
+          "sha256": "2d403d475880bf254cf7a1fe639ec7b6b38c76daedfe0eb1f8aea3552165b19e"
+        },
+        {
+          "disk": "disk2",
+          "name": "DOSX.EX_",
+          "size": 27426,
+          "sha256": "a0cbbabe19211342966d88e3c3c34df36dd443485f574ec0d3facc1322c3d9fb"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGA.SY_",
+          "size": 4190,
+          "sha256": "bb47e153bb2b3c0e41943d07bfee4d90fe0759aa36158389bd8b99c8ff633a64"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGA40850.FO_",
+          "size": 4058,
+          "sha256": "db016b2d6d75c9bc40655aa38eb600d9934b20799424faaa05bd7aedaf50421a"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGA40WOA.FO_",
+          "size": 3933,
+          "sha256": "7a79c28ce1f740fa6105de8c00f5979ee7a0638dbece3d92fc941fb0cf10c589"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGA80850.FO_",
+          "size": 3243,
+          "sha256": "0709a6dc201c3463e0960fce32aca49105ffbc59bc8b033cffb087516ecd2af2"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGA80WOA.FO_",
+          "size": 3259,
+          "sha256": "a01ee040cd723986749e4f232999abf0d384635322c407b12fc9c95ade4455ac"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGAHIBW.DR_",
+          "size": 26886,
+          "sha256": "b6817cf2ba551074e7d2eeda18c019cfcbcb8288ed219ce58fa3193e900bb57e"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGAMONO.2G_",
+          "size": 2563,
+          "sha256": "d1239352de4be78a3987e4e7a4b92bba45ab6b92283739bc781caf9c3185b8d2"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGAMONO.DR_",
+          "size": 26941,
+          "sha256": "ea91727109a7b5aaa6015c325bd7aa3ebe6f9c18705c889eeea49c9910113e58"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGAMONO.LG_",
+          "size": 1073,
+          "sha256": "2d9b8f80eefaa6f8d42fe5e86d4172aa3642b9a0914f9dffc0300863db85a4a7"
+        },
+        {
+          "disk": "disk2",
+          "name": "EGAMONO.RL_",
+          "size": 4619,
+          "sha256": "999f7cf792ab473fd7a4d4809c46852e7e5b7369cf09245159c05898d2ad583a"
+        },
+        {
+          "disk": "disk2",
+          "name": "HERC.3G_",
+          "size": 5988,
+          "sha256": "81eaaaa03f0d4a69ed57b0c8442ff8ec5b0769ea061b5fe75217b963648d33ca"
+        },
+        {
+          "disk": "disk2",
+          "name": "HERC850.FO_",
+          "size": 3524,
+          "sha256": "dc2e5c59a044d7b71c85c26a11a0c6d92df97f89cf3dc2df90596d6e66c97407"
+        },
+        {
+          "disk": "disk2",
+          "name": "HERCLOGO.LG_",
+          "size": 1019,
+          "sha256": "9a5edaf7f04279cc2fcc949801cad5e49ff0d6169e875c380c802b62d25b6b37"
+        },
+        {
+          "disk": "disk2",
+          "name": "HERCWOA.FO_",
+          "size": 3509,
+          "sha256": "120315349efc24ff34bcaf04131eebf862c0cb1c46eebecf2a4288f37ba08130"
+        },
+        {
+          "disk": "disk2",
+          "name": "HPMOUSE.DR_",
+          "size": 2540,
+          "sha256": "94940b17e53ec9950d1fa9d135dce5cd471027aebc71e7f408321f5a6a106a2b"
+        },
+        {
+          "disk": "disk2",
+          "name": "HPSYSTEM.DR_",
+          "size": 2108,
+          "sha256": "798dcf75250b0ba479ff738fefc80cc0364987a9fe4046f10e4ba9309fc5e34f"
+        },
+        {
+          "disk": "disk2",
+          "name": "IPX.OB_",
+          "size": 15111,
+          "sha256": "d8212b8b756a8d6b736a34d85d544d37ca7e9246f9c8706105f357c595e1df32"
+        },
+        {
+          "disk": "disk2",
+          "name": "IPXODI.CO_",
+          "size": 13552,
+          "sha256": "bb6c7155ad7959dbd7bddd69fe9157244b42f13c9d5496e51a7fcc114ff14053"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDBE.DL_",
+          "size": 2049,
+          "sha256": "1ff3c14e07e5842971aaad8c5dd4c8c4a2c5ab5a54134d843349f710c53df111"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDCA.DL_",
+          "size": 2127,
+          "sha256": "003918783dd5ad10a71b63dd787d3f19e7204d9db52240985269ccbb0ea71dad"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDDA.DL_",
+          "size": 2032,
+          "sha256": "58402e78034931cb51c84641d58457b331842fee9749a73b7be925d9257e1c31"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDDV.DL_",
+          "size": 1000,
+          "sha256": "5410dc9296409028934ef47191aa50012334f2ba2152600bf1d322ececa48b64"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDFC.DL_",
+          "size": 2272,
+          "sha256": "bf3dabb3936ca75662558cfb8b51e80409c0cc3e56418de4b0d1e7838e1ca8df"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDFI.DL_",
+          "size": 2079,
+          "sha256": "c2ca287b5358be2ec7707c46ad81d2f0aa04ede6871a35dcc3a12f6c2caa2c2c"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDFR.DL_",
+          "size": 1928,
+          "sha256": "678b4790da42e288a4175ebef2e033e93817f61dfecb021fea29744ada1f27f3"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDGR.DL_",
+          "size": 1976,
+          "sha256": "4ba2e0c295d0053ada6fc2560ade6c4ee69ba08d12bb348d823fc5af155b6b68"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDIC.DL_",
+          "size": 1412,
+          "sha256": "06a1426b775d2ad4626973e8580ff78d0a1710ce7eeb286ee8155642b50cb045"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDIT.DL_",
+          "size": 1806,
+          "sha256": "8c0d3752d469c215056a1086c57df2b6c81402c3aa22abfb62b3f29c22e6ef8a"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDLA.DL_",
+          "size": 2091,
+          "sha256": "929b4f2bf9803d58e60a422bde1f11b9899a82d0556b7afc498e7c5b89b5fbeb"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDMOUSE.DR_",
+          "size": 1078,
+          "sha256": "10e7813dbc07172b3c8604e151d4a990b0f7552743927e0fc208c1a658e68b7f"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDNE.DL_",
+          "size": 2029,
+          "sha256": "a02690897f0569e67370232c4eabffba29d0b4f0cb63f92ff20047dd5364c9f8"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDNO.DL_",
+          "size": 2059,
+          "sha256": "b0bccb5b959b3905c502ecf3b27fd9b5c4d87ae25d5ecf5f90f9fc65051fab69"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDPO.DL_",
+          "size": 1982,
+          "sha256": "e186c75341bcc48122b1b81b4c30b92879147456bd634a352a42d03b6582055d"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDSF.DL_",
+          "size": 2002,
+          "sha256": "d86c5793e201232e4f6113b6ba233568b42b56f59811d0d13ccbfb47ccc37075"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDSG.DL_",
+          "size": 1374,
+          "sha256": "1b7d1816895c2e42ae4bb92dd2b39a28e2ed42366bfb6493c29d33e50c066701"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDSP.DL_",
+          "size": 2074,
+          "sha256": "b6fceb56be9b989255bd4b6e7569f90313eee40132b6766c3200be1657cbf9a9"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDSW.DL_",
+          "size": 2070,
+          "sha256": "6221652cb91847b1aec5bb35bf07597b12fbfad5962c74ff1f446885edab2fa1"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDUK.DL_",
+          "size": 1153,
+          "sha256": "daaf20df4248e8c4f044423c7acf6c4a332503db716524ff8289638003ccc6e5"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDUS.DL_",
+          "size": 996,
+          "sha256": "c2d3ca3edbdcff9ca8c689a680af8e3dc03caae7e5e941bdee08a411e4a2b256"
+        },
+        {
+          "disk": "disk2",
+          "name": "KBDUSX.DL_",
+          "size": 1329,
+          "sha256": "10300cfd464414c205cb52819a95fb6db25f87583e0a8aa1a5cf3dd9854f9969"
+        },
+        {
+          "disk": "disk2",
+          "name": "KEYBOARD.DR_",
+          "size": 6115,
+          "sha256": "df2af9b760c834f358134b3a1c9577c91cf81d0ccb11feb4ecd83caf392e0648"
+        },
+        {
+          "disk": "disk2",
+          "name": "KRNL286.EX_",
+          "size": 55774,
+          "sha256": "809b933455a13a1877cdacf81dbac48ee5ce83e0af743faf3229fe0aeeb8f35a"
+        },
+        {
+          "disk": "disk2",
+          "name": "KRNL386.EX_",
+          "size": 59399,
+          "sha256": "035e81bcb16b02bffb044f43e61cb2f7e3c1e2392eadc42fb32ceeb5bf7d510b"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGDUT.DL_",
+          "size": 1425,
+          "sha256": "1ad61a822204769b1ae76f97b659a313f3e9c45be958271f4e8e4f12b2827e9c"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGENG.DL_",
+          "size": 1430,
+          "sha256": "498515adb67ed3350283ba9f0f3d9947463661a85718e3cb0889b883713f7f2e"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGFRN.DL_",
+          "size": 1457,
+          "sha256": "05715e6171d8c313180bdfb49fc85746109b29b8bf2d5e83ff28b777761b874b"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGGER.DL_",
+          "size": 1425,
+          "sha256": "9fdc15f97856b61825316b802f0f0438ce769a487a98204e3fe48138a2abade8"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGSCA.DL_",
+          "size": 1429,
+          "sha256": "ceb0d3eb5c9dc4ac0ac487bbabecac6c8afa3a8df3ed108418a25e2705e8cce4"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANGSPA.DL_",
+          "size": 1494,
+          "sha256": "c074f49176b888c21a9ed95d545368d23cbf7a89f75958c8ae7a5e73f7e192f8"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANMAN.DR_",
+          "size": 26011,
+          "sha256": "bc90180be2b9415690f63f2d9fcd708aa8d3a95cfbacb4374943450a29db6018"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANMAN.HL_",
+          "size": 14000,
+          "sha256": "a7e4cd01897125a383317a4d97087aad29bbc0306f345cb47c2e8fe1aa512d8e"
+        },
+        {
+          "disk": "disk2",
+          "name": "LANMAN10.38_",
+          "size": 1550,
+          "sha256": "39489bee2e0616015ac70c5287477b40ffba610e69d3a4c8b4633bc0f82cac85"
+        },
+        {
+          "disk": "disk2",
+          "name": "LMOUSE.CO_",
+          "size": 22326,
+          "sha256": "d015f8f3977425573b4939abfd821ac8cf0aeaa16ac411cb9f20733e02fcd2bb"
+        },
+        {
+          "disk": "disk2",
+          "name": "LMOUSE.DR_",
+          "size": 7898,
+          "sha256": "f0deb5a5a26fdb7aad514e2156529278acd5eeeb6357793ca203521259a8a7c1"
+        },
+        {
+          "disk": "disk2",
+          "name": "LSL.CO_",
+          "size": 6278,
+          "sha256": "e225b574e74e6a26ec7f20cbb5d5865b086f1bd5c3dea188a426255a26da07aa"
+        },
+        {
+          "disk": "disk2",
+          "name": "LVMD.38_",
+          "size": 4018,
+          "sha256": "c67e693e1d76cb24a79dc622f5b1a70c43493d124d9588dd9bbf1f4b3b2f56fa"
+        },
+        {
+          "disk": "disk2",
+          "name": "LZEXPAND.DL_",
+          "size": 6551,
+          "sha256": "92be6527cacfd06e85c241b25502c1b4a9a63deef419179ac24942a4f4ac24b8"
+        },
+        {
+          "disk": "disk2",
+          "name": "MOUSE.DR_",
+          "size": 8000,
+          "sha256": "9b83a0049f193231c09b1a2eb02d5c928f8c0c10367943581055d97a960c8400"
+        },
+        {
+          "disk": "disk2",
+          "name": "MSC3BC2.DR_",
+          "size": 2823,
+          "sha256": "acff4775306e33dcd109731700fc7e9aded033e6cc8f1328452c2468570e5c9b"
+        },
+        {
+          "disk": "disk2",
+          "name": "MSCMOUSE.DR_",
+          "size": 2901,
+          "sha256": "8a6f7bba99c65614dbfe7665314aaa369370d82894efa9aecc26093351935b19"
+        },
+        {
+          "disk": "disk2",
+          "name": "NETAPI20.DL_",
+          "size": 60347,
+          "sha256": "8c88d8200bd13abce0af52d826b69798bdf3ae77acc7153569c8b8d4f9f17a33"
+        },
+        {
+          "disk": "disk2",
+          "name": "NETWARE.DR_",
+          "size": 59787,
+          "sha256": "1cb8a52cc8b7c0dd0aeff5fd38d6618aa2a3184cf0675cf2a02015904f9bfc74"
+        },
+        {
+          "disk": "disk2",
+          "name": "NETWARE.HL_",
+          "size": 18204,
+          "sha256": "9a634c11c4c505cee4c77912e137c293f7df1b8b75f3f163e7609106ff8af38f"
+        },
+        {
+          "disk": "disk2",
+          "name": "NETX.CO_",
+          "size": 38642,
+          "sha256": "2d4246d1c08bdebcbca68e0a9955d8edc10d5b139b97ba1f3d9e42a0c32dc33d"
+        },
+        {
+          "disk": "disk2",
+          "name": "NOMOUSE.DR_",
+          "size": 315,
+          "sha256": "0cdbfe310a36ba031bdebf128c2edac67099f4e73356c994659109038fe85ca0"
+        },
+        {
+          "disk": "disk2",
+          "name": "NWPOPUP.EX_",
+          "size": 1577,
+          "sha256": "7aeab488fbae1dba11d50a5e9a9023e162f68e32d18b21bdcef74ff17d8e8115"
+        },
+        {
+          "disk": "disk2",
+          "name": "OLIBW.DR_",
+          "size": 27824,
+          "sha256": "4b7b38b47ef1fe6012d5035d2fb7942740599e0f00f18b25ae718c264300d754"
+        },
+        {
+          "disk": "disk2",
+          "name": "PCSA.DR_",
+          "size": 6177,
+          "sha256": "fd886d5383738eb56ed4b3a775c3bdf66098c657e6ae5f84c0118165c5c1de71"
+        },
+        {
+          "disk": "disk2",
+          "name": "PLASMA.3G_",
+          "size": 6405,
+          "sha256": "36447129342db0c3c388619112979932a9b52de980d5a25eec799fc5d537f071"
+        },
+        {
+          "disk": "disk2",
+          "name": "PLASMA.DR_",
+          "size": 27311,
+          "sha256": "14a9287b0b84014b836ba85c0ee68413b19be69b11f3529414fa50176d203198"
+        },
+        {
+          "disk": "disk2",
+          "name": "POWER.DR_",
+          "size": 9461,
+          "sha256": "578da293fdff8cc121fa3fd7645189f84344aaa5ad6cdde0e9e5dfb34eec9c13"
+        },
+        {
+          "disk": "disk2",
+          "name": "POWER.HL_",
+          "size": 7763,
+          "sha256": "e6ee4be7da26e1b306916298e87143b56a8554e720ea3204dfc82d56261f906b"
+        },
+        {
+          "disk": "disk2",
+          "name": "SL.DL_",
+          "size": 9547,
+          "sha256": "6f0af40669d3da8af096cd93405b77ec7b0d313dd0452ef725f9cdb3b5e4dd23"
+        },
+        {
+          "disk": "disk2",
+          "name": "SL.HL_",
+          "size": 9094,
+          "sha256": "aff1f149beaa4d8dce5027c625fd32c173b306a61001b3640d05e2e7f8757f18"
+        },
+        {
+          "disk": "disk2",
+          "name": "SUPERVGA.DR_",
+          "size": 44303,
+          "sha256": "9077cbd1573d59acc231a169f001bd3a151fb4c3811fdf6e335c6ed6e523552c"
+        },
+        {
+          "disk": "disk2",
+          "name": "TBMI2.CO_",
+          "size": 6616,
+          "sha256": "183b4c32a2dbd551ed1910ee5765e46202510a01ded65ce0e8716178fb2dde49"
+        },
+        {
+          "disk": "disk2",
+          "name": "TIGAWIN.RL_",
+          "size": 23493,
+          "sha256": "e0cecada9ad332e066bfad06f602d5037ed355519f983c9874ead5f7a5626c36"
+        },
+        {
+          "disk": "disk2",
+          "name": "USER.EX_",
+          "size": 195465,
+          "sha256": "0263432a77ff3d8d213091e9dc14c44b090199ef635eac676dfff42879d2058e"
+        },
+        {
+          "disk": "disk2",
+          "name": "V7VGA.3G_",
+          "size": 8960,
+          "sha256": "bd695dc5c86348dc37fa8be6cf7d6f22926e6f0a884e53381f6ba8dbada321c3"
+        },
+        {
+          "disk": "disk2",
+          "name": "V7VGA.DR_",
+          "size": 47671,
+          "sha256": "87dfc8b4a51a6c0d4122baf4646a8708cf06e7d50773a9c19bb3d77bfac8fba8"
+        },
+        {
+          "disk": "disk2",
+          "name": "VDDCGA.38_",
+          "size": 8906,
+          "sha256": "e24a9643f8b3fd94da679c4f884040692eba4402a4cde28b827c2deb718121b2"
+        },
+        {
+          "disk": "disk2",
+          "name": "VDDHERC.38_",
+          "size": 7023,
+          "sha256": "1966a80828d30f5be4bffa889695f8435b1e67c32435ccddcef53c0841ee929c"
+        },
+        {
+          "disk": "disk2",
+          "name": "VER.DL_",
+          "size": 6307,
+          "sha256": "a191385cbb0a5dd6f9f8e9aecc3a22655032f4e452cb0832840fb61e40f2a222"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA.DR_",
+          "size": 43952,
+          "sha256": "adf29071d60f4f20c434ebf368ac97a7ff91c0cfa7e64bbccb63aa678958e9af"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA30.3G_",
+          "size": 9803,
+          "sha256": "8b502b5a949e5a500fe4d393d2f7f9ded319832ceffe3bfa5edf08d09d544f2b"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA850.FO_",
+          "size": 3264,
+          "sha256": "7677912528733e159fb6aa910c8826c58c314a88b003e407c91be671e9ba2f0c"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA860.FO_",
+          "size": 3237,
+          "sha256": "bb2f1f5a5bacae64bc4cce67eb6bbd8571a4ae14d51cb096bdea5b2397d0fda5"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA861.FO_",
+          "size": 3260,
+          "sha256": "d0e86308ee3db550a89484597a0c413df9b5809594a9188e693af89ca4519ef2"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA863.FO_",
+          "size": 3266,
+          "sha256": "72fdfbbaf9fb2cdc88cb3b3d2e3ca76c8d07f177372f23a0d2fba8dd86fa32f2"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGA865.FO_",
+          "size": 3261,
+          "sha256": "a793c6111a0e6ef9d669b63985162df505e3ad2c747d96941c11cf041cb2bdf4"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGACOLOR.2G_",
+          "size": 3658,
+          "sha256": "5406e52edaad6dc1061163f6dc92887d98318e33ba2d0562fba0164b8e216902"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGADIB.3G_",
+          "size": 10382,
+          "sha256": "b3df63581ba34c976d64780cadefc074bf62410d185aa65bcd77589fb7b40f5c"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGAFIX.FO_",
+          "size": 2715,
+          "sha256": "57a0613005259d2e45ba97679ccf2d3e37d1066c39b31b9f8a97e3fd229ced12"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGALOGO.LG_",
+          "size": 1245,
+          "sha256": "4a7576bc84f2e5b28d4660464a380ab789437a34c3db76512a60ddd640009f5b"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGALOGO.RL_",
+          "size": 9204,
+          "sha256": "f65c98be17b2f9bddb56995ca3d63f85a8bb6c7f3202ff8cf6a0d14c2715eeea"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGAMONO.2G_",
+          "size": 3644,
+          "sha256": "d27c4464ff1bf7497ac5a6f6b37719e66129990cca5b1a2532a88c87f9d60a89"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGAMONO.DR_",
+          "size": 26679,
+          "sha256": "7644d1795f2a1a3e4b8733b342e40473305ba3f55297d822e0c7bd8838f41653"
+        },
+        {
+          "disk": "disk2",
+          "name": "VGAOEM.FO_",
+          "size": 3219,
+          "sha256": "dfb7c54af2b3b9167115cec02ce0d0b4801bd84a86bbefc2c4185831953f6fbe"
+        },
+        {
+          "disk": "disk2",
+          "name": "VIPX.38_",
+          "size": 8864,
+          "sha256": "1487e496368a0e2d37cd3839d26145ea6d4aa2f060fd4a8fad40eb220d6ec9e2"
+        },
+        {
+          "disk": "disk2",
+          "name": "VNETWARE.38_",
+          "size": 3903,
+          "sha256": "16f149ceccdd563ad6b3391c04de0b050ff068c2b9811ce966612fd6529c526f"
+        },
+        {
+          "disk": "disk2",
+          "name": "VPOWERD.38_",
+          "size": 2224,
+          "sha256": "d8939f25e86a3e8f21a1e56a55271752e66df35ecec55a1d35c3ecbac1b415bc"
+        },
+        {
+          "disk": "disk2",
+          "name": "WINDOWS.LO_",
+          "size": 878,
+          "sha256": "1f2ba4b2c5f6e49a56496904c9a08736ba0480ba1e70d3abe509db6c5aac17bf"
+        },
+        {
+          "disk": "disk2",
+          "name": "WINPOPUP.EX_",
+          "size": 15453,
+          "sha256": "e9e58b72a3382f4f35cc8ac3cdec4cde650507d78226688b03eb6a006705c640"
+        },
+        {
+          "disk": "disk2",
+          "name": "WINPOPUP.HL_",
+          "size": 1289,
+          "sha256": "14d94e747d9017e52722add03e6b4510415108dfeefad7cf632b905fb670c891"
+        },
+        {
+          "disk": "disk2",
+          "name": "XLAT850.BI_",
+          "size": 440,
+          "sha256": "c7220990b36536b74847e74e5c4672c682520d2542641ea19b88d9971fc4266e"
+        },
+        {
+          "disk": "disk2",
+          "name": "XLAT860.BI_",
+          "size": 412,
+          "sha256": "23c9340cac4d77beb0ce3d182692d481af5bb979bd52e5a0fdd500d930492fb5"
+        },
+        {
+          "disk": "disk2",
+          "name": "XLAT861.BI_",
+          "size": 415,
+          "sha256": "1cfceec0e97139884f798a6ac812e15aa9450628d175b6f5bb4d70a9f7548f7e"
+        },
+        {
+          "disk": "disk2",
+          "name": "XLAT863.BI_",
+          "size": 415,
+          "sha256": "bbd2a15b5e3aa9afbddc6c48d140cd42ba4d43471935dac25704947a68cca7d8"
+        },
+        {
+          "disk": "disk2",
+          "name": "XLAT865.BI_",
+          "size": 410,
+          "sha256": "14471438d3e555cf9d585edb6ab464ec3be31cf46ce5b489f2c71a787557af61"
+        },
+        {
+          "disk": "disk3",
+          "name": "256COLOR.BM_",
+          "size": 4312,
+          "sha256": "97288042235b5f2ee6de3683824436dfb9532d4c13b66f32f8231daa92b23350"
+        },
+        {
+          "disk": "disk3",
+          "name": "APPS.HL_",
+          "size": 11491,
+          "sha256": "193b524c5b036b89c1936835d0713db766287f02b0d5916680e31e0372a0d03b"
+        },
+        {
+          "disk": "disk3",
+          "name": "ARGYLE.BM_",
+          "size": 245,
+          "sha256": "da0858ad29e4d68176d391b56ed270858ca68368c85db8b840f9595ef040a186"
+        },
+        {
+          "disk": "disk3",
+          "name": "CALC.EX_",
+          "size": 27999,
+          "sha256": "a9697db8f5a7951eda0d101c5491233bbeb8fef1e434e158d783ca123ab44337"
+        },
+        {
+          "disk": "disk3",
+          "name": "CALC.HL_",
+          "size": 12989,
+          "sha256": "f4b6f741855cbb416d68f2ef7885a8d8967aaaa3ae984641aba37b9f12b4bb56"
+        },
+        {
+          "disk": "disk3",
+          "name": "CALENDAR.EX_",
+          "size": 37995,
+          "sha256": "66a029f85d8042577e8859ce88372ce0ada48466c477702584214ad1be7fb534"
+        },
+        {
+          "disk": "disk3",
+          "name": "CALENDAR.HL_",
+          "size": 13794,
+          "sha256": "ff9097363c8fac661dab5719fb3c59b24078b6f9b506eb3d2c059c85ce0b04f6"
+        },
+        {
+          "disk": "disk3",
+          "name": "CANYON.MI_",
+          "size": 17632,
+          "sha256": "b36abd65e0ad2a589fec94125df75a1eef6937b812d9b0a9d5944a68d2f131e8"
+        },
+        {
+          "disk": "disk3",
+          "name": "CARDFILE.EX_",
+          "size": 48673,
+          "sha256": "0b9365b7df60b84994db6722f5054ab5a456bbfd7eb52cc252646119d3ed83b6"
+        },
+        {
+          "disk": "disk3",
+          "name": "CHARMAP.EX_",
+          "size": 12015,
+          "sha256": "91b1c6c6a602e11ea010ded811f021c9e01ee05bc200ab4248a9f0ee558b2305"
+        },
+        {
+          "disk": "disk3",
+          "name": "CHIMES.WA_",
+          "size": 10591,
+          "sha256": "40b8999d1c8ce407a6a99a3fe773c9dd7e10a074cf1b2d9297717146346987b3"
+        },
+        {
+          "disk": "disk3",
+          "name": "CHORD.WA_",
+          "size": 11235,
+          "sha256": "eeadd9e961b8bf9f9e70bcca90c34cfde66098bd4d9e782a7bc5a2d6d561f43e"
+        },
+        {
+          "disk": "disk3",
+          "name": "CLOCK.EX_",
+          "size": 10140,
+          "sha256": "0af95397199b9e72e56241fb1ddbe94211b9a7a89816f4c55ce793543c528db4"
+        },
+        {
+          "disk": "disk3",
+          "name": "DISK3",
+          "size": 8,
+          "sha256": "3bec6991b6ef01721c5c3835bff43789f36e4d7c55b9a5a4ad60d1e030ab4c9f"
+        },
+        {
+          "disk": "disk3",
+          "name": "EGYPT.BM_",
+          "size": 225,
+          "sha256": "331806f8d143a38d7f73d96df99f432d41f9f5ad8a0301ab88fdc2cf32551a04"
+        },
+        {
+          "disk": "disk3",
+          "name": "EXPAND.EXE",
+          "size": 15285,
+          "sha256": "3859d2c671f075f7e6b18cd967487506784fc77147cb57b5a997139671a748d0"
+        },
+        {
+          "disk": "disk3",
+          "name": "FLOCK.BM_",
+          "size": 468,
+          "sha256": "c9f5090a573ec33457f164dc4cd182f641e52c8b7bd719e9b4a441db16c3f65a"
+        },
+        {
+          "disk": "disk3",
+          "name": "GLOSSARY.HL_",
+          "size": 37606,
+          "sha256": "946d980385f50b1940bc54c7f3cbeb023a1681289db6ef09124d26c572e126cc"
+        },
+        {
+          "disk": "disk3",
+          "name": "HERCULES.DR_",
+          "size": 27462,
+          "sha256": "298821323ddf89f0606a054cda31bcabe4c06558bb5e5096b525a068e0a98a33"
+        },
+        {
+          "disk": "disk3",
+          "name": "MORICONS.DL_",
+          "size": 40447,
+          "sha256": "54590dee74b2619d8ccd3572c9558a0d4dd44834cf33b25814b1bf603e98585a"
+        },
+        {
+          "disk": "disk3",
+          "name": "MPLAYER.EX_",
+          "size": 21454,
+          "sha256": "1175ebe9b7b9f3812792e8246ea37a0d99b15921fea92278fe8b0fe73206f280"
+        },
+        {
+          "disk": "disk3",
+          "name": "MPLAYER.HL_",
+          "size": 7872,
+          "sha256": "969b673edf6c41d57bd75b3a31f3329811a89e5c03ef5711d2fd0669072e60bc"
+        },
+        {
+          "disk": "disk3",
+          "name": "MSADLIB.DR_",
+          "size": 10495,
+          "sha256": "73b78d723834e543e733e5db51d4fe54a6fc0d75924ebc6e4a0f9846621189fb"
+        },
+        {
+          "disk": "disk3",
+          "name": "NETWORKS.WR_",
+          "size": 26489,
+          "sha256": "774d54ec998fc330368fe26c73c03f2dbace35fe1b9d8d280d6ca2cec8f99556"
+        },
+        {
+          "disk": "disk3",
+          "name": "NOTEPAD.EX_",
+          "size": 20018,
+          "sha256": "cbb4e1118b318bd5d535d6506e04c897a98798a7a4ee243ad70856f255489e36"
+        },
+        {
+          "disk": "disk3",
+          "name": "PACKAGER.EX_",
+          "size": 40667,
+          "sha256": "e42e45fb630d1e6117595cc11f2bcdea07424cab4d7b5d103015371d51fddbe9"
+        },
+        {
+          "disk": "disk3",
+          "name": "PACKAGER.HL_",
+          "size": 16647,
+          "sha256": "67fa942d3d500ec6ae6990e0886675dba5b8618b7fa3086fe35f5cb79af313d1"
+        },
+        {
+          "disk": "disk3",
+          "name": "PBRUSH.DL_",
+          "size": 4904,
+          "sha256": "2218e2cee00e6519863b778d3b9d27d12d06a77bf8aca00cbe380d78462932ec"
+        },
+        {
+          "disk": "disk3",
+          "name": "PBRUSH.EX_",
+          "size": 102781,
+          "sha256": "af2f10c3f92d621b740ba3dc71f7318b8d233bc64cb8f8f3150c0b841c8c5ce9"
+        },
+        {
+          "disk": "disk3",
+          "name": "PBRUSH.HL_",
+          "size": 31527,
+          "sha256": "5bac8fc6fb8b098c7283e0d9079184356f57a270ab8d372a6418483964b0b981"
+        },
+        {
+          "disk": "disk3",
+          "name": "PIFEDIT.HL_",
+          "size": 27098,
+          "sha256": "619f9780b5d068f4854c026e7ea340712554f364349f159520cd216b85892744"
+        },
+        {
+          "disk": "disk3",
+          "name": "PRINTERS.WR_",
+          "size": 15312,
+          "sha256": "9030378dbcc99cc4b19bb340c4a80e58e942c387076d2ff6d4770a8c3d7f06b3"
+        },
+        {
+          "disk": "disk3",
+          "name": "PRINTMAN.HL_",
+          "size": 32765,
+          "sha256": "3cd70ac0ce2bae653d0e421b247318a0cd0cdb215f603834f7fe2bba029941f9"
+        },
+        {
+          "disk": "disk3",
+          "name": "README.WR_",
+          "size": 32717,
+          "sha256": "b1994cbb8884e0f4c337e1a6c4ea9d5ee9d15f6c688a3199186a080ee62368cc"
+        },
+        {
+          "disk": "disk3",
+          "name": "RECORDER.DL_",
+          "size": 7779,
+          "sha256": "cdc66b6e6ac5c8ee57119caaaa8079a78ab1b4f0439f411d1e5255a70a392aa9"
+        },
+        {
+          "disk": "disk3",
+          "name": "RECORDER.EX_",
+          "size": 24091,
+          "sha256": "4e1ab499f68aefbff549428c003baec92aebe81934149e63a7cd1b48b13122fa"
+        },
+        {
+          "disk": "disk3",
+          "name": "SCRNSAVE.SC_",
+          "size": 2626,
+          "sha256": "8d23537a5d0692230d5602d59b09993c81e3f9eb0f23125a6d1152d92f8d7f65"
+        },
+        {
+          "disk": "disk3",
+          "name": "SETUP.INI",
+          "size": 92,
+          "sha256": "df564ffb52d632fba5051ad2e5eb8eb5fe1de2a09595ab6106b9b3bf7b43d99c"
+        },
+        {
+          "disk": "disk3",
+          "name": "SNDBLST.DR_",
+          "size": 10122,
+          "sha256": "b39811fc77c59189d4b531b4a8371a38235d87071d72d7cd6c96f7a328f7d42b"
+        },
+        {
+          "disk": "disk3",
+          "name": "SNDBLST2.DR_",
+          "size": 10445,
+          "sha256": "137dd4cb208dbb29ced6378e876ac0a33cf7ea3c3864b46310a942c74a25f85b"
+        },
+        {
+          "disk": "disk3",
+          "name": "SOL.EX_",
+          "size": 62451,
+          "sha256": "e9931e15cd4ebf4d4e11cbc40671cb0faeb64da69dd5c5407d0bac750067ea4a"
+        },
+        {
+          "disk": "disk3",
+          "name": "SOL.HL_",
+          "size": 8208,
+          "sha256": "4a39449a3732acfe1e5e9ddf3c4347cd0677ce879f38c22d24d153a6c11fb0c1"
+        },
+        {
+          "disk": "disk3",
+          "name": "SOUNDREC.EX_",
+          "size": 31764,
+          "sha256": "6e899d7040815db7a64fb52feefa63ad4ae9734b364238ce4a5d03bfe0ed0179"
+        },
+        {
+          "disk": "disk3",
+          "name": "SOUNDREC.HL_",
+          "size": 10058,
+          "sha256": "c393be80775b59ba9ae464947972c073d7b796327d75c947cf28253f56b12a18"
+        },
+        {
+          "disk": "disk3",
+          "name": "SSFLYWIN.SC_",
+          "size": 9705,
+          "sha256": "246f148bbe9c4db9e05d1ea94feb2e9a7c66ae12e8e712d1db9d2bb035aa77e7"
+        },
+        {
+          "disk": "disk3",
+          "name": "SSMARQUE.SC_",
+          "size": 9635,
+          "sha256": "87c4ef1cec0ccae9e0af7e7bdd65b2e51f0ce33d4ac44776aea5d168ef47049d"
+        },
+        {
+          "disk": "disk3",
+          "name": "SSMYST.SC_",
+          "size": 11282,
+          "sha256": "f7d84d23821a1d67c56cabb1e3427bfb2280b83752c0fd3bf853e2133ca01b82"
+        },
+        {
+          "disk": "disk3",
+          "name": "SYSINI.WR_",
+          "size": 16616,
+          "sha256": "9756f6836f734873781d563d31b6c49a1368e93c7d83a7af47c78dc39315bfa1"
+        },
+        {
+          "disk": "disk3",
+          "name": "TADA.WA_",
+          "size": 23658,
+          "sha256": "b52567fdb0820e4687e41bf70b2d4fb7ee1c5a21e50e528bbe3023624ea9e5db"
+        },
+        {
+          "disk": "disk3",
+          "name": "TERMINAL.HL_",
+          "size": 25674,
+          "sha256": "f795f664a0d83e056bc132f81e3b10b7686718df5c765b265827ae9fd38b8b07"
+        },
+        {
+          "disk": "disk3",
+          "name": "THATCH.BM_",
+          "size": 210,
+          "sha256": "0f1fb65611f260ea8b0275a468d7de33c2b9f303e99d58e51bf5a38f315d70d5"
+        },
+        {
+          "disk": "disk3",
+          "name": "TIMER.DR_",
+          "size": 3166,
+          "sha256": "32954df1920662acc86369fc60e5ed061bcb1904f8abe6d041f64e7bec050988"
+        },
+        {
+          "disk": "disk3",
+          "name": "VADLIBD.38_",
+          "size": 1952,
+          "sha256": "b08e48887b0b205e5c8f2cebe12c26163e03d3b6c6f5c266ec1acf143fee82dd"
+        },
+        {
+          "disk": "disk3",
+          "name": "VSBD.38_",
+          "size": 2463,
+          "sha256": "3e4c7e9d7d0e5eab0fd62d0689e8293cdd60efe75d7e784006e72cdee93e32b8"
+        },
+        {
+          "disk": "disk3",
+          "name": "VTDAPI.38_",
+          "size": 1824,
+          "sha256": "ca5850200471104d0ac1e4f859c13e026aefae87df20cbd22ce5ad82cbe8b6f1"
+        },
+        {
+          "disk": "disk3",
+          "name": "WINFILE.EX_",
+          "size": 89663,
+          "sha256": "ae2ea1fcc2dba13493e79f455ff4fef555a779def03f52e33ff81312f183453f"
+        },
+        {
+          "disk": "disk3",
+          "name": "WINHELP.HL_",
+          "size": 20313,
+          "sha256": "d1c4cf4ff8a2da393b4e4b77067ca1f8f366ddd7b2f4f4018ace1aef8d1f6ed6"
+        },
+        {
+          "disk": "disk3",
+          "name": "WININI.WR_",
+          "size": 9556,
+          "sha256": "42884f3aea51ede4df4818c40d5975a87ed20ca793d1ad352e74b14f33dd8a4f"
+        },
+        {
+          "disk": "disk3",
+          "name": "WINMINE.EX_",
+          "size": 13634,
+          "sha256": "9de3cc442746f02f5690b5210612f549666b96c91f15c650a77c23942d540de0"
+        },
+        {
+          "disk": "disk3",
+          "name": "WINTUTOR.DA_",
+          "size": 51813,
+          "sha256": "81d862eb3313920485f3c13a351eddcfafbf6c99f866fbf72f010671f16bf284"
+        },
+        {
+          "disk": "disk3",
+          "name": "WINTUTOR.EX_",
+          "size": 66632,
+          "sha256": "6f69d09d60260afdecc2981022c96f1637ab5dba32171c68d8fe5bd0a3c86b4e"
+        },
+        {
+          "disk": "disk3",
+          "name": "WRITE.EX_",
+          "size": 154980,
+          "sha256": "0100c62dea9c54665c04478b908cc88e83d86cca4bb1865f1f6be2646217d2f9"
+        },
+        {
+          "disk": "disk3",
+          "name": "WRITE.HL_",
+          "size": 29556,
+          "sha256": "3540aed274d1ffb004489c9fc4f78ca9cb770ee221d09b84c2516cba5c1a8d32"
+        },
+        {
+          "disk": "disk4",
+          "name": "APPS.IN_",
+          "size": 16889,
+          "sha256": "fe747bb5e3c2f7591416da63ff90d012b58d63d4085a3c8201b3ec644c22b687"
+        },
+        {
+          "disk": "disk4",
+          "name": "ARCADE.BM_",
+          "size": 375,
+          "sha256": "89d2e17b946456a05a559aa48d9ccb03dd4dad964b9e37483b36035b257a99e6"
+        },
+        {
+          "disk": "disk4",
+          "name": "ARCHES.BM_",
+          "size": 3137,
+          "sha256": "5fd55bfe5781d2c406673bc170fb104c1bce8b888a59c488c644b932482d85d8"
+        },
+        {
+          "disk": "disk4",
+          "name": "CARDFILE.HL_",
+          "size": 18523,
+          "sha256": "b299d63c390fcfe225588d58f2d00c9f493106bb35abd2638519061b51559328"
+        },
+        {
+          "disk": "disk4",
+          "name": "CARS.BM_",
+          "size": 332,
+          "sha256": "d7ca8a011db169186c9895002160529ec13143f2c461158ac51331c362e05394"
+        },
+        {
+          "disk": "disk4",
+          "name": "CASTLE.BM_",
+          "size": 544,
+          "sha256": "d985355c25b860b7a5295162c33c478ba5357923e21d94abd0fa5ad187d6a936"
+        },
+        {
+          "disk": "disk4",
+          "name": "CHARMAP.HL_",
+          "size": 4689,
+          "sha256": "06fb364e94ca7fb80f723e0b7b2b9d7e8a527f2b2493e8dd283db1f90843f5fc"
+        },
+        {
+          "disk": "disk4",
+          "name": "CHITZ.BM_",
+          "size": 3294,
+          "sha256": "133468df47cba7889ed92ca225dd845e4921ff425a656106dae63801ed8cdf84"
+        },
+        {
+          "disk": "disk4",
+          "name": "CLIPBRD.HL_",
+          "size": 7668,
+          "sha256": "ae04cbe75cb7b8ce49c248aed1494dfa5baf1321148f0d4126ab7c7acc9bc00d"
+        },
+        {
+          "disk": "disk4",
+          "name": "COMMDLG.DL_",
+          "size": 50924,
+          "sha256": "4f15c281d0cc70affc8143166de20a85c0c9c78593e505747417b010e10169cf"
+        },
+        {
+          "disk": "disk4",
+          "name": "DDEML.DL_",
+          "size": 22366,
+          "sha256": "fb55ce3890445c89bea9c3cc94f91443947c65926a95c74c1fa4f961c8917b53"
+        },
+        {
+          "disk": "disk4",
+          "name": "DISK4",
+          "size": 8,
+          "sha256": "261b125c8bb06aeeda95d2c8da82fa8ca34c917c2fea41678fb97df4a97e04e7"
+        },
+        {
+          "disk": "disk4",
+          "name": "DRIVERS.CP_",
+          "size": 21385,
+          "sha256": "b19589b3019865825d4027df147a141b1c952854b2baad883344f420b4d1e68a"
+        },
+        {
+          "disk": "disk4",
+          "name": "DRWATSON.EX_",
+          "size": 18559,
+          "sha256": "20e7ec5d97e1d479f551c7b70e539858b41767af7cce12f0293588be8dccbe3d"
+        },
+        {
+          "disk": "disk4",
+          "name": "DSWAP.EX_",
+          "size": 18810,
+          "sha256": "e13112d6e8e57ca897cded0146d603298b2793b3c7360670d19f050cf78f4354"
+        },
+        {
+          "disk": "disk4",
+          "name": "EMM386.EX_",
+          "size": 52996,
+          "sha256": "1f10e2af165d8fcfbf5430d16014abf61695f080b5ca3587275eb7cffbbcffbd"
+        },
+        {
+          "disk": "disk4",
+          "name": "HONEY.BM_",
+          "size": 345,
+          "sha256": "68f5dc80806fddf829dd5aaeedcff65cf5018aab71430d9b9ee9bb764200aa56"
+        },
+        {
+          "disk": "disk4",
+          "name": "LEAVES.BM_",
+          "size": 4616,
+          "sha256": "8bb8da1a03c0b200e79739adc5815a8cecba5eaf249ee8746b54e41c4139795a"
+        },
+        {
+          "disk": "disk4",
+          "name": "MAIN.CP_",
+          "size": 89396,
+          "sha256": "4fd25c19150af9ccc04e7cb108ff90ae52dab64c077d619a29d3c8040fecdf73"
+        },
+        {
+          "disk": "disk4",
+          "name": "MARBLE.BM_",
+          "size": 7666,
+          "sha256": "0260779269ff698db6bd154ce304ef1e7383ea40ca63496b488fdf0a3c17efc6"
+        },
+        {
+          "disk": "disk4",
+          "name": "MCICDA.DR_",
+          "size": 8368,
+          "sha256": "9ecb34135d47aa8ff7ba7866407b25495f906c12a3e887ea304c11011cd0a6eb"
+        },
+        {
+          "disk": "disk4",
+          "name": "MCISEQ.DR_",
+          "size": 16359,
+          "sha256": "6e38d5a9cea9293da4b7755f6a8aa576ae6898e8a0ae8be1bb425f39b7d340f8"
+        },
+        {
+          "disk": "disk4",
+          "name": "MCIWAVE.DR_",
+          "size": 17133,
+          "sha256": "d3bcbefb625a56007f0596f91fb6f301129d50bfa6af5e61d36094a741aa8465"
+        },
+        {
+          "disk": "disk4",
+          "name": "MIDIMAP.CF_",
+          "size": 7333,
+          "sha256": "074f0dfaeaed9b7bd88c2a789723998d54f55e6ae95bae27a301c93e88b22d2e"
+        },
+        {
+          "disk": "disk4",
+          "name": "MIDIMAP.DR_",
+          "size": 34150,
+          "sha256": "991698e44f2e849b0d5c636598600a7e70b92aca0e5cbc0bf2e7f9fbf4293ac3"
+        },
+        {
+          "disk": "disk4",
+          "name": "MMSYSTEM.DL_",
+          "size": 35478,
+          "sha256": "69140f4d46ea8aea31f5e488388b30869cc436be9ee71f40e58cb398e97fd709"
+        },
+        {
+          "disk": "disk4",
+          "name": "MONOUMB2.38_",
+          "size": 1017,
+          "sha256": "cd3f18a903735bd1bb121ea46cfc7f744bb2705e369078780dc804321ffaaaa9"
+        },
+        {
+          "disk": "disk4",
+          "name": "MOUSE.CO_",
+          "size": 31328,
+          "sha256": "e34e9be05ed5146293416cb906ab5b564b7c6f7cdcceadfdb4feab26f7c42aa6"
+        },
+        {
+          "disk": "disk4",
+          "name": "MOUSE.SY_",
+          "size": 30733,
+          "sha256": "de9d51f966dfcb106f86f70a81ff8fa2f986956f41060311d410faf9d8795737"
+        },
+        {
+          "disk": "disk4",
+          "name": "MOUSEHP.CO_",
+          "size": 20729,
+          "sha256": "3716e3379d3498857f1c051f93a578da0363b1e02c3fff7f3cec4b22e213d488"
+        },
+        {
+          "disk": "disk4",
+          "name": "MOUSEHP.SY_",
+          "size": 20642,
+          "sha256": "de4fcf7c0af0471a6669e364635aca80e156562ae92f11aff04e83389abd479e"
+        },
+        {
+          "disk": "disk4",
+          "name": "MPU401.DR_",
+          "size": 5265,
+          "sha256": "b4dac48c63dcc3c4f4883d7b61fc05d410141b1fbe3d8d56dc456dfe7ade1cd5"
+        },
+        {
+          "disk": "disk4",
+          "name": "MSD.EXE",
+          "size": 155538,
+          "sha256": "c1d72c3deb0053fea2164b091008a1522279487ff360ea55389d149508cce9de"
+        },
+        {
+          "disk": "disk4",
+          "name": "NOTEPAD.HL_",
+          "size": 8334,
+          "sha256": "fa37fb9b3ad7c001cb0e9cccb9bc67fcfdf603514b0a8f575657d0fb6ea5b86f"
+        },
+        {
+          "disk": "disk4",
+          "name": "OLESVR.DL_",
+          "size": 14552,
+          "sha256": "073b6475708396235d33324a0c0a90a1b83bd55ff2e4be40e2babb8829ba1b21"
+        },
+        {
+          "disk": "disk4",
+          "name": "PRINTMAN.EX_",
+          "size": 27709,
+          "sha256": "98968b61ab72d6f60ae2c5551a59c9029fbd87953029109ca599ed2063e27d83"
+        },
+        {
+          "disk": "disk4",
+          "name": "PROGMAN.EX_",
+          "size": 56919,
+          "sha256": "52a19d64dfa546dae7bed8dbf0ef2850eb35b1ed531db9b07c0d1000d6747d13"
+        },
+        {
+          "disk": "disk4",
+          "name": "RAMDRIVE.SY_",
+          "size": 3765,
+          "sha256": "96f4754c6d07abd0a12427cb09fc952f22a9ea6107d4aefe7baf87b330a33cf8"
+        },
+        {
+          "disk": "disk4",
+          "name": "RECORDER.HL_",
+          "size": 12440,
+          "sha256": "4d35b0eaf0f3fa7ca27b11c6b9410e7feab4762b4723b4aa7e3778daf3bc041c"
+        },
+        {
+          "disk": "disk4",
+          "name": "REDBRICK.BM_",
+          "size": 459,
+          "sha256": "c73b4921d8cdd1c42c9d11d838927c7be136d028da7495d88f6cba468e572652"
+        },
+        {
+          "disk": "disk4",
+          "name": "REGEDIT.EX_",
+          "size": 20050,
+          "sha256": "b4f0f579da795198f69028b21145c9c80a586dab1ce7598d6d02116b3c68e3bd"
+        },
+        {
+          "disk": "disk4",
+          "name": "REGEDIT.HL_",
+          "size": 16339,
+          "sha256": "1995654ae80a4d3b7bebb9ee14c990cdfe1237467248ad1e1397f59fa23bf1db"
+        },
+        {
+          "disk": "disk4",
+          "name": "RIVETS.BM_",
+          "size": 159,
+          "sha256": "3aaced23d8c4cf7e7617d487b8fbf6bd4295695a4f94c6c47beba6bcfd55f18c"
+        },
+        {
+          "disk": "disk4",
+          "name": "SHELL.DL_",
+          "size": 25821,
+          "sha256": "43adda386b73ef4cb92800122ccb2d1e338c302dae0a19f68cf0f114224a383b"
+        },
+        {
+          "disk": "disk4",
+          "name": "SMARTDRV.EX_",
+          "size": 17324,
+          "sha256": "69809e180209a2e44e2b06b07fe0f34f0c7d7320e8c275befd07e0a0722f4b64"
+        },
+        {
+          "disk": "disk4",
+          "name": "SND.CP_",
+          "size": 4986,
+          "sha256": "db114ddfa4a10dfe6752b4068ee58e48f2fa4be7ce65d2ca7d12f83c412df6db"
+        },
+        {
+          "disk": "disk4",
+          "name": "SQUARES.BM_",
+          "size": 163,
+          "sha256": "277d520266f61cdc202d8b961d64dfa5edb7e8b2d454b96c06680fc9490f42a7"
+        },
+        {
+          "disk": "disk4",
+          "name": "SSSTARS.SC_",
+          "size": 9444,
+          "sha256": "d365db796971d6ba37bf7345ff48c524d1dd7fa7d70db0e84a054dc4c81ceda5"
+        },
+        {
+          "disk": "disk4",
+          "name": "TARTAN.BM_",
+          "size": 4498,
+          "sha256": "fdaa221c2dd94688598e1e6999d0d7ee8dd68f2b551a5b13f0eb64fc5a593f3e"
+        },
+        {
+          "disk": "disk4",
+          "name": "TERMINAL.EX_",
+          "size": 84383,
+          "sha256": "7039e3a5921d6a730a62b23eda10c2c960aa2f46e78e7b219c20fcfae18f9305"
+        },
+        {
+          "disk": "disk4",
+          "name": "WIN386.EX_",
+          "size": 284215,
+          "sha256": "cfbee553b065cdc2c5fcdd3eaf3a397646e5fa61fb656e14bbe9eee354169e39"
+        },
+        {
+          "disk": "disk4",
+          "name": "WIN87EM.DL_",
+          "size": 8973,
+          "sha256": "12a751cab1a41ddc74c4346e60dbdeb5d0b50d211f1aafe2e7f79904a8e995b1"
+        },
+        {
+          "disk": "disk4",
+          "name": "WINFILE.HL_",
+          "size": 56961,
+          "sha256": "89f1fb63531616d62d7b4cc435492c3b562003dd0b151f9d9917cb3ed94692ee"
+        },
+        {
+          "disk": "disk4",
+          "name": "WINLOGO.BM_",
+          "size": 12211,
+          "sha256": "c821f646002af3ad523671c05e3aa38310e34928e73736b614c0d11a503d6839"
+        },
+        {
+          "disk": "disk4",
+          "name": "WINMINE.HL_",
+          "size": 7098,
+          "sha256": "239fbcdd13d81b89e053845521c91b128a680b5eff661f103b43e974aa964bf9"
+        },
+        {
+          "disk": "disk4",
+          "name": "WINOA386.MO_",
+          "size": 30564,
+          "sha256": "eb456ba001e10f53b1d981caffa52e1ead86340fd13e1ad2d85ad90c6eda67bb"
+        },
+        {
+          "disk": "disk4",
+          "name": "ZIGZAG.BM_",
+          "size": 210,
+          "sha256": "adc6ec853b79d57501a8c77e975eaddde9d232fcdf7b0726b3b410c2b70c8e05"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIAL.FO_",
+          "size": 427,
+          "sha256": "ef81b9e91c908a5b7778c323869198340bdec94e5592a4315ec3e274c9e5d0a0"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIAL.TT_",
+          "size": 52532,
+          "sha256": "905969f33bbabe787e866a4f8c20ea5b2c81921a09e31d458e7a10474592849f"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALB.FO_",
+          "size": 10358,
+          "sha256": "8cf6613c0a3330b3acd85e7954df440acc18b995721c131e98d55f45a6ede766"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALBD.FO_",
+          "size": 427,
+          "sha256": "c238e944670bbcef96431adb5055debef561a0eabe2e3199c4b54461c4d5725a"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALBD.TT_",
+          "size": 51841,
+          "sha256": "49d95d76424a244ac0f0bc9c3e9b317ea1ad9dba0132a3039a30a04b92c219ee"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALBI.FO_",
+          "size": 436,
+          "sha256": "0b071d9aafec2c7551f6500195790df41d40f1f8530b6e014ad6f011057bb253"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALBI.TT_",
+          "size": 57729,
+          "sha256": "12f2d355d4cac24c6c07856b28464c14dd39322f0c5696c723258fadc3264073"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALI.FO_",
+          "size": 429,
+          "sha256": "fc8bee89d6b1b2ee0c6a9b4ea20862f8d8c4f807fe5ca2d309b4c38aad3a0b1b"
+        },
+        {
+          "disk": "disk5",
+          "name": "ARIALI.TT_",
+          "size": 47643,
+          "sha256": "a596347f268ba0afbbcefd488c35ed74c34e6e113ab29cc20cb8fdc52d398231"
+        },
+        {
+          "disk": "disk5",
+          "name": "CLIPBRD.EX_",
+          "size": 11384,
+          "sha256": "36894bedd18cb7d51aab3685ea72ac650b4a8ab48638ffddc9039eb5f2a08f75"
+        },
+        {
+          "disk": "disk5",
+          "name": "CONTROL.EX_",
+          "size": 10270,
+          "sha256": "7fdadb6e95ff9b8db3d7b4c37082c2855d09105db23bf79d10ccd0ea4b0e4b3d"
+        },
+        {
+          "disk": "disk5",
+          "name": "CONTROL.INF",
+          "size": 20993,
+          "sha256": "882d6a3b00c36f3f4bbd11a8e7ae2fdf833a7da0252c25029a6fde128fb5289c"
+        },
+        {
+          "disk": "disk5",
+          "name": "CONTROL.SR_",
+          "size": 1278,
+          "sha256": "6e25951382e2851a20acbf78afbb296e9b251090ad2a7346ad051f14da27bafe"
+        },
+        {
+          "disk": "disk5",
+          "name": "COUR.FO_",
+          "size": 428,
+          "sha256": "ee07e8e4af05c55ae82b84abb08e50c38fa1ce074c0810baeafc3567e0f1e162"
+        },
+        {
+          "disk": "disk5",
+          "name": "COUR.TT_",
+          "size": 53733,
+          "sha256": "de8396deb9b6b9dac7ebd626b80f86fbbc47199a347c41d7de16b8cbfc004ab0"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURB.FO_",
+          "size": 8118,
+          "sha256": "d78a3042d993d00c18be4303c4bd9cd05f3cdc5b9bc3bed276bcf54162d8123b"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURBD.FO_",
+          "size": 430,
+          "sha256": "0dd239b1327331b8ef0e8fbcd9543100cbbe257358d602569a09636b77a20678"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURBD.TT_",
+          "size": 56871,
+          "sha256": "4ec89b332eb8d3391c9942658843274e2cd24d59be3fbe730582fece7606d4be"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURBI.TT_",
+          "size": 64330,
+          "sha256": "e555308010fb522078fbc7468503b2349a866f80312eb93863829feb90166809"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURE.FO_",
+          "size": 8612,
+          "sha256": "51bf8d4f21ade585d1d76b35c4749b8d79c6e99a06431bf18ad8704010dde654"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURF.FO_",
+          "size": 11021,
+          "sha256": "c26bb4570e55f621ec6cda211ee04fe780283a80b451839eb59bca4d7f78d708"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURI.FO_",
+          "size": 435,
+          "sha256": "8ca9f1396d126a0024911004c255f6ade2ec88d4f4d85356d99d8f45d8d20a6d"
+        },
+        {
+          "disk": "disk5",
+          "name": "COURI.TT_",
+          "size": 60757,
+          "sha256": "9dab58b9030bfef1778675480495b95a06dcbbeaacd2ce439286a205a33137fd"
+        },
+        {
+          "disk": "disk5",
+          "name": "DING.WA_",
+          "size": 6011,
+          "sha256": "ffcc12f4a6c3fcbc3d359615f7fc1c2ed77c6ad366ac564e19d6cb376510a7c0"
+        },
+        {
+          "disk": "disk5",
+          "name": "DISK5",
+          "size": 8,
+          "sha256": "8d2f396eafe1607770a864b7e9cad66c565a44a84029ba7600cb1e6d76c1ecb3"
+        },
+        {
+          "disk": "disk5",
+          "name": "HIMEM.SY_",
+          "size": 9384,
+          "sha256": "8df00cf9e60e6b665d90e28f22155fc3758228a48a5b188ebbb673e90cc3fca9"
+        },
+        {
+          "disk": "disk5",
+          "name": "MMTASK.TS_",
+          "size": 777,
+          "sha256": "d8abc59383f3e536d1461680dbfea08937d276c105e9e6e2c939961ee776c19c"
+        },
+        {
+          "disk": "disk5",
+          "name": "MODERN.FO_",
+          "size": 4376,
+          "sha256": "e54dff6c0db9ca4add24f8015a53a827ea6e65264660fced1492bb13aedd5bb3"
+        },
+        {
+          "disk": "disk5",
+          "name": "MSD.IN_",
+          "size": 350,
+          "sha256": "34a31db017b01f3d39f6c73bba27561a61a875d6dd167b909b37fe9cbaf57c14"
+        },
+        {
+          "disk": "disk5",
+          "name": "OLECLI.DL_",
+          "size": 45422,
+          "sha256": "bd91784081cd0af018b40d31c912a063aa5b94a9f488ece52bd014c301094f10"
+        },
+        {
+          "disk": "disk5",
+          "name": "PIFEDIT.EX_",
+          "size": 25970,
+          "sha256": "58e58e2f78403161740da98255813987449a3bb6758598a0aac39bbbd38b7e1b"
+        },
+        {
+          "disk": "disk5",
+          "name": "PROGMAN.HL_",
+          "size": 23516,
+          "sha256": "c9ac33fd3acab170216c8235e099cbcced57a6842cfcc1e8c25b929d2f4d1990"
+        },
+        {
+          "disk": "disk5",
+          "name": "REGEDITV.HL_",
+          "size": 10677,
+          "sha256": "94b04fd5f1992d8864594005ee31f26e3d43d6c9f1f2ac035023ed8d726bd9f1"
+        },
+        {
+          "disk": "disk5",
+          "name": "ROMAN.FO_",
+          "size": 6356,
+          "sha256": "684412ba6cfe58611591206c59ec028bd9cdef6d799a1c0e903461cd59bc0f4f"
+        },
+        {
+          "disk": "disk5",
+          "name": "SCRIPT.FO_",
+          "size": 5502,
+          "sha256": "ee17580a84e31bf1b8d60757e669041d51c9ce19d1ab6f2fac9939770c9e363c"
+        },
+        {
+          "disk": "disk5",
+          "name": "SERIFB.FO_",
+          "size": 18777,
+          "sha256": "04000f8ab138dc7d5befb84e661f31dd301b3cadb43fe5e82fadfe5b9d32a74b"
+        },
+        {
+          "disk": "disk5",
+          "name": "SERIFE.FO_",
+          "size": 21454,
+          "sha256": "284147c0a2c6a9905a6f287cbde372a5b4cd1df04d28e43f7103ac9f3a439ccd"
+        },
+        {
+          "disk": "disk5",
+          "name": "SERIFF.FO_",
+          "size": 27241,
+          "sha256": "a1024b53edd2c3d51296f1bfbea79878907a484783ed1269bf6ff1a3fba64a07"
+        },
+        {
+          "disk": "disk5",
+          "name": "SETUP.RE_",
+          "size": 1364,
+          "sha256": "4ac85e618817f4fb4c212db03f4998db1b1c49164aac744dc1ebbf4325e1e762"
+        },
+        {
+          "disk": "disk5",
+          "name": "SMALLB.FO_",
+          "size": 10928,
+          "sha256": "48db245a9c2547d8043f2a08682db20ceba625f30e5cf87fe87f62ba6717f975"
+        },
+        {
+          "disk": "disk5",
+          "name": "SMALLE.FO_",
+          "size": 12501,
+          "sha256": "859d3cd3631a484aa0e4ef41b6320c3d8fda4ea98685312c1a5537b01e42de01"
+        },
+        {
+          "disk": "disk5",
+          "name": "SMALLF.FO_",
+          "size": 10489,
+          "sha256": "b71bc6b6e0260abb0dfc34ced56e1673466442be05af45060563a0ce971c281b"
+        },
+        {
+          "disk": "disk5",
+          "name": "SSERIFB.FO_",
+          "size": 18968,
+          "sha256": "05b97d6a2582f5f47bf733b44ea4169382fcfc80117fc52aa9f3deb43d357c00"
+        },
+        {
+          "disk": "disk5",
+          "name": "SSERIFE.FO_",
+          "size": 21643,
+          "sha256": "97b9bcea67d946843f78e4d9f9ffb75ecfce15a4dc8eb021588bb1d827b1194b"
+        },
+        {
+          "disk": "disk5",
+          "name": "SSERIFF.FO_",
+          "size": 27627,
+          "sha256": "4660fa37b815b38fec25c2f577ec2d696d3357136b8f28eae5932e3842472ed7"
+        },
+        {
+          "disk": "disk5",
+          "name": "SYMBOLB.FO_",
+          "size": 19890,
+          "sha256": "2cdbeaf93f6d6d1cc9dd0483ca980f02148254dfccaf10c2ca5322b16dc7ef61"
+        },
+        {
+          "disk": "disk5",
+          "name": "SYMBOLE.FO_",
+          "size": 21296,
+          "sha256": "da5c1eb055a48b602eadd288ba8631fca0a94ef947a1902aa7bf396471a757df"
+        },
+        {
+          "disk": "disk5",
+          "name": "SYMBOLF.FO_",
+          "size": 27198,
+          "sha256": "1684ede2992eb404ffd4d00ecea25e562424eb81e5bdb2ca9af14728933716c9"
+        },
+        {
+          "disk": "disk5",
+          "name": "SYSEDIT.EX_",
+          "size": 10761,
+          "sha256": "896aa5541fc06e3c0e1310f2b4e7972b0ee3135cd26bb323906f9c782b6b8ab2"
+        },
+        {
+          "disk": "disk5",
+          "name": "TASKMAN.EX_",
+          "size": 2230,
+          "sha256": "effd0a3d26c4f5d9f02fe91706c808e761494e4b0f7a8d4153b28c67eaf6617d"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMES.FO_",
+          "size": 436,
+          "sha256": "ca9bdb0cd0d1243c80a69538872050ab6722b829e980a04a4cdc8e735d6528e7"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMES.TT_",
+          "size": 69074,
+          "sha256": "63e7ba23f9e0d7e793d0c4bb96c32e5eef8de1bf55d28f50db5aa8bf541ab764"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESB.FO_",
+          "size": 10361,
+          "sha256": "3eb3bca9cf2ebd177582716a656409bc830120505a1c4b4c2dc4465782bd3a47"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESBD.FO_",
+          "size": 437,
+          "sha256": "ffee17d9d345c48747bd398c8b8f0cdf70f74fc8c892aabcee127f24a7d1ddd3"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESBD.TT_",
+          "size": 63489,
+          "sha256": "90ea2e5477d4d9c04809f75e993b35ace7e6c18c01725bf7fb70257426d1119d"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESBI.FO_",
+          "size": 445,
+          "sha256": "ca55b680e5ff798042570a2f5a6cfbd4f11a06a3c84d7c31c923af2d3eb7e9a2"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESBI.TT_",
+          "size": 60539,
+          "sha256": "c850d1aa2f074a13080f58e6d2d72afbc951f547bbd711362df56f8e76bf5738"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESI.FO_",
+          "size": 439,
+          "sha256": "caf48ccfeca18e91816a3e27a05206c1be2f96346db00f6b7f3aab76552e0115"
+        },
+        {
+          "disk": "disk5",
+          "name": "TIMESI.TT_",
+          "size": 61880,
+          "sha256": "5f0072a71bc85ce1d04e9b70515b509683a5ea53af78f7f6a979e8644dd71bb6"
+        },
+        {
+          "disk": "disk5",
+          "name": "TOOLHELP.DL_",
+          "size": 10372,
+          "sha256": "67873026ba23004f163a35efcaf99b211b762e57192714cea9f58cf8000e5a7e"
+        },
+        {
+          "disk": "disk5",
+          "name": "WIN386.PS_",
+          "size": 418,
+          "sha256": "ed207e89be7df36333d665ce20cf128e049f2a9675cf7389b6918c9d93a98369"
+        },
+        {
+          "disk": "disk5",
+          "name": "WINOLDAP.MO_",
+          "size": 16879,
+          "sha256": "1fcae8d628d6ea17b93aeed76659516d1dfdf1ff83af279fa1c383c4f51e9ff7"
+        },
+        {
+          "disk": "disk5",
+          "name": "WINVER._",
+          "size": 1820,
+          "sha256": "44fd04a73c3e1cb6b0468ced496305a8693b2b3752bb7d424f75aba35f51d100"
+        },
+        {
+          "disk": "disk5",
+          "name": "WSWAP.EX_",
+          "size": 11757,
+          "sha256": "bf1b02620b21073bb0873107fe0d49e40466ed45e9a25b16b5aaa30573b258f9"
+        },
+        {
+          "disk": "disk6",
+          "name": "40291730.WP_",
+          "size": 1105,
+          "sha256": "92db7fbee0e47e5d2cdcdef5d04c6a0c5d1c368cbadc9cf3011d86cdac2b2e9f"
+        },
+        {
+          "disk": "disk6",
+          "name": "40293930.WP_",
+          "size": 1741,
+          "sha256": "596d5f84c84762e7d185fd0e92faf95721d739967efd0f298cb4ba1142961893"
+        },
+        {
+          "disk": "disk6",
+          "name": "CAN_ADF.EX_",
+          "size": 36591,
+          "sha256": "01e8cd3d839e197fcecf0d45bb48e0efa7f6d401c1fd3bbe2063ef1f3bcb1ed4"
+        },
+        {
+          "disk": "disk6",
+          "name": "CANON10E.DR_",
+          "size": 2652,
+          "sha256": "0db0ff9b4395d0cd91c963b33adc6f2b236af7f53bbfa093192e6999d0ea21d3"
+        },
+        {
+          "disk": "disk6",
+          "name": "CANON130.DR_",
+          "size": 2931,
+          "sha256": "dde7d808be8a3e4e21ea846d60be9250c5afa7ea95150b3c6cdaf8d52cbc6bc1"
+        },
+        {
+          "disk": "disk6",
+          "name": "CANON330.DR_",
+          "size": 5694,
+          "sha256": "a9362194434fde90167c82408872bf4233c72b1039c267ae625d4a06a326a3c4"
+        },
+        {
+          "disk": "disk6",
+          "name": "CIT24US.DR_",
+          "size": 8493,
+          "sha256": "a33f462c4ad1d293c2125650970b3c30c399b41c18cc8c97b2c515032576e89a"
+        },
+        {
+          "disk": "disk6",
+          "name": "CIT9US.DR_",
+          "size": 6979,
+          "sha256": "8c13392638462a7d913e48bb36b9208e361d9ec5c0e4ba639bd19d3428143151"
+        },
+        {
+          "disk": "disk6",
+          "name": "CITOH.DR_",
+          "size": 2422,
+          "sha256": "1df13722f29c2323411ea8f67f8596dda52f55dde11a0c07a3baacb31d625fde"
+        },
+        {
+          "disk": "disk6",
+          "name": "COURBI.FO_",
+          "size": 437,
+          "sha256": "50ddaba5350eeaf58df4237d323930bee40714ef912aeec8e40c6f834fad6584"
+        },
+        {
+          "disk": "disk6",
+          "name": "DEC1150.WP_",
+          "size": 1875,
+          "sha256": "bf7ed29cf1df45efaef36d1351452e17cb7b9cba6d27f22aae0c339cfe7bf3ac"
+        },
+        {
+          "disk": "disk6",
+          "name": "DEC2150.WP_",
+          "size": 1835,
+          "sha256": "db4653e33ff9871f48d0df91ff85403762e74bfd6499ae212959e2248c1e3a23"
+        },
+        {
+          "disk": "disk6",
+          "name": "DEC2250.WP_",
+          "size": 1972,
+          "sha256": "30509f03bdae7a2eada2db1f902cec34009067bc97a2dfbf5d48151d9b598f19"
+        },
+        {
+          "disk": "disk6",
+          "name": "DEC3250.WP_",
+          "size": 2012,
+          "sha256": "ded2d3a5920ae72bc0566b54dddb57fa63ac3fb9fedc13766064b0d0630f50bb"
+        },
+        {
+          "disk": "disk6",
+          "name": "DECCOLOR.WP_",
+          "size": 1308,
+          "sha256": "f8c314168b58acf5ce3de17f9e6984eb025151e57d602bb2b6dfda0cb98d0db5"
+        },
+        {
+          "disk": "disk6",
+          "name": "DECLPS20.WP_",
+          "size": 1533,
+          "sha256": "f146338a0e776760e3c824f9d900ba7093b3323ce31473a825e795dcf6cf2357"
+        },
+        {
+          "disk": "disk6",
+          "name": "DICONIX.DR_",
+          "size": 2201,
+          "sha256": "2519de52f6a92a94ba5d29dfca7886c48e603e35395d3b3665194a397bb2c594"
+        },
+        {
+          "disk": "disk6",
+          "name": "DISK6",
+          "size": 8,
+          "sha256": "cde7d4e0ad759360635157be968e051250800b7f3040ef42dbe01f1c299d1273"
+        },
+        {
+          "disk": "disk6",
+          "name": "DM309.DR_",
+          "size": 3225,
+          "sha256": "d47bb7226a078cb000d00d27c950154b4cd265841ad6ef989dd13d86950babf4"
+        },
+        {
+          "disk": "disk6",
+          "name": "DMCOLOR.DL_",
+          "size": 14744,
+          "sha256": "ce8c5e0e9d1132245ae0ad352995fe651c3310ef6d2f59d822fcd8e359857a2a"
+        },
+        {
+          "disk": "disk6",
+          "name": "EPL75523.WP_",
+          "size": 1554,
+          "sha256": "53b35e9ea8ff30357ca7069290127a4dff8a73034ffe196221543189566c87e3"
+        },
+        {
+          "disk": "disk6",
+          "name": "EPSON24.DR_",
+          "size": 5158,
+          "sha256": "67325836e5b37efb45057236fcd0edeb90748d0f0ef14580571765d149447a9c"
+        },
+        {
+          "disk": "disk6",
+          "name": "EPSON9.DR_",
+          "size": 6872,
+          "sha256": "14e641c64daf67d33ed1cb0d6e053ec5d0283ff6253dbf4d35cd6207c975f493"
+        },
+        {
+          "disk": "disk6",
+          "name": "ESCP2.DR_",
+          "size": 4488,
+          "sha256": "562c6c6fb797c3c5ff05bea121fd7d89eead59e537784262b0e69ea25f8429a8"
+        },
+        {
+          "disk": "disk6",
+          "name": "EXECJET.DR_",
+          "size": 5979,
+          "sha256": "a92f4c8f95ca8ce78e9a776d44e06b6fa3cd3d5aa5173fc92a35dc6bef652187"
+        },
+        {
+          "disk": "disk6",
+          "name": "FINSTALL.DL_",
+          "size": 110030,
+          "sha256": "72e0b249f2289cf0da72d0d5148a79ec252c42254cc33f309850fa6f0ee8dd9b"
+        },
+        {
+          "disk": "disk6",
+          "name": "FINSTALL.HL_",
+          "size": 15386,
+          "sha256": "691987277da9e2f436a3f952fc0cc5bf5a98999e4c648ddc7a8807d4cf623c95"
+        },
+        {
+          "disk": "disk6",
+          "name": "FUJI24.DR_",
+          "size": 5907,
+          "sha256": "241568ed1bedc54e0567a3fec12ee228661e4a44f753034a00553c74cb1c3362"
+        },
+        {
+          "disk": "disk6",
+          "name": "FUJI9.DR_",
+          "size": 3478,
+          "sha256": "54cf05e473b19cf6f72951e562c4881c83a76d4e4b1a5f67db7dfbb9197eaff3"
+        },
+        {
+          "disk": "disk6",
+          "name": "GENDRV.DL_",
+          "size": 49648,
+          "sha256": "725897f0ffd2960a235b72dc92990286fb70d52298629411edfab6b616723263"
+        },
+        {
+          "disk": "disk6",
+          "name": "HERMES_1.WP_",
+          "size": 781,
+          "sha256": "67172b6e9c86b7858cbd4caf614fa3d7d841e739fa53895c6eada59e3f9457ff"
+        },
+        {
+          "disk": "disk6",
+          "name": "HERMES_2.WP_",
+          "size": 1424,
+          "sha256": "1528b554869511bbab59e7f2cfedad128aff9b59c3ad71eb688d36b48e2c19ba"
+        },
+        {
+          "disk": "disk6",
+          "name": "HP_3D522.WP_",
+          "size": 1642,
+          "sha256": "28e38b80540f49ce563debd7dafec0f5f60685b8b165bf21fe0fcd7456db47bd"
+        },
+        {
+          "disk": "disk6",
+          "name": "HP_3P522.WP_",
+          "size": 1566,
+          "sha256": "ad3a43771b6136448515b3611aae9fb3cea17a7d9f677b3faadcdab2503094a2"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPDSKJET.DR_",
+          "size": 23308,
+          "sha256": "79179213a5160578031900c843d5db84e22aae50a72f80031b89bb710d6e8f68"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPELI523.WP_",
+          "size": 1592,
+          "sha256": "28d306efd2a74780b1568e0ff0dce6e27e1ce4898a6f0533e59ca6c3a98d7ce4"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPIID522.WP_",
+          "size": 1556,
+          "sha256": "8c0cb1d96d57cca0d9408bbe4c78d9b622b659786d154c339851c1d918245fd2"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPIII522.WP_",
+          "size": 1540,
+          "sha256": "cbd7c4567c293a32b32cfa68b8f8ee909680ab2401d29d6e2c5408162a5831bd"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPIIP522.WP_",
+          "size": 1547,
+          "sha256": "57f0898cf0c70a87ce4af1059cedcbf85a3c3c85d7b7368962d31a5604400e9e"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPPCL.DR_",
+          "size": 54150,
+          "sha256": "7b2f7cdf8c7e4781d6ca83fc31374d5690f10d3bf7997d9633bee8df2fbf1907"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPPCL5A.DR_",
+          "size": 185016,
+          "sha256": "9033905ff1505669c58aa1d4f87c2df722881fcf02c286200c5c2ba9d545fdf1"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPPCL5A.HL_",
+          "size": 17386,
+          "sha256": "615c7fab34f5a5e0cb946cf6954d1e1d8e695eed6bc4dd92e93a12c2df1457a9"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPPCL5OP.HL_",
+          "size": 8013,
+          "sha256": "c28b544fdc8f22ef3f3fc6dfa16982776fdfc895c6ac95f91691ca39c9a7630b"
+        },
+        {
+          "disk": "disk6",
+          "name": "HPPLOT.DR_",
+          "size": 34950,
+          "sha256": "dbf10ca35c152559c4c99d71a8ca5d0c0238b0059b7844693da13b3d4fa22492"
+        },
+        {
+          "disk": "disk6",
+          "name": "IBM17521.WP_",
+          "size": 1034,
+          "sha256": "2736de840b48b29c0dcd64f944c9196f9ceaa1fb3782eae700845a702ff12d30"
+        },
+        {
+          "disk": "disk6",
+          "name": "IBM39521.WP_",
+          "size": 1675,
+          "sha256": "a2bd9e69e8a369d439b1f401703ee08b7fe9fadb2b3e3b72228cffe00846b526"
+        },
+        {
+          "disk": "disk6",
+          "name": "IBM4019.DR_",
+          "size": 30069,
+          "sha256": "8145e2756c9244b2b041687d1177472ba7a3eddc014c29052cd067bde1a98f27"
+        },
+        {
+          "disk": "disk6",
+          "name": "IBM5204.DR_",
+          "size": 4797,
+          "sha256": "ab1869633bdb8e9efc124ddec14587f2937ab045f3596445e7d878328a0e59a3"
+        },
+        {
+          "disk": "disk6",
+          "name": "IBMCOLOR.DR_",
+          "size": 12699,
+          "sha256": "315f5f1318ac90b3f489e669a903c42f9223ad9ee40fe6c6af08277271467552"
+        },
+        {
+          "disk": "disk6",
+          "name": "L200230&.WP_",
+          "size": 749,
+          "sha256": "40e16aef67bb2707b5e1226763449c5591e727940cdc65a9d885015e138f596b"
+        },
+        {
+          "disk": "disk6",
+          "name": "L330_52&.WP_",
+          "size": 859,
+          "sha256": "e660857af8f63f592862a3f6bce63cee3aaac9db696bf1ffbea119854c0a35ac"
+        },
+        {
+          "disk": "disk6",
+          "name": "L530_52&.WP_",
+          "size": 858,
+          "sha256": "098abf9afc1cad5207fb56358f97466f9b8ca6d80253015061d034e28ad6468e"
+        },
+        {
+          "disk": "disk6",
+          "name": "L630_52&.WP_",
+          "size": 859,
+          "sha256": "0ca0541d590bf30071d527f268156d6205d879bfe7215b6c7d9c712a6a85c6a4"
+        },
+        {
+          "disk": "disk6",
+          "name": "LBPII.DR_",
+          "size": 26846,
+          "sha256": "a82b04954887c1f8ab70c3009e6060d93abc3125d6db957b3e09a10322c41f49"
+        },
+        {
+          "disk": "disk6",
+          "name": "LBPIII.DR_",
+          "size": 36482,
+          "sha256": "6f546df3d3f19e2ce9d4d65e5367dc80048f07092b84cbdb2fa62e264a5d9519"
+        },
+        {
+          "disk": "disk6",
+          "name": "MT_TI101.WP_",
+          "size": 1392,
+          "sha256": "9aae01c06c4f1197757c9287603cef911118e22d2969a7fba1fa8b1ebc1ced03"
+        },
+        {
+          "disk": "disk6",
+          "name": "N2090522.WP_",
+          "size": 1465,
+          "sha256": "91f5354b583cbb6f55b268a9b52b400b224d1d2b29570efbdf27a3f9ab1bb073"
+        },
+        {
+          "disk": "disk6",
+          "name": "N2290520.WP_",
+          "size": 1373,
+          "sha256": "5eef5e0f270ea449d04422ff6549b25db904799a80d0355d6b17f374dfc91462"
+        },
+        {
+          "disk": "disk6",
+          "name": "N2990523.WP_",
+          "size": 1499,
+          "sha256": "e339c7cf1a7672255604dbd104b47f279ecda544f479ebb4d1da37cc1b967cba"
+        },
+        {
+          "disk": "disk6",
+          "name": "N890_470.WP_",
+          "size": 1414,
+          "sha256": "68e98dcc009e44b8519f2a771c22bc640fc1496e94318d86fee98e1e56d133eb"
+        },
+        {
+          "disk": "disk6",
+          "name": "N890X505.WP_",
+          "size": 1415,
+          "sha256": "1003a52dc27d1aced4575d0ee2f21ae3098a461afbd4909de5b1af6adc2604dc"
+        },
+        {
+          "disk": "disk6",
+          "name": "NCM40519.WP_",
+          "size": 687,
+          "sha256": "e919ba955f8dc3fe1f92028e5a7b77a68c6ab056da9ffed1ce5d7ac962e0eb78"
+        },
+        {
+          "disk": "disk6",
+          "name": "NCM80519.WP_",
+          "size": 1248,
+          "sha256": "ccb05a7c5d46a4e21a96ca142cea5b1f024a250d2b62d574e995803897a1bd66"
+        },
+        {
+          "disk": "disk6",
+          "name": "NEC24PIN.DR_",
+          "size": 10791,
+          "sha256": "8541be70ae052ce78a4ff81b635a74e4038692003ca57478e1f2fd0f581bd9ff"
+        },
+        {
+          "disk": "disk6",
+          "name": "O5241503.WP_",
+          "size": 1496,
+          "sha256": "defa42af3ec588d96a237535fb68ad8b2f6ad9982b4a9cb0b54210abf5a298b1"
+        },
+        {
+          "disk": "disk6",
+          "name": "O5242503.WP_",
+          "size": 1476,
+          "sha256": "da2b907c1581b102f19d6cc8eb9e537d6516a78a3e2bf6e61b95f1d23fe0cd14"
+        },
+        {
+          "disk": "disk6",
+          "name": "OKI24.DR_",
+          "size": 5720,
+          "sha256": "f39171e24ee31626237b37a6bfd0bea656f74e76c4eebdc43ace04b76949c030"
+        },
+        {
+          "disk": "disk6",
+          "name": "OKI9.DR_",
+          "size": 4129,
+          "sha256": "2044a99f6ebe39fc9e99363dcfedab951603ae44e8f6229dde963eda4ba89946"
+        },
+        {
+          "disk": "disk6",
+          "name": "OKI9IBM.DR_",
+          "size": 3769,
+          "sha256": "4292f23507ea5fcb022e1fa93e1f5816a8bd251f593ee6ba6c0279b2fe67d988"
+        },
+        {
+          "disk": "disk6",
+          "name": "OL840518.WP_",
+          "size": 1575,
+          "sha256": "feeae6e56eff9a7fdd5ae817a3a99d39bfade8c1ccecb2fc25697b295e462f43"
+        },
+        {
+          "disk": "disk6",
+          "name": "OLIVETI1.WP_",
+          "size": 784,
+          "sha256": "01a16286e425c9e23a2f451918e64d7ab29902c260cc7afceb69dc4d83d4a369"
+        },
+        {
+          "disk": "disk6",
+          "name": "OLIVETI2.WP_",
+          "size": 1428,
+          "sha256": "a0074c2b9549ad0c7308a2e4c91792b42a0a12385c609587d7e3b473dd2e1c80"
+        },
+        {
+          "disk": "disk6",
+          "name": "P4455514.WP_",
+          "size": 1619,
+          "sha256": "fce754b53e86773c4d36e4f7fb1902136d8ac5b9caf37200fa469bfbd8ae9fbf"
+        },
+        {
+          "disk": "disk6",
+          "name": "PAINTJET.DR_",
+          "size": 2903,
+          "sha256": "7e6d0b2131a65a525b7f74d71e21a25993df7e43ae40af996a6453e864d9bb95"
+        },
+        {
+          "disk": "disk6",
+          "name": "PANSON24.DR_",
+          "size": 4405,
+          "sha256": "f278a064664bebf7ab19726656d04be72efb7460fd08ad19265d7351f751871e"
+        },
+        {
+          "disk": "disk6",
+          "name": "PANSON9.DR_",
+          "size": 4789,
+          "sha256": "3a5031993c00c361679095af7a2f4b6c7fed3f1c161714fc75df1500a4c664d8"
+        },
+        {
+          "disk": "disk6",
+          "name": "PG306.DR_",
+          "size": 18336,
+          "sha256": "8329ac62ed72e01fb7f675057bea7d10681b1f83d79a8cffbd76de5a824d02a1"
+        },
+        {
+          "disk": "disk6",
+          "name": "PHIIPX.WP_",
+          "size": 1219,
+          "sha256": "4f34f8c23750e4d83e8fac33dde82d76d27540e76b9f73e49fc0a65eb1dc8b8c"
+        },
+        {
+          "disk": "disk6",
+          "name": "PROPRINT.DR_",
+          "size": 3576,
+          "sha256": "08cfb521bd8727e4fd78cd778def96eb8df2cde8bbde50f12d51752d86b129b2"
+        },
+        {
+          "disk": "disk6",
+          "name": "PROPRN24.DR_",
+          "size": 3539,
+          "sha256": "28bbbfec15596efcbe46b747a4529facd5d8f194c731b7e3503753374a61719c"
+        },
+        {
+          "disk": "disk6",
+          "name": "PRTUPD.INF",
+          "size": 15855,
+          "sha256": "9db9e7762ea63380e7829df988364004f63479ee4b532334787c4093c1fc8328"
+        },
+        {
+          "disk": "disk6",
+          "name": "PS1.DR_",
+          "size": 3768,
+          "sha256": "6cdf8bc91361f28f0e11e72ebe9aba5f203134f05ac335d24ab908c61ed7ccb0"
+        },
+        {
+          "disk": "disk6",
+          "name": "PSCRIPT.DR_",
+          "size": 135968,
+          "sha256": "2ee3fea0c55210d825c3b8d18512ade2b4031c556d55cfd4c6d2fa8c71b39d34"
+        },
+        {
+          "disk": "disk6",
+          "name": "PSCRIPT.HL_",
+          "size": 32727,
+          "sha256": "7c5c63a25e581497336c2e9437089d0a3f0eed8f4baf75403c2cbcba30fa9a6f"
+        },
+        {
+          "disk": "disk6",
+          "name": "Q2200510.WP_",
+          "size": 1621,
+          "sha256": "4ae7769857fef2f93852b321f35205856491116a3e3a9334587b8c0c8d432d2f"
+        },
+        {
+          "disk": "disk6",
+          "name": "Q820_517.WP_",
+          "size": 1520,
+          "sha256": "d738cc9a3ce3a96ccd58263ef70559b4d31c318fda3a8118e6923f70d76c4f57"
+        },
+        {
+          "disk": "disk6",
+          "name": "QWIII.DR_",
+          "size": 4709,
+          "sha256": "a974075c1925334b5724c6d326890663144a030b64019584009be95946ca46ba"
+        },
+        {
+          "disk": "disk6",
+          "name": "SEIKO_04.WP_",
+          "size": 1385,
+          "sha256": "564bbc1dd61ffdae059033991c7207d5aa96e080508cde603a7876c226d81abb"
+        },
+        {
+          "disk": "disk6",
+          "name": "SEIKO_14.WP_",
+          "size": 1472,
+          "sha256": "684fb5d763fa4d62da1cc92710edfa03bf642541a38f35fc9a430ab748c35036"
+        },
+        {
+          "disk": "disk6",
+          "name": "SF4019.EX_",
+          "size": 33831,
+          "sha256": "b4ae3e33434a677c28f1ac81f99035f39fd9cc67604662e075787a4afb97bb67"
+        },
+        {
+          "disk": "disk6",
+          "name": "SFINST.EX_",
+          "size": 35394,
+          "sha256": "076a97ca81e59234c324d53dc78e8dc8e3028e00cd102d3f8f295ea643dfee3c"
+        },
+        {
+          "disk": "disk6",
+          "name": "SYMBOL.FO_",
+          "size": 428,
+          "sha256": "2f5c877d7994e8bf1a8913255460c20cc4c67bef1130ab27ba666d95d8ce41e6"
+        },
+        {
+          "disk": "disk6",
+          "name": "SYMBOL.TT_",
+          "size": 50450,
+          "sha256": "493e0adcb3070227200e7c2dc06be040c1030d72c3cf72b1b8e040305e3bc9fd"
+        },
+        {
+          "disk": "disk6",
+          "name": "TESTPS.TX_",
+          "size": 1242,
+          "sha256": "ff61a5d681aba892068a1fab09bc858cec1c483e478aad3786ca17405503c854"
+        },
+        {
+          "disk": "disk6",
+          "name": "THINKJET.DR_",
+          "size": 2305,
+          "sha256": "a09bccfbe48ec233a26397be372f051a118aa2fec44af247e2158f20f171500a"
+        },
+        {
+          "disk": "disk6",
+          "name": "TI850.DR_",
+          "size": 2156,
+          "sha256": "0f676500294731377968fda1f4b32272b6ac59edcbe7d3c419a394fbe0acca60"
+        },
+        {
+          "disk": "disk6",
+          "name": "TIM17521.WP_",
+          "size": 1048,
+          "sha256": "eb066a39f786f4a02c25c6ffbd63c4c70ca480a4a6a0def9ef5aebf16a538c18"
+        },
+        {
+          "disk": "disk6",
+          "name": "TIM35521.WP_",
+          "size": 1577,
+          "sha256": "3296485a34e2e083915a9ac42d798410e547c547061d81c73bd1a24177fcf725"
+        },
+        {
+          "disk": "disk6",
+          "name": "TKPHZR21.WP_",
+          "size": 1510,
+          "sha256": "328a6a9e5e68c2c8c48c24937b244026df007f4e00d0d81cd5c42b26e829dd76"
+        },
+        {
+          "disk": "disk6",
+          "name": "TKPHZR31.WP_",
+          "size": 1613,
+          "sha256": "288a4f532f137271af4a85231ee53945bea7a9140522c56d88c6b13db6e6901f"
+        },
+        {
+          "disk": "disk6",
+          "name": "TOSHIBA.DR_",
+          "size": 3320,
+          "sha256": "a07eba2a3aad0415c9013136540bcc68672f52387992a602005c6b946fc516a4"
+        },
+        {
+          "disk": "disk6",
+          "name": "TRIUMPH1.WP_",
+          "size": 785,
+          "sha256": "52dcd3dea254fa87c3fd72e6f6f1622320b5ba972639bd88ba3c8c88e89ef804"
+        },
+        {
+          "disk": "disk6",
+          "name": "TRIUMPH2.WP_",
+          "size": 1428,
+          "sha256": "d67b80e806ec894816ec35fa15f28f399044225a87f1e9b2a3fa37e3566c0cc6"
+        },
+        {
+          "disk": "disk6",
+          "name": "TTY.DR_",
+          "size": 16675,
+          "sha256": "5fafd5611764facbc30f8000c027ae904c69c27ca62c5d07a8588787185be5d4"
+        },
+        {
+          "disk": "disk6",
+          "name": "TTY.HL_",
+          "size": 8859,
+          "sha256": "c436c4af2cf0d55e42abb2ef164174577ada09817fdea316b3e478f4e6a62d5f"
+        },
+        {
+          "disk": "disk6",
+          "name": "U9415470.WP_",
+          "size": 1345,
+          "sha256": "ead8fa5f2e09b2821b3e45c7d2897893e6179b47b092d5ec37cf83e2289875f5"
+        },
+        {
+          "disk": "disk6",
+          "name": "UNIDRV.DL_",
+          "size": 72378,
+          "sha256": "4e21d32b15995788759be84e2cb3af7777c230575cf4e24069b3f83c13508834"
+        },
+        {
+          "disk": "disk6",
+          "name": "UNIDRV.HL_",
+          "size": 23219,
+          "sha256": "10e3ad688ebbca361aed560c3c91ba1d6bbfc3e1495627a2344be4faf8b01a9c"
+        },
+        {
+          "disk": "disk6",
+          "name": "WINGDING.FO_",
+          "size": 430,
+          "sha256": "c1e2f6ce0e28d1afdedfd965a8508d544df45e4349a447cba9b5504fc51b2e93"
+        },
+        {
+          "disk": "disk6",
+          "name": "WINGDING.TT_",
+          "size": 52533,
+          "sha256": "e258117abfbc208834517f74932889b89f2fbaa7d731e99635f8a31d787e33b5"
+        }
+      ]
+    },
+    {
+      "id": "wdl-svga256",
+      "label": "Windows Driver Library's svga.exe: the Super VGA 256-colour driver, unpacked",
+      "files": [
+        {
+          "name": "8514FIX.FON",
+          "size": 10976,
+          "sha256": "9d79657757c94d0c8ce4de56f4a3b9faa8087d651961dbea9eaa201513c05389"
+        },
+        {
+          "name": "8514OEM.FON",
+          "size": 12288,
+          "sha256": "c486c682b2e623cab22347b9356fd3e10d76f294467d9da1bbb6819b772e87f5"
+        },
+        {
+          "name": "8514SYS.FON",
+          "size": 9280,
+          "sha256": "dc7e1c9bb168e22b7a8b1a10c5d9555d71ea8486dc0d628fa17d117698bae61b"
+        },
+        {
+          "name": "CGA40850.FON",
+          "size": 6352,
+          "sha256": "c16fb6d47e6def7b345e966f552e86db94c520186da5780e501271d077bf1fce"
+        },
+        {
+          "name": "CGA40WOA.FON",
+          "size": 6336,
+          "sha256": "32482989159a4d10af71599300b99e7c618d768e97832bf7013b78e52fcea4e9"
+        },
+        {
+          "name": "CGA80850.FON",
+          "size": 4320,
+          "sha256": "e564fdf7a7b32f24b2aa14e46d37314e8afd4f4e0c6dc19345aaf0b91eeb3e58"
+        },
+        {
+          "name": "CGA80WOA.FON",
+          "size": 4304,
+          "sha256": "93e7c6c123d9b53a2d933f63093b4b85302023517f56abf057f9ef8a94d83b8b"
+        },
+        {
+          "name": "COURE.FON",
+          "size": 23408,
+          "sha256": "e81d15ef094f997d48cb144375866fb2f5d988b0b93b43c38cf58985e27acf45"
+        },
+        {
+          "name": "COURF.FON",
+          "size": 31712,
+          "sha256": "cd5169425701d19edc3d0c73f6974d1f77a28777fc079a4c09fdeee07484777d"
+        },
+        {
+          "name": "DISPLAY.TXT",
+          "size": 1734,
+          "sha256": "200d2bf083e322e83f4ab873f564f9462777d63af09d560a281af7292bcc7e6f"
+        },
+        {
+          "name": "EGA40850.FON",
+          "size": 8384,
+          "sha256": "3deef61582bea18f8073c862873a9c373df13143b7de302f66cdfa23cb535c3f"
+        },
+        {
+          "name": "EGA40WOA.FON",
+          "size": 8368,
+          "sha256": "a0e5dbe96d1cae29501b481cd98a1eac5f0f662aa367aa9712a419c3c32f4284"
+        },
+        {
+          "name": "EGA80850.FON",
+          "size": 5328,
+          "sha256": "701650e81604585ce653413dfc3a802e882e68f4c2b373bedfd3fbf94dae8372"
+        },
+        {
+          "name": "EGA80WOA.FON",
+          "size": 5312,
+          "sha256": "6e7a86167874f989433a264345e5ea6c0e000861cbca8153858b23d7d35d5ecc"
+        },
+        {
+          "name": "LICENSE.TXT",
+          "size": 3807,
+          "sha256": "a784c9fb1703d4096c6d147e9f84c4f7717c192fbb5cdcb170f96a7c8f1f12bb"
+        },
+        {
+          "name": "MODERN.FON",
+          "size": 8704,
+          "sha256": "b532bc33388b2aa350f1a497485fb63385adfc9d25094725e4c00bb0bf77628c"
+        },
+        {
+          "name": "OEMSETUP.INF",
+          "size": 5248,
+          "sha256": "a1910fc2d80720c80597d00c77d48b60bd63ef86919e9ecaec4efea4a5eaae78"
+        },
+        {
+          "name": "README.TXT",
+          "size": 2077,
+          "sha256": "70dfa98b454cd31693e5c29f2955bd1c8c05cf707b8b25d44273c7f6603dd3eb"
+        },
+        {
+          "name": "ROMAN.FON",
+          "size": 13312,
+          "sha256": "25733f3e5dddebea00c32382d6e40438282ea740f23955010cb38c4b1e312297"
+        },
+        {
+          "name": "SCRIPT.FON",
+          "size": 12288,
+          "sha256": "eacbfca9a5ef05a108ef5337c773d82a43398bb8ea177e5ebeef62934dd75811"
+        },
+        {
+          "name": "SERIFE.FON",
+          "size": 57936,
+          "sha256": "19bfe5865332ca1f1392bf77950f79dbb7d9e5600f79bc546397567310364fe2"
+        },
+        {
+          "name": "SERIFF.FON",
+          "size": 81728,
+          "sha256": "03a22afa8a2eb02d21c601fa575ddcc9e0496a2658c1dc73b8029566dc432e00"
+        },
+        {
+          "name": "SMALLE.FON",
+          "size": 26112,
+          "sha256": "de416395301da32c96bf34625483ea6ecdcdaaeb9ff72cdca00b5af4d7092da9"
+        },
+        {
+          "name": "SMALLF.FON",
+          "size": 21504,
+          "sha256": "371c8f75993177f8ffbba9e6ba0b910ec5c88ee2f8edba23b3e08a20f861dcb3"
+        },
+        {
+          "name": "SSERIFE.FON",
+          "size": 64544,
+          "sha256": "9b2658673e3c017847f7f6b272d2ec57dff7c1137567a0643e2057450859a5ce"
+        },
+        {
+          "name": "SSERIFF.FON",
+          "size": 89680,
+          "sha256": "c76d12a86eaaff3f32f98b1018ba1856aff5f29761727985bae114f56d911eca"
+        },
+        {
+          "name": "SVGA.EXE",
+          "size": 432405,
+          "sha256": "2810f2312a183928c74cdae77c5475ffab071b22a0affb6806df8b2bf279f23b"
+        },
+        {
+          "name": "SVGA256.3GR",
+          "size": 13824,
+          "sha256": "386957c03de74bfb9951995aced7b0a01098df63046ada7e56ebea6aa42825c1"
+        },
+        {
+          "name": "SVGA256.DRV",
+          "size": 117312,
+          "sha256": "440acc337733f6f3be7e8f4e6cb4a305a8bd62dfe6f6dea79898f81b9637e95d"
+        },
+        {
+          "name": "SYMBOLE.FON",
+          "size": 56336,
+          "sha256": "85ea10f38c3d4c7035d958af6fef01d9ceac1faad107cbcacdc4b3aaa24afe81"
+        },
+        {
+          "name": "SYMBOLF.FON",
+          "size": 80912,
+          "sha256": "b75f90d31c9461675c46ceebf9dafd72442312310aafebdf856deafe93c6ce69"
+        },
+        {
+          "name": "VDDSVGA.386",
+          "size": 46662,
+          "sha256": "8e11043db5251b8783508fc4013c087e132db8829eb866214b4c73dd6b3078e0"
+        },
+        {
+          "name": "VDDTLI4.386",
+          "size": 39996,
+          "sha256": "eb3d54c2c53ae8a98771dc8e32c1261e6e211dd8d90f7fa35abde85bb495e3db"
+        },
+        {
+          "name": "VDDTVGA.386",
+          "size": 18758,
+          "sha256": "114fe4c2b8e3710a258b1d034d5c5747917d294efab88a3c933e06c1d22e9ed8"
+        },
+        {
+          "name": "VGA.3GR",
+          "size": 16384,
+          "sha256": "2d020d462fce47ba80176707703a9ecb100d5c24c5df820b6e4d676f71cc733c"
+        },
+        {
+          "name": "VGA.DRV",
+          "size": 73200,
+          "sha256": "53312ed013bda513c74e33659f4ee7d1b4f2b1cf1a06aed672432a8fbc4a820a"
+        },
+        {
+          "name": "VGACOLOR.2GR",
+          "size": 4484,
+          "sha256": "6776463cb0c5d8993add49b5fe78d945c930f7208799970bc95bfee3c49b0f6b"
+        },
+        {
+          "name": "VGADIB.3GR",
+          "size": 15360,
+          "sha256": "90f7eca0757aa85de0e37b03b45439c361e42b251f3a93557ec6bcd8e7aece16"
+        },
+        {
+          "name": "VGAFIX.FON",
+          "size": 5360,
+          "sha256": "57402d1e89dc0d8368cde612d720ab4a6a813bfe5e243e9da2775013e06f2b0f"
+        },
+        {
+          "name": "VGALOGO.LGO",
+          "size": 1280,
+          "sha256": "051b595494db5d2f531386a8a224f52d5e371589ce5d8b7298a5e0c5c4820d64"
+        },
+        {
+          "name": "VGALOGO.RLE",
+          "size": 26778,
+          "sha256": "a34ef5d705bbd0d94575b5f1f9ee0d8c4c325fee1e4ef47212fead5425172945"
+        },
+        {
+          "name": "VGAOEM.FON",
+          "size": 5168,
+          "sha256": "011326f65e151d83c157ef6fdd23a2d851e8d0f2662d8409ea0b4a142e343a13"
+        },
+        {
+          "name": "VGASYS.FON",
+          "size": 7280,
+          "sha256": "7baefa14ef8ef2355374d0b5061043dd5f4f8c33ff57680366e4a725f91646f8"
+        },
+        {
+          "name": "WIN.CNF",
+          "size": 16112,
+          "sha256": "b4b781bb4382fed4d3154a3a43c8827fce2b1d91d35a11df1d18a7b536c3f6c4"
+        }
+      ]
+    }
+  ]
+}
