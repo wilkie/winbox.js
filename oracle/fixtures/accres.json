@@ -18,7 +18,7 @@
     {
       "function": "access",
       "args": "one",
-      "result": "ok,at=2880,read=8,4100,same"
+      "result": "ok,at=2838,read=8,4100,same"
     },
     {
       "function": "size",
@@ -28,7 +28,7 @@
     {
       "function": "access",
       "args": "seventeen",
-      "result": "ok,at=2882,read=8,73657665,same"
+      "result": "ok,at=2840,read=8,73657665,same"
     },
     {
       "function": "size",
@@ -38,7 +38,7 @@
     {
       "function": "access",
       "args": "three-hundred",
-      "result": "ok,at=2900,read=8,30313233,same"
+      "result": "ok,at=2858,read=8,30313233,same"
     },
     {
       "function": "size",
@@ -48,7 +48,7 @@
     {
       "function": "access",
       "args": "named",
-      "result": "ok,at=3200,read=6,6e616d65,same"
+      "result": "ok,at=3158,read=6,6e616d65,same"
     },
     {
       "function": "size",
