@@ -2,7 +2,7 @@
 
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
-import { OWN_WITH_FILE, ownByFile, ownPath } from './own-modules.js';
+import { OWN_WITH_FILE, ownByFile, ownFreed, ownPath } from './own-modules.js';
 import { start as startCommDlg } from './commdlg/state.js';
 import { loaded as printLoaded } from './commdlg/print-dlg.js';
 import { searchPlaces } from './kernel/search.js';
@@ -458,6 +458,7 @@ export async function freeLibrary(system: any, handle: number) {
   system._modules.unregister(library.loader);
   system.handles.free(library.instance);
   system.handles.free(library.module);
+  ownFreed(system, library.loader?.name);
 
   for (const other of library.brought) {
     await freeLibrary(system, other.instance);
@@ -491,6 +492,7 @@ export function releaseLibraries(system: any, libraries: Library[]) {
     system._modules.unregister(library.loader);
     system.handles.free(library.instance);
     system.handles.free(library.module);
+    ownFreed(system, library.loader?.name);
     releaseLibraries(system, brought);
   }
 }

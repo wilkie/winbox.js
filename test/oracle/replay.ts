@@ -5246,10 +5246,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:media': 'DOS function 1Ch is not answered',
 
   /* `LocalHandle` answers a block's pointer as Windows does -- a moveable
-   * block's handle, a fixed block's pointer itself -- but KERNEL tells any
-   * other value by bit 1, set only in a moveable block's pointer, and
-   * winbox.js's local heap does not lay its blocks at KERNEL's alignments
-   * (`lochand`; `KRNL386.EXE` seg1 `8d6a`). Five records. */
+   * block's handle, a fixed block's pointer itself -- and tells any other
+   * value by bit 1, set only in a moveable block's pointer, now that blocks
+   * have KERNEL's arenas before them (`lochand`; `KRNL386.EXE` seg1 `8d6a`).
+   * But a handle is a word of a two-byte slot here, not an entry of
+   * KERNEL's handle tables, and a discarded block's last pointer is still
+   * known as its handle's: two records. */
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
    * is made active, and where the focus goes, agree (`state`); the messages
    * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
@@ -5271,10 +5273,8 @@ export const KNOWN_GAPS: Record<string, string> = {
     'a window minimized and restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 71 records',
   'swpshow:zorder':
     'an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records',
-  'lochand:bits':
-    "a fixed block's pointer has bit 1 clear in Windows and a moveable block's set; winbox.js's heap lays blocks otherwise, one record",
   'lochand:handle':
-    "LocalHandle of a value no block starts at goes by bit 1 of it, which winbox.js's heap layout does not match KERNEL's, four records",
+    "LocalHandle of a handle itself and of a discarded block's last pointer follow KERNEL's handle tables, which winbox.js's heap does not keep, two records",
 
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
@@ -5311,14 +5311,16 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* A local heap made in a block of `GlobalAlloc`'s grows, as Windows' does,
    * to the same 80 blocks and the same `LocalReAlloc`; but where each block
    * lands, the handles given out and the sizes grown through follow Windows'
-   * own layout -- its handle tables and each block's header -- which winbox.js's
-   * heap does not keep (`lheapseg`). */
+   * handle tables, 32 handles of four bytes in a block of the heap made as
+   * the first is wanted (`KRNL386.EXE` seg1 `8a41`), and its moveable blocks
+   * at the top of a free block, which winbox.js's heap does not keep
+   * (`lheapseg`). */
   'lheapseg:alloc':
-    "the heap grows, but its handles and the points it grows at follow Windows' handle tables and block headers, which are not modelled",
+    "the heap grows, but its handles and the points it grows at follow Windows' handle tables and moveable blocks placed at the top, which are not modelled",
   'lheapseg:count':
-    "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
+    "80 blocks are made, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled",
   'lheapseg:realloc':
-    "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and block headers, which are not modelled",
+    "LocalReAlloc succeeds, as in Windows, but the block's size after follows Windows' handle tables and moveable blocks placed at the top, which are not modelled",
 
   /* A procedure given EnumTaskWindows without `MakeProcInstance`, which
    * USER calls with AX 1 (seg1 `1ad0`): its prologue, patched to three
@@ -5581,22 +5583,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
-  /* DDEML keeps each transaction a server's callbacks have not taken in its
-   * instance's own local heap, 2Eh bytes asked of `LocalAlloc` each
-   * (`DDEML.DLL` seg1 `22de`). KERNEL's local arena puts a header of four
-   * bytes before each block, rounded to four: 52 bytes, and the heap,
-   * grown to 64 KiB, was full at the 1,247th request. winbox.js keeps a
-   * header of two (`global-and-local-memory` in the knowledge base): 50 bytes, full at
-   * the 1,302nd. 2 of `ddeheap`'s 6 records: the count, in the server's
-   * XTYP_ERROR line and in its last; what XTYP_ERROR carries agrees. */
-  'ddeheap:requests': "a local block's header of two bytes where KERNEL's arena has four",
-  'ddeheap:server': "a local block's header of two bytes where KERNEL's arena has four",
   /* `prblt`'s last part: a stretch, one flipped, and a DIB set and
    * stretched, on a driver that can only `BitBlt`. GDI stretches into
    * bitmaps of its own and copies them with the driver's `BitBlt` (`GDI.EXE`
    * seg32 `0690` on, seg11 `0ce9` on), which winbox.js does not follow; 12
    * of the part's records. The rest of the probe agrees. */
   'prblt:fallback': "GDI's own stretching and DIBs for a driver that can only BitBlt",
+  /* DDEML's `WEP` answers what AX held as it was called for anything but
+   * `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`: DDEML's data segment, which the
+   * entry's prologue loads (`DDEML.DLL` seg2 `002c`). A library's instance is
+   * its data segment's handle, one less than its selector, and that is what
+   * Windows answered; winbox.js numbers a library's instance from a table
+   * of its own, so the data segment's selector is not one more than it. 1 of
+   * `ddewep`'s 6 records. */
+  'ddewep:WEP': "a library's instance is not its data segment's handle in winbox.js",
 };
 
 /**
@@ -5893,6 +5893,8 @@ const RUN_WHOLE = new Set<string>([
   'prdrv',
   'prband',
   'prblt',
+  'ddehsz',
+  'ddewep',
 ]);
 
 /**

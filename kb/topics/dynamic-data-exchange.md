@@ -2,7 +2,8 @@
 kind: topic
 name: Dynamic data exchange
 summary: How Windows 3.1's programs talk by DDE — the WM_DDE_ messages, their atoms and shared memory, and what USER does with them — and how DDEML.DLL is built on top, its instances, windows, hooks, timers and conversations, read out of the binaries and recorded between two programs.
-probes: [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail]
+probes:
+  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail, ddehsz, ddewep]
 ---
 
 Dynamic data exchange is two programs passing messages between their windows. The messages are `WM_DDE_*`, 3E0h to 3E8h, and what they carry is atoms for names and blocks of global memory for data. Windows 3.1 has two layers of it:
@@ -55,7 +56,8 @@ USER does not route DDE. It only checks the parameters, and the rest is `SendMes
 
 `DDEML.DLL` is three segments: code (seg1, 7532h bytes), the library's entry and `WEP` (seg2), and its data (seg3), whose local heap holds the instances. Its imports are KERNEL, USER, GDI and KEYBOARD.
 
-- [[read out]] It refuses to load outside protected mode (`GetWinFlags`, seg2 `000a`). `WEP` answers 1 (seg2 `002c`).
+- [[read out]] It refuses to load outside protected mode (`GetWinFlags`, seg2 `000a`). [[fn:DDEML.WEP]] answers 1 for `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`, and for anything else what AX held, DDEML's data segment, which the entry's prologue loads (seg2 `002c`-`0045`). It frees nothing: an instance a program leaves open, its atoms and its heap stay as they are, and nothing of DDEML's has anything to do as the program's windows are destroyed (`DMGWNDPROC`, seg1 `5558`).
+- [[measured]] [[probe:ddewep]]: a program that made an instance, two string handles and a registered name ended without `DdeUninitialize`. DDEML, which only it had loaded, went with it, and both strings were still atoms. Loaded again by another program, DDEML started from its file's data again: the instance made had the serial the first program's had. `WEP` called with 2 answered one more than `LoadLibrary`'s answer, the data segment whose handle is the library's instance.
 - [[read out]] **The first `DdeInitialize`** since `DDEML.DLL` was loaded (seg1 `00b4`; the word at DS `0018` it tests is set there, `0146`, and nowhere else) reads `[DDEML]` `ShutdownTimeout=` (3000 ms unless set) and `ShutdownRetryTimeout=` (30000 ms) from `WIN.INI`, adds the global atom `Progman` and keeps its number at DS `00A4` (`0134`-`013d`), registers its classes (`62e0`) and adds two atoms of its own, `Who` and `Made me?`, out of a string kept each byte XOR 25h (`5990`).
 - [[read out]] **The classes**, registered with DDEML's instance, style nought, no background (`62e0`-`63c4`):
 
@@ -74,6 +76,7 @@ USER does not route DDE. It only checks the parameters, and the rest is `SendMes
 - [[measured]] [[probe:ddemgmt]]: the probe's client instance was serial 2, its monitor 3, three more monitors 4 to 6 and the server's instance 7.
 - [[read out]] **A conversation** is a `DMGClientClass` or `DMGServerClass` window, its 42h bytes in its instance's heap at its window long 0, a serial at its window word 4. An `HCONV` is `MAKELONG(` the window `,` the serial `)`, and a call checks one by `IsWindow` and the word (`2dac`). A client conversation is a child of its instance's `DMGClass` window, or of a list's `DMGHoldingClass` window; a server conversation is a child of a `DMGHoldingClass` window each server instance makes the first time (`6f74`). [[measured]] The probe's first conversation was a `DMGClientClass` window, child of a `DMGClass` window at the top, and its word 4 was the handle's high word.
 - [[read out]] **A string handle** is a global atom: `MAKELONG(atom, 0)` from `DdeCreateStringHandle`. DDEML makes a second kind for an instance's own name, `MAKELONG(atom, ` its `DMGFrame` window `)`, which [[fn:DDEML.DdeQueryString]] writes as `Name:(hhhh)`.
+- [[read out]] **Its counts** are the atom's. Each handle an instance makes or keeps is put in the instance's array at 10h, and [[fn:DDEML.DdeFreeStringHandle]] takes one entry of it out, where it is there, and deletes the atom whether or not it was (seg1 `1a40`, `29d8`, `2ddc`). An instance ending deletes each entry left. [[measured]] [[probe:ddehsz]]: a handle freed by another instance of the same program lost a count there, and another as the instance that made it ended; made twice and freed once, or made and kept, the atom lost one count and two as the instance ended. An id of nought, or with another serial, answers FALSE and leaves the instance's last error as it was; the instance's own id clears it.
 
 ### Its private messages
 
@@ -117,7 +120,7 @@ Both keep the hook before them at the same word, `[3Ah]`, so the second put in o
 - The count of callbacks under way, at 2Eh, is up while the callback runs; DDEML's own calls that would make another callback read it (`DdeEnableCallback`, `DdeDisconnect`).
 - Each callback is told to the monitors with `MF_CALLBACKS`, the answer with it, but for `XTYP_MONITOR` itself (`58f8`-`5935`).
 - **`XTYP_ERROR`** is called back only when an instance's own heap of 4 KB is full (`61a8`, from `628a`): DDEML frees the 256 bytes it keeps against that (an instance's 36h), sets `DMLERR_LOW_MEMORY`, calls back `XTYP_ERROR` with 4007h in `dwData1`, and posts its window `WM_USER + D0h`, which keeps 256 bytes again once there are (`5728`-`5741`). The heap is a moveable block with `LocalInit` (`6118`), so `LocalAlloc` grows it to 64 KiB first.
-- [[measured]] [[probe:ddeheap]]: a server whose callbacks were disabled, posted one plain `WM_DDE_REQUEST` after another, each kept in its queue, was called back `XTYP_ERROR` in the 1,247th request, `dwData1` 4007h, `dwData2` nought, `DdeGetLastError` 4007h inside the callback. Twenty more requests after it brought nothing back, no acknowledgement, and left the server's last error `DMLERR_MEMORY_ERROR`, 4008h. winbox.js was called back in the 1,302nd: its local blocks take a header of two bytes where KERNEL's arena takes four ([[topic:global-and-local-memory]]).
+- [[measured]] [[probe:ddeheap]]: a server whose callbacks were disabled, posted one plain `WM_DDE_REQUEST` after another, each kept in its queue, was called back `XTYP_ERROR` in the 1,247th request, `dwData1` 4007h, `dwData2` nought, `DdeGetLastError` 4007h inside the callback. Twenty more requests after it brought nothing back, no acknowledgement, and left the server's last error `DMLERR_MEMORY_ERROR`, 4008h. Both engines are called back in the 1,247th too. Each request's block is 2Eh bytes, 52 with KERNEL's arena of four, and the heap grows to 65,504 bytes. After each growth, room too small to split is given to the last block whole ([[topic:global-and-local-memory]]). With a header of two bytes, as winbox.js had before, it was the 1,302nd.
 
 ### Timers and modal loops
 
@@ -173,8 +176,9 @@ DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), ev
 
 ## Not yet done
 
+- **A library's instance as its data segment's handle** ([[probe:ddewep]], 1 record): WinBox numbers a library's instance from a table of its own, so `WEP`'s answer, DDEML's data segment, is not one more than it.
+- **WinBox's own DDEML with no file, loaded and let go** ([[probe:ddewep]], 3 records with no `DDEML.DLL`): `GetModuleHandle` finds no `DDEML` while a program that imports it runs, and nothing undoes its data as that program ends. With the file, both are as in Windows.
 - **Freeing a task's memory as it ends**, and a module's `GMEM_DDESHARE` blocks as its last instance ends ([[probe:ddeleft]], 5 records): neither engine knows a block's owner.
 - **An atom deleted once too often**: the answer depends on KERNEL's local heap in USER's data segment, which winbox.js does not keep ([[probe:ddeleft]], 1 record).
 - USER's checks of the other messages' parameters (seg1 `afc2`-`b388`, and `af84` for the controls'): only the DDE rows are followed.
-- **The request in which an instance's heap is full** ([[probe:ddeheap]], 2 records): winbox.js's local blocks have a header of two bytes, KERNEL's arena four, so its heap holds more.
 - Atom numbers where a deleted atom's place in USER's table is taken: winbox.js gives a deleted atom's number to the next string added ([[topic:atoms]]), Windows the place in its heap that fits. Whether DDEML's `Progman` test holds after the atom was gone can differ: a first draft of [[probe:pmatom]], whose first instance ended before the connections, saw the test fail under Windows, the number taken by another name, and hold in winbox.js. Not recorded in the probe as it stands.

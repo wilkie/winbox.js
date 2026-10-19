@@ -142,10 +142,11 @@ export class Heap {
       return null;
     }
 
-    // Find a place to allocate within the heap.
-    // We want 2 more bytes to write the size
-    const searchSize = size + 2;
-    let address = this.find(searchSize) || this.grow(size, searchSize);
+    /* The block's arena before its bytes: KERNEL's four, a moveable block's
+     * handle after them (`Heap.HEADER`). */
+    const header = options.header ?? (options.movable ? Heap.MOVEABLE_HEADER : Heap.HEADER);
+    const searchSize = size + header;
+    let address = this.place(searchSize);
     if (address == 0) {
       // `LocalAlloc` fails with NULL; it never throws.
       return null;
@@ -153,24 +154,35 @@ export class Heap {
 
     view.heap = this;
 
+    /* A free block that would keep too little to be one is given whole: a
+     * fixed block's where 16 bytes or less would be left, a moveable one's
+     * where less than 16 (`KRNL386.EXE` seg1 `92a4`-`92b5`, `92f9`-`9308`).
+     * Its bytes are the block's, `LocalSize` and all. After each growth of a
+     * heap DDEML fills with blocks of 52, what was left past the last of
+     * them is lost so (`ddeheap`). */
+    const gap = this.#gapAt(address);
+    const left = gap - searchSize;
+    const whole = header === Heap.MOVEABLE_HEADER ? left < 16 : left <= 16;
+    const extra = whole ? left : 0;
+
     // Create the metadata chunk
     const sizeData = new Uint8Array(2);
     const sizeView = new DataView(sizeData.buffer);
 
     // Retain the allocation
-    this._allocations.push([address, searchSize, sizeView, view]);
+    this._allocations.push([address, searchSize + extra, sizeView, view, header, extra]);
     this._allocations.sort((a, b) => a[0] - b[0]);
 
-    // Write the size and increment the address by 2
-    sizeView.setUint16(0, size, true);
-    address += 2;
+    // Write the size and step past the arena
+    sizeView.setUint16(0, size + extra, true);
+    address += header;
 
     /* With `LMEM_ZEROINIT`, the block is nought in the segment the program
      * reads; without, it is what the memory held -- **recorded** by `lzero`,
      * a block given where a freed one was. Four Seas, a Visual Basic program,
      * asks for its controls so, and read a freed block's bytes as its own. */
     if (options.zeroInit) {
-      this.#writeAt(address, new Uint8Array(size));
+      this.#writeAt(address, new Uint8Array(size + extra));
     }
 
     // Allocate (and a handle, if movable)
@@ -195,6 +207,18 @@ export class Heap {
     // Return the address of the usable, allocated space
     return address;
   }
+
+  /**
+   * The bytes of a block's arena before its own: KERNEL's four, the
+   * previous arena's address with the block's flags in its low bits and the
+   * next's (`KRNL386.EXE` seg2 `2962`-`2992`, seg1 `930b`-`9331`), the
+   * block's bytes after them (`932c`-`932f`) -- and for a moveable block,
+   * its handle's address after those (`92d7`, `8b0f`), six. A fixed block
+   * of 2Eh bytes, as DDEML asks for each transaction it keeps, takes 52
+   * (`ddeheap`).
+   */
+  static HEADER = 4;
+  static MOVEABLE_HEADER = 6;
 
   /**
    * The size a request of this many bytes actually turns into.
@@ -263,21 +287,14 @@ export class Heap {
       address = this.getUint16(address - this._offset, true);
     }
 
-    // The two bytes before the data hold its size, so the block starts there.
-    const start = address - 2;
+    const allocation = this.#allocationAt(address);
 
-    for (const allocation of this._allocations) {
-      if (allocation[0] === start) {
-        return allocation[3].byteLength;
-      }
-    }
-
-    return 0;
+    return allocation ? allocation[3].byteLength + (allocation[5] ?? 0) : 0;
   }
 
   allocateHandle() {
     // Find 2 bytes of free space for the handle, growing for them as for a block.
-    const ret = this.find(2) || this.grow(2, 2);
+    const ret = this.place(2);
 
     // Create the data
     const data = new Uint8Array(2);
@@ -303,20 +320,26 @@ export class Heap {
     if (this._handles[address]) {
       const pointer = this.getUint16(address - this._offset, true);
       delete this._handles[address];
-      this.free(pointer);
-    } else {
-      // If it is not a handle, get to the actual starting point
-      address -= 2;
+      this.#release(pointer);
+
+      // And the handle's own slot.
+      const slot = this._allocations.findIndex((item) => item[0] === address && !item[2]);
+
+      if (slot >= 0) {
+        this._allocations.splice(slot, 1);
+      }
+
+      return;
     }
 
-    // TODO: this can be a binary search
-    for (let i = 0; i < this._allocations.length; i++) {
-      const item = this._allocations[i];
-      if (item[0] == address) {
-        this._allocations.splice(i, 1);
-        return;
-      }
-    }
+    this.#release(address);
+  }
+
+  /** The free bytes from an address to the next block, or to the heap's end. */
+  #gapAt(address) {
+    const next = this._allocations.find((item) => item[0] >= address);
+
+    return (next ? next[0] : this.byteLength + this._offset) - address;
   }
 
   /** The largest space between blocks, or after the last: what `LocalCompact` answers. */
@@ -367,51 +390,106 @@ export class Heap {
   }
 
   /**
-   * Grows a heap that is out of room, as a moveable data segment's does.
-   *
-   * Measured by the `localgro` probe: a request that does not fit grows the
-   * segment by the request and 544 more, rounded up to 32 -- 1,568 for 1,000
-   * bytes, 3,616 for 3,072 and 4,640 for 4,096 -- whatever room there was
-   * already. A growth that would pass 64K grows to 64K instead, if the block
-   * then fits; if it still does not, nothing grows and the request fails.
-   * Refused, because the 1,000-byte request disproves both: the block, its
-   * header and 540 (1,544), and the same with 512 rounded up to 32 (1,536),
-   * which each fit the other two sizes.
-   *
-   * @param {number} request - The bytes the caller asked for.
-   * @param {number} needed - The bytes the block takes in this heap.
-   * @returns {number} Where the block goes, or 0 if the heap cannot grow to it.
+   * Where a block of `needed` bytes, its arena and all, goes: the first gap
+   * it fits, else after the heap has grown for it, if it may grow; 0 for
+   * nowhere.
    */
-  grow(request, needed) {
+  place(needed) {
+    let address = this.find(needed);
+
+    while (address == 0 && this.grow(needed)) {
+      address = this.find(needed);
+    }
+
+    return address;
+  }
+
+  /**
+   * Grows a heap that is out of room, as KERNEL's default `LocalNotify`
+   * grows one (`KRNL386.EXE` seg1 `8de2`), and answers whether it grew.
+   * Read out: refused when the segment's size, less the largest free
+   * block, with the block and 18h, passes 64 KiB (`8e0a`-`8e1c`);
+   * otherwise the segment is given the block and 218h more (`8e1e`, 200h
+   * of them the heap's own, set by `LocalInit`, seg2 `2933`), and no more
+   * than FFF0h (`8e2c`-`8e36`), by `GlobalReAlloc`, which rounds up to 32
+   * bytes; and the heap's last arena moved to ten bytes short of its end,
+   * at a four-byte boundary, 64 KiB counting as FFFFh (`8e5c`-`8e6b`).
+   *
+   * Measured by `localgro`: a data segment of 12,160 bytes grew by 1,568
+   * for 1,000 bytes asked for (a block of 1,004), by 3,616 for 3,072 and
+   * 4,640 for 4,096, and to 65,312 and no more where 4,096 would not fit.
+   *
+   * @param {number} needed - The bytes the block takes in this heap.
+   * @returns {boolean} Whether the heap grew.
+   */
+  grow(needed) {
     if (!this.growable) {
-      return 0;
+      return false;
     }
 
-    const limit = 0x10000 - this._offset;
-    const size = Math.min(this._size + (((request + 544 + 31) >> 5) << 5), limit);
+    const size = this.segmentSize;
 
-    if (size <= this._size) {
-      return 0;
+    if (size - this.largestFree() + needed + 0x18 > 0xffff) {
+      return false;
     }
 
-    const previous = this._size;
+    const asked = Math.min(size + needed + 0x218, 0xfff0);
+    const grown = Math.min((asked + 31) & ~31, 0x10000);
+    const last = (Math.min(grown, 0xffff) - 0xa) & ~3;
 
-    this._size = size;
-
-    const address = this.find(needed);
-
-    if (address == 0) {
-      this._size = previous;
-      return 0;
+    if (last <= this._offset + this._size) {
+      return false;
     }
 
-    const view = new DataView(new Uint8Array(size).buffer);
+    this.segmentSize = grown;
+    this._size = last - this._offset;
+
+    const view = new DataView(new Uint8Array(this._size).buffer);
 
     new Uint8Array(view.buffer).set(new Uint8Array(this._view.buffer));
     this._view = view;
-    this.onGrow?.(this._offset + size);
+    this.onGrow?.(grown);
 
-    return address;
+    return true;
+  }
+
+  /**
+   * The size of the segment the heap is in, as `GlobalSize` would answer
+   * it, which its growth goes by: where nothing has said, what its last
+   * arena's place makes it, ten bytes and a rounding past it.
+   */
+  get segmentSize() {
+    return this._segmentSize ?? this._offset + this._size + 12;
+  }
+
+  set segmentSize(value) {
+    this._segmentSize = value;
+  }
+
+  declare _segmentSize: number | undefined;
+
+  /**
+   * Where `LocalInit` lays a heap from `start` to `end` out (`KRNL386.EXE`
+   * seg2 `28e3`-`2957`): its first arena at `start`, at least 0Ah and
+   * rounded up to four; then an arena of the heap's own, four bytes and the
+   * 2Ah of its information; the free block after that, at a four-byte
+   * boundary; and the last arena ten bytes short of `end`, rounded down to
+   * four. The blocks given go between the free block's start and the last
+   * arena. Nothing where they do not fit.
+   */
+  static layout(start: number, end: number): { first: number; free: number; last: number } | null {
+    const align = (at: number) => (Math.max(at, 0xa) + 3) & ~3;
+    const first = align(start);
+    const info = align(first + 0xa);
+
+    if (info >= end) {
+      return null;
+    }
+
+    const free = align(info + 4 + 0x2a);
+    const last = (end - 0xa) & ~3;
+
+    return last > free ? { first, free, last } : null;
   }
 
   /** Told the heap's new end when it grows: its block's size follows it. */
@@ -459,7 +537,9 @@ export class Heap {
 
   /** The allocation whose data starts at an address. */
   #allocationAt(address) {
-    return this._allocations.find((allocation) => allocation[0] === address - 2 && allocation[2]);
+    return this._allocations.find(
+      (allocation) => allocation[2] && allocation[0] + allocation[4] === address
+    );
   }
 
   /**
@@ -479,6 +559,7 @@ export class Heap {
     const handle = this._handles[value] ? value : null;
     const address = this.resolve(value);
     const allocation = address ? this.#allocationAt(address) : null;
+    const header = handle ? Heap.MOVEABLE_HEADER : Heap.HEADER;
 
     if (address && !allocation) {
       return null;
@@ -507,7 +588,9 @@ export class Heap {
 
     /* A block's bytes are the program's, in its segment, where it writes
      * them through the pointer `LocalLock` gave it: those are what move. */
-    const old = allocation ? this.#bytesAt(address, allocation[3]) : new Uint8Array(0);
+    const old = allocation
+      ? this.#bytesAt(address, allocation[3], allocation[5] ?? 0)
+      : new Uint8Array(0);
     const data = new Uint8Array(Heap.blockFor(size, !!handle));
 
     data.set(old.subarray(0, Math.min(old.length, data.length)));
@@ -521,12 +604,12 @@ export class Heap {
     }
 
     const view: any = new DataView(data.buffer);
-    const placed = this.insert(view, {});
+    const placed = this.insert(view, { header });
 
     if (placed === null) {
       // Put the old bytes back where they will go.
       const back: any = new DataView(old.buffer);
-      const again = old.length ? this.insert(back, {}) : null;
+      const again = old.length ? this.insert(back, { header }) : null;
 
       if (again !== null) {
         this.#writeAt(again, old);
@@ -574,8 +657,8 @@ export class Heap {
       return false;
     }
 
-    const [start, block] = allocation;
-    const wanted = Math.max(12, (size + 2 + 3) & ~3);
+    const [start, block, , , header] = allocation;
+    const wanted = Math.max(header + 10, (size + header + 3) & ~3);
 
     if (wanted <= block) {
       if (block - wanted >= 20) {
@@ -592,12 +675,12 @@ export class Heap {
       return false;
     }
 
-    const was = allocation[3].byteLength;
+    const was = allocation[3].byteLength + (allocation[5] ?? 0);
 
     this.#resize(allocation, wanted);
 
     if (zeroInit) {
-      this.#writeAt(start + 2 + was, new Uint8Array(allocation[3].byteLength - was));
+      this.#writeAt(start + header + was, new Uint8Array(allocation[3].byteLength - was));
     }
 
     return true;
@@ -606,9 +689,10 @@ export class Heap {
   /** An allocation made a block of a new length, its size word and all. */
   #resize(allocation, block) {
     allocation[1] = block;
-    allocation[2].setUint16(0, block - 2, true);
+    allocation[5] = 0;
+    allocation[2].setUint16(0, block - allocation[4], true);
 
-    const view: any = new DataView(new ArrayBuffer(block - 2));
+    const view: any = new DataView(new ArrayBuffer(block - allocation[4]));
 
     view.heap = this;
     view.handle = allocation[3].handle;
@@ -618,11 +702,14 @@ export class Heap {
   }
 
   /** A block's bytes at an address of the segment: the segment's own, where there is one. */
-  #bytesAt(address, view) {
-    const length = view.byteLength;
+  #bytesAt(address, view, extra = 0) {
+    const length = view.byteLength + extra;
 
     if (!this.mirror) {
-      return new Uint8Array(view.buffer, view.byteOffset, length).slice();
+      const bytes = new Uint8Array(length);
+
+      bytes.set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
+      return bytes;
     }
 
     const bytes = new Uint8Array(length);
@@ -648,7 +735,7 @@ export class Heap {
   /** Frees a block's data, leaving any handle to it. */
   #release(address) {
     const index = this._allocations.findIndex(
-      (allocation) => allocation[0] === address - 2 && allocation[2]
+      (allocation) => allocation[2] && allocation[0] + allocation[4] === address
     );
 
     if (index >= 0) {

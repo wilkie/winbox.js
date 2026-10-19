@@ -23,8 +23,17 @@ const PROBES: &[(&str, &[&str])] = &[
     ("ddeterm", &[]),
     ("ddelist", &[]),
     ("ddenest", &[]),
-    ("ddeheap", &["requests", "server"]),
+    ("ddeheap", &[]),
+    ("ddehsz", &[]),
+    ("ddewep", &["WEP"]),
 ];
+
+/// The records more that do not agree with no `DDEML.DLL` on the drive, as
+/// `test/win16/ddeml_test.ts`'s `WITHOUT_GAPS`: WinBox's own DDEML, with no
+/// file, is no library that is loaded and let go, so `GetModuleHandle`
+/// finds no `DDEML` while a program that imports it runs, and nothing lets
+/// its data go when that program ends (`ddewep`).
+const WITHOUT_FILE: &[(&str, &[&str])] = &[("ddewep", &["state", "LoadLibrary"])];
 
 /// A probe run, with or without `DDEML.DLL` on the drive: how it stopped,
 /// its records, and whether a library named `DDEML` was loaded from a file.
@@ -88,6 +97,13 @@ fn probes_agree_with_no_file() {
 
         assert_eq!(stop, Stop::Ended, "{name}");
         assert!(!loaded, "{name}: a file of DDEML's was loaded");
-        check(name, records, gaps);
+
+        let more = WITHOUT_FILE
+            .iter()
+            .find(|(probe, _)| *probe == name)
+            .map_or(&[][..], |(_, more)| *more);
+        let gaps: Vec<&str> = gaps.iter().chain(more).copied().collect();
+
+        check(name, records, &gaps);
     }
 }

@@ -1,0 +1,64 @@
+{
+  "probe": "ddehsz",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "nought",
+      "result": "0,there,nought's error=4003"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "nought,then its own",
+      "result": "1,gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "other serial",
+      "result": "0,err=4006,there"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "clears",
+      "result": "1,err=0,gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "high word",
+      "result": "1,err=0,gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "integer",
+      "result": "1,err=0"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "another instance's",
+      "result": "1,err=0,there,ended:gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "made twice",
+      "result": "1,same=1,ended:there,let go:gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "kept",
+      "result": "ended:there,let go:gone"
+    },
+    {
+      "function": "DdeFreeStringHandle",
+      "args": "freed twice",
+      "result": "1,1,ended:there,let go:gone"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
+import { Heap } from '../heap.js';
 
 /**
  * The **LocalInit** function initializes a local heap in the specified segment.
@@ -47,12 +48,6 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     uEndAddr = size - 1;
   }
 
-  // Also, apparently, if the start address is less than 16, it gets set
-  // to 16.
-  if (uStartAddr < 16) {
-    uStartAddr = 16;
-  }
-
   // Get the selector index
   const segment = uSegment;
 
@@ -61,18 +56,29 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     return FALSE;
   }
 
-  // Allocate a heap
-  const size = uEndAddr - uStartAddr;
-  const heap = this.allocator.heapInitialize(segment, uStartAddr, size);
+  /* KERNEL's arenas laid from the start to the end (`Heap.layout`): the
+   * blocks go between the free block and the last arena. */
+  const layout = Heap.layout(uStartAddr, uEndAddr);
+
+  if (!layout) {
+    return FALSE;
+  }
+
+  const heap = this.allocator.heapInitialize(segment, layout.free, layout.last - layout.free);
 
   if (heap) {
-    if (this._growable?.has(segment)) {
-      heap.growable = true;
-    }
-
     /* A heap in a block of `GlobalAlloc`'s grows too, the block with it,
      * fixed or moveable, as the Visual Basic runtime's does (`lheapseg`). */
     const block = this.allocator._objects?.[segment];
+
+    /* Its growth goes by the segment's size, `GlobalSize`'s, for a block of
+     * `GlobalAlloc`'s; a data segment's is not kept, and the heap's end
+     * stands for it (`Heap.segmentSize`). */
+    heap.segmentSize = block ? block.size : uEndAddr + 1;
+
+    if (this._growable?.has(segment)) {
+      heap.growable = true;
+    }
 
     if (block) {
       heap.growable = true;

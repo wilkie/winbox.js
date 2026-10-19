@@ -2,6 +2,7 @@
 
 import { redirect as commdlgRedirect } from './commdlg/index.js';
 import { Ddeml } from './ddeml/index.js';
+import { freed as ddemlFreed } from './ddeml/exports.js';
 import { LzExpand } from './lzexpand/index.js';
 import { Ver } from './ver/index.js';
 
@@ -54,4 +55,15 @@ export function ownByFile(file: string) {
   const name = file.toUpperCase().replace(/\.DLL$/, '');
 
   return OWN_WITH_FILE.includes(name) && file.toUpperCase().endsWith('.DLL') ? name : null;
+}
+
+/**
+ * One of these whose file was loaded, let go: its library gone, and with it
+ * its data segment, which WinBox's own stands for. DDEML's starts again from
+ * its file's data when loaded again (`ddewep`). As `own_modules::freed`.
+ */
+export function ownFreed(system: any, name: string) {
+  if (String(name ?? '').toUpperCase() === 'DDEML') {
+    ddemlFreed(system);
+  }
 }
