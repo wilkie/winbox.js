@@ -6,7 +6,7 @@ ordinal: 439
 summary: Draws a rectangle of a device-independent bitmap stretched into a rectangle of a device, as StretchBlt would from a bitmap made of it.
 versions:
   '3.1': exact
-probes: [dibdev, prdraw]
+probes: [dibdev, prdraw, prblt2]
 source: src/win16/gdi/dib-to-device.ts
 topics: [painting]
 ---
@@ -30,7 +30,7 @@ winbox.js agrees with all 16 records.
 
 ## On a printer driver's context
 
-[[read out]] On a printer driver's context whose `dpRaster` has `RC_STRETCHDIB` (`GDI.EXE` seg11 `1058`), the driver's `StretchDIBits`, ordinal 28, is given the destination mapped, the source, and the bits and header as the program gave them. It goes once for each of the visible region's rectangles within the destination, from the bottom up, with the raster operation, the brush, the `DRAWMODE` and the rectangle as the clip. The answer is the source's height. [[measured]] [[probe:prdraw]] stretches an 8 by 8 DIB ten times through the PostScript driver; both engines agree. See [[topic:printer-drivers]].
+[[read out]] On a printer driver's context whose `dpRaster` has `RC_STRETCHDIB` (`GDI.EXE` seg11 `1058`), the driver's `StretchDIBits`, ordinal 28, is given the destination mapped, the source, and the bits and header as the program gave them. It goes once for each of the visible region's rectangles within the destination, from the bottom up, with the raster operation, the brush, the `DRAWMODE` and the rectangle as the clip. The answer is the source's height. [[measured]] [[probe:prdraw]] stretches an 8 by 8 DIB ten times through the PostScript driver; both engines agree. For a driver without it, or that answers -1, GDI makes a bitmap compatible with the printer's of the DIB, as [[fn:GDI.CreateDIBitmap]] makes it, and `StretchBlt`s from it ([[fn:GDI.StretchBlt]]), answering the source's height where it drew. [[measured]] [[probe:prblt2]]. See [[topic:printer-drivers]].
 
 ## Implementation
 

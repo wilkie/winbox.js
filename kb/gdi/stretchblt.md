@@ -6,7 +6,7 @@ ordinal: 35
 summary: Copies a rectangle of pixels into a rectangle of another size, stretching or shrinking it, and mirroring it where an extent is negative.
 versions:
   '3.1': partial
-probes: [stretch, prblt]
+probes: [stretch, prblt, prblt2]
 source: src/win16/gdi/StretchBlt.ts
 topics: [accessories, printer-drivers]
 ---
@@ -37,4 +37,4 @@ topics: [accessories, printer-drivers]
 
 ## On a printer's context
 
-[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]]. Not followed: what GDI draws itself for a driver that cannot take it, which [[probe:prblt]] holds apart.
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver, or, for a driver that cannot stretch, stretches it into bitmaps of its own and has the driver copy them: see [[topic:printer-drivers]]. A stretch within a pixel either way is GDI's `BitBlt` of the smaller, and of its last column and row again, whatever the driver; it answers the source's height. From beyond a memory context's bitmap it answers nought. [[measured]] [[probe:prblt]], [[probe:prblt2]].
