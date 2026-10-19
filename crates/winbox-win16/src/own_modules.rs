@@ -82,3 +82,15 @@ pub(crate) fn redirect(system: &mut System, module: usize, ordinal: u16) -> Opti
 
     Some((system.stubs(kept), STEP * (ordinal + 1)))
 }
+
+/// One of these whose file was loaded, let go: its library gone, and with
+/// it its data segment, which WinBox's own stands for. DDEML's starts again
+/// from its file's data when loaded again (`ddewep`). As `ownFreed`.
+pub(crate) fn freed(system: &mut System, library: usize) {
+    if system.modules[library]
+        .name
+        .eq_ignore_ascii_case(crate::ddeml::NAME)
+    {
+        crate::ddeml::freed(system);
+    }
+}

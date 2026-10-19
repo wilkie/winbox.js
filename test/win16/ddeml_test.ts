@@ -30,19 +30,34 @@ const PROBE_GAPS: Record<string, string[]> = {
   ddenest: [],
   ddeheap: [],
   ddehsz: [],
+  ddewep: ['WEP'],
 };
+/**
+ * The records more that do not agree with no `DDEML.DLL` on the drive:
+ * WinBox's own DDEML, with no file, is no library that is loaded and let
+ * go, so `GetModuleHandle` finds no `DDEML` while a program that imports it
+ * runs, and nothing lets its data go when that program ends (`ddewep`). As
+ * `crates/winbox-win16/tests/ddeml.rs`'s `WITHOUT_FILE`.
+ */
+const WITHOUT_GAPS: Record<string, string[]> = { ddewep: ['state', 'LoadLibrary'] };
 /** As `replay.ts`'s `VIRTUAL_CLOCK`: these run on the instructions' clock. */
 const VIRTUAL = new Set(['ddexact', 'progdde', 'ddeterm', 'ddenest']);
 /** As `replay.ts`'s `SECONDS`. */
 const SECONDS: Record<string, number> = { ddenest: 100 };
 const FILES = [['WINDOWS', 'SYSTEM', 'DDEML.DLL']];
 
+/** The functions a probe's run is not held to, with the file or without it. */
+const gapsOf = (probe: string, without: boolean) => [
+  ...PROBE_GAPS[probe],
+  ...(without ? (WITHOUT_GAPS[probe] ?? []) : []),
+];
+
 /** What the oracle recorded, as `function(args) = result` lines, but the gaps. */
-function recorded(probe: string) {
+function recorded(probe: string, gaps: string[]) {
   const fixture = JSON.parse(readFileSync(join(FIXTURES, `${probe}.json`), 'utf8'));
 
   return fixture.records
-    .filter((record: any) => !PROBE_GAPS[probe].includes(record.function))
+    .filter((record: any) => !gaps.includes(record.function))
     .map((record: any) => `${record.function}(${record.args}) = ${record.result}`);
 }
 
@@ -68,8 +83,9 @@ describe('DDEML, WinBox own', () => {
             virtual: VIRTUAL.has(probe),
           }
         );
+        const gaps = gapsOf(probe, without);
         const written = recordsFrom((await outputOf(fileSystem, probe)) ?? '').filter(
-          (line: string) => !PROBE_GAPS[probe].some((name) => line.startsWith(`${name}(`))
+          (line: string) => !gaps.some((name) => line.startsWith(`${name}(`))
         );
 
         if (without) {
@@ -77,7 +93,7 @@ describe('DDEML, WinBox own', () => {
           expect(win16._modules.fromName('DDEML')?.constructor?.name).not.toBe('Loader');
         }
 
-        expect(written).toEqual(recorded(probe));
+        expect(written).toEqual(recorded(probe, gaps));
 
         if (probe === 'ddeinst') {
           /* An installer's session: Program Manager, started by it, made the

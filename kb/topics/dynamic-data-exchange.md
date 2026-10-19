@@ -3,7 +3,7 @@ kind: topic
 name: Dynamic data exchange
 summary: How Windows 3.1's programs talk by DDE — the WM_DDE_ messages, their atoms and shared memory, and what USER does with them — and how DDEML.DLL is built on top, its instances, windows, hooks, timers and conversations, read out of the binaries and recorded between two programs.
 probes:
-  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail, ddehsz]
+  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail, ddehsz, ddewep]
 ---
 
 Dynamic data exchange is two programs passing messages between their windows. The messages are `WM_DDE_*`, 3E0h to 3E8h, and what they carry is atoms for names and blocks of global memory for data. Windows 3.1 has two layers of it:
@@ -56,7 +56,8 @@ USER does not route DDE. It only checks the parameters, and the rest is `SendMes
 
 `DDEML.DLL` is three segments: code (seg1, 7532h bytes), the library's entry and `WEP` (seg2), and its data (seg3), whose local heap holds the instances. Its imports are KERNEL, USER, GDI and KEYBOARD.
 
-- [[read out]] It refuses to load outside protected mode (`GetWinFlags`, seg2 `000a`). `WEP` answers 1 (seg2 `002c`).
+- [[read out]] It refuses to load outside protected mode (`GetWinFlags`, seg2 `000a`). [[fn:DDEML.WEP]] answers 1 for `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`, and for anything else what AX held, DDEML's data segment, which the entry's prologue loads (seg2 `002c`-`0045`). It frees nothing: an instance a program leaves open, its atoms and its heap stay as they are, and nothing of DDEML's has anything to do as the program's windows are destroyed (`DMGWNDPROC`, seg1 `5558`).
+- [[measured]] [[probe:ddewep]]: a program that made an instance, two string handles and a registered name ended without `DdeUninitialize`. DDEML, which only it had loaded, went with it, and both strings were still atoms. Loaded again by another program, DDEML started from its file's data again: the instance made had the serial the first program's had. `WEP` called with 2 answered one more than `LoadLibrary`'s answer, the data segment whose handle is the library's instance.
 - [[read out]] **The first `DdeInitialize`** since `DDEML.DLL` was loaded (seg1 `00b4`; the word at DS `0018` it tests is set there, `0146`, and nowhere else) reads `[DDEML]` `ShutdownTimeout=` (3000 ms unless set) and `ShutdownRetryTimeout=` (30000 ms) from `WIN.INI`, adds the global atom `Progman` and keeps its number at DS `00A4` (`0134`-`013d`), registers its classes (`62e0`) and adds two atoms of its own, `Who` and `Made me?`, out of a string kept each byte XOR 25h (`5990`).
 - [[read out]] **The classes**, registered with DDEML's instance, style nought, no background (`62e0`-`63c4`):
 
@@ -175,6 +176,8 @@ DDEML is WinBox's own (`src/win16/ddeml/`, `crates/winbox-win16/src/ddeml/`), ev
 
 ## Not yet done
 
+- **A library's instance as its data segment's handle** ([[probe:ddewep]], 1 record): WinBox numbers a library's instance from a table of its own, so `WEP`'s answer, DDEML's data segment, is not one more than it.
+- **WinBox's own DDEML with no file, loaded and let go** ([[probe:ddewep]], 3 records with no `DDEML.DLL`): `GetModuleHandle` finds no `DDEML` while a program that imports it runs, and nothing undoes its data as that program ends. With the file, both are as in Windows.
 - **Freeing a task's memory as it ends**, and a module's `GMEM_DDESHARE` blocks as its last instance ends ([[probe:ddeleft]], 5 records): neither engine knows a block's owner.
 - **An atom deleted once too often**: the answer depends on KERNEL's local heap in USER's data segment, which winbox.js does not keep ([[probe:ddeleft]], 1 record).
 - USER's checks of the other messages' parameters (seg1 `afc2`-`b388`, and `af84` for the controls'): only the DDE rows are followed.

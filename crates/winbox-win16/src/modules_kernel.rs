@@ -570,6 +570,8 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
         };
         let module_handle = system.modules[library].handle;
 
+        crate::own_modules::freed(&mut system, library);
+
         // Its name, and its file, found no more.
         system.modules[library].name.clear();
         system.modules[library].path.clear();
@@ -608,6 +610,10 @@ impl System {
 
             let (instance, handle) = (module.instance, module.handle);
             let brought = std::mem::take(&mut module.brought);
+
+            crate::own_modules::freed(self, library);
+
+            let module = &mut self.modules[library];
 
             module.name.clear();
             module.path.clear();
