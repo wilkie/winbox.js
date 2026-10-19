@@ -21,7 +21,7 @@ import {
 
 const CLASSES = '.classes';
 
-type Mode = 'open' | 'create';
+export type Mode = 'open' | 'create';
 
 interface Shell {
   db: RegistryDatabase | null;
@@ -159,14 +159,13 @@ function partsOf(subkey: string | null, root: boolean) {
   return parts;
 }
 
-/** Opens (or makes) a key below another; an error code, or the entry. */
-async function find(system: any, hkey: number, subkey: string | null, mode: Mode) {
-  const db = await load(system);
-
-  if (typeof db === 'number') {
-    return { error: db };
-  }
-
+/** Opens (or makes) a key below another in a database; an error code, or the entry. */
+export function findIn(
+  db: RegistryDatabase,
+  hkey: number,
+  subkey: string | null,
+  mode: Mode
+): { error: number } | { at: number } {
   let at = keyOf(db, hkey, mode);
 
   if (at < 0) {
@@ -191,7 +190,43 @@ async function find(system: any, hkey: number, subkey: string | null, mode: Mode
     }
   }
 
-  return { db, at };
+  return { at };
+}
+
+/** Opens (or makes) a key below another; an error code, or the entry. */
+async function find(
+  system: any,
+  hkey: number,
+  subkey: string | null,
+  mode: Mode
+): Promise<{ error: number } | { db: RegistryDatabase; at: number }> {
+  const db = await load(system);
+
+  if (typeof db === 'number') {
+    return { error: db };
+  }
+
+  const found = findIn(db, hkey, subkey, mode);
+
+  return 'error' in found ? found : { db, at: found.at };
+}
+
+/** A key's value as `RegSetValue` sets it: an empty one takes the value away. */
+export function putValue(db: RegistryDatabase, at: number, text: string) {
+  const entry = db.entries[at];
+  const was = entry[3];
+
+  if (!text) {
+    if (was) {
+      entry[3] = 0;
+      db.releaseText(was);
+      db.dirty = true;
+    }
+  } else if (db.textOf(was) !== text) {
+    entry[3] = db.useText(text, false);
+    db.releaseText(was);
+    db.dirty = true;
+  }
 }
 
 /** A string and its nought into a program's buffer, cut to `cb` less one; its length and one. */
@@ -204,13 +239,23 @@ function copyOut(system: any, text: string, buffer: number, cb: number) {
   const kept = text.substring(0, Math.max(0, cb - 1));
 
   for (let i = 0; i <= kept.length; i++) {
-    core.write8((buffer >>> 16) & 0xffff, ((buffer & 0xffff) + i) & 0xffff, i < kept.length ? kept.charCodeAt(i) : 0);
+    core.write8(
+      (buffer >>> 16) & 0xffff,
+      ((buffer & 0xffff) + i) & 0xffff,
+      i < kept.length ? kept.charCodeAt(i) : 0
+    );
   }
 
   return kept.length + 1;
 }
 
-async function openKey(system: any, hkey: number, subkey: string | null, phkey: number, mode: Mode) {
+async function openKey(
+  system: any,
+  hkey: number,
+  subkey: string | null,
+  phkey: number,
+  mode: Mode
+) {
   const found = await find(system, hkey, subkey, mode);
 
   if ('error' in found) {
@@ -261,7 +306,13 @@ export async function queryValue(system: any, hkey: number, subkey: string) {
   return { value: found.db.textOf(found.db.entries[found.at][3]) ?? '' };
 }
 
-export async function RegQueryValue(this: any, hkey: number, lpszSubKey: any, lpszValue: number, lpcb: number) {
+export async function RegQueryValue(
+  this: any,
+  hkey: number,
+  lpszSubKey: any,
+  lpszValue: number,
+  lpcb: number
+) {
   const found = await find(this, hkey >>> 0, lpszSubKey ?? null, 'open');
 
   if ('error' in found) {
@@ -291,7 +342,7 @@ export async function RegSetValue(
   lpszValue: any,
   _cb: number
 ) {
-  if ((fdwType >>> 0) !== 1) {
+  if (fdwType >>> 0 !== 1) {
     return ERROR_INVALID_PARAMETER;
   }
 
@@ -304,22 +355,7 @@ export async function RegSetValue(
     return found.error;
   }
 
-  const { db, at } = found;
-  const entry = db.entries[at];
-  const text = lpszValue ? String(lpszValue) : '';
-  const was = entry[3];
-
-  if (!text) {
-    if (was) {
-      entry[3] = 0;
-      db.releaseText(was);
-      db.dirty = true;
-    }
-  } else if (db.textOf(was) !== text) {
-    entry[3] = db.useText(text, false);
-    db.releaseText(was);
-    db.dirty = true;
-  }
+  putValue(found.db, found.at, lpszValue ? String(lpszValue) : '');
 
   stateOf(this).open--;
 
@@ -366,7 +402,13 @@ export async function RegDeleteKey(this: any, hkey: number, lpszSubKey: any) {
 }
 
 /** A key's `index`th child's name, newest first; error 2 past the last (seg2 `14dc`). */
-export async function RegEnumKey(this: any, hkey: number, iSubkey: number, lpszName: number, cchName: number) {
+export async function RegEnumKey(
+  this: any,
+  hkey: number,
+  iSubkey: number,
+  lpszName: number,
+  cchName: number
+) {
   const found = await find(this, hkey >>> 0, null, 'open');
 
   if ('error' in found) {
@@ -388,4 +430,3 @@ export async function RegEnumKey(this: any, hkey: number, iSubkey: number, lpszN
 
   return ERROR_SUCCESS;
 }
-

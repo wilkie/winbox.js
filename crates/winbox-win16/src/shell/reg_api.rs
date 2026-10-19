@@ -34,7 +34,7 @@ pub struct Registry {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Mode {
+pub(crate) enum Mode {
     Open,
     Create,
 }
@@ -115,27 +115,7 @@ impl System {
 
     /// Opens (or makes) a key below another: the entry, or an error.
     fn find_key(&mut self, hkey: u32, subkey: Option<&[u8]>, mode: Mode) -> Result<usize, u32> {
-        let db = self.registry()?;
-        let Some(mut at) = key_of(db, hkey, mode) else {
-            return Err(ERROR_BADKEY);
-        };
-        let Some(parts) = parts_of(subkey, at == 0) else {
-            return Err(ERROR_BADKEY);
-        };
-
-        for part in parts {
-            let child = db.child_named(at, part);
-
-            if child != 0 {
-                at = child;
-            } else if mode == Mode::Create {
-                at = db.make_child(at, part);
-            } else {
-                return Err(ERROR_BADKEY);
-            }
-        }
-
-        Ok(at)
+        find_in(self.registry()?, hkey, subkey, mode)
     }
 
     /// A key's value, for SHELL's own use: the text, or the error
@@ -166,6 +146,54 @@ impl System {
         bytes.push(0);
         self.write_far(buffer, &bytes);
         Some(kept.len() as u32 + 1)
+    }
+}
+
+/// Opens (or makes) a key below another in a database: the entry, or an
+/// error.
+pub(crate) fn find_in(
+    db: &mut RegistryDatabase,
+    hkey: u32,
+    subkey: Option<&[u8]>,
+    mode: Mode,
+) -> Result<usize, u32> {
+    let Some(mut at) = key_of(db, hkey, mode) else {
+        return Err(ERROR_BADKEY);
+    };
+    let Some(parts) = parts_of(subkey, at == 0) else {
+        return Err(ERROR_BADKEY);
+    };
+
+    for part in parts {
+        let child = db.child_named(at, part);
+
+        if child != 0 {
+            at = child;
+        } else if mode == Mode::Create {
+            at = db.make_child(at, part);
+        } else {
+            return Err(ERROR_BADKEY);
+        }
+    }
+
+    Ok(at)
+}
+
+/// A key's value as `RegSetValue` sets it: an empty one takes the value
+/// away.
+pub(crate) fn put_value(db: &mut RegistryDatabase, at: usize, text: &[u8]) {
+    let was = db.entries[at][3];
+
+    if text.is_empty() {
+        if was != 0 {
+            db.entries[at][3] = 0;
+            db.release_text(was);
+            db.dirty = true;
+        }
+    } else if db.text_of(was) != Some(text) {
+        db.entries[at][3] = db.use_text(text, false);
+        db.release_text(was);
+        db.dirty = true;
     }
 }
 
@@ -337,20 +365,11 @@ pub fn reg_set_value(system: &mut System, args: &mut Args) -> Result<Answer, Sto
             return Ok(Answer::Dword(error));
         }
     };
-    let db = system.shell.registry.db.as_mut().expect("the database");
-    let was = db.entries[at][3];
-
-    if text.is_empty() {
-        if was != 0 {
-            db.entries[at][3] = 0;
-            db.release_text(was);
-            db.dirty = true;
-        }
-    } else if db.text_of(was) != Some(text.as_slice()) {
-        db.entries[at][3] = db.use_text(&text, false);
-        db.release_text(was);
-        db.dirty = true;
-    }
+    put_value(
+        system.shell.registry.db.as_mut().expect("the database"),
+        at,
+        &text,
+    );
 
     system.shell.registry.open -= 1;
     Ok(Answer::Dword(system.flush_registry()))

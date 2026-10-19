@@ -251,7 +251,8 @@ impl RegistryDatabase {
     }
 
     /// A text to use, shared if there is one -- by case for a name, exactly
-    /// for a value.
+    /// for a value. A new one is put last in its bucket's chain (seg2
+    /// `0ad5`-`0b03`).
     pub fn use_text(&mut self, text: &[u8], any_case: bool) -> i32 {
         let bucket = self.bucket_of(text);
         let mut id = self.entries[bucket][0] as usize;
@@ -274,9 +275,14 @@ impl RegistryDatabase {
         }
 
         let id = self.allocate();
+        let mut last = bucket;
 
-        self.entries[id] = [self.entries[bucket][0], 1, text.len() as i32, 0];
-        self.entries[bucket][0] = id as i32;
+        while self.entries[last][0] as usize > self.buckets {
+            last = self.entries[last][0] as usize;
+        }
+
+        self.entries[id] = [self.entries[last][0], 1, text.len() as i32, 0];
+        self.entries[last][0] = id as i32;
         self.texts.insert(id, text.to_vec());
         id as i32
     }
@@ -324,10 +330,11 @@ impl RegistryDatabase {
         0
     }
 
-    /// A child made first among its parent's (seg2 `08f4`).
+    /// A child made first among its parent's (seg2 `08f4`), its name's
+    /// text taken before its own entry (seg2 `0d0c`-`0d24`).
     pub fn make_child(&mut self, parent: usize, name: &[u8]) -> usize {
-        let id = self.allocate();
         let text = self.use_text(name, true);
+        let id = self.allocate();
 
         self.entries[id] = [self.entries[parent][1], 0, text, 0];
         self.entries[parent][1] = id as i32;
