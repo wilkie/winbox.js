@@ -246,6 +246,41 @@ export function SetDIBits(
   cScanLines: number,
   lpvBits: number,
   lpbmi: number,
+  fuColorUse: number
+) {
+  const given = this.handles.resolve(hdc);
+  const bitmap = this.handles.resolve(hbmp);
+
+  /* With a printer's context, GDI sets them itself through the driver
+   * (`printer-stretch.ts`). */
+  if ((given?.driverDevice || given?.compatibleDevice) && bitmap instanceof DeviceBitmap) {
+    return import('./printer-stretch.js').then(
+      async ({ setDIBitsFallback }) =>
+        (await setDIBitsFallback(
+          this,
+          hdc,
+          given,
+          bitmap,
+          uStartScan & 0xffff,
+          cScanLines & 0xffff,
+          lpvBits,
+          lpbmi,
+          fuColorUse
+        )) ?? setOwnDIBits.call(this, hdc, hbmp, uStartScan, cScanLines, lpvBits, lpbmi, fuColorUse)
+    );
+  }
+
+  return setOwnDIBits.call(this, hdc, hbmp, uStartScan, cScanLines, lpvBits, lpbmi, fuColorUse);
+}
+
+function setOwnDIBits(
+  this: any,
+  hdc: number,
+  hbmp: number,
+  uStartScan: number,
+  cScanLines: number,
+  lpvBits: number,
+  lpbmi: number,
   _fuColorUse: number
 ) {
   const target = this.handles.resolve(hbmp);

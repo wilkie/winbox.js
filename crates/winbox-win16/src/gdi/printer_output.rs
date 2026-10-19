@@ -1617,20 +1617,25 @@ pub struct Stretched {
 /// the driver's `StretchDIBits` given the destination, the source, the
 /// bits and the header as the program gave them, no conversion, the
 /// raster operation, the brush, the `DRAWMODE` and the rectangle as the
-/// clip. The answer is the source's height. Not followed: a header GDI
-/// converts (a core header, `DIB_PAL_COLORS`, a palette device), and GDI's
-/// own drawing where the driver answers -1 or has no `RC_STRETCHDIB`.
+/// clip. The answer is the source's height. None where the driver answers
+/// -1 or has no `RC_STRETCHDIB`, and GDI draws it (`printer_stretch.rs`).
+/// Not followed: a header GDI converts (a core header, `DIB_PAL_COLORS`, a
+/// palette device).
 pub async fn driver_stretch_dibits(
     engine: &Engine,
     dc: usize,
     given: Stretched,
-) -> Result<u16, Stop> {
+) -> Result<Option<u16>, Stop> {
     let (procedure, lp_pdevice, rects, corners, brush) = {
         let mut system = engine.system();
         let (procedure, lp_pdevice) = proc(&system, dc, STRETCH_DIBITS);
 
-        if procedure == 0 || caps(&system, dc, 0x26) & 0x2000 == 0 || given.usage != 0 {
-            return Ok(0);
+        if given.usage != 0 {
+            return Ok(Some(0));
+        }
+
+        if procedure == 0 || caps(&system, dc, 0x26) & 0x2000 == 0 {
+            return Ok(None);
         }
 
         let (x0, y0) = device_point(&system, dc, given.x, given.y);
@@ -1681,11 +1686,11 @@ pub async fn driver_stretch_dibits(
         .await?;
 
         if answer as u16 == 0xffff {
-            return Ok(0);
+            return Ok(None);
         }
     }
 
-    Ok(given.src_height as u16)
+    Ok(Some(given.src_height as u16))
 }
 
 /// The points a program gave, `count` of them at a far pointer.
@@ -2118,7 +2123,7 @@ fn ext_text_out_call(engine: &Engine, args: Args) -> Later<'_> {
 
 fn stretch_dibits_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
-        let Some(dc) = first(engine, &args).1 else {
+        let (hdc, Some(dc)) = first(engine, &args) else {
             return otherwise(engine, "StretchDIBits", args).await;
         };
         let given = {
@@ -2146,9 +2151,14 @@ fn stretch_dibits_call(engine: &Engine, args: Args) -> Later<'_> {
             }
         };
 
-        Ok(Answer::Word(
-            driver_stretch_dibits(engine, dc, given).await?,
-        ))
+        let answer = match driver_stretch_dibits(engine, dc, given).await? {
+            Some(answer) => answer,
+            None => super::printer_stretch::stretch_dibits_fallback(engine, hdc, dc, given)
+                .await?
+                .unwrap_or(0),
+        };
+
+        Ok(Answer::Word(answer))
     })
 }
 

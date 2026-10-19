@@ -190,6 +190,8 @@ pub const AGREEING: &[&str] = &[
     "prband",
     "ddeheap",
     "ddehsz",
+    "prblt",
+    "prblt2",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

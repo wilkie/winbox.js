@@ -32,11 +32,50 @@ const CBM_INIT = 0x4;
  * @returns {Types.HBITMAP} The bitmap, or `NULL`.
  */
 export function CreateDIBitmap(hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage) {
+  const given = hdc == NULL ? null : this.handles.resolve(hdc);
+
+  /* With a printer's context, a bitmap compatible with it and `SetDIBits`
+   * into it (`GDI.EXE` seg11 `0a8a`), which GDI does itself through the
+   * driver (`printer-stretch.ts`). */
+  if ((given?.driverDevice || given?.compatibleDevice) && lpbmih && dwInit & CBM_INIT) {
+    return import('./printer-stretch.js').then(async ({ compatibleBitmap, setDIBitsFallback }) => {
+      const core = this.machine.cpu.core;
+      const word = (at: number) =>
+        core.read16((lpbmih >>> 16) & 0xffff, ((lpbmih & 0xffff) + at) & 0xffff);
+      const coreHeader = word(0) === 12;
+      const width = (word(4) << 16) >> 16;
+      const height = (word(coreHeader ? 6 : 8) << 16) >> 16;
+      const bitmap = compatibleBitmap(this, given, width, height);
+      const answer = await setDIBitsFallback(
+        this,
+        hdc,
+        given,
+        bitmap,
+        0,
+        height & 0xffff,
+        lpbInit,
+        lpbmi,
+        fuUsage
+      );
+
+      if (answer === null) {
+        return createOwnDIBitmap.call(this, hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage);
+      }
+
+      return answer ? this.handles.allocate(bitmap) : NULL;
+    });
+  }
+
+  return createOwnDIBitmap.call(this, hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage);
+}
+
+function createOwnDIBitmap(this: any, hdc, lpbmih, dwInit, lpbInit, lpbmi, fuUsage) {
   const surface = hdc == NULL ? null : this.handles.resolve(hdc);
   const core = this.machine.cpu.core;
   const read = (far: number, count: number) =>
     Array.from({ length: count }, (_, at) => hugeRead8(core, far, at));
-  const word = (far: number, at: number) => core.read16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff);
+  const word = (far: number, at: number) =>
+    core.read16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff);
   const dword = (far: number, at: number) => (word(far, at) | (word(far, at + 2) << 16)) >>> 0;
 
   if (!surface || !lpbmih) {

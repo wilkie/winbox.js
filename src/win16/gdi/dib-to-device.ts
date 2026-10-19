@@ -156,27 +156,34 @@ export function SetDIBitsToDevice(
   }
 
   /* A printer's driver from the drive that takes DIBs draws it
-   * (`printer-blits.ts`); where it cannot, GDI's own drawing is not
-   * followed, and nothing is drawn. */
+   * (`printer-blits.ts`); where it cannot, GDI draws it itself and has the
+   * driver copy what it made (`printer-stretch.ts`). */
   if (surface.driverDevice) {
     const signed = (value: number) => (value << 16) >> 16;
+    const args = {
+      x: signed(xDest),
+      y: signed(yDest),
+      width: signed(cx),
+      height: signed(cy),
+      srcX: signed(xSrc),
+      srcY: signed(ySrc),
+      start: uStartScan & 0xffff,
+      count: cScanLines & 0xffff,
+      bits: lpvBits,
+      info: lpbmi,
+      usage: fuColorUse,
+    };
 
     return import('./printer-blits.js').then(async ({ driverDIBToDevice }) => {
-      const answer = await driverDIBToDevice(this, surface, {
-        x: signed(xDest),
-        y: signed(yDest),
-        width: signed(cx),
-        height: signed(cy),
-        srcX: signed(xSrc),
-        srcY: signed(ySrc),
-        start: uStartScan & 0xffff,
-        count: cScanLines & 0xffff,
-        bits: lpvBits,
-        info: lpbmi,
-        usage: fuColorUse,
-      });
+      const answer = await driverDIBToDevice(this, surface, args);
 
-      return answer ?? 0;
+      if (answer !== null) {
+        return answer;
+      }
+
+      const { dibToDeviceFallback } = await import('./printer-stretch.js');
+
+      return (await dibToDeviceFallback(this, hdc, surface, args)) ?? 0;
     });
   }
 
@@ -245,26 +252,36 @@ export function StretchDIBits(
     return 0;
   }
 
-  /* A printer driver's from the drive draws it (`printer-output.ts`). */
+  /* A printer driver's from the drive draws it (`printer-output.ts`), or
+   * GDI does and has the driver copy what it made (`printer-stretch.ts`). */
   if (surface.driverDevice) {
     const signed = (value: number) => (value << 16) >> 16;
+    const args = {
+      x: signed(xDest),
+      y: signed(yDest),
+      width: signed(cxDest),
+      height: signed(cyDest),
+      srcX: signed(xSrc),
+      srcY: signed(ySrc),
+      srcWidth: signed(cxSrc),
+      srcHeight: signed(cySrc),
+      bits: lpvBits,
+      info: lpbmi,
+      usage: _fuColorUse,
+      rop: dwRop,
+    };
 
-    return import('./printer-output.js').then(({ driverStretchDIBits }) =>
-      driverStretchDIBits(this, surface, {
-        x: signed(xDest),
-        y: signed(yDest),
-        width: signed(cxDest),
-        height: signed(cyDest),
-        srcX: signed(xSrc),
-        srcY: signed(ySrc),
-        srcWidth: signed(cxSrc),
-        srcHeight: signed(cySrc),
-        bits: lpvBits,
-        info: lpbmi,
-        usage: _fuColorUse,
-        rop: dwRop,
-      })
-    );
+    return import('./printer-output.js').then(async ({ driverStretchDIBits }) => {
+      const answer = await driverStretchDIBits(this, surface, args);
+
+      if (answer !== null) {
+        return answer;
+      }
+
+      const { stretchDIBitsFallback } = await import('./printer-stretch.js');
+
+      return (await stretchDIBitsFallback(this, hdc, surface, args)) ?? 0;
+    });
   }
 
   const dib = dibAt(this, surface, lpbmi, lpvBits);

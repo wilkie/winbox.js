@@ -26,6 +26,7 @@ pub mod printer_bands;
 pub mod printer_blits;
 pub mod printer_driver;
 pub mod printer_output;
+pub mod printer_stretch;
 pub mod printing;
 pub mod regions;
 pub mod shapes;

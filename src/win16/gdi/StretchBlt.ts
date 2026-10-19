@@ -86,9 +86,9 @@ export function StretchBlt(
 
   const source = hdcSrc ? this.handles.resolve(hdcSrc) : null;
 
-  /* A printer's driver from the drive that can stretch draws it
-   * (`printer-blits.ts`); where it cannot, GDI's own stretching is not
-   * followed, and the context's own surface takes it as before. */
+  /* A printer's driver from the drive draws it, or GDI stretches it
+   * itself and has the driver copy what it made (`printer-blits.ts`,
+   * `printer-stretch.ts`); what is not followed is answered as drawn. */
   if (destination.driverDevice && source) {
     const signed = (value: number) => (value << 16) >> 16;
     const args = [nXDest, nYDest, nWidthDest, nHeightDest, nXSrc, nYSrc, nWidthSrc, nHeightSrc].map(
@@ -102,7 +102,9 @@ export function StretchBlt(
         { x: args[0], y: args[1], width: args[2], height: args[3] },
         source,
         { x: args[4], y: args[5], width: args[6], height: args[7] },
-        dwRop >>> 0
+        dwRop >>> 0,
+        hdcDest,
+        hdcSrc
       );
 
       return answer ?? TRUE;

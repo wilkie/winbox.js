@@ -5,7 +5,7 @@ import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
 import { DWORD, UINT } from '../types.js';
 import { clipOf } from './clipping.js';
-import { bitsSize, formatOf, readByte, rowBytes } from './ddb.js';
+import { bitsSize, formatOf, readByte, rowBytes, writeByte } from './ddb.js';
 import { devicePoint } from './mapping.js';
 import {
   caps,
@@ -21,15 +21,12 @@ import type { PDevice } from './printer-driver.js';
 /**
  * Bitmaps drawn through a printer's driver, as Windows' GDI hands them to
  * it: `BitBlt` and `PatBlt` to the driver's `BitBlt`, `StretchBlt` to its
- * `StretchBlt` and `SetDIBitsToDevice` to its `DIBToDevice`. The twin of
- * `crates/winbox-win16/src/gdi/printer_blits.rs`.
+ * `StretchBlt` and `SetDIBitsToDevice` to its `DIBToDevice`; what GDI
+ * draws itself for a driver that cannot is `printer-stretch.ts`. The twin
+ * of `crates/winbox-win16/src/gdi/printer_blits.rs`.
  *
- * Not followed: what GDI does itself for a driver without `RC_STRETCHBLT`
- * or `RC_DIBTODEV` -- stretching into bitmaps of its own and copying them
- * with the driver's `BitBlt` (seg32 `0690` on, seg11 `0ce9` on) --, a
- * stretch that comes to a copy (seg32 `04fb`), a DIB whose colours GDI
- * converts first, and a memory context's drawing through its printer's
- * driver.
+ * Not followed: a memory context's own drawing through its printer's
+ * driver, but for what GDI draws into bitmaps of its own.
  */
 
 const BIT_BLT = 1;
@@ -50,7 +47,12 @@ function core(system: any) {
  * them for a blit (seg1 `2b62`, its flags 183h at first): from the top
  * down or the bottom up, and in each band from the left or from the right.
  */
-function blitRects(surface: any, within: Rect, topDown: boolean, leftToRight: boolean): Rect[] {
+export function blitRects(
+  surface: any,
+  within: Rect,
+  topDown: boolean,
+  leftToRight: boolean
+): Rect[] {
   const bands = [...clipOf(surface).bands];
   const rects: Rect[] = [];
 
@@ -95,14 +97,18 @@ function blitBox(surface: any, x: number, y: number, width: number, height: numb
 const isEmpty = (rect: Rect) => rect[0] === rect[2] || rect[1] === rect[3];
 
 /**
- * A memory context's bitmap as GDI hands it to a driver: its `BITMAP` --
- * the type nought, the width, the height, the bytes a row, the planes, the
- * bits a pixel, the bits' far pointer and the bytes a plane -- and its
- * bits after it, in rows padded to words. Given to `body` as a far
- * pointer, and let go after.
+ * A bitmap as GDI hands it to a driver: its `BITMAP` -- the type nought,
+ * the width, the height, the bytes a row, the planes, the bits a pixel,
+ * the bits' far pointer and the bytes a plane -- and its bits after it, in
+ * rows padded to words. Given to `body` as a far pointer, and let go
+ * after; where the driver draws into it, its bits read back first.
  */
-async function withBitmap<T>(system: any, source: any, body: (far: number) => Promise<T>) {
-  const bitmap = source.bitmap;
+export async function withBlock<T>(
+  system: any,
+  bitmap: any,
+  body: (far: number) => Promise<T>,
+  readBack = false
+) {
   const { planes, bits } = formatOf(bitmap);
   const size = bitsSize(bitmap);
   const handle = GlobalAlloc.call(system, 0x2042, 0x20 + size);
@@ -134,7 +140,15 @@ async function withBitmap<T>(system: any, source: any, body: (far: number) => Pr
   }
 
   try {
-    return await body(far);
+    const answer = await body(far);
+
+    if (readBack) {
+      for (let offset = 0; offset < size; offset++) {
+        writeByte(bitmap, offset, core(system).read8(segment, at(0x20 + offset)));
+      }
+    }
+
+    return answer;
   } finally {
     GlobalFree.call(system, handle);
   }
@@ -146,7 +160,7 @@ async function withBitmap<T>(system: any, source: any, body: (far: number) => Pr
  * (seg1 `2e06`-`2e10`: where either is a device, their drivers must be the
  * same).
  */
-function sameDriver(pdevice: PDevice, source: any) {
+export function sameDriver(pdevice: PDevice, source: any) {
   const other: PDevice | undefined = source?.driverDevice ?? source?.compatibleDevice;
 
   return Boolean(other && other.driver === pdevice.driver && source.bitmap);
@@ -155,12 +169,7 @@ function sameDriver(pdevice: PDevice, source: any) {
 /**
  * `BitBlt` or `PatBlt` on a driver's context (`GDI.EXE` seg1 `305b`,
  * `2d0d`): the destination's rectangle in device terms, empty answering 1;
- * a source not of the same driver answers nought; else the driver's
- * `BitBlt` once for each of the visible region's rectangles within the
- * destination -- from the bottom up where the source is above, from the
- * right where it is to the left (`2da8`) -- with that rectangle's corner,
- * the source and its corner moved as far, the extent, the raster
- * operation, the realized brush and the `DRAWMODE` (`2e92`); 1.
+ * a source not of the same driver answers nought; else `blitDevice`.
  */
 export async function driverBitBlt(
   system: any,
@@ -171,7 +180,6 @@ export async function driverBitBlt(
   rop: number
 ) {
   const pdevice: PDevice = surface.driverDevice;
-  const procedure = proc(pdevice, BIT_BLT);
   const within = blitBox(surface, dest.x, dest.y, dest.width, dest.height);
 
   if (isEmpty(within)) {
@@ -184,13 +192,52 @@ export async function driverBitBlt(
     return 1;
   }
 
-  if ((source && !sameDriver(pdevice, source)) || !procedure) {
+  if ((source && !sameDriver(pdevice, source)) || !proc(pdevice, BIT_BLT)) {
     return 0;
   }
 
+  return blitDevice(system, surface, within, source?.bitmap ?? null, [origin[0], origin[1]], rop);
+}
+
+/**
+ * A blit in device terms to a driver's context (seg1 `2d0d`): the
+ * driver's `BitBlt` once for each of the visible region's rectangles
+ * within the destination -- and within `limit`, a clip rectangle GDI sets
+ * itself -- from the bottom up where the source is above, from the right
+ * where it is to the left (`2da8`), with that rectangle's corner, the
+ * source and its corner moved as far, the extent, the raster operation,
+ * the realized brush and the `DRAWMODE` (`2e92`); 1.
+ */
+export async function blitDevice(
+  system: any,
+  surface: any,
+  within: Rect,
+  bitmap: any,
+  origin: [number, number],
+  rop: number,
+  limit: Rect | null = null
+) {
+  const pdevice: PDevice = surface.driverDevice;
+  const procedure = proc(pdevice, BIT_BLT);
+
+  if (!procedure) {
+    return 0;
+  }
+
+  const area: Rect = limit
+    ? [
+        Math.max(within[0], limit[0]),
+        Math.max(within[1], limit[1]),
+        Math.min(within[2], limit[2]),
+        Math.min(within[3], limit[3]),
+      ]
+    : within;
   const drawing = drawingOf(surface);
   const run = async (sourceFar: number) => {
-    const rects = blitRects(surface, within, origin[1] >= within[1], origin[0] >= within[0]);
+    const rects =
+      area[0] < area[2] && area[1] < area[3]
+        ? blitRects(surface, area, origin[1] >= within[1], origin[0] >= within[0])
+        : [];
 
     for (const rect of rects) {
       await callDriver(system, procedure, [
@@ -211,17 +258,15 @@ export async function driverBitBlt(
     return 1;
   };
 
-  return source ? withBitmap(system, source, run) : run(0);
+  return bitmap ? withBlock(system, bitmap, run) : run(0);
 }
 
 /**
- * `StretchBlt` on a driver's context whose `dpRaster` has `RC_STRETCHBLT`
- * (`GDI.EXE` seg32 `05fa`): both rectangles in device terms, a destination
- * given the wrong way round starting a pixel on from its far edge
- * (`11bb`); a flip made the source's, its corner its far edge and its
- * extent negative (`0658`); the driver's `StretchBlt` once for each of the
- * visible region's rectangles within the destination, that rectangle as
- * the clip (`0687`). Null where GDI stretches for the driver itself.
+ * `StretchBlt` on a driver's context (`GDI.EXE` seg1 `305b`, seg32
+ * `03ba`): both rectangles in device terms, either with no width or height
+ * answering 1 (seg1 `312c`); extents alike a copy (`30bc`); from a memory
+ * context, a far corner beyond its bitmap answers nought (`30da`); else
+ * `stretchOnDriver`. Null where winbox.js does not follow what GDI does.
  */
 export async function driverStretchBlt(
   system: any,
@@ -229,26 +274,66 @@ export async function driverStretchBlt(
   dest: { x: number; y: number; width: number; height: number },
   source: any,
   from: { x: number; y: number; width: number; height: number },
-  rop: number
+  rop: number,
+  hdcDest: number,
+  hdcSrc: number
 ): Promise<number | null> {
-  const pdevice: PDevice = surface.driverDevice;
-  const procedure = proc(pdevice, STRETCH_BLT);
   const [x0, y0] = devicePoint(surface, dest.x, dest.y);
   const [x1, y1] = devicePoint(surface, dest.x + dest.width, dest.y + dest.height);
   const [s0, t0] = devicePoint(source, from.x, from.y);
   const [s1, t1] = devicePoint(source, from.x + from.width, from.y + from.height);
 
-  /* Extents alike, neither turned over, is a copy (seg1 `30bc`). */
-  if (x1 - x0 === s1 - s0 && y1 - y0 === t1 - t0 && x1 > x0 && y1 > y0) {
+  if (x0 === x1 || y0 === y1 || s0 === s1 || t0 === t1) {
+    return 1;
+  }
+
+  if (x1 - x0 === s1 - s0 && y1 - y0 === t1 - t0) {
     return driverBitBlt(system, surface, dest, source, from, rop);
   }
 
-  if (!procedure || !(caps(pdevice, DP_RASTER) & RC_STRETCHBLT) || !sameDriver(pdevice, source)) {
-    return null;
+  const bitmap = source.memoryContext ? source.bitmap : null;
+
+  if (bitmap && (s1 > bitmap.width || t1 > bitmap.height)) {
+    return 0;
   }
 
-  if (x0 === x1 || y0 === y1 || s0 === s1 || t0 === t1) {
-    return 1;
+  const { stretchOnDriver } = await import('./printer-stretch.js');
+
+  return stretchOnDriver(
+    system,
+    surface,
+    hdcDest,
+    source,
+    hdcSrc,
+    [x0, y0, x1, y1],
+    [s0, t0, s1, t1],
+    rop
+  );
+}
+
+/**
+ * The driver's own `StretchBlt`, where its `dpRaster` has `RC_STRETCHBLT`
+ * (`GDI.EXE` seg32 `05fa`): the destination put in order, a destination
+ * given the wrong way round starting a pixel on from its far edge
+ * (`11bb`); a flip made the source's, its corner its far edge and its
+ * extent negative (`0658`); the driver's `StretchBlt` once for each of the
+ * visible region's rectangles within the destination, that rectangle as
+ * the clip (`0687`). 1; null where the driver cannot, or answers below
+ * nought, and GDI stretches for it.
+ */
+export async function driverStretch(
+  system: any,
+  surface: any,
+  source: any,
+  [x0, y0, x1, y1]: Rect,
+  [s0, t0, s1, t1]: Rect,
+  rop: number
+): Promise<number | null> {
+  const pdevice: PDevice = surface.driverDevice;
+  const procedure = proc(pdevice, STRETCH_BLT);
+
+  if (!procedure || !(caps(pdevice, DP_RASTER) & RC_STRETCHBLT) || !sameDriver(pdevice, source)) {
+    return null;
   }
 
   const within: Rect = [
@@ -274,7 +359,7 @@ export async function driverStretchBlt(
 
   const drawing = drawingOf(surface);
 
-  return withBitmap(system, source, async (sourceFar) => {
+  return withBlock(system, source.bitmap, async (sourceFar) => {
     for (const rect of blitRects(surface, within, true, true)) {
       const answer = await onStackBytes(system, words(...rect), (clip) =>
         callDriver(system, procedure, [

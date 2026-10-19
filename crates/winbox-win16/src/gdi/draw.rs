@@ -292,6 +292,41 @@ fn source_of(system: &mut System, dc: usize) -> Option<Sourced> {
     })
 }
 
+/// A device context's pixels copied into a bitmap of GDI's own by its
+/// driver, made the bitmap's format as `BitBlt` makes them: a colour of the
+/// background white in a monochrome one (`printer_stretch.rs`).
+pub(crate) fn copy_into(
+    system: &mut System,
+    target: &DeviceBitmap,
+    (x, y, width, height): (i32, i32, i32, i32),
+    dc: usize,
+    (sx, sy): (i32, i32),
+) {
+    let Some(source) = source_of(system, dc) else {
+        return;
+    };
+
+    blit::raster_op(
+        system.display_kind(),
+        &Target {
+            bitmap: target,
+            brush: Paintbrush::default(),
+            back: Color::rgb(0xff, 0xff, 0xff),
+            text: None,
+            origin: (0, 0),
+            realized: None,
+        },
+        x,
+        y,
+        width,
+        height,
+        SRCCOPY,
+        Some(&source.borrowed()),
+        sx,
+        sy,
+    );
+}
+
 /// One raster operation onto the pixels a device context draws on, its
 /// pattern `paint`. See `winbox_raster::blit::raster_op`.
 #[allow(clippy::too_many_arguments)]

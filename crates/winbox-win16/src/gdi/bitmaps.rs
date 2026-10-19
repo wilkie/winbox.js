@@ -216,6 +216,23 @@ pub(crate) fn create_bitmap_indirect(system: &mut System, args: &mut Args) -> Re
 ///
 /// `CreateDiscardableBitmap` is the same.
 pub fn create_compatible_bitmap(system: &mut System, hdc: u16, width: i16, height: i16) -> u16 {
+    // A printer's of its own format (`GDI.EXE` seg4 `01fb`): one plane of
+    // one bit is monochrome (`prblt2`).
+    if let Some(dc) = super::printer_driver::driver_dc_of(system, hdc)
+        && super::printer_driver::driver_caps(system, dc, 0x0c) == 1
+        && super::printer_driver::driver_caps(system, dc, 0x0e) == 1
+    {
+        let palette = palette_for_display(display_kind(system), Some(1));
+
+        return system.bitmap_handle(DeviceBitmap::new(
+            i32::from(width),
+            i32::from(height),
+            1,
+            None,
+            Some(palette),
+        ));
+    }
+
     let Ok(like) = kind_of(system, hdc) else {
         return 0;
     };

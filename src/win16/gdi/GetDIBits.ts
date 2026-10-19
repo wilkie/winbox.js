@@ -59,6 +59,41 @@ export function GetDIBits(
   lpbi: number,
   fuColorUse: number
 ) {
+  const given = this.handles.resolve(hdc);
+  const target = this.handles.resolve(hbmp);
+
+  /* With a printer's context, GDI gets them itself through the driver
+   * (`printer-stretch.ts`). */
+  if ((given?.driverDevice || given?.compatibleDevice) && target instanceof DeviceBitmap) {
+    return import('./printer-stretch.js').then(
+      async ({ getDIBitsFallback }) =>
+        (await getDIBitsFallback(
+          this,
+          hdc,
+          given,
+          target,
+          uStartScan & 0xffff,
+          cScanLines & 0xffff,
+          lpvBits,
+          lpbi,
+          fuColorUse
+        )) ?? getOwnDIBits.call(this, hdc, hbmp, uStartScan, cScanLines, lpvBits, lpbi, fuColorUse)
+    );
+  }
+
+  return getOwnDIBits.call(this, hdc, hbmp, uStartScan, cScanLines, lpvBits, lpbi, fuColorUse);
+}
+
+function getOwnDIBits(
+  this: any,
+  hdc: number,
+  hbmp: number,
+  uStartScan: number,
+  cScanLines: number,
+  lpvBits: number,
+  lpbi: number,
+  fuColorUse: number
+) {
   const bitmap = this.handles.resolve(hbmp);
 
   void hdc;
