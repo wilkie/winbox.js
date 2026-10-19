@@ -6,7 +6,7 @@ ordinal: 29
 summary: Fills a rectangle of a device context with the selected brush, or with white or black, under a raster operation.
 versions:
   '3.1': exact
-probes: [bitbits, dither, drawgaps, patrops, patmono, prblt]
+probes: [bitbits, dither, drawgaps, patrops, patmono]
 source: src/win16/gdi/PatBlt.ts
 ---
 

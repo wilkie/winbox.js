@@ -5,7 +5,7 @@ name: StretchBlt
 ordinal: 35
 summary: Copies a rectangle of pixels into a rectangle of another size, stretching or shrinking it, and mirroring it where an extent is negative.
 versions:
-  '3.1': exact
+  '3.1': partial
 probes: [stretch, prblt]
 source: src/win16/gdi/StretchBlt.ts
 topics: [accessories, printer-drivers]
@@ -37,4 +37,4 @@ topics: [accessories, printer-drivers]
 
 ## On a printer's context
 
-[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]]. Not followed: what GDI draws itself for a driver that cannot take it, which [[probe:prblt]] holds apart.

@@ -5,7 +5,7 @@ name: SetDIBitsToDevice
 ordinal: 443
 summary: Draws some of a device-independent bitmap's scan lines straight onto a device, at their place in a rectangle of it.
 versions:
-  '3.1': exact
+  '3.1': partial
 probes: [dibdev, prblt]
 source: src/win16/gdi/dib-to-device.ts
 topics: [painting, printer-drivers]
@@ -36,4 +36,4 @@ winbox.js agrees with all 36 records.
 
 ## On a printer's context
 
-[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]].
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]]. Not followed: what GDI draws itself for a driver that cannot take it, which [[probe:prblt]] holds apart.

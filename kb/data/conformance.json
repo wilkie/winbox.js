@@ -14495,6 +14495,96 @@
   },
   "gaps": {}
  },
+ "prband": {
+  "probe": "prband",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 174,
+  "functions": {
+   "band": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 40,
+    "agreed": 40,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "driver": {
+    "total": 76,
+    "agreed": 76,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 44,
+    "agreed": 44,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prblt": {
+  "probe": "prblt",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 199,
+  "functions": {
+   "call": {
+    "total": 41,
+    "agreed": 41,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "driver": {
+    "total": 46,
+    "agreed": 46,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fallback": {
+    "total": 31,
+    "agreed": 19,
+    "disagreed": 12,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "line": {
+    "total": 80,
+    "agreed": 80,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "size": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "fallback": "GDI's own stretching and DIBs for a driver that can only BitBlt"
+  }
+ },
  "prdlg": {
   "probe": "prdlg",
   "display": "vgaprint",
@@ -14755,6 +14845,29 @@
    "size": {
     "total": 1,
     "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "prdrv": {
+  "probe": "prdrv",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 80,
+  "functions": {
+   "call": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "driver": {
+    "total": 61,
+    "agreed": 61,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

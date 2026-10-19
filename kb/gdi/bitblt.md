@@ -6,7 +6,7 @@ ordinal: 34
 summary: Copies a rectangle of pixels from one device context to another, combining source, destination and brush under a raster operation.
 versions:
   '3.1': exact
-probes: [bitblt, bitbits, prblt]
+probes: [bitblt, bitbits]
 source: src/win16/gdi/BitBlt.ts
 topics: [display-drivers, printer-drivers]
 ---
