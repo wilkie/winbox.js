@@ -4,6 +4,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 
 import { NULL } from '../consts.js';
+import { driverCaps } from './printer-driver.js';
 
 /**
  * Makes a bitmap of the same kind as a device context's: the display's depth
@@ -23,6 +24,14 @@ export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
 
   if (!surface) {
     return NULL;
+  }
+
+  /* A printer's of its own format (`GDI.EXE` seg4 `01fb`): one plane of
+   * one bit is monochrome (`prblt2`). */
+  if (surface.driverDevice && driverCaps(surface, 0x0c) === 1 && driverCaps(surface, 0x0e) === 1) {
+    return this.handles.allocate(
+      new DeviceBitmap(nWidth, nHeight, 1, undefined, DevicePalette.forDisplay(this.display, 1))
+    );
   }
 
   const like = surface.bitmap instanceof DeviceBitmap ? surface.bitmap : null;

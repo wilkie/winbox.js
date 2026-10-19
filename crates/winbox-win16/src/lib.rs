@@ -3,6 +3,7 @@
 
 pub mod accelerators;
 pub mod accessible_tree;
+pub mod assets;
 pub mod atoms;
 pub mod audio;
 pub mod broadcast;

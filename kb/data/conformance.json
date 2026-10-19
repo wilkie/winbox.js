@@ -14602,8 +14602,8 @@
    },
    "fallback": {
     "total": 31,
-    "agreed": 19,
-    "disagreed": 12,
+    "agreed": 31,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -14622,9 +14622,37 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "fallback": "GDI's own stretching and DIBs for a driver that can only BitBlt"
-  }
+  "gaps": {}
+ },
+ "prblt2": {
+  "probe": "prblt2",
+  "display": "vgaprint",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 192,
+  "functions": {
+   "call": {
+    "total": 56,
+    "agreed": 56,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dib": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "driver": {
+    "total": 134,
+    "agreed": 134,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "prdlg": {
   "probe": "prdlg",

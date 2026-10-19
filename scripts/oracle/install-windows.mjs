@@ -166,7 +166,7 @@ export function driveFor(display) {
  * more to us than the megabyte they cost. Games, screen savers, wallpapers and
  * readmes are not.
  */
-const ANSWERS = [
+export const ANSWERS = [
   '[sysinfo]',
   'showsysinfo=no',
   '',

@@ -6,7 +6,7 @@ ordinal: 443
 summary: Draws some of a device-independent bitmap's scan lines straight onto a device, at their place in a rectangle of it.
 versions:
   '3.1': partial
-probes: [dibdev, prblt]
+probes: [dibdev, prblt, prblt2]
 source: src/win16/gdi/dib-to-device.ts
 topics: [painting, printer-drivers]
 ---
@@ -36,4 +36,4 @@ winbox.js agrees with all 36 records.
 
 ## On a printer's context
 
-[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver: see [[topic:printer-drivers]]. [[measured]] [[probe:prblt]]. Not followed: what GDI draws itself for a driver that cannot take it, which [[probe:prblt]] holds apart.
+[[read out]] On the context of a printer's driver from the drive, GDI hands it to the driver, or, for a driver that cannot take it, makes the scans a monochrome bitmap of its own and has the driver copy that, clipped to the destination's rectangle: see [[topic:printer-drivers]]. A colour is white where its blue, twice its red and five times its green come to 1020 or more. A compressed DIB answers 1. [[measured]] [[probe:prblt]], [[probe:prblt2]]. Not followed: `DIB_PAL_COLORS` there.

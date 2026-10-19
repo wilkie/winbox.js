@@ -218,23 +218,34 @@ export class RegistryDatabase {
     this.freeHead = id;
   }
 
-  /** A text to use, shared if there is one -- by case for a name, exactly for a value. */
+  /**
+   * A text to use, shared if there is one -- by case for a name, exactly for a
+   * value. A new one is put last in its bucket's chain (seg2 `0ad5`-`0b03`).
+   */
   useText(text: string, anyCase: boolean) {
     const bucket = this.bucketOf(text);
 
     for (let id = this.entries[bucket][0]; id > this.buckets; id = this.entries[id][0]) {
       const have = this.texts.get(id)!;
 
-      if (have.length === text.length && (anyCase ? have.toUpperCase() === text.toUpperCase() : have === text)) {
+      if (
+        have.length === text.length &&
+        (anyCase ? have.toUpperCase() === text.toUpperCase() : have === text)
+      ) {
         this.entries[id][1]++;
         return id;
       }
     }
 
     const id = this.#allocate();
+    let last = bucket;
 
-    this.entries[id] = [this.entries[bucket][0], 1, text.length, 0];
-    this.entries[bucket][0] = id;
+    while (this.entries[last][0] > this.buckets) {
+      last = this.entries[last][0];
+    }
+
+    this.entries[id] = [this.entries[last][0], 1, text.length, 0];
+    this.entries[last][0] = id;
     this.texts.set(id, text);
 
     return id;
@@ -272,11 +283,15 @@ export class RegistryDatabase {
     return 0;
   }
 
-  /** A child made first among its parent's (seg2 `08f4`). */
+  /**
+   * A child made first among its parent's (seg2 `08f4`), its name's text taken
+   * before its own entry (seg2 `0d0c`-`0d24`).
+   */
   makeChild(parent: number, name: string) {
+    const text = this.useText(name, true);
     const id = this.#allocate();
 
-    this.entries[id] = [this.entries[parent][1], 0, this.useText(name, true), 0];
+    this.entries[id] = [this.entries[parent][1], 0, text, 0];
     this.entries[parent][1] = id;
     this.dirty = true;
 
@@ -285,7 +300,7 @@ export class RegistryDatabase {
 
   /** A key and everything under it, gone. */
   removeTree(id: number) {
-    for (let child = this.entries[id][1]; child; ) {
+    for (let child = this.entries[id][1]; child;) {
       const next = this.entries[child][0];
 
       this.removeTree(child);

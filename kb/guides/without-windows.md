@@ -42,11 +42,11 @@ Nothing else from the installation is run. These are read as data:
 The bundle holds only what programs see, and no code:
 
 - **Fonts**: the boot fonts for each display, and the faces Setup puts in `[fonts]`, raster and TrueType.
-- **Display resources**: for each display winbox.js offers, its driver's bitmaps, icons, cursors and `OEMBIN` resources, taken out of the `.DRV` file and kept as resources, not as a driver. GDI and USER already read them as data and never run the driver.
+- **Display resources**: for each display winbox.js offers, its driver's bitmaps, icons, cursors and `OEMBIN` resources, kept in the `.DRV` file with every segment's bytes made nought: its tables and resources where they were, and no code. GDI and USER already read them as data and never run the driver.
 - **USER's and SHELL's pictures**: the flag icon, the cursors, the logo.
 - **System sounds**: the `.WAV` files `[sounds]` names.
 
-The profiles are not in the bundle. WinBox writes `WIN.INI` and `SYSTEM.INI` itself, from what is in the bundle and the display and sound chosen, as Setup would. Each key it writes is one that Windows' own Setup writes, and the oracle's installations show which. `REG.DAT` starts empty, as a new installation's does.
+The profiles are not in the bundle. WinBox writes `WIN.INI` and `SYSTEM.INI` itself for the display chosen, line for line as Windows' own Setup wrote them on the oracle's installation for that display, each line kept with what grounds it in `SETUP.INF`, the templates on the first disk, or the installation. `REG.DAT` is not empty in a new installation: Setup runs `regedit /s /u setup.reg` (`SETUP.INF` `[data]` `register`), and the oracle's is 2,556 bytes. WinBox makes it from the bundle's `SETUP.REG` the same way, byte for byte ([[topic:asset-bundle]]).
 
 **Whose assets they are.** The fonts, bitmaps and sounds are Microsoft's. The bundle is made from the user's own Windows 3.1 media, as the oracle's installations are now (`scripts/oracle`), and is never shipped. A bundle free of Microsoft's files would need replacements drawn to the same metrics, cell for cell. Programs whose layout depends on those metrics would notice anything else. That is a separate project, and the rule of this one still holds: nothing about Windows' behaviour is invented.
 
@@ -113,4 +113,4 @@ A launcher, native and on the page, sits on top of steps 3 and 4. It shows the g
 
 ## Not yet done
 
-All of it but COMMDLG's file dialogs, Find, Replace, Color, Font and Print, and VER and LZEXPAND. What winbox.js does today is in the first section.
+All of it but COMMDLG's file dialogs, Find, Replace, Color, Font and Print, VER, LZEXPAND and DDEML, and the asset bundle's making and composing: the bundle is made from the user's disks, and the base of C: composed from it for every display is the oracle's installation's data byte for byte ([[topic:asset-bundle]]); neither engine starts from it yet. What winbox.js does today is in the first section.

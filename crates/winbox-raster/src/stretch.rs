@@ -199,6 +199,174 @@ pub fn stretch_map(
     map
 }
 
+/// GDI's monochrome stretcher (`GDI.EXE` seg32 `0000`), as `StretchBlt`
+/// uses it for a printer's driver without `RC_STRETCHBLT` where neither
+/// side is turned over and the two are not both of colours: rows `first`
+/// to `last` of the destination, each `dw` pixels, a set bit white.
+///
+/// Each axis is the larger size against the smaller, a quotient and a
+/// remainder. Enlarging across, each source pixel is shown the quotient's
+/// times and once more where the remainder's running balance is above
+/// nought (`0185`); reducing, each destination pixel is a group of as
+/// many, white where all its pixels are (`BLACKONWHITE`, `01ed`), any of
+/// them (`WHITEONBLACK`, `0246`), or its first (`COLORONCOLOR`, `029f`).
+/// Down, the error starts at the larger less half the smaller, rounded up;
+/// enlarging, a row steps the source once the error falls below nought,
+/// and the rows between are copies (`0155`, `0129`); reducing, a row takes
+/// the source rows until the error falls below nought, anded, ored or the
+/// first kept by the same mode (`02f1`). Rows before `first` are passed
+/// over by the same steps (`00ef`, `010a`).
+///
+/// **Read out**, and **recorded** by `prblt2`. The twin of
+/// `src/raster/stretch.ts`'s `monoStretchRows`.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+pub fn mono_stretch_rows(
+    pixel: impl Fn(i32, i32) -> u8,
+    (sx, sy, sw, sh): (i32, i32, i32, i32),
+    dw: i32,
+    dh: i32,
+    mode: u16,
+    first: i32,
+    last: i32,
+) -> Vec<Vec<u8>> {
+    let grow_x = dw >= sw;
+    let small_x = if grow_x { sw } else { dw };
+    let large_x = if grow_x { dw } else { sw };
+    let quotient = large_x / small_x;
+    let remainder = large_x % small_x;
+    let grow_y = dh >= sh;
+    let small_y = if grow_y { sh } else { dh };
+    let large_y = if grow_y { dh } else { sh };
+    let mut error = (2 * large_y - small_y) >> 1;
+    let mut row = 0;
+    let mut from = sy;
+
+    while row < first {
+        if grow_y {
+            row += 1;
+            error -= small_y;
+
+            if error < 0 {
+                error += large_y;
+                from += 1;
+            }
+        } else {
+            from += 1;
+            error -= small_y;
+
+            if error < 0 {
+                error += large_y;
+                row += 1;
+            }
+        }
+    }
+
+    let line = |y: i32| -> Vec<u8> { (0..sw).map(|x| u8::from(pixel(sx + x, y) != 0)).collect() };
+    let across = |bits: &[u8]| -> Vec<u8> {
+        let mut out = vec![0u8; dw.max(0) as usize];
+        let mut balance = 0;
+        let mut at = 0usize;
+
+        for step in 0..small_x {
+            let mut count = quotient;
+
+            if balance > 0 {
+                count += 1;
+                balance -= small_x;
+            }
+
+            balance += remainder;
+
+            let count = count.max(0) as usize;
+
+            if grow_x {
+                let bit = bits.get(step as usize).copied().unwrap_or(0);
+
+                for slot in out.iter_mut().skip(at).take(count) {
+                    *slot = bit;
+                }
+            } else {
+                let group = bits.get(at..(at + count).min(bits.len())).unwrap_or(&[]);
+
+                out[step as usize] = match mode {
+                    1 => u8::from(group.iter().all(|&bit| bit != 0)),
+                    2 => u8::from(group.iter().any(|&bit| bit != 0)),
+                    _ => group.first().copied().unwrap_or(0),
+                };
+            }
+
+            at += count;
+        }
+
+        out
+    };
+    let mut rows = Vec::new();
+
+    while row <= last {
+        let mut bits = line(from);
+
+        if !grow_y {
+            from += 1;
+
+            let mut test = error;
+
+            loop {
+                test -= small_y;
+
+                if test < 0 {
+                    break;
+                }
+
+                let next = line(from);
+
+                from += 1;
+
+                if mode == 1 || mode == 2 {
+                    for (bit, other) in bits.iter_mut().zip(&next) {
+                        *bit = if mode == 1 {
+                            *bit & other
+                        } else {
+                            *bit | other
+                        };
+                    }
+                }
+            }
+
+            error = test + large_y;
+        }
+
+        let out = across(&bits);
+
+        rows.push(out.clone());
+        row += 1;
+
+        if grow_y {
+            error -= small_y;
+
+            let mut stepped = error < 0;
+
+            if stepped {
+                error += large_y;
+                from += 1;
+            }
+
+            while !stepped && row <= last {
+                rows.push(out.clone());
+                row += 1;
+                error -= small_y;
+                stepped = error < 0;
+
+                if stepped {
+                    error += large_y;
+                    from += 1;
+                }
+            }
+        }
+    }
+
+    rows
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -216,6 +384,20 @@ mod tests {
 
         assert_eq!(columns, vec![1, 4, 6, 8, 11, 13, 15]);
         assert_eq!(rows, vec![1, 4, 6, 8, 10, 13, 15]);
+    }
+
+    #[test]
+    fn monochrome_reducing_in_blackonwhite_ands_each_group() {
+        let pattern = |x: i32, y: i32| u8::from(y % 2 == 0 && x % 2 == 0);
+
+        assert_eq!(
+            mono_stretch_rows(pattern, (0, 0, 4, 2), 2, 1, 1, 0, 0),
+            vec![vec![0, 0]]
+        );
+        assert_eq!(
+            mono_stretch_rows(pattern, (0, 0, 4, 2), 2, 1, 2, 0, 0),
+            vec![vec![1, 1]]
+        );
     }
 
     #[test]

@@ -389,6 +389,96 @@ static void deviceText(LPVOID device)
     }
 }
 
+#ifdef PRDRV_COPIES
+/*
+ * Under `PRDRV_COPIES` (`prblt2.dll.c`) the driver's `BitBlt` also sums a
+ * monochrome source's bits within the rectangle, so that what GDI hands
+ * it can be compared, and carries out a copy (`SRCCOPY`) from one
+ * monochrome bitmap into another, so that GDI's bitmaps of its own hold
+ * what it put in them. A bitmap of more than a segment is left alone.
+ */
+
+/* A bitmap, by its `BITMAP`, of one plane of one bit and one segment. */
+static BOOL monochrome(LPVOID device)
+{
+    LPWORD words = (LPWORD)device;
+    LPBYTE bytes = (LPBYTE)device;
+
+    return device && words[0] == 0 && bytes[8] == 1 && bytes[9] == 1 && words[0x16 / 2] == 0;
+}
+
+static LPBYTE rowOf(LPVOID bitmap, WORD row)
+{
+    LPWORD words = (LPWORD)bitmap;
+    LPBYTE bits = *(LPBYTE FAR *)((LPBYTE)bitmap + 0x0a);
+
+    return bits + (WORD)(row * words[3]);
+}
+
+/* The bytes of each row within the rectangle, top down, the first and
+ * last masked to its columns: sum = sum * 31 + byte. */
+static WORD sumOf(LPVOID bitmap, WORD x, WORD y, WORD width, WORD height)
+{
+    WORD sum = 0;
+    WORD first = x >> 3;
+    WORD last = (x + width - 1) >> 3;
+    WORD row;
+    WORD at;
+
+    for (row = y; row < y + height; row++) {
+        LPBYTE line = rowOf(bitmap, row);
+
+        for (at = first; at <= last; at++) {
+            BYTE mask = 0xff;
+
+            if (at == first) {
+                mask &= (BYTE)(0xff >> (x & 7));
+            }
+
+            if (at == last) {
+                mask &= (BYTE)(0xff << (7 - ((x + width - 1) & 7)));
+            }
+
+            sum = (WORD)(sum * 31 + (line[at] & mask));
+        }
+    }
+
+    return sum;
+}
+
+static void copied(LPVOID dest, WORD x, WORD y, LPVOID source, WORD sx, WORD sy, WORD width,
+                   WORD height)
+{
+    WORD row;
+    WORD at;
+
+    for (row = 0; row < height; row++) {
+        LPBYTE to = rowOf(dest, y + row);
+        LPBYTE from = rowOf(source, sy + row);
+
+        at = 0;
+
+        if ((x & 7) == 0 && (sx & 7) == 0) {
+            for (; at + 8 <= width; at += 8) {
+                to[(x + at) >> 3] = from[(sx + at) >> 3];
+            }
+        }
+
+        for (; at < width; at++) {
+            WORD p = x + at;
+            WORD q = sx + at;
+            BYTE bit = (BYTE)(0x80 >> (p & 7));
+
+            if (from[q >> 3] & (0x80 >> (q & 7))) {
+                to[p >> 3] |= bit;
+            } else {
+                to[p >> 3] &= (BYTE)~bit;
+            }
+        }
+    }
+}
+#endif
+
 BOOL FAR PASCAL _export BitBlt(PDEV FAR *dest, WORD x, WORD y, LPVOID source, WORD sx, WORD sy,
                                WORD width, WORD height, DWORD rop, LPVOID brush, LPVOID drawMode)
 {
@@ -402,6 +492,15 @@ BOOL FAR PASCAL _export BitBlt(PDEV FAR *dest, WORD x, WORD y, LPVOID source, WO
 
     wsprintf(text + lstrlen(text), " %dx%d %08lX brush %d mode %d", width, height, rop,
              brush != NULL, drawMode != NULL);
+#ifdef PRDRV_COPIES
+    if (monochrome(source) && width && height) {
+        wsprintf(text + lstrlen(text), " sum %04X", sumOf(source, sx, sy, width, height));
+
+        if (monochrome(dest) && rop == 0x00CC0020L) {
+            copied(dest, x, y, source, sx, sy, width, height);
+        }
+    }
+#endif
     append();
     return 1;
 }

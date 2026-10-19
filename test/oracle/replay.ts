@@ -5555,12 +5555,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
-  /* `prblt`'s last part: a stretch, one flipped, and a DIB set and
-   * stretched, on a driver that can only `BitBlt`. GDI stretches into
-   * bitmaps of its own and copies them with the driver's `BitBlt` (`GDI.EXE`
-   * seg32 `0690` on, seg11 `0ce9` on), which winbox.js does not follow; 12
-   * of the part's records. The rest of the probe agrees. */
-  'prblt:fallback': "GDI's own stretching and DIBs for a driver that can only BitBlt",
 };
 
 /**
@@ -5860,6 +5854,7 @@ const RUN_WHOLE = new Set<string>([
   'ddehsz',
   'ddewep',
   'localgro',
+  'prblt2',
 ]);
 
 /**

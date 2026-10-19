@@ -1,0 +1,1157 @@
+{
+  "probe": "prblt2",
+  "display": "vgaprint",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours, an Apple LaserWriter Plus on LPT1"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC X",
+      "result": "1"
+    },
+    {
+      "function": "driver",
+      "args": "0",
+      "result": "Enable 1 X LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "1",
+      "result": "Enable 0 X LPT1: 0"
+    },
+    {
+      "function": "driver",
+      "args": "2",
+      "result": "RealizeObject brush 0 FFFFFF 0 size"
+    },
+    {
+      "function": "driver",
+      "args": "3",
+      "result": "RealizeObject brush 0 FFFFFF 0"
+    },
+    {
+      "function": "driver",
+      "args": "4",
+      "result": "RealizeObject pen 0 0 000000 size"
+    },
+    {
+      "function": "driver",
+      "args": "5",
+      "result": "RealizeObject pen 0 0 000000"
+    },
+    {
+      "function": "driver",
+      "args": "6",
+      "result": "RealizeObject font 0 0 0 \"\" size"
+    },
+    {
+      "function": "driver",
+      "args": "7",
+      "result": "RealizeObject font 0 0 0 \"\""
+    },
+    {
+      "function": "driver",
+      "args": "8",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "9",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "10",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "11",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X by a pixel both ways",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "12",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "13",
+      "result": "BitBlt 1 56,4 bitmap 0 16 8 2 1 1 15,0 1x8 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "14",
+      "result": "BitBlt 1 40,12 bitmap 0 16 8 2 1 1 0,7 16x1 00CC0020 brush 1 mode 1 sum 0A4B",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "15",
+      "result": "BitBlt 1 56,12 bitmap 0 16 8 2 1 1 15,7 1x1 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X by a pixel less",
+      "result": "8",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "16",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 15x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X by a pixel down",
+      "result": "16",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "17",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "18",
+      "result": "BitBlt 1 40,12 bitmap 0 16 8 2 1 1 0,7 16x1 00CC0020 brush 1 mode 1 sum 0A4B",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X by a pixel across",
+      "result": "8",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "19",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "20",
+      "result": "BitBlt 1 56,4 bitmap 0 16 8 2 1 1 15,0 1x8 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X by a pixel less both ways",
+      "result": "8",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "21",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 15x7 00CC0020 brush 1 mode 1 sum 6279",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X turned over both ways",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "22",
+      "result": "BitBlt 1 5,6 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X larger",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "23",
+      "result": "BitBlt 1 30,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X turned across",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "24",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "25",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "26",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 3F00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "27",
+      "result": "BitBlt 1 31,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 3F00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X turned down",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "28",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "29",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "30",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "31",
+      "result": "BitBlt 1 30,31 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X smaller",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "32",
+      "result": "BitBlt 1 4,4 bitmap 0 16 8 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X smaller turned across, WHITEONBLACK",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "33",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "34",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "35",
+      "result": "BitBlt 2 0,0 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum 0BC0",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "36",
+      "result": "BitBlt 1 5,4 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum 0BC0",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X smaller turned across, COLORONCOLOR",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "37",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "38",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "39",
+      "result": "BitBlt 2 0,0 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "40",
+      "result": "BitBlt 1 5,4 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X smaller turned down, COLORONCOLOR",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "41",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "42",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "43",
+      "result": "BitBlt 2 0,0 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum BC00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "44",
+      "result": "BitBlt 1 4,9 bitmap 0 8 4 2 1 1 0,0 8x4 00CC0020 brush 1 mode 1 sum BC00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X larger turned down, COLORONCOLOR",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "45",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "46",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "47",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "48",
+      "result": "BitBlt 1 30,31 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X from beyond the bitmap",
+      "result": "0",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X inverting",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "49",
+      "result": "BitBlt 1 30,30 bitmap 0 32 16 4 1 1 0,0 32x16 00660046 brush 1 mode 1 sum 7F00",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X far larger",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "50",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "51",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x4 00CC0020 brush 1 mode 1 sum 0A42",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "52",
+      "result": "BitBlt 250 0,0 bitmap 0 2000 150 250 1 1 0,0 2000x150 00CC0020 brush 1 mode 1 sum EF70",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "53",
+      "result": "BitBlt 1 0,0 bitmap 0 2000 188 250 1 1 900,0 64x48 00CC0020 brush 1 mode 1 sum 6080",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "54",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,4 16x4 00CC0020 brush 1 mode 1 sum 0A42",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "55",
+      "result": "BitBlt 250 0,0 bitmap 0 2000 150 250 1 1 0,0 2000x150 00CC0020 brush 1 mode 1 sum EF70",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X far larger turned across",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "56",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "57",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x4 00CC0020 brush 1 mode 1 sum 0A42",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "58",
+      "result": "BitBlt 250 0,0 bitmap 0 2000 150 250 1 1 0,0 2000x150 00CC0020 brush 1 mode 1 sum AC1A",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "59",
+      "result": "BitBlt 1 0,0 bitmap 0 2000 188 250 1 1 899,0 64x48 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "60",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,4 16x4 00CC0020 brush 1 mode 1 sum 0A42",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "61",
+      "result": "BitBlt 250 0,0 bitmap 0 2000 150 250 1 1 0,0 2000x150 00CC0020 brush 1 mode 1 sum AC1A",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X larger, clipped",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "62",
+      "result": "BitBlt 1 30,30 bitmap 0 32 16 4 1 1 0,0 10x4 00CC0020 brush 1 mode 1 sum A702",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "63",
+      "result": "BitBlt 1 30,34 bitmap 0 32 16 4 1 1 0,0 4x4 00CC0020 brush 1 mode 1 sum 1E00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "64",
+      "result": "BitBlt 1 38,34 bitmap 0 32 16 4 1 1 8,0 2x4 00CC0020 brush 1 mode 1 sum 1800",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "65",
+      "result": "BitBlt 1 30,38 bitmap 0 32 16 4 1 1 0,0 10x2 00CC0020 brush 1 mode 1 sum A5E8",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "X turned across, clipped",
+      "result": "1",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "66",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 0 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "67",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "68",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 3F00",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "69",
+      "result": "BitBlt 1 31,30 bitmap 0 32 16 4 1 1 0,0 9x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "70",
+      "result": "BitBlt 1 31,34 bitmap 0 32 16 4 1 1 0,4 3x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "71",
+      "result": "BitBlt 1 38,34 bitmap 0 32 16 4 1 1 7,4 2x4 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "driver",
+      "args": "72",
+      "result": "BitBlt 1 31,38 bitmap 0 32 16 4 1 1 0,8 9x2 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "X"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "73",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice a part",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "74",
+      "result": "BitBlt 1 2,20 bitmap 0 8 8 2 1 1 0,2 8x4 00CC0020 brush 1 mode 1 sum 1BC0",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice later scans",
+      "result": "4",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "75",
+      "result": "BitBlt 1 20,22 bitmap 0 8 4 2 1 1 2,0 6x4 00CC0020 brush 1 mode 1 sum 880A",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "76",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "77",
+      "result": "BitBlt 1 40,2 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1 sum F450",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits the same size",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "78",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "79",
+      "result": "BitBlt 1 40,30 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits turned across",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "80",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "81",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 0 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "82",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "83",
+      "result": "BitBlt 2 0,0 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1 sum BCEE",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "84",
+      "result": "BitBlt 1 41,30 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1 sum BCEE",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits a part",
+      "result": "4",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "85",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "86",
+      "result": "BitBlt 1 20,30 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 5C80",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits inverting",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "87",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "88",
+      "result": "BitBlt 1 40,30 bitmap 0 8 8 2 1 1 0,0 8x8 00660046 brush 1 mode 1 sum 2EA2",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice black and white",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "89",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 09D0",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice white and black",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "90",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum A5B0",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice white and white",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "91",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum AF80",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice 256",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "92",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum B240",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice 24 bits",
+      "result": "2",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "93",
+      "result": "BitBlt 1 2,2 bitmap 0 8 2 2 1 1 0,0 8x2 00CC0020 brush 1 mode 1 sum 131D",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice RLE4",
+      "result": "1",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "94",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2180",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "StretchDIBits RLE4",
+      "result": "8",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "95",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2180",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "96",
+      "result": "BitBlt 1 40,2 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1 sum 95E8",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBitsToDevice RLE8",
+      "result": "1",
+      "section": "DIBs"
+    },
+    {
+      "function": "driver",
+      "args": "97",
+      "result": "BitBlt 1 2,2 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 3180",
+      "section": "DIBs"
+    },
+    {
+      "function": "call",
+      "args": "CreateCompatibleBitmap",
+      "result": "16 8 2 1 1",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "SetDIBits",
+      "result": "8",
+      "section": "compatible"
+    },
+    {
+      "function": "driver",
+      "args": "98",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "GetDIBits",
+      "result": "8",
+      "section": "compatible"
+    },
+    {
+      "function": "driver",
+      "args": "99",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "compatible"
+    },
+    {
+      "function": "dib",
+      "args": "GetDIBits",
+      "result": "image 0 colours 000000 FFFFFF 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 000000 bits 00 01 11 10 00 01 11 00 00 11 11 00 10 11 01 00 10 01 01 10 10 01 11 10 00 01 11 00 00 11 11 00",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "GetDIBits two colours, a part",
+      "result": "4",
+      "section": "compatible"
+    },
+    {
+      "function": "driver",
+      "args": "100",
+      "result": "BitBlt 2 0,0 bitmap 0 16 8 2 1 1 0,2 16x4 00CC0020 brush 1 mode 1 sum 78DC",
+      "section": "compatible"
+    },
+    {
+      "function": "dib",
+      "args": "GetDIBits two colours, a part",
+      "result": "image 0 colours 000000 FFFFFF bits 3C 00 00 00 B4 00 00 00 96 00 00 00 9E 00 00 00",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "CreateDIBitmap",
+      "result": "1",
+      "section": "compatible"
+    },
+    {
+      "function": "driver",
+      "args": "101",
+      "result": "BitBlt 2 0,0 bitmap 0 8 8 2 1 1 0,0 8x8 00CC0020 brush 1 mode 1 sum 2EA2",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "StretchBlt of it",
+      "result": "1",
+      "section": "compatible"
+    },
+    {
+      "function": "driver",
+      "args": "102",
+      "result": "BitBlt 1 30,30 bitmap 0 16 16 2 1 1 0,0 16x16 00CC0020 brush 1 mode 1 sum F450",
+      "section": "compatible"
+    },
+    {
+      "function": "call",
+      "args": "display BitBlt",
+      "result": "0",
+      "section": "display"
+    },
+    {
+      "function": "call",
+      "args": "display StretchBlt",
+      "result": "1",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "103",
+      "result": "BitBlt 1 30,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7F00",
+      "section": "display"
+    },
+    {
+      "function": "call",
+      "args": "display StretchBlt turned across",
+      "result": "1",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "104",
+      "result": "BitBlt 4 0,0 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 3F00",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "105",
+      "result": "BitBlt 1 31,30 bitmap 0 32 16 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 3F00",
+      "section": "display"
+    },
+    {
+      "function": "call",
+      "args": "display StretchBlt of colours",
+      "result": "1",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "106",
+      "result": "BitBlt 1 30,30 bitmap 0 32 17 4 1 1 0,0 32x16 00CC0020 brush 1 mode 1 sum 7E00",
+      "section": "display"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC X",
+      "result": "1",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "107",
+      "result": "Disable 1 font0=160",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "108",
+      "result": "WEP font0=160",
+      "section": "display"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC XS",
+      "result": "1",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "109",
+      "result": "Enable 1 XS LPT1: 0",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "110",
+      "result": "Enable 0 XS LPT1: 0",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "111",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "112",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "113",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "114",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "115",
+      "result": "RealizeObject font 0 0 0 \"\" size",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "116",
+      "result": "RealizeObject font 0 0 0 \"\"",
+      "section": "display"
+    },
+    {
+      "function": "driver",
+      "args": "117",
+      "result": "RealizeObject brush 0 FFFFFF 0 size",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "118",
+      "result": "RealizeObject brush 0 FFFFFF 0",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "119",
+      "result": "RealizeObject pen 0 0 000000 size",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "120",
+      "result": "RealizeObject pen 0 0 000000",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS by a pixel both ways",
+      "result": "1",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "121",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "122",
+      "result": "BitBlt 1 56,4 bitmap 0 16 8 2 1 1 15,0 1x8 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "123",
+      "result": "BitBlt 1 40,12 bitmap 0 16 8 2 1 1 0,7 16x1 00CC0020 brush 1 mode 1 sum 0A4B",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "124",
+      "result": "BitBlt 1 56,12 bitmap 0 16 8 2 1 1 15,7 1x1 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS by a pixel less",
+      "result": "8",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "125",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 15x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS by a pixel down",
+      "result": "16",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "126",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "127",
+      "result": "BitBlt 1 40,12 bitmap 0 16 8 2 1 1 0,7 16x1 00CC0020 brush 1 mode 1 sum 0A4B",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS by a pixel across",
+      "result": "8",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "128",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "129",
+      "result": "BitBlt 1 56,4 bitmap 0 16 8 2 1 1 15,0 1x8 00CC0020 brush 1 mode 1 sum 0000",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS by a pixel less both ways",
+      "result": "8",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "130",
+      "result": "BitBlt 1 40,4 bitmap 0 16 8 2 1 1 0,0 15x7 00CC0020 brush 1 mode 1 sum 6279",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "XS turned over both ways",
+      "result": "1",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "131",
+      "result": "BitBlt 1 5,6 bitmap 0 16 8 2 1 1 0,0 16x8 00CC0020 brush 1 mode 1 sum B284",
+      "section": "XS"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC XS",
+      "result": "1",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "132",
+      "result": "Disable 1 font0=160",
+      "section": "XS"
+    },
+    {
+      "function": "driver",
+      "args": "133",
+      "result": "WEP font0=160",
+      "section": "XS"
+    }
+  ]
+}

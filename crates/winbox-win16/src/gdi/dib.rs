@@ -23,7 +23,7 @@ const CBM_INIT: u32 = 0x4;
 /// to the next selector, eight on (`__AHINCR`), at each 64 KiB, as a block
 /// `GlobalAlloc` gives of more than a segment is tiled. GDI reads a DIB's
 /// bits so: SimTower's title, 640 by 480 at a byte a pixel, is 300 KB.
-fn huge_read(system: &System, far: u32, count: usize) -> Vec<u8> {
+pub(crate) fn huge_read(system: &System, far: u32, count: usize) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(count);
 
     while bytes.len() < count {

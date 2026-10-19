@@ -24,12 +24,15 @@ File associations and OLE servers are kept in the registration database, `REG.DA
 - [[read out]] **The text area** holds each text just after a word naming its entry back, packed with no nought between them.
 - [[read out]] **Texts are shared** by names and values alike: `txtfile` is the value of `.txt` and of `.ini`, and the name of a key, and is stored once.
 - [[read out]] **A text's bucket** is its first 39 characters, upper-cased, summed as signed bytes, taken modulo the bucket count, plus one (seg2 `063e`).
+- [[read out]] **A new text is put last** in its bucket's chain: the chain is walked to the text whose next is the bucket again, and the new one put after it (seg2 `0ad5`-`0b03`). The chains in the installation's file run oldest first for this reason.
 - [[measured]] The installation's `REG.DAT` decodes entirely by this: every back reference, every count and every bucket.
 
 ## Keys
 
 - [[read out]] `HKEY_CLASSES_ROOT`, 1, is not the root but the root's child `.classes`, found again at every call. Any other handle is `0001:` and a key's entry (seg2 `0dbc`).
 - [[read out]] A new key is put **first** among its parent's children (seg2 `08f4`). Children therefore come newest first, not sorted.
+- [[read out]] **A new key's name is stored before its entry is taken**: the text is found or made first (seg2 `0d13`, the text routine at `0a1a`), then the entry, with the text's number, is made (`0d24`, `08f4`). A key's entry number, which is its handle's low word, follows from that order.
+- [[measured]] With both, `REG.DAT` made from nothing by Setup's `regedit /s /u setup.reg` is the installation's file byte for byte, all 2,556 bytes of it, for each of the oracle's installations ([[topic:asset-bundle]]).
 - [[measured]] [[probe:registry]] enumerates the classes root from `WordDocument` to `.ini`, the file's order. A key it makes comes first after that.
 - [[read out]] A name is matched without regard to case, and takes the case of whichever spelling was stored first. A value must match exactly to be shared.
 - [[read out]] **A path is refused with error 2** if it:
@@ -54,7 +57,7 @@ File associations and OLE servers are kept in the registration database, `REG.DA
 
 - `WIN.INI`'s `[embedding]` section, which SHELL copies in when a key is first opened and out when it writes (seg2 `1730`, `18b4`).
 - SHELL writes a temporary file and renames it into place, where winbox.js writes `REG.DAT` directly.
-- The order SHELL packs the texts in when it writes, and the database being dropped and read again under memory pressure.
+- The order SHELL packs the texts in when it writes, and the database being dropped and read again under memory pressure. winbox.js packs them in their entries' order, which is SHELL's for a database made from nothing and written once.
 
 ## In winbox.js
 

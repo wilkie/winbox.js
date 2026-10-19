@@ -1244,9 +1244,10 @@ function signed(value: number) {
  * the driver's `StretchDIBits` given the destination, the source, the
  * bits and the header as the program gave them, no conversion, the
  * raster operation, the brush, the `DRAWMODE` and the rectangle as the
- * clip. The answer is the source's height. Not followed: a header GDI
- * converts (a core header, `DIB_PAL_COLORS`, a palette device), and GDI's
- * own drawing where the driver answers -1 or has no `RC_STRETCHDIB`.
+ * clip. The answer is the source's height. Null where the driver answers
+ * -1 or has no `RC_STRETCHDIB`, and GDI draws it (`printer-stretch.ts`).
+ * Not followed: a header GDI converts (a core header, `DIB_PAL_COLORS`, a
+ * palette device).
  */
 export async function driverStretchDIBits(
   system: any,
@@ -1269,8 +1270,12 @@ export async function driverStretchDIBits(
   const pdevice: PDevice = surface.driverDevice;
   const procedure = proc(pdevice, STRETCH_DIBITS);
 
-  if (!procedure || !(caps(pdevice, 0x26) & 0x2000) || args.usage) {
+  if (args.usage) {
     return 0;
+  }
+
+  if (!procedure || !(caps(pdevice, 0x26) & 0x2000)) {
+    return null;
   }
 
   const drawing = drawingOf(surface);
@@ -1303,7 +1308,7 @@ export async function driverStretchDIBits(
     );
 
     if ((answer & 0xffff) === 0xffff) {
-      return 0;
+      return null;
     }
   }
 

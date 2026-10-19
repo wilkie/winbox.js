@@ -6,9 +6,9 @@ ordinal: 440
 summary: Sets some or all of a bitmap's scan lines from a device-independent bitmap, counted from its bottom row, and answers how many it set.
 versions:
   '3.1': exact
-probes: [gdidraw, deskdeep]
+probes: [gdidraw, deskdeep, prblt2]
 source: src/win16/gdi/gdi-draw.ts
-topics: [palettes]
+topics: [palettes, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -26,6 +26,10 @@ winbox.js agrees with all of these records. Both were stubs.
 
 - 24 bits answer 8, each pixel matched on its own: green (100, 200, 50) is bright green on the VGA, by its driver's rule, and olive on the 256-colour display, the nearest of the static colours with no palette selected.
 - 16 and 32 bits answer nought and set nothing. [[read out]] The display driver takes 1, 4, 8 and 24 bits and one plane, and answers nought for anything else (VGA.DRV seg9 `0059`-`0080`, SVGA256.DRV seg9 `0197`-`01be`); GDI hands the bits to its `DeviceBitmapBits` (`GDI.EXE` seg11 `091e`).
+
+## With a printer's context
+
+[[read out]] With the context of a printer's driver that has no `RC_DI_BITMAP`, GDI sets the bits itself (`GDI.EXE` seg11 `094c`, seg12 `094f`). The scans become a monochrome bitmap of its own, each colour white where its blue, twice its red and five times its green come to 1020 or more. The driver's `BitBlt` copies it into the bitmap, through a memory context made compatible with the printer's. A compressed DIB answers 1. [[measured]] [[probe:prblt2]]. See [[topic:printer-drivers]].
 
 ## Nuances
 

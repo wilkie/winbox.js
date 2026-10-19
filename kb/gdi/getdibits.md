@@ -6,9 +6,9 @@ ordinal: 441
 summary: Reads a device-dependent bitmap back as a DIB, at the bit count the header asks for.
 versions:
   '3.1': exact
-probes: [getdib]
+probes: [getdib, prblt2]
 source: src/win16/gdi/GetDIBits.ts
-topics: [palettes]
+topics: [palettes, printer-drivers]
 ---
 
 ## Observed behaviour
@@ -23,6 +23,10 @@ topics: [palettes]
 - [[measured]] The lines are counted from the bottom, starting at `uStartScan`. The answer is how many lines were read. The bytes after a line's pixels, up to its four-byte end, are left as they were.
 
 winbox.js agrees with all 34 records. Championship Slots of the corpus reads its pictures back this way.
+
+## With a printer's context
+
+[[read out]] With the context of a printer's driver that has no `RC_DI_BITMAP`, GDI reads the bits itself (`GDI.EXE` seg12 `0d92`). The driver's `BitBlt` copies the rows into a monochrome bitmap of GDI's own, as wide as the header says. The colour table is black, white and the rest nought, whatever the bit count. Each pixel is 0 or 1 at the header's bits a pixel. One bit's rows are copied a word at a time and padded with noughts; the others' padding is left as it was. It answers the lines, no more than the header's height less `uStartScan`, and leaves the image size as it was. [[measured]] [[probe:prblt2]]. See [[topic:printer-drivers]].
 
 ## Nuances
 
