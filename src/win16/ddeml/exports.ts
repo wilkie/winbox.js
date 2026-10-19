@@ -2,7 +2,7 @@
 
 import { LocalInit } from '../kernel/LocalInit.js';
 import { Loader } from '../loader.js';
-import { indexFor } from '../selectors.js';
+import { indexFor, segmentSelector } from '../selectors.js';
 import { DDEML_NAME, DDEML_PATH, D_HINSTANCE, Dd, far } from './core.js';
 import * as conv from './conv.js';
 import * as data from './data.js';
@@ -60,14 +60,22 @@ function ready(system: any): Dd {
 /**
  * `WEP` (seg2 `002c`): 1 for `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`, nought
  * and 1; for anything else what AX held as it was called, which the entry's
- * prologue loads with DDEML's data segment -- WinBox's own, which stands for
- * the file's (`Dd.ds`). It does nothing else: no instance still open is
- * ended. **Recorded** by `ddewep`: 1, 1, and one more than `LoadLibrary`'s
- * answer, a library's instance being its data segment's handle.
+ * prologue loads with DDEML's data segment: the file's, while the file is
+ * loaded, as KERNEL patched it (`KRNL386.EXE` seg1 `7bac`); else WinBox's
+ * own, which stands for it (`Dd.ds`). It does nothing else: no instance
+ * still open is ended. **Recorded** by `ddewep`: 1, 1, and one more than
+ * `LoadLibrary`'s answer, a library's instance being its data segment's
+ * handle (`libraryInstance`).
  */
 export function WEP(this: any, code: number) {
   if ((code & 0xffff) === 0 || (code & 0xffff) === 1) {
     return 1;
+  }
+
+  const loader: any = this._modules.fromName(DDEML_NAME);
+
+  if (loader instanceof Loader && loader.ds) {
+    return segmentSelector(loader.translate(loader.ds));
   }
 
   return new Dd(this).ds();

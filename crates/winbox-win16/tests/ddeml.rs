@@ -25,7 +25,7 @@ const PROBES: &[(&str, &[&str])] = &[
     ("ddenest", &[]),
     ("ddeheap", &[]),
     ("ddehsz", &[]),
-    ("ddewep", &["WEP"]),
+    ("ddewep", &[]),
 ];
 
 /// The records more that do not agree with no `DDEML.DLL` on the drive, as

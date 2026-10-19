@@ -30,7 +30,7 @@ const PROBE_GAPS: Record<string, string[]> = {
   ddenest: [],
   ddeheap: [],
   ddehsz: [],
-  ddewep: ['WEP'],
+  ddewep: [],
 };
 /**
  * The records more that do not agree with no `DDEML.DLL` on the drive:

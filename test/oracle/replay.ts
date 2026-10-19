@@ -5589,14 +5589,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * seg32 `0690` on, seg11 `0ce9` on), which winbox.js does not follow; 12
    * of the part's records. The rest of the probe agrees. */
   'prblt:fallback': "GDI's own stretching and DIBs for a driver that can only BitBlt",
-  /* DDEML's `WEP` answers what AX held as it was called for anything but
-   * `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`: DDEML's data segment, which the
-   * entry's prologue loads (`DDEML.DLL` seg2 `002c`). A library's instance is
-   * its data segment's handle, one less than its selector, and that is what
-   * Windows answered; winbox.js numbers a library's instance from a table
-   * of its own, so the data segment's selector is not one more than it. 1 of
-   * `ddewep`'s 6 records. */
-  'ddewep:WEP': "a library's instance is not its data segment's handle in winbox.js",
 };
 
 /**

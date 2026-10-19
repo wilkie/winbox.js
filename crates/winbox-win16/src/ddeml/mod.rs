@@ -212,20 +212,29 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
 
 /// `WEP` (seg2 `002c`): 1 for `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`,
 /// nought and 1; for anything else what AX held as it was called, which
-/// the entry's prologue loads with DDEML's data segment -- WinBox's own,
-/// which stands for the file's (`data_selector`). It does nothing else: no
-/// instance still open is ended. **Recorded** by `ddewep`: 1, 1, and one
-/// more than `LoadLibrary`'s answer, a library's instance being its data
-/// segment's handle. As `exports.ts`'s `WEP`.
+/// the entry's prologue loads with DDEML's data segment: the file's, while
+/// the file is loaded, as KERNEL patched it (`KRNL386.EXE` seg1 `7bac`);
+/// else WinBox's own, which stands for it (`data_selector`). It does
+/// nothing else: no instance still open is ended. **Recorded** by
+/// `ddewep`: 1, 1, and one more than `LoadLibrary`'s answer, a library's
+/// instance being its data segment's handle (`library_instance`). As
+/// `exports.ts`'s `WEP`.
 #[allow(clippy::unnecessary_wraps)]
 fn wep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let code = args.word(system);
 
-    Ok(Answer::Word(if code <= 1 {
-        1
-    } else {
-        data_selector(system)
-    }))
+    if code <= 1 {
+        return Ok(Answer::Word(1));
+    }
+
+    let file = system
+        .module_named(NAME)
+        .and_then(|library| system.modules[library].data());
+
+    Ok(Answer::Word(file.map_or_else(
+        || data_selector(system),
+        winbox_machine::segment_selector,
+    )))
 }
 
 /// DDEML's file let go, its library gone: its data segment goes with it,

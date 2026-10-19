@@ -2,7 +2,8 @@
 kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
-probes: [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search, solodata, mplopen]
+probes:
+  [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search, solodata, mplopen, ddewep]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -50,25 +51,15 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[measured]] `COMMDLG` is not loaded before, comes with `MAIN.CPL` counting 1, and goes when `MAIN.CPL` goes. A library's imports are counted as loads, and let go with it.
 - [[measured]] [[fn:KERNEL.GetModuleHandle]] finds `MAIN.CPL` by its module name, `MAINCPL`, and by its file's name with the extension, `MAIN.CPL`. Its file's name without the extension, `MAIN`, finds nothing.
 - [[measured]] `GetModuleHandle` answers the module, not the instance `LoadLibrary` gave: the two are different numbers for one library. winbox.js gives a library loaded from its file both, and either finds it. [[probe:drvmsg]] tells them apart through [fn:USER.GetDriverModuleHandle] ([[topic:installable-drivers]]).
-- [[documented]] As a library goes, its `WEP` runs, told that the library alone is going. winbox.js does this; it is not recorded.
-- [[measured]] Control Panel frees each applet library once it has asked it for its applets. All twelve still show.
 
-## Libraries winbox.js keeps itself
+## A library's instance
 
-- KERNEL, USER, GDI, KEYBOARD, SYSTEM, DISPLAY, SHELL, MMSYSTEM, SOUND, WIN87EM and TOOLHELP are winbox.js's own, and their files are not loaded. Their export tables -- the ordinals, names and argument sizes -- are the installation's files', held to them by a test.
-- [[read out]] `TOOLHELP.DLL` walks KERNEL's private structures: its start-up asks `GlobalMasterHandle` for the global heap's arena, and loads what it answers as a selector. winbox.js's KERNEL has no such arena, so TOOLHELP is kept among its own. `NotifyRegister` and `InterruptRegister`, which Object Packager and Dr. Watson use, keep what they are given and answer TRUE. Nothing is notified, and no fault passed on, yet.
-- [[measured]] [[probe:modhand]] asks for Windows' own modules' handles. Each module handle is 32 or more, with 3 in its low two bits, as a selector's are. `LoadLibrary` of the module's file answers its instance, a different number and also 32 or more. That is its data segment's handle: a selector less one for USER, GDI and MMSYSTEM, whose data is moveable, and the selector itself for KERNEL, SOUND and KEYBOARD. winbox.js gives each module it keeps both handles, from descriptors of their own, and answers the same. The system and display drivers are found by their module names, `SYSTEM` and `DISPLAY`, the display driver whichever file it is: `VGA.DRV`, `SUPERVGA.DRV`, `EGA.DRV` or `HERCULES.DRV`. winbox.js keeps both, with the drivers' own export tables, every entry a stub. GDI draws through winbox.js's own code, not through them.
-- [[measured]] An answer below 32 from `LoadLibrary` is an error, and programs treat it so. winbox.js answered 22 for `USER.EXE`. `CTL3D.DLL` loads `USER.EXE` by name as it starts, took the answer for a failure, left its hook unset, and then called through it at 0000:0000.
-- `COMMDLG` is made WinBox's own a function at a time ([[topic:common-dialogs]]). [[measured]] [[probe:loadpath]] loads it by its whole path, as WinHelp does, and records what its `GetFileTitle` makes of `C:\DIR\FILE.TXT`: `FILE.TXT`. winbox.js once answered such a load with names only, whose `GetFileTitle` did nothing, and WinHelp's File Open and Print Setup did nothing either.
-
-## COMMDLG, WinBox's and the file's
-
-WinBox keeps `COMMDLG` as it keeps USER, and loads `COMMDLG.DLL` beside it when the drive has one. An export WinBox answers is WinBox's; any other is the file's code while the file is there.
-
-- With the file, a program that imports `COMMDLG`, or loads it by its name or its whole path, gets the file's library, as on Windows: its module handle and instance, its count, and its entry point, which registers its messages. Each import of an export WinBox answers is linked to WinBox's stub for that ordinal rather than to the file's entry, and `GetProcAddress` answers the stub. Imports of the other exports are linked to the file's entries. Inside the file nothing changes: its own calls between its functions stay its own.
-- Without the file, a program links to WinBox's stubs throughout. An export WinBox answers is answered; one it does not answer yet answers nought, as a stub does. `LoadLibrary` finds `COMMDLG.DLL` by its name, in any directory, whether or not the file is there, as it finds the other modules WinBox keeps. As `COMMDLG` loads, by an import or by `LoadLibrary`, the messages the file's entry point registers are registered in its order (`COMMDLG.DLL` seg7 `010b`, `0208`), so a program that registers `FILEOKSTRING` itself gets the same number either way.
-- [[read out]] The extended error `CommDlgExtendedError` answers is one doubleword, `[2CCh]` in the file's data (seg6 `01f1`). WinBox's functions set that doubleword while the file is loaded, and their own otherwise, so the error reads the same whichever code failed last. WinBox finds it from the file's `CommDlgExtendedError` code, as the file reads it.
-- A dialog WinBox makes is made with `COMMDLG`'s instance, the file's library's or WinBox's own, and its procedure is WinBox's stub for the export the file uses, `FileOpenDlgProc` and the rest, which USER calls as it calls any procedure. A hook is called with `COMMDLG`'s data segment in DS, as the file calls one.
+- [[read out]] A library's instance is its data segment's handle. KERNEL's `GetInstance` (`KRNL386.EXE` seg2 `0b59`) answers, for a module whose flags say it has data (bit 0 or 1) and that names a data segment, the handle in that segment's entry; for any other, the module's own handle. A moveable segment's handle is its selector less one, a fixed one's the selector itself.
+- [[read out]] That is what `LoadLibrary` answers. `LoadModule` (seg2 `159c`) answers what starting the library answers (seg2 `13e8`), which is `GetInstance` once its entry point has answered something other than nought (seg2 `24a0`, `24fb`), or at once where it has no entry point (`24c8`). A library loaded already answers `GetInstance` again (seg2 `1c34`-`1c53`). `LoadLibrary` is `LoadModule` with no parameter block (seg2 `1560`), and its 11 becomes 20.
+- [[read out]] The entry point is given the same number in DI, and its data segment's selector in DS (seg2 `24cd`-`24f1`).
+- [[measured]] [[probe:ddewep]]: DDEML's `WEP` answers its data segment's selector for anything but `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`, and that is one more than `LoadLibrary`'s answer. winbox.js numbered a library's instances from a table of its own, and the record differed; it now gives a library its data segment's handle, and its module's handle where it has no data.
+- [[read out]] **What takes which.** `GetModuleHandle` given a number in the pointer's offset, its segment nought, and `GetModuleFileName`, `GetModuleUsage` and `FreeLibrary` (seg2 `07bc`, `0841`, `088c`, `0cf2`) each find the module with `GetExePtr` (seg1 `4e78`), which takes the module's handle, a task's instance, a task, or any block a module owns, such as its data segment. So each takes an instance or a module. `GetInstanceData` (seg2 `08a9`) takes the handle of a segment: it copies from the same offset of the instance's data segment into the caller's.
+- `FreeModule` is the same code as `FreeLibrary` (seg2 `0176`, `018a`).
 
 ## LocalInit with no start
 
@@ -133,4 +124,5 @@ A program's exported function takes its data segment from AX, so what the caller
 - `src/win16/library.ts` finds, places, patches and links a library.
 - `src/win16/commdlg/` and `crates/winbox-win16/src/commdlg/` are WinBox's `COMMDLG`; `linker.ts` and `GetProcAddress.ts` send its exports there.
 - `Win16.startLibraries` runs the entry points from `InitTask`.
+- `libraryInstance` in `library.ts` (`library_instance` in `crates/winbox-win16/src/loader.rs`) gives a library its instance.
 - `src/win16/user/props.ts` holds the window properties.

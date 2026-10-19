@@ -568,14 +568,18 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
         let Some(Object::Library(library)) = system.handles.resolve(handle) else {
             return Ok(());
         };
-        let module_handle = system.modules[library].handle;
+        let (instance, module_handle) = (
+            system.modules[library].instance,
+            system.modules[library].handle,
+        );
 
         crate::own_modules::freed(&mut system, library);
 
-        // Its name, and its file, found no more.
+        // Its name, and its file, found no more: freed by its instance or
+        // its module's handle, both go.
         system.modules[library].name.clear();
         system.modules[library].path.clear();
-        system.handles.free(handle);
+        system.handles.free(instance);
         system.handles.free(module_handle);
     }
 

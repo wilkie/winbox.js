@@ -266,13 +266,10 @@ impl System {
             crate::commdlg::print_loaded(self);
         }
 
-        // As the TypeScript engine numbers them: the instance from the
-        // atoms' range, the module's handle from the modules'.
-        self.modules[library].instance = self
-            .handles
-            .allocate(Kind::Atom, Object::Library(library))
-            .unwrap_or(0);
+        // The module's handle from the modules' range, as the TypeScript
+        // engine numbers it; the instance its data segment's handle.
         self.modules[library].handle = self.handles.alias(Object::Library(library)).unwrap_or(0);
+        self.modules[library].instance = self.library_instance(library);
 
         let header = &self.modules[library].executable.header;
 
@@ -302,6 +299,32 @@ impl System {
         self.link(library);
         order.push(library);
         library
+    }
+
+    /// A library's instance, as `LoadLibrary` answers it and its entry
+    /// point is given it in DI: its data segment's handle -- one below the
+    /// selector for a moveable segment, the selector for a fixed one --
+    /// where its header says it has data (flags bit 0 or 1) and names the
+    /// segment; else its module's handle (`KRNL386.EXE` seg2 `0b59`, which
+    /// seg2 `24a0` gives the entry point and seg2 `1c50` answers for a
+    /// library loaded again). **Recorded** by `ddewep`: DDEML's `WEP`
+    /// answers its data segment's selector, one more than the instance. As
+    /// `libraryInstance`.
+    fn library_instance(&mut self, library: usize) -> u16 {
+        let module = &self.modules[library];
+        let header = &module.executable.header;
+
+        let Some(data) = module.data().filter(|_| header.flags & 3 != 0) else {
+            return module.handle;
+        };
+        let movable =
+            module.executable.segments[usize::from(header.auto_data_segment) - 1].movable();
+        let selector = segment_selector(data);
+
+        self.handles.alias_at(
+            if movable { selector - 1 } else { selector },
+            Object::Library(library),
+        )
     }
 
     /// A module placed: its segments mapped, from descriptor 1 on, its

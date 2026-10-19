@@ -201,7 +201,6 @@ async function loadFound(
       printLoaded(system);
     }
 
-    library.instance = system.handles.allocate(library);
     library.module = system.handles.alias(library);
 
     /* The data segment KERNEL allocates: its minimum allocation (64K for
@@ -209,6 +208,8 @@ async function loadFound(
      * (`KRNL386.EXE` seg1 `7660`). Its heap is put at the end of it. */
     const header = executable.neHeader;
     const data = library.loader.segments[library.loader.ds - 1];
+
+    library.instance = libraryInstance(system, library, header, data);
 
     if (data) {
       const size =
@@ -236,6 +237,26 @@ async function loadFound(
 
     return library;
   }
+}
+
+/**
+ * A library's instance, as `LoadLibrary` answers it and its entry point is
+ * given it in DI: its data segment's handle -- one below the selector for a
+ * moveable segment, the selector for a fixed one -- where its header says it
+ * has data (flags bit 0 or 1) and names the segment; else its module's
+ * handle (`KRNL386.EXE` seg2 `0b59`, which seg2 `24a0` gives the entry point
+ * and seg2 `1c50` answers for a library loaded again). **Recorded** by
+ * `ddewep`: DDEML's `WEP` answers its data segment's selector, one more than
+ * the instance.
+ */
+function libraryInstance(system: any, library: Library, header: any, data: any) {
+  if (!data || !(header.flags & 3)) {
+    return library.module;
+  }
+
+  const selector = segmentSelector(library.loader.translate(library.loader.ds));
+
+  return system.handles.aliasAt(data.movable ? selector - 1 : selector, library);
 }
 
 /**
