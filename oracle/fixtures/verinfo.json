@@ -163,7 +163,7 @@
     {
       "function": "size",
       "args": "C:\\ORACLE\\OWNCOPY.EXE",
-      "result": "0|2316"
+      "result": "0|22c2"
     },
     {
       "function": "size",
@@ -413,12 +413,12 @@
     {
       "function": "rsize",
       "args": "self",
-      "result": "328|2316"
+      "result": "328|22c2"
     },
     {
       "function": "rsize",
       "args": "own",
-      "result": "328|2316"
+      "result": "328|22c2"
     },
     {
       "function": "query",
@@ -728,7 +728,7 @@
     {
       "function": "rsize",
       "args": "C:\\ORACLE\\OWNCOPY.EXE,16,2",
-      "result": "108|245e"
+      "result": "108|240a"
     },
     {
       "function": "rget",

@@ -15,7 +15,7 @@
  */
 
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, readdir, rm, stat } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,6 +40,10 @@ const TOOLS = join(WATCOM, 'binl64');
  * pile of undefined symbols.
  */
 function run(command, args, cwd) {
+  /* Linker and librarian calls name their files relative to `cwd` (BUILD), never
+   * absolutely: wlink writes the output name it was given into the executable
+   * (the module description in its non-resident names), so an absolute one would
+   * make a probe's bytes, and its size, depend on where the repo is checked out. */
   return new Promise((resolvePromise, reject) => {
     const child = spawn(command, args, {
       cwd,
@@ -139,7 +143,17 @@ async function buildLibrary(name) {
 
   await run(
     'wlink',
-    ['system', 'windows_dll', 'option', 'quiet', 'name', library, 'file', object, ...exports],
+    [
+      'system',
+      'windows_dll',
+      'option',
+      'quiet',
+      'name',
+      basename(library),
+      'file',
+      basename(object),
+      ...exports,
+    ],
     BUILD
   );
   await rm(object, { force: true });
@@ -167,11 +181,7 @@ async function buildChild(name) {
 
   if (imports) {
     await rm(importLibrary, { force: true });
-    await run(
-      'wlib',
-      ['-q', '-n', importLibrary, `+${join(BUILD, `${name.toUpperCase()}D.DLL`)}`],
-      BUILD
-    );
+    await run('wlib', ['-q', '-n', basename(importLibrary), `+${name.toUpperCase()}D.DLL`], BUILD);
   }
 
   await run(
@@ -182,9 +192,9 @@ async function buildChild(name) {
       'option',
       'quiet',
       'name',
-      executable,
+      basename(executable),
       'file',
-      object,
+      basename(object),
       ...(imports ? ['library', importLibrary] : []),
       /* And `MMSYSTEM`, for a child that opens files through it. */
       ...((await readFile(source, 'latin1')).includes('<mmsystem.h>')
@@ -197,6 +207,48 @@ async function buildChild(name) {
   await rm(importLibrary, { force: true });
 
   return executable;
+}
+
+/**
+ * The time `wrc` is made to have compiled a resource file at: 1 September 2001.
+ * Not zero: the verinfo probe takes a block's last byte being zero for the end of
+ * a string, and the last byte of the fixed block is the stamp's high one, which
+ * a real compile leaves non-zero.
+ */
+const PINNED_STAMP = 999302400;
+
+/**
+ * Makes a compiled resource file independent of the time it was compiled at.
+ *
+ * `wrc` stamps the current time into a `VERSIONINFO`'s fixed block (its
+ * `dwFileDateLS`, after the 0xFEEF04BD signature) and leaves the same value in
+ * the padding that follows the string tables, so the same source gives
+ * different bytes each time. Nothing reads the date; it is replaced by a fixed
+ * one wherever it appears.
+ */
+async function unstamp(path) {
+  const data = await readFile(path);
+  const at = data.indexOf(Buffer.from([0xbd, 0x04, 0xef, 0xfe]));
+
+  if (at < 0) {
+    return;
+  }
+
+  /* dwSignature, dwStrucVersion, the two file and two product version words,
+   * mask, flags, OS, type, subtype, dwFileDateMS, dwFileDateLS. */
+  const stamp = Buffer.alloc(4);
+  const pinned = Buffer.alloc(4);
+
+  data.copy(stamp, 0, at + 48, at + 52);
+  pinned.writeUInt32LE(PINNED_STAMP);
+
+  if (stamp.readUInt32LE() !== 0) {
+    for (let from = data.indexOf(stamp); from >= 0; from = data.indexOf(stamp, from + 4)) {
+      pinned.copy(data, from);
+    }
+  }
+
+  await writeFile(path, data);
 }
 
 /** Compiles and links one probe. */
@@ -235,7 +287,17 @@ async function build(name) {
 
   await run(
     'wlink',
-    ['system', 'windows', 'option', 'quiet', 'name', executable, 'file', object, ...extra],
+    [
+      'system',
+      'windows',
+      'option',
+      'quiet',
+      'name',
+      basename(executable),
+      'file',
+      basename(object),
+      ...extra,
+    ],
     BUILD
   );
 
@@ -258,6 +320,7 @@ async function build(name) {
     const compiled = join(BUILD, `${name}.res`);
 
     await run('wrc', ['-q', '-r', '-bt=windows', script, `-fo=${compiled}`], BUILD);
+    await unstamp(compiled);
     await run('wrc', ['-q', '-bt=windows', '-s0', compiled, executable], BUILD);
     await rm(compiled, { force: true });
   }
