@@ -29,6 +29,7 @@ const PROBE_GAPS: Record<string, string[]> = {
   ddelist: [],
   ddenest: [],
   ddeheap: [],
+  ddehsz: [],
 };
 /** As `replay.ts`'s `VIRTUAL_CLOCK`: these run on the instructions' clock. */
 const VIRTUAL = new Set(['ddexact', 'progdde', 'ddeterm', 'ddenest']);

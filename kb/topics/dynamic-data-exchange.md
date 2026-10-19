@@ -3,7 +3,7 @@ kind: topic
 name: Dynamic data exchange
 summary: How Windows 3.1's programs talk by DDE — the WM_DDE_ messages, their atoms and shared memory, and what USER does with them — and how DDEML.DLL is built on top, its instances, windows, hooks, timers and conversations, read out of the binaries and recorded between two programs.
 probes:
-  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail]
+  [dderaw, ddemgmt, ddeleft, pmatom, ddemon, ddeterm, ddelist, ddeheap, ddefail, ddehsz]
 ---
 
 Dynamic data exchange is two programs passing messages between their windows. The messages are `WM_DDE_*`, 3E0h to 3E8h, and what they carry is atoms for names and blocks of global memory for data. Windows 3.1 has two layers of it:
@@ -75,6 +75,7 @@ USER does not route DDE. It only checks the parameters, and the rest is `SendMes
 - [[measured]] [[probe:ddemgmt]]: the probe's client instance was serial 2, its monitor 3, three more monitors 4 to 6 and the server's instance 7.
 - [[read out]] **A conversation** is a `DMGClientClass` or `DMGServerClass` window, its 42h bytes in its instance's heap at its window long 0, a serial at its window word 4. An `HCONV` is `MAKELONG(` the window `,` the serial `)`, and a call checks one by `IsWindow` and the word (`2dac`). A client conversation is a child of its instance's `DMGClass` window, or of a list's `DMGHoldingClass` window; a server conversation is a child of a `DMGHoldingClass` window each server instance makes the first time (`6f74`). [[measured]] The probe's first conversation was a `DMGClientClass` window, child of a `DMGClass` window at the top, and its word 4 was the handle's high word.
 - [[read out]] **A string handle** is a global atom: `MAKELONG(atom, 0)` from `DdeCreateStringHandle`. DDEML makes a second kind for an instance's own name, `MAKELONG(atom, ` its `DMGFrame` window `)`, which [[fn:DDEML.DdeQueryString]] writes as `Name:(hhhh)`.
+- [[read out]] **Its counts** are the atom's. Each handle an instance makes or keeps is put in the instance's array at 10h, and [[fn:DDEML.DdeFreeStringHandle]] takes one entry of it out, where it is there, and deletes the atom whether or not it was (seg1 `1a40`, `29d8`, `2ddc`). An instance ending deletes each entry left. [[measured]] [[probe:ddehsz]]: a handle freed by another instance of the same program lost a count there, and another as the instance that made it ended; made twice and freed once, or made and kept, the atom lost one count and two as the instance ended. An id of nought, or with another serial, answers FALSE and leaves the instance's last error as it was; the instance's own id clears it.
 
 ### Its private messages
 
