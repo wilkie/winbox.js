@@ -366,6 +366,15 @@ impl Machine {
         self.session.install_sound()
     }
 
+    /// A module's file from the asset bundle put in the store behind C:,
+    /// by its name -- `USER.EXE`, `SHELL.DLL`, a display driver, its code
+    /// taken out: what the kept modules' resources are read from where C:
+    /// has no file of theirs (`kb/topics/asset-bundle.md`). Before the
+    /// first program starts.
+    pub fn add_module(&mut self, name: &str, bytes: Vec<u8>) {
+        self.session.add_module(name, bytes);
+    }
+
     /// The program at a DOS path started, to be stepped; once one has
     /// started, another started beside it, as Program Manager starts one,
     /// while the run goes on. Nothing where it started; else why it could

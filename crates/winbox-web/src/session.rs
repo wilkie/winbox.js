@@ -12,6 +12,7 @@ use std::rc::Rc;
 
 use winbox_machine::{Change, Clock, HostTime, MemoryDrive, WallTime};
 use winbox_ne::Executable;
+use winbox_win16::assets::Assets;
 use winbox_win16::audio::Sound;
 use winbox_win16::engine::{EngineRun, Pace, Step};
 use winbox_win16::host::{Host, HostSlot};
@@ -104,6 +105,10 @@ pub struct Session {
     stop: Option<Stop>,
     /// The last survey's screens.
     kept: Vec<Kept>,
+    /// The asset bundle's modules the page has handed over: the store the
+    /// kept modules' files are read from where C: has none of their own
+    /// (`System.assets`).
+    assets: Option<Rc<Assets>>,
 }
 
 impl std::fmt::Debug for Session {
@@ -166,6 +171,7 @@ impl Session {
             wake_at: 0.0,
             stop: None,
             kept: Vec::new(),
+            assets: None,
         })
     }
 
@@ -321,11 +327,21 @@ impl Session {
             .map_err(|error| format!("{path} is not a New Executable: {error:?}"))
     }
 
+    /// A module's file put in the asset bundle's store, by its name:
+    /// `USER.EXE`, `SHELL.DLL`, a display driver, their code taken out.
+    pub fn add_module(&mut self, name: &str, bytes: Vec<u8>) {
+        Rc::make_mut(self.assets.get_or_insert_default()).add_module(name, bytes);
+    }
+
     /// The drives mounted on a system, each sharing the page's files until
-    /// the program writes one.
+    /// the program writes one; and the asset bundle's store behind them.
     fn mount(&self, system: &mut System) {
         for (&letter, drive) in &self.drives {
             system.files.mount(letter, drive.clone());
+        }
+
+        if self.assets.is_some() {
+            system.assets.clone_from(&self.assets);
         }
     }
 
