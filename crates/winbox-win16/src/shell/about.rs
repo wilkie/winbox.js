@@ -19,7 +19,8 @@
 //!
 //! The strings and the dialog are winbox.js's own (`STRINGS`,
 //! `ABOUT_DIALOG`). The logo is read from the installation's `SHELL.DLL`,
-//! as the display's artwork is, and is not drawn without it.
+//! else the asset bundle's, as the display's artwork is, and is not drawn
+//! without either.
 //!
 //! Not followed: the credits hidden behind a double click.
 
@@ -363,19 +364,24 @@ impl AboutProc {
     }
 }
 
-/// SHELL's Windows logo, from the installation's file; none without it.
-fn logo(system: &mut System) -> Option<crate::gdi::ddb::Bitmap> {
-    let handle = system.files.open("C:\\WINDOWS\\SYSTEM\\SHELL.DLL")?;
-    let bytes = {
-        let file = system.files.resolve(handle).expect("an open file");
-        let size = file.size() as usize;
+/// SHELL's Windows logo, from the installation's file, else the asset
+/// bundle's; none without either.
+pub fn logo(system: &mut System) -> Option<crate::gdi::ddb::Bitmap> {
+    let bytes = match system.files.open("C:\\WINDOWS\\SYSTEM\\SHELL.DLL") {
+        Some(handle) => {
+            let bytes = {
+                let file = system.files.resolve(handle).expect("an open file");
+                let size = file.size() as usize;
 
-        file.seek(std::io::SeekFrom::Start(0));
-        file.read(size)
+                file.seek(std::io::SeekFrom::Start(0));
+                file.read(size)
+            };
+
+            system.files.close(handle);
+            bytes
+        }
+        None => system.assets.as_ref()?.module("SHELL.DLL")?.to_vec(),
     };
-
-    system.files.close(handle);
-
     let resources = resources_of(&bytes)?;
     let resource = resources
         .iter()

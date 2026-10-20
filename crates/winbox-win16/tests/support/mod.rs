@@ -522,9 +522,89 @@ pub struct Setup {
     pub without: Vec<String>,
 }
 
+/// What drive C: has beneath it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Base {
+    /// The oracle's installation of Windows for the display, as the probe
+    /// was recorded on.
+    Installed,
+    /// The base the asset bundle (`oracle/build/assets`, `pnpm assets`)
+    /// composes for the display, its modules the store behind it
+    /// (`kb/topics/asset-bundle.md`).
+    Assets,
+}
+
+impl Base {
+    /// The folder beneath drive C: on a display: the installation's, or the
+    /// bundle's base written into the host's temporary folder, its store
+    /// given to the system. None for the bundle's where it is not made.
+    fn folder(self, display: &str, system: &mut System) -> Option<PathBuf> {
+        Some(match self {
+            Self::Installed if display == "vga" => root().join("oracle/build/drive-c"),
+            Self::Installed => root().join(format!("oracle/build/drive-c-{display}")),
+            Self::Assets => {
+                let assets = bundle()?;
+                let windows = assets
+                    .base_in(&std::env::temp_dir().join("winbox-bases"), display)
+                    .unwrap_or_else(|error| panic!("the asset bundle's base: {error}"));
+
+                system.assets = Some(assets);
+                windows
+            }
+        })
+    }
+
+    /// `WINBOX_BASE=assets`, the asset bundle's; else the installation.
+    pub fn chosen() -> Self {
+        match std::env::var("WINBOX_BASE").as_deref() {
+            Ok("assets") => Self::Assets,
+            _ => Self::Installed,
+        }
+    }
+}
+
+thread_local! {
+    /// The asset bundle, read once a thread; none where it is not made.
+    static BUNDLE: std::cell::OnceCell<Option<std::rc::Rc<winbox_win16::assets::Assets>>> =
+        const { std::cell::OnceCell::new() };
+}
+
+/// The asset bundle `pnpm assets` unpacks into `oracle/build/assets`; none
+/// where it is not made.
+pub fn bundle() -> Option<std::rc::Rc<winbox_win16::assets::Assets>> {
+    BUNDLE.with(|bundle| {
+        bundle
+            .get_or_init(|| {
+                let folder = root().join("oracle/build/assets");
+
+                folder.is_dir().then(|| {
+                    std::rc::Rc::new(
+                        winbox_win16::assets::Assets::open(&folder)
+                            .unwrap_or_else(|error| panic!("the asset bundle: {error}")),
+                    )
+                })
+            })
+            .clone()
+    })
+}
+
 impl Setup {
-    /// A probe's run made ready; `None` where it is not built.
+    /// A probe's run made ready, on the base `WINBOX_BASE` chooses; `None`
+    /// where it is not built.
     pub fn of(name: &str) -> Option<Self> {
+        let base = Base::chosen();
+        let setup = Self::on(name, base);
+
+        assert!(
+            base == Base::Installed || bundle().is_some(),
+            "WINBOX_BASE=assets, and no asset bundle in oracle/build/assets: `pnpm assets`"
+        );
+        setup
+    }
+
+    /// A probe's run made ready on a base; `None` where it is not built,
+    /// or the base is the asset bundle's and there is none.
+    pub fn on(name: &str, base: Base) -> Option<Self> {
         // A fixture named for a display is its probe run on that display;
         // another, on the display it was recorded on -- the VGA without one.
         // One recorded with the MIDI Mapper's current setup another
@@ -589,11 +669,9 @@ impl Setup {
 
         // The machine the oracle recorded on: A:, a floppy; C:, Windows
         // installed, its own files read and never written; Z:, DOSBox's.
-        let windows = if display == "vga" {
-            root().join("oracle/build/drive-c")
-        } else {
-            root().join(format!("oracle/build/drive-c-{display}"))
-        };
+        // Or, on the asset bundle's base, C: has that beneath it, and the
+        // bundle's modules are the store behind it.
+        let windows = base.folder(&display, &mut system)?;
         // A probe recorded with a `WIN.INI` preset (`record.mjs --ini`) finds
         // `WIN.INI` set as it says, and its copies made.
         if let Some(preset) = &ini

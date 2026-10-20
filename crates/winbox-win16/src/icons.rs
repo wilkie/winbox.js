@@ -300,7 +300,8 @@ impl System {
     }
 
     /// The installation's display driver and USER read, where the drive has
-    /// one: the driver `SYSTEM.INI` names, VGA.DRV for none.
+    /// one: the driver `SYSTEM.INI` names, VGA.DRV for none; each from the
+    /// asset bundle's store where the system folder has no file of it.
     pub fn read_drivers(&mut self) {
         let Some((_, ini)) = self.files.read_from("C:\\WINDOWS", "SYSTEM.INI") else {
             return;
@@ -317,10 +318,9 @@ impl System {
             })
             .filter(|name| !name.is_empty())
             .unwrap_or_else(|| "VGA.DRV".to_string());
-        let read = |name: &str| {
-            self.files
-                .read_from("C:\\WINDOWS\\SYSTEM", &name.to_ascii_uppercase())
-                .and_then(|(_, bytes)| Executable::parse(bytes).ok())
+        let mut read = |name: &str| {
+            self.installed_or_stored("C:\\WINDOWS\\SYSTEM", &name.to_ascii_uppercase())
+                .and_then(|bytes| Executable::parse(bytes).ok())
         };
         let (Some(driver), user) = (read(&driver), read("USER.EXE")) else {
             return;

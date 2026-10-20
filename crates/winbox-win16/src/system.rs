@@ -174,6 +174,11 @@ pub struct System {
     /// The kept modules' files from the installation, read when first asked
     /// for their resources, by the kept module's index.
     pub kept_files: HashMap<usize, Option<std::rc::Rc<winbox_ne::Executable>>>,
+    /// The asset bundle the system was started from, where it was: the
+    /// store the kept modules' files are read from where C: has none of
+    /// its own -- `USER.EXE`, `SHELL.DLL` and the display drivers, their
+    /// code taken out (`assets.rs`). An installation on C: comes first.
+    pub assets: Option<std::rc::Rc<crate::assets::Assets>>,
     /// Whether the display driver's `OEMBIN` 1 has been taken into the
     /// display's metrics and colours, as USER takes it as it starts
     /// (`display.rs`).
@@ -559,6 +564,7 @@ impl System {
             cursor_clip: None,
             scheduler: crate::scheduler::Scheduler::default(),
             kept_files: HashMap::new(),
+            assets: None,
             oembin_taken: false,
             icon_blocks: HashSet::new(),
             standard_icons: HashMap::new(),
@@ -625,15 +631,24 @@ impl System {
         }
     }
 
-    /// A kept module's file as the installation has it, read once.
+    /// A module's file in a folder of C:, as the installation has it, else
+    /// the asset bundle's store's of the same name: its bytes.
+    pub fn installed_or_stored(&mut self, folder: &str, file: &str) -> Option<Vec<u8>> {
+        self.files
+            .read_from(folder, file)
+            .map(|(_, bytes)| bytes)
+            .or_else(|| Some(self.assets.as_ref()?.module(file)?.to_vec()))
+    }
+
+    /// A kept module's file as the installation has it, else as the asset
+    /// bundle's store has it, read once.
     pub fn kept_file(&mut self, kept: usize) -> Option<std::rc::Rc<winbox_ne::Executable>> {
         if !self.kept_files.contains_key(&kept) {
             let path = self.kept_path(kept);
             let (folder, file) = path.rsplit_once('\\')?;
             let read = self
-                .files
-                .read_from(folder, file)
-                .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok())
+                .installed_or_stored(folder, file)
+                .and_then(|bytes| winbox_ne::Executable::parse(bytes).ok())
                 .map(std::rc::Rc::new);
 
             self.kept_files.insert(kept, read);

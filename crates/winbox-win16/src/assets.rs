@@ -13,7 +13,9 @@
 //! files on C: at all.
 
 use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde::Deserialize;
 
@@ -240,6 +242,327 @@ pub fn compose(pool: &dyn Fn(&str) -> Option<PoolFile>, display: &str) -> Result
         directories: layout.directories.clone(),
         files,
     })
+}
+
+/// The asset bundle's manifest's format this engine reads.
+pub const FORMAT: u64 = 1;
+
+/// An asset bundle, read: its pool of files, and its modules -- `USER.EXE`,
+/// `SHELL.DLL` and the display drivers, their code taken out -- the store
+/// the kept modules' resources are read from where C: has no file of
+/// theirs (`System::kept_file`). `kb/topics/asset-bundle.md`.
+#[derive(Debug, Clone, Default)]
+pub struct Assets {
+    /// The bundle's id: the sha256 of its files' sha256s.
+    pub id: String,
+    /// The display modes it serves.
+    pub displays: Vec<String>,
+    /// The pool's files, by their names, upper case.
+    pub pool: BTreeMap<String, PoolFile>,
+    /// The modules' files, by their names, upper case.
+    pub modules: BTreeMap<String, Vec<u8>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Manifest {
+    format: u64,
+    id: String,
+    #[serde(default)]
+    displays: Vec<String>,
+    files: Vec<ManifestFile>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ManifestFile {
+    path: String,
+    size: usize,
+    #[serde(default)]
+    date: u16,
+    #[serde(default)]
+    time: u16,
+}
+
+/// The name of the manifest, at the bundle's root.
+const MANIFEST: &str = "winbox-assets.json";
+
+/// The entries of a zip archive of stored entries, as the maker writes the
+/// bundle (`src/assets/zip.ts`): their data by their paths. An entry that
+/// is compressed is refused.
+///
+/// # Errors
+///
+/// What is not such an archive.
+pub fn stored_zip_entries(bytes: &[u8]) -> Result<BTreeMap<String, Vec<u8>>, String> {
+    let short = || "a zip archive cut short".to_string();
+    let word = |at: usize| {
+        bytes
+            .get(at..at + 2)
+            .map(|b| usize::from(u16::from_le_bytes([b[0], b[1]])))
+            .ok_or_else(short)
+    };
+    let dword = |at: usize| {
+        bytes
+            .get(at..at + 4)
+            .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as usize)
+            .ok_or_else(short)
+    };
+    // The end record: 22 bytes, after the entries and before a comment of
+    // up to 65,535.
+    let end = (0..=bytes.len().saturating_sub(22))
+        .rev()
+        .take(65_536)
+        .find(|&at| bytes[at..].starts_with(&[0x50, 0x4b, 0x05, 0x06]))
+        .ok_or_else(|| "not a zip archive".to_string())?;
+    let count = word(end + 10)?;
+    let mut at = dword(end + 16)?;
+    let mut entries = BTreeMap::new();
+
+    for _ in 0..count {
+        if dword(at)? != 0x0201_4b50 {
+            return Err("a zip archive's directory broken".to_string());
+        }
+
+        let method = word(at + 10)?;
+        let size = dword(at + 20)?;
+        let stored = dword(at + 24)?;
+        let name_length = word(at + 28)?;
+        let local = dword(at + 42)?;
+        let name: String = bytes
+            .get(at + 46..at + 46 + name_length)
+            .ok_or_else(short)?
+            .iter()
+            .map(|&byte| char::from(byte))
+            .collect();
+
+        if method != 0 || size != stored {
+            return Err(format!(
+                "{name} is compressed: the bundle's entries are stored"
+            ));
+        }
+
+        if dword(local)? != 0x0403_4b50 {
+            return Err(format!("{name}: no local header"));
+        }
+
+        let data_at = local + 30 + word(local + 26)? + word(local + 28)?;
+        let data = bytes.get(data_at..data_at + size).ok_or_else(short)?;
+
+        if !name.ends_with('/') {
+            entries.insert(name, data.to_vec());
+        }
+
+        at += 46 + name_length + word(at + 30)? + word(at + 32)?;
+    }
+
+    Ok(entries)
+}
+
+impl Assets {
+    /// A bundle from its files by their paths in it, the manifest among
+    /// them.
+    ///
+    /// # Errors
+    ///
+    /// No manifest, a format this engine does not know, or a file the
+    /// manifest names missing or of another size.
+    pub fn from_files(read: &dyn Fn(&str) -> Option<Vec<u8>>) -> Result<Self, String> {
+        let manifest =
+            read(MANIFEST).ok_or_else(|| format!("no {MANIFEST}: not an asset bundle"))?;
+        let manifest: Manifest =
+            serde_json::from_slice(&manifest).map_err(|error| format!("{MANIFEST}: {error}"))?;
+
+        if manifest.format != FORMAT {
+            return Err(format!(
+                "an asset bundle of format {}: this WinBox reads {FORMAT}",
+                manifest.format
+            ));
+        }
+
+        let mut assets = Self {
+            id: manifest.id,
+            displays: manifest.displays,
+            ..Self::default()
+        };
+
+        for file in manifest.files {
+            let data = read(&file.path).ok_or_else(|| format!("{} is missing", file.path))?;
+
+            if data.len() != file.size {
+                return Err(format!("{} is not the size the manifest says", file.path));
+            }
+
+            if let Some(name) = file.path.strip_prefix("pool/") {
+                assets.pool.insert(
+                    name.to_ascii_uppercase(),
+                    PoolFile {
+                        data,
+                        date: file.date,
+                        time: file.time,
+                    },
+                );
+            } else if let Some(name) = file.path.strip_prefix("modules/") {
+                assets.modules.insert(name.to_ascii_uppercase(), data);
+            }
+        }
+
+        Ok(assets)
+    }
+
+    /// A bundle from `winbox-assets.zip`'s bytes.
+    ///
+    /// # Errors
+    ///
+    /// As `stored_zip_entries` and `from_files`.
+    pub fn from_zip(bytes: &[u8]) -> Result<Self, String> {
+        let entries = stored_zip_entries(bytes)?;
+
+        Self::from_files(&|path| entries.get(path).cloned())
+    }
+
+    /// A bundle from a file, `winbox-assets.zip`, or a folder it was
+    /// unpacked into.
+    ///
+    /// # Errors
+    ///
+    /// What cannot be read, and as `from_zip` and `from_files`.
+    pub fn open(path: &Path) -> Result<Self, String> {
+        if path.is_dir() {
+            Self::from_files(&|name| std::fs::read(path.join(name)).ok())
+        } else {
+            let bytes =
+                std::fs::read(path).map_err(|error| format!("{}: {error}", path.display()))?;
+
+            Self::from_zip(&bytes)
+        }
+    }
+
+    /// A module's file by its name, `VGA.DRV`; none where the bundle has
+    /// none.
+    pub fn module(&self, name: &str) -> Option<&[u8]> {
+        self.modules
+            .get(&name.to_ascii_uppercase())
+            .map(Vec::as_slice)
+    }
+
+    /// A module's file put in the store, as the page hands one over.
+    pub fn add_module(&mut self, name: &str, bytes: Vec<u8>) {
+        self.modules.insert(name.to_ascii_uppercase(), bytes);
+    }
+
+    /// The base of C: for a display, from the bundle's pool.
+    ///
+    /// # Errors
+    ///
+    /// As `compose`.
+    pub fn compose(&self, display: &str) -> Result<Composed, String> {
+        compose(
+            &|name: &str| self.pool.get(&name.to_ascii_uppercase()).cloned(),
+            display,
+        )
+    }
+
+    /// The base of C: for a display, written into the folder
+    /// `base-<id>-<display>` of `cache` once: where it is there already,
+    /// it is taken as it is. Written beside and renamed into place, so a
+    /// run beside another never finds half of one.
+    ///
+    /// # Errors
+    ///
+    /// As `compose`, and what cannot be written.
+    pub fn base_in(&self, cache: &Path, display: &str) -> Result<PathBuf, String> {
+        static MADE: AtomicUsize = AtomicUsize::new(0);
+        let folder = cache.join(format!("base-{}-{display}", self.id));
+
+        if folder.is_dir() {
+            return Ok(folder);
+        }
+
+        let composed = self.compose(display)?;
+        let building = cache.join(format!(
+            ".base-{}-{display}-{}-{}",
+            self.id,
+            std::process::id(),
+            MADE.fetch_add(1, Ordering::Relaxed)
+        ));
+
+        write_base(&composed, &building)
+            .map_err(|error| format!("{}: {error}", building.display()))?;
+
+        if std::fs::rename(&building, &folder).is_err() {
+            // Another run made it first.
+            let _ = std::fs::remove_dir_all(&building);
+
+            if !folder.is_dir() {
+                return Err(format!("{}: could not be made", folder.display()));
+            }
+        }
+
+        Ok(folder)
+    }
+}
+
+/// A host's file or folder last written at seconds since 1970, local time
+/// read as universal, as a host drive reads it back.
+fn set_written(path: &Path, seconds: i64) -> std::io::Result<()> {
+    let at = std::time::UNIX_EPOCH + std::time::Duration::from_secs(seconds.max(0).unsigned_abs());
+    let mut options = std::fs::File::options();
+
+    if path.is_dir() {
+        // Windows opens a folder only with `FILE_FLAG_BACKUP_SEMANTICS`.
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::OpenOptionsExt;
+
+            options.custom_flags(0x0200_0000).write(true);
+        }
+        #[cfg(not(windows))]
+        options.read(true);
+    } else {
+        options.write(true);
+    }
+
+    options.open(path)?.set_modified(at)
+}
+
+/// A composed base written into a folder of the host's: its files, each
+/// last written when its placement says, and its folders, made and last
+/// written at `STAMP`, as the page's drive stamps a folder it makes.
+///
+/// # Errors
+///
+/// What cannot be written.
+pub fn write_base(composed: &Composed, root: &Path) -> std::io::Result<()> {
+    let on_host = |path: &str| {
+        path.split('/')
+            .fold(root.to_path_buf(), |at, part| at.join(part))
+    };
+    let mut folders = std::collections::BTreeSet::new();
+
+    std::fs::create_dir_all(root)?;
+
+    for directory in &composed.directories {
+        std::fs::create_dir_all(on_host(directory))?;
+        folders.insert(directory.clone());
+    }
+
+    for file in &composed.files {
+        if let Some((parent, _)) = file.path.rsplit_once('/') {
+            std::fs::create_dir_all(on_host(parent))?;
+            folders.insert(parent.to_string());
+        }
+
+        let path = on_host(&file.path);
+
+        std::fs::write(&path, &file.data)?;
+        set_written(&path, file.modified)?;
+    }
+
+    // The deepest first, as making a folder in one moves its stamp.
+    for folder in folders.iter().rev() {
+        set_written(&on_host(folder), STAMP)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
