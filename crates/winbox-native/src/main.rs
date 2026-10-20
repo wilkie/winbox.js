@@ -3,7 +3,7 @@
 //! host's mouse and keyboard handed to its windows, as the page does with
 //! its canvas.
 //!
-//! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display
+//! `winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display
 //! vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640] [--resolution WxH] [--scale N]
 //! [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]] [--sound [--sound-dump FILE.wav]]
 //! [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]`
@@ -30,7 +30,13 @@
 //!
 //! `--windows` is an installed Windows 3.1 directory, read and never
 //! written, beneath drive C: (`oracle/build/drive-c`): its display driver
-//! and fonts draw the screen. `--drive` is the host directory that is drive
+//! and fonts draw the screen. `--assets` is WinBox's asset bundle in its
+//! place, `winbox-assets.zip` or the folder it was unpacked into
+//! (`kb/topics/asset-bundle.md`): the base of C: it composes for the
+//! display is written once into the host's cache folder, `winbox/base-<id>-<display>`,
+//! and is beneath C: as an installation is; the display driver's, USER's
+//! and SHELL's resources are read from its modules. The two are not given
+//! together. `--drive` is the host directory that is drive
 //! C: itself, else one made for the run, and removed after it, with a copy
 //! of the program's folder where `--path` puts it -- `C:\` and its file's
 //! name by default. `--shot` saves the screen as it shows five seconds in,
@@ -82,6 +88,9 @@ struct Options {
     drive: Option<PathBuf>,
     path: Option<String>,
     windows: Option<PathBuf>,
+    /// The asset bundle, `winbox-assets.zip` or the folder it was unpacked
+    /// into, in the installation's place.
+    assets: Option<PathBuf>,
     display: String,
     shot: Option<PathBuf>,
     shot_seconds: u64,
@@ -110,6 +119,7 @@ fn options() -> Options {
         drive: None,
         path: None,
         windows: None,
+        assets: None,
         display: "vga".to_string(),
         shot: None,
         shot_seconds: 5,
@@ -128,6 +138,7 @@ fn options() -> Options {
             "--drive" => options.drive = arguments.next().map(PathBuf::from),
             "--path" => options.path = arguments.next(),
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
+            "--assets" => options.assets = arguments.next().map(PathBuf::from),
             "--shot" => options.shot = arguments.next().map(PathBuf::from),
             "--shot-seconds" => {
                 options.shot_seconds = arguments
@@ -161,9 +172,14 @@ fn options() -> Options {
         }
     }
 
+    if options.windows.is_some() && options.assets.is_some() {
+        eprintln!("--windows and --assets each give drive C: its base: give one, not both");
+        std::process::exit(2);
+    }
+
     let Some(file) = file else {
         eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]"
+            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]"
         );
         std::process::exit(2);
     };
@@ -417,6 +433,43 @@ fn install_sound(root: &Path, windows: Option<&Path>) {
     }
 }
 
+/// Where WinBox keeps what it makes once and reads again: the host's
+/// cache folder's `winbox`.
+fn cache_folder() -> PathBuf {
+    let cache = if cfg!(windows) {
+        std::env::var_os("LOCALAPPDATA").map(PathBuf::from)
+    } else {
+        std::env::var_os("XDG_CACHE_HOME")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".cache")))
+    };
+
+    cache.unwrap_or_else(std::env::temp_dir).join("winbox")
+}
+
+/// The asset bundle at `path` read, and the base of C: it composes for the
+/// display, in the cache folder's `base-<id>-<display>`: written the first
+/// time, read as it is after.
+fn asset_base(
+    path: &Path,
+    display: &str,
+) -> Result<(PathBuf, winbox_win16::assets::Assets), String> {
+    let assets = winbox_win16::assets::Assets::open(path)?;
+
+    if !assets.displays.iter().any(|served| served == display) {
+        return Err(format!(
+            "it serves the displays {}, not {display}",
+            assets.displays.join(", ")
+        ));
+    }
+
+    let cache = cache_folder();
+
+    std::fs::create_dir_all(&cache).map_err(|error| format!("{}: {error}", cache.display()))?;
+
+    Ok((assets.base_in(&cache, display)?, assets))
+}
+
 #[allow(clippy::too_many_lines)]
 fn main() {
     let Options {
@@ -424,6 +477,7 @@ fn main() {
         drive,
         path,
         windows,
+        assets,
         display,
         shot,
         shot_seconds,
@@ -445,6 +499,22 @@ fn main() {
     let mut system = System::new();
 
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    // The asset bundle in the installation's place: the base it composes
+    // for the display written once into the cache, beneath drive C: as an
+    // installation is, and its modules the store behind it.
+    let windows = match assets {
+        Some(assets) => {
+            let (base, assets) = asset_base(&assets, &display).unwrap_or_else(|error| {
+                eprintln!("the asset bundle: {error}");
+                std::process::exit(2);
+            });
+
+            system.assets = Some(Rc::new(assets));
+            Some(base)
+        }
+        None => windows,
+    };
 
     let mut events = event_loop();
     // Seamless mode's screen is the host's desktop, divided by a whole
