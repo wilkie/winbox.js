@@ -739,8 +739,16 @@ export async function runProbe(
        * straight to it, or on by a frame when nothing waits for one -- or
        * when what waits is past the run's or the step's end, as USER's own
        * screen saver's look, ten seconds on, can be: the step ends on time,
-       * as it did before the look waited. */
-      if (clock.virtual && !pending && (clock.nextDue() > started + until || !clock.idle())) {
+       * as it did before the look waited. Not while the host works for the
+       * program (`clock.hold`): a printed document's PDF, deflated over the
+       * host's turns, let thirty seconds go by a frame a turn, and the run
+       * ended in `printing`'s ENDDOC. */
+      if (
+        clock.virtual &&
+        !pending &&
+        !clock.holding &&
+        (clock.nextDue() > started + until || !clock.idle())
+      ) {
         clock.advance(1000 / 30);
       }
 

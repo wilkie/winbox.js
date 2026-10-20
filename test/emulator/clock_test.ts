@@ -80,6 +80,16 @@ describe('Clock', () => {
 
       expect(clock.now()).toEqual(40);
     });
+
+    it('says host work is held until it is done', async () => {
+      let done!: (value: number) => void;
+      const held = clock.hold(new Promise<number>((resolve) => (done = resolve)));
+
+      expect(clock.holding).toBe(true);
+      done(7);
+      expect(await held).toEqual(7);
+      expect(clock.holding).toBe(false);
+    });
   });
 
   describe('real', () => {
