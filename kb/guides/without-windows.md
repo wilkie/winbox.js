@@ -113,4 +113,4 @@ A launcher, native and on the page, sits on top of steps 3 and 4. It shows the g
 
 ## Not yet done
 
-All of it but COMMDLG's file dialogs, Find, Replace, Color, Font and Print, VER, LZEXPAND and DDEML, and the asset bundle's making and composing: the bundle is made from the user's disks, and the base of C: composed from it for every display is the oracle's installation's data byte for byte ([[topic:asset-bundle]]); neither engine starts from it yet. What winbox.js does today is in the first section.
+All of it but COMMDLG's file dialogs, Find, Replace, Color, Font and Print, VER, LZEXPAND and DDEML, and the asset bundle's making and composing: the bundle is made from the user's disks, and the base of C: composed from it for every display is the oracle's installation's data byte for byte, and both engines start from it alone -- native with `--assets`, the probe harnesses with `WINBOX_BASE=assets` -- reading USER's, SHELL's and the display drivers' resources from its store ([[topic:asset-bundle]]); what programs see differently on it is not yet swept, and the page does not yet take the disks. What winbox.js does today is in the first section.

@@ -6,7 +6,7 @@ summary: WinBox's asset bundle — the fonts, data files, sounds and the resourc
 
 The asset bundle is step 2 of [[guide:without-windows]]. It holds what programs see of an installed Windows 3.1, and none of the code. It is made from the user's own setup disks and is never shipped. With it, WinBox can lay out a base for drive C: for any display it serves, as Windows' own Setup laid one out.
 
-Neither engine starts from it yet: the bundle is made and composed, and the composition is held to the oracle's installations.
+Both engines start from it alone, as below: the native build, the probe harnesses, and the page's engines through their options. The page does not yet take the user's disks to make one.
 
 ## The format
 
@@ -88,9 +88,34 @@ The pool's files keep the date and time of their files on the disk, as `LZCopy` 
 
 What the base lacks of an installation is its code and what only code reads: `WIN.COM`, the accessories, `TASKMAN`, `WINHELP`, `CONTROL.EXE`, every `.DRV`, `.DLL`, `.386` and grabber, the help files, the groups, `PROGMAN.INI`, `CONTROL.INI` and the `.PIF` files.
 
+## Starting from the bundle
+
+An engine started from the bundle has two things where it would have an installation:
+
+- **Drive C:'s base**: the base the bundle composes for the display, laid out as above, beneath C: as an installation is: read, and never written; what a program writes goes above it.
+- **The module store**: the bundle's `USER.EXE`, `SHELL.DLL` and display drivers, behind C: and never on it. Where WinBox reads a kept module's resources -- the display driver's bitmaps, icons, cursors and `OEMBIN`, USER's flag icon and cursors, SHELL's logo, and `FindResource` on a kept module's handle (the display driver's alone in the TypeScript engine) -- it takes the file in `C:\WINDOWS\SYSTEM` first, and the store's of the same name after. An installation on C: still wins; with neither, there is nothing to read, as before.
+
+| Engine     | The store                                                                                                                                                                   | Reading it                                                                                                                                                                                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Rust       | `System.assets`, an `Assets` (`assets.rs`): read from `winbox-assets.zip`, a zip of stored entries read by the engine's own reader, or from the folder it was unpacked into | `System::kept_file`, the `read` of `read_drivers`, and SHELL's `about::logo`                                                                                                                      |
+| TypeScript | `options.assets`, anything with `module(name)`; `src/assets/bundle.ts`'s `Assets` is one, read from the zip or the folder                                                   | `Win16.displayResources` and SHELL's logo (`shell/about.ts`), through `Win16.assetModule`; and the raster desktop's driver and USER, which the page or the harness hands over as `options.raster` |
+| wasm       | `Machine.add_module(name, bytes)`, a file at a time, before the first program starts                                                                                        | as the Rust engine                                                                                                                                                                                |
+
+**How each is run from it:**
+
+- **Native**: `winbox-native PROGRAM.EXE --assets winbox-assets.zip` (or the unpacked folder) `--display <mode>`. It is refused with `--windows`, and for a display the bundle does not serve. The base for the display is written once into the host's cache folder, `winbox/base-<id>-<display>` (`%LOCALAPPDATA%` on Windows, `$XDG_CACHE_HOME` or `~/.cache` elsewhere), each file last written when the base says and each folder at the page's stamp, and is then what the `--windows` folder would be: the drive above it is `HostDrive::over` it, and `--sound` installs the sound driver into the drive's `SYSTEM.INI` from the base's, as from an installation's.
+- **The probe harnesses**: `WINBOX_BASE=assets`. The Rust harness (`tests/support`, `Setup::of`) writes the base into the host's temporary folder, `winbox-bases/base-<id>-<display>`, and mounts it as it mounts an installation; the TypeScript harness (`test/win16/run-probe.ts`) makes a FAT16 volume in memory, as the page makes its drive, and puts the base's files on it. Either refuses to run when `oracle/build/assets` is not made. Without the switch nothing changes.
+
+  `WINBOX_BASE=assets cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey`
+
+[[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation, in both engines; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`tests/asset_base.rs`, `test/assets/base_test.ts`).
+
+**What a program sees differently** on the bundle's base is the subject of the next step: a file of Windows' code it looks for on C: is not there (`AccessResource` on a kept module opens its file there, and fails; `GetModuleFileName` names a file that is not there), and the files' stamps are the disks' and the page's, where an installation's are when it was made.
+
 ## Not yet done
 
-- Neither engine starts from the bundle: the modules as a store behind C: (`System.assets`, `options.assets`), native's `--assets`, the harnesses' switch, the page's drop of the disks and its store. That is step 4 of the plan, and the fidelity sweep of every probe and the corpus on the bundle's base after it.
+- The fidelity sweep: every probe in both harnesses, and the corpus, on the bundle's base, and a list of each record that differs from the installation's with its reason. Native's `--assets` has not been run with a window yet.
+- The page's drop of the disks, its store of the bundle, and its saved changes kept by the bundle's id and the display.
 - The page making a bundle in the browser: the maker runs there unchanged, but nothing calls it.
 - `PROGMAN.INI`, which only Program Manager reads.
 - An oracle installation with Setup's `bitmaps` installed, which would ground placing the sounds and wallpapers.
