@@ -114,7 +114,7 @@ An engine started from the bundle has two things where it would have an installa
 
 ## Not yet done
 
-- The fidelity sweep: every probe in both harnesses, and the corpus, on the bundle's base, and a list of each record that differs from the installation's with its reason. Native's `--assets` has not been run with a window yet.
+- The fidelity sweep: every probe in both harnesses, and the corpus, on the bundle's base, and a list of each record that differs from the installation's with its reason. Native's `--assets` has not been run with a window yet. [[measured]] A first survey of the Rust engine's probes on the base agrees on fewer records than on the installation for `verinst`, `freelib`, `cardview`, `prnote`, `shellex`, `notepos`, `associco`, `sndbig`, `shell2`, `filedlg`, `pmatom`, `comboesc`, `ddeinst`, `sndrec`, `progdde`, `tasklist`, `mplopen`, `tutor`, `mapcpl`, `sysdirs`, `sndrec-vgasound` and `mplopen-vgasound`, and `verinfo` stops on its time; each is to be explained.
 - The page's drop of the disks, its store of the bundle, and its saved changes kept by the bundle's id and the display.
 - The page making a bundle in the browser: the maker runs there unchanged, but nothing calls it.
 - `PROGMAN.INI`, which only Program Manager reads.
