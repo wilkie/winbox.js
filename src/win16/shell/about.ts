@@ -48,7 +48,8 @@ import { SHELL_STRINGS } from './strings.js';
  *
  * The strings and the dialog are winbox.js's own (`strings.ts`,
  * `about-dialog.ts`). The logo is read from the installation's `SHELL.DLL`,
- * as the display's artwork is, and is not drawn without it.
+ * else the asset bundle's, as the display's artwork is, and is not drawn
+ * without either.
  *
  * Not followed: the credits hidden behind a double click.
  */
@@ -115,17 +116,32 @@ function thousands(n: number, separator: string) {
   return out.split('\0')[0];
 }
 
-/** SHELL's Windows logo, from the installation's file; null without it. */
-async function logo(system: any) {
+/** SHELL's file, the installation's, else the asset bundle's; null without either. */
+async function shellFile(system: any): Promise<Uint8Array | null> {
   const handle = await system.dos.files.open('C:\\WINDOWS\\SYSTEM\\SHELL.DLL');
 
   if (!handle) {
-    return null;
+    return system.assetModule?.('SHELL.DLL') ?? null;
   }
 
   try {
     const file = system.dos.files.resolve(handle);
-    const bytes = new Uint8Array(await file.read(0, file.size));
+
+    return new Uint8Array(await file.read(0, file.size));
+  } finally {
+    system.dos.files.close(handle);
+  }
+}
+
+/** SHELL's Windows logo, from the installation's file, else the asset bundle's; null without either. */
+export async function logo(system: any) {
+  try {
+    const bytes = await shellFile(system);
+
+    if (!bytes) {
+      return null;
+    }
+
     const resource = resourcesOf(bytes).find((each) => each.type === RT_BITMAP && each.id === LOGO);
 
     if (!resource) {
@@ -141,8 +157,6 @@ async function logo(system: any) {
     );
   } catch {
     return null;
-  } finally {
-    system.dos.files.close(handle);
   }
 }
 

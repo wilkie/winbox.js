@@ -16,6 +16,7 @@ import { accessibleTree, type AccessibleTree } from '../../src/win16/user/access
 import { withCursor } from '../../src/win16/user/cursor-api.js';
 import { shownColours } from '../../src/raster/shown-colours.js';
 import { mergeIni, parsePreset, presetCopies } from './ini-preset.js';
+import { Assets } from '../../src/assets/bundle.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -54,6 +55,67 @@ export function imageFor(display: string) {
   return display === 'vga'
     ? IMAGE
     : join(__dirname, '..', '..', 'oracle', 'build', `win31-${display}.img`);
+}
+
+/** The asset bundle `pnpm assets` unpacks, as `bundle()` reads it. */
+export const ASSETS = join(__dirname, '..', '..', 'oracle', 'build', 'assets');
+
+let bundleRead: Assets | null | undefined;
+
+/** The asset bundle in `oracle/build/assets`, read once; null where it is not made. */
+export function bundle(): Assets | null {
+  if (bundleRead === undefined) {
+    bundleRead = existsSync(ASSETS)
+      ? Assets.fromFiles((path) => {
+          const at = join(ASSETS, path);
+
+          return existsSync(at) ? new Uint8Array(readFileSync(at)) : undefined;
+        })
+      : null;
+  }
+
+  return bundleRead;
+}
+
+/**
+ * What drive C: has beneath it: the oracle's installation of Windows for the
+ * display, as the probe was recorded on; or, `WINBOX_BASE=assets`, the base
+ * the asset bundle composes for the display, its modules the store behind it
+ * (`kb/topics/asset-bundle.md`).
+ */
+export type Base = 'installed' | 'assets';
+
+/** The base `WINBOX_BASE` chooses. */
+export function chosenBase(): Base {
+  return process.env.WINBOX_BASE === 'assets' ? 'assets' : 'installed';
+}
+
+/**
+ * The asset bundle's base for a display put on the machine's first disk, a
+ * FAT16 volume made in memory as the page makes its drive (`fillDrive`): its
+ * folders, and each file last written when the base says.
+ */
+async function bundleDrive(machine: any, assets: Assets, display: string) {
+  const composed = assets.compose(display);
+  const fileSystem: any = new FAT16(machine.disks[0]);
+
+  await fileSystem.format();
+
+  for (const directory of composed.directories) {
+    await fileSystem.open(directory.split('/'), true);
+  }
+
+  for (const { path, data, modified } of composed.files) {
+    await fileSystem.map(
+      path.split('/'),
+      new DataView(data.buffer, data.byteOffset, data.byteLength),
+      {
+        modified,
+      }
+    );
+  }
+
+  return fileSystem;
 }
 
 /** A file-like over bytes, offering what a loader asks a file for. */
@@ -167,6 +229,8 @@ export async function runProbe(
      * system: for reading a program's own memory as it runs, as Catz's cat
      * is read a frame at a time. */
     watch = null as ((call: any, count: number, win16: any) => void) | null,
+    /* What C: has beneath it; `WINBOX_BASE` chooses where not given. */
+    base = chosenBase() as Base,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -227,7 +291,17 @@ export async function runProbe(
 
   /* A probe that loads the installation's own libraries runs on a copy of
    * the drive the recording was made on. */
-  if (installation) {
+  const assets = installation && base === 'assets' ? bundle() : null;
+
+  if (installation && base === 'assets' && !assets) {
+    throw new Error(
+      'WINBOX_BASE=assets, and no asset bundle in oracle/build/assets: `pnpm assets`'
+    );
+  }
+
+  if (assets) {
+    fileSystem = await bundleDrive(machine, assets, display);
+  } else if (installation) {
     fileSystem = await machine.mountImage(new Uint8Array(readFileSync(imageFor(display))));
   } else {
     fileSystem = new FAT16(machine.disks[0]);
@@ -382,16 +456,20 @@ export async function runProbe(
   const ini = installation ? await installed(['WINDOWS', 'SYSTEM.INI']) : null;
   const driverName =
     (ini && /^display\.drv\s*=\s*(\S+)/im.exec(String.fromCharCode(...ini))?.[1]) || 'VGA.DRV';
+  /* Each the installation's, else the asset bundle's. */
+  const module = async (name: string) =>
+    (await installed(['WINDOWS', 'SYSTEM', name])) ?? assets?.module(name) ?? null;
   const raster = installation
     ? {
-        driver: await installed(['WINDOWS', 'SYSTEM', driverName.toUpperCase()]),
-        user: await installed(['WINDOWS', 'SYSTEM', 'USER.EXE']),
+        driver: await module(driverName.toUpperCase()),
+        user: await module('USER.EXE'),
       }
     : undefined;
 
   const win16: any = new Win16(new DOS(machine), machine, {
     ...(display === 'vga' ? {} : { display }),
     ...(raster?.driver && raster.user ? { raster } : {}),
+    ...(assets ? { assets } : {}),
     nextFrame: (callback: any) => {
       pending = callback;
     },

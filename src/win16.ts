@@ -416,22 +416,22 @@ export class Win16 {
    */
   async displayResources(files: any[]) {
     const display: any = this._modules.fromName('DISPLAY');
+    const name = display ? String(display.path).split('\\').pop()!.toUpperCase() : '';
     const file: any = display
-      ? files.find(
-          (one: any) =>
-            String(one.name ?? '').toUpperCase() === String(display.path).split('\\').pop()
-        )
+      ? files.find((one: any) => String(one.name ?? '').toUpperCase() === name)
       : null;
+    /* The installation's file, else the asset bundle's (`options.assets`). */
+    const bytes = file
+      ? new Uint8Array(await file.read(0, file.size))
+      : display
+        ? this.assetModule(name)
+        : undefined;
 
-    if (!file || display.executable) {
+    if (!bytes || display.executable) {
       return;
     }
 
-    const executable: any = new Executable(
-      'DISPLAY',
-      display.path,
-      streamOf(new Uint8Array(await file.read(0, file.size)))
-    );
+    const executable: any = new Executable('DISPLAY', display.path, streamOf(bytes));
 
     try {
       await executable.parse();
@@ -460,6 +460,17 @@ export class Win16 {
       this._display.metricsByIndex = { ...this._display.metricsByIndex, ...taken.metrics };
       this._display.sysColors = taken.colors;
     }
+  }
+
+  /**
+   * A module's file from the asset bundle's store, `options.assets`, by its
+   * name -- `USER.EXE`, `SHELL.DLL`, a display driver, their code taken out:
+   * what the kept modules' resources are read from where C: has no file of
+   * theirs. None without a store, or one without it.
+   * See `kb/topics/asset-bundle.md`.
+   */
+  assetModule(name: string): Uint8Array | undefined {
+    return (this._options as any).assets?.module(name) ?? undefined;
   }
 
   /**
