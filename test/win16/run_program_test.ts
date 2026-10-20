@@ -42,24 +42,22 @@ const PROBE = join(PROBES, 'STRINGS.EXE');
  * in this repository. A system with no fonts is not a state Windows is ever
  * in, so that probe steps aside rather than running against nothing.
  *
- * `virtual` runs a probe on the machine's virtual clock, whose time is the
- * instructions run, rather than the host's. `comms` needs it: what it records
- * is how much of a write at 110 baud has gone, a character in 91 ms, just
- * after the write and after a second's wait on `GetTickCount`. On the host's
- * clock the answer just after hangs on the host not stalling for 91 ms
- * between two calls, which a loaded host, with a full run's other workers and
- * their collections, does not promise. `mmtime` needs it too: it counts the
- * calls of its timer events through a wait on `GetTickCount`, and on the
- * host's clock they are made when the host gets round to them. `iconclk`
- * presses with `MOUSE_EVENT` a timer's second apart, so that no two make a
- * double click but the one meant to, and that one within the double-click
- * time: on the host's clock both, and its run in the replay, held to 12% of
- * a CPU beside other whole runs, came out wrong (3 of 17 records agreed).
+ * Every probe runs on the machine's virtual clock, whose time is the
+ * instructions run, rather than the host's, as the Rust engine runs every
+ * probe: what a probe records must not hang on how busy the host is. On the
+ * host's clock, `about` reads SHELL's About box from a timer 300 ms after
+ * asking for it, and with the full run's other workers beside it the timer
+ * came before the box was shown: every control read hidden (`101=-|...`),
+ * 1 run in 3 of this file held to a third of a CPU by busy loops. `comms`
+ * (how much of a write at 110 baud has gone, a character in 91 ms),
+ * `mmtime` (its timer events counted through a wait on `GetTickCount`) and
+ * `iconclk` (presses a timer's second apart, against the double-click time)
+ * failed so before them, and `menubits`, `menuinv`, `menucar`, `menubmp`
+ * and `setcur` act from timers, `winexec`, `curdir` and `search` give up
+ * waiting on another program after a while of `GetTickCount`.
  */
 /* A probe ends when it exits Windows, and the run with it: this is only how
- * long one that never does is given. Frames pass quickly while a program
- * waits, and a probe that waits on its own timers -- `about` reads each box
- * from one -- needs real time as well as a count of frames. */
+ * long one that never does is given, in the virtual clock's seconds. */
 const FRAMES = 4000;
 const SECONDS = 30;
 
@@ -83,7 +81,7 @@ const END_TO_END = [
   { name: 'mcidevs', fixture: 'mcidevs', installation: true },
   { name: 'getmsg', fixture: 'getmsg', installation: true },
   { name: 'minis2', fixture: 'minis2', installation: true },
-  { name: 'comms', fixture: 'comms', installation: true, virtual: true },
+  { name: 'comms', fixture: 'comms', installation: true },
   { name: 'flash', fixture: 'flash', installation: true },
   { name: 'wndds', fixture: 'wndds', installation: true },
   { name: 'about', fixture: 'about', installation: true },
@@ -121,7 +119,7 @@ const END_TO_END = [
   { name: 'polyline', fixture: 'polyline', installation: true },
   { name: 'dibdev', fixture: 'dibdev', installation: true },
   { name: 'ovlstyle', fixture: 'ovlstyle', installation: true },
-  { name: 'mmtime', fixture: 'mmtime', installation: true, virtual: true },
+  { name: 'mmtime', fixture: 'mmtime', installation: true },
   { name: 'sysheap', fixture: 'sysheap', installation: true },
   { name: 'grow', fixture: 'grow', installation: true },
   { name: 'fillext', fixture: 'fillext', installation: true },
@@ -153,7 +151,7 @@ const END_TO_END = [
   { name: 'menuflag', fixture: 'menuflag', installation: true },
   { name: 'drawgaps', fixture: 'drawgaps', installation: true },
   { name: 'iconkid', fixture: 'iconkid', installation: true },
-  { name: 'iconclk', fixture: 'iconclk', installation: true, virtual: true },
+  { name: 'iconclk', fixture: 'iconclk', installation: true },
   { name: 'patrops', fixture: 'patrops', installation: true },
   { name: 'patmono', fixture: 'patmono', installation: true },
   { name: 'queries', fixture: 'queries', installation: true },
@@ -294,7 +292,7 @@ whenBuilt('running a real Win16 program', () => {
  * and what comes out the far end is what Windows wrote.
  */
 describe('what real programs produce', () => {
-  for (const { name, fixture: recording, fonts, installation, virtual } of END_TO_END) {
+  for (const { name, fixture: recording, fonts, installation } of END_TO_END) {
     const probe = join(PROBES, `${name.toUpperCase()}.EXE`);
     const fixture = join(FIXTURES, `${recording}.json`);
 
@@ -305,7 +303,7 @@ describe('what real programs produce', () => {
       `${name} agrees with real Windows, end to end`,
       async function () {
         const { fileSystem } = await runProbe(name, FRAMES, fonts, installation, SECONDS, {
-          virtual: !!virtual,
+          virtual: true,
         });
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
