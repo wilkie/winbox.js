@@ -67,6 +67,7 @@ export class Clock {
   #skipped = 0;
   #charged = 0;
   #pending: Pending[] = [];
+  #holding = 0;
 
   constructor({
     virtual = false,
@@ -194,6 +195,29 @@ export class Clock {
     if (this.virtual) {
       this.#charged += instructions;
     }
+  }
+
+  /**
+   * Work the host does for the guest across its own turns -- a printed
+   * document's PDF deflated through a `CompressionStream` -- held against
+   * the clock until it is done. It runs none of the guest's instructions, so
+   * on a virtual clock it takes no time: whatever drives the clock when
+   * nothing runs leaves it where it is while anything is held (`holding`),
+   * or a run would find as much time gone as the host took over it.
+   */
+  async hold<T>(work: Promise<T>): Promise<T> {
+    this.#holding++;
+
+    try {
+      return await work;
+    } finally {
+      this.#holding--;
+    }
+  }
+
+  /** Whether host work is held against the clock (`hold`). */
+  get holding(): boolean {
+    return this.#holding > 0;
   }
 
   /** Virtual: time moved on by `ms`, as when nothing ran for a while. */

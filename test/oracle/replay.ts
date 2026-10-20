@@ -5927,6 +5927,10 @@ const BOX_KEYS: Record<string, string[][]> = {
  * came within a second and a half of each. `ddenest` lets synchronous
  * transactions time out, one after 10000h + 500 milliseconds, and says
  * whether that came within a second and a half.
+ * `about` reads SHELL's About box from a timer 300 ms after asking for it:
+ * on the host's clock, beside a loaded run's other workers, the timer came
+ * before the box was shown, and every control read hidden
+ * (`run_program_test`'s end-to-end run, 1 in 3 at a third of a CPU).
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5955,6 +5959,7 @@ const VIRTUAL_CLOCK = new Set([
   'chfontpr',
   'ddeterm',
   'ddenest',
+  'about',
 ]);
 
 /**

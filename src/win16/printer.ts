@@ -1,5 +1,6 @@
 'use strict';
 
+import { clockOf } from '../emulator/clock.js';
 import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { DevicePalette } from '../raster/device-palette.js';
 import { pdfOf } from '../raster/pdf.js';
@@ -155,12 +156,16 @@ function isFile(port: string) {
  * to the emulator's host (`system.printed`) for a port that is a device.
  */
 export async function deliver(system: any, surface: any, job: PrintJob) {
-  const pdf = await pdfOf(
-    job.pages,
-    PRINTER_CAPS.width,
-    PRINTER_CAPS.height,
-    PRINTER_CAPS.logicalPixelsX,
-    (surface.bitmap as DeviceBitmap).devicePalette.colours
+  /* Deflated by the host over its own turns: held, so that a virtual
+   * clock does not count them (`clock.ts`, `hold`). */
+  const pdf = await clockOf(system).hold(
+    pdfOf(
+      job.pages,
+      PRINTER_CAPS.width,
+      PRINTER_CAPS.height,
+      PRINTER_CAPS.logicalPixelsX,
+      (surface.bitmap as DeviceBitmap).devicePalette.colours
+    )
   );
 
   if (!isFile(job.port)) {
