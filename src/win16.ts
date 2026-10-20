@@ -491,8 +491,9 @@ export class Win16 {
   /**
    * USER's raster desktop, when the page asked for one: every window drawn on
    * `screen`, by USER, from the display driver's OEM bitmaps given as
-   * `options.raster.driver`, the display driver's bytes. Without it -- no
-   * Windows installation to draw with -- a program makes no windows.
+   * `options.raster.driver`, the display driver's bytes, else the asset
+   * bundle's (`options.assets`). Without either -- nothing to draw with -- a
+   * program makes no windows.
    * See `win16/user/desktop.ts`.
    */
   /** The desktop window's handle. See `desktop-handle.ts`. */
@@ -507,10 +508,14 @@ export class Win16 {
       return null;
     }
 
+    /* The driver and USER handed over, else the asset bundle's. */
+    const driver = raster.driver ?? this.assetModule(this._display.driverFile);
+    const user = raster.user ?? this.assetModule('USER.EXE');
+
     this._rasterDesktop ??= rasterDesktop(
       this,
-      raster.driver
-        ? driverResources(raster.driver, this._display, raster.user)
+      driver
+        ? driverResources(driver, this._display, user)
         : { oem: raster.oem ?? new Map(), icons: new Map(), cursors: new Set<number>() }
     );
 
