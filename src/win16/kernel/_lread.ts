@@ -47,12 +47,8 @@ export async function _lread(hf, hpvBuffer, cbBuffer) {
   const destSegment = (hpvBuffer >> 16) & 0xffff;
   const destOffset = hpvBuffer & 0xffff;
 
-  console.log('segment?', destSegment);
-
   const address = this.machine.cpu.core.translateAddress(destSegment, destOffset);
   this.machine.memory.write(address, new DataView(data));
-
-  console.log('read', data);
 
   return data.byteLength;
 }
