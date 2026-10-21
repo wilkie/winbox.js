@@ -9,7 +9,10 @@
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run, and removed after it, with a copy of the program's folder where
 //! `--path` puts it; `--windows` an installed drive beneath it, read and
-//! never written (`oracle/build/drive-c`); `--oracle-drives` adds the
+//! never written (`oracle/build/drive-c`), or `--assets` the base the
+//! asset bundle composes for the display, `winbox-assets.zip` or the folder
+//! it was unpacked into (`oracle/build/assets`), its modules the store
+//! behind it (`kb/topics/asset-bundle.md`); `--oracle-drives` adds the
 //! oracle's A: and Z:, made for the run as well; `--path` is the program's
 //! path, as DOS names it, `C:\` and its file's name by default.
 //! `--screen FILE` saves the screen as the run left it as a PNG; with
@@ -107,6 +110,7 @@ struct Options {
     drive: Option<PathBuf>,
     path: Option<String>,
     windows: Option<PathBuf>,
+    assets: Option<PathBuf>,
     oracle_drives: bool,
     screen: Option<PathBuf>,
     marks: Option<PathBuf>,
@@ -120,6 +124,7 @@ fn options() -> Options {
         drive: None,
         path: None,
         windows: None,
+        assets: None,
         oracle_drives: false,
         screen: None,
         marks: None,
@@ -132,6 +137,7 @@ fn options() -> Options {
             "--drive" => options.drive = arguments.next().map(PathBuf::from),
             "--path" => options.path = arguments.next(),
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
+            "--assets" => options.assets = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
             "--calls" => survey.calls = arguments.next().and_then(|n| n.parse().ok()),
@@ -174,6 +180,7 @@ fn main() {
         drive,
         path,
         windows,
+        assets,
         oracle_drives,
         screen,
         marks,
@@ -218,6 +225,20 @@ fn main() {
         made.push(root.clone());
         root
     });
+    // Or the asset bundle's base for the display beneath it, written once
+    // into the host's temporary folder, its modules the system's store.
+    let windows = match &assets {
+        Some(bundle) => {
+            let bundle = winbox_win16::assets::Assets::open(bundle).expect("the asset bundle");
+            let base = bundle
+                .base_in(&std::env::temp_dir().join("winbox-bases"), &survey.display)
+                .expect("the asset bundle's base for the display");
+
+            system.assets = Some(std::rc::Rc::new(bundle));
+            Some(base)
+        }
+        None => windows,
+    };
     // Windows installed beneath it, its files read and never written, where
     // an installation's drive is given.
     let c = match &windows {

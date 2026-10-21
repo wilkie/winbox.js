@@ -18,11 +18,16 @@ import { shownColours } from '../../src/raster/shown-colours.js';
  * Not part of the ordinary run: `CORPUS=1 npx jest test/corpus --forceExit`, or
  * `CORPUS=ski,bandit` for some. A box that lets no program run is answered
  * Enter, as its default button: an Application Error box is closed.
+ *
+ * `WINBOX_BASE=assets` runs each program on the asset bundle's base in
+ * place of the installation (`run-probe.ts`); `CORPUS_REPORTS=DIR` writes
+ * the reports there instead, to set beside `corpus/reports`
+ * (`kb/topics/asset-bundle.md`).
  */
 
 const ROOT = join(__dirname, '..', '..');
 const CORPUS = join(ROOT, 'corpus');
-const REPORTS = join(CORPUS, 'reports');
+const REPORTS = process.env.CORPUS_REPORTS || join(CORPUS, 'reports');
 const wanted = process.env.CORPUS ?? '';
 const manifest = existsSync(join(CORPUS, 'manifest.json'))
   ? JSON.parse(readFileSync(join(CORPUS, 'manifest.json'), 'utf8'))

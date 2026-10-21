@@ -14,6 +14,11 @@
 //! `cargo build --release -p winbox-win16 --example trace --example corpus`
 //! then `target/release/examples/corpus`, from the repository's root, with
 //! the corpus's programs and reports and the oracle's installations there.
+//! With `--base assets`, each program's drive C: has beneath it the base
+//! the asset bundle composes for its display (`oracle/build/assets`, `pnpm
+//! assets`) in place of the installation, and its run is held to the same
+//! reports: what differs is what the bundle's base changes
+//! (`kb/topics/asset-bundle.md`).
 //!
 //! `WINBOX_TRACE` names another command to run in the trace example's
 //! place, taking its arguments, its words split at spaces: `node
@@ -187,7 +192,9 @@ fn same(got: &str, want: &str) -> bool {
 struct Run {
     exe: String,
     path: String,
-    windows: String,
+    /// What drive C: has beneath it: `--windows` and an installation's
+    /// folder, or `--assets` and the asset bundle's.
+    base: (&'static str, String),
     display: String,
     screen: std::path::PathBuf,
     /// The TypeScript engine's calls.
@@ -212,8 +219,8 @@ fn trace(run: &Run) -> String {
             run.exe.as_str(),
             "--path",
             &run.path,
-            "--windows",
-            &run.windows,
+            run.base.0,
+            &run.base.1,
             "--display",
             &run.display,
             // The survey's boxKeys: Enter at each of three boxes.
@@ -465,7 +472,29 @@ fn manifest(path: &str) -> Vec<Program> {
         .unwrap_or_default()
 }
 
+/// What drive C: has beneath it on a display: the oracle's installation
+/// for it, or with `assets` the bundle's base.
+fn base_of(assets: bool, display: &str) -> (&'static str, String) {
+    if assets {
+        ("--assets", "oracle/build/assets".to_string())
+    } else if display == "vga" {
+        ("--windows", "oracle/build/drive-c".to_string())
+    } else {
+        ("--windows", format!("oracle/build/drive-c-{display}"))
+    }
+}
+
+/// `--base assets`: drive C: has the asset bundle's base beneath it, not
+/// the oracle's installation, against the same reports.
+fn on_assets() -> bool {
+    std::env::args()
+        .collect::<Vec<_>>()
+        .windows(2)
+        .any(|pair| pair[0] == "--base" && pair[1] == "assets")
+}
+
 fn main() {
+    let assets = on_assets();
     let programs = manifest("corpus/manifest.json")
         .into_iter()
         .chain(manifest("corpus/manifest.local.json"));
@@ -495,11 +524,7 @@ fn main() {
         let path = format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase());
         let survey = program.survey.unwrap_or_default();
         let display = survey.display.clone().unwrap_or_else(|| "vga".to_string());
-        let windows = if display == "vga" {
-            "oracle/build/drive-c".to_string()
-        } else {
-            format!("oracle/build/drive-c-{display}")
-        };
+        let base = base_of(assets, &display);
         let screen = screens.join(format!("{}.png", program.id));
         // The TypeScript engine keeps its first calls and its last, the
         // rest counted between: past its first, there is nothing to compare.
@@ -512,7 +537,7 @@ fn main() {
         let out = trace(&Run {
             exe: exe.clone(),
             path: path.clone(),
-            windows: windows.clone(),
+            base,
             display: display.clone(),
             screen: screen.clone(),
             calls: total,
@@ -594,6 +619,48 @@ fn main() {
     println!("agree to their stop: {agree} of {}", rows.len());
     println!("whole runs alike: {whole_alike} of {}", rows.len());
     println!("screens alike: {alike} of {compared}");
+
+    if assets {
+        held_to_list(&rows);
+    }
+}
+
+/// On the bundle's base, each program that differs held to the list of
+/// those that do, with why (`test/oracle/assets-differences.json`): those
+/// that differ and are not listed, and those listed that no longer differ.
+/// A program differs where its row says more than its calls agreeing to
+/// their stop, all of them, and its screens alike: where the calls part,
+/// the screens differ (each on a line of its own), or the run is not whole
+/// (` -- of `).
+fn held_to_list(rows: &[String]) {
+    let differing: Vec<String> = rows
+        .iter()
+        .filter(|row| row.contains('\n') || row.contains(" -- of "))
+        .filter_map(|row| row.split(' ').next().map(str::to_string))
+        .collect();
+    let listed: serde_json::Value = std::fs::read_to_string("test/oracle/assets-differences.json")
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+        .unwrap_or_default();
+    let listed = listed["corpus"].as_object().cloned().unwrap_or_default();
+    let ran: Vec<&str> = rows
+        .iter()
+        .filter_map(|row| row.split(' ').next())
+        .collect();
+    let unlisted: Vec<&String> = differing
+        .iter()
+        .filter(|id| !listed.contains_key(id.as_str()))
+        .collect();
+    let gone: Vec<&String> = listed
+        .keys()
+        .filter(|id| ran.contains(&id.as_str()) && !differing.contains(id))
+        .collect();
+
+    println!(
+        "differing on the bundle's base: {} of {}, not listed: {unlisted:?}, listed and alike: {gone:?}",
+        differing.len(),
+        rows.len()
+    );
 }
 
 #[cfg(test)]
