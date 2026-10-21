@@ -1,0 +1,273 @@
+{
+  "about": "Each record a probe writes differently on the asset bundle's base than on the oracle's installation, by fixture, with its reason (kb/topics/asset-bundle.md). Held by crates/winbox-win16/tests/assets_sweep.rs and test/assets/sweep_test.ts (ASSETS_SWEEP=1): a difference not listed fails, and so does one listed that no longer comes. A record is `function(args)`, or ends in `*` for every record it begins; `stop` is how the run ended. `engine`, where given, is the one engine the entry is for. `corpus`: each program whose calls or screens differ on the base from the TypeScript engine's survey on the installation (`examples/corpus.rs --base assets`), with why.",
+  "corpus": {
+    "wslam": "Imports COMMDLG: on the installation COMMDLG.DLL is loaded and its LibEntry's calls (LocalInit, ...) come first; on the base COMMDLG is WinBox's own, with no code to run, and the calls part at the first",
+    "hanoi": "Imports COMMDLG: COMMDLG.DLL's LibEntry runs first on the installation, not on the base. The same calls, and the same run, on the installation with COMMDLG.DLL taken off",
+    "fibsw": "Imports COMMDLG: COMMDLG.DLL's LibEntry runs first on the installation, not on the base",
+    "wordsrch": "Imports COMMDLG: COMMDLG.DLL's LibEntry runs first on the installation, not on the base",
+    "champ": "Imports COMMDLG: COMMDLG.DLL's LibEntry runs first on the installation, not on the base",
+    "caribb": "Imports VER and DDEML: on the installation VER.DLL, LZEXPAND.DLL (which VER.DLL imports) and DDEML.DLL are loaded, their LibEntries run before the program and their segments take selectors; on the base all three are WinBox's own -- the calls part at the first, and GetDOSEnvironment answers another selector. The same on the installation with the three files taken off",
+    "bg": "LoadLibrary(commdlg.dll): on the installation COMMDLG.DLL's file is loaded, on the base WinBox's own COMMDLG, so the module handle answered differs (478 there, 158 on the base) and the calls after it",
+    "simtower": "Imports COMMDLG: on the 256-colour installation COMMDLG.DLL is loaded and its LibEntry allocates before the program runs, so the program's first GlobalAlloc answers another handle (1062 there, 990 on the base); the run parts from there, and the steps' screens are not reached where the report's were (WING is WinBox's own on both)"
+  },
+  "probes": {
+    "associco": [
+      {
+        "records": ["ExtractAssociatedIcon(*", "DumpIcon(ExtractIcon)"],
+        "reason": "NOTEPAD.EXE, PROGMAN.EXE, MORICONS.DLL, WIN.COM and SYSTEM\\USER.EXE are not on the base: SHELL gives its own icon 6, as for C:\\NOPE.EXE, which is on neither; the .TXT files' program, notepad.exe, is not there either; and ExtractIcon of NOTEPAD.EXE gives no icon for DumpIcon"
+      }
+    ],
+    "cardview": [
+      {
+        "records": ["started(CARDFILE.EXE)", "window(*", "child(*"],
+        "reason": "CARDFILE.EXE is not on the base: WinExec answers 2, and there is no Cardfile to read"
+      }
+    ],
+    "comboesc": [
+      {
+        "records": ["open(drives,*"],
+        "reason": "COMMDLG.DLL is not on the base, so GetOpenFileName is WinBox's own COMMDLG: its drives' combo box tells the hook CBN_SELENDCANCEL (0Ah) as its list goes away, where COMMDLG.DLL's does not -- the same on the installation with COMMDLG.DLL taken off; a gap of WinBox's own COMMDLG, not of the base"
+      }
+    ],
+    "ddeinst": [
+      {
+        "records": ["DdeConnect(PROGMAN,PROGMAN)", "execute(*", "request(*", "DdeDisconnect(*"],
+        "reason": "PROGMAN.EXE is not on the base: no Program Manager answers the DDE conversation"
+      }
+    ],
+    "diskfree": [
+      {
+        "engine": "typescript",
+        "records": ["space(0)", "space(3)"],
+        "reason": "The TypeScript harness puts the base on a FAT16 volume it makes in memory, as the page makes its drive (fillDrive), where the installation is its own disk image: GetDiskFreeSpace of C: answers that volume's clusters, not the image's. A matter of the volume, not of the files on it; the Rust engine's host folders answer alike"
+      }
+    ],
+    "filedlg": [
+      {
+        "records": ["state(*", "log(click-file)"],
+        "reason": "C:\\WINDOWS on the base has no .TXT file (SETUP.TXT, which Setup copies, and BOOTLOG.TXT, which WIN.COM writes as Windows starts): the dialog's file list is empty, so there is no file to click"
+      },
+      {
+        "engine": "rust",
+        "records": ["log(dblclick-dir)", "log(dblclick-up)", "log(choose)"],
+        "reason": "COMMDLG.DLL is not on the base, so the dialog is WinBox's own COMMDLG: in the Rust engine its directories' list tells the hook LBN_SELCHANGE once on a double click, where COMMDLG.DLL's tells it twice, and its drives' combo box CBN_SELENDOK (9) before closing up -- the same on the installation with COMMDLG.DLL taken off; a gap of the Rust engine's own COMMDLG, not of the base"
+      },
+      {
+        "engine": "typescript",
+        "records": ["log(choose)"],
+        "reason": "COMMDLG.DLL is not on the base, so the dialog is WinBox's own COMMDLG: its drives' combo box tells the hook CBN_SELENDOK (9) before closing up, where COMMDLG.DLL's does not; a gap of WinBox's own COMMDLG, not of the base"
+      }
+    ],
+    "freelib": [
+      {
+        "records": ["load(*", "brought(*", "named(*", "free(*"],
+        "reason": "MAIN.CPL is not in the base's SYSTEM: LoadLibrary answers 2, and the rest is never reached"
+      }
+    ],
+    "mapcpl": [
+      {
+        "records": [
+          "init()",
+          "count()",
+          "newinquire()",
+          "dialog(*",
+          "open(*",
+          "current(*",
+          "box(open)"
+        ],
+        "reason": "MIDIMAP.DRV is not on the base: WinBox's mapper has no applet without it (CPL_INIT answers nought, `wbmapper/applet.rs`), so no dialog, the current setup is not changed, and the mapper opens on the installation's own setup's channels"
+      }
+    ],
+    "mplopen": [
+      {
+        "records": [
+          "exec(MPLAYER.EXE)",
+          "box()",
+          "player()",
+          "menu(*",
+          "dialog()",
+          "types()",
+          "enabled(*",
+          "dir(*",
+          "closed()"
+        ],
+        "reason": "MPLAYER.EXE is not on the base: WinExec answers 2, and there is no Media Player"
+      }
+    ],
+    "mplopen-vgasound": [
+      {
+        "records": [
+          "exec(MPLAYER.EXE)",
+          "player()",
+          "menu(*",
+          "dialog()",
+          "types()",
+          "enabled(*",
+          "dir(*",
+          "closed()"
+        ],
+        "reason": "MPLAYER.EXE is not on the base: WinExec answers 2, and there is no Media Player"
+      }
+    ],
+    "notepos": [
+      {
+        "records": ["started(NOTEPAD.EXE)", "window(*", "class(*"],
+        "reason": "NOTEPAD.EXE is not on the base: WinExec answers 2"
+      }
+    ],
+    "pmatom": [
+      {
+        "records": [
+          "WinExec(PROGMAN.EXE)",
+          "FindWindow(Progman)",
+          "count(*",
+          "raw(*",
+          "DdeConnect(*",
+          "clear(*"
+        ],
+        "reason": "PROGMAN.EXE is not on the base: no Program Manager, so none of its atoms, windows or DDE answers"
+      }
+    ],
+    "prnote": [
+      {
+        "records": ["started(*", "size(*", "line(*"],
+        "reason": "NOTEPAD.EXE is not on the base: WinExec of NOTEPAD.EXE /p answers 2, and nothing is printed"
+      }
+    ],
+    "progdde": [
+      {
+        "records": [
+          "files(*",
+          "WinExec(PROGMAN.EXE)",
+          "DdeConnect(*",
+          "initiate(*",
+          "request(*",
+          "transaction(*",
+          "execute(*",
+          "layout(*",
+          "waited(*",
+          "FindWindow(*",
+          "plain(*"
+        ],
+        "reason": "PROGMAN.EXE, PROGMAN.INI and the groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: no Program Manager to start or talk to, and no groups named"
+      }
+    ],
+    "shell2": [
+      {
+        "records": [
+          "find(C:\\WINDOWS\\NOTEPAD.EXE|NULL)",
+          "find(NOTEPAD.EXE|C:\\WINDOWS)",
+          "extract(*"
+        ],
+        "reason": "NOTEPAD.EXE, PROGMAN.EXE and MORICONS.DLL are not on the base: FindExecutable answers 2, and ExtractIcon finds no icons"
+      }
+    ],
+    "shellex": [
+      {
+        "records": ["exec(text file)", "notepad(title)"],
+        "reason": "A .TXT file's program, notepad.exe, is not on the base: ShellExecute answers 2"
+      }
+    ],
+    "sndbig": [
+      {
+        "records": [
+          "exec(big)",
+          "box()",
+          "window(*",
+          "texts(*",
+          "command(*",
+          "closed(*",
+          "bytes(*",
+          "length(*",
+          "block(*"
+        ],
+        "reason": "SOUNDREC.EXE is not on the base: WinExec fails, and there is no Sound Recorder to edit or save the file"
+      }
+    ],
+    "sndrec": [
+      {
+        "records": [
+          "exec(*",
+          "box()",
+          "window(*",
+          "texts(*",
+          "command(*",
+          "closed(*",
+          "bytes(*",
+          "length(*",
+          "block(*"
+        ],
+        "reason": "SOUNDREC.EXE is not on the base: WinExec fails, and there is no Sound Recorder to edit or save the files"
+      }
+    ],
+    "sndrec-vgasound": [
+      {
+        "records": [
+          "exec(*",
+          "window(*",
+          "texts(*",
+          "command(*",
+          "closed(*",
+          "bytes(*",
+          "length(*",
+          "block(*"
+        ],
+        "reason": "SOUNDREC.EXE is not on the base: WinExec fails, and there is no Sound Recorder to edit or save the files"
+      }
+    ],
+    "sysdirs": [
+      {
+        "records": ["load(system-name)", "load(system-path)"],
+        "reason": "MAIN.CPL is not in the base's SYSTEM: LoadLibrary of it by name and by path answers 2"
+      }
+    ],
+    "tasklist": [
+      {
+        "records": [
+          "keys(*",
+          "active(*",
+          "place(*",
+          "title(*",
+          "task(*",
+          "list(*",
+          "selected(*",
+          "gone(*",
+          "found(*"
+        ],
+        "reason": "TASKMAN.EXE is not on the base: DefWindowProc's SC_TASKLIST starts no Task List, so Control and Escape reach the probe's window and nothing is switched, ended or arranged"
+      }
+    ],
+    "tutor": [
+      {
+        "records": ["exec(tutorial)", "screen(*"],
+        "reason": "WINTUTOR.EXE is not on the base: WinExec fails, and the screen read is the probe's own, not the Tutorial's"
+      }
+    ],
+    "verinfo": [
+      {
+        "records": [
+          "size(*",
+          "info(*",
+          "getinfo(*",
+          "query(*",
+          "ownopen(*",
+          "rsize(*",
+          "rget(*",
+          "lang(*"
+        ],
+        "reason": "COMMDLG.DLL, USER.EXE, GDI.EXE, SHELL.DLL, MMSYSTEM.DLL, SYSTEM.DRV, NOTEPAD.EXE, PROGMAN.EXE and CALC.EXE are not on the base, and the probe's VCOPY.DRV and VCOPY.DR_ are copies of SYSTEM.DRV: no version information. Its block left as it filled it (0CCh), the probe's own sum then reads 0CCCCh bytes of its 4100-byte block: a general protection fault, and the run ends there"
+      },
+      {
+        "records": ["stop"],
+        "reason": "The Rust engine's run: the fault's box of USER's, which no hand answers in the sweep, is still up when its time is up. The TypeScript harness tells no stop apart: its runs end alike on both",
+        "engine": "rust"
+      }
+    ],
+    "verinst": [
+      {
+        "records": ["install(*", "left(*", "find(*"],
+        "reason": "SYSTEM.DRV is not on the base, and every source the probe makes is a copy of it, its version information changed; nor are SYSTEM\\USER.EXE, SYSTEM\\GDI.EXE, NOTEPAD.EXE and SYSTEM\\COMMDLG.DLL, which VerFindFile and VerInstallFile look for"
+      }
+    ]
+  }
+}

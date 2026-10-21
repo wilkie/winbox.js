@@ -5868,7 +5868,7 @@ const ADAPTED = new Set(['penmatch']);
  * run comes up, one list for each box, as the recording pressed them
  * (`record.mjs --shoot ... --then`).
  */
-const BOX_KEYS: Record<string, string[][]> = {
+export const BOX_KEYS: Record<string, string[][]> = {
   fault: [['Enter'], ['Enter']],
   minis3: [['Enter'], ['Enter']],
   nullds: [['Enter'], ['Enter']],
