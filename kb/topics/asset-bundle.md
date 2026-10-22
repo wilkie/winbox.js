@@ -132,7 +132,9 @@ The media are made into a bundle by the maker `pnpm assets` runs (`makeAssets`),
 
 **What programs write.** The changes on C: are kept against the bundle's id and the display (`assets:<id>:<display>`), each display's in a record of its own, as each display's base has its own profiles and fonts: a `WIN.INI` written on one display is not put on another's base, and is there again when its display is chosen again. Changes on an installation are kept as before, against its archive's hash. Forgetting the bundle forgets every display's.
 
-`e2e/run.spec.ts` drops the disks' images and the driver's files on each engine, checks the bundle's id and the displays offered, runs the `chrome` probe to its window on the screen, reloads to the bundle remembered and forgets it; and drops a `winbox-assets.zip` made already and keeps what the `strings` probe writes apart for the VGA and the EGA. Both are skipped where the media, the bundle or the probes are not there.
+**Programs kept.** A zip of programs dropped on the bundle's base, or an installation, is kept as a layer of its own, bound to the display it was dropped on, and what it writes is kept with its stack apart from the rest ([[format:layer]], On the page). Forgetting the bundle forgets the programs kept on it.
+
+`e2e/run.spec.ts` drops the disks' images and the driver's files on each engine, checks the bundle's id and the displays offered, runs the `chrome` probe to its window on the screen, reloads to the bundle remembered and forgets it; drops a `winbox-assets.zip` made already and keeps what the `strings` probe writes apart for the VGA and the EGA; and keeps two programs dropped on it, reloads to them listed, opens one with what it wrote, and forgets each, its layer and blobs with it. All are skipped where the media, the bundle or the probes are not there.
 
 ## What a program sees differently
 
