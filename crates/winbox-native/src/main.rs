@@ -8,6 +8,10 @@
 //! [--path C:\PROGRAM.EXE] [--shot FILE [--shot-seconds N]] [--sound [--sound-dump FILE.wav]]
 //! [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]`
 //!
+//! `winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [...]`,
+//! `--install NAME MEDIA [SETUP.EXE] (...) [--keep]`, `--layer-from DIR|LAYER.zip NAME (...)`:
+//! programs kept as layers of drive C: (`programs.rs`, `kb/formats/layer.md`).
+//!
 //! Desktop mode, the default, shows the whole screen, desktop and all, in
 //! one window. `--seamless` shows each window at the top as a window of
 //! the host's and no desktop (`seamless_host.rs`;
@@ -39,7 +43,23 @@
 //! together. `--drive` is the host directory that is drive
 //! C: itself, else one made for the run, and removed after it, with a copy
 //! of the program's folder where `--path` puts it -- `C:\` and its file's
-//! name by default. `--shot` saves the screen as it shows five seconds in,
+//! name by default. A `--drive` over a base keeps what is deleted of the
+//! base from run to run, in the cache folder's `winbox/drives/<sha256 of
+//! its path>.removed` (`HostDrive::keeping_removed`).
+//!
+//! `--program NAME` runs a program kept: drive C: is its base, its layers
+//! over it, each materialised once into `winbox/layer-<stack id>`, and its
+//! user's layer, `winbox/users/NAME/C`, on top, what it deletes beneath kept
+//! in `removed` beside it; the `.EXE` named, else the program's only one.
+//! Its display is its own; another is refused, as is another base.
+//! `--install NAME MEDIA` runs an installer -- `SETUP.EXE`, or the one
+//! named, in the media, a folder or a zip archive, put at `C:\NAME` --
+//! over the program's stack (none yet: the base) beneath an empty top in
+//! `winbox/staging`; as the run ends, `--keep` or the console keeps what
+//! it left, the media's paths dropped, as a layer of the program, made in
+//! turn over its layers. `--layer-from` puts a layer of the user's own
+//! files, laid out as C: has them, or a layer's exchange zip, on a
+//! program's stack. `--shot` saves the screen as it shows five seconds in,
 //! a binary PPM, or `--shot-seconds` in. `--sound` installs winbox.js's
 //! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
 //! `[drivers]` onto the drive, and the MIDI Mapper's setups in
@@ -63,13 +83,14 @@ use std::time::{Duration, Instant};
 
 mod host_os;
 mod input;
+mod programs;
 mod script;
 mod seamless;
 mod seamless_host;
 mod speaker;
 
 use softbuffer::{Context, Surface};
-use winbox_machine::{Clock, HostDrive};
+use winbox_machine::{Body, Clock, HostDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::System;
 use winbox_win16::host::{Host, HostSlot};
@@ -82,16 +103,38 @@ use winit::window::{Window, WindowId};
 
 use input::{Input, Inputs};
 
+/// What a run is of: a program's file of the host's, a program kept, an
+/// installer run into a layer, or a layer made and kept.
+enum Mode {
+    /// `PROGRAM.EXE`: a file of the host's, put on C: for the run.
+    File(PathBuf),
+    /// `--program NAME [C:\PATH.EXE]`: a program kept, on its stack.
+    Program { name: String, exe: Option<String> },
+    /// `--install NAME MEDIA [SETUP.EXE]`: an installer run over a
+    /// program's stack, what it left kept as a layer of it.
+    Install {
+        name: String,
+        media: PathBuf,
+        setup: Option<String>,
+    },
+    /// `--layer-from DIR|ZIP NAME`: a layer of the user's own files, or an
+    /// exchange zip, put on a program's stack.
+    LayerFrom { from: PathBuf, name: String },
+}
+
 /// What the command line asks for.
 struct Options {
-    file: PathBuf,
+    mode: Mode,
     drive: Option<PathBuf>,
     path: Option<String>,
     windows: Option<PathBuf>,
     /// The asset bundle, `winbox-assets.zip` or the folder it was unpacked
     /// into, in the installation's place.
     assets: Option<PathBuf>,
-    display: String,
+    /// The display mode; a kept program's own where none is given.
+    display: Option<String>,
+    /// What an installer left kept without asking.
+    keep: bool,
     shot: Option<PathBuf>,
     shot_seconds: u64,
     sound: bool,
@@ -111,16 +154,35 @@ struct Options {
     script: Option<PathBuf>,
 }
 
+const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]
+winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [and a run's switches]
+winbox-native --install NAME MEDIA [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--keep] [and a run's switches]
+winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE]";
+
+fn usage() -> ! {
+    eprintln!("{USAGE}");
+    std::process::exit(2);
+}
+
+/// Said, and the run ended.
+fn refuse(what: &str) -> ! {
+    eprintln!("{what}");
+    std::process::exit(2);
+}
+
+#[allow(clippy::too_many_lines)]
 fn options() -> Options {
-    let mut arguments = std::env::args().skip(1);
+    let mut arguments = std::env::args().skip(1).peekable();
     let mut file = None;
+    let mut mode = None;
     let mut options = Options {
-        file: PathBuf::new(),
+        mode: Mode::File(PathBuf::new()),
         drive: None,
         path: None,
         windows: None,
         assets: None,
-        display: "vga".to_string(),
+        display: None,
+        keep: false,
         shot: None,
         shot_seconds: 5,
         sound: false,
@@ -134,7 +196,37 @@ fn options() -> Options {
     };
 
     while let Some(argument) = arguments.next() {
+        // An argument that follows, where it is not a switch.
+        let mut operand = || arguments.next_if(|argument| !argument.starts_with("--"));
+
         match argument.as_str() {
+            "--program" => {
+                let name = operand().unwrap_or_else(|| usage());
+                let exe = operand();
+
+                mode = Some(Mode::Program { name, exe });
+            }
+            "--install" => {
+                let name = operand().unwrap_or_else(|| usage());
+                let media = operand().unwrap_or_else(|| usage());
+                let setup = operand();
+
+                mode = Some(Mode::Install {
+                    name,
+                    media: PathBuf::from(media),
+                    setup,
+                });
+            }
+            "--layer-from" => {
+                let from = operand().unwrap_or_else(|| usage());
+                let name = operand().unwrap_or_else(|| usage());
+
+                mode = Some(Mode::LayerFrom {
+                    from: PathBuf::from(from),
+                    name,
+                });
+            }
+            "--keep" => options.keep = true,
             "--drive" => options.drive = arguments.next().map(PathBuf::from),
             "--path" => options.path = arguments.next(),
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
@@ -163,28 +255,56 @@ fn options() -> Options {
             "--seamless-shots" => options.seamless_shots = arguments.next().map(PathBuf::from),
             "--seamless-log" => options.seamless_log = arguments.next().map(PathBuf::from),
             "--script" => options.script = arguments.next().map(PathBuf::from),
-            "--display" => {
-                if let Some(display) = arguments.next() {
-                    options.display = display;
-                }
-            }
+            "--display" => options.display = arguments.next(),
             _ => file = Some(PathBuf::from(argument)),
         }
     }
 
     if options.windows.is_some() && options.assets.is_some() {
-        eprintln!("--windows and --assets each give drive C: its base: give one, not both");
-        std::process::exit(2);
+        refuse("--windows and --assets each give drive C: its base: give one, not both");
     }
 
-    let Some(file) = file else {
-        eprintln!(
-            "winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]"
-        );
-        std::process::exit(2);
+    let mode = match (mode, file) {
+        (Some(_), Some(file)) => refuse(&format!(
+            "{}: a kept program is run, an installer run or a layer made without a program's file",
+            file.display()
+        )),
+        (Some(mode), None) => mode,
+        (None, Some(file)) => Mode::File(file),
+        (None, None) => usage(),
     };
 
-    Options { file, ..options }
+    if !matches!(mode, Mode::File(_)) {
+        if options.drive.is_some() || options.path.is_some() {
+            refuse("--drive and --path are for a program's file: a kept program's C: is its stack");
+        }
+
+        if options.windows.is_none() && options.assets.is_none() {
+            refuse("a kept program's layers lie over a base: give --assets or --windows");
+        }
+    }
+
+    Options { mode, ..options }
+}
+
+/// A question answered on the console: yes or no, else `default`, as it
+/// is where nothing can be read.
+fn ask(question: &str, default: bool) -> bool {
+    use std::io::Write as _;
+
+    eprint!("{question} [{}] ", if default { "Y/n" } else { "y/N" });
+    let _ = std::io::stderr().flush();
+
+    let mut line = String::new();
+
+    match std::io::stdin().read_line(&mut line) {
+        Ok(0) | Err(_) => default,
+        Ok(_) => match line.trim().to_ascii_lowercase().as_str() {
+            "y" | "yes" => true,
+            "n" | "no" => false,
+            _ => default,
+        },
+    }
 }
 
 /// The host's event loop: under WSL, on X -- WSLg's XWayland -- even where
@@ -447,13 +567,8 @@ fn cache_folder() -> PathBuf {
     cache.unwrap_or_else(std::env::temp_dir).join("winbox")
 }
 
-/// The asset bundle at `path` read, and the base of C: it composes for the
-/// display, in the cache folder's `base-<id>-<display>`: written the first
-/// time, read as it is after.
-fn asset_base(
-    path: &Path,
-    display: &str,
-) -> Result<(PathBuf, winbox_win16::assets::Assets), String> {
+/// The asset bundle at `path` read, where it serves the display.
+fn open_assets(path: &Path, display: &str) -> Result<winbox_win16::assets::Assets, String> {
     let assets = winbox_win16::assets::Assets::open(path)?;
 
     if !assets.displays.iter().any(|served| served == display) {
@@ -463,22 +578,400 @@ fn asset_base(
         ));
     }
 
+    Ok(assets)
+}
+
+/// The cache folder, made where it is not there.
+fn made_cache() -> PathBuf {
     let cache = cache_folder();
 
-    std::fs::create_dir_all(&cache).map_err(|error| format!("{}: {error}", cache.display()))?;
+    if let Err(error) = std::fs::create_dir_all(&cache) {
+        refuse(&format!("{}: {error}", cache.display()));
+    }
 
-    Ok((assets.base_in(&cache, display)?, assets))
+    cache
+}
+
+/// A path on C: as a drive takes it: its names beneath the root.
+fn parts_of(path: &str) -> Vec<String> {
+    winbox_machine::Files::parse(path).parts
+}
+
+/// A file written on a drive through the drive, as a program would write
+/// it: a lower layer's copied up, its folders' stamps kept.
+fn write_on(c: &mut HostDrive, path: &str, bytes: &[u8]) {
+    match c.create(&parts_of(path)) {
+        Some(Body::Host(mut file)) => {
+            file.write(bytes);
+        }
+        _ => eprintln!("{path}: could not be written"),
+    }
+}
+
+/// `install_sound` on a drive of layers, through the drive: `SYSTEM.INI`
+/// as the drive has it, with the card named; the MIDI Mapper's setups
+/// where the drive's own folder has none of its own, from those beneath.
+fn install_sound_on(c: &mut HostDrive) {
+    let ini = r"WINDOWS\SYSTEM.INI";
+    let cfg = r"WINDOWS\SYSTEM\MIDIMAP.CFG";
+
+    match c.read(&parts_of(ini)) {
+        Some(text) => {
+            let installed = winbox_win16::wbsound::install(&text);
+
+            if installed != text {
+                write_on(c, ini, &installed);
+            }
+        }
+        None => eprintln!("the sound driver: no SYSTEM.INI to name it in"),
+    }
+
+    let own = ["WINDOWS", "SYSTEM", "MIDIMAP.CFG"]
+        .iter()
+        .fold(c.root.clone(), |at, name| at.join(name));
+
+    if !own.exists()
+        && let Some(installed) = c
+            .read(&parts_of(cfg))
+            .and_then(|bytes| winbox_win16::wbsound::install_setups(&bytes))
+    {
+        write_on(c, cfg, &installed);
+    }
+}
+
+/// The base a kept program's stack is put on: the asset bundle's for the
+/// display, its store given to the system, or the installation's folder.
+fn kept_base(
+    assets: Option<&Path>,
+    windows: Option<&Path>,
+    display: &str,
+    system: Option<&mut System>,
+) -> programs::Base {
+    let base = match (assets, windows) {
+        (Some(assets), _) => {
+            let assets = open_assets(assets, display)
+                .unwrap_or_else(|error| refuse(&format!("the asset bundle: {error}")));
+            let base = programs::Base::of_assets(&assets, display, &made_cache());
+
+            if let Some(system) = system {
+                system.assets = Some(Rc::new(assets));
+            }
+
+            base
+        }
+        (None, Some(windows)) => programs::Base::of_folder(windows, display),
+        (None, None) => unreachable!("refused with the options"),
+    };
+
+    base.unwrap_or_else(|error| refuse(&format!("the base: {error}")))
+}
+
+/// The display a kept program runs on: its own, refused where another is
+/// given; a new program's the one given, else the VGA.
+fn kept_display(program: Option<&programs::Program>, given: Option<&String>) -> String {
+    match (program, given) {
+        (Some(program), Some(given)) if *given != program.display => refuse(&format!(
+            "{} was installed on the {} display, and its layers are bound to it: run it with --display {}",
+            program.name, program.display, program.display
+        )),
+        (Some(program), _) => program.display.clone(),
+        (None, given) => given.cloned().unwrap_or_else(|| "vga".to_string()),
+    }
+}
+
+/// `--layer-from`: a layer of the user's own files, or an exchange zip,
+/// put on a program's stack, the program made where it is not kept.
+fn layer_from(options: &Options, from: &Path, name: &str) {
+    let store = programs::Store::new(made_cache());
+    let kept = store.program(name).unwrap_or_else(|error| refuse(&error));
+    let display = kept_display(kept.as_ref(), options.display.as_ref());
+    let base = kept_base(
+        options.assets.as_deref(),
+        options.windows.as_deref(),
+        &display,
+        None,
+    );
+    let mut program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
+    let stack = store
+        .stack(&base, &program)
+        .unwrap_or_else(|error| refuse(&error));
+    let layer = if from.is_dir() {
+        programs::layer_of_folder(from, &stack)
+    } else {
+        std::fs::read(from)
+            .map_err(|error| format!("{}: {error}", from.display()))
+            .and_then(|bytes| winbox_win16::layers::Layer::from_zip(&bytes))
+    }
+    .unwrap_or_else(|error| refuse(&error));
+
+    store
+        .add_layer(&mut program, &stack, &layer)
+        .unwrap_or_else(|error| refuse(&error));
+    eprintln!(
+        "layer {} put on {} ({} entries); its programs: {}",
+        layer.manifest.id,
+        program.name,
+        layer.manifest.entries.len(),
+        program.exes.join(" ")
+    );
+}
+
+/// An installer's run, to be kept or not as it ends.
+struct Installing {
+    store: programs::Store,
+    program: programs::Program,
+    stack: Vec<winbox_win16::layers::Layer>,
+    lowers: Vec<winbox_machine::HostLayer>,
+    staging: programs::Staging,
+}
+
+impl Installing {
+    /// What the installer left: kept as a layer of the program where
+    /// `--keep` says so or the console does, the staging let go of.
+    fn end(mut self, keep: bool) {
+        match programs::installed(&self.staging, &self.stack, self.lowers.clone()) {
+            Ok(None) => eprintln!("{} left nothing to keep", self.staging.setup),
+            Ok(Some(layer)) => {
+                let files = layer
+                    .manifest
+                    .entries
+                    .iter()
+                    .filter(|entry| matches!(entry, winbox_win16::layers::LayerEntry::File { .. }))
+                    .count();
+
+                eprintln!(
+                    "{} left {files} files, {} entries in all",
+                    self.staging.setup,
+                    layer.manifest.entries.len()
+                );
+
+                if keep
+                    || ask(
+                        &format!(
+                            "Keep what it installed as a layer of {}?",
+                            self.program.name
+                        ),
+                        false,
+                    )
+                {
+                    match self.store.add_layer(&mut self.program, &self.stack, &layer) {
+                        Ok(()) => eprintln!(
+                            "kept layer {}; {}'s programs: {}",
+                            layer.manifest.id,
+                            self.program.name,
+                            self.program.exes.join(" ")
+                        ),
+                        Err(error) => eprintln!("not kept: {error}"),
+                    }
+                } else {
+                    eprintln!("not kept");
+                }
+            }
+            Err(error) => eprintln!("what the installer left: {error}"),
+        }
+
+        self.staging.discard();
+    }
+}
+
+/// Drive C: of a kept program: its user's layer over its stack. Where its
+/// layers have changed since that was made, the console is asked whether
+/// to put it on the new stack, else it is set aside.
+fn program_drive(
+    options: &Options,
+    name: &str,
+    exe: Option<&String>,
+    system: &mut System,
+) -> (HostDrive, String) {
+    let store = programs::Store::new(made_cache());
+    let program = store
+        .program(name)
+        .unwrap_or_else(|error| refuse(&error))
+        .unwrap_or_else(|| {
+            let kept: Vec<String> = store
+                .programs()
+                .into_iter()
+                .map(|program| format!("{} ({})", program.name, program.display))
+                .collect();
+
+            refuse(&format!(
+                "no program {name} is kept: --install or --layer-from keeps one; kept: {}",
+                if kept.is_empty() {
+                    "none".to_string()
+                } else {
+                    kept.join(", ")
+                }
+            ))
+        });
+    let display = kept_display(Some(&program), options.display.as_ref());
+
+    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    let base = kept_base(
+        options.assets.as_deref(),
+        options.windows.as_deref(),
+        &display,
+        Some(system),
+    );
+    let stack = store
+        .stack(&base, &program)
+        .unwrap_or_else(|error| refuse(&error));
+    let lowers = store
+        .lowers(&base, &stack)
+        .unwrap_or_else(|error| refuse(&error));
+
+    if let programs::UserLayer::Other(_) = store.user_layer(&program)
+        && !ask(
+            &format!(
+                "{name}'s layers have changed since what it wrote was kept. Put what it wrote on them?"
+            ),
+            true,
+        )
+    {
+        match store.set_user_aside(name) {
+            Ok(aside) => eprintln!("what {name} wrote is set aside in {}", aside.display()),
+            Err(error) => refuse(&error),
+        }
+    }
+
+    let mut c = store
+        .user_drive(&program, lowers)
+        .unwrap_or_else(|error| refuse(&error));
+
+    if options.sound {
+        install_sound_on(&mut c);
+    }
+
+    let path = match (exe, program.exes.as_slice()) {
+        (Some(exe), _) => exe.clone(),
+        (None, [only]) => only.clone(),
+        (None, []) => refuse(&format!("{name} has no program: name one, C:\\PATH.EXE")),
+        (None, exes) => refuse(&format!("{name} has programs {}: name one", exes.join(" "))),
+    };
+
+    (c, path)
+}
+
+/// Drive C: of an installer's run: an empty top over its media, laid at
+/// `C:\<NAME>`, over the program's stack -- a program not kept yet, the
+/// base alone.
+fn install_drive(
+    options: &Options,
+    name: &str,
+    media: &Path,
+    setup: Option<&String>,
+    system: &mut System,
+) -> (HostDrive, String, Installing) {
+    let store = programs::Store::new(made_cache());
+    let kept = store.program(name).unwrap_or_else(|error| refuse(&error));
+    let display = kept_display(kept.as_ref(), options.display.as_ref());
+
+    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    let base = kept_base(
+        options.assets.as_deref(),
+        options.windows.as_deref(),
+        &display,
+        Some(system),
+    );
+    let program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
+    let stack = store
+        .stack(&base, &program)
+        .unwrap_or_else(|error| refuse(&error));
+    let lowers = store
+        .lowers(&base, &stack)
+        .unwrap_or_else(|error| refuse(&error));
+    // An installer named alone is in its media's folder.
+    let is_exe = media
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("exe"));
+    let (media, setup) = match (is_exe, setup) {
+        (true, None) => (
+            media.parent().unwrap_or(Path::new(".")).to_path_buf(),
+            media
+                .file_name()
+                .map(|name| name.to_string_lossy().to_string()),
+        ),
+        (_, setup) => (media.to_path_buf(), setup.cloned()),
+    };
+    let media = if media.as_os_str().is_empty() {
+        PathBuf::from(".")
+    } else {
+        media
+    };
+    let staging = store
+        .stage(name, &media, setup.as_deref())
+        .unwrap_or_else(|error| refuse(&error));
+    let c = staging
+        .drive(lowers.clone())
+        .unwrap_or_else(|error| refuse(&error));
+
+    if options.sound {
+        eprintln!(
+            "--sound is not used while installing: the driver's SYSTEM.INI would be kept in the program's layer"
+        );
+    }
+
+    let path = staging.setup.clone();
+
+    eprintln!(
+        "installing {name}: its media at C:\\{}, run as {path}",
+        staging.media
+    );
+
+    (
+        c,
+        path,
+        Installing {
+            store,
+            program,
+            stack,
+            lowers,
+            staging,
+        },
+    )
 }
 
 #[allow(clippy::too_many_lines)]
 fn main() {
+    let options = options();
+
+    if let Mode::LayerFrom { from, name } = &options.mode {
+        layer_from(&options, from, name);
+        return;
+    }
+
+    let mut system = System::new();
+    let mut made = None;
+    let mut installing = None;
+    let (c, path) = match &options.mode {
+        Mode::File(file) => {
+            let (c, path, root) = file_drive(&options, file, &mut system);
+
+            made = root;
+            (c, path)
+        }
+        Mode::Program { name, exe } => program_drive(&options, name, exe.as_ref(), &mut system),
+        Mode::Install { name, media, setup } => {
+            let (c, path, install) =
+                install_drive(&options, name, media, setup.as_ref(), &mut system);
+
+            installing = Some(install);
+            (c, path)
+        }
+        Mode::LayerFrom { .. } => unreachable!("made above"),
+    };
+    // A program's file is read where it is on the host; a kept program's
+    // where its stack has it.
+    let bytes = match &options.mode {
+        Mode::File(file) => std::fs::read(file).expect("the program's file"),
+        _ => c
+            .read(&parts_of(&path))
+            .unwrap_or_else(|| refuse(&format!("{path}: not on drive C:"))),
+    };
+    let executable = Executable::parse(bytes).expect("a New Executable");
     let Options {
-        file,
-        drive,
-        path,
-        windows,
-        assets,
-        display,
+        keep,
         shot,
         shot_seconds,
         sound,
@@ -489,33 +982,8 @@ fn main() {
         seamless_shots,
         seamless_log,
         script,
-    } = options();
-    let bytes = std::fs::read(&file).expect("the program's file");
-    let executable = Executable::parse(bytes).expect("a New Executable");
-    let name = file.file_name().map_or(String::new(), |name| {
-        name.to_string_lossy().to_ascii_uppercase()
-    });
-    let path = path.unwrap_or_else(|| format!("C:\\{name}"));
-    let mut system = System::new();
-
-    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
-
-    // The asset bundle in the installation's place: the base it composes
-    // for the display written once into the cache, beneath drive C: as an
-    // installation is, and its modules the store behind it.
-    let windows = match assets {
-        Some(assets) => {
-            let (base, assets) = asset_base(&assets, &display).unwrap_or_else(|error| {
-                eprintln!("the asset bundle: {error}");
-                std::process::exit(2);
-            });
-
-            system.assets = Some(Rc::new(assets));
-            Some(base)
-        }
-        None => windows,
-    };
-
+        ..
+    } = options;
     let mut events = event_loop();
     // Seamless mode's screen is the host's desktop, divided by a whole
     // scale; desktop mode's is `--resolution` where it is given, else the
@@ -545,48 +1013,6 @@ fn main() {
     // The host's own time: a program runs as fast as the host runs it, and
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
-
-    // Drive C:, the directory given, else one made for the run with the
-    // program's folder where its path puts it.
-    let mut made = None;
-    let root = drive.unwrap_or_else(|| {
-        let root = std::env::temp_dir().join(format!("winbox-native-{}", std::process::id()));
-        let folders: Vec<&str> = path.split('\\').skip(1).collect();
-        let (last, parents) = folders[..folders.len() - 1].split_last().unzip();
-        let parent = parents
-            .unwrap_or_default()
-            .iter()
-            .fold(root.clone(), |at, part| at.join(part));
-
-        std::fs::create_dir_all(&parent).expect("the run's drive");
-
-        if let Some(folder) = file.parent() {
-            // A file named alone is in the current folder.
-            let folder = if folder.as_os_str().is_empty() {
-                Path::new(".")
-            } else {
-                folder
-            };
-            let folder = std::fs::canonicalize(folder).expect("the program's folder");
-
-            match last {
-                Some(last) => copy_folder(&folder, &parent.join(last)),
-                None => copy_folder(&folder, &parent),
-            }
-        }
-
-        made = Some(root.clone());
-        root
-    });
-    if sound {
-        install_sound(&root, windows.as_deref());
-    }
-
-    let c = match &windows {
-        Some(installed) => HostDrive::over(root.clone(), installed.clone()),
-        None => HostDrive::new(root.clone()),
-    };
-
     system.files.mount('C', c);
 
     let (program, libraries) = system.load(executable, &path);
@@ -656,8 +1082,112 @@ fn main() {
     let stop = engine.run(u64::MAX / 2, f64::INFINITY);
 
     eprintln!("stopped: {stop:?}");
+    // The window and the engine let go of before the console is asked.
+    drop(engine);
 
     if let Some(made) = made {
         let _ = std::fs::remove_dir_all(made);
     }
+
+    if let Some(installing) = installing {
+        installing.end(keep);
+    }
+}
+
+/// Drive C: of a program's file: the directory given, else one made for
+/// the run with the program's folder where its path puts it, over the
+/// installation or the asset bundle's base; the folder made, to be let go
+/// of after the run. A directory given keeps what is deleted of the base
+/// from run to run (`programs::drive_removed`).
+fn file_drive(
+    options: &Options,
+    file: &Path,
+    system: &mut System,
+) -> (HostDrive, String, Option<PathBuf>) {
+    let display = options.display.clone().unwrap_or_else(|| "vga".to_string());
+    let name = file.file_name().map_or(String::new(), |name| {
+        name.to_string_lossy().to_ascii_uppercase()
+    });
+    let path = options
+        .path
+        .clone()
+        .unwrap_or_else(|| format!("C:\\{name}"));
+
+    system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+
+    // The asset bundle in the installation's place: the base it composes
+    // for the display written once into the cache, beneath drive C: as an
+    // installation is, and its modules the store behind it.
+    let windows = match &options.assets {
+        Some(assets) => {
+            let assets = open_assets(assets, &display)
+                .unwrap_or_else(|error| refuse(&format!("the asset bundle: {error}")));
+            let base = assets
+                .base_in(&made_cache(), &display)
+                .unwrap_or_else(|error| refuse(&format!("the asset bundle: {error}")));
+
+            system.assets = Some(Rc::new(assets));
+            Some(base)
+        }
+        None => options.windows.clone(),
+    };
+
+    // Drive C:, the directory given, else one made for the run with the
+    // program's folder where its path puts it.
+    let mut made = None;
+    let given = options.drive.clone();
+    let root = given.clone().unwrap_or_else(|| {
+        let root = std::env::temp_dir().join(format!("winbox-native-{}", std::process::id()));
+        let folders: Vec<&str> = path.split('\\').skip(1).collect();
+        let (last, parents) = folders[..folders.len() - 1].split_last().unzip();
+        let parent = parents
+            .unwrap_or_default()
+            .iter()
+            .fold(root.clone(), |at, part| at.join(part));
+
+        std::fs::create_dir_all(&parent).expect("the run's drive");
+
+        if let Some(folder) = file.parent() {
+            // A file named alone is in the current folder.
+            let folder = if folder.as_os_str().is_empty() {
+                Path::new(".")
+            } else {
+                folder
+            };
+            let folder = std::fs::canonicalize(folder).expect("the program's folder");
+
+            match last {
+                Some(last) => copy_folder(&folder, &parent.join(last)),
+                None => copy_folder(&folder, &parent),
+            }
+        }
+
+        made = Some(root.clone());
+        root
+    });
+    if options.sound {
+        install_sound(&root, windows.as_deref());
+    }
+
+    let c = match &windows {
+        Some(installed) => {
+            let c = HostDrive::over(root.clone(), installed.clone());
+
+            // The user's own drive keeps what is deleted of the base from
+            // run to run, as one folder would; a drive made for the run
+            // is let go of after it.
+            match given {
+                Some(given) => {
+                    let removed = programs::drive_removed(&made_cache(), &given);
+
+                    c.keeping_removed(removed.clone())
+                        .unwrap_or_else(|error| refuse(&format!("{}: {error}", removed.display())))
+                }
+                None => c,
+            }
+        }
+        None => HostDrive::new(root.clone()),
+    };
+
+    (c, path, made)
 }

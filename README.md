@@ -126,7 +126,34 @@ the `SIMTOWER.INI` its installer writes, and its mixer, WaveMix, needs
 directory that is drive C:, laid over it: what a program writes lands there,
 the installation's files copied up first. Without `--drive`, a C: is made for
 the run and removed after it, with the program's folder copied where `--path`
-puts it. Nothing else of the host's files is given to the program.
+puts it. Nothing else of the host's files is given to the program. A
+`--drive` laid over an installation or the asset bundle's base keeps what a
+program deletes of it from run to run, in the cache folder's
+`winbox/drives/<sha256 of the drive's path>.removed` (delete that file to
+have the base's files back).
+
+Programs can also be kept as layers of drive C:, as the page keeps them
+(`kb/formats/layer.md`), in the host's cache folder (`winbox` in
+`%LOCALAPPDATA%`, or `$XDG_CACHE_HOME`/`~/.cache`):
+
+```shell
+winbox-native --install NAME MEDIA [SETUP.EXE] (--assets FILE.zip|DIR | --windows DIR) [--display MODE] [--keep]
+winbox-native --layer-from DIR|LAYER.zip NAME (--assets FILE.zip|DIR | --windows DIR) [--display MODE]
+winbox-native --program NAME [C:\PATH.EXE] (--assets FILE.zip|DIR | --windows DIR) [and a run's switches]
+```
+
+`--install` runs an installer: its media, a folder or a zip archive (or the
+installer's `.EXE` itself, its folder the media), are put at `C:\NAME` beneath
+an empty top over the program's base and layers. As the run ends, it asks on
+the console, or `--keep` says, whether to keep what the installer left as a
+layer of the program; the media are dropped from it. Programs meant to share
+a machine are installed in turn under one name. `--layer-from` makes a layer
+of your own files laid out as C: has them (SimTower's `WAVMIX16.DLL` in
+`WINDOWS\SYSTEM`, `WAVEMIX.INI`, `SIMTOWER.INI`), or takes a layer's exchange
+zip. `--program` runs a kept program on its stack, the `.EXE` named or its
+only one; what it writes and deletes is kept for it in
+`winbox/users/NAME/`. A program's layers are bound to the display it was
+installed on, and to its base.
 
 On Windows, give `--windows` a local copy of the installation. An installation read across
 `\\wsl.localhost` works, but the program starts several seconds later.
