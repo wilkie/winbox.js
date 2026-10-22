@@ -707,7 +707,16 @@ impl System {
         let at = self.linear(self.pointer(DS, DX));
         let bytes = self.cpu.bus.read(at, usize::from(self.cpu.regs[CX]));
         let file = self.files.resolve(handle).ok_or(ERROR_INVALID_HANDLE)?;
+
+        // Nought bytes make the file end where it is, and stamp it: DOSBox
+        // truncates the host's file there (`localFile::Write`,
+        // `drive_local.cpp` 454-468), which moves its stamp. **Recorded**
+        // by `dirorder`.
         let written = if bytes.is_empty() {
+            if let Some(at) = file.seek(SeekFrom::Current(0)) {
+                file.truncate(at);
+            }
+
             0
         } else {
             file.write(&bytes)
@@ -855,34 +864,48 @@ impl System {
         self.rename_path(&from, &to)
     }
 
-    /// A file renamed, as DOS's 56h renames one: DOS's error if it is not.
+    /// A file or folder renamed, or moved to another folder, as DOSBox's
+    /// `DOS_Rename` renames one (`dos_files.cpp` 263-296): another drive is
+    /// error 11h; a name there already, file or folder, 5; nothing to
+    /// rename, 2; and a rename the host refuses -- into a folder not there,
+    /// a folder into itself -- 2 as well. A folder moves with all it holds.
+    /// **Recorded** by `dirorder`.
     fn rename_path(&mut self, from: &str, to: &str) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, from);
         let (to_drive, to_parts, to_name) = resolve_file(&self.files, to);
-        let entry = if self.files.is_directory(drive, &parts) && !name.is_empty() {
-            self.files.lookup(drive, &parts, &name)
-        } else {
-            None
+        let found = |files: &Files, drive: char, parts: &[String], name: &str| {
+            if files.is_directory(drive, parts) && !name.is_empty() {
+                files.lookup(drive, parts, name)
+            } else {
+                None
+            }
         };
-        let entry = entry.ok_or(ERROR_FILE_NOT_FOUND)?;
 
         if drive != to_drive {
             return Err(ERROR_NOT_SAME_DEVICE);
         }
 
-        if !self.files.is_directory(to_drive, &to_parts) || to_name.is_empty() {
-            return Err(ERROR_PATH_NOT_FOUND);
+        if found(&self.files, to_drive, &to_parts, &to_name).is_some() {
+            return Err(ERROR_ACCESS_DENIED);
         }
 
-        let moved = parts != to_parts;
+        let entry = found(&self.files, drive, &parts, &name).ok_or(ERROR_FILE_NOT_FOUND)?;
+        let source = [parts.clone(), vec![name.clone()]].concat();
+        let into_itself = entry.attributes & 0x10 != 0
+            && to_parts.len() >= source.len()
+            && to_parts
+                .iter()
+                .zip(&source)
+                .all(|(a, b)| a.eq_ignore_ascii_case(b));
 
-        if self.files.lookup(to_drive, &to_parts, &to_name).is_some()
-            || (entry.attributes & 0x10 != 0 && moved)
+        if !self.files.is_directory(to_drive, &to_parts)
+            || to_name.is_empty()
+            || into_itself
             || !self
                 .files
                 .rename(drive, (&parts, &name), (&to_parts, &to_name))
         {
-            return Err(ERROR_ACCESS_DENIED);
+            return Err(ERROR_FILE_NOT_FOUND);
         }
 
         Ok(())
@@ -904,7 +927,7 @@ impl System {
 
     /// The first entry a search finds, in the transfer area with the
     /// search's state: its drive, its pattern, the attributes asked for,
-    /// where it is, and its folder among those searched.
+    /// and its number among the searches (`Searches`).
     fn find_first(&mut self) -> Result<(), u16> {
         let spec = self.string_at(DS, DX);
         let slash = [spec.rfind('\\'), spec.rfind('/'), spec.find(':')]
@@ -919,20 +942,26 @@ impl System {
             return Err(ERROR_PATH_NOT_FOUND);
         }
 
-        let directory = parts.join("\\");
-        let index = if let Some(index) = self.searched.iter().position(|one| *one == directory) {
-            index
-        } else {
-            self.searched.push(directory);
-            self.searched.len() - 1
-        };
+        let names = self
+            .files
+            .list(drive, &parts)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|entry| entry.name)
+            .collect();
+        let number = self.searches.begin(Search {
+            drive,
+            parts,
+            names,
+            at: 0,
+        });
         let pattern = eleven_of(if name.is_empty() { "*.*" } else { name });
         let mut state = [0u8; 21];
 
         state[0] = drive as u8 - 0x40;
         state[1..12].copy_from_slice(&pattern.as_bytes()[..11]);
         state[12] = self.low(CX);
-        state[15..17].copy_from_slice(&(index as u16).to_le_bytes());
+        state[13..15].copy_from_slice(&number.to_le_bytes());
         self.carry_on(state)
     }
 
@@ -945,31 +974,37 @@ impl System {
         self.carry_on(state)
     }
 
-    fn carry_on(&mut self, mut state: [u8; 21]) -> Result<(), u16> {
-        let drive = char::from(state[0] + 0x40);
+    /// The search carried on through the names it began with: each that
+    /// matches looked for again as the folder is now, one gone passed over,
+    /// as DOSBox's `localDrive::FindNext` stats each (`drive_local.cpp`
+    /// 231-280). Its last name passed, the search is over.
+    fn carry_on(&mut self, state: [u8; 21]) -> Result<(), u16> {
         let asked = state[12];
-        let from = usize::from(u16::from_le_bytes([state[13], state[14]]));
-        let directory = self
-            .searched
-            .get(usize::from(u16::from_le_bytes([state[15], state[16]])))
-            .cloned()
-            .unwrap_or_default();
-        let parts: Vec<String> = if directory.is_empty() {
-            Vec::new()
-        } else {
-            directory.split('\\').map(str::to_string).collect()
+        let number = u16::from_le_bytes([state[13], state[14]]);
+        let Some(search) = self.searches.get(number) else {
+            return Err(ERROR_NO_MORE_FILES);
         };
+        let (drive, parts) = (search.drive, search.parts.clone());
         let entries = self.files.list(drive, &parts).unwrap_or_default();
 
-        for (at, entry) in entries.iter().enumerate().skip(from) {
-            if admits(asked, entry.attributes) && matches(&state[1..12], &entry.name) {
-                state[13..15].copy_from_slice(&(at as u16 + 1).to_le_bytes());
+        while let Some(search) = self.searches.get(number)
+            && let Some(name) = search.names.get(search.at).cloned()
+        {
+            search.at += 1;
+
+            if !matches(&state[1..12], &name) {
+                continue;
+            }
+
+            if let Some(entry) = entries.iter().find(|entry| entry.name == name)
+                && admits(asked, entry.attributes)
+            {
                 self.answer_found(&state, entry);
                 return Ok(());
             }
         }
 
-        state[13..15].copy_from_slice(&(entries.len() as u16).to_le_bytes());
+        self.searches.end(number);
         Err(ERROR_NO_MORE_FILES)
     }
 
@@ -1021,5 +1056,70 @@ impl System {
             (of_day % 60) as u16,
             weekday as u16,
         ]
+    }
+}
+
+/// The most searches open at once: DOSBox's `MAX_OPENDIRS`
+/// (`dos_system.h` 124).
+const MAX_SEARCHES: usize = 2048;
+
+/// One search: its folder, and the names the folder had as the search
+/// began, in DOSBox's order, and how far through them it is. DOSBox copies
+/// the folder's names as a search begins (`DOS_Drive_Cache::FindFirst`,
+/// `drive_cache.cpp` 777-826): a file made while it is open is not found by
+/// it, and one deleted is passed over. **Recorded** by `dirorder`.
+#[derive(Debug, Clone)]
+pub struct Search {
+    drive: char,
+    parts: Vec<String>,
+    names: Vec<String>,
+    at: usize,
+}
+
+/// DOS's searches, by the number a search's state keeps, as DOSBox keeps
+/// them: each begun in the next number free after the last, round from the
+/// first, and freed once it is over; with none free, all are let go and
+/// the first is taken (`drive_cache.cpp` 783-805).
+#[derive(Debug, Clone, Default)]
+pub struct Searches {
+    open: Vec<Option<Search>>,
+    next: usize,
+}
+
+impl Searches {
+    fn begin(&mut self, search: Search) -> u16 {
+        if self.open.is_empty() {
+            self.open = vec![None; MAX_SEARCHES];
+        }
+
+        let mut tried = 0;
+
+        while tried < MAX_SEARCHES && self.open[self.next].is_some() {
+            self.next = (self.next + 1) % MAX_SEARCHES;
+            tried += 1;
+        }
+
+        let mut number = self.next;
+
+        self.next = (self.next + 1) % MAX_SEARCHES;
+
+        if tried == MAX_SEARCHES {
+            self.open.iter_mut().for_each(|one| *one = None);
+            number = 0;
+            self.next = 1;
+        }
+
+        self.open[number] = Some(search);
+        number as u16
+    }
+
+    fn get(&mut self, number: u16) -> Option<&mut Search> {
+        self.open.get_mut(usize::from(number))?.as_mut()
+    }
+
+    fn end(&mut self, number: u16) {
+        if let Some(one) = self.open.get_mut(usize::from(number)) {
+            *one = None;
+        }
     }
 }

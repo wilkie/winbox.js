@@ -3,8 +3,9 @@
  * (create new), 40h (write), 41h (delete), 56h (rename), 43h (attributes),
  * and directories made and taken away, 39h and 3Ah.
  *
- * DOS as it is documented, underneath Windows; nothing here has been
- * measured. A path is taken from the drive's current directory when it does
+ * DOS as it is documented, underneath Windows, and as DOSBox answers where
+ * `dirorder` measured it: renaming, removing a directory, and the stamps
+ * of a folder and of a file written nought bytes. A path is taken from the drive's current directory when it does
  * not begin at the root, as the other calls take it (`directory.ts`).
  */
 
@@ -79,13 +80,21 @@ export async function writeFile(this: any, handle: number, address: number, coun
     throw ERROR_INVALID_HANDLE;
   }
 
+  /* Nought bytes make the file end where it is, and stamp it (`end`). As
+   * `dos.rs`. */
+  if (!count) {
+    await file.end?.(file.position);
+
+    return 0;
+  }
+
   const bytes = new Uint8Array(count);
 
   for (let i = 0; i < count; i++) {
     bytes[i] = this.machine.memory.read8(address + i);
   }
 
-  const written = count ? await file.write(file.position, bytes) : 0;
+  const written = await file.write(file.position, bytes);
 
   file.position += written;
 
@@ -106,6 +115,8 @@ export async function deleteFile(this: any, path: string) {
   if (!(await folder.lookup(name)) || !(await fileSystem.unlink(folder, name))) {
     throw ERROR_FILE_NOT_FOUND;
   }
+
+  await this.files.changed(drive, parts);
 }
 
 /** Makes a directory (39h): error 3 when its parent is not there, 5 when the name is. */
@@ -122,6 +133,7 @@ export async function makeDirectory(this: any, path: string) {
   }
 
   await this.files.query(drive).makeDirectory(parent, name);
+  await this.files.changed(drive, parts);
 }
 
 /**
@@ -152,6 +164,7 @@ export async function removeDirectory(this: any, path: string) {
   }
 
   await this.files.query(drive).unlink(parent, name);
+  await this.files.changed(drive, parts);
 }
 
 /**
@@ -185,19 +198,16 @@ export async function fileAttributes(this: any, path: string, action: number, at
 }
 
 /**
- * Renames a file (56h), to another name on the same drive, in the same
- * directory or another. A directory keeps its parent. The new name must not
- * be there.
+ * Renames a file or folder (56h), or moves it to another folder, as
+ * DOSBox's `DOS_Rename` renames one (`dos_files.cpp` 263-296): another
+ * drive is error 11h; a name there already, file or folder, 5; nothing to
+ * rename, 2; and a rename the host refuses -- into a folder not there, a
+ * folder into itself -- 2 as well. A folder moves with all it holds, its
+ * stamp kept. **Recorded** by `dirorder`. As `dos.rs`.
  */
 export async function renameFile(this: any, from: string, to: string) {
   const source = resolveFile(this, from);
   const target = resolveFile(this, to);
-  const fromFolder = await openDirectory(this, source.drive, source.parts);
-  const entry = fromFolder && source.name ? await fromFolder.lookup(source.name) : null;
-
-  if (!fromFolder || !entry) {
-    throw ERROR_FILE_NOT_FOUND;
-  }
 
   if (source.drive !== target.drive) {
     throw ERROR_NOT_SAME_DEVICE;
@@ -205,17 +215,30 @@ export async function renameFile(this: any, from: string, to: string) {
 
   const toFolder = await openDirectory(this, target.drive, target.parts);
 
-  if (!toFolder || !target.name) {
-    throw ERROR_PATH_NOT_FOUND;
-  }
-
-  const moved = source.parts.join('\\') !== target.parts.join('\\');
-
-  if ((await toFolder.lookup(target.name)) || (entry.info.directory && moved)) {
+  if (toFolder && target.name && (await toFolder.lookup(target.name))) {
     throw ERROR_ACCESS_DENIED;
   }
 
+  const fromFolder = await openDirectory(this, source.drive, source.parts);
+  const entry = fromFolder && source.name ? await fromFolder.lookup(source.name) : null;
+
+  if (!entry) {
+    throw ERROR_FILE_NOT_FOUND;
+  }
+
+  const path = [...source.parts, source.name];
+  const intoItself =
+    entry.info.directory &&
+    target.parts.length >= path.length &&
+    path.every((part, at) => part === target.parts[at]);
+
+  if (!toFolder || !target.name || intoItself) {
+    throw ERROR_FILE_NOT_FOUND;
+  }
+
   await this.files.query(source.drive).rename(fromFolder, entry, toFolder, target.name);
+  await this.files.changed(source.drive, source.parts);
+  await this.files.changed(target.drive, target.parts);
 }
 
 /**
