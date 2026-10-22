@@ -637,8 +637,16 @@ impl System {
     /// for WinBox's own `COMMDLG` with no file, `COMMDLG.DLL`'s, 3.00 --
     /// its dialogs are made with its instance, and their controls then
     /// tell what a module made for 3.00 is told (`kb/topics/combo-boxes.md`).
-    /// None for any other.
+    /// KERNEL's is the Windows version, 3.10, which KERNEL sets in its own
+    /// module as it starts (`KRNL386.EXE` seg1 `c285`-`c288`), where its
+    /// file says 3.00 (`lbmark`). None for any other.
     pub fn expected_windows_version(&mut self, handle: u16) -> Option<u16> {
+        if let Some(Object::Kept(kept)) = self.handles.resolve(handle)
+            && self.kept[kept].module.name == "KERNEL"
+        {
+            return Some(0x30a);
+        }
+
         if let Some(executable) = self.executable_of(handle) {
             return Some(executable.header.expected_windows_version);
         }

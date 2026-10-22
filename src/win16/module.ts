@@ -5,15 +5,22 @@ export class Module {}
 /**
  * The Windows version the module of a handle or instance was made for, as
  * `CreateWindow` asks `GetExpWinVer` of the instance it is given (`USER.EXE`
- * seg8 `0425`-`0432`): its file's header's (word 3Eh), or one a module
- * WinBox keeps says of itself -- `COMMDLG`'s with no file, `COMMDLG.DLL`'s
- * 3.00, as its dialogs are made with its instance. Undefined for any other.
+ * seg8 `0425`-`0432`): its file's header's (word 3Eh); or one a module
+ * WinBox keeps says of itself -- KERNEL's 3.10, which KERNEL sets on itself
+ * as it starts, and `COMMDLG`'s with no file, `COMMDLG.DLL`'s 3.00, as its
+ * dialogs are made with its instance; or, for another kept module, its
+ * file's header's, the installation's or the asset bundle's, read as the
+ * system starts (`Win16.keptVersions`). Undefined for any other.
  * As the Rust engine's `System::expected_windows_version`.
  */
 export function expectedWindowsVersion(system: any, handle: number): number | undefined {
   const module = system.handles.resolve(handle);
 
-  return module?.executable?.neHeader?.expectedWindowsVersion ?? module?.expectedWindowsVersion;
+  return (
+    module?.executable?.neHeader?.expectedWindowsVersion ??
+    module?.expectedWindowsVersion ??
+    module?.fileWindowsVersion
+  );
 }
 
 /**

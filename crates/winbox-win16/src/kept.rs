@@ -985,8 +985,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetExpWinVer",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DirectResAlloc",

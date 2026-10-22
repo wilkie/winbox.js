@@ -1,0 +1,54 @@
+{
+  "probe": "lbmark",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "expwinver",
+      "args": "own",
+      "result": "300"
+    },
+    {
+      "function": "expwinver",
+      "args": "shell",
+      "result": "300"
+    },
+    {
+      "function": "expwinver",
+      "args": "user",
+      "result": "30a"
+    },
+    {
+      "function": "expwinver",
+      "args": "kernel",
+      "result": "30a"
+    },
+    {
+      "function": "notes",
+      "args": "own",
+      "result": "100:4,100:1,100:1,100:2"
+    },
+    {
+      "function": "notes",
+      "args": "shell",
+      "result": "100:5,101:4,101:1,101:1,101:2"
+    },
+    {
+      "function": "notes",
+      "args": "user",
+      "result": "101:5,102:4,102:1,102:2"
+    },
+    {
+      "function": "notes",
+      "args": "kernel",
+      "result": "102:5,103:4,103:1,103:2"
+    }
+  ]
+}

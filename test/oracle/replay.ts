@@ -5855,6 +5855,7 @@ const RUN_WHOLE = new Set<string>([
   'ddewep',
   'localgro',
   'prblt2',
+  'lbmark',
 ]);
 
 /**
