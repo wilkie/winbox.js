@@ -22,6 +22,25 @@ fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
+/// A manifest's entries as lines, for a difference that reads.
+fn lines(entries: &serde_json::Value) -> Vec<String> {
+    entries
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|entry| {
+            format!(
+                "{} {} {} {} {}",
+                entry["kind"].as_str().unwrap_or(""),
+                entry["path"].as_str().unwrap_or(""),
+                entry["sha256"].as_str().unwrap_or(""),
+                entry["size"],
+                entry["modified"]
+            )
+        })
+        .collect()
+}
+
 #[test]
 fn caribbean_treasures_installer_into_a_layer() {
     let media = root().join("corpus/programs/caribb");
@@ -111,24 +130,6 @@ fn caribbean_treasures_installer_into_a_layer() {
         "the installer stopped"
     );
     let made = serde_json::to_value(&installed.layer.manifest).unwrap();
-
-    let lines = |entries: &serde_json::Value| -> Vec<String> {
-        entries
-            .as_array()
-            .into_iter()
-            .flatten()
-            .map(|entry| {
-                format!(
-                    "{} {} {} {} {}",
-                    entry["kind"].as_str().unwrap_or(""),
-                    entry["path"].as_str().unwrap_or(""),
-                    entry["sha256"].as_str().unwrap_or(""),
-                    entry["size"],
-                    entry["modified"]
-                )
-            })
-            .collect()
-    };
 
     assert_eq!(
         lines(&made["entries"]),
