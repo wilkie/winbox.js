@@ -202,6 +202,7 @@ Decided, and not built yet:
 - Moving a program's layer between displays, by replaying its profile writes.
 - An installer that restarts Windows (`ExitWindowsExec`, `_MSSETUP`).
 - The stamps an installer gives its files. DOSBox fakes function 5701h, so installed files carry the time of installing, and a layer's id depends on the clock unless it runs on the virtual one. A layer installed on the page takes the stamps of the host's clock, so two installs of one program are two layers.
+- A layer installed natively takes its folders' stamps from the host's folders (`changes_from` of the layered host drive), where the page and the harnesses take the stamps DOS gave the program (`changes_seen`); its files' paths and bytes are the same.
 - A Program Manager stand-in for installers' DDE: `caribb`'s `CreateGroup` goes nowhere on the base.
 - The page offers Keep once no program is running: an installer that leaves running a program it does not wait for is offered Keep only once that program ends.
 - Natively: forgetting a program, and collecting the blobs and materialised layers no program names, as the page's `collect` does; exporting a kept program's layer as its exchange zip; a name of the media's or the user's files that is not 8.3, which the page shortens and the native build refuses; a layer from the user's files deleting a path of the stack (a folder holds no whiteouts, so it only adds and writes); the program's groups and items an installer gives Program Manager.
