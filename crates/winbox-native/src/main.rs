@@ -53,10 +53,10 @@
 //! in `removed` beside it; the `.EXE` named, else the program's only one.
 //! Its display is its own; another is refused, as is another base.
 //! `--install NAME MEDIA` runs an installer -- `SETUP.EXE`, or the one
-//! named, in the media, a folder or a zip archive, put at `C:\NAME` --
+//! named, in the media, a folder or a zip archive, put at `C:\WBSETUP` --
 //! over the program's stack (none yet: the base) beneath an empty top in
 //! `winbox/staging`; as the run ends, `--keep` or the console keeps what
-//! it left, the media's paths dropped, as a layer of the program, made in
+//! it left, all of the media's path dropped, as a layer of the program, made in
 //! turn over its layers. `--layer-from` puts a layer of the user's own
 //! files, laid out as C: has them, or a layer's exchange zip, on a
 //! program's stack. `--shot` saves the screen as it shows five seconds in,
@@ -731,7 +731,8 @@ impl Installing {
     fn end(mut self, keep: bool) {
         match programs::installed(&self.staging, &self.stack, self.lowers.clone()) {
             Ok(None) => eprintln!("{} left nothing to keep", self.staging.setup),
-            Ok(Some(layer)) => {
+            Ok(Some(installed)) => {
+                let layer = installed.layer;
                 let files = layer
                     .manifest
                     .entries
@@ -744,6 +745,20 @@ impl Installing {
                     self.staging.setup,
                     layer.manifest.entries.len()
                 );
+
+                if !installed.dropped.is_empty() {
+                    eprintln!(
+                        "{} entries of the media at C:\\{} dropped: they are discarded after installing",
+                        installed.dropped.len(),
+                        self.staging.media
+                    );
+                }
+
+                // What the installer wrote that names the media is told,
+                // not rewritten, as the page's status line tells it.
+                for reference in &installed.references {
+                    eprintln!("names the media: {}: {}", reference.path, reference.line);
+                }
 
                 if keep
                     || ask(

@@ -143,10 +143,12 @@ winbox-native --program NAME [C:\PATH.EXE] (--assets FILE.zip|DIR | --windows DI
 ```
 
 `--install` runs an installer: its media, a folder or a zip archive (or the
-installer's `.EXE` itself, its folder the media), are put at `C:\NAME` beneath
-an empty top over the program's base and layers. As the run ends, it asks on
-the console, or `--keep` says, whether to keep what the installer left as a
-layer of the program; the media are dropped from it. Programs meant to share
+installer's `.EXE` itself, its folder the media), are put at `C:\WBSETUP`
+beneath an empty top over the program's base and layers. As the run ends, it
+asks on the console, or `--keep` says, whether to keep what the installer left
+as a layer of the program; the media, and anything the installer wrote into
+their folder, are dropped from it, as on the page, and the lines it wrote that
+name the media are told on the console. Programs meant to share
 a machine are installed in turn under one name. `--layer-from` makes a layer
 of your own files laid out as C: has them (SimTower's `WAVMIX16.DLL` in
 `WINDOWS\SYSTEM`, `WAVEMIX.INI`, `SIMTOWER.INI`), or takes a layer's exchange

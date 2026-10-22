@@ -19,8 +19,8 @@
 //! (`layers::materialise`), and its user's layer on top, a writable folder
 //! whose deletes of what is beneath are kept in a file beside it
 //! (`HostDrive::keeping_removed`). An installer is run over the same stack
-//! with its media beneath an empty top; what it left in the top, its
-//! media's paths dropped, is the layer kept.
+//! with its media, at `C:\WBSETUP`, beneath an empty top; what it left in
+//! the top, everything at the media's path dropped, is the layer kept.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -30,7 +30,8 @@ use serde::{Deserialize, Serialize};
 use winbox_machine::{Change, Files, HostDrive, HostLayer, MemoryDrive, Volume, days_from_civil};
 use winbox_win16::assets::{Assets, STAMP, dos_seconds, set_written};
 use winbox_win16::layers::{
-    Layer, LayerEntry, Made, Manifest, flatten, manifest_text, materialise, stack_refusal,
+    Installed, Layer, LayerEntry, Made, Manifest, flatten, manifest_text, materialise,
+    stack_refusal,
 };
 use winbox_win16::sha256::sha256_hex;
 
@@ -461,22 +462,10 @@ pub fn check_name(name: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// The folder an installer's media are put in on C:, `C:\<NAME>`: the
-/// program's name as a DOS name, its letters kept, eight at most.
-pub fn media_folder(name: &str) -> Result<String, String> {
-    let folder: String = name
-        .to_ascii_uppercase()
-        .chars()
-        .filter(|c| c.is_ascii_alphanumeric() || "_-$~!#%&@^".contains(*c))
-        .take(8)
-        .collect();
-
-    if folder.is_empty() {
-        return Err(format!("{name:?} makes no DOS name for its media's folder"));
-    }
-
-    Ok(folder)
-}
+/// The folder an installer's media are put in on C:, as the page and the
+/// probe harnesses put them (`MEDIA` in `src/run/main.ts`): a folder of
+/// their own, so nothing the installer installs can be taken for media.
+pub const MEDIA: &str = "WBSETUP";
 
 /// Whether a path is a folder's, or beneath it.
 fn within(path: &str, folder: &str) -> bool {
@@ -519,7 +508,7 @@ pub enum UserLayer {
 }
 
 /// An installer's run: its folder in `staging`, where its media are put
-/// (`media/`, laid at `C:\<media>`) and its top (`C/`, its deletes in
+/// (`media/`, laid at `C:\WBSETUP`) and its top (`C/`, its deletes in
 /// `removed`); and the installer as C: names it.
 #[derive(Debug, Clone)]
 pub struct Staging {
@@ -765,7 +754,7 @@ impl Store {
     /// folder of `staging` of its own. The installer is `setup` in the
     /// media, else `SETUP.EXE`.
     pub fn stage(&self, name: &str, media: &Path, setup: Option<&str>) -> Result<Staging, String> {
-        let folder_name = media_folder(name)?;
+        let folder_name = MEDIA.to_string();
         let tree = if media.is_dir() {
             host_tree(media, &folder_name)?
         } else {
@@ -866,45 +855,32 @@ fn ids(stack: &[Layer]) -> Vec<String> {
 }
 
 /// What an installer left in its top, as a layer over the stack it ran
-/// on: the drive as it stands told against the stack and the media
-/// (`MemoryDrive::changes_from`), and of that, what names the media's
-/// folders or deletes their paths dropped, where the stack beneath has no
-/// such path -- the media are discarded after installing. A file the
-/// installer wrote over one of the media's is its own, and kept. None
-/// where it left nothing.
+/// on (`Layer::installed`): the drive as it stands told against the stack
+/// with the media laid on it (`MemoryDrive::changes_from`), and of that,
+/// every entry whose path is the media's folder or lies beneath it dropped
+/// -- the files the installer wrote there too, for the media are discarded
+/// after installing, as on the page and in the probe harnesses
+/// (`drop_media`). What is kept that names the media is told, not
+/// rewritten. None where it left nothing.
 pub fn installed(
     staging: &Staging,
     stack: &[Layer],
     lowers: Vec<HostLayer>,
-) -> Result<Option<Layer>, String> {
-    let beneath = flatten(stack)?.drive();
-    let mut before = beneath.clone();
+) -> Result<Option<Installed>, String> {
+    let mut before = flatten(stack)?.drive();
 
     before.apply(&staging.laid);
 
     let after = held(&staging.drive(lowers)?);
-    let media: BTreeSet<&str> = staging.laid.iter().map(Change::path).collect();
-    let on_stack = |path: &str| {
-        let parts = Files::parse(path).parts;
+    let changes = after.changes_from(&before);
+    let installed = Layer::installed(
+        &changes,
+        std::slice::from_ref(&staging.media),
+        ids(stack),
+        made_from(Some(staging.setup.clone())),
+    )?;
 
-        beneath.is_directory(&parts) || beneath.entry(&parts).is_some()
-    };
-    let changes: Vec<Change> = after
-        .changes_from(&before)
-        .into_iter()
-        .filter(|change| match change {
-            Change::File { .. } => true,
-            Change::Folder { path, .. } | Change::Removed { path } => {
-                !media.contains(path.as_str()) || on_stack(path)
-            }
-        })
-        .collect();
-
-    if changes.is_empty() {
-        return Ok(None);
-    }
-
-    Layer::from_changes(&changes, ids(stack), made_from(Some(staging.setup.clone()))).map(Some)
+    Ok((!installed.layer.manifest.entries.is_empty()).then_some(installed))
 }
 
 /// A layer of the user's own files, laid out in a folder as C: has them,
