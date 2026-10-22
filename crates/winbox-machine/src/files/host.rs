@@ -1028,7 +1028,15 @@ mod tests {
             let folder = parts.join("\\");
 
             for entry in files.list('C', parts).unwrap() {
-                let stamp = if entry.modified[0] >= 2020 {
+                // The root's own stamp, which its `.` and `..` and a
+                // top-level folder's `..` carry, is the host folder's or
+                // none on a MemoryDrive, and is not measured
+                // (`kb/topics/drives-and-disks.md`): not compared.
+                let root = (entry.name == ".." && parts.len() <= 2)
+                    || (entry.name == "." && folder.is_empty());
+                let stamp = if root {
+                    "root".to_string()
+                } else if entry.modified[0] >= 2020 {
                     "now".to_string()
                 } else {
                     format!("{:?}", entry.modified)
