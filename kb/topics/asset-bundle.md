@@ -6,7 +6,7 @@ summary: WinBox's asset bundle — the fonts, data files, sounds and the resourc
 
 The asset bundle is step 2 of [[guide:without-windows]]. It holds what programs see of an installed Windows 3.1, and none of the code. It is made from the user's own setup disks and is never shipped. With it, WinBox can lay out a base for drive C: for any display it serves, as Windows' own Setup laid one out.
 
-Both engines start from it alone, as below: the native build, the probe harnesses, and the page's engines through their options. The page does not yet take the user's disks to make one.
+Both engines start from it alone, as below: the native build, the probe harnesses, and the page, which makes the bundle from the user's disks in the browser and keeps it there.
 
 ## The format
 
@@ -104,11 +104,35 @@ An engine started from the bundle has two things where it would have an installa
 **How each is run from it:**
 
 - **Native**: `winbox-native PROGRAM.EXE --assets winbox-assets.zip` (or the unpacked folder) `--display <mode>`. It is refused with `--windows`, and for a display the bundle does not serve. The base for the display is written once into the host's cache folder, `winbox/base-<id>-<display>` (`%LOCALAPPDATA%` on Windows, `$XDG_CACHE_HOME` or `~/.cache` elsewhere), each file last written when the base says and each folder at the page's stamp, and is then what the `--windows` folder would be: the drive above it is `HostDrive::over` it, and `--sound` installs the sound driver into the drive's `SYSTEM.INI` from the base's, as from an installation's.
+- **The page** (`run.html`, either engine): the user drops the disks' images, and the bundle is made there (On the page, below).
 - **The probe harnesses**: `WINBOX_BASE=assets`. The Rust harness (`tests/support`, `Setup::of`) writes the base into the host's temporary folder, `winbox-bases/base-<id>-<display>`, and mounts it as it mounts an installation; the TypeScript harness (`test/win16/run-probe.ts`) makes a FAT16 volume in memory, as the page makes its drive, and puts the base's files on it. Either refuses to run when `oracle/build/assets` is not made. Without the switch nothing changes.
 
   `WINBOX_BASE=assets cargo test --release -p winbox-win16 --test probes -- --ignored --nocapture survey`
 
 [[measured]] On the bundle's base, `drvres` on the VGA, EGA, Hercules and Super VGA, `chrome` on the same four, `fontboot` with its three presets and `about` write the same records as on the oracle's installation, in both engines; and SHELL's logo read from the bundle is the installation's, pixel for pixel, on all four displays (`tests/asset_base.rs`, `test/assets/base_test.ts`).
+
+## On the page
+
+The page (`src/run`) takes the user's Windows 3.1 in either of two forms: an installation's directory, zipped, as before, or the setup disks.
+
+**What is dropped.** Each file is told by what it holds (`src/run/media.ts`, `classify`):
+
+- A zip with `winbox-assets.json` at its root: a bundle made already, taken as it is.
+- A zip with a `SYSTEM` folder of fonts: an installation, as before.
+- A zip with a disk's image, a `SETUP.INF` or `OEMSETUP.INF`, or a file `COMPRESS`ed for a disk (its name ending in `_`), and any file that is not a zip: the media.
+- Any other zip: programs.
+
+The media are made into a bundle by the maker `pnpm assets` runs (`makeAssets`), unchanged, told against `known-media.json`; media it does not know are taken all the same, and the page says how many of the files were not known. The maker keeps the first file it finds of each name, and the Super VGA driver's files hold fonts of the disks' names, the same bytes with none of the disks' stamps, so the page gives the maker the images first, then zips, then loose files, by name, as the script gives it the images before the driver's files (`orderMedia`). No browser unpacks `svga.exe` (PKZIP's implode), so the 256-colour display is served only where its unpacked files -- `OEMSETUP.INF` and `SVGA256.DRV` -- are dropped too: with the disks, or after them while the page is open, when they are made into a bundle with the disks dropped before. [[measured]] The bundle the page makes from the six disks' images and the driver's files, given in any order, is the script's: the same id, and every file of the manifest the same, its hash, size, stamp and source (`test/run/media_test.ts`).
+
+**Where it is kept.** The bundle, as `winbox-assets.zip`'s bytes, is kept in the browser's IndexedDB, in a store of its own, `assets`, beside the installation's `archives` (`src/run/store.ts`), and read again on the next visit. It never leaves the browser. The page has one Windows at a time: dropping a bundle forgets an installation kept, and dropping an installation forgets the bundle.
+
+**C: on its base.** `planDrive` puts the base the bundle composes for the display chosen where the installation would go: its folders first, at the page's stamp, then its files, each last written when the base says, then the programs' archives, each in a folder of its own. The TypeScript engine is given the bundle as `options.assets`, and its driver for the display and its `USER.EXE` as `options.raster`; the Rust engine has each of the bundle's modules put in its store with `add_module` before the machine's first program. The display list offers only the displays the bundle serves.
+
+[[measured]] What a program sees of the page's base is the harnesses' base. The TypeScript engine's drive on the base alone is the TypeScript harness's volume, sector for sector, on the VGA, EGA and 256-colour displays (`test/run/media_test.ts`). The Rust engine's machine, filled as the page fills it, reports what the trace example does with `--assets` -- the base written to a host's folder, as the Rust harness and the native build mount it -- call for call and screen for screen, for `drvres` on the VGA, EGA and 256-colour displays, `chrome`, `about`, `sysdirs`, `fontboot` and `diskfree` (`crates/winbox-web/tests/assets_base.rs`).
+
+**What programs write.** The changes on C: are kept against the bundle's id and the display (`assets:<id>:<display>`), each display's in a record of its own, as each display's base has its own profiles and fonts: a `WIN.INI` written on one display is not put on another's base, and is there again when its display is chosen again. Changes on an installation are kept as before, against its archive's hash. Forgetting the bundle forgets every display's.
+
+`e2e/run.spec.ts` drops the disks' images and the driver's files on each engine, checks the bundle's id and the displays offered, runs the `chrome` probe to its window on the screen, reloads to the bundle remembered and forgets it; and drops a `winbox-assets.zip` made already and keeps what the `strings` probe writes apart for the VGA and the EGA. Both are skipped where the media, the bundle or the probes are not there.
 
 ## What a program sees differently
 
@@ -159,8 +183,8 @@ So a new installation's files from the disks keep the disks' stamp, and those of
 
 - WinBox's own COMMDLG against Windows': its drives' combo box's `CBN_SELENDOK` and `CBN_SELENDCANCEL`, and the Rust engine's directories' list's `LBN_SELCHANGE` on a double click (`comboesc`, `filedlg` with no `COMMDLG.DLL`).
 - Native's `--assets` has not been run with a window yet.
-- The page's drop of the disks, its store of the bundle, and its saved changes kept by the bundle's id and the display.
-- The page making a bundle in the browser: the maker runs there unchanged, but nothing calls it.
+- The page reads no folder dropped on it: the driver's files are chosen or dropped one by one, or zipped.
+- A bundle the page makes from media `known-media.json` does not list is taken, and said to be so, but nothing measures what programs see on it.
 - `PROGMAN.INI`, which only Program Manager reads.
 - An oracle installation with Setup's `bitmaps` installed, which would ground placing the sounds and wallpapers.
 - What `REGEDIT`'s `/U` does is not read out; with it, the database made from nothing is the installation's byte for byte.
