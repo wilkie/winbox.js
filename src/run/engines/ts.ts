@@ -14,6 +14,7 @@ import { Machine } from '../../emulator/machine.js';
 import { Win16 } from '../../win16.js';
 import { previousInstance } from '../../win16/kernel/WinExec.js';
 import { Presenter } from '../../raster/presenter.js';
+import { DISPLAY_MODES } from '../../win16/display-modes.js';
 import { accessibleTree } from '../../win16/user/accessible-tree.js';
 import { AriaMirror } from '../aria-mirror.js';
 import { applyChanges, fat16Drive, Fat16Changes } from '../changes.js';
@@ -68,7 +69,7 @@ export class TypeScriptEngine implements Engine {
     );
   };
 
-  async rebuild({ plan, windows, display, coprocessor, changes: kept }: Setup) {
+  async rebuild({ plan, windows, assets, display, coprocessor, changes: kept }: Setup) {
     const page = this.#page;
     const machine = new Machine({ coprocessor });
     const drive = await fillDrive(machine, plan);
@@ -81,9 +82,16 @@ export class TypeScriptEngine implements Engine {
     await applyChanges(kept, fat16Drive(drive.fileSystem));
 
     /* Windows are USER's own, drawn on one screen from the installation's
-     * display driver and fonts. Without an installation a program still runs,
-     * but it makes no windows. */
-    const driver = windows && drive.windows ? displayDriverOf(windows) : null;
+     * display driver and fonts, or the asset bundle's driver for the display
+     * and its base's fonts. Without either a program still runs, but it makes
+     * no windows. */
+    const driverFile = (DISPLAY_MODES as any)[display]?.driverFile ?? 'VGA.DRV';
+    const driver = !drive.windows
+      ? null
+      : windows
+        ? displayDriverOf(windows)
+        : (assets?.module(driverFile) ?? null);
+    const user = windows ? systemFileOf(windows, 'USER.EXE') : (assets?.module('USER.EXE') ?? null);
 
     screenNote(page.desktop);
 
@@ -98,7 +106,8 @@ export class TypeScriptEngine implements Engine {
         console.error(error);
         page.status(`Stopped: ${error?.message ?? error}`, 'error');
       },
-      ...(driver ? { raster: { driver, user: systemFileOf(windows!, 'USER.EXE') } } : {}),
+      ...(driver ? { raster: { driver, user } } : {}),
+      ...(assets ? { assets } : {}),
     });
 
     if (drive.windows) {

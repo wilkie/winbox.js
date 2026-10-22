@@ -95,7 +95,7 @@ export function chosenBase(): Base {
  * FAT16 volume made in memory as the page makes its drive (`fillDrive`): its
  * folders, and each file last written when the base says.
  */
-async function bundleDrive(machine: any, assets: Assets, display: string) {
+export async function bundleDrive(machine: any, assets: Assets, display: string) {
   const composed = assets.compose(display);
   const fileSystem: any = new FAT16(machine.disks[0]);
 
