@@ -81,6 +81,29 @@ The native build keeps each layer as a folder of the host's, and `HostDrive::lay
 
 The folder is named by the stack through the layer, not the layer alone. The stack id is the sha256 of the ids of the base and of each layer up to it, one to a line. A host drive of layers takes a folder's stamp from the highest layer that has the folder. A layer that writes `WINDOWS\WIN.INI` holds a `WINDOWS` folder without a stamp of its own, so that folder must carry the stamp the stack beneath gives it. Each folder of the layer is stamped as the flattened stack through it has it. A stack materialised this way, under an empty top, lists and reads, stamps included, as the flattened stack held in memory does; `crates/winbox-win16/tests/layers.rs` holds it to that.
 
+## The probe harnesses on layers
+
+`WINBOX_BASE=layers` runs every probe on the asset bundle's base split into a stack of layers, as `WINBOX_BASE=assets` runs it on the base in one folder ([[topic:asset-bundle]]). The split is the same in both engines (`crates/winbox-win16/tests/support/layered.rs`, `test/layers/split.ts`), and each layer is made over all those beneath it, so the stack passes the stacking checks. The layers, lowest first:
+
+1. The base's folders and files outside `WINDOWS\SYSTEM` that are not fonts or profiles: `WINDOWS`, `WINDOWS\TEMP`, `REG.DAT`. It is named by its id, not `base:…`, so its cache folder is never a whole base's.
+2. `WINDOWS\SYSTEM`, and its files that are not fonts or profiles.
+3. The fonts: `.FON`, `.FOT`, `.TTF`.
+4. The profiles: `.INI`.
+5. A decoy. It adds a folder at the root, a folder in `WINDOWS`, and a file in each of them and in `WINDOWS\SYSTEM`, all stamped 1 January 2021.
+6. The decoy's whiteout, removing each of those.
+7. The profiles, `MIDIMAP.CFG` and the first font again, and `WINDOWS\SYSTEM`'s folder entry, all as the base has them. A file is shadowed by the same bytes and stamp, so a read takes the highest layer and a write copies up from it.
+
+The Rust harness materialises the stack into the host's temporary folder, `winbox-layers/layer-<stack id>` (`materialise_stack`). It mounts the layers with `HostDrive::layered` under the run's own writable folder, where the run puts the probe and its files. The TypeScript harness flattens the stack (`flattenStack`) and puts the flat drive on its FAT16 volume, as `bundleDrive` puts the base: each folder stamped as the stack has it, then each file.
+
+[[measured]] Every probe's records and stop on the layers are what they are on the base in one folder, exactly, in each engine:
+
+- **Rust:** all 552 fixtures, in 670 seconds on eight threads (`LAYERS_SWEEP=1 cargo test --release -p winbox-win16 --test layers_sweep -- --nocapture`).
+- **TypeScript:** the file probes (`LAYERS_SWEEP=1 LAYERS_SWEEP_PROBES=… npx jest test/layers/sweep_test.ts`). These were `curdir`, `dirorder`, `diskfree`, `filecdr`, `filedlg`, `loadpath`, `lzfiles`, `ofnopen`, `openfile`, `profhold`, `profile`, `profnew`, `search` and `sysdirs`, each run in under 40 seconds.
+
+The sweep found no difference, so the layering needed no fix. To check that it can see one, the whiteout was taken out of the stack. Both the drive's listing and `filedlg`'s record of `C:\WINDOWS` then showed the decoy: five folders where there are four.
+
+On every run, without the switch, `tests/layers_sweep.rs` and `test/layers/base_test.ts` check that the stack lists and reads, stamps included, as the base in one folder does on each display. They also run `dirorder`, `filecdr`, `openfile`, `profile`, `loadpath` and `verinst` (Rust), or `dirorder`, `diskfree`, `filecdr`, `loadpath`, `openfile`, `profile` and `profnew` (TypeScript), on both.
+
 ## The rest of the design
 
 Decided, and not built yet:
@@ -94,7 +117,8 @@ Decided, and not built yet:
 ## Not yet done
 
 - Everything under "The rest of the design".
-- The probe harnesses on a base split into layers (`WINBOX_BASE=layers`), every record held to what it is on the asset bundle's base.
+- The TypeScript engine's whole sweep on the layers: its file probes are run, and the rest are some hours of one CPU (`LAYERS_SWEEP_SHARD=k/n` shares them out). `verinst` alone is hours on the bundle's base ([[topic:asset-bundle]]).
+- A sweep on a stack with a program's layer installed by its installer, rather than one cut from the base.
 - Moving a program's layer between displays, by replaying its profile writes.
 - An installer that restarts Windows (`ExitWindowsExec`, `_MSSETUP`).
 - The stamps an installer gives its files. DOSBox fakes function 5701h, so installed files carry the time of installing, and a layer's id depends on the clock unless it runs on the virtual one.
