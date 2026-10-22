@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
-pub use host::{HostDrive, HostFile};
+pub use host::{HostDrive, HostFile, HostLayer};
 pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
 
 /// The most files open at once.

@@ -52,7 +52,13 @@ The profiles are not in the bundle. WinBox writes `WIN.INI` and `SYSTEM.INI` its
 
 ## Drives from layers
 
-A drive is a stack of folders, the top one writable, each below it read-only. A read takes the first layer that has the name. A write to a file only a lower layer has copies it up first, and a delete in a lower layer is recorded as hidden. The native build's drive already does this with two layers (`HostDrive::over`, `crates/winbox-machine/src/files/host.rs`). The design generalises it:
+A drive is a stack of folders, the top one writable, each below it read-only. A read takes the first layer that has the name. A write to a file only a lower layer has copies it up first, and a delete in a lower layer is recorded as hidden. The Rust engine's host drive does this for any number of layers (`HostDrive::layered`, `crates/winbox-machine/src/files/host.rs`; `HostDrive::over` is the one-layer case). The stack must look as one folder of what it holds does, because the oracle's C: is one DOSBox `localDrive` over one folder:
+
+- [[read out]] A rename is the host's `rename()` (`localDrive::Rename`, `drive_local.cpp`), so a folder renamed keeps everything in it and a file keeps its stamp. The stack copies a lower folder up with everything in it, and a lower file with its stamp, before it renames.
+- [[read out]] A folder's stamp is the host's `st_mtime` (`localDrive::FindNext`). It moves when an entry is made, deleted or moved in it, and not when a file already in it is written. The folders the stack makes only to hold a copied-up file take the lower folders' stamps and keep them; a delete that only hides a lower file still moves its folder's stamp.
+- Each layer hides paths of the layers below it, kept as DOS paths. A folder made again over a hidden one shows nothing of the hidden one. The top's hidden paths can be kept in a file beside the top, outside the drive (`HostDrive::keeping_removed`); the native build does not use that yet, so it forgets deletes from one run to the next.
+
+The design builds the drive from three kinds of layer:
 
 1. **Base**: the asset bundle, laid out as `C:\WINDOWS` and `C:\WINDOWS\SYSTEM` would be, with the profiles WinBox writes. It is read-only and shared by every program.
 2. **Programs**: what an installer added, as a layer of its own, read-only once installed. It holds the program's folder, the DLLs it put in `SYSTEM`, and its own `.INI` files. SimTower needed `WAVMIX16.DLL` in `SYSTEM`, `WAVEMIX.INI` and `SIMTOWER.INI`, and its installer would have put them there.
