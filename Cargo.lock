@@ -1994,6 +1994,9 @@ name = "winbox-native"
 version = "0.1.0"
 dependencies = [
  "cpal",
+ "miniz_oxide 0.9.1",
+ "serde",
+ "serde_json",
  "softbuffer",
  "winbox-machine",
  "winbox-ne",
