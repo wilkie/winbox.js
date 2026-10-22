@@ -1,0 +1,124 @@
+{
+  "about": "A small stack both engines put together alike (test/layers/layer_test.ts, crates/winbox-win16/tests/layers.rs): a synthetic base; layer A, a program installed over it, which deletes a base file, deletes the base's HELP folder and makes it again with a file of its own (an opaque folder), writes WIN.INI and adds files to SYSTEM; layer B, what the program wrote as it ran, over the base and A, two of its files the same bytes (one blob); D, a program's archive made over nothing; C, made over the base alone and writing WIN.INI too. `expected` is written by the TypeScript test with LAYERS_UPDATE=1.",
+  "base": {
+    "assets": "fixture",
+    "display": "vga",
+    "directories": ["WINDOWS", "WINDOWS/SYSTEM", "WINDOWS/TEMP"],
+    "files": [
+      ["WINDOWS/HELP/ONE.HLP", "one", 700197000],
+      ["WINDOWS/HELP/TWO.HLP", "two", 700197000],
+      ["WINDOWS/README.TXT", "readme", 700197000],
+      ["WINDOWS/SYSTEM.INI", "[boot]\r\n", 1578306040],
+      ["WINDOWS/SYSTEM/VGASYS.FON", "font", 700197000],
+      ["WINDOWS/WIN.INI", "[windows]\r\n", 1578306040]
+    ]
+  },
+  "layers": {
+    "A": {
+      "over": ["base"],
+      "made": {
+        "by": "WinBox",
+        "from": "fixture install"
+      },
+      "changes": [
+        ["removed", "WINDOWS\\README.TXT"],
+        ["removed", "WINDOWS\\HELP"],
+        ["folder", "WINDOWS\\SYSTEM", 770472000],
+        ["folder", "GAME", 770472000],
+        ["folder", "WINDOWS\\HELP", 770472001],
+        ["folder", "GAME\\DATA", 770472002],
+        ["file", "WINDOWS\\WIN.INI", "[windows]\r\nload=game\r\n", 770472010],
+        ["file", "WINDOWS\\SYSTEM\\CTL3D.DLL", "ctl3d", 700000000],
+        ["file", "GAME\\GAME.EXE", "MZgame", 770472004],
+        ["file", "GAME\\DATA\\LEVEL1.DAT", "level one", 770472006],
+        ["file", "WINDOWS\\HELP\\GAME.HLP", "game help", 770472008]
+      ]
+    },
+    "B": {
+      "over": ["base", "A"],
+      "made": {
+        "by": "WinBox",
+        "from": "fixture run"
+      },
+      "changes": [
+        ["removed", "GAME\\DATA\\LEVEL1.DAT"],
+        ["folder", "GAME", 789039010],
+        ["folder", "GAME\\DATA", 789039010],
+        ["file", "GAME\\SAVE1.DAT", "saved", 789039012],
+        ["file", "GAME\\SAVE2.DAT", "saved", 789039014],
+        ["file", "WINDOWS\\WIN.INI", "[windows]\r\nload=game\r\n[game]\r\nlevel=2\r\n", 789039016]
+      ]
+    },
+    "C": {
+      "over": ["base"],
+      "made": {
+        "by": "WinBox"
+      },
+      "changes": [["file", "WINDOWS\\WIN.INI", "[windows]\r\nload=other\r\n", 825638398]]
+    },
+    "D": {
+      "over": [],
+      "made": {
+        "by": "WinBox",
+        "version": "1.0.0",
+        "from": "DISK1.ZIP"
+      },
+      "changes": [
+        ["folder", "DISK1", 825638398],
+        ["file", "DISK1\\SETUP.EXE", "MZsetup", 825638398],
+        ["file", "DISK1\\README.TXT", "readme", 700197000]
+      ]
+    }
+  },
+  "stacks": [
+    {
+      "layers": ["base", "A", "B", "D"]
+    },
+    {
+      "layers": ["base", "A", "C"],
+      "refused": "both touch WINDOWS\\WIN.INI"
+    },
+    {
+      "layers": ["base", "B"],
+      "refused": "not beneath it"
+    },
+    {
+      "layers": ["base", "B", "A"],
+      "refused": "not beneath it"
+    }
+  ],
+  "expected": {
+    "ids": {
+      "base": "base:fixture:vga",
+      "A": "9cb355d08d10c99e6180a46e710716347ac1de6ab96175018ebbabb66c02a2ae",
+      "B": "b904f9008d95933c8fa1df73da2de30b4c596b13302e1aa90533af520584ebfc",
+      "C": "e8fe6ca5e11cae0554c8c2aca84cff03bbe6d6c0e4b56709ab98b26a5240224d",
+      "D": "67afe54009be55ab9b671eac007af68eda68ca7f0fa43a071ff39b096ec4b24c"
+    },
+    "zips": {
+      "A": "e46442d47d238883d7e36d5eb4f7e9952f4ba038dfbabcc60827749b353b5a82",
+      "B": "e3bfd493be5f6decb783852022dfd2e6e150aa9e184a431e3d6dce93a3b1bbf3",
+      "C": "fac5d2b2e0f8285c0235ca7e0d4b2e0365e83bfe12e178080451af82291f883d",
+      "D": "c81f68c098ad0f2da01bdd56decc349c2f16c7932b22ff84bcf2d2e026103f0f"
+    },
+    "flat": [
+      "folder DISK1 825638398",
+      "folder GAME 789039010",
+      "folder GAME\\DATA 789039010",
+      "folder WINDOWS 1578306040",
+      "folder WINDOWS\\HELP 770472001",
+      "folder WINDOWS\\SYSTEM 770472000",
+      "folder WINDOWS\\TEMP 1578306040",
+      "file DISK1\\README.TXT 711a6108ba2ce6ca93dd47d6817f2361db10d8ab6eec89460b2dfc2c325efabe 6 700197000",
+      "file DISK1\\SETUP.EXE 810a7af89b876c1ac75fc6dd308645bc9e393a2778e0fca1f8ea28d09847d09c 7 825638398",
+      "file GAME\\GAME.EXE fcfcf5e63817987e35407fe29c4de960072c1c76418dc965175ca0e1594cea04 6 770472004",
+      "file GAME\\SAVE1.DAT d81c55f49c5bb0d36bc11e3966ec4efab66f8dfefbbc1761161ca9d230e5466a 5 789039012",
+      "file GAME\\SAVE2.DAT d81c55f49c5bb0d36bc11e3966ec4efab66f8dfefbbc1761161ca9d230e5466a 5 789039014",
+      "file WINDOWS\\HELP\\GAME.HLP 2204a2477910292179312bf0ba892e39884d1b967ab87feb3704975d85c34959 9 770472008",
+      "file WINDOWS\\SYSTEM.INI 9eace57a2faeaf99d3012d0196993f67d8b358deb7e6f04245eddeef479f6435 8 1578306040",
+      "file WINDOWS\\SYSTEM\\CTL3D.DLL cf7efe56701afa790aa2613228fc5c4ababde030aad29b6d95fda229cef8bb7c 5 700000000",
+      "file WINDOWS\\SYSTEM\\VGASYS.FON 795ea3efa43d0872b63bf0067be97553b46983e4f075097669391e9d15388ecc 4 700197000",
+      "file WINDOWS\\WIN.INI 3d49b923f1abb1eb9ace2220401eaaef9fc0fb9e4b39833f094b1f37a1b03bad 39 789039016"
+    ]
+  }
+}

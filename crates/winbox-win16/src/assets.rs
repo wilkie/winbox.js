@@ -357,6 +357,100 @@ pub fn stored_zip_entries(bytes: &[u8]) -> Result<BTreeMap<String, Vec<u8>>, Str
     Ok(entries)
 }
 
+/// Zip's CRC-32 of an entry's data.
+pub fn crc32(data: &[u8]) -> u32 {
+    let mut crc = 0xffff_ffff_u32;
+
+    for &byte in data {
+        crc ^= u32::from(byte);
+
+        for _ in 0..8 {
+            crc = if crc & 1 == 1 {
+                0xedb8_8320 ^ (crc >> 1)
+            } else {
+                crc >> 1
+            };
+        }
+    }
+
+    !crc
+}
+
+/// An entry of a zip archive of stored entries: its path, its data, and
+/// the DOS date and time words.
+#[derive(Debug, Clone)]
+pub struct StoredEntry<'a> {
+    pub path: &'a str,
+    pub data: &'a [u8],
+    pub date: u16,
+    pub time: u16,
+}
+
+/// A zip archive of stored entries -- no compression -- as the
+/// TypeScript engine's `writeStoredZip` (`src/assets/zip.ts`) writes one,
+/// byte for byte: each entry a local header, the name and the data; then
+/// the central directory and the end record. No extra fields, no
+/// comments, names in ASCII.
+///
+/// # Errors
+///
+/// More entries or bytes than a zip without zip64 holds.
+pub fn write_stored_zip(entries: &[StoredEntry]) -> Result<Vec<u8>, String> {
+    let too_many = || "too many files for a zip archive without zip64".to_string();
+    let count = u16::try_from(entries.len()).map_err(|_| too_many())?;
+    let mut out = Vec::new();
+    let mut central = Vec::new();
+
+    for entry in entries {
+        let name = entry.path.as_bytes();
+        let crc = crc32(entry.data);
+        let size = u32::try_from(entry.data.len()).map_err(|_| too_many())?;
+        let name_length = u16::try_from(name.len()).map_err(|_| too_many())?;
+        let offset = u32::try_from(out.len()).map_err(|_| too_many())?;
+
+        out.extend_from_slice(&0x0403_4b50_u32.to_le_bytes());
+        out.extend_from_slice(&10u16.to_le_bytes());
+        out.extend_from_slice(&[0; 4]);
+        out.extend_from_slice(&entry.time.to_le_bytes());
+        out.extend_from_slice(&entry.date.to_le_bytes());
+        out.extend_from_slice(&crc.to_le_bytes());
+        out.extend_from_slice(&size.to_le_bytes());
+        out.extend_from_slice(&size.to_le_bytes());
+        out.extend_from_slice(&name_length.to_le_bytes());
+        out.extend_from_slice(&[0; 2]);
+        out.extend_from_slice(name);
+        out.extend_from_slice(entry.data);
+
+        central.extend_from_slice(&0x0201_4b50_u32.to_le_bytes());
+        central.extend_from_slice(&10u16.to_le_bytes());
+        central.extend_from_slice(&10u16.to_le_bytes());
+        central.extend_from_slice(&[0; 4]);
+        central.extend_from_slice(&entry.time.to_le_bytes());
+        central.extend_from_slice(&entry.date.to_le_bytes());
+        central.extend_from_slice(&crc.to_le_bytes());
+        central.extend_from_slice(&size.to_le_bytes());
+        central.extend_from_slice(&size.to_le_bytes());
+        central.extend_from_slice(&name_length.to_le_bytes());
+        central.extend_from_slice(&[0; 12]);
+        central.extend_from_slice(&offset.to_le_bytes());
+        central.extend_from_slice(name);
+    }
+
+    let at = u32::try_from(out.len()).map_err(|_| too_many())?;
+    let central_size = u32::try_from(central.len()).map_err(|_| too_many())?;
+
+    out.extend_from_slice(&central);
+    out.extend_from_slice(&0x0605_4b50_u32.to_le_bytes());
+    out.extend_from_slice(&[0; 4]);
+    out.extend_from_slice(&count.to_le_bytes());
+    out.extend_from_slice(&count.to_le_bytes());
+    out.extend_from_slice(&central_size.to_le_bytes());
+    out.extend_from_slice(&at.to_le_bytes());
+    out.extend_from_slice(&[0; 2]);
+
+    Ok(out)
+}
+
 impl Assets {
     /// A bundle from its files by their paths in it, the manifest among
     /// them.
@@ -503,7 +597,7 @@ impl Assets {
 
 /// A host's file or folder last written at seconds since 1970, local time
 /// read as universal, as a host drive reads it back.
-fn set_written(path: &Path, seconds: i64) -> std::io::Result<()> {
+pub fn set_written(path: &Path, seconds: i64) -> std::io::Result<()> {
     let at = std::time::UNIX_EPOCH + std::time::Duration::from_secs(seconds.max(0).unsigned_abs());
     let mut options = std::fs::File::options();
 
