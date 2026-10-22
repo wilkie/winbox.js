@@ -28,6 +28,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "WaitEvent" => Implementation::Sync(wait_event),
         "IsWinOldApTask" => Implementation::Sync(is_win_old_ap_task),
         "GetVersion" => Implementation::Sync(get_version),
+        "GetExpWinVer" => Implementation::Sync(get_exp_win_ver),
         "GetModuleFilename" => Implementation::Sync(get_module_filename),
         "GlobalHandle" => Implementation::Sync(global_handle),
         "GlobalSize" => Implementation::Sync(global_size),
@@ -294,6 +295,19 @@ fn wait_event(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// Windows 3.1 on DOS 6.22.
 fn get_version(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(0x0616_0a03))
+}
+
+/// The Windows version the module of a handle or instance was made for,
+/// as `CreateWindow` asks it (`KRNL386.EXE` seg1 `4f02`-`4f27`):
+/// `GetExePtr`'s module, its word 3Eh (`System::expected_windows_version`).
+/// Nought for a handle of no module. The high word, the module's flag
+/// 2000h, is not answered (`lbmark`). As `GetExpWinVer.ts`.
+fn get_exp_win_ver(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+
+    Ok(Answer::Word(
+        system.expected_windows_version(instance).unwrap_or(0),
+    ))
 }
 
 /// A module's file, as far as the buffer holds it with its nought: a kept

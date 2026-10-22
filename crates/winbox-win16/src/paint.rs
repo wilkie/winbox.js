@@ -130,9 +130,7 @@ impl System {
     pub(crate) fn expected_version(&mut self, index: usize) -> u16 {
         let instance = self.painted(index).instance;
 
-        self.executable_of(instance).map_or(0x30a, |executable| {
-            executable.header.expected_windows_version
-        })
+        self.expected_windows_version(instance).unwrap_or(0x30a)
     }
 }
 

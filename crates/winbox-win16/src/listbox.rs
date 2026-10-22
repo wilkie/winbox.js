@@ -310,8 +310,8 @@ impl System {
     fn made_before_310(&mut self, index: usize) -> bool {
         let instance = self.control_window(index).instance;
 
-        self.executable_of(instance)
-            .is_some_and(|executable| executable.header.expected_windows_version < 0x30a)
+        self.expected_windows_version(instance)
+            .is_some_and(|version| version < 0x30a)
     }
 
     pub(crate) fn is_selected(&mut self, index: usize, item: i32) -> bool {

@@ -61,6 +61,10 @@ use crate::system::{STEP, System};
 /// The module's name, and its file's.
 pub const NAME: &str = "COMMDLG";
 
+/// The Windows version `COMMDLG.DLL` was made for, its header's word 3Eh:
+/// 3.00. WinBox's own answers it with no file (`System::expected_windows_version`).
+pub const EXPECTED_WINDOWS_VERSION: u16 = 0x300;
+
 /// The function that answers an export WinBox has made its own: the
 /// registration point. Every export not here is the file's while it is
 /// loaded, and a stub without it.

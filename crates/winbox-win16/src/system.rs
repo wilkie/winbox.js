@@ -632,6 +632,34 @@ impl System {
         }
     }
 
+    /// The Windows version the module of a handle or instance was made for,
+    /// as `CreateWindow` asks `GetExpWinVer` of the instance it is given
+    /// (`USER.EXE` seg8 `0425`-`0432`): its file's header's (word 3Eh), or,
+    /// for WinBox's own `COMMDLG` with no file, `COMMDLG.DLL`'s, 3.00 --
+    /// its dialogs are made with its instance, and their controls then
+    /// tell what a module made for 3.00 is told (`kb/topics/combo-boxes.md`).
+    /// KERNEL's is the Windows version, 3.10, which KERNEL sets in its own
+    /// module as it starts (`KRNL386.EXE` seg1 `c285`-`c288`), where its
+    /// file says 3.00 (`lbmark`). None for any other.
+    pub fn expected_windows_version(&mut self, handle: u16) -> Option<u16> {
+        if let Some(Object::Kept(kept)) = self.handles.resolve(handle)
+            && self.kept[kept].module.name == "KERNEL"
+        {
+            return Some(0x30a);
+        }
+
+        if let Some(executable) = self.executable_of(handle) {
+            return Some(executable.header.expected_windows_version);
+        }
+
+        match self.handles.resolve(handle)? {
+            Object::Kept(kept) if self.kept[kept].module.name == crate::commdlg::NAME => {
+                Some(crate::commdlg::EXPECTED_WINDOWS_VERSION)
+            }
+            _ => None,
+        }
+    }
+
     /// A module's file in a folder of C:, as the installation has it, else
     /// the asset bundle's store's of the same name: its bytes.
     pub fn installed_or_stored(&mut self, folder: &str, file: &str) -> Option<Vec<u8>> {

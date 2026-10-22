@@ -36,6 +36,7 @@ import { GetWindowLong } from './window-words.js';
 import { activateForFocus, activateWindow, SetWindowPos } from './window-state.js';
 import { GetSysModalWindow, SetSysModalWindow } from './userwin.js';
 import { LockMyTask } from './lock-input.js';
+import { expectedWindowsVersion } from '../module.js';
 import { postQuit } from './queue.js';
 
 /**
@@ -1415,8 +1416,7 @@ export async function dlgSetFocus(system: any, hwnd: number) {
   if ((await send(system, hwnd, WM_GETDLGCODE, 0, 0)) & DLGC_HASSETSEL) {
     const window = system.handles.resolve(hwnd);
     const instance = window?._createStruct?.hInstance ?? window?.data?.hInstance ?? 0;
-    const version =
-      system.handles.resolve(instance)?.executable?.neHeader?.expectedWindowsVersion ?? 0x300;
+    const version = expectedWindowsVersion(system, instance) ?? 0x300;
 
     await send(system, hwnd, EM_SETSEL, 0, version >= 0x300 ? 0xfffe0000 : 0x7fff0000);
   }

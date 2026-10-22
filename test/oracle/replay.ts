@@ -5856,6 +5856,7 @@ const RUN_WHOLE = new Set<string>([
   'localgro',
   'prblt2',
   'dirorder',
+  'lbmark',
 ]);
 
 /**
