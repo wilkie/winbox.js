@@ -217,7 +217,6 @@ export class DOS {
    * Invokes a DOS Protected Mode Interface system call.
    */
   dpmiInvoke() {
-    console.log('DPMI call', '0x' + this._machine.cpu.core.ax.toString(16));
     this._dpmi.invoke();
     return true;
   }

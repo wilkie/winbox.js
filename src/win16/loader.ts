@@ -203,18 +203,15 @@ export class Loader {
     if (flags & (1 << 11)) {
       // When bit 11 is set, the first segment in the executable is the
       // code that loads the application.
-      console.log('First segment loads the application.');
     }
 
     if (flags & (1 << 13)) {
       // When bit 13 is set, the linker detects errors at link time but
       // still creates an executable file.
-      console.log('Linker detects errors at link time but still creates an executable file.');
     }
 
     if (flags & (1 << 15)) {
       // When bit 15 is set, the executable file is a library module.
-      console.log('Library module!');
     }
 
     const autoDataSegmentIndex = this.header.autoDataSegmentIndex;
@@ -224,8 +221,6 @@ export class Loader {
     this._IP = this.header.entryPointIP;
     this._SS = this.header.initialStackPointerSS;
     this._SP = this.header.initialStackPointerSP;
-
-    console.log('ENTRY', this.cs.toString(16), ':', this.ip.toString(16));
 
     await this.readResidentEntries();
     await this.readNonResidentEntries();
@@ -244,7 +239,7 @@ export class Loader {
     const parts: Uint8Array[] = [];
     let size = 0;
 
-    for (let at = 0; at + 4 <= records.byteLength; ) {
+    for (let at = 0; at + 4 <= records.byteLength;) {
       const repeats = records.getUint16(at, true);
       const length = records.getUint16(at + 2, true);
       const bytes = new Uint8Array(records.buffer, records.byteOffset + at + 4, length);
@@ -278,7 +273,6 @@ export class Loader {
     offset += this.executable.headerOffset;
 
     for (let i = 0; i < count; i++) {
-      console.log('Loading segment');
       const segment: any = {};
 
       // This is a logical unit that lists the pages from start of file.
@@ -296,62 +290,44 @@ export class Loader {
 
       if (segmentFlags & 0x1) {
         // Bit 0 Set: Data segment, Clear: Code segment
-        console.log('Data segment!');
         segment.data = true;
       } else {
-        console.log('Code segment!');
         segment.code = true;
       }
 
-      console.log(
-        'segment offset:',
-        segmentOffset,
-        'length:',
-        segmentLength,
-        'minAlloc:',
-        segmentMinAllocation
-      );
       segment.offset = segmentOffset;
       segment.length = segmentLength;
       segment.minAllocation = segmentMinAllocation;
 
       if (segmentFlags & 0x2) {
         // Bit 1 Set: Loader has allocated memory for the segment.
-        console.log('Loader has allocated memory.');
       }
 
       if (segmentFlags & 0x4) {
         // Bit 2 Set: The segment is loaded.
-        console.log('This segment is loaded.');
         segment.loaded = true;
       }
 
       if (segmentFlags & 0x10) {
         // Bit 4 Set: Segment type is MOVABLE, Clear: type is FIXED
-        console.log('MOVABLE!');
         segment.movable = true;
       } else {
-        console.log('FIXED!');
         segment.movable = false;
       }
 
       if (segmentFlags & 0x20) {
         // Bit 5 Set: Segment type is PURE/SHARABLE,
         //     Clear: Segment type is IMPURE/NONSHARABLE
-        console.log('PURE/SHARABLE!');
         segment.sharable = true;
       } else {
-        console.log('IMPURE/NONSHARABLE!');
         segment.sharable = false;
       }
 
       if (segmentFlags & 0x40) {
         // Bit 6 Set: Segment type is PRELOAD
         //     Clear: Segment type is LOADONCALL
-        console.log('PRELOAD!');
         segment.preload = true;
       } else {
-        console.log('LOADONCALL!');
         segment.preload = false;
       }
 
@@ -359,7 +335,6 @@ export class Loader {
       if (segmentFlags & 0x80) {
         // Bit 7 Set: If code segment, type is EXECUTEONLY
         //            If data segment, type is READONLY
-        console.log('EXECUTEONLY/READONLY!');
         segment.writable = false;
       }
 
@@ -372,7 +347,6 @@ export class Loader {
 
       if (segmentFlags & 0x100) {
         // Bit 8 Set: Segment contains relocation data.
-        console.log('RELOCATION DATA!');
 
         // Read the relocation data?
         let relocationOffset = segmentOffset + segmentLength;
@@ -445,7 +419,6 @@ export class Loader {
             const importIndex = (await this._stream.read16(relocationOffset + 4, true)) - 1;
             const procedureOrdinal = await this._stream.read16(relocationOffset + 6, true);
 
-            //console.log("Imported from", this.moduleReferenceEntries[importIndex], "at", procedureOrdinal);
             segment.relocations.push({
               type: Loader.RELOCATION_IMPORT,
               addressType: addressType,
@@ -460,8 +433,13 @@ export class Loader {
             const importIndex = (await this._stream.read16(relocationOffset + 4, true)) - 1;
             const importNameOffset = await this._stream.read16(relocationOffset + 6, true);
             /* The procedure's name, in the imported-names table. */
-            const namesAt = this.header.importedNamesOffset + this.executable.headerOffset + importNameOffset;
-            const procedure = await Util.readAsyncString(this._stream, namesAt + 1, await this._stream.read8(namesAt));
+            const namesAt =
+              this.header.importedNamesOffset + this.executable.headerOffset + importNameOffset;
+            const procedure = await Util.readAsyncString(
+              this._stream,
+              namesAt + 1,
+              await this._stream.read8(namesAt)
+            );
 
             segment.relocations.push({
               type: Loader.RELOCATION_IMPORT,

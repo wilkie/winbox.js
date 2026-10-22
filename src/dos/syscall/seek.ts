@@ -1,13 +1,6 @@
 export function seek(handle, hi, lo, basis) {
   const position = (hi << 16) | lo;
   const file = this.files.resolve(handle);
-  console.log(
-    'DOS: seek()',
-    handle,
-    file,
-    position.toString(16),
-    ['start', 'current', 'end'][basis]
-  );
 
   // TODO: encode access
   // TODO: handle errors

@@ -136,7 +136,6 @@ export class Scheduler {
    * Places the given task in the scheduler queue by its handle.
    */
   queue(handle) {
-    //console.log('queuing', handle);
     this._currentTask = handle;
   }
 
@@ -689,7 +688,6 @@ export class Scheduler {
 
   run() {
     if (this._running) {
-      //console.log("already running");
       return;
     }
 
@@ -774,7 +772,6 @@ export class Scheduler {
 
               if (cpu.interrupt !== null) {
                 // Handle interrupt
-                //console.log("interrupt", cpu.interrupt.toString(16));
                 this.task.halt();
                 break;
               }
@@ -992,8 +989,6 @@ export class Scheduler {
     const newCS = (proc >> 16) & 0xffff;
     const newIP = proc & 0xffff;
 
-    //console.log("calling wndproc", newCS.toString(16), newIP.toString(16));
-
     const args = [
       [hwnd, HWND],
       [message, UINT],
@@ -1080,7 +1075,6 @@ export class Scheduler {
     this.task.halt();
 
     // Preserve context
-    //console.log("pushContext");
     this.task.pushContext(this._machine.cpu.state);
 
     // Set up stack
@@ -1182,7 +1176,6 @@ export class Scheduler {
   }
 
   callReturn() {
-    //console.log("returning");
     const currentTask = this.active;
 
     // Stop execution
@@ -1190,7 +1183,6 @@ export class Scheduler {
 
     // Pull the callback item off its call stack
     const call = this.task.pullCall();
-    //console.log("pulled the call", call);
 
     // The task is no longer handling a call (unless returning to a
     // prior call)
@@ -1221,15 +1213,12 @@ export class Scheduler {
     }
 
     // Get the CS:IP from the task
-    //console.log("popContext");
     const context = this.task.popContext();
 
     // Reset CS:IP to the point after the syscall
     if (context != 1) {
       this._machine.cpu.state = context;
     }
-
-    //console.log("Resuming at", this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
 
     // If there is a pending callback, we will call that
     // This callback may request a call into the VM again...

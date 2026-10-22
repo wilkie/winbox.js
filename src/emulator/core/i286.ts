@@ -2191,7 +2191,6 @@ export class I286 implements CpuCore16 {
       }
 
       case 0x60: {
-
         // PUSHA
         this.debug('pusha       ');
         const sp = this.sp;
@@ -2469,7 +2468,6 @@ export class I286 implements CpuCore16 {
         break;
 
       case 0x86: {
-
         // XCHG eb,rb / XCHG rb,eb
         this.debug('xchg   eb,rb');
         const xchgByteTemp = this.readOperand8(instruction);
@@ -2479,7 +2477,6 @@ export class I286 implements CpuCore16 {
       }
 
       case 0x87: {
-
         // XCHG ew,rw / XCHG rw,ew
         this.debug('xchg   ew,rw');
         const xchgWordTemp = this.readOperand16(instruction);
@@ -2509,7 +2506,6 @@ export class I286 implements CpuCore16 {
         break;
 
       case 0x8c: {
-
         // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS
         this.debug('mov    ew,+S');
         const movSource = instruction.modifier;
@@ -2538,12 +2534,10 @@ export class I286 implements CpuCore16 {
         break;
 
       case 0x8e: {
-
         // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
         // MOV DS,mw / MOV DS,rw
         this.debug('mov    +S,rm');
         const movDestination = instruction.modifier;
-        console.log(instruction, movDestination, this.readOperand16(instruction));
         if (movDestination >= 4 || movDestination == 1) {
           // Invalid
           throw new InvalidInstruction(instruction);
@@ -2590,7 +2584,6 @@ export class I286 implements CpuCore16 {
         break;
 
       case 0x99: {
-
         // CWD (Convert Word to Double-Word)
         this.debug('cwd         ');
         const cwdValue = this._alu.cwd16(this.ax);
@@ -2628,7 +2621,6 @@ export class I286 implements CpuCore16 {
         break;
 
       case 0x9e: {
-
         // SAHF (Store AH into Flags)
         this.debug('sahf        ', this.ah.toString(16));
         const sahfValue = this.ah;
@@ -2641,7 +2633,6 @@ export class I286 implements CpuCore16 {
       }
 
       case 0x9f: {
-
         // LAHF (Load Flags into AH)
         this.debug('lahf        ');
         // Bit 1 is reserved and always reads as one.
@@ -2691,12 +2682,10 @@ export class I286 implements CpuCore16 {
         while (!instruction.repeat || this.cx != 0) {
           // No segment overrides are allowed.
           if (instruction.opcode == 0xa4) {
-            //console.log("MOVSB WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment ?? this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment ?? this.ds, this.si).toString(16));
             this.write8(this.es, this.di, this.read8(instruction.segment ?? this.ds, this.si));
             this.di += this._flags.direction ? -1 : 1;
             this.si += this._flags.direction ? -1 : 1;
           } else {
-            //console.log("MOVSW WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment ?? this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment ?? this.ds, this.si).toString(16));
             this.write16(this.es, this.di, this.read16(instruction.segment ?? this.ds, this.si));
             this.di += this._flags.direction ? -2 : 2;
             this.si += this._flags.direction ? -2 : 2;
@@ -3152,9 +3141,6 @@ export class I286 implements CpuCore16 {
       case 0xf4: // HLT (Halt)
         // TODO: halt machine
         console.log('hlt         ', this.cs.toString(16), (this.ip - 1).toString(16));
-        for (let i = 0; i < 10; i++) {
-          //console.log(this._stackTrace[(i + this._stackIndex) % 10][0].toString(16), ":", this._stackTrace[(i + this._stackIndex) % 10][1].toString(16));
-        }
 
         // Register Dump
         console.log(this.state);
@@ -3214,69 +3200,69 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-      case 0xf7: {
-
-        // DIV ew / IDIV ew / IMUL ew / MUL ew /
-        // NEG ew / NOT ew
-        const aluWordOperand = this.readOperand16(instruction);
-        switch (instruction.modifier) {
-          case 0x0: // TEST (not possible)
-          case 0x1: // Also not implemented
-            throw new InvalidInstruction(instruction);
-          case 0x2: // NOT ew
-            this.debug('not    ew   ');
-            this.writeOperand16(instruction, this._alu.not16(aluWordOperand));
-            break;
-          case 0x3: // NEG ew
-            this.debug('neg    ew   ');
-            this.writeOperand16(instruction, this._alu.neg16(aluWordOperand));
-            break;
-          case 0x4: {
-            // MUL ew
-            this.debug('mul    ew   ');
-            const mulResult = this._alu.mul16(this.ax, aluWordOperand);
-            this.dx = (mulResult >> 16) & 0xffff;
-            this.ax = mulResult & 0xffff;
-            break;
-          }
-          case 0x5: {
-            // IMUL ew
-            this.debug('imul   ew   ');
-            const imulResult = this._alu.imul16(this.ax, aluWordOperand);
-            this.dx = (imulResult >> 16) & 0xffff;
-            this.ax = imulResult & 0xffff;
-            break;
-          }
-          case 0x6: // DIV ew
-            this.debug('div    ew   ');
-            try {
-              const divOperand = ((this.dx << 16) | this.ax) >>> 0;
-              const divResult = this._alu.div16(divOperand, aluWordOperand);
-              this.dx = (divResult >>> 16) & 0xffff;
-              this.ax = divResult & 0xffff;
-            } catch (error) {
-              if (!(error instanceof DivideError)) {
-                throw error;
-              }
-              this.raiseInterrupt(instruction, 0);
+      case 0xf7:
+        {
+          // DIV ew / IDIV ew / IMUL ew / MUL ew /
+          // NEG ew / NOT ew
+          const aluWordOperand = this.readOperand16(instruction);
+          switch (instruction.modifier) {
+            case 0x0: // TEST (not possible)
+            case 0x1: // Also not implemented
+              throw new InvalidInstruction(instruction);
+            case 0x2: // NOT ew
+              this.debug('not    ew   ');
+              this.writeOperand16(instruction, this._alu.not16(aluWordOperand));
+              break;
+            case 0x3: // NEG ew
+              this.debug('neg    ew   ');
+              this.writeOperand16(instruction, this._alu.neg16(aluWordOperand));
+              break;
+            case 0x4: {
+              // MUL ew
+              this.debug('mul    ew   ');
+              const mulResult = this._alu.mul16(this.ax, aluWordOperand);
+              this.dx = (mulResult >> 16) & 0xffff;
+              this.ax = mulResult & 0xffff;
+              break;
             }
-            break;
-          case 0x7: // IDIV ew
-            this.debug('idiv   ew   ');
-            try {
-              // The dividend is DX:AX, the same as DIV. This passed AX alone.
-              const idivOperand = ((this.dx << 16) | this.ax) >>> 0;
-              const idivResult = this._alu.idiv16(idivOperand, aluWordOperand);
-              this.dx = (idivResult >>> 16) & 0xffff;
-              this.ax = idivResult & 0xffff;
-            } catch (error) {
-              if (!(error instanceof DivideError)) {
-                throw error;
-              }
-              this.raiseInterrupt(instruction, 0);
+            case 0x5: {
+              // IMUL ew
+              this.debug('imul   ew   ');
+              const imulResult = this._alu.imul16(this.ax, aluWordOperand);
+              this.dx = (imulResult >> 16) & 0xffff;
+              this.ax = imulResult & 0xffff;
+              break;
             }
-            break;
-      }
+            case 0x6: // DIV ew
+              this.debug('div    ew   ');
+              try {
+                const divOperand = ((this.dx << 16) | this.ax) >>> 0;
+                const divResult = this._alu.div16(divOperand, aluWordOperand);
+                this.dx = (divResult >>> 16) & 0xffff;
+                this.ax = divResult & 0xffff;
+              } catch (error) {
+                if (!(error instanceof DivideError)) {
+                  throw error;
+                }
+                this.raiseInterrupt(instruction, 0);
+              }
+              break;
+            case 0x7: // IDIV ew
+              this.debug('idiv   ew   ');
+              try {
+                // The dividend is DX:AX, the same as DIV. This passed AX alone.
+                const idivOperand = ((this.dx << 16) | this.ax) >>> 0;
+                const idivResult = this._alu.idiv16(idivOperand, aluWordOperand);
+                this.dx = (idivResult >>> 16) & 0xffff;
+                this.ax = idivResult & 0xffff;
+              } catch (error) {
+                if (!(error instanceof DivideError)) {
+                  throw error;
+                }
+                this.raiseInterrupt(instruction, 0);
+              }
+              break;
+          }
         }
         break;
 
@@ -3537,7 +3523,8 @@ export class I286 implements CpuCore16 {
          * and gates, LSL the LDT and TSSs. */
         const selector = this.readOperand16(instruction);
         const descriptor = this.peekDescriptor(selector);
-        const systemTypes = instruction.subOpcode === 0x02 ? [1, 2, 3, 4, 5, 9, 0xb, 0xc] : [1, 2, 3, 9, 0xb];
+        const systemTypes =
+          instruction.subOpcode === 0x02 ? [1, 2, 3, 4, 5, 9, 0xb, 0xc] : [1, 2, 3, 9, 0xb];
         const ok =
           !!descriptor &&
           (descriptor.type || systemTypes.includes(descriptor.flags & 0xf)) &&
@@ -3546,10 +3533,12 @@ export class I286 implements CpuCore16 {
         this.flags.zero = ok;
 
         if (ok) {
-          const wide = !!instruction.operandOverride && typeof (this as any).writeRegister32 === 'function';
+          const wide =
+            !!instruction.operandOverride && typeof (this as any).writeRegister32 === 'function';
           const value =
             instruction.subOpcode === 0x02
-              ? ((descriptor.flags & 0xff) << 8) | (wide ? ((descriptor.granularity ?? 0) & 0xf0) << 16 : 0)
+              ? ((descriptor.flags & 0xff) << 8) |
+                (wide ? ((descriptor.granularity ?? 0) & 0xf0) << 16 : 0)
               : descriptor.limit;
 
           if (wide) {

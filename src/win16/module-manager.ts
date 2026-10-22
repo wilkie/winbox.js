@@ -59,7 +59,6 @@ export class ModuleManager {
     // Assign it a segment
     loadedModule.segment = this._globalAllocator.find(4096);
 
-    console.log('loading', module.name, '@', loadedModule.segment, 'with', module.exports.length);
     this._segments[loadedModule.segment] = loadedModule;
 
     // Craft code stubs for each function.
