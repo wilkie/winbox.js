@@ -459,6 +459,12 @@ export class RustEngine implements Engine {
       machine.add_file('C', placement.parts.join('\\'), placement.data, placement.modified);
     }
 
+    /* What a stack's layers make or stamp of folders, once its files are
+     * there, as the TypeScript engine sets them (`fillDrive`). */
+    for (const folder of plan.stamps) {
+      machine.add_folder('C', folder.parts.join('\\'), folder.modified);
+    }
+
     machine.mark_planned();
 
     for (const change of orderChanges(changes)) {
