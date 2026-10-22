@@ -8,7 +8,10 @@
  * images -- make WinBox's asset bundle here, in the browser
  * (`kb/topics/asset-bundle.md`), or a bundle already made is dropped; the
  * bundle is remembered as an installation is, and C: is the base it composes
- * for the display chosen, with no installation at all. What programs write on C: is remembered too, as the changes
+ * for the display chosen, with no installation at all. A zip of programs
+ * dropped over either is kept as a program of its own, a layer over that
+ * Windows (`kb/formats/layer.md`), and listed on every visit, each run on
+ * its own stack. What programs write on C: is remembered too, as the changes
  * against what was dropped (`changes.ts`), and put back on the drive each time
  * it is made, on either engine. Nothing is uploaded anywhere. Each program's
  * API calls are traced as it runs -- the functions it needed, and which of
@@ -31,7 +34,15 @@ import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { Presenter } from '../raster/presenter.js';
 import { readZip } from '../zip.js';
 import { type Change, sameChanges } from './changes.js';
-import { type Archive, type Plan, planDrive, type Program } from './drive.js';
+import { baseName, type Layer } from '../layers/layer.js';
+import {
+  type Archive,
+  type Plan,
+  planDrive,
+  type Program,
+  programLayer,
+  type Stack,
+} from './drive.js';
 import { type Engine, type Page } from './engines/engine.js';
 import { TypeScriptEngine } from './engines/ts.js';
 import { classify, makeFromMedia } from './media.js';
@@ -41,10 +52,20 @@ import {
   forgetAssets,
   forgetChanges,
   forgetWindows,
+  forgetAllPrograms,
+  forgetProgram,
   identify,
+  keepProgram,
   type Kept,
+  type KeptProgram,
+  keptCounts,
+  programChangesKey,
+  programIdentity,
   recallAssets,
   recallChanges,
+  recallChangesAt,
+  recallLayers,
+  recallPrograms,
   recallWindows,
   rememberAssets,
   rememberChanges,
@@ -67,6 +88,9 @@ const elements = {
   coprocessor: $<HTMLInputElement>('#coprocessor'),
   soundOption: $<HTMLElement>('#sound-option'),
   sound: $<HTMLInputElement>('#sound'),
+  keptSection: $<HTMLElement>('#kept-section'),
+  keptNote: $<HTMLElement>('#kept-note'),
+  keptPrograms: $<HTMLElement>('#kept-programs'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -87,20 +111,61 @@ const state: {
   installation: string | null;
   assets: Assets | null;
   media: AssetInput[];
+  programs: KeptProgram[];
+  program: string | null;
 } = {
   archives: [],
   windows: null,
   installation: null,
   assets: null,
   media: [],
+  programs: [],
+  program: null,
 };
 
 /**
- * What the changes programs write are told against: the installation, or
- * the asset bundle and the display, whose base differs with the display
- * (`assetsIdentity`); null with neither.
+ * The programs kept in this browser, each a stack of its own
+ * (`kb/formats/layer.md`): the base and its layers, the lowest first.
+ * What was dropped as an archive is laid at `C:\<NAME>` as before, and
+ * kept as a layer. `state.program` is the one chosen, whose stack C: is
+ * while the Windows and the display it was made on are; else C: is the
+ * base alone, with the archives dropped loose on it -- the "loose
+ * programs" stack, whose changes are kept as they were before programs
+ * were kept. Each kept program's layers, read back once.
+ */
+const stacks = new Map<string, Layer[]>();
+
+/** The base C: is now: its name as a stack names it, or null with no Windows. */
+function baseNow() {
+  return state.windows && state.installation
+    ? `install:${state.installation}`
+    : state.assets
+      ? baseName(state.assets.id, elements.display.value)
+      : null;
+}
+
+/** The program chosen, where it was made on the base and display C: is now. */
+function programNow() {
+  const program = state.programs.find((one) => one.name === state.program);
+
+  return program && program.base === baseNow() && program.display === elements.display.value
+    ? program
+    : null;
+}
+
+/**
+ * What the changes programs write are told against: the program chosen's
+ * stack (`programIdentity`); else the installation, or the asset bundle
+ * and the display, whose base differs with the display (`assetsIdentity`);
+ * null with neither.
  */
 function identityNow() {
+  const program = programNow();
+
+  if (program) {
+    return programIdentity(program.name, program.base, program.display, program.layers);
+  }
+
   return !state.windows && state.assets
     ? assetsIdentity(state.assets.id, elements.display.value)
     : state.installation;
@@ -380,12 +445,50 @@ async function rebuild({ keeping = true } = {}) {
 
   const display = elements.display.value;
   const assets = state.windows ? null : state.assets;
+  const program = programNow();
+  let composed: ReturnType<Assets['compose']> | null;
 
   try {
-    plan = planDrive(state.archives, state.windows, assets?.compose(display) ?? null);
+    composed = assets?.compose(display) ?? null;
   } catch (error: any) {
     rebuilding = false;
     status(`The asset bundle has no base for that display: ${error?.message ?? error}`, 'error');
+    return false;
+  }
+
+  /* The program chosen's stack: its layers over the base, read back. */
+  let stack: Stack | undefined;
+
+  if (program) {
+    try {
+      let layers = stacks.get(program.name);
+
+      if (!layers) {
+        layers = await recallLayers(program);
+        stacks.set(program.name, layers);
+      }
+
+      stack = {
+        base: program.base,
+        layers: layers.map((layer) => ({ layer, order: program.orders[layer.manifest.id] })),
+      };
+    } catch (error: any) {
+      rebuilding = false;
+      status(`${program.name} could not be read back: ${error?.message ?? error}`, 'error');
+      render();
+      return false;
+    }
+  }
+
+  try {
+    plan = planDrive(program ? [] : state.archives, state.windows, composed, stack);
+  } catch (error: any) {
+    rebuilding = false;
+    status(
+      `${program?.name ?? 'C:'} could not be put together: ${error?.message ?? error}`,
+      'error'
+    );
+    render();
     return false;
   }
 
@@ -479,10 +582,61 @@ function renderDisplays() {
       : (names[0] ?? '');
 }
 
+/**
+ * The programs kept, each with the way to put its stack on C: and to
+ * forget it: those made on another display offered on that display.
+ */
+function renderKept() {
+  const chosen = programNow();
+  const base = baseNow();
+
+  elements.keptSection.hidden = !state.programs.length;
+  elements.keptNote.textContent =
+    'Each on a C: of its own, over Windows, with what it writes. Programs dropped are kept here.';
+  elements.keptPrograms.replaceChildren(
+    ...state.programs.map((program) => {
+      const row = document.createElement('li');
+      const label = document.createElement('code');
+      const actions = document.createElement('span');
+      const open = document.createElement('button');
+      const forget = document.createElement('button');
+      const here = program.base === base && program.display === elements.display.value;
+      const shown = program === chosen;
+      const display = (DISPLAY_MODES as any)[program.display]?.description ?? program.display;
+
+      label.textContent = here ? program.name : `${program.name} (${display})`;
+      actions.className = 'actions';
+
+      open.type = 'button';
+      open.textContent = shown ? 'Close' : 'Open';
+      open.disabled = !here;
+      open.setAttribute(
+        'aria-label',
+        shown
+          ? `Close ${program.name}`
+          : here
+            ? `Open ${program.name}`
+            : `${program.name} was made on the ${display}, and is opened there`
+      );
+      open.addEventListener('click', () => choose(shown ? null : program.name));
+
+      forget.type = 'button';
+      forget.textContent = 'Forget';
+      forget.setAttribute('aria-label', `Forget ${program.name}`);
+      forget.addEventListener('click', () => forgetKept(program.name));
+
+      actions.append(open, forget);
+      row.append(label, actions);
+      return row;
+    })
+  );
+}
+
 function render() {
   elements.windows.textContent = windowsText();
   elements.forget.hidden = !state.windows && !state.assets;
   renderChanges();
+  renderKept();
 
   elements.programs.replaceChildren(
     ...(plan?.programs ?? []).map((program) => {
@@ -510,9 +664,10 @@ function render() {
   if (plan && !plan.programs.length) {
     const row = document.createElement('li');
     row.className = 'empty';
-    row.textContent = state.archives.length
-      ? 'No programs in what was dropped.'
-      : 'Drop a zip of programs to run.';
+    row.textContent =
+      state.archives.length || programNow()
+        ? 'No programs in what was dropped.'
+        : 'Drop a zip of programs to run.';
     elements.programs.replaceChildren(row);
   }
 
@@ -562,7 +717,7 @@ async function takeAssets(name: string, bytes: Uint8Array) {
   const same = !state.windows && state.assets?.id === assets.id;
 
   if (!same) {
-    await forgetAllChanges();
+    await Promise.all([forgetAllChanges(), forgetPrograms()]);
     kept = { installation: null, changes: [] };
   }
 
@@ -618,6 +773,7 @@ async function accept(files: File[]) {
 
   try {
     const media: AssetInput[] = [];
+    const archives: Archive[] = [];
 
     for (const file of files) {
       const bytes = new Uint8Array(await file.arrayBuffer());
@@ -632,7 +788,7 @@ async function accept(files: File[]) {
 
           /* What programs wrote on another installation is not put on this one. */
           if (installation !== state.installation) {
-            await forgetAllChanges();
+            await Promise.all([forgetAllChanges(), forgetPrograms()]);
             kept = { installation: null, changes: [] };
           }
 
@@ -645,12 +801,9 @@ async function accept(files: File[]) {
         case 'media':
           media.push(dropped.input);
           break;
-        case 'programs': {
-          const archive: Archive = { name: file.name, entries: dropped.entries };
-
-          state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
+        case 'programs':
+          archives.push({ name: file.name, entries: dropped.entries });
           break;
-        }
       }
     }
 
@@ -662,6 +815,12 @@ async function accept(files: File[]) {
 
       note = await takeAssets('winbox-assets.zip', made.zip);
     }
+
+    /* The programs kept over the Windows dropped with them, if any; the
+     * last of them chosen. */
+    for (const archive of archives) {
+      note = (await takeProgram(archive)) ?? note;
+    }
   } catch (error: any) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
     rebuilding = false;
@@ -672,6 +831,124 @@ async function accept(files: File[]) {
 
   if (await rebuild({ keeping: false })) {
     status(note ?? 'Ready.', note ? 'error' : 'info');
+  }
+}
+
+/**
+ * A program's archive dropped: kept as a program of its own, a layer laid
+ * at `C:\\<NAME>` over the base C: is now, and chosen, so that C: is its
+ * stack and its programs are offered to run. Where there is no Windows to
+ * keep it over, or it cannot be kept, it is put on C: loose, as before,
+ * until the page is left; why, where it could not be kept.
+ */
+async function takeProgram(archive: Archive) {
+  const loose = () => {
+    state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
+    state.program = null;
+  };
+  const base = baseNow();
+
+  if (!base) {
+    loose();
+    return null;
+  }
+
+  const display = elements.display.value;
+  const name = archive.name.replace(/\.zip$/i, '');
+  let made;
+
+  try {
+    made = await programLayer(
+      archive,
+      state.windows,
+      state.windows ? null : (state.assets?.compose(display) ?? null)
+    );
+  } catch (error: any) {
+    loose();
+    return `${archive.name} is on C: until the page is left, and not kept: ${error?.message ?? error}`;
+  }
+
+  const { id } = made.layer.manifest;
+  const program: KeptProgram = {
+    name,
+    base,
+    display,
+    layers: [id],
+    exes: made.programs,
+    orders: { [id]: made.order },
+    kept: Date.now(),
+  };
+
+  /* What a program of this name wrote on a stack since changed: put on
+   * the new one, or forgotten, as the user says. */
+  const identity = programIdentity(name, base, display, program.layers);
+  const before = await recallChangesAt(programChangesKey(name));
+
+  if (before && before.installation !== identity && before.changes.length) {
+    const again = confirm(
+      `${name} was kept before, and what it wrote with it. Put what it wrote on the ${name} dropped now? Cancel forgets it.`
+    );
+
+    await (again
+      ? rememberChanges({ installation: identity, changes: before.changes }).catch(() => undefined)
+      : forgetChanges(before.installation));
+  }
+
+  try {
+    await keepProgram(program, [made.layer]);
+  } catch (error: any) {
+    loose();
+    return `${archive.name} could not be kept in this browser, and is on C: until the page is left: ${error?.message ?? error}`;
+  }
+
+  stacks.set(name, [made.layer]);
+  state.programs = [...state.programs.filter((one) => one.name !== name), program];
+  state.archives = state.archives.filter((one) => one.name !== archive.name);
+  state.program = name;
+  return null;
+}
+
+/** Every program kept forgotten, with what they wrote: they were made on a Windows now gone. */
+async function forgetPrograms() {
+  await forgetAllPrograms();
+  state.programs = [];
+  state.program = null;
+  stacks.clear();
+}
+
+/** A program kept put on C:, its stack, or none: the base alone, with what was dropped loose. */
+async function choose(name: string | null) {
+  await hold();
+  state.program = name;
+
+  if (await rebuild({ keeping: false })) {
+    status(name ? `${name} is on C:.` : 'Ready.');
+  }
+}
+
+/** A program kept forgotten, and what it wrote; its layers and blobs, where no other has them. */
+async function forgetKept(name: string) {
+  await hold({ keeping: state.program !== name });
+
+  try {
+    await forgetProgram(name);
+  } catch (error: any) {
+    rebuilding = false;
+    status(`${name} could not be forgotten: ${error?.message ?? error}`, 'error');
+    return;
+  }
+
+  stacks.delete(name);
+  state.programs = state.programs.filter((one) => one.name !== name);
+
+  if (state.program === name) {
+    state.program = null;
+    kept = { installation: null, changes: [] };
+    tooLarge = [];
+  }
+
+  if (await rebuild({ keeping: false })) {
+    status(`Forgot ${name}, and what it wrote.`);
   }
 }
 
@@ -716,7 +993,9 @@ function start() {
     await hold({ keeping: false });
 
     const what = state.windows ? 'the Windows installation' : 'the asset bundle';
+    const had = state.programs.length;
 
+    await forgetPrograms();
     state.windows = null;
     state.installation = null;
     state.assets = null;
@@ -727,7 +1006,11 @@ function start() {
     renderDisplays();
 
     if (await rebuild({ keeping: false })) {
-      status(`Forgot ${what}, and what programs wrote.`);
+      status(
+        had
+          ? `Forgot ${what}, the programs kept on it, and what programs wrote.`
+          : `Forgot ${what}, and what programs wrote.`
+      );
     }
   });
 
@@ -758,39 +1041,43 @@ function start() {
   });
   addEventListener('pagehide', () => keep());
 
-  Promise.all([recallWindows(), recallAssets()]).then(async ([remembered, bundle]) => {
-    let note: string | null = null;
+  Promise.all([recallWindows(), recallAssets(), recallPrograms()]).then(
+    async ([remembered, bundle, programs]) => {
+      let note: string | null = null;
 
-    if (remembered) {
-      state.windows = { name: remembered.name, entries: await readZip(remembered.bytes) };
-      state.installation = await identify(remembered);
-    } else if (bundle) {
-      try {
-        state.assets = await Assets.fromZip(bundle.bytes);
-      } catch (error: any) {
-        note = `The asset bundle kept could not be read: ${error?.message ?? error}`;
+      state.programs = programs;
+
+      if (remembered) {
+        state.windows = { name: remembered.name, entries: await readZip(remembered.bytes) };
+        state.installation = await identify(remembered);
+      } else if (bundle) {
+        try {
+          state.assets = await Assets.fromZip(bundle.bytes);
+        } catch (error: any) {
+          note = `The asset bundle kept could not be read: ${error?.message ?? error}`;
+        }
+      }
+
+      renderDisplays();
+
+      /* What was kept is put back only on what it was written on. */
+      const identity = identityNow();
+
+      kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
+
+      if (await rebuild({ keeping: false })) {
+        status(
+          note ??
+            (remembered
+              ? `Remembered ${remembered.name}.`
+              : state.assets
+                ? 'Remembered the asset bundle.'
+                : 'Ready.'),
+          note ? 'error' : 'info'
+        );
       }
     }
-
-    renderDisplays();
-
-    /* What was kept is put back only on what it was written on. */
-    const identity = identityNow();
-
-    kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
-
-    if (await rebuild({ keeping: false })) {
-      status(
-        note ??
-          (remembered
-            ? `Remembered ${remembered.name}.`
-            : state.assets
-              ? 'Remembered the asset bundle.'
-              : 'Ready.'),
-        note ? 'error' : 'info'
-      );
-    }
-  });
+  );
 
   /* Handy for prodding the machine from the browser console. */
   Object.assign(globalThis as Record<string, unknown>, {
@@ -808,6 +1095,7 @@ function start() {
       get kept() {
         return kept;
       },
+      keptCounts,
       keep: keepAll,
       accept,
       run,

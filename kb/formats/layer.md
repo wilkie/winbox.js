@@ -1,7 +1,7 @@
 ---
 kind: format
 name: WinBox layers
-summary: WinBox's own format for a layer of drive C: — what an installer or a running program added, deleted or wrote, kept apart from the base and content-addressed — its manifest and id, how a stack of layers flattens to one drive and when a stack is refused, its exchange zip, and how the native build writes a layer to disk for its layered host drive.
+summary: WinBox's own format for a layer of drive C: — what an installer or a running program added, deleted or wrote, kept apart from the base and content-addressed — its manifest and id, how a stack of layers flattens to one drive and when a stack is refused, its exchange zip, how the page keeps programs as layers in the browser, and how the native build writes a layer to disk for its layered host drive.
 ---
 
 A layer is not a format of Windows'. It is WinBox's way of keeping what a program put on drive C: apart from the base the asset bundle composes ([[topic:asset-bundle]]), so that programs can be installed once and run over the base in any visit, on the page or in the native build. The design it follows is in [[guide:without-windows]], under "Drives from layers".
@@ -104,14 +104,41 @@ The sweep found no difference, so the layering needed no fix. To check that it c
 
 On every run, without the switch, `tests/layers_sweep.rs` and `test/layers/base_test.ts` check that the stack lists and reads, stamps included, as the base in one folder does on each display. They also run `dirorder`, `filecdr`, `openfile`, `profile`, `loadpath` and `verinst` (Rust), or `dirorder`, `diskfree`, `filecdr`, `loadpath`, `openfile`, `profile` and `profnew` (TypeScript), on both.
 
+## On the page
+
+The page (`run.html`, either engine) keeps programs as layers ([[topic:asset-bundle]] has the rest of the page).
+
+**Storage.** IndexedDB `winbox-run`, version 4 (`src/run/store.ts`). Version 3's stores, `archives`, `assets` and `changes`, are kept as they are, and three are added:
+
+| Store      | Key            | What                                                                                                                                                                           |
+| ---------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `blobs`    | sha256         | A file's bytes. Kept once, whichever layers name them.                                                                                                                         |
+| `layers`   | the layer's id | Its manifest.                                                                                                                                                                  |
+| `programs` | its name       | `KeptProgram`: its name, its base (`base:<assets id>:<display>` or `install:<sha256>`), its display, its layers' ids, the lowest first, its EXEs, and each layer's file order. |
+
+A program is written in one transaction over the three stores. Forgetting one deletes its record and its user layer, then deletes every layer no program names and every blob no layer kept names (`collect`). The page asks `navigator.storage.persist()` once, as the first program is kept, without waiting: Firefox asks the user. A write that fails, for want of room say, is said on the status line, and the archive is put on C: loose for the visit.
+
+**A program dropped.** With Windows there, an installation or the asset bundle, a zip of programs is made into a layer over nothing (`programLayer`, `src/run/drive.ts`). Its files are where `planDrive` lays the archive over the base, `C:\<NAME>` and beneath, under the same 8.3 names and with the archive's stamps. Each folder it makes has a `folder` entry at the page's stamp, 10:20:40 on 6 January 2020, which is what the TypeScript engine's volume gives a folder it makes for a file. Its program record keeps the order the archive gave its files, so its drive is filled in the order the loose drive is. The program is chosen at once and its EXEs listed, so dropping and running is still one step. Without Windows, an archive is put on C: loose for the visit, as before.
+
+**C: from a stack.** `planDrive`'s `stack`, the base's name and the layers over it, puts each layer's entries on the plan of the base, as `flattenStack` puts them on what is beneath. A file removed is taken out of the plan. A file written is placed after what is placed already, in the order the program record keeps, else the layer's. The folders the layers make or stamp go in the plan's `stamps`, which each engine sets once the files are placed: `fat16Drive`'s `folder` on the TypeScript engine, `add_folder` on the Rust engine. The stack is refused as `stackRefusal` refuses it, with the base's plan counted as the lowest layer. Each engine marks its drive as planned from that plan (`Fat16Changes`, `mark_planned`), so what a program writes is told against the stack.
+
+[[measured]] On the TypeScript engine, a single program's stack is the drive of its archive dropped loose, sector for sector, on a synthetic base, on an installation and on the asset bundle's base for the VGA (`test/run/layers_test.ts`). The volume filled from `stack.json`'s first stack holds what the stack flattened holds. A FAT entry keeps its stamp to two seconds, so an odd second shows as the even one before it. The Rust engine's drive, filled from that plan as the page fills it (`test/run/stack-plan.json`), holds the flattened stack exactly. On the asset bundle's base, the `strings` probe run from a program's layer tells only what it wrote, and its changes put back on the same stack made afresh are told the same (`crates/winbox-web/tests/layers_page.rs`).
+
+The Rust engine's page drive used to give a program's folder, `C:\GAMES`, the stamp of the first file put in it, where the TypeScript engine's gave the page's stamp. The two engines disagreed, and a layer must name one stamp, so both now give the TypeScript engine's.
+
+**The user's layer.** What a program writes is kept in `changes` under `C:program:<name>`. It is told against the stack's identity, `programIdentity`: the name, the base, the display and the layers' ids. It is put back only on that stack. When a program of the same name is dropped again with other files, the page asks whether to put what it wrote on the new one or forget it.
+
+**The loose stack.** Version 3's records, `C` and `C:assets:<id>:<display>`, are the "loose programs" stack: the base alone, with archives dropped loose on it. They are read and kept as before. This is C: whenever no kept program is open, as on every visit until one is opened.
+
+**What the user sees.** The Kept programs list, above Programs, shows each program kept. A program made on another display is named with that display and opened only there. Open puts its stack on C: and lists its EXEs under Programs. Close goes back to the loose stack. Forget lets the program go with what it wrote. A program stays bound to its Windows: dropping another installation or bundle, or forgetting the one there, forgets every program kept.
+
 ## The rest of the design
 
 Decided, and not built yet:
 
-- **Page storage.** IndexedDB version 4 (`src/run/store.ts`): a `blobs` store by sha256, a `layers` store of manifests, and a `programs` store: each program's name, its base, its layers and EXEs, and its display. The user's layer is kept in `changes`, as `Kept` under a new key.
 - **Native storage.** `winbox/blobs/<sha256>`, `winbox/layers/<id>.json`, the materialised `winbox/layer-<stack id>/`, `winbox/programs/<name>.json`, and the user's layer as `winbox/users/<program>/C/`, with its hidden paths in a `removed` file beside `C/` (`HostDrive::keeping_removed`).
-- **Installing.** The page drops an archive. It is added as a program, laid at `C:\<NAME>` as today, and kept as a layer. Or it is installed: the base, the archive as media and an empty top; the installer runs; "Keep" makes the top a layer, its blobs hashed with `crypto.subtle`. The owner chose to discard the media after installing. Only the installer's top is kept, and its entries that name the media's paths are dropped. A program that later reads its setup folder will not find it. Native: `--install NAME`, `--program NAME [C:\PATH.EXE]`, `--layer-from DIR|ZIP`.
-- **The user's layer.** One per stack, under `C:program:<name>`, kept with the stack's identity: base, display and layer ids. A lower layer changed: ask to apply or drop. Today's `C:assets:<id>:<display>` records become the user layer of a "loose programs" stack under the same key.
+- **Installing.** The page drops an archive and keeps it as a layer (On the page, above). Or it is installed: the base, the archive as media and an empty top; the installer runs; "Keep" makes the top a layer, its blobs hashed with `crypto.subtle`. The owner chose to discard the media after installing. Only the installer's top is kept, and its entries that name the media's paths are dropped. A program that later reads its setup folder will not find it. Native: `--install NAME`, `--program NAME [C:\PATH.EXE]`, `--layer-from DIR|ZIP`.
+- **The user's layer, natively.** One per stack, as on the page.
 - **The owner's decisions (2026-10-21).** Layers are materialised on disk and stacked by the host drive, rather than read live from blobs or flattened into one folder per stack. The Rust engine has its own sha256. Installer media are discarded after installing. A program's layer is bound to its display. One user layer per stack. Programs sharing a machine are installed in turn, and a stack of layers made apart that touch one path is refused. Today's records are kept as the "loose programs" stack. Programs' archives are kept as layers. An installation may be a base. A layer is taken on an explicit "Keep".
 
 ## Not yet done
@@ -119,6 +146,9 @@ Decided, and not built yet:
 - Everything under "The rest of the design".
 - The TypeScript engine's whole sweep on the layers: its file probes are run, and the rest are some hours of one CPU (`LAYERS_SWEEP_SHARD=k/n` shares them out). `verinst` alone is hours on the bundle's base ([[topic:asset-bundle]]).
 - A sweep on a stack with a program's layer installed by its installer, rather than one cut from the base.
+- Installing on the page: an installer run into an empty top over a program's stack, its top kept as a layer with "Keep" and added to the program's `layers`. The store, `planDrive`'s `stack` and the user's layer take any number of layers already.
+- Exporting a kept program's layer as its exchange zip from the page, and taking one dropped.
+- An archive whose name is not an 8.3 name, `Ski Free.zip`, is laid on C: with each of its files in a folder of its own, `SKIFRE~1` to `SKIFRE~6`, by `planDrive` as before and so in the layer kept of it: a folder's long name is not remembered once shortened.
 - Moving a program's layer between displays, by replaying its profile writes.
 - An installer that restarts Windows (`ExitWindowsExec`, `_MSSETUP`).
 - The stamps an installer gives its files. DOSBox fakes function 5701h, so installed files carry the time of installing, and a layer's id depends on the clock unless it runs on the virtual one.

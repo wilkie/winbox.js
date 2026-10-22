@@ -1,0 +1,68 @@
+{
+  "about": "The page's plan of test/layers/stack.json's first stack (src/run/drive.ts, planDrive with a stack): what both engines fill C: with, in order -- the folders, the files, then the folders the layers make or stamp. Written by test/run/layers_test.ts with LAYERS_UPDATE=1; crates/winbox-web/tests/layers_page.rs fills the Rust engine's drive from it.",
+  "stack": ["base", "A", "B", "D"],
+  "folders": [
+    ["WINDOWS", 1578306040],
+    ["WINDOWS\\SYSTEM", 1578306040],
+    ["WINDOWS\\TEMP", 1578306040]
+  ],
+  "placements": [
+    [
+      "WINDOWS\\SYSTEM.INI",
+      "9eace57a2faeaf99d3012d0196993f67d8b358deb7e6f04245eddeef479f6435",
+      1578306040
+    ],
+    [
+      "WINDOWS\\SYSTEM\\VGASYS.FON",
+      "795ea3efa43d0872b63bf0067be97553b46983e4f075097669391e9d15388ecc",
+      700197000
+    ],
+    [
+      "GAME\\GAME.EXE",
+      "fcfcf5e63817987e35407fe29c4de960072c1c76418dc965175ca0e1594cea04",
+      770472004
+    ],
+    [
+      "WINDOWS\\HELP\\GAME.HLP",
+      "2204a2477910292179312bf0ba892e39884d1b967ab87feb3704975d85c34959",
+      770472008
+    ],
+    [
+      "WINDOWS\\SYSTEM\\CTL3D.DLL",
+      "cf7efe56701afa790aa2613228fc5c4ababde030aad29b6d95fda229cef8bb7c",
+      700000000
+    ],
+    [
+      "GAME\\SAVE1.DAT",
+      "d81c55f49c5bb0d36bc11e3966ec4efab66f8dfefbbc1761161ca9d230e5466a",
+      789039012
+    ],
+    [
+      "GAME\\SAVE2.DAT",
+      "d81c55f49c5bb0d36bc11e3966ec4efab66f8dfefbbc1761161ca9d230e5466a",
+      789039014
+    ],
+    [
+      "WINDOWS\\WIN.INI",
+      "3d49b923f1abb1eb9ace2220401eaaef9fc0fb9e4b39833f094b1f37a1b03bad",
+      789039016
+    ],
+    [
+      "DISK1\\README.TXT",
+      "711a6108ba2ce6ca93dd47d6817f2361db10d8ab6eec89460b2dfc2c325efabe",
+      700197000
+    ],
+    [
+      "DISK1\\SETUP.EXE",
+      "810a7af89b876c1ac75fc6dd308645bc9e393a2778e0fca1f8ea28d09847d09c",
+      825638398
+    ]
+  ],
+  "stamps": [
+    ["DISK1", 825638398],
+    ["GAME", 789039010],
+    ["GAME\\DATA", 789039010],
+    ["WINDOWS\\HELP", 770472001],
+    ["WINDOWS\\SYSTEM", 770472000]
+  ]
+}

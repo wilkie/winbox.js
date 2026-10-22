@@ -10,8 +10,8 @@
 //! moment and the run is the same however fast the host is.
 #![allow(clippy::cast_precision_loss, clippy::float_cmp)]
 
+use std::cell::Cell;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering};
 
 use winbox_machine::host_seconds;
 use winbox_web::session::{Made, Session, State};
@@ -21,13 +21,23 @@ fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
 }
 
-/// The host's time in hundredths of a millisecond, a hundredth on each
-/// time it is read.
-static TICKS: AtomicU64 = AtomicU64::new(0);
+thread_local! {
+    /// The host's time in hundredths of a millisecond, a hundredth on each
+    /// time it is read: each test's own, as one counter for them all ran
+    /// on as the tests beside it read it, and how far depended on how the
+    /// threads met (`the_page_hears_the_base_level_setup_through_the_mapper`
+    /// once heard its first note outside its window under load).
+    static TICKS: Cell<u64> = const { Cell::new(0) };
+}
 
 #[allow(clippy::cast_precision_loss)]
 fn quick_ms() -> f64 {
-    TICKS.fetch_add(1, Ordering::Relaxed) as f64 / 100.0
+    TICKS.with(|ticks| {
+        let now = ticks.get();
+
+        ticks.set(now + 1);
+        now as f64 / 100.0
+    })
 }
 
 /// A host's folder put on drive C: at `dos`, every file in it, and its
@@ -387,15 +397,23 @@ fn the_page_hears_the_base_level_setup_through_the_mapper() {
     );
 }
 
-/// The host's time in hundredths of a millisecond, two milliseconds on
-/// each time it is read: a host so loaded that its time has moved on
-/// between any two readings of it. (At one millisecond a reading the
-/// sound's wait below came through by chance before it was mended; at two,
-/// five and ten it never came back.)
-static LOADED: AtomicU64 = AtomicU64::new(0);
+thread_local! {
+    /// The host's time in hundredths of a millisecond, two milliseconds on
+    /// each time it is read: a host so loaded that its time has moved on
+    /// between any two readings of it. (At one millisecond a reading the
+    /// sound's wait below came through by chance before it was mended; at
+    /// two, five and ten it never came back.) Each test's own, as `TICKS`.
+    static LOADED: Cell<u64> = const { Cell::new(0) };
+}
 
+#[allow(clippy::cast_precision_loss)]
 fn loaded_ms() -> f64 {
-    LOADED.fetch_add(200, Ordering::Relaxed) as f64 / 100.0
+    LOADED.with(|loaded| {
+        let now = loaded.get();
+
+        loaded.set(now + 200);
+        now as f64 / 100.0
+    })
 }
 
 /// Half a second of a tone at 44,100 samples a second, sixteen-bit stereo,

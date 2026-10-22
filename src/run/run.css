@@ -147,6 +147,16 @@ h2 {
   overflow-wrap: anywhere;
 }
 
+.programs .actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+#kept-note {
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+
 .programs .empty,
 #windows {
   color: var(--muted);

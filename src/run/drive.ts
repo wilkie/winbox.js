@@ -2,7 +2,16 @@
 
 import { type Composed } from '../assets/compose.js';
 import { FAT16 } from '../file-systems/fat16.js';
+import {
+  type Layer,
+  type LayerEntry,
+  layerFromChanges,
+  type LayerManifest,
+  LAYER_FORMAT,
+  stackRefusal,
+} from '../layers/layer.js';
 import { type ZipEntry } from '../zip.js';
+import { type Change, fat16Drive } from './changes.js';
 
 /**
  * Puts dropped archives onto the machine's C: drive. Where each file goes, and
@@ -177,6 +186,13 @@ export interface Plan {
   /** The folders made first: the asset bundle's base's (`WINDOWS\TEMP`), where it is placed. */
   folders: Folder[];
   placements: Placement[];
+
+  /**
+   * The folders a stack's layers make or stamp (`planDrive`'s `layers`),
+   * made, or their stamps set, once every file is placed: shallowest
+   * first, each depth by path. None for a drive of loose archives alone.
+   */
+  stamps: Folder[];
   files: string[];
   programs: Program[];
 
@@ -193,21 +209,48 @@ export interface Plan {
  */
 const STAMP = Date.UTC(2020, 0, 6, 10, 20, 40) / 1000;
 
+/** A layer of a stack as the page plans it, and the order its files were placed in, where kept. */
+export interface PlannedLayer {
+  layer: Layer;
+
+  /**
+   * The paths of its files in the order they are put on the drive: a
+   * program's archive's, in the archive's order, as a drive of the archive
+   * dropped loose has them (`programLayer`). Files it does not name go
+   * after, in the layer's order; without it, all are in the layer's.
+   */
+  order?: string[];
+}
+
+/**
+ * A stack over the base the page places (`kb/formats/layer.md`): the
+ * base's name, `base:<assets id>:<display>` or `install:<sha256>`, and its
+ * layers, the lowest first.
+ */
+export interface Stack {
+  base: string;
+  layers: PlannedLayer[];
+}
+
 /**
  * Where everything dropped goes on C:, and under which 8.3 names: the Windows
  * installation, if given, under `C:\WINDOWS`, or else the asset bundle's base
- * for the display, if given, where Setup put each of its files; and each
- * archive under a directory of its own. Both engines fill their drives from
- * this, so a program sees the same names on either.
+ * for the display, if given, where Setup put each of its files; then the
+ * layers of a stack over that base, each put on what is beneath as
+ * `flattenStack` puts it (`kb/formats/layer.md`); and each archive under a
+ * directory of its own. Both engines fill their drives from this, so a
+ * program sees the same names on either.
  */
 export function planDrive(
   archives: Archive[],
   windows: Archive | null,
-  base: Composed | null = null
+  base: Composed | null = null,
+  stack?: Stack
 ): Plan {
   const plan: Plan = {
     folders: [],
     placements: [],
+    stamps: [],
     files: [],
     programs: [],
     windows: false,
@@ -243,15 +286,6 @@ export function planDrive(
       original,
       modified: entry.modified ?? STAMP,
     });
-
-    const path = `C:\\${dos.join('\\')}`;
-    plan.files.push(path);
-
-    const kind = /\.EXE$/.test(path) ? kindOf(entry.data) : null;
-
-    if (kind) {
-      plan.programs.push({ path, parts: dos, kind });
-    }
   };
 
   if (windows) {
@@ -293,6 +327,24 @@ export function planDrive(
     }
   }
 
+  if (stack?.layers.length) {
+    putLayers(plan, stack);
+
+    /* Their names taken, for an archive placed loose beside them. */
+    for (const path of [
+      ...plan.placements.map(({ parts }) => parts),
+      ...plan.stamps.map(({ parts }) => parts),
+    ]) {
+      for (let at = 0; at < path.length; at++) {
+        const key = path.slice(0, at).join('\\');
+        const taken = used.get(key) ?? new Set<string>();
+
+        taken.add(path[at]);
+        used.set(key, taken);
+      }
+    }
+  }
+
   for (const archive of archives) {
     const base = archive.name.replace(/\.zip$/i, '');
 
@@ -305,7 +357,269 @@ export function planDrive(
     }
   }
 
+  /* What is on C:, and the programs among it, in the order it is placed. */
+  for (const { parts, data } of plan.placements) {
+    const path = `C:\\${parts.join('\\')}`;
+    const kind = /\.EXE$/.test(path) ? kindOf(data) : null;
+
+    plan.files.push(path);
+
+    if (kind) {
+      plan.programs.push({ path, parts, kind });
+    }
+  }
+
   return plan;
+}
+
+/** Whether a path is a folder's, or beneath it. */
+const within = (path: string, folder: string) => path === folder || path.startsWith(`${folder}\\`);
+
+/** The folders above a path, the shallowest first. */
+const above = (path: string) => {
+  const names = path.split('\\');
+
+  return names.slice(1).map((_, at) => names.slice(0, at + 1).join('\\'));
+};
+
+/** The canonical order of folders: the shallowest first, each depth by path, byte by byte. */
+const foldersFirst = (one: string, other: string) =>
+  one.split('\\').length - other.split('\\').length || (one < other ? -1 : one > other ? 1 : 0);
+
+const pathOf = ({ parts }: { parts: string[] }) => parts.join('\\');
+
+/**
+ * A stack's layers put on the plan of its base, in their order, each entry
+ * as `flattenStack` puts it on what is beneath (`kb/formats/layer.md`): a
+ * removed path's files and folders taken out of the plan; a folder made,
+ * the folders above it too, or its stamp moved; a file placed, replacing
+ * one there, after what is placed already, as a drive made afresh takes
+ * it, and the folders above it made with its stamp where they are not
+ * there. What the layers make or stamp of folders goes in `stamps`, set
+ * once the files are placed. Refused as a stack is refused
+ * (`stackRefusal`), the base counted as a layer.
+ */
+function putLayers(plan: Plan, { base, layers }: Stack) {
+  const refusal = stackRefusal([
+    planManifest(plan, base),
+    ...layers.map(({ layer }) => layer.manifest),
+  ]);
+
+  if (refusal) {
+    throw new Error(refusal);
+  }
+
+  /* Every folder there is, and the stamps the layers give folders. */
+  const folders = new Set<string>();
+  const stamps = new Map<string, number>();
+
+  for (const folder of plan.folders) {
+    for (const path of [...above(pathOf(folder)), pathOf(folder)]) {
+      folders.add(path);
+    }
+  }
+
+  for (const placement of plan.placements) {
+    for (const path of above(pathOf(placement))) {
+      folders.add(path);
+    }
+  }
+
+  const files = new Set(plan.placements.map(pathOf));
+
+  /* A folder made where it is not there, with the folders above it,
+   * stamped then; false where a file is in the way. */
+  const made = (path: string, modified: number) => {
+    for (const folder of [...above(path), path]) {
+      if (files.has(folder)) {
+        return false;
+      }
+
+      if (!folders.has(folder)) {
+        folders.add(folder);
+        stamps.set(folder, modified);
+      }
+    }
+
+    return true;
+  };
+
+  for (const { layer, order } of layers) {
+    const placed = new Map((order ?? []).map((path, at) => [path, at]));
+    const rank = (entry: LayerEntry) => placed.get(entry.path) ?? placed.size;
+    const entries = layer.manifest.entries
+      .map((entry, at) => ({ entry, at }))
+      .sort(
+        (one, other) =>
+          (one.entry.kind === 'file' && other.entry.kind === 'file'
+            ? rank(one.entry) - rank(other.entry)
+            : 0) || one.at - other.at
+      )
+      .map(({ entry }) => entry);
+
+    for (const entry of entries) {
+      switch (entry.kind) {
+        case 'removed':
+          plan.placements = plan.placements.filter((one) => !within(pathOf(one), entry.path));
+          plan.folders = plan.folders.filter((one) => !within(pathOf(one), entry.path));
+
+          for (const path of [...folders, ...files]) {
+            if (within(path, entry.path)) {
+              folders.delete(path);
+              files.delete(path);
+              stamps.delete(path);
+            }
+          }
+
+          break;
+        case 'folder':
+          if (made(entry.path, entry.modified)) {
+            stamps.set(entry.path, entry.modified);
+          }
+
+          break;
+        case 'file': {
+          const folder = above(entry.path).pop();
+
+          if (folders.has(entry.path) || (folder && !made(folder, entry.modified))) {
+            break;
+          }
+
+          const data = layer.blobs.get(entry.sha256);
+
+          if (!data) {
+            throw new Error(`layer ${layer.manifest.id} has no blob ${entry.sha256}`);
+          }
+
+          plan.placements = plan.placements.filter((one) => pathOf(one) !== entry.path);
+          plan.placements.push({
+            parts: entry.path.split('\\'),
+            data,
+            original: `${layer.manifest.id}/${entry.path}`,
+            modified: entry.modified,
+          });
+          files.add(entry.path);
+          break;
+        }
+      }
+    }
+  }
+
+  plan.stamps = [...stamps.keys()]
+    .sort(foldersFirst)
+    .map((path) => ({ parts: path.split('\\'), modified: stamps.get(path)! }));
+}
+
+/**
+ * What a plan puts on C:, as a layer's manifest, for telling whether a
+ * layer touches it (`stackRefusal`): its folders and its files, by path.
+ * Not a layer of its own: its files' hashes are not taken.
+ */
+export function planManifest(plan: Plan, id: string): LayerManifest {
+  const folders = new Set<string>();
+
+  for (const { parts } of [...plan.folders, ...plan.stamps]) {
+    folders.add(parts.join('\\'));
+  }
+
+  for (const placement of plan.placements) {
+    for (const path of above(pathOf(placement))) {
+      folders.add(path);
+    }
+  }
+
+  return {
+    format: LAYER_FORMAT,
+    id,
+    over: [],
+    made: { by: 'WinBox' },
+    entries: [
+      ...[...folders].map((path): LayerEntry => ({ kind: 'folder', path, modified: STAMP })),
+      ...plan.placements.map((placement): LayerEntry => ({
+        kind: 'file',
+        path: pathOf(placement),
+        sha256: '',
+        size: placement.data.length,
+        modified: placement.modified,
+      })),
+    ],
+  };
+}
+
+/** A program's archive made into a layer, and what the page keeps of it beside. */
+export interface ProgramLayer {
+  layer: Layer;
+
+  /** Its files' paths in the archive's order, which the drive is filled in (`PlannedLayer`). */
+  order: string[];
+
+  /** Its programs, as the plan names them: `C:\GAMES\SKI.EXE`. */
+  programs: string[];
+}
+
+/**
+ * A program's archive, dropped, as a layer of its own made over nothing
+ * (`kb/formats/layer.md`): each of its files where `planDrive` places it
+ * over the base, under the same 8.3 names, written when the archive says;
+ * and each folder it makes, `C:\GAMES` and those beneath, at the page's
+ * stamp, as the TypeScript engine's volume makes a folder for a file put in
+ * it. The stack of the base and this layer is the drive with the archive
+ * dropped loose on it, file for file and stamp for stamp. Refused where it
+ * would replace a file of the base's.
+ */
+export async function programLayer(
+  archive: Archive,
+  windows: Archive | null,
+  base: Composed | null
+): Promise<ProgramLayer> {
+  const beneath = planDrive([], windows, base);
+  const loose = planDrive([archive], windows, base);
+  const prefix = `${archive.name}/`;
+  const placements = loose.placements.filter((one) => one.original.startsWith(prefix));
+  const taken = new Set(beneath.placements.map(pathOf));
+  const folders = new Set<string>(beneath.folders.map(pathOf));
+
+  for (const placement of beneath.placements) {
+    for (const path of above(pathOf(placement))) {
+      folders.add(path);
+    }
+  }
+
+  const made = new Set<string>();
+  const changes: Change[] = [];
+
+  for (const placement of placements) {
+    const path = pathOf(placement);
+
+    if (taken.has(path)) {
+      throw new Error(`it holds C:\\${path}, which Windows has already`);
+    }
+
+    for (const folder of above(path)) {
+      if (!folders.has(folder)) {
+        made.add(folder);
+      }
+    }
+
+    changes.push({ kind: 'file', path, data: placement.data, modified: placement.modified });
+  }
+
+  for (const path of made) {
+    changes.push({ kind: 'folder', path, modified: STAMP });
+  }
+
+  const layer = await layerFromChanges(changes, {
+    made: { by: 'WinBox run page', from: archive.name },
+  });
+  const order = placements.map(pathOf);
+
+  return {
+    layer,
+    order,
+    programs: loose.programs
+      .filter((program) => order.includes(program.parts.join('\\')))
+      .map((program) => program.path),
+  };
 }
 
 /**
@@ -326,6 +640,14 @@ export async function fillDrive(machine: any, { placements, ...plan }: Plan): Pr
     await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength), {
       modified,
     });
+  }
+
+  /* What a stack's layers make or stamp of folders, once its files are
+   * there, as a change to a folder is put back on a drive. */
+  const changed = fat16Drive(fileSystem);
+
+  for (const { parts, modified } of plan.stamps) {
+    await changed.folder(parts.join('\\'), modified);
   }
 
   return { fileSystem, ...plan };

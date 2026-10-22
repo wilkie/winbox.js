@@ -1,5 +1,6 @@
 'use strict';
 
+import { type Layer, type LayerManifest } from '../layers/layer.js';
 import { type Change } from './changes.js';
 
 /**
@@ -17,6 +18,9 @@ const DATABASE = 'winbox-run';
 const ARCHIVES = 'archives';
 const ASSETS = 'assets';
 const CHANGES = 'changes';
+const BLOBS = 'blobs';
+const LAYERS = 'layers';
+const PROGRAMS = 'programs';
 const KEY = 'windows';
 const BUNDLE = 'bundle';
 
@@ -40,9 +44,57 @@ const DRIVE = 'C';
 /** The identity of changes made on an asset bundle's base for a display. */
 export const assetsIdentity = (id: string, display: string) => `assets:${id}:${display}`;
 
-/** Where changes told against an identity are kept: the installation's, or none, in the one record. */
+/**
+ * The identity of what programs wrote on a kept program's stack: its name,
+ * and the stack -- the base, the display and the layers' ids -- which what
+ * it wrote is kept only with.
+ */
+export const programIdentity = (name: string, base: string, display: string, layers: string[]) =>
+  `program:${encodeURIComponent(name)}:${base}:${display}:${layers.join(',')}`;
+
+/**
+ * Where changes told against an identity are kept: a kept program's in a
+ * record of its own, `C:program:<name>`, whatever its stack; the asset
+ * bundle's base's for each display; the installation's, or none, in the
+ * one record.
+ */
 export const changesKey = (identity: string | null) =>
-  identity?.startsWith('assets:') ? `${DRIVE}:${identity}` : DRIVE;
+  identity?.startsWith('program:')
+    ? `${DRIVE}:program:${decodeURIComponent(identity.split(':')[1])}`
+    : identity?.startsWith('assets:')
+      ? `${DRIVE}:${identity}`
+      : DRIVE;
+
+/** Where a kept program's changes are kept, by its name. */
+export const programChangesKey = (name: string) => `${DRIVE}:program:${name}`;
+
+/**
+ * A program kept in this browser (`kb/formats/layer.md`): its stack -- the
+ * base it was made on and its layers, the lowest first, each kept in the
+ * `layers` store, its files' bytes in `blobs` -- and the display it is
+ * bound to. What it writes as it runs is its user layer, kept in `changes`
+ * under `programChangesKey`.
+ */
+export interface KeptProgram {
+  /** Its name: its archive's, without `.zip`. */
+  name: string;
+
+  /** The base it was made on: `base:<assets id>:<display>`, or `install:<sha256 of the archive>`. */
+  base: string;
+  display: string;
+
+  /** Its layers' ids, the lowest first. */
+  layers: string[];
+
+  /** Its programs, as C: names them: `C:\GAMES\SKI.EXE`. */
+  exes: string[];
+
+  /** The order a layer's files are put on the drive in, by its id, where kept (`PlannedLayer`). */
+  orders: Record<string, string[]>;
+
+  /** When it was kept, in milliseconds since 1970. */
+  kept: number;
+}
 
 export interface Remembered {
   name: string;
@@ -66,12 +118,14 @@ let opened: Promise<IDBDatabase | null> | null = null;
 function open(): Promise<IDBDatabase | null> {
   opened ??= new Promise((resolve) => {
     try {
-      const request = indexedDB.open(DATABASE, 3);
+      /* Version 4 added the programs, their layers and the blobs; the
+       * stores before it are kept as they are. */
+      const request = indexedDB.open(DATABASE, 4);
 
       request.onupgradeneeded = () => {
         const database = request.result;
 
-        for (const name of [ARCHIVES, ASSETS, CHANGES]) {
+        for (const name of [ARCHIVES, ASSETS, CHANGES, BLOBS, LAYERS, PROGRAMS]) {
           if (!database.objectStoreNames.contains(name)) {
             database.createObjectStore(name);
           }
@@ -173,6 +227,209 @@ export const forgetChanges = (identity: string | null) =>
 
 /** Forgets everything programs wrote, against whatever it was. */
 export const forgetAllChanges = () => run(CHANGES, 'readwrite', (store) => store.clear());
+
+/** A request answered, as a promise. */
+const answer = <T>(request: IDBRequest<T>) =>
+  new Promise<T>((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+/**
+ * Something done in one transaction over several stores, answered once the
+ * transaction is done; rejected, with why, where it failed -- the browser's
+ * quota spent, say -- or the database could not be opened.
+ */
+function across<T>(
+  names: string[],
+  mode: IDBTransactionMode,
+  act: (stores: Record<string, IDBObjectStore>) => Promise<T>
+) {
+  return open().then(
+    (database) =>
+      new Promise<T>((resolve, reject) => {
+        if (!database) {
+          reject(new Error('this browser keeps nothing for the page'));
+          return;
+        }
+
+        try {
+          const transaction = database.transaction(names, mode);
+          const stores = Object.fromEntries(
+            names.map((name) => [name, transaction.objectStore(name)])
+          );
+          let result: T;
+
+          act(stores).then(
+            (value) => (result = value),
+            (error) => {
+              try {
+                transaction.abort();
+              } catch {
+                /* Done already. */
+              }
+
+              reject(error);
+            }
+          );
+          transaction.oncomplete = () => resolve(result);
+          transaction.onerror = () => reject(transaction.error);
+          transaction.onabort = () => reject(transaction.error ?? new Error('not kept'));
+        } catch (error) {
+          reject(error);
+        }
+      })
+  );
+}
+
+/**
+ * Asks the browser to keep what the page keeps when it runs short of
+ * room, where it can be asked: a program kept is not to vanish with the
+ * cache. Asked once, and not waited for -- Firefox asks the user, and
+ * answers only once they have -- for what it answers changes nothing here.
+ */
+let persisting = false;
+
+function persist() {
+  if (persisting) {
+    return;
+  }
+
+  persisting = true;
+
+  try {
+    navigator.storage?.persist?.().catch(() => false);
+  } catch {
+    /* Not to be asked here. */
+  }
+}
+
+/** The programs kept, the earliest kept first; none where the store cannot be opened. */
+export async function recallPrograms(): Promise<KeptProgram[]> {
+  const programs = await run<KeptProgram[]>(PROGRAMS, 'readonly', (store) => store.getAll());
+
+  return (programs ?? []).sort((one, other) => one.kept - other.kept);
+}
+
+/**
+ * A program kept, with its layers and their blobs, a blob or a layer kept
+ * already left as it is; rejects, with why, where it could not be. What
+ * another program of the same name had and nothing else has is let go of.
+ */
+export async function keepProgram(program: KeptProgram, layers: Layer[]) {
+  persist();
+  await across([BLOBS, LAYERS, PROGRAMS], 'readwrite', async (stores) => {
+    for (const { manifest, blobs } of layers) {
+      for (const [hash, data] of blobs) {
+        if ((await answer(stores[BLOBS].getKey(hash))) === undefined) {
+          stores[BLOBS].put(data, hash);
+        }
+      }
+
+      stores[LAYERS].put(manifest, manifest.id);
+    }
+
+    stores[PROGRAMS].put(program, program.name);
+  });
+  await collect().catch(() => undefined);
+}
+
+/**
+ * A kept program's layers, the lowest first, their blobs read back;
+ * rejects where one is missing.
+ */
+export function recallLayers(program: KeptProgram) {
+  return across([BLOBS, LAYERS], 'readonly', async (stores) => {
+    const layers: Layer[] = [];
+
+    for (const id of program.layers) {
+      const manifest = await answer<LayerManifest | undefined>(stores[LAYERS].get(id));
+
+      if (!manifest) {
+        throw new Error(`its layer ${id} is not kept`);
+      }
+
+      const blobs = new Map<string, Uint8Array>();
+
+      for (const entry of manifest.entries) {
+        if (entry.kind === 'file' && !blobs.has(entry.sha256)) {
+          const data = await answer<Uint8Array | undefined>(stores[BLOBS].get(entry.sha256));
+
+          if (!data) {
+            throw new Error(`the bytes of its C:\\${entry.path} are not kept`);
+          }
+
+          blobs.set(entry.sha256, data);
+        }
+      }
+
+      layers.push({ manifest, blobs });
+    }
+
+    return layers;
+  });
+}
+
+/** A program forgotten, and what it wrote; its layers and blobs, where nothing else has them. */
+export async function forgetProgram(name: string) {
+  await across([PROGRAMS, CHANGES], 'readwrite', async (stores) => {
+    stores[PROGRAMS].delete(name);
+    stores[CHANGES].delete(programChangesKey(name));
+  });
+  await collect().catch(() => undefined);
+}
+
+/** Every program forgotten, with its layers and blobs. */
+export const forgetAllPrograms = () =>
+  across([BLOBS, LAYERS, PROGRAMS], 'readwrite', async (stores) => {
+    for (const name of [BLOBS, LAYERS, PROGRAMS]) {
+      stores[name].clear();
+    }
+  }).catch(() => undefined);
+
+/**
+ * The layers no kept program has, and the blobs no layer kept has, let go
+ * of: what forgetting a program, or keeping another in its name, leaves.
+ */
+export function collect() {
+  return across([BLOBS, LAYERS, PROGRAMS], 'readwrite', async (stores) => {
+    const programs = await answer<KeptProgram[]>(stores[PROGRAMS].getAll());
+    const used = new Set(programs.flatMap((program) => program.layers));
+    const manifests = await answer<LayerManifest[]>(stores[LAYERS].getAll());
+    const hashes = new Set<string>();
+
+    for (const manifest of manifests) {
+      if (!used.has(manifest.id)) {
+        stores[LAYERS].delete(manifest.id);
+        continue;
+      }
+
+      for (const entry of manifest.entries) {
+        if (entry.kind === 'file') {
+          hashes.add(entry.sha256);
+        }
+      }
+    }
+
+    for (const hash of await answer<IDBValidKey[]>(stores[BLOBS].getAllKeys())) {
+      if (!hashes.has(String(hash))) {
+        stores[BLOBS].delete(hash);
+      }
+    }
+  });
+}
+
+/** How many layers and blobs are kept: what the page's tests look at. */
+export const keptCounts = () =>
+  across([BLOBS, LAYERS, PROGRAMS], 'readonly', async (stores) => ({
+    programs: await answer(stores[PROGRAMS].count()),
+    layers: await answer(stores[LAYERS].count()),
+    blobs: await answer(stores[BLOBS].count()),
+  }));
+
+/** What programs wrote kept under a key, whatever it was told against. */
+export const recallChangesAt = (key: string) =>
+  run<Kept>(CHANGES, 'readonly', (store) => store.get(key));
 
 /**
  * An installation told apart from another: its archive's SHA-256, where the

@@ -53,11 +53,15 @@ driver's files, unpacked from the Driver Library's `svga.exe`): the page makes
 WinBox's asset bundle from them, in the browser, as `pnpm assets` does, keeps
 it there, and puts on `C:\WINDOWS` the base it composes for the display
 chosen, with no installed Windows at all; a `winbox-assets.zip` made already
-can be dropped instead (see `kb/topics/asset-bundle.md`). What programs write
-on C: -- changes to WIN.INI, a game's high scores, a saved document -- is kept
-there too, as the changes against what was dropped (on the bundle's base, for
-each display apart), and put back on either engine each time the page is
-opened, until Forget changes clears them. Nothing is uploaded. As a
+can be dropped instead (see `kb/topics/asset-bundle.md`). With Windows there,
+a zip of programs dropped is kept too, as a program of its own: a layer laid at
+`C:\<NAME>` over Windows, for the display it was dropped on, listed under Kept
+programs on every visit, where Open puts it on C: and Forget lets it go (see
+`kb/formats/layer.md`). What programs write on C: -- changes to WIN.INI, a
+game's high scores, a saved document -- is kept there too, as the changes
+against what was dropped (each kept program's apart, and on the bundle's base
+each display's), and put back on either engine each time the page is opened,
+until Forget changes clears them. Nothing is uploaded. As a
 program runs, the page lists every API function it called, marking the ones
 that reach no implementation yet, and its most recent calls with their
 arguments.
