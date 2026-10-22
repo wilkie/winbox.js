@@ -219,7 +219,11 @@ export class FileManager {
      * was not there (`drive_local.cpp` 51-80). */
     const made = !(await fileSystem.open(pathInfo.path));
 
-    await fileSystem.create(pathInfo.path);
+    /* Its archive bit set, as DOSBox lists every file of the host's folder
+     * (`localDrive::FindNext` gives each `DOS_ATTR_ARCHIVE`) and the Rust
+     * engine's drive lists a file: what an installer makes lists as 20h
+     * (**recorded** by `instlay`). */
+    await fileSystem.create(pathInfo.path, { archive: true });
 
     if (made) {
       await this.changed(pathInfo.drive, pathInfo.path.slice(0, -1));

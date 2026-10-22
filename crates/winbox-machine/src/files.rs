@@ -457,6 +457,24 @@ impl Files {
         key
     }
 
+    /// A folder's stamp as DOS's clock gave it, seconds since 1970, where
+    /// an entry was made in it, deleted from it or renamed since its drive
+    /// was mounted: what a program listing it is told (`list`). None where
+    /// its stamp is still the drive's own. A drive held in memory keeps a
+    /// folder's by its own clock, which a run on a virtual one does not
+    /// share: a layer of what a program wrote takes a folder's from here.
+    pub fn folder_stamp(&self, letter: char, path: &str) -> Option<i64> {
+        let names: Vec<String> = path
+            .split('\\')
+            .filter(|name| !name.is_empty())
+            .map(str::to_string)
+            .collect();
+
+        self.folders
+            .get(&Self::folder_key(letter.to_ascii_uppercase(), &names))
+            .copied()
+    }
+
     /// An entry with the stamp DOS's clock gave it, where it is a folder
     /// whose entries changed.
     fn stamped(&self, letter: char, names: &[String], mut entry: Entry) -> Entry {

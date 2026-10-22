@@ -115,9 +115,8 @@ export async function bundleDrive(machine: any, assets: Assets, display: string)
     await fileSystem.map(
       path.split('/'),
       new DataView(data.buffer, data.byteOffset, data.byteLength),
-      {
-        modified,
-      }
+      /* Its archive bit set, as the page places it (`fillDrive`). */
+      { modified, archive: true }
     );
   }
 
@@ -149,9 +148,8 @@ export async function layersDrive(machine: any, assets: Assets, display: string)
     await fileSystem.map(
       path.split('\\'),
       new DataView(data.buffer, data.byteOffset, data.byteLength),
-      {
-        modified,
-      }
+      /* Its archive bit set, as the page places it (`fillDrive`). */
+      { modified, archive: true }
     );
   }
 
@@ -271,6 +269,19 @@ export async function runProbe(
     watch = null as ((call: any, count: number, win16: any) => void) | null,
     /* What C: has beneath it; `WINBOX_BASE` chooses where not given. */
     base = chosenBase() as Base,
+    /* Whether the probe's own file is put at `C:\<NAME>.EXE`, and what it
+     * brings -- its library, the program it starts -- beside Windows, as
+     * the recorder puts them: a run whose drive has its program already
+     * (`start`) puts neither. */
+    own = true,
+    brought = true,
+    /* The drive made ready, once everything is placed on it and before
+     * Windows starts: an installer's media placed, a layer put on it, a
+     * drive's changes marked from here (`test/layers/install_test.ts`). */
+    prepare = null as ((fileSystem: any) => Promise<void>) | null,
+    /* The program started, where it is on the drive, as DOS names it,
+     * `C:\INSTLAY\INSTLAYC.EXE`, in place of the probe. */
+    start = null as string | null,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -426,7 +437,7 @@ export async function runProbe(
    * Windows. See `build-probes.mjs`. */
   const library = join(PROBES, `${name.toUpperCase()}D.DLL`);
 
-  if (installation && existsSync(library)) {
+  if (installation && brought && existsSync(library)) {
     await fileSystem.map(
       ['WINDOWS', `${name.toUpperCase()}D.DLL`],
       new DataView(new Uint8Array(readFileSync(library)).buffer)
@@ -459,24 +470,26 @@ export async function runProbe(
   /* The probe itself on the drive, where it runs from, as the Rust engine's
    * runs put it (`tests/support`): a probe that reads its own file finds
    * it (`verinfo`, `verinst`). */
-  const own = join(PROBES, `${name.toUpperCase()}.EXE`);
+  const ownFile = join(PROBES, `${name.toUpperCase()}.EXE`);
 
-  if (installation && !program && existsSync(own)) {
+  if (installation && own && !program && existsSync(ownFile)) {
     await fileSystem.map(
       [`${name.toUpperCase()}.EXE`],
-      new DataView(new Uint8Array(readFileSync(own)).buffer)
+      new DataView(new Uint8Array(readFileSync(ownFile)).buffer)
     );
   }
 
   /* And the program it starts. */
   const child = join(PROBES, `${name.toUpperCase()}C.EXE`);
 
-  if (installation && existsSync(child)) {
+  if (installation && brought && existsSync(child)) {
     await fileSystem.map(
       ['WINDOWS', `${name.toUpperCase()}C.EXE`],
       new DataView(new Uint8Array(readFileSync(child)).buffer)
     );
   }
+
+  await prepare?.(fileSystem);
 
   /* The scheduler hands the next slice of execution to a frame driver, which
    * in a browser is the animation frame. Here it is a trampoline: the callback
@@ -587,17 +600,36 @@ export async function runProbe(
     await mapFolder(fileSystem, program.directory, ['CORPUS', program.folder]);
   }
 
-  const executable: any = program
-    ? new Executable(
-        program.file.replace(/\.[^.]*$/, '').toUpperCase(),
-        `${home}\\${program.file.toUpperCase()}`,
-        new MemoryFile(new Uint8Array(readFileSync(join(program.directory, program.file))))
-      )
-    : new Executable(
-        upper,
-        `C:\\${upper}.EXE`,
-        new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
-      );
+  /* A program on the drive, read from there. */
+  const onDrive = start
+    ? await (async () => {
+        const parts = start.replace(/^C:\\/i, '').split('\\');
+        const file = await fileSystem.open(parts);
+
+        if (!file) {
+          throw new Error(`${start} is not on the drive`);
+        }
+
+        return {
+          module: parts[parts.length - 1].replace(/\.[^.]*$/, '').toUpperCase(),
+          data: new Uint8Array(await file.read(0, file.info.size)),
+        };
+      })()
+    : null;
+
+  const executable: any = onDrive
+    ? new Executable(onDrive.module, start!.toUpperCase(), new MemoryFile(onDrive.data))
+    : program
+      ? new Executable(
+          program.file.replace(/\.[^.]*$/, '').toUpperCase(),
+          `${home}\\${program.file.toUpperCase()}`,
+          new MemoryFile(new Uint8Array(readFileSync(join(program.directory, program.file))))
+        )
+      : new Executable(
+          upper,
+          `C:\\${upper}.EXE`,
+          new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
+        );
 
   await executable.parse();
 

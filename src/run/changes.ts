@@ -370,11 +370,13 @@ export function fat16Drive(fileSystem: any): ChangedDrive {
       );
     },
 
+    /* With its archive bit, as DOS made it, and as DOSBox lists every file
+     * of the host's folder (`file-manager.ts`, `create`). */
     async file(path, data, modified) {
       await fileSystem.map(
         split(path),
         new DataView(data.buffer, data.byteOffset, data.byteLength),
-        { modified }
+        { modified, archive: true }
       );
     },
   };

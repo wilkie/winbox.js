@@ -636,9 +636,12 @@ export async function fillDrive(machine: any, { placements, ...plan }: Plan): Pr
     await fileSystem.open(parts, true);
   }
 
+  /* Each with its archive bit, as DOSBox lists every file of the host's
+   * folder its C: is, and the Rust engine's drive lists a file. */
   for (const { parts, data, modified } of placements) {
     await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength), {
       modified,
+      archive: true,
     });
   }
 

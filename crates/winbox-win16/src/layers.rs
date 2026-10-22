@@ -21,7 +21,7 @@ use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde::{Deserialize, Serialize};
-use winbox_machine::{Change, HostLayer, MemoryDrive};
+use winbox_machine::{Change, Files, HostLayer, MemoryDrive};
 
 use crate::assets::{
     Composed, STAMP, StoredEntry, set_written, stored_zip_entries, write_stored_zip,
@@ -737,6 +737,171 @@ impl Flat {
 
         drive
     }
+}
+
+/* ---- an installer into a layer ---- */
+
+/// A drive's changes without those naming the media
+/// (`kb/formats/layer.md`, "An installer into a layer"): a path of the
+/// media, as a layer keeps it (`layer_path`), or one beneath a folder of
+/// it. What is kept, and the paths dropped. The installer's media are
+/// discarded once it has installed, as the owner chose: only its own top is
+/// kept. The TypeScript engine's twin is `dropMedia`
+/// (`src/layers/install.ts`).
+pub fn drop_media(changes: &[Change], media: &[String]) -> (Vec<Change>, Vec<String>) {
+    let media: Vec<String> = media
+        .iter()
+        .map(|path| layer_path(path))
+        .filter(|path| !path.is_empty())
+        .collect();
+    let mut kept = Vec::new();
+    let mut dropped = Vec::new();
+
+    for change in changes {
+        let path = layer_path(change.path());
+
+        if media.iter().any(|folder| within(&path, folder)) {
+            dropped.push(path);
+        } else {
+            kept.push(change.clone());
+        }
+    }
+
+    (kept, dropped)
+}
+
+/// A line of a file the installer wrote that names the media.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MediaReference {
+    /// The file, as a layer names it: `WINDOWS\WIN.INI`.
+    pub path: String,
+    /// The line, as the file has it, its bytes read as Latin-1.
+    pub line: String,
+}
+
+/// The lines of a layer's files that name a path of the media, its DOS
+/// path with the drive's letter, `C:\SETUP`, in any case: what the
+/// installer wrote that refers to what is not kept. A file with a nought
+/// byte in it is not text, and is passed over: a program's own code names
+/// paths too. Each file's lines are split at line feeds, a carriage return before one left off. As
+/// `mediaReferences`.
+pub fn media_references(layer: &Layer, media: &[String]) -> Vec<MediaReference> {
+    let names: Vec<String> = media
+        .iter()
+        .map(|path| layer_path(path))
+        .filter(|path| !path.is_empty())
+        .map(|path| format!("C:\\{path}"))
+        .collect();
+    let mut found = Vec::new();
+
+    for entry in &layer.manifest.entries {
+        let LayerEntry::File { path, sha256, .. } = entry else {
+            continue;
+        };
+        let Some(data) = layer.blobs.get(sha256).filter(|data| !data.contains(&0)) else {
+            continue;
+        };
+        let text: String = data.iter().map(|&byte| char::from(byte)).collect();
+        let names_one = |text: &str| {
+            let upper = text.to_uppercase();
+
+            names.iter().any(|name| upper.contains(name.as_str()))
+        };
+
+        if !names_one(&text) {
+            continue;
+        }
+
+        for line in text.split('\n') {
+            let bare = line.strip_suffix('\r').unwrap_or(line);
+
+            if names_one(bare) {
+                found.push(MediaReference {
+                    path: path.clone(),
+                    line: bare.to_string(),
+                });
+            }
+        }
+    }
+
+    found
+}
+
+/// What `Layer::installed` makes: the layer, the paths dropped, and what
+/// names the media.
+#[derive(Debug, Clone)]
+pub struct Installed {
+    pub layer: Layer,
+    pub dropped: Vec<String>,
+    pub references: Vec<MediaReference>,
+}
+
+impl Layer {
+    /// The layer an installer made: the top's changes as a layer over the
+    /// stack it ran on (`over`, the base's name first), those naming the
+    /// media dropped (`drop_media`), and the lines of what it kept that
+    /// name the media (`media_references`). As `installedLayer`.
+    pub fn installed(
+        changes: &[Change],
+        media: &[String],
+        over: Vec<String>,
+        made: Made,
+    ) -> Result<Installed, String> {
+        let (kept, dropped) = drop_media(changes, media);
+        let layer = Self::from_changes(&kept, over, made)?;
+        let references = media_references(&layer, media);
+
+        Ok(Installed {
+            layer,
+            dropped,
+            references,
+        })
+    }
+}
+
+/// What differs on a drive held in memory from `before`, the drive it was
+/// made from (`MemoryDrive::changes_from`), each folder's stamp as DOS's
+/// clock gave it to the programs that listed it (`Files::folder_stamp`):
+/// the drive keeps a folder's by its own clock, and a run on a virtual one
+/// writes its files by that and its folders' stamps by DOS's. None where
+/// `letter` is not a drive held in memory.
+pub fn changes_seen(files: &Files, letter: char, before: &MemoryDrive) -> Option<Vec<Change>> {
+    let after = files.memory(letter)?;
+
+    Some(
+        after
+            .changes_from(before)
+            .into_iter()
+            .map(|change| match change {
+                Change::Folder { path, modified } => Change::Folder {
+                    modified: files.folder_stamp(letter, &path).unwrap_or(modified),
+                    path,
+                },
+                other => other,
+            })
+            .collect(),
+    )
+}
+
+/// An installer run over a drive into an empty top, as a layer
+/// (`Layer::installed`): `before` the drive as it was given the
+/// installer -- the stack flattened (`Flat::drive`), and the media placed
+/// on it -- and `files` the system's once the installer has run, that
+/// drive mounted as `letter` (`changes_seen`). The helper for any front
+/// end that runs an installer on a drive held in memory: the probe
+/// harnesses, the page, the native build.
+pub fn install_into_layer(
+    before: &MemoryDrive,
+    files: &Files,
+    letter: char,
+    media: &[String],
+    over: Vec<String>,
+    made: Made,
+) -> Result<Installed, String> {
+    let changes = changes_seen(files, letter, before)
+        .ok_or_else(|| format!("{letter}: is not a drive held in memory"))?;
+
+    Layer::installed(&changes, media, over, made)
 }
 
 /// Where a DOS path beneath a layer's folder is on the host.

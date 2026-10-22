@@ -1,0 +1,294 @@
+{
+  "probe": "instlay",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mkdir",
+      "args": "C:\\INSTLAY",
+      "result": "0"
+    },
+    {
+      "function": "unpack",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.TX_",
+      "result": "728"
+    },
+    {
+      "function": "unpack",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.DL_",
+      "result": "366"
+    },
+    {
+      "function": "lzcopy",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.TX_>C:\\INSTLAY\\README.TXT",
+      "result": "3000"
+    },
+    {
+      "function": "find",
+      "args": "INSTLAY.DLL",
+      "result": "1||C:\\WINDOWS\\SYSTEM"
+    },
+    {
+      "function": "verinst",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.DL_>C:\\WINDOWS\\SYSTEM\\INSTLAY.DLL",
+      "result": "0|"
+    },
+    {
+      "function": "find",
+      "args": "INSTLAYC.EXE",
+      "result": "1|C:\\WINDOWS|C:\\WINDOWS\\SYSTEM"
+    },
+    {
+      "function": "verinst",
+      "args": "C:\\WINDOWS\\INSTLAYC.EXE>C:\\INSTLAY\\INSTLAYC.EXE",
+      "result": "0|"
+    },
+    {
+      "function": "clean",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.TX_",
+      "result": "deleted"
+    },
+    {
+      "function": "clean",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.DL_",
+      "result": "deleted"
+    },
+    {
+      "function": "profile",
+      "args": "WIN.INI [InstLay] Path=C:\\INSTLAY",
+      "result": "yes"
+    },
+    {
+      "function": "profile",
+      "args": "WIN.INI [InstLay] Media=C:\\WINDOWS\\INSTLAY.EXE",
+      "result": "yes"
+    },
+    {
+      "function": "profile",
+      "args": "C:\\INSTLAY\\INSTLAY.INI [Settings] Level=3",
+      "result": "yes"
+    },
+    {
+      "function": "profile",
+      "args": "C:\\INSTLAY\\INSTLAY.INI [Settings] Name=Layered",
+      "result": "yes"
+    },
+    {
+      "function": "profile",
+      "args": "INSTLAY.INI [Installed] From=C:\\WINDOWS",
+      "result": "yes"
+    },
+    {
+      "function": "delete",
+      "args": "C:\\WINDOWS\\SYSTEM\\SETUP.REG",
+      "result": "deleted"
+    },
+    {
+      "function": "scratch",
+      "args": "C:\\INSTLAY\\TMP\\SCRATCH.TMP",
+      "result": "deleted"
+    },
+    {
+      "function": "scratch",
+      "args": "C:\\INSTLAY\\TMP",
+      "result": "0 0"
+    },
+    {
+      "function": "scratch",
+      "args": "C:\\WINDOWS\\INSTTMP\\SCRATCH.TMP",
+      "result": "deleted"
+    },
+    {
+      "function": "scratch",
+      "args": "C:\\WINDOWS\\INSTTMP",
+      "result": "0 0"
+    },
+    {
+      "function": "stamp",
+      "args": "C:\\INSTLAY\\INSTLAYC.EXE",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "stamp",
+      "args": "C:\\INSTLAY\\INSTLAY.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "stamp",
+      "args": "C:\\WINDOWS\\SYSTEM\\INSTLAY.DLL",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "stamp",
+      "args": "C:\\WINDOWS\\INSTLAY.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "stamp",
+      "args": "C:\\WINDOWS\\WIN.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.module",
+      "args": "",
+      "result": "C:\\INSTLAY\\INSTLAYC.EXE"
+    },
+    {
+      "function": "c.list",
+      "args": "C:\\INSTLAY",
+      "result": ".:10:0:0000 ..:10:0:0000 INSTLAY.INI:20:35:a071 INSTLAYC.EXE:20:5476:73ef README.TXT:20:3000:fff5 "
+    },
+    {
+      "function": "c.found",
+      "args": "C:\\WINDOWS\\SYSTEM\\INSTLAY.*",
+      "result": "INSTLAY.DLL:20:756:011f "
+    },
+    {
+      "function": "c.found",
+      "args": "C:\\WINDOWS\\INSTLAY.IN?",
+      "result": "INSTLAY.INI:20:30:77d9 "
+    },
+    {
+      "function": "c.there",
+      "args": "C:\\WINDOWS\\SYSTEM\\SETUP.REG",
+      "result": "no"
+    },
+    {
+      "function": "c.there",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.TX_",
+      "result": "no"
+    },
+    {
+      "function": "c.there",
+      "args": "C:\\WINDOWS\\TEMP\\INSTLAY.DL_",
+      "result": "no"
+    },
+    {
+      "function": "c.there",
+      "args": "C:\\INSTLAY\\TMP",
+      "result": "no"
+    },
+    {
+      "function": "c.there",
+      "args": "C:\\WINDOWS\\INSTTMP",
+      "result": "no"
+    },
+    {
+      "function": "c.bytes",
+      "args": "C:\\INSTLAY\\README.TXT",
+      "result": "same"
+    },
+    {
+      "function": "c.bytes",
+      "args": "C:\\WINDOWS\\SYSTEM\\INSTLAY.DLL",
+      "result": "same"
+    },
+    {
+      "function": "c.profile",
+      "args": "WIN.INI [InstLay] Path",
+      "result": "C:\\INSTLAY"
+    },
+    {
+      "function": "c.profile",
+      "args": "WIN.INI [InstLay] Media",
+      "result": "C:\\WINDOWS\\INSTLAY.EXE"
+    },
+    {
+      "function": "c.profile",
+      "args": "C:\\INSTLAY\\INSTLAY.INI [Settings] Level",
+      "result": "3"
+    },
+    {
+      "function": "c.profile",
+      "args": "C:\\INSTLAY\\INSTLAY.INI [Settings] Name",
+      "result": "Layered"
+    },
+    {
+      "function": "c.profile",
+      "args": "INSTLAY.INI [Installed] From",
+      "result": "C:\\WINDOWS"
+    },
+    {
+      "function": "c.text",
+      "args": "C:\\INSTLAY\\INSTLAY.INI",
+      "result": "[Settings]\r\nLevel=3\r\nName=Layered\r\n"
+    },
+    {
+      "function": "c.text",
+      "args": "C:\\WINDOWS\\INSTLAY.INI",
+      "result": "[Installed]\r\nFrom=C:\\WINDOWS\r\n"
+    },
+    {
+      "function": "c.text",
+      "args": "C:\\WINDOWS\\WIN.INI",
+      "result": "[InstLay]\r\nPath=C:\\INSTLAY\r\nMedia=C:\\WINDOWS\\INSTLAY.EXE\r\n"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\INSTLAY\\INSTLAYC.EXE",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\INSTLAY\\INSTLAY.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\SYSTEM\\INSTLAY.DLL",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\INSTLAY.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\WIN.INI",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\INSTLAY",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\SYSTEM",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\TEMP",
+      "result": "as README.TXT"
+    },
+    {
+      "function": "c.stamp",
+      "args": "C:\\WINDOWS\\SYSTEM\\MIDIMAP.CFG",
+      "result": "other"
+    },
+    {
+      "function": "exec",
+      "args": "C:\\INSTLAY\\INSTLAYC.EXE",
+      "result": "inst"
+    },
+    {
+      "function": "ended",
+      "args": "INSTLAYC",
+      "result": "yes"
+    }
+  ]
+}

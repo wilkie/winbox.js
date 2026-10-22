@@ -5872,6 +5872,7 @@ const RUN_WHOLE = new Set<string>([
   'locinfo',
   'abouthin',
   'grround',
+  'instlay',
 ]);
 
 /**
@@ -5981,6 +5982,7 @@ const VIRTUAL_CLOCK = new Set([
   'about',
   'abouthin',
   'dirorder',
+  'instlay',
 ]);
 
 /**

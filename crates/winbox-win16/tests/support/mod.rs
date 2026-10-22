@@ -202,6 +202,7 @@ pub const AGREEING: &[&str] = &[
     "lbmark",
     "abouthin",
     "grround",
+    "instlay",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -518,6 +519,9 @@ pub struct Setup {
     /// The probe's name, upper case, as its files are named.
     pub upper: String,
     pub bytes: Vec<u8>,
+    /// Where the program is started from, as DOS names it: the probe's
+    /// own `C:\<NAME>.EXE`, unless a run says otherwise.
+    pub program: String,
     /// What drive C: has beneath the run's own folder.
     pub beneath: Beneath,
     /// The files put on drive C:, by their paths there, with their bytes.
@@ -801,6 +805,7 @@ impl Setup {
 
         Some(Self {
             system,
+            program: format!("C:\\{upper}.EXE"),
             upper,
             bytes,
             beneath,
@@ -809,13 +814,12 @@ impl Setup {
         })
     }
 
-    /// The probe loaded and started from `C:\`, the system made ready by
-    /// `prepare` first.
+    /// The probe loaded and started from where `program` says, `C:\` its
+    /// own, the system made ready by `prepare` first.
     fn start(mut self, prepare: impl FnOnce(&mut System)) -> System {
-        let (program, libraries) = self.system.load(
-            Executable::parse(self.bytes).unwrap(),
-            &format!("C:\\{}.EXE", self.upper),
-        );
+        let (program, libraries) = self
+            .system
+            .load(Executable::parse(self.bytes).unwrap(), &self.program);
 
         self.system.link(program);
         self.system.start(program, libraries, "").unwrap();
@@ -970,6 +974,41 @@ pub fn run_in_memory(
         .unwrap_or_default();
 
     Some((stop, records_of(&output), system))
+}
+
+/// `run_in_memory` on a drive C: of the run's own, held in memory, and the
+/// program `setup` names started from it: what is placed is the run's to
+/// put on `c` beforehand. Why it stopped, the records in
+/// `C:\ORACLE\<output>.OUT`, and the system as it ended, its drives with
+/// it. For a run whose drive is made of layers, or whose program is on it
+/// already: an installer run into a layer and the program it installed
+/// (`tests/install_layer.rs`).
+pub fn run_drive(
+    setup: Setup,
+    c: MemoryDrive,
+    output: &str,
+    prepare: impl FnOnce(&mut System),
+) -> (Stop, Vec<[String; 3]>, System) {
+    let mut system = setup.system;
+
+    system.files.mount('A', MemoryDrive::removable());
+    system.files.mount('C', c);
+    system.files.mount('Z', MemoryDrive::new());
+
+    let setup = Setup { system, ..setup };
+    let engine = winbox_win16::Engine::new(setup.start(prepare));
+    let stop = engine.run(2_000_000_000, 300.0);
+    let system = engine.into_system();
+    let output = system
+        .files
+        .read_from(
+            "C:\\ORACLE",
+            &format!("{}.OUT", output.to_ascii_uppercase()),
+        )
+        .map(|(_, bytes)| bytes)
+        .unwrap_or_default();
+
+    (stop, records_of(&output), system)
 }
 
 /// The probe is Windows' shell, as the recorder makes it (`record.mjs`,
