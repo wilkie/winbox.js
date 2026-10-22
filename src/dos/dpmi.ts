@@ -132,24 +132,6 @@ export class DPMI {
 
   invoke() {
     // A DOS/bios call
-    console.log(
-      'dos DPMI called from:',
-      this._machine.cpu.core.cs.toString(16),
-      ':',
-      this._machine.cpu.core.ip.toString(16),
-      'ah=',
-      this._machine.cpu.core.ah.toString(16) + 'h',
-      'al=',
-      this._machine.cpu.core.al.toString(16) + 'h',
-      'bx=',
-      this._machine.cpu.core.bx.toString(16),
-      'cx=',
-      this._machine.cpu.core.cx.toString(16),
-      'ds=',
-      this._machine.cpu.core.ds.toString(16),
-      'dx=',
-      this._machine.cpu.core.dx.toString(16)
-    );
 
     const handler = this._exports[this._machine.cpu.core.ax];
 

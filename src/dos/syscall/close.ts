@@ -1,6 +1,5 @@
 export function close(handle) {
   const file = this.files.resolve(handle);
-  console.log('DOS: close()', handle, file);
 
   // TODO: encode access
   // TODO: handle errors

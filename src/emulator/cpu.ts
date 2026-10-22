@@ -178,16 +178,13 @@ export class CPU implements CpuCoreHost {
    * Performs a CPU step.
    */
   step() {
-    //console.log(this.cs, this.ip, this.bp);
     //if (this.ip == 0x542A) {
     // The drawobject call
-    //__console.log("Executing:", this.cs.toString(16), ":", this.ip.toString(16), 'sp:', this.sp.toString(16), 'bp:', this.bp.toString(16), 'ax:', this.ax.toString(16), 'bx:', this.bx.toString(16), 'cx:', this.cx.toString(16), 'dx:', this.dx.toString(16), 'si:', this.si.toString(16));//, this.memory.read16(this.ds >> 3, this.bp + 6).toString(16));
     /*
             let a = this.pop16();
             let b = this.pop16();
             this.push16(b);
             this.push16(a);
-            //__console.log("from", a.toString(16), b.toString(16));
         }*/
 
     try {
