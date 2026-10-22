@@ -74,6 +74,9 @@ export interface Engine {
    */
   changes(): Promise<Change[] | null>;
 
+  /** Whether no program is running: every one started has ended, or none has. */
+  idle(): boolean;
+
   /**
    * Whether the machine has a sound card, where the engine has one to give
    * it: the Rust engine, WinBox's own (`sound.ts`). Given as Windows starts

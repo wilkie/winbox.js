@@ -234,7 +234,10 @@ impl Session {
     /// What differs on a drive from the drive as planned (`mark_planned`):
     /// once a program has started, the drive it writes; until then, the
     /// drive as the page fills it. A file a program has open is told as it
-    /// stands.
+    /// stands; a folder's stamp as DOS's clock gave it to the programs
+    /// (`changes_seen`): the drive keeps its own by the host's clock, which
+    /// is universal time, where DOS's is local time read as universal --
+    /// hours apart west or east of Greenwich.
     pub fn changes(&self, letter: char) -> Vec<Change> {
         let letter = letter.to_ascii_uppercase();
         let empty = MemoryDrive::new();
@@ -243,10 +246,8 @@ impl Session {
         if self.run.is_some() {
             let system = self.engine.system();
 
-            return system
-                .files
-                .memory(letter)
-                .map_or_else(Vec::new, |drive| drive.changes_from(planned));
+            return winbox_win16::layers::changes_seen(&system.files, letter, planned)
+                .unwrap_or_default();
         }
 
         self.drives

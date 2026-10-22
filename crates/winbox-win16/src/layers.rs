@@ -892,7 +892,8 @@ pub fn dos_stamp(seconds: i64) -> i64 {
 /// made from (`MemoryDrive::changes_from`), each folder's stamp as DOS's
 /// clock gave it to the programs that listed it (`Files::folder_stamp`):
 /// the drive keeps a folder's by its own clock, and a run on a virtual one
-/// writes its files by that and its folders' stamps by DOS's. None where
+/// writes its files by that and its folders' stamps by DOS's. A folder
+/// whose stamp, as DOS gave it, is the one it had is not told. None where
 /// `letter` is not a drive held in memory.
 pub fn changes_seen(files: &Files, letter: char, before: &MemoryDrive) -> Option<Vec<Change>> {
     let after = files.memory(letter)?;
@@ -901,12 +902,15 @@ pub fn changes_seen(files: &Files, letter: char, before: &MemoryDrive) -> Option
         after
             .changes_from(before)
             .into_iter()
-            .map(|change| match change {
-                Change::Folder { path, modified } => Change::Folder {
-                    modified: files.folder_stamp(letter, &path).unwrap_or(modified),
-                    path,
-                },
-                other => other,
+            .filter_map(|change| match change {
+                Change::Folder { path, modified } => {
+                    let modified = files.folder_stamp(letter, &path).unwrap_or(modified);
+
+                    // Its stamp, as DOS gave it, the one it had: unchanged.
+                    (before.folder_modified(&path) != Some(modified))
+                        .then_some(Change::Folder { path, modified })
+                }
+                other => Some(other),
             })
             .collect(),
     )

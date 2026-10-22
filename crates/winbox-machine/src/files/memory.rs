@@ -332,6 +332,13 @@ impl MemoryDrive {
         }
     }
 
+    /// When a folder was last written, seconds since 1970, as a DOS path
+    /// names it; none where no folder is there.
+    pub fn folder_modified(&self, path: &str) -> Option<i64> {
+        self.folder(&names(&Files::parse(path).parts))
+            .map(|folder| folder.modified)
+    }
+
     /// A file's bytes, as a DOS path names it.
     pub fn data(&self, path: &str) -> Option<Rc<Vec<u8>>> {
         match self.node(&names(&Files::parse(path).parts))? {

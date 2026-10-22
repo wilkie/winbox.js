@@ -126,6 +126,12 @@ export class TypeScriptEngine implements Engine {
     this.session = { machine, win16, drive, changes };
   }
 
+  idle() {
+    const tasks = Object.values(this.session?.win16.scheduler._tasks ?? {}) as any[];
+
+    return tasks.every((task) => task.ended);
+  }
+
   async changes() {
     return (await this.session?.changes.changes()) ?? null;
   }

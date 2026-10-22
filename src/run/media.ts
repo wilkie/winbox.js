@@ -36,6 +36,20 @@ const baseName = (path: string) => path.split('/').pop() ?? path;
 const ofMedia = (entry: ZipEntry) =>
   IMAGE.test(entry.path) || /^(OEM)?SETUP\.INF$|_$/i.test(baseName(entry.path));
 
+/**
+ * A program's installer in its archive, `SETUP.EXE` or `INSTALL.EXE`, the
+ * shallowest, the first of its depth in the archive's order: its path in
+ * the archive; none where there is none.
+ */
+export function installerOf(entries: ZipEntry[]) {
+  const found = entries
+    .filter((entry) => /^(SETUP|INSTALL)\.EXE$/i.test(baseName(entry.path)))
+    .map((entry, at) => ({ path: entry.path, depth: entry.path.split('/').length, at }))
+    .sort((one, other) => one.depth - other.depth || one.at - other.at);
+
+  return found[0]?.path ?? null;
+}
+
 /** What a dropped file is. Anything not a zip is taken as media, a disk's image or a file of one. */
 export async function classify(name: string, bytes: Uint8Array): Promise<Dropped> {
   if (!isZip(bytes)) {
@@ -52,6 +66,18 @@ export async function classify(name: string, bytes: Uint8Array): Promise<Dropped
    * the media: its SYSTEM directory holds a SETUP.INF too. */
   if (entries.some((entry) => /(^|\/)SYSTEM\/[^/]+\.(FON|TTF)$/i.test(entry.path))) {
     return { kind: 'installation', name, bytes, entries };
+  }
+
+  /* A program's own installer, with no Setup's list of Windows' or disk's
+   * image beside it, is a program's, though its files may be `COMPRESS`ed
+   * for a disk as Windows' are (`CTL3D.DL_`). */
+  if (
+    installerOf(entries) &&
+    !entries.some(
+      (entry) => IMAGE.test(entry.path) || /^(OEM)?SETUP\.INF$/i.test(baseName(entry.path))
+    )
+  ) {
+    return { kind: 'programs', name, entries };
   }
 
   if (entries.some(ofMedia)) {

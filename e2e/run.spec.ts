@@ -77,6 +77,11 @@ const CLOCK = join(DRIVE_C, 'CLOCK.EXE');
 const FAULT = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULT.EXE');
 const FAULTC = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULTC.EXE');
 
+/* The `instlay` probe's installer and the program it installs, shipped as a
+ * program's installer is: SETUP.EXE and its files. */
+const INSTLAY = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAY.EXE');
+const INSTLAYC = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAYC.EXE');
+
 /* The installation's files a program's windows are drawn from: SYSTEM.INI
  * and WIN.INI, the display driver and the fonts, and USER. */
 function installation() {
@@ -2077,6 +2082,115 @@ for (const { engine, page: at } of ENGINES) {
         timeout: 30000,
       });
       await expect(kept).toHaveCount(0);
+      expect(errors).toEqual([]);
+    });
+
+    test('installs a program by its installer into a layer, and another in turn, on Keep', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(INSTLAY) || !existsSync(INSTLAYC),
+        'the asset bundle, or the instlay probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const kept = page.locator('#kept-programs li');
+      const counts = () => page.evaluate(() => (globalThis as any).winbox.keptCounts());
+      /* The probe's installer as a program's installer is shipped: SETUP.EXE,
+       * and the program it installs beside it. */
+      const media = (name: string) => ({
+        name,
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'SETUP.EXE', data: new Uint8Array(readFileSync(INSTLAY)) },
+          { path: 'INSTLAYC.EXE', data: new Uint8Array(readFileSync(INSTLAYC)) },
+        ]),
+      });
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      /* Offered to install, or to keep as it is. */
+      await page.locator('#picker').setInputFiles(media('instlay.zip'));
+      await expect(page.locator('#status')).toHaveText(
+        'instlay.zip holds an installer, SETUP.EXE: install it, or keep it as a program.'
+      );
+      await expect(page.getByRole('button', { name: 'Keep as a program' })).toBeVisible();
+      await expect(page.locator('#install-into')).toHaveValue('');
+
+      /* Installed: run from its media at C:\WBSETUP over the base, and
+       * offered to be kept once its task has ended -- not before. */
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await expect(page.locator('#files')).toContainText('C:\\WBSETUP\\SETUP.EXE');
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'Installed instlay, its 6 files kept as a layer, its setup files let go of. ' +
+          'What it wrote still names them, which are not kept: ' +
+          'C:\\WINDOWS\\WIN.INI: Media=C:\\WBSETUP\\INSTLAYC.EXE.'
+      );
+      await expect(kept).toHaveCount(1);
+      await expect(page.getByRole('button', { name: 'Close instlay' })).toBeVisible();
+      await expect(page.locator('#install-section')).toBeHidden();
+      await expect(page.locator('#files')).not.toContainText('WBSETUP');
+      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 6 });
+
+      /* Installed in turn into it: a second layer over the first, the one
+       * program's stack. */
+      await page.locator('#picker').setInputFiles(media('again.zip'));
+      await page.locator('#install-into').selectOption('instlay');
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      await expect(page.locator('#status')).toContainText('Installed instlay,');
+      await expect(kept).toHaveCount(1);
+      expect((await counts()).layers).toBe(2);
+
+      /* The program installed runs from its layer, and ends. */
+      await page.getByRole('button', { name: 'Run C:\\INSTLAY\\INSTLAYC.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
+        timeout: 30000,
+      });
+
+      /* A third, discarded: nothing kept of it. */
+      await page.locator('#picker').setInputFiles(media('third.zip'));
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.getByRole('button', { name: 'Discard' })).toBeVisible();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Discard' }).click();
+      await expect(page.locator('#status')).toHaveText('Discarded what the installer wrote.');
+      expect((await counts()).programs).toBe(1);
+
+      /* Remembered on the next visit, and forgotten with its layers. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await expect(kept).toHaveCount(1);
+      await page.getByRole('button', { name: 'Open instlay' }).click();
+      await expect(page.locator('#status')).toHaveText('instlay is on C:.');
+      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\INSTLAYC.EXE');
+      await page.getByRole('button', { name: 'Forget instlay' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
       expect(errors).toEqual([]);
     });
   });

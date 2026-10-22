@@ -34,9 +34,17 @@ import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { Presenter } from '../raster/presenter.js';
 import { readZip } from '../zip.js';
 import { type Change, sameChanges } from './changes.js';
-import { baseName, type Layer } from '../layers/layer.js';
+import { installedLayer, type MediaReference } from '../layers/install.js';
+import {
+  baseName,
+  type Layer,
+  type LayerEntry,
+  type LayerManifest,
+  touching,
+} from '../layers/layer.js';
 import {
   type Archive,
+  layerPrograms,
   type Plan,
   planDrive,
   type Program,
@@ -45,7 +53,7 @@ import {
 } from './drive.js';
 import { type Engine, type Page } from './engines/engine.js';
 import { TypeScriptEngine } from './engines/ts.js';
-import { classify, makeFromMedia } from './media.js';
+import { classify, installerOf, makeFromMedia } from './media.js';
 import {
   assetsIdentity,
   forgetAllChanges,
@@ -91,6 +99,14 @@ const elements = {
   keptSection: $<HTMLElement>('#kept-section'),
   keptNote: $<HTMLElement>('#kept-note'),
   keptPrograms: $<HTMLElement>('#kept-programs'),
+  installSection: $<HTMLElement>('#install-section'),
+  installNote: $<HTMLElement>('#install-note'),
+  installTarget: $<HTMLElement>('#install-target'),
+  installInto: $<HTMLSelectElement>('#install-into'),
+  install: $<HTMLButtonElement>('#install'),
+  keepAsProgram: $<HTMLButtonElement>('#keep-as-program'),
+  installKeep: $<HTMLButtonElement>('#install-keep'),
+  installDiscard: $<HTMLButtonElement>('#install-discard'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -113,6 +129,8 @@ const state: {
   media: AssetInput[];
   programs: KeptProgram[];
   program: string | null;
+  offer: Archive | null;
+  installing: Installing | null;
 } = {
   archives: [],
   windows: null,
@@ -121,7 +139,43 @@ const state: {
   media: [],
   programs: [],
   program: null,
+  offer: null,
+  installing: null,
 };
+
+/**
+ * Where an installer's media are put on C: while it runs: a folder of
+ * their own, which no installer installs into, so that what it installed
+ * is never taken for its media (`kb/formats/layer.md`, "Installing on the
+ * page").
+ */
+const MEDIA = 'WBSETUP';
+
+/**
+ * A program's installer running over a stack (`kb/formats/layer.md`): its
+ * archive put on C: as its media, at `C:\WBSETUP`, over the stack of the
+ * kept program it installs into, or the base alone, with nothing written
+ * on it yet; until it is kept as a layer, or let go of.
+ */
+interface Installing {
+  /** The program's name: its archive's, or the program it installs into. */
+  name: string;
+
+  /** The archive dropped, as it was named. */
+  from: string;
+
+  /** The media, as `planDrive` lays them: the archive named for their folder. */
+  media: Archive;
+
+  /** Its installer, where the plan puts it: `C:\WBSETUP\SETUP.EXE`. */
+  installer: string;
+
+  /** The kept program it installs into, in turn; none for a program of its own. */
+  into: string | null;
+
+  /** Whether its task has ended, so that what it wrote may be kept. */
+  ended: boolean;
+}
 
 /**
  * The programs kept in this browser, each a stack of its own
@@ -220,6 +274,11 @@ function trace(name: string, stub: boolean, line: string) {
 
   if (name === 'USER.ExitWindows') {
     status('The program asked Windows to end the session, and has finished.');
+
+    /* An installer that ends Windows has ended. */
+    if (state.installing) {
+      installerEnded();
+    }
   }
 }
 
@@ -230,7 +289,14 @@ function status(message: string, kind: 'info' | 'error' = 'info') {
 
 /* ---- the engine ---- */
 
-const page: Page = { desktop: elements.desktop, status, call: trace, ended: () => keep() };
+const page: Page = {
+  desktop: elements.desktop,
+  status,
+  call: trace,
+  /* What a program wrote kept as it ends; an installer's, once its task
+   * has ended, kept only as the user says (`keepInstalled`). */
+  ended: () => (state.installing ? installerEnded() : keep()),
+};
 
 /** Where `pnpm build:web` writes the Rust engine's module, as `pnpm dev` serves it. */
 const RUST_MODULE = '/target/winbox-web/winbox_web_bg.wasm';
@@ -321,7 +387,8 @@ async function keepNow() {
   const current = made;
   const at = generation;
 
-  if (!current || rebuilding) {
+  /* An installer's top is kept as a layer, and only on "Keep". */
+  if (!current || rebuilding || state.installing) {
     return;
   }
 
@@ -433,10 +500,12 @@ async function rebuild({ keeping = true } = {}) {
   renderTrace();
 
   /* What programs wrote against what the machine is now made from: kept
-   * from before, where it was against another -- another display's base. */
-  const identity = identityNow();
+   * from before, where it was against another -- another display's base.
+   * An installer runs on an empty top, with nothing kept. */
+  const installing = state.installing;
+  const identity = installing ? null : identityNow();
 
-  if (kept.installation !== identity) {
+  if (!installing && kept.installation !== identity) {
     kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
     tooLarge = [];
   }
@@ -445,7 +514,10 @@ async function rebuild({ keeping = true } = {}) {
 
   const display = elements.display.value;
   const assets = state.windows ? null : state.assets;
-  const program = programNow();
+  /* An installer runs over the stack of the program it installs into. */
+  const program = installing
+    ? (state.programs.find((one) => one.name === installing.into) ?? null)
+    : programNow();
   let composed: ReturnType<Assets['compose']> | null;
 
   try {
@@ -481,7 +553,12 @@ async function rebuild({ keeping = true } = {}) {
   }
 
   try {
-    plan = planDrive(program ? [] : state.archives, state.windows, composed, stack);
+    plan = planDrive(
+      installing ? [installing.media] : program ? [] : state.archives,
+      state.windows,
+      composed,
+      stack
+    );
   } catch (error: any) {
     rebuilding = false;
     status(
@@ -498,7 +575,7 @@ async function rebuild({ keeping = true } = {}) {
     assets,
     display,
     coprocessor: elements.coprocessor.checked,
-    changes: kept.changes,
+    changes: installing ? [] : kept.changes,
   };
 
   try {
@@ -633,6 +710,7 @@ function renderKept() {
 }
 
 function render() {
+  renderInstall();
   elements.windows.textContent = windowsText();
   elements.forget.hidden = !state.windows && !state.assets;
   renderChanges();
@@ -770,6 +848,7 @@ async function accept(files: File[]) {
   await hold();
 
   let note: string | null = null;
+  let offered: string | null = null;
 
   try {
     const media: AssetInput[] = [];
@@ -817,8 +896,16 @@ async function accept(files: File[]) {
     }
 
     /* The programs kept over the Windows dropped with them, if any; the
-     * last of them chosen. */
+     * last of them chosen. One with an installer is offered to install, or
+     * to keep as it is: the last of those, where there is Windows. */
     for (const archive of archives) {
+      if (installerOf(archive.entries) && baseNow()) {
+        state.offer = archive;
+        state.installing = null;
+        offered = offerText(archive);
+        continue;
+      }
+
       note = (await takeProgram(archive)) ?? note;
     }
   } catch (error: any) {
@@ -830,7 +917,7 @@ async function accept(files: File[]) {
   renderDisplays();
 
   if (await rebuild({ keeping: false })) {
-    status(note ?? 'Ready.', note ? 'error' : 'info');
+    status(note ?? offered ?? 'Ready.', note ? 'error' : 'info');
   }
 }
 
@@ -913,13 +1000,312 @@ async function forgetPrograms() {
   await forgetAllPrograms();
   state.programs = [];
   state.program = null;
+  state.offer = null;
+  state.installing = null;
   stacks.clear();
+}
+
+/* ---- installing ---- */
+
+/** A program's name, as its archive names it. */
+const programName = (archive: Archive) => archive.name.replace(/\.zip$/i, '');
+
+/** The installer's file in an archive, as DOS names it: `SETUP.EXE`. */
+const installerName = (archive: Archive) =>
+  (installerOf(archive.entries) ?? '').split('/').pop()!.toUpperCase();
+
+/** What the page says of an archive with an installer, dropped. */
+function offerText(archive: Archive) {
+  return `${archive.name} holds an installer, ${installerName(archive)}: install it, or keep it as a program.`;
+}
+
+/** The kept programs an installer may install into: those of the base and display C: is now. */
+function programsHere() {
+  const base = baseNow();
+
+  return state.programs.filter(
+    (program) => program.base === base && program.display === elements.display.value
+  );
+}
+
+/** A name no kept program has: the name, or it numbered. */
+function freeName(name: string) {
+  const taken = new Set(state.programs.map((program) => program.name));
+
+  for (let number = 2; taken.has(name); number++) {
+    if (!taken.has(`${name} ${number}`)) {
+      return `${name} ${number}`;
+    }
+  }
+
+  return name;
+}
+
+/**
+ * An archive with an installer, run: its archive put on C: as its media,
+ * at `C:\WBSETUP`, over the stack of the program chosen to install into,
+ * or the base alone, with an empty top; and its installer started there.
+ * What it writes is kept only once its task has ended, and the user says
+ * so (`keepInstalled`).
+ */
+async function install() {
+  const archive = state.offer;
+  const installer = archive && installerOf(archive.entries);
+
+  if (!archive || !installer) {
+    return;
+  }
+
+  const into = elements.installInto.value || null;
+  const media: Archive = { name: `${MEDIA}.zip`, entries: archive.entries };
+
+  await hold();
+  state.offer = null;
+  state.installing = {
+    name: into ?? programName(archive),
+    from: archive.name,
+    media,
+    installer: '',
+    into,
+    ended: false,
+  };
+
+  if (!(await rebuild({ keeping: false }))) {
+    state.installing = null;
+    renderInstall();
+    return;
+  }
+
+  /* Its installer where the plan put it, under an 8.3 name. */
+  const placed = plan?.placements.find(
+    (placement) => placement.original === `${media.name}/${installer}`
+  );
+  const program = plan?.programs.find(
+    (one) => placed && one.kind === 'windows' && one.parts.join('\\') === placed.parts.join('\\')
+  );
+
+  if (!program) {
+    status(`${installerName(archive)} is not a Windows program, and is not run here.`, 'error');
+    return;
+  }
+
+  state.installing.installer = program.path;
+  renderInstall();
+  await run(program);
+}
+
+/**
+ * A program has ended, or asked Windows to end: once the engine has done
+ * with it, where none is left running, the installer's task has ended --
+ * not a program it started and waits for -- and what it wrote may be kept.
+ */
+function installerEnded() {
+  setTimeout(() => {
+    const installing = state.installing;
+
+    if (!installing || installing.ended || !made?.idle()) {
+      return;
+    }
+
+    installing.ended = true;
+    renderInstall();
+    status('The installer has ended. Keep what it installed, or discard it.');
+  }, 0);
+}
+
+/**
+ * What the installer wrote kept as a layer (`installedLayer`): its top's
+ * changes, those naming its media dropped, over the stack it ran on; and
+ * the program kept with it -- one of its own, or the program it installed
+ * into with the layer added over its others, as programs sharing a
+ * machine are installed in turn. What that program wrote before is put on
+ * its new stack, but where the installer wrote. The program is then
+ * chosen, its stack on C:.
+ */
+async function keepInstalled() {
+  const installing = state.installing;
+  const base = baseNow();
+
+  if (!installing?.ended || !base) {
+    return;
+  }
+
+  let changes: Change[] | null = null;
+
+  try {
+    changes = await (await engine).changes();
+  } catch (error) {
+    console.error(error);
+  }
+
+  if (!changes) {
+    status('What the installer wrote could not be read.', 'error');
+    return;
+  }
+
+  const into = state.programs.find((one) => one.name === installing.into) ?? null;
+  const { layer, references } = await installedLayer(changes, {
+    media: [MEDIA],
+    over: [base, ...(into?.layers ?? [])],
+    made: { by: 'WinBox run page', from: installing.from },
+  });
+
+  if (!layer.manifest.entries.length) {
+    status('The installer wrote nothing on C: to keep.', 'error');
+    return;
+  }
+
+  const { id } = layer.manifest;
+  const exes = layerPrograms(layer);
+  const program: KeptProgram = into
+    ? {
+        ...into,
+        layers: [...into.layers, id],
+        exes: [...into.exes, ...exes.filter((exe) => !into.exes.includes(exe))],
+      }
+    : {
+        name: freeName(installing.name),
+        base,
+        display: elements.display.value,
+        layers: [id],
+        exes,
+        orders: {},
+        kept: Date.now(),
+      };
+
+  try {
+    await keepProgram(program, [layer]);
+
+    if (into) {
+      await carryChanges(into, program, layer.manifest);
+    }
+  } catch (error: any) {
+    status(`What the installer wrote could not be kept: ${error?.message ?? error}`, 'error');
+    return;
+  }
+
+  await hold({ keeping: false });
+  stacks.delete(program.name);
+  state.programs = [...state.programs.filter((one) => one.name !== program.name), program];
+  state.program = program.name;
+  state.installing = null;
+
+  if (await rebuild({ keeping: false })) {
+    status(installedText(program.name, layer.manifest, references));
+  }
+}
+
+/** What the page says of a program installed and kept. */
+function installedText(name: string, manifest: LayerManifest, references: MediaReference[]) {
+  const files = manifest.entries.filter((entry) => entry.kind === 'file').length;
+  const naming = references.map((reference) => `C:\\${reference.path}: ${reference.line}`);
+
+  return (
+    `Installed ${name}, its ${files} files kept as a layer, its setup files let go of.` +
+    (naming.length
+      ? ` What it wrote still names them, which are not kept: ${naming.join('; ')}.`
+      : '')
+  );
+}
+
+/**
+ * What a program wrote, kept against its stack before a layer was
+ * installed into it, put on its new stack: but where the installer wrote,
+ * for there the installer's is the newer (`touching`).
+ */
+async function carryChanges(was: KeptProgram, now: KeptProgram, manifest: LayerManifest) {
+  const before = await recallChangesAt(programChangesKey(was.name));
+
+  if (!before?.changes.length) {
+    return;
+  }
+
+  const entryOf = (change: Change): LayerEntry =>
+    change.kind === 'file'
+      ? { kind: 'file', path: change.path, sha256: '', size: 0, modified: change.modified }
+      : change.kind === 'folder'
+        ? { kind: 'folder', path: change.path, modified: change.modified }
+        : { kind: 'removed', path: change.path };
+  const touched = (change: Change) =>
+    touching({ ...manifest, entries: [entryOf(change)] }, manifest) !== undefined;
+
+  await rememberChanges({
+    installation: programIdentity(now.name, now.base, now.display, now.layers),
+    changes: before.changes.filter((change) => !touched(change)),
+  });
+}
+
+/** The installer's run let go of, and what it wrote with it. */
+async function discardInstall() {
+  await hold({ keeping: false });
+  state.installing = null;
+
+  if (await rebuild({ keeping: false })) {
+    status('Discarded what the installer wrote.');
+  }
+}
+
+/** The archive with an installer kept as it is, a program of its own, as any archive is. */
+async function keepAsProgram() {
+  const archive = state.offer;
+
+  if (!archive) {
+    return;
+  }
+
+  await hold();
+  state.offer = null;
+
+  const note = await takeProgram(archive);
+
+  if (await rebuild({ keeping: false })) {
+    status(note ?? `${programName(archive)} is on C:.`, note ? 'error' : 'info');
+  }
+}
+
+/** The offer to install, or the installer running, shown with what may be done. */
+function renderInstall() {
+  const { offer, installing } = state;
+
+  elements.installSection.hidden = !offer && !installing;
+  elements.installTarget.hidden = !offer;
+  elements.install.hidden = !offer;
+  elements.keepAsProgram.hidden = !offer;
+  elements.installKeep.hidden = !installing?.ended;
+  elements.installDiscard.hidden = !installing;
+
+  if (offer) {
+    const chosen = elements.installInto.value;
+    const into = programsHere();
+
+    elements.installNote.textContent =
+      `${offer.name} holds an installer, ${installerName(offer)}. Installed, what it writes ` +
+      'on C: is kept as a layer, and its setup files let go of; or the archive is kept as it is.';
+    elements.installInto.replaceChildren(
+      ...[
+        { value: '', text: `as ${freeName(programName(offer))}, a program of its own` },
+        ...into.map((program) => ({ value: program.name, text: `into ${program.name}` })),
+      ].map(({ value, text }) => {
+        const option = document.createElement('option');
+
+        option.value = value;
+        option.textContent = text;
+        return option;
+      })
+    );
+    elements.installInto.value = into.some((program) => program.name === chosen) ? chosen : '';
+  } else if (installing) {
+    elements.installNote.textContent = installing.ended
+      ? `The installer has ended. Keep what it installed${installing.into ? ` into ${installing.into}` : ''} as a layer, or discard it.`
+      : `Installing ${installing.name} from ${installing.from}: its setup files are at C:\\${MEDIA} while it runs.`;
+  }
 }
 
 /** A program kept put on C:, its stack, or none: the base alone, with what was dropped loose. */
 async function choose(name: string | null) {
   await hold();
   state.program = name;
+  state.installing = null;
 
   if (await rebuild({ keeping: false })) {
     status(name ? `${name} is on C:.` : 'Ready.');
@@ -961,7 +1347,15 @@ function start() {
 
   renderDisplays();
   elements.display.value = 'vga';
-  elements.display.addEventListener('change', () => rebuild());
+  elements.display.addEventListener('change', () => {
+    /* An installer runs on the display it was started on. */
+    state.installing = null;
+    rebuild();
+  });
+  elements.install.addEventListener('click', () => install());
+  elements.keepAsProgram.addEventListener('click', () => keepAsProgram());
+  elements.installKeep.addEventListener('click', () => keepInstalled());
+  elements.installDiscard.addEventListener('click', () => discardInstall());
   elements.coprocessor.addEventListener('change', () => rebuild());
 
   /* Only the Rust engine has a sound card to give a machine. Windows reads

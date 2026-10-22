@@ -546,6 +546,21 @@ export function planManifest(plan: Plan, id: string): LayerManifest {
   };
 }
 
+/**
+ * The Windows programs a layer writes, as the plan names a program:
+ * `C:\WINDOWS\GAMES\CARRIB.EXE`, in the layer's order -- what a program
+ * installed into a layer offers to run.
+ */
+export function layerPrograms(layer: Layer) {
+  return layer.manifest.entries.flatMap((entry) => {
+    const data = entry.kind === 'file' ? layer.blobs.get(entry.sha256) : undefined;
+
+    return data && /\.EXE$/.test(entry.path) && kindOf(data) === 'windows'
+      ? [`C:\\${entry.path}`]
+      : [];
+  });
+}
+
 /** A program's archive made into a layer, and what the page keeps of it beside. */
 export interface ProgramLayer {
   layer: Layer;

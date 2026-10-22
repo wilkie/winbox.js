@@ -216,7 +216,11 @@ export class FileManager {
     const pathInfo = this.parse(path);
     const fileSystem = this.query(pathInfo.drive);
 
-    if (!fileSystem) {
+    /* Not in a folder that is not there, as DOS answers 3Ch there (path not
+     * found) and the Rust engine's drive does: the volume would make the
+     * folders above a file it maps. A program that writes its records into
+     * `C:\ORACLE` makes none on a drive without that folder. */
+    if (!fileSystem || !(await fileSystem.open(pathInfo.path.slice(0, -1)))) {
       return null;
     }
 

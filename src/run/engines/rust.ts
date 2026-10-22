@@ -380,6 +380,10 @@ export class RustEngine implements Engine {
    * tells it; kept as the changes a machine made afresh for this one is
    * given -- once Windows is exited, or a panic has trapped the module.
    */
+  idle() {
+    return this.#running === null;
+  }
+
   async changes() {
     const machine = this.#machine;
 
