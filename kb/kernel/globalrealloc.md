@@ -6,7 +6,7 @@ ordinal: 16
 summary: Resizes a global block, and on the recorded cases hands back the same handle with the block still at the same address.
 versions:
   '3.1': exact
-probes: [handles]
+probes: [handles, grround]
 topics: [global-and-local-memory]
 ---
 
@@ -15,6 +15,7 @@ topics: [global-and-local-memory]
 - [[measured]] Growing a moveable block from 256 to 1024 bytes, shrinking one from 1024 to 256, growing a fixed block from 256 to 1024, and resizing a moveable block from 256 to 256 all return the handle they were given, and [[fn:KERNEL.GlobalLock]] gives the same address afterwards as before — 4 of 4 records of [[probe:handles]].
 - [[measured]] [[fn:KERNEL.GlobalSize]] reports the new size afterwards: 1024, 256, 1024 and 256.
 - [[measured]] A fixed block grows in place just as a moveable one does.
+- [[measured]] The new size is rounded up to 32 bytes, as [[fn:KERNEL.GlobalAlloc]] rounds one: [[probe:grround]] grows blocks of 100h, moveable and fixed, to 101h, 110h, 111h and 120h, all 120h; 130h, 140h; 2FF0h, 3000h; 3510h and 3511h, 3520h.
 
 ## Nuances
 

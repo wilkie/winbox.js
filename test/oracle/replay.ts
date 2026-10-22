@@ -5555,6 +5555,17 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is not crossed, and the buffer with the space is kept. A matter of
    * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
   'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
+  /* `GetModuleHandle` given the probe's task: `GetExePtr` finds no module
+   * for a task's handle, and Windows answers nought where the name finds
+   * the module (`KRNL386.EXE` seg1 `4e78`-`4eff`). A program's task is its
+   * instance here, and a program's module is found by its name as nought,
+   * so the two agree as `module`: 1 record of `modnum`'s. */
+  'modnum:bytask': "a program's task is its instance, and its module answers nought by its name",
+  /* KERNEL's own notify procedure is `8de2` in KERNEL's first code
+   * segment; `LocalNotify` answers it as `LocalInit` left it. WinBox has
+   * no such segment, and keeps the offset with the segment nought: 1
+   * record of `locinfo`'s. */
+  'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
 };
 
 /**
@@ -5857,6 +5868,10 @@ const RUN_WHOLE = new Set<string>([
   'prblt2',
   'dirorder',
   'lbmark',
+  'modnum',
+  'locinfo',
+  'abouthin',
+  'grround',
 ]);
 
 /**
@@ -5964,6 +5979,7 @@ const VIRTUAL_CLOCK = new Set([
   'ddeterm',
   'ddenest',
   'about',
+  'abouthin',
   'dirorder',
 ]);
 

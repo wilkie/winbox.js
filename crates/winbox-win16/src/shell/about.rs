@@ -475,9 +475,20 @@ pub fn shell_about(engine: &Engine, mut args: Args) -> Later<'_> {
                 },
             )
         };
+        // Made with SHELL's own instance, which its entry point keeps at
+        // [350h] (`SHELL.DLL` seg1 `0069` calling seg2 `0000`, which stores
+        // it at `0010`) and `ShellAbout` hands `DialogBoxParam` (seg9
+        // `002b`): **recorded** by `abouthin`. As `about.ts`.
+        let shell = {
+            let system = engine.system();
+
+            system
+                .kept_named("SHELL")
+                .map_or(0, |kept| system.kept[kept].instance())
+        };
         let (owner, disabled, active) = engine.begin_modal(owner).await?;
         let hwnd = engine
-            .create_dialog(0, &template(), owner, DialogProc::About(about), 0, true)
+            .create_dialog(shell, &template(), owner, DialogProc::About(about), 0, true)
             .await?;
 
         Ok(Answer::Word(

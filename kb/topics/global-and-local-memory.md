@@ -26,7 +26,9 @@ probes:
     segreg,
     gfresh,
     ddeheap,
-    lzero,
+    lzero,,
+    locinfo,
+    grround,
   ]
 ---
 
@@ -203,7 +205,7 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 
 ## A module's segments
 
-[[read out]] Each segment a module is loaded into is a block of global memory like any other, with a handle and a size: its minimum allocation, 64K for none, and for the data segment its stack and heap more (`KRNL386.EXE` seg1 `7660`). [[measured]] A Visual Basic program asks [[fn:KERNEL.GlobalHandle]] for its own data segment's handle as it starts and grows the segment with [[fn:KERNEL.GlobalReAlloc]], and ends at once when either fails. A segment with no bytes in the file, at offset nought, is only its minimum allocation: a Visual Basic program's data segment is two bytes.
+[[read out]] Each segment a module is loaded into is a block of global memory like any other, with a handle and a size: its minimum allocation, 64K for none, and two bytes, and for the data segment its stack and heap more (`KRNL386.EXE` seg1 `7678`-`76a7`). [[measured]] The global heap rounds that up to 32 bytes, as it rounds any block: [[probe:grround]] has `GlobalAlloc` and `GlobalReAlloc` alike give 2FF0h as 3000h and 3510h as 3520h. [[probe:locinfo]]'s data segment asks for 2FF0h and has 3000h, and its heap, at the segment's end, grows from there: its size after growing, 914h, is 924h where the segment is taken as 2FF0h. winbox.js rounded a segment to 16 bytes before, and gave the two bytes only to the data segment. [[measured]] A Visual Basic program asks [[fn:KERNEL.GlobalHandle]] for its own data segment's handle as it starts and grows the segment with [[fn:KERNEL.GlobalReAlloc]], and ends at once when either fails. A segment with no bytes in the file, at offset nought, is only its minimum allocation: a Visual Basic program's data segment is two bytes.
 
 ## USER's and GDI's heaps
 
@@ -237,7 +239,7 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 ## Not yet measured
 
 - A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
-- A program's own notify procedure: `LocalNotify` is a stub, and KERNEL's own is the one told (read out, not recorded). Discardable blocks discarded by compaction, `LocalShrink` moving blocks, and `LocalReAlloc` of a locked block are read out, not recorded.
+- A program's own notify procedure: [[fn:KERNEL.LocalNotify]] puts it in the heap's information, but KERNEL's own is the one told (read out, not recorded); and KERNEL's own procedure's segment is nought there. Discardable blocks discarded by compaction, `LocalShrink` moving blocks, and `LocalReAlloc` of a locked block are read out, not recorded.
 
 `LocalLock`'s lock count, which is kept, and read out, but not recorded. `LocalReAlloc` of a fixed block that shrinks or has room after it. Global discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
 

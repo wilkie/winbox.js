@@ -317,8 +317,8 @@ async function loadFound(
     library.module = system.handles.alias(library);
 
     /* The data segment KERNEL allocates: its minimum allocation (64K for
-     * none) and two bytes, its stack and its heap, in paragraphs
-     * (`KRNL386.EXE` seg1 `7660`). Its heap is put at the end of it. */
+     * none) and two bytes, its stack and its heap (`KRNL386.EXE` seg1
+     * `7678`-`76a7`). Its heap is put at the end of it. */
     const header = executable.neHeader;
     const data = library.loader.segments[library.loader.ds - 1];
 
@@ -331,9 +331,11 @@ async function loadFound(
       /* Its heap grows with it when a request does not fit (`LocalInit`):
        * `COMMDLG.DLL`'s heap of 400h bytes is asked for 40Dh as its Open
        * dialog starts. */
+      /* Rounded up to 32 bytes, as the global heap rounds a block
+       * (**recorded** by `grround`). */
       system.allocator.setSegmentSize(
         library.loader.translate(library.loader.ds),
-        (size + 15) & ~15
+        (size + 31) & ~31
       );
     }
 

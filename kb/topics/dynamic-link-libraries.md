@@ -3,7 +3,20 @@ kind: topic
 name: Dynamic-link libraries
 summary: How Windows 3.1's KERNEL loads a program's DLLs — the data segment it gives one, the local heap its entry point asks for, the registers it starts with, and the prologues it patches — read out of KRNL386.EXE and COMMDLG.DLL.
 probes:
-  [nullds, sysdirs, freelib, wndds, loadpath, modhand, loadname, search, solodata, mplopen, ddewep]
+  [
+    nullds,
+    sysdirs,
+    freelib,
+    wndds,
+    loadpath,
+    modhand,
+    loadname,
+    search,
+    solodata,
+    mplopen,
+    ddewep,
+    modnum,
+  ]
 ---
 
 A program can import from a module winbox.js does not keep itself, such as `COMMDLG.DLL`, the common dialogs, or a program's own DLL. winbox.js then loads the file from the disk the way KERNEL does. Notepad's Find dialog is `COMMDLG.DLL` running, not a copy of it.
@@ -59,7 +72,8 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - [[read out]] The entry point is given the same number in DI, and its data segment's selector in DS (seg2 `24cd`-`24f1`).
 - [[measured]] [[probe:ddewep]]: DDEML's `WEP` answers its data segment's selector for anything but `WEP_FREE_DLL` and `WEP_SYSTEM_EXIT`, and that is one more than `LoadLibrary`'s answer. winbox.js numbered a library's instances from a table of its own, and the record differed; it now gives a library its data segment's handle, and its module's handle where it has no data.
 - [[read out]] **What takes which.** `GetModuleHandle` given a number in the pointer's offset, its segment nought, and `GetModuleFileName`, `GetModuleUsage` and `FreeLibrary` (seg2 `07bc`, `0841`, `088c`, `0cf2`) each find the module with `GetExePtr` (seg1 `4e78`), which takes the module's handle, a task's instance, a task, or any block a module owns, such as its data segment. So each takes an instance or a module. `GetInstanceData` (seg2 `08a9`) takes the handle of a segment: it copies from the same offset of the instance's data segment into the caller's.
-- `FreeModule` is the same code as `FreeLibrary` (seg2 `0176`, `018a`).
+- `FreeModule` is the same code as `FreeLibrary` (seg2 `0176`, `018a`). [[measured]] [[probe:modnum]]: `MAIN.CPL` loaded twice counts 1 after [[fn:KERNEL.FreeModule]] of its instance, and is gone after `FreeModule` of its module's handle. Both engines give it `FreeLibrary`'s code.
+- [[measured]] [[probe:modnum]]: [[fn:KERNEL.GetModuleHandle]] given an instance or a module's handle as a number answers its module's handle, for the probe, USER, SHELL and `MAIN.CPL`; given the probe's task, nought. Both engines answer a number so; a program's task is its instance in WinBox, a known gap. [[fn:KERNEL.GetInstanceData]] copies from another instance's data segment ([[probe:locinfo]]).
 
 ## WinBox's own libraries with no file
 
@@ -142,6 +156,7 @@ A program's exported function takes its data segment from AX, so what the caller
 - The `load` records of [[probe:sysdirs]] are not replayed: a replay runs no program's code, and loading a library runs its entry point.
 - Loading a segment only when it is first called.
 - A library's resources beyond its dialogs.
+- A program's module has no handle of its own: `GetModuleHandle` of its name answers nought, and its task is its instance.
 
 ## In winbox.js
 

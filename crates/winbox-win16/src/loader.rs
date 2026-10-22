@@ -277,8 +277,9 @@ impl System {
         let header = &self.modules[library].executable.header;
 
         // The data segment KERNEL allocates: its minimum allocation (64K for
-        // none) and two bytes, its stack and its heap, in paragraphs. Its
-        // heap grows with it when a request does not fit (`local_init`).
+        // none) and two bytes, its stack and its heap (`KRNL386.EXE` seg1
+        // `7678`-`76a7`). Its heap grows with it when a request does not
+        // fit (`local_init`).
         if let Some(data) = self.modules[library].data() {
             let segment = &self.modules[library].executable.segments
                 [usize::from(header.auto_data_segment) - 1];
@@ -291,7 +292,9 @@ impl System {
                 + u32::from(header.initial_stack_size)
                 + u32::from(header.initial_heap_size);
 
-            self.global.set_segment_size(data, (size + 15) & !15);
+            // Rounded up to 32 bytes, as the global heap rounds a block
+            // (**recorded** by `grround`).
+            self.global.set_segment_size(data, (size + 31) & !31);
         }
 
         self.load_libraries_for(library, beside, order);
@@ -366,14 +369,18 @@ impl System {
     }
 
     /// Each segment a block of global memory, with a size: its minimum
-    /// allocation, 64K for none, and for the data segment two bytes, the
-    /// stack and the heap more, in paragraphs (`KRNL386.EXE` seg1 `7660`).
+    /// allocation, 64K for none, and two bytes, and for the data segment
+    /// the stack and the heap more (`KRNL386.EXE` seg1 `7678`-`76a7`),
+    /// which the global heap rounds up to 32 bytes as it rounds any
+    /// block's (**recorded** by `grround`: 2FF0h is given 3000h, and
+    /// `locinfo`'s heap at the end of its data segment grows from there).
+    /// As `win16.ts`.
     fn size_segments(&mut self, module: &Module) {
         let header = &module.executable.header;
 
         for (number, segment) in module.executable.segments.iter().enumerate() {
             let extra = if number + 1 == usize::from(header.auto_data_segment) {
-                2 + u32::from(header.initial_stack_size) + u32::from(header.initial_heap_size)
+                u32::from(header.initial_stack_size) + u32::from(header.initial_heap_size)
             } else {
                 0
             };
@@ -381,10 +388,10 @@ impl System {
                 0 => 0x10000,
                 size => u32::from(size),
             };
-            let size = (minimum + extra).min(0x10000);
+            let size = (minimum + 2 + extra).min(0x10000);
 
             self.global
-                .set_segment_size(module.segments[number], (size + 15) & !15);
+                .set_segment_size(module.segments[number], (size + 31) & !31);
         }
     }
 

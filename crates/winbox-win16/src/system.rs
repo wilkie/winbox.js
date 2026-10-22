@@ -59,6 +59,22 @@ impl KeptModule {
     }
 }
 
+/// The Windows version of each module WinBox keeps, as its file on the
+/// installation says (its NE header's word 3Eh), for a base with no file of
+/// it, as the asset bundle's has none of most: WinBox's stand-in carries
+/// its file's version, as `COMMDLG`'s does
+/// (`commdlg::EXPECTED_WINDOWS_VERSION`). KERNEL's own is the Windows
+/// version (`expected_windows_version`). As `KEPT_VERSIONS` in `module.ts`.
+pub fn kept_version(name: &str) -> Option<u16> {
+    match name {
+        crate::commdlg::NAME => Some(crate::commdlg::EXPECTED_WINDOWS_VERSION),
+        "DDEML" | "LZEXPAND" | "TOOLHELP" | "VER" | "WIN87EM" | "SHELL" => Some(0x300),
+        "GDI" | "USER" | "KEYBOARD" | "MMSYSTEM" | "SOUND" | "SYSTEM" | "TIMER" | "MCISEQ"
+        | "MCIWAVE" | "WING" | "DISPLAY" => Some(0x30a),
+        _ => None,
+    }
+}
+
 /// A descriptor as the processor reads one.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 // Each is a bit of the descriptor, as the processor reads it.
@@ -640,7 +656,9 @@ impl System {
     /// tell what a module made for 3.00 is told (`kb/topics/combo-boxes.md`).
     /// KERNEL's is the Windows version, 3.10, which KERNEL sets in its own
     /// module as it starts (`KRNL386.EXE` seg1 `c285`-`c288`), where its
-    /// file says 3.00 (`lbmark`). None for any other.
+    /// file says 3.00 (`lbmark`). Another kept module with no file on the
+    /// base answers its file's on the installation (`kept_version`). None
+    /// for any other.
     pub fn expected_windows_version(&mut self, handle: u16) -> Option<u16> {
         if let Some(Object::Kept(kept)) = self.handles.resolve(handle)
             && self.kept[kept].module.name == "KERNEL"
@@ -653,11 +671,27 @@ impl System {
         }
 
         match self.handles.resolve(handle)? {
-            Object::Kept(kept) if self.kept[kept].module.name == crate::commdlg::NAME => {
-                Some(crate::commdlg::EXPECTED_WINDOWS_VERSION)
-            }
+            Object::Kept(kept) => kept_version(self.kept[kept].module.name),
             _ => None,
         }
+    }
+
+    /// KERNEL's flag 2000h of the module of a handle or instance, which
+    /// `GetExpWinVer` answers in DX (`KRNL386.EXE` seg1 `4f1a`-`4f1f`): set
+    /// as `LoadModule` loads a file whose header's byte 37h has 02h (seg2
+    /// `0ed9`-`0edc`, `1271`-`1279`), a Windows 2 program marked to run in
+    /// protected mode; a file whose own flags have 2000h is refused (seg2
+    /// `0ebd`-`0ec2`). No file of the installation, the probes or the
+    /// corpus has it. Nought for a kept module with no file. As
+    /// `moduleFlag2000` in `module.ts`.
+    pub fn module_flag_2000(&mut self, handle: u16) -> u16 {
+        self.executable_of(handle).map_or(0, |executable| {
+            if executable.header.os2_flags & 2 == 0 {
+                0
+            } else {
+                0x2000
+            }
+        })
     }
 
     /// A module's file in a folder of C:, as the installation has it, else

@@ -52,6 +52,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LocalShrink" => Implementation::Sync(memory::local_shrink),
         "LocalHandle" => Implementation::Sync(memory::local_handle),
         "LocalFlags" => Implementation::Sync(memory::local_flags),
+        "LocalNotify" => Implementation::Sync(memory::local_notify),
+        "LocalCountFree" => Implementation::Sync(memory::local_count_free),
+        "LocalHeapSize" => Implementation::Sync(memory::local_heap_size),
+        "GetInstanceData" => Implementation::Sync(memory::get_instance_data),
         "OutputDebugString" | "FatalAppExit" => Implementation::Sync(nothing_shown),
         "IsDBCSLeadByte" => Implementation::Sync(is_dbcs_lead_byte),
         "FatalExit" => Implementation::Async(fatal_exit),
@@ -130,7 +134,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GlobalPageUnlock" => Implementation::Sync(memory::global_page_unlock),
         "SetHandleCount" => Implementation::Sync(modules_kernel::set_handle_count),
         "GlobalNotify" => Implementation::Sync(modules_kernel::global_notify),
-        "FreeLibrary" => Implementation::Async(modules_kernel::free_library),
+        // The same code (`KRNL386.EXE` seg2 `0176`, `018a`).
+        "FreeLibrary" | "FreeModule" => Implementation::Async(modules_kernel::free_library),
         _ => {
             return crate::atoms::kernel_implementation(name)
                 .or_else(|| crate::kernel_calls::implementation(name));
@@ -299,15 +304,20 @@ fn get_version(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
 
 /// The Windows version the module of a handle or instance was made for,
 /// as `CreateWindow` asks it (`KRNL386.EXE` seg1 `4f02`-`4f27`):
-/// `GetExePtr`'s module, its word 3Eh (`System::expected_windows_version`).
-/// Nought for a handle of no module. The high word, the module's flag
-/// 2000h, is not answered (`lbmark`). As `GetExpWinVer.ts`.
+/// `GetExePtr`'s module, its word 3Eh in AX
+/// (`System::expected_windows_version`) and its flag 2000h in DX
+/// (`System::module_flag_2000`). For a handle of no module, nought in AX
+/// and DX as it was. **Recorded** by `lbmark` and `modnum`. As
+/// `GetExpWinVer.ts`.
 fn get_exp_win_ver(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let instance = args.word(system);
 
-    Ok(Answer::Word(
-        system.expected_windows_version(instance).unwrap_or(0),
-    ))
+    Ok(match system.expected_windows_version(instance) {
+        Some(version) => {
+            Answer::Dword(u32::from(system.module_flag_2000(instance)) << 16 | u32::from(version))
+        }
+        None => Answer::Word(0),
+    })
 }
 
 /// A module's file, as far as the buffer holds it with its nought: a kept
@@ -433,13 +443,17 @@ fn lclose(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 /// A module's handle by its name, or by its file's name where the name has
 /// a dot; nought for one not loaded, or one of WinBox's own libraries
-/// that has a file while it is not in use.
+/// that has a file while it is not in use. A number with no segment is a
+/// module's handle or an instance (`module_by_number`).
 fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let name = args.dword(system);
 
-    // Nought, or a number in a pointer's place.
-    if name >> 16 == 0 {
+    if name == 0 {
         return Ok(Answer::Word(0));
+    }
+
+    if name >> 16 == 0 {
+        return Ok(Answer::Word(module_by_number(system, name as u16)));
     }
 
     let text = String::from_utf8_lossy(&system.read_string(name)).to_ascii_uppercase();
@@ -486,6 +500,29 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
             kept.handle()
         }
     })))
+}
+
+/// `GetModuleHandle` given a number in the offset, its segment nought:
+/// KERNEL hands it to `GetExePtr` (`KRNL386.EXE` seg2 `07c6`, `082e`),
+/// which finds the module of a module's handle or an instance -- a
+/// program's, a library's, or one WinBox keeps -- and answers its handle,
+/// as its name would find it. A task's handle finds nothing (**recorded**
+/// by `modnum`), but a program's task is its instance here. As
+/// `GetModuleHandle.ts`.
+fn module_by_number(system: &System, number: u16) -> u16 {
+    match system.handles.resolve(number) {
+        Some(Object::Task(module) | Object::Library(module)) => system.modules[module].handle,
+        Some(Object::Kept(kept)) => {
+            let kept = &system.kept[kept];
+
+            if crate::own_modules::own_with_file(kept.module.name) && kept.usage == 0 {
+                0
+            } else {
+                kept.handle()
+            }
+        }
+        _ => 0,
+    }
 }
 
 /// A string copied, its nought too: the destination.

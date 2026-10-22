@@ -438,6 +438,9 @@ export class Win16 {
 
       if (signature.length === 0x40 && signature[0] === 0x4e && signature[1] === 0x45) {
         module.fileWindowsVersion = signature[0x3e] | (signature[0x3f] << 8);
+        /* Its byte 37h, whose 02h KERNEL keeps as the module's flag 2000h
+         * (`moduleFlag2000`). */
+        module.fileOtherFlags = signature[0x37];
       }
     }
   }
@@ -785,19 +788,21 @@ export class Win16 {
     patchPrologues(this, { loader, executable });
 
     /* Each segment a block of global memory KERNEL allocated, with a handle
-     * and a size: its minimum allocation, 64K for none, and for the data
-     * segment two bytes, the stack and the heap more, in paragraphs
-     * (`KRNL386.EXE` seg1 `7660`). A Visual Basic program's start-up asks
-     * `GlobalHandle` for its own data segment's, and ends when it has
-     * none. */
+     * and a size: its minimum allocation, 64K for none, and two bytes, and
+     * for the data segment the stack and the heap more (`KRNL386.EXE` seg1
+     * `7678`-`76a7`), which the global heap rounds up to 32 bytes as it
+     * rounds any block's (**recorded** by `grround`: 2FF0h is given 3000h,
+     * and `locinfo`'s heap at the end of its data segment grows from
+     * there). A Visual Basic program's start-up asks `GlobalHandle` for its
+     * own data segment's, and ends when it has none. */
     loader.segments.forEach((segment: any, index: number) => {
       const extra =
         index + 1 === loader.ds
-          ? 2 + executable.neHeader.initialStackSize + executable.neHeader.initialLocalHeapSize
+          ? executable.neHeader.initialStackSize + executable.neHeader.initialLocalHeapSize
           : 0;
-      const size = Math.min((segment.minAllocation || 0x10000) + extra, 0x10000);
+      const size = Math.min((segment.minAllocation || 0x10000) + 2 + extra, 0x10000);
 
-      this.allocator.setSegmentSize(loader.translate(index + 1), (size + 15) & ~15);
+      this.allocator.setSegmentSize(loader.translate(index + 1), (size + 31) & ~31);
     });
 
     // Register the module with the system
