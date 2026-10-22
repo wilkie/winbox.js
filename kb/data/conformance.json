@@ -29,6 +29,29 @@
   },
   "gaps": {}
  },
+ "abouthin": {
+  "probe": "abouthin",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "answer": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "instance": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "accinit": {
   "probe": "accinit",
   "display": "vga",
@@ -8698,6 +8721,29 @@
   },
   "gaps": {}
  },
+ "grround": {
+  "probe": "grround",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 36,
+  "functions": {
+   "alloc": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realloc": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "handbits": {
   "probe": "handbits",
   "display": "vga",
@@ -10158,6 +10204,45 @@
    }
   },
   "gaps": {}
+ },
+ "locinfo": {
+  "probe": "locinfo",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "heap": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "instance": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notify": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notifyseg": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "notifyseg": "KERNEL's notify procedure's segment, its code's, which WinBox has none of"
+  }
  },
  "lockinp": {
   "probe": "lockinp",
@@ -12539,6 +12624,45 @@
    }
   },
   "gaps": {}
+ },
+ "modnum": {
+  "probe": "modnum",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 15,
+  "functions": {
+   "bynumber": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "bytask": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "expwinver": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "usage": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "bytask": "a program's task is its instance, and its module answers nought by its name"
+  }
  },
  "mousemsg": {
   "probe": "mousemsg",

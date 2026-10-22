@@ -78,6 +78,8 @@ import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
 import { GetExpWinVer } from './kernel/GetExpWinVer.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
+import { GetInstanceData } from './kernel/GetInstanceData.js';
+import { LocalCountFree, LocalHeapSize, LocalNotify } from './kernel/LocalNotify.js';
 import { FileCdr } from './kernel/FileCdr.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
@@ -244,7 +246,7 @@ export class Kernel extends Module {
       [LocalHandle, 'LocalHandle', 2, [NEARPTR], HLOCAL],
       [LocalFlags, 'LocalFlags', 2, [HLOCAL], UINT],
       [LocalCompact, 'LocalCompact', 2, [UINT], UINT],
-      [Kernel.stub, 'LocalNotify', 4],
+      [LocalNotify, 'LocalNotify', 4, [FARPTR], DWORD],
       [GlobalAlloc, 'GlobalAlloc', 6, [UINT, DWORD], HGLOBAL],
       [GlobalReAlloc, 'GlobalReAlloc', 8, [HGLOBAL, DWORD, UINT], HGLOBAL],
       [GlobalFree, 'GlobalFree', 2, [HGLOBAL], HGLOBAL],
@@ -279,7 +281,8 @@ export class Kernel extends Module {
       null, // was IsScreenGrab; Windows 3.1 exports nothing at this ordinal
       null, // was BuildPDB; Windows 3.1 exports nothing at this ordinal
       [LoadModule, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
-      [Kernel.stub, 'FreeModule', 2, [HINSTANCE], BOOL],
+      /* The same code as `FreeLibrary` (`KRNL386.EXE` seg2 `0176`, `018a`). */
+      [FreeLibrary, 'FreeModule', 2, [HINSTANCE]],
       [GetModuleHandle, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
       [GetModuleUsage, 'GetModuleUsage', 2, [HINSTANCE], INT],
       [GetModuleFilename, 'GetModuleFilename', 8, [HINSTANCE, FARPTR, INT], INT],
@@ -288,7 +291,7 @@ export class Kernel extends Module {
       [MakeProcInstance, 'MakeProcInstance', 6, [FARPTR, HINSTANCE], FARPTR],
       [FreeProcInstance, 'FreeProcInstance', 4, [FARPTR]],
       [Kernel.stub, 'CallProcInstance', 4],
-      [Kernel.stub, 'GetInstanceData', 6],
+      [GetInstanceData, 'GetInstanceData', 6, [HINSTANCE, NEARPTR, INT], INT],
       [Catch, 'Catch', 4, [FARPTR], INT],
       [Throw, 'Throw', 6, [FARPTR, INT], INT], // Return value must match Catch
       [GetProfileInt, 'GetProfileInt', 10, [LPCSTR, LPCSTR, INT], UINT],
@@ -418,13 +421,13 @@ export class Kernel extends Module {
       [Kernel.stub, 'GlobalHandleNoRIP', 2],
       // 160 //
       [Kernel.stub, 'EMSCopy', 14],
-      [Kernel.stub, 'LocalCountFree', 0],
-      [Kernel.stub, 'LocalHeapSize', 0],
+      [LocalCountFree, 'LocalCountFree', 0, [], UINT],
+      [LocalHeapSize, 'LocalHeapSize', 0, [], UINT],
       [Kernel.stub, 'GlobalLRUOldest', 2],
       [Kernel.stub, 'GlobalLRUNewest', 2],
       [Kernel.stub, 'A20Proc', 2],
       [WinExec, 'WinExec', 6, [LPCSTR, UINT], UINT],
-      [GetExpWinVer, 'GetExpWinVer', 2, [HANDLE], UINT],
+      [GetExpWinVer, 'GetExpWinVer', 2, [HANDLE], DWORD],
       [Kernel.stub, 'DirectResAlloc', 6],
       [GetFreeSpace, 'GetFreeSpace', 2, [UINT], DWORD],
       // 170 //

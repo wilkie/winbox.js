@@ -291,5 +291,11 @@ export async function ShellAbout(
     return 0;
   };
 
-  return await dialogBoxTemplate(system, 0, template, hWnd, proc, 0);
+  /* Made with SHELL's own instance, which its entry point keeps at [350h]
+   * (`SHELL.DLL` seg1 `0069` calling seg2 `0000`, which stores it at
+   * `0010`) and `ShellAbout` hands `DialogBoxParam` (seg9 `002b`):
+   * **recorded** by `abouthin`. */
+  const shell = system._modules.instanceFromPath('C:\\WINDOWS\\SYSTEM\\SHELL.DLL') ?? 0;
+
+  return await dialogBoxTemplate(system, shell, template, hWnd, proc, 0);
 }

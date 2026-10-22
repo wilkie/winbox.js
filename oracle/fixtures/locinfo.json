@@ -1,0 +1,54 @@
+{
+  "probe": "locinfo",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "heap",
+      "args": "start",
+      "result": "3f4 3ae"
+    },
+    {
+      "function": "heap",
+      "args": "two blocks",
+      "result": "914 4d6"
+    },
+    {
+      "function": "heap",
+      "args": "freed",
+      "result": "914 83c"
+    },
+    {
+      "function": "notify",
+      "args": "first",
+      "result": "8de2"
+    },
+    {
+      "function": "notifyseg",
+      "args": "first",
+      "result": "segment"
+    },
+    {
+      "function": "notify",
+      "args": "given back",
+      "result": "ours"
+    },
+    {
+      "function": "instance",
+      "args": "16 bytes",
+      "result": "16 first instance"
+    },
+    {
+      "function": "instance",
+      "args": "none",
+      "result": "0"
+    }
+  ]
+}
