@@ -196,6 +196,8 @@ pub const AGREEING: &[&str] = &[
     "localgro",
     "prblt",
     "prblt2",
+    "dirorder",
+    "lbmark",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

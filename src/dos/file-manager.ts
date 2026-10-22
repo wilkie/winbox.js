@@ -1,3 +1,4 @@
+import { stampAt } from '../file-systems/fat16.js';
 import { Stream } from '../stream.js';
 
 /**
@@ -41,6 +42,35 @@ export class FileManager {
   /** A DOS call noted: anything asked of DOS, files or not. */
   touch() {
     this.activity++;
+  }
+
+  /**
+   * A folder's entries changed -- one made in it, deleted from it or
+   * renamed -- and its stamp DOS's clock's now: DOSBox's C: is a folder of
+   * the host's, whose stamp moves so and not when a file in it is written
+   * (**recorded** by `dirorder`). The root's is its file system's own. As
+   * `files.rs`'s `changed`.
+   *
+   * @param {string} drive - The folder's drive.
+   * @param {string[]} parts - Its names from the root.
+   */
+  async changed(drive: string, parts: string[]) {
+    const fileSystem = this.query(drive);
+
+    if (!this.now || !fileSystem) {
+      return;
+    }
+
+    if (!parts.length) {
+      fileSystem.rootStamp = stampAt(this.now());
+      return;
+    }
+
+    const folder = await fileSystem.open(parts);
+
+    if (folder?.info?.directory && folder.stamp) {
+      await folder.stamp(this.now());
+    }
   }
 
   /**
@@ -184,7 +214,16 @@ export class FileManager {
       return null;
     }
 
+    /* A file made where none was changes its folder; one emptied does not:
+     * DOSBox's `localDrive::FileCreate` adds an entry only for a file that
+     * was not there (`drive_local.cpp` 51-80). */
+    const made = !(await fileSystem.open(pathInfo.path));
+
     await fileSystem.create(pathInfo.path);
+
+    if (made) {
+      await this.changed(pathInfo.drive, pathInfo.path.slice(0, -1));
+    }
 
     const file = await fileSystem.open(pathInfo.path);
 

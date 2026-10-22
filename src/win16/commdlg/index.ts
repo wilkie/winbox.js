@@ -71,6 +71,15 @@ export class CommDlg extends Module {
     return 'C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL';
   }
 
+  /**
+   * The Windows version `COMMDLG.DLL` was made for, its header's word 3Eh:
+   * 3.00. With no file, WinBox's answers it for its instance, which its
+   * dialogs are made with (`expectedWindowsVersion`).
+   */
+  static get expectedWindowsVersion() {
+    return 0x300;
+  }
+
   static get exports() {
     return [
       // 0 // "Common Windows Dialogs, Ver 3.10"

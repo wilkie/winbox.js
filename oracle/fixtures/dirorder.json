@@ -1,0 +1,194 @@
+{
+  "probe": "dirorder",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "made",
+      "result": "!D,.,..,AAA,SUB,$DOL.TXT,-DASH.TXT,1ONE.TXT,A!.TXT,A.CD,A.TXT,AB.C,B,MID.TXT,ZED.TXT,_UND.TXT,~TIL.TXT"
+    },
+    {
+      "function": "order",
+      "args": "remade",
+      "result": "!D,.,..,AAA,SUB,$DOL.TXT,-DASH.TXT,1ONE.TXT,A!.TXT,A.CD,AB.C,B,MID.TXT,NEW.TXT,ZED.TXT,_UND.TXT,~TIL.TXT"
+    },
+    {
+      "function": "search",
+      "args": "first",
+      "result": "$DOL.TXT"
+    },
+    {
+      "function": "search",
+      "args": "rest",
+      "result": "-DASH.TXT,1ONE.TXT,A!.TXT,NEW.TXT,ZED.TXT,_UND.TXT,~TIL.TXT"
+    },
+    {
+      "function": "order",
+      "args": "after",
+      "result": "!D,.,..,AAA,SUB,$DOL.TXT,-DASH.TXT,1ONE.TXT,A!.TXT,A.CD,AB.C,ADD.TXT,B,NEW.TXT,ZED.TXT,ZZZ.TXT,_UND.TXT,~TIL.TXT"
+    },
+    {
+      "function": "rename",
+      "args": "file",
+      "result": "0"
+    },
+    {
+      "function": "rename",
+      "args": "folder",
+      "result": "0"
+    },
+    {
+      "function": "stamp",
+      "args": "renamed",
+      "result": "same"
+    },
+    {
+      "function": "stamp",
+      "args": "renamed-handle",
+      "result": "same"
+    },
+    {
+      "function": "stamp",
+      "args": "open-unwritten",
+      "result": "same"
+    },
+    {
+      "function": "stamp",
+      "args": "written-nothing",
+      "result": "different"
+    },
+    {
+      "function": "stamp",
+      "args": "made-again",
+      "result": "different"
+    },
+    {
+      "function": "stamp",
+      "args": "written",
+      "result": "different"
+    },
+    {
+      "function": "folder",
+      "args": "file-written",
+      "result": "same"
+    },
+    {
+      "function": "folder",
+      "args": "file-made",
+      "result": "different"
+    },
+    {
+      "function": "folder",
+      "args": "file-deleted",
+      "result": "different"
+    },
+    {
+      "function": "folder",
+      "args": "file-renamed",
+      "result": "different"
+    },
+    {
+      "function": "folder",
+      "args": "renamed",
+      "result": "same"
+    },
+    {
+      "function": "folder",
+      "args": "dot",
+      "result": "same"
+    },
+    {
+      "function": "folder",
+      "args": "dotdot",
+      "result": "same"
+    },
+    {
+      "function": "order",
+      "args": "renamed",
+      "result": "!D,.,..,AAA,FD,FG,FM,FR,FW,SUB,$DOL.TXT,-DASH.TXT,1ONE.TXT,A!.TXT,A.CD,AB.C,ADD.TXT,AGAIN.TXT,B,NEW.TXT,NOTHING.TXT,OPEN.TXT,QQQ.TXT,WRITE.TXT,ZED.TXT,ZZZ.TXT,_UND.TXT,~TIL.TXT"
+    },
+    {
+      "function": "rename",
+      "args": "folder-moved",
+      "result": "0"
+    },
+    {
+      "function": "folder",
+      "args": "moved",
+      "result": "same"
+    },
+    {
+      "function": "order",
+      "args": "moved-folder",
+      "result": ".,..,IN.TXT"
+    },
+    {
+      "function": "rename",
+      "args": "file-moved",
+      "result": "0"
+    },
+    {
+      "function": "order",
+      "args": "moved-into",
+      "result": ".,..,FH,B"
+    },
+    {
+      "function": "rename",
+      "args": "into-itself",
+      "result": "2"
+    },
+    {
+      "function": "rename",
+      "args": "missing",
+      "result": "2"
+    },
+    {
+      "function": "rename",
+      "args": "exists",
+      "result": "5"
+    },
+    {
+      "function": "rename",
+      "args": "missing-onto-existing",
+      "result": "5"
+    },
+    {
+      "function": "rename",
+      "args": "no-folder",
+      "result": "2"
+    },
+    {
+      "function": "rename",
+      "args": "folder-onto-file",
+      "result": "5"
+    },
+    {
+      "function": "rmdir",
+      "args": "not-empty",
+      "result": "5"
+    },
+    {
+      "function": "rmdir",
+      "args": "missing",
+      "result": "3"
+    },
+    {
+      "function": "rmdir",
+      "args": "file",
+      "result": "3"
+    },
+    {
+      "function": "root",
+      "args": "dots",
+      "result": "yes yes"
+    }
+  ]
+}

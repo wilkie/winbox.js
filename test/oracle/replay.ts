@@ -5855,6 +5855,8 @@ const RUN_WHOLE = new Set<string>([
   'ddewep',
   'localgro',
   'prblt2',
+  'dirorder',
+  'lbmark',
 ]);
 
 /**
@@ -5931,6 +5933,8 @@ export const BOX_KEYS: Record<string, string[][]> = {
  * on the host's clock, beside a loaded run's other workers, the timer came
  * before the box was shown, and every control read hidden
  * (`run_program_test`'s end-to-end run, 1 in 3 at a third of a CPU).
+ * `dirorder` waits four seconds of `GetTickCount` for the stamps it compares
+ * to move.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5960,6 +5964,7 @@ const VIRTUAL_CLOCK = new Set([
   'ddeterm',
   'ddenest',
   'about',
+  'dirorder',
 ]);
 
 /**

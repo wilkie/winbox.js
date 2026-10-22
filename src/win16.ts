@@ -404,6 +404,42 @@ export class Win16 {
     }
 
     await this.displayResources(files);
+    await this.keptVersions(files);
+  }
+
+  /**
+   * The Windows version each module WinBox keeps was made for, by its file,
+   * the installation's in the system directory, else the asset bundle's:
+   * its header's word 3Eh, which `GetExpWinVer` answers and `CreateWindow`
+   * marks a window by (`expectedWindowsVersion`): `SHELL.DLL`'s 3.00, where
+   * USER's is 3.10 (`lbmark`). A module with none says nothing. As the
+   * Rust engine's `kept_file`.
+   */
+  async keptVersions(files: any[]) {
+    for (const module of Object.values(this._modules._modules) as any[]) {
+      if (module.executable || typeof module.path !== 'string') {
+        continue;
+      }
+
+      const name = module.path.split('\\').pop().toUpperCase();
+      const file: any = files.find((one: any) => String(one.name ?? '').toUpperCase() === name);
+      const read = async (at: number, length: number) =>
+        file
+          ? new Uint8Array(await file.read(at, length))
+          : (this.assetModule(name)?.subarray(at, at + length) ?? new Uint8Array());
+      const stub = await read(0, 0x40);
+
+      if (stub.length < 0x40) {
+        continue;
+      }
+
+      const header = stub[0x3c] | (stub[0x3d] << 8) | (stub[0x3e] << 16) | (stub[0x3f] << 24);
+      const signature = await read(header, 0x40);
+
+      if (signature.length === 0x40 && signature[0] === 0x4e && signature[1] === 0x45) {
+        module.fileWindowsVersion = signature[0x3e] | (signature[0x3f] << 8);
+      }
+    }
   }
 
   /**

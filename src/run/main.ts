@@ -4,7 +4,11 @@
  *
  * A zip of a Windows installation gives the programs Windows' own fonts and
  * files; it is found by what it holds and remembered in this browser, so it is
- * dropped once. What programs write on C: is remembered too, as the changes
+ * dropped once. In its place, the user's Windows 3.1 setup disks -- their
+ * images -- make WinBox's asset bundle here, in the browser
+ * (`kb/topics/asset-bundle.md`), or a bundle already made is dropped; the
+ * bundle is remembered as an installation is, and C: is the base it composes
+ * for the display chosen, with no installation at all. What programs write on C: is remembered too, as the changes
  * against what was dropped (`changes.ts`), and put back on the drive each time
  * it is made, on either engine. Nothing is uploaded anywhere. Each program's
  * API calls are traced as it runs -- the functions it needed, and which of
@@ -19,6 +23,9 @@
  * Served by `pnpm dev` at `/run.html`. Not part of the distributed bundle.
  */
 
+import { Assets } from '../assets/bundle.js';
+import { composedDisplays } from '../assets/compose.js';
+import { type AssetInput } from '../assets/make.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
 import { DeviceBitmap } from '../raster/device-bitmap.js';
 import { Presenter } from '../raster/presenter.js';
@@ -27,13 +34,19 @@ import { type Change, sameChanges } from './changes.js';
 import { type Archive, type Plan, planDrive, type Program } from './drive.js';
 import { type Engine, type Page } from './engines/engine.js';
 import { TypeScriptEngine } from './engines/ts.js';
+import { classify, makeFromMedia } from './media.js';
 import {
+  assetsIdentity,
+  forgetAllChanges,
+  forgetAssets,
   forgetChanges,
   forgetWindows,
   identify,
   type Kept,
+  recallAssets,
   recallChanges,
   recallWindows,
+  rememberAssets,
   rememberChanges,
   rememberWindows,
 } from './store.js';
@@ -63,14 +76,38 @@ const elements = {
 };
 
 /**
- * What has been dropped: program archives, and at most one Windows
- * installation, with what tells it apart (`identify`).
+ * What has been dropped: program archives, and at most one Windows -- an
+ * installation, with what tells it apart (`identify`), or an asset bundle --
+ * and the media dropped since the page was opened, which media dropped
+ * after are added to: the Super VGA driver's files after the disks.
  */
-const state: { archives: Archive[]; windows: Archive | null; installation: string | null } = {
+const state: {
+  archives: Archive[];
+  windows: Archive | null;
+  installation: string | null;
+  assets: Assets | null;
+  media: AssetInput[];
+} = {
   archives: [],
   windows: null,
   installation: null,
+  assets: null,
+  media: [],
 };
+
+/**
+ * What the changes programs write are told against: the installation, or
+ * the asset bundle and the display, whose base differs with the display
+ * (`assetsIdentity`); null with neither.
+ */
+function identityNow() {
+  return !state.windows && state.assets
+    ? assetsIdentity(state.assets.id, elements.display.value)
+    : state.installation;
+}
+
+/** What the machine as last made was told against, and so what its changes are kept against. */
+let built: string | null = null;
 
 /** Where everything dropped is on C:, as the engine's machine was last made from. */
 let plan: Plan | null = null;
@@ -250,11 +287,11 @@ async function keepNow() {
     renderChanges();
   }
 
-  if (kept.installation === state.installation && sameChanges(changes, kept.changes)) {
+  if (kept.installation === built && sameChanges(changes, kept.changes)) {
     return;
   }
 
-  const next = { installation: state.installation, changes };
+  const next = { installation: built, changes };
 
   try {
     await rememberChanges(next);
@@ -330,14 +367,35 @@ async function rebuild({ keeping = true } = {}) {
   recent.length = 0;
   renderTrace();
 
-  plan = planDrive(state.archives, state.windows);
+  /* What programs wrote against what the machine is now made from: kept
+   * from before, where it was against another -- another display's base. */
+  const identity = identityNow();
+
+  if (kept.installation !== identity) {
+    kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
+    tooLarge = [];
+  }
+
+  built = identity;
+
+  const display = elements.display.value;
+  const assets = state.windows ? null : state.assets;
+
+  try {
+    plan = planDrive(state.archives, state.windows, assets?.compose(display) ?? null);
+  } catch (error: any) {
+    rebuilding = false;
+    status(`The asset bundle has no base for that display: ${error?.message ?? error}`, 'error');
+    return false;
+  }
 
   const setup = {
     plan,
     windows: state.windows,
-    display: elements.display.value,
+    assets,
+    display,
     coprocessor: elements.coprocessor.checked,
-    changes: kept.installation === state.installation ? kept.changes : [],
+    changes: kept.changes,
   };
 
   try {
@@ -363,11 +421,67 @@ async function run(program: Program) {
 
 /* ---- the page ---- */
 
+/** What the page has of Windows, said. */
+function windowsText() {
+  if (state.windows) {
+    return `Windows installation: ${state.windows.name}${plan?.windows ? '' : ' (no SYSTEM fonts found in it)'}`;
+  }
+
+  if (state.assets) {
+    const { manifest } = state.assets;
+    const unknown = manifest.sources.filter((source) => !source.known).length;
+
+    return (
+      `Windows 3.1 from your setup disks: the asset bundle ${manifest.id.slice(0, 12)}, ` +
+      `kept in this browser, ${manifest.displays.length} displays. ` +
+      (unknown
+        ? `${unknown} of the ${manifest.sources.length} files it was made from are not of the retail disks WinBox knows. `
+        : '') +
+      (manifest.displays.includes('vga256')
+        ? ''
+        : "For 256 colours, drop the Super VGA 256-colour driver's files (OEMSETUP.INF and SVGA256.DRV, unpacked from the Driver Library's svga.exe) with the disks.")
+    ).trim();
+  }
+
+  return (
+    'No Windows. Drop the images of your Windows 3.1 setup disks, a winbox-assets.zip ' +
+    'made from them, or a zip of your own Windows 3.1 directory, to give programs its fonts.'
+  );
+}
+
+/**
+ * The displays offered: those the asset bundle has a driver and a base for,
+ * where C: is its base; every one, else. The one chosen kept where it is
+ * offered, VGA else, or the first.
+ */
+function renderDisplays() {
+  const names = Object.keys(DISPLAY_MODES).filter(
+    (name) =>
+      state.windows ||
+      !state.assets ||
+      (state.assets.displays.includes(name) && composedDisplays().includes(name))
+  );
+  const chosen = elements.display.value;
+
+  elements.display.replaceChildren(
+    ...names.map((name) => {
+      const option = document.createElement('option');
+
+      option.value = name;
+      option.textContent = (DISPLAY_MODES as any)[name].description;
+      return option;
+    })
+  );
+  elements.display.value = names.includes(chosen)
+    ? chosen
+    : names.includes('vga')
+      ? 'vga'
+      : (names[0] ?? '');
+}
+
 function render() {
-  elements.windows.textContent = state.windows
-    ? `Windows installation: ${state.windows.name}${plan?.windows ? '' : ' (no SYSTEM fonts found in it)'}`
-    : 'No Windows installation. Drop a zip of your own Windows 3.1 directory to give programs its fonts.';
-  elements.forget.hidden = !state.windows;
+  elements.windows.textContent = windowsText();
+  elements.forget.hidden = !state.windows && !state.assets;
   renderChanges();
 
   elements.programs.replaceChildren(
@@ -438,32 +552,115 @@ function renderEngine() {
   );
 }
 
-async function accept(files: File[]) {
-  const zips = files.filter((file) => /\.zip$/i.test(file.name));
+/**
+ * An asset bundle taken in place of what Windows the page had, and
+ * remembered; why it could not be kept, where it could not. What programs
+ * wrote against another Windows goes with it.
+ */
+async function takeAssets(name: string, bytes: Uint8Array) {
+  const assets = await Assets.fromZip(bytes);
+  const same = !state.windows && state.assets?.id === assets.id;
 
-  if (!zips.length) {
-    status('Only zip archives are read here.', 'error');
+  if (!same) {
+    await forgetAllChanges();
+    kept = { installation: null, changes: [] };
+  }
+
+  state.windows = null;
+  state.installation = null;
+  state.assets = assets;
+  await forgetWindows();
+
+  try {
+    await rememberAssets({ name, bytes });
+  } catch (error: any) {
+    return `The asset bundle could not be kept in this browser, and is to be dropped again next time: ${error?.message ?? error}`;
+  }
+
+  return null;
+}
+
+/**
+ * A bundle made from the media dropped; where they are not enough alone --
+ * no SETUP.INF among them, the driver's files dropped after the disks --
+ * with the media dropped before them.
+ */
+async function bundleFrom(media: AssetInput[]) {
+  try {
+    const made = await makeFromMedia(media);
+
+    state.media = media;
+    return made;
+  } catch (error: any) {
+    if (!state.media.length || !/SETUP\.INF/.test(String(error?.message))) {
+      throw error;
+    }
+
+    const all = [...state.media, ...media];
+    const made = await makeFromMedia(all);
+
+    state.media = all;
+    return made;
+  }
+}
+
+async function accept(files: File[]) {
+  if (!files.length) {
     return;
   }
 
-  status(`Reading ${zips.map((file) => file.name).join(', ')}…`);
+  status(`Reading ${files.map((file) => file.name).join(', ')}…`);
 
-  /* What the machine wrote kept, against the installation it ran. */
+  /* What the machine wrote kept, against the Windows it ran. */
   await hold();
 
-  try {
-    for (const file of zips) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const archive: Archive = { name: file.name, entries: await readZip(bytes) };
+  let note: string | null = null;
 
-      /* An installation is recognised by its SYSTEM directory of fonts. */
-      if (archive.entries.some((entry) => /(^|\/)SYSTEM\/[^/]+\.(FON|TTF)$/i.test(entry.path))) {
-        state.windows = archive;
-        state.installation = await identify({ name: file.name, bytes });
-        await rememberWindows({ name: file.name, bytes });
-      } else {
-        state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
+  try {
+    const media: AssetInput[] = [];
+
+    for (const file of files) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const dropped = await classify(file.name, bytes);
+
+      switch (dropped.kind) {
+        case 'bundle':
+          note = await takeAssets(file.name, bytes);
+          break;
+        case 'installation': {
+          const installation = await identify({ name: file.name, bytes });
+
+          /* What programs wrote on another installation is not put on this one. */
+          if (installation !== state.installation) {
+            await forgetAllChanges();
+            kept = { installation: null, changes: [] };
+          }
+
+          state.windows = { name: file.name, entries: dropped.entries };
+          state.installation = installation;
+          state.assets = null;
+          await Promise.all([rememberWindows({ name: file.name, bytes }), forgetAssets()]);
+          break;
+        }
+        case 'media':
+          media.push(dropped.input);
+          break;
+        case 'programs': {
+          const archive: Archive = { name: file.name, entries: dropped.entries };
+
+          state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
+          break;
+        }
       }
+    }
+
+    /* The disks made into a bundle here, as `pnpm assets` makes one. */
+    if (media.length) {
+      status(`Making the asset bundle from ${media.map((one) => one.name).join(', ')}…`);
+
+      const made = await bundleFrom(media);
+
+      note = await takeAssets('winbox-assets.zip', made.zip);
     }
   } catch (error: any) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
@@ -471,13 +668,10 @@ async function accept(files: File[]) {
     return;
   }
 
-  /* What programs wrote on another installation is not put on this one. */
-  if (kept.installation !== state.installation) {
-    kept = { installation: state.installation, changes: [] };
-  }
+  renderDisplays();
 
   if (await rebuild({ keeping: false })) {
-    status('Ready.');
+    status(note ?? 'Ready.', note ? 'error' : 'info');
   }
 }
 
@@ -488,13 +682,7 @@ Object.assign(globalThis as Record<string, unknown>, { DeviceBitmap, Presenter }
 function start() {
   renderEngine();
 
-  for (const name of Object.keys(DISPLAY_MODES)) {
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = (DISPLAY_MODES as any)[name].description;
-    elements.display.append(option);
-  }
-
+  renderDisplays();
   elements.display.value = 'vga';
   elements.display.addEventListener('change', () => rebuild());
   elements.coprocessor.addEventListener('change', () => rebuild());
@@ -522,25 +710,35 @@ function start() {
   });
   elements.picker.addEventListener('change', () => accept([...(elements.picker.files ?? [])]));
 
-  /* What programs wrote was written on the installation, and goes with it. */
+  /* What programs wrote was written on the installation, or the bundle's
+   * base, and goes with it. */
   elements.forget.addEventListener('click', async () => {
     await hold({ keeping: false });
+
+    const what = state.windows ? 'the Windows installation' : 'the asset bundle';
+
     state.windows = null;
     state.installation = null;
+    state.assets = null;
+    state.media = [];
     kept = { installation: null, changes: [] };
     tooLarge = [];
-    await Promise.all([forgetWindows(), forgetChanges()]);
+    await Promise.all([forgetWindows(), forgetAssets(), forgetAllChanges()]);
+    renderDisplays();
 
     if (await rebuild({ keeping: false })) {
-      status('Forgot the Windows installation, and what programs wrote.');
+      status(`Forgot ${what}, and what programs wrote.`);
     }
   });
 
   elements.forgetChanges.addEventListener('click', async () => {
     await hold({ keeping: false });
-    kept = { installation: state.installation, changes: [] };
+
+    const identity = identityNow();
+
+    kept = { installation: identity, changes: [] };
     tooLarge = [];
-    await forgetChanges();
+    await forgetChanges(identity);
 
     if (await rebuild({ keeping: false })) {
       status('Forgot what programs wrote.');
@@ -560,20 +758,37 @@ function start() {
   });
   addEventListener('pagehide', () => keep());
 
-  Promise.all([recallWindows(), recallChanges()]).then(async ([remembered, recalled]) => {
+  Promise.all([recallWindows(), recallAssets()]).then(async ([remembered, bundle]) => {
+    let note: string | null = null;
+
     if (remembered) {
       state.windows = { name: remembered.name, entries: await readZip(remembered.bytes) };
       state.installation = await identify(remembered);
+    } else if (bundle) {
+      try {
+        state.assets = await Assets.fromZip(bundle.bytes);
+      } catch (error: any) {
+        note = `The asset bundle kept could not be read: ${error?.message ?? error}`;
+      }
     }
 
-    /* What was kept is put back only on the installation it was written on. */
-    kept =
-      recalled && recalled.installation === state.installation
-        ? recalled
-        : { installation: state.installation, changes: [] };
+    renderDisplays();
+
+    /* What was kept is put back only on what it was written on. */
+    const identity = identityNow();
+
+    kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
 
     if (await rebuild({ keeping: false })) {
-      status(remembered ? `Remembered ${remembered.name}.` : 'Ready.');
+      status(
+        note ??
+          (remembered
+            ? `Remembered ${remembered.name}.`
+            : state.assets
+              ? 'Remembered the asset bundle.'
+              : 'Ready.'),
+        note ? 'error' : 'info'
+      );
     }
   });
 

@@ -52,6 +52,7 @@ interface WasmMachine {
   add_drive(drive: string): void;
   add_file(drive: string, dosPath: string, bytes: Uint8Array, mtimeSecs: number): boolean;
   add_folder(drive: string, dosPath: string, mtimeSecs: number): boolean;
+  add_module(name: string, bytes: Uint8Array): void;
   remove(drive: string, dosPath: string): boolean;
   mark_planned(): void;
   changes(drive: string): WasmChange[];
@@ -436,14 +437,23 @@ export class RustEngine implements Engine {
   /**
    * A machine made, its C: drive filled from the plan, marked as planned,
    * and what programs wrote before put back on it, in the order the
-   * TypeScript engine puts it back on its own (`orderChanges`).
+   * TypeScript engine puts it back on its own (`orderChanges`); and the
+   * asset bundle's modules put in the store behind C:, where there is one.
    */
   #make() {
-    const { plan, display, coprocessor, changes } = this.#setup!;
+    const { plan, assets, display, coprocessor, changes } = this.#setup!;
     const wasm = this.#wasm!;
     const machine = enter(wasm, () => new wasm.Machine(display, coprocessor));
 
     machine.add_drive('C');
+
+    for (const [name, bytes] of assets?.modules ?? []) {
+      machine.add_module(name, bytes);
+    }
+
+    for (const folder of plan.folders) {
+      machine.add_folder('C', folder.parts.join('\\'), folder.modified);
+    }
 
     for (const placement of plan.placements) {
       machine.add_file('C', placement.parts.join('\\'), placement.data, placement.modified);

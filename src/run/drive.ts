@@ -1,5 +1,6 @@
 'use strict';
 
+import { type Composed } from '../assets/compose.js';
 import { FAT16 } from '../file-systems/fat16.js';
 import { type ZipEntry } from '../zip.js';
 
@@ -13,8 +14,10 @@ import { type ZipEntry } from '../zip.js';
  *
  * A Windows installation is recognised by what it holds, a `SYSTEM` directory
  * of fonts, wherever it sits in its archive, and goes to `C:\WINDOWS`, which is
- * where the system looks for its fonts. Every other archive gets a directory of
- * its own, named after it.
+ * where the system looks for its fonts. In its place the page may have the
+ * base an asset bundle composes for the display (`compose.ts`), laid out where
+ * Setup put each file. Every other archive gets a directory of its own, named
+ * after it.
  */
 
 export interface Archive {
@@ -160,13 +163,24 @@ export interface Placement {
   modified: number;
 }
 
+/** A folder both engines make on C:, whether or not anything is placed in it. */
+export interface Folder {
+  /** Its DOS path's parts beneath `C:\`. */
+  parts: string[];
+
+  /** When it was last written, as a placement's. */
+  modified: number;
+}
+
 /** What goes on C:, worked out once and filled in by whichever engine runs. */
 export interface Plan {
+  /** The folders made first: the asset bundle's base's (`WINDOWS\TEMP`), where it is placed. */
+  folders: Folder[];
   placements: Placement[];
   files: string[];
   programs: Program[];
 
-  /** Whether a Windows installation was found and placed. */
+  /** Whether a Windows installation, or an asset bundle's base, was found and placed. */
   windows: boolean;
 
   /** Names that were not valid 8.3 names, and what they became. */
@@ -181,12 +195,24 @@ const STAMP = Date.UTC(2020, 0, 6, 10, 20, 40) / 1000;
 
 /**
  * Where everything dropped goes on C:, and under which 8.3 names: the Windows
- * installation, if given, under `C:\WINDOWS`, and each archive under a
- * directory of its own. Both engines fill their drives from this, so a program
- * sees the same names on either.
+ * installation, if given, under `C:\WINDOWS`, or else the asset bundle's base
+ * for the display, if given, where Setup put each of its files; and each
+ * archive under a directory of its own. Both engines fill their drives from
+ * this, so a program sees the same names on either.
  */
-export function planDrive(archives: Archive[], windows: Archive | null): Plan {
-  const plan: Plan = { placements: [], files: [], programs: [], windows: false, renamed: [] };
+export function planDrive(
+  archives: Archive[],
+  windows: Archive | null,
+  base: Composed | null = null
+): Plan {
+  const plan: Plan = {
+    folders: [],
+    placements: [],
+    files: [],
+    programs: [],
+    windows: false,
+    renamed: [],
+  };
 
   /* The names used so far in each directory, by its DOS path. */
   const used = new Map<string, Set<string>>();
@@ -242,6 +268,29 @@ export function planDrive(archives: Archive[], windows: Archive | null): Plan {
         }
       }
     }
+  } else if (base) {
+    /* The base's folders made first, at the page's stamp, as the harnesses
+     * and the native build make them; then its files, under the names Setup
+     * gave them, which are 8.3 names already. */
+    plan.windows = true;
+
+    for (const folder of base.directories) {
+      const parts = folder.split('/');
+
+      plan.folders.push({ parts, modified: STAMP });
+
+      for (let at = 0; at < parts.length; at++) {
+        const key = parts.slice(0, at).join('\\');
+        const taken = used.get(key) ?? new Set<string>();
+
+        taken.add(parts[at]);
+        used.set(key, taken);
+      }
+    }
+
+    for (const file of base.files) {
+      place(file.path.split('/'), file, file.path);
+    }
   }
 
   for (const archive of archives) {
@@ -268,6 +317,11 @@ export async function fillDrive(machine: any, { placements, ...plan }: Plan): Pr
   const fileSystem: any = new FAT16(machine.disks[0]);
   await fileSystem.format();
 
+  /* Made as the volume makes a folder, at its own stamp: the page's. */
+  for (const { parts } of plan.folders) {
+    await fileSystem.open(parts, true);
+  }
+
   for (const { parts, data, modified } of placements) {
     await fileSystem.map(parts, new DataView(data.buffer, data.byteOffset, data.byteLength), {
       modified,
@@ -278,5 +332,9 @@ export async function fillDrive(machine: any, { placements, ...plan }: Plan): Pr
 }
 
 /** The machine's first disk formatted and filled with what was dropped. */
-export const buildDrive = (machine: any, archives: Archive[], windows: Archive | null) =>
-  fillDrive(machine, planDrive(archives, windows));
+export const buildDrive = (
+  machine: any,
+  archives: Archive[],
+  windows: Archive | null,
+  base: Composed | null = null
+) => fillDrive(machine, planDrive(archives, windows, base));
