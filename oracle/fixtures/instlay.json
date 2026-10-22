@@ -67,7 +67,7 @@
     },
     {
       "function": "profile",
-      "args": "WIN.INI [InstLay] Media=C:\\WINDOWS\\INSTLAY.EXE",
+      "args": "WIN.INI [InstLay] Media=C:\\WINDOWS\\INSTLAYC.EXE",
       "result": "yes"
     },
     {
@@ -198,7 +198,7 @@
     {
       "function": "c.profile",
       "args": "WIN.INI [InstLay] Media",
-      "result": "C:\\WINDOWS\\INSTLAY.EXE"
+      "result": "C:\\WINDOWS\\INSTLAYC.EXE"
     },
     {
       "function": "c.profile",
@@ -228,7 +228,7 @@
     {
       "function": "c.text",
       "args": "C:\\WINDOWS\\WIN.INI",
-      "result": "[InstLay]\r\nPath=C:\\INSTLAY\r\nMedia=C:\\WINDOWS\\INSTLAY.EXE\r\n"
+      "result": "[InstLay]\r\nPath=C:\\INSTLAY\r\nMedia=C:\\WINDOWS\\INSTLAYC.EXE\r\n"
     },
     {
       "function": "c.stamp",

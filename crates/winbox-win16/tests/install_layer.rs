@@ -172,7 +172,7 @@ fn an_installer_into_a_layer_and_the_program_it_installed() {
             .iter()
             .map(|reference| format!("{}: {}", reference.path, reference.line))
             .collect::<Vec<_>>(),
-        ["WINDOWS\\WIN.INI: Media=C:\\WINDOWS\\INSTLAY.EXE"],
+        ["WINDOWS\\WIN.INI: Media=C:\\WINDOWS\\INSTLAYC.EXE"],
         "what names the media"
     );
 

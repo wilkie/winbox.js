@@ -4,8 +4,11 @@
  * then read back by the program it installed, INSTLAYC.EXE
  * (`instlay.child.c`), started from where it was installed.
  *
- * Its media are itself and the program beside it in C:\WINDOWS, where the
- * recorder puts both. It installs, in the order a Setup does:
+ * Its media are itself and the program beside it, in C:\WINDOWS where the
+ * recorder puts both: the folder it was started from, where the program is
+ * beside it, else C:\WINDOWS -- the probe harnesses start it from C:\, and
+ * the page from its media's folder. It installs, in the order a Setup
+ * does:
  *
  * * `mkdir`: its program's folder, C:\INSTLAY.
  * * `unpack`: two files in COMPRESS's format (`lzdata.h`) written into
@@ -17,9 +20,9 @@
  *   into WINDOWS\SYSTEM, expanded on the way; and of the program, from the
  *   media's folder into C:\INSTLAY: what each answers.
  * * `clean`: the unpacked files deleted.
- * * `profile`: WIN.INI's [InstLay] -- its folder, and the media it came
- *   from, which are not kept -- and a private INSTLAY.INI in its folder
- *   and in Windows' folder, by WritePrivateProfileString.
+ * * `profile`: WIN.INI's [InstLay] -- its folder, and the program on the
+ *   media it came from, which are not kept -- and a private INSTLAY.INI
+ *   in its folder and in Windows' folder, by WritePrivateProfileString.
  * * `delete`: a file of Windows' deleted, SYSTEM\SETUP.REG.
  * * `scratch`: a folder made, a file written in it, both deleted: one in
  *   C:\INSTLAY and one in C:\WINDOWS.
@@ -58,6 +61,35 @@ static void record(LPCSTR function, LPCSTR args, LPCSTR result)
 #define probe record
 
 static char text[256];
+
+/* The media's folder, and the program on them. */
+static char media[144];
+static char mediaProgram[160];
+
+/* The folder the installer was started from, where the program it
+ * installs is beside it; C:\WINDOWS, where the recorder puts both, else. */
+static void findMedia(HINSTANCE instance)
+{
+    OFSTRUCT of;
+    int slash = 0;
+    int i;
+
+    GetModuleFileName(instance, media, sizeof(media));
+
+    for (i = 0; media[i]; i++) {
+        if (media[i] == '\\') {
+            slash = i;
+        }
+    }
+
+    media[slash] = 0;
+    wsprintf(mediaProgram, "%s\\INSTLAYC.EXE", (LPSTR)media);
+
+    if (slash <= 2 || OpenFile(mediaProgram, &of, OF_EXIST) == HFILE_ERROR) {
+        lstrcpy(media, "C:\\WINDOWS");
+        wsprintf(mediaProgram, "%s\\INSTLAYC.EXE", (LPSTR)media);
+    }
+}
 
 static void putFile(LPCSTR path, const unsigned char *data, unsigned int size)
 {
@@ -185,6 +217,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     MSG msg;
 
     probeOpen(OUTPUT);
+    findMedia(instance);
 
     wsprintf(text, "%d", mkdir(HOME));
     probe("mkdir", HOME, text);
@@ -197,13 +230,13 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     find("INSTLAY.DLL");
     install("INSTLAY.DL_", "INSTLAY.DLL", TEMP, "C:\\WINDOWS\\SYSTEM");
     find("INSTLAYC.EXE");
-    install("INSTLAYC.EXE", "INSTLAYC.EXE", "C:\\WINDOWS", HOME);
+    install("INSTLAYC.EXE", "INSTLAYC.EXE", media, HOME);
 
     erase("clean", TEMP "\\INSTLAY.TX_");
     erase("clean", TEMP "\\INSTLAY.DL_");
 
     profile(NULL, "InstLay", "Path", HOME);
-    profile(NULL, "InstLay", "Media", "C:\\WINDOWS\\INSTLAY.EXE");
+    profile(NULL, "InstLay", "Media", mediaProgram);
     profile(HOME "\\INSTLAY.INI", "Settings", "Level", "3");
     profile(HOME "\\INSTLAY.INI", "Settings", "Name", "Layered");
     profile("INSTLAY.INI", "Installed", "From", "C:\\WINDOWS");

@@ -129,7 +129,7 @@ async function installedProgram(installed: Installed) {
     ).toBe(true);
     /* What it wrote that names its media, kept as it wrote it. */
     expect(installed.references.map(({ path, line }) => `${path}: ${line}`)).toEqual([
-      'WINDOWS\\WIN.INI: Media=C:\\WINDOWS\\INSTLAY.EXE',
+      'WINDOWS\\WIN.INI: Media=C:\\WINDOWS\\INSTLAYC.EXE',
     ]);
 
     const program = await installedProgram(installed);
