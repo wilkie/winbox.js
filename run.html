@@ -15,13 +15,16 @@
     <main class="layout">
       <aside class="side" aria-label="Programs and files">
         <label id="drop" class="drop">
-          <input id="picker" type="file" accept=".zip" multiple />
+          <input id="picker" type="file" multiple />
           <strong>Drop zip archives here</strong>
-          <span>or choose them. Nothing leaves this browser.</span>
+          <span
+            >or choose them: programs, and your Windows 3.1 -- its setup disks' images, or an
+            installed copy. Nothing leaves this browser.</span
+          >
         </label>
 
         <section>
-          <h2>Windows installation</h2>
+          <h2>Windows</h2>
           <p id="windows"></p>
           <button id="forget" type="button" hidden>Forget it</button>
         </section>
@@ -41,14 +44,10 @@
         <section>
           <h2>Machine</h2>
           <label><input id="coprocessor" type="checkbox" checked /> Math coprocessor</label>
-          <p>
-            Without one, programs' floating-point instructions are emulated, as WIN87EM does.
-          </p>
+          <p>Without one, programs' floating-point instructions are emulated, as WIN87EM does.</p>
           <div id="sound-option" hidden>
             <label><input id="sound" type="checkbox" /> Sound</label>
-            <p>
-              WinBox's own sound card, from the next program run. MIDI is not played yet.
-            </p>
+            <p>WinBox's own sound card, from the next program run. MIDI is not played yet.</p>
           </div>
         </section>
 

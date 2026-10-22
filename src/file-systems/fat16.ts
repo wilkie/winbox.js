@@ -27,6 +27,13 @@ export class FAT16 extends FileSystem {
   declare openPath: any;
   declare static MAX_DIRECTORY_ENTRIES: any;
   declare static MAX_ROOT_ENTRIES: any;
+  /**
+   * The root's stamp, which no entry holds: what its `.` and `..` are
+   * listed with, as DOSBox lists a host's folder's (`find.ts`). The stamp
+   * this file system gives what it makes, until DOS's clock changes what
+   * the root holds (`FileManager.changed`).
+   */
+  rootStamp = stampOf();
   constructor(disk) {
     super(disk);
 
@@ -542,6 +549,15 @@ export class FAT16 extends FileSystem {
   async rename(from, entry, to, name) {
     await to.append({ ...entry.info, name });
     await from.write8(entry.info.entryOffset, 0xe5);
+
+    /* A folder moved to another keeps its clusters; its `..` names the
+     * folder it is in now, nought for the root, as `makeDirectory` makes
+     * it. */
+    if (entry.info.directory && from.path !== to.path) {
+      const moved = new FAT16Directory(entry.info, entry.info.inode, `${to.path}\\${name}`, this);
+
+      await moved.write16(32 + 26, to.path === '' ? 0 : to.inode);
+    }
   }
 
   /**
@@ -833,8 +849,7 @@ export class FAT16File extends File {
    * @param {Date} at - When.
    */
   async stamp(at: Date) {
-    const time = { hour: at.getHours(), minute: at.getMinutes(), second: at.getSeconds() };
-    const date = { year: at.getFullYear(), month: at.getMonth() + 1, day: at.getDate() };
+    const { time, date } = stampAt(at);
 
     this.info.time = time;
     this.info.date = date;
@@ -848,6 +863,28 @@ export class FAT16File extends File {
         this.info.entryOffset + 24,
         (((date.year - 1980) & 0x7f) << 9) | (date.month << 5) | date.day
       );
+    }
+  }
+
+  /**
+   * The file made to end where it is, and stamped, as DOS's write of
+   * nought bytes leaves it: DOSBox truncates the host's file there
+   * (`localFile::Write`, `drive_local.cpp` 454-468), which moves its
+   * stamp whether its size changes or not. **Recorded** by `dirorder`.
+   *
+   * @param {number} at - Where it ends.
+   */
+  async end(at: number) {
+    if (at > this.size) {
+      await this.reserve(at);
+    }
+
+    if (at !== this.size) {
+      await this.setSize(at);
+    }
+
+    if (this.now) {
+      await this.stamp(this.now());
     }
   }
 
@@ -1241,6 +1278,14 @@ export function stampOf(modified?: number) {
   return {
     time: { hour: at.getUTCHours(), minute: at.getUTCMinutes(), second: at.getUTCSeconds() },
     date: { year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate() },
+  };
+}
+
+/** A time as an entry's stamp: the time and the date, local, as DOS keeps them. */
+export function stampAt(at: Date) {
+  return {
+    time: { hour: at.getHours(), minute: at.getMinutes(), second: at.getSeconds() },
+    date: { year: at.getFullYear(), month: at.getMonth() + 1, day: at.getDate() },
   };
 }
 

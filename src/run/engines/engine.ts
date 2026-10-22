@@ -9,6 +9,7 @@
  * the default, and the TypeScript engine (`ts.ts`), at `run.html?engine=ts`.
  */
 
+import { type Assets } from '../../assets/bundle.js';
 import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 
@@ -36,6 +37,14 @@ export interface Setup {
 
   /** The Windows installation dropped, if any, which the plan put under `C:\WINDOWS`. */
   windows: Archive | null;
+
+  /**
+   * The asset bundle, where one is had in place of an installation: the plan
+   * put its base for the display under `C:\WINDOWS`, and its modules --
+   * `USER.EXE`, `SHELL.DLL`, the display drivers -- are the store behind C:
+   * the kept modules' resources are read from (`kb/topics/asset-bundle.md`).
+   */
+  assets: Assets | null;
 
   /** The display, as `DISPLAY_MODES` names it. */
   display: string;
@@ -82,7 +91,8 @@ export function screenNote(desktop: HTMLElement) {
 
   note.className = 'screen-note';
   note.textContent =
-    'Windows are drawn from a Windows 3.1 installation: drop one to see them. ' +
+    'Windows are drawn from a Windows 3.1 installation, or from your Windows 3.1 ' +
+    'setup disks: drop either to see them. ' +
     'Without it, programs still run, but they make no windows.';
   desktop.replaceChildren(note);
 }

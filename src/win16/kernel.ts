@@ -76,6 +76,7 @@ import { Dos3Call } from './kernel/Dos3Call.js';
 import { IsDBCSLeadByte } from './kernel/IsDBCSLeadByte.js';
 import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
+import { GetExpWinVer } from './kernel/GetExpWinVer.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { FileCdr } from './kernel/FileCdr.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
@@ -213,6 +214,16 @@ export class Kernel extends Module {
    * this path in every task's environment. */
   static get path() {
     return 'C:\\WINDOWS\\SYSTEM\\KRNL386.EXE';
+  }
+
+  /**
+   * The Windows version KERNEL's own module says it was made for: 3.10,
+   * the Windows version, which KERNEL sets in its module as it starts
+   * (`KRNL386.EXE` seg1 `c285`-`c288`, `KRNL286.EXE` seg1 `b403`-`b406`),
+   * where its file's header says 3.00. **Recorded** by `lbmark`.
+   */
+  static get expectedWindowsVersion() {
+    return 0x30a;
   }
 
   static get exports() {
@@ -413,7 +424,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GlobalLRUNewest', 2],
       [Kernel.stub, 'A20Proc', 2],
       [WinExec, 'WinExec', 6, [LPCSTR, UINT], UINT],
-      [Kernel.stub, 'GetExpWinVer', 2],
+      [GetExpWinVer, 'GetExpWinVer', 2, [HANDLE], UINT],
       [Kernel.stub, 'DirectResAlloc', 6],
       [GetFreeSpace, 'GetFreeSpace', 2, [UINT], DWORD],
       // 170 //

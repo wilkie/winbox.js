@@ -158,6 +158,50 @@ function stereoTone() {
   return data;
 }
 
+/* The user's Windows 3.1 media, where the oracle has fetched them: the six
+ * setup disks' images, and the Driver Library's Super VGA 256-colour
+ * driver's files, unpacked. Never committed; the asset bundle made from them
+ * stays in the browser. */
+const FLOPPIES = join(process.cwd(), 'oracle', '.cache', 'floppies');
+const SVGA256 = join(process.cwd(), 'oracle', '.cache', 'svga256');
+
+/* The asset bundle `pnpm assets` makes from them, and its manifest. */
+const BUNDLE = join(process.cwd(), 'oracle', 'build', 'winbox-assets.zip');
+const MANIFEST = join(process.cwd(), 'oracle', 'build', 'assets', 'winbox-assets.json');
+
+/* The media as a person drops them: every image below the floppies' folder,
+ * and the driver's files, its svga.exe left out, as no browser unpacks it. */
+function media() {
+  const files: string[] = [];
+  const walk = (at: string) => {
+    for (const entry of readdirSync(at, { withFileTypes: true })) {
+      const path = join(at, entry.name);
+
+      if (entry.isDirectory()) {
+        walk(path);
+      } else if (/\.img$/i.test(entry.name)) {
+        files.push(path);
+      }
+    }
+  };
+
+  walk(FLOPPIES);
+
+  if (existsSync(SVGA256)) {
+    files.push(
+      ...readdirSync(SVGA256)
+        .filter((name) => !/\.exe$/i.test(name))
+        .map((name) => join(SVGA256, name))
+    );
+  }
+
+  return files.map((path) => ({
+    name: path.split(/[\\/]/).pop()!,
+    mimeType: 'application/octet-stream',
+    buffer: readFileSync(path),
+  }));
+}
+
 /* The Rust engine's module, which `pnpm build:web` builds and nothing commits. */
 const RUST = join(process.cwd(), 'target', 'winbox-web', 'winbox_web_bg.wasm');
 
@@ -297,7 +341,7 @@ for (const { engine, page: at } of ENGINES) {
 
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
-      await expect(page.locator('#windows')).toContainText('No Windows installation');
+      await expect(page.locator('#windows')).toContainText('No Windows.');
 
       await page.locator('#picker').setInputFiles({
         name: 'Games.zip',
@@ -1813,6 +1857,133 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#status')).toHaveText('Ready.');
       await expect(changed).toHaveCount(0);
       expect(await drive()).toEqual({});
+    });
+
+    test("makes the asset bundle from the setup disks, and draws a program's windows on its base", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(FLOPPIES) || !existsSync(MANIFEST) || !existsSync(CHROME),
+        "the user's Windows 3.1 disks, the asset bundle or the chrome probe are not here"
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+
+      /* The disks' images and the driver's files, made into a bundle here:
+       * the one `pnpm assets` makes from them, by its id, every file known. */
+      await page.locator('#picker').setInputFiles(media());
+      await expect(page.locator('#status')).toHaveText('Ready.', { timeout: 60000 });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+      await expect(page.locator('#windows')).not.toContainText('not of the retail disks');
+
+      const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+
+      expect(await page.evaluate(() => (globalThis as any).winbox.state.assets.manifest.id)).toBe(
+        manifest.id
+      );
+
+      /* The displays it serves, and no other. */
+      const offered = await page
+        .locator('#display option')
+        .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value));
+
+      expect([...offered].sort()).toEqual([...manifest.displays].sort());
+
+      /* C: has its base, and no code of Windows'. */
+      const files: string[] = await page.evaluate(() => (globalThis as any).winbox.plan.files);
+
+      expect(files).toContain('C:\\WINDOWS\\WIN.INI');
+      expect(files).toContain('C:\\WINDOWS\\SYSTEM\\VGASYS.FON');
+      expect(files.filter((file) => /\.(EXE|DLL|DRV)$/.test(file))).toEqual([]);
+
+      await page.locator('#picker').setInputFiles({
+        name: 'probes.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'CHROME.EXE', data: new Uint8Array(readFileSync(CHROME)) }]),
+      });
+      await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
+      await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
+
+      await expect(page.locator('#counts')).toContainText('USER.CreateWindow', { timeout: 20000 });
+      await expect(page.locator('#counts')).toContainText('USER.GetWindowRect', { timeout: 20000 });
+      await expect(page.locator('#counts')).toContainText('GDI.GetPixel');
+      await expect(page.locator('#status')).not.toContainText('stopped');
+
+      /* Its window drawn, from the bundle's driver and fonts: more than the
+       * desktop's colour on the screen. */
+      const colours = await page.evaluate(() => {
+        const canvas = document.querySelector('canvas.screen') as HTMLCanvasElement;
+        const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+        const seen = new Set<number>();
+
+        for (let at = 0; at < data.length; at += 4) {
+          seen.add((data[at] << 16) | (data[at + 1] << 8) | data[at + 2]);
+        }
+
+        return seen.size;
+      });
+
+      expect(colours).toBeGreaterThan(3);
+
+      /* Remembered in this browser, with no disk dropped again. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      await page.getByRole('button', { name: 'Forget it' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'Forgot the asset bundle, and what programs wrote.'
+      );
+      await expect(page.locator('#windows')).toContainText('No Windows.');
+      expect(errors).toEqual([]);
+    });
+
+    test("keeps what a program writes on the bundle's base apart for each display", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(STRINGS),
+        'the asset bundle, or the strings probe, has not been made here'
+      );
+
+      const out = 'C:\\ORACLE\\STRINGS.OUT';
+      const changed = page.locator('#changed li');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+
+      /* A bundle already made, dropped as it is. */
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+      await page.locator('#picker').setInputFiles({
+        name: 'oracle.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'STRINGS.EXE', data: new Uint8Array(readFileSync(STRINGS)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
+      await expect(changed.filter({ hasText: out })).toHaveCount(1, { timeout: 20000 });
+
+      /* Another display's base is another C:, with nothing written on it... */
+      await page.locator('#display').selectOption('ega');
+      await expect(changed).toHaveCount(0);
+
+      /* ...and the first's is there again as it was left. */
+      await page.locator('#display').selectOption('vga');
+      await expect(changed.filter({ hasText: out })).toHaveCount(1);
+
+      await page.getByRole('button', { name: 'Forget it' }).click();
+      await expect(page.locator('#windows')).toContainText('No Windows.');
+      await expect(changed).toHaveCount(0);
     });
   });
 }

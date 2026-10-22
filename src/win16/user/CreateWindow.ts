@@ -284,7 +284,6 @@ export async function CreateWindow(
 
   const windowClass = this.handles.retrieve(lpszClassName);
   const hWnd = this.handles.allocate(dialog);
-  console.log('CREATED WINDOW', hWnd);
 
   dialog.window.hwnd = hWnd;
 
@@ -557,7 +556,6 @@ export async function CreateWindow(
     await callHooks(this, WH_SHELL, HSHELL_WINDOWCREATED, hWnd, 0);
   }
 
-  console.log('FINISING UP CREATEWINDOW', hWnd);
   return hWnd;
 }
 

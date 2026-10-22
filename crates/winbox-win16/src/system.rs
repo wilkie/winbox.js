@@ -156,8 +156,9 @@ pub struct System {
     pub epoch_ms: i64,
     /// DOS's disk transfer area with no task.
     pub transfer_area: (u16, u16),
-    /// The folders DOS has searched, by the number a search's state keeps.
-    pub searched: Vec<String>,
+    /// DOS's searches, by the number a search's state keeps
+    /// (`dos::Search`).
+    pub searches: crate::dos::Searches,
     /// DOS functions asked for and not answered, by AX.
     pub unanswered_dos: Vec<u16>,
     /// `MakeProcInstance`'s thunks: the block they are made in, and how
@@ -485,7 +486,7 @@ impl System {
             clock: Clock::virtual_at(INSTRUCTIONS_PER_MS),
             epoch_ms: days_from_civil(1992, 4, 6) * 86_400_000 + 9 * 3_600_000,
             transfer_area: (0, 0x80),
-            searched: Vec::new(),
+            searches: crate::dos::Searches::default(),
             unanswered_dos: Vec::new(),
             thunks: (0, crate::modules_kernel::THUNKS),
             clock_day: None,
@@ -627,6 +628,34 @@ impl System {
             Object::Task(program) => Some(self.modules[program].executable.clone()),
             Object::Library(module) => Some(self.modules[module].executable.clone()),
             Object::Kept(kept) => self.kept_file(kept),
+            _ => None,
+        }
+    }
+
+    /// The Windows version the module of a handle or instance was made for,
+    /// as `CreateWindow` asks `GetExpWinVer` of the instance it is given
+    /// (`USER.EXE` seg8 `0425`-`0432`): its file's header's (word 3Eh), or,
+    /// for WinBox's own `COMMDLG` with no file, `COMMDLG.DLL`'s, 3.00 --
+    /// its dialogs are made with its instance, and their controls then
+    /// tell what a module made for 3.00 is told (`kb/topics/combo-boxes.md`).
+    /// KERNEL's is the Windows version, 3.10, which KERNEL sets in its own
+    /// module as it starts (`KRNL386.EXE` seg1 `c285`-`c288`), where its
+    /// file says 3.00 (`lbmark`). None for any other.
+    pub fn expected_windows_version(&mut self, handle: u16) -> Option<u16> {
+        if let Some(Object::Kept(kept)) = self.handles.resolve(handle)
+            && self.kept[kept].module.name == "KERNEL"
+        {
+            return Some(0x30a);
+        }
+
+        if let Some(executable) = self.executable_of(handle) {
+            return Some(executable.header.expected_windows_version);
+        }
+
+        match self.handles.resolve(handle)? {
+            Object::Kept(kept) if self.kept[kept].module.name == crate::commdlg::NAME => {
+                Some(crate::commdlg::EXPECTED_WINDOWS_VERSION)
+            }
             _ => None,
         }
     }

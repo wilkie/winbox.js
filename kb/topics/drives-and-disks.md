@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Drives and disks
-summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType, the network calls with no network, disk space, the drive IOCTL calls and absolute disk reads — measured where Windows answers and documented where DOS does.
-probes: [drivetyp, netcaps, diskfree]
+summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType, the network calls with no network, disk space, the drive IOCTL calls and absolute disk reads — and how DOSBox's C: lists a folder, stamps it and renames in it, measured where Windows and DOSBox answer and documented where DOS does.
+probes: [drivetyp, netcaps, diskfree, dirorder]
 ---
 
 File Manager asks each drive letter whether it exists, what kind it is, whether it is on a network, and how much room it has.
@@ -56,6 +56,61 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 - [[measured]] The Rust engine agrees with five of `diskfree`'s six `space` records. Z: is the sixth: the survey's Z: is an empty folder, which answers as a fixed drive does, not as DOSBox's own Z:.
 - The Rust engine answers 6C00h as DOSBox's `DOS_OpenFileExtended` does (`dos_files.cpp`). It answers 5700h from the file's entry, 5701h by doing nothing, as DOSBox does, and 4401h as DOSBox's IOCTL does: error 1 for a file, error 0Dh with DH not nought.
 
+## A folder as DOS lists and keeps it
+
+The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and what a program sees of a folder is what DOSBox makes of the host's: the order its search gives the names, the stamps, and what a rename may do. [[probe:dirorder]] makes a folder, `C:\ORACLE\DO`, and lists it, changes it and lists it again. Its stamps are recorded as the same or different four seconds on, not as times.
+
+### The order of a search
+
+- [[measured]] Function 4Eh and 4Fh give a folder's folders first, then its files, each in order of its name byte by byte. `.` and `..` are folders like any other. A folder whose name starts with a byte below `.`, as `!D` does, comes before them. Made in the order `MID.TXT`, `ZED.TXT`, `A.TXT`, `A!.TXT`, `-DASH.TXT`, `$DOL.TXT`, `1ONE.TXT`, `_UND.TXT`, `~TIL.TXT`, `B`, `AB.C`, `A.CD`, then the folders `SUB`, `AAA` and `!D`, the folder lists as `!D`, `.`, `..`, `AAA`, `SUB`, `$DOL.TXT`, `-DASH.TXT`, `1ONE.TXT`, `A!.TXT`, `A.CD`, `A.TXT`, `AB.C`, `B`, `MID.TXT`, `ZED.TXT`, `_UND.TXT`, `~TIL.TXT`. `A!.TXT` comes before `A.TXT`, so the name is compared as written, not as its eleven characters padded with spaces.
+- [[measured]] A file deleted and made again, or a new one made, takes its place in that order. The order of making never shows.
+- [[measured]] The root, `C:\`, lists `.` and `..` too.
+- [[read out]] DOSBox keeps each folder's names in a list sorted by name with `strcmp` (`drive_cache.cpp` 677-711, `CreateEntry`), made from the host's own listing, `.` and `..` among them (`ReadDir`, 723-741). A search copies that list as it begins and sorts the copy folders first (`FindFirst`, 777-826; `SortByDirName`, 52-56; `DIRALPHABETICAL`, which the cache's constructor sets, 71 and 82).
+- [[measured]] **A search is the names there were as it began.** A search of `*.TXT` was left open after its first file. `ADD.TXT` and `ZZZ.TXT` were made, and `MID.TXT`, which it had not reached, was deleted. The rest of the search gave neither new file and passed over `MID.TXT`.
+- [[read out]] Each next call takes the next name from the copy and looks at the host's file again (`localDrive::FindNext`, `drive_local.cpp` 231-280). A name gone is passed over, and the size and stamp are the file's as it is now. A search over is let go of. DOSBox keeps up to 2,048 searches (`MAX_OPENDIRS`, `dos_system.h` 124). With none free, it lets all go and starts again from the first (`drive_cache.cpp` 783-805). The search's place is DOSBox's, not the record's. `DOS_Drive_Cache::AddEntry` moves the place of an open read of a folder when an entry is made in it (194-217), but that read is DOSBox's own, for finding names, not a program's search.
+- [[documented]] MS-DOS on a FAT disk may differ, and nothing here measures it: Microsoft's FAT specification gives the root no `.` and `..` entries.
+
+### Stamps
+
+- [[measured]] A file's stamp, as the search and 5700h give it:
+
+  | Done four seconds after the file was written | Its stamp |
+  | -------------------------------------------- | --------- |
+  | renamed                                      | the same  |
+  | opened to write, and closed unwritten        | the same  |
+  | written nought bytes at its end              | moved     |
+  | made again with 3Ch, nothing written         | moved     |
+  | written                                      | moved     |
+
+- [[read out]] DOSBox renames with the host's `rename()` (`localDrive::Rename`, `drive_local.cpp` 347-362), which keeps the stamp. A write of nought bytes is `ftruncate` at the file's place (`localFile::Write`, 454-468). Under Linux, where the oracle runs, that moves the stamp though the size stays.
+- [[measured]] A folder's own stamp, as its folder lists it, moves when a file is made in it, deleted from it or renamed in it. It does not move when a file in it is written, when the folder itself is renamed, or when it is moved into another folder.
+- [[measured]] `.` has the folder's own stamp, and `..` its parent's.
+- [[read out]] These are the host's: the stamp is the folder's on the host (`stat`, `drive_local.cpp` 255-276), which moves when the folder's entries change. 3Ch adds an entry only for a file that was not there (`localDrive::FileCreate`, 51-80).
+
+### Renaming and removing
+
+- [[measured]] Function 56h renames a folder, and moves one to another folder with all it holds, answering nought. It moves a file to another folder too.
+- [[measured]] Its errors:
+
+  | 56h                                       | AX  |
+  | ----------------------------------------- | --- |
+  | the new name is there, a file or a folder | 5   |
+  | the old name is not there, the new one is | 5   |
+  | the old name is not there                 | 2   |
+  | into a folder that is not there           | 2   |
+  | a folder into a folder inside it          | 2   |
+
+- [[read out]] `DOS_Rename` (`dos_files.cpp` 263-296) answers error 11h for another drive, then 5 if the new name is there, then 2 if the old one is not. A rename the host refuses is error 2 as well. Nothing in it stops a folder moving.
+- [[measured]] Function 3Ah on a folder that holds anything answers 5. On a name that is not there, or a file's, it answers 3. `DOS_RemoveDir` (`dos_files.cpp` 235-261) tests for a folder first.
+
+### In each engine
+
+- Both engines list a folder as DOSBox does: `files.rs`'s `Files::list`, and `listed` in `src/dos/syscall/find.ts`. The TypeScript engine's drives are FAT volumes, whose folders hold their entries in the order they were made, with `.` and `..` on the disk. They are listed in DOSBox's order all the same, with `.` and `..` made as they are listed. Before, the TypeScript engine gave the FAT's order, and the Rust engine sorted by name, files and folders together, with no `.` or `..` in the root.
+- Both keep each search as DOSBox does: the names as it began, in up to 2,048 numbered searches, the number in the record's bytes 13 and 14 (`Searches` in `dos.rs`, `searches` in `find.ts`). USER's `DlgDirList` and the TypeScript and Rust COMMDLG's own lists take the same order. COMMDLG passes over names starting with `.`, and USER keeps `..`, so the root's list box now shows `[..]`.
+- A folder's stamp is DOS's clock's when an entry is made in it, deleted or renamed (`Files::changed`, `FileManager.changed`). The TypeScript engine writes it into the folder's entry. The Rust engine keeps it beside the drive, as it keeps attributes, because a host's folder takes the host's clock and not DOS's. A drive held in memory keeps it itself as well.
+- Function 40h with CX nought ends the file where it is and stamps it, as `_lwrite` with nought bytes did already.
+- 56h answers as DOSBox's does, and moves folders. Before, both engines refused to move a folder, with error 5, and answered 3 for a folder that is not there.
+
 ## Sectors
 
 - [[read out]] File Manager reads each drive's boot sector with `INT 25h` and takes one whose media byte is F8h with one FAT for a RAM drive (`WINFILE.EXE` seg6 `09e3`-`09fd`). The TypeScript engine reads the sector from its disk, or answers AX 8002h with the carry set where there is no disk; the Rust engine's drives are files, not sectors, and answer so. `INT 25h` and `26h` return with the flags still on the stack. The Rust engine stopped at the interrupt, and File Manager never opened.
@@ -65,6 +120,9 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 - Functions 1Bh, 1Ch, 1Fh and 32h: a drive's allocation and its parameter block. The parameter block's pointer would need a selector over a table of the engine's own.
 - Drives mounted as removable, and floppy drives.
 - The IOCTL requests other than getting a device's parameters.
+- The stamps of the root's `.` and `..`, which are the host folder's and its parent's under DOSBox, and unmeasured. Both engines give the root's own stamp to both. The TypeScript engine's root stamp is held in memory, and the Rust engine's for a drive held in memory is not among its changes, so neither is kept from one visit to the next.
+- A search's attributes as DOSBox gives them: only a folder's bit or the archive bit, from the host (`drive_local.cpp` 255-266). The engines give each file's own.
+- Long names on the host, which DOSBox lists by short names it makes (`CreateShortName`) and sorts by them.
 
 ## In winbox.js
 

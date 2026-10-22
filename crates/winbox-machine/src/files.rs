@@ -281,6 +281,12 @@ pub struct Files {
     open: HashMap<usize, OpenFile>,
     /// Attributes set on files, which no drive keeps of its own, by path.
     attributes: HashMap<String, u8>,
+    /// Folders' stamps by path, from DOS's clock, as an entry was made in
+    /// one, deleted from it or renamed: DOSBox's C: is a folder of the
+    /// host's, whose stamp moves so and not when a file in it is written
+    /// (**recorded** by `dirorder`). A host's folder keeps the host's
+    /// clock's, not DOS's.
+    folders: HashMap<String, i64>,
     /// DOS's clock, seconds since 1970, as the system last set it: what a
     /// file written is stamped with. None leaves each drive its own.
     pub now: Option<i64>,
@@ -304,6 +310,7 @@ impl Files {
             drive: 'C',
             open: HashMap::new(),
             attributes: HashMap::new(),
+            folders: HashMap::new(),
             now: None,
             activity: Cell::new(0),
         }
@@ -386,12 +393,21 @@ impl Files {
         key
     }
 
-    /// What a folder holds, as DOS lists it: `.` and `..` first in a folder
-    /// not the root, then by name -- a host's folder keeps no order of its
-    /// own, where a FAT's is the order its entries were made in.
+    /// What a folder holds, as DOSBox lists a folder of the host's: `.`
+    /// and `..` in every folder, the root's too, `.` with the folder's own
+    /// stamp and `..` with the one above's; folders first, then files, each
+    /// by its name byte by byte (`drive_cache.cpp` 52-56, `SortByDirName`,
+    /// the order `DIRALPHABETICAL` its constructor sets at 71, 82). A name
+    /// starting with a byte below `.`, `!D`, comes before `.`.
+    /// **Recorded** by `dirorder`.
     pub fn list(&self, letter: char, parts: &[String]) -> Option<Vec<Entry>> {
         self.touch();
         let drive = self.drives.get(&letter)?;
+        let names: Vec<String> = parts
+            .iter()
+            .filter(|part| !part.is_empty())
+            .cloned()
+            .collect();
         let mut entries: Vec<Entry> = drive
             .children(parts)?
             .into_iter()
@@ -402,27 +418,90 @@ impl Files {
                     entry.attributes = attributes;
                 }
 
-                entry
+                self.stamped(letter, &Self::joined(parts, &entry.name), entry)
             })
             .collect();
+        let own = self.stamped(letter, &names, drive.entry(&names)?);
+        let above = match names.split_last() {
+            Some((_, above)) => self.stamped(letter, above, drive.entry(above)?),
+            None => own.clone(),
+        };
 
-        entries.sort_by(|a, b| a.name.cmp(&b.name));
-
-        if parts.iter().any(|part| !part.is_empty()) {
-            let folder = drive.entry(parts)?;
-
-            for name in ["..", "."] {
-                entries.insert(
-                    0,
-                    Entry {
-                        name: name.to_string(),
-                        ..folder.clone()
-                    },
-                );
-            }
+        for (name, entry) in [(".", own), ("..", above)] {
+            entries.push(Entry {
+                name: name.to_string(),
+                attributes: 0x10,
+                size: 0,
+                ..entry
+            });
         }
 
+        entries.sort_by(|a, b| {
+            (b.attributes & 0x10)
+                .cmp(&(a.attributes & 0x10))
+                .then_with(|| a.name.as_bytes().cmp(b.name.as_bytes()))
+        });
+
         Some(entries)
+    }
+
+    /// The key a folder's stamp is kept by: its drive and its names.
+    fn folder_key(letter: char, names: &[String]) -> String {
+        let mut key = format!("{letter}:");
+
+        for name in names.iter().filter(|name| !name.is_empty()) {
+            key.push('\\');
+            key.push_str(&name.to_ascii_uppercase());
+        }
+
+        key
+    }
+
+    /// An entry with the stamp DOS's clock gave it, where it is a folder
+    /// whose entries changed.
+    fn stamped(&self, letter: char, names: &[String], mut entry: Entry) -> Entry {
+        if entry.attributes & 0x10 != 0
+            && let Some(&seconds) = self.folders.get(&Self::folder_key(letter, names))
+        {
+            entry.modified = stamp(seconds);
+        }
+
+        entry
+    }
+
+    /// A folder's entries changed: its stamp DOS's clock's now.
+    fn changed(&mut self, letter: char, names: &[String]) {
+        if let Some(now) = self.now {
+            self.folders.insert(Self::folder_key(letter, names), now);
+        }
+    }
+
+    /// The folders' stamps kept under a path moved with it, or dropped.
+    fn carried(&mut self, letter: char, from: &[String], to: Option<&[String]>) {
+        let from = Self::folder_key(letter, from);
+        let to = to.map(|to| Self::folder_key(letter, to));
+        let moved: Vec<String> = self
+            .folders
+            .keys()
+            .filter(|key| {
+                **key == from
+                    || key
+                        .strip_prefix(from.as_str())
+                        .is_some_and(|rest| rest.starts_with('\\'))
+            })
+            .cloned()
+            .collect();
+
+        for key in moved {
+            let Some(seconds) = self.folders.remove(&key) else {
+                continue;
+            };
+
+            if let Some(to) = &to {
+                self.folders
+                    .insert(format!("{to}{}", &key[from.len()..]), seconds);
+            }
+        }
     }
 
     /// An entry of a folder, by its name.
@@ -447,23 +526,53 @@ impl Files {
     /// A file or an empty folder let go of.
     pub fn unlink(&mut self, letter: char, parts: &[String], name: &str) -> bool {
         self.touch();
-        self.drives
+        let path = Self::joined(parts, name);
+        let gone = self
+            .drives
             .get_mut(&letter)
-            .is_some_and(|drive| drive.unlink(&Self::joined(parts, name)))
+            .is_some_and(|drive| drive.unlink(&path));
+
+        if gone {
+            self.carried(letter, &path, None);
+            self.changed(letter, parts);
+        }
+
+        gone
     }
 
     pub fn make_directory(&mut self, letter: char, parts: &[String], name: &str) -> bool {
         self.touch();
-        self.drives
+        let made = self
+            .drives
             .get_mut(&letter)
-            .is_some_and(|drive| drive.mkdir(&Self::joined(parts, name)))
+            .is_some_and(|drive| drive.mkdir(&Self::joined(parts, name)));
+
+        if made {
+            self.changed(letter, parts);
+        }
+
+        made
     }
 
+    /// A file or folder renamed, or moved to another folder with all it
+    /// holds, as DOSBox's host's `rename()` moves one (`drive_local.cpp`
+    /// 347-362): its own stamp kept, its folders' made now.
     pub fn rename(&mut self, letter: char, from: (&[String], &str), to: (&[String], &str)) -> bool {
         self.touch();
-        self.drives.get_mut(&letter).is_some_and(|drive| {
-            drive.rename(&Self::joined(from.0, from.1), &Self::joined(to.0, to.1))
-        })
+        let source = Self::joined(from.0, from.1);
+        let target = Self::joined(to.0, to.1);
+        let moved = self
+            .drives
+            .get_mut(&letter)
+            .is_some_and(|drive| drive.rename(&source, &target));
+
+        if moved {
+            self.carried(letter, &source, Some(&target));
+            self.changed(letter, from.0);
+            self.changed(letter, to.0);
+        }
+
+        moved
     }
 
     /// A file's attributes set, as no drive keeps them.
@@ -601,7 +710,16 @@ impl Files {
         self.touch();
         let parsed = Self::parse(path);
         let letter = parsed.drive?;
-        let mut body = self.drives.get_mut(&letter)?.create(&parsed.parts)?;
+        let drive = self.drives.get_mut(&letter)?;
+        let made = drive.entry(&parsed.parts).is_none();
+        let mut body = drive.create(&parsed.parts)?;
+
+        // A file made where none was changes its folder; one emptied does
+        // not: DOSBox's `localDrive::FileCreate` adds an entry only for a
+        // file that was not there (`drive_local.cpp` 51-80).
+        if made && let Some((_, folder)) = parsed.parts.split_last() {
+            self.changed(letter, folder);
+        }
 
         if let Some(now) = self.now {
             body.stamp(now);
@@ -764,11 +882,13 @@ mod tests {
         let root = files.list('C', &[String::new()]).unwrap();
         let names: Vec<&str> = root.iter().map(|entry| entry.name.as_str()).collect();
 
-        assert_eq!(names, ["AUTOEXEC.BAT", "WINDOWS"]);
-        assert_eq!(root[0].attributes, 0x20);
-        assert_eq!(root[0].size, 11);
-        assert_eq!(root[0].modified, [1992, 3, 10, 3, 10, 2]);
-        assert_eq!(root[1].attributes, 0x10);
+        // `.` and `..` in the root too, and folders before files, as
+        // DOSBox lists a host's folder (`dirorder`).
+        assert_eq!(names, [".", "..", "WINDOWS", "AUTOEXEC.BAT"]);
+        assert_eq!(root[3].attributes, 0x20);
+        assert_eq!(root[3].size, 11);
+        assert_eq!(root[3].modified, [1992, 3, 10, 3, 10, 2]);
+        assert_eq!(root[2].attributes, 0x10);
 
         let windows = files.list('C', &["windows".into()]).unwrap();
         let names: Vec<&str> = windows.iter().map(|entry| entry.name.as_str()).collect();
@@ -989,14 +1109,21 @@ mod tests {
         written.mount('C', files.memory('C').unwrap().clone());
         made.mount('C', again);
 
+        // Less `.` and `..`: the root's stamp, which they may give, is not
+        // among the changes.
+        let listed = |files: &Files, parts: &[String]| {
+            files.list('C', parts).map(|entries| {
+                entries
+                    .into_iter()
+                    .filter(|entry| entry.name != "." && entry.name != "..")
+                    .collect::<Vec<_>>()
+            })
+        };
+
         for folder in ["C:\\", "C:\\WINDOWS", "C:\\WINDOWS\\SYSTEM", "C:\\GAMES"] {
             let parts = Files::parse(folder).parts;
 
-            assert_eq!(
-                written.list('C', &parts),
-                made.list('C', &parts),
-                "{folder}"
-            );
+            assert_eq!(listed(&written, &parts), listed(&made, &parts), "{folder}");
         }
 
         assert_eq!(
