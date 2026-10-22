@@ -839,8 +839,9 @@ pub struct Installed {
 impl Layer {
     /// The layer an installer made: the top's changes as a layer over the
     /// stack it ran on (`over`, the base's name first), those naming the
-    /// media dropped (`drop_media`), and the lines of what it kept that
-    /// name the media (`media_references`). As `installedLayer`.
+    /// media dropped (`drop_media`), each stamp to the two seconds DOS's
+    /// directory entry keeps (`dos_stamp`), and the lines of what it kept
+    /// that name the media (`media_references`). As `installedLayer`.
     pub fn installed(
         changes: &[Change],
         media: &[String],
@@ -848,6 +849,25 @@ impl Layer {
         made: Made,
     ) -> Result<Installed, String> {
         let (kept, dropped) = drop_media(changes, media);
+        let kept: Vec<Change> = kept
+            .into_iter()
+            .map(|change| match change {
+                Change::Folder { path, modified } => Change::Folder {
+                    path,
+                    modified: dos_stamp(modified),
+                },
+                Change::File {
+                    path,
+                    data,
+                    modified,
+                } => Change::File {
+                    path,
+                    data,
+                    modified: dos_stamp(modified),
+                },
+                removed @ Change::Removed { .. } => removed,
+            })
+            .collect();
         let layer = Self::from_changes(&kept, over, made)?;
         let references = media_references(&layer, media);
 
@@ -857,6 +877,15 @@ impl Layer {
             references,
         })
     }
+}
+
+/// A stamp as a DOS directory entry keeps it: to two seconds, an odd second
+/// the even one before it. A program sees no more of a file's or a
+/// folder's stamp; the TypeScript engine's FAT volume keeps no more, where
+/// the Rust engine's drive held in memory keeps the second DOS's clock gave
+/// it. As `dosStamp`.
+pub fn dos_stamp(seconds: i64) -> i64 {
+    seconds - seconds.rem_euclid(2)
 }
 
 /// What differs on a drive held in memory from `before`, the drive it was

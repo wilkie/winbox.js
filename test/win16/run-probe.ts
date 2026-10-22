@@ -282,6 +282,15 @@ export async function runProbe(
     /* The program started, where it is on the drive, as DOS names it,
      * `C:\INSTLAY\INSTLAYC.EXE`, in place of the probe. */
     start = null as string | null,
+    /* The mouse's moves, presses and releases a step makes kept in
+     * `stepMarks` too, with where each was (`pointer`). */
+    markPointers = false,
+    /* The folder the program is started in, as Program Manager starts an
+     * item: `C:\CARIBB` for an installer run from its media. */
+    directory = null as string | null,
+    /* Whether `SYSTEM.INI`'s `shell=` names the probe, as the recorder makes
+     * it: not for a program of the corpus run as Program Manager would. */
+    shell = true,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -330,6 +339,14 @@ export async function runProbe(
     code?: string;
     kind?: string;
     alt?: boolean;
+    pointer?: {
+      kind: string;
+      x: number;
+      y: number;
+      button: number;
+      buttons: number;
+      double: boolean;
+    };
   }[] = [];
 
   /* The trees kept, one at each place without a key in `stepMarks`. */
@@ -418,7 +435,7 @@ export async function runProbe(
    * `setShell`): `SYSTEM.INI`'s `shell=` names it. Program Manager started
    * by a probe reads it, and is not the shell (`progdde`; `PROGMAN.EXE` seg3
    * `0b88`-`0c0a`). */
-  if (installation) {
+  if (installation && shell) {
     const systemIni = await fileSystem.open(['WINDOWS', 'SYSTEM.INI']);
 
     if (systemIni) {
@@ -676,7 +693,7 @@ export async function runProbe(
   /* Started in its own folder, as Program Manager starts a program whose
    * item's working directory is where the program is: the directory
    * Program Manager gives a new item. */
-  win16.run(handle, home ? { directory: home } : {});
+  win16.run(handle, (home ?? directory) ? { directory: home ?? directory } : {});
 
   /* The API can suspend on a promise -- writing a file does -- so driving this
    * means letting the timer and microtask queues drain between slices, not
@@ -692,6 +709,29 @@ export async function runProbe(
   const going = () =>
     clock.virtual ? clock.now() - started < until : ran < frames || clock.now() - started < until;
   const stepShots: Uint8Array[] = [];
+
+  /* The mouse moved, pressed or let go by a step, noted where it was
+   * where `markPointers` asks, for another engine to do the same at the
+   * same place (the Rust engine's `marks_of`). */
+  const pointer = (kind: 'move' | 'down' | 'up', at: any) => {
+    if (markPointers) {
+      stepMarks.push({
+        calls: callCount,
+        instructions: machine.cpu._cycleCount,
+        time: clock.now(),
+        pointer: {
+          kind,
+          x: at.x,
+          y: at.y,
+          button: at.button,
+          buttons: at.buttons,
+          double: at.double,
+        },
+      });
+    }
+
+    win16.rasterInput.pointer(kind, at);
+  };
 
   /* A key pressed or let go, noted where it was. */
   const press = async (keysym: string, kind: 'down' | 'up', alt: boolean) => {
@@ -747,11 +787,11 @@ export async function runProbe(
             control: false,
           };
 
-          win16.rasterInput.pointer('move', { ...at, buttons: 0, double: false });
+          pointer('move', { ...at, buttons: 0, double: false });
 
           for (let time = 0; time < (clicked[1] ? 2 : 1); time++) {
-            win16.rasterInput.pointer('down', { ...at, buttons: 1, double: time === 1 });
-            win16.rasterInput.pointer('up', { ...at, buttons: 0, double: false });
+            pointer('down', { ...at, buttons: 1, double: time === 1 });
+            pointer('up', { ...at, buttons: 0, double: false });
           }
 
           await new Promise((next) => setImmediate(next));
@@ -764,7 +804,7 @@ export async function runProbe(
         const moved = /^move:(\d+),(\d+)$/.exec(keysym);
 
         if (moved) {
-          win16.rasterInput.pointer('move', {
+          pointer('move', {
             x: Number(moved[1]),
             y: Number(moved[2]),
             button: 0,
@@ -783,19 +823,19 @@ export async function runProbe(
           const [fromX, fromY, toX, toY] = dragged.slice(1).map(Number);
           const at = (x: number, y: number) => ({ x, y, button: 0, shift: false, control: false });
 
-          win16.rasterInput.pointer('move', { ...at(fromX, fromY), buttons: 0, double: false });
-          win16.rasterInput.pointer('down', { ...at(fromX, fromY), buttons: 1, double: false });
+          pointer('move', { ...at(fromX, fromY), buttons: 0, double: false });
+          pointer('down', { ...at(fromX, fromY), buttons: 1, double: false });
           await runSeconds(0.1);
 
           for (let step = 1; step <= 8; step++) {
             const x = fromX + Math.trunc(((toX - fromX) * step) / 8);
             const y = fromY + Math.trunc(((toY - fromY) * step) / 8);
 
-            win16.rasterInput.pointer('move', { ...at(x, y), buttons: 1, double: false });
+            pointer('move', { ...at(x, y), buttons: 1, double: false });
             await runSeconds(0.05);
           }
 
-          win16.rasterInput.pointer('up', { ...at(toX, toY), buttons: 0, double: false });
+          pointer('up', { ...at(toX, toY), buttons: 0, double: false });
           await new Promise((next) => setImmediate(next));
           continue;
         }

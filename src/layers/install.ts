@@ -110,16 +110,34 @@ export interface Installed {
 }
 
 /**
+ * A stamp as a DOS directory entry keeps it: to two seconds, an odd second
+ * the even one before it. A program sees no more of a file's or a folder's
+ * stamp; the TypeScript engine's FAT volume keeps no more, where the Rust
+ * engine's drive held in memory keeps the second DOS's clock gave it. As
+ * `dos_stamp`.
+ */
+export function dosStamp(seconds: number) {
+  return seconds - (((seconds % 2) + 2) % 2);
+}
+
+/**
  * The layer an installer made: the top's changes as a layer over the stack
  * it ran on (`over`, the base's name first), those naming the media
- * dropped (`dropMedia`), and the lines of what it kept that name the media.
+ * dropped (`dropMedia`), each stamp to the two seconds DOS's directory
+ * entry keeps (`dosStamp`), and the lines of what it kept that name the
+ * media.
  */
 export async function installedLayer(
   changes: Change[],
   { media, over, made }: { media: string[]; over: string[]; made?: Made }
 ): Promise<Installed> {
   const { kept, dropped } = dropMedia(changes, media);
-  const layer = await layerFromChanges(kept, { over, made });
+  const layer = await layerFromChanges(
+    kept.map((change) =>
+      change.kind === 'removed' ? change : { ...change, modified: dosStamp(change.modified) }
+    ),
+    { over, made }
+  );
 
   return { layer, dropped, references: mediaReferences(layer, media) };
 }

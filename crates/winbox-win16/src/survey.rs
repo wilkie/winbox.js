@@ -416,7 +416,8 @@ pub fn call_line(call: &Call, counts: bool) -> String {
 }
 
 /// The keys a TypeScript engine's survey report says it pressed, each with
-/// Alt held where it says so, and the
+/// Alt held where it says so, the mouse's moves, presses and releases
+/// where it kept them (`pointer`), and the
 /// screens it took, each where it did (`stepMarks`): the calls made by
 /// then. A key's message has the time it had there. None where the text
 /// is not a report.
@@ -427,7 +428,22 @@ pub fn marks_of(report: &str) -> VecDeque<CallMark> {
     for mark in report["stepMarks"].as_array().into_iter().flatten() {
         let calls = mark["calls"].as_u64().unwrap_or(0) as usize;
         let instructions = mark["instructions"].as_u64().unwrap_or(0);
+        let pointer = &mark["pointer"];
         let action = match (mark["key"].as_str(), mark["code"].as_str()) {
+            // The mouse moved, pressed or let go, where a run keeps it
+            // (`run-probe.ts`, `markPointers`).
+            _ if pointer.is_object() => MarkAction::Pointer(Pointer {
+                kind: match pointer["kind"].as_str() {
+                    Some("down") => PointerKind::Down,
+                    Some("up") => PointerKind::Up,
+                    _ => PointerKind::Move,
+                },
+                x: pointer["x"].as_i64().unwrap_or(0) as i16,
+                y: pointer["y"].as_i64().unwrap_or(0) as i16,
+                button: pointer["button"].as_u64().unwrap_or(0) as u8,
+                buttons: pointer["buttons"].as_u64().unwrap_or(0) as u8,
+                double: pointer["double"].as_bool().unwrap_or(false),
+            }),
             (Some(key), Some(code)) => MarkAction::Key {
                 down: mark["kind"].as_str() == Some("down"),
                 key: Key {

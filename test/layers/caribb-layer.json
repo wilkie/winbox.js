@@ -1,0 +1,283 @@
+{
+ "stepMarks": [
+  {
+   "calls": 1458,
+   "instructions": 35756,
+   "time": 10000
+  },
+  {
+   "calls": 1458,
+   "instructions": 35756,
+   "time": 10000,
+   "pointer": {
+    "kind": "move",
+    "x": 320,
+    "y": 272,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 1458,
+   "instructions": 35756,
+   "time": 10000,
+   "pointer": {
+    "kind": "down",
+    "x": 320,
+    "y": 272,
+    "button": 0,
+    "buttons": 1,
+    "double": false
+   }
+  },
+  {
+   "calls": 1458,
+   "instructions": 35756,
+   "time": 10000,
+   "pointer": {
+    "kind": "up",
+    "x": 320,
+    "y": 272,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 2820,
+   "instructions": 69157,
+   "time": 15016
+  },
+  {
+   "calls": 2820,
+   "instructions": 69157,
+   "time": 15016,
+   "pointer": {
+    "kind": "move",
+    "x": 463,
+    "y": 210,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 2820,
+   "instructions": 69157,
+   "time": 15016,
+   "pointer": {
+    "kind": "down",
+    "x": 463,
+    "y": 210,
+    "button": 0,
+    "buttons": 1,
+    "double": false
+   }
+  },
+  {
+   "calls": 2820,
+   "instructions": 69157,
+   "time": 15016,
+   "pointer": {
+    "kind": "up",
+    "x": 463,
+    "y": 210,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 2854,
+   "instructions": 70614,
+   "time": 20048
+  },
+  {
+   "calls": 2854,
+   "instructions": 70614,
+   "time": 20048,
+   "pointer": {
+    "kind": "move",
+    "x": 285,
+    "y": 303,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 2854,
+   "instructions": 70614,
+   "time": 20048,
+   "pointer": {
+    "kind": "down",
+    "x": 285,
+    "y": 303,
+    "button": 0,
+    "buttons": 1,
+    "double": false
+   }
+  },
+  {
+   "calls": 2854,
+   "instructions": 70614,
+   "time": 20048,
+   "pointer": {
+    "kind": "up",
+    "x": 285,
+    "y": 303,
+    "button": 0,
+    "buttons": 0,
+    "double": false
+   }
+  },
+  {
+   "calls": 5688,
+   "instructions": 397634385,
+   "time": 170057
+  },
+  {
+   "calls": 5688,
+   "instructions": 397634385,
+   "time": 170057,
+   "key": "Return",
+   "code": "Enter",
+   "kind": "down"
+  },
+  {
+   "calls": 5696,
+   "instructions": 397634637,
+   "time": 170057,
+   "key": "Return",
+   "code": "Enter",
+   "kind": "up"
+  },
+  {
+   "calls": 5705,
+   "instructions": 397634807,
+   "time": 180087
+  }
+ ],
+ "layer": {
+  "format": 1,
+  "id": "f51e72e567cdc4c2ccd1649927af0fa0cc43ea606b290e5ad0175ef9e6c0c641",
+  "over": [
+   "base:0c542ca6fc6a6f129cf757c6634e25a74db2420bbd5ef5944925af0fd504cdaa:vga"
+  ],
+  "made": {
+   "by": "WinBox",
+   "from": "CARIBB.ZIP"
+  },
+  "entries": [
+   {
+    "kind": "folder",
+    "path": "WINDOWS",
+    "modified": 702550952
+   },
+   {
+    "kind": "folder",
+    "path": "WINDOWS\\GAMES",
+    "modified": 702550952
+   },
+   {
+    "kind": "folder",
+    "path": "WINDOWS\\SYSTEM",
+    "modified": 702550834
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.EXE",
+    "sha256": "26809479b9d6a6bc42b8206f8ebb101d352e00e6f25205fc27016425a54bddd4",
+    "size": 63648,
+    "modified": 702550838
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.GAM",
+    "sha256": "d5cf937803495bbc8999875379839f3bb4fb5b0557fac8a450b5e838df190e55",
+    "size": 850266,
+    "modified": 702550870
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.IMG",
+    "sha256": "31399ed6d8e158b7577e68221eb500402f2be9865a0e9b1d2316cf194d46c863",
+    "size": 2461388,
+    "modified": 702550920
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.MTF",
+    "sha256": "d31998657c27f287d1c446b351bdcc9295597088dba39a945e875dee6bf2336e",
+    "size": 1260,
+    "modified": 702550920
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.MUS",
+    "sha256": "5c4ce0e617b6955a8a89d0dddb57ee837a39a28a8b64974c8ab14a6ada1b258a",
+    "size": 22392,
+    "modified": 702550922
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.SND",
+    "sha256": "0176bf50ae7088863517fcf912401eaf5104d09085e2046b7097528ac0901bc6",
+    "size": 260187,
+    "modified": 702550952
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES\\CARRIB.TXT",
+    "sha256": "16b3e6fa3cd5a7d70d5e59413be9cc22e51daa56e7541050d168a776ae85bdb6",
+    "size": 1213,
+    "modified": 702550952
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\KNP.INI",
+    "sha256": "f8599e65a3fbd3bc5002119ee9f3bca65795a54d7f3478f96850d9848184faa5",
+    "size": 19,
+    "modified": 702550952
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\SYSTEM.INI",
+    "sha256": "afdaece47a0a13648969b6385723230d1915d4232634aa8ba0045ee138453789",
+    "size": 1526,
+    "modified": 702550952
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\SYSTEM\\DIB.DRV",
+    "sha256": "3593d16875c97fbf3f6751d1e2d86deda141cf45b8d44d2cfd8cadcd56804b7f",
+    "size": 30544,
+    "modified": 702550834
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\SYSTEM\\IBMJOY.DRV",
+    "sha256": "d896e860f4a2052335cb066d7328cee0093d308dbb912924c31a7f837e18a6c0",
+    "size": 5600,
+    "modified": 702550834
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\SYSTEM\\KNPG.DLL",
+    "sha256": "657dc59c0da50fa7d966638687fe89db3c7fa9a3c6150a5d5a9968530e70ec87",
+    "size": 54976,
+    "modified": 702550830
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\SYSTEM\\KNPS.DLL",
+    "sha256": "fc2c3d71d9dfd160c4e5d06c90e35af5dd49127e67b6f7a46411286bd7dca4ef",
+    "size": 83568,
+    "modified": 702550826
+   }
+  ]
+ },
+ "dropped": [],
+ "references": []
+}

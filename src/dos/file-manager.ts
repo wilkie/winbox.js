@@ -147,7 +147,10 @@ export class FileManager {
     let drive = '';
     if (path.indexOf(':') >= 0) {
       const parts = path.split(':');
-      drive = parts[0];
+      /* In either case, as DOS reads a drive's letter and the Rust
+       * engine's `Files::parse` takes it: Caribbean Treasure's installer
+       * makes `c:\windows\games\carrib.exe`. */
+      drive = parts[0].toUpperCase();
       path = parts[1];
     }
 
@@ -160,7 +163,10 @@ export class FileManager {
     }
 
     /* Split by slash, `.` the folder it is in and `..` the one above, as DOS
-     * reads them: Four Seasons opens `.\FS_CARDS.PIC` from its own folder. */
+     * reads them: Four Seasons opens `.\FS_CARDS.PIC` from its own folder.
+     * Each name upper case, as DOS makes a path (DOSBox's `DOS_MakeName`)
+     * and the Rust engine's drive keeps it: a file made as
+     * `c:\windows\games\carrib.exe` is `CARRIB.EXE`. */
     const parts: string[] = [];
 
     for (const part of path.split('\\')) {
@@ -173,7 +179,7 @@ export class FileManager {
         continue;
       }
 
-      parts.push(part);
+      parts.push(part.toUpperCase());
     }
 
     /* The folder itself, as the root is: one empty name. */
