@@ -16,22 +16,26 @@
  * | 1Ah    | 4    | The size                                      |
  * | 1Eh    | 13   | The name, `NAME.EXT` and a null               |
  *
- * The next call needs nothing but the record, which is what lets a program
- * keep several searches going in several records. The first 21 bytes here
- * hold the drive, the name as eleven characters with each `*` spread into
- * `?`s, the attributes, how far through the directory the search has gone,
- * and which directory it is.
+ * The first 21 bytes here hold the drive, the name as eleven characters
+ * with each `*` spread into `?`s, the attributes, and the search's number.
+ * DOS keeps the rest, as DOSBox does: the folder, and the names it held as
+ * the search began, in the order DOSBox lists a host's folder (`listed`).
+ * Each next call looks for the next of those names in the folder as it is
+ * now: a file made while a search is open is not found by it, and one
+ * deleted is passed over (`DOS_Drive_Cache::FindFirst`, `drive_cache.cpp`
+ * 777-826; `localDrive::FindNext`, `drive_local.cpp` 231-280). **Recorded**
+ * by `dirorder`. As `dos.rs`.
  *
  * Which entries a search finds goes by the attributes asked for: ordinary
  * files always, and hidden, system and directory entries only when their bit
  * is asked for. The volume label is found only by a search asking for it
  * alone.
  *
- * This is DOS as it is documented, underneath Windows: nothing here has been
- * measured. COMMDLG lists the files for its Open dialog this way, and File
- * Manager its directories.
+ * COMMDLG lists the files for its Open dialog this way, and File Manager
+ * its directories.
  */
 
+import { stampOf } from '../../file-systems/fat16.js';
 import { segmentSelector } from '../../win16/selectors.js';
 import { openDirectory, resolveDirectory } from './directory.js';
 
@@ -43,13 +47,106 @@ const ATTRIBUTE_SYSTEM = 0x04;
 const ATTRIBUTE_VOLUME = 0x08;
 const ATTRIBUTE_DIRECTORY = 0x10;
 
-/** The directories searched so far, which a record names by their place here. */
-function searchedDirectories(dos: any): string[] {
-  if (!dos._searched) {
-    dos._searched = [];
+/** The most searches open at once: DOSBox's `MAX_OPENDIRS` (`dos_system.h` 124). */
+const MAX_SEARCHES = 2048;
+
+interface Search {
+  drive: string;
+  parts: string[];
+  names: string[];
+  at: number;
+}
+
+/**
+ * DOS's searches, by the number a record keeps, as DOSBox keeps them: each
+ * begun in the next number free after the last, round from the first, and
+ * freed once it is over; with none free, all are let go and the first is
+ * taken (`drive_cache.cpp` 783-805).
+ */
+function searches(dos: any): { open: (Search | null)[]; next: number } {
+  if (!dos._searches) {
+    dos._searches = { open: new Array(MAX_SEARCHES).fill(null), next: 0 };
   }
 
-  return dos._searched;
+  return dos._searches;
+}
+
+function begin(dos: any, search: Search) {
+  const all = searches(dos);
+  let tried = 0;
+
+  while (tried < MAX_SEARCHES && all.open[all.next]) {
+    all.next = (all.next + 1) % MAX_SEARCHES;
+    tried++;
+  }
+
+  let number = all.next;
+
+  all.next = (all.next + 1) % MAX_SEARCHES;
+
+  if (tried === MAX_SEARCHES) {
+    all.open.fill(null);
+    number = 0;
+    all.next = 1;
+  }
+
+  all.open[number] = search;
+
+  return number;
+}
+
+/** Names compared byte by byte, as DOSBox's `strcmp`. */
+function byBytes(a: string, b: string) {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
+ * A folder's entries as DOSBox lists a folder of the host's: `.` and `..`
+ * in every folder, the root's too, `.` with the folder's own stamp and `..`
+ * with the one above's; folders first, then files, each by its name byte by
+ * byte (`drive_cache.cpp` 52-56, `SortByDirName`, the order
+ * `DIRALPHABETICAL` its constructor sets at 71, 82). A name starting with a
+ * byte below `.`, `!D`, comes before `.`. **Recorded** by `dirorder`. As
+ * `files.rs`'s `list`.
+ */
+export async function listed(dos: any, drive: string, parts: string[], folder: any) {
+  return [...(await held(folder)), ...(await dots(dos, drive, parts, folder))].sort(
+    (a: any, b: any) =>
+      ((b.attributes ?? 0) & ATTRIBUTE_DIRECTORY) - ((a.attributes ?? 0) & ATTRIBUTE_DIRECTORY) ||
+      byBytes(String(a.name), String(b.name))
+  );
+}
+
+/** What a folder holds, less the `.` and `..` a FAT folder keeps. */
+async function held(folder: any) {
+  return (await folder.list())
+    .map((entry: any) => entry.info)
+    .filter((info: any) => info.name !== '.' && info.name !== '..');
+}
+
+/** A folder's `.`, with its own stamp, and `..`, with the one above's. */
+async function dots(dos: any, drive: string, parts: string[], folder: any) {
+  const rootStamp = dos.files.query(drive)?.rootStamp ?? stampOf();
+  const own = parts.length ? folder.info : rootStamp;
+  let above = rootStamp;
+
+  if (parts.length > 1) {
+    above = (await openDirectory(dos, drive, parts.slice(0, -1)))?.info ?? own;
+  } else if (!parts.length) {
+    above = own;
+  }
+
+  return [
+    ['.', own],
+    ['..', above],
+  ].map(([name, stamp]) => ({
+    name,
+    attributes: ATTRIBUTE_DIRECTORY,
+    directory: true,
+    size: 0,
+    time: stamp.time,
+    date: stamp.date,
+  }));
 }
 
 /**
@@ -196,34 +293,52 @@ function stateOf(dos: any) {
 }
 
 /**
- * Carries a search on from the entry at `from`, answering with the first
- * that matches, or failing with "no more files".
+ * Carries a search on through the names it began with: each that matches
+ * looked for again as the folder is now, one gone passed over. Its last
+ * name passed, the search is over, and "no more files".
  */
 async function carryOn(dos: any, state: Uint8Array) {
   const view = new DataView(state.buffer);
-  const drive = String.fromCharCode(state[0] + 0x40);
   const pattern = String.fromCharCode(...state.subarray(1, 12));
   const asked = state[12];
-  const from = view.getUint16(13, true);
-  const directory = searchedDirectories(dos)[view.getUint16(15, true)];
+  const number = view.getUint16(13, true);
+  const all = searches(dos);
+  const search = all.open[number];
 
-  const fileSystem = dos.files.query(drive);
-  const parts = directory === '' ? [] : directory.split('\\');
-  const folder = fileSystem ? await fileSystem.open(parts) : null;
-  const entries = folder?.list ? await folder.list() : [];
+  if (!search) {
+    throw ERROR_NO_MORE_FILES;
+  }
 
-  for (let at = from; at < entries.length; at++) {
-    const info = entries[at].info;
+  /* The folder as it is now; its `.` and `..` made only when a search
+   * comes to them, which takes looking at the folder above. */
+  const folder = await openDirectory(dos, search.drive, search.parts);
+  const now = new Map(folder ? (await held(folder)).map((info: any) => [info.name, info]) : []);
 
-    if (admits(asked, info.attributes ?? 0) && matches(pattern, info.name)) {
-      view.setUint16(13, at + 1, true);
+  const lookup = async (name: string) => {
+    if (folder && (name === '.' || name === '..')) {
+      return (await dots(dos, search.drive, search.parts, folder))[name === '.' ? 0 : 1];
+    }
+
+    return now.get(name);
+  };
+
+  while (search.at < search.names.length) {
+    const name = search.names[search.at++];
+
+    if (!matches(pattern, name)) {
+      continue;
+    }
+
+    const info: any = await lookup(name);
+
+    if (info && admits(asked, info.attributes ?? 0)) {
       answer(dos, state, info);
 
       return;
     }
   }
 
-  view.setUint16(13, entries.length, true);
+  all.open[number] = null;
 
   throw ERROR_NO_MORE_FILES;
 }
@@ -237,14 +352,8 @@ export async function findFirst(this: any, spec: string, attributes: number) {
     throw ERROR_PATH_NOT_FOUND;
   }
 
-  const searched = searchedDirectories(this);
-  const directory = parts.join('\\');
-  let index = searched.indexOf(directory);
-
-  if (index < 0) {
-    index = searched.push(directory) - 1;
-  }
-
+  const names = (await listed(this, drive, parts, folder)).map((info: any) => info.name);
+  const number = begin(this, { drive, parts, names, at: 0 });
   const state = new Uint8Array(21);
   const view = new DataView(state.buffer);
   const pattern = elevenOf(name === '' ? '*.*' : name);
@@ -256,8 +365,7 @@ export async function findFirst(this: any, spec: string, attributes: number) {
   }
 
   state[12] = attributes & 0xff;
-  view.setUint16(13, 0, true);
-  view.setUint16(15, index, true);
+  view.setUint16(13, number, true);
 
   await carryOn(this, state);
 }
@@ -286,9 +394,9 @@ export async function searchDirectory(dos: any, spec: string, attributes: number
   }
 
   const pattern = elevenOf(name === '' ? '*.*' : name);
-  const entries = await folder.list();
+  const entries = await listed(dos, drive, parts, folder);
 
-  return entries
-    .map((entry: any) => entry.info)
-    .filter((info: any) => admits(attributes & 0xff, info.attributes ?? 0) && matches(pattern, info.name));
+  return entries.filter(
+    (info: any) => admits(attributes & 0xff, info.attributes ?? 0) && matches(pattern, info.name)
+  );
 }

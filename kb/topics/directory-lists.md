@@ -18,6 +18,7 @@ A program lists the files on a disk with `DlgDirList`, or by sending `LB_DIR` to
     - The answer is a 43-byte record. Its first 21 bytes are for DOS's own use and hold what the next call carries on from; then come the attribute byte, the time, the date, the size and the name.
     - Ordinary files are always found. Hidden, system and directory entries are found only when their bit is asked for, and the volume label only when it is asked for alone.
     - Error 12h, "no more files", ends the search.
+    - [[measured]] Under DOSBox, folders come first, then files, each by name, with `.` and `..` in the root as well. A search is the names the folder held as it began ([[topic:drives-and-disks]], [[probe:dirorder]]).
 - [[documented]] DOSBox, where the oracle's Windows runs, answers 26 drive letters to 0Eh, and winbox.js does the same. MS-DOS answers its `LASTDRIVE`.
 - [[measured]] Without these calls, `COMMDLG`'s Open dialog never finished opening. It asked 19h which drive each selection had made current and found none of them. Its loop of 4Fh calls then never met the carry flag that ends it.
 

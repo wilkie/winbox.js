@@ -172,8 +172,9 @@ pub struct System {
     pub epoch_ms: i64,
     /// DOS's disk transfer area with no task.
     pub transfer_area: (u16, u16),
-    /// The folders DOS has searched, by the number a search's state keeps.
-    pub searched: Vec<String>,
+    /// DOS's searches, by the number a search's state keeps
+    /// (`dos::Search`).
+    pub searches: crate::dos::Searches,
     /// DOS functions asked for and not answered, by AX.
     pub unanswered_dos: Vec<u16>,
     /// `MakeProcInstance`'s thunks: the block they are made in, and how
@@ -501,7 +502,7 @@ impl System {
             clock: Clock::virtual_at(INSTRUCTIONS_PER_MS),
             epoch_ms: days_from_civil(1992, 4, 6) * 86_400_000 + 9 * 3_600_000,
             transfer_area: (0, 0x80),
-            searched: Vec::new(),
+            searches: crate::dos::Searches::default(),
             unanswered_dos: Vec::new(),
             thunks: (0, crate::modules_kernel::THUNKS),
             clock_day: None,

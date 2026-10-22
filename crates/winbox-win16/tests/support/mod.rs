@@ -196,6 +196,7 @@ pub const AGREEING: &[&str] = &[
     "localgro",
     "prblt",
     "prblt2",
+    "dirorder",
     "lbmark",
     "abouthin",
     "grround",

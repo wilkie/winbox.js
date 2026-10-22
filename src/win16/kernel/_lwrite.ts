@@ -50,9 +50,10 @@ export async function _lwrite(hf, hpvBuffer, cbBuffer) {
    * **Recorded** by `progdde`: a group shorter than before has no bytes of
    * the old one after its end. */
   if (!cbBuffer) {
-    if ((file as any).setSize && file.size !== file.position) {
-      await (file as any).setSize(file.position);
-    }
+    /* And stamps it, as DOSBox's truncation of the host's file does
+     * (`FAT16File.end`); as `kernel.rs`, whose truncation marks the file
+     * written. */
+    await (file as any).end?.(file.position);
 
     return 0;
   }
