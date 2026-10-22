@@ -1938,7 +1938,7 @@ for (const { engine, page: at } of ENGINES) {
 
       await page.getByRole('button', { name: 'Forget it' }).click();
       await expect(page.locator('#status')).toHaveText(
-        'Forgot the asset bundle, and what programs wrote.'
+        'Forgot the asset bundle, the programs kept on it, and what programs wrote.'
       );
       await expect(page.locator('#windows')).toContainText('No Windows.');
       expect(errors).toEqual([]);
@@ -1984,6 +1984,100 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Forget it' }).click();
       await expect(page.locator('#windows')).toContainText('No Windows.');
       await expect(changed).toHaveCount(0);
+    });
+
+    test('keeps a program dropped as a layer of its own, with what it writes, until forgotten', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(STRINGS),
+        'the asset bundle, or the strings probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const out = 'C:\\ORACLE\\STRINGS.OUT';
+      const changed = page.locator('#changed li');
+      const kept = page.locator('#kept-programs li');
+      const probe = new Uint8Array(readFileSync(STRINGS));
+      const counts = () => page.evaluate(() => (globalThis as any).winbox.keptCounts());
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(page.locator('#kept-section')).toBeHidden();
+
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      /* Dropped and run in one step, as before: kept as a program, its
+       * stack on C:. */
+      await page.locator('#picker').setInputFiles({
+        name: 'oracle.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'STRINGS.EXE', data: probe }]),
+      });
+      await expect(kept).toHaveCount(1);
+      await expect(page.getByRole('button', { name: 'Close oracle' })).toBeVisible();
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
+      await expect(changed.filter({ hasText: out })).toHaveCount(1, { timeout: 20000 });
+
+      /* Another program, the same probe in an archive of another name: a
+       * stack of its own, with nothing the first wrote, and the probe's
+       * bytes kept once. */
+      await page.locator('#picker').setInputFiles({
+        name: 'other.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'STRINGS.EXE', data: probe }]),
+      });
+      await expect(kept).toHaveCount(2);
+      await expect(page.getByRole('button', { name: 'Close other' })).toBeVisible();
+      await expect(changed).toHaveCount(0);
+      await expect(page.locator('#programs')).not.toContainText('C:\\ORACLE\\');
+      expect(await counts()).toEqual({ programs: 2, layers: 2, blobs: 1 });
+
+      /* Remembered: listed on the next visit, opened, what it wrote put
+       * back, and run again. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await expect(kept).toHaveCount(2);
+      await page.getByRole('button', { name: 'Open oracle' }).click();
+      await expect(page.locator('#status')).toHaveText('oracle is on C:.');
+      await expect(changed.filter({ hasText: out })).toHaveCount(1);
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
+      await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 20000 });
+
+      /* Bound to the display it was made on: on another, C: is the base
+       * alone, and the program is opened on its own. */
+      await page.locator('#display').selectOption('ega');
+      await expect(changed).toHaveCount(0);
+      await expect(page.getByRole('button', { name: /^oracle was made on/ })).toBeDisabled();
+      await page.locator('#display').selectOption('vga');
+      await expect(changed.filter({ hasText: out })).toHaveCount(1);
+
+      /* Forgotten, with what it wrote; the blob the other has stays. */
+      await page.getByRole('button', { name: 'Forget oracle' }).click();
+      await expect(page.locator('#status')).toHaveText('Forgot oracle, and what it wrote.');
+      await expect(kept).toHaveCount(1);
+      await expect(changed).toHaveCount(0);
+      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 1 });
+
+      await page.getByRole('button', { name: 'Forget other' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
+
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await expect(kept).toHaveCount(0);
+      expect(errors).toEqual([]);
     });
   });
 }
