@@ -1,6 +1,5 @@
 export async function read(handle, address, max) {
   const file = this.files.resolve(handle);
-  console.log('DOS: read()', handle, file, address.toString(16), max);
 
   // TODO: encode access
   // TODO: handle errors

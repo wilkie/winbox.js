@@ -783,11 +783,6 @@ export class Win16 {
     const loader = new Loader(executable, this._globalAllocator);
     await loader.parse();
 
-    console.log('resident', loader.residentEntries);
-    console.log('non-resident', loader.nonResidentEntries);
-    console.log('module-reference', loader.moduleReferenceEntries);
-    console.log('exports', loader.exports);
-
     /* Its exported functions made to take their data segment from AX, as
      * KERNEL patches a program's; see `library.ts`. */
     patchPrologues(this, { loader, executable });
@@ -829,8 +824,6 @@ export class Win16 {
     (task as any).libraries = await loadLibrariesFor(this, loader, beside, [], brought);
     /* Those it counted, let go as it ends (`exitTask`). */
     (task as any).brought = brought;
-
-    console.log('WE NEED:', this._linker.requirementsFor(task));
 
     /* Its local heap is made as it calls `InitTask`, at the end of its data
      * segment (`initTask`). */
@@ -1289,7 +1282,6 @@ export class Win16 {
     }
 
     this.debug('Calling', module.instance.name, called, args);
-    //console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
     //}
 
     // Halt the task so it won't continue
@@ -1373,8 +1365,6 @@ export class Win16 {
     }
     //let now = (new Date).getTime();
     //let elapsed = now - last;
-    //console.log(module.instance.exports[ip][1], "in", elapsed);
-    //console.log("result", result, typeof result === 'function');
 
     if (implementation === module.instance.stub) {
       console.log(

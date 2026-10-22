@@ -269,7 +269,6 @@ export class Executable {
 
       let limit = 0;
       while (offset < last && limit <= 30) {
-        console.log('looking', offset, last);
         limit++;
 
         const resourceType = Util.readStructure(
@@ -289,8 +288,6 @@ export class Executable {
           resourceType.id &= 0x7fff;
         }
 
-        console.log('read resource', resourceType);
-
         offset += 8;
 
         resourceType.entries = [];
@@ -305,7 +302,6 @@ export class Executable {
           } else {
             resource.id &= 0x7fff;
           }
-          console.log('read subresource', resource);
 
           resource.offset <<= shift;
           resource.length <<= shift;
@@ -327,10 +323,8 @@ export class Executable {
     // Now, look at any newly discovered names for resources
     // For instance, from name tables.
     if (this._nameTable) {
-      console.log('translating resource names');
       for (let i = 0; i < ret.length; i++) {
         const resourceType = ret[i];
-        console.log('looking at', resourceType);
 
         /* A type the table names, as a program's own may be. */
         if (this._typeNames?.[resourceType.id]) {
@@ -348,7 +342,6 @@ export class Executable {
 
           if (names[resource.id]) {
             resource.name = names[resource.id];
-            console.log('found a name!', resource);
           }
         }
       }
@@ -379,8 +372,6 @@ export class Executable {
 
     // Get the name table bytes
     const view = new DataView(await this.readResource(resource));
-
-    console.log('reading name table', resource, view);
 
     // Initialize the name table
     this._nameTable = {};
@@ -436,8 +427,6 @@ export class Executable {
       offset += length;
     }
 
-    console.log('name table', this._nameTable);
-
     return this._nameTable;
   }
 
@@ -479,8 +468,6 @@ export class Executable {
 
     await this._readResourceTable();
     await this._readEntryPoints();
-
-    console.log('HEADER', this.neHeader);
   }
 
   /**

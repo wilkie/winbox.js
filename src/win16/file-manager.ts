@@ -43,14 +43,11 @@ export class FileManager {
         await stream.head();
 
         const size = stream.size;
-        console.log(path, '=>', url, size);
 
         // We can now allocate the file blocks for it on disk
         await this.map(path, stream);
-        console.log('done');
       })
     );
-    console.log('DONE');
   }
 
   mount(name, fileSystem) {
@@ -72,7 +69,6 @@ export class FileManager {
     // TODO: parse the drive in the file manager
     // and use that to decide when file system
     // is being accessed.
-    console.log('parsing', path);
 
     // Get the drive
     let drive = '';
