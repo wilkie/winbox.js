@@ -453,7 +453,7 @@ fn wavemix_on_winboxs_own_card() {
     let Some(mut setup) = support::Setup::of("wavemix") else {
         return;
     };
-    let installed = std::fs::read(setup.windows.join("WINDOWS").join("SYSTEM.INI")).unwrap();
+    let installed = setup.beneath.read("WINDOWS\\SYSTEM.INI").unwrap();
 
     for (path, bytes) in &mut setup.placed {
         if path == "WINDOWS\\SYSTEM.INI" {

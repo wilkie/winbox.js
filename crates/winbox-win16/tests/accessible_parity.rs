@@ -45,7 +45,7 @@ fn made(run: &serde_json::Value) -> Option<(System, String, Vec<u8>)> {
     // A probe, as the probes run: from C:\, A: and Z: beside it.
     if let Some(probe) = run["probe"].as_str() {
         let mut setup = Setup::of(probe)?;
-        let mut c = installed(&setup.windows);
+        let mut c = setup.beneath.held();
 
         assert!(c.add_folder("ORACLE", now));
 

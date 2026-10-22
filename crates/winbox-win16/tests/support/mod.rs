@@ -3,10 +3,12 @@
 //! back.
 #![allow(dead_code)]
 
+pub mod layered;
+
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use winbox_machine::{HostDrive, MemoryDrive};
+use winbox_machine::{HostDrive, HostLayer, MemoryDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -211,11 +213,11 @@ pub const AGREEING: &[&str] = &[
 ///   a printer (`vgaprint`), finds that printer's driver where Setup put it:
 ///   the dialogs load it by name and ask it for its DEVMODE and what it can
 ///   do. The probe writes the printer into `WIN.INI` itself (`prdlg.c`).
-fn printers(probe: &str, windows: &Path) -> Vec<(String, Vec<u8>)> {
+fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
     let mut placed = Vec::new();
 
     if probe == "printing"
-        && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI"))
+        && let Some(text) = beneath.read("WINDOWS\\WIN.INI")
     {
         placed.push((
             "WINDOWS\\WIN.INI".to_string(),
@@ -516,8 +518,8 @@ pub struct Setup {
     /// The probe's name, upper case, as its files are named.
     pub upper: String,
     pub bytes: Vec<u8>,
-    /// The installation's folder.
-    pub windows: PathBuf,
+    /// What drive C: has beneath the run's own folder.
+    pub beneath: Beneath,
     /// The files put on drive C:, by their paths there, with their bytes.
     pub placed: Vec<(String, Vec<u8>)>,
     /// The installation's files taken off drive C: before the probe
@@ -536,16 +538,26 @@ pub enum Base {
     /// composes for the display, its modules the store behind it
     /// (`kb/topics/asset-bundle.md`).
     Assets,
+    /// That base split into a stack of layers, with a decoy and its
+    /// whiteout and files shadowed by the same bytes (`layered`), each
+    /// materialised into the host's temporary folder and put together by
+    /// `HostDrive::layered`; the bundle's modules the store behind it.
+    Layers,
 }
 
 impl Base {
-    /// The folder beneath drive C: on a display: the installation's, or the
-    /// bundle's base written into the host's temporary folder, its store
-    /// given to the system. None for the bundle's where it is not made.
-    fn folder(self, display: &str, system: &mut System) -> Option<PathBuf> {
+    /// What is beneath drive C: on a display: the installation's folder,
+    /// or the bundle's base written into the host's temporary folder, or
+    /// that base's layers, the bundle's store given to the system. None
+    /// for the bundle's where it is not made.
+    fn beneath(self, display: &str, system: &mut System) -> Option<Beneath> {
         Some(match self {
-            Self::Installed if display == "vga" => root().join("oracle/build/drive-c"),
-            Self::Installed => root().join(format!("oracle/build/drive-c-{display}")),
+            Self::Installed if display == "vga" => {
+                Beneath::Folder(root().join("oracle/build/drive-c"))
+            }
+            Self::Installed => {
+                Beneath::Folder(root().join(format!("oracle/build/drive-c-{display}")))
+            }
             Self::Assets => {
                 let assets = bundle()?;
                 let windows = assets
@@ -553,16 +565,68 @@ impl Base {
                     .unwrap_or_else(|error| panic!("the asset bundle's base: {error}"));
 
                 system.assets = Some(assets);
-                windows
+                Beneath::Folder(windows)
+            }
+            Self::Layers => {
+                let assets = bundle()?;
+                let stacked = layered::stacked(&assets, display);
+
+                system.assets = Some(assets);
+                Beneath::Layers(stacked)
             }
         })
     }
 
-    /// `WINBOX_BASE=assets`, the asset bundle's; else the installation.
+    /// `WINBOX_BASE=assets`, the asset bundle's; `WINBOX_BASE=layers`, it
+    /// in layers; else the installation.
     pub fn chosen() -> Self {
         match std::env::var("WINBOX_BASE").as_deref() {
             Ok("assets") => Self::Assets,
+            Ok("layers") => Self::Layers,
             _ => Self::Installed,
+        }
+    }
+}
+
+/// What drive C: has beneath the run's own folder.
+#[derive(Clone)]
+pub enum Beneath {
+    /// One folder of the host's: an installation, or the bundle's base.
+    Folder(PathBuf),
+    /// The bundle's base in layers.
+    Layers(std::rc::Rc<layered::Stacked>),
+}
+
+impl Beneath {
+    /// The layers `HostDrive::layered` puts beneath the run's folder, the
+    /// highest first.
+    pub fn lowers(&self) -> Vec<HostLayer> {
+        match self {
+            Self::Folder(folder) if folder.is_dir() => vec![HostLayer::new(folder.clone())],
+            Self::Folder(_) => Vec::new(),
+            Self::Layers(stacked) => stacked.lowers.clone(),
+        }
+    }
+
+    /// A file beneath, by its DOS path beneath the drive's root, as the
+    /// drive would read it.
+    pub fn read(&self, path: &str) -> Option<Vec<u8>> {
+        let parts: Vec<String> = path
+            .split('\\')
+            .filter(|name| !name.is_empty())
+            .map(str::to_string)
+            .collect();
+
+        HostDrive::layered(PathBuf::new(), self.lowers()).read(&parts)
+    }
+
+    /// What is beneath held in memory, each file and folder stamped as
+    /// it is: an installation's folder loaded once a thread (`installed`).
+    pub fn held(&self) -> MemoryDrive {
+        match self {
+            Self::Folder(folder) if folder.is_dir() => installed(folder),
+            Self::Folder(_) => MemoryDrive::new(),
+            Self::Layers(stacked) => stacked.flat.drive(),
         }
     }
 }
@@ -601,7 +665,7 @@ impl Setup {
 
         assert!(
             base == Base::Installed || bundle().is_some(),
-            "WINBOX_BASE=assets, and no asset bundle in oracle/build/assets: `pnpm assets`"
+            "WINBOX_BASE={base:?}, and no asset bundle in oracle/build/assets: `pnpm assets`"
         );
         setup
     }
@@ -675,7 +739,7 @@ impl Setup {
         // installed, its own files read and never written; Z:, DOSBox's.
         // Or, on the asset bundle's base, C: has that beneath it, and the
         // bundle's modules are the store behind it.
-        let windows = base.folder(&display, &mut system)?;
+        let beneath = base.beneath(&display, &mut system)?;
         // A probe recorded with a `WIN.INI` preset (`record.mjs --ini`) finds
         // `WIN.INI` set as it says, and its copies made.
         if let Some(preset) = &ini
@@ -684,10 +748,7 @@ impl Setup {
         {
             let sections = parse_preset(&text);
             let on_drive = |path: &str| {
-                path.trim_start_matches("C:\\")
-                    .trim_start_matches("c:\\")
-                    .split('\\')
-                    .fold(windows.clone(), |folder, name| folder.join(name))
+                beneath.read(path.trim_start_matches("C:\\").trim_start_matches("c:\\"))
             };
 
             for (name, keys) in &sections {
@@ -696,7 +757,7 @@ impl Setup {
                 }
 
                 for (to, from) in keys {
-                    if let Ok(bytes) = std::fs::read(on_drive(from)) {
+                    if let Some(bytes) = on_drive(from) {
                         let to = to.trim_start_matches("C:\\").trim_start_matches("c:\\");
 
                         placed.push((to.to_string(), bytes));
@@ -704,12 +765,12 @@ impl Setup {
                 }
             }
 
-            if let Ok(text) = std::fs::read(windows.join("WINDOWS").join("WIN.INI")) {
+            if let Some(text) = beneath.read("WINDOWS\\WIN.INI") {
                 placed.push(("WINDOWS\\WIN.INI".to_string(), merge_ini(&text, &sections)));
             }
         }
 
-        placed.extend(printers(probe, &windows));
+        placed.extend(printers(probe, &beneath));
 
         // A probe recorded with Windows' Sound Blaster and Ad Lib drivers
         // finds winbox.js's own sound driver named in `SYSTEM.INI`'s
@@ -718,7 +779,7 @@ impl Setup {
         // the MIDI Mapper's setups in `MIDIMAP.CFG` naming its devices, the
         // current one the installation's, "Ad Lib", but where the recording made
         // another current (`record.mjs --midimap` writes it in the file).
-        if sound && let Ok(text) = std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")) {
+        if sound && let Some(text) = beneath.read("WINDOWS\\SYSTEM.INI") {
             let profile = winbox_win16::wbsound::Profile::SoundBlaster;
 
             placed.push((
@@ -726,7 +787,7 @@ impl Setup {
                 winbox_win16::wbsound::install_as(&text, profile),
             ));
 
-            if let Ok(bytes) = std::fs::read(windows.join("WINDOWS/SYSTEM/MIDIMAP.CFG")) {
+            if let Some(bytes) = beneath.read("WINDOWS\\SYSTEM\\MIDIMAP.CFG") {
                 let installed = match &midimap {
                     Some(setup) => winbox_win16::wbmapper::setups::install(&bytes, setup),
                     None => winbox_win16::wbsound::install_setups(&bytes),
@@ -742,7 +803,7 @@ impl Setup {
             system,
             upper,
             bytes,
-            windows,
+            beneath,
             placed,
             without: Vec::new(),
         })
@@ -786,7 +847,7 @@ pub fn run_setup<T>(
         std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
-    name_the_shell(&mut setup.placed, &setup.windows, &setup.upper);
+    name_the_shell(&mut setup.placed, &setup.beneath, &setup.upper);
 
     for (path, bytes) in &setup.placed {
         let to = path
@@ -797,11 +858,7 @@ pub fn run_setup<T>(
         std::fs::write(to, bytes).unwrap();
     }
 
-    let c = if setup.windows.is_dir() {
-        HostDrive::over(drive.join("C"), setup.windows.clone())
-    } else {
-        HostDrive::new(drive.join("C"))
-    };
+    let c = HostDrive::layered(drive.join("C"), setup.beneath.lowers());
 
     std::fs::create_dir_all(drive.join("A")).unwrap();
     std::fs::create_dir_all(drive.join("Z")).unwrap();
@@ -890,11 +947,7 @@ pub fn run_in_memory(
 ) -> Option<(Stop, Vec<[String; 3]>, System)> {
     let mut setup = Setup::of(name)?;
     let now = winbox_machine::host_seconds();
-    let mut c = if setup.windows.is_dir() {
-        installed(&setup.windows)
-    } else {
-        MemoryDrive::new()
-    };
+    let mut c = setup.beneath.held();
 
     assert!(c.add_folder("ORACLE", now));
 
@@ -923,13 +976,13 @@ pub fn run_in_memory(
 /// `setShell`): `SYSTEM.INI`'s `shell=` names it. Program Manager started
 /// by a probe reads it, and is not the shell (`progdde`; `PROGMAN.EXE` seg3
 /// `0b88`-`0c0a`).
-fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, windows: &Path, upper: &str) {
+fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, beneath: &Beneath, upper: &str) {
     let at = placed
         .iter()
         .position(|(path, _)| path == "WINDOWS\\SYSTEM.INI");
     let text = match at {
         Some(at) => Some(placed[at].1.clone()),
-        None => std::fs::read(windows.join("WINDOWS").join("SYSTEM.INI")).ok(),
+        None => beneath.read("WINDOWS\\SYSTEM.INI"),
     };
 
     if let Some(text) = text {

@@ -17,6 +17,9 @@ import { withCursor } from '../../src/win16/user/cursor-api.js';
 import { shownColours } from '../../src/raster/shown-colours.js';
 import { mergeIni, parsePreset, presetCopies } from './ini-preset.js';
 import { Assets } from '../../src/assets/bundle.js';
+import { STAMP } from '../../src/assets/compose.js';
+import { fat16Drive } from '../../src/run/changes.js';
+import { layeredBase } from '../layers/split.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -81,13 +84,16 @@ export function bundle(): Assets | null {
  * What drive C: has beneath it: the oracle's installation of Windows for the
  * display, as the probe was recorded on; or, `WINBOX_BASE=assets`, the base
  * the asset bundle composes for the display, its modules the store behind it
- * (`kb/topics/asset-bundle.md`).
+ * (`kb/topics/asset-bundle.md`); or, `WINBOX_BASE=layers`, that base split
+ * into a stack of layers and flattened (`test/layers/split.ts`).
  */
-export type Base = 'installed' | 'assets';
+export type Base = 'installed' | 'assets' | 'layers';
 
 /** The base `WINBOX_BASE` chooses. */
 export function chosenBase(): Base {
-  return process.env.WINBOX_BASE === 'assets' ? 'assets' : 'installed';
+  const base = process.env.WINBOX_BASE;
+
+  return base === 'assets' || base === 'layers' ? base : 'installed';
 }
 
 /**
@@ -108,6 +114,40 @@ export async function bundleDrive(machine: any, assets: Assets, display: string)
   for (const { path, data, modified } of composed.files) {
     await fileSystem.map(
       path.split('/'),
+      new DataView(data.buffer, data.byteOffset, data.byteLength),
+      {
+        modified,
+      }
+    );
+  }
+
+  return fileSystem;
+}
+
+/**
+ * The asset bundle's base for a display split into layers (`layeredBase`)
+ * and flattened (`flattenStack`), put on the machine's first disk as
+ * `bundleDrive` puts the base: each folder, stamped as the stack has it,
+ * then each file last written when the stack says.
+ */
+export async function layersDrive(machine: any, assets: Assets, display: string) {
+  const { flat } = await layeredBase(assets, display);
+  const fileSystem: any = new FAT16(machine.disks[0]);
+  const drive = fat16Drive(fileSystem);
+
+  await fileSystem.format();
+
+  for (const { path, modified } of flat.folders) {
+    await fileSystem.open(path.split('\\'), true);
+
+    if (modified !== STAMP) {
+      await drive.folder(path, modified);
+    }
+  }
+
+  for (const { path, data, modified } of flat.files) {
+    await fileSystem.map(
+      path.split('\\'),
       new DataView(data.buffer, data.byteOffset, data.byteLength),
       {
         modified,
@@ -291,15 +331,17 @@ export async function runProbe(
 
   /* A probe that loads the installation's own libraries runs on a copy of
    * the drive the recording was made on. */
-  const assets = installation && base === 'assets' ? bundle() : null;
+  const assets = installation && base !== 'installed' ? bundle() : null;
 
-  if (installation && base === 'assets' && !assets) {
+  if (installation && base !== 'installed' && !assets) {
     throw new Error(
-      'WINBOX_BASE=assets, and no asset bundle in oracle/build/assets: `pnpm assets`'
+      `WINBOX_BASE=${base}, and no asset bundle in oracle/build/assets: \`pnpm assets\``
     );
   }
 
-  if (assets) {
+  if (assets && base === 'layers') {
+    fileSystem = await layersDrive(machine, assets, display);
+  } else if (assets) {
     fileSystem = await bundleDrive(machine, assets, display);
   } else if (installation) {
     fileSystem = await machine.mountImage(new Uint8Array(readFileSync(imageFor(display))));
