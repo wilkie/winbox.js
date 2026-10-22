@@ -4,6 +4,7 @@ import { shapeOf } from './update-region.js';
 import { User } from '../user.js';
 import { RasterWindow } from './raster-window.js';
 import { paintsItself } from './desktop.js';
+import { windowVersion } from '../module.js';
 import { GetDC } from './GetDC.js';
 import { ReleaseDC } from './ReleaseDC.js';
 import { paintsIcon, WM_ICONERASEBKGND } from './paint-icon.js';
@@ -223,9 +224,10 @@ export async function syncPaint(system: any, hwnd: number) {
 
 export const WM_SYNCPAINT = 0x0088;
 
-/** The Windows version the window's program was made for, from its module. */
+/**
+ * The Windows version the window's module was made for: the module of the
+ * instance it was made with, as the Rust engine's `expected_version`.
+ */
 function expectedVersion(system: any, dialog: RasterWindow) {
-  const instance = dialog.data?.hInstance ?? 0;
-
-  return system.handles.resolve(instance)?.executable?.neHeader?.expectedWindowsVersion ?? 0x30a;
+  return windowVersion(system, dialog);
 }

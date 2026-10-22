@@ -88,6 +88,7 @@ import { ReleaseCapture, SetCapture } from './SetCapture.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { positionRaster, showRaster } from './window-state.js';
+import { windowVersion } from '../module.js';
 
 const HWND_TOPMOST = 0xffff;
 const SWP_NOSIZE = 0x0001;
@@ -741,9 +742,10 @@ function listHost(system: any, window: RasterWindow): ListHost {
      * (**recorded** by `ofnopen`: COMMDLG's folders' list, filled in
      * `WM_INITDIALOG`, asks for no `WM_DRAWITEM`). */
     visible: () => shows(shown),
-    madeBefore310: () =>
-      (system.handles.resolve(window.data?.hInstance ?? 0)?.executable?.neHeader
-        ?.expectedWindowsVersion ?? 0x30a) < 0x30a,
+    /* The module of the instance the list was made with, as USER marks
+     * its window as it is made (seg8 `0425`-`0432`), not its task's:
+     * COMMDLG's folders' list in a program made for 3.10 is COMMDLG's. */
+    madeBefore310: () => windowVersion(system, window) < 0x30a,
     drawText: (index, top, fill, rows) => {
       const list = listState(control);
       const selected =
@@ -1510,7 +1512,7 @@ async function closeUp(system: any, window: RasterWindow, notify: boolean, kept:
     return;
   }
 
-  if (notify && moduleVersion(system, window) >= 0x30a) {
+  if (notify && windowVersion(system, window) >= 0x30a) {
     await comboNotify(system, window, kept ? CBN_SELENDOK : CBN_SELENDCANCEL);
 
     if (system.handles.resolve(window.window.hwnd) !== window) {
@@ -1543,18 +1545,6 @@ async function closeUp(system: any, window: RasterWindow, notify: boolean, kept:
   if (notify && was) {
     await comboNotify(system, window, CBN_CLOSEUP);
   }
-}
-
-/**
- * The Windows version a window's module was made for: the module of the
- * instance it was made with, its `CREATESTRUCT`'s, as `CreateWindow` asks
- * `GetExpWinVer` of it (`USER.EXE` seg8 `0428`). 3.10 where it has none, as
- * the Rust engine's `expected_version` answers.
- */
-function moduleVersion(system: any, window: RasterWindow) {
-  const instance = (window as any)._createStruct?.hInstance ?? window.data?.hInstance ?? 0;
-
-  return system.handles.resolve(instance)?.executable?.neHeader?.expectedWindowsVersion ?? 0x30a;
 }
 
 /** The list dropped down if put away, put away if dropped. */

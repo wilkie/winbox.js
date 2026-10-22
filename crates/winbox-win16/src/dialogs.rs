@@ -1609,9 +1609,7 @@ impl Engine {
                     .window_named(hwnd)
                     .map_or(0, |index| system.shown_window(index).instance);
 
-                system.executable_of(instance).map_or(0x300, |executable| {
-                    executable.header.expected_windows_version
-                })
+                system.expected_windows_version(instance).unwrap_or(0x300)
             };
             let end: u32 = if version >= 0x300 {
                 0xfffe_0000

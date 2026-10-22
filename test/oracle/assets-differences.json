@@ -23,12 +23,6 @@
         "reason": "CARDFILE.EXE is not on the base: WinExec answers 2, and there is no Cardfile to read"
       }
     ],
-    "comboesc": [
-      {
-        "records": ["open(drives,*"],
-        "reason": "COMMDLG.DLL is not on the base, so GetOpenFileName is WinBox's own COMMDLG: its drives' combo box tells the hook CBN_SELENDCANCEL (0Ah) as its list goes away, where COMMDLG.DLL's does not -- the same on the installation with COMMDLG.DLL taken off; a gap of WinBox's own COMMDLG, not of the base"
-      }
-    ],
     "ddeinst": [
       {
         "records": ["DdeConnect(PROGMAN,PROGMAN)", "execute(*", "request(*", "DdeDisconnect(*"],
@@ -46,16 +40,6 @@
       {
         "records": ["state(*", "log(click-file)"],
         "reason": "C:\\WINDOWS on the base has no .TXT file (SETUP.TXT, which Setup copies, and BOOTLOG.TXT, which WIN.COM writes as Windows starts): the dialog's file list is empty, so there is no file to click"
-      },
-      {
-        "engine": "rust",
-        "records": ["log(dblclick-dir)", "log(dblclick-up)", "log(choose)"],
-        "reason": "COMMDLG.DLL is not on the base, so the dialog is WinBox's own COMMDLG: in the Rust engine its directories' list tells the hook LBN_SELCHANGE once on a double click, where COMMDLG.DLL's tells it twice, and its drives' combo box CBN_SELENDOK (9) before closing up -- the same on the installation with COMMDLG.DLL taken off; a gap of the Rust engine's own COMMDLG, not of the base"
-      },
-      {
-        "engine": "typescript",
-        "records": ["log(choose)"],
-        "reason": "COMMDLG.DLL is not on the base, so the dialog is WinBox's own COMMDLG: its drives' combo box tells the hook CBN_SELENDOK (9) before closing up, where COMMDLG.DLL's does not; a gap of WinBox's own COMMDLG, not of the base"
       }
     ],
     "freelib": [
