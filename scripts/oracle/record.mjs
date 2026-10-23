@@ -35,7 +35,7 @@ import { fileURLToPath } from 'node:url';
 import { DISPLAYS, SOUND_BLASTER, driveFor } from './install-windows.mjs';
 import { decodeDro, decodeTrace, describeWav, writesJson } from './dro.mjs';
 import { fixtureFor } from './per-display.mjs';
-import { mergeIni, parsePreset, presetCopies } from './ini-preset.mjs';
+import { mergeIni, parsePreset, presetCopies, presetShell } from './ini-preset.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'oracle', '.cache');
@@ -46,6 +46,10 @@ const FIXTURES = join(ROOT, 'oracle', 'fixtures');
 
 /** Where a probe writes, on the guest and on the host. */
 const OUTPUT_DIR = 'ORACLE';
+
+/* The shell a probe's preset keeps in place of the probe (`--ini`, its
+ * `[oracle shell]`): `pmshell` is started by Program Manager, the shell. */
+let presetShellProgram = null;
 
 /** Where `fabricate.mjs` leaves the fonts built to ask a particular question. */
 const FONTS = join(BUILD, 'fonts');
@@ -609,6 +613,7 @@ async function setIni(probe, preset) {
 
   await writeFile(path, mergeIni(await readFile(path, 'latin1'), sections), 'latin1');
   log(`  WIN.INI set as ${probe}.${preset}.ini says`);
+  presetShellProgram = presetShell(sections);
   return preset;
 }
 
@@ -633,7 +638,7 @@ async function record(
     });
   }
 
-  await setShell(basename(source));
+  await setShell(presetShellProgram ?? basename(source));
 
   await cp(source, join(SCRATCH, 'WINDOWS', basename(source)));
 

@@ -52,7 +52,7 @@ export function mergeIni(text, sections) {
   }
 
   for (const { name, keys } of sections) {
-    if (name.toLowerCase() === 'oracle copy') {
+    if (name.toLowerCase().startsWith('oracle ')) {
       continue;
     }
 
@@ -99,4 +99,18 @@ export function presetCopies(sections) {
   return sections
     .filter(({ name }) => name.toLowerCase() === 'oracle copy')
     .flatMap(({ keys }) => keys);
+}
+
+/**
+ * The shell the preset keeps, its `[oracle shell]` section's `shell=`: the
+ * program `SYSTEM.INI`'s `shell=` names in place of the probe, which then
+ * runs as that shell starts it (`pmshell`'s `run=`). Null where it has none.
+ */
+export function presetShell(sections) {
+  const shell = sections
+    .filter(({ name }) => name.toLowerCase() === 'oracle shell')
+    .flatMap(({ keys }) => keys)
+    .find(([key]) => key.toLowerCase() === 'shell');
+
+  return shell ? shell[1] : null;
 }
