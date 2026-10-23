@@ -5,10 +5,11 @@
 //! (`kb/topics/program-manager-dde.md`).
 
 use super::commands;
-use super::loaded::{self, Loaded};
+use super::loaded;
 use super::main::{Pm, R};
 use super::parse::{self, Block};
 use crate::commdlg::api::{self, Arg};
+use crate::groups::GroupFile;
 
 const WM_DDE_INITIATE: u16 = 0x3e0;
 const WM_DDE_TERMINATE: u16 = 0x3e1;
@@ -257,11 +258,30 @@ async fn group_list(pm: &Pm<'_>, hwnd: u16, client: u16, item: u16, format: u16)
         return refuse(pm, hwnd, client, item).await;
     };
     let mut size = 6u32;
+    let windows: Vec<u16> = loaded::with(pm, |groups| {
+        groups
+            .list()
+            .iter()
+            .map(|key| groups.map[key].hwnd)
+            .collect()
+    });
 
-    for group in &loaded::groups(pm).list {
-        let title = group.title();
+    for window in windows {
+        let length = pm.user("GetWindowTextLength", &[Arg::W(window)]).await? as u16;
+        let title = pm
+            .call(
+                "USER",
+                "GetWindowText",
+                &[
+                    Arg::W(window),
+                    api::buffer(usize::from(length) + 2),
+                    Arg::W(length + 2),
+                ],
+            )
+            .await?
+            .string(0);
 
-        size += title.len() as u32 + 2;
+        size += u32::from(length) + 2;
 
         if pm
             .kernel("GlobalReAlloc", &[Arg::W(data), Arg::D(size), Arg::W(2)])
@@ -273,7 +293,7 @@ async fn group_list(pm: &Pm<'_>, hwnd: u16, client: u16, item: u16, format: u16)
         }
 
         let at = pm.kernel("GlobalLock", &[Arg::W(data)]).await? + 4;
-        let mut line = title.to_vec();
+        let mut line = title.clone();
 
         line.extend_from_slice(b"\r\n\0");
 
@@ -376,102 +396,130 @@ enum Field<'a> {
     Number(u16),
 }
 
-/// The value of an item's tag as seg4 `0c5a` reads it: none, 0; a record
-/// of six bytes, 1; of seven, its byte; of eight, its word.
-fn tag_value(loaded: &Loaded, item: &crate::groups::Item, id: u16) -> u16 {
-    let Some(tags) = &loaded.group.tags else {
-        return 0;
+/// An item as a group's text and `AppProperties` read it from its group's
+/// block: its name, its command and working directory as seg4 `2967` makes
+/// them from the stored command and its directory tag, its icon's path and
+/// index, and its hot key and minimized tags as seg4 `0c5a` reads them --
+/// none 0, a record of six bytes 1, of seven its byte, of eight its word.
+struct Described {
+    name: Vec<u8>,
+    command: Vec<u8>,
+    directory: Vec<u8>,
+    icon_path: Vec<u8>,
+    icon_index: u16,
+    hot_key: u16,
+    minimized: u16,
+}
+
+fn describe(block: &GroupFile, slot: u16) -> Described {
+    let data = &block.data;
+    let def = block.def(slot);
+    let word = |at: usize| u16::from_le_bytes([data[at], data[at + 1]]);
+    let string = |field: usize| crate::groups::c_string(data, word(def + field).into());
+    let tag = |id: u16| {
+        block.find_tag(id, slot).map(|at| {
+            let size = usize::from(word(at + 4));
+
+            data.get(at + 6..at + size.max(6)).unwrap_or(&[]).to_vec()
+        })
     };
-    let Some(tag) = tags
-        .iter()
-        .find(|tag| tag.id == id && tag.item == item.slot)
-    else {
-        return 0;
-    };
-    let data = match &tag.data {
-        Some(data) => data.clone(),
-        None => match id {
-            crate::groups::TAG_HOTKEY => item.hot_key.to_le_bytes().to_vec(),
-            crate::groups::TAG_MINIMIZED => Vec::new(),
-            _ => item.program_directory.clone().unwrap_or_default(),
+    let value = |id: u16| match tag(id) {
+        None => 0,
+        Some(data) => match data.len() {
+            0 => 1,
+            1 => u16::from(data[0]),
+            2 => u16::from_le_bytes([data[0], data[1]]),
+            _ => 0,
         },
     };
+    let program = tag(crate::groups::TAG_DIRECTORY).map(|data| crate::groups::c_string(&data, 0));
+    let (command, directory) = crate::groups::command_of(&string(0x14), program.as_deref());
 
-    match data.len() {
-        0 => 1,
-        1 => u16::from(data[0]),
-        2 => u16::from_le_bytes([data[0], data[1]]),
-        _ => 0,
+    Described {
+        name: string(0x12),
+        command,
+        directory,
+        icon_path: string(0x16),
+        icon_index: word(def + 4),
+        hot_key: value(crate::groups::TAG_HOTKEY),
+        minimized: value(crate::groups::TAG_MINIMIZED),
     }
 }
 
-/// `10ad`: the group whose name is the item's atom (`GlobalFindAtom` of its
-/// name), the MDI client's children walked from the top; its text, or a
-/// negative acknowledgement where there is none or the format is not
-/// `CF_TEXT`. The first line `"name",path,items,show`, show 3 maximized, 2
-/// the current group an icon and 7 another, 1 the current group otherwise
-/// and 4 another; then for each item in the group's order
-/// `"name","command",directory,icon path,x,y,icon index,hot key,minimized`.
+/// `10ad`: the group whose name, as its block has it, `GlobalFindAtom`
+/// finds to be the item's atom, the MDI client's children walked from the
+/// top; its text, or a negative acknowledgement where there is none or the
+/// format is not `CF_TEXT`. The first line `"name",path,items,show`, show
+/// 3 maximized, 2 the current group an icon and 7 another, 1 the current
+/// group otherwise and 4 another; then for each item in the group's order
+/// in memory `"name","command",directory,icon path,x,y,icon index,hot
+/// key,minimized`, its place its icon's in memory.
 async fn group_text(pm: &Pm<'_>, hwnd: u16, client: u16, item: u16, format: u16) -> R<()> {
     if format != CF_TEXT {
         return refuse(pm, hwnd, client, item).await;
     }
 
-    let groups = loaded::groups(pm);
     let mut found = None;
 
-    for (index, group) in groups.top_down() {
-        let atom = pm
-            .user("GlobalFindAtom", &[api::text(&group.group.name)])
-            .await? as u16;
+    for window in loaded::windows_top_down(pm).await? {
+        let key = loaded::key_of(pm, window).await?;
+        let Some(block) = loaded::lock(pm, key).await? else {
+            continue;
+        };
+        let name = crate::groups::c_string(
+            &block.data,
+            u16::from_le_bytes([block.data[0x16], block.data[0x17]]).into(),
+        );
 
-        if atom == item {
-            found = Some((index, group));
+        if pm.user("GlobalFindAtom", &[api::text(&name)]).await? as u16 == item {
+            found = Some((window, key, block, name));
             break;
         }
     }
 
-    let Some((index, group)) = found else {
+    let Some((window, key, block, name)) = found else {
+        return refuse(pm, hwnd, client, item).await;
+    };
+    let Some(group) = loaded::group(pm, key) else {
         return refuse(pm, hwnd, client, item).await;
     };
     let Some(data) = data_block(pm).await? else {
         return refuse(pm, hwnd, client, item).await;
     };
-    let current = groups.current == Some(index);
-    let show = if group.zoomed() {
+    let current = loaded::with(pm, |groups| groups.current) == key;
+    let show = if pm.user("IsZoomed", &[Arg::W(window)]).await? as u16 != 0 {
         3
-    } else if group.iconic() {
+    } else if pm.user("IsIconic", &[Arg::W(window)]).await? as u16 != 0 {
         if current { 2 } else { 7 }
     } else if current {
         1
     } else {
         4
     };
+    let described: Vec<(Described, [i16; 4])> = group
+        .items
+        .iter()
+        .map(|each| (describe(&block, each.slot), each.icon))
+        .collect();
     let mut size = 6;
     let mut fields = vec![
-        (Field::Text(&group.group.name, true), false),
+        (Field::Text(&name, true), false),
         (Field::Text(&group.path, false), false),
-        (Field::Number(group.group.items.len() as u16), false),
+        (Field::Number(group.items.len() as u16), false),
         (Field::Number(show), true),
     ];
 
-    for each in &group.group.items {
+    for (each, icon) in &described {
         fields.extend([
             (Field::Text(&each.name, true), false),
             (Field::Text(&each.command, true), false),
             (Field::Text(&each.directory, false), false),
             (Field::Text(&each.icon_path, false), false),
-            (Field::Number(each.x as u16), false),
-            (Field::Number(each.y as u16), false),
+            (Field::Number(icon[0] as u16), false),
+            (Field::Number(icon[1] as u16), false),
             (Field::Number(each.icon_index), false),
-            (
-                Field::Number(tag_value(group, each, crate::groups::TAG_HOTKEY)),
-                false,
-            ),
-            (
-                Field::Number(tag_value(group, each, crate::groups::TAG_MINIMIZED)),
-                true,
-            ),
+            (Field::Number(each.hot_key), false),
+            (Field::Number(each.minimized), true),
         ]);
     }
 
@@ -513,17 +561,26 @@ async fn property(
     instance: u16,
     which: Property,
 ) -> R<()> {
-    let groups = loaded::groups(pm);
-    let found = (instance == 0)
-        .then(|| {
-            groups
-                .top_down()
-                .find_map(|(_, group)| group.group.items.first())
-        })
-        .flatten();
-    let Some(found) = found else {
+    let mut found = None;
+
+    for window in loaded::windows_top_down(pm).await? {
+        let key = loaded::key_of(pm, window).await?;
+        let first = loaded::group(pm, key).and_then(|group| group.items.first().copied());
+
+        // Every item's instance is nought: none was started.
+        if let Some(first) = first.filter(|_| instance == 0) {
+            found = Some((key, first.slot));
+            break;
+        }
+    }
+
+    let Some((key, slot)) = found else {
         return refuse(pm, hwnd, client, item).await;
     };
+    let Some(block) = loaded::lock(pm, key).await? else {
+        return refuse(pm, hwnd, client, item).await;
+    };
+    let found = describe(&block, slot);
     let value = match which {
         // Not yet: the icon's header and planes as `GetInternalIconHeader`
         // gives them (`0d64`, `0e1b`-`0f26`), which wants the item's icon.

@@ -12,6 +12,7 @@ import { scaleIcon } from '../user/driver-resources.js';
 import { WinExec } from '../kernel/WinExec.js';
 import { searchFile, taskDirectory } from '../kernel/search.js';
 import { queryValue } from './reg-api.js';
+import { progmanFile } from '../progman/stored.js';
 
 /**
  * SHELL's calls about programs and their files: the environment's
@@ -516,19 +517,26 @@ export async function ShellExecute(
 export async function ExtractIcon(this: any, _hinst: number, lpszExeName: string, iIcon: number) {
   const index = (iIcon << 16) >> 16;
   const handle = await this.dos.files.open(String(lpszExeName ?? ''));
-
-  if (!handle) {
-    return 0;
-  }
-
   let bytes: Uint8Array;
 
-  try {
-    const file = this.dos.files.resolve(handle);
+  if (handle) {
+    try {
+      const file = this.dos.files.resolve(handle);
 
-    bytes = new Uint8Array(await file.read(0, file.size));
-  } finally {
-    this.dos.files.close(handle);
+      bytes = new Uint8Array(await file.read(0, file.size));
+    } finally {
+      this.dos.files.close(handle);
+    }
+  } else {
+    /* While WinBox's Program Manager runs, the file it says it is
+     * (`progman/stored.ts`). */
+    const stored = await progmanFile(this, String(lpszExeName ?? ''));
+
+    if (!stored) {
+      return 0;
+    }
+
+    bytes = stored;
   }
 
   const none = index === -1 ? 0 : 1;

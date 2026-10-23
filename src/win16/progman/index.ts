@@ -5,6 +5,7 @@
 import { Module } from '../module.js';
 import { HINSTANCE, HWND, INT, LPARAM, LRESULT, FARPTR, UINT, WPARAM } from '../types.js';
 import { FRAMEWNDPROC, WINMAIN } from './main.js';
+import { GROUPWNDPROC } from './window.js';
 
 /**
  * `PROGMAN`, WinBox's own Program Manager: a task with no file, started only
@@ -37,6 +38,7 @@ export class Progman extends Module {
       null,
       [WINMAIN, 'WINMAIN', 10, [HINSTANCE, HINSTANCE, FARPTR, UINT], INT],
       [FRAMEWNDPROC, 'FRAMEWNDPROC', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
+      [GROUPWNDPROC, 'GROUPWNDPROC', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
     ];
   }
 

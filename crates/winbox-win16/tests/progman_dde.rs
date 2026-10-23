@@ -1,11 +1,14 @@
-//! WinBox's own Program Manager's DDE (`src/progman/dde.rs`): the probes
-//! that talk to Program Manager, run with `PROGMAN.EXE` taken off the
-//! installation so that WinBox's answers, held to what Windows wrote with
-//! Microsoft's. As `test/win16/progman_dde_test.ts`.
+//! WinBox's own Program Manager (`src/progman/`): the probes that talk to
+//! Program Manager, run with `PROGMAN.EXE` taken off the installation so
+//! that WinBox's answers, held to what Windows wrote with Microsoft's --
+//! its DDE, what its commands change, its group files and `PROGMAN.INI`.
+//! As `test/win16/progman_dde_test.ts`.
 //!
-//! What a command changes -- a group made, an item added, a file written --
-//! is not done yet, so every record that hangs on it is left out, each
-//! named with why; the rest are held, in order.
+//! WinBox's frame is hidden, by the owner's decision, and so every group's
+//! window with it: a `windows` record's visibility is left out
+//! (`hidden`); its places, icons and zooms are held. Any record left out
+//! is named, with why, in `test/win16/progman-dde-gaps.json`; the rest are
+//! held, in order.
 
 mod support;
 
@@ -14,7 +17,39 @@ use winbox_win16::Stop;
 use support::{Setup, box_hand, recorded, run_setup};
 
 /// The probes held.
-const PROBES: &[&str] = &["progdde", "pmraw", "pmatom", "ddeinst", "pmsyntax"];
+const PROBES: &[&str] = &[
+    "progdde",
+    "pmraw",
+    "pmatom",
+    "ddeinst",
+    "pmsyntax",
+    "pmbare-vga",
+    "pmbare-ega",
+    "pmfiles",
+    "pmgroups",
+];
+
+/// A `windows` record with each window's visibility, its first digit of
+/// three, made `-`: WinBox's frame is hidden, and its groups' windows in
+/// it.
+fn hidden(function: &str, result: &str) -> String {
+    if function != "windows" {
+        return result.to_string();
+    }
+
+    result
+        .split(';')
+        .map(|part| match part.rsplit_once(':') {
+            Some((rest, flags))
+                if flags.len() == 3 && flags.bytes().all(|b| b.is_ascii_digit()) =>
+            {
+                format!("{rest}:-{}", &flags[1..])
+            }
+            _ => part.to_string(),
+        })
+        .collect::<Vec<_>>()
+        .join(";")
+}
 
 /// The records left out of each probe, with why, shared with the
 /// TypeScript engine's test (`test/win16/progman-dde-gaps.json`): a
@@ -49,7 +84,14 @@ fn held(records: &[[String; 3]], gaps: &[String]) -> Vec<String> {
                 .iter()
                 .any(|gap| *gap == record[0] || *gap == call || *gap == nth)
         })
-        .map(|record| format!("{}({}) = {}", record[0], record[1], record[2]))
+        .map(|record| {
+            format!(
+                "{}({}) = {}",
+                record[0],
+                record[1],
+                hidden(&record[0], &record[2])
+            )
+        })
         .collect()
 }
 
@@ -63,7 +105,10 @@ fn run_probe(name: &str) -> Option<(Stop, Vec<[String; 3]>, bool)> {
     Some(run_setup(
         name,
         setup,
-        |system| system.box_hand = Some(box_hand(name)),
+        |system| {
+            system.box_hand = Some(box_hand(name));
+            support::progman_in_store(system);
+        },
         |system| {
             let engine = winbox_win16::Engine::new(system);
             let stop = engine.run(2_000_000_000, 300.0);

@@ -22,9 +22,11 @@
 mod commands;
 mod dde;
 pub mod image;
+mod items;
 mod loaded;
 pub(crate) mod main;
 mod parse;
+mod window;
 
 use std::collections::BTreeMap;
 
@@ -66,18 +68,26 @@ pub static MODULE: Kept = Kept {
             returns: 4,
             stub: false,
         }),
+        Some(Export {
+            name: "GROUPWNDPROC",
+            pops: 10,
+            returns: 4,
+            stub: false,
+        }),
     ],
 };
 
 /// The ordinals of `MODULE`'s exports.
 pub(crate) const WINMAIN: u16 = 1;
 pub(crate) const FRAME_PROC: u16 = 2;
+pub(crate) const GROUP_PROC: u16 = 3;
 
 /// The function that answers an export.
 pub(crate) fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "WINMAIN" => Implementation::Async(main::win_main),
         "FRAMEWNDPROC" => Implementation::Async(main::frame_proc),
+        "GROUPWNDPROC" => Implementation::Async(window::group_proc),
         _ => return None,
     })
 }

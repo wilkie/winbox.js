@@ -341,6 +341,10 @@ export async function runProbe(
     /* The folder the program is started in, as Program Manager starts an
      * item: `C:\CARIBB` for an installer run from its media. */
     directory = null as string | null,
+    /* `PROGMAN.EXE` in the store behind C:, where the store has none, as the
+     * asset bundle carries it for WinBox's Program Manager's icons: the
+     * installation's (`kb/topics/program-manager-dde.md`). */
+    progmanStore = false,
     /* Whether `SYSTEM.INI`'s `shell=` names the probe, as the recorder makes
      * it: not for a program of the corpus run as Program Manager would. */
     shell = true,
@@ -609,7 +613,7 @@ export async function runProbe(
   const win16: any = new Win16(new DOS(machine), machine, {
     ...(display === 'vga' ? {} : { display }),
     ...(raster?.driver && raster.user ? { raster } : {}),
-    ...(assets ? { assets } : {}),
+    ...(storeOf(assets, progmanStore) ? { assets: storeOf(assets, progmanStore) } : {}),
     nextFrame: (callback: any) => {
       pending = callback;
     },
@@ -1165,4 +1169,24 @@ export function recordsFrom(text: string) {
     .map((line) => line.split('\t').map(unescape))
     .filter(([name]) => name !== '#')
     .map(([name, args, value]) => `${name}(${args}) = ${value}`);
+}
+
+/** The installation's `PROGMAN.EXE`, as the asset bundle's store carries it. */
+const PROGMAN = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'PROGMAN.EXE');
+
+/**
+ * The store behind C: given to `Win16`: the bundle's, with `PROGMAN.EXE`
+ * where it is asked for and the bundle has none -- the installation's.
+ */
+function storeOf(assets: Assets | null, progman: boolean) {
+  if (!progman || assets?.module('PROGMAN.EXE') || !existsSync(PROGMAN)) {
+    return assets;
+  }
+
+  const bytes = new Uint8Array(readFileSync(PROGMAN));
+
+  return {
+    module: (name: string) =>
+      name.toUpperCase() === 'PROGMAN.EXE' ? bytes : (assets?.module(name) ?? undefined),
+  };
 }
