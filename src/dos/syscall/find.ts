@@ -37,7 +37,7 @@
 
 import { stampOf } from '../../file-systems/fat16.js';
 import { segmentSelector } from '../../win16/selectors.js';
-import { openDirectory, resolveDirectory } from './directory.js';
+import { openDirectory, refusedName, resolveDirectory } from './directory.js';
 
 const ERROR_PATH_NOT_FOUND = 0x03;
 const ERROR_NO_MORE_FILES = 0x12;
@@ -282,7 +282,11 @@ function answer(dos: any, state: Uint8Array, info: any) {
   );
   view.setUint32(0x1a, info.size >>> 0, true);
 
-  const name = String(info.name).toUpperCase().substring(0, 12);
+  /* A disc's label as its volume names it, case kept (`Set_Label` with
+   * `cdrom`, `drives.cpp` 91-92); every other name upper case. */
+  const name = (
+    info.attributes === ATTRIBUTE_VOLUME ? String(info.name) : String(info.name).toUpperCase()
+  ).substring(0, 12);
 
   for (let i = 0; i < name.length; i++) {
     record[0x1e + i] = name.charCodeAt(i) & 0xff;
@@ -417,6 +421,45 @@ export async function findFirst(this: any, spec: string, attributes: number) {
   }
 
   state[12] = attributes & 0xff;
+
+  refusedName(this, spec);
+
+  /* A disc's search, as DOSBox's `isoDrive::FindFirst` begins it
+   * (`drive_iso.cpp` 250-284): the pattern as `GetSearchParams` gives it,
+   * the number of its directory iterator kept in the record's word at 0Dh
+   * (`dirID`). As `dos.rs`. */
+  const fileSystem = this.files.query(drive);
+
+  if (fileSystem?.findFirst) {
+    const dotted =
+      String.fromCharCode(...state.subarray(1, 9)) +
+      '.' +
+      String.fromCharCode(...state.subarray(9, 12));
+    const begun = fileSystem.findFirst(parts, state[12], dotted);
+
+    if (typeof begun === 'number') {
+      throw begun;
+    }
+
+    const [iterator, info] = begun;
+
+    view.setUint16(13, iterator, true);
+
+    if (info) {
+      answer(this, state, info);
+
+      return;
+    }
+
+    const [segment, offset] = transferArea(this);
+
+    this.machine.memory.write(
+      this.machine.cpu.core.translateAddress(segment, offset),
+      new DataView(state.buffer)
+    );
+
+    throw ERROR_NO_MORE_FILES;
+  }
 
   /* A disk image's search, as DOSBox's `fatDrive::FindFirst` begins it
    * (857-878): the label alone asked for, none -- no more files; else from

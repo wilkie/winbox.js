@@ -5557,23 +5557,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * no such segment, and keeps the offset with the segment nought: 1
    * record of `locinfo`'s. */
   'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
-  /* The image probes' drives that neither engine presents yet: an ISO
-   * 9660 disc (`kb/topics/drives-and-disks.md`, Not yet done). The drives
-   * the engines have agree: `drvioctl`'s A: with nothing in it, B: a
-   * floppy image, C:, E: (none), Z: and the numbers past; `imgcd`'s 150Ch. */
-  'drvioctl:d:': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:entry': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:label': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:match': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:read': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:open': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:attr': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:space': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:ioctl': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:1500': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:150b': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:write': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgcd:after': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   /* `pmstart`'s `GetModuleHandle("PROGMAN")`, Microsoft's Program Manager
    * running: winbox.js gives a program loaded from its file no module handle,
    * and answers nought for its name (`kb/kernel/getmodulehandle.md`). WinBox's

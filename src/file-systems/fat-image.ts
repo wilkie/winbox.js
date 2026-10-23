@@ -350,6 +350,11 @@ export class FATImage extends FileSystem {
     return this.drive.getFileAttr(path.filter((part) => part !== ''));
   }
 
+  /** Whether a search for folders finds a folder there (`TestDir`). */
+  testDir(path: string[]) {
+    return this.searchFolder(path) !== null;
+  }
+
   /** A folder by its first cluster, nought the root's, as a search keeps it; null where a search for folders does not find it. */
   searchFolder(path: string[]) {
     return this.drive.getDirClustNum(

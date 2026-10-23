@@ -1,11 +1,13 @@
 //! DOS's files, as winbox.js's `FileManager` keeps them: drives by letter,
 //! each a file system, a current directory, and the open files by handle.
 //! A drive is a directory of the host's (`HostDrive`), a tree held in
-//! memory (`MemoryDrive`) or a disk image's FAT volume (`FatVolume`), its
-//! names found without regard to case, as DOS finds them.
+//! memory (`MemoryDrive`), a disk image's FAT volume (`FatVolume`) or a
+//! disc image's ISO 9660 one (`IsoVolume`), its names found without regard
+//! to case, as DOS finds them.
 
 mod fat;
 mod host;
+mod iso;
 mod mbr;
 mod memory;
 mod overlay;
@@ -18,6 +20,7 @@ use std::io::{ErrorKind, SeekFrom};
 use fat::same_name;
 pub use fat::{FatError, FatVolume, ImageFile};
 pub use host::{HostDrive, HostFile, HostLayer};
+pub use iso::{DiscFile, IsoError, IsoVolume};
 pub use mbr::{Sectors, is_floppy, volume_start};
 pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
 pub use overlay::Overlay;
@@ -200,7 +203,20 @@ pub trait Volume: Debug {
     fn image(&self) -> Option<Vec<u8>> {
         None
     }
+
+    /// A disc's search begun as DOSBox's `isoDrive::FindFirst` begins it,
+    /// the pattern as `GetSearchParams` gives it (`IsoVolume`); none for a
+    /// drive whose search begins from a folder's first slot
+    /// (`search_folder`).
+    fn find_first(&self, _parts: &[String], _attributes: u8, _pattern: &str) -> Option<Begun> {
+        None
+    }
 }
+
+/// A search begun on a disc (`Volume::find_first`): the number of the
+/// directory iterator its record keeps, and the entry found, none where
+/// none was; or DOS's error, its record not begun.
+pub type Begun = Result<(u16, Option<Entry>), u16>;
 
 /// The order DOS's search lists a folder's entries in, as DOSBox's drives
 /// list them.
@@ -278,12 +294,13 @@ pub(crate) fn stamp(seconds: i64) -> [u16; 6] {
 }
 
 /// An open file's bytes: a host's file, a file of a drive held in memory,
-/// or one of a disk image.
+/// one of a disk image, or one of a disc.
 #[derive(Debug)]
 pub enum Body {
     Host(HostFile),
     Memory(MemoryFile),
     Image(ImageFile),
+    Disc(DiscFile),
 }
 
 /// A file open, and where in it the next read or write is.
@@ -310,7 +327,7 @@ impl Body {
         match self {
             Body::Host(file) => file.stamp(seconds),
             Body::Memory(file) => file.stamp(seconds),
-            Body::Image(_) => {}
+            Body::Image(_) | Body::Disc(_) => {}
         }
     }
 
@@ -332,6 +349,7 @@ impl OpenFile {
             Body::Host(file) => file.write(bytes),
             Body::Memory(file) => file.write(bytes),
             Body::Image(file) => file.write(bytes),
+            Body::Disc(_) => 0,
         }
     }
 
@@ -341,6 +359,7 @@ impl OpenFile {
             Body::Host(file) => file.read(length),
             Body::Memory(file) => file.read(length),
             Body::Image(file) => file.read(length),
+            Body::Disc(file) => file.read(length),
         }
     }
 
@@ -349,6 +368,7 @@ impl OpenFile {
             Body::Host(file) => file.seek(to),
             Body::Memory(file) => file.seek(to),
             Body::Image(file) => file.seek(to),
+            Body::Disc(file) => file.seek(to),
         }
     }
 
@@ -360,6 +380,7 @@ impl OpenFile {
             Body::Host(file) => file.truncate(length),
             Body::Memory(file) => file.truncate(length),
             Body::Image(file) => file.truncate(length),
+            Body::Disc(_) => false,
         }
     }
 
@@ -368,6 +389,7 @@ impl OpenFile {
             Body::Host(file) => file.size(),
             Body::Memory(file) => file.size(),
             Body::Image(file) => file.size(),
+            Body::Disc(file) => file.size(),
         }
     }
 
@@ -387,9 +409,21 @@ impl OpenFile {
     }
 
     /// Whether a write is refused, error 5: a disk image's file opened to
-    /// read alone (`fatFile::Write`, `drive_fat.cpp` 163-166).
+    /// read alone (`fatFile::Write`, `drive_fat.cpp` 163-166); a disc's
+    /// always (`isoFile::Write`, `drive_iso.cpp` 100-102, fails -- DOSBox
+    /// then answers whatever error DOS last set, which is not followed).
     pub fn refuses_write(&self) -> bool {
-        matches!(&self.body, Body::Image(file) if file.refuses_write())
+        match &self.body {
+            Body::Image(file) => file.refuses_write(),
+            Body::Disc(_) => true,
+            _ => false,
+        }
+    }
+
+    /// Whether it is a file of a disc, whose device information has bit 6
+    /// set (`isoFile::GetInformation`, `drive_iso.cpp` 130-132).
+    pub fn on_disc(&self) -> bool {
+        matches!(&self.body, Body::Disc(_))
     }
 
     /// The time and date 5700h answers where the file keeps its own: a
@@ -398,6 +432,7 @@ impl OpenFile {
     pub fn own_stamp(&self) -> Option<(u16, u16)> {
         match &self.body {
             Body::Image(file) => Some(file.stamp()),
+            Body::Disc(file) => Some(file.stamp()),
             _ => None,
         }
     }
@@ -1053,6 +1088,21 @@ impl Files {
         self.drives
             .get(&letter)?
             .find_from(folder, attributes, pattern, at)
+    }
+
+    /// A disc's search begun (`Volume::find_first`); none for a drive that
+    /// is no disc.
+    pub fn find_first(
+        &self,
+        letter: char,
+        parts: &[String],
+        attributes: u8,
+        pattern: &str,
+    ) -> Option<Begun> {
+        self.touch();
+        self.drives
+            .get(&letter)?
+            .find_first(parts, attributes, pattern)
     }
 
     /// A disk image mounted, as programs have written it: its bytes, to be
