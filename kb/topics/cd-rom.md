@@ -49,9 +49,9 @@ Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then 
 
 ## Not yet done
 
-- Mounting a disc in the native front end and on the page (phases 6 and 7 of the design in [[topic:drives-and-disks]]).
+- Mounting a disc on the page (phase 7 of the design in [[topic:drives-and-disks]]). The native build mounts one (`--mount D:GAME.ISO`), read from its file as sectors are asked for, and swaps a set of discs ([[topic:drives-and-disks]], "The native build's drives").
 - A write to a disc's file opened to read and write: DOSBox's `isoFile::Write` fails and DOS answers whatever error it last set (`dos.cpp` 590-603), which neither engine keeps; both answer 5.
 - `DOS_MakeName` on a folder's drive, C: among them: both engines take any name there, cut nothing and refuse nothing, where DOSBox does as on an image.
 - MSCDEX's calls that take a buffer (1501h, 1505h, 150Dh, 150Fh, 1510h), which through Windows need DPMI's real-mode calls and memory below 1 MB.
 - CUE/BIN images, their data track and then CD audio.
-- A swapped disc with a file open on it.
+- A swapped disc with a file open on it: [[read out]] DOSBox's `isoFile` reads through MSCDEX, which the new disc's `Activate` points at the new image (`drive_iso.cpp` 200-202, 472), so it reads the new disc; both engines' `DiscFile` keeps reading the disc it was opened on. Phase 8 (`imgswap`).
