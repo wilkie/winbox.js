@@ -4,7 +4,9 @@
  * (`oracle/probes/<probe>.mounts`): a floppy, a CD-ROM and a hard disk,
  * each the same bytes every time it is made.
  *
- *   node scripts/oracle/make-images.mjs
+ *   node scripts/oracle/make-images.mjs [name.img ...]
+ *
+ * With names, only those images are made, the others left as they are.
  *
  * Writes `oracle/probes/images/`, which is committed: the images are ours,
  * made here, and small once compressed.
@@ -16,6 +18,10 @@
  *   folder with a folder in it. Every entry's creation, access and
  *   modification stamps are set apart from one another (`FLOPPY_STAMPS`),
  *   so a listing shows which of them a drive answers.
+ * * `imgwrite.img`: a 1.44 MB FAT12 floppy for `imgwrite` to write to:
+ *   files in the order they were copied, a deleted entry between them, a
+ *   file with no extension, one of 1,000 bytes, a folder, and a hidden
+ *   folder with a file in it.
  * * `imgcd.iso`: an ISO 9660 disc (`xorriso`), its primary volume
  *   descriptor alone -- no Joliet, no Rock Ridge -- names past 8.3 (`-l`),
  *   in mixed case (`-allow-lowercase`), with their `;1` versions, a file
@@ -338,6 +344,43 @@ async function makeFloppy(scratch) {
   return bytes;
 }
 
+/** `imgwrite`'s floppy, made as `imgflop`'s is; every stamp `OTHER`'s. */
+async function makeWriteFloppy(scratch) {
+  const image = join(scratch, 'imgwrite.img');
+
+  await writeFile(image, Buffer.alloc(1440 * 1024));
+  await run('mformat', ['-i', image, '-f', '1440', '-v', 'WBWRITE', '-N', '19940404', '::']);
+
+  for (const [path, host] of await hostFiles(scratch, [
+    ['ONE.TXT', textOf('ONE.TXT', 2)],
+    ['TWO.TXT', textOf('TWO.TXT', 1)],
+    ['GONE.TXT', textOf('GONE.TXT', 1)],
+    ['THREE.TXT', textOf('THREE.TXT', 3)],
+    ['NOEXT', textOf('NOEXT', 1)],
+    ['BIG.TXT', Buffer.from(Array.from({ length: 1000 }, (_, i) => 0x41 + (i % 26)))],
+  ])) {
+    await run('mcopy', ['-i', image, host, `::${path}`]);
+  }
+
+  await run('mmd', ['-i', image, '::SUBDIR']);
+  await run('mmd', ['-i', image, '::HIDDIR']);
+
+  for (const [path, host] of await hostFiles(scratch, [
+    ['HIDDIR/INSIDE.TXT', textOf('HIDDIR\\INSIDE.TXT', 1)],
+  ])) {
+    await run('mcopy', ['-i', image, host, `::${path}`]);
+  }
+
+  await run('mattrib', ['-i', image, '+h', '::HIDDIR']);
+  await run('mdel', ['-i', image, '::GONE.TXT']);
+
+  const bytes = await readFile(image);
+
+  setFatStamps(bytes, 0);
+
+  return bytes;
+}
+
 /* ---------------------------------------------------------- hard disk */
 
 const CYLINDERS = 6;
@@ -546,6 +589,7 @@ async function makeDisc(scratch) {
 
 async function main() {
   const scratch = await mkdtemp(join(tmpdir(), 'winbox-images-'));
+  const only = process.argv.slice(2);
 
   try {
     await mkdir(OUT, { recursive: true });
@@ -554,7 +598,8 @@ async function main() {
       ['imgflop.img', makeFloppy],
       ['imghdd.img', makeHardDisk],
       ['imgcd.iso', makeDisc],
-    ]) {
+      ['imgwrite.img', makeWriteFloppy],
+    ].filter(([name]) => !only.length || only.includes(name))) {
       const bytes = await make(scratch);
 
       await writeFile(join(OUT, name), bytes);

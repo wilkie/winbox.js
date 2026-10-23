@@ -2,9 +2,11 @@ import { FileSystem, File } from '../file-system.js';
 import { Stream } from '../stream.js';
 
 /**
- * Represents the low-level FAT file-system: FAT16, and FAT12 where a disk
- * image's volume has fewer than 4,085 clusters, as DOS tells the two apart
- * (`mount`). The volumes this engine formats are FAT16 whatever their size.
+ * Represents the low-level FAT file-system: FAT16, and FAT12 where a volume
+ * read by its count of clusters has fewer than 4,085, as DOS tells the two
+ * apart (`mount`). The volumes this engine formats are FAT16 whatever their
+ * size. A disk image mounted as a drive is DOSBox's `fatDrive`'s to read
+ * and write (`FATImage`, `FatDrive`), not this class's.
  */
 export class FAT16 extends FileSystem {
   declare _blocks: any;
@@ -97,7 +99,7 @@ export class FAT16 extends FileSystem {
    *
    * With `byClusters`, its FAT's entries are 12-bit where it has fewer than
    * 4,085 clusters, as DOS, and DOSBox's `fatDrive`, decide (`drive_fat.cpp`
-   * 694-721), whatever the boot sector calls it: a disk image's. Without,
+   * 694-721), whatever the boot sector calls it. Without,
    * they are 16-bit, as this engine's own `format` writes them for a volume
    * of any size: the page's drive, and the oracle's, a true FAT16.
    */
@@ -859,8 +861,7 @@ export class FAT16File extends File {
         ? data
         : new Uint8Array(data.buffer ?? data, data.byteOffset ?? 0, data.byteLength ?? data.length);
 
-    /* A disk image is not written to yet (`FATImage`): nothing written. */
-    if (bytes.length === 0 || this.fileSystem.readOnly) {
+    if (bytes.length === 0) {
       return 0;
     }
 
@@ -904,10 +905,6 @@ export class FAT16File extends File {
    * @param {Date} at - When.
    */
   async stamp(at: Date) {
-    if (this.fileSystem.readOnly) {
-      return;
-    }
-
     const { time, date } = stampAt(at);
 
     this.info.time = time;
@@ -934,10 +931,6 @@ export class FAT16File extends File {
    * @param {number} at - Where it ends.
    */
   async end(at: number) {
-    if (this.fileSystem.readOnly) {
-      return;
-    }
-
     if (at > this.size) {
       await this.reserve(at);
     }
@@ -1260,18 +1253,8 @@ export class FAT16Directory extends FAT16File {
       }
 
       const flags = await this.read8(offset + 11);
-
-      /* A disk image's volume label is no entry DOSBox's search finds
-       * (`FindNextInternal`, `drive_fat.cpp` 950-951), nor opens. */
-      if (this.fileSystem.listing === 'stored' && flags & 0x08) {
-        continue;
-      }
-
-      /* The stamp written, or, on a disk image, its creation stamp, which
-       * DOSBox gives as its date and time (`drive_fat.cpp` 957). */
-      const stamped = this.fileSystem.listsCreation ? 14 : 22;
-      const time = await this.read16(offset + stamped);
-      const date = await this.read16(offset + stamped + 2);
+      const time = await this.read16(offset + 22);
+      const date = await this.read16(offset + 24);
       const size = await this.read32(offset + 28);
       const inode = await this.read16(offset + 26);
       const directory = (flags & 0x10) != 0;

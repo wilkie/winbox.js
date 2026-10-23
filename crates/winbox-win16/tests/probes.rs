@@ -25,6 +25,73 @@ fn probes_agree_with_windows() {
     }
 }
 
+/// What a program writes to a disk image is kept apart from it, sector by
+/// sector (`Overlay`): after `imgwrite` has written all over its floppy, the
+/// images the probes mount are as they were committed, and the image as
+/// written -- what `--write-back` keeps -- holds what it wrote. As
+/// `image_writes_test.ts`.
+#[test]
+fn image_probes_leave_their_images_as_they_were() {
+    let images = root().join("oracle/probes/images");
+    let read_all = || {
+        let mut all: Vec<(String, Vec<u8>)> = std::fs::read_dir(&images)
+            .unwrap()
+            .flatten()
+            .map(|entry| {
+                (
+                    entry.file_name().to_string_lossy().into_owned(),
+                    std::fs::read(entry.path()).unwrap(),
+                )
+            })
+            .collect();
+
+        all.sort();
+        all
+    };
+    let before = read_all();
+    let Some((stop, _, written)) = support::run_on(
+        "imgwrite",
+        |_| {},
+        |system| {
+            let engine = winbox_win16::Engine::new(system);
+            let stop = engine.run(2_000_000_000, 300.0);
+            let written = engine.system().files.image('A');
+
+            (stop, written)
+        },
+    ) else {
+        return;
+    };
+
+    assert_eq!(stop, Stop::Ended);
+    assert!(
+        read_all() == before,
+        "an image the probes mount was written"
+    );
+
+    let written = written.expect("A: an image");
+    let original = std::fs::read(images.join("imgwrite.img")).unwrap();
+
+    assert_eq!(written.len(), original.len());
+    assert_ne!(written, original);
+
+    let volume = winbox_machine::FatVolume::new(written, true).unwrap();
+    let names: Vec<String> = winbox_machine::Volume::children(&volume, &[String::new()])
+        .unwrap()
+        .into_iter()
+        .map(|entry| entry.name)
+        .collect();
+
+    assert!(names.contains(&"GROW.TXT".to_string()));
+    assert!(names.contains(&"SUBDIR.".to_string()));
+    assert_eq!(
+        winbox_machine::Volume::allocation(&volume)
+            .unwrap()
+            .free_clusters,
+        0x0b07
+    );
+}
+
 /// How many records of each probe the TypeScript engine agrees with
 /// Windows on, from the knowledge base's conformance data.
 fn typescript_agreed() -> std::collections::HashMap<String, u64> {

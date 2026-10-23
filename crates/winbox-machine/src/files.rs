@@ -8,16 +8,19 @@ mod fat;
 mod host;
 mod mbr;
 mod memory;
+mod overlay;
 
 use std::cell::Cell;
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
+use fat::same_name;
 pub use fat::{FatError, FatVolume, ImageFile};
 pub use host::{HostDrive, HostFile, HostLayer};
 pub use mbr::{Sectors, is_floppy, volume_start};
 pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
+pub use overlay::Overlay;
 
 /// The most files open at once.
 pub const MAX_OPEN_FILES: usize = 512;
@@ -91,11 +94,25 @@ pub trait Volume: Debug {
     /// opened.
     fn create(&mut self, parts: &[String]) -> Option<Body>;
 
+    /// A file created with the attributes DOS's 3Ch was asked to make it
+    /// with, which a disk image's entry keeps (`FatVolume`); a folder's
+    /// drive keeps none.
+    fn create_with(&mut self, parts: &[String], _attributes: u8) -> Option<Body> {
+        self.create(parts)
+    }
+
     /// A file or an empty folder let go of.
     fn unlink(&mut self, parts: &[String]) -> bool;
 
     /// A folder made.
     fn mkdir(&mut self, parts: &[String]) -> bool;
+
+    /// An empty folder let go of, as DOS's 3Ah does: as `unlink`, but on a
+    /// disk image, where deleting a file and removing a folder are DOSBox's
+    /// two functions (`FileUnlink`, `RemoveDir`).
+    fn remove_dir(&mut self, parts: &[String]) -> bool {
+        self.unlink(parts)
+    }
 
     /// A file or folder moved, or renamed.
     fn rename(&mut self, from: &[String], to: &[String]) -> bool;
@@ -150,6 +167,38 @@ pub trait Volume: Debug {
     /// The order a folder's entries are listed in (`Listing`).
     fn listing(&self) -> Listing {
         Listing::Sorted
+    }
+
+    /// A disk image's file's or folder's attributes, as DOSBox's
+    /// `fatDrive::GetFileAttr` finds them; none for another drive, whose
+    /// are its listing's.
+    fn attributes(&self, _parts: &[String]) -> Option<u8> {
+        None
+    }
+
+    /// A disk image's folder as DOSBox's search keeps it, by its first
+    /// cluster, nought the root's; none for another drive, or a folder a
+    /// search for folders does not find.
+    fn search_folder(&self, _parts: &[String]) -> Option<u32> {
+        None
+    }
+
+    /// A disk image's search carried on from a slot of a folder, as
+    /// DOSBox's `FindNextInternal` carries it on: the entry found, and the
+    /// slot after it in `at`; none for another drive.
+    fn find_from(
+        &self,
+        _folder: u32,
+        _attributes: u8,
+        _pattern: &str,
+        _at: &mut u16,
+    ) -> Option<Entry> {
+        None
+    }
+
+    /// A disk image as programs have written it; none for another drive.
+    fn image(&self) -> Option<Vec<u8>> {
+        None
     }
 }
 
@@ -255,13 +304,21 @@ pub struct OpenFile {
 
 impl Body {
     /// The file's entry stamped as last written at a time, seconds since
-    /// 1970.
+    /// 1970. Not a disk image's: DOSBox stamps nothing there, made,
+    /// written or closed (`drive_fat.cpp` 270-275, 793-796).
     fn stamp(&mut self, seconds: i64) {
         match self {
             Body::Host(file) => file.stamp(seconds),
             Body::Memory(file) => file.stamp(seconds),
-            // Not written to yet.
             Body::Image(_) => {}
+        }
+    }
+
+    /// The file let go of: a disk image's writes its sector back
+    /// (`fatFile::Close`).
+    fn close(&mut self) {
+        if let Body::Image(file) = self {
+            file.close();
         }
     }
 }
@@ -311,6 +368,37 @@ impl OpenFile {
             Body::Host(file) => file.size(),
             Body::Memory(file) => file.size(),
             Body::Image(file) => file.size(),
+        }
+    }
+
+    /// The mode DOS's 3Dh opened it in, AL: a disk image's file keeps it,
+    /// and refuses a write to one opened to read and a read from one opened
+    /// to write, as DOSBox's `fatFile` does; another keeps none.
+    pub fn set_mode(&mut self, mode: u8) {
+        if let Body::Image(file) = &mut self.body {
+            file.set_mode(mode);
+        }
+    }
+
+    /// Whether a read is refused, error 5: a disk image's file opened to
+    /// write alone (`fatFile::Read`, `drive_fat.cpp` 108-111).
+    pub fn refuses_read(&self) -> bool {
+        matches!(&self.body, Body::Image(file) if file.refuses_read())
+    }
+
+    /// Whether a write is refused, error 5: a disk image's file opened to
+    /// read alone (`fatFile::Write`, `drive_fat.cpp` 163-166).
+    pub fn refuses_write(&self) -> bool {
+        matches!(&self.body, Body::Image(file) if file.refuses_write())
+    }
+
+    /// The time and date 5700h answers where the file keeps its own: a
+    /// disk image's, its entry's creation stamp as it was opened
+    /// (`FileOpen`, `drive_fat.cpp` 832-834).
+    pub fn own_stamp(&self) -> Option<(u16, u16)> {
+        match &self.body {
+            Body::Image(file) => Some(file.stamp()),
+            _ => None,
         }
     }
 }
@@ -635,9 +723,16 @@ impl Files {
     /// An entry of a folder, by its name.
     pub fn lookup(&self, letter: char, parts: &[String], name: &str) -> Option<Entry> {
         self.touch();
-        self.list(letter, parts)?
-            .into_iter()
-            .find(|entry| entry.name.eq_ignore_ascii_case(name))
+
+        let stored = self.listing(letter) == Listing::AsStored;
+
+        self.list(letter, parts)?.into_iter().find(|entry| {
+            if stored {
+                same_name(&entry.name, name)
+            } else {
+                entry.name.eq_ignore_ascii_case(name)
+            }
+        })
     }
 
     fn joined(parts: &[String], name: &str) -> Vec<String> {
@@ -659,6 +754,23 @@ impl Files {
             .drives
             .get_mut(&letter)
             .is_some_and(|drive| drive.unlink(&path));
+
+        if gone {
+            self.carried(letter, &path, None);
+            self.changed(letter, parts);
+        }
+
+        gone
+    }
+
+    /// An empty folder let go of, as DOS's 3Ah does (`Volume::remove_dir`).
+    pub fn remove_directory(&mut self, letter: char, parts: &[String], name: &str) -> bool {
+        self.touch();
+        let path = Self::joined(parts, name);
+        let gone = self
+            .drives
+            .get_mut(&letter)
+            .is_some_and(|drive| drive.remove_dir(&path));
 
         if gone {
             self.carried(letter, &path, None);
@@ -704,8 +816,9 @@ impl Files {
     }
 
     /// A file's attributes set, as no folder's drive keeps them: whether
-    /// they were. A disk image's are its entries', and it is not written
-    /// to yet.
+    /// they were. A disk image's are its entries', which DOSBox leaves as
+    /// they are: its `DOS_SetFileAttr` only looks for the file
+    /// (`dos_files.cpp` 643-656), and it is found.
     pub fn set_attributes(
         &mut self,
         letter: char,
@@ -714,7 +827,7 @@ impl Files {
         attributes: u8,
     ) -> bool {
         if self.listing(letter) == Listing::AsStored {
-            return false;
+            return true;
         }
 
         self.attributes
@@ -848,12 +961,18 @@ impl Files {
     /// Not searched for: the path given and nowhere else, and a path that
     /// names no drive names none mounted.
     pub fn create(&mut self, path: &str) -> Option<usize> {
+        self.create_with(path, 0)
+    }
+
+    /// A file created with the attributes DOS's 3Ch was given, which a
+    /// disk image's entry keeps (`Volume::create_with`).
+    pub fn create_with(&mut self, path: &str, attributes: u8) -> Option<usize> {
         self.touch();
         let parsed = Self::parse(path);
         let letter = parsed.drive?;
         let drive = self.drives.get_mut(&letter)?;
         let made = drive.entry(&parsed.parts).is_none();
-        let mut body = drive.create(&parsed.parts)?;
+        let mut body = drive.create_with(&parsed.parts, attributes)?;
 
         // A file made where none was changes its folder; one emptied does
         // not: DOSBox's `localDrive::FileCreate` adds an entry only for a
@@ -896,11 +1015,51 @@ impl Files {
             return false;
         };
 
+        file.body.close();
+
         if let Some(at) = file.written_at {
             file.body.stamp(at);
         }
 
         true
+    }
+
+    /// A disk image's file's or folder's attributes, as DOSBox's
+    /// `GetFileAttr` finds them (`Volume::attributes`); none where it finds
+    /// none, or the drive is no image.
+    pub fn image_attributes(&self, letter: char, parts: &[String], name: &str) -> Option<u8> {
+        self.touch();
+        self.drives
+            .get(&letter)?
+            .attributes(&Self::joined(parts, name))
+    }
+
+    /// A disk image's folder by its first cluster, as a search keeps it
+    /// (`Volume::search_folder`).
+    pub fn search_folder(&self, letter: char, parts: &[String]) -> Option<u32> {
+        self.drives.get(&letter)?.search_folder(parts)
+    }
+
+    /// A disk image's search carried on from a slot (`Volume::find_from`).
+    pub fn find_from(
+        &self,
+        letter: char,
+        folder: u32,
+        attributes: u8,
+        pattern: &str,
+        at: &mut u16,
+    ) -> Option<Entry> {
+        self.touch();
+        self.drives
+            .get(&letter)?
+            .find_from(folder, attributes, pattern, at)
+    }
+
+    /// A disk image mounted, as programs have written it: its bytes, to be
+    /// saved as a new image ("Save image..." on the page, `--write-back`
+    /// natively); none for a drive that is no image.
+    pub fn image(&self, letter: char) -> Option<Vec<u8>> {
+        self.drives.get(&letter.to_ascii_uppercase())?.image()
     }
 
     fn allocate(&mut self, file: OpenFile) -> Option<usize> {

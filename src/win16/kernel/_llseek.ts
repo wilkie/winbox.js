@@ -49,6 +49,12 @@ export function _llseek(hf, lOffset, nOrigin) {
     return -1;
   }
 
+  /* A disk image's file seeks as DOSBox's `fatFile::Seek` does, as its
+   * DOS call does (`seek.ts`). */
+  if ((file as any).dosSeek && nOrigin >= 0 && nOrigin <= 2) {
+    return (file as any).dosSeek(lOffset | 0, nOrigin);
+  }
+
   let to: number;
 
   switch (nOrigin) {

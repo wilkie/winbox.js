@@ -209,9 +209,11 @@ export class FileManager {
    * path it gave and nowhere else.
    *
    * @param {string} path - The path to create.
+   * @param {number} attributes - What DOS's 3Ch was asked to make it with,
+   * which a disk image's entry keeps (`FATImage`).
    * @returns {Promise<number>} An open file descriptor, or null.
    */
-  async create(path) {
+  async create(path, attributes = 0) {
     this.touch();
 
     const pathInfo = this.parse(path);
@@ -230,25 +232,29 @@ export class FileManager {
      * was not there (`drive_local.cpp` 51-80). */
     const existing = await fileSystem.open(pathInfo.path);
     const made = !existing;
+    const stored = fileSystem.listing === 'stored';
 
     /* A folder is not made a file: DOS refuses it (access denied), as the
      * Rust engine's drive does (`pmsyntax`: Program Manager's `_lcreat` of
-     * `C:\WINDOWS\`, a group's name with no letter or digit for a file). */
-    if (existing?.info?.directory || pathInfo.path.length === 0) {
+     * `C:\WINDOWS\`, a group's name with no letter or digit for a file).
+     * A disk image's drive makes what DOSBox's `FileCreate` makes, which
+     * does not look for a folder (`FATImage`). */
+    if ((existing?.info?.directory && !stored) || pathInfo.path.length === 0) {
       return null;
     }
 
     /* Its archive bit set, as DOSBox lists every file of the host's folder
      * (`localDrive::FindNext` gives each `DOS_ATTR_ARCHIVE`) and the Rust
      * engine's drive lists a file: what an installer makes lists as 20h
-     * (**recorded** by `instlay`). */
-    await fileSystem.create(pathInfo.path, { archive: true });
+     * (**recorded** by `instlay`). A disk image's entry has the attributes
+     * asked for alone, the file it makes opened as it is made. */
+    const created = await fileSystem.create(pathInfo.path, { archive: true, attributes });
 
     if (made) {
       await this.changed(pathInfo.drive, pathInfo.path.slice(0, -1));
     }
 
-    const file = await fileSystem.open(pathInfo.path);
+    const file = stored ? created : await fileSystem.open(pathInfo.path);
 
     if (!file) {
       return null;
@@ -358,6 +364,8 @@ export class FileManager {
 
     // Deallocate the handle
     if (this._descriptors[handle]) {
+      /* A disk image's file writes its sector back (`fatFile::Close`). */
+      this._descriptors[handle].close?.();
       delete this._descriptors[handle];
       handle = -1;
     }

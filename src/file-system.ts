@@ -61,7 +61,7 @@ export class FileSystem {
     throw 'Unimplemented';
   }
 
-  async create(path, _options = {}) {
+  async create(path, _options = {}): Promise<any> {
     throw 'Unimplemented';
   }
 

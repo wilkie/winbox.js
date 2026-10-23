@@ -1,0 +1,3 @@
+# A: a 1.44 MB floppy image to write to: see imgwrite.c. The recorder
+# mounts a copy of it.
+a: imgwrite.img floppy
