@@ -57,6 +57,28 @@ pub struct Program {
     /// When it was kept, in milliseconds since 1970.
     #[serde(default)]
     pub kept: u64,
+    /// The images it was installed or last run with (`--mount`), each set's
+    /// in order, its drive's letter pinned: mounted again where it is run
+    /// with none given. Left out where there are none, as a program kept
+    /// before had none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub media: Vec<Medium>,
+}
+
+/// An image a program is run with, as the page's `KeptProgram` is to keep
+/// one (`letter`, `kind`, `name`, `size`), with its file on the host where
+/// the page keeps a key to its own store.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Medium {
+    /// Its drive's letter, `A`; images of one letter are a set, in order.
+    pub letter: String,
+    /// `floppy`, `hdd` or `iso`, as a probe's `.mounts` names them.
+    pub kind: String,
+    /// The file's name, and its size in bytes.
+    pub name: String,
+    pub size: u64,
+    /// The file, its full path on the host.
+    pub path: String,
 }
 
 impl Program {
@@ -70,6 +92,7 @@ impl Program {
             exes: Vec::new(),
             orders: BTreeMap::new(),
             kept: 0,
+            media: Vec::new(),
         }
     }
 
@@ -509,10 +532,13 @@ pub enum UserLayer {
 
 /// An installer's run: its folder in `staging`, where its media are put
 /// (`media/`, laid at `C:\WBSETUP`) and its top (`C/`, its deletes in
-/// `removed`); and the installer as C: names it.
+/// `removed`); and the installer as C: names it. Media on a drive of their
+/// own, floppies at A:, are named by the drive, `A:\`, and nothing of them
+/// is put on C:.
 #[derive(Debug, Clone)]
 pub struct Staging {
     pub folder: PathBuf,
+    /// The media's folder on C:, `WBSETUP`, or their drive's root, `A:\`.
     pub media: String,
     pub setup: String,
     /// The media as they were put on C:.
@@ -522,6 +548,15 @@ pub struct Staging {
 impl Staging {
     pub fn top(&self) -> PathBuf {
         self.folder.join("C")
+    }
+
+    /// Where the media are, as DOS names it: `C:\WBSETUP`, or `A:\`.
+    pub fn media_path(&self) -> String {
+        if self.media.contains(':') {
+            self.media.clone()
+        } else {
+            format!("C:\\{}", self.media)
+        }
     }
 
     pub fn removed(&self) -> PathBuf {
@@ -795,6 +830,49 @@ impl Store {
             media: folder_name,
             setup: format!("C:\\{setup}"),
             laid,
+        })
+    }
+
+    /// An installer's run made ready from media on a drive of their own --
+    /// the floppy images mounted at A: -- with nothing of them put on C:,
+    /// so nothing is laid beneath the empty top and nothing of C: is
+    /// dropped for them (`drop_media`); what names them is told by their
+    /// letter (`media_references`). The installer is `setup` on the
+    /// drive's root, else `SETUP.EXE`. Whether it is there is the drive's
+    /// to tell, once mounted.
+    pub fn stage_drive(
+        &self,
+        name: &str,
+        letter: char,
+        setup: Option<&str>,
+    ) -> Result<Staging, String> {
+        if letter == 'C' {
+            return Err(
+                "C: is the program's drive: media are a folder, a zip, or a drive of images"
+                    .to_string(),
+            );
+        }
+
+        let setup = setup
+            .unwrap_or("SETUP.EXE")
+            .replace('/', "\\")
+            .to_ascii_uppercase();
+        let folder = self
+            .root
+            .join("staging")
+            .join(format!("{name}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&folder);
+
+        for made in [folder.join("media"), folder.join("C")] {
+            std::fs::create_dir_all(&made)
+                .map_err(|error| format!("{}: {error}", made.display()))?;
+        }
+
+        Ok(Staging {
+            folder,
+            media: format!("{letter}:\\"),
+            setup: format!("{letter}:\\{}", setup.trim_start_matches('\\')),
+            laid: Vec::new(),
         })
     }
 

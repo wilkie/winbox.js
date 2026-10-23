@@ -5,6 +5,7 @@
 //! disc image's ISO 9660 one (`IsoVolume`), its names found without regard
 //! to case, as DOS finds them.
 
+mod empty;
 mod fat;
 mod host;
 mod iso;
@@ -17,6 +18,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
+pub use empty::EmptyDrive;
 use fat::same_name;
 pub use fat::{FatError, FatVolume, ImageFile};
 pub use host::{HostDrive, HostFile, HostLayer};
@@ -202,6 +204,12 @@ pub trait Volume: Debug {
     /// A disk image as programs have written it; none for another drive.
     fn image(&self) -> Option<Vec<u8>> {
         None
+    }
+
+    /// Whether programs have written to a disk image anything it did not
+    /// hold (`FatVolume::changed`); false for another drive.
+    fn changed(&self) -> bool {
+        false
     }
 
     /// A disc's search begun as DOSBox's `isoDrive::FindFirst` begins it,
@@ -1112,6 +1120,48 @@ impl Files {
         self.drives.get(&letter.to_ascii_uppercase())?.image()
     }
 
+    /// A drive's disk changed for another, as DOSBox's drive manager swaps
+    /// a set's disks (`DriveManager::CycleAllDisks`, `drives.cpp` 173-191):
+    /// the drive's current folder is kept, whether or not the new disk has
+    /// it (`strcpy(newDisk->curdir, oldDisk->curdir)`). The disk that was
+    /// in, to be put back later with what was written to it; none where no
+    /// drive was. A file open on the old disk keeps reading and writing it,
+    /// as DOSBox's `fatFile` keeps its `myDrive` (`drive_fat.cpp` 64, 92):
+    /// what DOSBox does with a disc's file across a swap is not followed
+    /// yet (`kb/topics/drives-and-disks.md`).
+    pub fn swap(&mut self, letter: char, volume: Box<dyn Volume>) -> Option<Box<dyn Volume>> {
+        let letter = letter.to_ascii_uppercase();
+        let old = self.drives.insert(letter, volume);
+
+        self.pwd
+            .entry(letter)
+            .or_insert_with(|| format!("{letter}:\\"));
+        old
+    }
+
+    /// A removable drive's disk taken out (`EmptyDrive`): the drive stays,
+    /// with nothing in it, a CD-ROM drive still one. The disk taken out;
+    /// none where the drive had none, or is not removable.
+    pub fn eject(&mut self, letter: char) -> Option<Box<dyn Volume>> {
+        let letter = letter.to_ascii_uppercase();
+        let drive = self.drives.get(&letter)?;
+
+        if !drive.removable() {
+            return None;
+        }
+
+        let empty = EmptyDrive::after(drive.as_ref());
+
+        self.swap(letter, Box::new(empty))
+    }
+
+    /// Whether a drive's disk has been written to (`Volume::changed`).
+    pub fn image_changed(&self, letter: char) -> bool {
+        self.drives
+            .get(&letter.to_ascii_uppercase())
+            .is_some_and(|drive| drive.changed())
+    }
+
     fn allocate(&mut self, file: OpenFile) -> Option<usize> {
         let handle =
             (FIRST_HANDLE..MAX_OPEN_FILES).find(|handle| !self.open.contains_key(handle))?;
@@ -1678,5 +1728,73 @@ mod tests {
         );
         assert!(lower.join("AUTOEXEC.BAT").exists());
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    fn image(name: &str) -> Vec<u8> {
+        std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../../oracle/probes/images")
+                .join(name),
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn swaps_a_disk_keeping_the_folder_and_what_was_written() {
+        let mut files = Files::new();
+        let first = FatVolume::new(image("imgflop.img"), true).unwrap();
+        let second = FatVolume::new(image("imgwrite.img"), true).unwrap();
+
+        files.mount('A', first);
+        files.set_current('A', "A:\\SUBDIR\\".to_string());
+
+        let handle = files.create("A:\\NEW.TXT").unwrap();
+
+        files.resolve(handle).unwrap().write(b"written");
+        files.close(handle);
+        assert!(files.image_changed('A'));
+
+        // The other disk in, the current folder kept as DOSBox keeps it,
+        // whether or not the new disk has it; the first back with its write.
+        let out = files.swap('a', Box::new(second)).unwrap();
+
+        assert!(out.changed());
+        assert!(!files.image_changed('A'));
+        assert_eq!(files.current('A'), "A:\\SUBDIR\\");
+        assert!(files.lookup('A', &[String::new()], "NEW.TXT").is_none());
+
+        let second = files.swap('A', out).unwrap();
+
+        assert!(!second.changed());
+        assert!(files.lookup('A', &[String::new()], "NEW.TXT").is_some());
+        assert!(files.has_disk('A'));
+    }
+
+    #[test]
+    fn ejects_a_disk_leaving_the_drive_empty() {
+        let mut files = Files::new();
+
+        files.mount('A', FatVolume::new(image("imgflop.img"), true).unwrap());
+        files.mount('D', IsoVolume::new(image("imgcd.iso")).unwrap());
+        files.mount('C', MemoryDrive::new());
+
+        let floppy = files.eject('A').unwrap();
+        let disc = files.eject('D').unwrap();
+
+        assert_eq!(floppy.label(), None);
+        assert_eq!(disc.label().as_deref(), Some("WINBOXCD.202"));
+
+        // A floppy drive with nothing in it, as DOSBox's with nothing
+        // mounted: there, removable, no disk. A CD-ROM drive still one.
+        assert!(files.mounted('A') && files.removable('A') && !files.has_disk('A'));
+        assert!(!files.remote('A'));
+        assert!(files.mounted('D') && files.removable('D') && !files.has_disk('D'));
+        assert!(files.remote('D'));
+        assert_eq!(files.floppy_disks(), 0);
+        assert!(files.open("A:\\README.TXT").is_none());
+
+        // A fixed drive has no disk to take out.
+        assert!(files.eject('C').is_none());
+        assert!(files.has_disk('C'));
     }
 }

@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 use winbox_win16::key_input::Key;
 use winbox_win16::raster_input::{Pointer, PointerKind};
 use winit::event::{ElementState, KeyEvent, MouseButton};
-use winit::keyboard::{Key as LogicalKey, ModifiersState, NamedKey, PhysicalKey};
+use winit::keyboard::{Key as LogicalKey, KeyCode, ModifiersState, NamedKey, PhysicalKey};
 
 /// How close in time and place a second press must be to make a double
 /// click, as a page's `detail` of 2 says one is: Windows' own 500
@@ -43,6 +43,9 @@ pub struct Inputs {
     pub modifiers: ModifiersState,
     last_press: Option<Press>,
     pub input: Vec<Input>,
+    /// F12 pressed as Ctrl+Shift+F12, the drives' (`key`): its release is
+    /// theirs too.
+    chord: bool,
 }
 
 impl Inputs {
@@ -102,6 +105,30 @@ impl Inputs {
         let PhysicalKey::Code(code) = event.physical_key else {
             return;
         };
+
+        // Ctrl+Shift+F12, with images mounted, is the drives': the next disk
+        // in each drive with a set (`mounts.rs`). Neither press nor release
+        // of F12 reaches Windows; Ctrl and Shift did, and are let go of as
+        // ever.
+        if code == KeyCode::F12 && crate::mounts::chord_taken() {
+            let chord = self.modifiers.control_key()
+                && self.modifiers.shift_key()
+                && !self.modifiers.alt_key();
+
+            if event.state == ElementState::Pressed && chord {
+                if !event.repeat {
+                    crate::mounts::ask_next();
+                }
+
+                self.chord = true;
+                return;
+            }
+
+            if event.state == ElementState::Released && std::mem::take(&mut self.chord) {
+                return;
+            }
+        }
+
         // What it types, as a page's `key` gives it: the space bar is a
         // character there, where winit names it.
         let text = match &event.logical_key {

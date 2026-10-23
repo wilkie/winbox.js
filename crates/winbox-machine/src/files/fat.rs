@@ -1059,6 +1059,10 @@ impl Volume for FatVolume {
     fn image(&self) -> Option<Vec<u8>> {
         Some(FatVolume::image(self))
     }
+
+    fn changed(&self) -> bool {
+        FatVolume::changed(self)
+    }
 }
 
 /// A file of a disk image open, as DOSBox's `fatFile` keeps one: where it
