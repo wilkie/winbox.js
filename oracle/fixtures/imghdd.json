@@ -1,0 +1,224 @@
+{
+  "probe": "imghdd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "D: 0",
+      "result": "FIRST.TXT 20 24 1021 0821"
+    },
+    {
+      "function": "entry",
+      "args": "D: 1",
+      "result": "SECOND.TXT 20 39 1063 1862"
+    },
+    {
+      "function": "entry",
+      "args": "D: 2",
+      "result": "HARDSUB 10 0 10a5 28a3"
+    },
+    {
+      "function": "entry",
+      "args": "D: end",
+      "result": "3 18"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\HARDSUB 0",
+      "result": ". 10 0 10a5 28a3"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\HARDSUB 1",
+      "result": ".. 10 0 10a5 28a3"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\HARDSUB 2",
+      "result": "HARDIN.TXT 20 36 10e7 38e4"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\HARDSUB end",
+      "result": "3 18"
+    },
+    {
+      "function": "label",
+      "args": "D:\\*.*",
+      "result": "error 18"
+    },
+    {
+      "function": "match",
+      "args": "D:\\*.TXT 00",
+      "result": "FIRST.TXT,SECOND.TXT"
+    },
+    {
+      "function": "read",
+      "args": "D:\\FIRST.TXT",
+      "result": "36 46495253542e545854206c696e652031 1021 0821"
+    },
+    {
+      "function": "read",
+      "args": "D:\\SECOND.TXT",
+      "result": "57 5345434f4e442e545854206c696e6520 1063 1862"
+    },
+    {
+      "function": "read",
+      "args": "D:\\HARDSUB\\HARDIN.TXT",
+      "result": "54 484152445355425c48415244494e2e54 10e7 38e4"
+    },
+    {
+      "function": "open",
+      "args": "D:\\first.txt",
+      "result": "36"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\FIRST.TXT",
+      "result": "20"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\HARDSUB",
+      "result": "10"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 171d 0200 1721 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0004 0c0c 0802 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "440d 0004 0860 02be 0 030501000000000300ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "4400 0004 0c0c 0d0d 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "3"
+    },
+    {
+      "function": "write",
+      "args": "create",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "write",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "wrote",
+      "result": "9"
+    },
+    {
+      "function": "write",
+      "args": "close",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "mkdir",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "rename",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "delete",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "D: 0",
+      "result": "FIRST.TXT 20 24 1021 0821"
+    },
+    {
+      "function": "after",
+      "args": "D: 1",
+      "result": "HARDSUB 10 0 10a5 28a3"
+    },
+    {
+      "function": "after",
+      "args": "D: 2",
+      "result": "NEWDIR 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "D: 3",
+      "result": "RENAMED.TXT 00 9 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "D: end",
+      "result": "4 18"
+    },
+    {
+      "function": "after",
+      "args": "D:\\HARDSUB 0",
+      "result": ". 10 0 10a5 28a3"
+    },
+    {
+      "function": "after",
+      "args": "D:\\HARDSUB 1",
+      "result": ".. 10 0 10a5 28a3"
+    },
+    {
+      "function": "after",
+      "args": "D:\\HARDSUB 2",
+      "result": "HARDIN.TXT 20 36 10e7 38e4"
+    },
+    {
+      "function": "after",
+      "args": "D:\\HARDSUB end",
+      "result": "3 18"
+    },
+    {
+      "function": "after",
+      "args": "D:\\NEWDIR 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "D:\\NEWDIR 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "D:\\NEWDIR end",
+      "result": "2 18"
+    },
+    {
+      "function": "after",
+      "args": "36",
+      "result": "0001 171c 0200 1721 0"
+    }
+  ]
+}

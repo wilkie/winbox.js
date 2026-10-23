@@ -17,6 +17,42 @@ export class FileSystem {
     return this._disk;
   }
 
+  /*
+   * What kind of drive it is, as the Rust engine's `Volume` says (a drive
+   * mounted that is not a `FileSystem` answers each as undefined, the same):
+   */
+
+  /** Whether the drive is removable, as a floppy is. */
+  get removable() {
+    return false;
+  }
+
+  /**
+   * Whether the drive is remote, as DOSBox's CD-ROM drives are: IOCTL 4409h
+   * sets bit 12 of DX for it, and `GetDriveType` calls it `DRIVE_REMOTE`.
+   */
+  get remote() {
+    return false;
+  }
+
+  /** The drive's own volume label, as a disk or disc keeps one; none for a folder's. */
+  get label(): string | null {
+    return null;
+  }
+
+  /** The media byte DOSBox's table holds for it: F0h for a floppy, F8h else. */
+  get mediaByte() {
+    return this.removable ? 0xf0 : 0xf8;
+  }
+
+  /**
+   * The order a folder's entries are listed in: `sorted`, as DOSBox lists a
+   * folder of the host's, or `stored`, as an image keeps them.
+   */
+  get listing(): 'sorted' | 'stored' {
+    return 'sorted';
+  }
+
   async format() {
     throw 'Unimplemented';
   }

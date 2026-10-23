@@ -1,0 +1,2 @@
+# A: a 1.44 MB floppy image: see imgflop.c.
+a: imgflop.img floppy

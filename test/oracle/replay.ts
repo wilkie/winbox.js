@@ -5557,6 +5557,45 @@ export const KNOWN_GAPS: Record<string, string> = {
    * no such segment, and keeps the offset with the segment nought: 1
    * record of `locinfo`'s. */
   'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
+  /* The image probes' drives: images DOSBox mounts (`<probe>.mounts`) that
+   * neither engine presents yet -- a floppy's and a hard disk's FAT and an
+   * ISO 9660 disc (`kb/topics/drives-and-disks.md`, Not yet done). The
+   * drives the engines have agree: `drvioctl`'s A: with nothing in it, C:,
+   * E: (none), Z: and the numbers past; `imgcd`'s 150Ch, and `imgflop`'s
+   * label search, error 18 as on a drive with nothing. */
+  'drvioctl:b:': 'B: is a floppy image under DOSBox, which is not mounted here',
+  'drvioctl:d:': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgflop:entry': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:match': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:read': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:open': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:attr': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:space': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:ioctl': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:write': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgflop:after': 'A: is a floppy image under DOSBox, which is not mounted here',
+  'imgcd:entry': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:label': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:match': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:read': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:open': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:attr': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:space': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:ioctl': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:1500': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:150b': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:write': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imgcd:after': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
+  'imghdd:entry': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:label': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:match': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:read': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:open': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:attr': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:space': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:ioctl': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:write': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:after': 'D: is a hard disk image under DOSBox, which is not mounted here',
 };
 
 /**
@@ -5865,6 +5904,11 @@ const RUN_WHOLE = new Set<string>([
   'grround',
   'instlay',
   ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
+  'drvioctl',
+  'mscdex',
+  'imgflop',
+  'imgcd',
+  'imghdd',
 ]);
 
 /**

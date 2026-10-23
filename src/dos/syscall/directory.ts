@@ -94,6 +94,11 @@ export function directoryOf(dos: any, letter: string): string {
 export function volumeLabel(dos: any, letter: string): string | null {
   const fileSystem = dos.files.query(letter);
 
+  /* A disk's or disc's own (`Volume::label`). */
+  if (fileSystem?.label) {
+    return fileSystem.label;
+  }
+
   if (!fileSystem || fileSystem.removable) {
     return null;
   }

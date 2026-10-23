@@ -1,0 +1,469 @@
+{
+  "probe": "imgcd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "D: 0",
+      "result": "A_VERY_L.TEX 20 23 1e64 28c3"
+    },
+    {
+      "function": "entry",
+      "args": "D: 1",
+      "result": "HIDDEN.TXT 22 13 20a6 3904"
+    },
+    {
+      "function": "entry",
+      "args": "D: 2",
+      "result": "LONGNAMEDFOL 10 800 1b6c 69c7"
+    },
+    {
+      "function": "entry",
+      "args": "D: 3",
+      "result": "MIXEDCAS.TXT 20 16 24e8 4945"
+    },
+    {
+      "function": "entry",
+      "args": "D: 4",
+      "result": "NOEXT 20 e 1e85 30e4"
+    },
+    {
+      "function": "entry",
+      "args": "D: 5",
+      "result": "README.TXT 20 26 1c43 20a3"
+    },
+    {
+      "function": "entry",
+      "args": "D: 6",
+      "result": "SUBDIR 10 800 1a64 28c4"
+    },
+    {
+      "function": "entry",
+      "args": "D: 7",
+      "result": "ZONE.TXT 20 11 22c7 4125"
+    },
+    {
+      "function": "entry",
+      "args": "D: end",
+      "result": "8 18"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\LONGNAMEDFOL end",
+      "result": "0 3"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR 0",
+      "result": ". 10 800 1a64 28c4"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR 1",
+      "result": ".. 10 800 1b8d 71e8"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR 2",
+      "result": "DEEPER 10 800 1b4b 61a7"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR 3",
+      "result": "INNER.TXT 20 32 1822 1883"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR 4",
+      "result": "LONG_INN.TXT 20 1c 1843 20a3"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR end",
+      "result": "5 18"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR\\DEEPER 0",
+      "result": ". 10 800 1b4b 61a7"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR\\DEEPER 1",
+      "result": ".. 10 800 1b8d 71e8"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR\\DEEPER 2",
+      "result": "DEEP.TXT 20 11 1b2a 5986"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUBDIR\\DEEPER end",
+      "result": "3 18"
+    },
+    {
+      "function": "label",
+      "args": "D:\\*.*",
+      "result": "WINBOXCD.202 08 0 0000 0000"
+    },
+    {
+      "function": "match",
+      "args": "D:\\*.TXT 00",
+      "result": "MIXEDCAS.TXT,README.TXT,ZONE.TXT"
+    },
+    {
+      "function": "match",
+      "args": "D:\\*.* 00",
+      "result": "A_VERY_L.TEX,MIXEDCAS.TXT,NOEXT,README.TXT,ZONE.TXT"
+    },
+    {
+      "function": "match",
+      "args": "D:\\*.* 02",
+      "result": "A_VERY_L.TEX,HIDDEN.TXT,MIXEDCAS.TXT,NOEXT,README.TXT,ZONE.TXT"
+    },
+    {
+      "function": "match",
+      "args": "D:\\LONGNAMEDFOLDER 10",
+      "result": "LONGNAMEDFOL"
+    },
+    {
+      "function": "match",
+      "args": "D:\\LONGNAME 10",
+      "result": "LONGNAMEDFOL"
+    },
+    {
+      "function": "read",
+      "args": "D:\\A_VERY_L.TEX",
+      "result": "35 415f566572795f4c6f6e675f46696c65 1e64 28c3"
+    },
+    {
+      "function": "read",
+      "args": "D:\\HIDDEN.TXT",
+      "result": "19 48494444454e2e545854206c696e6520 20a6 3904"
+    },
+    {
+      "function": "read",
+      "args": "D:\\MIXEDCAS.TXT",
+      "result": "22 4d69786564436173652e547874206c69 24e8 4945"
+    },
+    {
+      "function": "read",
+      "args": "D:\\NOEXT",
+      "result": "14 4e4f455854206c696e6520310d0a 1e85 30e4"
+    },
+    {
+      "function": "read",
+      "args": "D:\\README.TXT",
+      "result": "38 524541444d452e545854206c696e6520 1c43 20a3"
+    },
+    {
+      "function": "read",
+      "args": "D:\\ZONE.TXT",
+      "result": "17 5a4f4e452e545854206c696e6520310d 22c7 4125"
+    },
+    {
+      "function": "read",
+      "args": "D:\\SUBDIR\\INNER.TXT",
+      "result": "50 5355424449522f494e4e45522e545854 1822 1883"
+    },
+    {
+      "function": "read",
+      "args": "D:\\SUBDIR\\LONG_INN.TXT",
+      "result": "28 4c6f6e675f496e6e65725f4e616d652e 1843 20a3"
+    },
+    {
+      "function": "read",
+      "args": "D:\\SUBDIR\\DEEPER\\DEEP.TXT",
+      "result": "17 444545502e545854206c696e6520310d 1b2a 5986"
+    },
+    {
+      "function": "open",
+      "args": "D:\\readme.txt",
+      "result": "38"
+    },
+    {
+      "function": "open",
+      "args": "D:\\README.TXT;1",
+      "result": "error 3"
+    },
+    {
+      "function": "open",
+      "args": "D:\\A_VERY_LONG_FILE_NAME.TEXT",
+      "result": "35"
+    },
+    {
+      "function": "open",
+      "args": "D:\\A_VERY_L.TEX",
+      "result": "35"
+    },
+    {
+      "function": "open",
+      "args": "D:\\NOEXT.",
+      "result": "14"
+    },
+    {
+      "function": "open",
+      "args": "D:\\HIDDEN.TXT",
+      "result": "19"
+    },
+    {
+      "function": "open",
+      "args": "D:\\LONGNAMEDFOLDER\\INNER.TXT",
+      "result": "error 3"
+    },
+    {
+      "function": "open",
+      "args": "D:\\LONGNAME\\INNER.TXT",
+      "result": "error 3"
+    },
+    {
+      "function": "open",
+      "args": "D:\\SUBDIR\\LONG_INNER_NAME.TXT",
+      "result": "28"
+    },
+    {
+      "function": "open",
+      "args": "D:\\subdir\\deeper\\deep.txt",
+      "result": "17"
+    },
+    {
+      "function": "open",
+      "args": "D:\\SUBDIR\\..\\README.TXT",
+      "result": "38"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\README.TXT",
+      "result": "21"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\HIDDEN.TXT",
+      "result": "23"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\LONGNAMEDFOLDER",
+      "result": "error 2"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\SUBDIR",
+      "result": "31"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\SUBDIR\\DEEPER",
+      "result": "31"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\NOPE.TXT",
+      "result": "error 2"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0000 0800 ea60 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 1"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0004 0c0c 1000 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "0001 0004 0860 03ea 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "0001 0004 0c0c 0d0d 1"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "4"
+    },
+    {
+      "function": "1500",
+      "args": "",
+      "result": "15ff 0001 0003 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "0",
+      "result": "0000 adad 0000 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "1",
+      "result": "0000 adad 0001 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "2",
+      "result": "0000 adad 0002 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "3",
+      "result": "5ad8 adad 0003 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "4",
+      "result": "0000 adad 0004 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "5",
+      "result": "0000 adad 0005 0d0d 0"
+    },
+    {
+      "function": "150c",
+      "args": "",
+      "result": "150c 0217 0c0c 0d0d 0"
+    },
+    {
+      "function": "write",
+      "args": "create",
+      "result": "2"
+    },
+    {
+      "function": "write",
+      "args": "mkdir",
+      "result": "3"
+    },
+    {
+      "function": "write",
+      "args": "rename",
+      "result": "2"
+    },
+    {
+      "function": "write",
+      "args": "delete",
+      "result": "2"
+    },
+    {
+      "function": "after",
+      "args": "D: 0",
+      "result": "A_VERY_L.TEX 20 23 1e64 28c3"
+    },
+    {
+      "function": "after",
+      "args": "D: 1",
+      "result": "HIDDEN.TXT 22 13 20a6 3904"
+    },
+    {
+      "function": "after",
+      "args": "D: 2",
+      "result": "LONGNAMEDFOL 10 800 1b6c 69c7"
+    },
+    {
+      "function": "after",
+      "args": "D: 3",
+      "result": "MIXEDCAS.TXT 20 16 24e8 4945"
+    },
+    {
+      "function": "after",
+      "args": "D: 4",
+      "result": "NOEXT 20 e 1e85 30e4"
+    },
+    {
+      "function": "after",
+      "args": "D: 5",
+      "result": "README.TXT 20 26 1c43 20a3"
+    },
+    {
+      "function": "after",
+      "args": "D: 6",
+      "result": "SUBDIR 10 800 1a64 28c4"
+    },
+    {
+      "function": "after",
+      "args": "D: 7",
+      "result": "ZONE.TXT 20 11 22c7 4125"
+    },
+    {
+      "function": "after",
+      "args": "D: end",
+      "result": "8 18"
+    },
+    {
+      "function": "after",
+      "args": "D:\\LONGNAMEDFOL end",
+      "result": "0 3"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR 0",
+      "result": ". 10 800 1a64 28c4"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR 1",
+      "result": ".. 10 800 1b8d 71e8"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR 2",
+      "result": "DEEPER 10 800 1b4b 61a7"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR 3",
+      "result": "INNER.TXT 20 32 1822 1883"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR 4",
+      "result": "LONG_INN.TXT 20 1c 1843 20a3"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR end",
+      "result": "5 18"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR\\DEEPER 0",
+      "result": ". 10 800 1b4b 61a7"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR\\DEEPER 1",
+      "result": ".. 10 800 1b8d 71e8"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR\\DEEPER 2",
+      "result": "DEEP.TXT 20 11 1b2a 5986"
+    },
+    {
+      "function": "after",
+      "args": "D:\\SUBDIR\\DEEPER end",
+      "result": "3 18"
+    },
+    {
+      "function": "after",
+      "args": "36",
+      "result": "0001 0000 0800 ea60 0"
+    }
+  ]
+}

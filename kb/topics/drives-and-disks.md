@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Drives and disks
-summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType, the network calls with no network, disk space, the drive IOCTL calls and absolute disk reads — and how DOSBox's C: lists a folder, stamps it and renames in it, measured where Windows and DOSBox answer and documented where DOS does.
-probes: [drivetyp, netcaps, diskfree, dirorder]
+summary: What Windows 3.1 and DOS say about the drives there are — GetDriveType as SYSTEM.DRV works it out, the network calls with no network, disk space, the drive IOCTL calls, MSCDEX and absolute disk reads — how DOSBox's C: lists a folder, stamps it and renames in it, and what DOSBox makes of a floppy, hard disk or CD-ROM image, measured where Windows and DOSBox answer and documented where DOS does.
+probes: [drivetyp, netcaps, diskfree, dirorder, drvioctl, mscdex, imgflop, imgcd, imghdd]
 ---
 
 File Manager asks each drive letter whether it exists, what kind it is, whether it is on a network, and how much room it has.
@@ -10,7 +10,15 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 ## GetDriveType
 
 - [[measured]] [[probe:drivetyp]] finds that a drive that is not there answers **0**, and so does any number past Z:. Under DOSBox, where the oracle's Windows ran, A: is removable (2), and C: and Z: are fixed (3).
-- [[read out]] KERNEL asks `SYSTEM.DRV` for the answer, not DOS.
+- [[read out]] KERNEL asks `SYSTEM.DRV` for the answer, not DOS: its `InquireSystem` (`SYSTEM.DRV` seg1 `0002`-`0169`), code 1, the drive from nought for A:. It asks DOS in turn:
+  1. It selects the drive (function 0Eh) and asks which is current (19h), then selects the one that was. A drive that did not become current answers **0** (`0031`-`005c`).
+  2. IOCTL 4409h succeeding with bit 12 of DX set is a remote drive, **4** (`0079`-`0090`).
+  3. 4408h succeeding with bit 0 of AX set is a fixed drive, **3**; with it clear, a removable one, **2** -- but A: or B: only where bit 0 of the BIOS's equipment word says a floppy drive is there, else **0** (`0092`-`00b8`).
+  4. 4408h failing: the equipment word's count of floppy drives less one (bits 6-7), nought taken as one, is compared with the drive's number: below it **3**, else **2** (`00e5`-`00f9`).
+  5. Then 440Eh. Succeeding with AL nought, the kind stands (`00bb`-`00e2`). Failing, B: with the count nought -- the one floppy drive's second letter -- answers **0**, and DX 1 beside it; any other drive the kind (`00fb`-`010b`).
+- [[read out]] `SYSTEM.DRV` reads the equipment word once, as it starts, with `INT 11h`: bits 6-7 at its data's `0Ah`, the low byte at `0Bh` (`01e4`-`020b`). Under DOS 4.00 and 4.01 it asks 5F02h for network drives instead of 4409h (`005f`-`0077`, `019b`); not under DOSBox's DOS 5.
+- [[read out]] DOSBox selects A: and B: whether or not anything is mounted there (`DOS_SetDefaultDrive`, `dos_files.cpp` 56), and its BIOS counts no floppy drive until a floppy image is mounted (`bios.cpp` 1043; `imageDisk::imageDisk`, `bios_disk.cpp` 219-229, bit 0 set by the first, the count by the second). So with nothing mounted A: answers 2 by step 4, and B: 0 by step 5.
+- [[measured]] [[probe:drvioctl]] with a floppy image as B: and a CD-ROM image as D:: A:, with nothing in it, **2**; B: **2**; C: **3**; D: **4**; E:, not there, **0**; Z: **3**.
 - [[measured]] winbox.js answered 1 for a missing drive before. File Manager then showed all 26 letters as drives.
 
 ## The network, with none installed
@@ -21,17 +29,39 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 ## DOS
 
 - [[documented]] **Function 36h** answers a drive's sectors to a cluster, its free clusters, its bytes to a sector and its clusters, or FFFFh for a drive that is not there.
-- [[documented]] **Function 44h:**
-  - 08h answers whether a drive is removable;
-  - 09h answers whether it is remote;
-  - 0Dh, with `CX` 0860h, answers a block device's parameters: its type, its cylinders, and the BIOS parameter block from its boot sector.
+- [[documented]] **Function 44h:** 08h answers whether a drive is removable, 09h whether it is remote, 0Dh a block device's generic request -- with `CX` 0860h its parameters -- and 0Eh the logical drive map. With no answer at all, the carry flag was whatever it happened to be, and File Manager read a parameter block nothing had written.
+- [[measured]] [[probe:drvioctl]] asks each of them of the current drive, A: to E:, Z: and the number past Z:, BL the drive, BH nought, CX 0C0Ch and DX 0D0Dh before, and a buffer of 40 bytes of CCh at DS:DX for 0Dh. Under DOSBox, B: a floppy image and D: a CD-ROM image:
 
-  A drive that is not there is error 0Fh. With no answer at all, the carry flag was whatever it happened to be, and File Manager read a parameter block nothing had written.
+  | Drive                        | 4408h     | 4409h              | 440Dh CL 60h                | 440Dh CL 46h, 66h | 440Eh     |
+  | ---------------------------- | --------- | ------------------ | --------------------------- | ----------------- | --------- |
+  | C:, Z:, a hard disk image    | AX 1      | AX 0300h, DX 0802h | type 5, "not removable" 1   | AX as it was      | AL 0      |
+  | B:, a floppy image           | AX 0      | AX 0300h, DX 0802h | type 14h, "not removable" 0 | AX as it was      | AL 0      |
+  | D:, a CD-ROM image           | error 1   | AX 0300h, DX 1000h | error 1                     | error 1           | error 1   |
+  | A: with nothing, E:, past Z: | error 0Fh | error 0Fh          | error 0Fh                   | error 0Fh         | error 0Fh |
 
+  Every other register is left as it was. Any other CL, 67h among them, is error 1.
+
+- [[measured]] The parameter block 440Dh CL 60h writes is DOSBox's: byte 0 is 3, byte 1 the type, word 2 whether it is not removable, word 4 the cylinders, nought, byte 6 the media type, nought; then where the BIOS parameter block begins, DOSBox's own drive number (2 for C:, 1 for B:, 19h for Z:) and a nought, and FFFFFFFFh at 1Fh. Bytes 9 to 1Eh are left as they were: there is no BIOS parameter block. The hard disk image's is the same as C:'s ([[probe:imghdd]]), the floppy image's as B:'s with its own drive number ([[probe:imgflop]]).
+- [[read out]] DOSBox's `DOS_IOCTL` (`dos_ioctl.cpp` 41-46, 127-204): a drive not there is error 0Fh; 08h answers AX 0 for A: and B: whatever is mounted, then error 1 for a drive that is removable -- only its CD-ROM drives say so (`isoDrive::isRemovable`, `drive_iso.cpp` 378-380; a FAT image's is false, `drive_fat.cpp` 764) -- else 1; 09h DX 1000h for a remote drive (a CD-ROM), else 0802h, and AX 0300h; 0Dh and 0Eh refuse a removable drive with error 1; 0Dh looks at CL alone. For CL 46h and 66h it writes a serial number, the label and the file system's name, but none of it reaches the program: Windows' DOS extender in standard mode copies back the parameter block of 60h, and not that of 66h. [[inferred]] It copies back only for the minor codes it knows.
 - [[documented]] **`INT 25h` and `INT 26h`** read and write a volume's sectors by number. Unlike other interrupts, they return with the flags still on the stack, and the caller pops them. File Manager reads a drive's boot sector this way. With no handler, its pop took its own return address.
 - [[documented]] A drive that is not there answers 8002h to `INT 25h`, as DOSBox's does.
 
 - [[measured]] Function 47h, the current directory, fails on a removable drive with no disk in it: COMMDLG's Open box, changed to an empty `a:`, says it cannot read the drive ([[probe:ofnopen]]). [[inferred]] The engines answer error 0Fh, invalid drive, as for a drive that is not there; the box says the same for any error.
+
+## MSCDEX
+
+[[measured]] [[probe:mscdex]] makes MSCDEX's register calls through `INT 2Fh` with no disc mounted, BX 0B0Bh, CX 0C0Ch and DX 0D0Dh before; [[probe:imgcd]] makes them with a CD-ROM image as D:.
+
+| Call                              | No disc                    | A disc as D:              |
+| --------------------------------- | -------------------------- | ------------------------- |
+| 1500h, installed?                 | AL FFh, BX 0, CX as it was | AL FFh, BX 1, CX 3        |
+| 150Bh, CX the drive from 0 for A: | AX 0, BX ADADh             | AX 5AD8h for D:, BX ADADh |
+| 150Ch, the version                | BX 0217h                   | BX 0217h                  |
+| 1100h, the network redirector's   | AL FFh                     |                           |
+
+- [[read out]] DOSBox installs its own MSCDEX whether or not a disc is mounted (`MSCDEX_Init`, `dos_mscdex.cpp` 1312-1322) and answers these as recorded (`MSCDEX_Handler`, 1069-1167). Its version is 2.23 (`MSCDEX_VERSION_HIGH`, `_LOW`, 37-38). 1100h also writes ADADh over a word of DADAh on the caller's stack (1071-1074): through Windows that stack is the DOS extender's. The calls that take a buffer at ES:BX -- 1501h, 150Dh, 1505h, 150Fh, 1510h -- are not recorded: through Windows they need DPMI's real-mode calls and a buffer below 1 MB.
+- [[read out]] File Manager asks MSCDEX of each drive. With no handler, `INT 2Fh` went through an empty vector. Then both engines left every register as it was, which to 1500h says "not installed".
+- Both engines now answer 1100h, 1500h, 150Bh and 150Ch as DOSBox does, a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `run.rs`, `DOS.multiplexInterrupt` in `src/dos.ts`). Any other function changes nothing. See [[topic:cd-rom]].
 
 ## Free space
 
@@ -111,6 +141,59 @@ The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and wh
 - Function 40h with CX nought ends the file where it is and stamps it, as `_lwrite` with nought bytes did already.
 - 56h answers as DOSBox's does, and moves folders. Before, both engines refused to move a folder, with error 5, and answered 3 for a folder that is not there.
 
+## Disk and CD images
+
+DOSBox mounts disk and disc images as drives with `IMGMOUNT`: a floppy's or hard disk's FAT, or an ISO 9660 CD-ROM. The probes [[probe:imgflop]], [[probe:imgcd]] and [[probe:imghdd]] record what Windows sees of each, and [[probe:drvioctl]] mounts a floppy image as B: and a CD-ROM image as D:. Neither engine mounts images yet; their records are known gaps.
+
+### How the probes mount them
+
+- A probe's images are listed in `oracle/probes/<probe>.mounts`, a line each: a drive, an image of `oracle/probes/images/` and its kind -- `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`. `scripts/oracle/record.mjs` copies each into the build and mounts it with `imgmount <drive> <copy> -t <kind>` before `win`. DOSBox writes a disk image's changes straight into its file (`fatDrive::fatDrive` opens it `rb+`, `drive_fat.cpp` 642), so the committed image is never the one written. Both replays read the same list (`mountsOf` in `test/win16/run-probe.ts`, `mounts_of` in `tests/support/mod.rs`) and mount what their engine can present (`imageDrive`, `image_volume`): nothing yet.
+- `scripts/oracle/make-images.mjs` makes the images, the same bytes every time: `imgflop.img`, a 1.44 MB FAT12 floppy (`mformat`, `mcopy`); `imghdd.img`, 6 cylinders of 16 heads and 63 sectors with a master boot record and one FAT16 partition from sector 63; and `imgcd.iso` (`xorriso`), an ISO 9660 primary volume descriptor alone. Every entry's creation, access and modification stamps are set apart, so a listing shows which a drive answers.
+- [[read out]] `IMGMOUNT` takes several files only for ISOs (`dos_programs.cpp` 1206-1209), and its drive manager swaps only those; a hard disk image is sized from its file only in whole cylinders of 16 heads and 63 sectors (1213-1236).
+
+### A FAT image
+
+- [[measured]] [[probe:imgflop]]: the root lists its entries in the order the disk holds them -- `README.TXT`, `ZEBRA.TXT`, `APPLE.TXT`, `LONGFI~1.TXT`, `DATA.BIN`, `SUBDIR`, `HIDDEN.SYS` -- with no `.` or `..`; the label entry, the deleted entry and the long name's VFAT entries are passed over. A subfolder lists its `.` and `..` first, as they are on the disk.
+- [[measured]] The date and time a search and 5700h give are the entry's **creation** stamp (bytes 0Eh-11h), not its last write: `README.TXT`, created 1993-04-05 06:07:08 and written 1992-03-10 03:10:00, lists as 1A85h 30E4h. [[read out]] `fatDrive::FindNextInternal` and `fatFile` take `crtTime` and `crtDate` (`drive_fat.cpp` 809-810, 833-834, 957).
+- [[measured]] A search for the label (attribute 08h) answers error 18, no more files, though the floppy has a label entry. [[read out]] `fatDrive::FindFirst` answers the label search so (857-867).
+- [[measured]] Attributes are the entry's own: `HIDDEN.SYS` 27h. A file is found by its short name in either case; a long name is not found (error 2).
+- [[measured]] 36h answers the FAT's own figures: the floppy 1 sector to a cluster, 2,832 free of 2,847, 512 bytes to a sector; the hard disk image 1, 5,917 free of 5,921, 512.
+- [[measured]] Written: a file made with 3Ch, written and closed, and a folder made, list with date and time **nought**; the file's attributes are those 3Ch was given, nought, not 20h. A file renamed takes a new entry at the end; one deleted is gone from the listing, and the room it had is free again.
+- [[measured]] The hard disk image answers 4408h AX 1 and `GetDriveType` 3, as C: does ([[probe:imghdd]]); the floppy image as A: answers 4408h AX 0 and 2.
+
+### An ISO 9660 image
+
+- [[measured]] [[probe:imgcd]]: names lose their `;1` and a trailing dot, are cut to eight characters before the dot and twelve in all, and are listed in capitals: `A_Very_Long_File_Name.Text` lists as `A_VERY_L.TEX`, `LONGNAMEDFOLDER` as `LONGNAMEDFOL`, `NOEXT.` as `NOEXT`. Entries come in the disc's order; the root has no `.` and `..`, a subfolder has them first.
+- [[measured]] A file is found by its listed name, by its whole name and in either case. **A folder whose name was cut cannot be entered**: `LONGNAMEDFOL` lists, but neither it nor `LONGNAMEDFOLDER` opens as a path (error 3), and 4300h of it is error 2. An 8.3 folder, `SUBDIR`, works.
+- [[measured]] Attributes in a listing: 20h a file, 10h a folder, and 02h added for a record marked hidden. 4300h answers 21h for a file, 23h hidden, 31h for a folder: read-only added. Folders list 2,048 bytes long.
+- [[measured]] Stamps are the record's date with its year from 1900; the offset from GMT is ignored (`ZONE.TXT`, written 08:09:10 two hours east of GMT, lists 08:09:10).
+- [[measured]] The label search answers `WINBOXCD.202` for the volume `WINBOXCD2026`, attribute 08h, stamped nought: the name made 8.3 with a dot.
+- [[measured]] 36h answers 1 sector to a cluster, nought free, 2,048 bytes to a sector, 60,000 clusters, whatever the disc. 3Ch and 41h and 56h answer error 2, 39h error 3: nothing is written.
+- [[read out]] `isoDrive` (`drive_iso.cpp`): the primary volume descriptor at sector 16 only, no Joliet or Rock Ridge (516-526); names made at 309; lookup without regard to case (553); 36h's figures (342-348); remote and removable (374-380). The label is `Set_Label` with `cdrom` true (`drives.cpp` 80-108).
+
+### The design
+
+The images become drives in both engines in phases, each with its probe agreeing:
+
+1. The oracle's groundwork: the `.mounts` lists, the images and the probes above. Done.
+2. Drives' kinds: `Volume` gains `remote`, `label`, `media_byte` and `listing` (`Listing::Sorted` for a folder as DOSBox lists one, `AsStored` for an image), the TypeScript `FileSystem` the same; IOCTL 4408h, 4409h, 440Dh and 440Eh as DOSBox answers them; `GetDriveType` as `SYSTEM.DRV` works it out; MSCDEX's register calls. Done: [[probe:drvioctl]] agrees for A:, C:, E:, Z: and the numbers past, [[probe:mscdex]] wholly.
+3. A FAT12 or FAT16 image read: one FAT reader for both by the count of clusters, as DOSBox chooses (`drive_fat.cpp` 700-711), over the image's sectors -- a floppy if 2,880 KB or less with no partition table, else a hard disk whose first partition is used, else sector 63 (660-678). Its stamps, order, attributes and room as above.
+4. Writes to a FAT image, as DOSBox makes them, kept apart from the image (decision 1).
+5. ISO 9660 and MSCDEX with a disc.
+6. The native front end: `--mount A:disk1.img,disk2.img`, `--mount D:game.iso`, swapping a set's disks by commands on standard input and a key other than Ctrl+F4, which closes an MDI child; `--install` from A:.
+7. The page: images dropped beside Windows as drives, a strip of drives with Next and Eject for a set of floppies, installing from floppies, a program's CD remembered.
+8. Swapping a disk with a file open on it (a probe, `imgswap`).
+9. Later: hard disk images of other layouts, MSCDEX's buffer calls, CUE/BIN images' data track, CD audio, `INT 25h` and `26h` as DOSBox answers them (it reads nothing, `dos.cpp` 1095-1118).
+
+The owner's decisions (2026-10-22):
+
+- **Floppy writes:** copy-on-write. The user's image is never changed; what is written is kept beside it, and saved as a new image on request ("Save image…", `--write-back`).
+- **ISO storage on the page:** no copy of a read-only image. Where the browser offers it, a File System Access handle, whose permission is asked again each visit; elsewhere the file is chosen or dropped again each visit and read where it is, by slices. A copy in the browser's storage only when asked for. The Rust page engine holds a mounted image in memory for now; a worker reading synchronously is a later step.
+- **Drive letters:** floppies A: and B:; hard disk images from D:; CD-ROMs at the first free letter after, one after another, each program's kept.
+- **DOSBox's quirks on a FAT image** -- creation stamps listed, nought stamps written, no label found -- followed as recorded.
+- **CUE/BIN:** the data track only, after ISO; audio later. **Hard disk images:** later, raw only.
+- **MSCDEX with no disc:** answered as DOSBox does (phase 2).
+
 ## Sectors
 
 - [[read out]] File Manager reads each drive's boot sector with `INT 25h` and takes one whose media byte is F8h with one FAT for a RAM drive (`WINFILE.EXE` seg6 `09e3`-`09fd`). The TypeScript engine reads the sector from its disk, or answers AX 8002h with the carry set where there is no disk; the Rust engine's drives are files, not sectors, and answer so. `INT 25h` and `26h` return with the flags still on the stack. The Rust engine stopped at the interrupt, and File Manager never opened.
@@ -118,13 +201,17 @@ The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and wh
 ## Not yet done
 
 - Functions 1Bh, 1Ch, 1Fh and 32h: a drive's allocation and its parameter block. The parameter block's pointer would need a selector over a table of the engine's own.
-- Drives mounted as removable, and floppy drives.
-- The IOCTL requests other than getting a device's parameters.
+- Images as drives: phases 3 to 9 of the design above. [[probe:imgflop]], [[probe:imgcd]] and [[probe:imghdd]], and [[probe:drvioctl]]'s B: and D:, are known gaps until then.
+- IOCTL 4404h, 4405h and 4411h, and 440Dh's minor codes other than 46h, 60h and 66h, which DOSBox refuses with error 1.
+- MSCDEX's calls with a buffer, and 1100h's word on the caller's stack.
+- The BIOS's equipment word itself, `INT 11h`: neither engine answers it. `GetDriveType` counts each removable drive with a disk in it as DOSBox's BIOS counts a floppy image mounted.
+- B: under DOSBox is selectable with nothing mounted; a session here without B: has none, and answers 0 for it as DOSBox does -- but with two floppy images DOSBox's B: would answer 2. Unrecorded.
 - The stamps of the root's `.` and `..`, which are the host folder's and its parent's under DOSBox, and unmeasured. Both engines give the root's own stamp to both. The TypeScript engine's root stamp is held in memory, and the Rust engine's for a drive held in memory is not among its changes, so neither is kept from one visit to the next.
 - A search's attributes as DOSBox gives them: only a folder's bit or the archive bit, from the host (`drive_local.cpp` 255-266). The engines give each file's own.
 - Long names on the host, which DOSBox lists by short names it makes (`CreateShortName`) and sorts by them.
 
 ## In winbox.js
 
-- `src/win16/kernel/GetDriveType.ts` and `src/win16/user/wnet.ts` hold the Windows calls.
-- `src/dos/syscall/diskSpace.ts` and `src/dos/syscall/ioctl.ts` hold the DOS functions, and `DOS.absoluteDisk` in `src/dos.ts` the interrupts.
+- `src/win16/kernel/GetDriveType.ts` and `src/win16/user/wnet.ts` hold the Windows calls; the Rust engine's `drive_type` is in `modules_kernel.rs`.
+- `src/dos/syscall/diskSpace.ts` and `src/dos/syscall/ioctl.ts` hold the DOS functions, and `DOS.absoluteDisk` and `DOS.multiplexInterrupt` in `src/dos.ts` the interrupts; the Rust engine's are `drive_ioctl` in `dos.rs` and `multiplex_interrupt` in `run.rs`.
+- A drive's kind is the `Volume` trait's (`crates/winbox-machine/src/files.rs`): `removable`, `remote`, `label`, `media_byte`, `listing`; `Files::has_disk` and `Files::floppy_disks` from them. The TypeScript engine's `FileSystem` has the same getters (`src/file-system.ts`).

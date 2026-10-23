@@ -1,0 +1,2 @@
+# D: a hard disk image: see imghdd.c.
+d: imghdd.img hdd
