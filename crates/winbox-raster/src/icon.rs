@@ -2,7 +2,7 @@
 //! entries, the one that fits a display, and its picture as the display's
 //! palette indices and a mask.
 
-use crate::DevicePalette;
+use crate::{DevicePalette, DisplayKind, matched_index};
 
 /// An icon's picture: an index of the display's palette a pixel, and its
 /// mask, 1 where the screen beneath shows through.
@@ -128,11 +128,25 @@ pub fn decode_icon(bytes: &[u8], palette: &mut DevicePalette) -> IconData {
         0
     };
     let byte = |at: usize| bytes.get(at).copied().unwrap_or(0);
+    // On a display of sixteen colours each colour of the table is the one
+    // the driver draws it as, by its own matching, not the nearest: on the
+    // EGA a light grey, `c0c0c0`, is its grey `82`, index 7, not white
+    // (`pmbare` on the EGA: Program Manager's own icon in a group file).
+    let display = DisplayKind {
+        colors: 16,
+        ega: palette.colours == DevicePalette::ega().colours,
+        ibm: false,
+    };
     let map: Vec<u8> = (0..count)
         .map(|at| {
             let entry = size + at * 4;
+            let (red, green, blue) = (byte(entry + 2), byte(entry + 1), byte(entry));
 
-            palette.index(byte(entry + 2), byte(entry + 1), byte(entry)) as u8
+            if palette.size() == 16 {
+                matched_index(display, palette, red, green, blue) as u8
+            } else {
+                palette.index(red, green, blue) as u8
+            }
         })
         .collect();
     let xor_stride = ((width * bit_count + 31) >> 5) << 2;

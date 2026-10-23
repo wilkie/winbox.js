@@ -534,6 +534,28 @@ export async function ExtractIcon(this: any, _hinst: number, lpszExeName: string
   const none = index === -1 ? 0 : 1;
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
+  /* Not two bytes to read: nought (seg10 `02b7`-`02c1`). */
+  if (bytes.length < 2) {
+    return 0;
+  }
+
+  /* A first word of nought is an icon file's (seg10 `084a`, `030e`-`035c`):
+   * nought unless the next word, its type, is 1; then -1 answers 1, its one
+   * icon, and another index but the first nought. A PIF begins so, and is
+   * no icon file: `DOSPRMPT.PIF` answers nought (`pmbare`). The first icon
+   * of an icon file itself is not yet read here. */
+  if (bytes[0] === 0 && bytes[1] === 0) {
+    if (bytes.length < 6 || view.getUint16(2, true) !== 1) {
+      return 0;
+    }
+
+    if (index !== 0) {
+      return index === -1 ? 1 : 0;
+    }
+
+    return none;
+  }
+
   if (bytes.length < 0x40 || bytes[0] !== 0x4d || bytes[1] !== 0x5a) {
     return none;
   }

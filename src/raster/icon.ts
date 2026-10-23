@@ -1,6 +1,7 @@
 'use strict';
 
-import { type DevicePalette } from './device-palette.js';
+import { DevicePalette } from './device-palette.js';
+import { matchedIndex } from './colour-match.js';
 
 /**
  * An icon as Windows 3.1 keeps one in a resource, and draws it.
@@ -84,10 +85,24 @@ export function decodeIcon(bytes: Uint8Array, palette: DevicePalette): IconData 
   const count = bitCount <= 8 ? used || 1 << bitCount : 0;
   const map: number[] = [];
 
+  /* On a display of sixteen colours each colour of the table is the one the
+   * driver draws it as, by its own matching, not the nearest: on the EGA a
+   * light grey, `c0c0c0`, is its grey `82`, index 7, not white (`pmbare` on
+   * the EGA: Program Manager's own icon in a group file). */
+  const ega = palette.colours.every((colour, index) =>
+    colour.every((value, at) => value === DevicePalette.EGA.colours[index]?.[at])
+  );
+  const display = { colors: 16, palette: ega ? 'ega' : undefined };
+
   for (let at = 0; at < count; at++) {
     const entry = size + at * 4;
+    const [red, green, blue] = [bytes[entry + 2], bytes[entry + 1], bytes[entry]];
 
-    map.push(palette.index(bytes[entry + 2], bytes[entry + 1], bytes[entry]));
+    map.push(
+      palette.size === 16
+        ? matchedIndex(display, palette, red, green, blue)
+        : palette.index(red, green, blue)
+    );
   }
 
   const xorStride = ((width * bitCount + 31) >> 5) << 2;

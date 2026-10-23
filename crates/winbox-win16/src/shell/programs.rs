@@ -732,6 +732,28 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     let none = u16::from(index != -1);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
 
+    // Not two bytes to read: nought (seg10 `02b7`-`02c1`).
+    if bytes.len() < 2 {
+        return Ok(0);
+    }
+
+    // A first word of nought is an icon file's (seg10 `084a`,
+    // `030e`-`035c`): nought unless the next word, its type, is 1; then -1
+    // answers 1, its one icon, and another index but the first nought. A
+    // PIF begins so, and is no icon file: `DOSPRMPT.PIF` answers nought
+    // (`pmbare`). The first icon of an icon file itself is not yet read here.
+    if bytes[0] == 0 && bytes[1] == 0 {
+        if bytes.len() < 6 || word(2) != 1 {
+            return Ok(0);
+        }
+
+        if index != 0 {
+            return Ok(u16::from(index == -1));
+        }
+
+        return Ok(none);
+    }
+
     if bytes.len() < 0x40 || bytes[0] != 0x4d || bytes[1] != 0x5a {
         return Ok(none);
     }

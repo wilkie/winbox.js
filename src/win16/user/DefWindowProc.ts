@@ -57,6 +57,8 @@ import {
   WM_SETHOTKEY,
 } from './task-list.js';
 
+const WM_QUERYENDSESSION = 0x0011;
+
 /** The buffer `DefWindowProc` reads a caption into. */
 class CaptionText extends Struct {
   constructor() {
@@ -402,8 +404,10 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
   }
 
   switch (uMsg) {
-    /* An icon may be restored (`iconclk`). */
+    /* An icon may be restored (`iconclk`); Windows may end (`USER.EXE` seg1
+     * `5d77`, its table's entries for 11h and 13h, `62c5`; `pmshell`). */
     case User.WM_QUERYOPEN:
+    case WM_QUERYENDSESSION:
       return 1;
 
     /* The window's menu, open, ends (`iconclk`); then the capture is let go

@@ -228,10 +228,23 @@ export function SetWindowWord(this: any, hwnd: number, nOffset: number, wNewWord
  * box's list, made with `WS_VISIBLE` and hidden at once, reads without it.
  */
 function styleShown(dialog: RasterWindow) {
-  const style = dialog.window.style;
+  /* Minimized or maximized is in the style, as `MinMaximize` sets and clears
+   * its bits (`USER.EXE` seg6 `1c40`-`1c44`, `1d13`-`1d35`): Program Manager
+   * places a minimized group's items by its restored rectangle on seeing
+   * `WS_MINIMIZE` (`PROGMAN.EXE` seg2 `1345`-`1366`; `pmgroups`). */
+  const state =
+    dialog.window.state === 'minimized'
+      ? WS_MINIMIZE
+      : dialog.window.state === 'maximized'
+        ? WS_MAXIMIZE
+        : 0;
+  const style = (dialog.window.style & ~(WS_MINIMIZE | WS_MAXIMIZE)) | state;
 
   return (dialog.window.visible ? style | WS_VISIBLE : style & ~WS_VISIBLE) >>> 0;
 }
+
+const WS_MINIMIZE = 0x20000000;
+const WS_MAXIMIZE = 0x01000000;
 
 export function GetWindowLong(this: any, hwnd: number, nOffset: number) {
   const dialog = this.handles.resolve(hwnd);

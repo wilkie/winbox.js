@@ -16,7 +16,7 @@ import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-direc
 import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
 import { withCursor } from '../../src/win16/user/cursor-api.js';
 import { shownColours } from '../../src/raster/shown-colours.js';
-import { mergeIni, parsePreset, presetCopies } from './ini-preset.js';
+import { mergeIni, parsePreset, presetCopies, presetShell } from './ini-preset.js';
 import { Assets } from '../../src/assets/bundle.js';
 import { STAMP } from '../../src/assets/compose.js';
 import { fat16Drive } from '../../src/run/changes.js';
@@ -447,6 +447,11 @@ export async function runProbe(
     );
   }
 
+  /* The shell a preset keeps in the probe's place (`[oracle shell]`,
+   * `pmshell`): Windows starts it, and it starts the probe as WIN.INI's
+   * `run=` names it, from `C:\WINDOWS`, where the recorder puts it. */
+  let keptShell: string | null = null;
+
   /* A preset's settings, as the recorder makes them (`ini-preset.ts`). */
   if (installation && iniPreset) {
     const sections = parsePreset(
@@ -467,6 +472,8 @@ export async function runProbe(
         await fileSystem.map(partsOf(to), new DataView(bytes.buffer));
       }
     }
+
+    keptShell = presetShell(sections);
 
     const iniFile = await fileSystem.open(['WINDOWS', 'WIN.INI']);
     const text = mergeIni(
@@ -490,7 +497,7 @@ export async function runProbe(
     if (systemIni) {
       const text = String.fromCharCode(
         ...new Uint8Array(await systemIni.read(0, systemIni.info.size))
-      ).replace(/^shell=.*$/im, `shell=${name.toUpperCase()}.EXE`);
+      ).replace(/^shell=.*$/im, `shell=${keptShell ?? `${name.toUpperCase()}.EXE`}`);
 
       await fileSystem.map(
         ['WINDOWS', 'SYSTEM.INI'],
@@ -543,6 +550,14 @@ export async function runProbe(
       [`${name.toUpperCase()}.EXE`],
       new DataView(new Uint8Array(readFileSync(ownFile)).buffer)
     );
+  }
+
+  if (installation && keptShell && existsSync(ownFile)) {
+    await fileSystem.map(
+      ['WINDOWS', `${name.toUpperCase()}.EXE`],
+      new DataView(new Uint8Array(readFileSync(ownFile)).buffer)
+    );
+    start ??= `C:\\WINDOWS\\${keptShell.toUpperCase()}`;
   }
 
   /* And the program it starts. */

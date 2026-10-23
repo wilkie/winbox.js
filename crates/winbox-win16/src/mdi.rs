@@ -1524,6 +1524,35 @@ impl Engine {
                     }
                 }
 
+                // Minimized: the first of the client's children from the
+                // front that is shown and owned by none -- itself, or the
+                // one above it now that `SW_MINIMIZE` put it beneath -- is
+                // sent `WM_CHILDACTIVATE`, where the client is within the
+                // active window (seg15 `1826`-`1865`; `pmgroups`).
+                if wparam == SIZE_MINIMIZED {
+                    let first = {
+                        let system = self.system();
+
+                        system
+                            .active_top()
+                            .filter(|&active| system.within(client_index, active))
+                            .and_then(|_| named(&system, hwnd))
+                            .and_then(|index| {
+                                system.siblings(index).into_iter().find(|&other| {
+                                    system.windows[other].as_ref().is_some_and(|window| {
+                                        window.owner.is_none() && window.visible
+                                    })
+                                })
+                            })
+                            .map(|other| system.hwnd_of(other))
+                    };
+
+                    if let Some(first) = first {
+                        self.send_message(first, WM_CHILDACTIVATE, 0, &mut Param::Value(0))
+                            .await?;
+                    }
+                }
+
                 self.def_window_proc(hwnd, message, wparam, lparam).await
             }
             WM_SETFOCUS => {

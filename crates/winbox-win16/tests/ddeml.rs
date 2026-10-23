@@ -16,7 +16,7 @@ const PROBES: &[(&str, &[&str])] = &[
     ("ddemgmt", &[]),
     ("pmatom", &[]),
     ("ddeleft", &["owned", "DdeFreeStringHandle"]),
-    ("progdde", &["files"]),
+    ("progdde", &[]),
     ("ddeinst", &[]),
     ("ddefail", &[]),
     ("ddemon", &[]),

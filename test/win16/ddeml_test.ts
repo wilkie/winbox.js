@@ -21,7 +21,7 @@ const PROBE_GAPS: Record<string, string[]> = {
   ddemgmt: [],
   pmatom: [],
   ddeleft: ['owned', 'DdeFreeStringHandle'],
-  progdde: ['files'],
+  progdde: [],
   ddeinst: [],
   ddefail: [],
   ddemon: [],

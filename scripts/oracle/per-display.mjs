@@ -99,6 +99,9 @@ export const PER_DISPLAY = new Set([
   /* Whether a font file of version 3.0 is taken, which `RC_BIGFONT` in
    * the display's `RASTERCAPS` decides. */
   'fontver',
+  /* Program Manager's group file holds the display's resolution and its
+   * icons' format, and its windows are placed by the screen's size. */
+  'pmbare',
 ]);
 
 /**
