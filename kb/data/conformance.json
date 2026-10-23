@@ -5584,6 +5584,74 @@
   },
   "gaps": {}
  },
+ "drvioctl": {
+  "probe": "drvioctl",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 64,
+  "functions": {
+   "a:": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "b:": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "c:": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cur": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "d:": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "e:": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "past": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "z:": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "b:": "B: is a floppy image under DOSBox, which is not mounted here",
+   "d:": "D: is a CD-ROM image under DOSBox, which is not mounted here"
+  }
+ },
  "drvmsg": {
   "probe": "drvmsg",
   "display": "vga",
@@ -9230,6 +9298,298 @@
    }
   },
   "gaps": {}
+ },
+ "imgcd": {
+  "probe": "imgcd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 91,
+  "functions": {
+   "1500": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "150b": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "150c": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "after": {
+    "total": 21,
+    "agreed": 0,
+    "disagreed": 21,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 6,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 20,
+    "agreed": 0,
+    "disagreed": 20,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ioctl": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "label": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "match": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 11,
+    "agreed": 0,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 9,
+    "agreed": 0,
+    "disagreed": 9,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 4,
+    "agreed": 2,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "1500": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "entry": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "label": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "match": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "read": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "open": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "attr": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "space": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "ioctl": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "150b": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "write": "D: is a CD-ROM image under DOSBox, which is not mounted here",
+   "after": "D: is a CD-ROM image under DOSBox, which is not mounted here"
+  }
+ },
+ "imgflop": {
+  "probe": "imgflop",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 76,
+  "functions": {
+   "after": {
+    "total": 22,
+    "agreed": 0,
+    "disagreed": 22,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr": {
+    "total": 5,
+    "agreed": 1,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 17,
+    "agreed": 0,
+    "disagreed": 17,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ioctl": {
+    "total": 5,
+    "agreed": 1,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "label": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "match": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 5,
+    "agreed": 2,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 7,
+    "agreed": 2,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "entry": "A: is a floppy image under DOSBox, which is not mounted here",
+   "match": "A: is a floppy image under DOSBox, which is not mounted here",
+   "read": "A: is a floppy image under DOSBox, which is not mounted here",
+   "open": "A: is a floppy image under DOSBox, which is not mounted here",
+   "attr": "A: is a floppy image under DOSBox, which is not mounted here",
+   "space": "A: is a floppy image under DOSBox, which is not mounted here",
+   "ioctl": "A: is a floppy image under DOSBox, which is not mounted here",
+   "write": "A: is a floppy image under DOSBox, which is not mounted here",
+   "after": "A: is a floppy image under DOSBox, which is not mounted here"
+  }
+ },
+ "imghdd": {
+  "probe": "imghdd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 42,
+  "functions": {
+   "after": {
+    "total": 13,
+    "agreed": 0,
+    "disagreed": 13,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ioctl": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "label": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "match": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "entry": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "label": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "match": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "read": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "open": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "attr": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "space": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "ioctl": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "write": "D: is a hard disk image under DOSBox, which is not mounted here",
+   "after": "D: is a hard disk image under DOSBox, which is not mounted here"
+  }
  },
  "inframe": {
   "probe": "inframe",
@@ -13087,6 +13447,43 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 1
+   }
+  },
+  "gaps": {}
+ },
+ "mscdex": {
+  "probe": "mscdex",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 31,
+  "functions": {
+   "1100": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "1500": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "150b": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "150c": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}
