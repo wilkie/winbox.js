@@ -1197,6 +1197,36 @@ export async function DefMDIChildProc(
         }
       }
 
+      /* Minimized: the first of the client's children from the front that is
+       * shown and owned by none -- itself, or the one above it now that
+       * `SW_MINIMIZE` put it beneath -- is sent `WM_CHILDACTIVATE`, where the
+       * client is within the active window (seg15 `1826`-`1865`;
+       * `pmgroups`). */
+      if (wParam === User.SIZE_MINIMIZED) {
+        const active = window.desktop.activeTop;
+        let inside = false;
+
+        for (let at = clientWindow?.window ?? null; at; at = at.parent) {
+          inside ||= at === active;
+        }
+
+        const first =
+          active && inside
+            ? window.desktop.windows.find(
+                (other: any) =>
+                  other.parent === window.window.parent &&
+                  !other.titleOf &&
+                  other.hwnd &&
+                  !other.owner &&
+                  other.visible
+              )
+            : null;
+
+        if (first) {
+          await SendMessage.call(this, first.hwnd, WM_CHILDACTIVATE, 0, 0);
+        }
+      }
+
       return DefWindowProc.call(this, hwnd, message, wParam, lParam);
 
     case User.WM_SETFOCUS:

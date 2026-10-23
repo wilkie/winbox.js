@@ -407,7 +407,10 @@ export class FAT16 extends FileSystem {
     if (path.length > 1) {
       current = await this.open(path.slice(0, path.length - 1), create);
 
-      if (!current) {
+      /* A path through a file, not a folder, is no path: DOS's "path not
+       * found", as the Rust engine's drive answers it (`pmsyntax`: Program
+       * Manager naming a group file below a file). */
+      if (!(current instanceof FAT16Directory)) {
         return null;
       }
     }
@@ -574,6 +577,12 @@ export class FAT16 extends FileSystem {
   async map(path, data, options: any = {}) {
     // Open each directory, creating as we go
     const directory = await this.open(path.slice(0, path.length - 1), true);
+
+    /* No folder to make it in -- the path runs through a file: nothing made,
+     * as DOS answers "path not found". */
+    if (!(directory instanceof FAT16Directory)) {
+      return null;
+    }
 
     /* Creating a file that already exists replaces it. Without this the
      * directory collects a fresh entry every time, and a program that rewrites

@@ -61,6 +61,21 @@ export async function showRaster(
     }
   }
 
+  /* Minimized, maximized, or restored from either, as `MinMaximize` does it
+   * (`USER.EXE` seg14 `0c67`-`0c92`, seg6 `1a72`): `SW_SHOWNOACTIVATE` of a
+   * window minimized or maximized restores it, not made active where a
+   * window is (`1b3d`-`1b48`, `1c61`). */
+  const minMax =
+    MINMAX_COMMANDS.has(show) ||
+    (RESTORING_COMMANDS.has(show) && (shown.state === 'minimized' || shown.state === 'maximized'));
+  const restoringQuietly = show === SW_SHOWNOACTIVATE && minMax;
+
+  if (restoringQuietly) {
+    show = User.SW_RESTORE;
+  }
+
+  const child = !!shown.parent || (shown.style & (WS_CHILD | WS_POPUP)) === WS_CHILD;
+
   /* An icon restored is asked first, and stays one if its window says no
    * (`iconclk`; the answer is documented, not recorded). */
   const fromIcon = show === User.SW_RESTORE && shown.state === 'minimized';
@@ -92,9 +107,20 @@ export async function showRaster(
   let flags = SWP_NOSIZE | SWP_NOMOVE | (hiding ? SWP_HIDEWINDOW : SWP_SHOWWINDOW);
 
   /* A child of the desktop window, as a combo box's list dropped down is
-   * (`comboact`), is a child still. */
-  if (hiding || shown.parent || (shown.style & (WS_CHILD | WS_POPUP)) === WS_CHILD) {
+   * (`comboact`), is a child still. A child minimized, maximized or restored
+   * so goes where `MinMaximize` puts it, and is made active, but with
+   * `SW_SHOWNOACTIVATE`; minimized with `SW_MINIMIZE` or
+   * `SW_SHOWMINNOACTIVE` it stays where it lies (seg6 `1b3d`-`1b81`,
+   * `1c66`; `pmgroups`). */
+  if (
+    hiding ||
+    (child && !(minMax && show !== User.SW_MINIMIZE && show !== User.SW_SHOWMINNOACTIVE))
+  ) {
     flags |= SWP_NOZORDER | SWP_NOACTIVATE;
+  }
+
+  if (restoringQuietly && window.desktop.activeTop) {
+    flags |= SWP_NOACTIVATE;
   }
 
   /* A window at the top whose class saves the bits under it, as the dialog
@@ -283,6 +309,31 @@ export async function showRaster(
         desktop.show(shown);
       }
 
+      /* A child minimized with `SW_MINIMIZE` or `SW_SHOWMINNOACTIVE` goes
+       * after the last of the brothers beneath it owned as it is, before the
+       * first not topmost as it is, and stays where it is with none (seg6
+       * `1b70`-`1b7d`, `1e58`-`1e89`; `pmgroups`). */
+      if (child && (show === User.SW_MINIMIZE || show === User.SW_SHOWMINNOACTIVE)) {
+        const brothers = desktop.windows.filter(
+          (other: any) => other.parent === shown.parent && !other.titleOf && other.hwnd
+        );
+        let last = null;
+
+        for (const other of brothers.slice(brothers.indexOf(shown) + 1)) {
+          if (other.topmost !== shown.topmost) {
+            break;
+          }
+
+          if (other.owner === shown.owner) {
+            last = other;
+          }
+        }
+
+        if (last) {
+          desktop.reorder(shown, { to: 'after', other: last });
+        }
+      }
+
       break;
 
     case User.SW_SHOWMAXIMIZED: {
@@ -324,7 +375,13 @@ export async function showRaster(
       break;
 
     case SW_SHOWNA:
-      desktop.showOnTop(shown);
+      /* A child is shown where it lies: `ShowWindow` gives a child
+       * `SWP_NOZORDER` (`USER.EXE` seg14 `0cf5`-`0cff`, `0d2b`; `pmgroups`). */
+      if (child) {
+        desktop.showInPlace(shown);
+      } else {
+        desktop.showOnTop(shown);
+      }
       break;
 
     default:
@@ -348,6 +405,18 @@ export async function showRaster(
       ? () => ask(SWP_NOSIZE | SWP_NOMOVE)
       : undefined
   );
+
+  /* A child moved so without `SWP_NOACTIVATE` is sent `WM_CHILDACTIVATE`, as
+   * `SetWindowPos` sends it the first window of its list without that flag:
+   * an MDI child is made the active one (seg7 `0ca3`-`0ce6`, `0260`-`026f`,
+   * `0382`-`03a6`; `pmgroups`). */
+  if (child && minMax && !(flags & SWP_NOACTIVATE)) {
+    await send(WM_CHILDACTIVATE, 0, 0);
+
+    if (!system.handles.resolve(hwnd)) {
+      return was ? TRUE : FALSE;
+    }
+  }
 
   /* Placed again: told where it is now. */
   const moved = [shown.left, shown.top, shown.width, shown.height, shown.state].join() !== before;
@@ -1999,6 +2068,7 @@ const CS_HREDRAW = 0x0002;
 const CS_SAVEBITS = 0x0800;
 const SW_SHOWNOACTIVATE = 4;
 const SW_SHOWNA = 8;
+const WM_CHILDACTIVATE = 0x0022;
 /** Sent with `WM_SHOWWINDOW`, before a window shows or hides: undocumented. */
 const WM_SETVISIBLE = 0x0009;
 

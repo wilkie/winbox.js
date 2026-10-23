@@ -295,7 +295,10 @@ pub fn find_window(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
                     .collect::<Vec<u8>>()
             };
 
-            if lower(window.title.as_bytes()) != lower(title) {
+            // The title's bytes as set, one a character (`WM_GETTEXT`).
+            let caption: Vec<u8> = window.title.chars().map(|char| char as u8).collect();
+
+            if lower(&caption) != lower(title) {
                 continue;
             }
         }
@@ -774,12 +777,27 @@ pub(crate) fn window_long(system: &mut System, index: usize, offset: i16) -> u32
 /// `comboact`: a combo box's list, made with `WS_VISIBLE` and hidden at
 /// once, reads without it.
 fn style_shown(window: &Window) -> u32 {
+    // Minimized or maximized is in the style, as `MinMaximize` sets and
+    // clears its bits (`USER.EXE` seg6 `1c40`-`1c44`, `1d13`-`1d35`):
+    // Program Manager places a minimized group's items by its restored
+    // rectangle on seeing `WS_MINIMIZE` (`PROGMAN.EXE` seg2 `1345`-`1366`;
+    // `pmgroups`).
+    let state = match window.placement {
+        crate::windows::Placement::Minimized => WS_MINIMIZE,
+        crate::windows::Placement::Maximized => WS_MAXIMIZE,
+        crate::windows::Placement::Normal => 0,
+    };
+    let style = window.style & !(WS_MINIMIZE | WS_MAXIMIZE) | state;
+
     if window.visible {
-        window.style | WS_VISIBLE
+        style | WS_VISIBLE
     } else {
-        window.style & !WS_VISIBLE
+        style & !WS_VISIBLE
     }
 }
+
+const WS_MINIMIZE: u32 = 0x2000_0000;
+const WS_MAXIMIZE: u32 = 0x0100_0000;
 
 pub fn get_window_long(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);

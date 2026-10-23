@@ -227,7 +227,15 @@ export class FileManager {
     /* A file made where none was changes its folder; one emptied does not:
      * DOSBox's `localDrive::FileCreate` adds an entry only for a file that
      * was not there (`drive_local.cpp` 51-80). */
-    const made = !(await fileSystem.open(pathInfo.path));
+    const existing = await fileSystem.open(pathInfo.path);
+    const made = !existing;
+
+    /* A folder is not made a file: DOS refuses it (access denied), as the
+     * Rust engine's drive does (`pmsyntax`: Program Manager's `_lcreat` of
+     * `C:\WINDOWS\`, a group's name with no letter or digit for a file). */
+    if (existing?.info?.directory || pathInfo.path.length === 0) {
+      return null;
+    }
 
     /* Its archive bit set, as DOSBox lists every file of the host's folder
      * (`localDrive::FindNext` gives each `DOS_ATTR_ARCHIVE`) and the Rust

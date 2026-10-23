@@ -104,6 +104,15 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
       profile.set(String(lpszSection), name, null);
     }
   } else {
+    /* A value the same as the buffer's, byte for byte, is left as it is:
+     * nothing changes and nothing is written, and the answer is 1
+     * (`KRNL386.EXE` seg1 `6df2`-`6e03`, `7150`, `707c`; `pmshell`: Program
+     * Manager's `display.drv=` unchanged leaves `Order=`'s leading space in
+     * the file). */
+    if (value !== null && profile.get(String(lpszSection), String(lpszEntry), false) === value) {
+      return 1;
+    }
+
     profile.set(String(lpszSection), String(lpszEntry), value);
   }
 

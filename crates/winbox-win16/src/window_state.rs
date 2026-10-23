@@ -40,6 +40,7 @@ const WS_CHILD: u32 = 0x4000_0000;
 const CS_SAVEBITS: u16 = 0x0800;
 
 const WM_SETVISIBLE: u16 = 0x0009;
+const WM_CHILDACTIVATE: u16 = 0x0022;
 const WM_QUERYOPEN: u16 = 0x0013;
 const WM_GETTEXT: u16 = 0x000d;
 const WM_SHOWWINDOW: u16 = 0x0018;
@@ -1061,6 +1062,16 @@ impl Engine {
             return Ok(was);
         }
 
+        // Minimized, maximized, or restored from either, as `MinMaximize`
+        // does it (`USER.EXE` seg14 `0c67`-`0c92`, seg6 `1a72`):
+        // `SW_SHOWNOACTIVATE` of a window minimized or maximized restores
+        // it, not made active where a window is (`1b3d`-`1b48`, `1c61`).
+        let min_max = matches!(show, 2 | 3 | 6 | 7)
+            || matches!(show, 1 | 4 | 9)
+                && matches!(placement, Placement::Minimized | Placement::Maximized);
+        let restoring_quietly = show == SW_SHOWNOACTIVATE && min_max;
+        let show = if restoring_quietly { SW_RESTORE } else { show };
+
         // An icon restored is asked first, and stays one if its window says
         // no (`iconclk`).
         let from_icon = show == SW_RESTORE && placement == Placement::Minimized;
@@ -1108,8 +1119,17 @@ impl Engine {
                 SWP_SHOWWINDOW
             };
 
-        if hiding || child {
+        // A child minimized, maximized or restored so goes where
+        // `MinMaximize` puts it, and is made active, but with
+        // `SW_SHOWNOACTIVATE`; minimized with `SW_MINIMIZE` or
+        // `SW_SHOWMINNOACTIVE` it stays where it lies (seg6 `1b3d`-`1b81`,
+        // `1c66`; `pmgroups`).
+        if hiding || child && (!min_max || matches!(show, SW_MINIMIZE | SW_SHOWMINNOACTIVE)) {
             flags |= SWP_NOZORDER | SWP_NOACTIVATE;
+        }
+
+        if restoring_quietly && self.system().active_hwnd() != 0 {
+            flags |= SWP_NOACTIVATE;
         }
 
         // Shown and not made active: where it lies with `SW_SHOWNOACTIVATE`,
@@ -1285,6 +1305,40 @@ impl Engine {
                     } else {
                         system.show(index);
                     }
+
+                    // A child minimized with `SW_MINIMIZE` or
+                    // `SW_SHOWMINNOACTIVE` goes after the last of the
+                    // brothers beneath it owned as it is, before the first
+                    // not topmost as it is, and stays where it is with none
+                    // (seg6 `1b70`-`1b7d`, `1e58`-`1e89`; `pmgroups`).
+                    if child && matches!(show, SW_MINIMIZE | SW_SHOWMINNOACTIVE) {
+                        let last = {
+                            let window = system.windows[index].as_ref().expect("a window");
+                            let (owner, topmost) = (window.owner, window.topmost);
+                            let order = system.siblings(index);
+
+                            order
+                                .iter()
+                                .skip_while(|&&other| other != index)
+                                .skip(1)
+                                .copied()
+                                .take_while(|&other| {
+                                    system.windows[other]
+                                        .as_ref()
+                                        .is_some_and(|other| other.topmost == topmost)
+                                })
+                                .filter(|&other| {
+                                    system.windows[other]
+                                        .as_ref()
+                                        .is_some_and(|other| other.owner == owner)
+                                })
+                                .last()
+                        };
+
+                        if let Some(last) = last {
+                            system.reorder(index, crate::moved::Insert::After(last));
+                        }
+                    }
                 }
                 SW_SHOWMAXIMIZED => {
                     let to = zoom.map(|[x, y, cx, cy]| {
@@ -1315,6 +1369,10 @@ impl Engine {
                     }
                 }
                 SW_SHOWNOACTIVATE => system.show_in_place(index),
+                // A child is shown where it lies: `ShowWindow` gives a
+                // child `SWP_NOZORDER` (`USER.EXE` seg14 `0cf5`-`0cff`,
+                // `0d2b`; `pmgroups`).
+                SW_SHOWNA if child => system.show_in_place(index),
                 SW_SHOWNA => system.show_on_top(index),
                 // Shown already, nothing of it is due but what it came to
                 // show of itself: Clock's `SW_SHOW` after its frame changed
@@ -1350,6 +1408,19 @@ impl Engine {
 
         if self.gone(index) {
             return Ok(was);
+        }
+
+        // A child moved so without `SWP_NOACTIVATE` is sent
+        // `WM_CHILDACTIVATE`, as `SetWindowPos` sends it the first window of
+        // its list without that flag: an MDI child is made the active one
+        // (seg7 `0ca3`-`0ce6`, `0260`-`026f`, `0382`-`03a6`; `pmgroups`).
+        if child && min_max && flags & SWP_NOACTIVATE == 0 {
+            self.send_message(hwnd, WM_CHILDACTIVATE, 0, &mut Param::Value(0))
+                .await?;
+
+            if self.gone(index) {
+                return Ok(was);
+            }
         }
 
         let moved = self.system().place_key(index) != before;
@@ -1917,7 +1988,7 @@ pub fn set_window_placement(engine: &Engine, mut args: Args) -> Later<'_> {
             (args.word(&system), args.dword(&system))
         };
         let (index, show, rect) = {
-            let system = engine.system();
+            let mut system = engine.system();
             let Some(index) = system.window_named(hwnd).filter(|_| far != 0) else {
                 return Ok(Answer::Word(0));
             };
@@ -1925,6 +1996,18 @@ pub fn set_window_placement(engine: &Engine, mut args: Args) -> Later<'_> {
             let word = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
             let show = u16::from_le_bytes([bytes[4], bytes[5]]);
             let rect = [word(14), word(16), word(18), word(20)];
+
+            // `WPF_SETMINPOSITION`: its icon goes at `ptMinPosition`, in its
+            // parent's client area, as Program Manager places a group's
+            // icon where its file says (`PROGMAN.EXE` seg4 `1f04`-`1f51`;
+            // `pmraw`, `pmfiles`).
+            if word(2) & 1 != 0 {
+                let (x, y) = placement_origin(&system, index);
+
+                if let Some(window) = system.windows[index].as_mut() {
+                    window.icon_place = Some((word(6) + x, word(8) + y));
+                }
+            }
 
             (index, show, rect)
         };

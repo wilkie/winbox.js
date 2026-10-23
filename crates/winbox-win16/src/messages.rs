@@ -323,9 +323,12 @@ impl Engine {
                 Ok(1)
             }
             WM_GETTEXT => {
-                let caption = system.windows[index]
+                // The caption's bytes as they were set, one a character:
+                // a byte of 80h and above is not spelt in UTF-8 (`pmsyntax`:
+                // a group's name with `ü` in Program Manager's list).
+                let caption: Vec<u8> = system.windows[index]
                     .as_ref()
-                    .map(|window| window.title.clone())
+                    .map(|window| window.title.chars().map(|char| char as u8).collect())
                     .unwrap_or_default();
 
                 match lparam {
@@ -335,7 +338,7 @@ impl Engine {
                         Ok(if wparam == 0 {
                             0
                         } else {
-                            system.copy_text(caption.as_bytes(), far, usize::from(wparam)) as u32
+                            system.copy_text(&caption, far, usize::from(wparam)) as u32
                         })
                     }
                     Param::Struct(bytes) => {
@@ -344,7 +347,7 @@ impl Engine {
                             .min(usize::from(wparam).saturating_sub(1))
                             .min(bytes.len().saturating_sub(1));
 
-                        bytes[..count].copy_from_slice(&caption.as_bytes()[..count]);
+                        bytes[..count].copy_from_slice(&caption[..count]);
 
                         if count < bytes.len() {
                             bytes[count] = 0;
@@ -356,7 +359,8 @@ impl Engine {
             }
             WM_GETTEXTLENGTH => Ok(system.windows[index]
                 .as_ref()
-                .map_or(0, |window| window.title.len()) as u32),
+                .map_or(0, |window| window.title.chars().count())
+                as u32),
             _ => Ok(0),
         }
     }

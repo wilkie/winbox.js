@@ -20,6 +20,7 @@ const SWP_NOCLIENTSIZE: u16 = 0x0800;
 const SWP_NOCLIENTMOVE: u16 = 0x1000;
 const WM_CLOSE: u16 = 0x0010;
 const WM_QUERYOPEN: u16 = 0x0013;
+const WM_QUERYENDSESSION: u16 = 0x0011;
 const WM_CANCELMODE: u16 = 0x001f;
 const WM_SETCURSOR: u16 = 0x0020;
 const WM_MOUSEACTIVATE: u16 = 0x0021;
@@ -132,8 +133,10 @@ impl Engine {
             // (`task_list.rs`).
             crate::task_list::WM_SETHOTKEY => self.system().set_hot_key(hwnd, wparam),
             crate::task_list::WM_GETHOTKEY => u32::from(self.system().get_hot_key(hwnd)),
-            // An icon may be restored (`iconclk`).
-            WM_QUERYOPEN => 1,
+            // An icon may be restored (`iconclk`); Windows may end
+            // (`USER.EXE` seg1 `5d77`, its table's entries for 11h and 13h,
+            // `62c5`; `pmshell`).
+            WM_QUERYOPEN | WM_QUERYENDSESSION => 1,
             // The window's menu, open, ends (`iconclk`); then the capture
             // is let go if the window has it (`USER.EXE` seg1 `5ff2`,
             // `5d0c`-`5d48`; `btnmore`). USER ends a scroll bar's tracking

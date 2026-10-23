@@ -44,6 +44,19 @@ export async function SetWindowPlacement(this: any, hwnd: number, lpwndpl: any) 
   const width = rect.right - rect.left;
   const height = rect.bottom - rect.top;
 
+  /* `WPF_SETMINPOSITION`: its icon goes at `ptMinPosition`, in its parent's
+   * client area, as Program Manager places a group's icon where its file
+   * says (`PROGMAN.EXE` seg4 `1f04`-`1f51`; `pmraw`, `pmfiles`). */
+  if (lpwndpl.flags & 1) {
+    const parent = shown.parent;
+
+    shown.iconPlace = {
+      left:
+        ((lpwndpl.ptMinPosition.x << 16) >> 16) + (parent ? parent.left + parent.client.left : 0),
+      top: ((lpwndpl.ptMinPosition.y << 16) >> 16) + (parent ? parent.top + parent.client.top : 0),
+    };
+  }
+
   if (shown.state === 'normal') {
     await MoveWindow.call(this, hwnd, rect.left, rect.top, width, height, 0);
   } else {
