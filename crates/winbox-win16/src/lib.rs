@@ -94,6 +94,7 @@ pub mod present;
 pub mod printer;
 pub mod profile;
 mod profiles_kernel;
+pub mod progman;
 pub mod queue;
 pub mod raster_input;
 pub mod resources;

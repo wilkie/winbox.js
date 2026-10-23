@@ -5596,6 +5596,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'imghdd:ioctl': 'D: is a hard disk image under DOSBox, which is not mounted here',
   'imghdd:write': 'D: is a hard disk image under DOSBox, which is not mounted here',
   'imghdd:after': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  /* `pmstart`'s `GetModuleHandle("PROGMAN")`, Microsoft's Program Manager
+   * running: winbox.js gives a program loaded from its file no module handle,
+   * and answers nought for its name (`kb/kernel/getmodulehandle.md`). WinBox's
+   * own, with no PROGMAN.EXE, has its kept module's and agrees
+   * (`test/win16/progman_test.ts`). */
+  'pmstart:module': 'a program loaded from its file has no module handle in winbox.js',
 };
 
 /**
@@ -5909,6 +5915,7 @@ const RUN_WHOLE = new Set<string>([
   'imgflop',
   'imgcd',
   'imghdd',
+  'pmstart',
 ]);
 
 /**

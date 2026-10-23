@@ -68,6 +68,7 @@ import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
 import { MciSeq, MciWave } from './win16/mmsystem/mci-drivers.js';
 import { dosCall } from './win16/kernel/FileCdr.js';
+import { previousInstance } from './win16/kernel/WinExec.js';
 import { floatingInterrupt } from './win16/win87em/emulator.js';
 import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
@@ -603,6 +604,20 @@ export class Win16 {
 
     /* The processor to the next task waiting for it, if any. */
     this.scheduler.ended(handle);
+
+    /* Its module gone with its last instance: `GetModuleHandle` finds it no
+     * more. Only WinBox's Program Manager has a handle to lose (`progman/`);
+     * a program loaded from its file has none yet. As `exit_task`. */
+    const path = task.executable?.path;
+
+    if (
+      typeof path === 'string' &&
+      this._modules._handles[path] !== undefined &&
+      this._modules._handles[path] === (this as any)._progmanKept &&
+      !previousInstance(this, path)
+    ) {
+      this._modules._handles[path] = undefined;
+    }
     (this._options as any).onExit?.(handle, code);
   }
 

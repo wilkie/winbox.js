@@ -5,6 +5,7 @@ import { missingLibrary, streamOf } from '../library.js';
 import { directoryOf, environmentBlock } from './search.js';
 import { segmentSelector } from '../selectors.js';
 import { locate } from '../shell/programs.js';
+import { startProgman, wanted } from '../progman/main.js';
 
 /**
  * Starts a program. **Recorded** by `winexec`, a program of the probe's own
@@ -46,6 +47,11 @@ export async function WinExec(this: any, lpszCmdLine: string | null, fuCmdShow: 
   }
 
   const found = await locate(this, name, '');
+
+  /* `PROGMAN.EXE` found nowhere: WinBox's own (`progman/`). */
+  if ('error' in found && found.error === 2 && wanted(name)) {
+    return startProgman(this, commandLine, fuCmdShow & 0xffff);
+  }
 
   if ('error' in found) {
     return found.error;
@@ -99,6 +105,23 @@ export async function startProgram(
 
   await executable.parse();
 
+  return startExecutable(system, executable, path, commandLine, show, environment);
+}
+
+/**
+ * A program started, as `startProgram` starts one, from its executable as
+ * read: from its file, or made in memory (`progman/`), `loaded` told of its
+ * task once it is made and before it runs. Its instance.
+ */
+export async function startExecutable(
+  system: any,
+  executable: any,
+  path: string,
+  commandLine: string,
+  show: number,
+  environment?: Uint8Array,
+  loaded?: (task: any) => void
+) {
   if (await missingLibrary(system, executable, directoryOf(path))) {
     return 2;
   }
@@ -111,6 +134,7 @@ export async function startProgram(
 
   system.link(task);
   system.run(task, { commandLine, show, previous, environment: inherited });
+  loaded?.(system.handles.resolve(task));
 
   /* The new program has the processor first; this one has it back when the
    * new one waits for a message, answering what it sends meanwhile. */
@@ -195,8 +219,11 @@ export async function LoadModule(
   }
 
   const found = await locate(this, name, '');
+  /* `PROGMAN.EXE` found nowhere: WinBox's own (`progman/`), started once
+   * the block is read. */
+  const progman = 'error' in found && found.error === 2 && wanted(name);
 
-  if ('error' in found) {
+  if ('error' in found && !progman) {
     return found.error;
   }
 
@@ -228,6 +255,10 @@ export async function LoadModule(
     if (shows && word(shows, 0) >= 2) {
       show = word(shows, 2);
     }
+  }
+
+  if (progman || 'error' in found) {
+    return startProgman(this, commandLine, show, environment);
   }
 
   return startProgram(this, found.path, commandLine, show, environment);

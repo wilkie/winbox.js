@@ -225,8 +225,13 @@ impl Engine {
             }
         };
 
-        // The new program has the processor first; this one has it back
-        // when the new one waits for a message.
+        self.run_started(child).await
+    }
+
+    /// A task just made run until it waits for a message: the new program
+    /// has the processor first, and this one has it back when the new one
+    /// waits for a message. Its instance.
+    pub(crate) async fn run_started(&self, child: usize) -> Result<u16, Stop> {
         self.yield_turn(None).await?;
 
         loop {
@@ -293,6 +298,22 @@ impl System {
         let Ok(executable) = winbox_ne::Executable::parse(bytes) else {
             return Ok(Err(11));
         };
+
+        self.add_executable(executable, path, command_line, show, strings, first)
+    }
+
+    /// A program made a task, as `add_program` makes one, from its
+    /// executable as read: from its file, or made in memory (`progman`).
+    pub(crate) fn add_executable(
+        &mut self,
+        executable: winbox_ne::Executable,
+        path: &str,
+        command_line: &str,
+        show: u16,
+        strings: Option<Vec<u8>>,
+        first: bool,
+    ) -> Result<Result<usize, u16>, Stop> {
+        let folder = path.rsplit_once('\\').map_or("", |(folder, _)| folder);
 
         // A library it imports found nowhere: not started (`search`).
         if self.missing_library(&executable, Some(folder)).is_some() {
@@ -400,6 +421,19 @@ impl System {
 
         self.release_libraries(&brought);
         self.end_task(slot);
+
+        // Its module gone with its last instance: `GetModuleHandle` finds
+        // it no more. Only WinBox's Program Manager has a handle to lose
+        // (`progman`); a program loaded from its file has none yet.
+        if self.running_instances(program) == 0 {
+            let path = self.modules[program].path.clone();
+
+            for module in &mut self.modules {
+                if !module.is_library() && module.path.eq_ignore_ascii_case(&path) {
+                    module.handle = 0;
+                }
+            }
+        }
     }
 }
 
@@ -450,6 +484,10 @@ impl Engine {
 
         match found {
             Ok(path) => self.start_program(&path, command_line, show, None).await,
+            // `PROGMAN.EXE` found nowhere: WinBox's own (`progman`).
+            Err(2) if crate::progman::wanted(&name) => {
+                self.start_progman(command_line, show, None).await
+            }
             Err(error) => Ok(error),
         }
     }
@@ -499,6 +537,9 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
 
             let path = match crate::shell::programs::locate(&mut system, &name, "") {
                 Ok(path) => path,
+                // `PROGMAN.EXE` found nowhere: WinBox's own (`progman`),
+                // started once the block is read.
+                Err(2) if crate::progman::wanted(&name) => String::new(),
                 Err(error) => return Ok(Answer::Word(error)),
             };
             let word = |system: &System, far: u32, at: u32| {
@@ -553,6 +594,12 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
 
             (path, command_line, show, strings)
         };
+
+        if path.is_empty() {
+            return Ok(Answer::Word(
+                engine.start_progman(&command_line, show, strings).await?,
+            ));
+        }
 
         Ok(Answer::Word(
             engine
