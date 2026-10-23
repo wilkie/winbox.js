@@ -143,12 +143,12 @@ The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and wh
 
 ## Disk and CD images
 
-DOSBox mounts disk and disc images as drives with `IMGMOUNT`: a floppy's or hard disk's FAT, or an ISO 9660 CD-ROM. The probes [[probe:imgflop]], [[probe:imgcd]] and [[probe:imghdd]] record what Windows sees of each, and [[probe:drvioctl]] mounts a floppy image as B: and a CD-ROM image as D:. Both engines mount a FAT image, read only for now ([[format:fat]]); an ISO 9660 disc's records, and what the probes write to a FAT image, are known gaps.
+DOSBox mounts disk and disc images as drives with `IMGMOUNT`: a floppy's or hard disk's FAT, or an ISO 9660 CD-ROM. The probes [[probe:imgflop]], [[probe:imgcd]] and [[probe:imghdd]] record what Windows sees of each, [[probe:imgwrite]] what writing to a floppy image does, and [[probe:drvioctl]] mounts a floppy image as B: and a CD-ROM image as D:. Both engines mount a FAT image, read and written as DOSBox reads and writes one, what is written kept apart from the image ([[format:fat]]); an ISO 9660 disc's records are known gaps.
 
 ### How the probes mount them
 
 - A probe's images are listed in `oracle/probes/<probe>.mounts`, a line each: a drive, an image of `oracle/probes/images/` and its kind -- `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`. `scripts/oracle/record.mjs` copies each into the build and mounts it with `imgmount <drive> <copy> -t <kind>` before `win`. DOSBox writes a disk image's changes straight into its file (`fatDrive::fatDrive` opens it `rb+`, `drive_fat.cpp` 642), so the committed image is never the one written. Both replays read the same list (`mountsOf` in `test/win16/run-probe.ts`, `mounts_of` in `tests/support/mod.rs`) and mount what their engine can present (`imageDrive`, `image_volume`): a FAT image, a floppy's or a hard disk's, as `FATImage` and `FatVolume`.
-- `scripts/oracle/make-images.mjs` makes the images, the same bytes every time: `imgflop.img`, a 1.44 MB FAT12 floppy (`mformat`, `mcopy`); `imghdd.img`, 6 cylinders of 16 heads and 63 sectors with a master boot record and one FAT16 partition from sector 63; and `imgcd.iso` (`xorriso`), an ISO 9660 primary volume descriptor alone. Every entry's creation, access and modification stamps are set apart, so a listing shows which a drive answers.
+- `scripts/oracle/make-images.mjs` makes the images, the same bytes every time: `imgflop.img`, a 1.44 MB FAT12 floppy (`mformat`, `mcopy`); `imghdd.img`, 6 cylinders of 16 heads and 63 sectors with a master boot record and one FAT16 partition from sector 63; `imgcd.iso` (`xorriso`), an ISO 9660 primary volume descriptor alone; and `imgwrite.img`, a floppy with a file of no extension and a hidden folder, for [[probe:imgwrite]] to write to. `make-images.mjs imgwrite.img` makes the one named alone. Every entry's creation, access and modification stamps are set apart, so a listing shows which a drive answers.
 - [[read out]] `IMGMOUNT` takes several files only for ISOs (`dos_programs.cpp` 1206-1209), and its drive manager swaps only those; a hard disk image is sized from its file only in whole cylinders of 16 heads and 63 sectors (1213-1236).
 
 ### A FAT image
@@ -158,7 +158,8 @@ DOSBox mounts disk and disc images as drives with `IMGMOUNT`: a floppy's or hard
 - [[measured]] A search for the label (attribute 08h) answers error 18, no more files, though the floppy has a label entry. [[read out]] `fatDrive::FindFirst` answers the label search so (857-867).
 - [[measured]] Attributes are the entry's own: `HIDDEN.SYS` 27h. A file is found by its short name in either case; a long name is not found (error 2).
 - [[measured]] 36h answers the FAT's own figures: the floppy 1 sector to a cluster, 2,832 free of 2,847, 512 bytes to a sector; the hard disk image 1, 5,917 free of 5,921, 512.
-- [[measured]] Written: a file made with 3Ch, written and closed, and a folder made, list with date and time **nought**; the file's attributes are those 3Ch was given, nought, not 20h. A file renamed takes a new entry at the end; one deleted is gone from the listing, and the room it had is free again.
+- [[measured]] Written: a file made with 3Ch, written and closed, and a folder made, list with date and time **nought**; the file's attributes are those 3Ch was given, nought, not 20h. A file made or renamed takes the folder's first slot deleted or never used -- [[probe:imgflop]]'s `NEW.TXT` the deleted entry's, its rename the end; one deleted is gone from the listing, and the room it had is free again.
+- [[measured]] [[probe:imgwrite]]: a file with no extension lists as `NOEXT.`, and is found with the dot or without; a hidden folder lists, but a path through it is not found (3), nor a search in it, and a folder made in it costs a cluster all the same; a seek stops at the file's end; a file made over one there keeps its old clusters lost; a write that fills its second cluster takes a third; 4301h and 5701h change nothing; a file open twice reads what it read as it was opened, and writes it back as it is closed. [[format:fat]] has each, and the slots a search carries on from.
 - [[measured]] The hard disk image answers 4408h AX 1 and `GetDriveType` 3, as C: does ([[probe:imghdd]]); the floppy image as A: answers 4408h AX 0 and 2.
 
 ### An ISO 9660 image
@@ -177,8 +178,8 @@ The images become drives in both engines in phases, each with its probe agreeing
 
 1. The oracle's groundwork: the `.mounts` lists, the images and the probes above. Done.
 2. Drives' kinds: `Volume` gains `remote`, `label`, `media_byte` and `listing` (`Listing::Sorted` for a folder as DOSBox lists one, `AsStored` for an image), the TypeScript `FileSystem` the same; IOCTL 4408h, 4409h, 440Dh and 440Eh as DOSBox answers them; `GetDriveType` as `SYSTEM.DRV` works it out; MSCDEX's register calls. Done: [[probe:drvioctl]] agrees for A:, C:, E:, Z: and the numbers past, [[probe:mscdex]] wholly.
-3. A FAT12 or FAT16 image read: one FAT reader for both by the count of clusters, as DOSBox chooses (`drive_fat.cpp` 700-711), over the image's sectors -- a floppy if 2,880 KB or less with no partition table, else a hard disk whose first partition is used, else sector 63 (660-678). Its stamps, order, attributes and room as above. Done ([[format:fat]]): [[probe:imgflop]]'s and [[probe:imghdd]]'s records agree up to what they write, and [[probe:drvioctl]]'s B:. Writes are refused until phase 4.
-4. Writes to a FAT image, as DOSBox makes them, kept apart from the image (decision 1).
+3. A FAT12 or FAT16 image read: one FAT reader for both by the count of clusters, as DOSBox chooses (`drive_fat.cpp` 700-711), over the image's sectors -- a floppy if 2,880 KB or less with no partition table, else a hard disk whose first partition is used, else sector 63 (660-678). Its stamps, order, attributes and room as above. Done ([[format:fat]]): [[probe:imgflop]]'s and [[probe:imghdd]]'s reads, and [[probe:drvioctl]]'s B:.
+4. Writes to a FAT image, as DOSBox makes them, kept apart from the image (decision 1). Done ([[format:fat]]): a copy-on-write overlay of sectors under each engine's FAT drive, DOSBox's `fatDrive` and `fatFile` followed function by function; [[probe:imgflop]], [[probe:imghdd]] and [[probe:imgwrite]] agree wholly in both engines. The image as written is there to be saved (`Files::image`, `FatVolume::image`; `FATImage.image`) for the page's "Save image…" and the native `--write-back`.
 5. ISO 9660 and MSCDEX with a disc.
 6. The native front end: `--mount A:disk1.img,disk2.img`, `--mount D:game.iso`, swapping a set's disks by commands on standard input and a key other than Ctrl+F4, which closes an MDI child; `--install` from A:.
 7. The page: images dropped beside Windows as drives, a strip of drives with Next and Eject for a set of floppies, installing from floppies, a program's CD remembered.
@@ -201,7 +202,8 @@ The owner's decisions (2026-10-22):
 ## Not yet done
 
 - Functions 1Bh, 1Ch, 1Fh and 32h: a drive's allocation and its parameter block. The parameter block's pointer would need a selector over a table of the engine's own.
-- Images as drives: phases 4 to 9 of the design above. What [[probe:imgflop]] and [[probe:imghdd]] write to a FAT image, and the listing and room after, are known gaps until phase 4; [[probe:imgcd]], and [[probe:drvioctl]]'s D:, until phase 5. [[format:fat]] has what is left of reading a FAT image.
+- Images as drives: phases 5 to 9 of the design above. [[probe:imgcd]], and [[probe:drvioctl]]'s D:, are known gaps until phase 5. [[format:fat]] has what is left of a FAT image.
+- Saving a written image: the engines give the image as written, but neither the page nor the native front end offers it yet ("Save image…", `--write-back`, phases 6 and 7).
 - IOCTL 4404h, 4405h and 4411h, and 440Dh's minor codes other than 46h, 60h and 66h, which DOSBox refuses with error 1.
 - MSCDEX's calls with a buffer, and 1100h's word on the caller's stack.
 - The BIOS's equipment word itself, `INT 11h`: neither engine answers it. `GetDriveType` counts each removable drive with a disk in it as DOSBox's BIOS counts a floppy image mounted.
@@ -214,5 +216,5 @@ The owner's decisions (2026-10-22):
 
 - `src/win16/kernel/GetDriveType.ts` and `src/win16/user/wnet.ts` hold the Windows calls; the Rust engine's `drive_type` is in `modules_kernel.rs`.
 - `src/dos/syscall/diskSpace.ts` and `src/dos/syscall/ioctl.ts` hold the DOS functions, and `DOS.absoluteDisk` and `DOS.multiplexInterrupt` in `src/dos.ts` the interrupts; the Rust engine's are `drive_ioctl` in `dos.rs` and `multiplex_interrupt` in `run.rs`.
-- A FAT disk image is `FatVolume` (`crates/winbox-machine/src/files/fat.rs`, `files/mbr.rs`) and `FATImage` (`src/file-systems/fat-image.ts`), [[format:fat]].
+- A FAT disk image is `FatVolume` (`crates/winbox-machine/src/files/fat.rs`, `files/mbr.rs`) and `FATImage` (`src/file-systems/fat-image.ts`, `fat-drive.ts`), [[format:fat]]; what is written to it, an `Overlay` (`files/overlay.rs`) and an `OverlayDisk` (`src/file-systems/overlay-disk.ts`).
 - A drive's kind is the `Volume` trait's (`crates/winbox-machine/src/files.rs`): `removable`, `remote`, `label`, `media_byte`, `listing`; `Files::has_disk` and `Files::floppy_disks` from them. The TypeScript engine's `FileSystem` has the same getters (`src/file-system.ts`).
