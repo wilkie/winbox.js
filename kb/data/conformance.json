@@ -5620,8 +5620,8 @@
    },
    "d:": {
     "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5647,9 +5647,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "d:": "D: is a CD-ROM image under DOSBox, which is not mounted here"
-  }
+  "gaps": {}
  },
  "drvmsg": {
   "probe": "drvmsg",
@@ -9306,15 +9304,15 @@
   "functions": {
    "1500": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "150b": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9327,89 +9325,76 @@
    },
    "after": {
     "total": 21,
-    "agreed": 0,
-    "disagreed": 21,
+    "agreed": 21,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "attr": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "entry": {
     "total": 20,
-    "agreed": 0,
-    "disagreed": 20,
+    "agreed": 20,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "ioctl": {
     "total": 5,
-    "agreed": 0,
-    "disagreed": 5,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "label": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "match": {
     "total": 5,
-    "agreed": 0,
-    "disagreed": 5,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "open": {
     "total": 11,
-    "agreed": 0,
-    "disagreed": 11,
+    "agreed": 11,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "read": {
     "total": 9,
-    "agreed": 0,
-    "disagreed": 9,
+    "agreed": 9,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "space": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "write": {
     "total": 4,
-    "agreed": 2,
-    "disagreed": 2,
+    "agreed": 4,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "1500": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "entry": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "label": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "match": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "read": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "open": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "attr": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "space": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "ioctl": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "150b": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "write": "D: is a CD-ROM image under DOSBox, which is not mounted here",
-   "after": "D: is a CD-ROM image under DOSBox, which is not mounted here"
-  }
+  "gaps": {}
  },
  "imgflop": {
   "probe": "imgflop",
