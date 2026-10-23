@@ -1,7 +1,13 @@
 import { chdir, getCurrentDirectory } from './syscall/directory.js';
 import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
-import { blockDeviceRequest, deviceInformation, isRemote, isRemovable } from './syscall/ioctl.js';
+import {
+  blockDeviceRequest,
+  deviceInformation,
+  isRemote,
+  isRemovable,
+  logicalDriveMap,
+} from './syscall/ioctl.js';
 import { getDiskSpace } from './syscall/diskSpace.js';
 import {
   createFile,
@@ -370,8 +376,16 @@ export class SyscallManager {
 
       // Block device remote
       // BL: drive
-      // DX <- attributes, bit 12 remote
-      0x4409: [isRemote, [[I286.REGISTER_BL, 1, Number]], [[I286.REGISTER_DX, 2]], true],
+      // DX <- attributes, bit 12 remote; AX <- 0300h
+      0x4409: [
+        isRemote,
+        [[I286.REGISTER_BL, 1, Number]],
+        [
+          [I286.REGISTER_DX, 2],
+          [I286.REGISTER_AX, 2],
+        ],
+        true,
+      ],
 
       // 0x440a: handle local
       // 0x440b: set sharing retry count
@@ -391,7 +405,10 @@ export class SyscallManager {
         true,
       ],
 
-      // 0x440e: get logical drive map
+      // Get logical drive map
+      // BL: drive
+      // AL <- 0, the drive its own only
+      0x440e: [logicalDriveMap, [[I286.REGISTER_BL, 1, Number]], [[I286.REGISTER_AL, 1]], true],
       // 0x440f: set logical drive map
       // 0x45: create duplicate handle (dup)
       // 0x46: force duplicate handle (forcdup, dup2)

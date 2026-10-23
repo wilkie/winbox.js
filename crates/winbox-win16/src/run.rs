@@ -128,11 +128,16 @@ impl System {
                         0x34..=0x3c => {
                             return Event::Stop(Stop::Unsupported("the floating-point emulator"));
                         }
-                        // The multiplex interrupt: no resident program is
-                        // here to answer it, so the registers stay as they
-                        // were -- "not installed". And a lone `FWAIT`, made
-                        // `INT 3Dh` by its OS fixup: it returns.
-                        0x2f | 0x3d => {
+                        // The multiplex interrupt: MSCDEX's calls, as
+                        // DOSBox's own answers them (`multiplex_interrupt`).
+                        0x2f => {
+                            self.multiplex_interrupt();
+                            self.cpu.ip += 2;
+                            self.instructions += 1;
+                        }
+                        // A lone `FWAIT`, made `INT 3Dh` by its OS fixup:
+                        // it returns.
+                        0x3d => {
                             self.cpu.ip += 2;
                             self.instructions += 1;
                         }
@@ -212,6 +217,60 @@ impl System {
 }
 
 impl System {
+    /// INT 2Fh, the multiplex interrupt. DOSBox installs its own MSCDEX
+    /// whether or not a disc is mounted (`dos_mscdex.cpp` 1312-1322), and
+    /// answers (1069-1167), **recorded** through Windows by `mscdex` with no
+    /// disc and `imgcd` with one:
+    ///
+    /// * 1100h, the network redirector's installation check: AL `FFh`.
+    /// * 1500h, MSCDEX's: AL `FFh`, BX the number of CD-ROM drives -- here the
+    ///   drives removable and remote -- and CX the first, 0 for A:, left as
+    ///   it was where there is none.
+    /// * 150Bh, whether drive CL is a CD-ROM: AX 5AD8h if so, else nought;
+    ///   BX `ADADh`.
+    /// * 150Ch, MSCDEX's version: BX 0217h, 2.23.
+    ///
+    /// Any other function changes nothing: no other resident program is
+    /// here to answer.
+    fn multiplex_interrupt(&mut self) {
+        use winbox_cpu::{AX, BX, CX};
+
+        let compact_discs: Vec<u16> = (0..26u8)
+            .filter(|&drive| {
+                let letter = char::from(b'A' + drive);
+
+                self.files.removable(letter) && self.files.remote(letter)
+            })
+            .map(u16::from)
+            .collect();
+
+        match self.cpu.regs[AX] {
+            0x1100 | 0x1500 => {
+                if self.cpu.regs[AX] == 0x1500 {
+                    self.cpu.regs[BX] = compact_discs.len() as u16;
+
+                    if let Some(&first) = compact_discs.first() {
+                        self.cpu.regs[CX] = first;
+                    }
+                }
+
+                self.cpu.regs[AX] |= 0x00ff;
+            }
+            0x150b => {
+                let drive = self.cpu.regs[CX] & 0xff;
+
+                self.cpu.regs[AX] = if compact_discs.contains(&drive) {
+                    0x5ad8
+                } else {
+                    0
+                };
+                self.cpu.regs[BX] = 0xadad;
+            }
+            0x150c => self.cpu.regs[BX] = 0x0217,
+            _ => {}
+        }
+    }
+
     /// INT 31h, DPMI, as far as winbox.js answers it: 000Bh copies a
     /// descriptor of the local table, the selector in BX, to the eight bytes
     /// at ES:EDI, and 000Ch copies them back into it -- each with the carry

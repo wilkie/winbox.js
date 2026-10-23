@@ -203,6 +203,10 @@ pub const AGREEING: &[&str] = &[
     "abouthin",
     "grround",
     "instlay",
+    "mscdex",
+    // Not `drvioctl`, `imgflop`, `imgcd` or `imghdd`: their drives are
+    // images DOSBox mounts (`<probe>.mounts`) that this engine does not
+    // present yet (`image_volume`). `drvioctl`'s other drives agree.
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -882,6 +886,7 @@ pub fn run_setup<T>(
         .system
         .files
         .mount('Z', HostDrive::new(drive.join("Z")));
+    mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
     let (stop, made) = go(setup.start(prepare));
@@ -890,6 +895,73 @@ pub fn run_setup<T>(
 
     std::fs::remove_dir_all(drive).unwrap();
     (stop, records_of(&output), made)
+}
+/// An image a probe's recording had mounted beside drive C, as its sidecar
+/// names it: its drive, its file in `oracle/probes/images/`, and its kind,
+/// `floppy`, `iso` or `hdd`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Mount {
+    pub letter: char,
+    pub image: String,
+    pub kind: String,
+}
+
+/// The images a probe's recording had mounted, as
+/// `oracle/probes/<probe>.mounts` lists them and `record.mjs` reads them: a
+/// line each, as `a:imgflop.img floppy`; `#` starts a comment. As
+/// `run-probe.ts`'s `mountsOf`.
+pub fn mounts_of(probe: &str) -> Vec<Mount> {
+    let Ok(text) = std::fs::read(root().join(format!("oracle/probes/{probe}.mounts"))) else {
+        return Vec::new();
+    };
+
+    String::from_utf8_lossy(&text)
+        .lines()
+        .map(|line| line.split('#').next().unwrap_or("").trim())
+        .filter(|line| !line.is_empty())
+        .map(|line| {
+            let spaced = line.replacen(':', ": ", 1);
+            let words: Vec<&str> = spaced.split_whitespace().collect();
+
+            match words[..] {
+                [drive, image, kind]
+                    if drive.len() == 2
+                        && drive.starts_with(|letter: char| letter.is_ascii_alphabetic())
+                        && drive.ends_with(':')
+                        && ["floppy", "iso", "hdd"]
+                            .contains(&kind.to_ascii_lowercase().as_str()) =>
+                {
+                    Mount {
+                        letter: drive.chars().next().unwrap().to_ascii_uppercase(),
+                        image: image.to_string(),
+                        kind: kind.to_ascii_lowercase(),
+                    }
+                }
+                _ => panic!("{probe}.mounts: cannot read {line:?}"),
+            }
+        })
+        .collect()
+}
+
+/// An image as a drive, where this engine can present one of its kind;
+/// none yet -- a FAT image, a floppy's or a hard disk's, and an ISO 9660
+/// disc are to come (`kb/topics/drives-and-disks.md`). A probe whose image
+/// is not mounted runs without it, and is left out of `AGREEING`.
+fn image_volume(_mount: &Mount, _bytes: Vec<u8>) -> Option<MemoryDrive> {
+    None
+}
+
+/// The images a probe's recording had mounted, each mounted where it can
+/// be (`image_volume`).
+fn mount_images(system: &mut System, probe: &str) {
+    for mount in mounts_of(probe) {
+        let bytes = std::fs::read(root().join("oracle/probes/images").join(&mount.image))
+            .unwrap_or_else(|error| panic!("{probe}.mounts: {}: {error}", mount.image));
+
+        if let Some(volume) = image_volume(&mount, bytes) {
+            system.files.mount(mount.letter, volume);
+        }
+    }
 }
 
 /// A host's folder held in memory, each file and folder last written when
@@ -962,6 +1034,7 @@ pub fn run_in_memory(
     setup.system.files.mount('A', MemoryDrive::removable());
     setup.system.files.mount('C', c);
     setup.system.files.mount('Z', MemoryDrive::new());
+    mount_images(&mut setup.system, &setup.upper.to_ascii_lowercase());
 
     let upper = setup.upper.clone();
     let engine = winbox_win16::Engine::new(setup.start(prepare));

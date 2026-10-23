@@ -1,76 +1,119 @@
 /**
  * Asking DOS about a drive: INT 21h function 44h, subfunctions 08h (whether
- * it is removable), 09h (whether it is remote) and 0Dh (a block device's
- * parameters). BL is the drive, 0 for the current one and 1 for A:; a drive
- * that is not there is error 0Fh. DOS as documented: every drive here is a
- * fixed disk, local.
+ * it is removable), 09h (whether it is remote), 0Dh (a block device's
+ * generic request) and 0Eh (the logical drive map). BL is the drive, 0 for
+ * the current one and 1 for A:. As DOSBox answers them (`dos_ioctl.cpp`
+ * 41-46, 127-204), **recorded** through Windows by `drvioctl`; as `dos.rs`'s
+ * `drive_ioctl`.
  *
- * File Manager asks each drive letter with 440Dh. With no answer the carry
- * flag was whatever it happened to be, and it read a parameter block nothing
- * had written.
+ * A drive DOS has not got is error 0Fh -- a floppy drive with nothing in it
+ * among them, DOSBox's floppy drive with nothing mounted (`hasDisk`).
+ * DOSBox's removable drives are its CD-ROMs alone (`isRemovable`), here a
+ * drive removable and remote; A: and B: are its floppies, whatever is
+ * mounted.
+ *
+ * File Manager asks each drive letter with 440Dh.
  */
 
 const ERROR_INVALID_FUNCTION = 0x01;
 const ERROR_INVALID_HANDLE = 0x06;
 const ERROR_INVALID_DRIVE = 0x0f;
 
+/**
+ * Whether DOS has a drive: mounted, and not a removable drive with no disk
+ * in it. As `Files::has_disk`.
+ */
+export function hasDisk(fileSystem: any) {
+  return Boolean(fileSystem) && !(fileSystem.removable && !fileSystem.space);
+}
+
+/** A CD-ROM drive, as DOSBox's removable drives are: removable and remote. */
+export function isCompactDisc(fileSystem: any) {
+  return Boolean(fileSystem?.removable && fileSystem?.remote);
+}
+
+/** The drive BL names, with its number from nought for A:; error 0Fh for none. */
 function driveOf(dos: any, drive: number) {
   const letter = drive === 0 ? dos.files.drive : String.fromCharCode(0x40 + drive);
   const fileSystem = drive > 26 ? null : dos.files.query(letter);
 
-  if (!fileSystem) {
+  if (!hasDisk(fileSystem)) {
     throw ERROR_INVALID_DRIVE;
   }
 
-  return fileSystem;
+  return { fileSystem, number: letter.charCodeAt(0) - 0x41 };
 }
 
-/** 4408h: 0 for removable, 1 for fixed. */
+/** 4408h: AX 0 (removable) for A: and B:, 1 (fixed) for another; a CD-ROM error 1. */
 export function isRemovable(this: any, drive: number) {
-  driveOf(this, drive);
+  const { fileSystem, number } = driveOf(this, drive);
+
+  if (number < 2) {
+    return 0;
+  }
+
+  if (isCompactDisc(fileSystem)) {
+    throw ERROR_INVALID_FUNCTION;
+  }
 
   return 1;
 }
 
-/** 4409h: the device's attributes in DX, bit 12 set for a remote drive. */
+/** 4409h: DX 1000h for a remote drive, else 0802h; AX 0300h. */
 export function isRemote(this: any, drive: number) {
-  driveOf(this, drive);
+  const { fileSystem } = driveOf(this, drive);
 
-  return 0;
+  return [fileSystem.remote ? 0x1000 : 0x0802, 0x0300];
 }
 
 /**
- * 440Dh: a generic request of a block device. Only "get device parameters"
- * (CX 0860h) is answered: a fixed disk (type 5, attributes 1), its
- * cylinders, and the BIOS parameter block from its boot sector.
+ * 440Dh: a generic request of a block device, a CD-ROM's error 1. CL 60h,
+ * get device parameters: special functions 3, the type 14h (a 1.44 MB
+ * floppy) for A: and B: else 5 (a fixed disk), the word "not removable",
+ * nought cylinders and media type, then DOSBox's own drive number and
+ * nought where the parameter block's bytes per sector begin, and FFFFFFFFh
+ * at 1Fh; the rest as it was. CL 46h or 66h, the media id: DOSBox writes
+ * it, but through Windows' DOS extender nothing comes back, AX left as it
+ * was. Another CL, error 1. CH is not looked at.
  */
-export async function blockDeviceRequest(this: any, drive: number, code: number, address: number) {
-  const fileSystem = driveOf(this, drive);
+export function blockDeviceRequest(this: any, drive: number, code: number, address: number) {
+  const { fileSystem, number } = driveOf(this, drive);
 
-  if (code !== 0x0860 || !fileSystem.disk) {
+  if (isCompactDisc(fileSystem)) {
+    throw ERROR_INVALID_FUNCTION;
+  }
+
+  const minor = code & 0xff;
+
+  if (minor === 0x46 || minor === 0x66) {
+    return [];
+  }
+
+  if (minor !== 0x60) {
     throw ERROR_INVALID_FUNCTION;
   }
 
   const memory = this.machine.memory;
-  const bpb: number[] = [];
+  const floppy = number < 2;
 
-  for (let i = 0; i < 25; i++) {
-    bpb.push(await fileSystem.disk.read8(0, 11 + i));
+  [3, floppy ? 0x14 : 5, floppy ? 0 : 1, 0, 0, 0, 0, number, 0].forEach((byte, i) =>
+    memory.write8(address + i, byte)
+  );
+
+  for (let i = 0; i < 4; i++) {
+    memory.write8(address + 0x1f + i, 0xff);
   }
 
-  const word = (at: number) => bpb[at] | (bpb[at + 1] << 8);
-  const sectors = word(8) || (word(21) | (word(23) << 16));
-  const perCylinder = Math.max(1, word(13) * word(15));
-  const cylinders = Math.ceil(sectors / perCylinder);
+  return [];
+}
 
-  memory.write8(address + 1, 5);
-  memory.write8(address + 2, 1);
-  memory.write8(address + 3, 0);
-  memory.write8(address + 4, cylinders & 0xff);
-  memory.write8(address + 5, (cylinders >> 8) & 0xff);
-  memory.write8(address + 6, 0);
+/** 440Eh: AL 0, the drive its own only; a CD-ROM error 1. */
+export function logicalDriveMap(this: any, drive: number) {
+  const { fileSystem } = driveOf(this, drive);
 
-  bpb.forEach((byte, i) => memory.write8(address + 7 + i, byte));
+  if (isCompactDisc(fileSystem)) {
+    throw ERROR_INVALID_FUNCTION;
+  }
 
   return 0;
 }

@@ -3,6 +3,7 @@ import { clockOf } from './emulator/clock.js';
 import { FileManager } from './dos/file-manager.js';
 import { SyscallManager } from './dos/syscall-manager.js';
 import { DPMI } from './dos/dpmi.js';
+import { isCompactDisc } from './dos/syscall/ioctl.js';
 
 /**
  * This represents the DOS 16-bit Operating System emulation.
@@ -42,17 +43,61 @@ export class DOS {
     machine.interrupts.on(0x31, this.dpmiInvoke.bind(this));
 
     /* The multiplex interrupt, where resident programs answer whether they
-     * are installed. None is here: DOS's own handler returns with the
-     * registers as they were, which to an installation check -- MSCDEX's,
-     * which File Manager makes for every drive -- is "not installed". Without
-     * one, the interrupt went through an empty vector into whatever was
-     * there. */
-    machine.interrupts.on(0x2f, () => true);
+     * are installed: MSCDEX's calls as DOSBox's own answers them
+     * (`multiplexInterrupt`); any other, the registers as they were. */
+    machine.interrupts.on(0x2f, () => this.multiplexInterrupt());
 
     /* Absolute disk reads and writes, which File Manager makes of a drive's
      * boot sector. */
     machine.interrupts.on(0x25, () => this.absoluteDisk(false));
     machine.interrupts.on(0x26, () => this.absoluteDisk(true));
+  }
+
+  /**
+   * INT 2Fh, the multiplex interrupt. DOSBox installs its own MSCDEX whether
+   * or not a disc is mounted (`dos_mscdex.cpp` 1312-1322), and answers
+   * (1069-1167), **recorded** through Windows by `mscdex` with no disc and
+   * `imgcd` with one; as `run.rs`'s `multiplex_interrupt`:
+   *
+   * * 1100h, the network redirector's installation check: AL FFh.
+   * * 1500h, MSCDEX's: AL FFh, BX the number of CD-ROM drives -- here the
+   *   drives removable and remote -- and CX the first, 0 for A:, left as it
+   *   was where there is none.
+   * * 150Bh, whether drive CL is a CD-ROM: AX 5AD8h if so, else nought; BX
+   *   ADADh.
+   * * 150Ch, MSCDEX's version: BX 0217h, 2.23.
+   *
+   * Any other function changes nothing: no other resident program is here
+   * to answer.
+   */
+  multiplexInterrupt() {
+    const core = this._machine.cpu.core;
+    const compactDiscs: number[] = [];
+
+    for (let drive = 0; drive < 26; drive++) {
+      if (isCompactDisc(this._files.query(String.fromCharCode(0x41 + drive)))) {
+        compactDiscs.push(drive);
+      }
+    }
+
+    if (core.ax === 0x1500) {
+      core.bx = compactDiscs.length;
+
+      if (compactDiscs.length) {
+        core.cx = compactDiscs[0];
+      }
+
+      core.ax |= 0xff;
+    } else if (core.ax === 0x1100) {
+      core.ax |= 0xff;
+    } else if (core.ax === 0x150b) {
+      core.ax = compactDiscs.includes(core.cx & 0xff) ? 0x5ad8 : 0;
+      core.bx = 0xadad;
+    } else if (core.ax === 0x150c) {
+      core.bx = 0x0217;
+    }
+
+    return true;
   }
 
   /**

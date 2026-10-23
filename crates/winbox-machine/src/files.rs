@@ -120,6 +120,46 @@ pub trait Volume: Debug {
             None
         }
     }
+
+    /// Whether the drive is remote, as DOSBox's CD-ROM drives are
+    /// (`isRemote`, `drive_iso.cpp` 374-376): IOCTL 4409h sets bit 12 of
+    /// DX for it, and `GetDriveType` calls it `DRIVE_REMOTE`. A folder of
+    /// the host's, or a disk image, is not.
+    fn remote(&self) -> bool {
+        false
+    }
+
+    /// The drive's own volume label, as a disk or disc keeps one; none for
+    /// a folder, whose label DOSBox makes from its letter
+    /// (`System::volume_label`).
+    fn label(&self) -> Option<String> {
+        None
+    }
+
+    /// The media byte DOSBox's table holds for the drive (`imgmount`,
+    /// `dos_programs.cpp` 1095-1103, 1268): F0h for a floppy, F8h for a hard
+    /// disk or a disc.
+    fn media_byte(&self) -> u8 {
+        if self.removable() { 0xf0 } else { 0xf8 }
+    }
+
+    /// The order a folder's entries are listed in (`Listing`).
+    fn listing(&self) -> Listing {
+        Listing::Sorted
+    }
+}
+
+/// The order DOS's search lists a folder's entries in, as DOSBox's drives
+/// list them.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Listing {
+    /// A folder of the host's: `.` and `..` in every folder, the root's
+    /// too, then folders and files by name (`Files::list`).
+    Sorted,
+    /// A disk or disc image: its entries in the order the image keeps them,
+    /// `.` and `..` only where the image has them, outside the root
+    /// (`drive_fat.cpp` `FindNextInternal` 898-960, `drive_iso.cpp` 301).
+    AsStored,
 }
 
 /// A file or folder as a directory lists it.
@@ -370,6 +410,36 @@ impl Files {
         self.drives
             .get(&letter)
             .is_some_and(|drive| drive.removable())
+    }
+
+    /// Whether a drive is remote (`Volume::remote`).
+    pub fn remote(&self, letter: char) -> bool {
+        self.drives.get(&letter).is_some_and(|drive| drive.remote())
+    }
+
+    /// A drive's own label (`Volume::label`).
+    pub fn label(&self, letter: char) -> Option<String> {
+        self.drives.get(&letter)?.label()
+    }
+
+    /// Whether DOS has the drive: mounted, and not a removable drive with
+    /// no disk in it -- DOSBox's floppy drive with nothing mounted, which
+    /// DOS answers as no drive (`dos_ioctl.cpp` 41-46: `Drives[drive]`
+    /// none, error 0Fh).
+    pub fn has_disk(&self, letter: char) -> bool {
+        self.mounted(letter) && (!self.removable(letter) || self.allocation(letter).is_some())
+    }
+
+    /// How many floppy disks are in their drives: the drives removable and
+    /// not remote with a disk in each, as DOSBox's BIOS counts a floppy
+    /// image mounted in its equipment word (`bios_disk.cpp` 219-229).
+    pub fn floppy_disks(&self) -> usize {
+        self.drives
+            .iter()
+            .filter(|&(&letter, drive)| {
+                drive.removable() && !drive.remote() && self.has_disk(letter)
+            })
+            .count()
     }
 
     /// Whether a folder is there.

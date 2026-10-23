@@ -361,9 +361,7 @@ impl System {
                 }
                 0x4400 => Some(self.device_information()),
                 0x4401 => Some(self.set_device_information()),
-                0x4408 => Some(self.drive_of(self.low(BX)).map(|()| self.cpu.regs[AX] = 1)),
-                0x4409 => Some(self.drive_of(self.low(BX)).map(|()| self.cpu.regs[DX] = 0)),
-                0x440d => Some(self.drive_of(self.low(BX)).and(Err(ERROR_INVALID_FUNCTION))),
+                0x4408 | 0x4409 | 0x440d | 0x440e => Some(self.drive_ioctl(ax)),
                 _ => {
                     self.unanswered_dos.push(ax);
                     None
@@ -405,10 +403,77 @@ impl System {
         (drive <= 26 && self.files.mounted(letter)).then_some(letter)
     }
 
-    fn drive_of(&self, drive: u8) -> Result<(), u16> {
-        self.drive_letter(drive)
-            .map(|_| ())
-            .ok_or(ERROR_INVALID_DRIVE)
+    /// IOCTL of a drive, BL the drive, nought the current one: as DOSBox
+    /// answers them (`dos_ioctl.cpp` 41-46, 127-204), **recorded** through
+    /// Windows by `drvioctl`. A drive DOS has not got -- a floppy drive
+    /// with nothing in it among them (`Files::has_disk`) -- is error 0Fh.
+    /// DOSBox's removable drives are its CD-ROMs alone (`isRemovable`),
+    /// here a drive removable and remote; A: and B: are its floppies,
+    /// whatever is mounted.
+    ///
+    /// * 4408h: AX 0 (removable) for A: and B:, 1 (fixed) for another, a
+    ///   CD-ROM error 1.
+    /// * 4409h: DX 1000h for a remote drive, else 0802h; AX 0300h.
+    /// * 440Dh: a CD-ROM error 1. CL 60h, get device parameters: special
+    ///   functions 3, the type 14h (a 1.44 MB floppy) for A: and B: else 5
+    ///   (a fixed disk), the word "not removable", nought cylinders and
+    ///   media type, then DOSBox's own drive number and nought where the
+    ///   parameter block's bytes per sector begin, and `FFFFFFFFh` at 1Fh; the
+    ///   rest as it was. CL 46h or 66h, the media id: DOSBox writes it, but
+    ///   through Windows' DOS extender nothing comes back, AX left as it
+    ///   was. Another CL, error 1. CH is not looked at.
+    /// * 440Eh: a CD-ROM error 1, else AL 0, the drive its own only.
+    fn drive_ioctl(&mut self, ax: u16) -> Result<(), u16> {
+        let letter = self
+            .drive_letter(self.low(BX))
+            .filter(|&letter| self.files.has_disk(letter))
+            .ok_or(ERROR_INVALID_DRIVE)?;
+        let number = letter as u8 - b'A';
+        let compact_disc = self.files.removable(letter) && self.files.remote(letter);
+
+        match ax {
+            0x4408 if number < 2 => self.cpu.regs[AX] = 0,
+            0x4408 if compact_disc => return Err(ERROR_INVALID_FUNCTION),
+            0x4408 => self.cpu.regs[AX] = 1,
+            0x4409 => {
+                self.cpu.regs[DX] = if self.files.remote(letter) {
+                    0x1000
+                } else {
+                    0x0802
+                };
+                self.cpu.regs[AX] = 0x0300;
+            }
+            _ if compact_disc => return Err(ERROR_INVALID_FUNCTION),
+            0x440e => self.set_low(AX, 0),
+            _ => match self.low(CX) {
+                0x60 => {
+                    let at = self.pointer(DS, DX);
+                    let floppy = number < 2;
+
+                    self.write_far(
+                        at,
+                        &[
+                            3,
+                            if floppy { 0x14 } else { 5 },
+                            u8::from(!floppy),
+                            0,
+                            0,
+                            0,
+                            0,
+                            number,
+                            0,
+                        ],
+                    );
+                    let next = (at & 0xffff_0000) | u32::from((at as u16).wrapping_add(0x1f));
+
+                    self.write_far(next, &[0xff; 4]);
+                }
+                0x46 | 0x66 => {}
+                _ => return Err(ERROR_INVALID_FUNCTION),
+            },
+        }
+
+        Ok(())
     }
 
     fn device_information(&mut self) -> Result<(), u16> {
@@ -802,6 +867,10 @@ impl System {
     /// them. **Recorded** by `ofnopen`: COMMDLG's drives' list shows
     /// `c: c_drive` and `z: dosbox`.
     pub(crate) fn volume_label(&self, letter: char) -> Option<String> {
+        if let Some(label) = self.files.label(letter) {
+            return Some(label);
+        }
+
         if !self.files.mounted(letter) || self.files.removable(letter) {
             return None;
         }

@@ -17,9 +17,7 @@ const ERROR_FILE_EXISTS: u16 = 0x50;
 /// Whether a drive, by its number from A's nought, is a fixed disk, as
 /// `GetDriveType` says `DRIVE_FIXED`.
 fn fixed(system: &System, drive: u8) -> bool {
-    let letter = char::from(b'A' + drive);
-
-    system.files.mounted(letter) && !system.files.removable(letter)
+    crate::modules_kernel::drive_type(system, i32::from(drive)) == 3
 }
 
 /// The drive temporary files go on: the one given, with `TF_FORCEDRIVE`;
