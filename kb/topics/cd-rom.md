@@ -46,10 +46,10 @@ Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then 
 - Both engines' DOS follows `DOS_MakeName` on an image's drive, a disc's or a FAT's (`dos_name` and `make_name_error` in `dos.rs`; `dosName`, `makeNameError` and `refusedName` in `src/dos/syscall/directory.ts`), and opens the name it made; a disc's file opened to write alone is refused, and why a file is not opened is told as `DOS_OpenFile` tells it (`open_path`, `open_error`; `open.ts`).
 - Both harnesses mount a probe's `iso` images (`image_volume`, `imageDrive`). [[probe:imgcd]] agrees wholly, 91 of 91 records, and [[probe:drvioctl]] 64 of 64, in both engines; [[probe:mscdex]] still 31 of 31.
 - MSCDEX counts a drive removable and remote a CD-ROM, so a disc mounted answers 1500h and 150Bh as `imgcd` recorded.
+- The page mounts a disc from its Drives strip, at the first free letter after the hard disks', and remembers a kept program's ([[topic:drives-and-disks]], "The page's drives"); [[probe:imgcd]] reads it there on both engines. The native build mounts one with `--mount D:GAME.ISO`, read from its file as sectors are asked for.
 
 ## Not yet done
 
-- Mounting a disc on the page (phase 7 of the design in [[topic:drives-and-disks]]). The native build mounts one (`--mount D:GAME.ISO`), read from its file as sectors are asked for, and swaps a set of discs ([[topic:drives-and-disks]], "The native build's drives").
 - A write to a disc's file opened to read and write: DOSBox's `isoFile::Write` fails and DOS answers whatever error it last set (`dos.cpp` 590-603), which neither engine keeps; both answer 5.
 - `DOS_MakeName` on a folder's drive, C: among them: both engines take any name there, cut nothing and refuse nothing, where DOSBox does as on an image.
 - MSCDEX's calls that take a buffer (1501h, 1505h, 150Dh, 150Fh, 1510h), which through Windows need DPMI's real-mode calls and memory below 1 MB.

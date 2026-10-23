@@ -61,7 +61,13 @@ programs on every visit, where Open puts it on C: and Forget lets it go (see
 game's high scores, a saved document -- is kept there too, as the changes
 against what was dropped (each kept program's apart, and on the bundle's base
 each display's), and put back on either engine each time the page is opened,
-until Forget changes clears them. Nothing is uploaded. As a
+until Forget changes clears them. Disk and CD images (`.img`, `.iso`) dropped
+beside Windows become drives, in the Drives strip: floppies dropped together
+are one set at A:, swapped with Next and Eject, a hard disk image D:, a CD the
+letter after; programs on them run from there, an installer on a floppy
+installs into a layer, what programs write to a disk is saved only as a new
+file (Save image…), and a kept program remembers its CD (see
+`kb/topics/drives-and-disks.md`). Nothing is uploaded. As a
 program runs, the page lists every API function it called, marking the ones
 that reach no implementation yet, and its most recent calls with their
 arguments.
