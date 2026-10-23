@@ -163,7 +163,12 @@ export async function removeDirectory(this: any, path: string) {
     throw ERROR_ACCESS_DENIED;
   }
 
-  await this.files.query(drive).unlink(parent, name);
+  /* A drive that will not let it go, as a disk image not written to yet:
+   * error 5, as the Rust engine's answers. */
+  if (!(await this.files.query(drive).unlink(parent, name))) {
+    throw ERROR_ACCESS_DENIED;
+  }
+
   await this.files.changed(drive, parts);
 }
 
@@ -188,7 +193,8 @@ export async function fileAttributes(this: any, path: string, action: number, at
     return entry.info.attributes;
   }
 
-  if (attributes & ~SETTABLE) {
+  /* A disk image's are its entries', and it is not written to yet. */
+  if (attributes & ~SETTABLE || this.files.query(drive)?.readOnly) {
     throw ERROR_ACCESS_DENIED;
   }
 

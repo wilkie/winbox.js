@@ -5557,23 +5557,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * no such segment, and keeps the offset with the segment nought: 1
    * record of `locinfo`'s. */
   'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
-  /* The image probes' drives: images DOSBox mounts (`<probe>.mounts`) that
-   * neither engine presents yet -- a floppy's and a hard disk's FAT and an
-   * ISO 9660 disc (`kb/topics/drives-and-disks.md`, Not yet done). The
-   * drives the engines have agree: `drvioctl`'s A: with nothing in it, C:,
-   * E: (none), Z: and the numbers past; `imgcd`'s 150Ch, and `imgflop`'s
-   * label search, error 18 as on a drive with nothing. */
-  'drvioctl:b:': 'B: is a floppy image under DOSBox, which is not mounted here',
+  /* The image probes' drives that neither engine presents yet: an ISO
+   * 9660 disc (`kb/topics/drives-and-disks.md`, Not yet done). The drives
+   * the engines have agree: `drvioctl`'s A: with nothing in it, B: a
+   * floppy image, C:, E: (none), Z: and the numbers past; `imgcd`'s 150Ch. */
   'drvioctl:d:': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imgflop:entry': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:match': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:read': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:open': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:attr': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:space': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:ioctl': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:write': 'A: is a floppy image under DOSBox, which is not mounted here',
-  'imgflop:after': 'A: is a floppy image under DOSBox, which is not mounted here',
+  /* A FAT image is read and not yet written to: what `imgflop` and
+   * `imghdd` make, rename and delete on it, and its listing and room after,
+   * are refused here (phase 4 of the design). Their reads agree. */
+  'imgflop:write': 'A FAT image is not written to yet: making, renaming and deleting are refused',
+  'imgflop:after': 'The listing and room after writes to a FAT image, which are refused here',
   'imgcd:entry': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:label': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:match': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
@@ -5586,16 +5579,8 @@ export const KNOWN_GAPS: Record<string, string> = {
   'imgcd:150b': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:write': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:after': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imghdd:entry': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:label': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:match': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:read': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:open': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:attr': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:space': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:ioctl': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:write': 'D: is a hard disk image under DOSBox, which is not mounted here',
-  'imghdd:after': 'D: is a hard disk image under DOSBox, which is not mounted here',
+  'imghdd:write': 'A FAT image is not written to yet: making, renaming and deleting are refused',
+  'imghdd:after': 'The listing and room after writes to a FAT image, which are refused here',
 };
 
 /**

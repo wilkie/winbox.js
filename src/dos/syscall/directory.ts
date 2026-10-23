@@ -99,7 +99,10 @@ export function volumeLabel(dos: any, letter: string): string | null {
     return fileSystem.label;
   }
 
-  if (!fileSystem || fileSystem.removable) {
+  /* A disk image with no label of its own has none: DOSBox's FAT drive
+   * answers its label search with no file (`drive_fat.cpp` 857-867),
+   * **recorded** by `imgflop` and `imghdd`. */
+  if (!fileSystem || fileSystem.removable || fileSystem.listing === 'stored') {
     return null;
   }
 

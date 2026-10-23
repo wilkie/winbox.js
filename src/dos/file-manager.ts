@@ -57,7 +57,8 @@ export class FileManager {
   async changed(drive: string, parts: string[]) {
     const fileSystem = this.query(drive);
 
-    if (!this.now || !fileSystem) {
+    /* Not a disk image's, whose folders' stamps are its entries'. */
+    if (!this.now || !fileSystem || fileSystem.listing === 'stored') {
       return;
     }
 

@@ -110,11 +110,24 @@ function byBytes(a: string, b: string) {
  * `files.rs`'s `list`.
  */
 export async function listed(dos: any, drive: string, parts: string[], folder: any) {
+  /* A disk image's folder as the image keeps it: its entries in the order
+   * of their slots, `.` and `..` only where it has them, none in the root
+   * (`fatDrive::FindNextInternal`, `drive_fat.cpp` 898-960). **Recorded**
+   * by `imgflop` and `imghdd`. As `files.rs`'s `Listing::AsStored`. */
+  if (stored(dos, drive)) {
+    return (await folder.list()).map((entry: any) => entry.info);
+  }
+
   return [...(await held(folder)), ...(await dots(dos, drive, parts, folder))].sort(
     (a: any, b: any) =>
       ((b.attributes ?? 0) & ATTRIBUTE_DIRECTORY) - ((a.attributes ?? 0) & ATTRIBUTE_DIRECTORY) ||
       byBytes(String(a.name), String(b.name))
   );
+}
+
+/** Whether a drive lists its folders as a disk image keeps them. */
+function stored(dos: any, drive: string) {
+  return dos.files.query(drive)?.listing === 'stored';
 }
 
 /** What a folder holds, less the `.` and `..` a FAT folder keeps. */
@@ -312,10 +325,16 @@ async function carryOn(dos: any, state: Uint8Array) {
   /* The folder as it is now; its `.` and `..` made only when a search
    * comes to them, which takes looking at the folder above. */
   const folder = await openDirectory(dos, search.drive, search.parts);
-  const now = new Map(folder ? (await held(folder)).map((info: any) => [info.name, info]) : []);
+  const asStored = stored(dos, search.drive);
+  const entries = folder
+    ? asStored
+      ? await listed(dos, search.drive, search.parts, folder)
+      : await held(folder)
+    : [];
+  const now = new Map(entries.map((info: any) => [info.name, info]));
 
   const lookup = async (name: string) => {
-    if (folder && (name === '.' || name === '..')) {
+    if (folder && !asStored && (name === '.' || name === '..')) {
       return (await dots(dos, search.drive, search.parts, folder))[name === '.' ? 0 : 1];
     }
 
