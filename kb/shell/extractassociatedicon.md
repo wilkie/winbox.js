@@ -36,6 +36,8 @@ source: src/win16/shell/programs.ts
 3. If a program is found, it is copied over the path, with `.EXE` added where it has no extension (`0960`-`0988`). `ExtractIcon` runs again on it. A 1 gives the caller's icon 6, and nought gives the caller's icon 2.
 4. If it answers nought (no file, or no icon at that index), it is the caller's icon 2 and index 6 (`0904`-`0924`).
 
+[[read out]] `ExtractIcon` (seg10 `021a`, `026e`) reads a file's first word: `MZ` is a program's; nought is an icon file's, whose next word, its type, must be 1, else the answer is nought (`084a`, `030e`-`035c`); any other word answers 1. A PIF begins with a nought byte and its checksum's, nought in `DOSPRMPT.PIF`: [[measured]] Program Manager's item for `C:\WINDOWS\DOSPRMPT.PIF` has index 6 ([[probe:pmbare]]). A file shorter than two bytes answers nought (`02b7`-`02c1`). The engines follow all of these but an icon file's own first icon, which they do not yet read.
+
 ## Implementation
 
 `ExtractAssociatedIcon` in `src/win16/shell/programs.ts` and `extract_associated_icon` in `crates/winbox-win16/src/shell/programs.rs` follow those steps. They use the engines' own `ExtractIcon`, `FindExecutable`, `GetModuleFileName` and `LoadIcon`.

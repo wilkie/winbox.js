@@ -82,6 +82,15 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
   - keeps track of which child is maximized.
 - [[read out]] **`TranslateMDISysAccel`** (seg15 `01d1`): Ctrl+F4 closes the active child. Ctrl+F6 or Ctrl+Tab goes to the next child, and with Shift to the one before.
 
+## A child shown, minimized and maximized
+
+- [[read out]] `ShowWindow` shows or hides a child without making it active or moving it among its brothers: `SWP_NOZORDER` and `SWP_NOACTIVATE` (`USER.EXE` seg14 `0cf5`-`0d2b`). But `SW_SHOWMINIMIZED`, `SW_SHOWMAXIMIZED`, `SW_MINIMIZE` and `SW_SHOWMINNOACTIVE`, and `SW_SHOWNORMAL`, `SW_SHOWNOACTIVATE` and `SW_RESTORE` of a window minimized or maximized, go to `MinMaximize` (seg14 `0c39`-`0c92`, seg6 `1a72`), which places a child as it places a window at the top: in front and made active, but `SWP_NOACTIVATE` for `SW_SHOWNOACTIVATE`, `SW_MINIMIZE` and `SW_SHOWMINNOACTIVE` where a window is active, and for the last two after the last of its brothers beneath it owned as it is (seg6 `1b3d`-`1b81`, `1c66`, `1e58`). `SW_SHOWNOACTIVATE` of a window minimized or maximized restores it.
+- [[read out]] `SetWindowPos` sends the first window of its list moved without `SWP_NOACTIVATE`, if a child, `WM_CHILDACTIVATE`; a window at the top it makes active (`USER.EXE` seg7 `0ca3`-`0ce6`, `0260`-`026f`, `0382`-`03a6`). An MDI child so becomes the active one.
+- [[read out]] `DefMDIChildProc` given `WM_SIZE` with `SIZE_MINIMIZED`, where the client is within the active window, sends `WM_CHILDACTIVATE` to the first of the client's children from the front that is shown and owned by none (seg15 `1826`-`1865`): itself, minimized in front, or the one now above it.
+- [[read out]] A window's style holds its state: `MinMaximize` sets and clears `WS_MINIMIZE` and `WS_MAXIMIZE` (seg6 `1c40`-`1c44`, `1d13`-`1d35`), and `GetWindowLong` answers them.
+- [[measured]] Program Manager's `[ShowGroup]` gives a group each show command in turn; which group is current after each, and where its window lies, is in [[topic:program-manager-dde]]. Both engines agree with every record of [[probe:pmgroups]].
+- [[read out]] `SetWindowPlacement` with `WPF_SETMINPOSITION` puts the window's icon at `ptMinPosition`, in its parent's client area. [[measured]] Program Manager places a minimized group so, and two groups loaded from the same file's bytes lie at one icon place ([[probe:pmfiles]]).
+
 ## What they needed besides
 
 - [[measured]] Program Manager, to open:
@@ -126,4 +135,5 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 - `src/win16/user/mdi.ts` holds the class, its messages and the default procedures.
 - `src/win16/user/placement.ts` holds `SetWindowPlacement`.
+- `showRaster` in `src/win16/user/window-state.ts` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
 - `Desktop.maximize` fills a child's parent.
