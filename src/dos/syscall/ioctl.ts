@@ -139,5 +139,7 @@ export function deviceInformation(this: any, handle: number) {
 
   const letter = String(file.mount ?? this.files.drive ?? 'C').toUpperCase();
 
-  return (letter.charCodeAt(0) - 0x41) & 0x3f;
+  /* A disc's file has bit 6 set, as `isoFile::GetInformation` answers 40h
+   * (`drive_iso.cpp` 130-132, `dos_ioctl.cpp` 62). As `dos.rs`. */
+  return ((letter.charCodeAt(0) - 0x41) & 0x3f) | (file.onDisc ? 0x40 : 0);
 }

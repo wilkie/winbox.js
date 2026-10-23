@@ -9,8 +9,97 @@
  * it is.
  */
 
+const ERROR_FILE_NOT_FOUND = 0x02;
 const ERROR_PATH_NOT_FOUND = 0x03;
 const ERROR_INVALID_DRIVE = 0x0f;
+
+/**
+ * A name of a path as DOSBox's `DOS_MakeName` makes it (`dos_files.cpp`
+ * 81-117, 168-180) before any drive's function sees it: spaces dropped,
+ * and, after its first dot, three characters kept and before it eight;
+ * eight with no dot. Followed for the drives that follow `dos_files.cpp`,
+ * disk and disc images (`listing` `stored`). **Recorded** by `imgcd`:
+ * `A_VERY_LONG_FILE_NAME.TEXT` opens `A_VERY_L.TEX`, and `LONGNAMEDFOLDER`,
+ * made `LONGNAME`, finds no `LONGNAMEDFOL`. As `dos.rs`'s `dos_name`.
+ */
+export function dosName(whole: string) {
+  const name = whole.replaceAll(' ', '');
+
+  if (/^\.*$/.test(name)) {
+    return name;
+  }
+
+  const dot = name.indexOf('.');
+
+  if (dot < 0) {
+    return name.substring(0, 8);
+  }
+
+  return name.substring(0, Math.min(dot, 8)) + name.substring(dot, dot + 4);
+}
+
+/** The characters `DOS_MakeName` takes besides letters and digits (`dos_files.cpp` 84-101). */
+const TAKEN = new Set([
+  ..."/ \\$#@()!%{}`~_-.*?&'+^",
+  ...[246, 255, 0xa0, 0xe5, 0xbd].map((code) => String.fromCharCode(code)),
+]);
+
+/**
+ * What DOSBox's `DOS_MakeName` refuses of a path (`dos_files.cpp` 58-180):
+ * none or a space first, file not found; a character it does not take, path
+ * not found; a name with a second dot after its first, file not found for
+ * the last name and path not found for a folder's. **Recorded** by `imgcd`:
+ * `README.TXT;1` is path not found. As `dos.rs`'s `make_name_error`.
+ */
+export function makeNameError(path: string): number | null {
+  if (!path || path.startsWith(' ')) {
+    return ERROR_FILE_NOT_FOUND;
+  }
+
+  const rest = path.length >= 2 && path[1] === ':' ? path.substring(2) : path;
+
+  for (const character of rest) {
+    if (!/[A-Za-z0-9]/.test(character) && !TAKEN.has(character)) {
+      return ERROR_PATH_NOT_FOUND;
+    }
+  }
+
+  const names = rest.split(/[\\/]/);
+
+  for (let at = 0; at < names.length; at++) {
+    const name = names[at].replaceAll(' ', '');
+    const dot = name.indexOf('.');
+
+    if (/^\.*$/.test(name)) {
+      continue;
+    }
+
+    if (dot >= 0 && name.indexOf('.', dot + 1) >= 0) {
+      return at + 1 === names.length ? ERROR_FILE_NOT_FOUND : ERROR_PATH_NOT_FOUND;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * DOSBox's `DOS_MakeName`'s refusal of a path (`makeNameError`), on a
+ * drive that follows `dos_files.cpp`: a disk or disc image. A folder's
+ * drive takes any name, as before. As `dos.rs`'s `refused_name`.
+ */
+export function refusedName(dos: any, path: string) {
+  const drive = path.length >= 2 && path[1] === ':' ? path[0].toUpperCase() : dos.files.drive;
+
+  if (dos.files.query(drive)?.listing !== 'stored') {
+    return;
+  }
+
+  const error = makeNameError(path);
+
+  if (error !== null) {
+    throw error;
+  }
+}
 
 /**
  * A directory path taken apart: its drive letter and its parts from the
@@ -42,6 +131,10 @@ export function resolveDirectory(dos: any, path: string) {
     } else {
       parts.push(part.toUpperCase());
     }
+  }
+
+  if (dos.files.query(drive)?.listing === 'stored') {
+    return { drive, parts: parts.map(dosName) };
   }
 
   return { drive, parts };

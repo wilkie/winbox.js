@@ -86,7 +86,82 @@ fn resolve_directory(files: &Files, path: &str) -> (char, Vec<String>) {
         }
     }
 
+    if files.listing(drive) == Listing::AsStored {
+        parts = parts.iter().map(|part| dos_name(part)).collect();
+    }
+
     (drive, parts)
+}
+
+/// A name of a path as DOSBox's `DOS_MakeName` makes it (`dos_files.cpp`
+/// 81-117, 168-180) before any drive's function sees it: spaces dropped,
+/// and, after its first dot, three characters kept and before it eight;
+/// eight with no dot. Followed for the drives that follow `dos_files.cpp`,
+/// disk and disc images (`Listing::AsStored`). **Recorded** by `imgcd`:
+/// `A_VERY_LONG_FILE_NAME.TEXT` opens `A_VERY_L.TEX`, and
+/// `LONGNAMEDFOLDER`, made `LONGNAME`, finds no `LONGNAMEDFOL`.
+fn dos_name(name: &str) -> String {
+    let name: Vec<char> = name.chars().filter(|&character| character != ' ').collect();
+
+    if name.iter().all(|&character| character == '.') {
+        return name.into_iter().collect();
+    }
+
+    match name.iter().position(|&character| character == '.') {
+        Some(dot) => name[..dot.min(8)]
+            .iter()
+            .chain(name[dot..].iter().take(4))
+            .collect(),
+        None => name.into_iter().take(8).collect(),
+    }
+}
+
+/// What DOSBox's `DOS_MakeName` refuses of a path (`dos_files.cpp` 58-180):
+/// none or a space first, file not found; a character it does not take, path
+/// not found; a name with a second dot after its first, file not found for
+/// the last name and path not found for a folder's. **Recorded** by
+/// `imgcd`: `README.TXT;1` is path not found.
+fn make_name_error(path: &str) -> Option<u16> {
+    if path.is_empty() || path.starts_with(' ') {
+        return Some(ERROR_FILE_NOT_FOUND);
+    }
+
+    let rest = if path.len() >= 2 && path.as_bytes()[1] == b':' {
+        &path[2..]
+    } else {
+        path
+    };
+    let taken = |character: char| {
+        character.is_ascii_alphanumeric()
+            || "/ \\$#@()!%{}`~_-.*?&'+^".contains(character)
+            || matches!(u32::from(character), 246 | 255 | 0xa0 | 0xe5 | 0xbd)
+    };
+
+    if !rest.chars().all(taken) {
+        return Some(ERROR_PATH_NOT_FOUND);
+    }
+
+    let names: Vec<&str> = rest.split(['\\', '/']).collect();
+
+    for (at, name) in names.iter().enumerate() {
+        let name: String = name.chars().filter(|&character| character != ' ').collect();
+
+        if name.chars().all(|character| character == '.') {
+            continue;
+        }
+
+        if let Some(dot) = name.find('.')
+            && name[dot + 1..].contains('.')
+        {
+            return Some(if at + 1 == names.len() {
+                ERROR_FILE_NOT_FOUND
+            } else {
+                ERROR_PATH_NOT_FOUND
+            });
+        }
+    }
+
+    None
 }
 
 /// A file's path taken apart: its drive, its folder's names, and its name.
@@ -97,8 +172,13 @@ fn resolve_file(files: &Files, path: &str) -> (char, Vec<String>, String) {
         .max()
         .map_or(0, |at| at + 1);
     let (drive, parts) = resolve_directory(files, &path[..slash]);
+    let name = path[slash..].to_ascii_uppercase();
 
-    (drive, parts, path[slash..].to_ascii_uppercase())
+    if files.listing(drive) == Listing::AsStored && !name.is_empty() {
+        return (drive, parts, dos_name(&name));
+    }
+
+    (drive, parts, name)
 }
 
 /// A name as a search pattern's eleven characters: a `*` fills its part
@@ -481,10 +561,14 @@ impl System {
         let drive = self
             .files
             .resolve(usize::from(handle))
-            .map(|file| file.drive);
+            .map(|file| (file.drive, file.on_disc()));
 
+        // A disc's file has bit 6 set, as `isoFile::GetInformation` answers
+        // 40h (`drive_iso.cpp` 130-132, `dos_ioctl.cpp` 62).
         self.cpu.regs[DX] = match drive {
-            Some(letter) => u16::from(letter as u8 - b'A') & 0x3f,
+            Some((letter, disc)) => {
+                u16::from(letter as u8 - b'A') & 0x3f | if disc { 0x40 } else { 0 }
+            }
             None if handle <= 4 => 0x80d3,
             None => return Err(ERROR_INVALID_HANDLE),
         };
@@ -564,11 +648,22 @@ impl System {
 
         let path = self.string_at(DS, SI);
         let attributes = self.low(CX);
-        let (handle, done) = match self.files.open(&path) {
+        let mode = self.low(BX);
+        let (drive, ..) = resolve_file(&self.files, &path);
+        // A disc's file opened to write alone is refused
+        // (`isoDrive::FileOpen`), and the error `DOS_OpenFile` gives is the
+        // one answered where nothing is to be made.
+        let refused = self.files.removable(drive) && self.files.remote(drive) && mode & 0x0f == 1;
+        let opened = if refused {
+            None
+        } else if self.files.listing(drive) == Listing::AsStored {
+            self.files.open(&self.placed_path(&path))
+        } else {
+            self.files.open(&path)
+        };
+        let (handle, done) = match opened {
             Some(handle) => match action & 0x0f {
                 1 => {
-                    let mode = self.low(BX);
-
                     if let Some(file) = self.files.resolve(handle) {
                         file.set_mode(mode);
                     }
@@ -584,7 +679,7 @@ impl System {
                     return Err(ERROR_FILE_EXISTS);
                 }
             },
-            None if action & 0xf0 == 0 => return Err(ERROR_FILE_NOT_FOUND),
+            None if action & 0xf0 == 0 => return Err(self.open_error(&path, mode)),
             None => (self.make_file_with(&path, false, attributes)?, 2),
         };
 
@@ -594,7 +689,11 @@ impl System {
     }
 
     fn make_directory(&mut self) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+        let path = self.string_at(DS, DX);
+
+        self.refused_name(&path)?;
+
+        let (drive, parts, name) = resolve_file(&self.files, &path);
 
         // A disk image's folder made as DOSBox's `DOS_MakeDir` makes it
         // (`dos_files.cpp` 217-233): its `MakeDir` asked first, whatever is
@@ -628,7 +727,11 @@ impl System {
     }
 
     fn remove_directory(&mut self) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+        let path = self.string_at(DS, DX);
+
+        self.refused_name(&path)?;
+
+        let (drive, parts, name) = resolve_file(&self.files, &path);
 
         // A disk image's folder removed as DOSBox's `DOS_RemoveDir` removes
         // it (`dos_files.cpp` 235-261): one a search for folders does not
@@ -782,6 +885,8 @@ impl System {
     /// A file created as `make_file` creates one, with the attributes CX
     /// gave DOS, which a disk image's entry keeps.
     fn make_file_with(&mut self, path: &str, fresh: bool, attributes: u8) -> Result<usize, u16> {
+        self.refused_name(path)?;
+
         let (drive, parts, name) = resolve_file(&self.files, path);
 
         if name.is_empty() || !self.files.is_directory(drive, &parts) {
@@ -805,37 +910,91 @@ impl System {
         self.files.create_with(&path, attributes).ok_or(refused)
     }
 
-    fn open_file(&mut self) -> Result<(), u16> {
-        let path = self.string_at(DS, DX);
-        let mode = self.low(AX);
-        let (drive, ..) = resolve_file(&self.files, &path);
+    /// DOSBox's `DOS_MakeName`'s refusal of a path (`make_name_error`), on
+    /// a drive that follows `dos_files.cpp`: a disk or disc image. A folder's
+    /// drive takes any name, as before.
+    fn refused_name(&self, path: &str) -> Result<(), u16> {
+        let drive = match path.as_bytes() {
+            [letter, b':', ..] => char::from(*letter).to_ascii_uppercase(),
+            _ => self.files.drive,
+        };
+
+        if self.files.listing(drive) != Listing::AsStored {
+            return Ok(());
+        }
+
+        make_name_error(path).map_or(Ok(()), Err)
+    }
+
+    /// A file opened as DOSBox's `DOS_OpenFile` opens one (`dos_files.cpp`
+    /// 509-570), in a mode, AL of 3Dh: its handle, or DOS's error. On a
+    /// disc, `isoDrive::FileOpen` refuses a file opened to write alone
+    /// (`drive_iso.cpp` 204-208).
+    pub(crate) fn open_path(&mut self, path: &str, mode: u8) -> Result<usize, u16> {
+        let (drive, ..) = resolve_file(&self.files, path);
+        let stored = self.files.listing(drive) == Listing::AsStored;
 
         // A folder or a label on a disk image is not opened: access denied
         // (`DOS_OpenFile`, `dos_files.cpp` 517-523).
-        if self.files.listing(drive) == Listing::AsStored
+        if stored
             && self
-                .attributes_of(&path)
+                .attributes_of(path)
                 .is_ok_and(|attributes| attributes & 0x18 != 0)
         {
             return Err(ERROR_ACCESS_DENIED);
         }
 
-        let Some(handle) = self.files.open(&path) else {
-            // Not there, on a disk image: "path not found" where its folder
-            // is not there either, as DOSBox's `DOS_OpenFile` answers
-            // (`PathExists`, `dos_files.cpp` 447-459, 563).
-            let (drive, parts, _) = resolve_file(&self.files, &path);
+        self.refused_name(path)?;
 
-            return Err(
-                if self.files.listing(drive) == Listing::AsStored
-                    && !self.files.is_directory(drive, &parts)
-                {
-                    ERROR_PATH_NOT_FOUND
-                } else {
-                    ERROR_FILE_NOT_FOUND
-                },
-            );
+        let refused = self.files.removable(drive) && self.files.remote(drive) && mode & 0x0f == 1;
+        let opened = if refused {
+            None
+        } else if stored {
+            // The name `DOS_MakeName` made, as the drive's `FileOpen` is
+            // given it.
+            self.files.open(&self.placed_path(path))
+        } else {
+            self.files.open(path)
         };
+        let Some(handle) = opened else {
+            return Err(self.open_error(path, mode));
+        };
+
+        Ok(handle)
+    }
+
+    /// Why a file was not opened, as DOSBox's `DOS_OpenFile` tells it
+    /// (`dos_files.cpp` 560-568), on a disk or disc image: a file there
+    /// opened other than to read alone, access denied; else "path not
+    /// found" where its folder is not there either (`PathExists`, 447-459),
+    /// "file not found" where it is. Another drive's, file not found.
+    fn open_error(&self, path: &str, mode: u8) -> u16 {
+        let (drive, parts, name) = resolve_file(&self.files, path);
+
+        if self.files.listing(drive) != Listing::AsStored {
+            return ERROR_FILE_NOT_FOUND;
+        }
+
+        if mode & 3 != 0
+            && self
+                .files
+                .image_attributes(drive, &parts, &name)
+                .is_some_and(|attributes| attributes & 0x10 == 0)
+        {
+            return ERROR_ACCESS_DENIED;
+        }
+
+        if self.files.is_directory(drive, &parts) {
+            ERROR_FILE_NOT_FOUND
+        } else {
+            ERROR_PATH_NOT_FOUND
+        }
+    }
+
+    fn open_file(&mut self) -> Result<(), u16> {
+        let path = self.string_at(DS, DX);
+        let mode = self.low(AX);
+        let handle = self.open_path(&path, mode)?;
 
         if let Some(file) = self.files.resolve(handle) {
             file.set_mode(mode);
@@ -912,6 +1071,8 @@ impl System {
 
     /// A file deleted, as DOS's function 41h deletes one.
     pub(crate) fn delete_path(&mut self, path: &str) -> Result<(), u16> {
+        self.refused_name(path)?;
+
         let (drive, parts, name) = resolve_file(&self.files, path);
 
         // A disk image's file deleted as DOSBox's `DOS_UnlinkFile` deletes
@@ -973,6 +1134,8 @@ impl System {
     /// A file's attributes, as function 4300h answers them; DOS's error
     /// where it is not there.
     pub(crate) fn attributes_of(&self, path: &str) -> Result<u8, u16> {
+        self.refused_name(path)?;
+
         let (drive, parts, name) = resolve_file(&self.files, path);
 
         // A disk image's, as DOSBox's `fatDrive::GetFileAttr` finds them:
@@ -1028,8 +1191,14 @@ impl System {
 
         // A disk image's found as DOSBox's `GetFileAttr` finds them, and
         // set as its `DOS_SetFileAttr` sets them: not at all, the file
-        // only looked for (`dos_files.cpp` 643-656).
+        // only looked for (`dos_files.cpp` 643-656) -- on a disc, refused
+        // before it is looked for, access denied (648-651).
         if self.files.listing(drive) == Listing::AsStored {
+            if self.low(AX) != 0 && self.files.removable(drive) && self.files.remote(drive) {
+                self.refused_name(&path)?;
+                return Err(ERROR_ACCESS_DENIED);
+            }
+
             let attributes = self.attributes_of(&path)?;
 
             if self.low(AX) == 0 {
@@ -1097,6 +1266,9 @@ impl System {
     /// a folder into itself -- 2 as well. A folder moves with all it holds.
     /// **Recorded** by `dirorder`.
     fn rename_path(&mut self, from: &str, to: &str) -> Result<(), u16> {
+        self.refused_name(from)?;
+        self.refused_name(to)?;
+
         let (drive, parts, name) = resolve_file(&self.files, from);
         let (to_drive, to_parts, to_name) = resolve_file(&self.files, to);
 
@@ -1189,6 +1361,35 @@ impl System {
         state[0] = drive as u8 - 0x40;
         state[1..12].copy_from_slice(&pattern.as_bytes()[..11]);
         state[12] = self.low(CX);
+
+        self.refused_name(&spec)?;
+
+        // A disc's search, as DOSBox's `isoDrive::FindFirst` begins it
+        // (`drive_iso.cpp` 250-284): the pattern as `GetSearchParams` gives
+        // it, the number of its directory iterator kept in the record's
+        // word at 0Dh (`dirID`).
+        let dotted: String = state[1..9]
+            .iter()
+            .chain(b".")
+            .chain(&state[9..12])
+            .map(|&byte| char::from(byte))
+            .collect();
+
+        if let Some(begun) = self.files.find_first(drive, &parts, state[12], &dotted) {
+            let (iterator, found) = begun?;
+
+            state[13..15].copy_from_slice(&iterator.to_le_bytes());
+
+            if let Some(entry) = found {
+                self.answer_found(&state, &entry);
+                return Ok(());
+            }
+
+            let (segment, offset) = self.transfer();
+
+            self.write_far(u32::from(segment) << 16 | u32::from(offset), &state);
+            return Err(ERROR_NO_MORE_FILES);
+        }
 
         // A disk image's search, as DOSBox's `fatDrive::FindFirst` begins
         // it (`drive_fat.cpp` 857-878): the label alone asked for, none --

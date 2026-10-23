@@ -8,6 +8,7 @@ import { DOS } from '../../src/dos.js';
 import { Disk } from '../../src/emulator/disk.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { FATImage } from '../../src/file-systems/fat-image.js';
+import { ISO9660 } from '../../src/file-systems/iso9660.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
@@ -266,15 +267,18 @@ export function mountsOf(probe: string) {
 }
 
 /**
- * An image as a drive, where this engine can present one of its kind: a FAT
- * image, a floppy's or a hard disk's (`FATImage`); an ISO 9660 disc is to
- * come (`kb/topics/drives-and-disks.md`). A probe whose image is not
+ * An image as a drive: a FAT image, a floppy's or a hard disk's
+ * (`FATImage`), or an ISO 9660 disc (`ISO9660`). A probe whose image is not
  * mounted runs without it, and its records of that drive are known gaps.
  * As `support/mod.rs`'s `image_volume`.
  */
 async function imageDrive(kind: 'floppy' | 'iso' | 'hdd', bytes: Uint8Array): Promise<any | null> {
   if (kind === 'floppy' || kind === 'hdd') {
     return await FATImage.of(bytes, kind === 'floppy');
+  }
+
+  if (kind === 'iso') {
+    return ISO9660.of(bytes);
   }
 
   return null;

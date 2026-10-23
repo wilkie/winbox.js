@@ -8,7 +8,7 @@ pub mod layered;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use winbox_machine::{FatVolume, HostDrive, HostLayer, MemoryDrive, Volume};
+use winbox_machine::{FatVolume, HostDrive, HostLayer, IsoVolume, MemoryDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -215,9 +215,8 @@ pub const AGREEING: &[&str] = &[
     "imgflop",
     "imghdd",
     "imgwrite",
-    // Not `drvioctl` or `imgcd`: a CD-ROM image DOSBox mounts
-    // (`<probe>.mounts`) that this engine does not present yet
-    // (`image_volume`); `drvioctl`'s other drives agree.
+    "drvioctl",
+    "imgcd",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -985,13 +984,15 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
         .collect()
 }
 
-/// An image as a drive, where this engine can present one of its kind: a
-/// FAT image, a floppy's or a hard disk's (`FatVolume`); an ISO 9660 disc
-/// is to come (`kb/topics/drives-and-disks.md`). A probe whose image is not
-/// mounted runs without it, and is left out of `AGREEING`.
+/// An image as a drive: a FAT image, a floppy's or a hard disk's
+/// (`FatVolume`), or an ISO 9660 disc (`IsoVolume`). A probe whose image
+/// is not mounted runs without it, and is left out of `AGREEING`.
 fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
     match mount.kind.as_str() {
         "floppy" | "hdd" => FatVolume::new(bytes, mount.kind == "floppy")
+            .ok()
+            .map(|volume| Box::new(volume) as Box<dyn Volume>),
+        "iso" => IsoVolume::new(bytes)
             .ok()
             .map(|volume| Box::new(volume) as Box<dyn Volume>),
         _ => None,

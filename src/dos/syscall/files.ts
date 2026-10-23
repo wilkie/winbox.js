@@ -9,7 +9,7 @@
  * not begin at the root, as the other calls take it (`directory.ts`).
  */
 
-import { openDirectory, resolveDirectory } from './directory.js';
+import { dosName, openDirectory, refusedName, resolveDirectory } from './directory.js';
 
 const ERROR_PATH_NOT_FOUND = 0x03;
 const ERROR_INVALID_HANDLE = 0x06;
@@ -26,8 +26,13 @@ const SETTABLE = 0x27;
 export function resolveFile(dos: any, path: string) {
   const slash = Math.max(path.lastIndexOf('\\'), path.lastIndexOf('/'), path.indexOf(':'));
   const { drive, parts } = resolveDirectory(dos, path.substring(0, slash + 1));
+  const name = path.substring(slash + 1).toUpperCase();
 
-  return { drive, parts, name: path.substring(slash + 1).toUpperCase() };
+  if (dos.files.query(drive)?.listing === 'stored' && name) {
+    return { drive, parts, name: dosName(name) };
+  }
+
+  return { drive, parts, name };
 }
 
 /** The whole path of a file, as the file manager opens it. */
@@ -48,6 +53,8 @@ function image(dos: any, drive: string) {
 }
 
 async function make(dos: any, path: string, fresh: boolean, attributes = 0) {
+  refusedName(dos, path);
+
   const { drive, parts, name } = resolveFile(dos, path);
 
   if (!name || !(await openDirectory(dos, drive, parts))) {
@@ -116,6 +123,8 @@ export async function writeFile(this: any, handle: number, address: number, coun
 
 /** Deletes a file (41h). */
 export async function deleteFile(this: any, path: string) {
+  refusedName(this, path);
+
   const { drive, parts, name } = resolveFile(this, path);
 
   /* A disk image's file deleted as DOSBox's `DOS_UnlinkFile` deletes it:
@@ -146,6 +155,8 @@ export async function deleteFile(this: any, path: string) {
 
 /** Makes a directory (39h): error 3 when its parent is not there, 5 when the name is. */
 export async function makeDirectory(this: any, path: string) {
+  refusedName(this, path);
+
   const { drive, parts, name } = resolveFile(this, path);
 
   /* A disk image's folder made as DOSBox's `DOS_MakeDir` makes it
@@ -159,9 +170,7 @@ export async function makeDirectory(this: any, path: string) {
       return;
     }
 
-    throw fileSystem.searchFolder([...parts, name]) !== null
-      ? ERROR_ACCESS_DENIED
-      : ERROR_PATH_NOT_FOUND;
+    throw fileSystem.testDir([...parts, name]) ? ERROR_ACCESS_DENIED : ERROR_PATH_NOT_FOUND;
   }
   const parent = await openDirectory(this, drive, parts);
 
@@ -182,6 +191,8 @@ export async function makeDirectory(this: any, path: string) {
  * and is not a drive's current directory.
  */
 export async function removeDirectory(this: any, path: string) {
+  refusedName(this, path);
+
   const { drive, parts, name } = resolveFile(this, path);
 
   /* A disk image's folder removed as DOSBox's `DOS_RemoveDir` removes it
@@ -191,7 +202,7 @@ export async function removeDirectory(this: any, path: string) {
   if (image(this, drive) && name) {
     const fileSystem = this.files.query(drive);
 
-    if (fileSystem.searchFolder([...parts, name]) === null) {
+    if (!fileSystem.testDir([...parts, name])) {
       throw ERROR_PATH_NOT_FOUND;
     }
 
@@ -245,6 +256,8 @@ export async function removeDirectory(this: any, path: string) {
  * 1) from CX. A directory's or a volume label's bit cannot be set.
  */
 export async function fileAttributes(this: any, path: string, action: number, attributes: number) {
+  refusedName(this, path);
+
   const { drive, parts, name } = resolveFile(this, path);
   const fileSystem = this.files.query(drive);
 
@@ -252,8 +265,13 @@ export async function fileAttributes(this: any, path: string, action: number, at
    * finds none, its folder not there among them, error 2
    * (`DOS_GetFileAttr`, `dos_files.cpp` 632-641) -- and set as its
    * `DOS_SetFileAttr` sets them: not at all, the file only looked for
-   * (643-656). As `dos.rs`. */
+   * (643-656); on a disc, refused before it is looked for, access denied
+   * (648-651). As `dos.rs`. */
   if (fileSystem?.listing === 'stored') {
+    if (action !== 0 && fileSystem.removable && fileSystem.remote) {
+      throw ERROR_ACCESS_DENIED;
+    }
+
     const found = fileSystem.attributes([...parts, name]);
 
     if (found === null) {
@@ -295,6 +313,9 @@ export async function fileAttributes(this: any, path: string, action: number, at
  * stamp kept. **Recorded** by `dirorder`. As `dos.rs`.
  */
 export async function renameFile(this: any, from: string, to: string) {
+  refusedName(this, from);
+  refusedName(this, to);
+
   const source = resolveFile(this, from);
   const target = resolveFile(this, to);
 
