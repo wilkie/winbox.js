@@ -407,8 +407,6 @@ fn media_are_read_from_a_zip_and_names_are_held_to_dos() {
 
     write_files(&scratch.0, &[("Long Name.txt", b"", 800_000_000)]);
     assert!(host_tree(&scratch.0, "").unwrap_err().contains("DOS name"));
-    assert_eq!(media_folder("SimTower 2").unwrap(), "SIMTOWER");
-    assert!(media_folder("...").is_err());
 }
 
 fn root() -> PathBuf {
@@ -440,13 +438,15 @@ fn run_on(system: System, c: HostDrive, path: &str) -> System {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
-    let probe = root().join("oracle/build/probes/STRINGS.EXE");
-    let (Ok(bundle), Ok(probe)) = (
+    let probes = root().join("oracle/build/probes");
+    let (Ok(bundle), Ok(installer), Ok(child)) = (
         Assets::open(&root().join("oracle/build/assets")),
-        std::fs::read(&probe),
+        std::fs::read(probes.join("INSTLAY.EXE")),
+        std::fs::read(probes.join("INSTLAYC.EXE")),
     ) else {
-        eprintln!("skipped: the asset bundle, or the strings probe, is not made");
+        eprintln!("skipped: the asset bundle, or the instlay probe, is not made");
         return;
     };
     let bundle = Rc::new(bundle);
@@ -456,7 +456,7 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
     std::fs::create_dir_all(&store.root).unwrap();
 
     let base = Base::of_assets(&bundle, "vga", &store.root).unwrap();
-    let mut program = Program::new("Oracle", &base);
+    let mut program = Program::new("Instlay", &base);
     let system = || {
         let mut system = System::new();
 
@@ -465,17 +465,37 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
         system
     };
 
+    // The folder the probe writes its records in, `C:\ORACLE`, is the
+    // user's own, a layer beneath the installer's: the probe harnesses
+    // count it among their media, and an installer's own folder is not the
+    // media's.
+    let own = scratch.0.join("own");
+
+    std::fs::create_dir_all(own.join("ORACLE")).unwrap();
+
+    let stack = store.stack(&base, &program).unwrap();
+    let layer = layer_of_folder(&own, &stack).unwrap();
+
+    store.add_layer(&mut program, &stack, &layer).unwrap();
+
     // Installing: the probe, as an installer, run from its media at
-    // C:\ORACLE over the base, writes C:\ORACLE\STRINGS.OUT.
+    // C:\WBSETUP over the base, with the program it installs beside it.
     let media = scratch.0.join("media");
 
-    write_files(&media, &[("STRINGS.EXE", &probe, 800_000_000)]);
+    write_files(
+        &media,
+        &[
+            ("INSTLAY.EXE", &installer, 800_000_000),
+            ("INSTLAYC.EXE", &child, 800_000_000),
+        ],
+    );
 
     let stack = store.stack(&base, &program).unwrap();
     let lowers = store.lowers(&base, &stack).unwrap();
-    let staging = store.stage("Oracle", &media, Some("strings.exe")).unwrap();
+    let staging = store.stage("Instlay", &media, Some("instlay.exe")).unwrap();
 
-    assert_eq!(staging.setup, "C:\\ORACLE\\STRINGS.EXE");
+    assert_eq!(staging.media, "WBSETUP");
+    assert_eq!(staging.setup, "C:\\WBSETUP\\INSTLAY.EXE");
 
     let ended = run_on(
         system(),
@@ -485,46 +505,89 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
 
     drop(ended);
 
-    let installed = installed(&staging, &stack, lowers)
+    let kept = installed(&staging, &stack, lowers)
         .unwrap()
         .expect("the installer left something");
 
     staging.discard();
 
-    // Its output kept, the media dropped: not the probe's file, nor its
-    // folder, which only the media made.
-    let paths: Vec<&str> = installed
+    // What the installer wrote, and nothing of the media: not the setup
+    // files, nor their folder. The same entries the probe harnesses keep
+    // for `instlay` (`crates/winbox-win16/tests/install_layer.rs`), apart
+    // from the probe's records in the user's `C:\ORACLE`, which the harness
+    // drops as part of its media. The stamps are this run's own, so the id
+    // is not the harness's; the entries and the bytes are.
+    let layer = &kept.layer;
+    let entries: Vec<String> = layer
         .manifest
         .entries
         .iter()
-        .map(LayerEntry::path)
+        .map(|entry| match entry {
+            LayerEntry::Removed { path } => format!("removed {path}"),
+            LayerEntry::Folder { path, .. } => format!("folder {path}"),
+            LayerEntry::File { path, .. } => format!("file {path}"),
+        })
+        .filter(|entry| !entry.ends_with("ORACLE") && !entry.contains("ORACLE\\"))
         .collect();
 
-    assert_eq!(paths, ["ORACLE\\STRINGS.OUT"]);
     assert_eq!(
-        installed.manifest.made.from.as_deref(),
-        Some("C:\\ORACLE\\STRINGS.EXE")
+        entries,
+        [
+            "removed WINDOWS\\SYSTEM\\SETUP.REG",
+            "folder INSTLAY",
+            "folder WINDOWS",
+            "folder WINDOWS\\SYSTEM",
+            "folder WINDOWS\\TEMP",
+            "file INSTLAY\\INSTLAY.INI",
+            "file INSTLAY\\INSTLAYC.EXE",
+            "file INSTLAY\\README.TXT",
+            "file WINDOWS\\INSTLAY.INI",
+            "file WINDOWS\\SYSTEM\\INSTLAY.DLL",
+            "file WINDOWS\\WIN.INI",
+        ]
+    );
+    assert!(
+        layer
+            .manifest
+            .entries
+            .iter()
+            .all(|entry| !entry.path().starts_with("WBSETUP"))
+    );
+    assert_eq!(
+        layer.manifest.made.from.as_deref(),
+        Some("C:\\WBSETUP\\INSTLAY.EXE")
+    );
+    assert_eq!(
+        layer
+            .blobs
+            .get(&sha256_hex(&child))
+            .map(|bytes| bytes.to_vec()),
+        Some(child.clone()),
+        "the program it installed, byte for byte"
     );
 
-    let output = installed.blobs.values().next().unwrap().to_vec();
+    // The media dropped, and what the installer wrote that names them told.
+    assert!(
+        kept.dropped
+            .iter()
+            .all(|path| path == "WBSETUP" || path.starts_with("WBSETUP\\")),
+        "dropped: {:?}",
+        kept.dropped
+    );
+    assert_eq!(
+        kept.references
+            .iter()
+            .map(|reference| format!("{}: {}", reference.path, reference.line))
+            .collect::<Vec<_>>(),
+        ["WINDOWS\\WIN.INI: Media=C:\\WBSETUP\\INSTLAYC.EXE"]
+    );
 
-    assert!(!output.is_empty());
-    store.add_layer(&mut program, &stack, &installed).unwrap();
+    store.add_layer(&mut program, &stack, layer).unwrap();
+    assert_eq!(program.exes, ["C:\\INSTLAY\\INSTLAYC.EXE"]);
 
-    // The program itself from the user's own files, in turn.
-    let own = scratch.0.join("own");
-
-    write_files(&own, &[("ORACLE\\STRINGS.EXE", &probe, 800_000_000)]);
-
-    let stack = store.stack(&base, &program).unwrap();
-    let layer = layer_of_folder(&own, &stack).unwrap();
-
-    store.add_layer(&mut program, &stack, &layer).unwrap();
-    assert_eq!(program.exes, ["C:\\ORACLE\\STRINGS.EXE"]);
-
-    // Run from its stack: what it writes goes in its user's layer, and the
-    // layers stay as kept.
-    let program = store.program("Oracle").unwrap().unwrap();
+    // The program installed, run from its stack: its records go in the
+    // user's layer, and the layers stay as kept.
+    let program = store.program("Instlay").unwrap().unwrap();
     let stack = store.stack(&base, &program).unwrap();
     let lowers = store.lowers(&base, &stack).unwrap();
     let ended = run_on(
@@ -536,18 +599,23 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
     drop(ended);
 
     let written = store
-        .user("Oracle")
+        .user("Instlay")
         .join("C")
         .join("ORACLE")
-        .join("STRINGS.OUT");
+        .join("INSTLAY.OUT");
+    let records = String::from_utf8_lossy(&std::fs::read(&written).unwrap()).to_string();
 
-    assert_eq!(std::fs::read(&written).unwrap(), output);
-    assert_eq!(
-        std::fs::read(lowers[1].path.join("ORACLE").join("STRINGS.OUT")).unwrap(),
-        output
+    // The installer's records were kept in the layer (`C:\ORACLE` is not
+    // the media's) and the program it started read back in them; run
+    // again from the stack it appends its own, and the folders it lists
+    // have the stamps they are given on the base, not README.TXT's.
+    assert_eq!(records.matches("c.module\t").count(), 2, "{records}");
+    assert!(
+        records.ends_with("c.stamp\tC:\\\\INSTLAY\tother\r\nc.stamp\tC:\\\\WINDOWS\tother\r\nc.stamp\tC:\\\\WINDOWS\\\\SYSTEM\tother\r\nc.stamp\tC:\\\\WINDOWS\\\\TEMP\tother\r\nc.stamp\tC:\\\\WINDOWS\\\\SYSTEM\\\\MIDIMAP.CFG\tother\r\n"),
+        "{records}"
     );
     assert_eq!(
-        store.layer(&installed.manifest.id).unwrap().manifest,
-        installed.manifest
+        store.layer(&layer.manifest.id).unwrap().manifest,
+        layer.manifest
     );
 }
