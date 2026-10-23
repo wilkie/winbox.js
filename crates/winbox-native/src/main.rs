@@ -69,6 +69,14 @@
 //! standard error; `--sound-dump` keeps what the speakers are handed, as a
 //! WAV file, and implies `--sound`.
 //!
+//! `--mount [L:]IMAGE[,IMAGE...]` mounts disk and disc images beside C:
+//! (`mounts.rs`), never writing them: a set of floppies or discs for one
+//! letter is swapped by `a next`, `a 2`, `a eject` on standard input or
+//! Ctrl+Shift+F12; `a save FILE` and `--write-back DIR` save a floppy as
+//! written, as a new file. `--install NAME A:` runs the installer from the
+//! images at A:, nothing of them put on C:, and a kept program remembers
+//! its images.
+//!
 //! Under WSL the window is opened on X, not Wayland (`event_loop`), which
 //! needs `libxkbcommon-x11-0` installed.
 //!
@@ -81,8 +89,10 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
+mod console;
 mod host_os;
 mod input;
+mod mounts;
 mod programs;
 mod script;
 mod seamless;
@@ -152,11 +162,15 @@ struct Options {
     /// What seamless mode did with the host's windows, frame by frame.
     seamless_log: Option<PathBuf>,
     script: Option<PathBuf>,
+    /// `--mount [L:]IMAGE[,IMAGE...]`, each as given.
+    mounts: Vec<mounts::Request>,
+    /// Where each image written to is saved, a new file, as the run ends.
+    write_back: Option<PathBuf>,
 }
 
-const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]]
+const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
 winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [and a run's switches]
-winbox-native --install NAME MEDIA [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--keep] [and a run's switches]
+winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--keep] [and a run's switches]
 winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE]";
 
 fn usage() -> ! {
@@ -193,6 +207,8 @@ fn options() -> Options {
         seamless_shots: None,
         seamless_log: None,
         script: None,
+        mounts: Vec::new(),
+        write_back: None,
     };
 
     while let Some(argument) = arguments.next() {
@@ -256,6 +272,14 @@ fn options() -> Options {
             "--seamless-log" => options.seamless_log = arguments.next().map(PathBuf::from),
             "--script" => options.script = arguments.next().map(PathBuf::from),
             "--display" => options.display = arguments.next(),
+            "--mount" => {
+                let spec = arguments.next().unwrap_or_else(|| usage());
+
+                options
+                    .mounts
+                    .push(mounts::parse_mount(&spec).unwrap_or_else(|error| refuse(&error)));
+            }
+            "--write-back" => options.write_back = arguments.next().map(PathBuf::from),
             _ => file = Some(PathBuf::from(argument)),
         }
     }
@@ -295,11 +319,9 @@ fn ask(question: &str, default: bool) -> bool {
     eprint!("{question} [{}] ", if default { "Y/n" } else { "y/N" });
     let _ = std::io::stderr().flush();
 
-    let mut line = String::new();
-
-    match std::io::stdin().read_line(&mut line) {
-        Ok(0) | Err(_) => default,
-        Ok(_) => match line.trim().to_ascii_lowercase().as_str() {
+    match console::line() {
+        None => default,
+        Some(line) => match line.trim().to_ascii_lowercase().as_str() {
             "y" | "yes" => true,
             "n" | "no" => false,
             _ => default,
@@ -723,6 +745,8 @@ struct Installing {
     stack: Vec<winbox_win16::layers::Layer>,
     lowers: Vec<winbox_machine::HostLayer>,
     staging: programs::Staging,
+    /// The images the installer ran with, for the program to remember.
+    media: Vec<programs::Medium>,
 }
 
 impl Installing {
@@ -748,9 +772,9 @@ impl Installing {
 
                 if !installed.dropped.is_empty() {
                     eprintln!(
-                        "{} entries of the media at C:\\{} dropped: they are discarded after installing",
+                        "{} entries of the media at {} dropped: they are discarded after installing",
                         installed.dropped.len(),
-                        self.staging.media
+                        self.staging.media_path()
                     );
                 }
 
@@ -769,6 +793,10 @@ impl Installing {
                         false,
                     )
                 {
+                    if !self.media.is_empty() {
+                        self.program.media = std::mem::take(&mut self.media);
+                    }
+
                     match self.store.add_layer(&mut self.program, &self.stack, &layer) {
                         Ok(()) => eprintln!(
                             "kept layer {}; {}'s programs: {}",
@@ -797,7 +825,7 @@ fn program_drive(
     name: &str,
     exe: Option<&String>,
     system: &mut System,
-) -> (HostDrive, String) {
+) -> (HostDrive, String, programs::Program) {
     let store = programs::Store::new(made_cache());
     let program = store
         .program(name)
@@ -864,7 +892,7 @@ fn program_drive(
         (None, exes) => refuse(&format!("{name} has programs {}: name one", exes.join(" "))),
     };
 
-    (c, path)
+    (c, path, program)
 }
 
 /// Drive C: of an installer's run: an empty top over its media, laid at
@@ -896,6 +924,33 @@ fn install_drive(
     let lowers = store
         .lowers(&base, &stack)
         .unwrap_or_else(|error| refuse(&error));
+    // Media on a drive of their own, the floppies or disc mounted there:
+    // nothing is put on C:.
+    if let Some(letter) = drive_media(media) {
+        let staging = store
+            .stage_drive(name, letter, setup.map(String::as_str))
+            .unwrap_or_else(|error| refuse(&error));
+        let c = staging
+            .drive(lowers.clone())
+            .unwrap_or_else(|error| refuse(&error));
+        let path = staging.setup.clone();
+
+        eprintln!("installing {name} from drive {letter}:, run as {path}");
+
+        return (
+            c,
+            path,
+            Installing {
+                store,
+                program,
+                stack,
+                lowers,
+                staging,
+                media: Vec::new(),
+            },
+        );
+    }
+
     // An installer named alone is in its media's folder.
     let is_exe = media
         .extension()
@@ -943,8 +998,23 @@ fn install_drive(
             stack,
             lowers,
             staging,
+            media: Vec::new(),
         },
     )
+}
+
+/// Media named as a drive, `A:` or `A:\`: the images mounted there.
+fn drive_media(media: &Path) -> Option<char> {
+    let text = media.to_str()?;
+    let bytes = text.as_bytes();
+
+    (matches!(bytes.len(), 2 | 3)
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && bytes
+            .get(2)
+            .is_none_or(|&slash| matches!(slash, b'\\' | b'/')))
+    .then(|| char::from(bytes[0]).to_ascii_uppercase())
 }
 
 #[allow(clippy::too_many_lines)]
@@ -959,6 +1029,7 @@ fn main() {
     let mut system = System::new();
     let mut made = None;
     let mut installing = None;
+    let mut kept = None;
     let (c, path) = match &options.mode {
         Mode::File(file) => {
             let (c, path, root) = file_drive(&options, file, &mut system);
@@ -966,7 +1037,12 @@ fn main() {
             made = root;
             (c, path)
         }
-        Mode::Program { name, exe } => program_drive(&options, name, exe.as_ref(), &mut system),
+        Mode::Program { name, exe } => {
+            let (c, path, program) = program_drive(&options, name, exe.as_ref(), &mut system);
+
+            kept = Some(program);
+            (c, path)
+        }
         Mode::Install { name, media, setup } => {
             let (c, path, install) =
                 install_drive(&options, name, media, setup.as_ref(), &mut system);
@@ -976,13 +1052,28 @@ fn main() {
         }
         Mode::LayerFrom { .. } => unreachable!("made above"),
     };
+    let mut mounts = mount_images(&options, kept.as_mut(), installing.as_mut());
+
+    system.files.mount('C', c);
+    mounts.mount(&mut system.files);
+
     // A program's file is read where it is on the host; a kept program's
-    // where its stack has it.
+    // where its stack has it; an installer on a drive of images there.
     let bytes = match &options.mode {
         Mode::File(file) => std::fs::read(file).expect("the program's file"),
-        _ => c
-            .read(&parts_of(&path))
-            .unwrap_or_else(|| refuse(&format!("{path}: not on drive C:"))),
+        _ => path
+            .rsplit_once('\\')
+            .and_then(|(folder, name)| system.files.read_from(folder, name))
+            .map_or_else(
+                || {
+                    if let Some(installing) = &installing {
+                        installing.staging.discard();
+                    }
+
+                    refuse(&format!("{path}: not there"))
+                },
+                |(_, bytes)| bytes,
+            ),
     };
     let executable = Executable::parse(bytes).expect("a New Executable");
     let Options {
@@ -997,6 +1088,7 @@ fn main() {
         seamless_shots,
         seamless_log,
         script,
+        write_back,
         ..
     } = options;
     let mut events = event_loop();
@@ -1028,7 +1120,6 @@ fn main() {
     // The host's own time: a program runs as fast as the host runs it, and
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
-    system.files.mount('C', c);
 
     let (program, libraries) = system.load(executable, &path);
 
@@ -1038,11 +1129,17 @@ fn main() {
         .expect("the program's registers");
 
     // Started in its own folder, as Program Manager starts a program whose
-    // item's working directory is where the program is.
-    if let Some((folder, _)) = path.rsplit_once('\\')
-        && folder.len() > 2
-    {
-        system.files.set_path(folder);
+    // item's working directory is where the program is: an installer on a
+    // drive of images on that drive, which is made current.
+    if let Some((folder, _)) = path.rsplit_once('\\') {
+        let letter = folder.chars().next().map(|c| c.to_ascii_uppercase());
+
+        if let Some(letter) = letter.filter(|&letter| letter != 'C') {
+            system.files.drive = letter;
+            system.files.set_path(&format!("{folder}\\"));
+        } else if folder.len() > 2 {
+            system.files.set_path(folder);
+        }
     }
 
     let screen = (
@@ -1052,7 +1149,7 @@ fn main() {
     // `--scale` enlarges desktop mode's window, each pixel of the screen a
     // square of the host's that many pixels.
     let window_size = scale.map(|scale| (screen.0 * scale.max(1), screen.1 * scale.max(1)));
-    if let Some(host_screen) = host_screen {
+    let host: Box<dyn Host> = if let Some(host_screen) = host_screen {
         let script = match script.as_deref().map(script::Script::read) {
             Some(Ok(script)) => script,
             Some(Err(error)) => {
@@ -1067,7 +1164,7 @@ fn main() {
         // button's release is its, and never comes back, so USER's own loop
         // moves the window there.
         system.set_seamless(cfg!(windows));
-        system.host = Some(HostSlot::new(Box::new(seamless_host::Seamless::new(
+        Box::new(seamless_host::Seamless::new(
             events,
             host_screen,
             seamless_shots,
@@ -1075,7 +1172,7 @@ fn main() {
             shot_seconds,
             sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
             script,
-        ))));
+        ))
     } else {
         let app = App {
             screen,
@@ -1083,22 +1180,43 @@ fn main() {
             ..App::default()
         };
 
-        system.host = Some(HostSlot::new(Box::new(Native {
+        Box::new(Native {
             events,
             app,
             shot,
             shot_seconds,
             started: Instant::now(),
             speaker: sound.then(|| speaker::Speaker::open(sound_dump.as_deref())),
-        })));
-    }
+        })
+    };
+    // The drives' commands and Ctrl+Shift+F12 taken between frames.
+    let mounts = Rc::new(std::cell::RefCell::new(mounts));
+    let host = if mounts.borrow().is_empty() {
+        host
+    } else {
+        mounts::take_the_chord();
+        eprintln!(
+            "drives: {}; on this console: a next, a 2, a eject, a save FILE, drives; Ctrl+Shift+F12 puts in each drive's next disk",
+            mounts.borrow().status().join("; ")
+        );
+        Box::new(Mounting {
+            inner: host,
+            mounts: Rc::clone(&mounts),
+        })
+    };
+
+    system.host = Some(HostSlot::new(host));
 
     let engine = winbox_win16::Engine::new(system);
     let stop = engine.run(u64::MAX / 2, f64::INFINITY);
 
     eprintln!("stopped: {stop:?}");
     // The window and the engine let go of before the console is asked.
-    drop(engine);
+    let mut system = engine.into_system();
+
+    system.host = None;
+    tell_written(&mounts.borrow(), &system.files, write_back.as_deref());
+    drop(system);
 
     if let Some(made) = made {
         let _ = std::fs::remove_dir_all(made);
@@ -1106,6 +1224,80 @@ fn main() {
 
     if let Some(installing) = installing {
         installing.end(keep);
+    }
+}
+
+/// The images mounted for the run (`mounts.rs`): those `--mount` gives,
+/// else those a kept program was last run with, its record told of those
+/// given; an installer's run told of them, for its program to remember.
+fn mount_images(
+    options: &Options,
+    kept: Option<&mut programs::Program>,
+    installing: Option<&mut Installing>,
+) -> mounts::Mounts {
+    let given = !options.mounts.is_empty();
+    let requests = match (&kept, given) {
+        (Some(program), false) => mounts::requests_of(&program.media),
+        _ => options.mounts.clone(),
+    };
+    let mounts = match mounts::Mounts::open(&requests) {
+        Ok(mounts) => mounts,
+        Err(error) if !given => {
+            eprintln!("the images it was run with: {error}: run without them");
+            mounts::Mounts::default()
+        }
+        Err(error) => refuse(&error),
+    };
+
+    if given && let Some(program) = kept {
+        program.media = mounts.media();
+
+        if let Err(error) = programs::Store::new(made_cache()).put_program(program) {
+            eprintln!("its images not remembered: {error}");
+        }
+    }
+
+    if let Some(installing) = installing {
+        installing.media = mounts.media();
+    }
+
+    mounts
+}
+
+/// As the run ends, each image written to saved into `--write-back`'s
+/// folder, a new file; without it, told as not saved.
+fn tell_written(mounts: &mounts::Mounts, files: &winbox_machine::Files, write_back: Option<&Path>) {
+    match write_back {
+        Some(dir) => {
+            for said in mounts.write_back(files, dir) {
+                eprintln!("{said}");
+            }
+        }
+        None => {
+            for written in mounts.written(files) {
+                eprintln!(
+                    "{written} was written to, and is not saved: --write-back DIR saves it as a new file"
+                );
+            }
+        }
+    }
+}
+
+/// A host with drives of images: the console's commands and Ctrl+Shift+F12
+/// done before each frame (`Mounts::poll`), the rest the host's own.
+struct Mounting {
+    inner: Box<dyn Host>,
+    mounts: Rc<std::cell::RefCell<mounts::Mounts>>,
+}
+
+impl Host for Mounting {
+    fn frame(&mut self, system: &mut System) -> bool {
+        self.mounts.borrow_mut().poll(&mut system.files);
+        self.inner.frame(system)
+    }
+
+    fn sound(&mut self, sound: &winbox_win16::audio::Sound) {
+        self.inner.sound(sound);
     }
 }
 

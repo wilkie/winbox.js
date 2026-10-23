@@ -157,6 +157,26 @@ only one; what it writes and deletes is kept for it in
 `winbox/users/NAME/`. A program's layers are bound to the display it was
 installed on, and to its base.
 
+Floppy, hard disk and CD-ROM images are mounted beside C: for any run
+(`kb/topics/drives-and-disks.md`, "The native build's drives"):
+
+```shell
+winbox-native ... --mount A:DISK1.IMG,DISK2.IMG --mount GAME.ISO [--write-back DIR]
+winbox-native --install NAME A: [SETUP.EXE] --mount A:DISK1.IMG,DISK2.IMG,DISK3.IMG (--assets FILE.zip|DIR | --windows DIR)
+```
+
+An `.iso` is a CD-ROM; any other image a FAT floppy (2,880 KB or less) or
+hard disk. Without a letter, floppies take A: then B:, a hard disk the first
+free from D:, a disc the first free after that. Several images for one letter
+are a set, the first in the drive: type `a next`, `a 2` or `a eject` on the
+console while the program runs (`drives` lists them), or press
+Ctrl+Shift+F12 for each drive's next disk. The images are never written:
+what a program writes to a floppy is kept apart for the run, and `a save
+FILE` or `--write-back DIR` saves it as a new image, never over a file that is
+there. `--install NAME A:` installs from the floppies at A:, putting nothing
+of them on C:, and a program remembers the images it was installed or run
+with, mounting them again at the same letters.
+
 On Windows, give `--windows` a local copy of the installation. An installation read across
 `\\wsl.localhost` works, but the program starts several seconds later.
 

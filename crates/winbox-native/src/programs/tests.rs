@@ -619,3 +619,175 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
         layer.manifest
     );
 }
+
+/// A floppy image holding the files given in a folder of its own, `SETUP`,
+/// made from a probe's floppy by writing them through the drive, as DOS
+/// would.
+fn floppy_of(files: &[(&str, &[u8])]) -> Vec<u8> {
+    let image = std::fs::read(root().join("oracle/probes/images/imgflop.img")).unwrap();
+    let mut drive = Files::new();
+
+    drive.mount(
+        'A',
+        winbox_machine::FatVolume::new(image, true).expect("a FAT floppy"),
+    );
+
+    assert!(drive.make_directory('A', &[String::new()], "SETUP"));
+
+    for (name, bytes) in files {
+        let handle = drive.create(&format!("A:\\SETUP\\{name}")).unwrap();
+
+        drive.resolve(handle).unwrap().write(bytes);
+        drive.close(handle);
+    }
+
+    drive.image('A').unwrap()
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn an_installer_run_from_a_floppy_image_drops_nothing_and_names_a() {
+    let probes = root().join("oracle/build/probes");
+    let (Ok(bundle), Ok(installer), Ok(child)) = (
+        Assets::open(&root().join("oracle/build/assets")),
+        std::fs::read(probes.join("INSTLAY.EXE")),
+        std::fs::read(probes.join("INSTLAYC.EXE")),
+    ) else {
+        eprintln!("skipped: the asset bundle, or the instlay probe, is not made");
+        return;
+    };
+    let bundle = Rc::new(bundle);
+    let scratch = Scratch::new("floppy");
+    let store = Store::new(scratch.0.join("winbox"));
+
+    std::fs::create_dir_all(&store.root).unwrap();
+
+    // The installer and the program it installs on a floppy image, the
+    // image read where it is and never written. In a folder: the probe
+    // installs from the folder it was started from only where that is not
+    // a drive's root.
+    let disk = scratch.0.join("DISK1.IMG");
+
+    std::fs::write(
+        &disk,
+        floppy_of(&[("INSTLAY.EXE", &installer), ("INSTLAYC.EXE", &child)]),
+    )
+    .unwrap();
+
+    let image = std::fs::read(&disk).unwrap();
+    let base = Base::of_assets(&bundle, "vga", &store.root).unwrap();
+    let mut program = Program::new("Floppy", &base);
+    let own = scratch.0.join("own");
+
+    std::fs::create_dir_all(own.join("ORACLE")).unwrap();
+
+    let stack = store.stack(&base, &program).unwrap();
+
+    store
+        .add_layer(
+            &mut program,
+            &stack,
+            &layer_of_folder(&own, &stack).unwrap(),
+        )
+        .unwrap();
+
+    let stack = store.stack(&base, &program).unwrap();
+    let lowers = store.lowers(&base, &stack).unwrap();
+    let staging = store
+        .stage_drive("Floppy", 'A', Some("setup/instlay.exe"))
+        .unwrap();
+
+    assert_eq!(staging.media, "A:\\");
+    assert_eq!(staging.media_path(), "A:\\");
+    assert_eq!(staging.setup, "A:\\SETUP\\INSTLAY.EXE");
+    assert!(staging.laid.is_empty());
+    assert!(store.stage_drive("Floppy", 'C', None).is_err());
+
+    // Run from A:, that drive current, as `main` starts an installer on a
+    // drive of images.
+    let mut mounts = crate::mounts::Mounts::open(&[crate::mounts::Request {
+        letter: Some('A'),
+        paths: vec![disk.clone()],
+    }])
+    .unwrap();
+    let mut system = System::new();
+
+    system.display = winbox_win16::display::mode("vga").unwrap();
+    system.assets = Some(Rc::clone(&bundle));
+    system
+        .files
+        .mount('C', staging.drive(lowers.clone()).unwrap());
+    mounts.mount(&mut system.files);
+
+    let (_, bytes) = system.files.read_from("A:\\SETUP", "INSTLAY.EXE").unwrap();
+    let executable = winbox_ne::Executable::parse(bytes).unwrap();
+    let (loaded, libraries) = system.load(executable, &staging.setup);
+
+    system.link(loaded);
+    system.start(loaded, libraries, "").unwrap();
+    system.files.drive = 'A';
+    system.files.set_path("A:\\SETUP");
+
+    let engine = winbox_win16::Engine::new(system);
+
+    assert_eq!(engine.run(2_000_000_000, 300.0), winbox_win16::Stop::Ended);
+    drop(engine.into_system());
+
+    let kept = installed(&staging, &stack, lowers)
+        .unwrap()
+        .expect("the installer left something");
+
+    staging.discard();
+
+    // Nothing of C: was the media, so nothing is dropped; the program it
+    // installed is copied from A:, and WIN.INI's line naming it is told
+    // (the probe's own records, which name A: too, apart).
+    assert!(kept.dropped.is_empty(), "{:?}", kept.dropped);
+    let entries: Vec<String> = kept
+        .layer
+        .manifest
+        .entries
+        .iter()
+        .map(|entry| entry.path().to_string())
+        .collect();
+
+    assert!(
+        kept.layer
+            .blobs
+            .get(&sha256_hex(&child))
+            .is_some_and(|bytes| **bytes == child),
+        "the program it installed, byte for byte: {entries:?}"
+    );
+    assert!(
+        kept.layer
+            .manifest
+            .entries
+            .iter()
+            .any(|entry| entry.path() == "INSTLAY\\INSTLAYC.EXE")
+    );
+    assert_eq!(
+        kept.references
+            .iter()
+            .filter(|reference| !reference.path.starts_with("ORACLE"))
+            .map(|reference| format!("{}: {}", reference.path, reference.line))
+            .collect::<Vec<_>>(),
+        ["WINDOWS\\WIN.INI: Media=A:\\SETUP\\INSTLAYC.EXE"]
+    );
+    assert_eq!(
+        kept.layer.manifest.made.from.as_deref(),
+        Some("A:\\SETUP\\INSTLAY.EXE")
+    );
+
+    // The image as it was; the program keeps its media, the letter pinned.
+    assert_eq!(std::fs::read(&disk).unwrap(), image);
+
+    program.media = mounts.media();
+    store.add_layer(&mut program, &stack, &kept.layer).unwrap();
+
+    let again = store.program("Floppy").unwrap().unwrap();
+
+    assert_eq!(again.media.len(), 1);
+    assert_eq!(again.media[0].letter, "A");
+    assert_eq!(again.media[0].kind, "floppy");
+    assert_eq!(again.exes, ["C:\\INSTLAY\\INSTLAYC.EXE"]);
+}
