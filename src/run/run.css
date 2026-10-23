@@ -157,6 +157,28 @@ h2 {
   margin: 0 0 0.25rem;
 }
 
+.drives li {
+  flex-wrap: wrap;
+}
+
+.drives li.over {
+  outline: 2px dashed var(--accent);
+}
+
+.drives .actions {
+  flex-wrap: wrap;
+}
+
+.drives select {
+  font: inherit;
+  max-width: 100%;
+}
+
+#drives-note {
+  color: var(--muted);
+  margin: 0 0 0.25rem;
+}
+
 .programs .empty,
 #windows {
   color: var(--muted);

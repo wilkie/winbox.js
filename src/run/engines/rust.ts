@@ -28,6 +28,7 @@
 import { AriaMirror } from '../aria-mirror.js';
 import { type Change, orderChanges } from '../changes.js';
 import { type Program } from '../drive.js';
+import { type DriveSet } from '../drives.js';
 import {
   attachInput,
   type Engine,
@@ -79,7 +80,31 @@ interface WasmMachine {
   take_sound(): SoundEvent[];
   take_calls(counts: boolean): string;
   accessible_tree(): string;
+  add_disk(drive: string, image: ImageBytes, kind: string): string | undefined;
+  insert_disk(drive: string, disk: number): string | undefined;
+  eject_disk(drive: string): string | undefined;
+  remove_disks(drive: string): boolean;
+  disk_image(drive: string, disk: number): Uint8Array | undefined;
+  disk_changed(drive: string, disk: number): boolean;
 }
+
+/**
+ * A disk image's bytes as the module reads them (`ImageBytes` in
+ * `crates/winbox-web/src/lib.rs`): from the page's own bytes, where they
+ * are, a slice at a time, so a disc is never copied into the module's
+ * memory. The image is held in memory all the same, as the module reads
+ * it synchronously; a worker reading the file itself is a later step.
+ */
+interface ImageBytes {
+  readonly size: number;
+  read(offset: number, into: Uint8Array): void;
+}
+
+/** A disk's bytes as the module reads them. */
+const imageBytes = (bytes: Uint8Array): ImageBytes => ({
+  size: bytes.length,
+  read: (offset, into) => into.set(bytes.subarray(offset, offset + into.length)),
+});
 
 /** A change on a drive, as `crates/winbox-web/src/lib.rs` hands it over (`DriveChange`). */
 interface WasmChange {
@@ -341,6 +366,7 @@ export class RustEngine implements Engine {
        * one's programs wrote. */
       if (this.#started || !this.#machine) {
         await this.changes();
+        this.carry();
         this.#halt();
         await this.#fresh();
         this.#machine = this.#make();
@@ -413,6 +439,79 @@ export class RustEngine implements Engine {
     }
   }
 
+  /* ---- the drives of images ---- */
+
+  /** A set's disks added to a machine, the one in the drive put in, or the drive emptied. */
+  #mountOn(machine: WasmMachine, set: DriveSet) {
+    for (const disk of set.disks) {
+      const refused = machine.add_disk(set.letter, imageBytes(disk.bytes), set.kind);
+
+      if (refused !== undefined) {
+        machine.remove_disks(set.letter);
+        return `${set.letter}: ${refused}`;
+      }
+    }
+
+    return (
+      (set.ejected
+        ? machine.eject_disk(set.letter)
+        : set.current > 0
+          ? machine.insert_disk(set.letter, set.current)
+          : undefined) ?? null
+    );
+  }
+
+  async mount(set: DriveSet) {
+    return this.#machine ? this.#mountOn(this.#machine, set) : null;
+  }
+
+  async addDisk(set: DriveSet, disk: number) {
+    const machine = this.#machine;
+
+    if (!machine) {
+      return null;
+    }
+
+    const refused = machine.add_disk(set.letter, imageBytes(set.disks[disk].bytes), set.kind);
+
+    return refused === undefined ? null : `${set.letter}: ${refused}`;
+  }
+
+  insert(letter: string, disk: number) {
+    return this.#machine?.insert_disk(letter, disk) ?? null;
+  }
+
+  eject(letter: string) {
+    return this.#machine?.eject_disk(letter) ?? null;
+  }
+
+  unmount(letter: string) {
+    this.#machine?.remove_disks(letter);
+  }
+
+  diskImage(letter: string, disk: number) {
+    return this.#machine?.disk_image(letter, disk) ?? null;
+  }
+
+  diskChanged(letter: string, disk: number) {
+    return this.#machine?.disk_changed(letter, disk) ?? false;
+  }
+
+  carry() {
+    try {
+      for (const set of this.#setup?.drives ?? []) {
+        set.disks.forEach((disk, at) => {
+          if (this.diskChanged(set.letter, at)) {
+            disk.bytes = this.diskImage(set.letter, at)!;
+            disk.written = true;
+          }
+        });
+      }
+    } catch {
+      /* A lost instance answers nothing (`Lost`): what it wrote is lost with it. */
+    }
+  }
+
   /**
    * A program started beside those running. One that cannot be started is
    * told, as on the TypeScript engine, and the others run on; a call that
@@ -470,6 +569,15 @@ export class RustEngine implements Engine {
     }
 
     machine.mark_planned();
+
+    /* The drives of images, each set's disk in its drive, or none. */
+    for (const set of this.#setup!.drives) {
+      const refused = this.#mountOn(machine, set);
+
+      if (refused) {
+        this.#page.status(refused, 'error');
+      }
+    }
 
     for (const change of orderChanges(changes)) {
       switch (change.kind) {
