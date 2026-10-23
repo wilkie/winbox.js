@@ -231,6 +231,49 @@ function emptyDrive(removable: boolean) {
   return { removable, open: async (parts: string[]) => (parts.length ? null : root) };
 }
 
+/**
+ * The images a probe's recording had mounted beside C:, as
+ * `oracle/probes/<probe>.mounts` lists them and `record.mjs` reads them: a
+ * line each, a drive, an image of `oracle/probes/images/` and its kind --
+ * `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`; `#` starts a
+ * comment. As `support/mod.rs`'s `mounts_of`.
+ */
+export function mountsOf(probe: string) {
+  const path = join(__dirname, '..', '..', 'oracle', 'probes', `${probe}.mounts`);
+
+  if (!existsSync(path)) {
+    return [];
+  }
+
+  return readFileSync(path, 'latin1')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/#.*/, '').trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^([a-z]):\s*(\S+)\s+(floppy|iso|hdd)$/i);
+
+      if (!match) {
+        throw new Error(`${probe}.mounts: cannot read ${JSON.stringify(line)}`);
+      }
+
+      return {
+        letter: match[1].toUpperCase(),
+        image: match[2],
+        kind: match[3].toLowerCase() as 'floppy' | 'iso' | 'hdd',
+      };
+    });
+}
+
+/**
+ * An image as a drive, where this engine can present one of its kind; none
+ * yet -- a FAT image, a floppy's or a hard disk's, and an ISO 9660 disc are
+ * to come (`kb/topics/drives-and-disks.md`). A probe whose image is not
+ * mounted runs without it, and its records of that drive are known gaps.
+ */
+function imageDrive(_kind: 'floppy' | 'iso' | 'hdd', _bytes: Uint8Array): any | null {
+  return null;
+}
+
 /** Loads the probe and runs it, collecting every API call it makes. */
 export async function runProbe(
   name = 'strings',
@@ -600,6 +643,16 @@ export async function runProbe(
   if (!program) {
     win16.dos.files.mount('A', emptyDrive(true));
     win16.dos.files.mount('Z', emptyDrive(false));
+
+    /* And the images its recording had mounted, where they can be. */
+    for (const { letter, image, kind } of mountsOf(name)) {
+      const bytes = readFileSync(join(__dirname, '..', '..', 'oracle', 'probes', 'images', image));
+      const drive = imageDrive(kind, new Uint8Array(bytes));
+
+      if (drive) {
+        win16.dos.files.mount(letter, drive);
+      }
+    }
   }
 
   const upper = name.toUpperCase();

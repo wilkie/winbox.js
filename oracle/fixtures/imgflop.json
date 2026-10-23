@@ -1,0 +1,394 @@
+{
+  "probe": "imgflop",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "A: 0",
+      "result": "README.TXT 20 39 1a85 30e4"
+    },
+    {
+      "function": "entry",
+      "args": "A: 1",
+      "result": "ZEBRA.TXT 20 24 1622 1883"
+    },
+    {
+      "function": "entry",
+      "args": "A: 2",
+      "result": "APPLE.TXT 20 12 1f9f bf7d"
+    },
+    {
+      "function": "entry",
+      "args": "A: 3",
+      "result": "LONGFI~1.TXT 20 36 2109 5166"
+    },
+    {
+      "function": "entry",
+      "args": "A: 4",
+      "result": "DATA.BIN 20 bb8 1908 4104"
+    },
+    {
+      "function": "entry",
+      "args": "A: 5",
+      "result": "SUBDIR 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A: 6",
+      "result": "HIDDEN.SYS 27 13 1329 4925"
+    },
+    {
+      "function": "entry",
+      "args": "A: end",
+      "result": "7 18"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 0",
+      "result": ". 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 1",
+      "result": ".. 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 2",
+      "result": "NESTED 10 0 1421 0821"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 3",
+      "result": "INNER.TXT 20 64 1c63 1862"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR end",
+      "result": "4 18"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR\\NESTED 0",
+      "result": ". 10 0 1421 0821"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR\\NESTED 1",
+      "result": ".. 10 0 1421 0821"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR\\NESTED 2",
+      "result": "DEEP.TXT 20 1f 16a5 28a3"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR\\NESTED end",
+      "result": "3 18"
+    },
+    {
+      "function": "label",
+      "args": "A:\\*.*",
+      "result": "error 18"
+    },
+    {
+      "function": "match",
+      "args": "A:\\*.TXT 00",
+      "result": "README.TXT,ZEBRA.TXT,APPLE.TXT,LONGFI~1.TXT"
+    },
+    {
+      "function": "match",
+      "args": "A:\\*.* 00",
+      "result": "README.TXT,ZEBRA.TXT,APPLE.TXT,LONGFI~1.TXT,DATA.BIN"
+    },
+    {
+      "function": "match",
+      "args": "A:\\*.* 06",
+      "result": "README.TXT,ZEBRA.TXT,APPLE.TXT,LONGFI~1.TXT,DATA.BIN,HIDDEN.SYS"
+    },
+    {
+      "function": "match",
+      "args": "A:\\SUBDIR 10",
+      "result": "SUBDIR"
+    },
+    {
+      "function": "match",
+      "args": "A:\\?????.TXT 00",
+      "result": "ZEBRA.TXT,APPLE.TXT"
+    },
+    {
+      "function": "read",
+      "args": "A:\\README.TXT",
+      "result": "57 524541444d452e545854206c696e6520 1a85 30e4"
+    },
+    {
+      "function": "read",
+      "args": "A:\\ZEBRA.TXT",
+      "result": "36 5a454252412e545854206c696e652031 1622 1883"
+    },
+    {
+      "function": "read",
+      "args": "A:\\APPLE.TXT",
+      "result": "18 4150504c452e545854206c696e652031 1f9f bf7d"
+    },
+    {
+      "function": "read",
+      "args": "A:\\LONGFI~1.TXT",
+      "result": "54 4c6f6e672046696c65204e616d652e74 2109 5166"
+    },
+    {
+      "function": "read",
+      "args": "A:\\DATA.BIN",
+      "result": "3000 00070e151c232a31383f464d545b6269 1908 4104"
+    },
+    {
+      "function": "read",
+      "args": "A:\\HIDDEN.SYS",
+      "result": "19 48494444454e2e535953206c696e6520 1329 4925"
+    },
+    {
+      "function": "read",
+      "args": "A:\\SUBDIR\\INNER.TXT",
+      "result": "100 5355424449525c494e4e45522e545854 1c63 1862"
+    },
+    {
+      "function": "read",
+      "args": "A:\\SUBDIR\\NESTED\\DEEP.TXT",
+      "result": "31 5355424449525c4e45535445445c4445 16a5 28a3"
+    },
+    {
+      "function": "open",
+      "args": "A:\\readme.txt",
+      "result": "57"
+    },
+    {
+      "function": "open",
+      "args": "A:\\LONGFI~1.TXT",
+      "result": "54"
+    },
+    {
+      "function": "open",
+      "args": "A:\\Long File Name.txt",
+      "result": "error 2"
+    },
+    {
+      "function": "open",
+      "args": "A:\\DELETED.TXT",
+      "result": "error 2"
+    },
+    {
+      "function": "open",
+      "args": "A:\\SUBDIR\\..\\README.TXT",
+      "result": "57"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\README.TXT",
+      "result": "20"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\HIDDEN.SYS",
+      "result": "27"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\SUBDIR",
+      "result": "10"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\SUBDIR\\NESTED",
+      "result": "10"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\NOPE.TXT",
+      "result": "error 2"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0b10 0200 0b1f 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0000 0001 0c0c 0d0d 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0001 0c0c 0802 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "440d 0001 0860 034a 0 031400000000000000ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "4400 0001 0c0c 0d0d 0"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "2"
+    },
+    {
+      "function": "write",
+      "args": "create",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "write",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "wrote",
+      "result": "9"
+    },
+    {
+      "function": "write",
+      "args": "close",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "mkdir",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "rename",
+      "result": "0"
+    },
+    {
+      "function": "write",
+      "args": "delete",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "A: 0",
+      "result": "README.TXT 20 39 1a85 30e4"
+    },
+    {
+      "function": "after",
+      "args": "A: 1",
+      "result": "APPLE.TXT 20 12 1f9f bf7d"
+    },
+    {
+      "function": "after",
+      "args": "A: 2",
+      "result": "LONGFI~1.TXT 20 36 2109 5166"
+    },
+    {
+      "function": "after",
+      "args": "A: 3",
+      "result": "DATA.BIN 20 bb8 1908 4104"
+    },
+    {
+      "function": "after",
+      "args": "A: 4",
+      "result": "SUBDIR 10 0 185d 0842"
+    },
+    {
+      "function": "after",
+      "args": "A: 5",
+      "result": "HIDDEN.SYS 27 13 1329 4925"
+    },
+    {
+      "function": "after",
+      "args": "A: 6",
+      "result": "NEWDIR 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "A: 7",
+      "result": "RENAMED.TXT 00 9 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "A: end",
+      "result": "8 18"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR 0",
+      "result": ". 10 0 185d 0842"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR 1",
+      "result": ".. 10 0 185d 0842"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR 2",
+      "result": "NESTED 10 0 1421 0821"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR 3",
+      "result": "INNER.TXT 20 64 1c63 1862"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR end",
+      "result": "4 18"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR\\NESTED 0",
+      "result": ". 10 0 1421 0821"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR\\NESTED 1",
+      "result": ".. 10 0 1421 0821"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR\\NESTED 2",
+      "result": "DEEP.TXT 20 1f 16a5 28a3"
+    },
+    {
+      "function": "after",
+      "args": "A:\\SUBDIR\\NESTED end",
+      "result": "3 18"
+    },
+    {
+      "function": "after",
+      "args": "A:\\NEWDIR 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "A:\\NEWDIR 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "after",
+      "args": "A:\\NEWDIR end",
+      "result": "2 18"
+    },
+    {
+      "function": "after",
+      "args": "36",
+      "result": "0001 0b0f 0200 0b1f 0"
+    }
+  ]
+}

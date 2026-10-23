@@ -422,9 +422,59 @@ async function keepCapture(name, display, source, capture) {
   );
 }
 
+/**
+ * The images a probe has mounted beside C:, as `oracle/probes/<probe>.mounts`
+ * lists them, a line each: a drive, an image of `oracle/probes/images/`, and
+ * its kind -- `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`. Each is
+ * copied into the build first, since DOSBox writes a disk image's changes
+ * straight into its file (`drive_fat.cpp`), and mounted with `imgmount`
+ * before Windows starts. `#` starts a comment.
+ */
+async function mountsOf(probe) {
+  const text = await readFile(join(ROOT, 'oracle', 'probes', `${probe}.mounts`), 'latin1').catch(
+    () => ''
+  );
+
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.replace(/#.*/, '').trim())
+    .filter(Boolean)
+    .map((line) => {
+      const match = line.match(/^([a-z]):\s*(\S+)\s+(floppy|iso|hdd)$/i);
+
+      if (!match) {
+        throw new Error(`${probe}.mounts: cannot read ${JSON.stringify(line)}`);
+      }
+
+      return { letter: match[1].toUpperCase(), image: match[2], kind: match[3].toLowerCase() };
+    });
+}
+
+/** The `imgmount` lines for a probe's images, each copied into the build. */
+async function imgmountLines(probe) {
+  const lines = [];
+  const into = join(BUILD, 'record-images');
+
+  await rm(into, { recursive: true, force: true });
+
+  for (const { letter, image, kind } of await mountsOf(probe)) {
+    const copy = join(into, `${letter}-${image}`);
+
+    await mkdir(into, { recursive: true });
+    await cp(join(ROOT, 'oracle', 'probes', 'images', image), copy);
+    /* An `hdd` is sized from its file, whole cylinders of 16 heads and 63
+     * sectors (`dos_programs.cpp` 1213-1236). */
+    lines.push(`imgmount ${letter.toLowerCase()} ${copy} -t ${kind}`);
+    log(`  ${letter}: ${image} (${kind})`);
+  }
+
+  return lines;
+}
+
 /** Boots Windows with the probe as its shell and waits for it to finish. */
 async function runProbe(probe, display, shoot = null, capture = null) {
   const config = join(BUILD, 'record.conf');
+  const mounts = await imgmountLines(basename(probe, '.EXE').toLowerCase());
 
   await writeFile(
     config,
@@ -447,6 +497,7 @@ async function runProbe(probe, display, shoot = null, capture = null) {
       ...(DISPLAYS[display].sound ? SOUND_BLASTER : []),
       '[autoexec]',
       `mount c ${SCRATCH}`,
+      ...mounts,
       'c:',
       'cd \\WINDOWS',
       'win /s',

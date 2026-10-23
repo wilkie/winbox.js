@@ -1,0 +1,169 @@
+{
+  "probe": "mscdex",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "1500",
+      "args": "",
+      "result": "15ff 0000 0c0c 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "0",
+      "result": "0000 adad 0000 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "1",
+      "result": "0000 adad 0001 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "2",
+      "result": "0000 adad 0002 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "3",
+      "result": "0000 adad 0003 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "4",
+      "result": "0000 adad 0004 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "5",
+      "result": "0000 adad 0005 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "6",
+      "result": "0000 adad 0006 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "7",
+      "result": "0000 adad 0007 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "8",
+      "result": "0000 adad 0008 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "9",
+      "result": "0000 adad 0009 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "10",
+      "result": "0000 adad 000a 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "11",
+      "result": "0000 adad 000b 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "12",
+      "result": "0000 adad 000c 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "13",
+      "result": "0000 adad 000d 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "14",
+      "result": "0000 adad 000e 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "15",
+      "result": "0000 adad 000f 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "16",
+      "result": "0000 adad 0010 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "17",
+      "result": "0000 adad 0011 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "18",
+      "result": "0000 adad 0012 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "19",
+      "result": "0000 adad 0013 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "20",
+      "result": "0000 adad 0014 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "21",
+      "result": "0000 adad 0015 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "22",
+      "result": "0000 adad 0016 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "23",
+      "result": "0000 adad 0017 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "24",
+      "result": "0000 adad 0018 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "25",
+      "result": "0000 adad 0019 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "26",
+      "result": "0000 adad 001a 0d0d 0"
+    },
+    {
+      "function": "150b",
+      "args": "27",
+      "result": "0000 adad 001b 0d0d 0"
+    },
+    {
+      "function": "150c",
+      "args": "",
+      "result": "150c 0217 0c0c 0d0d 0"
+    },
+    {
+      "function": "1100",
+      "args": "",
+      "result": "11ff 0b0b 0c0c 0d0d 0"
+    }
+  ]
+}

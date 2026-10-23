@@ -1,0 +1,334 @@
+{
+  "probe": "drvioctl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cur",
+      "args": "4408",
+      "result": "0001 0000 0c0c 0d0d 0"
+    },
+    {
+      "function": "cur",
+      "args": "4409",
+      "result": "0300 0000 0c0c 0802 0"
+    },
+    {
+      "function": "cur",
+      "args": "440d 0860",
+      "result": "440d 0000 0860 0176 0 030501000000000200ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "cur",
+      "args": "440d 0866",
+      "result": "440d 0000 0866 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "cur",
+      "args": "440d 0846",
+      "result": "440d 0000 0846 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "cur",
+      "args": "440d 0867",
+      "result": "0001 0000 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "cur",
+      "args": "440e",
+      "result": "4400 0000 0c0c 0d0d 0"
+    },
+    {
+      "function": "cur",
+      "args": "type",
+      "result": "0"
+    },
+    {
+      "function": "a:",
+      "args": "4408",
+      "result": "000f 0001 0c0c 0d0d 1"
+    },
+    {
+      "function": "a:",
+      "args": "4409",
+      "result": "000f 0001 0c0c 0d0d 1"
+    },
+    {
+      "function": "a:",
+      "args": "440d 0860",
+      "result": "000f 0001 0860 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "a:",
+      "args": "440d 0866",
+      "result": "000f 0001 0866 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "a:",
+      "args": "440d 0846",
+      "result": "000f 0001 0846 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "a:",
+      "args": "440d 0867",
+      "result": "000f 0001 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "a:",
+      "args": "440e",
+      "result": "000f 0001 0c0c 0d0d 1"
+    },
+    {
+      "function": "a:",
+      "args": "type",
+      "result": "2"
+    },
+    {
+      "function": "b:",
+      "args": "4408",
+      "result": "0000 0002 0c0c 0d0d 0"
+    },
+    {
+      "function": "b:",
+      "args": "4409",
+      "result": "0300 0002 0c0c 0802 0"
+    },
+    {
+      "function": "b:",
+      "args": "440d 0860",
+      "result": "440d 0002 0860 0176 0 031400000000000100ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "b:",
+      "args": "440d 0866",
+      "result": "440d 0002 0866 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "b:",
+      "args": "440d 0846",
+      "result": "440d 0002 0846 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "b:",
+      "args": "440d 0867",
+      "result": "0001 0002 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "b:",
+      "args": "440e",
+      "result": "4400 0002 0c0c 0d0d 0"
+    },
+    {
+      "function": "b:",
+      "args": "type",
+      "result": "2"
+    },
+    {
+      "function": "c:",
+      "args": "4408",
+      "result": "0001 0003 0c0c 0d0d 0"
+    },
+    {
+      "function": "c:",
+      "args": "4409",
+      "result": "0300 0003 0c0c 0802 0"
+    },
+    {
+      "function": "c:",
+      "args": "440d 0860",
+      "result": "440d 0003 0860 0176 0 030501000000000200ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "c:",
+      "args": "440d 0866",
+      "result": "440d 0003 0866 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "c:",
+      "args": "440d 0846",
+      "result": "440d 0003 0846 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "c:",
+      "args": "440d 0867",
+      "result": "0001 0003 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "c:",
+      "args": "440e",
+      "result": "4400 0003 0c0c 0d0d 0"
+    },
+    {
+      "function": "c:",
+      "args": "type",
+      "result": "3"
+    },
+    {
+      "function": "d:",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 1"
+    },
+    {
+      "function": "d:",
+      "args": "4409",
+      "result": "0300 0004 0c0c 1000 0"
+    },
+    {
+      "function": "d:",
+      "args": "440d 0860",
+      "result": "0001 0004 0860 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "d:",
+      "args": "440d 0866",
+      "result": "0001 0004 0866 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "d:",
+      "args": "440d 0846",
+      "result": "0001 0004 0846 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "d:",
+      "args": "440d 0867",
+      "result": "0001 0004 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "d:",
+      "args": "440e",
+      "result": "0001 0004 0c0c 0d0d 1"
+    },
+    {
+      "function": "d:",
+      "args": "type",
+      "result": "4"
+    },
+    {
+      "function": "e:",
+      "args": "4408",
+      "result": "000f 0005 0c0c 0d0d 1"
+    },
+    {
+      "function": "e:",
+      "args": "4409",
+      "result": "000f 0005 0c0c 0d0d 1"
+    },
+    {
+      "function": "e:",
+      "args": "440d 0860",
+      "result": "000f 0005 0860 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "e:",
+      "args": "440d 0866",
+      "result": "000f 0005 0866 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "e:",
+      "args": "440d 0846",
+      "result": "000f 0005 0846 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "e:",
+      "args": "440d 0867",
+      "result": "000f 0005 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "e:",
+      "args": "440e",
+      "result": "000f 0005 0c0c 0d0d 1"
+    },
+    {
+      "function": "e:",
+      "args": "type",
+      "result": "0"
+    },
+    {
+      "function": "z:",
+      "args": "4408",
+      "result": "0001 001a 0c0c 0d0d 0"
+    },
+    {
+      "function": "z:",
+      "args": "4409",
+      "result": "0300 001a 0c0c 0802 0"
+    },
+    {
+      "function": "z:",
+      "args": "440d 0860",
+      "result": "440d 001a 0860 0176 0 030501000000001900ccccccccccccccccccccccccccccccccccccccccccccffffffffcccccccccc"
+    },
+    {
+      "function": "z:",
+      "args": "440d 0866",
+      "result": "440d 001a 0866 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "z:",
+      "args": "440d 0846",
+      "result": "440d 001a 0846 0176 0 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "z:",
+      "args": "440d 0867",
+      "result": "0001 001a 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "z:",
+      "args": "440e",
+      "result": "4400 001a 0c0c 0d0d 0"
+    },
+    {
+      "function": "z:",
+      "args": "type",
+      "result": "3"
+    },
+    {
+      "function": "past",
+      "args": "4408",
+      "result": "000f 001b 0c0c 0d0d 1"
+    },
+    {
+      "function": "past",
+      "args": "4409",
+      "result": "000f 001b 0c0c 0d0d 1"
+    },
+    {
+      "function": "past",
+      "args": "440d 0860",
+      "result": "000f 001b 0860 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "past",
+      "args": "440d 0866",
+      "result": "000f 001b 0866 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "past",
+      "args": "440d 0846",
+      "result": "000f 001b 0846 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "past",
+      "args": "440d 0867",
+      "result": "000f 001b 0867 0176 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    },
+    {
+      "function": "past",
+      "args": "440e",
+      "result": "000f 001b 0c0c 0d0d 1"
+    },
+    {
+      "function": "past",
+      "args": "type",
+      "result": "0"
+    }
+  ]
+}
