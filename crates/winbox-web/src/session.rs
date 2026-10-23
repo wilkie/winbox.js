@@ -10,7 +10,10 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::rc::Rc;
 
-use winbox_machine::{Change, Clock, HostTime, MemoryDrive, WallTime};
+use winbox_machine::{
+    Change, Clock, EmptyDrive, FatVolume, HostTime, IsoVolume, MemoryDrive, Sectors, Volume,
+    WallTime,
+};
 use winbox_ne::Executable;
 use winbox_win16::assets::Assets;
 use winbox_win16::audio::Sound;
@@ -109,6 +112,45 @@ pub struct Session {
     /// kept modules' files are read from where C: has none of their own
     /// (`System.assets`).
     assets: Option<Rc<Assets>>,
+    /// The disk and disc images the page has mounted, by drive: each
+    /// drive's set, in order (`add_disk`).
+    disks: BTreeMap<char, DiskSet>,
+}
+
+/// What a disk image is, as the page's Drives strip names it and DOSBox's
+/// `imgmount -t` does: a floppy's FAT, a hard disk's, or an ISO 9660 disc.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiskKind {
+    Floppy,
+    Hdd,
+    Iso,
+}
+
+impl DiskKind {
+    /// The kind a name gives: `floppy`, `hdd` or `iso`.
+    pub fn of(name: &str) -> Option<Self> {
+        match name {
+            "floppy" => Some(Self::Floppy),
+            "hdd" => Some(Self::Hdd),
+            "iso" => Some(Self::Iso),
+            _ => None,
+        }
+    }
+}
+
+/// A drive's images, in order (the page's Drives strip): the one in the
+/// drive, or the one last in where it is empty. Each disk's volume is held
+/// here while it is out of the drive -- and, until a program starts, while
+/// it is in, the drives being mounted as the program starts (`start`);
+/// once one has, the disk in the drive is `Files`' (`Files::swap`), and
+/// what is written to it kept in its overlay, as natively
+/// (`crates/winbox-native/src/mounts.rs`).
+#[derive(Debug)]
+struct DiskSet {
+    kind: DiskKind,
+    disks: Vec<Option<Box<dyn Volume>>>,
+    current: usize,
+    ejected: bool,
 }
 
 impl std::fmt::Debug for Session {
@@ -172,6 +214,7 @@ impl Session {
             stop: None,
             kept: Vec::new(),
             assets: None,
+            disks: BTreeMap::new(),
         })
     }
 
@@ -346,6 +389,192 @@ impl Session {
         }
     }
 
+    /// A disk or disc image added to a drive's set, as the page's Drives
+    /// strip mounts one: a floppy's or a hard disk's FAT volume, or an ISO
+    /// 9660 disc, read from `sectors` -- the page's bytes, outside the
+    /// module's memory -- and never written: what programs write to a FAT
+    /// image is kept in its copy-on-write overlay (`FatVolume`). The first
+    /// of a set is put in its drive; once a program has started, at once.
+    /// A set is of one kind, and a hard disk image is alone, as natively
+    /// (`Mounts::open`). Its number in the set; why not, where it is not.
+    pub fn add_disk(
+        &mut self,
+        letter: char,
+        sectors: impl Sectors + 'static,
+        kind: DiskKind,
+    ) -> Result<usize, String> {
+        let letter = letter.to_ascii_uppercase();
+
+        if letter == 'C' || self.drives.contains_key(&letter) {
+            return Err(format!("{letter}: is the page's own drive"));
+        }
+
+        if let Some(set) = self.disks.get(&letter)
+            && (set.kind != kind || kind == DiskKind::Hdd)
+        {
+            return Err(format!(
+                "{letter}: has images of another kind, or a hard disk, which is alone"
+            ));
+        }
+
+        let volume: Box<dyn Volume> = match kind {
+            DiskKind::Iso => Box::new(
+                IsoVolume::new(sectors)
+                    .map_err(|error| format!("not an ISO 9660 disc: {error:?}"))?,
+            ),
+            DiskKind::Floppy | DiskKind::Hdd => Box::new(
+                FatVolume::new(sectors, kind == DiskKind::Floppy)
+                    .map_err(|error| format!("not a FAT image: {error:?}"))?,
+            ),
+        };
+        let running = self.run.is_some();
+        let set = self.disks.entry(letter).or_insert_with(|| DiskSet {
+            kind,
+            disks: Vec::new(),
+            current: 0,
+            ejected: false,
+        });
+
+        set.disks.push(Some(volume));
+
+        if running && set.disks.len() == 1 {
+            let volume = set.disks[0].take().expect("the disk just added");
+
+            self.engine.system().files.mount_boxed(letter, volume);
+        }
+
+        Ok(set.disks.len() - 1)
+    }
+
+    /// Each set's disk put in its drive as a program first starts: an
+    /// empty drive where it was taken out.
+    fn mount_disks(disks: &mut BTreeMap<char, DiskSet>, system: &mut System) {
+        for (&letter, set) in disks {
+            if set.ejected {
+                let empty = set.disks[set.current]
+                    .as_deref()
+                    .map_or_else(EmptyDrive::default, EmptyDrive::after);
+
+                system.files.mount(letter, empty);
+            } else if let Some(volume) = set.disks[set.current].take() {
+                system.files.mount_boxed(letter, volume);
+            }
+        }
+    }
+
+    /// A drive's disk `to`, counted from nought, put in it: the disk that
+    /// was in kept with what was written to it (`Files::swap`), its
+    /// current folder kept, as DOSBox's drive manager keeps it.
+    pub fn insert_disk(&mut self, letter: char, to: usize) -> Result<(), String> {
+        let letter = letter.to_ascii_uppercase();
+        let running = self.run.is_some();
+        let set = self
+            .disks
+            .get_mut(&letter)
+            .ok_or(format!("{letter}: has no images"))?;
+
+        if to >= set.disks.len() {
+            return Err(format!("{letter}: has {} disks", set.disks.len()));
+        }
+
+        if set.kind == DiskKind::Hdd {
+            return Err(format!("{letter}: is a hard disk, not taken out"));
+        }
+
+        if !set.ejected && set.current == to {
+            return Ok(());
+        }
+
+        if running {
+            let volume = set.disks[to]
+                .take()
+                .expect("a disk out of the drive holds its volume");
+            let out = self.engine.system().files.swap(letter, volume);
+
+            if !set.ejected {
+                set.disks[set.current] = out;
+            }
+        }
+
+        set.current = to;
+        set.ejected = false;
+        Ok(())
+    }
+
+    /// A drive's disk taken out, the drive left empty (`Files::eject`).
+    pub fn eject_disk(&mut self, letter: char) -> Result<(), String> {
+        let letter = letter.to_ascii_uppercase();
+        let running = self.run.is_some();
+        let set = self
+            .disks
+            .get_mut(&letter)
+            .ok_or(format!("{letter}: has no images"))?;
+
+        if set.kind == DiskKind::Hdd {
+            return Err(format!("{letter}: is a hard disk, not taken out"));
+        }
+
+        if !set.ejected {
+            if running {
+                set.disks[set.current] = self.engine.system().files.eject(letter);
+            }
+
+            set.ejected = true;
+        }
+
+        Ok(())
+    }
+
+    /// A drive's images let go of, and the drive with them.
+    pub fn remove_disks(&mut self, letter: char) -> bool {
+        let letter = letter.to_ascii_uppercase();
+
+        if self.disks.remove(&letter).is_none() {
+            return false;
+        }
+
+        if self.run.is_some() {
+            self.engine.system().files.unmount(letter);
+        }
+
+        true
+    }
+
+    /// Whether a disk is in its drive now, held by `Files`.
+    fn in_files(&self, set: &DiskSet, disk: usize) -> bool {
+        self.run.is_some() && !set.ejected && set.current == disk
+    }
+
+    /// A disk of a drive's set as programs have written it, to be saved as
+    /// a new image ("Save image..."); none for a disc, or no such disk.
+    pub fn disk_image(&self, letter: char, disk: usize) -> Option<Vec<u8>> {
+        let letter = letter.to_ascii_uppercase();
+        let set = self.disks.get(&letter)?;
+
+        if self.in_files(set, disk) {
+            self.engine.system().files.image(letter)
+        } else {
+            set.disks.get(disk)?.as_ref()?.image()
+        }
+    }
+
+    /// Whether programs have written to a disk of a drive's set.
+    pub fn disk_changed(&self, letter: char, disk: usize) -> bool {
+        let letter = letter.to_ascii_uppercase();
+        let Some(set) = self.disks.get(&letter) else {
+            return false;
+        };
+
+        if self.in_files(set, disk) {
+            self.engine.system().files.image_changed(letter)
+        } else {
+            set.disks
+                .get(disk)
+                .and_then(Option::as_ref)
+                .is_some_and(|volume| volume.changed())
+        }
+    }
+
     /// The program at `path`, as DOS names it, loaded, linked and started
     /// in its own folder, its calls logged, and its run begun: stepped
     /// from now on (`step`). The drives are mounted as they are now. Once
@@ -355,15 +584,49 @@ impl Session {
             return self.launch(path).map(|_| ());
         }
 
-        let executable = self.executable(path)?;
+        let (letter, _) = split_path(path).ok_or_else(|| format!("no drive in {path}"))?;
+        let executable = if self.disks.contains_key(&letter) {
+            None
+        } else {
+            Some(self.executable(path)?)
+        };
 
         {
             let mut system = self.engine.system();
 
             self.mount(&mut system);
+            Self::mount_disks(&mut self.disks, &mut system);
+
+            // A program on a drive of images read from it, its drive made
+            // current, as an installer is run from its floppy.
+            let executable = if let Some(executable) = executable {
+                executable
+            } else {
+                executable_on(&system.files, path)?
+            };
+
             system.log = Some(Vec::new());
-            survey::start(&mut system, executable, path)
-                .map_err(|exit| format!("the program's registers: {exit:?}"))?;
+
+            if letter == 'C' {
+                survey::start(&mut system, executable, path)
+                    .map_err(|exit| format!("the program's registers: {exit:?}"))?;
+            } else {
+                // Started from a drive of images -- an installer from its
+                // floppy -- that drive is made current, and its folder the
+                // current one there, as the native build starts an
+                // installer from A: (`--install NAME A:`).
+                let (program, libraries) = system.load(executable, path);
+
+                system.link(program);
+                system
+                    .start(program, libraries, "")
+                    .map_err(|exit| format!("the program's registers: {exit:?}"))?;
+                system.files.drive = letter;
+
+                if let Some((folder, _)) = path.rsplit_once('\\') {
+                    system.files.set_path(folder);
+                }
+            }
         }
 
         self.run = Some(self.engine.begin(u64::MAX / 2, f64::INFINITY));
@@ -596,6 +859,24 @@ impl Session {
     pub fn kept(&self) -> &[Kept] {
         &self.kept
     }
+}
+
+/// A program's file on a drive of images, by its DOS path, read through
+/// DOS's files and parsed.
+fn executable_on(files: &winbox_machine::Files, path: &str) -> Result<Executable, String> {
+    let (folder, name) = path
+        .rsplit_once('\\')
+        .ok_or_else(|| format!("no file {path}"))?;
+    let folder = if folder.len() > 2 {
+        folder.to_string()
+    } else {
+        format!("{folder}\\")
+    };
+    let (_, bytes) = files
+        .read_from(&folder, name)
+        .ok_or_else(|| format!("no file {path}"))?;
+
+    Executable::parse(bytes).map_err(|error| format!("{path} is not a New Executable: {error:?}"))
 }
 
 /// A pointer event, its kind as a number: 0 a move, 1 a press, 2 a

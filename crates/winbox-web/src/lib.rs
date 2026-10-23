@@ -11,12 +11,12 @@
 pub mod session;
 
 use wasm_bindgen::prelude::*;
-use winbox_machine::Change;
+use winbox_machine::{Change, Sectors};
 use winbox_win16::audio::{MidiOutput, Sound};
 use winbox_win16::key_input::Key;
 use winbox_win16::survey::Survey;
 
-use crate::session::{Made, Session};
+use crate::session::{DiskKind, Made, Session};
 
 #[wasm_bindgen]
 extern "C" {
@@ -57,6 +57,52 @@ fn started() {
     std::panic::set_hook(Box::new(|info| {
         console_error(&format!("winbox-web: {info}"));
     }));
+}
+
+#[wasm_bindgen]
+extern "C" {
+    /// A disk image's bytes as the page holds them, outside the module's
+    /// memory (`src/run/engines/rust.ts`): its `size`, and `read`, which
+    /// copies bytes from an offset into the slice it is given. A disc of
+    /// hundreds of megabytes is so never copied into the module.
+    pub type ImageBytes;
+
+    #[wasm_bindgen(method, getter)]
+    fn size(this: &ImageBytes) -> f64;
+
+    #[wasm_bindgen(method)]
+    fn read(this: &ImageBytes, offset: f64, into: &mut [u8]);
+}
+
+/// An image's sectors read from the page's bytes as they are asked for.
+struct PageSectors {
+    image: ImageBytes,
+    size: u64,
+}
+
+impl std::fmt::Debug for PageSectors {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("PageSectors")
+            .field("size", &self.size)
+            .finish_non_exhaustive()
+    }
+}
+
+impl Sectors for PageSectors {
+    fn size(&self) -> u64 {
+        self.size
+    }
+
+    // An offset into an image is far inside a double's 53 bits.
+    #[allow(clippy::cast_precision_loss)]
+    fn read_at(&self, offset: u64, into: &mut [u8]) {
+        into.fill(0);
+
+        if offset < self.size {
+            self.image.read(offset as f64, into);
+        }
+    }
 }
 
 /// A machine, run from a page.
@@ -347,6 +393,48 @@ impl Machine {
     /// them, before what programs wrote before is put back.
     pub fn mark_planned(&mut self) {
         self.session.mark_planned();
+    }
+
+    /// A disk or disc image added to a drive's set (`Session::add_disk`):
+    /// `kind` `floppy`, `hdd` or `iso`, its bytes the page's. Nothing
+    /// where it was added; else why not, told rather than thrown.
+    // An image's size is a whole number of bytes far inside a double's.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    pub fn add_disk(&mut self, drive: &str, image: ImageBytes, kind: &str) -> Option<String> {
+        let Some(kind) = DiskKind::of(kind) else {
+            return Some(format!("no kind of image {kind}"));
+        };
+        let size = image.size().max(0.0) as u64;
+
+        self.session
+            .add_disk(letter(drive), PageSectors { image, size }, kind)
+            .err()
+    }
+
+    /// A drive's disk, counted from nought, put in it; why not, where not.
+    pub fn insert_disk(&mut self, drive: &str, disk: u32) -> Option<String> {
+        self.session.insert_disk(letter(drive), disk as usize).err()
+    }
+
+    /// A drive's disk taken out, the drive left empty; why not, where not.
+    pub fn eject_disk(&mut self, drive: &str) -> Option<String> {
+        self.session.eject_disk(letter(drive)).err()
+    }
+
+    /// A drive's images let go of, and the drive with them.
+    pub fn remove_disks(&mut self, drive: &str) -> bool {
+        self.session.remove_disks(letter(drive))
+    }
+
+    /// A disk of a drive's set as programs have written it: its bytes, to
+    /// be saved as a new image; none for a disc.
+    pub fn disk_image(&self, drive: &str, disk: u32) -> Option<Vec<u8>> {
+        self.session.disk_image(letter(drive), disk as usize)
+    }
+
+    /// Whether programs have written to a disk of a drive's set.
+    pub fn disk_changed(&self, drive: &str, disk: u32) -> bool {
+        self.session.disk_changed(letter(drive), disk as usize)
     }
 
     /// What differs on a drive from the drive as planned: what is gone,

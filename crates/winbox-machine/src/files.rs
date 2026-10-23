@@ -1155,6 +1155,14 @@ impl Files {
         self.swap(letter, Box::new(empty))
     }
 
+    /// A drive taken away, its letter no drive's any more, as the
+    /// TypeScript engine's `FileManager.unmount`: the page's Drives strip
+    /// removing a set of images. The volume it had; none where no drive
+    /// was.
+    pub fn unmount(&mut self, letter: char) -> Option<Box<dyn Volume>> {
+        self.drives.remove(&letter.to_ascii_uppercase())
+    }
+
     /// Whether a drive's disk has been written to (`Volume::changed`).
     pub fn image_changed(&self, letter: char) -> bool {
         self.drives
