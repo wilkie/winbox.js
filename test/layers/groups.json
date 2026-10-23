@@ -1,0 +1,3655 @@
+{
+  "about": "Program Manager's groups as both engines read and write them (src/layers/groups.ts, crates/winbox-win16/src/groups.rs; test/layers/groups_test.ts, crates/winbox-win16/tests/groups.rs). Synthetic: groups made by Program Manager's own operations from made-up items and 8 by 8 icons, PROGMAN.INI texts, commands, and a stack of them. `expected` is written by the TypeScript test with GROUPS_UPDATE=1.",
+  "icons": {
+    "a": {
+      "header": "000000000800080002000101",
+      "and": "ff00ff00c300c300c300c300ff00ff00",
+      "xor": "00007e0042005a005a0042007e000000"
+    },
+    "b": {
+      "header": "000000000800080002000101",
+      "and": "0f000f000f000f00f000f000f000f000",
+      "xor": "f000f000f000f0000f000f000f000f00"
+    },
+    "c": {
+      "header": "000000000800080004000401",
+      "and": "ff00ff00ff00ff00ff00ff00ff00ff00",
+      "xor": "0123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210"
+    }
+  },
+  "scripts": [
+    {
+      "name": "made",
+      "steps": [
+        [
+          "create",
+          "WinBox Games",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Solitaire",
+            "command": "C:\\WINDOWS\\SOL.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Minesweeper",
+            "command": "C:\\WINDOWS\\WINMINE.EXE",
+            "directory": null,
+            "iconPath": "C:\\WINDOWS\\WINMINE.EXE",
+            "iconIndex": 0,
+            "icon": "b",
+            "x": 96,
+            "y": 0,
+            "hotKey": 1601,
+            "minimized": true
+          }
+        ]
+      ]
+    },
+    {
+      "name": "deleted",
+      "steps": [
+        [
+          "create",
+          "Rows",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "One",
+            "command": "C:\\ONE\\ONE.EXE",
+            "directory": "C:\\ONE",
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Two",
+            "command": "C:\\TWO\\TWO.EXE /a",
+            "directory": "C:\\WORK",
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "b",
+            "x": 96,
+            "y": 0,
+            "hotKey": 1602,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Three",
+            "command": "THREE.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 171,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": true
+          }
+        ],
+        ["delete", 1],
+        [
+          "add",
+          {
+            "name": "Four",
+            "command": "C:\\FOUR\\FOUR.EXE",
+            "directory": "",
+            "iconPath": "C:\\FOUR\\FOUR.EXE",
+            "iconIndex": 2,
+            "icon": "b",
+            "x": 96,
+            "y": 0,
+            "hotKey": 1603,
+            "minimized": true
+          }
+        ]
+      ]
+    },
+    {
+      "name": "saved",
+      "steps": [
+        [
+          "create",
+          "Rows",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "One",
+            "command": "C:\\ONE\\ONE.EXE",
+            "directory": "C:\\ONE",
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Two",
+            "command": "C:\\TWO\\TWO.EXE /a",
+            "directory": "C:\\WORK",
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "b",
+            "x": 96,
+            "y": 0,
+            "hotKey": 1602,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Three",
+            "command": "THREE.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 171,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": true
+          }
+        ],
+        ["delete", 0],
+        [
+          "save",
+          {
+            "show": 1,
+            "rcNormal": [0, 0, 514, 252],
+            "ptMin": [-1, -1]
+          },
+          [
+            {
+              "slot": 2,
+              "x": 21,
+              "y": 0
+            },
+            {
+              "slot": 1,
+              "x": 96,
+              "y": 0
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "renamed",
+      "steps": [
+        [
+          "create",
+          "Old",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Notepad",
+            "command": "C:\\WINDOWS\\NOTEPAD.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        ["rename", "A New Name"]
+      ]
+    },
+    {
+      "name": "refreshed",
+      "steps": [
+        [
+          "create",
+          "Display",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "One",
+            "command": "ONE.EXE",
+            "directory": null,
+            "iconPath": "ONE.EXE",
+            "iconIndex": 0,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Two",
+            "command": "TWO.EXE",
+            "directory": null,
+            "iconPath": "TWO.EXE",
+            "iconIndex": 0,
+            "icon": "b",
+            "x": 96,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Three",
+            "command": "THREE.EXE",
+            "directory": null,
+            "iconPath": "THREE.EXE",
+            "iconIndex": 1,
+            "icon": "a",
+            "x": 171,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "refresh",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 4,
+            "planes": 1
+          },
+          [
+            {
+              "iconIndex": 3,
+              "icon": "c"
+            },
+            null,
+            {
+              "iconIndex": 1,
+              "icon": "c"
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "high bytes",
+      "steps": [
+        [
+          "create",
+          "Spiele für Kinder",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "Café Olé",
+            "command": "C:\\SPIELE\\CAFÉ.EXE ñ",
+            "directory": "C:\\SPIELE",
+            "iconPath": "C:\\SPIELE\\CAFÉ.EXE",
+            "iconIndex": 0,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ]
+      ]
+    },
+    {
+      "name": "full",
+      "steps": [
+        [
+          "create",
+          "Full",
+          {
+            "cx": 8,
+            "cy": 8,
+            "bitsPixel": 1,
+            "planes": 1
+          }
+        ],
+        [
+          "fill",
+          50,
+          {
+            "name": "Item",
+            "command": "C:\\ITEM.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": -1,
+            "y": -1,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        [
+          "add",
+          {
+            "name": "One more",
+            "command": "C:\\MORE.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "a",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ],
+        ["delete", 7],
+        [
+          "add",
+          {
+            "name": "Seven",
+            "command": "C:\\SEVEN.EXE",
+            "directory": null,
+            "iconPath": "",
+            "iconIndex": 6,
+            "icon": "b",
+            "x": 21,
+            "y": 0,
+            "hotKey": 0,
+            "minimized": false
+          }
+        ]
+      ]
+    }
+  ],
+  "commands": [
+    ["C:\\WINDOWS\\NOTEPAD.EXE", null],
+    ["C:\\WINDOWS\\NOTEPAD.EXE README.TXT", "C:\\DOCS"],
+    ["c:\\windows\\games\\carrib.exe", "c:\\windows\\games"],
+    ["NOTEPAD.EXE", ""],
+    ["A:SETUP.EXE /x  y", "  C:\\TEMP  "],
+    ["C:\\X\\P.EXE", "C:\\"],
+    ["C:P.EXE", "C:"],
+    ["P.EXE", "\\"],
+    ["\\P.EXE", null],
+    ["", null]
+  ],
+  "inis": [
+    "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\n",
+    "[Settings]\r\nOrder= 2 3 1\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\PMCOPY.GRP\r\nGroup07=C:\\WINDOWS\\SEVEN.GRP\r\nGroupx=C:\\WINDOWS\\X.GRP\r\ngroup5=C:\\WINDOWS\\LOWER.GRP\r\nGroup=C:\\WINDOWS\\NONE.GRP\r\nGroup6=\r\nGroup65537=C:\\WINDOWS\\WRAP.GRP\r\n",
+    "[Settings]\r\nOrder=1 1 2\r\n[Groups]\r\nGroup1=A.GRP\r\nGroup2=B.GRP\r\nGroup3=C.GRP\r\nGroup4=D.GRP\r\n",
+    "[Settings]\r\nOrder= 3 x 1\r\n[Groups]\r\nGroup1=A.GRP\r\nGroup2=B.GRP\r\nGroup3=C.GRP\r\n",
+    "[Groups]\r\nGroup1=\"QUOTED.GRP\"\r\nGroup1=SECOND.GRP\r\n",
+    "[Settings]\r\nOrder= 45 44 43 1\r\n[Groups]\r\nGroup1=G1.GRP\r\nGroup2=G2.GRP\r\nGroup3=G3.GRP\r\nGroup4=G4.GRP\r\nGroup5=G5.GRP\r\nGroup6=G6.GRP\r\nGroup7=G7.GRP\r\nGroup8=G8.GRP\r\nGroup9=G9.GRP\r\nGroup10=G10.GRP\r\nGroup11=G11.GRP\r\nGroup12=G12.GRP\r\nGroup13=G13.GRP\r\nGroup14=G14.GRP\r\nGroup15=G15.GRP\r\nGroup16=G16.GRP\r\nGroup17=G17.GRP\r\nGroup18=G18.GRP\r\nGroup19=G19.GRP\r\nGroup20=G20.GRP\r\nGroup21=G21.GRP\r\nGroup22=G22.GRP\r\nGroup23=G23.GRP\r\nGroup24=G24.GRP\r\nGroup25=G25.GRP\r\nGroup26=G26.GRP\r\nGroup27=G27.GRP\r\nGroup28=G28.GRP\r\nGroup29=G29.GRP\r\nGroup30=G30.GRP\r\nGroup31=G31.GRP\r\nGroup32=G32.GRP\r\nGroup33=G33.GRP\r\nGroup34=G34.GRP\r\nGroup35=G35.GRP\r\nGroup36=G36.GRP\r\nGroup37=G37.GRP\r\nGroup38=G38.GRP\r\nGroup39=G39.GRP\r\nGroup40=G40.GRP\r\nGroup41=G41.GRP\r\nGroup42=G42.GRP\r\nGroup43=G43.GRP\r\nGroup44=G44.GRP\r\nGroup45=G45.GRP\r\n"
+  ],
+  "writes": [
+    {
+      "ini": "[Settings]\r\ndisplay.drv=vga.drv\r\n",
+      "groups": [
+        {
+          "n": 1,
+          "path": "C:\\WINDOWS\\WINBOXGA.GRP"
+        }
+      ],
+      "deleted": []
+    },
+    {
+      "ini": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\n",
+      "groups": [
+        {
+          "n": 2,
+          "path": "C:\\WINDOWS\\ACCESSOR.GRP"
+        },
+        {
+          "n": 3,
+          "path": "C:\\WINDOWS\\STARTUP.GRP"
+        },
+        {
+          "n": 1,
+          "path": "C:\\WINDOWS\\MAIN.GRP"
+        },
+        {
+          "n": 4,
+          "path": "C:\\WINDOWS\\PROBEGRO.GRP"
+        }
+      ],
+      "deleted": [3]
+    },
+    {
+      "ini": "",
+      "groups": [
+        {
+          "n": 40000,
+          "path": "C:\\WINDOWS\\BIG.GRP"
+        }
+      ],
+      "deleted": []
+    }
+  ],
+  "stack": {
+    "files": {
+      "WINDOWS\\PROGMAN.INI": "[Settings]\r\nOrder= 3 1\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MADE.GRP\r\nGroup2=saved.grp\r\nGroup3=\\GAMES\\RENAMED.GRP\r\nGroup4=D:\\ELSEWHERE.GRP\r\nGroup5=C:\\WINDOWS\\MISSING.GRP\r\nGroup6=C:\\WINDOWS\\DAMAGED.GRP\r\nGROUP=C:\\WINDOWS\\..\\WINDOWS\\FULL.GRP\r\n",
+      "WINDOWS\\MADE.GRP": {
+        "script": "made"
+      },
+      "WINDOWS\\SAVED.GRP": {
+        "script": "saved"
+      },
+      "GAMES\\RENAMED.GRP": {
+        "script": "renamed"
+      },
+      "WINDOWS\\FULL.GRP": {
+        "script": "full"
+      },
+      "WINDOWS\\DAMAGED.GRP": {
+        "script": "made",
+        "damage": 40
+      }
+    }
+  },
+  "expected": {
+    "scripts": [
+      {
+        "name": "made",
+        "results": [
+          null,
+          {
+            "slot": 0
+          },
+          {
+            "slot": 1
+          }
+        ],
+        "bytes": "504d434338d9130100000000000000000000000000002600080008000101000002003300950057696e426f782047616d6573001500000006000c00100010006900750085004b0055006800536f6c69746169726500433a5c57494e444f57535c534f4c2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000000000c0010001000e700f3000301ad00b900d0004d696e657377656570657200433a5c57494e444f57535c57494e4d494e452e45584500433a5c57494e444f57535c57494e4d494e452e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100001200433a5c57494e444f57535c000281010008004106038101000600018101001200433a5c57494e444f57535c00ffffffff0000",
+        "model": {
+          "name": "WinBox Games",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 2,
+          "items": [
+            {
+              "slot": 0,
+              "name": "Solitaire",
+              "command": "C:\\WINDOWS\\SOL.EXE",
+              "directory": "C:\\WINDOWS",
+              "stored": "C:\\WINDOWS\\SOL.EXE",
+              "programDirectory": "C:\\WINDOWS\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 1,
+              "name": "Minesweeper",
+              "command": "C:\\WINDOWS\\WINMINE.EXE",
+              "directory": "C:\\WINDOWS",
+              "stored": "C:\\WINDOWS\\WINMINE.EXE",
+              "programDirectory": "C:\\WINDOWS\\",
+              "iconPath": "C:\\WINDOWS\\WINMINE.EXE",
+              "iconIndex": 0,
+              "x": 96,
+              "y": 0,
+              "hotKey": 1601,
+              "minimized": true,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "0f000f000f000f00f000f000f000f000",
+                "xor": "f000f000f000f0000f000f000f000f00",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0",
+            "item 1",
+            "itemName 1",
+            "command 1",
+            "iconPath 1",
+            "header 1",
+            "and 1",
+            "xor 1"
+          ],
+          "tags": [
+            {
+              "id": 33025,
+              "item": 0,
+              "data": null
+            },
+            {
+              "id": 33026,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33027,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 1,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d434338d9130100000000000000000000000000002600080008000101000002003300950057696e426f782047616d6573001500000006000c00100010006900750085004b0055006800536f6c69746169726500433a5c57494e444f57535c534f4c2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000000000c0010001000e700f3000301ad00b900d0004d696e657377656570657200433a5c57494e444f57535c57494e4d494e452e45584500433a5c57494e444f57535c57494e4d494e452e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100001200433a5c57494e444f57535c000281010008004106038101000600018101001200433a5c57494e444f57535c00ffffffff0000",
+        "fresh": "504d434338d9130100000000000000000000000000002600080008000101000002003300950057696e426f782047616d6573001500000006000c00100010006900750085004b0055006800536f6c69746169726500433a5c57494e444f57535c534f4c2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000000000c0010001000e700f3000301ad00b900d0004d696e657377656570657200433a5c57494e444f57535c57494e4d494e452e45584500433a5c57494e444f57535c57494e4d494e452e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100001200433a5c57494e444f57535c000281010008004106038101000600018101001200433a5c57494e444f57535c00ffffffff0000"
+      },
+      {
+        "name": "deleted",
+        "results": [
+          null,
+          {
+            "slot": 0
+          },
+          {
+            "slot": 1
+          },
+          {
+            "slot": 2
+          },
+          null,
+          {
+            "slot": 1
+          }
+        ],
+        "bytes": "504d4343643b3d0100000000000000000000000000002800080008000101000003002d00da008500526f7773001500000006000c00100010005900650075004500490058004f6e6500433a5c4f4e455c4f4e452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ab00000006000c0010001000ae00ba00ca009d00a300ad0054687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000002000c001000100011011d012d01f200f7000001466f757200464f55522e45584500433a5c464f55525c464f55522e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100000e00433a5c4f4e455c000381020006000281010008004306038101000600018101000f00433a5c464f55525c00ffffffff0000",
+        "model": {
+          "name": "Rows",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 3,
+          "items": [
+            {
+              "slot": 0,
+              "name": "One",
+              "command": "C:\\ONE\\ONE.EXE",
+              "directory": "C:\\ONE",
+              "stored": "C:\\ONE\\ONE.EXE",
+              "programDirectory": "C:\\ONE\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 1,
+              "name": "Four",
+              "command": "C:\\FOUR\\FOUR.EXE",
+              "directory": "",
+              "stored": "FOUR.EXE",
+              "programDirectory": "C:\\FOUR\\",
+              "iconPath": "C:\\FOUR\\FOUR.EXE",
+              "iconIndex": 2,
+              "x": 96,
+              "y": 0,
+              "hotKey": 1603,
+              "minimized": true,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "0f000f000f000f00f000f000f000f000",
+                "xor": "f000f000f000f0000f000f000f000f00",
+                "header": null
+              }
+            },
+            {
+              "slot": 2,
+              "name": "Three",
+              "command": "THREE.EXE",
+              "directory": "",
+              "stored": "THREE.EXE",
+              "programDirectory": null,
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 171,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": true,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0",
+            "item 2",
+            "itemName 2",
+            "command 2",
+            "iconPath 2",
+            "header 2",
+            "and 2",
+            "xor 2",
+            "item 1",
+            "itemName 1",
+            "command 1",
+            "iconPath 1",
+            "header 1",
+            "and 1",
+            "xor 1"
+          ],
+          "tags": [
+            {
+              "id": 33025,
+              "item": 0,
+              "data": null
+            },
+            {
+              "id": 33027,
+              "item": 2,
+              "data": null
+            },
+            {
+              "id": 33026,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33027,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 1,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d4343643b3d0100000000000000000000000000002800080008000101000003002d00da008500526f7773001500000006000c00100010005900650075004500490058004f6e6500433a5c4f4e455c4f4e452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ab00000006000c0010001000ae00ba00ca009d00a300ad0054687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000002000c001000100011011d012d01f200f7000001466f757200464f55522e45584500433a5c464f55525c464f55522e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100000e00433a5c4f4e455c000381020006000281010008004306038101000600018101000f00433a5c464f55525c00ffffffff0000",
+        "fresh": "504d4343bd803d0100000000000000000000000000002800080008000101000003002d008500e800526f7773001500000006000c00100010005900650075004500490058004f6e6500433a5c4f4e455c4f4e452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000002000c0010001000bc00c800d8009d00a200ab00466f757200464f55522e45584500433a5c464f55525c464f55522e455845000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f00ab00000006000c001000100011011d012d0100010601100154687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100000e00433a5c4f4e455c000281010008004306038101000600018101000f00433a5c464f55525c00038102000600ffffffff0000"
+      },
+      {
+        "name": "saved",
+        "results": [
+          null,
+          {
+            "slot": 0
+          },
+          {
+            "slot": 1
+          },
+          {
+            "slot": 2
+          },
+          null,
+          [0, 1]
+        ],
+        "bytes": "504d434341c3de000100000000000202fc00ffffffff28000800080001010000030089002d000000526f7773006000000006000c00100010005d0069007900450049005c0054776f00433a5c574f524b5c54574f2e455845202f6100000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f001500000006000c0010001000b200be00ce00a100a700b10054687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d43430281010008004206018101000e00433a5c54574f5c00038100000600ffffffff0000",
+        "model": {
+          "name": "Rows",
+          "show": 1,
+          "rcNormal": [0, 0, 514, 252],
+          "ptMin": [-1, -1],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 3,
+          "items": [
+            {
+              "slot": 0,
+              "name": "Three",
+              "command": "THREE.EXE",
+              "directory": "",
+              "stored": "THREE.EXE",
+              "programDirectory": null,
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": true,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 1,
+              "name": "Two",
+              "command": "C:\\TWO\\TWO.EXE /a",
+              "directory": "C:\\WORK",
+              "stored": "C:\\WORK\\TWO.EXE /a",
+              "programDirectory": "C:\\TWO\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 96,
+              "y": 0,
+              "hotKey": 1602,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "0f000f000f000f00f000f000f000f000",
+                "xor": "f000f000f000f0000f000f000f000f00",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 1",
+            "itemName 1",
+            "command 1",
+            "iconPath 1",
+            "header 1",
+            "and 1",
+            "xor 1",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0"
+          ],
+          "tags": [
+            {
+              "id": 33026,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33027,
+              "item": 0,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d434341c3de000100000000000202fc00ffffffff28000800080001010000030089002d000000526f7773006000000006000c00100010005d0069007900450049005c0054776f00433a5c574f524b5c54574f2e455845202f6100000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f001500000006000c0010001000b200be00ce00a100a700b10054687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d43430281010008004206018101000e00433a5c54574f5c00038100000600ffffffff0000",
+        "fresh": "504d434341e7de000100000000000202fc00ffffffff2800080008000101000003002d0082000000526f7773001500000006000c001000100056006200720045004b00550054687265650054485245452e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000006000c0010001000b200be00ce009a009e00b10054776f00433a5c574f524b5c54574f2e455845202f6100000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d43430381000006000281010008004206018101000e00433a5c54574f5c00ffffffff0000"
+      },
+      {
+        "name": "renamed",
+        "results": [
+          null,
+          {
+            "slot": 0
+          },
+          null
+        ],
+        "bytes": "504d4343cfe69300000000000000000000000000000088000800080001010000010024001500000006000c00100010005c00680078003c0044005b004e6f746570616400433a5c57494e444f57535c4e4f54455041442e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e00000041204e6577204e616d65000080ffff0a00504d4343018100001200433a5c57494e444f57535c00ffffffff0000",
+        "model": {
+          "name": "A New Name",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 1,
+          "items": [
+            {
+              "slot": 0,
+              "name": "Notepad",
+              "command": "C:\\WINDOWS\\NOTEPAD.EXE",
+              "directory": "C:\\WINDOWS",
+              "stored": "C:\\WINDOWS\\NOTEPAD.EXE",
+              "programDirectory": "C:\\WINDOWS\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0",
+            "name"
+          ],
+          "tags": [
+            {
+              "id": 33025,
+              "item": 0,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d4343cfe69300000000000000000000000000000088000800080001010000010024001500000006000c00100010005c00680078003c0044005b004e6f746570616400433a5c57494e444f57535c4e4f54455041442e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e00000041204e6577204e616d65000080ffff0a00504d4343018100001200433a5c57494e444f57535c00ffffffff0000",
+        "fresh": "504d43432eab930000000000000000000000000000002400080008000101000001002f0041204e6577204e616d65001500000006000c001000100067007300830047004f0066004e6f746570616400433a5c57494e444f57535c4e4f54455041442e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100001200433a5c57494e444f57535c00ffffffff0000"
+      },
+      {
+        "name": "refreshed",
+        "results": [
+          null,
+          {
+            "slot": 0
+          },
+          {
+            "slot": 1
+          },
+          {
+            "slot": 2
+          },
+          null
+        ],
+        "bytes": "504d4343d4ce3201000000000000000000000000000028000800080004010000030030005c008800446973706c6179001500000003000c0010002000ba00c600d60048004c0054004f6e65004f4e452e455845004f4e452e4558450060000000000000000000000000000000000074007800800054776f0054574f2e4558450054574f2e45584500ab00000001000c0010002000f60002011201a000a600b00054687265650054485245452e4558450054485245452e45584500000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210",
+        "model": {
+          "name": "Display",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 4,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 3,
+          "items": [
+            {
+              "slot": 0,
+              "name": "One",
+              "command": "ONE.EXE",
+              "directory": "",
+              "stored": "ONE.EXE",
+              "programDirectory": null,
+              "iconPath": "ONE.EXE",
+              "iconIndex": 3,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 4,
+                "planes": 4,
+                "bitsPixel": 1,
+                "and": "ff00ff00ff00ff00ff00ff00ff00ff00",
+                "xor": "0123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210",
+                "header": null
+              }
+            },
+            {
+              "slot": 1,
+              "name": "Two",
+              "command": "TWO.EXE",
+              "directory": "",
+              "stored": "TWO.EXE",
+              "programDirectory": null,
+              "iconPath": "TWO.EXE",
+              "iconIndex": 0,
+              "x": 96,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": null
+            },
+            {
+              "slot": 2,
+              "name": "Three",
+              "command": "THREE.EXE",
+              "directory": "",
+              "stored": "THREE.EXE",
+              "programDirectory": null,
+              "iconPath": "THREE.EXE",
+              "iconIndex": 1,
+              "x": 171,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 4,
+                "planes": 4,
+                "bitsPixel": 1,
+                "and": "ff00ff00ff00ff00ff00ff00ff00ff00",
+                "xor": "0123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "item 1",
+            "itemName 1",
+            "command 1",
+            "iconPath 1",
+            "item 2",
+            "itemName 2",
+            "command 2",
+            "iconPath 2",
+            "header 0",
+            "and 0",
+            "xor 0",
+            "header 2",
+            "and 2",
+            "xor 2"
+          ],
+          "tags": null
+        },
+        "again": "504d4343d4ce3201000000000000000000000000000028000800080004010000030030005c008800446973706c6179001500000003000c0010002000ba00c600d60048004c0054004f6e65004f4e452e455845004f4e452e4558450060000000000000000000000000000000000074007800800054776f0054574f2e4558450054574f2e45584500ab00000001000c0010002000f60002011201a000a600b00054687265650054485245452e4558450054485245452e45584500000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210",
+        "fresh": "504d43430ece3201000000000000000000000000000028000800080004010000030030009800c400446973706c6179001500000003000c00100020005c006800780048004c0054004f6e65004f4e452e455845004f4e452e45584500000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210600000000000000000000000000000000000b000b400bc0054776f0054574f2e4558450054574f2e45584500ab00000001000c0010002000f60002011201dc00e200ec0054687265650054485245452e4558450054485245452e45584500000000000800080004000401ff00ff00ff00ff00ff00ff00ff00ff000123456789abcdeffedcba98765432100123456789abcdeffedcba9876543210"
+      },
+      {
+        "name": "high bytes",
+        "results": [
+          null,
+          {
+            "slot": 0
+          }
+        ],
+        "bytes": "504d4343ef78ab0000000000000000000000000000002400080008000101000001003600537069656c652066fc72204b696e646572001500000000000c00100010007f008b009b004e0057006c00436166e9204f6ce900433a5c535049454c455c434146c92e45584520f100433a5c535049454c455c434146c92e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100001100433a5c535049454c455c00ffffffff0000",
+        "model": {
+          "name": "Spiele für Kinder",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 1,
+          "items": [
+            {
+              "slot": 0,
+              "name": "Café Olé",
+              "command": "C:\\SPIELE\\CAFÉ.EXE ñ",
+              "directory": "C:\\SPIELE",
+              "stored": "C:\\SPIELE\\CAFÉ.EXE ñ",
+              "programDirectory": "C:\\SPIELE\\",
+              "iconPath": "C:\\SPIELE\\CAFÉ.EXE",
+              "iconIndex": 0,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0"
+          ],
+          "tags": [
+            {
+              "id": 33025,
+              "item": 0,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d4343ef78ab0000000000000000000000000000002400080008000101000001003600537069656c652066fc72204b696e646572001500000000000c00100010007f008b009b004e0057006c00436166e9204f6ce900433a5c535049454c455c434146c92e45584520f100433a5c535049454c455c434146c92e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100001100433a5c535049454c455c00ffffffff0000",
+        "fresh": "504d4343ef78ab0000000000000000000000000000002400080008000101000001003600537069656c652066fc72204b696e646572001500000000000c00100010007f008b009b004e0057006c00436166e9204f6ce900433a5c535049454c455c434146c92e45584520f100433a5c535049454c455c434146c92e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100001100433a5c535049454c455c00ffffffff0000"
+      },
+      {
+        "name": "full",
+        "results": [
+          null,
+          null,
+          {
+            "error": 115
+          },
+          null,
+          {
+            "slot": 7
+          }
+        ],
+        "bytes": "504d43439245e31100000000000000000000000000008600080008000101000032008b00e3003b019301eb0143029b028b11f3024b03a303fc035504ae0407056005b90512066b06c4061d077607cf0728088108da0833098c09e5093e0a970af00a490ba20bfb0b540cad0c060d5f0db80d110e6a0ec30e1c0f750fce0f27108010d910321146756c6c00ffffffff06000c0010001000b700c300d300a300aa00b6004974656d203000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010000f011b012b01fb0002010e014974656d203100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100067017301830153015a0166014974656d203200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000bf01cb01db01ab01b201be014974656d203300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100017022302330203020a0216024974656d203400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006f027b028b025b0262026e024974656d203500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c702d302e302b302ba02c6024974656d203600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010001f032b033b030b0312031e034974656d203800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100077038303930363036a0376034974656d203900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000d003dc03ec03bb03c303cf034974656d20313000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100029043504450414041c0428044974656d20313100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100082048e049e046d04750481044974656d20313200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000db04e704f704c604ce04da044974656d20313300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003405400550051f05270533054974656d20313400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008d059905a905780580058c054974656d20313500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e605f2050206d105d905e5054974656d20313600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003f064b065b062a0632063e064974656d20313700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010009806a406b40683068b0697064974656d20313800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000f106fd060d07dc06e406f0064974656d20313900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010004a075607660735073d0749074974656d20323000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a307af07bf078e079607a2074974656d20323100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fc0708081808e707ef07fb074974656d20323200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005508610871084008480854084974656d20323300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ae08ba08ca089908a108ad084974656d20323400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000070913092309f208fa0806094974656d20323500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100060096c097c094b0953095f094974656d20323600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000b909c509d509a409ac09b8094974656d20323700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000120a1e0a2e0afd09050a110a4974656d20323800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006b0a770a870a560a5e0a6a0a4974656d20323900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c40ad00ae00aaf0ab70ac30a4974656d20333000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010001d0b290b390b080b100b1c0b4974656d20333100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000760b820b920b610b690b750b4974656d20333200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000cf0bdb0beb0bba0bc20bce0b4974656d20333300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000280c340c440c130c1b0c270c4974656d20333400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000810c8d0c9d0c6c0c740c800c4974656d20333500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000da0ce60cf60cc50ccd0cd90c4974656d20333600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000330d3f0d4f0d1e0d260d320d4974656d20333700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008c0d980da80d770d7f0d8b0d4974656d20333800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e50df10d010ed00dd80de40d4974656d20333900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003e0e4a0e5a0e290e310e3d0e4974656d20343000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000970ea30eb30e820e8a0e960e4974656d20343100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000f00efc0e0c0fdb0ee30eef0e4974656d20343200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000490f550f650f340f3c0f480f4974656d20343300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a20fae0fbe0f8d0f950fa10f4974656d20343400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fb0f07101710e60fee0ffa0f4974656d20343500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005410601070103f10471053104974656d20343600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ad10b910c9109810a010ac104974656d20343700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000061112112211f110f91005114974656d20343800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005f116b117b114a1152115e114974656d20343900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000001500000006000c0010001000b711c311d311a311a911b611536576656e00433a5c534556454e2e45584500000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100000a00433a5c00018101000a00433a5c00018102000a00433a5c00018103000a00433a5c00018104000a00433a5c00018105000a00433a5c00018106000a00433a5c00018108000a00433a5c00018109000a00433a5c0001810a000a00433a5c0001810b000a00433a5c0001810c000a00433a5c0001810d000a00433a5c0001810e000a00433a5c0001810f000a00433a5c00018110000a00433a5c00018111000a00433a5c00018112000a00433a5c00018113000a00433a5c00018114000a00433a5c00018115000a00433a5c00018116000a00433a5c00018117000a00433a5c00018118000a00433a5c00018119000a00433a5c0001811a000a00433a5c0001811b000a00433a5c0001811c000a00433a5c0001811d000a00433a5c0001811e000a00433a5c0001811f000a00433a5c00018120000a00433a5c00018121000a00433a5c00018122000a00433a5c00018123000a00433a5c00018124000a00433a5c00018125000a00433a5c00018126000a00433a5c00018127000a00433a5c00018128000a00433a5c00018129000a00433a5c0001812a000a00433a5c0001812b000a00433a5c0001812c000a00433a5c0001812d000a00433a5c0001812e000a00433a5c0001812f000a00433a5c00018130000a00433a5c00018131000a00433a5c00018107000a00433a5c00ffffffff0000",
+        "model": {
+          "name": "Full",
+          "show": 0,
+          "rcNormal": [0, 0, 0, 0],
+          "ptMin": [0, 0],
+          "cxIcon": 8,
+          "cyIcon": 8,
+          "bitsPixel": 1,
+          "planes": 1,
+          "reserved": 0,
+          "slots": 50,
+          "items": [
+            {
+              "slot": 0,
+              "name": "Item 0",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 1,
+              "name": "Item 1",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 2,
+              "name": "Item 2",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 3,
+              "name": "Item 3",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 4,
+              "name": "Item 4",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 5,
+              "name": "Item 5",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 6,
+              "name": "Item 6",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 7,
+              "name": "Seven",
+              "command": "C:\\SEVEN.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\SEVEN.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": 21,
+              "y": 0,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "0f000f000f000f00f000f000f000f000",
+                "xor": "f000f000f000f0000f000f000f000f00",
+                "header": null
+              }
+            },
+            {
+              "slot": 8,
+              "name": "Item 8",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 9,
+              "name": "Item 9",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 10,
+              "name": "Item 10",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 11,
+              "name": "Item 11",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 12,
+              "name": "Item 12",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 13,
+              "name": "Item 13",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 14,
+              "name": "Item 14",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 15,
+              "name": "Item 15",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 16,
+              "name": "Item 16",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 17,
+              "name": "Item 17",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 18,
+              "name": "Item 18",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 19,
+              "name": "Item 19",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 20,
+              "name": "Item 20",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 21,
+              "name": "Item 21",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 22,
+              "name": "Item 22",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 23,
+              "name": "Item 23",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 24,
+              "name": "Item 24",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 25,
+              "name": "Item 25",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 26,
+              "name": "Item 26",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 27,
+              "name": "Item 27",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 28,
+              "name": "Item 28",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 29,
+              "name": "Item 29",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 30,
+              "name": "Item 30",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 31,
+              "name": "Item 31",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 32,
+              "name": "Item 32",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 33,
+              "name": "Item 33",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 34,
+              "name": "Item 34",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 35,
+              "name": "Item 35",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 36,
+              "name": "Item 36",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 37,
+              "name": "Item 37",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 38,
+              "name": "Item 38",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 39,
+              "name": "Item 39",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 40,
+              "name": "Item 40",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 41,
+              "name": "Item 41",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 42,
+              "name": "Item 42",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 43,
+              "name": "Item 43",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 44,
+              "name": "Item 44",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 45,
+              "name": "Item 45",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 46,
+              "name": "Item 46",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 47,
+              "name": "Item 47",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 48,
+              "name": "Item 48",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            },
+            {
+              "slot": 49,
+              "name": "Item 49",
+              "command": "C:\\ITEM.EXE",
+              "directory": "C:\\",
+              "stored": "C:\\ITEM.EXE",
+              "programDirectory": "C:\\",
+              "iconPath": "",
+              "iconIndex": 6,
+              "x": -1,
+              "y": -1,
+              "hotKey": 0,
+              "minimized": false,
+              "icon": {
+                "hotX": 0,
+                "hotY": 0,
+                "cx": 8,
+                "cy": 8,
+                "widthBytes": 2,
+                "planes": 1,
+                "bitsPixel": 1,
+                "and": "ff00ff00c300c300c300c300ff00ff00",
+                "xor": "00007e0042005a005a0042007e000000",
+                "header": null
+              }
+            }
+          ],
+          "layout": [
+            "name",
+            "item 0",
+            "itemName 0",
+            "command 0",
+            "iconPath 0",
+            "header 0",
+            "and 0",
+            "xor 0",
+            "item 1",
+            "itemName 1",
+            "command 1",
+            "iconPath 1",
+            "header 1",
+            "and 1",
+            "xor 1",
+            "item 2",
+            "itemName 2",
+            "command 2",
+            "iconPath 2",
+            "header 2",
+            "and 2",
+            "xor 2",
+            "item 3",
+            "itemName 3",
+            "command 3",
+            "iconPath 3",
+            "header 3",
+            "and 3",
+            "xor 3",
+            "item 4",
+            "itemName 4",
+            "command 4",
+            "iconPath 4",
+            "header 4",
+            "and 4",
+            "xor 4",
+            "item 5",
+            "itemName 5",
+            "command 5",
+            "iconPath 5",
+            "header 5",
+            "and 5",
+            "xor 5",
+            "item 6",
+            "itemName 6",
+            "command 6",
+            "iconPath 6",
+            "header 6",
+            "and 6",
+            "xor 6",
+            "item 8",
+            "itemName 8",
+            "command 8",
+            "iconPath 8",
+            "header 8",
+            "and 8",
+            "xor 8",
+            "item 9",
+            "itemName 9",
+            "command 9",
+            "iconPath 9",
+            "header 9",
+            "and 9",
+            "xor 9",
+            "item 10",
+            "itemName 10",
+            "command 10",
+            "iconPath 10",
+            "header 10",
+            "and 10",
+            "xor 10",
+            "item 11",
+            "itemName 11",
+            "command 11",
+            "iconPath 11",
+            "header 11",
+            "and 11",
+            "xor 11",
+            "item 12",
+            "itemName 12",
+            "command 12",
+            "iconPath 12",
+            "header 12",
+            "and 12",
+            "xor 12",
+            "item 13",
+            "itemName 13",
+            "command 13",
+            "iconPath 13",
+            "header 13",
+            "and 13",
+            "xor 13",
+            "item 14",
+            "itemName 14",
+            "command 14",
+            "iconPath 14",
+            "header 14",
+            "and 14",
+            "xor 14",
+            "item 15",
+            "itemName 15",
+            "command 15",
+            "iconPath 15",
+            "header 15",
+            "and 15",
+            "xor 15",
+            "item 16",
+            "itemName 16",
+            "command 16",
+            "iconPath 16",
+            "header 16",
+            "and 16",
+            "xor 16",
+            "item 17",
+            "itemName 17",
+            "command 17",
+            "iconPath 17",
+            "header 17",
+            "and 17",
+            "xor 17",
+            "item 18",
+            "itemName 18",
+            "command 18",
+            "iconPath 18",
+            "header 18",
+            "and 18",
+            "xor 18",
+            "item 19",
+            "itemName 19",
+            "command 19",
+            "iconPath 19",
+            "header 19",
+            "and 19",
+            "xor 19",
+            "item 20",
+            "itemName 20",
+            "command 20",
+            "iconPath 20",
+            "header 20",
+            "and 20",
+            "xor 20",
+            "item 21",
+            "itemName 21",
+            "command 21",
+            "iconPath 21",
+            "header 21",
+            "and 21",
+            "xor 21",
+            "item 22",
+            "itemName 22",
+            "command 22",
+            "iconPath 22",
+            "header 22",
+            "and 22",
+            "xor 22",
+            "item 23",
+            "itemName 23",
+            "command 23",
+            "iconPath 23",
+            "header 23",
+            "and 23",
+            "xor 23",
+            "item 24",
+            "itemName 24",
+            "command 24",
+            "iconPath 24",
+            "header 24",
+            "and 24",
+            "xor 24",
+            "item 25",
+            "itemName 25",
+            "command 25",
+            "iconPath 25",
+            "header 25",
+            "and 25",
+            "xor 25",
+            "item 26",
+            "itemName 26",
+            "command 26",
+            "iconPath 26",
+            "header 26",
+            "and 26",
+            "xor 26",
+            "item 27",
+            "itemName 27",
+            "command 27",
+            "iconPath 27",
+            "header 27",
+            "and 27",
+            "xor 27",
+            "item 28",
+            "itemName 28",
+            "command 28",
+            "iconPath 28",
+            "header 28",
+            "and 28",
+            "xor 28",
+            "item 29",
+            "itemName 29",
+            "command 29",
+            "iconPath 29",
+            "header 29",
+            "and 29",
+            "xor 29",
+            "item 30",
+            "itemName 30",
+            "command 30",
+            "iconPath 30",
+            "header 30",
+            "and 30",
+            "xor 30",
+            "item 31",
+            "itemName 31",
+            "command 31",
+            "iconPath 31",
+            "header 31",
+            "and 31",
+            "xor 31",
+            "item 32",
+            "itemName 32",
+            "command 32",
+            "iconPath 32",
+            "header 32",
+            "and 32",
+            "xor 32",
+            "item 33",
+            "itemName 33",
+            "command 33",
+            "iconPath 33",
+            "header 33",
+            "and 33",
+            "xor 33",
+            "item 34",
+            "itemName 34",
+            "command 34",
+            "iconPath 34",
+            "header 34",
+            "and 34",
+            "xor 34",
+            "item 35",
+            "itemName 35",
+            "command 35",
+            "iconPath 35",
+            "header 35",
+            "and 35",
+            "xor 35",
+            "item 36",
+            "itemName 36",
+            "command 36",
+            "iconPath 36",
+            "header 36",
+            "and 36",
+            "xor 36",
+            "item 37",
+            "itemName 37",
+            "command 37",
+            "iconPath 37",
+            "header 37",
+            "and 37",
+            "xor 37",
+            "item 38",
+            "itemName 38",
+            "command 38",
+            "iconPath 38",
+            "header 38",
+            "and 38",
+            "xor 38",
+            "item 39",
+            "itemName 39",
+            "command 39",
+            "iconPath 39",
+            "header 39",
+            "and 39",
+            "xor 39",
+            "item 40",
+            "itemName 40",
+            "command 40",
+            "iconPath 40",
+            "header 40",
+            "and 40",
+            "xor 40",
+            "item 41",
+            "itemName 41",
+            "command 41",
+            "iconPath 41",
+            "header 41",
+            "and 41",
+            "xor 41",
+            "item 42",
+            "itemName 42",
+            "command 42",
+            "iconPath 42",
+            "header 42",
+            "and 42",
+            "xor 42",
+            "item 43",
+            "itemName 43",
+            "command 43",
+            "iconPath 43",
+            "header 43",
+            "and 43",
+            "xor 43",
+            "item 44",
+            "itemName 44",
+            "command 44",
+            "iconPath 44",
+            "header 44",
+            "and 44",
+            "xor 44",
+            "item 45",
+            "itemName 45",
+            "command 45",
+            "iconPath 45",
+            "header 45",
+            "and 45",
+            "xor 45",
+            "item 46",
+            "itemName 46",
+            "command 46",
+            "iconPath 46",
+            "header 46",
+            "and 46",
+            "xor 46",
+            "item 47",
+            "itemName 47",
+            "command 47",
+            "iconPath 47",
+            "header 47",
+            "and 47",
+            "xor 47",
+            "item 48",
+            "itemName 48",
+            "command 48",
+            "iconPath 48",
+            "header 48",
+            "and 48",
+            "xor 48",
+            "item 49",
+            "itemName 49",
+            "command 49",
+            "iconPath 49",
+            "header 49",
+            "and 49",
+            "xor 49",
+            "item 7",
+            "itemName 7",
+            "command 7",
+            "iconPath 7",
+            "header 7",
+            "and 7",
+            "xor 7"
+          ],
+          "tags": [
+            {
+              "id": 33025,
+              "item": 0,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 1,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 2,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 3,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 4,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 5,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 6,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 8,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 9,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 10,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 11,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 12,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 13,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 14,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 15,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 16,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 17,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 18,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 19,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 20,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 21,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 22,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 23,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 24,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 25,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 26,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 27,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 28,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 29,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 30,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 31,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 32,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 33,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 34,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 35,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 36,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 37,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 38,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 39,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 40,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 41,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 42,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 43,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 44,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 45,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 46,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 47,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 48,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 49,
+              "data": null
+            },
+            {
+              "id": 33025,
+              "item": 7,
+              "data": null
+            }
+          ]
+        },
+        "again": "504d43439245e31100000000000000000000000000008600080008000101000032008b00e3003b019301eb0143029b028b11f3024b03a303fc035504ae0407056005b90512066b06c4061d077607cf0728088108da0833098c09e5093e0a970af00a490ba20bfb0b540cad0c060d5f0db80d110e6a0ec30e1c0f750fce0f27108010d910321146756c6c00ffffffff06000c0010001000b700c300d300a300aa00b6004974656d203000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010000f011b012b01fb0002010e014974656d203100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100067017301830153015a0166014974656d203200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000bf01cb01db01ab01b201be014974656d203300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100017022302330203020a0216024974656d203400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006f027b028b025b0262026e024974656d203500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c702d302e302b302ba02c6024974656d203600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010001f032b033b030b0312031e034974656d203800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100077038303930363036a0376034974656d203900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000d003dc03ec03bb03c303cf034974656d20313000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100029043504450414041c0428044974656d20313100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100082048e049e046d04750481044974656d20313200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000db04e704f704c604ce04da044974656d20313300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003405400550051f05270533054974656d20313400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008d059905a905780580058c054974656d20313500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e605f2050206d105d905e5054974656d20313600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003f064b065b062a0632063e064974656d20313700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010009806a406b40683068b0697064974656d20313800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000f106fd060d07dc06e406f0064974656d20313900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010004a075607660735073d0749074974656d20323000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a307af07bf078e079607a2074974656d20323100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fc0708081808e707ef07fb074974656d20323200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005508610871084008480854084974656d20323300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ae08ba08ca089908a108ad084974656d20323400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000070913092309f208fa0806094974656d20323500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100060096c097c094b0953095f094974656d20323600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000b909c509d509a409ac09b8094974656d20323700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000120a1e0a2e0afd09050a110a4974656d20323800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006b0a770a870a560a5e0a6a0a4974656d20323900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c40ad00ae00aaf0ab70ac30a4974656d20333000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010001d0b290b390b080b100b1c0b4974656d20333100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000760b820b920b610b690b750b4974656d20333200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000cf0bdb0beb0bba0bc20bce0b4974656d20333300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000280c340c440c130c1b0c270c4974656d20333400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000810c8d0c9d0c6c0c740c800c4974656d20333500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000da0ce60cf60cc50ccd0cd90c4974656d20333600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000330d3f0d4f0d1e0d260d320d4974656d20333700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008c0d980da80d770d7f0d8b0d4974656d20333800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e50df10d010ed00dd80de40d4974656d20333900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003e0e4a0e5a0e290e310e3d0e4974656d20343000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000970ea30eb30e820e8a0e960e4974656d20343100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000f00efc0e0c0fdb0ee30eef0e4974656d20343200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000490f550f650f340f3c0f480f4974656d20343300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a20fae0fbe0f8d0f950fa10f4974656d20343400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fb0f07101710e60fee0ffa0f4974656d20343500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005410601070103f10471053104974656d20343600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ad10b910c9109810a010ac104974656d20343700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000061112112211f110f91005114974656d20343800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005f116b117b114a1152115e114974656d20343900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000001500000006000c0010001000b711c311d311a311a911b611536576656e00433a5c534556454e2e45584500000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f000080ffff0a00504d4343018100000a00433a5c00018101000a00433a5c00018102000a00433a5c00018103000a00433a5c00018104000a00433a5c00018105000a00433a5c00018106000a00433a5c00018108000a00433a5c00018109000a00433a5c0001810a000a00433a5c0001810b000a00433a5c0001810c000a00433a5c0001810d000a00433a5c0001810e000a00433a5c0001810f000a00433a5c00018110000a00433a5c00018111000a00433a5c00018112000a00433a5c00018113000a00433a5c00018114000a00433a5c00018115000a00433a5c00018116000a00433a5c00018117000a00433a5c00018118000a00433a5c00018119000a00433a5c0001811a000a00433a5c0001811b000a00433a5c0001811c000a00433a5c0001811d000a00433a5c0001811e000a00433a5c0001811f000a00433a5c00018120000a00433a5c00018121000a00433a5c00018122000a00433a5c00018123000a00433a5c00018124000a00433a5c00018125000a00433a5c00018126000a00433a5c00018127000a00433a5c00018128000a00433a5c00018129000a00433a5c0001812a000a00433a5c0001812b000a00433a5c0001812c000a00433a5c0001812d000a00433a5c0001812e000a00433a5c0001812f000a00433a5c00018130000a00433a5c00018131000a00433a5c00018107000a00433a5c00ffffffff0000",
+        "fresh": "504d4343a34ce31100000000000000000000000000008600080008000101000032008b00e3003b019301eb0143029b02f3024b03a303fb035404ad0406055f05b80511066a06c3061c077507ce0727088008d90832098b09e4093d0a960aef0a480ba10bfa0b530cac0c050d5e0db70d100e690ec20e1b0f740fcd0f26107f10d81031118a1146756c6c00ffffffff06000c0010001000b700c300d300a300aa00b6004974656d203000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010000f011b012b01fb0002010e014974656d203100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100067017301830153015a0166014974656d203200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000bf01cb01db01ab01b201be014974656d203300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100017022302330203020a0216024974656d203400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006f027b028b025b0262026e024974656d203500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c702d302e302b302ba02c6024974656d203600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000001500000006000c00100010001f032b033b030b0311031e03536576656e00433a5c534556454e2e45584500000000000008000800020001010f000f000f000f00f000f000f000f000f000f000f000f0000f000f000f000f00ffffffff06000c001000100077038303930363036a0376034974656d203800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000cf03db03eb03bb03c203ce034974656d203900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100028043404440413041b0427044974656d20313000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100081048d049d046c04740480044974656d20313100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000da04e604f604c504cd04d9044974656d20313200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100033053f054f051e05260532054974656d20313300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008c059805a80577057f058b054974656d20313400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e505f1050106d005d805e4054974656d20313500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003e064a065a06290631063d064974656d20313600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010009706a306b30682068a0696064974656d20313700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000f006fc060c07db06e306ef064974656d20313800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100049075507650734073c0748074974656d20313900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a207ae07be078d079507a1074974656d20323000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fb0707081708e607ee07fa074974656d20323100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005408600870083f08470853084974656d20323200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ad08b908c9089808a008ac084974656d20323300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000060912092209f108f90805094974656d20323400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005f096b097b094a0952095e094974656d20323500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000b809c409d409a309ab09b7094974656d20323600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000110a1d0a2d0afc09040a100a4974656d20323700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010006a0a760a860a550a5d0a690a4974656d20323800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000c30acf0adf0aae0ab60ac20a4974656d20323900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010001c0b280b380b070b0f0b1b0b4974656d20333000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000750b810b910b600b680b740b4974656d20333100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ce0bda0bea0bb90bc10bcd0b4974656d20333200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000270c330c430c120c1a0c260c4974656d20333300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000800c8c0c9c0c6b0c730c7f0c4974656d20333400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000d90ce50cf50cc40ccc0cd80c4974656d20333500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000320d3e0d4e0d1d0d250d310d4974656d20333600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010008b0d970da70d760d7e0d8a0d4974656d20333700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000e40df00d000ecf0dd70de30d4974656d20333800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010003d0e490e590e280e300e3c0e4974656d20333900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000960ea20eb20e810e890e950e4974656d20343000433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ef0efb0e0b0fda0ee20eee0e4974656d20343100433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000480f540f640f330f3b0f470f4974656d20343200433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000a10fad0fbd0f8c0f940fa00f4974656d20343300433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000fa0f06101610e50fed0ff90f4974656d20343400433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c001000100053105f106f103e10461052104974656d20343500433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000ac10b810c81097109f10ab104974656d20343600433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000051111112111f010f81004114974656d20343700433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c00100010005e116a117a11491151115d114974656d20343800433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ffffffff06000c0010001000b711c311d311a211aa11b6114974656d20343900433a5c4954454d2e4558450000000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100000a00433a5c00018101000a00433a5c00018102000a00433a5c00018103000a00433a5c00018104000a00433a5c00018105000a00433a5c00018106000a00433a5c00018107000a00433a5c00018108000a00433a5c00018109000a00433a5c0001810a000a00433a5c0001810b000a00433a5c0001810c000a00433a5c0001810d000a00433a5c0001810e000a00433a5c0001810f000a00433a5c00018110000a00433a5c00018111000a00433a5c00018112000a00433a5c00018113000a00433a5c00018114000a00433a5c00018115000a00433a5c00018116000a00433a5c00018117000a00433a5c00018118000a00433a5c00018119000a00433a5c0001811a000a00433a5c0001811b000a00433a5c0001811c000a00433a5c0001811d000a00433a5c0001811e000a00433a5c0001811f000a00433a5c00018120000a00433a5c00018121000a00433a5c00018122000a00433a5c00018123000a00433a5c00018124000a00433a5c00018125000a00433a5c00018126000a00433a5c00018127000a00433a5c00018128000a00433a5c00018129000a00433a5c0001812a000a00433a5c0001812b000a00433a5c0001812c000a00433a5c0001812d000a00433a5c0001812e000a00433a5c0001812f000a00433a5c00018130000a00433a5c00018131000a00433a5c00ffffffff0000"
+      }
+    ],
+    "commands": [
+      {
+        "stored": "C:\\WINDOWS\\NOTEPAD.EXE",
+        "programDirectory": "C:\\WINDOWS\\",
+        "command": "C:\\WINDOWS\\NOTEPAD.EXE",
+        "directory": "C:\\WINDOWS"
+      },
+      {
+        "stored": "C:\\DOCS\\NOTEPAD.EXE README.TXT",
+        "programDirectory": "C:\\WINDOWS\\",
+        "command": "C:\\WINDOWS\\NOTEPAD.EXE README.TXT",
+        "directory": "C:\\DOCS"
+      },
+      {
+        "stored": "c:\\windows\\games\\carrib.exe",
+        "programDirectory": "c:\\windows\\games\\",
+        "command": "c:\\windows\\games\\carrib.exe",
+        "directory": "c:\\windows\\games"
+      },
+      {
+        "stored": "NOTEPAD.EXE",
+        "programDirectory": "",
+        "command": "NOTEPAD.EXE",
+        "directory": ""
+      },
+      {
+        "stored": "C:\\TEMP\\SETUP.EXE /x  y",
+        "programDirectory": "A:",
+        "command": "A:SETUP.EXE /x  y",
+        "directory": "C:\\TEMP"
+      },
+      {
+        "stored": "C:\\P.EXE",
+        "programDirectory": "C:\\X\\",
+        "command": "C:\\X\\P.EXE",
+        "directory": "C:\\"
+      },
+      {
+        "stored": "C:\\P.EXE",
+        "programDirectory": "C:",
+        "command": "C:P.EXE",
+        "directory": "C:\\"
+      },
+      {
+        "stored": "\\P.EXE",
+        "programDirectory": "",
+        "command": "P.EXE",
+        "directory": ""
+      },
+      {
+        "stored": "\\P.EXE",
+        "programDirectory": "\\",
+        "command": "\\P.EXE",
+        "directory": ""
+      },
+      {
+        "stored": "",
+        "programDirectory": "",
+        "command": "",
+        "directory": ""
+      }
+    ],
+    "inis": [
+      {
+        "order": "2 3 1",
+        "keys": [
+          {
+            "key": "GROUP2",
+            "n": 2,
+            "path": "C:\\WINDOWS\\ACCESSOR.GRP"
+          },
+          {
+            "key": "GROUP3",
+            "n": 3,
+            "path": "C:\\WINDOWS\\STARTUP.GRP"
+          },
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "C:\\WINDOWS\\MAIN.GRP"
+          }
+        ]
+      },
+      {
+        "order": "2 3 1",
+        "keys": [
+          {
+            "key": "GROUP2",
+            "n": 2,
+            "path": "C:\\WINDOWS\\ACCESSOR.GRP"
+          },
+          {
+            "key": "GROUP3",
+            "n": 3,
+            "path": "C:\\WINDOWS\\STARTUP.GRP"
+          },
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "C:\\WINDOWS\\MAIN.GRP"
+          },
+          {
+            "key": "GROUP4",
+            "n": 4,
+            "path": "C:\\WINDOWS\\PMCOPY.GRP"
+          },
+          {
+            "key": "GROUP5",
+            "n": 5,
+            "path": "C:\\WINDOWS\\LOWER.GRP"
+          },
+          {
+            "key": "GROUP",
+            "n": 0,
+            "path": "C:\\WINDOWS\\NONE.GRP"
+          },
+          {
+            "key": "GROUP65537",
+            "n": 1,
+            "path": "C:\\WINDOWS\\WRAP.GRP"
+          }
+        ]
+      },
+      {
+        "order": "1 1 2",
+        "keys": [
+          {
+            "key": "GROUP4",
+            "n": 4,
+            "path": "D.GRP"
+          },
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "A.GRP"
+          },
+          {
+            "key": "GROUP2",
+            "n": 2,
+            "path": "B.GRP"
+          },
+          {
+            "key": "GROUP3",
+            "n": 3,
+            "path": "C.GRP"
+          }
+        ]
+      },
+      {
+        "order": "3 x 1",
+        "keys": [
+          {
+            "key": "GROUP3",
+            "n": 3,
+            "path": "C.GRP"
+          },
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "A.GRP"
+          },
+          {
+            "key": "GROUP2",
+            "n": 2,
+            "path": "B.GRP"
+          }
+        ]
+      },
+      {
+        "order": "",
+        "keys": [
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "QUOTED.GRP"
+          },
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "QUOTED.GRP"
+          }
+        ]
+      },
+      {
+        "order": "45 44 43 1",
+        "keys": [
+          {
+            "key": "GROUP1",
+            "n": 1,
+            "path": "G1.GRP"
+          },
+          {
+            "key": "GROUP2",
+            "n": 2,
+            "path": "G2.GRP"
+          },
+          {
+            "key": "GROUP3",
+            "n": 3,
+            "path": "G3.GRP"
+          },
+          {
+            "key": "GROUP4",
+            "n": 4,
+            "path": "G4.GRP"
+          },
+          {
+            "key": "GROUP5",
+            "n": 5,
+            "path": "G5.GRP"
+          },
+          {
+            "key": "GROUP6",
+            "n": 6,
+            "path": "G6.GRP"
+          },
+          {
+            "key": "GROUP7",
+            "n": 7,
+            "path": "G7.GRP"
+          },
+          {
+            "key": "GROUP8",
+            "n": 8,
+            "path": "G8.GRP"
+          },
+          {
+            "key": "GROUP9",
+            "n": 9,
+            "path": "G9.GRP"
+          },
+          {
+            "key": "GROUP10",
+            "n": 10,
+            "path": "G10.GRP"
+          },
+          {
+            "key": "GROUP11",
+            "n": 11,
+            "path": "G11.GRP"
+          },
+          {
+            "key": "GROUP12",
+            "n": 12,
+            "path": "G12.GRP"
+          },
+          {
+            "key": "GROUP13",
+            "n": 13,
+            "path": "G13.GRP"
+          },
+          {
+            "key": "GROUP14",
+            "n": 14,
+            "path": "G14.GRP"
+          },
+          {
+            "key": "GROUP15",
+            "n": 15,
+            "path": "G15.GRP"
+          },
+          {
+            "key": "GROUP16",
+            "n": 16,
+            "path": "G16.GRP"
+          },
+          {
+            "key": "GROUP17",
+            "n": 17,
+            "path": "G17.GRP"
+          },
+          {
+            "key": "GROUP18",
+            "n": 18,
+            "path": "G18.GRP"
+          },
+          {
+            "key": "GROUP19",
+            "n": 19,
+            "path": "G19.GRP"
+          },
+          {
+            "key": "GROUP20",
+            "n": 20,
+            "path": "G20.GRP"
+          },
+          {
+            "key": "GROUP21",
+            "n": 21,
+            "path": "G21.GRP"
+          },
+          {
+            "key": "GROUP22",
+            "n": 22,
+            "path": "G22.GRP"
+          },
+          {
+            "key": "GROUP23",
+            "n": 23,
+            "path": "G23.GRP"
+          },
+          {
+            "key": "GROUP24",
+            "n": 24,
+            "path": "G24.GRP"
+          },
+          {
+            "key": "GROUP25",
+            "n": 25,
+            "path": "G25.GRP"
+          },
+          {
+            "key": "GROUP26",
+            "n": 26,
+            "path": "G26.GRP"
+          },
+          {
+            "key": "GROUP27",
+            "n": 27,
+            "path": "G27.GRP"
+          },
+          {
+            "key": "GROUP28",
+            "n": 28,
+            "path": "G28.GRP"
+          },
+          {
+            "key": "GROUP29",
+            "n": 29,
+            "path": "G29.GRP"
+          },
+          {
+            "key": "GROUP30",
+            "n": 30,
+            "path": "G30.GRP"
+          },
+          {
+            "key": "GROUP31",
+            "n": 31,
+            "path": "G31.GRP"
+          },
+          {
+            "key": "GROUP32",
+            "n": 32,
+            "path": "G32.GRP"
+          },
+          {
+            "key": "GROUP33",
+            "n": 33,
+            "path": "G33.GRP"
+          },
+          {
+            "key": "GROUP34",
+            "n": 34,
+            "path": "G34.GRP"
+          },
+          {
+            "key": "GROUP35",
+            "n": 35,
+            "path": "G35.GRP"
+          },
+          {
+            "key": "GROUP36",
+            "n": 36,
+            "path": "G36.GRP"
+          },
+          {
+            "key": "GROUP37",
+            "n": 37,
+            "path": "G37.GRP"
+          },
+          {
+            "key": "GROUP38",
+            "n": 38,
+            "path": "G38.GRP"
+          },
+          {
+            "key": "GROUP39",
+            "n": 39,
+            "path": "G39.GRP"
+          },
+          {
+            "key": "GROUP40",
+            "n": 40,
+            "path": "G40.GRP"
+          },
+          {
+            "key": "GROUP4",
+            "n": 4,
+            "path": "G4.GRP"
+          }
+        ]
+      }
+    ],
+    "writes": [
+      {
+        "writes": [
+          ["Groups", "Group1", "C:\\WINDOWS\\WINBOXGA.GRP"],
+          ["Settings", "Order", " 1"]
+        ],
+        "ini": "[Settings]\r\ndisplay.drv=vga.drv\r\nOrder= 1\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\WINBOXGA.GRP\r\n"
+      },
+      {
+        "writes": [
+          ["Groups", "Group2", "C:\\WINDOWS\\ACCESSOR.GRP"],
+          ["Groups", "Group3", "C:\\WINDOWS\\STARTUP.GRP"],
+          ["Groups", "Group1", "C:\\WINDOWS\\MAIN.GRP"],
+          ["Groups", "Group4", "C:\\WINDOWS\\PROBEGRO.GRP"],
+          ["Settings", "Order", " 2 3 1 4"],
+          ["Groups", "Group3", null]
+        ],
+        "ini": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 4\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup4=C:\\WINDOWS\\PROBEGRO.GRP\r\n"
+      },
+      {
+        "writes": [
+          ["Groups", "Group-25536", "C:\\WINDOWS\\BIG.GRP"],
+          ["Settings", "Order", " -25536"]
+        ],
+        "ini": "[Groups]\r\nGroup-25536=C:\\WINDOWS\\BIG.GRP\r\n\r\n[Settings]\r\nOrder= -25536\r\n"
+      }
+    ],
+    "stack": [
+      {
+        "key": "GROUP3",
+        "n": 3,
+        "path": "\\GAMES\\RENAMED.GRP",
+        "file": "GAMES\\RENAMED.GRP",
+        "refusal": null,
+        "name": "A New Name",
+        "items": ["Notepad"]
+      },
+      {
+        "key": "GROUP1",
+        "n": 1,
+        "path": "C:\\WINDOWS\\MADE.GRP",
+        "file": "WINDOWS\\MADE.GRP",
+        "refusal": null,
+        "name": "WinBox Games",
+        "items": ["Solitaire", "Minesweeper"]
+      },
+      {
+        "key": "GROUP2",
+        "n": 2,
+        "path": "saved.grp",
+        "file": "WINDOWS\\SAVED.GRP",
+        "refusal": null,
+        "name": "Rows",
+        "items": ["Three", "Two"]
+      },
+      {
+        "key": "GROUP4",
+        "n": 4,
+        "path": "D:\\ELSEWHERE.GRP",
+        "file": null,
+        "refusal": "cannot be opened",
+        "name": null,
+        "items": null
+      },
+      {
+        "key": "GROUP5",
+        "n": 5,
+        "path": "C:\\WINDOWS\\MISSING.GRP",
+        "file": "WINDOWS\\MISSING.GRP",
+        "refusal": "cannot be opened",
+        "name": null,
+        "items": null
+      },
+      {
+        "key": "GROUP6",
+        "n": 6,
+        "path": "C:\\WINDOWS\\DAMAGED.GRP",
+        "file": "WINDOWS\\DAMAGED.GRP",
+        "refusal": "checksum",
+        "name": null,
+        "items": null
+      },
+      {
+        "key": "GROUP",
+        "n": 4,
+        "path": "C:\\WINDOWS\\..\\WINDOWS\\FULL.GRP",
+        "file": "WINDOWS\\FULL.GRP",
+        "refusal": null,
+        "name": "Full",
+        "items": [
+          "Item 0",
+          "Item 1",
+          "Item 2",
+          "Item 3",
+          "Item 4",
+          "Item 5",
+          "Item 6",
+          "Seven",
+          "Item 8",
+          "Item 9",
+          "Item 10",
+          "Item 11",
+          "Item 12",
+          "Item 13",
+          "Item 14",
+          "Item 15",
+          "Item 16",
+          "Item 17",
+          "Item 18",
+          "Item 19",
+          "Item 20",
+          "Item 21",
+          "Item 22",
+          "Item 23",
+          "Item 24",
+          "Item 25",
+          "Item 26",
+          "Item 27",
+          "Item 28",
+          "Item 29",
+          "Item 30",
+          "Item 31",
+          "Item 32",
+          "Item 33",
+          "Item 34",
+          "Item 35",
+          "Item 36",
+          "Item 37",
+          "Item 38",
+          "Item 39",
+          "Item 40",
+          "Item 41",
+          "Item 42",
+          "Item 43",
+          "Item 44",
+          "Item 45",
+          "Item 46",
+          "Item 47",
+          "Item 48",
+          "Item 49"
+        ]
+      }
+    ]
+  }
+}

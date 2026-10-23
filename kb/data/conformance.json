@@ -5599,8 +5599,8 @@
    },
    "b:": {
     "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -5648,7 +5648,6 @@
    }
   },
   "gaps": {
-   "b:": "B: is a floppy image under DOSBox, which is not mounted here",
    "d:": "D: is a CD-ROM image under DOSBox, which is not mounted here"
   }
  },
@@ -9420,29 +9419,29 @@
   "functions": {
    "after": {
     "total": 22,
-    "agreed": 0,
-    "disagreed": 22,
+    "agreed": 10,
+    "disagreed": 12,
     "unimplemented": 0,
     "unsupported": 0
    },
    "attr": {
     "total": 5,
-    "agreed": 1,
-    "disagreed": 4,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "entry": {
     "total": 17,
-    "agreed": 0,
-    "disagreed": 17,
+    "agreed": 17,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "ioctl": {
     "total": 5,
-    "agreed": 1,
-    "disagreed": 4,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9455,118 +9454,29 @@
    },
    "match": {
     "total": 5,
-    "agreed": 0,
-    "disagreed": 5,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "open": {
     "total": 5,
-    "agreed": 2,
-    "disagreed": 3,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "read": {
     "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "space": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "write": {
-    "total": 7,
-    "agreed": 2,
-    "disagreed": 5,
-    "unimplemented": 0,
-    "unsupported": 0
-   }
-  },
-  "gaps": {
-   "entry": "A: is a floppy image under DOSBox, which is not mounted here",
-   "match": "A: is a floppy image under DOSBox, which is not mounted here",
-   "read": "A: is a floppy image under DOSBox, which is not mounted here",
-   "open": "A: is a floppy image under DOSBox, which is not mounted here",
-   "attr": "A: is a floppy image under DOSBox, which is not mounted here",
-   "space": "A: is a floppy image under DOSBox, which is not mounted here",
-   "ioctl": "A: is a floppy image under DOSBox, which is not mounted here",
-   "write": "A: is a floppy image under DOSBox, which is not mounted here",
-   "after": "A: is a floppy image under DOSBox, which is not mounted here"
-  }
- },
- "imghdd": {
-  "probe": "imghdd",
-  "display": "vga",
-  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 42,
-  "functions": {
-   "after": {
-    "total": 13,
-    "agreed": 0,
-    "disagreed": 13,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "attr": {
-    "total": 2,
-    "agreed": 0,
-    "disagreed": 2,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "entry": {
-    "total": 8,
-    "agreed": 0,
-    "disagreed": 8,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "ioctl": {
-    "total": 5,
-    "agreed": 0,
-    "disagreed": 5,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "label": {
-    "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "match": {
-    "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "open": {
-    "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "read": {
-    "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
-    "unimplemented": 0,
-    "unsupported": 0
-   },
-   "space": {
-    "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9579,16 +9489,90 @@
    }
   },
   "gaps": {
-   "entry": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "label": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "match": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "read": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "open": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "attr": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "space": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "ioctl": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "write": "D: is a hard disk image under DOSBox, which is not mounted here",
-   "after": "D: is a hard disk image under DOSBox, which is not mounted here"
+   "write": "A FAT image is not written to yet: making, renaming and deleting are refused",
+   "after": "The listing and room after writes to a FAT image, which are refused here"
+  }
+ },
+ "imghdd": {
+  "probe": "imghdd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 42,
+  "functions": {
+   "after": {
+    "total": 13,
+    "agreed": 5,
+    "disagreed": 8,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "attr": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ioctl": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "label": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "match": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "read": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "space": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "write": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "write": "A FAT image is not written to yet: making, renaming and deleting are refused",
+   "after": "The listing and room after writes to a FAT image, which are refused here"
   }
  },
  "inframe": {

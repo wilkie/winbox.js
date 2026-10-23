@@ -871,7 +871,13 @@ impl System {
             return Some(label);
         }
 
-        if !self.files.mounted(letter) || self.files.removable(letter) {
+        // A disk image with no label of its own has none: DOSBox's FAT
+        // drive answers its label search with no file (`drive_fat.cpp`
+        // 857-867), **recorded** by `imgflop` and `imghdd`.
+        if !self.files.mounted(letter)
+            || self.files.removable(letter)
+            || self.files.listing(letter) == winbox_machine::Listing::AsStored
+        {
             return None;
         }
 
@@ -905,12 +911,16 @@ impl System {
             return Err(ERROR_ACCESS_DENIED);
         }
 
-        self.files.set_attributes(
+        // A disk image's are its entries', and it is not written to yet.
+        if !self.files.set_attributes(
             drive,
             &parts,
             &name,
             (entry.attributes & 0x10) | attributes as u8,
-        );
+        ) {
+            return Err(ERROR_ACCESS_DENIED);
+        }
+
         Ok(())
     }
 

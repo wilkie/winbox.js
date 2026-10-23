@@ -50,6 +50,7 @@ pub mod fonts;
 pub mod frame;
 pub mod gdi;
 pub mod get_dc;
+pub mod groups;
 pub mod handles;
 pub mod hooks;
 pub mod host;
