@@ -1,10 +1,12 @@
 //! DOS's files, as winbox.js's `FileManager` keeps them: drives by letter,
 //! each a file system, a current directory, and the open files by handle.
-//! A drive is a directory of the host's (`HostDrive`) or a tree held in
-//! memory (`MemoryDrive`), its names found without regard to case, as DOS
-//! finds them.
+//! A drive is a directory of the host's (`HostDrive`), a tree held in
+//! memory (`MemoryDrive`) or a disk image's FAT volume (`FatVolume`), its
+//! names found without regard to case, as DOS finds them.
 
+mod fat;
 mod host;
+mod mbr;
 mod memory;
 
 use std::cell::Cell;
@@ -12,7 +14,9 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
+pub use fat::{FatError, FatVolume, ImageFile};
 pub use host::{HostDrive, HostFile, HostLayer};
+pub use mbr::{Sectors, is_floppy, volume_start};
 pub use memory::{Change, MemoryDrive, MemoryFile, Stored, WallTime, host_seconds};
 
 /// The most files open at once.
@@ -224,12 +228,13 @@ pub(crate) fn stamp(seconds: i64) -> [u16; 6] {
     ]
 }
 
-/// An open file's bytes: a host's file, or a file of a drive held in
-/// memory.
+/// An open file's bytes: a host's file, a file of a drive held in memory,
+/// or one of a disk image.
 #[derive(Debug)]
 pub enum Body {
     Host(HostFile),
     Memory(MemoryFile),
+    Image(ImageFile),
 }
 
 /// A file open, and where in it the next read or write is.
@@ -255,6 +260,8 @@ impl Body {
         match self {
             Body::Host(file) => file.stamp(seconds),
             Body::Memory(file) => file.stamp(seconds),
+            // Not written to yet.
+            Body::Image(_) => {}
         }
     }
 }
@@ -267,6 +274,7 @@ impl OpenFile {
         match &mut self.body {
             Body::Host(file) => file.write(bytes),
             Body::Memory(file) => file.write(bytes),
+            Body::Image(file) => file.write(bytes),
         }
     }
 
@@ -275,6 +283,7 @@ impl OpenFile {
         match &mut self.body {
             Body::Host(file) => file.read(length),
             Body::Memory(file) => file.read(length),
+            Body::Image(file) => file.read(length),
         }
     }
 
@@ -282,6 +291,7 @@ impl OpenFile {
         match &mut self.body {
             Body::Host(file) => file.seek(to),
             Body::Memory(file) => file.seek(to),
+            Body::Image(file) => file.seek(to),
         }
     }
 
@@ -292,6 +302,7 @@ impl OpenFile {
         match &mut self.body {
             Body::Host(file) => file.truncate(length),
             Body::Memory(file) => file.truncate(length),
+            Body::Image(file) => file.truncate(length),
         }
     }
 
@@ -299,6 +310,7 @@ impl OpenFile {
         match &self.body {
             Body::Host(file) => file.size(),
             Body::Memory(file) => file.size(),
+            Body::Image(file) => file.size(),
         }
     }
 }
@@ -367,9 +379,15 @@ impl Files {
     }
 
     pub fn mount(&mut self, letter: char, drive: impl Volume + 'static) {
+        self.mount_boxed(letter, Box::new(drive));
+    }
+
+    /// A drive mounted whose kind is chosen as it runs: a disk image's
+    /// volume, or a folder.
+    pub fn mount_boxed(&mut self, letter: char, drive: Box<dyn Volume>) {
         let letter = letter.to_ascii_uppercase();
 
-        self.drives.insert(letter, Box::new(drive));
+        self.drives.insert(letter, drive);
         self.pwd
             .entry(letter)
             .or_insert_with(|| format!("{letter}:\\"));
@@ -415,6 +433,14 @@ impl Files {
     /// Whether a drive is remote (`Volume::remote`).
     pub fn remote(&self, letter: char) -> bool {
         self.drives.get(&letter).is_some_and(|drive| drive.remote())
+    }
+
+    /// The order a drive lists its folders in (`Volume::listing`); a
+    /// folder's, `Sorted`, where no drive is.
+    pub fn listing(&self, letter: char) -> Listing {
+        self.drives
+            .get(&letter)
+            .map_or(Listing::Sorted, |drive| drive.listing())
     }
 
     /// A drive's own label (`Volume::label`).
@@ -470,9 +496,18 @@ impl Files {
     /// the order `DIRALPHABETICAL` its constructor sets at 71, 82). A name
     /// starting with a byte below `.`, `!D`, comes before `.`.
     /// **Recorded** by `dirorder`.
+    ///
+    /// A disk image's folder (`Listing::AsStored`) is listed as the image
+    /// keeps it, `.` and `..` only where it has them, each entry's
+    /// attributes and stamps its own: neither the attributes set nor the
+    /// folders' stamps kept beside a folder's drive are its.
     pub fn list(&self, letter: char, parts: &[String]) -> Option<Vec<Entry>> {
         self.touch();
         let drive = self.drives.get(&letter)?;
+
+        if drive.listing() == Listing::AsStored {
+            return drive.children(parts);
+        }
         let names: Vec<String> = parts
             .iter()
             .filter(|part| !part.is_empty())
@@ -557,8 +592,13 @@ impl Files {
         entry
     }
 
-    /// A folder's entries changed: its stamp DOS's clock's now.
+    /// A folder's entries changed: its stamp DOS's clock's now. Not a disk
+    /// image's, whose folders' stamps are its entries'.
     fn changed(&mut self, letter: char, names: &[String]) {
+        if self.listing(letter) == Listing::AsStored {
+            return;
+        }
+
         if let Some(now) = self.now {
             self.folders.insert(Self::folder_key(letter, names), now);
         }
@@ -663,10 +703,23 @@ impl Files {
         moved
     }
 
-    /// A file's attributes set, as no drive keeps them.
-    pub fn set_attributes(&mut self, letter: char, parts: &[String], name: &str, attributes: u8) {
+    /// A file's attributes set, as no folder's drive keeps them: whether
+    /// they were. A disk image's are its entries', and it is not written
+    /// to yet.
+    pub fn set_attributes(
+        &mut self,
+        letter: char,
+        parts: &[String],
+        name: &str,
+        attributes: u8,
+    ) -> bool {
+        if self.listing(letter) == Listing::AsStored {
+            return false;
+        }
+
         self.attributes
             .insert(Self::key(letter, parts, name), attributes);
+        true
     }
 
     /// A file's bytes, from a folder named by its path, the file found by

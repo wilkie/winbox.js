@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { DOS } from '../../src/dos.js';
 import { Disk } from '../../src/emulator/disk.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
+import { FATImage } from '../../src/file-systems/fat-image.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
@@ -265,12 +266,17 @@ export function mountsOf(probe: string) {
 }
 
 /**
- * An image as a drive, where this engine can present one of its kind; none
- * yet -- a FAT image, a floppy's or a hard disk's, and an ISO 9660 disc are
- * to come (`kb/topics/drives-and-disks.md`). A probe whose image is not
+ * An image as a drive, where this engine can present one of its kind: a FAT
+ * image, a floppy's or a hard disk's (`FATImage`); an ISO 9660 disc is to
+ * come (`kb/topics/drives-and-disks.md`). A probe whose image is not
  * mounted runs without it, and its records of that drive are known gaps.
+ * As `support/mod.rs`'s `image_volume`.
  */
-function imageDrive(_kind: 'floppy' | 'iso' | 'hdd', _bytes: Uint8Array): any | null {
+async function imageDrive(kind: 'floppy' | 'iso' | 'hdd', bytes: Uint8Array): Promise<any | null> {
+  if (kind === 'floppy' || kind === 'hdd') {
+    return await FATImage.of(bytes, kind === 'floppy');
+  }
+
   return null;
 }
 
@@ -647,7 +653,7 @@ export async function runProbe(
     /* And the images its recording had mounted, where they can be. */
     for (const { letter, image, kind } of mountsOf(name)) {
       const bytes = readFileSync(join(__dirname, '..', '..', 'oracle', 'probes', 'images', image));
-      const drive = imageDrive(kind, new Uint8Array(bytes));
+      const drive = await imageDrive(kind, new Uint8Array(bytes));
 
       if (drive) {
         win16.dos.files.mount(letter, drive);

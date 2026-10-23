@@ -8,7 +8,7 @@ pub mod layered;
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
 
-use winbox_machine::{HostDrive, HostLayer, MemoryDrive, Volume};
+use winbox_machine::{FatVolume, HostDrive, HostLayer, MemoryDrive, Volume};
 use winbox_ne::Executable;
 use winbox_win16::sys_error_box::BoxHand;
 use winbox_win16::{Stop, System};
@@ -943,12 +943,17 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
         .collect()
 }
 
-/// An image as a drive, where this engine can present one of its kind;
-/// none yet -- a FAT image, a floppy's or a hard disk's, and an ISO 9660
-/// disc are to come (`kb/topics/drives-and-disks.md`). A probe whose image
-/// is not mounted runs without it, and is left out of `AGREEING`.
-fn image_volume(_mount: &Mount, _bytes: Vec<u8>) -> Option<MemoryDrive> {
-    None
+/// An image as a drive, where this engine can present one of its kind: a
+/// FAT image, a floppy's or a hard disk's (`FatVolume`); an ISO 9660 disc
+/// is to come (`kb/topics/drives-and-disks.md`). A probe whose image is not
+/// mounted runs without it, and is left out of `AGREEING`.
+fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
+    match mount.kind.as_str() {
+        "floppy" | "hdd" => FatVolume::new(bytes, mount.kind == "floppy")
+            .ok()
+            .map(|volume| Box::new(volume) as Box<dyn Volume>),
+        _ => None,
+    }
 }
 
 /// The images a probe's recording had mounted, each mounted where it can
@@ -959,7 +964,7 @@ fn mount_images(system: &mut System, probe: &str) {
             .unwrap_or_else(|error| panic!("{probe}.mounts: {}: {error}", mount.image));
 
         if let Some(volume) = image_volume(&mount, bytes) {
-            system.files.mount(mount.letter, volume);
+            system.files.mount_boxed(mount.letter, volume);
         }
     }
 }
