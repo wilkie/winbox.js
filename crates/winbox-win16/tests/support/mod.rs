@@ -1185,3 +1185,27 @@ fn set_shell(text: &[u8], program: &str) -> Vec<u8> {
 
     text.to_vec()
 }
+
+/// `PROGMAN.EXE` in the store behind drive C, where the store has none, as
+/// the asset bundle carries it for WinBox's Program Manager's icons (the
+/// owner's decision of 2026-10-22, `kb/topics/program-manager-dde.md`):
+/// the installation's, for a run with it taken off C: or a bundle made
+/// before it carried one.
+#[allow(dead_code)]
+pub fn progman_in_store(system: &mut System) {
+    if system
+        .assets
+        .as_ref()
+        .is_some_and(|assets| assets.module("PROGMAN.EXE").is_some())
+    {
+        return;
+    }
+
+    let Ok(bytes) = std::fs::read(root().join("oracle/build/drive-c/WINDOWS/PROGMAN.EXE")) else {
+        return;
+    };
+    let mut assets = system.assets.as_deref().cloned().unwrap_or_default();
+
+    assets.add_module("PROGMAN.EXE", bytes);
+    system.assets = Some(std::rc::Rc::new(assets));
+}

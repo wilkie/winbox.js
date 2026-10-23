@@ -30,11 +30,8 @@ const PROBE = 'pmstart';
  * (`kb/kernel/getmodulehandle.md`).
  */
 const WITH_FILE = ['module'];
-/**
- * And with WinBox's: its frame is hidden, by the owner's decision; and it does
- * not yet save its settings as it closes.
- */
-const WITHOUT_FILE = ['visible', 'saved'];
+/** And with WinBox's: its frame is hidden, by the owner's decision. */
+const WITHOUT_FILE = ['visible'];
 
 /** The image's digest and size, and the menu template's size, as the Rust engine's tests have them. */
 const IMAGE_SHA256 = '89a699814c6d1b516817239577f2e6df0ed59ea978ba4fc7f6acf456d1aa4d16';

@@ -714,20 +714,49 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Word(extract_icon_of(system, &name, index)?))
 }
 
+/// While WinBox's Program Manager runs, the file it says it is,
+/// `C:\WINDOWS\PROGMAN.EXE`, which is on no drive: `PROGMAN.EXE`'s
+/// resources as the asset bundle's store has them, so that its own icons,
+/// which items of DOS programs and items whose program is not found show,
+/// are found where a group names them (`progman`; the owner's decision of
+/// 2026-10-22). Asked for by that path, `\WINDOWS\PROGMAN.EXE`, or the
+/// name alone, as `OpenFile` would find it in the Windows directory.
+fn progman_file(system: &mut System, name: &str) -> Option<Vec<u8>> {
+    let kept = system.kept_named(crate::progman::NAME)?;
+
+    if !(0..system.modules.len()).any(|module| system.progman_kept(module) == Some(kept)) {
+        return None;
+    }
+
+    let upper = name.to_ascii_uppercase();
+    let named = [
+        crate::progman::FILE,
+        "\\WINDOWS\\PROGMAN.EXE",
+        crate::progman::PATH,
+    ]
+    .contains(&upper.as_str());
+
+    named.then(|| system.installed_or_stored("C:\\WINDOWS", crate::progman::FILE))?
+}
+
 /// `ExtractIcon` of a file by its name.
 fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, Stop> {
-    let Some(handle) = system.files.open(name) else {
+    let bytes = if let Some(handle) = system.files.open(name) {
+        let bytes = {
+            let file = system.files.resolve(handle).expect("an open file");
+            let size = file.size() as usize;
+
+            file.seek(std::io::SeekFrom::Start(0));
+            file.read(size)
+        };
+
+        system.files.close(handle);
+        bytes
+    } else if let Some(bytes) = progman_file(system, name) {
+        bytes
+    } else {
         return Ok(0);
     };
-    let bytes = {
-        let file = system.files.resolve(handle).expect("an open file");
-        let size = file.size() as usize;
-
-        file.seek(std::io::SeekFrom::Start(0));
-        file.read(size)
-    };
-
-    system.files.close(handle);
 
     let none = u16::from(index != -1);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);

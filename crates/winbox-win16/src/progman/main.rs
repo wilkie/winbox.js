@@ -6,14 +6,14 @@
 //! is kept at the same places in the instance's own (`D_*`). As
 //! `src/win16/progman/main.ts`.
 //!
-//! What it does not do yet, each left where the file does it: its icons,
-//! accelerators and fonts (it has no resources); the groups' windows (the
-//! groups are read into the group model, `loaded.rs`, which its DDE,
-//! `dde.rs`, reads) and what its commands change; saving the settings
-//! (seg4 `2845`); as the shell, `load=` and `run=` and ending
-//! Windows; its command line; and the messages of its menus and help.
-//! WinBox's is hidden, by the owner's decision: its frame is never shown,
-//! so it is not painted or made active.
+//! Its groups are `loaded.rs`'s, their items `items.rs`'s, their windows'
+//! procedure `window.rs`'s. What it does not do yet, each left where the
+//! file does it: its own icons 2 and 7 and its accelerators (its icons are
+//! `PROGMAN.EXE`'s in the asset bundle's store, `resources.rs`); as the
+//! shell, `load=` and `run=` and ending Windows; its command line; and the
+//! messages of its menus and help. WinBox's is hidden, by the owner's
+//! decision: its frame is never shown, so it is not painted or made
+//! active.
 
 use winbox_cpu::{DS, SP, SS};
 
@@ -27,7 +27,7 @@ pub(super) type R<T> = Result<T, Stop>;
 
 /// `[Settings]` `MinOnRun`, `AutoArrange`, `SaveSettings`.
 const D_MIN_ON_RUN: u16 = 0x12;
-const D_AUTO_ARRANGE: u16 = 0x14;
+pub(super) const D_AUTO_ARRANGE: u16 = 0x14;
 const D_SAVE_SETTINGS: u16 = 0x1c;
 /// Whether it is the shell.
 pub(super) const D_SHELL: u16 = 0x18;
@@ -35,11 +35,38 @@ pub(super) const D_SHELL: u16 = 0x18;
 /// `EditLevel`.
 const D_NO_RUN: u16 = 0x28;
 const D_NO_CLOSE: u16 = 0x2a;
-const D_NO_SAVE_SETTINGS: u16 = 0x2c;
+pub(super) const D_NO_SAVE_SETTINGS: u16 = 0x2c;
 const D_NO_FILE_MENU: u16 = 0x2e;
 const D_EDIT_LEVEL: u16 = 0x12e;
 /// Set as `WM_CLOSE` is taken.
-const D_CLOSING: u16 = 0x32;
+pub(super) const D_CLOSING: u16 = 0x32;
+/// Set while a group's window is made (seg4 `1e44`).
+pub(super) const D_CREATING: u16 = 0x16;
+/// `PROGMAN.INI` found read-only as start-up read it.
+pub(super) const D_INI_READ_ONLY: u16 = 0x1e;
+/// Saving's errors shown (seg4 `285c`), and an item left with no icon
+/// (seg4 `1ae9`).
+pub(super) const D_SAVE_ERRORS: u16 = 0x30;
+pub(super) const D_LOST_ICONS: u16 = 0x34;
+/// Set while a group's file is read as it loads (seg4 `1e77`).
+pub(super) const D_LOADING: u16 = 0x162;
+/// Set while a group's scroll bars are fitted (seg2 `0b29`).
+pub(super) const D_SCROLLING: u16 = 0x15c;
+/// The metrics start-up keeps (seg3 `0a43`-`0b07`): `SM_CYBORDER`; two
+/// `SM_CXBORDER`s and two `SM_CYBORDER`s; `SM_CXICON` and `SM_CYICON`; an
+/// icon's cell, the icon and four borders each way; the icons' spacing
+/// across and down; `IconTitleWrap`; and the font of the icons' titles.
+pub(super) const D_BORDER_Y: u16 = 0x798;
+pub(super) const D_BORDER_X: u16 = 0x446;
+const D_BORDERS_Y: u16 = 0x44c;
+const D_CX_ICON: u16 = 0x76e;
+const D_CY_ICON: u16 = 0x770;
+pub(super) const D_CELL_X: u16 = 0x444;
+pub(super) const D_CELL_Y: u16 = 0x44a;
+pub(super) const D_ACROSS: u16 = 0x4d4;
+pub(super) const D_DOWN: u16 = 0x558;
+pub(super) const D_TITLE_WRAP: u16 = 0x24;
+pub(super) const D_TITLE_FONT: u16 = 0x124;
 /// The frame, which a second instance asks for by `GetInstanceData`.
 pub(crate) const D_FRAME: u16 = 0x126;
 /// The registered messages `OTHERWINDOWCREATED` and `ACTIVATESHELLWINDOW`,
@@ -49,7 +76,7 @@ const D_ACTIVATE_SHELL: u16 = 0x134;
 const D_SHELL_HELP: u16 = 0x81c;
 const D_COMMDLG_HELP: u16 = 0x450;
 /// Its instance.
-const D_INSTANCE: u16 = 0x72a;
+pub(super) const D_INSTANCE: u16 = 0x72a;
 /// The MDI client.
 pub(crate) const D_CLIENT: u16 = 0x76c;
 
@@ -211,7 +238,7 @@ impl<'e> Pm<'e> {
 
     /// `n` bytes of its stack, written, for a structure that points at
     /// them: their far address, and the stack pointer to give back.
-    fn reserve(&self, bytes: &[u8]) -> (u32, u16) {
+    pub(super) fn reserve(&self, bytes: &[u8]) -> (u32, u16) {
         let mut system = self.e.system();
         let saved = system.cpu.regs[SP];
         let at = saved.wrapping_sub((bytes.len() as u16 + 1) & !1);
@@ -222,7 +249,7 @@ impl<'e> Pm<'e> {
         (far, saved)
     }
 
-    fn release(&self, saved: u16) {
+    pub(super) fn release(&self, saved: u16) {
         self.e.system().cpu.regs[SP] = saved;
     }
 
@@ -365,6 +392,10 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
         return Ok(false);
     }
 
+    if !keep_metrics(pm).await? {
+        return Ok(false);
+    }
+
     // SYSTEM.INI's path: the Windows directory, a backslash where it is
     // longer than a root's, and `system.ini` (`0b3c`-`0b78`).
     let directory = pm
@@ -382,6 +413,7 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
     }
 
     system_ini.extend_from_slice(b"system.ini");
+    super::loaded::change(pm, |groups| groups.system_ini.clone_from(&system_ini));
 
     // The shell: the only task, or `shell=` holding `PROGMAN.EXE` at any
     // place along it, without regard to case (`0b88`-`0c0a`).
@@ -410,7 +442,7 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
         pm.sd16(place, message as u16);
     }
 
-    if !register_frame(pm, instance).await? {
+    if !register_frame(pm, instance).await? || !register_group(pm, instance).await? {
         return Ok(false);
     }
 
@@ -472,6 +504,139 @@ async fn register_frame(pm: &Pm<'_>, instance: u16) -> R<bool> {
 
     pm.release(saved);
     Ok(answer? as u16 != 0)
+}
+
+/// `RegisterClass` of the groups' class, `PMGroup` (string 3): double
+/// clicks (`CS_DBLCLKS`), its procedure WinBox's `GROUPWNDPROC`, a word of
+/// its own for the group, the arrow cursor, `COLOR_WINDOW + 1` its
+/// background (seg3 `0d73`-`0dd6`). Its icon, PROGMAN.EXE's icon 1, it
+/// has not.
+async fn register_group(pm: &Pm<'_>, instance: u16) -> R<bool> {
+    let cursor = pm.user("LoadCursor", &[Arg::W(0), Arg::D(0x7f00)]).await? as u16;
+    let procedure = {
+        let mut system = pm.e.system();
+
+        super::export_address(&mut system, super::GROUP_PROC)
+    };
+    let (name, saved) = pm.reserve(&[super::loaded::GROUP_CLASS, b"\0"].concat());
+    let mut class = 0x0008u16.to_le_bytes().to_vec();
+
+    class.extend_from_slice(&procedure.to_le_bytes());
+
+    for word in [0u16, 2, instance, 0, cursor, 6] {
+        class.extend_from_slice(&word.to_le_bytes());
+    }
+
+    class.extend_from_slice(&0u32.to_le_bytes());
+    class.extend_from_slice(&name.to_le_bytes());
+
+    let answer = pm.user("RegisterClass", &[Arg::B(class)]).await;
+
+    pm.release(saved);
+    Ok(answer? as u16 != 0)
+}
+
+/// The metrics start-up keeps for placing icons (seg3 `0a43`-`0b0c`):
+/// `SM_CYBORDER`; `SM_CXICON`, `SM_CYICON`; two `SM_CXBORDER`s and two
+/// `SM_CYBORDER`s; a cell each way, the icon and twice those; the icons'
+/// spacing across and down and `IconTitleWrap` (`SystemParametersInfo` 13,
+/// 18h, 19h); and the icons' title font, made from
+/// `SPI_GETICONTITLELOGFONT` -- without which it does not start.
+///
+/// Not followed: its icons 2 and 7 and its accelerators, which it has not.
+async fn keep_metrics(pm: &Pm<'_>) -> R<bool> {
+    let metric = |index: u16| async move {
+        Ok::<u16, Stop>(pm.user("GetSystemMetrics", &[Arg::W(index)]).await? as u16)
+    };
+
+    pm.sd16(D_BORDER_Y, metric(6).await?);
+    pm.sd16(D_CX_ICON, metric(11).await?);
+    pm.sd16(D_CY_ICON, metric(12).await?);
+    pm.sd16(D_BORDER_X, metric(5).await?.wrapping_mul(2));
+    pm.sd16(D_BORDERS_Y, metric(6).await?.wrapping_mul(2));
+    pm.sd16(
+        D_CELL_X,
+        pm.d16(D_BORDER_X)
+            .wrapping_mul(2)
+            .wrapping_add(pm.d16(D_CX_ICON)),
+    );
+    pm.sd16(
+        D_CELL_Y,
+        pm.d16(D_BORDERS_Y)
+            .wrapping_mul(2)
+            .wrapping_add(pm.d16(D_CY_ICON)),
+    );
+
+    for (action, place) in [(13, D_ACROSS), (0x18, D_DOWN), (0x19, D_TITLE_WRAP)] {
+        let called = pm
+            .call(
+                "USER",
+                "SystemParametersInfo",
+                &[Arg::W(action), Arg::W(0), api::buffer(2), Arg::W(0)],
+            )
+            .await?;
+
+        pm.sd16(
+            place,
+            u16::from_le_bytes([called.buffers[0][0], called.buffers[0][1]]),
+        );
+    }
+
+    let font = pm
+        .call(
+            "USER",
+            "SystemParametersInfo",
+            &[Arg::W(0x1f), Arg::W(0x32), api::buffer(0x32), Arg::W(0)],
+        )
+        .await?
+        .buffers[0]
+        .clone();
+    let font = pm
+        .call("GDI", "CreateFontIndirect", &[Arg::B(font)])
+        .await?
+        .word();
+
+    pm.sd16(D_TITLE_FONT, font);
+    Ok(font != 0)
+}
+
+/// A DOS call on a path, as seg5's helpers make one: AX as given, DS:DX
+/// the path with its nought on the stack. The carry, and AX after.
+pub(super) async fn dos_path(pm: &Pm<'_>, ax: u16, path: &[u8]) -> R<(bool, u16)> {
+    use winbox_cpu::{AX, DX};
+
+    let (far, saved_sp) = pm.reserve(&[path, b"\0"].concat());
+    let saved = {
+        let mut system = pm.e.system();
+        let cpu = &mut system.cpu;
+        let saved = (
+            cpu.regs[AX],
+            cpu.regs[DX],
+            cpu.flags,
+            cpu.segments[DS].selector,
+        );
+
+        cpu.regs[AX] = ax;
+        cpu.regs[DX] = far as u16;
+        saved
+    };
+
+    pm.load_ds((far >> 16) as u16)?;
+
+    let called = api::api(pm.e, "KERNEL", "Dos3Call", &[]).await;
+    let after = {
+        let mut system = pm.e.system();
+        let cpu = &mut system.cpu;
+        let after = (cpu.flags & 1 != 0, cpu.regs[AX]);
+
+        (cpu.regs[AX], cpu.regs[DX], cpu.flags) = (saved.0, saved.1, saved.2);
+        after
+    };
+
+    pm.load_ds(saved.3)?;
+    pm.release(saved_sp);
+    called?;
+    Ok(after)
 }
 
 /// Its settings (seg3 `02e3`): `[Settings]` `MinOnRun`, `AutoArrange` and
@@ -637,7 +802,7 @@ async fn create_frame(pm: &Pm<'_>, instance: u16, place: [u16; 5], _show: u16) -
 /// and, where there is one, the group loaded with the number after `GROUP`
 /// (`0832`-`085b`, `loaded::load`); then `[Settings]` `display.drv=`
 /// written with `SYSTEM.INI`'s `[boot]` `display.drv=` (`08ab`-`08d8`).
-async fn load_groups(pm: &Pm<'_>, system_ini: &[u8]) -> R<()> {
+pub(super) async fn load_groups(pm: &Pm<'_>, system_ini: &[u8]) -> R<()> {
     let list = pm
         .call(
             "KERNEL",
@@ -667,7 +832,7 @@ async fn load_groups(pm: &Pm<'_>, system_ini: &[u8]) -> R<()> {
                     .wrapping_add(u16::from(digit.wrapping_sub(b'0')))
             });
 
-            super::loaded::load(pm, n, &path).await?;
+            super::loaded::load(pm, &path, n).await?;
         }
     }
 
@@ -754,7 +919,7 @@ async fn frame_message(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam
         // on and `NoClose` is not -- not yet (`save`).
         WM_ENDSESSION => {
             if wparam != 0 && pm.d16(D_NO_CLOSE) == 0 && pm.d16(D_SAVE_SETTINGS) != 0 {
-                save(pm);
+                super::loaded::save(pm).await?;
             }
 
             Ok(0)
@@ -866,12 +1031,12 @@ async fn close(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam: u32) -
     }
 
     if pm.user("GetKeyState", &[Arg::W(0x10)]).await? as u16 & 0x8000 != 0 {
-        save(pm);
+        super::loaded::save(pm).await?;
         return Ok(0);
     }
 
     if pm.d16(D_SAVE_SETTINGS) != 0 {
-        save(pm);
+        super::loaded::save(pm).await?;
     }
 
     pm.sd16(D_CLOSING, 1);
@@ -883,11 +1048,6 @@ async fn close(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam: u32) -
     pm.sd16(D_CLOSING, 0);
     Ok(0)
 }
-
-/// Saving the settings (seg4 `2845`): `Window=`, the groups and their
-/// files. Not yet: what it would write is `pmstart`'s and `pmbare`'s
-/// records.
-pub(super) fn save(_pm: &Pm<'_>) {}
 
 /// 464h (`2762`-`287f`), from a second instance: with no item starting,
 /// restored if it is an icon, and it and its last popup brought to the

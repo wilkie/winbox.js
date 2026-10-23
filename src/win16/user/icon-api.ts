@@ -7,6 +7,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { decodeIcon, iconEntries, pickIcon, type IconData } from '../../raster/icon.js';
 import { Executable } from '../../executable.js';
+import { isProgman, progmanExecutable } from '../progman/stored.js';
 
 import { scaleIcon } from './driver-resources.js';
 import { RasterWindow } from './raster-window.js';
@@ -47,7 +48,10 @@ export async function LoadIcon(hinst, lpszIcon) {
   }
 
   const module = this.handles.resolve(hinst);
-  const icon = module?.executable ? await moduleIcon(this, module.executable, lpszIcon) : null;
+  /* WinBox's Program Manager's are `PROGMAN.EXE`'s, from the store
+   * (`progman/stored.ts`). */
+  const executable = isProgman(this, module) ? await progmanExecutable(this) : module?.executable;
+  const icon = executable ? await moduleIcon(this, executable, lpszIcon) : null;
 
   /* A block of memory in the display's format, which a program may write
    * into; see `icon-block.ts`. */
@@ -159,7 +163,15 @@ export function CreateIcon(
     return 0;
   }
 
-  return blockFromBits(this, width, height, nPlanes & 0xff, nBitsPixel & 0xff, lpvANDbits, lpvXORbits);
+  return blockFromBits(
+    this,
+    width,
+    height,
+    nPlanes & 0xff,
+    nBitsPixel & 0xff,
+    lpvANDbits,
+    lpvXORbits
+  );
 }
 
 /**

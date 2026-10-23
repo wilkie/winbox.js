@@ -1,9 +1,16 @@
 'use strict';
 
 import { B, D, W, buffer, stringOf, text } from '../commdlg/api.js';
-import { type Item, TAG_HOTKEY, TAG_MINIMIZED } from '../../layers/groups.js';
+import {
+  type GroupFile,
+  TAG_DIRECTORY,
+  TAG_HOTKEY,
+  TAG_MINIMIZED,
+  cString,
+  commandOf,
+} from '../../layers/groups.js';
 import { type Pm, bytesOf } from './main.js';
-import { type Loaded, topDown, groups, iconic, titleOf, zoomed } from './loaded.js';
+import { group, groups, keyOf, list, lock, windowsTopDown } from './loaded.js';
 import { Block, parse } from './parse.js';
 import { run } from './commands.js';
 
@@ -226,11 +233,17 @@ async function groupList(pm: Pm, hwnd: number, client: number, item: number, for
   }
 
   let size = 6;
+  const all = groups(pm);
 
-  for (const group of groups(pm).list) {
-    const title = bytesOf(titleOf(group));
+  for (const key of list(all)) {
+    const window = all.map.get(key)!.hwnd;
+    const length = (await pm.user('GetWindowTextLength', [W(window)])) & 0xffff;
+    const title = stringOf(
+      await pm.call('USER', 'GetWindowText', [W(window), buffer(length + 2), W(length + 2)]),
+      0
+    );
 
-    size += title.length + 2;
+    size += length + 2;
 
     if (!((await pm.kernel('GlobalReAlloc', [W(data), D(size), W(2)])) & 0xffff)) {
       await pm.kernel('GlobalFree', [W(data)]);
@@ -305,62 +318,94 @@ async function field(pm: Pm, data: number, size: number, value: Field, endOfLine
   return size + added;
 }
 
-/** The value of an item's tag as seg4 `0c5a` reads it: none, 0; a record of six bytes, 1; of seven, its byte; of eight, its word. */
-function tagValue(loaded: Loaded, item: Item, id: number): number {
-  const tag = loaded.group.tags?.find((each) => each.id === id && each.item === item.slot);
+/**
+ * An item as a group's text and `AppProperties` read it from its group's
+ * block: its name, its command and working directory as seg4 `2967` makes
+ * them from the stored command and its directory tag, its icon's path and
+ * index, and its hot key and minimized tags as seg4 `0c5a` reads them -- none
+ * 0, a record of six bytes 1, of seven its byte, of eight its word.
+ */
+function describe(block: GroupFile, slot: number) {
+  const data = block.data;
+  const def = block.def(slot);
+  const word = (at: number) => data[at] | (data[at + 1] << 8);
+  const field = (offset: number) => cString(data, word(def + offset));
+  const tag = (id: number) => {
+    const at = block.findTag(id, slot);
 
-  if (!tag) {
+    return at < 0 ? null : Array.from(data.subarray(at + 6, at + Math.max(word(at + 4), 6)));
+  };
+  const value = (id: number) => {
+    const found = tag(id);
+
+    if (!found) {
+      return 0;
+    }
+
+    switch (found.length) {
+      case 0:
+        return 1;
+      case 1:
+        return found[0];
+      case 2:
+        return found[0] | (found[1] << 8);
+    }
+
     return 0;
-  }
+  };
+  const program = tag(TAG_DIRECTORY);
+  const { command, directory } = commandOf(
+    field(0x14),
+    program ? cString(Uint8Array.from(program), 0) : null
+  );
 
-  const data =
-    tag.data !== undefined
-      ? Array.from(tag.data)
-      : id === TAG_HOTKEY
-        ? [item.hotKey & 0xff, item.hotKey >> 8]
-        : id === TAG_MINIMIZED
-          ? []
-          : bytesOf(item.programDirectory ?? '');
-
-  switch (data.length) {
-    case 0:
-      return 1;
-    case 1:
-      return data[0];
-    case 2:
-      return data[0] | (data[1] << 8);
-  }
-
-  return 0;
+  return {
+    name: field(0x12),
+    command,
+    directory,
+    iconPath: field(0x16),
+    iconIndex: word(def + 4),
+    hotKey: value(TAG_HOTKEY),
+    minimized: value(TAG_MINIMIZED),
+  };
 }
 
 /**
- * `10ad`: the group whose name is the item's atom (`GlobalFindAtom` of its
- * name), the MDI client's children walked from the top; its text, or a
- * negative acknowledgement where there is none or the format is not
- * `CF_TEXT`. The first line `"name",path,items,show`, show 3 maximized, 2 the
- * current group an icon and 7 another, 1 the current group otherwise and 4
- * another; then for each item in the group's order
- * `"name","command",directory,icon path,x,y,icon index,hot key,minimized`.
+ * `10ad`: the group whose name, as its block has it, `GlobalFindAtom` finds to
+ * be the item's atom, the MDI client's children walked from the top; its
+ * text, or a negative acknowledgement where there is none or the format is
+ * not `CF_TEXT`. The first line `"name",path,items,show`, show 3 maximized, 2
+ * the current group an icon and 7 another, 1 the current group otherwise and
+ * 4 another; then for each item in the group's order in memory
+ * `"name","command",directory,icon path,x,y,icon index,hot key,minimized`, its
+ * place its icon's in memory.
  */
 async function groupText(pm: Pm, hwnd: number, client: number, item: number, format: number) {
   if (format !== CF_TEXT) {
     return refuse(pm, hwnd, client, item);
   }
 
-  const all = groups(pm);
-  let found: [number, Loaded] | null = null;
+  let found: [number, number, GroupFile, string] | null = null;
 
-  for (const [index, group] of topDown(all)) {
-    const atom = (await pm.user('GlobalFindAtom', [text(bytesOf(group.group.name))])) & 0xffff;
+  for (const window of await windowsTopDown(pm)) {
+    const key = await keyOf(pm, window);
+    const block = await lock(pm, key);
 
-    if (atom === item) {
-      found = [index, group];
+    if (!block) {
+      continue;
+    }
+
+    const name = cString(block.data, block.data[0x16] | (block.data[0x17] << 8));
+
+    if (((await pm.user('GlobalFindAtom', [text(bytesOf(name))])) & 0xffff) === item) {
+      found = [window, key, block, name];
       break;
     }
   }
 
-  if (!found) {
+  const loaded = found ? group(pm, found[1]) : undefined;
+
+  if (!found || !loaded) {
     return refuse(pm, hwnd, client, item);
   }
 
@@ -370,28 +415,39 @@ async function groupText(pm: Pm, hwnd: number, client: number, item: number, for
     return refuse(pm, hwnd, client, item);
   }
 
-  const [index, group] = found;
-  const current = all.current === index;
-  const show = zoomed(group) ? 3 : iconic(group) ? (current ? 2 : 7) : current ? 1 : 4;
+  const [window, key, block, name] = found;
+  const current = groups(pm).current === key;
+  const show =
+    (await pm.user('IsZoomed', [W(window)])) & 0xffff
+      ? 3
+      : (await pm.user('IsIconic', [W(window)])) & 0xffff
+        ? current
+          ? 2
+          : 7
+        : current
+          ? 1
+          : 4;
   const string = (value: string, quoted: boolean): Field => ({ bytes: bytesOf(value), quoted });
   const fields: [Field, boolean][] = [
-    [string(group.group.name, true), false],
-    [string(group.path, false), false],
-    [{ number: group.group.items.length }, false],
+    [string(name, true), false],
+    [string(loaded.path, false), false],
+    [{ number: loaded.items.length }, false],
     [{ number: show }, true],
   ];
 
-  for (const each of group.group.items) {
+  for (const each of loaded.items) {
+    const described = describe(block, each.slot);
+
     fields.push(
-      [string(each.name, true), false],
-      [string(each.command, true), false],
-      [string(each.directory, false), false],
-      [string(each.iconPath, false), false],
-      [{ number: each.x }, false],
-      [{ number: each.y }, false],
-      [{ number: each.iconIndex }, false],
-      [{ number: tagValue(group, each, TAG_HOTKEY) }, false],
-      [{ number: tagValue(group, each, TAG_MINIMIZED) }, true]
+      [string(described.name, true), false],
+      [string(described.command, true), false],
+      [string(described.directory, false), false],
+      [string(described.iconPath, false), false],
+      [{ number: each.icon[0] }, false],
+      [{ number: each.icon[1] }, false],
+      [{ number: described.iconIndex }, false],
+      [{ number: described.hotKey }, false],
+      [{ number: described.minimized }, true]
     );
   }
 
@@ -427,17 +483,26 @@ async function property(
   instance: number,
   which: Property
 ) {
-  const found =
-    instance === 0
-      ? topDown(groups(pm))
-          .map(([, group]) => group.group.items[0])
-          .find((first) => first !== undefined)
-      : undefined;
+  let chosen: [number, number] | null = null;
 
-  if (!found) {
+  for (const window of await windowsTopDown(pm)) {
+    const key = await keyOf(pm, window);
+    const first = group(pm, key)?.items[0];
+
+    /* Every item's instance is nought: none was started. */
+    if (first && instance === 0) {
+      chosen = [key, first.slot];
+      break;
+    }
+  }
+
+  const block = chosen ? await lock(pm, chosen[0]) : null;
+
+  if (!chosen || !block) {
     return refuse(pm, hwnd, client, item);
   }
 
+  const found = describe(block, chosen[1]);
   let value: number[];
 
   switch (which) {

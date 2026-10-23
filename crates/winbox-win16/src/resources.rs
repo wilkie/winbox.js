@@ -76,11 +76,27 @@ impl System {
     /// finds its "Windows Default" scheme in (`MAIN.CPL` seg6 `2922`).
     fn resources_of(&mut self, instance: u16) -> Option<Owner> {
         match self.handles.resolve(instance)? {
+            // WinBox's Program Manager, made in memory with no resources:
+            // `PROGMAN.EXE`'s, as the asset bundle's store has them, where
+            // it keeps its module (`progman`; `kb/topics/asset-bundle.md`).
+            Object::Task(program) if let Some(kept) = self.progman_kept(program) => {
+                self.kept_file(kept).map(|_| Owner::Kept(kept))
+            }
             Object::Task(program) => Some(Owner::Module(program)),
             Object::Library(module) => Some(Owner::Module(module)),
             Object::Kept(kept) => self.kept_file(kept).map(|_| Owner::Kept(kept)),
             _ => None,
         }
+    }
+
+    /// WinBox's Program Manager's kept module, where a program's module is
+    /// the one made in memory for it: given the kept module's handle as its
+    /// instance runs (`progman::start_progman`).
+    pub(crate) fn progman_kept(&self, program: usize) -> Option<usize> {
+        let kept = self.kept_named(crate::progman::NAME)?;
+        let handle = self.kept[kept].handle();
+
+        (handle != 0 && self.modules.get(program)?.handle == handle).then_some(kept)
     }
 
     /// The file an owner's resources are in.

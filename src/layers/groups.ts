@@ -184,7 +184,7 @@ function text(bytes: Uint8Array) {
 }
 
 /** The string at an offset, to its nought or the end of the data. */
-function cString(data: Uint8Array, at: number) {
+export function cString(data: Uint8Array, at: number) {
   let end = at;
 
   while (end < data.length && data[end] !== 0) {

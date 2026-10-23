@@ -1,8 +1,29 @@
 'use strict';
 
-import { D, W, text } from '../commdlg/api.js';
-import { bytesOf, D_FRAME, D_SHELL, type Pm, save, WM_CLOSE } from './main.js';
-import { topDown, groups, titleOf } from './loaded.js';
+import { D, W, buffer, stringOf } from '../commdlg/api.js';
+import { cString } from '../../layers/groups.js';
+import { D_FRAME, D_SHELL, type Pm, WM_CLOSE, latin, string } from './main.js';
+import {
+  create,
+  group,
+  groups,
+  keyOf,
+  load,
+  lock,
+  reloadAll,
+  remove,
+  save,
+  unload,
+  windowsTopDown,
+} from './loaded.js';
+import {
+  type Adding,
+  create as createItem,
+  defaults,
+  fitted,
+  nameOf,
+  remove as removeItem,
+} from './items.js';
 import {
   ADD_ITEM,
   type Block,
@@ -19,20 +40,16 @@ import {
 
 /**
  * The execute string's commands carried out, each as `PROGMAN.EXE`'s handler
- * (seg7, by the table at `0ade`) decides whether it is done. As
+ * (seg7, by the table at `0ade`) carries it out. As
  * `crates/winbox-win16/src/progman/commands.rs`.
- *
- * Each checks its arguments and finds what it works on as the file does, and
- * answers as the file answers. What each then changes -- a group's window,
- * its file, `PROGMAN.INI`, an item made or taken out -- is not done yet
- * (marked "Not yet"): where the file's answer does not hang on it, the command
- * still answers as the file does; where it does, the command fails.
  */
 
 /** `[2A6h]`: a `ReplaceItem` waiting for the next `AddItem`, and the place it kept, `[81Eh]` and `[820h]` (`08ad`-`08b9`, `094a`-`0953`). */
 const D_REPLACING = 0x2a6;
 const D_REPLACED_X = 0x81e;
 const D_REPLACED_Y = 0x820;
+
+const s16 = (value: number) => (value << 16) >> 16;
 
 /** One command (`035f`-`036c`, `0ad1`): whether it was done. */
 export async function run(pm: Pm, block: Block, command: Command): Promise<boolean> {
@@ -43,29 +60,42 @@ export async function run(pm: Pm, block: Block, command: Command): Promise<boole
       return createGroup(pm, block, args);
     case ADD_ITEM:
       return addItem(pm, block, args);
-    case DELETE_GROUP:
-      /* `075e`: one argument, a group of that title; then the group deleted
-       * (seg4 `23af`), whose answer is not looked at. */
+    case DELETE_GROUP: {
+      /* `075e`: one argument, a group of that title deleted (seg4 `23af`),
+       * whose answer is not looked at. */
       if (args.length !== 1) {
         return false;
       }
 
-      /* Not yet: the group's window, file and key taken away. */
-      return (await titled(pm, block.string(args[0]), 0x101)) !== null;
+      const hwnd = await titled(pm, block.string(args[0]), 0x101);
+
+      if (hwnd === null) {
+        return false;
+      }
+
+      await remove(pm, hwnd);
+
+      return true;
+    }
     case EXIT_PROGMAN:
       return exitProgman(pm, block, args);
-    case SHOW_GROUP:
-      /* `0821`: two arguments, a group of that title; then `ShowWindow` of it
-       * with the number. */
+    case SHOW_GROUP: {
+      /* `0821`: two arguments, a group of that title; `ShowWindow` of it with
+       * the number, whose answer is not looked at. */
       if (args.length !== 2) {
         return false;
       }
 
-      /* Not yet: `ShowWindow(group, number)` -- WinBox's groups have no
-       * windows yet. */
-      number(block, args[1]);
+      const hwnd = await titled(pm, block.string(args[0]), 0x101);
 
-      return (await titled(pm, block.string(args[0]), 0x101)) !== null;
+      if (hwnd === null) {
+        return false;
+      }
+
+      await pm.user('ShowWindow', [W(hwnd), W(number(block, args[1]))]);
+
+      return true;
+    }
     case DELETE_ITEM:
     case REPLACE_ITEM:
       if (command.index === REPLACE_ITEM) {
@@ -86,14 +116,17 @@ export async function run(pm: Pm, block: Block, command: Command): Promise<boole
  * The group a title names, as the handlers find it (`03e9`-`0442`): the MDI
  * client's children from the top, those with an owner -- icons' titles --
  * passed over, each one's `GetWindowText` into a buffer of `size` compared by
- * `lstrcmpi`. Its index among the loaded groups.
+ * `lstrcmpi`. Its window.
  */
 async function titled(pm: Pm, name: number[], size: number): Promise<number | null> {
-  for (const [index, group] of topDown(groups(pm))) {
-    const title = bytesOf(titleOf(group)).slice(0, size - 1);
+  for (const hwnd of await windowsTopDown(pm)) {
+    const title = stringOf(
+      await pm.call('USER', 'GetWindowText', [W(hwnd), buffer(size), W(size)]),
+      0
+    );
 
-    if (((await pm.user('lstrcmpi', [text(name), text(title)])) & 0xffff) === 0) {
-      return index;
+    if (((await pm.user('lstrcmpi', [string(latin(name)), string(latin(title))])) & 0xffff) === 0) {
+      return hwnd;
     }
   }
 
@@ -119,38 +152,87 @@ async function createGroup(pm: Pm, block: Block, args: number[]) {
 
   cut(block, args[0], 30);
 
-  /* Not yet: `BringWindowToTop` of the group found; or the group made, its
-   * file written, `PROGMAN.INI` rewritten and the group made current. */
-  await titled(pm, block.string(args[0]), 0x101);
+  const name = block.string(args[0]);
+  const found = await titled(pm, name, 0x101);
+
+  if (found !== null) {
+    await pm.user('BringWindowToTop', [W(found)]);
+    return true;
+  }
+
+  await create(pm, latin(name), args.length === 2 ? latin(block.string(args[1])) : '');
 
   return true;
 }
 
 /**
  * `0479`: one to four arguments, or six to nine; the command not empty; the
- * name cut to 40 characters; a `ReplaceItem` waiting taken. Then the item made
- * in the current group (seg4 `105d`), whose answer is the command's.
+ * name cut to 40 characters, else made from the command (seg5 `00ed`); the
+ * icon path, its index, the place, the directory (else the command's, seg6
+ * `0398`), the hot key and minimized; a `ReplaceItem`'s place taken where one
+ * waits; an index of 666 or more less 666 and the item put last, else first
+ * (`05f8`); with no icon path `FindExecutable`'s. The item made in the current
+ * group (seg4 `105d`), whose answer is the command's; then the group's scroll
+ * bars fitted.
  */
-function addItem(pm: Pm, block: Block, args: number[]) {
-  if (!args.length || args.length === 5 || args.length > 9) {
+async function addItem(pm: Pm, block: Block, args: number[]) {
+  if (!args.length || args.length === 5 || args.length > 9 || block.at(args[0]) === 0) {
     return false;
   }
 
-  if (block.at(args[0]) === 0) {
-    return false;
-  }
+  let command = latin(block.string(args[0]));
+  let name = '';
 
   if (args.length > 1) {
     cut(block, args[1], 40);
+    name = latin(block.string(args[1]));
   }
 
+  if (!name) {
+    [name, command] = await nameOf(pm, command);
+  }
+
+  let iconIndex = args.length > 3 ? number(block, args[3]) : 0;
+  let place: [number, number] | null =
+    args.length > 4 ? [s16(number(block, args[4])), s16(number(block, args[5]))] : null;
+
   if (pm.d16(D_REPLACING)) {
+    place = [s16(pm.d16(D_REPLACED_X)), s16(pm.d16(D_REPLACED_Y))];
     pm.sd16(D_REPLACING, 0);
   }
 
-  /* Not yet: the item made -- its defaults, its icon, its place and the
-   * group's file written -- on whose answer the command hangs; so it fails. */
-  return false;
+  const first = iconIndex < 666;
+
+  if (!first) {
+    iconIndex -= 666;
+  }
+
+  const adding: Adding = {
+    name,
+    command,
+    iconPath: args.length > 2 ? latin(block.string(args[2])) : '',
+    directory: args.length > 6 ? latin(block.string(args[6])) : '',
+    hotKey: 0,
+    minimized: false,
+    iconIndex,
+    place,
+    first,
+  };
+
+  await defaults(pm, adding, args.length > 6);
+  adding.hotKey = args.length > 7 ? number(block, args[7]) : 0;
+  adding.minimized = args.length > 8 && number(block, args[8]) !== 0;
+
+  const current = groups(pm).current;
+  const hwnd = group(pm, current)?.hwnd;
+
+  if (hwnd === undefined || !(await createItem(pm, hwnd, adding))) {
+    return false;
+  }
+
+  await fitted(pm, current);
+
+  return true;
 }
 
 /**
@@ -163,7 +245,7 @@ async function exitProgman(pm: Pm, block: Block, args: number[]) {
   }
 
   if (block.at(args[0]) === 0x31) {
-    save(pm);
+    await save(pm);
   }
 
   await pm.user('PostMessage', [W(pm.d16(D_FRAME)), W(WM_CLOSE), W(0), D(0)]);
@@ -174,29 +256,37 @@ async function exitProgman(pm: Pm, block: Block, args: number[]) {
 /**
  * `08bc`: one argument; the current group's first item of that name, in the
  * group's order, compared by `lstrcmpi`; its place kept for a `ReplaceItem`;
- * then the item taken out (seg4 `15a8`). None found, or no current group,
- * fails.
+ * the item deleted (seg4 `15a8`). None found, or no current group, fails.
  */
 async function deleteItem(pm: Pm, block: Block, args: number[]) {
   if (args.length !== 1) {
     return false;
   }
 
-  const all = groups(pm);
-  const current = all.current === null ? undefined : all.list[all.current];
+  const current = groups(pm).current;
 
-  if (!current) {
+  if (!group(pm, current)) {
     return false;
   }
 
-  const name = block.string(args[0]);
+  const groupBlock = await lock(pm, current);
 
-  for (const item of current.group.items) {
-    if (((await pm.user('lstrcmpi', [text(name), text(bytesOf(item.name))])) & 0xffff) === 0) {
-      pm.sd16(D_REPLACED_X, item.x);
-      pm.sd16(D_REPLACED_Y, item.y);
+  if (!groupBlock) {
+    return false;
+  }
 
-      /* Not yet: the item taken out and the group's file written. */
+  const name = latin(block.string(args[0]));
+  const data = groupBlock.data;
+
+  for (const item of [...(group(pm, current)?.items ?? [])]) {
+    const def = groupBlock.def(item.slot);
+    const theirs = cString(data, data[def + 0x12] | (data[def + 0x13] << 8));
+
+    if (((await pm.user('lstrcmpi', [string(name), string(theirs)])) & 0xffff) === 0) {
+      pm.sd16(D_REPLACED_X, item.icon[0]);
+      pm.sd16(D_REPLACED_Y, item.icon[1]);
+      await removeItem(pm, current, item.slot);
+
       return true;
     }
   }
@@ -205,20 +295,34 @@ async function deleteItem(pm: Pm, block: Block, args: number[]) {
 }
 
 /**
- * `0988`: no argument, every group unloaded and loaded again (seg3 `0809`);
- * one, the group of that title -- its window's text into a buffer of 1Fh --
- * from its file (seg4 `1f9a`, `1d4d`), whose answer is not looked at; more,
- * refused.
+ * `0988`: no argument, every group unloaded and loaded again; one, the group
+ * of that title -- its window's text into a buffer of 1Fh -- unloaded and
+ * loaded again from its file as its number (seg4 `1f9a`, `1d4d`), whose answer
+ * is not looked at; more, refused.
  */
 async function reload(pm: Pm, block: Block, args: number[]) {
   switch (args.length) {
     case 0:
-      /* Not yet: the MDI client hidden, every group unloaded, all loaded
-       * again and `display.drv=` written. */
+      await reloadAll(pm);
       return true;
-    case 1:
-      /* Not yet: the group unloaded and loaded again. */
-      return (await titled(pm, block.string(args[0]), 0x1f)) !== null;
+    case 1: {
+      const hwnd = await titled(pm, block.string(args[0]), 0x1f);
+
+      if (hwnd === null) {
+        return false;
+      }
+
+      const found = group(pm, await keyOf(pm, hwnd));
+
+      if (found) {
+        const { path, n } = found;
+
+        await unload(pm, hwnd);
+        await load(pm, path, n);
+      }
+
+      return true;
+    }
   }
 
   return false;
