@@ -19,13 +19,53 @@ import { type Layer, layerFromChanges, layerPath, type Made } from './layer.js';
 /** Whether a path is a folder's, or beneath it. */
 const within = (path: string, folder: string) => path === folder || path.startsWith(`${folder}\\`);
 
+/** A media path's drive letter, upper case, where it names one: `A:\`. */
+function mediaLetter(path: string) {
+  return /^[A-Za-z]:/.test(path) ? path[0].toUpperCase() : null;
+}
+
+/**
+ * A media path as a layer of C: names it (`layerPath`): one with no drive's
+ * letter, or with C:'s. Null for C:'s root, and for another drive's --
+ * `A:\`, the floppy an installer ran from -- of which C:'s layer holds
+ * nothing. As `media_on_c`.
+ */
+function mediaOnC(path: string) {
+  const letter = mediaLetter(path);
+
+  if (letter && letter !== 'C') {
+    return null;
+  }
+
+  const onC = layerPath(letter ? path.slice(2) : path);
+
+  return onC === '' ? null : onC;
+}
+
+/**
+ * A media path as a program names it: its DOS path with the drive's letter,
+ * `C:\SETUP`, or `A:\` for a floppy's root. As `media_name`.
+ */
+function mediaName(path: string) {
+  const letter = mediaLetter(path);
+
+  if (letter && letter !== 'C') {
+    return `${letter}:\\${layerPath(path.slice(2))}`;
+  }
+
+  const onC = mediaOnC(path);
+
+  return onC === null ? null : `C:\\${onC}`;
+}
+
 /**
  * A drive's changes without those naming the media: a path of the media,
- * as a layer keeps it (`layerPath`), or one beneath a folder of it. What is
- * kept, and the paths dropped.
+ * as a layer keeps it (`layerPath`), or one beneath a folder of it; media on
+ * another drive, `A:\`, drop nothing of C:. What is kept, and the paths
+ * dropped.
  */
 export function dropMedia(changes: Change[], media: string[]) {
-  const paths = media.map(layerPath).filter((path) => path !== '');
+  const paths = media.map(mediaOnC).filter((path) => path !== null);
   const kept: Change[] = [];
   const dropped: string[] = [];
 
@@ -53,17 +93,15 @@ export interface MediaReference {
 
 /**
  * The lines of a layer's files that name a path of the media, its DOS
- * path with the drive's letter, `C:\SETUP`, in any case: what the installer
+ * path with the drive's letter, `C:\SETUP` -- or `A:\` for media on a
+ * floppy's drive, which nothing on C: is dropped for -- in any case: what the installer
  * wrote that refers to what is not kept. A file with a nought byte in it is
  * not text, and is passed over: a program's own code names paths too. Each
  * file's lines are split at line feeds, a carriage return before one left
  * off.
  */
 export function mediaReferences(layer: Layer, media: string[]): MediaReference[] {
-  const names = media
-    .map(layerPath)
-    .filter((path) => path !== '')
-    .map((path) => `C:\\${path}`);
+  const names = media.map(mediaName).filter((name) => name !== null);
   const found: MediaReference[] = [];
 
   for (const entry of layer.manifest.entries) {

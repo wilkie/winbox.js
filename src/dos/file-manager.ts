@@ -1,3 +1,4 @@
+import { EmptyDrive } from '../file-systems/empty-drive.js';
 import { stampAt } from '../file-systems/fat16.js';
 import { Stream } from '../stream.js';
 
@@ -134,6 +135,39 @@ export class FileManager {
 
   unmount(name) {
     delete this._map[name];
+  }
+
+  /**
+   * A drive's disk changed for another, as DOSBox's drive manager swaps a
+   * set's disks (`DriveManager::CycleAllDisks`, `drives.cpp` 173-191): the
+   * drive's current folder is kept, whether or not the new disk has it. The
+   * disk that was in, to be put back later with what was written to it;
+   * undefined where no drive was. A file open on the old disk keeps it. As
+   * `Files::swap`.
+   */
+  swap(letter: string, fileSystem: any) {
+    const drive = letter.toUpperCase();
+    const old = this._map[drive];
+
+    this._map[drive] = fileSystem;
+    this._pwd[drive] ??= `${drive}:\\`;
+    return old;
+  }
+
+  /**
+   * A removable drive's disk taken out (`EmptyDrive`): the drive stays, with
+   * nothing in it, a CD-ROM drive still one. The disk taken out; undefined
+   * where the drive had none, or is not removable. As `Files::eject`.
+   */
+  eject(letter: string) {
+    const drive = letter.toUpperCase();
+    const fileSystem = this._map[drive];
+
+    if (!fileSystem?.removable) {
+      return undefined;
+    }
+
+    return this.swap(drive, EmptyDrive.after(fileSystem));
   }
 
   query(drive) {

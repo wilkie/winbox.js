@@ -741,19 +741,51 @@ impl Flat {
 
 /* ---- an installer into a layer ---- */
 
+/// A media path's drive letter, upper case, where it names one: `A:\`.
+fn media_letter(path: &str) -> Option<char> {
+    let mut chars = path.chars();
+    let letter = chars.next().filter(char::is_ascii_alphabetic)?;
+
+    (chars.next() == Some(':')).then(|| letter.to_ascii_uppercase())
+}
+
+/// A media path as a layer of C: names it (`layer_path`): one with no
+/// drive's letter, or with C:'s. None for C:'s root, and for another
+/// drive's -- `A:\`, the floppy an installer ran from -- of which C:'s
+/// layer holds nothing.
+fn media_on_c(path: &str) -> Option<String> {
+    let path = match media_letter(path) {
+        Some('C') => layer_path(&path[2..]),
+        Some(_) => return None,
+        None => layer_path(path),
+    };
+
+    (!path.is_empty()).then_some(path)
+}
+
+/// A media path as a program names it: its DOS path with the drive's
+/// letter, `C:\SETUP`, or `A:\` for a floppy's root.
+fn media_name(path: &str) -> Option<String> {
+    match media_letter(path) {
+        Some(letter) if letter != 'C' => {
+            let rest = layer_path(&path[2..]);
+
+            Some(format!("{letter}:\\{rest}"))
+        }
+        _ => media_on_c(path).map(|path| format!("C:\\{path}")),
+    }
+}
+
 /// A drive's changes without those naming the media
 /// (`kb/formats/layer.md`, "An installer into a layer"): a path of the
 /// media, as a layer keeps it (`layer_path`), or one beneath a folder of
-/// it. What is kept, and the paths dropped. The installer's media are
+/// it; media on another drive, `A:\`, drop nothing of C:. What is kept,
+/// and the paths dropped. The installer's media are
 /// discarded once it has installed, as the owner chose: only its own top is
 /// kept. The TypeScript engine's twin is `dropMedia`
 /// (`src/layers/install.ts`).
 pub fn drop_media(changes: &[Change], media: &[String]) -> (Vec<Change>, Vec<String>) {
-    let media: Vec<String> = media
-        .iter()
-        .map(|path| layer_path(path))
-        .filter(|path| !path.is_empty())
-        .collect();
+    let media: Vec<String> = media.iter().filter_map(|path| media_on_c(path)).collect();
     let mut kept = Vec::new();
     let mut dropped = Vec::new();
 
@@ -780,18 +812,14 @@ pub struct MediaReference {
 }
 
 /// The lines of a layer's files that name a path of the media, its DOS
-/// path with the drive's letter, `C:\SETUP`, in any case: what the
+/// path with the drive's letter, `C:\SETUP` -- or `A:\` for media on a
+/// floppy's drive, which nothing on C: is dropped for -- in any case: what the
 /// installer wrote that refers to what is not kept. A file with a nought
 /// byte in it is not text, and is passed over: a program's own code names
 /// paths too. Each file's lines are split at line feeds, a carriage return before one left off. As
 /// `mediaReferences`.
 pub fn media_references(layer: &Layer, media: &[String]) -> Vec<MediaReference> {
-    let names: Vec<String> = media
-        .iter()
-        .map(|path| layer_path(path))
-        .filter(|path| !path.is_empty())
-        .map(|path| format!("C:\\{path}"))
-        .collect();
+    let names: Vec<String> = media.iter().filter_map(|path| media_name(path)).collect();
     let mut found = Vec::new();
 
     for entry in &layer.manifest.entries {
@@ -1048,4 +1076,72 @@ pub fn materialise_stack(stack: &[Layer], cache: &Path) -> Result<Vec<HostLayer>
 
     layers.reverse();
     Ok(layers)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn file(path: &str, text: &str) -> Change {
+        Change::File {
+            path: path.to_string(),
+            data: Rc::new(text.as_bytes().to_vec()),
+            modified: 800_000_000,
+        }
+    }
+
+    #[test]
+    fn media_on_a_floppy_drop_nothing_and_are_named_with_their_letter() {
+        let changes = [
+            file(
+                r"WINDOWS\WIN.INI",
+                "[Game]\r\nDisk=a:\\SETUP.EXE\r\nHome=C:\\GAME\r\n",
+            ),
+            file(
+                r"GAME\GAME.INI",
+                "Source=A:\\DATA\r\nSetup=C:\\WBSETUP\\X\r\n",
+            ),
+            file(r"WBSETUP\LOG.TXT", "A:\\"),
+        ];
+        let media = ["A:\\".to_string()];
+        let (kept, dropped) = drop_media(&changes, &media);
+
+        assert_eq!(kept.len(), 3);
+        assert!(dropped.is_empty());
+
+        let installed = Layer::installed(&changes, &media, Vec::new(), Made::default()).unwrap();
+        let lines: Vec<String> = installed
+            .references
+            .iter()
+            .map(|reference| format!("{}: {}", reference.path, reference.line))
+            .collect();
+
+        assert_eq!(
+            lines,
+            [
+                r"GAME\GAME.INI: Source=A:\DATA",
+                r"WBSETUP\LOG.TXT: A:\",
+                r"WINDOWS\WIN.INI: Disk=a:\SETUP.EXE",
+            ]
+        );
+
+        // C:'s media, by its letter or none, as before.
+        for media in [r"WBSETUP", r"C:\WBSETUP"] {
+            let media = [media.to_string()];
+            let (kept, dropped) = drop_media(&changes, &media);
+
+            assert_eq!(kept.len(), 2);
+            assert_eq!(dropped, [r"WBSETUP\LOG.TXT"]);
+
+            let installed =
+                Layer::installed(&changes, &media, Vec::new(), Made::default()).unwrap();
+            let lines: Vec<&str> = installed
+                .references
+                .iter()
+                .map(|reference| reference.line.as_str())
+                .collect();
+
+            assert_eq!(lines, [r"Setup=C:\WBSETUP\X"]);
+        }
+    }
 }
