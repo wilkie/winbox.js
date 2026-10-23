@@ -81,6 +81,7 @@ A program can import from a module winbox.js does not keep itself, such as `COMM
 - WinBox's own `COMMDLG`, `VER`, `LZEXPAND` and `DDEML`, with no file on the drive, are counted as the file would be: each import and each `LoadLibrary` once more, each `FreeLibrary` and each importer's end once less. `GetModuleHandle` finds one while its count is not nought, and `GetModuleUsage` answers the count. At nought its data goes as the file's goes. Loaded afresh, it brings what its file imports: `VER.DLL` imports `LZEXPAND`. `COMMDLG`'s messages are registered as its file's entry point registers them, once each time it is loaded afresh. [[probe:ddewep]]'s six records agree with and without `DDEML.DLL` on the drive.
 - [[documented]] As a library goes, its `WEP` runs, told that the library alone is going. winbox.js does this; it is not recorded.
 - [[measured]] Control Panel frees each applet library once it has asked it for its applets. All twelve still show.
+- WinBox's own Program Manager is a program with no file, not a library: started where a program starts `PROGMAN.EXE` and there is none, its module made in memory and loaded as a program's file is, its code a module WinBox keeps once it first starts ([[topic:program-manager-dde]], "WinBox's own").
 
 ## Libraries winbox.js keeps itself
 

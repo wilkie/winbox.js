@@ -2,7 +2,8 @@
 kind: topic
 name: Program Manager's DDE interface
 summary: The DDE server installers drive in Windows 3.1's Program Manager — how it starts and ends and what it writes then, the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, and what it writes to its group files and PROGMAN.INI.
-probes: [progdde, postend, pmatom, ddeinst, pmbare, pmraw, pmsyntax, pmgroups, pmfiles, pmshell]
+probes:
+  [progdde, postend, pmatom, ddeinst, pmbare, pmraw, pmsyntax, pmgroups, pmfiles, pmshell, pmstart]
 ---
 
 Installers tell Program Manager about the programs they put in by DDE: they connect to the service and topic `PROGMAN`, and send execute strings such as `[CreateGroup(Games)][AddItem(C:\GAMES\GAME.EXE,Game)]`. A WinBox stand-in for this service, for a launcher, is planned in [[guide:without-windows]]; this page is what it follows.
@@ -16,7 +17,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 ## Starting
 
 - [[read out]] `WinMain` (seg1 `0010`): a command line makes the show command 7, `SW_SHOWMINNOACTIVE`; then the start-up (seg3 `09fd`), then the message loop.
-- [[read out]] **A second instance** gets the first's frame by `GetInstanceData`, sends it 464h, and ends (seg3 `0a12`-`0a3e`). The first, given 464h while it starts an item, takes that item's title, icon and hot key; otherwise it is restored if it is an icon and brought to the top (seg2 `2762`-`287f`).
+- [[read out]] **A second instance** gets the first's frame by `GetInstanceData`, sends it 464h, and ends (seg3 `0a12`-`0a3e`). The first, given 464h while it starts an item, takes that item's title, icon and hot key; otherwise it is restored if it is an icon and brought to the top (seg2 `2762`-`287f`). [[measured]] A second `WinExec` of it answered an instance, and after it there was one frame, the first ([[probe:pmstart]]).
 - [[read out]] **The shell**: Program Manager is the shell when it is the only task as it starts, or when `SYSTEM.INI`'s `shell=` holds `PROGMAN.EXE`, compared without case at each place along the line (seg3 `0b88`-`0c0a`).
 - [[read out]] **Settings**, from `PROGMAN.INI`'s `[Settings]`: `MinOnRun`, `AutoArrange` and `SaveSettings`, defaults 0, 0 and 1; and `[Restrictions]` `NoRun`, `NoClose`, `NoSaveSettings`, `EditLevel`, `NoFileMenu` (seg3 `036e`-`040b`, `04fc`). A read-only `PROGMAN.INI` is said so in a box (`0329`-`0369`).
 - [[read out]] **The frame** is placed by `Window=`, five numbers, left, top, right, bottom and a show command; with none it is `CW_USEDEFAULT` and shown normally. A show command given to Program Manager other than `SW_SHOWNORMAL` wins over the file's (seg3 `08ff`-`09d4`, `045c`). [[measured]] With no `PROGMAN.INI` the frame came to 4, 0, 636, 408 on the VGA and 4, 0, 636, 284 on the EGA ([[probe:pmbare]]).
@@ -28,6 +29,7 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 ## Ending
 
 - [[read out]] `WM_CLOSE` (seg2 `236d`): with `NoClose`, nothing. With Shift held, the settings are saved and nothing more. Otherwise they are saved where `SaveSettings` is on; the shell then asks whether to end Windows and ends it, and Program Manager not the shell is destroyed.
+- [[measured]] Not the shell, with no `PROGMAN.INI` before it started and no groups, closed by a `WM_CLOSE` posted to its frame: its window went, `GetModuleHandle("PROGMAN")` then answered nought, and `PROGMAN.INI` had gained only `Window=4 0 636 408 1` after its `display.drv=` ([[probe:pmstart]]).
 - [[read out]] `WM_ENDSESSION` saves the settings where Windows is ending, `SaveSettings` is on and `NoClose` is not (seg2 `2353`-`236a`). `WM_QUERYENDSESSION` is `DefFrameProc`'s, 1. [[measured]] Sent them by [[probe:pmshell]]: `WM_QUERYENDSESSION` answered 1; `WM_ENDSESSION` with nought wrote nothing; with 1 it wrote `Window=10 20 410 320 1`, the frame's new place.
 - [[read out]] Saving the settings (seg4 `2845`): nothing with `NoSaveSettings`; else `Window=` from `GetWindowPlacement`, a show command of 7 written as 1; `[Groups]` and `Order=` again; and each group's file with its window's place ([[format:grp]]). [[measured]] After `[ExitProgman(1)]` with no `PROGMAN.INI` before: `display.drv=vga.drv`, `Order= 1 2 3`, `Window=4 0 636 408 1`, `[Groups]` ([[probe:pmbare]]).
 
@@ -224,9 +226,23 @@ DDEML is WinBox's own ([[topic:dynamic-data-exchange]]): [[probe:progdde]]'s exe
 
 All six pm probes run whole in both engines, Program Manager Microsoft's, and every record agrees: [[probe:pmbare]] on the VGA and the EGA, [[probe:pmshell]] with Program Manager the shell as the recorder makes it (`run-probe.ts`, `tests/support`: the preset's `[oracle shell]`).
 
+### WinBox's own
+
+Where a program starts `PROGMAN.EXE` -- by `WinExec` or `LoadModule` -- and no such file is found, both engines start WinBox's own Program Manager in its place: a task with no file, module `PROGMAN`, described "WinBox Program Manager". An installation's own `PROGMAN.EXE` is found first and is Microsoft's. Nothing else starts it, so an ordinary run, a probe's or the corpus's never has it (`crates/winbox-win16/src/progman/`, `src/win16/progman/`).
+
+It is made as a program and a library it calls are:
+
+- **The program** is an executable made in memory, the same 2,504 bytes in both engines, and loaded, linked and made a task as any program's file is, so its data segment is its instance, `hPrevInstance` and `GetModuleFileName` are a program's (`C:\WINDOWS\PROGMAN.EXE`), and it ends as a program ends. Its header has `PROGMAN.EXE`'s sizes: a data segment of 8A3h bytes and a word more, a heap of 200h, a stack of 17D0h, Windows 3.10. Its one code segment is a C program's start-up: `InitTask`, `WaitEvent(0)`, `InitApp`, a far call to `WinMain`, and DOS's function 4Ch with its answer.
+- **WinBox's code** is a module WinBox keeps once Program Manager first starts, as it keeps its sound card's driver: its exports are `WinMain`, whose address the start-up finds in the program's data, and the frame's window procedure. `GetModuleHandle("PROGMAN")` answers its handle, which the program's module is given while an instance runs. Each is engine code calling KERNEL, USER and SHELL through their exports as the file calls them, as WinBox's DDEML does ([[topic:dynamic-data-exchange]]), and keeping what `PROGMAN.EXE` keeps in its data segment at the same offsets in its own: the frame at 126h, which a second instance reads by `GetInstanceData`, the MDI client at 76Ch, the settings at 12h-2Eh.
+
+What it does, as read out above: `WinMain`'s show command; a second instance's 464h and its end; the shell test; `SetErrorMode(1)`; the four registered messages; the class `Progman`; the settings and `Window=`; the frame, `CreateWindow` of `Progman` titled "Program Manager", `WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN`, `CW_USEDEFAULT` with no `Window=`, with `PROGMAN.EXE`'s menu, made from its menu 5, `E&xit Windows...` made `E&xit` where it is not the shell, and the options checked; in its `WM_CREATE`, `RegisterShellHook` and the MDI client over its client; `[Groups]` and `Order=` read; `display.drv=` written; the MDI client shown; the message loop with `TranslateMDISysAccel`; and its frame's `WM_SIZE`, `WM_CLOSE` not the shell, `WM_DESTROY`, `WM_ENDSESSION`, `WM_SYSCOMMAND` with `NoClose`, 464h and `ACTIVATESHELLWINDOW`, the rest `DefFrameProc`'s.
+
+- **Hidden**, by the owner's decision: the frame is never shown, so the show command -- `WinMain`'s, or `Window=`'s -- is not used, and the frame is not painted, made active or given the keyboard. `GetWindowRect` still answers its place, `IsWindowVisible` nought. Its keys are not translated: it has no accelerators, and the frame's own key handling is for when it is active.
+- [[measured]] [[probe:pmstart]], run with `PROGMAN.EXE` taken off the installation and on the asset bundle's base, which has none, agrees with Windows' records, Microsoft's Program Manager running, in every record but two: `IsWindowVisible`, nought; and `PROGMAN.INI` after it closed, which lacks `Window=`, as it does not yet save. Its module found by name, its instance's file, its title, its frame at 4, 0, 636, 408 and its MDI client 624 by 362, the menu's line taken from its client as from Microsoft's, `[Settings]` `display.drv=vga.drv` as it started, a second instance ending with one frame left, and its window and module gone once closed, agree (`crates/winbox-win16/tests/progman.rs`, `test/win16/progman_test.ts`). With the file, Microsoft's agrees but for `GetModuleHandle`, which WinBox answers nought for a program loaded from its file ([[fn:KERNEL.GetModuleHandle]]).
+
 ## Not yet done
 
 - The `AppProperties` items for a program Program Manager started, and the boxes it shows as it starts for a group file it cannot load (system-modal, [[format:grp]]).
 - Why `Groups` answers no names after `[Reload]`.
 - `load=`, and the StartUp group's items, measured.
-- A WinBox stand-in for this service.
+- WinBox's own Program Manager, beyond starting and ending: DDE (seg7) and its execute strings and requests; loading its groups, their windows and icons; saving its settings and group files (seg4 `2845`), `Window=` first; as the shell, `load=`, `run=` and the StartUp group, and `WM_CLOSE` asking to end Windows -- it does nothing yet; its command line; the classes `PMGroup` and `pmhotkey`; its `WH_MSGFILTER` hook; its menus' commands, `WM_INITMENU`, `WM_MENUSELECT`, `WM_WININICHANGE`, `ShellHelp`, 465h and 466h; and 464h and `OTHERWINDOWCREATED` for a program one of its items started. And it as the shell in install runs.
