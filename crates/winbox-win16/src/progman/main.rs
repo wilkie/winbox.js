@@ -7,9 +7,10 @@
 //! `src/win16/progman/main.ts`.
 //!
 //! What it does not do yet, each left where the file does it: its icons,
-//! accelerators and fonts (it has no resources); the groups (`[Groups]` and
-//! `Order=` are read, and nothing is loaded); DDE (seg7); saving the
-//! settings (seg4 `2845`); as the shell, `load=` and `run=` and ending
+//! accelerators and fonts (it has no resources); the groups' windows (the
+//! groups are read into the group model, `loaded.rs`, which its DDE,
+//! `dde.rs`, reads) and what its commands change; saving the settings
+//! (seg4 `2845`); as the shell, `load=` and `run=` and ending
 //! Windows; its command line; and the messages of its menus and help.
 //! WinBox's is hidden, by the owner's decision: its frame is never shown,
 //! so it is not painted or made active.
@@ -20,7 +21,7 @@ use crate::call::{Answer, Args, Later, Stop};
 use crate::commdlg::api::{self, Arg, Called};
 use crate::engine::Engine;
 
-type R<T> = Result<T, Stop>;
+pub(super) type R<T> = Result<T, Stop>;
 
 // What `PROGMAN.EXE` keeps in its data segment (seg8), by its places.
 
@@ -29,7 +30,7 @@ const D_MIN_ON_RUN: u16 = 0x12;
 const D_AUTO_ARRANGE: u16 = 0x14;
 const D_SAVE_SETTINGS: u16 = 0x1c;
 /// Whether it is the shell.
-const D_SHELL: u16 = 0x18;
+pub(super) const D_SHELL: u16 = 0x18;
 /// `[Restrictions]` `NoRun`, `NoClose`, `NoSaveSettings`, `NoFileMenu`,
 /// `EditLevel`.
 const D_NO_RUN: u16 = 0x28;
@@ -56,7 +57,7 @@ pub(crate) const D_CLIENT: u16 = 0x76c;
 const WM_CREATE: u16 = 0x01;
 const WM_DESTROY: u16 = 0x02;
 const WM_SIZE: u16 = 0x05;
-const WM_CLOSE: u16 = 0x10;
+pub(super) const WM_CLOSE: u16 = 0x10;
 const WM_ENDSESSION: u16 = 0x16;
 const WM_SYSCOMMAND: u16 = 0x112;
 /// A second instance's, and a program's it started (seg2 `2762`).
@@ -144,46 +145,46 @@ pub fn menu_template() -> Vec<u8> {
 /// One instance's Program Manager, as its calls are made: its engine and
 /// its data segment.
 pub(crate) struct Pm<'e> {
-    e: &'e Engine,
-    ds: u16,
+    pub(super) e: &'e Engine,
+    pub(super) ds: u16,
 }
 
 impl<'e> Pm<'e> {
     /// An instance's: its data segment's selector, one above the instance
     /// (`instds`).
-    fn new(e: &'e Engine, instance: u16) -> Self {
+    pub(super) fn new(e: &'e Engine, instance: u16) -> Self {
         Self {
             e,
             ds: instance.wrapping_add(1),
         }
     }
 
-    fn at(&self, offset: u16) -> u32 {
+    pub(super) fn at(&self, offset: u16) -> u32 {
         u32::from(self.ds) << 16 | u32::from(offset)
     }
 
     /// A word of its data.
-    fn d16(&self, offset: u16) -> u16 {
+    pub(super) fn d16(&self, offset: u16) -> u16 {
         let bytes = self.e.system().read_far(self.at(offset), 2);
 
         u16::from_le_bytes([bytes[0], bytes[1]])
     }
 
-    fn sd16(&self, offset: u16, value: u16) {
+    pub(super) fn sd16(&self, offset: u16, value: u16) {
         self.e
             .system()
             .write_far(self.at(offset), &value.to_le_bytes());
     }
 
-    async fn call(&self, module: &str, name: &str, args: &[Arg]) -> R<Called> {
+    pub(super) async fn call(&self, module: &str, name: &str, args: &[Arg]) -> R<Called> {
         api::api(self.e, module, name, args).await
     }
 
-    async fn user(&self, name: &str, args: &[Arg]) -> R<u32> {
+    pub(super) async fn user(&self, name: &str, args: &[Arg]) -> R<u32> {
         Ok(self.call("USER", name, args).await?.value)
     }
 
-    async fn kernel(&self, name: &str, args: &[Arg]) -> R<u32> {
+    pub(super) async fn kernel(&self, name: &str, args: &[Arg]) -> R<u32> {
         Ok(self.call("KERNEL", name, args).await?.value)
     }
 
@@ -241,7 +242,7 @@ impl<'e> Pm<'e> {
     }
 
     /// `GetPrivateProfileString` into a buffer of `size`: what it read.
-    async fn profile_string(
+    pub(super) async fn profile_string(
         &self,
         section: &[u8],
         key: Option<&[u8]>,
@@ -267,14 +268,14 @@ impl<'e> Pm<'e> {
         Ok(called.string(if key.is_some() { 3 } else { 2 }))
     }
 
-    async fn send(&self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> R<u32> {
+    pub(super) async fn send(&self, hwnd: u16, message: u16, wparam: u16, lparam: u32) -> R<u32> {
         api::send(self.e, hwnd, message, wparam, lparam).await
     }
 }
 
 /// Its profile, by the name it loads (string 6), which KERNEL finds in the
 /// Windows directory.
-const INI: &[u8] = b"PROGMAN.INI";
+pub(super) const INI: &[u8] = b"PROGMAN.INI";
 
 /// `WinMain` (seg1 `0010`): a command line makes the show command 7,
 /// `SW_SHOWMINNOACTIVE`; the start-up; and the message loop, until
@@ -300,7 +301,10 @@ pub(crate) fn win_main(engine: &Engine, mut args: Args) -> Later<'_> {
             return Ok(Answer::Word(0));
         }
 
-        Ok(Answer::Word(message_loop(&pm).await?))
+        let quit = message_loop(&pm).await?;
+
+        engine.system().progman.instances.remove(&instance);
+        Ok(Answer::Word(quit))
     })
 }
 
@@ -627,14 +631,45 @@ async fn create_frame(pm: &Pm<'_>, instance: u16, place: [u16; 5], _show: u16) -
     Ok(frame)
 }
 
-/// The groups (seg3 `0809`, `06c1`): `[Groups]`' keys and `Order=` read,
-/// and -- not yet -- each group loaded from its file; then `[Settings]`
-/// `display.drv=` written with `SYSTEM.INI`'s `[boot]` `display.drv=`
-/// (`08ab`-`08d8`).
+/// The groups (seg3 `0809`, `06c1`): `[Groups]`' keys (a buffer of 140h)
+/// and `Order=` (7Fh) read and put in the order start-up loads them
+/// (`groups::start_up_keys`); each key's path read (78h, `0875`-`088b`)
+/// and, where there is one, the group loaded with the number after `GROUP`
+/// (`0832`-`085b`, `loaded::load`); then `[Settings]` `display.drv=`
+/// written with `SYSTEM.INI`'s `[boot]` `display.drv=` (`08ab`-`08d8`).
 async fn load_groups(pm: &Pm<'_>, system_ini: &[u8]) -> R<()> {
-    pm.profile_string(b"Groups", None, 0x140, INI).await?;
-    pm.profile_string(b"Settings", Some(b"Order"), 0x7f, INI)
+    let list = pm
+        .call(
+            "KERNEL",
+            "GetPrivateProfileString",
+            &[
+                api::text(b"Groups"),
+                Arg::D(0),
+                api::text(b""),
+                api::buffer(0x140),
+                Arg::W(0x140),
+                api::text(INI),
+            ],
+        )
+        .await?
+        .buffers[2]
+        .clone();
+    let order = pm
+        .profile_string(b"Settings", Some(b"Order"), 0x7f, INI)
         .await?;
+
+    for key in crate::groups::start_up_keys(&list, &order) {
+        let path = pm.profile_string(b"Groups", Some(&key), 0x78, INI).await?;
+
+        if !path.is_empty() {
+            let n = key[5..].iter().fold(0u16, |n, digit| {
+                n.wrapping_mul(10)
+                    .wrapping_add(u16::from(digit.wrapping_sub(b'0')))
+            });
+
+            super::loaded::load(pm, n, &path).await?;
+        }
+    }
 
     let display = pm
         .profile_string(b"Boot", Some(b"display.drv"), 0x78, system_ini)
@@ -728,6 +763,11 @@ async fn frame_message(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam
         WM_SYSCOMMAND if pm.d16(D_NO_CLOSE) != 0 && wparam == SC_CLOSE => Ok(0),
         WM_ACTIVATE_FIRST => {
             activated(pm, hwnd).await?;
+            Ok(0)
+        }
+        // `228c`-`2296`, `2486`: DDE, seg7's, answered nought.
+        _ if super::dde::is_dde(message) => {
+            super::dde::message(pm, hwnd, message, wparam, lparam).await?;
             Ok(0)
         }
         _ if message == pm.d16(D_ACTIVATE_SHELL) => {
@@ -847,7 +887,7 @@ async fn close(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam: u32) -
 /// Saving the settings (seg4 `2845`): `Window=`, the groups and their
 /// files. Not yet: what it would write is `pmstart`'s and `pmbare`'s
 /// records.
-fn save(_pm: &Pm<'_>) {}
+pub(super) fn save(_pm: &Pm<'_>) {}
 
 /// 464h (`2762`-`287f`), from a second instance: with no item starting,
 /// restored if it is an icon, and it and its last popup brought to the

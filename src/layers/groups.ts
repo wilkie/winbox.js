@@ -1350,19 +1350,11 @@ function groupKey(key: string) {
 }
 
 /**
- * `PROGMAN.INI`'s groups in the order start-up loads them (seg3 `06c1`-
- * `08a3`): `[Groups]`' keys (a buffer of 140h), upper case, those of
- * `GROUP` and digits not beginning with nought; those `Order=` (a buffer of
- * 7Fh) names, in its order -- each moved to the end as it is found, the
- * rest then moved after them one by one in the file's order; each with a
- * value (a buffer of 78h) loaded, its number the digits'.
+ * `Order=`'s numbers matched to the keys as start-up matches them (seg3
+ * `075d`-`07ff`): each key found moved to the end, the rest then moved after
+ * them one by one in the file's order.
  */
-export function groupKeys(ini: string) {
-  const profile = new Profile(ini);
-  const keys = keyList(profile.entries('Groups'), 0x140)
-    .map((key) => key.replace(/[a-z]/g, (letter) => letter.toUpperCase()))
-    .filter(groupKey);
-  const order = (profile.get('Settings', 'Order') ?? '').slice(0, 0x7e);
+function ordered(keys: string[], order: string) {
   let unmatched = keys.length;
   let at = 0;
 
@@ -1396,6 +1388,48 @@ export function groupKeys(ini: string) {
   for (let turn = 0; turn < unmatched && keys.length; turn++) {
     rotate(0);
   }
+
+  return keys;
+}
+
+/**
+ * The keys start-up loads, from `[Groups]`' key list as
+ * `GetPrivateProfileString` with no entry gave it and `Order=` as read (seg3
+ * `06c1`-`0802`): the names to the first empty one, upper case, those of
+ * `GROUP` and digits not beginning with nought, in `Order=`'s order and then
+ * the rest. As `groups::start_up_keys`.
+ */
+export function startUpKeys(list: string, order: string) {
+  const keys: string[] = [];
+
+  for (const name of list.split('\0')) {
+    if (!name) {
+      break;
+    }
+
+    keys.push(name.replace(/[a-z]/g, (letter) => letter.toUpperCase()));
+  }
+
+  return ordered(keys.filter(groupKey), order);
+}
+
+/**
+ * `PROGMAN.INI`'s groups in the order start-up loads them (seg3 `06c1`-
+ * `08a3`): `[Groups]`' keys (a buffer of 140h), upper case, those of
+ * `GROUP` and digits not beginning with nought; those `Order=` (a buffer of
+ * 7Fh) names, in its order -- each moved to the end as it is found, the
+ * rest then moved after them one by one in the file's order; each with a
+ * value (a buffer of 78h) loaded, its number the digits'.
+ */
+export function groupKeys(ini: string) {
+  const profile = new Profile(ini);
+  const order = (profile.get('Settings', 'Order') ?? '').slice(0, 0x7e);
+  const keys = ordered(
+    keyList(profile.entries('Groups'), 0x140)
+      .map((key) => key.replace(/[a-z]/g, (letter) => letter.toUpperCase()))
+      .filter(groupKey),
+    order
+  );
 
   const loaded: GroupKey[] = [];
 

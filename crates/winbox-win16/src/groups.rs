@@ -1553,6 +1553,22 @@ fn ordered(mut keys: Vec<Vec<u8>>, order: &[u8]) -> Vec<Vec<u8>> {
     keys
 }
 
+/// The keys start-up loads, from `[Groups]`' key list as
+/// `GetPrivateProfileString` with no entry gave it and `Order=` as read
+/// (seg3 `06c1`-`0802`): the names to the first empty one, upper case,
+/// those of `GROUP` and digits not beginning with nought, in `Order=`'s
+/// order and then the rest.
+pub fn start_up_keys(list: &[u8], order: &[u8]) -> Vec<Vec<u8>> {
+    let keys = list
+        .split(|&byte| byte == 0)
+        .take_while(|name| !name.is_empty())
+        .map(<[u8]>::to_ascii_uppercase)
+        .filter(|key| group_key(key))
+        .collect();
+
+    ordered(keys, order)
+}
+
 /// `PROGMAN.INI`'s groups in the order start-up loads them (seg3
 /// `06c1`-`08a3`): `[Groups]`' keys (a buffer of 140h), upper case, those
 /// of `GROUP` and digits not beginning with nought; those `Order=` (a

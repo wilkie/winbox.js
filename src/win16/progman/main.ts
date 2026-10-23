@@ -6,6 +6,9 @@ import { Executable } from '../../executable.js';
 import { streamOf } from '../library.js';
 import { WINMAIN_SLOT, image } from './image.js';
 import { Progman } from './index.js';
+import { dde, isDde } from './dde.js';
+import { forget, load } from './loaded.js';
+import { startUpKeys } from '../../layers/groups.js';
 
 /**
  * Program Manager's `WinMain` and its frame's window procedure, as
@@ -17,9 +20,9 @@ import { Progman } from './index.js';
  * `crates/winbox-win16/src/progman/main.rs`.
  *
  * What it does not do yet, each left where the file does it: its icons,
- * accelerators and fonts (it has no resources); the groups (`[Groups]` and
- * `Order=` are read, and nothing is loaded); DDE (seg7); saving the settings
- * (seg4 `2845`); as the shell, `load=` and `run=` and ending Windows; its
+ * accelerators and fonts (it has no resources); the groups' windows (the
+ * groups are read into the group model, `loaded.ts`, which its DDE, `dde.ts`,
+ * reads) and what its commands change; saving the settings (seg4 `2845`); as the shell, `load=` and `run=` and ending Windows; its
  * command line; and the messages of its menus and help. WinBox's is hidden,
  * by the owner's decision: its frame is never shown, so it is not painted or
  * made active.
@@ -29,7 +32,7 @@ import { Progman } from './index.js';
 const D_MIN_ON_RUN = 0x12;
 const D_AUTO_ARRANGE = 0x14;
 const D_SAVE_SETTINGS = 0x1c;
-const D_SHELL = 0x18;
+export const D_SHELL = 0x18;
 const D_NO_RUN = 0x28;
 const D_NO_CLOSE = 0x2a;
 const D_NO_SAVE_SETTINGS = 0x2c;
@@ -49,7 +52,7 @@ export const D_CLIENT = 0x76c;
 const WM_CREATE = 0x01;
 const WM_DESTROY = 0x02;
 const WM_SIZE = 0x05;
-const WM_CLOSE = 0x10;
+export const WM_CLOSE = 0x10;
 const WM_ENDSESSION = 0x16;
 const WM_SYSCOMMAND = 0x112;
 /** A second instance's, and a program's it started (seg2 `2762`). */
@@ -66,7 +69,7 @@ export const FILE = 'PROGMAN.EXE';
 export const PATH = 'C:\\WINDOWS\\PROGMAN.EXE';
 
 /** Its profile, by the name it loads (string 6). */
-const INI = 'PROGMAN.INI';
+export const INI = 'PROGMAN.INI';
 
 /** Its menu, as `PROGMAN.EXE`'s menu 5 has it; a separator is nought and nothing. */
 const MENU: [string, [number, string][]][] = [
@@ -115,9 +118,10 @@ const MENU: [string, [number, string][]][] = [
   ],
 ];
 
-const bytesOf = (value: string) => Array.from(value, (character) => character.charCodeAt(0) & 0xff);
-const string = (value: string) => text(bytesOf(value));
-const latin = (bytes: number[]) => String.fromCharCode(...bytes);
+export const bytesOf = (value: string) =>
+  Array.from(value, (character) => character.charCodeAt(0) & 0xff);
+export const string = (value: string) => text(bytesOf(value));
+export const latin = (bytes: number[]) => String.fromCharCode(...bytes);
 
 /**
  * The menu as a template for `LoadMenuIndirect`: a header of two noughts,
@@ -201,7 +205,7 @@ export async function startProgman(
 }
 
 /** One instance's Program Manager, as its calls are made: the system and its data segment. */
-class Pm {
+export class Pm {
   declare system: any;
   declare ds: number;
 
@@ -213,6 +217,30 @@ class Pm {
 
   get core() {
     return this.system.machine.cpu.core;
+  }
+
+  /** Bytes at a far address. */
+  readFar(far: number, length: number): number[] {
+    const selector = far >>> 16;
+    const offset = far & 0xffff;
+
+    return Array.from(
+      { length },
+      (_, i) => this.core.read8(selector, (offset + i) & 0xffff) & 0xff
+    );
+  }
+
+  /** Bytes written at a far address. */
+  writeFar(far: number, bytes: number[]) {
+    const selector = far >>> 16;
+    const offset = far & 0xffff;
+
+    bytes.forEach((byte, i) => this.core.write8(selector, (offset + i) & 0xffff, byte & 0xff));
+  }
+
+  /** `SendMessage`. */
+  send(hwnd: number, message: number, wParam: number, lParam: number) {
+    return send(this.system, hwnd, message, wParam, lParam);
   }
 
   d16(offset: number): number {
@@ -316,7 +344,11 @@ export async function WINMAIN(
     return 0;
   }
 
-  return messageLoop(pm);
+  const quit = await messageLoop(pm);
+
+  forget(pm);
+
+  return quit;
 }
 
 /**
@@ -577,14 +609,39 @@ async function createFrame(pm: Pm, instance: number, place: number[], _show: num
 }
 
 /**
- * The groups (seg3 `0809`, `06c1`): `[Groups]`' keys and `Order=` read, and
- * -- not yet -- each group loaded from its file; then `[Settings]`
- * `display.drv=` written with `SYSTEM.INI`'s `[boot]` `display.drv=`
- * (`08ab`-`08d8`).
+ * The groups (seg3 `0809`, `06c1`): `[Groups]`' keys (a buffer of 140h) and
+ * `Order=` (7Fh) read and put in the order start-up loads them
+ * (`startUpKeys`); each key's path read (78h, `0875`-`088b`) and, where there
+ * is one, the group loaded with the number after `GROUP` (`0832`-`085b`,
+ * `load`); then `[Settings]` `display.drv=` written with `SYSTEM.INI`'s
+ * `[boot]` `display.drv=` (`08ab`-`08d8`).
  */
 async function loadGroups(pm: Pm, systemIni: string) {
-  await pm.profileString('Groups', null, 0x140, INI);
-  await pm.profileString('Settings', 'Order', 0x7f, INI);
+  const list = (
+    await pm.call('KERNEL', 'GetPrivateProfileString', [
+      string('Groups'),
+      D(0),
+      string(''),
+      buffer(0x140),
+      W(0x140),
+      string(INI),
+    ])
+  ).buffers[2];
+  const order = await pm.profileString('Settings', 'Order', 0x7f, INI);
+
+  for (const key of startUpKeys(latin(list), order)) {
+    const path = await pm.profileString('Groups', key, 0x78, INI);
+
+    if (path) {
+      let n = 0;
+
+      for (const digit of key.slice(5)) {
+        n = (n * 10 + digit.charCodeAt(0) - 0x30) & 0xffff;
+      }
+
+      await load(pm, n, path);
+    }
+  }
 
   const display = await pm.profileString('Boot', 'display.drv', 0x78, systemIni);
 
@@ -655,6 +712,12 @@ async function frameMessage(
     case WM_ACTIVATE_FIRST:
       await activated(pm, hwnd);
       return 0;
+  }
+
+  /* `228c`-`2296`, `2486`: DDE, seg7's, answered nought. */
+  if (isDde(message)) {
+    await dde(pm, hwnd, message, wParam, lParam);
+    return 0;
   }
 
   /* `26b1`: with `NoClose`, `SC_CLOSE` does nothing. */
@@ -756,7 +819,7 @@ async function close(pm: Pm, hwnd: number, message: number, wParam: number, lPar
  * Saving the settings (seg4 `2845`): `Window=`, the groups and their files.
  * Not yet: what it would write is `pmstart`'s and `pmbare`'s records.
  */
-function save(_pm: Pm) {}
+export function save(_pm: Pm) {}
 
 /**
  * 464h (`2762`-`287f`), from a second instance: with no item starting,

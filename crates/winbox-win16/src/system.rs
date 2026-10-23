@@ -385,6 +385,8 @@ pub struct System {
     pub lzexpand: crate::lzexpand::State,
     /// What `DDEML` keeps of its own (`ddeml/`).
     pub ddeml: crate::ddeml::State,
+    /// What WinBox's Program Manager keeps of its own (`progman/`).
+    pub progman: crate::progman::State,
     /// What `SwapMouseButton` was last given.
     pub swap_buttons: Option<u16>,
     /// USER's settings, once read from `WIN.INI` (`system_parameters.rs`).
@@ -595,6 +597,7 @@ impl System {
             commdlg: crate::commdlg::State::default(),
             lzexpand: crate::lzexpand::State::default(),
             ddeml: crate::ddeml::State::default(),
+            progman: crate::progman::State::default(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),
             atoms: crate::atoms::Atoms::default(),
