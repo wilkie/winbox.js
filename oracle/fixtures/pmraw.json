@@ -1,0 +1,244 @@
+{
+  "probe": "pmraw",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "WinExec",
+      "args": "PROGMAN.EXE",
+      "result": "1"
+    },
+    {
+      "function": "initiate",
+      "args": "PROGMAN,PROGMAN",
+      "result": "1:ack:PROGMAN|PROGMAN:progman;"
+    },
+    {
+      "function": "initiate",
+      "args": "Shell,AppProperties",
+      "result": "1:ack:Shell|AppProperties:progman;"
+    },
+    {
+      "function": "posted",
+      "args": "[CreateGroup(Raw Group)]",
+      "result": "ack:8000:same:partner;|size=32:flags=0"
+    },
+    {
+      "function": "posted",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE)]",
+      "result": "ack:8000:same:partner;|size=64:flags=0"
+    },
+    {
+      "function": "posted",
+      "args": "[Bogus]",
+      "result": "ack:0:same:partner;|size=32:flags=0"
+    },
+    {
+      "function": "posted",
+      "args": "",
+      "result": "ack:8000:same:partner;|size=32:flags=0"
+    },
+    {
+      "function": "posted",
+      "args": "two",
+      "result": "ack:8000:same:partner;ack:8000:other:partner;"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "data:Groups:same:flags=0:size=64:3000,0001,Accessories..StartUp..Main..Raw Group..;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "Raw Group",
+      "result": "data:Raw Group:same:flags=0:size=256:3000,0001,\"Raw Group\",C:\\WINDOWS\\RAWGROUP.GRP,3,1..\"Nope\",\"C:\\WIND;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "Raw Group",
+      "result": "ack:0:same:Raw Group;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "Nothing",
+      "result": "ack:0:same:Nothing;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "GetIcon",
+      "result": "ack:0:same:GetIcon;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "GetDescription",
+      "result": "ack:0:same:GetDescription;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "GetWorkingDir",
+      "result": "ack:0:same:GetWorkingDir;|atom:found"
+    },
+    {
+      "function": "request",
+      "args": "GetIcon",
+      "result": "ack:0:same:GetIcon;|atom:found"
+    },
+    {
+      "function": "poke",
+      "args": "Groups",
+      "result": "ack:0:same:Groups;|data:size=32:flags=0|atom:found"
+    },
+    {
+      "function": "advise",
+      "args": "Groups",
+      "result": "ack:0:same:Groups;|data:size=32:flags=0|atom:found"
+    },
+    {
+      "function": "unadvise",
+      "args": "Groups",
+      "result": "ack:0:same:Groups;|atom:found"
+    },
+    {
+      "function": "data",
+      "args": "Groups",
+      "result": "ack:0:same:Groups;|data:size=32:flags=0|atom:found"
+    },
+    {
+      "function": "terminate",
+      "args": "",
+      "result": "terminate:partner;"
+    },
+    {
+      "function": "posted",
+      "args": "[AddItem(C:\\WINDOWS\\CLOCK.EXE)]",
+      "result": "ack:8000:same:partner;|size=32:flags=0"
+    },
+    {
+      "function": "DdeInitialize",
+      "args": "clientonly",
+      "result": "0"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Reload Me)][AddItem(C:\\WINDOWS\\NOTEPAD.EXE)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Reload Two)][AddItem(C:\\WINDOWS\\CALC.EXE)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Reload Me",
+      "result": "text:\"Reload Me\",C:\\WINDOWS\\RELOADME.GRP,1,4\r\n\"Notepad\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "text",
+      "args": "created",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 4 5 6\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\RAWGROUP.GRP\r\nGroup5=C:\\WINDOWS\\RELOADME.GRP\r\nGroup6=C:\\WINDOWS\\RELOADTW.GRP\r\n"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\WINDOWS\\RELOADME.GRP",
+      "result": "9447"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload(Reload Me)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nRaw Group\r\nReload Two\r\nAccessories\r\n/92"
+    },
+    {
+      "function": "request",
+      "args": "Reload Me",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "request",
+      "args": "Accessories",
+      "result": "text:\"Accessories\",C:\\WINDOWS\\RELOADME.GRP,13,2\r\n\"Write\",\"WRITE.EXE\",,C:\\WINDOWS\\WRITE.EXE,21,0,0,0,0\r\n\"Paintbrush\",\"PBRUSH.EXE\",,C:\\WINDOWS\\PBRUSH.EXE,96,0,0,0,0\r\n\"Terminal\",\"TERMINAL.EXE\",,C:\\WINDOWS\\TERMINAL.EXE,171,0,0,0,0\r\n\"Notepad\",\"NOTEPAD.EXE\",,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"Recorder\",\"RECORDER.EXE\",,C:\\WINDOWS\\RECORDER.EXE,321,0,0,0,0\r\n\"Cardfile\",\"CARDFILE.EXE\",,C:\\WINDOWS\\CARDFILE.EXE,21,72,0,0,0\r\n\"Calendar\",\"CALENDAR.EXE\",,C:\\WINDOWS\\CALENDAR.EXE,96,72,0,0,0\r\n\"Calculator\",\"CALC.EXE\",,C:\\WINDOWS\\CALC.EXE,171,72,0,0,0\r\n\"Clock\",\"CLOCK.EXE\",,C:\\WINDOWS\\CLOCK.EXE,246,72,0,0,0\r\n\"Object Packager\",\"PACKAGER.EXE\",,C:\\WINDOWS\\PACKAGER.EXE,321,72,0,0,0\r\n\"Character Map\",\"CHARMAP.EXE\",,C:\\WINDOWS\\CHARMAP.EXE,21,144,0,0,0\r\n\"Media Player\",\"MPLAYER.EXE\",,C:\\WINDOWS\\MPLAYER.EXE,96,144,0,0,0\r\n\"Sound Recorder\",\"SOUNDREC.EXE\",,C:\\WINDOWS\\SOUNDREC.EXE,171,144,0,0,0\r\n/892"
+    },
+    {
+      "function": "windows",
+      "args": "reloaded",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Accessories:21,218,57,254:110;Reload Two:0,0,416,202:100;Raw Group:66,66,482,268:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "delete",
+      "args": "C:\\WINDOWS\\RELOADTW.GRP",
+      "result": "1"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload(Reload Two)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nRaw Group\r\nAccessories\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "Reload Two",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "text",
+      "args": "reload-deleted",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 4 5 6\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\RAWGROUP.GRP\r\nGroup5=C:\\WINDOWS\\RELOADME.GRP\r\nGroup6=C:\\WINDOWS\\RELOADTW.GRP\r\n"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload(Nope)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload(a,b)]",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload()]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[Reload]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:/28"
+    },
+    {
+      "function": "text",
+      "args": "reload-all",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 4 5 6\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\RAWGROUP.GRP\r\nGroup5=C:\\WINDOWS\\RELOADME.GRP\r\nGroup6=C:\\WINDOWS\\RELOADTW.GRP\r\n"
+    },
+    {
+      "function": "windows",
+      "args": "reload-all",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Accessories:21,218,57,254:110;Raw Group:44,44,460,246:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    }
+  ]
+}

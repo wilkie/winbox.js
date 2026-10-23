@@ -1,0 +1,734 @@
+{
+  "probe": "pmgroups",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "clientonly",
+      "result": "0"
+    },
+    {
+      "function": "WinExec",
+      "args": "PROGMAN.EXE",
+      "result": "1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Shown)][AddItem(C:\\WINDOWS\\CALC.EXE)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Other)][AddItem(C:\\WINDOWS\\CLOCK.EXE)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "windows",
+      "args": "made",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Shown:66,66,482,268:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,0)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,1,4\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,1,1\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,0)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Shown:66,66,482,268:000;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 0)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,1,4\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,2,1\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/220"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,1)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Shown:66,66,482,268:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,2)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,1,2\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,3,4\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,2)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:171,218,207,254:110;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 2)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,3)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,2,3\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/220"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,3,4\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,3)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:-4,-23,508,294:101;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 3)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,4)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,3,1\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,3,4\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,4)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 4)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,5)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,4,1\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/380"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,3,4\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,5)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 5)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,6)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,5,7\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/444"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,3,1\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,6)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110;Shown:171,218,207,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 6)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,7)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,5,7\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/444"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,4,1\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/380"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,7)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110;Shown:171,218,207,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 7)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,8)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,5,7\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/444"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,5,1\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/444"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,8)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110;Shown:171,218,207,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 8)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,9)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,5,1\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/444"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,6,4\r\n\"After 8\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,9)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 9)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,10)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,6,1\r\n\"After 9\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,6,4\r\n\"After 8\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,10)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 10)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,11)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,7,1\r\n\"After 10\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,72,0,0,0\r\n\"After 9\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/604"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,6,4\r\n\"After 8\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "windows",
+      "args": "[ShowGroup(Shown,11)]",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOTEPAD.EXE,After 11)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,-1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,1x)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Shown,x)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(\"shown\",1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Shown",
+      "result": "text:\"Shown\",C:\\WINDOWS\\SHOWN.GRP,8,1\r\n\"After 11\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,72,0,0,0\r\n\"After 10\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,72,0,0,0\r\n\"After 9\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 5\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 4\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 3\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 2\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Calc\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/700"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,6,4\r\n\"After 8\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "execute",
+      "args": "[ShowGroup(Other,1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\WRITE.EXE,Later)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Other",
+      "result": "text:\"Other\",C:\\WINDOWS\\OTHER.GRP,6,4\r\n\"After 8\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,21,72,0,0,0\r\n\"After 7\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,321,0,0,0,0\r\n\"After 6\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"After 1\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"After 0\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,96,0,0,0,0\r\n\"Clock\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,21,0,0,0,0\r\n/540"
+    },
+    {
+      "function": "copy",
+      "args": "C:\\WINDOWS\\COPIED.GRP",
+      "result": "9447"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Not Its Name,C:\\WINDOWS\\COPIED.GRP)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nShown\r\nOther\r\nNot Its Name\r\n/60"
+    },
+    {
+      "function": "request",
+      "args": "Not Its Name",
+      "result": "text:\"Not Its Name\",C:\\WINDOWS\\COPIED.GRP,13,2\r\n\"Write\",\"WRITE.EXE\",,C:\\WINDOWS\\WRITE.EXE,21,0,0,0,0\r\n\"Paintbrush\",\"PBRUSH.EXE\",,C:\\WINDOWS\\PBRUSH.EXE,96,0,0,0,0\r\n\"Terminal\",\"TERMINAL.EXE\",,C:\\WINDOWS\\TERMINAL.EXE,171,0,0,0,0\r\n\"Notepad\",\"NOTEPAD.EXE\",,C:\\WINDOWS\\NOTEPAD.EXE,246,0,0,0,0\r\n\"Recorder\",\"RECORDER.EXE\",,C:\\WINDOWS\\RECORDER.EXE,321,0,0,0,0\r\n\"Cardfile\",\"CARDFILE.EXE\",,C:\\WINDOWS\\CARDFILE.EXE,21,72,0,0,0\r\n\"Calendar\",\"CALENDAR.EXE\",,C:\\WINDOWS\\CALENDAR.EXE,96,72,0,0,0\r\n\"Calculator\",\"CALC.EXE\",,C:\\WINDOWS\\CALC.EXE,171,72,0,0,0\r\n\"Clock\",\"CLOCK.EXE\",,C:\\WINDOWS\\CLOCK.EXE,246,72,0,0,0\r\n\"Object Packager\",\"PACKAGER.EXE\",,C:\\WINDOWS\\PACKAGER.EXE,321,72,0,0,0\r\n\"Character Map\",\"CHARMAP.EXE\",,C:\\WINDOWS\\CHARMAP.EXE,21,144,0,0,0\r\n\"Media Player\",\"MPLAYER.EXE\",,C:\\WINDOWS\\MPLAYER.EXE,96,144,0,0,0\r\n\"Sound Recorder\",\"SOUNDREC.EXE\",,C:\\WINDOWS\\SOUNDREC.EXE,171,144,0,0,0\r\n/892"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Main Again,C:\\WINDOWS\\MAIN.GRP)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nShown\r\nOther\r\nNot Its Name\r\n/60"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(No Extension,C:\\WINDOWS\\NOEXT)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Spaced Path,C:\\WINDOWS\\A B.GRP)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Elsewhere,C:\\TEMP\\ELSE.GRP)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "text",
+      "args": "paths",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 5 4 6 7 8\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\SHOWN.GRP\r\nGroup5=C:\\WINDOWS\\OTHER.GRP\r\nGroup6=C:\\WINDOWS\\COPIED.GRP\r\nGroup7=C:\\WINDOWS\\NOEXT.GRP\r\nGroup8=C:\\WINDOWS\\A_B.GRP\r\n"
+    },
+    {
+      "function": "windows",
+      "args": "paths",
+      "result": "frame:68,48,580,384:100;client:0,0,504,290;Spaced Path:44,44,460,246:100;No Extension:22,22,438,224:100;Not Its Name:21,218,57,254:110;Shown:66,66,482,268:100;Other:88,88,504,290:100;Main:0,0,416,202:100;StartUp:96,218,132,254:110;Accessories:21,218,57,254:110"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Twins)][AddItem(C:\\WINDOWS\\CALC.EXE,Twin)][AddItem(C:\\WINDOWS\\CLOCK.EXE,Twin)][AddItem(C:\\WINDOWS\\NOTEPAD.EXE,twin)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Twins",
+      "result": "text:\"Twins\",C:\\WINDOWS\\TWINS.GRP,3,1\r\n\"twin\",\"C:\\WINDOWS\\NOTEPAD.EXE\",C:\\WINDOWS,C:\\WINDOWS\\NOTEPAD.EXE,171,0,0,0,0\r\n\"Twin\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,96,0,0,0,0\r\n\"Twin\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/284"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteItem(TWIN)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Twins",
+      "result": "text:\"Twins\",C:\\WINDOWS\\TWINS.GRP,2,1\r\n\"Twin\",\"C:\\WINDOWS\\CLOCK.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CLOCK.EXE,96,0,0,0,0\r\n\"Twin\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/188"
+    },
+    {
+      "function": "execute",
+      "args": "[ReplaceItem(Twin)][AddItem(C:\\WINDOWS\\SOL.EXE,Replaced)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Twins",
+      "result": "text:\"Twins\",C:\\WINDOWS\\TWINS.GRP,2,1\r\n\"Replaced\",\"C:\\WINDOWS\\SOL.EXE\",C:\\WINDOWS,,96,0,6,0,0\r\n\"Twin\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/188"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Twins)][CreateGroup(TWINS)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nShown\r\nOther\r\nNot Its Name\r\nNo Extension\r\nSpaced Path\r\nTwins\r\n/92"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 0)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 2)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 3)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 4)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 5)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 6)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 7)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 8)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 9)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 10)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 11)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 12)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 13)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 14)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 15)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 16)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 17)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 18)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 19)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 20)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 21)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 22)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 23)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 24)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 25)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 26)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 27)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 28)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 29)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 30)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 31)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 32)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 33)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 34)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 35)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 36)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 37)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 38)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(Many 39)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nShown\r\nOther\r\nNot Its Name\r\nNo Extension\r\nSpaced Path\r\nTwins\r\nMany 0\r\nMany 1\r\nMany 2\r\nMany 3\r\nMany 4\r\nMany 5\r\nMany 6\r\nMany 7\r\nMany 8\r\nMany 9\r\nMany 10\r\nMany 11\r\nMany 12\r\nMany 13\r\nMany 14\r\nMany 15\r\nMany 16\r\nMany 17\r\nMany 18\r\nMany 19\r\nMany 20\r\nMany 21\r\nMany 22\r\nMany 23\r\nMany 24\r\nMany 25\r\nMany 26\r\nMany 27\r\nMany 28\r\nMany 29\r\nMany 30\r\n/380"
+    },
+    {
+      "function": "text",
+      "args": "many",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 5 4 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\SHOWN.GRP\r\nGroup5=C:\\WINDOWS\\OTHER.GRP\r\nGroup6=C:\\WINDOWS\\COPIED.GRP\r\nGroup7=C:\\WINDOWS\\NOEXT.GRP\r\nGroup8=C:\\WINDOWS\\A_B.GRP\r\nGroup9=C:\\WINDOWS\\TWINS.GRP\r\nGroup10=C:\\WINDOWS\\MANY0.GRP\r\nGroup11=C:\\WINDOWS\\MANY1.GRP\r\nGroup12=C:\\WINDOWS\\MANY2.GRP\r\nGroup13=C:\\WINDOWS\\MANY3.GRP\r\nGroup14=C:\\WINDOWS\\MANY4.GRP\r\nGroup15=C:\\WINDOWS\\MANY5.GRP\r\nGroup16=C:\\WINDOWS\\MANY6.GRP\r\nGroup17=C:\\WINDOWS\\MANY7.GRP\r\nGroup18=C:\\WINDOWS\\MANY8.GRP\r\nGroup19=C:\\WINDOWS\\MANY9.GRP\r\nGroup20=C:\\WINDOWS\\MANY10.GRP\r\nGroup21=C:\\WINDOWS\\MANY11.GRP\r\nGroup22=C:\\WINDOWS\\MANY12.GRP\r\nGroup23=C:\\WINDOWS\\MANY13.GRP\r\nGroup24=C:\\WINDOWS\\MANY14.GRP\r\nGroup25=C:\\WINDOWS\\MANY15.GRP\r\nGroup26=C:\\WINDOWS\\MANY16.GRP\r\nGroup27=C:\\WINDOWS\\MANY17.GRP\r\nGroup28=C:\\WINDOWS\\MANY18.GRP\r\nGroup29=C:\\WINDOWS\\MANY19.GRP\r\nGroup30=C:\\WINDOWS\\MANY20.GRP\r\nGroup31=C:\\WINDOWS\\MANY21.GRP\r\nGroup32=C:\\WINDOWS\\MANY22.GRP\r\nGroup33=C:\\WINDOWS\\MANY23.GRP\r\nGroup34=C:\\WINDOWS\\MANY24.GRP\r\nGroup35=C:\\WINDOWS\\MANY25.GRP\r\nGroup36=C:\\WINDOWS\\MANY26.GRP\r\nGroup37=C:\\WINDOWS\\MANY27.GRP\r\nGroup38=C:\\WINDOWS\\MANY28.GRP\r\nGroup39=C:\\WINDOWS\\MANY29.GRP\r\nGroup40=C:\\WINDOWS\\MANY30.GRP\r\n"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\CALC.EXE,Where)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Many 39",
+      "result": "0,4009,0"
+    },
+    {
+      "function": "request",
+      "args": "Many 30",
+      "result": "text:\"Many 30\",C:\\WINDOWS\\MANY30.GRP,1,1\r\n\"Where\",\"C:\\WINDOWS\\CALC.EXE\",C:\\WINDOWS,C:\\WINDOWS\\CALC.EXE,21,0,0,0,0\r\n/124"
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(Many 0)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(After Many)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "request",
+      "args": "Groups",
+      "result": "text:Accessories\r\nStartUp\r\nMain\r\nShown\r\nOther\r\nNot Its Name\r\nNo Extension\r\nSpaced Path\r\nTwins\r\nMany 1\r\nMany 2\r\nMany 3\r\nMany 4\r\nMany 5\r\nMany 6\r\nMany 7\r\nMany 8\r\nMany 9\r\nMany 10\r\nMany 11\r\nMany 12\r\nMany 13\r\nMany 14\r\nMany 15\r\nMany 16\r\nMany 17\r\nMany 18\r\nMany 19\r\nMany 20\r\nMany 21\r\nMany 22\r\nMany 23\r\nMany 24\r\nMany 25\r\nMany 26\r\nMany 27\r\nMany 28\r\nMany 29\r\nMany 30\r\nAfter Many\r\n/380"
+    },
+    {
+      "function": "text",
+      "args": "after-many",
+      "result": "[Settings]\r\nWindow=68 48 580 384 1\r\ndisplay.drv=vga.drv\r\nOrder= 2 3 1 5 4 6 7 8 9 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 10\r\n\r\n[Groups]\r\nGroup1=C:\\WINDOWS\\MAIN.GRP\r\nGroup2=C:\\WINDOWS\\ACCESSOR.GRP\r\nGroup3=C:\\WINDOWS\\STARTUP.GRP\r\nGroup4=C:\\WINDOWS\\SHOWN.GRP\r\nGroup5=C:\\WINDOWS\\OTHER.GRP\r\nGroup6=C:\\WINDOWS\\COPIED.GRP\r\nGroup7=C:\\WINDOWS\\NOEXT.GRP\r\nGroup8=C:\\WINDOWS\\A_B.GRP\r\nGroup9=C:\\WINDOWS\\TWINS.GRP\r\nGroup11=C:\\WINDOWS\\MANY1.GRP\r\nGroup12=C:\\WINDOWS\\MANY2.GRP\r\nGroup13=C:\\WINDOWS\\MANY3.GRP\r\nGroup14=C:\\WINDOWS\\MANY4.GRP\r\nGroup15=C:\\WINDOWS\\MANY5.GRP\r\nGroup16=C:\\WINDOWS\\MANY6.GRP\r\nGroup17=C:\\WINDOWS\\MANY7.GRP\r\nGroup18=C:\\WINDOWS\\MANY8.GRP\r\nGroup19=C:\\WINDOWS\\MANY9.GRP\r\nGroup20=C:\\WINDOWS\\MANY10.GRP\r\nGroup21=C:\\WINDOWS\\MANY11.GRP\r\nGroup22=C:\\WINDOWS\\MANY12.GRP\r\nGroup23=C:\\WINDOWS\\MANY13.GRP\r\nGroup24=C:\\WINDOWS\\MANY14.GRP\r\nGroup25=C:\\WINDOWS\\MANY15.GRP\r\nGroup26=C:\\WINDOWS\\MANY16.GRP\r\nGroup27=C:\\WINDOWS\\MANY17.GRP\r\nGroup28=C:\\WINDOWS\\MANY18.GRP\r\nGroup29=C:\\WINDOWS\\MANY19.GRP\r\nGroup30=C:\\WINDOWS\\MANY20.GRP\r\nGroup31=C:\\WINDOWS\\MANY21.GRP\r\nGroup32=C:\\WINDOWS\\MANY22.GRP\r\nGroup33=C:\\WINDOWS\\MANY23.GRP\r\nGroup34=C:\\WINDOWS\\MANY24.GRP\r\nGroup35=C:\\WINDOWS\\MANY25.GRP\r\nGroup36=C:\\WINDOWS\\MANY26.GRP\r\nGroup37=C:\\WINDOWS\\MANY27.GRP\r\nGroup38=C:\\WINDOWS\\MANY28.GRP\r\nGroup39=C:\\WINDOWS\\MANY29.GRP\r\nGroup40=C:\\WINDOWS\\MANY30.GRP\r\nGroup10=C:\\WINDOWS\\AFTERMAN.GRP\r\n"
+    }
+  ]
+}

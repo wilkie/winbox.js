@@ -5546,15 +5546,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * winbox.js keeps no heap for the atoms, and answers nought: 1 record,
    * where Windows' freed entry still held the string. */
   'ddeleft:DdeFreeStringHandle': 'an atom deleted once too often answers nought',
-  /* KERNEL drops a held private profile when the file's DOS date and time
-   * are no longer those it opened it with (`KRNL386.EXE` seg1 `62f3`;
-   * `profhold`). Under DOSBox, Program Manager's first rewrite of
-   * PROGMAN.INI came in a later two-second step of the DOS clock than its
-   * start-up write, so the probe's read after it loaded the file again and
-   * `Order=` lost its leading space; on the engines' virtual clock the step
-   * is not crossed, and the buffer with the space is kept. A matter of
-   * time, not of the rule: 3 of `progdde`'s 9 `files` records. */
-  'progdde:files': "the DOS clock's two-second step not crossed where Windows crossed it",
   /* `GetModuleHandle` given the probe's task: `GetExePtr` finds no module
    * for a task's handle, and Windows answers nought where the name finds
    * the module (`KRNL386.EXE` seg1 `4e78`-`4eff`). A program's task is its
@@ -5873,6 +5864,7 @@ const RUN_WHOLE = new Set<string>([
   'abouthin',
   'grround',
   'instlay',
+  ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
 ]);
 
 /**
@@ -5950,7 +5942,9 @@ export const BOX_KEYS: Record<string, string[][]> = {
  * before the box was shown, and every control read hidden
  * (`run_program_test`'s end-to-end run, 1 in 3 at a third of a CPU).
  * `dirorder` waits four seconds of `GetTickCount` for the stamps it compares
- * to move.
+ * to move. The Program Manager probes, `pmbare` and the rest, run with it as
+ * `progdde` does, and `pmbare` waits out DDEML's ten seconds after
+ * `[ExitProgman(1)]`.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -5983,6 +5977,7 @@ const VIRTUAL_CLOCK = new Set([
   'abouthin',
   'dirorder',
   'instlay',
+  ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
 ]);
 
 /**
@@ -5995,6 +5990,13 @@ const VIRTUAL_CLOCK = new Set([
  * 500 milliseconds beside its other steps.
  */
 const SECONDS: Record<string, number> = { spiidle: 90, findrepl: 60, choosclr: 400, ddenest: 100 };
+
+/**
+ * Whole-run probes run on each display they were recorded on, not only the
+ * VGA's: `pmbare`'s group files hold the display's icons, and its windows
+ * are placed by the screen's size, on the EGA as on the VGA.
+ */
+const ON_THEIR_DISPLAYS = new Set(['pmbare']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
@@ -6078,7 +6080,7 @@ export async function replayRecord(
     const written =
       display === 'vga' || display === 'vgaprint'
         ? await wholeRun(probe, 'vga', ini)
-        : display === 'vga256'
+        : display === 'vga256' || ON_THEIR_DISPLAYS.has(probe)
           ? await wholeRun(probe, display)
           : null;
 

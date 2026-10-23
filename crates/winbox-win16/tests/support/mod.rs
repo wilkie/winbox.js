@@ -203,6 +203,14 @@ pub const AGREEING: &[&str] = &[
     "abouthin",
     "grround",
     "instlay",
+    "pmbare-vga",
+    "pmbare-ega",
+    "pmraw",
+    "pmsyntax",
+    "pmgroups",
+    "pmfiles",
+    "pmshell-progman",
+    "progdde",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -373,6 +381,17 @@ pub fn parse_preset(text: &str) -> Vec<(String, Vec<(String, String)>)> {
     sections
 }
 
+/// The shell a preset keeps, its `[oracle shell]` section's `shell=`, as
+/// `ini-preset.mjs`'s `presetShell` reads it.
+pub fn preset_shell(sections: &[(String, Vec<(String, String)>)]) -> Option<&str> {
+    sections
+        .iter()
+        .filter(|(name, _)| name.eq_ignore_ascii_case("oracle shell"))
+        .flat_map(|(_, keys)| keys)
+        .find(|(key, _)| key.eq_ignore_ascii_case("shell"))
+        .map(|(_, value)| value.as_str())
+}
+
 /// `WIN.INI`'s text with a preset's sections set in it, as
 /// `ini-preset.mjs` sets them: each key's line in its section replaced,
 /// else written after the section's last line that is not blank, else the
@@ -389,7 +408,7 @@ pub fn merge_ini(text: &[u8], sections: &[(String, Vec<(String, String)>)]) -> V
     }
 
     for (name, keys) in sections {
-        if name.eq_ignore_ascii_case("oracle copy") {
+        if name.to_ascii_lowercase().starts_with("oracle ") {
             continue;
         }
 
@@ -530,6 +549,10 @@ pub struct Setup {
     /// starts, by their paths there: `VER.DLL`, for a run with WinBox's own
     /// alone.
     pub without: Vec<String>,
+    /// The program `SYSTEM.INI`'s `shell=` names: the probe, as the
+    /// recorder makes it, unless its preset keeps another (`[oracle
+    /// shell]`, `pmshell`), which is then what is started.
+    pub shell: String,
 }
 
 /// What drive C: has beneath it.
@@ -744,6 +767,9 @@ impl Setup {
         // Or, on the asset bundle's base, C: has that beneath it, and the
         // bundle's modules are the store behind it.
         let beneath = base.beneath(&display, &mut system)?;
+        let mut bytes = bytes;
+        let mut program = format!("C:\\{upper}.EXE");
+        let mut shell = format!("{upper}.EXE");
         // A probe recorded with a `WIN.INI` preset (`record.mjs --ini`) finds
         // `WIN.INI` set as it says, and its copies made.
         if let Some(preset) = &ini
@@ -771,6 +797,18 @@ impl Setup {
 
             if let Some(text) = beneath.read("WINDOWS\\WIN.INI") {
                 placed.push(("WINDOWS\\WIN.INI".to_string(), merge_ini(&text, &sections)));
+            }
+
+            // A shell the preset keeps in the probe's place (`pmshell`):
+            // started first, it starts the probe as `WIN.INI`'s `run=`
+            // names it, from `C:\WINDOWS`, where the recorder puts it.
+            if let Some(kept) = preset_shell(&sections) {
+                let kept = kept.to_ascii_uppercase();
+
+                placed.push((format!("WINDOWS\\{upper}.EXE"), bytes.clone()));
+                bytes = beneath.read(&format!("WINDOWS\\{kept}"))?;
+                program = format!("C:\\WINDOWS\\{kept}");
+                shell = kept;
             }
         }
 
@@ -805,12 +843,13 @@ impl Setup {
 
         Some(Self {
             system,
-            program: format!("C:\\{upper}.EXE"),
+            program,
             upper,
             bytes,
             beneath,
             placed,
             without: Vec::new(),
+            shell,
         })
     }
 
@@ -851,7 +890,7 @@ pub fn run_setup<T>(
         std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
-    name_the_shell(&mut setup.placed, &setup.beneath, &setup.upper);
+    name_the_shell(&mut setup.placed, &setup.beneath, &setup.shell);
 
     for (path, bytes) in &setup.placed {
         let to = path
@@ -1015,7 +1054,7 @@ pub fn run_drive(
 /// `setShell`): `SYSTEM.INI`'s `shell=` names it. Program Manager started
 /// by a probe reads it, and is not the shell (`progdde`; `PROGMAN.EXE` seg3
 /// `0b88`-`0c0a`).
-fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, beneath: &Beneath, upper: &str) {
+fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, beneath: &Beneath, shell: &str) {
     let at = placed
         .iter()
         .position(|(path, _)| path == "WINDOWS\\SYSTEM.INI");
@@ -1025,7 +1064,7 @@ fn name_the_shell(placed: &mut Vec<(String, Vec<u8>)>, beneath: &Beneath, upper:
     };
 
     if let Some(text) = text {
-        let shell = set_shell(&text, &format!("{upper}.EXE"));
+        let shell = set_shell(&text, shell);
 
         match at {
             Some(at) => placed[at].1 = shell,
