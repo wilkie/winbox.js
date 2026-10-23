@@ -1,0 +1,764 @@
+{
+  "probe": "imgwrite",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "A: 0",
+      "result": "ONE.TXT 20 20 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: 1",
+      "result": "TWO.TXT 20 10 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: 2",
+      "result": "THREE.TXT 20 36 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: 3",
+      "result": "NOEXT. 20 e 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: 4",
+      "result": "BIG.TXT 20 3e8 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: 5",
+      "result": "SUBDIR 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A: 6",
+      "result": "HIDDIR 12 0 0021 0000"
+    },
+    {
+      "function": "entry",
+      "args": "A: end",
+      "result": "7 18"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 0",
+      "result": ". 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR 1",
+      "result": ".. 10 0 185d 0842"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\SUBDIR end",
+      "result": "2 18"
+    },
+    {
+      "function": "entry",
+      "args": "A:\\HIDDIR end",
+      "result": "0 3"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0b16 0200 0b1f 0"
+    },
+    {
+      "function": "read",
+      "args": "A:\\NOEXT",
+      "result": "14 4e4f455854206c696e6520310d0a 0021 0000"
+    },
+    {
+      "function": "read",
+      "args": "A:\\NOEXT.",
+      "result": "14 4e4f455854206c696e6520310d0a 0021 0000"
+    },
+    {
+      "function": "open",
+      "args": "A:\\noext",
+      "result": "14"
+    },
+    {
+      "function": "match",
+      "args": "A:\\NOEXT 00",
+      "result": "NOEXT."
+    },
+    {
+      "function": "match",
+      "args": "A:\\NOEXT.* 00",
+      "result": "NOEXT."
+    },
+    {
+      "function": "noext",
+      "args": "make",
+      "result": "0"
+    },
+    {
+      "function": "match",
+      "args": "A:\\B*.* 00",
+      "result": "BARE.,BIG.TXT"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\BARE",
+      "result": "00"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\HIDDIR",
+      "result": "12"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\HIDDIR\\INSIDE.TXT",
+      "result": "error 2"
+    },
+    {
+      "function": "open",
+      "args": "A:\\HIDDIR\\INSIDE.TXT",
+      "result": "error 3"
+    },
+    {
+      "function": "match",
+      "args": "A:\\HIDDIR\\*.* 37",
+      "result": "error 3"
+    },
+    {
+      "function": "match",
+      "args": "A:\\HIDDIR 12",
+      "result": "HIDDIR"
+    },
+    {
+      "function": "hidden",
+      "args": "chdir",
+      "result": "3"
+    },
+    {
+      "function": "hidden",
+      "args": "cwd",
+      "result": "A:\\"
+    },
+    {
+      "function": "hidden",
+      "args": "36",
+      "result": "0001 0b15 0200 0b1f 0"
+    },
+    {
+      "function": "hidden",
+      "args": "mkdir",
+      "result": "3"
+    },
+    {
+      "function": "hidden",
+      "args": "36",
+      "result": "0001 0b14 0200 0b1f 0"
+    },
+    {
+      "function": "hidden",
+      "args": "create",
+      "result": "3"
+    },
+    {
+      "function": "hidden",
+      "args": "delete",
+      "result": "2"
+    },
+    {
+      "function": "hidden",
+      "args": "rmdir",
+      "result": "3"
+    },
+    {
+      "function": "seek",
+      "args": "set 5000",
+      "result": "1000"
+    },
+    {
+      "function": "seek",
+      "args": "cur 0",
+      "result": "1000"
+    },
+    {
+      "function": "seek",
+      "args": "end -10",
+      "result": "990"
+    },
+    {
+      "function": "seek",
+      "args": "read",
+      "result": "434445464748494a4b4c"
+    },
+    {
+      "function": "seek",
+      "args": "cur -2000",
+      "result": "1000"
+    },
+    {
+      "function": "seek",
+      "args": "end 100",
+      "result": "1000"
+    },
+    {
+      "function": "seek",
+      "args": "set -5",
+      "result": "1000"
+    },
+    {
+      "function": "seek",
+      "args": "set 512",
+      "result": "512"
+    },
+    {
+      "function": "seek",
+      "args": "read 512",
+      "result": "53545556"
+    },
+    {
+      "function": "mode",
+      "args": "write read-only",
+      "result": "5"
+    },
+    {
+      "function": "mode",
+      "args": "wrote",
+      "result": "0"
+    },
+    {
+      "function": "mode",
+      "args": "read write-only",
+      "result": "5"
+    },
+    {
+      "function": "mode",
+      "args": "read",
+      "result": "0"
+    },
+    {
+      "function": "read",
+      "args": "A:\\THREE.TXT",
+      "result": "54 54485245452e545854206c696e652031 0021 0000"
+    },
+    {
+      "function": "stale",
+      "args": "read",
+      "result": "41414141"
+    },
+    {
+      "function": "read",
+      "args": "A:\\STALE.TXT",
+      "result": "4 42424242 0000 0000"
+    },
+    {
+      "function": "read",
+      "args": "A:\\STALE.TXT",
+      "result": "4 41414141 0000 0000"
+    },
+    {
+      "function": "zero",
+      "args": "write",
+      "result": "0"
+    },
+    {
+      "function": "zero",
+      "args": "size",
+      "result": "0 1000"
+    },
+    {
+      "function": "over",
+      "args": "36",
+      "result": "0001 0b13 0200 0b1f 0"
+    },
+    {
+      "function": "over",
+      "args": "create",
+      "result": "0"
+    },
+    {
+      "function": "over",
+      "args": "size",
+      "result": "0"
+    },
+    {
+      "function": "over",
+      "args": "36",
+      "result": "0001 0b13 0200 0b1f 0"
+    },
+    {
+      "function": "over",
+      "args": "36",
+      "result": "0001 0b12 0200 0b1f 0"
+    },
+    {
+      "function": "read",
+      "args": "A:\\ONE.TXT",
+      "result": "1 31 0021 0000"
+    },
+    {
+      "function": "stamp",
+      "args": "set",
+      "result": "0"
+    },
+    {
+      "function": "stamp",
+      "args": "made",
+      "result": "0000 0000"
+    },
+    {
+      "function": "stamp",
+      "args": "reopened",
+      "result": "0000 0000"
+    },
+    {
+      "function": "stamp",
+      "args": "there",
+      "result": "0021 0000"
+    },
+    {
+      "function": "attrib",
+      "args": "set",
+      "result": "0"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\TWO.TXT",
+      "result": "20"
+    },
+    {
+      "function": "attrib",
+      "args": "make hidden",
+      "result": "0"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\HID.TXT",
+      "result": "02"
+    },
+    {
+      "function": "match",
+      "args": "A:\\HID.TXT 00",
+      "result": "error 18"
+    },
+    {
+      "function": "match",
+      "args": "A:\\HID.TXT 02",
+      "result": "HID.TXT"
+    },
+    {
+      "function": "grow",
+      "args": "36",
+      "result": "0001 0b11 0200 0b1f 0"
+    },
+    {
+      "function": "grow",
+      "args": "wrote",
+      "result": "1024 1024"
+    },
+    {
+      "function": "grow",
+      "args": "last",
+      "result": "6768696a"
+    },
+    {
+      "function": "grow",
+      "args": "36",
+      "result": "0001 0b0e 0200 0b1f 0"
+    },
+    {
+      "function": "folder",
+      "args": "mkdir",
+      "result": "0"
+    },
+    {
+      "function": "folder",
+      "args": "mkdir again",
+      "result": "5"
+    },
+    {
+      "function": "folder",
+      "args": "file",
+      "result": "0"
+    },
+    {
+      "function": "folder",
+      "args": "A:\\NEWDIR 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "folder",
+      "args": "A:\\NEWDIR 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "folder",
+      "args": "A:\\NEWDIR 2",
+      "result": "IN.TXT 00 2 0000 0000"
+    },
+    {
+      "function": "folder",
+      "args": "A:\\NEWDIR end",
+      "result": "3 18"
+    },
+    {
+      "function": "folder",
+      "args": "rmdir full",
+      "result": "5"
+    },
+    {
+      "function": "folder",
+      "args": "delete",
+      "result": "0"
+    },
+    {
+      "function": "folder",
+      "args": "rmdir",
+      "result": "0"
+    },
+    {
+      "function": "folder",
+      "args": "rmdir gone",
+      "result": "3"
+    },
+    {
+      "function": "folder",
+      "args": "36",
+      "result": "0001 0b0e 0200 0b1f 0"
+    },
+    {
+      "function": "rename",
+      "args": "into folder",
+      "result": "0"
+    },
+    {
+      "function": "rename",
+      "args": "A:\\SUBDIR 0",
+      "result": ". 10 0 185d 0842"
+    },
+    {
+      "function": "rename",
+      "args": "A:\\SUBDIR 1",
+      "result": ".. 10 0 185d 0842"
+    },
+    {
+      "function": "rename",
+      "args": "A:\\SUBDIR 2",
+      "result": "TWO.TXT 20 10 0021 0000"
+    },
+    {
+      "function": "rename",
+      "args": "A:\\SUBDIR end",
+      "result": "3 18"
+    },
+    {
+      "function": "rename",
+      "args": "folder",
+      "result": "2"
+    },
+    {
+      "function": "rename",
+      "args": "onto",
+      "result": "5"
+    },
+    {
+      "function": "rename",
+      "args": "none",
+      "result": "2"
+    },
+    {
+      "function": "rename",
+      "args": "delete folder",
+      "result": "2"
+    },
+    {
+      "function": "open",
+      "args": "A:\\SUBDIR",
+      "result": "error 5"
+    },
+    {
+      "function": "search",
+      "args": "made ahead",
+      "result": ".,..,A1.TXT,A2.TXT,A3.TXT,A4.TXT 18"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 2",
+      "result": "B2.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 3",
+      "result": "A3.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 4",
+      "result": "A4.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH end",
+      "result": "5 18"
+    },
+    {
+      "function": "search",
+      "args": "renamed",
+      "result": "B2.TXT,C2.TXT,A3.TXT,A4.TXT 18"
+    },
+    {
+      "function": "search",
+      "args": "made behind",
+      "result": "C2.TXT,A3.TXT,A4.TXT,E6.TXT 18"
+    },
+    {
+      "function": "search",
+      "args": "deleted ahead",
+      "result": "D5.TXT,C2.TXT,A3.TXT,E6.TXT 18"
+    },
+    {
+      "function": "search",
+      "args": "after the end",
+      "result": "18 "
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 2",
+      "result": "D5.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 3",
+      "result": "C2.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 4",
+      "result": "A3.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 5",
+      "result": "F7.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH 6",
+      "result": "E6.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "search",
+      "args": "A:\\SEARCH end",
+      "result": "7 18"
+    },
+    {
+      "function": "quirk",
+      "args": "mkdir over a file",
+      "result": "0"
+    },
+    {
+      "function": "quirk",
+      "args": "create over a folder",
+      "result": "2"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\THREE.TXT",
+      "result": "20"
+    },
+    {
+      "function": "attr",
+      "args": "A:\\SUBDIR",
+      "result": "10"
+    },
+    {
+      "function": "open",
+      "args": "A:\\SUBDIR",
+      "result": "error 5"
+    },
+    {
+      "function": "match",
+      "args": "A:\\SUBDIR\\*.* 37",
+      "result": ".,..,TWO.TXT"
+    },
+    {
+      "function": "final",
+      "args": "A: 0",
+      "result": "ONE.TXT 20 1 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 1",
+      "result": "SEARCH 10 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 2",
+      "result": "BARE. 00 4 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 3",
+      "result": "THREE.TXT 20 36 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 4",
+      "result": "NOEXT. 20 e 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 5",
+      "result": "BIG.TXT 20 3e8 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 6",
+      "result": "SUBDIR 10 0 185d 0842"
+    },
+    {
+      "function": "final",
+      "args": "A: 7",
+      "result": "HIDDIR 12 0 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 8",
+      "result": "STALE.TXT 00 4 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 9",
+      "result": "STAMP.TXT 00 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 10",
+      "result": "HID.TXT 02 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 11",
+      "result": "GROW.TXT 00 400 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 12",
+      "result": "THREE.TXT 10 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: 13",
+      "result": "SUBDIR. 00 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A: end",
+      "result": "14 18"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 0",
+      "result": ". 10 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 1",
+      "result": ".. 10 0 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 2",
+      "result": "D5.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 3",
+      "result": "C2.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 4",
+      "result": "A3.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 5",
+      "result": "F7.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH 6",
+      "result": "E6.TXT 00 1 0000 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SEARCH end",
+      "result": "7 18"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SUBDIR 0",
+      "result": ". 10 0 185d 0842"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SUBDIR 1",
+      "result": ".. 10 0 185d 0842"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SUBDIR 2",
+      "result": "TWO.TXT 20 10 0021 0000"
+    },
+    {
+      "function": "final",
+      "args": "A:\\SUBDIR end",
+      "result": "3 18"
+    },
+    {
+      "function": "final",
+      "args": "A:\\HIDDIR end",
+      "result": "0 3"
+    },
+    {
+      "function": "final",
+      "args": "A:\\THREE.TXT end",
+      "result": "0 3"
+    },
+    {
+      "function": "final",
+      "args": "36",
+      "result": "0001 0b07 0200 0b1f 0"
+    }
+  ]
+}

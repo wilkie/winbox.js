@@ -362,17 +362,50 @@ async function carryOn(dos: any, state: Uint8Array) {
   throw ERROR_NO_MORE_FILES;
 }
 
+/**
+ * A disk image's search carried on from the slot its record keeps, the
+ * folder read again as it is now, as DOSBox's `FindNextInternal` reads it
+ * (`drive_fat.cpp` 898-960): an entry made in a slot it has not come to is
+ * found, one made in a slot it has passed is not, and one deleted is passed
+ * over. The pattern is the record's eleven characters, a dot between, as
+ * `GetSearchParams` makes it. The slot it has come to is kept in the
+ * record, the word at 0Dh, whether anything is found or not; the folder's
+ * cluster is the word at 0Fh (`sDTA`'s `dirID` and `dirCluster`). As
+ * `dos.rs`'s `carry_on_image`.
+ */
+function carryOnImage(dos: any, state: Uint8Array) {
+  const view = new DataView(state.buffer);
+  const fileSystem = dos.files.query(String.fromCharCode(state[0] + 0x40));
+  const pattern =
+    String.fromCharCode(...state.subarray(1, 9)) +
+    '.' +
+    String.fromCharCode(...state.subarray(9, 12));
+  const [info, at] = fileSystem.findFrom(
+    view.getUint16(15, true),
+    state[12],
+    pattern,
+    view.getUint16(13, true)
+  );
+
+  view.setUint16(13, at, true);
+
+  if (info) {
+    answer(dos, state, info);
+
+    return;
+  }
+
+  const [segment, offset] = transferArea(dos);
+  const address = dos.machine.cpu.core.translateAddress(segment, offset);
+
+  dos.machine.memory.write(address, new DataView(state.buffer));
+
+  throw ERROR_NO_MORE_FILES;
+}
+
 /** Finds the first entry a search takes (4Eh). */
 export async function findFirst(this: any, spec: string, attributes: number) {
   const { drive, parts, name } = split(this, spec);
-  const folder = await openDirectory(this, drive, parts);
-
-  if (!folder) {
-    throw ERROR_PATH_NOT_FOUND;
-  }
-
-  const names = (await listed(this, drive, parts, folder)).map((info: any) => info.name);
-  const number = begin(this, { drive, parts, names, at: 0 });
   const state = new Uint8Array(21);
   const view = new DataView(state.buffer);
   const pattern = elevenOf(name === '' ? '*.*' : name);
@@ -384,6 +417,36 @@ export async function findFirst(this: any, spec: string, attributes: number) {
   }
 
   state[12] = attributes & 0xff;
+
+  /* A disk image's search, as DOSBox's `fatDrive::FindFirst` begins it
+   * (857-878): the label alone asked for, none -- no more files; else from
+   * the folder's first slot. */
+  if (stored(this, drive)) {
+    if (state[12] === ATTRIBUTE_VOLUME) {
+      throw ERROR_NO_MORE_FILES;
+    }
+
+    const folder = this.files.query(drive).searchFolder(parts);
+
+    if (folder === null) {
+      throw ERROR_PATH_NOT_FOUND;
+    }
+
+    view.setUint16(15, folder & 0xffff, true);
+    carryOnImage(this, state);
+
+    return;
+  }
+
+  const folder = await openDirectory(this, drive, parts);
+
+  if (!folder) {
+    throw ERROR_PATH_NOT_FOUND;
+  }
+
+  const names = (await listed(this, drive, parts, folder)).map((info: any) => info.name);
+  const number = begin(this, { drive, parts, names, at: 0 });
+
   view.setUint16(13, number, true);
 
   await carryOn(this, state);
@@ -391,7 +454,15 @@ export async function findFirst(this: any, spec: string, attributes: number) {
 
 /** Finds the next entry a search takes (4Fh), from the record left by the last. */
 export async function findNext(this: any) {
-  await carryOn(this, stateOf(this));
+  const state = stateOf(this);
+
+  if (state[0] >= 1 && state[0] <= 26 && stored(this, String.fromCharCode(state[0] + 0x40))) {
+    carryOnImage(this, state);
+
+    return;
+  }
+
+  await carryOn(this, state);
 }
 
 /** The current drive (19h), 0 for A:. */

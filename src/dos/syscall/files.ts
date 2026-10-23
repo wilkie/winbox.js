@@ -42,7 +42,12 @@ async function exists(dos: any, drive: string, parts: string[], name: string) {
   return folder ? !!(await folder.lookup(name)) : false;
 }
 
-async function make(dos: any, path: string, fresh: boolean) {
+/** Whether a drive is a disk image's, which DOSBox's `fatDrive` answers for (`FATImage`). */
+function image(dos: any, drive: string) {
+  return dos.files.query(drive)?.listing === 'stored';
+}
+
+async function make(dos: any, path: string, fresh: boolean, attributes = 0) {
   const { drive, parts, name } = resolveFile(dos, path);
 
   if (!name || !(await openDirectory(dos, drive, parts))) {
@@ -53,23 +58,25 @@ async function make(dos: any, path: string, fresh: boolean) {
     throw ERROR_FILE_EXISTS;
   }
 
-  const handle = await dos.files.create(fullPath(drive, parts, name));
+  const handle = await dos.files.create(fullPath(drive, parts, name), attributes & 0xff);
 
+  /* On a disk image, as DOSBox's `DOS_CreateFile` answers a `FileCreate`
+   * that fails, its folder there (`dos_files.cpp` 501-504). As `dos.rs`. */
   if (handle === null || handle === undefined) {
-    throw ERROR_ACCESS_DENIED;
+    throw image(dos, drive) ? ERROR_FILE_NOT_FOUND : ERROR_ACCESS_DENIED;
   }
 
   return handle;
 }
 
 /** Creates a file (3Ch), emptying one that is there; answers its handle. */
-export function createFile(this: any, path: string, _attributes: number) {
-  return make(this, path, false);
+export function createFile(this: any, path: string, attributes: number) {
+  return make(this, path, false, attributes);
 }
 
 /** Creates a file that is not there yet (5Bh): error 50h when it is. */
-export function createNewFile(this: any, path: string, _attributes: number) {
-  return make(this, path, true);
+export function createNewFile(this: any, path: string, attributes: number) {
+  return make(this, path, true, attributes);
 }
 
 /** Writes to a file (40h) at its position; answers how much was written. */
@@ -78,6 +85,12 @@ export async function writeFile(this: any, handle: number, address: number, coun
 
   if (!file) {
     throw ERROR_INVALID_HANDLE;
+  }
+
+  /* A disk image's file opened to read alone (`fatFile::Write`,
+   * `drive_fat.cpp` 163-166). */
+  if (file.refusesWrite?.()) {
+    throw ERROR_ACCESS_DENIED;
   }
 
   /* Nought bytes make the file end where it is, and stamp it (`end`). As
@@ -104,6 +117,18 @@ export async function writeFile(this: any, handle: number, address: number, coun
 /** Deletes a file (41h). */
 export async function deleteFile(this: any, path: string) {
   const { drive, parts, name } = resolveFile(this, path);
+
+  /* A disk image's file deleted as DOSBox's `DOS_UnlinkFile` deletes it:
+   * its `FileUnlink` asked, file not found where it will not
+   * (`dos_files.cpp` 621-630) -- a folder, or a path not there. As
+   * `dos.rs`. */
+  if (image(this, drive)) {
+    if (!this.files.query(drive).drive.fileUnlink([...parts, name])) {
+      throw ERROR_FILE_NOT_FOUND;
+    }
+
+    return;
+  }
   const folder = await openDirectory(this, drive, parts);
 
   if (!folder) {
@@ -122,6 +147,22 @@ export async function deleteFile(this: any, path: string) {
 /** Makes a directory (39h): error 3 when its parent is not there, 5 when the name is. */
 export async function makeDirectory(this: any, path: string) {
   const { drive, parts, name } = resolveFile(this, path);
+
+  /* A disk image's folder made as DOSBox's `DOS_MakeDir` makes it
+   * (`dos_files.cpp` 217-233): its `MakeDir` asked first, whatever is
+   * there, and why it failed told after -- the folder there, access
+   * denied; else path not found. As `dos.rs`. */
+  if (image(this, drive) && name) {
+    const fileSystem = this.files.query(drive);
+
+    if (fileSystem.drive.makeDir([...parts, name])) {
+      return;
+    }
+
+    throw fileSystem.searchFolder([...parts, name]) !== null
+      ? ERROR_ACCESS_DENIED
+      : ERROR_PATH_NOT_FOUND;
+  }
   const parent = await openDirectory(this, drive, parts);
 
   if (!name || !parent) {
@@ -142,6 +183,30 @@ export async function makeDirectory(this: any, path: string) {
  */
 export async function removeDirectory(this: any, path: string) {
   const { drive, parts, name } = resolveFile(this, path);
+
+  /* A disk image's folder removed as DOSBox's `DOS_RemoveDir` removes it
+   * (`dos_files.cpp` 235-261): one a search for folders does not find,
+   * path not found; the current one, 10h; one its `RemoveDir` will not
+   * remove, access denied. As `dos.rs`. */
+  if (image(this, drive) && name) {
+    const fileSystem = this.files.query(drive);
+
+    if (fileSystem.searchFolder([...parts, name]) === null) {
+      throw ERROR_PATH_NOT_FOUND;
+    }
+
+    const current = this.files._pwd?.[drive];
+
+    if (current && current.toUpperCase() === `${fullPath(drive, parts, name)}\\`) {
+      throw ERROR_CURRENT_DIRECTORY;
+    }
+
+    if (!fileSystem.drive.removeDir([...parts, name])) {
+      throw ERROR_ACCESS_DENIED;
+    }
+
+    return;
+  }
   const parent = await openDirectory(this, drive, parts);
   const entry = parent && name ? await parent.lookup(name) : null;
 
@@ -163,9 +228,12 @@ export async function removeDirectory(this: any, path: string) {
     throw ERROR_ACCESS_DENIED;
   }
 
-  /* A drive that will not let it go, as a disk image not written to yet:
-   * error 5, as the Rust engine's answers. */
-  if (!(await this.files.query(drive).unlink(parent, name))) {
+  /* A drive that will not let it go: error 5, as the Rust engine's
+   * answers. A disk image's folder is DOSBox's `RemoveDir`'s to delete,
+   * not `FileUnlink`'s. */
+  const fileSystem = this.files.query(drive);
+
+  if (!(await (fileSystem.removeDirectory ?? fileSystem.unlink).call(fileSystem, parent, name))) {
     throw ERROR_ACCESS_DENIED;
   }
 
@@ -178,6 +246,22 @@ export async function removeDirectory(this: any, path: string) {
  */
 export async function fileAttributes(this: any, path: string, action: number, attributes: number) {
   const { drive, parts, name } = resolveFile(this, path);
+  const fileSystem = this.files.query(drive);
+
+  /* A disk image's found as DOSBox's `GetFileAttr` finds them -- where it
+   * finds none, its folder not there among them, error 2
+   * (`DOS_GetFileAttr`, `dos_files.cpp` 632-641) -- and set as its
+   * `DOS_SetFileAttr` sets them: not at all, the file only looked for
+   * (643-656). As `dos.rs`. */
+  if (fileSystem?.listing === 'stored') {
+    const found = fileSystem.attributes([...parts, name]);
+
+    if (found === null) {
+      throw ERROR_FILE_NOT_FOUND;
+    }
+
+    return action === 0 ? found : attributes;
+  }
   const parent = await openDirectory(this, drive, parts);
   const entry = parent && name ? await parent.lookup(name) : null;
 
@@ -193,8 +277,7 @@ export async function fileAttributes(this: any, path: string, action: number, at
     return entry.info.attributes;
   }
 
-  /* A disk image's are its entries', and it is not written to yet. */
-  if (attributes & ~SETTABLE || this.files.query(drive)?.readOnly) {
+  if (attributes & ~SETTABLE) {
     throw ERROR_ACCESS_DENIED;
   }
 
@@ -214,6 +297,27 @@ export async function fileAttributes(this: any, path: string, action: number, at
 export async function renameFile(this: any, from: string, to: string) {
   const source = resolveFile(this, from);
   const target = resolveFile(this, to);
+
+  /* On a disk image, as `DOS_Rename` asks its drive: the name there, file
+   * or folder, access denied; nothing to rename, or a rename
+   * `fatDrive::Rename` will not make -- a folder's -- file not found. As
+   * `dos.rs`. */
+  if (source.drive === target.drive && image(this, source.drive)) {
+    const fileSystem = this.files.query(source.drive);
+
+    if (fileSystem.attributes([...target.parts, target.name]) !== null) {
+      throw ERROR_ACCESS_DENIED;
+    }
+
+    if (
+      fileSystem.attributes([...source.parts, source.name]) === null ||
+      !fileSystem.drive.rename([...source.parts, source.name], [...target.parts, target.name])
+    ) {
+      throw ERROR_FILE_NOT_FOUND;
+    }
+
+    return;
+  }
 
   if (source.drive !== target.drive) {
     throw ERROR_NOT_SAME_DEVICE;
@@ -257,6 +361,12 @@ export async function fileStamp(this: any, handle: number) {
 
   if (!file || file.mount === undefined || file.path === undefined) {
     throw ERROR_INVALID_HANDLE;
+  }
+
+  /* A disk image's file keeps its entry's creation stamp as it was opened
+   * (`FileOpen`, `drive_fat.cpp` 832-834). */
+  if (file.dosStamp) {
+    return file.dosStamp;
   }
 
   const { drive, parts, name } = resolveFile(this, `${file.mount}:${file.path}`);

@@ -5562,11 +5562,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * the engines have agree: `drvioctl`'s A: with nothing in it, B: a
    * floppy image, C:, E: (none), Z: and the numbers past; `imgcd`'s 150Ch. */
   'drvioctl:d:': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  /* A FAT image is read and not yet written to: what `imgflop` and
-   * `imghdd` make, rename and delete on it, and its listing and room after,
-   * are refused here (phase 4 of the design). Their reads agree. */
-  'imgflop:write': 'A FAT image is not written to yet: making, renaming and deleting are refused',
-  'imgflop:after': 'The listing and room after writes to a FAT image, which are refused here',
   'imgcd:entry': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:label': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:match': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
@@ -5579,8 +5574,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'imgcd:150b': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:write': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
   'imgcd:after': 'D: is a CD-ROM image under DOSBox, which is not mounted here',
-  'imghdd:write': 'A FAT image is not written to yet: making, renaming and deleting are refused',
-  'imghdd:after': 'The listing and room after writes to a FAT image, which are refused here',
   /* `pmstart`'s `GetModuleHandle("PROGMAN")`, Microsoft's Program Manager
    * running: winbox.js gives a program loaded from its file no module handle,
    * and answers nought for its name (`kb/kernel/getmodulehandle.md`). WinBox's
@@ -5901,6 +5894,7 @@ const RUN_WHOLE = new Set<string>([
   'imgcd',
   'imghdd',
   'pmstart',
+  'imgwrite',
 ]);
 
 /**

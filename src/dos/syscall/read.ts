@@ -8,6 +8,12 @@ export async function read(handle, address, max) {
     throw 0x6; // INVALID_HANDLE
   }
 
+  /* A disk image's file opened to write alone (`fatFile::Read`,
+   * `drive_fat.cpp` 108-111): access denied. As `dos.rs`. */
+  if (file.refusesRead?.()) {
+    throw 0x5;
+  }
+
   // Read the data
   const data = await file.read(file.position, max);
   file.position += data.byteLength;

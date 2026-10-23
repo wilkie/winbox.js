@@ -41,7 +41,7 @@ describe('a FAT image', () => {
   it('reads a floppy as FAT12, as the image keeps it (`imgflop`)', async function () {
     const floppy = await FATImage.of(image('imgflop.img'), true);
 
-    expect(floppy._twelve).toBe(true);
+    expect(floppy.twelve).toBe(true);
     expect(floppy.removable).toBe(true);
     expect(floppy.mediaByte).toBe(0xf0);
     expect(floppy.listing).toBe('stored');
@@ -85,7 +85,7 @@ describe('a FAT image', () => {
 
     const disk = await FATImage.of(bytes, false);
 
-    expect(disk._twelve).toBe(false);
+    expect(disk.twelve).toBe(false);
     expect(disk.removable).toBe(false);
     expect(disk.mediaByte).toBe(0xf8);
     expect((await listing(disk, [])).map(([name]: any) => name)).toEqual([
@@ -101,16 +101,79 @@ describe('a FAT image', () => {
     });
   });
 
-  it('is not written to', async function () {
-    const floppy = await FATImage.of(image('imgflop.img'), true);
+  /* What `imgflop` writes, as DOSBox writes it: a file made in the first
+   * deleted slot, a folder at the end, the rename at the end after it, the
+   * old name and the file deleted made E5h; every stamp nought; one cluster
+   * each taken, one given back. The image itself untouched. As `fat.rs`. */
+  it('is written as DOSBox writes it, the image left as it was', async function () {
+    const bytes = image('imgflop.img');
+    const before = createHash('sha256').update(bytes).digest('hex');
+    const floppy = await FATImage.of(bytes, true);
     const root = await floppy.open([]);
-    const file: any = await floppy.open(['README.TXT']);
+    const made: any = await floppy.create(['NEW.TXT']);
 
-    await expect(floppy.create(['NEW.TXT'])).rejects.toBe(5);
-    await expect(floppy.makeDirectory(root, 'NEWDIR')).rejects.toBe(5);
-    expect(await floppy.unlink(root, 'ZEBRA.TXT')).toBe(false);
-    expect(await file.write(0, new Uint8Array([1, 2, 3]))).toBe(0);
-    expect((await listing(floppy, [])).length).toBe(7);
+    expect(await made.write(0, new TextEncoder().encode('written\r\n'))).toBe(9);
+    made.close();
+    await floppy.makeDirectory(root, 'NEWDIR');
+    await floppy.rename(root, await root.lookup('NEW.TXT'), root, 'RENAMED.TXT');
+    expect(await floppy.unlink(root, 'ZEBRA.TXT')).toBe(true);
+    expect(await listing(floppy, [])).toEqual([
+      ['README.TXT', 0x20, 0x39, 0x1a85, 0x30e4],
+      ['APPLE.TXT', 0x20, 0x12, 0x1f9f, 0xbf7d],
+      ['LONGFI~1.TXT', 0x20, 0x36, 0x2109, 0x5166],
+      ['DATA.BIN', 0x20, 0xbb8, 0x1908, 0x4104],
+      ['SUBDIR', 0x10, 0, 0x185d, 0x0842],
+      ['HIDDEN.SYS', 0x27, 0x13, 0x1329, 0x4925],
+      ['NEWDIR', 0x10, 0, 0, 0],
+      ['RENAMED.TXT', 0, 9, 0, 0],
+    ]);
+    expect((await listing(floppy, ['NEWDIR'])).map(([name]: any) => name)).toEqual(['.', '..']);
+    expect((await floppy.space()).free).toBe(2831);
+
+    const renamed: any = await floppy.open(['RENAMED.TXT']);
+
+    expect(new TextDecoder().decode(await renamed.read(0, 9))).toBe('written\r\n');
+    expect(floppy.changed).toBe(true);
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe(before);
+
+    /* The image as written: the same size, the writes in it. */
+    const written = floppy.image();
+
+    expect(written.length).toBe(bytes.length);
+    expect((await (await FATImage.of(written, true)).space()).free).toBe(2831);
+  });
+
+  /* A write that fills its cluster to the end takes the next, zeroed; a
+   * file made over one there keeps its clusters lost; a seek stops at the
+   * end; a file with no extension lists with a dot. As `fat.rs`. */
+  it('takes clusters, seeks and names as DOSBox does', async function () {
+    const floppy = await FATImage.of(image('imgflop.img'), true);
+    const free = async () => (await floppy.space()).free;
+    const before = await free();
+    const full: any = await floppy.create(['FULL.TXT']);
+
+    expect(await full.write(0, new Uint8Array(512).fill(0x78))).toBe(512);
+    full.close();
+    expect(await free()).toBe(before - 2);
+
+    const again: any = await floppy.create(['FULL.TXT']);
+
+    expect(again.size).toBe(0);
+    expect(await again.write(0, Uint8Array.of(0x79))).toBe(1);
+    again.close();
+    expect(await free()).toBe(before - 3);
+
+    const readme: any = await floppy.open(['README.TXT']);
+
+    expect(readme.dosSeek(5000, 0)).toBe(0x39);
+    expect(readme.dosSeek(-1, 1)).toBe(0x38);
+
+    (await floppy.create(['NOEXT'])).close();
+
+    const root: any = await floppy.open([]);
+
+    expect((await listing(floppy, [])).map(([name]: any) => name)).toContain('NOEXT.');
+    expect(await root.lookup('NOEXT')).not.toBeNull();
   });
 
   it('takes a floppy for one by its size, as DOSBox does', function () {

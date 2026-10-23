@@ -9,6 +9,15 @@ export function seek(handle, hi, lo, basis) {
     throw 0x6; // INVALID_HANDLE
   }
 
+  /* A disk image's file seeks as DOSBox's `fatFile::Seek` does: no further
+   * than its end, nor before its start (`drive_fat.cpp` 238-268). As
+   * `dos.rs`. */
+  if (file.dosSeek) {
+    const at = file.dosSeek(position, basis) >>> 0;
+
+    return [(at >> 16) & 0xffff, at & 0xffff];
+  }
+
   // Seek
   if (basis == 0) {
     // From beginning

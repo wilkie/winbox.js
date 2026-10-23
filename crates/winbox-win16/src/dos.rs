@@ -7,7 +7,7 @@
 use std::io::SeekFrom;
 
 use winbox_cpu::{AX, BX, CX, DI, DS, DX, ES, SI};
-use winbox_machine::{Entry, Files, civil_from_days, segment_selector};
+use winbox_machine::{Entry, Files, Listing, civil_from_days, segment_selector};
 
 use crate::call::Stop;
 use crate::system::System;
@@ -534,6 +534,13 @@ impl System {
     /// no file. `OpenFile` keeps the two in its structure (`openfile`).
     pub(crate) fn handle_stamp(&mut self, handle: usize) -> Option<(u16, u16)> {
         let file = self.files.resolve(handle)?;
+
+        // A disk image's file keeps its entry's creation stamp as it was
+        // opened (`FileOpen`, `drive_fat.cpp` 832-834).
+        if let Some(stamp) = file.own_stamp() {
+            return Some(stamp);
+        }
+
         let path = file.dos_path.clone();
         let (drive, parts, name) = resolve_file(&self.files, &path);
         let entry = self.files.lookup(drive, &parts, &name)?;
@@ -556,12 +563,21 @@ impl System {
         }
 
         let path = self.string_at(DS, SI);
+        let attributes = self.low(CX);
         let (handle, done) = match self.files.open(&path) {
             Some(handle) => match action & 0x0f {
-                1 => (handle, 1),
+                1 => {
+                    let mode = self.low(BX);
+
+                    if let Some(file) = self.files.resolve(handle) {
+                        file.set_mode(mode);
+                    }
+
+                    (handle, 1)
+                }
                 2 => {
                     self.files.close(handle);
-                    (self.make_file(&path, false)?, 3)
+                    (self.make_file_with(&path, false, attributes)?, 3)
                 }
                 _ => {
                     self.files.close(handle);
@@ -569,7 +585,7 @@ impl System {
                 }
             },
             None if action & 0xf0 == 0 => return Err(ERROR_FILE_NOT_FOUND),
-            None => (self.make_file(&path, false)?, 2),
+            None => (self.make_file_with(&path, false, attributes)?, 2),
         };
 
         self.cpu.regs[AX] = handle as u16;
@@ -579,6 +595,24 @@ impl System {
 
     fn make_directory(&mut self) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+
+        // A disk image's folder made as DOSBox's `DOS_MakeDir` makes it
+        // (`dos_files.cpp` 217-233): its `MakeDir` asked first, whatever is
+        // there, and why it failed told after -- the folder there, access
+        // denied; else path not found.
+        if self.files.listing(drive) == Listing::AsStored && !name.is_empty() {
+            if self.files.make_directory(drive, &parts, &name) {
+                return Ok(());
+            }
+
+            let full = [parts, vec![name]].concat();
+
+            return Err(if self.files.is_directory(drive, &full) {
+                ERROR_ACCESS_DENIED
+            } else {
+                ERROR_PATH_NOT_FOUND
+            });
+        }
 
         if name.is_empty() || !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
@@ -595,6 +629,33 @@ impl System {
 
     fn remove_directory(&mut self) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+
+        // A disk image's folder removed as DOSBox's `DOS_RemoveDir` removes
+        // it (`dos_files.cpp` 235-261): one a search for folders does not
+        // find, path not found; the current one, 10h; one its `RemoveDir`
+        // will not remove, access denied.
+        if self.files.listing(drive) == Listing::AsStored && !name.is_empty() {
+            let full = [parts.clone(), vec![name.clone()]].concat();
+
+            if !self.files.is_directory(drive, &full) {
+                return Err(ERROR_PATH_NOT_FOUND);
+            }
+
+            if self
+                .files
+                .current(drive)
+                .eq_ignore_ascii_case(&format!("{drive}:\\{}\\", full.join("\\")))
+            {
+                return Err(ERROR_CURRENT_DIRECTORY);
+            }
+
+            if !self.files.remove_directory(drive, &parts, &name) {
+                return Err(ERROR_ACCESS_DENIED);
+            }
+
+            return Ok(());
+        }
+
         let entry = (!name.is_empty())
             .then(|| self.files.lookup(drive, &parts, &name))
             .flatten();
@@ -623,7 +684,7 @@ impl System {
             .iter()
             .any(|entry| entry.name != "." && entry.name != "..");
 
-        if held || !self.files.unlink(drive, &parts, &name) {
+        if held || !self.files.remove_directory(drive, &parts, &name) {
             return Err(ERROR_ACCESS_DENIED);
         }
 
@@ -698,7 +759,7 @@ impl System {
     /// A file created, or with `fresh` only where none is there: its handle
     /// in AX.
     fn create(&mut self, fresh: bool) -> Result<(), u16> {
-        let handle = self.make_file(&self.string_at(DS, DX), fresh)?;
+        let handle = self.make_file_with(&self.string_at(DS, DX), fresh, self.low(CX))?;
 
         self.cpu.regs[AX] = handle as u16;
         Ok(())
@@ -715,6 +776,12 @@ impl System {
     /// A file created at a path, as functions 3Ch and 5Bh create one --
     /// with `fresh` only where none is there: its handle, or DOS's error.
     pub(crate) fn make_file(&mut self, path: &str, fresh: bool) -> Result<usize, u16> {
+        self.make_file_with(path, fresh, 0)
+    }
+
+    /// A file created as `make_file` creates one, with the attributes CX
+    /// gave DOS, which a disk image's entry keeps.
+    fn make_file_with(&mut self, path: &str, fresh: bool, attributes: u8) -> Result<usize, u16> {
         let (drive, parts, name) = resolve_file(&self.files, path);
 
         if name.is_empty() || !self.files.is_directory(drive, &parts) {
@@ -727,12 +794,52 @@ impl System {
 
         let path = format!("{drive}:\\{}", [parts, vec![name]].concat().join("\\"));
 
-        self.files.create(&path).ok_or(ERROR_ACCESS_DENIED)
+        let refused = if self.files.listing(drive) == Listing::AsStored {
+            // As DOSBox's `DOS_CreateFile` answers a `FileCreate` that
+            // fails, its folder there (`dos_files.cpp` 501-504).
+            ERROR_FILE_NOT_FOUND
+        } else {
+            ERROR_ACCESS_DENIED
+        };
+
+        self.files.create_with(&path, attributes).ok_or(refused)
     }
 
     fn open_file(&mut self) -> Result<(), u16> {
         let path = self.string_at(DS, DX);
-        let handle = self.files.open(&path).ok_or(ERROR_FILE_NOT_FOUND)?;
+        let mode = self.low(AX);
+        let (drive, ..) = resolve_file(&self.files, &path);
+
+        // A folder or a label on a disk image is not opened: access denied
+        // (`DOS_OpenFile`, `dos_files.cpp` 517-523).
+        if self.files.listing(drive) == Listing::AsStored
+            && self
+                .attributes_of(&path)
+                .is_ok_and(|attributes| attributes & 0x18 != 0)
+        {
+            return Err(ERROR_ACCESS_DENIED);
+        }
+
+        let Some(handle) = self.files.open(&path) else {
+            // Not there, on a disk image: "path not found" where its folder
+            // is not there either, as DOSBox's `DOS_OpenFile` answers
+            // (`PathExists`, `dos_files.cpp` 447-459, 563).
+            let (drive, parts, _) = resolve_file(&self.files, &path);
+
+            return Err(
+                if self.files.listing(drive) == Listing::AsStored
+                    && !self.files.is_directory(drive, &parts)
+                {
+                    ERROR_PATH_NOT_FOUND
+                } else {
+                    ERROR_FILE_NOT_FOUND
+                },
+            );
+        };
+
+        if let Some(file) = self.files.resolve(handle) {
+            file.set_mode(mode);
+        }
 
         self.cpu.regs[AX] = handle as u16;
         Ok(())
@@ -750,11 +857,13 @@ impl System {
         let handle = usize::from(self.cpu.regs[BX]);
         let buffer = self.pointer(DS, DX);
         let count = usize::from(self.cpu.regs[CX]);
-        let bytes = self
-            .files
-            .resolve(handle)
-            .ok_or(ERROR_INVALID_HANDLE)?
-            .read(count);
+        let file = self.files.resolve(handle).ok_or(ERROR_INVALID_HANDLE)?;
+
+        if file.refuses_read() {
+            return Err(ERROR_ACCESS_DENIED);
+        }
+
+        let bytes = file.read(count);
         let at = self.linear(buffer);
 
         // On from DS:DX through the selector's limit, past its first 64 KiB
@@ -772,6 +881,10 @@ impl System {
         let at = self.linear(self.pointer(DS, DX));
         let bytes = self.cpu.bus.read(at, usize::from(self.cpu.regs[CX]));
         let file = self.files.resolve(handle).ok_or(ERROR_INVALID_HANDLE)?;
+
+        if file.refuses_write() {
+            return Err(ERROR_ACCESS_DENIED);
+        }
 
         // Nought bytes make the file end where it is, and stamp it: DOSBox
         // truncates the host's file there (`localFile::Write`,
@@ -800,6 +913,17 @@ impl System {
     /// A file deleted, as DOS's function 41h deletes one.
     pub(crate) fn delete_path(&mut self, path: &str) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, path);
+
+        // A disk image's file deleted as DOSBox's `DOS_UnlinkFile` deletes
+        // it: its `FileUnlink` asked, file not found where it will not
+        // (`dos_files.cpp` 621-630) -- a folder, or a path not there.
+        if self.files.listing(drive) == Listing::AsStored {
+            return if self.files.unlink(drive, &parts, &name) {
+                Ok(())
+            } else {
+                Err(ERROR_FILE_NOT_FOUND)
+            };
+        }
 
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
@@ -851,6 +975,16 @@ impl System {
     pub(crate) fn attributes_of(&self, path: &str) -> Result<u8, u16> {
         let (drive, parts, name) = resolve_file(&self.files, path);
 
+        // A disk image's, as DOSBox's `fatDrive::GetFileAttr` finds them:
+        // where it finds none, its folder not there among them, "file not
+        // found" (`DOS_GetFileAttr`, `dos_files.cpp` 632-641).
+        if self.files.listing(drive) == Listing::AsStored {
+            return self
+                .files
+                .image_attributes(drive, &parts, &name)
+                .ok_or(ERROR_FILE_NOT_FOUND);
+        }
+
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
         }
@@ -876,7 +1010,7 @@ impl System {
         // 857-867), **recorded** by `imgflop` and `imghdd`.
         if !self.files.mounted(letter)
             || self.files.removable(letter)
-            || self.files.listing(letter) == winbox_machine::Listing::AsStored
+            || self.files.listing(letter) == Listing::AsStored
         {
             return None;
         }
@@ -889,7 +1023,21 @@ impl System {
     }
 
     fn file_attributes(&mut self) -> Result<(), u16> {
-        let (drive, parts, name) = resolve_file(&self.files, &self.string_at(DS, DX));
+        let path = self.string_at(DS, DX);
+        let (drive, parts, name) = resolve_file(&self.files, &path);
+
+        // A disk image's found as DOSBox's `GetFileAttr` finds them, and
+        // set as its `DOS_SetFileAttr` sets them: not at all, the file
+        // only looked for (`dos_files.cpp` 643-656).
+        if self.files.listing(drive) == Listing::AsStored {
+            let attributes = self.attributes_of(&path)?;
+
+            if self.low(AX) == 0 {
+                self.cpu.regs[CX] = u16::from(attributes);
+            }
+
+            return Ok(());
+        }
 
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
@@ -911,7 +1059,6 @@ impl System {
             return Err(ERROR_ACCESS_DENIED);
         }
 
-        // A disk image's are its entries', and it is not written to yet.
         if !self.files.set_attributes(
             drive,
             &parts,
@@ -952,6 +1099,26 @@ impl System {
     fn rename_path(&mut self, from: &str, to: &str) -> Result<(), u16> {
         let (drive, parts, name) = resolve_file(&self.files, from);
         let (to_drive, to_parts, to_name) = resolve_file(&self.files, to);
+
+        // On a disk image, as `DOS_Rename` asks its drive: the name there,
+        // file or folder, access denied; nothing to rename, or a rename
+        // `fatDrive::Rename` will not make -- a folder's -- file not found.
+        if drive == to_drive && self.files.listing(drive) == Listing::AsStored {
+            if self.attributes_of(to).is_ok() {
+                return Err(ERROR_ACCESS_DENIED);
+            }
+
+            self.attributes_of(from)?;
+
+            return if self
+                .files
+                .rename(drive, (&parts, &name), (&to_parts, &to_name))
+            {
+                Ok(())
+            } else {
+                Err(ERROR_FILE_NOT_FOUND)
+            };
+        }
         let found = |files: &Files, drive: char, parts: &[String], name: &str| {
             if files.is_directory(drive, parts) && !name.is_empty() {
                 files.lookup(drive, parts, name)
@@ -1016,6 +1183,31 @@ impl System {
             .map_or(0, |at| at + 1);
         let (drive, parts) = resolve_directory(&self.files, &spec[..slash]);
         let name = &spec[slash..];
+        let pattern = eleven_of(if name.is_empty() { "*.*" } else { name });
+        let mut state = [0u8; 21];
+
+        state[0] = drive as u8 - 0x40;
+        state[1..12].copy_from_slice(&pattern.as_bytes()[..11]);
+        state[12] = self.low(CX);
+
+        // A disk image's search, as DOSBox's `fatDrive::FindFirst` begins
+        // it (`drive_fat.cpp` 857-878): the label alone asked for, none --
+        // no more files; else from the folder's first slot, its cluster and
+        // the slot kept where DOSBox's are, the words at 0Dh and 0Fh of the
+        // record (`sDTA`'s `dirID` and `dirCluster`).
+        if self.files.listing(drive) == Listing::AsStored {
+            if state[12] == 0x08 {
+                return Err(ERROR_NO_MORE_FILES);
+            }
+
+            let folder = self
+                .files
+                .search_folder(drive, &parts)
+                .ok_or(ERROR_PATH_NOT_FOUND)?;
+
+            state[15..17].copy_from_slice(&(folder as u16).to_le_bytes());
+            return self.carry_on_image(state);
+        }
 
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
@@ -1034,12 +1226,7 @@ impl System {
             names,
             at: 0,
         });
-        let pattern = eleven_of(if name.is_empty() { "*.*" } else { name });
-        let mut state = [0u8; 21];
 
-        state[0] = drive as u8 - 0x40;
-        state[1..12].copy_from_slice(&pattern.as_bytes()[..11]);
-        state[12] = self.low(CX);
         state[13..15].copy_from_slice(&number.to_le_bytes());
         self.carry_on(state)
     }
@@ -1050,7 +1237,49 @@ impl System {
         let mut state = [0u8; 21];
 
         state.copy_from_slice(&bytes);
+
+        if (1..=26).contains(&state[0])
+            && self.files.listing(char::from(state[0] + 0x40)) == Listing::AsStored
+        {
+            return self.carry_on_image(state);
+        }
+
         self.carry_on(state)
+    }
+
+    /// A disk image's search carried on from the slot its record keeps, the
+    /// folder read again as it is now, as DOSBox's `FindNextInternal` reads
+    /// it (`drive_fat.cpp` 898-960): an entry made in a slot it has not
+    /// come to is found, one made in a slot it has passed is not, and one
+    /// deleted is passed over. The pattern is the record's eleven
+    /// characters, a dot between, as `GetSearchParams` makes it. The slot
+    /// it has come to is kept in the record whether anything is found or
+    /// not.
+    fn carry_on_image(&mut self, mut state: [u8; 21]) -> Result<(), u16> {
+        let letter = char::from(state[0] + 0x40);
+        let pattern: String = state[1..9]
+            .iter()
+            .chain(b".")
+            .chain(&state[9..12])
+            .map(|&byte| char::from(byte))
+            .collect();
+        let folder = u16::from_le_bytes([state[15], state[16]]);
+        let mut at = u16::from_le_bytes([state[13], state[14]]);
+        let found = self
+            .files
+            .find_from(letter, u32::from(folder), state[12], &pattern, &mut at);
+
+        state[13..15].copy_from_slice(&at.to_le_bytes());
+
+        if let Some(entry) = found {
+            self.answer_found(&state, &entry);
+            return Ok(());
+        }
+
+        let (segment, offset) = self.transfer();
+
+        self.write_far(u32::from(segment) << 16 | u32::from(offset), &state);
+        Err(ERROR_NO_MORE_FILES)
     }
 
     /// The search carried on through the names it began with: each that

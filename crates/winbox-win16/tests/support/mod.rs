@@ -212,11 +212,12 @@ pub const AGREEING: &[&str] = &[
     "pmshell-progman",
     "progdde",
     "mscdex",
+    "imgflop",
+    "imghdd",
+    "imgwrite",
     // Not `drvioctl` or `imgcd`: a CD-ROM image DOSBox mounts
     // (`<probe>.mounts`) that this engine does not present yet
-    // (`image_volume`); `drvioctl`'s other drives agree. Nor `imgflop` or
-    // `imghdd`: their reads of a FAT image agree, and what they write to
-    // it is refused until it is written to.
+    // (`image_volume`); `drvioctl`'s other drives agree.
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
