@@ -19,8 +19,14 @@
 //! is the kept module's: a program WinBox loads from a file has none yet
 //! (`kb/kernel/getmodulehandle.md`).
 
+mod commands;
+mod dde;
 pub mod image;
+mod loaded;
 pub(crate) mod main;
+mod parse;
+
+use std::collections::BTreeMap;
 
 use crate::call::{Implementation, Stop};
 use crate::engine::Engine;
@@ -33,6 +39,13 @@ pub const FILE: &str = "PROGMAN.EXE";
 /// Where it says it is: the Windows directory, where `WinExec` looks
 /// second.
 pub const PATH: &str = "C:\\WINDOWS\\PROGMAN.EXE";
+
+/// What WinBox's Program Manager keeps outside its instances' data: each
+/// instance's groups as loaded (`loaded.rs`), by its instance.
+#[derive(Debug, Default)]
+pub struct State {
+    pub(crate) instances: BTreeMap<u16, loaded::Groups>,
+}
 
 /// WinBox's code as the program links to it.
 pub static MODULE: Kept = Kept {
