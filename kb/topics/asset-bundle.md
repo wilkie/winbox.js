@@ -15,7 +15,7 @@ Both engines start from it alone, as below: the native build, the probe harnesse
 ```
 winbox-assets.json        the manifest
 pool/<8.3 NAME>           fonts, MIDIMAP.CFG, SETUP.REG, the sounds
-modules/<8.3 NAME>        USER.EXE, SHELL.DLL, PROGMAN.EXE, the display drivers, code taken out
+modules/<8.3 NAME>        USER.EXE, SHELL.DLL, the display drivers, code taken out
 ```
 
 The manifest, `winbox-assets.json`:
@@ -45,11 +45,10 @@ The maker (`src/assets/make.ts`) takes floppy images, zips of them, the disks' f
 | `DING.WAV`, `CHORD.WAV`, `CHIMES.WAV`, `TADA.WAV`                                                                      | `[win.bmps]`, its `.WAV` lines                                                                                                                      | the file, expanded; pool only |
 | `USER.EXE`                                                                                                             | `[windows.system]`                                                                                                                                  | segments nought               |
 | `SHELL.DLL`                                                                                                            | `[win.other]`                                                                                                                                       | segments nought               |
-| `PROGMAN.EXE`                                                                                                          | `[win.shell]`                                                                                                                                       | segments nought               |
 | `VGA.DRV`, `SUPERVGA.DRV`, `EGA.DRV`, `HERCULES.DRV`, `8514.DRV`, `XGA.DRV`                                            | `[display]`, the line of each display's profile                                                                                                     | segments nought               |
 | `SVGA256.DRV`                                                                                                          | the Driver Library's `OEMSETUP.INF`, `[display]` `8et4480`; only where its files are given, for no browser unpacks `svga.exe` (PKZIP's implode)     | segments nought               |
 
-[[measured]] Made from the retail disks and the Driver Library's files, before `PROGMAN.EXE` went into it, the bundle is 78 files, 3,066,639 bytes:
+[[measured]] Made from the retail disks and the Driver Library's files, the bundle is 78 files, 3,066,639 bytes:
 
 | Part          | Files | Bytes     |
 | ------------- | ----- | --------- |
@@ -68,7 +67,7 @@ The maker (`src/assets/make.ts`) takes floppy images, zips of them, the disks' f
 
 `USER.EXE`, `SHELL.DLL` and the display drivers are kept with every segment's bytes made nought, and the relocation records after each segment too (`src/assets/ne.ts`, `zeroSegments`). Everything else stays at its own offset: the DOS stub, the NE header, the segment, resource, name, module and entry tables, and the resources' data. Of the 920,288 bytes of the nine modules, 633,951 are nought; `USER.EXE` keeps 26,800 of its 264,016.
 
-WinBox reads only their resources: the display driver's bitmaps, icons, cursors and `OEMBIN` ([[topic:display-driver-resources]]), USER's flag icon and cursors, SHELL's logo, and `PROGMAN.EXE`'s icons, which WinBox's own Program Manager gives the items of DOS programs and of programs not found, by the owner's decision of 2026-10-22 ([[topic:program-manager-dde]]). Their exports are WinBox's own table, not the file's ([[topic:dynamic-link-libraries]]). [[measured]] Each module read from the bundle gives the same resource table as the whole file, entry for entry and offset for offset, so the same resource handles; the same bytes for every resource; the same `DriverResources::read` and `read_oem`; and the same `OEMBIN` values (`crates/winbox-win16/tests/asset_modules.rs`).
+WinBox reads only their resources: the display driver's bitmaps, icons, cursors and `OEMBIN` ([[topic:display-driver-resources]]), USER's flag icon and cursors, and SHELL's logo; and, once the bundle carries it, `PROGMAN.EXE`'s icons, which WinBox's own Program Manager gives the items of DOS programs and of programs not found, by the owner's decision of 2026-10-22 ([[topic:program-manager-dde]]). Their exports are WinBox's own table, not the file's ([[topic:dynamic-link-libraries]]). [[measured]] Each module read from the bundle gives the same resource table as the whole file, entry for entry and offset for offset, so the same resource handles; the same bytes for every resource; the same `DriverResources::read` and `read_oem`; and the same `OEMBIN` values (`crates/winbox-win16/tests/asset_modules.rs`).
 
 [[measured]] Setup writes the user's name and company into `USER.EXE`: into one of its string tables, a resource, not a segment. The bundle's is the disk's, which says "Unknown User" and "Unknown Organization". Both engines take those strings from their own table, so nothing drawn changes.
 
@@ -94,7 +93,7 @@ What the base lacks of an installation is its code and what only code reads: `WI
 An engine started from the bundle has two things where it would have an installation:
 
 - **Drive C:'s base**: the base the bundle composes for the display, laid out as above, beneath C: as an installation is: read, and never written; what a program writes goes above it.
-- **The module store**: the bundle's `USER.EXE`, `SHELL.DLL`, `PROGMAN.EXE` and display drivers, behind C: and never on it. Where WinBox reads a kept module's resources -- the display driver's bitmaps, icons, cursors and `OEMBIN`, USER's flag icon and cursors, SHELL's logo, and `FindResource` on a kept module's handle (the display driver's alone in the TypeScript engine) -- it takes the file in `C:\WINDOWS\SYSTEM` first, and the store's of the same name after. An installation on C: still wins; with neither, there is nothing to read, as before.
+- **The module store**: the bundle's `USER.EXE`, `SHELL.DLL` and display drivers, behind C: and never on it. Where WinBox reads a kept module's resources -- the display driver's bitmaps, icons, cursors and `OEMBIN`, USER's flag icon and cursors, SHELL's logo, and `FindResource` on a kept module's handle (the display driver's alone in the TypeScript engine) -- it takes the file in `C:\WINDOWS\SYSTEM` first, and the store's of the same name after. An installation on C: still wins; with neither, there is nothing to read, as before.
 
 | Engine     | The store                                                                                                                                                                   | Reading it                                                                                                                                                                 |
 | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -187,6 +186,6 @@ So a new installation's files from the disks keep the disks' stamp, and those of
 - The page reads no folder dropped on it: the driver's files are chosen or dropped one by one, or zipped.
 - A bundle the page makes from media `known-media.json` does not list is taken, and said to be so, but nothing measures what programs see on it.
 - `PROGMAN.INI`, which only Program Manager reads.
-- The bundle in `oracle/build` made again with `PROGMAN.EXE` in it: the harnesses put the installation's in the store meanwhile (`progman_in_store`, `progmanStore`), and Caribbean Treasure's layer, which names the bundle's id, is made again with it.
+- `PROGMAN.EXE` in the bundle's modules (`[win.shell]`, its code taken out), for WinBox's own Program Manager's icons: the maker's change goes with making the bundle in `oracle/build` again, which changes its id, and with that Caribbean Treasure's layer, which names the id, and the page-maker test held to it. Meanwhile the probe harnesses put the installation's `PROGMAN.EXE` in the store (`progman_in_store`, `progmanStore`).
 - An oracle installation with Setup's `bitmaps` installed, which would ground placing the sounds and wallpapers.
 - What `REGEDIT`'s `/U` does is not read out; with it, the database made from nothing is the installation's byte for byte.

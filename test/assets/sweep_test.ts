@@ -79,8 +79,8 @@ async function run({ probe, display, ini }: Run, base: Base) {
     virtual: true,
     keepCalls: 0,
     base,
-    /* As the bundle made since PROGMAN.EXE went in its store carries it, for
-     * WinBox's Program Manager's icons. */
+    /* PROGMAN.EXE in the store, as the bundle is to carry it, for WinBox's
+     * Program Manager's icons (owner's decision D8). */
     progmanStore: true,
   });
 
