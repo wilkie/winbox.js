@@ -42,6 +42,34 @@ describe('swapping disks', () => {
     expect(hasDisk(files.query('A'))).toBe(true);
   });
 
+  /* As `imgswap` records it, and `a_discs_file_reads_the_disc_swapped_in`. */
+  test("a disc's file reads the disc swapped in, but for the sector it last read", async () => {
+    const files = new FileManager();
+    const text = (bytes: Uint8Array) => String.fromCharCode(...bytes);
+
+    files.mount('D', ISO9660.of(image('imgsw1.iso')));
+
+    const file = files.resolve(await files.open('D:\\BIG.DAT'));
+
+    expect(text(file.readHere(2064).subarray(2048))).toBe('disc1 sector 1\r\n');
+
+    const first = files.swap('D', ISO9660.of(image('imgsw2.iso')));
+    const bytes = file.readHere(2048);
+
+    /* The rest of sector 1 from the file's own buffer, then the new disc's
+     * sector 2. */
+    expect(text(bytes.subarray(0, 16))).toBe('disc1 sector 1\r\n');
+    expect(text(bytes.subarray(2032))).toBe('disc2 sector 2\r\n');
+
+    files.swap('D', first);
+    file.dosSeek(0, 0);
+    expect(text(file.readHere(16))).toBe('disc1 sector 0\r\n');
+
+    files.eject('D');
+    file.dosSeek(4096, 0);
+    expect(file.readHere(16).length).toBe(0);
+  });
+
   test('ejects a disk, leaving the drive empty', async () => {
     const files = new FileManager();
     const floppy = await FATImage.of(image('imgflop.img'), true);

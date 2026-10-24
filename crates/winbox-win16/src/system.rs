@@ -146,6 +146,12 @@ pub struct System {
     /// program makes the next: the corpus comparison runs as far as the
     /// TypeScript engine's run went.
     pub calls_until: Option<usize>,
+    /// Shown each call before it is made: its module, its name and where
+    /// its arguments begin on the stack (the last pushed first), for a
+    /// harness to act at a program's call -- as the probes' harness swaps
+    /// a disc as `imgswap` writes its record asking for it. As the
+    /// TypeScript engine's `onCall`.
+    pub call_watch: Option<fn(&mut System, &'static str, &'static str, u32)>,
     /// Keys pressed and screens kept at set calls (`call_marks.rs`).
     pub call_marks: crate::call_marks::CallMarks,
     /// The time a message made now is given, where it is to be another's.
@@ -498,6 +504,7 @@ impl System {
             instructions: 0,
             log: None,
             calls_until: None,
+            call_watch: None,
             call_marks: crate::call_marks::CallMarks::default(),
             message_time: None,
             heap_blocks: HashSet::new(),

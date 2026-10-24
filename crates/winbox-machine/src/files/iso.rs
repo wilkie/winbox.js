@@ -272,7 +272,7 @@ struct DirIterator {
 
 /// The disc as DOSBox's `isoDrive` holds it.
 #[derive(Debug)]
-struct Disc {
+pub(crate) struct Disc {
     image: CdImage,
     root_entry: DirEntry,
     /// The label `Set_Label` makes of the volume's name (`discLabel`).
@@ -696,6 +696,12 @@ impl Volume for IsoVolume {
         Listing::AsStored
     }
 
+    /// A file of the disc this one was swapped in for reads this one
+    /// (`DiscFile`).
+    fn give_disc(&self, file: &mut DiscFile) {
+        file.read_from(Some(&self.disc));
+    }
+
     /// `GetFileAttr` (330-340): 21h, 02h with it where hidden, 10h where a
     /// folder.
     fn attributes(&self, parts: &[String]) -> Option<u8> {
@@ -769,15 +775,26 @@ impl Volume for IsoVolume {
 
 /// A file of the disc open, as DOSBox's `isoFile` keeps one (31-132):
 /// where it begins and ends in the image, by the cooked sector, where the
-/// next read is, and its record's stamp.
+/// next read is, its record's stamp, and the sector it last read, kept
+/// (`buffer`, `cachedSector`).
+///
+/// It reads the disc its drive holds now, not the one it was opened on:
+/// DOSBox's `isoFile` reads through its drive's `readSector` (472-474),
+/// which asks MSCDEX's unit for the drive -- and a disc swapped in points
+/// that unit at its own image (`Activate`, `UpdateMscdex`, 181-202). So a
+/// swap hands the file the disc swapped in (`Volume::give_disc`): none,
+/// for a drive left empty, and a read then reads nothing, as a sector not
+/// read does. **Measured** by `imgswap`.
 #[derive(Debug)]
 pub struct DiscFile {
-    disc: Rc<RefCell<Disc>>,
+    disc: Option<Rc<RefCell<Disc>>>,
     file_begin: u32,
     file_pos: u32,
     file_end: u32,
     time: u16,
     date: u16,
+    buffer: Box<[u8; ISO_FRAMESIZE]>,
+    cached_sector: i64,
 }
 
 impl DiscFile {
@@ -786,12 +803,36 @@ impl DiscFile {
         let (time, date) = de.stamp();
 
         Self {
-            disc: Rc::clone(disc),
+            disc: Some(Rc::clone(disc)),
             file_begin,
             file_pos: file_begin,
             file_end: file_begin.wrapping_add(de.data_length()),
             time,
             date,
+            buffer: Box::new([0; ISO_FRAMESIZE]),
+            cached_sector: -1,
+        }
+    }
+
+    /// The disc it reads from now on: the one swapped into its drive, none
+    /// where the drive was left empty. The sector it last read stays kept.
+    pub(crate) fn read_from(&mut self, disc: Option<&Rc<RefCell<Disc>>>) {
+        self.disc = disc.map(Rc::clone);
+    }
+
+    /// A sector of the disc its drive holds into its buffer
+    /// (`isoDrive::readSector`); whether there was one.
+    fn read_sector(&mut self, sector: u32) -> bool {
+        match self
+            .disc
+            .as_ref()
+            .and_then(|disc| disc.borrow().read_sector(sector))
+        {
+            Some(bytes) => {
+                *self.buffer = bytes;
+                true
+            }
+            None => false,
         }
     }
 
@@ -802,24 +843,41 @@ impl DiscFile {
     }
 
     /// Bytes read from where it is (`isoFile::Read`, 63-98): no more than
-    /// is left of it, a sector at a time, stopping at a sector the image
-    /// does not hold.
+    /// is left of it, a sector at a time, the sector last read taken from
+    /// its buffer, stopping at a sector the image does not hold.
     pub fn read(&mut self, length: usize) -> Vec<u8> {
-        let length = (length.min(0xffff) as u32).min(self.file_end.wrapping_sub(self.file_pos));
-        let disc = self.disc.borrow();
-        let mut data = Vec::with_capacity(length as usize);
+        let mut size =
+            (length.min(0xffff) as u32).min(self.file_end.wrapping_sub(self.file_pos)) as usize;
+        let mut data = Vec::with_capacity(size);
         let mut sector = self.file_pos / ISO_FRAMESIZE as u32;
         let mut sector_pos = (self.file_pos % ISO_FRAMESIZE as u32) as usize;
 
-        while data.len() < length as usize {
-            let Some(buffer) = disc.read_sector(sector) else {
-                break;
-            };
-            let take = (ISO_FRAMESIZE - sector_pos).min(length as usize - data.len());
+        if i64::from(sector) != self.cached_sector {
+            if self.read_sector(sector) {
+                self.cached_sector = i64::from(sector);
+            } else {
+                size = 0;
+                self.cached_sector = -1;
+            }
+        }
 
-            data.extend_from_slice(&buffer[sector_pos..sector_pos + take]);
-            sector_pos = 0;
-            sector += 1;
+        while data.len() < size {
+            let rem_sector = ISO_FRAMESIZE - sector_pos;
+            let rem_size = size - data.len();
+
+            if rem_sector < rem_size {
+                data.extend_from_slice(&self.buffer[sector_pos..]);
+                sector_pos = 0;
+                sector = sector.wrapping_add(1);
+                self.cached_sector += 1;
+
+                if !self.read_sector(sector) {
+                    size = data.len();
+                    self.cached_sector = -1;
+                }
+            } else {
+                data.extend_from_slice(&self.buffer[sector_pos..sector_pos + rem_size]);
+            }
         }
 
         self.file_pos = self.file_pos.wrapping_add(data.len() as u32);

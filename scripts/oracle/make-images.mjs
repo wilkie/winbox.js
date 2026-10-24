@@ -41,6 +41,8 @@
  *   (DOSBox's `imgmount -t hdd` takes a size only of whole such cylinders,
  *   `dos_programs.cpp` 1213-1236), with a master boot record of one
  *   partition from sector 63, FAT16 of 512-byte clusters on it.
+ * * `imgsw1.iso` and `imgsw2.iso`: two discs mounted as one drive's set for
+ *   `imgswap`, swapped while it runs (`swapDisc`).
  *
  * Needs `mtools` and `xorriso`.
  */
@@ -533,10 +535,15 @@ function isoRecords(image) {
   return offsets;
 }
 
-async function makeDisc(scratch) {
-  const tree = join(scratch, 'disc');
+/**
+ * An ISO 9660 disc of files and folders, each written when it says, its
+ * primary volume descriptor alone (`xorriso`), named `label`; written to
+ * `name` in `scratch`, its bytes answered.
+ */
+async function isoOf(scratch, name, files, folders, label, written) {
+  const tree = join(scratch, `${name}-tree`);
 
-  for (const [path, seconds, bytes] of DISC) {
+  for (const [path, seconds, bytes] of files) {
     const host = join(tree, ...path.split('/'));
 
     await mkdir(dirname(host), { recursive: true });
@@ -544,11 +551,13 @@ async function makeDisc(scratch) {
     await utimes(host, seconds, seconds);
   }
 
-  for (const [path, seconds] of DISC_FOLDERS) {
+  for (const [path, seconds] of folders) {
     await utimes(join(tree, ...path.split('/').filter(Boolean)), seconds, seconds);
   }
 
-  const image = join(scratch, 'imgcd.iso');
+  const image = join(scratch, name);
+  const at = new Date(written * 1000);
+  const digits = (n, width = 2) => String(n).padStart(width, '0');
 
   await run(
     'xorriso',
@@ -559,7 +568,7 @@ async function makeDisc(scratch) {
       '-l',
       '-allow-lowercase',
       '-V',
-      DISC_LABEL,
+      label,
       '-sysid',
       'WINBOX',
       '-publisher',
@@ -568,15 +577,28 @@ async function makeDisc(scratch) {
       '',
       '-A',
       '',
-      '--modification-date=1993121314151600',
+      `--modification-date=${digits(at.getUTCFullYear(), 4)}${digits(at.getUTCMonth() + 1)}` +
+        `${digits(at.getUTCDate())}${digits(at.getUTCHours())}${digits(at.getUTCMinutes())}` +
+        `${digits(at.getUTCSeconds())}00`,
       '-o',
       image,
       tree,
     ],
-    { SOURCE_DATE_EPOCH: String(utc(1993, 12, 13, 14, 15, 16)) }
+    { SOURCE_DATE_EPOCH: String(written) }
   );
 
-  const bytes = await readFile(image);
+  return readFile(image);
+}
+
+async function makeDisc(scratch) {
+  const bytes = await isoOf(
+    scratch,
+    'imgcd.iso',
+    DISC,
+    DISC_FOLDERS,
+    DISC_LABEL,
+    utc(1993, 12, 13, 14, 15, 16)
+  );
 
   for (const at of isoRecords(bytes)) {
     const name = bytes.toString('latin1', at + 33, at + 33 + bytes[at + 32]);
@@ -594,6 +616,43 @@ async function makeDisc(scratch) {
   }
 
   return bytes;
+}
+
+/**
+ * A file of whole sectors, each 2,048 bytes of one 16-byte line naming the
+ * disc and the sector, so that a read shows which disc and sector it came
+ * from: `disc1 sector 0\r\n`.
+ */
+function sectorsOf(disc, count) {
+  return Buffer.from(
+    Array.from({ length: count }, (_, sector) =>
+      `disc${disc} sector ${sector}\r\n`.repeat(2048 / 16)
+    ).join(''),
+    'latin1'
+  );
+}
+
+/**
+ * The two discs `imgswap` swaps between (`imgswap.mounts`): each a
+ * `BIG.DAT` of four sectors naming its disc, at the same place on both; a
+ * file of its own; a `SHARED` folder on both, and a `SUB1` folder on the
+ * first alone, made current before the swap.
+ */
+function swapDisc(disc) {
+  const files = [
+    ['BIG.DAT', utc(1994, 1, disc, 1, 2, 4), sectorsOf(disc, 4)],
+    [`ONLY${disc}.TXT`, utc(1994, 2, disc, 2, 3, 4), textOf(`ONLY${disc}.TXT`, 2)],
+    ['SHARED/S.TXT', utc(1994, 3, disc, 3, 4, 6), textOf(`disc${disc} SHARED/S.TXT`, 1)],
+    ...(disc === 1 ? [['SUB1/IN1.TXT', utc(1994, 4, 1, 4, 5, 6), textOf('SUB1/IN1.TXT', 1)]] : []),
+  ];
+  const folders = [
+    ['SHARED', utc(1994, 5, disc, 5, 6, 8)],
+    ...(disc === 1 ? [['SUB1', utc(1994, 6, 1, 6, 7, 8)]] : []),
+    ['', utc(1994, 7, disc, 7, 8, 10)],
+  ];
+
+  return (scratch) =>
+    isoOf(scratch, `imgsw${disc}.iso`, files, folders, `SWAPDISC${disc}`, utc(1994, 7, disc));
 }
 
 /* ------------------------------------------------------------ CUE/BIN */
@@ -693,6 +752,8 @@ async function main() {
       ['imghdd.img', makeHardDisk],
       ['imgcd.iso', makeDisc],
       ['imgwrite.img', makeWriteFloppy],
+      ['imgsw1.iso', swapDisc(1)],
+      ['imgsw2.iso', swapDisc(2)],
       ['imgcd.bin', async () => rawSectors(await discBytes(), 1)],
       [
         'imgcd.cue',

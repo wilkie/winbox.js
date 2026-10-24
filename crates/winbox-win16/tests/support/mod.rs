@@ -221,6 +221,7 @@ pub const AGREEING: &[&str] = &[
     "imgcue",
     "imgcue2",
     "imgtrk",
+    "imgswap",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -954,12 +955,15 @@ pub fn run_setup<T>(
 }
 /// An image a probe's recording had mounted beside drive C, as its sidecar
 /// names it: its drive, its file in `oracle/probes/images/`, and its kind,
-/// `floppy`, `iso` or `hdd`.
+/// `floppy`, `iso` or `hdd`; and the rest of its set, where several images
+/// joined by commas are one drive's (`d: imgsw1.iso,imgsw2.iso iso`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Mount {
     pub letter: char,
     pub image: String,
     pub kind: String,
+    /// Every image of the drive's set, the first `image`.
+    pub images: Vec<String>,
 }
 
 /// The images a probe's recording had mounted, as
@@ -980,17 +984,20 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
             let words: Vec<&str> = spaced.split_whitespace().collect();
 
             match words[..] {
-                [drive, image, kind]
+                [drive, images, kind]
                     if drive.len() == 2
                         && drive.starts_with(|letter: char| letter.is_ascii_alphabetic())
                         && drive.ends_with(':')
                         && ["floppy", "iso", "hdd"]
                             .contains(&kind.to_ascii_lowercase().as_str()) =>
                 {
+                    let images: Vec<String> = images.split(',').map(str::to_string).collect();
+
                     Mount {
                         letter: drive.chars().next().unwrap().to_ascii_uppercase(),
-                        image: image.to_string(),
+                        image: images[0].clone(),
                         kind: kind.to_ascii_lowercase(),
+                        images,
                     }
                 }
                 _ => panic!("{probe}.mounts: cannot read {line:?}"),
@@ -1004,9 +1011,9 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
 /// beside it, as `record.mjs` copies them and DOSBox finds them
 /// (`GetRealFileName`). A probe whose image is not mounted runs without
 /// it, and is left out of `AGREEING`.
-fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
-    match mount.kind.as_str() {
-        "floppy" | "hdd" => FatVolume::new(bytes, mount.kind == "floppy")
+fn image_volume(kind: &str, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
+    match kind {
+        "floppy" | "hdd" => FatVolume::new(bytes, kind == "floppy")
             .ok()
             .map(|volume| Box::new(volume) as Box<dyn Volume>),
         "iso" => IsoVolume::open(Box::new(bytes), &mut |name| {
@@ -1020,17 +1027,82 @@ fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
     }
 }
 
-/// The images a probe's recording had mounted, each mounted where it can
-/// be (`image_volume`).
-fn mount_images(system: &mut System, probe: &str) {
-    for mount in mounts_of(probe) {
-        let bytes = std::fs::read(root().join("oracle/probes/images").join(&mount.image))
-            .unwrap_or_else(|error| panic!("{probe}.mounts: {}: {error}", mount.image));
+/// The disks of a drive's set not in it, by the drive, in the order they
+/// come in.
+type Sets = Vec<(char, std::collections::VecDeque<Box<dyn Volume>>)>;
 
-        if let Some(volume) = image_volume(&mount, bytes) {
-            system.files.mount_boxed(mount.letter, volume);
+thread_local! {
+    /// Each drive's set for the run on this thread: what `swap_at_request`
+    /// swaps.
+    static SETS: RefCell<Sets> = RefCell::default();
+}
+
+/// The images a probe's recording had mounted, each mounted where it can
+/// be (`image_volume`): a set's first in its drive, the rest kept to be
+/// swapped in at the probe's request (`swap_at_request`).
+fn mount_images(system: &mut System, probe: &str) {
+    let mut sets = Vec::new();
+
+    for mount in mounts_of(probe) {
+        let mut volumes = std::collections::VecDeque::new();
+
+        for image in &mount.images {
+            let bytes = std::fs::read(root().join("oracle/probes/images").join(image))
+                .unwrap_or_else(|error| panic!("{probe}.mounts: {image}: {error}"));
+
+            if let Some(volume) = image_volume(&mount.kind, bytes) {
+                volumes.push_back(volume);
+            }
+        }
+
+        if let Some(first) = volumes.pop_front() {
+            system.files.mount_boxed(mount.letter, first);
+        }
+
+        if !volumes.is_empty() {
+            sets.push((mount.letter, volumes));
         }
     }
+
+    if !sets.is_empty() {
+        system.call_watch = Some(swap_at_request);
+    }
+
+    SETS.with(|kept| *kept.borrow_mut() = sets);
+}
+
+/// The next disk swapped into each drive with a set, as the recorder
+/// presses DOSBox's swap key (`record.mjs`'s `runSwapping`): as the probe
+/// writes a record of `swap` whose result is `request` -- at its `_lwrite`
+/// of it, before the write is made. DOSBox's key puts the next disk in
+/// every drive with a set, the last followed by the first
+/// (`DriveManager::CycleAllDisks`); the probe waits for the disk, so where
+/// the swap comes changes nothing it records. As `run-probe.ts`'s
+/// `swapAtRequest`.
+fn swap_at_request(system: &mut System, module: &'static str, name: &'static str, args: u32) {
+    if module != "KERNEL" || name != "_lwrite" {
+        return;
+    }
+
+    // `_lwrite(hFile, lpBuffer, cbBuffer)`, Pascal: the count pushed last.
+    let length = system.cpu.bus.read16(args);
+    let buffer = u32::from(system.cpu.bus.read16(args + 2))
+        | (u32::from(system.cpu.bus.read16(args + 4)) << 16);
+    let record = system.read_far(buffer, usize::from(length));
+
+    if !(record.starts_with(b"swap\t") && record.ends_with(b"\trequest\r\n")) {
+        return;
+    }
+
+    SETS.with(|sets| {
+        for (letter, set) in sets.borrow_mut().iter_mut() {
+            if let Some(next) = set.pop_front()
+                && let Some(out) = system.files.swap(*letter, next)
+            {
+                set.push_back(out);
+            }
+        }
+    });
 }
 
 /// A host's folder held in memory, each file and folder last written when

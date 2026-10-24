@@ -5879,6 +5879,7 @@ const RUN_WHOLE = new Set<string>([
   'pmstart',
   'imgwrite',
   ...['imgbin', 'imgcue', 'imgcue2', 'imgtrk'],
+  'imgswap',
 ]);
 
 /**

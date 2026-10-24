@@ -239,7 +239,9 @@ function emptyDrive(removable: boolean) {
  * `oracle/probes/<probe>.mounts` lists them and `record.mjs` reads them: a
  * line each, a drive, an image of `oracle/probes/images/` and its kind --
  * `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`; `#` starts a
- * comment. As `support/mod.rs`'s `mounts_of`.
+ * comment. Several images joined by commas are one drive's set, as
+ * `d: imgsw1.iso,imgsw2.iso iso`, swapped at the probe's request
+ * (`swapAtRequest`). As `support/mod.rs`'s `mounts_of`.
  */
 export function mountsOf(probe: string) {
   const path = join(__dirname, '..', '..', 'oracle', 'probes', `${probe}.mounts`);
@@ -259,9 +261,12 @@ export function mountsOf(probe: string) {
         throw new Error(`${probe}.mounts: cannot read ${JSON.stringify(line)}`);
       }
 
+      const images = match[2].split(',');
+
       return {
         letter: match[1].toUpperCase(),
-        image: match[2],
+        image: images[0],
+        images,
         kind: match[3].toLowerCase() as 'floppy' | 'iso' | 'hdd',
       };
     });
@@ -289,6 +294,43 @@ async function imageDrive(kind: 'floppy' | 'iso' | 'hdd', bytes: Uint8Array): Pr
   }
 
   return null;
+}
+
+/**
+ * The next disk swapped into each drive with a set, as the recorder presses
+ * DOSBox's swap key (`record.mjs`'s `runSwapping`): as the probe writes a
+ * record of `swap` whose result is `request` -- at its `_lwrite` of it,
+ * before the write is made. DOSBox's key puts the next disk in every drive
+ * with a set, the last followed by the first (`DriveManager::CycleAllDisks`);
+ * the probe waits for the disk, so where the swap comes changes nothing it
+ * records. As `support/mod.rs`'s `swap_at_request`.
+ */
+function swapAtRequest(call: any, win16: any, sets: { letter: string; disks: any[] }[]) {
+  if (call.module !== 'KERNEL' || call.name !== '_lwrite') {
+    return;
+  }
+
+  const [, buffer, length] = call.args;
+  const address = win16.machine.cpu.core.translateAddress(
+    (buffer >>> 16) & 0xffff,
+    buffer & 0xffff
+  );
+  const record = Array.from({ length }, (_, at) =>
+    String.fromCharCode(win16.machine.memory.read8(address + at))
+  ).join('');
+
+  if (!(record.startsWith('swap\t') && record.endsWith('\trequest\r\n'))) {
+    return;
+  }
+
+  for (const set of sets) {
+    const next = set.disks.shift();
+    const out = next && win16.dos.files.swap(set.letter, next);
+
+    if (out) {
+      set.disks.push(out);
+    }
+  }
 }
 
 /** Loads the probe and runs it, collecting every API call it makes. */
@@ -621,6 +663,9 @@ export async function runProbe(
       }
     : undefined;
 
+  /* The disks of each drive's set not in it, swapped in at the probe's
+   * request (`swapAtRequest`). */
+  const sets: { letter: string; disks: any[] }[] = [];
   const win16: any = new Win16(new DOS(machine), machine, {
     ...(display === 'vga' ? {} : { display }),
     ...(raster?.driver && raster.user ? { raster } : {}),
@@ -642,6 +687,10 @@ export async function runProbe(
       callCount++;
       functions.add(name);
       watch?.(call, callCount, win16);
+
+      if (sets.length) {
+        swapAtRequest(call, win16, sets);
+      }
 
       if (call.stub) {
         stubs[name] = (stubs[name] ?? 0) + 1;
@@ -685,12 +734,27 @@ export async function runProbe(
     win16.dos.files.mount('Z', emptyDrive(false));
 
     /* And the images its recording had mounted, where they can be. */
-    for (const { letter, image, kind } of mountsOf(name)) {
-      const bytes = readFileSync(join(__dirname, '..', '..', 'oracle', 'probes', 'images', image));
-      const drive = await imageDrive(kind, new Uint8Array(bytes));
+    for (const { letter, images, kind } of mountsOf(name)) {
+      const disks: any[] = [];
 
-      if (drive) {
-        win16.dos.files.mount(letter, drive);
+      for (const image of images) {
+        const bytes = readFileSync(
+          join(__dirname, '..', '..', 'oracle', 'probes', 'images', image)
+        );
+        const drive = await imageDrive(kind, new Uint8Array(bytes));
+
+        if (drive) {
+          disks.push(drive);
+        }
+      }
+
+      if (disks.length) {
+        win16.dos.files.mount(letter, disks.shift());
+      }
+
+      /* A set's other disks, kept to be swapped in. */
+      if (disks.length) {
+        sets.push({ letter, disks });
       }
     }
   }

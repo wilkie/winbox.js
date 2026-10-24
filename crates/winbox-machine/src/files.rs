@@ -221,6 +221,15 @@ pub trait Volume: Debug {
     fn find_first(&self, _parts: &[String], _attributes: u8, _pattern: &str) -> Option<Begun> {
         None
     }
+
+    /// A file of a disc, open on the disc this drive was swapped in for,
+    /// given what it reads from now on, as DOSBox's `isoFile` reads the
+    /// disc MSCDEX's unit holds (`DiscFile`): a disc's own disc
+    /// (`IsoVolume`); no disc for another drive -- an empty one -- which
+    /// the file then reads nothing from.
+    fn give_disc(&self, file: &mut DiscFile) {
+        file.read_from(None);
+    }
 }
 
 /// A search begun on a disc (`Volume::find_first`): the number of the
@@ -1127,12 +1136,23 @@ impl Files {
     /// the drive's current folder is kept, whether or not the new disk has
     /// it (`strcpy(newDisk->curdir, oldDisk->curdir)`). The disk that was
     /// in, to be put back later with what was written to it; none where no
-    /// drive was. A file open on the old disk keeps reading and writing it,
-    /// as DOSBox's `fatFile` keeps its `myDrive` (`drive_fat.cpp` 64, 92):
-    /// what DOSBox does with a disc's file across a swap is not followed
-    /// yet (`kb/topics/drives-and-disks.md`).
+    /// drive was.
+    ///
+    /// A file open on a disk image keeps reading and writing the disk it
+    /// was opened on, as DOSBox's `fatFile` keeps its `myDrive`
+    /// (`drive_fat.cpp` 64, 92). A file open on a disc reads the disc
+    /// swapped in, at its own sectors, but for the sector it last read,
+    /// which it keeps (`DiscFile`, `Volume::give_disc`): **measured** by
+    /// `imgswap`.
     pub fn swap(&mut self, letter: char, volume: Box<dyn Volume>) -> Option<Box<dyn Volume>> {
         let letter = letter.to_ascii_uppercase();
+
+        for file in self.open.values_mut().filter(|file| file.drive == letter) {
+            if let Body::Disc(disc) = &mut file.body {
+                volume.give_disc(disc);
+            }
+        }
+
         let old = self.drives.insert(letter, volume);
 
         self.pwd
@@ -1778,6 +1798,40 @@ mod tests {
         assert!(!second.changed());
         assert!(files.lookup('A', &[String::new()], "NEW.TXT").is_some());
         assert!(files.has_disk('A'));
+    }
+
+    /// A disc's file open across a swap reads the disc swapped in at its
+    /// own sectors, but for the sector it last read (`DiscFile`), as
+    /// `imgswap` records; a drive left empty gives it nothing to read.
+    /// As `swap_test.ts`.
+    #[test]
+    fn a_discs_file_reads_the_disc_swapped_in() {
+        let mut files = Files::new();
+
+        files.mount('D', IsoVolume::new(image("imgsw1.iso")).unwrap());
+
+        let handle = files.open("D:\\BIG.DAT").unwrap();
+        let read = |files: &mut Files, length| files.resolve(handle).unwrap().read(length);
+
+        assert_eq!(read(&mut files, 2064)[2048..], *b"disc1 sector 1\r\n");
+
+        let first = files
+            .swap('D', Box::new(IsoVolume::new(image("imgsw2.iso")).unwrap()))
+            .unwrap();
+        let bytes = read(&mut files, 2048);
+
+        // The rest of sector 1 from the file's own buffer, then the new
+        // disc's sector 2.
+        assert_eq!(bytes[..16], *b"disc1 sector 1\r\n");
+        assert_eq!(bytes[2032..], *b"disc2 sector 2\r\n");
+
+        files.swap('D', first);
+        files.resolve(handle).unwrap().seek(SeekFrom::Start(0));
+        assert_eq!(read(&mut files, 16), b"disc1 sector 0\r\n");
+
+        files.eject('D');
+        files.resolve(handle).unwrap().seek(SeekFrom::Start(4096));
+        assert!(read(&mut files, 16).is_empty());
     }
 
     #[test]
