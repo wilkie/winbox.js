@@ -5,7 +5,12 @@ import { join } from 'node:path';
 
 import { STAMP } from '../../src/assets/compose.js';
 import { installedLayer } from '../../src/layers/install.js';
-import { baseName } from '../../src/layers/layer.js';
+import { programGroups } from '../../src/layers/groups.js';
+import { baseName, flattenStack } from '../../src/layers/layer.js';
+import { DevicePalette } from '../../src/raster/device-palette.js';
+import { decodeIcon, iconEntries, pickIcon } from '../../src/raster/icon.js';
+import { iconIndices } from '../../src/run/group-icon.js';
+import { resourcesOf } from '../../src/win16/ne-resources.js';
 import { Fat16Changes } from '../../src/run/changes.js';
 import { type Plan } from '../../src/run/drive.js';
 import { bundle, runProbe } from '../win16/run-probe.js';
@@ -108,5 +113,48 @@ const STEPS = [
     expect(made.layer).toEqual(fixture.layer);
     expect(made.dropped).toEqual(fixture.dropped);
     expect(made.references).toEqual(fixture.references);
+
+    /* The group as the page shows it under the program kept: its item,
+     * whose icon, drawn from the group file's own bits, is the game's own,
+     * as `ExtractIcon` decodes it for the VGA. */
+    const files = new Map(
+      flattenStack([
+        {
+          manifest: {
+            format: 1,
+            id: made.layer.over[0],
+            over: [],
+            made: { by: 'WinBox' },
+            entries: [],
+          },
+          blobs: new Map(),
+        },
+        installed.layer,
+      ]).files.map((file) => [file.path, file.data])
+    );
+    const groups = programGroups((path) => files.get(path));
+
+    expect(groups.map((group) => [group.file, group.group?.name])).toEqual([
+      ['WINDOWS\\GAMES.GRP', 'Games'],
+    ]);
+
+    const [item] = groups[0].group!.items;
+    const game = files.get('WINDOWS\\GAMES\\CARRIB.EXE')!;
+    const resources = resourcesOf(game);
+    const group = resources.filter((each) => each.type === 14)[item.iconIndex];
+    const entry = pickIcon(iconEntries(group.data), 32, 16);
+    const own = decodeIcon(
+      resources.find((each) => each.type === 3 && each.id === entry?.id)!.data,
+      DevicePalette.SIXTEEN
+    );
+    const drawn = iconIndices(item.icon!)!;
+
+    expect([item.name, item.command, item.directory]).toEqual([
+      'Caribbean Treasure',
+      'c:\\windows\\games\\carrib.exe',
+      'c:\\windows\\games',
+    ]);
+    expect([...drawn.and]).toEqual([...own.and]);
+    expect([...drawn.xor]).toEqual([...own.xor]);
   }, 900_000);
 });

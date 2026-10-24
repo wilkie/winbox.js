@@ -152,6 +152,50 @@ h2 {
   gap: 0.25rem;
 }
 
+#kept-programs > li {
+  flex-wrap: wrap;
+}
+
+.groups,
+.group-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-basis: 100%;
+}
+
+.groups > li,
+.group-items > li {
+  display: block;
+  border-bottom: none;
+  padding: 0.15rem 0 0.15rem 1rem;
+}
+
+.group-name {
+  font-weight: 600;
+}
+
+.group-items summary {
+  cursor: pointer;
+}
+
+.group-items .item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  vertical-align: middle;
+}
+
+.group-items .item-icon {
+  image-rendering: pixelated;
+  flex: none;
+}
+
+.group-items p {
+  margin: 0.15rem 0 0.15rem 1.5rem;
+  color: var(--muted);
+}
+
 #kept-note {
   color: var(--muted);
   margin: 0 0 0.25rem;

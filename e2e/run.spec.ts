@@ -2314,6 +2314,59 @@ for (const { engine, page: at } of ENGINES) {
 
       expect(planned).toContain('C:\\WINDOWS\\WINBOXGA.GRP');
       expect(planned).toContain('C:\\WINDOWS\\PROGMAN.INI');
+
+      /* The group listed under the program kept, read back from what this
+       * browser keeps, and again once the page is opened afresh: each item
+       * with its icon drawn from the group file's bits, its name, and its
+       * command line on hover and opened. */
+      const shown = async () => {
+        const groups = page.getByRole('list', { name: "ddeinst's Program Manager groups" });
+
+        await expect(groups).toContainText('WinBox Games');
+
+        const items = groups.getByRole('list', { name: 'Items of WinBox Games' });
+
+        await expect(items.getByRole('listitem')).toHaveCount(2);
+
+        const solitaire = items.locator('summary', { hasText: 'Solitaire' });
+
+        await expect(solitaire).toHaveAttribute('title', 'C:\\WINDOWS\\SOL.EXE (in C:\\WINDOWS)');
+        await expect(items.locator('summary', { hasText: 'Minesweeper' })).toHaveAttribute(
+          'title',
+          'C:\\WINDOWS\\WINMINE.EXE (in C:\\WINDOWS)'
+        );
+        await expect(items.getByText('C:\\WINDOWS\\SOL.EXE', { exact: true })).toBeHidden();
+        await solitaire.click();
+        await expect(items.getByText('C:\\WINDOWS\\SOL.EXE', { exact: true })).toBeVisible();
+
+        /* Drawn, 32 by 32, of more than the window's white. */
+        const icon = await items
+          .locator('canvas')
+          .first()
+          .evaluate((canvas: HTMLCanvasElement) => {
+            const data = canvas
+              .getContext('2d')!
+              .getImageData(0, 0, canvas.width, canvas.height).data;
+            const colours = new Set<number>();
+
+            for (let at = 0; at < data.length; at += 4) {
+              colours.add((data[at] << 16) | (data[at + 1] << 8) | data[at + 2]);
+            }
+
+            return { width: canvas.width, height: canvas.height, colours: colours.size };
+          });
+
+        expect(icon.width).toBe(32);
+        expect(icon.height).toBe(32);
+        expect(icon.colours).toBeGreaterThan(1);
+      };
+
+      await shown();
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await shown();
       await page.getByRole('button', { name: 'Forget ddeinst' }).click();
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);

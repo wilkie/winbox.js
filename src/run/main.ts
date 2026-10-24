@@ -36,6 +36,14 @@ import { readZip } from '../zip.js';
 import { type Change, sameChanges } from './changes.js';
 import { installedLayer, type MediaReference } from '../layers/install.js';
 import {
+  groupFiles,
+  programFiles,
+  programGroups,
+  PROGMAN_INI,
+  type StackGroup,
+} from '../layers/groups.js';
+import { iconPixels } from './group-icon.js';
+import {
   baseName,
   type Layer,
   type LayerEntry,
@@ -93,6 +101,8 @@ import {
   recallChanges,
   recallChangesAt,
   recallLayers,
+  recallBlobs,
+  recallManifests,
   recallImage,
   recallPrograms,
   recallWindows,
@@ -773,9 +783,156 @@ function renderKept() {
 
       actions.append(open, forget);
       row.append(label, actions);
+
+      const groups = keptGroups(program);
+
+      if (groups?.length) {
+        row.append(groupsList(program, groups));
+      }
+
       return row;
     })
   );
+}
+
+/**
+ * Each kept program's own Program Manager groups (`programGroups`), by the
+ * program and its layers: read from the store once, `PROGMAN.INI` and its
+ * group files alone, then shown; null while being read, or where they could
+ * not be.
+ */
+const groupsKept = new Map<string, StackGroup[] | null>();
+
+/** A kept program's groups as read; null until then, the reading begun. */
+function keptGroups(program: KeptProgram) {
+  const key = `${program.name}\n${program.layers.join(' ')}`;
+
+  if (!groupsKept.has(key)) {
+    groupsKept.set(key, null);
+    readGroups(program)
+      .then((groups) => {
+        groupsKept.set(key, groups);
+
+        if (groups.length) {
+          renderKept();
+        }
+      })
+      .catch((error) => console.error(error));
+  }
+
+  return groupsKept.get(key) ?? null;
+}
+
+/** A kept program's groups, from its layers' manifests and the files they name. */
+async function readGroups(program: KeptProgram): Promise<StackGroup[]> {
+  const files = programFiles(await recallManifests(program));
+  const read = async (paths: string[]) => {
+    const hashes = paths.flatMap((path) => files.get(path) ?? []);
+    const blobs = await recallBlobs(hashes);
+
+    return new Map(
+      paths.flatMap((path) => {
+        const data = blobs.get(files.get(path) ?? '');
+
+        return data ? [[path, data] as [string, Uint8Array]] : [];
+      })
+    );
+  };
+  const ini = (await read([PROGMAN_INI])).get(PROGMAN_INI);
+
+  if (!ini) {
+    return [];
+  }
+
+  const found = await read(groupFiles(ini));
+
+  found.set(PROGMAN_INI, ini);
+  return programGroups((path) => found.get(path));
+}
+
+/**
+ * A kept program's groups as a list under it, read-only: each group's name,
+ * and its items, each with its icon drawn from the group file's own bits on
+ * the group window's colour (`iconPixels`), its name, and its command line
+ * and working directory as the title and, opened, beneath it.
+ */
+function groupsList(program: KeptProgram, groups: StackGroup[]) {
+  const list = document.createElement('ul');
+
+  list.className = 'groups';
+  list.setAttribute('aria-label', `${program.name}'s Program Manager groups`);
+
+  for (const stacked of groups) {
+    const row = document.createElement('li');
+    const name = document.createElement('span');
+    const group = stacked.group;
+
+    name.className = 'group-name';
+    name.textContent = group?.name ?? stacked.path;
+    row.append(name);
+
+    if (!group) {
+      const why = document.createElement('span');
+
+      why.className = 'empty';
+      why.textContent = ` would not load, as Program Manager would refuse it: ${stacked.refusal}`;
+      row.append(why);
+      list.append(row);
+      continue;
+    }
+
+    const items = document.createElement('ul');
+
+    items.className = 'group-items';
+    items.setAttribute('aria-label', `Items of ${group.name}`);
+
+    for (const item of group.items) {
+      const entry = document.createElement('li');
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      const label = document.createElement('span');
+      const command = document.createElement('p');
+      const line = document.createElement('code');
+      const pixels = item.icon ? iconPixels(item.icon, program.display) : null;
+
+      if (item.icon && pixels) {
+        const canvas = document.createElement('canvas');
+
+        canvas.width = item.icon.cx;
+        canvas.height = item.icon.cy;
+        canvas.className = 'item-icon';
+        canvas.setAttribute('aria-hidden', 'true');
+        canvas
+          .getContext('2d')
+          ?.putImageData(new ImageData(pixels, item.icon.cx, item.icon.cy), 0, 0);
+        label.append(canvas);
+      }
+
+      label.className = 'item';
+      label.append(item.name);
+      summary.append(label);
+      summary.title = item.directory ? `${item.command} (in ${item.directory})` : item.command;
+
+      line.textContent = item.command;
+      command.append(line);
+
+      if (item.directory) {
+        const directory = document.createElement('code');
+
+        directory.textContent = item.directory;
+        command.append(' in ', directory);
+      }
+
+      details.append(summary, command);
+      entry.append(details);
+      items.append(entry);
+    }
+
+    row.append(items);
+    list.append(row);
+  }
+
+  return list;
 }
 
 function render() {

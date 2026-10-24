@@ -416,6 +416,45 @@ export function recallLayers(program: KeptProgram) {
   });
 }
 
+/**
+ * A kept program's layers' manifests, the lowest first, without their
+ * blobs; rejects where one is missing.
+ */
+export function recallManifests(program: KeptProgram) {
+  return across([LAYERS], 'readonly', async (stores) => {
+    const manifests: LayerManifest[] = [];
+
+    for (const id of program.layers) {
+      const manifest = await answer<LayerManifest | undefined>(stores[LAYERS].get(id));
+
+      if (!manifest) {
+        throw new Error(`its layer ${id} is not kept`);
+      }
+
+      manifests.push(manifest);
+    }
+
+    return manifests;
+  });
+}
+
+/** Blobs kept, by their sha256: those asked for, any not kept left out. */
+export function recallBlobs(hashes: string[]) {
+  return across([BLOBS], 'readonly', async (stores) => {
+    const blobs = new Map<string, Uint8Array>();
+
+    for (const hash of hashes) {
+      const data = await answer<Uint8Array | undefined>(stores[BLOBS].get(hash));
+
+      if (data) {
+        blobs.set(hash, data);
+      }
+    }
+
+    return blobs;
+  });
+}
+
 /** A program forgotten, and what it wrote; its layers and blobs, where nothing else has them. */
 export async function forgetProgram(name: string) {
   await across([PROGRAMS, CHANGES], 'readwrite', async (stores) => {
