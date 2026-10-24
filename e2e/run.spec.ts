@@ -82,6 +82,68 @@ const FAULTC = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULTC.EXE');
 const INSTLAY = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAY.EXE');
 const INSTLAYC = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAYC.EXE');
 
+/* The `ddeinst` probe, an installer's last step: a group asked of Program
+ * Manager over DDE. */
+const DDEINST = join(process.cwd(), 'oracle', 'build', 'probes', 'DDEINST.EXE');
+
+/* The probes that read a floppy's image at A: and a CD-ROM's at D:, as
+ * DOSBox mounted them for the oracle (`imgflop.mounts`, `imgcd.mounts`), and
+ * the committed images they read. */
+const IMGFLOP = join(process.cwd(), 'oracle', 'build', 'probes', 'IMGFLOP.EXE');
+const IMGCD = join(process.cwd(), 'oracle', 'build', 'probes', 'IMGCD.EXE');
+const IMAGES = join(process.cwd(), 'oracle', 'probes', 'images');
+
+/** A committed image, as the page's file picker is given it. */
+const probeImage = (name: string) => ({
+  name,
+  mimeType: 'application/octet-stream',
+  buffer: readFileSync(join(IMAGES, name)),
+});
+
+/**
+ * A committed floppy's image with files written into a folder of it, as DOS
+ * writes them: by the page's own FAT image (`src/file-systems/fat-image.ts`),
+ * the files never put on the image by hand.
+ */
+async function floppyOf(
+  page: import('@playwright/test').Page,
+  base: string,
+  folder: string,
+  files: [string, Buffer][]
+) {
+  const written: string = await page.evaluate(
+    async ({ base, folder, files }) => {
+      const bytes = (text: string) => Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+      const { FATImage } = await import('/src/file-systems/fat-image.ts' as string);
+      const image = await FATImage.of(bytes(base), true);
+
+      await image.makeDirectory(await image.open([]), folder);
+
+      for (const [name, data] of files) {
+        const file = await image.create([folder, name]);
+
+        await file.write(0, bytes(data));
+        file.close();
+      }
+
+      let text = '';
+
+      for (const byte of image.image() as Uint8Array) {
+        text += String.fromCharCode(byte);
+      }
+
+      return btoa(text);
+    },
+    {
+      base: readFileSync(join(IMAGES, base)).toString('base64'),
+      folder,
+      files: files.map(([name, data]) => [name, data.toString('base64')] as [string, string]),
+    }
+  );
+
+  return Buffer.from(written, 'base64');
+}
+
 /* The installation's files a program's windows are drawn from: SYSTEM.INI
  * and WIN.INI, the display driver and the fonts, and USER. */
 function installation() {
@@ -2135,8 +2197,10 @@ for (const { engine, page: at } of ENGINES) {
       );
       await expect(page.locator('#files')).toContainText('C:\\WBSETUP\\SETUP.EXE');
       await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      /* Its six, and PROGMAN.INI, which Program Manager, the installer's
+       * shell, wrote as it started: the bundle's base has none. */
       await expect(page.locator('#status')).toHaveText(
-        'Installed instlay, its 6 files kept as a layer, its setup files let go of. ' +
+        'Installed instlay, its 7 files kept as a layer, its setup files let go of. ' +
           'What it wrote still names them, which are not kept: ' +
           'C:\\WINDOWS\\WIN.INI: Media=C:\\WBSETUP\\INSTLAYC.EXE.'
       );
@@ -2145,10 +2209,19 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#install-section')).toBeHidden();
       await expect(page.locator('#files')).not.toContainText('WBSETUP');
       await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
-      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 6 });
+      /* PROGMAN.INI on C: as the kept program's stack plans it: the
+       * bundle's base has none of its own. */
+      expect(
+        await page.evaluate(() => (globalThis as any).winbox.plan.files as string[])
+      ).toContain('C:\\WINDOWS\\PROGMAN.INI');
+      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 7 });
 
       /* Installed in turn into it: a second layer over the first, the one
-       * program's stack. */
+       * program's stack. It writes the same files again, the same bytes, so
+       * what makes them a change is their stamps, the host's time to DOS's
+       * two seconds: in the same two seconds as the first, it would write
+       * nothing new. */
+      await page.waitForTimeout(2100);
       await page.locator('#picker').setInputFiles(media('again.zip'));
       await page.locator('#install-into').selectOption('instlay');
       await page.getByRole('button', { name: 'Install', exact: true }).click();
@@ -2191,6 +2264,431 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Forget instlay' }).click();
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
+      expect(errors).toEqual([]);
+    });
+
+    test('installs an installer that asks Program Manager for its group, the group kept in its layer', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(DDEINST),
+        'the asset bundle, or the ddeinst probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      /* The probe's installer's last step, shipped as an installer is: it
+       * finds Program Manager running -- WinBox's own, the run's shell, the
+       * bundle's base having none -- and asks it over DDE for a group of
+       * two items. */
+      await page.locator('#picker').setInputFiles({
+        name: 'ddeinst.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'SETUP.EXE', data: new Uint8Array(readFileSync(DDEINST)) }]),
+      });
+      await expect(page.locator('#status')).toHaveText(
+        'ddeinst.zip holds an installer, SETUP.EXE: install it, or keep it as a program.'
+      );
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+
+      /* The group's file and PROGMAN.INI naming it, kept as its layer. */
+      await expect(page.locator('#status')).toContainText(
+        'Installed ddeinst, its 2 files kept as a layer'
+      );
+      const planned = await page.evaluate(() => (globalThis as any).winbox.plan.files as string[]);
+
+      expect(planned).toContain('C:\\WINDOWS\\WINBOXGA.GRP');
+      expect(planned).toContain('C:\\WINDOWS\\PROGMAN.INI');
+      await page.getByRole('button', { name: 'Forget ddeinst' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(errors).toEqual([]);
+    });
+
+    test('mounts disk and CD images as drives beside Windows: read, swapped, ejected and saved', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(IMGFLOP) || !existsSync(IMGCD) || !existsSync(NOTEPAD),
+        'the imgflop and imgcd probes, or the installation, have not been built here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const drives = page.locator('#drives li');
+      const output = (name: string) =>
+        page.evaluate(async (name) => {
+          const changes = await (globalThis as any).winbox.engine.changes();
+          const file = changes.find((change: any) => change.path === `ORACLE\\${name}`);
+
+          return file ? new TextDecoder().decode(file.data) : '';
+        }, name);
+      const ended = 'The program asked Windows to end the session, and has finished.';
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await expect(page.locator('#drives-note')).toContainText('No drives but C:.');
+      await page.locator('#picker').setInputFiles([
+        { name: 'windows.zip', mimeType: 'application/zip', buffer: archive(installation()) },
+        {
+          name: 'oracle.zip',
+          mimeType: 'application/zip',
+          buffer: archive([
+            { path: 'IMGFLOP.EXE', data: new Uint8Array(readFileSync(IMGFLOP)) },
+            { path: 'IMGCD.EXE', data: new Uint8Array(readFileSync(IMGCD)) },
+          ]),
+        },
+      ]);
+      await expect(page.locator('#programs')).toContainText('C:\\ORACLE\\IMGFLOP.EXE');
+
+      /* Beside Windows, two floppies dropped together are one set, in the
+       * order of their names, at A:; a disc the first letter after C:. */
+      await page
+        .locator('#picker')
+        .setInputFiles([
+          probeImage('imgwrite.img'),
+          probeImage('imgflop.img'),
+          probeImage('imgcd.iso'),
+        ]);
+      await expect(page.locator('#status')).toHaveText(
+        'A: Disk 1 of 2, imgflop.img. D: imgcd.iso.'
+      );
+      await expect(drives).toHaveCount(2);
+      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(1).locator('code')).toHaveText('D: imgcd.iso');
+      await expect(page.getByRole('button', { name: 'Eject D:' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Save the image in D:' })).toHaveCount(0);
+
+      /* The floppy read by its probe, as Windows read it under DOSBox, and
+       * written to: its overlay, the image dropped never written. */
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGFLOP.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(ended, { timeout: 30000 });
+      expect(await output('IMGFLOP.OUT')).toContain('A: 0\tREADME.TXT 20 39 1a85 30e4');
+      expect(await page.evaluate(() => (globalThis as any).winbox.engine.diskChanged('A', 0))).toBe(
+        true
+      );
+
+      /* Saved as a new file, as written. */
+      const saving = page.waitForEvent('download');
+
+      await page.getByRole('button', { name: 'Save the image in A:' }).click();
+
+      const download = await saving;
+      const saved = readFileSync((await download.path())!);
+
+      expect(download.suggestedFilename()).toBe('imgflop-saved.img');
+      expect(saved.length).toBe(1474560);
+      expect(saved.equals(probeImage('imgflop.img').buffer)).toBe(false);
+      await expect(page.locator('#status')).toHaveText(
+        'A: saved as imgflop-saved.img, as programs wrote it.'
+      );
+
+      /* Swapped, emptied and picked; the disk written put back as it was
+       * written. */
+      await page.getByRole('button', { name: 'Next disk in A:' }).click();
+      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 2 of 2, imgwrite.img');
+      await page.getByRole('button', { name: 'Eject A:' }).click();
+      await expect(drives.nth(0).locator('code')).toHaveText('A: Empty (2 disks)');
+      await expect(page.getByRole('button', { name: 'Eject A:' })).toHaveCount(0);
+      await page.getByRole('combobox', { name: 'Disk in A:' }).selectOption('0');
+      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
+      expect(
+        await page.evaluate(() =>
+          Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
+        )
+      ).toEqual(Array.from(saved));
+
+      /* The disc read by its probe, on a machine made afresh -- the
+       * coprocessor changed -- what was written to the floppy kept for it. */
+      await page.getByLabel('Math coprocessor').uncheck();
+      await expect
+        .poll(() =>
+          page.evaluate(() => {
+            const image = (globalThis as any).winbox.engine.diskImage('A', 0);
+
+            return image ? Array.from(image as Uint8Array).join() : '';
+          })
+        )
+        .toBe(Array.from(saved).join());
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGCD.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(ended, { timeout: 30000 });
+      expect(await output('IMGCD.OUT')).toContain('D: 0\tA_VERY_L.TEX');
+      expect(
+        await page.evaluate(() =>
+          Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
+        )
+      ).toEqual(Array.from(saved));
+
+      /* A disc dropped on D:'s row goes in its set, and in the drive. */
+      await page.evaluate(async (data) => {
+        const transfer = new DataTransfer();
+        const row = [...document.querySelectorAll('#drives li')].find((li) =>
+          li.textContent?.startsWith('D:')
+        )!;
+
+        transfer.items.add(
+          new File([Uint8Array.from(atob(data), (c) => c.charCodeAt(0))], 'imgcd-2.iso')
+        );
+        row.dispatchEvent(
+          new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true })
+        );
+      }, probeImage('imgcd.iso').buffer.toString('base64'));
+      await expect(drives.nth(1).locator('code')).toHaveText('D: Disc 2 of 2, imgcd-2.iso');
+      await expect(page.locator('#status')).toHaveText('D: Disc 2 of 2, imgcd-2.iso.');
+
+      /* Taken away. */
+      await page.getByRole('button', { name: 'Remove D:' }).click();
+      await expect(drives).toHaveCount(1);
+      expect(errors).toEqual([]);
+    });
+
+    test('installs a program from its floppy into a layer, the floppy not kept with it', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(INSTLAY) || !existsSync(INSTLAYC),
+        'the asset bundle, or the instlay probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      /* The probe's installer and its program in a folder of a floppy, as
+       * DOS writes them there: the probe installs from its own folder only
+       * where that is not a drive's root. */
+      const floppy = await floppyOf(page, 'imgwrite.img', 'INSTALL', [
+        ['SETUP.EXE', readFileSync(INSTLAY)],
+        ['INSTLAYC.EXE', readFileSync(INSTLAYC)],
+      ]);
+
+      await page.locator('#picker').setInputFiles({
+        name: 'instlay-disk1.img',
+        mimeType: 'application/octet-stream',
+        buffer: floppy,
+      });
+      await expect(page.locator('#status')).toHaveText('A: instlay-disk1.img.');
+      await expect(page.locator('#programs')).toContainText('A:\\INSTALL\\SETUP.EXE');
+
+      await page.getByRole('button', { name: 'Install from A:' }).click();
+      await expect(page.locator('#install-note')).toHaveText(
+        'A: holds an installer, A:\\INSTALL\\SETUP.EXE. Installed, what it writes on C: is ' +
+          'kept as a layer; its disks are not kept with it.'
+      );
+      await expect(page.getByRole('button', { name: 'Keep as a program' })).toBeHidden();
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'Installed instlay-disk1 from A:, its 7 files kept as a layer. ' +
+          'What it wrote still names them, which are not kept: ' +
+          'C:\\WINDOWS\\WIN.INI: Media=A:\\INSTALL\\INSTLAYC.EXE.'
+      );
+      await expect(page.getByRole('button', { name: 'Close instlay-disk1' })).toBeVisible();
+      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      expect(await page.evaluate(() => (globalThis as any).winbox.state.programs[0].media)).toEqual(
+        []
+      );
+
+      /* The program installed runs from its layer, the floppy still in A:. */
+      await page.getByRole('button', { name: 'Run C:\\INSTLAY\\INSTLAYC.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
+        timeout: 30000,
+      });
+      await page.getByRole('button', { name: 'Forget instlay-disk1' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(errors).toEqual([]);
+    });
+
+    test("remembers a kept program's disc, asked for again by its name, or kept as a copy", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(IMGCD) || !existsSync(NOTEPAD),
+        'the imgcd probe, or the installation, has not been built here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const counts = () => page.evaluate(() => (globalThis as any).winbox.imageCounts());
+      const drives = page.locator('#drives li');
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'windows.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await expect(page.locator('#windows')).toContainText('windows.zip');
+
+      /* The disc in D: as the program is dropped: kept with it. */
+      await page.locator('#picker').setInputFiles(probeImage('imgcd.iso'));
+      await expect(page.locator('#status')).toHaveText('D: imgcd.iso.');
+      await page.locator('#picker').setInputFiles({
+        name: 'cdgame.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'IMGCD.EXE', data: new Uint8Array(readFileSync(IMGCD)) }]),
+      });
+      await expect(page.getByRole('button', { name: 'Close cdgame' })).toBeVisible();
+      expect(
+        await page.evaluate(() =>
+          (globalThis as any).winbox.state.programs[0].media.map(
+            (one: any) => `${one.letter} ${one.kind} ${one.name} ${one.size}`
+          )
+        )
+      ).toEqual(['D iso imgcd.iso 395264']);
+
+      /* No handle and no copy: nothing of the image is kept. */
+      expect(await counts()).toEqual({ images: 0, copies: 0 });
+
+      /* On the next visit, opened, it asks for the disc by its name. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered windows.zip.', {
+        timeout: 30000,
+      });
+      await expect(drives).toHaveCount(0);
+      await page.getByRole('button', { name: 'Open cdgame' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'cdgame is on C:. Choose again, or drop, the images it is run with: imgcd.iso for D:.'
+      );
+      await expect(page.locator('#needed li code')).toHaveText('D: imgcd.iso (386 KB) for cdgame');
+      await page.getByLabel('Choose imgcd.iso again').setInputFiles(probeImage('imgcd.iso'));
+      await expect(page.locator('#status')).toHaveText('Every image is had.');
+      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+      await expect(page.locator('#needed')).toBeHidden();
+
+      await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The program asked Windows to end the session, and has finished.',
+        { timeout: 30000 }
+      );
+
+      /* A copy kept, where it is asked for: opened again on the next
+       * visit, its disc is in D: at once. */
+      await page.getByLabel("Keep copies of a kept program's images in this browser").check();
+      await expect.poll(counts).toEqual({ images: 1, copies: 1 });
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered windows.zip.', {
+        timeout: 30000,
+      });
+      await page.getByRole('button', { name: 'Open cdgame' }).click();
+      await expect(page.locator('#status')).toHaveText('cdgame is on C:.');
+      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+
+      /* Forgotten, with what is kept of its disc. */
+      await page.getByRole('button', { name: 'Forget cdgame' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(await counts()).toEqual({ images: 0, copies: 0 });
+      expect(errors).toEqual([]);
+    });
+
+    test('mounts a cue sheet with the files it names, asking for those not dropped with it', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(IMGCD) || !existsSync(NOTEPAD),
+        'the imgcd probe, or the installation, has not been built here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const drives = page.locator('#drives li');
+      const files = [probeImage('imgcd.bin'), probeImage('imgtrk audio.wav')];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'windows.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await expect(page.locator('#windows')).toContainText('windows.zip');
+
+      /* The sheet alone wants its files, by the names it gives them. */
+      await page.locator('#picker').setInputFiles(probeImage('imgtrk.cue'));
+      await expect(page.locator('#status')).toHaveText(
+        'imgtrk.cue wants imgcd.bin, imgtrk audio.wav: drop or choose it too.'
+      );
+      await expect(page.locator('#needed li code')).toHaveText([
+        'imgcd.bin for imgtrk.cue',
+        'imgtrk audio.wav for imgtrk.cue',
+      ]);
+      await expect(drives).toHaveCount(0);
+
+      /* Given them, it is a disc. */
+      await page.locator('#picker').setInputFiles(files);
+      await expect(page.locator('#status')).toHaveText('D: imgtrk.cue.');
+      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(page.locator('#needed')).toBeHidden();
+
+      /* A program kept with it remembers the sheet and its files. */
+      await page.locator('#picker').setInputFiles({
+        name: 'cdgame.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'IMGCD.EXE', data: new Uint8Array(readFileSync(IMGCD)) }]),
+      });
+      await expect(page.getByRole('button', { name: 'Close cdgame' })).toBeVisible();
+      expect(
+        await page.evaluate(() =>
+          (globalThis as any).winbox.state.programs[0].media.map(
+            (one: any) =>
+              `${one.letter} ${one.kind} ${one.name} ${one.size} ` +
+              one.tracks.map((track: any) => `${track.name} ${track.size}`).join(', ')
+          )
+        )
+      ).toEqual(['D iso imgtrk.cue 261 imgcd.bin 453936, imgtrk audio.wav 70604']);
+
+      /* Opened on the next visit, all three are asked for, and taken. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered windows.zip.', {
+        timeout: 30000,
+      });
+      await page.getByRole('button', { name: 'Open cdgame' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'cdgame is on C:. Choose again, or drop, the images it is run with: ' +
+          'imgtrk.cue for D:, imgcd.bin for D:, imgtrk audio.wav for D:.'
+      );
+      await page.locator('#picker').setInputFiles([probeImage('imgtrk.cue'), ...files]);
+      await expect(page.locator('#status')).toHaveText('Every image is had.');
+      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+
+      await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The program asked Windows to end the session, and has finished.',
+        { timeout: 30000 }
+      );
+
+      await page.getByRole('button', { name: 'Forget cdgame' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);
     });
   });

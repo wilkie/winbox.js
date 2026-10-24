@@ -12,6 +12,7 @@
 import { type Assets } from '../../assets/bundle.js';
 import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
+import { type DriveSet } from '../drives.js';
 
 /** What the page gives an engine. */
 export interface Page {
@@ -46,6 +47,14 @@ export interface Setup {
    */
   assets: Assets | null;
 
+  /**
+   * The disk and disc images on drives other than C:, each drive's set
+   * (`drives.ts`): mounted as the machine is made, the disk in each drive
+   * put in, or the drive left empty. The page's own objects, which the
+   * engine brings up to date as it is told to (`carry`).
+   */
+  drives: DriveSet[];
+
   /** The display, as `DISPLAY_MODES` names it. */
   display: string;
   coprocessor: boolean;
@@ -64,8 +73,14 @@ export interface Engine {
   /** A machine made afresh, its drive filled from the plan, its screen shown. */
   rebuild(setup: Setup): Promise<void>;
 
-  /** A program on the drive run. */
-  run(program: Program): Promise<void>;
+  /**
+   * A program on the drive run. An installer (`install`) is run as Windows
+   * started as `WIN SETUP.EXE` runs one, on a machine made afresh: Program
+   * Manager the shell, started first and given it as its command line,
+   * starting it and answering what it asks over DDE -- WinBox's own where
+   * the drive has no `PROGMAN.EXE` (`kb/topics/program-manager-dde.md`).
+   */
+  run(program: Program, options?: { install?: boolean }): Promise<void>;
 
   /**
    * What differs on C: from the drive as planned, as it stands: what
@@ -74,8 +89,47 @@ export interface Engine {
    */
   changes(): Promise<Change[] | null>;
 
-  /** Whether no program is running: every one started has ended, or none has. */
+  /**
+   * Whether no program is running: every one started has ended, or none has
+   * -- an installer's shell apart, which runs on as the installer ends.
+   */
   idle(): boolean;
+
+  /**
+   * A drive's set of images mounted on the machine as it is, as the Drives
+   * strip adds one (it is in `Setup.drives` already): at once where a
+   * program runs. Why not, where it could not be; null where it was.
+   */
+  mount(set: DriveSet): Promise<string | null>;
+
+  /** A disk added to a drive's set on the machine as it is (it is in the set already). */
+  addDisk(set: DriveSet, disk: number): Promise<string | null>;
+
+  /**
+   * A drive's disk, from nought, put in it, the disk that was in kept with
+   * what was written to it; its current folder kept, as DOSBox's drive
+   * manager keeps it (`Files::swap`, `FileManager.swap`).
+   */
+  insert(letter: string, disk: number): string | null;
+
+  /** A drive's disk taken out, the drive left empty (`Files::eject`, `FileManager.eject`). */
+  eject(letter: string): string | null;
+
+  /** A drive's images let go of, and the drive with them. */
+  unmount(letter: string): void;
+
+  /** A disk of a drive's set as programs have written it, for "Save image…"; null for a disc. */
+  diskImage(letter: string, disk: number): Uint8Array | null;
+
+  /** Whether programs have written to a disk of a drive's set. */
+  diskChanged(letter: string, disk: number): boolean;
+
+  /**
+   * Each disk programs have written to kept as written in the page's set
+   * (`Disk.written`), for the machine made next to be given: what was
+   * written is kept for the visit, across the machine made afresh.
+   */
+  carry(): void;
 
   /**
    * Whether the machine has a sound card, where the engine has one to give

@@ -466,6 +466,20 @@ async function imgmountLines(probe) {
 
     await mkdir(into, { recursive: true });
     await cp(join(ROOT, 'oracle', 'probes', 'images', image), copy);
+
+    /* A cue sheet's files beside it, by their own names, where DOSBox
+     * looks for them after the working folder (`GetRealFileName`,
+     * `cdrom_image.cpp` 618-647). */
+    if (/\.cue$/i.test(image)) {
+      const sheet = await readFile(join(ROOT, 'oracle', 'probes', 'images', image), 'latin1');
+
+      for (const [, quoted, bare] of sheet.matchAll(/^\s*FILE\s+(?:"([^"]*)"|(\S+))/gim)) {
+        const file = quoted ?? bare;
+
+        await cp(join(ROOT, 'oracle', 'probes', 'images', file), join(into, file));
+        log(`  ${letter}: ${file} (the cue sheet's)`);
+      }
+    }
     /* An `hdd` is sized from its file, whole cylinders of 16 heads and 63
      * sectors (`dos_programs.cpp` 1213-1236). */
     lines.push(`imgmount ${letter.toLowerCase()} ${copy} -t ${kind}`);

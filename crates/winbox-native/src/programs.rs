@@ -19,8 +19,10 @@
 //! (`layers::materialise`), and its user's layer on top, a writable folder
 //! whose deletes of what is beneath are kept in a file beside it
 //! (`HostDrive::keeping_removed`). An installer is run over the same stack
-//! with its media, at `C:\WBSETUP`, beneath an empty top; what it left in
-//! the top, everything at the media's path dropped, is the layer kept.
+//! with its media, at `C:\WBSETUP`, beneath an empty top, started by
+//! Program Manager, the run's shell (`progman::start_shell`); what it left
+//! in the top, everything at the media's path dropped -- Program Manager's
+//! `PROGMAN.INI` and group files kept -- is the layer kept.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;

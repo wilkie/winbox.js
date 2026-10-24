@@ -17,9 +17,8 @@ const PROBE: &str = "pmstart";
 /// its file (`kb/kernel/getmodulehandle.md`).
 const WITH_FILE: &[&str] = &["module"];
 
-/// And with WinBox's: its frame is hidden, by the owner's decision; and it
-/// does not yet save its settings as it closes.
-const WITHOUT_FILE: &[&str] = &["visible", "saved"];
+/// And with WinBox's: its frame is hidden, by the owner's decision.
+const WITHOUT_FILE: &[&str] = &["visible"];
 
 /// A run of the probe: how it stopped, its records, and whether a module
 /// named `PROGMAN` was loaded from a file of that name -- Microsoft's.

@@ -21,6 +21,7 @@ const CHANGES = 'changes';
 const BLOBS = 'blobs';
 const LAYERS = 'layers';
 const PROGRAMS = 'programs';
+const IMAGES = 'images';
 const KEY = 'windows';
 const BUNDLE = 'bundle';
 
@@ -94,6 +95,50 @@ export interface KeptProgram {
 
   /** When it was kept, in milliseconds since 1970. */
   kept: number;
+
+  /**
+   * The disk and disc images it is run with, each set's in order, its
+   * letter pinned (`kb/topics/drives-and-disks.md`, "The page's drives"):
+   * mounted again as it is opened, each from what the `images` store keeps
+   * of it -- a handle on the file, or a copy where one was asked for --
+   * else asked for again by its name.
+   */
+  media?: Medium[];
+}
+
+/** An image a kept program is run with. */
+export interface Medium {
+  /** Its drive, upper case: `D`. */
+  letter: string;
+  kind: 'floppy' | 'hdd' | 'iso';
+
+  /** Its file's name and size, by which it is asked for again. */
+  name: string;
+  size: number;
+
+  /** What tells its file again (`imageKey`): its name, size and last change. */
+  key: string;
+
+  /**
+   * A cue sheet's files, in the order it names them: each kept, and asked
+   * for again, as the sheet itself is.
+   */
+  tracks?: { name: string; size: number; key: string }[];
+}
+
+/**
+ * What the page keeps of an image, by its key (`imageKey`): no copy of the
+ * file unless one was asked for. A File System Access handle on it, where
+ * the browser gives one (Chromium), whose permission to read is asked
+ * again on each visit; or the image's bytes, where the person ticked to
+ * keep a copy in this browser.
+ */
+export interface KeptImage {
+  name: string;
+  size: number;
+  modified: number;
+  handle?: unknown;
+  bytes?: Uint8Array;
 }
 
 export interface Remembered {
@@ -118,14 +163,15 @@ let opened: Promise<IDBDatabase | null> | null = null;
 function open(): Promise<IDBDatabase | null> {
   opened ??= new Promise((resolve) => {
     try {
-      /* Version 4 added the programs, their layers and the blobs; the
-       * stores before it are kept as they are. */
-      const request = indexedDB.open(DATABASE, 4);
+      /* Version 4 added the programs, their layers and the blobs, and 5
+       * the images programs are run with; the stores before them are kept
+       * as they are. */
+      const request = indexedDB.open(DATABASE, 5);
 
       request.onupgradeneeded = () => {
         const database = request.result;
 
-        for (const name of [ARCHIVES, ASSETS, CHANGES, BLOBS, LAYERS, PROGRAMS]) {
+        for (const name of [ARCHIVES, ASSETS, CHANGES, BLOBS, LAYERS, PROGRAMS, IMAGES]) {
           if (!database.objectStoreNames.contains(name)) {
             database.createObjectStore(name);
           }
@@ -381,20 +427,33 @@ export async function forgetProgram(name: string) {
 
 /** Every program forgotten, with its layers and blobs. */
 export const forgetAllPrograms = () =>
-  across([BLOBS, LAYERS, PROGRAMS], 'readwrite', async (stores) => {
-    for (const name of [BLOBS, LAYERS, PROGRAMS]) {
+  across([BLOBS, LAYERS, PROGRAMS, IMAGES], 'readwrite', async (stores) => {
+    for (const name of [BLOBS, LAYERS, PROGRAMS, IMAGES]) {
       stores[name].clear();
     }
   }).catch(() => undefined);
 
 /**
- * The layers no kept program has, and the blobs no layer kept has, let go
- * of: what forgetting a program, or keeping another in its name, leaves.
+ * The layers no kept program has, the blobs no layer kept has, and the
+ * images no kept program is run with, let go of: what forgetting a
+ * program, or keeping another in its name, leaves.
  */
 export function collect() {
-  return across([BLOBS, LAYERS, PROGRAMS], 'readwrite', async (stores) => {
+  return across([BLOBS, LAYERS, PROGRAMS, IMAGES], 'readwrite', async (stores) => {
     const programs = await answer<KeptProgram[]>(stores[PROGRAMS].getAll());
     const used = new Set(programs.flatMap((program) => program.layers));
+    const media = new Set(
+      programs
+        .flatMap((program) => program.media ?? [])
+        .flatMap((one) => [one.key, ...(one.tracks ?? []).map((track) => track.key)])
+    );
+
+    for (const key of await answer<IDBValidKey[]>(stores[IMAGES].getAllKeys())) {
+      if (!media.has(String(key))) {
+        stores[IMAGES].delete(key);
+      }
+    }
+
     const manifests = await answer<LayerManifest[]>(stores[LAYERS].getAll());
     const hashes = new Set<string>();
 
@@ -426,6 +485,34 @@ export const keptCounts = () =>
     layers: await answer(stores[LAYERS].count()),
     blobs: await answer(stores[BLOBS].count()),
   }));
+
+/** A kept program's record written again, its media changed; rejects where it could not be. */
+export const rememberProgram = (program: KeptProgram) =>
+  across([PROGRAMS], 'readwrite', async (stores) => {
+    stores[PROGRAMS].put(program, program.name);
+  }).then(() => collect().catch(() => undefined));
+
+/** What is kept of an image, by its key; null where nothing is. */
+export const recallImage = (key: string) =>
+  run<KeptImage>(IMAGES, 'readonly', (store) => store.get(key));
+
+/**
+ * What is kept of an image written, by its key: a handle on its file, or
+ * its bytes where a copy was asked for. Rejects where it could not be --
+ * the browser's quota spent by a copy, say.
+ */
+export const rememberImage = (key: string, image: KeptImage) => {
+  persist();
+  return run(IMAGES, 'readwrite', (store) => store.put(image, key), true);
+};
+
+/** How many images are kept, and how many of them as copies: what the page's tests look at. */
+export const imageCounts = () =>
+  across([IMAGES], 'readonly', async (stores) => {
+    const images = await answer<KeptImage[]>(stores[IMAGES].getAll());
+
+    return { images: images.length, copies: images.filter((image) => image.bytes).length };
+  });
 
 /** What programs wrote kept under a key, whatever it was told against. */
 export const recallChangesAt = (key: string) =>

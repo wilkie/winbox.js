@@ -596,29 +596,33 @@ pub fn load_icon_named(system: &mut System, instance: u16, wanted: Result<u16, S
     let Some(module) = module_of(system, instance) else {
         return 0;
     };
-    let executable = &system.modules[module].executable;
-    let group = typed(executable, RT_GROUP_ICON)
-        .into_iter()
-        .find(|(id, given, _)| match &wanted {
-            Ok(number) => *id == Some(*number),
-            Err(text) => {
-                let upper = text.to_ascii_uppercase();
+    // WinBox's Program Manager's are `PROGMAN.EXE`'s, from the store
+    // (`System::progman_kept`).
+    let executable = match system.progman_kept(module) {
+        Some(kept) => match system.kept_file(kept) {
+            Some(file) => file,
+            None => return 0,
+        },
+        None => system.modules[module].executable.clone(),
+    };
+    let group =
+        typed(&executable, RT_GROUP_ICON)
+            .into_iter()
+            .find(|(id, given, _)| match &wanted {
+                Ok(number) => *id == Some(*number),
+                Err(text) => {
+                    let upper = text.to_ascii_uppercase();
 
-                given.as_deref() == Some(upper.as_str())
-                    || id.is_some_and(|id| id.to_string() == upper)
-            }
-        });
+                    given.as_deref() == Some(upper.as_str())
+                        || id.is_some_and(|id| id.to_string() == upper)
+                }
+            });
     let Some((_, _, group)) = group else {
         return 0;
     };
     let mut palette = system.palette();
     let colours = system.display.colors;
-    let Some(icon) = icon_of(
-        &system.modules[module].executable,
-        &group,
-        colours,
-        &mut palette,
-    ) else {
+    let Some(icon) = icon_of(&executable, &group, colours, &mut palette) else {
         return 0;
     };
 

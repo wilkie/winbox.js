@@ -29,7 +29,9 @@ fn records_on(name: &str, base: Base) -> Option<(Stop, Vec<[String; 3]>)> {
     let (stop, records, ()) = run_setup(
         name,
         setup,
-        |system| system.box_hand = Some(box_hand(name)),
+        |system| {
+            system.box_hand = Some(box_hand(name));
+        },
         |system| {
             (
                 winbox_win16::Engine::new(system).run(2_000_000_000, 300.0),

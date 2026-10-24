@@ -13,12 +13,15 @@ import { Executable } from '../../executable.js';
 import { Machine } from '../../emulator/machine.js';
 import { Win16 } from '../../win16.js';
 import { previousInstance } from '../../win16/kernel/WinExec.js';
+import { startShell } from '../../win16/progman/main.js';
 import { Presenter } from '../../raster/presenter.js';
 import { DISPLAY_MODES } from '../../win16/display-modes.js';
 import { accessibleTree } from '../../win16/user/accessible-tree.js';
 import { AriaMirror } from '../aria-mirror.js';
 import { applyChanges, fat16Drive, Fat16Changes } from '../changes.js';
 import { displayDriverOf, fillDrive, type Drive, type Program, systemFileOf } from '../drive.js';
+import { type DriveSet, volumeOf } from '../drives.js';
+import { EmptyDrive } from '../../file-systems/empty-drive.js';
 import {
   attachInput,
   type Engine,
@@ -69,7 +72,7 @@ export class TypeScriptEngine implements Engine {
     );
   };
 
-  async rebuild({ plan, windows, assets, display, coprocessor, changes: kept }: Setup) {
+  async rebuild({ plan, windows, assets, display, coprocessor, changes: kept, drives }: Setup) {
     const page = this.#page;
     const machine = new Machine({ coprocessor });
     const drive = await fillDrive(machine, plan);
@@ -124,10 +127,19 @@ export class TypeScriptEngine implements Engine {
     }
 
     this.session = { machine, win16, drive, changes };
+    this.#drives = drives;
+    this.#sets.clear();
+
+    for (const set of drives) {
+      await this.mount(set);
+    }
   }
 
   idle() {
-    const tasks = Object.values(this.session?.win16.scheduler._tasks ?? {}) as any[];
+    const win16 = this.session?.win16;
+    const tasks = Object.entries(win16?.scheduler._tasks ?? {})
+      .filter(([handle]) => Number(handle) !== win16?._shellTask)
+      .map(([, task]) => task as any);
 
     return tasks.every((task) => task.ended);
   }
@@ -136,7 +148,103 @@ export class TypeScriptEngine implements Engine {
     return (await this.session?.changes.changes()) ?? null;
   }
 
-  async run(program: Program) {
+  /* ---- the drives of images ---- */
+
+  /** The page's sets, as the machine was last made from them. */
+  #drives: DriveSet[] = [];
+
+  /**
+   * Each drive's volumes, by its letter: one a disk of its set, read from
+   * the page's bytes where they are (`FATImage`, `ISO9660`) -- held in
+   * memory, as the Rust engine's are, since this engine's readers read a
+   * sector at once -- the one in the drive mounted on DOS's files, the
+   * others holding what was written to them while they are out.
+   */
+  readonly #sets = new Map<string, any[]>();
+
+  async mount(set: DriveSet) {
+    const files = this.session?.win16.dos.files;
+
+    if (!files) {
+      return null;
+    }
+
+    try {
+      const volumes = await Promise.all(set.disks.map((disk) => volumeOf(set.kind, disk)));
+      const volume = volumes[set.current];
+
+      this.#sets.set(set.letter, volumes);
+      files.mount(set.letter, set.ejected ? EmptyDrive.after(volume) : volume);
+      return null;
+    } catch (error: any) {
+      return `${set.letter}: ${error?.message ?? error}`;
+    }
+  }
+
+  async addDisk(set: DriveSet, disk: number) {
+    const volumes = this.#sets.get(set.letter);
+
+    if (!volumes) {
+      return this.mount(set);
+    }
+
+    try {
+      volumes[disk] = await volumeOf(set.kind, set.disks[disk]);
+      return null;
+    } catch (error: any) {
+      return `${set.letter}: ${error?.message ?? error}`;
+    }
+  }
+
+  insert(letter: string, disk: number) {
+    const volumes = this.#sets.get(letter);
+    const files = this.session?.win16.dos.files;
+
+    if (!volumes?.[disk] || !files) {
+      return `${letter}: has no disk ${disk + 1}`;
+    }
+
+    files.swap(letter, volumes[disk]);
+    return null;
+  }
+
+  eject(letter: string) {
+    const files = this.session?.win16.dos.files;
+
+    if (!this.#sets.has(letter) || !files) {
+      return `${letter}: has no images`;
+    }
+
+    return files.eject(letter) ? null : `${letter}: is a hard disk, not taken out`;
+  }
+
+  unmount(letter: string) {
+    this.#sets.delete(letter);
+    this.session?.win16.dos.files.unmount(letter);
+  }
+
+  diskImage(letter: string, disk: number) {
+    const volume = this.#sets.get(letter)?.[disk];
+
+    return volume?.image?.() ?? null;
+  }
+
+  diskChanged(letter: string, disk: number) {
+    return Boolean(this.#sets.get(letter)?.[disk]?.changed);
+  }
+
+  carry() {
+    for (const set of this.#drives) {
+      set.disks.forEach((disk, at) => {
+        if (this.diskChanged(set.letter, at)) {
+          disk.bytes = this.diskImage(set.letter, at)!;
+          disk.written = true;
+        }
+      });
+    }
+  }
+
+  async run(program: Program, options: { install?: boolean } = {}) {
     const session = this.session;
 
     if (!session) {
@@ -148,7 +256,22 @@ export class TypeScriptEngine implements Engine {
     page.status(`Running ${program.path}…`);
 
     try {
-      const file = await session.drive.fileSystem.open(program.parts);
+      const letter = program.path[0].toUpperCase();
+      const fileSystem =
+        letter === 'C' ? session.drive.fileSystem : session.win16.dos.files.query(letter);
+      const file = await fileSystem?.open(program.parts);
+
+      if (!file) {
+        throw new Error(`no file ${program.path}`);
+      }
+
+      /* An installer: Program Manager the shell, starting it (`startShell`). */
+      if (options.install) {
+        await startShell(session.win16, program.path);
+        page.status(`${program.path} is running.`);
+        return;
+      }
+
       const name = program.parts[program.parts.length - 1].replace(/\.EXE$/, '');
       const executable: any = new Executable(name, program.path, file);
 

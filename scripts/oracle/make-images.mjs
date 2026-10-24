@@ -28,6 +28,15 @@
  *   without an extension, one marked hidden (the existence bit of its
  *   record, set here), one whose record's offset from GMT is not nought,
  *   a folder whose name is past 8.3, and an 8.3 one with folders two deep.
+ * * `imgcd.bin` and `imgcd.cue`: `imgcd.iso`'s sectors as a raw image, each
+ *   2,352 bytes of mode 1 -- sync, header (its place as minutes, seconds
+ *   and frames, 150 on), data, EDC; the ECC left nought, which DOSBox
+ *   never reads -- and a cue sheet of one MODE1/2352 track.
+ * * `imgcd2.bin` and `imgcd2.cue`: the same as mode 2 form 1 (sync, header,
+ *   subheader, data, EDC), a MODE2/2352 track.
+ * * `imgtrk.cue` and `imgtrk audio.wav`: two files, `imgcd.bin` its data
+ *   track and a WAVE file of silence its audio track, after a pregap; a
+ *   name with a space, quoted, and a REM, a TITLE and a CATALOG.
  * * `imghdd.img`: a hard disk of 6 cylinders, 16 heads and 63 sectors
  *   (DOSBox's `imgmount -t hdd` takes a size only of whole such cylinders,
  *   `dos_programs.cpp` 1213-1236), with a master boot record of one
@@ -587,6 +596,91 @@ async function makeDisc(scratch) {
   return bytes;
 }
 
+/* ------------------------------------------------------------ CUE/BIN */
+
+/** A number as two binary-coded decimal digits. */
+const bcd = (n) => ((Math.floor(n / 10) << 4) | (n % 10)) & 0xff;
+
+/** The CD-ROM EDC's table: CRC-32 of polynomial 8001801Bh, bits reversed (D8018001h). */
+const EDC_TABLE = Array.from({ length: 256 }, (_, i) => {
+  let edc = i;
+
+  for (let bit = 0; bit < 8; bit++) {
+    edc = (edc >>> 1) ^ (edc & 1 ? 0xd8018001 : 0);
+  }
+
+  return edc >>> 0;
+});
+
+function edc(bytes) {
+  let value = 0;
+
+  for (const byte of bytes) {
+    value = (EDC_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8)) >>> 0;
+  }
+
+  return value;
+}
+
+/**
+ * A 2,048-byte image's sectors as raw 2,352-byte ones: sync, a header of
+ * the sector's place (150 frames on) and its mode, then for mode 1 the data
+ * and its EDC; for mode 2 form 1 a subheader twice, the data and the EDC
+ * over both. ECC left nought.
+ */
+function rawSectors(cooked, mode) {
+  const count = cooked.length / 2048;
+  const raw = Buffer.alloc(count * 2352);
+
+  for (let sector = 0; sector < count; sector++) {
+    const out = raw.subarray(sector * 2352, (sector + 1) * 2352);
+    const frames = sector + 150;
+    const data = cooked.subarray(sector * 2048, (sector + 1) * 2048);
+
+    out.fill(0xff, 1, 11);
+    out[12] = bcd(Math.floor(frames / 4500));
+    out[13] = bcd(Math.floor(frames / 75) % 60);
+    out[14] = bcd(frames % 75);
+    out[15] = mode;
+
+    if (mode === 1) {
+      data.copy(out, 16);
+      out.writeUInt32LE(edc(out.subarray(0, 2064)), 2064);
+    } else {
+      out.set([0, 0, 0x08, 0, 0, 0, 0x08, 0], 16);
+      data.copy(out, 24);
+      out.writeUInt32LE(edc(out.subarray(16, 2072)), 2072);
+    }
+  }
+
+  return raw;
+}
+
+const discBytes = () => readFile(join(OUT, 'imgcd.iso'));
+
+/** A cue sheet's text, its lines ended CR LF as a DOS program writes one. */
+const cueText = (lines) => Buffer.from(lines.map((line) => `${line}\r\n`).join(''), 'latin1');
+
+/** A WAVE file of silence: 44.1 kHz, 16-bit stereo, a number of CD frames long. */
+function silence(frames) {
+  const data = frames * 2352;
+  const wave = Buffer.alloc(44 + data);
+
+  wave.write('RIFF', 0, 'latin1');
+  wave.writeUInt32LE(36 + data, 4);
+  wave.write('WAVEfmt ', 8, 'latin1');
+  wave.writeUInt32LE(16, 16);
+  wave.writeUInt16LE(1, 20);
+  wave.writeUInt16LE(2, 22);
+  wave.writeUInt32LE(44100, 24);
+  wave.writeUInt32LE(44100 * 4, 28);
+  wave.writeUInt16LE(4, 32);
+  wave.writeUInt16LE(16, 34);
+  wave.write('data', 36, 'latin1');
+  wave.writeUInt32LE(data, 40);
+  return wave;
+}
+
 async function main() {
   const scratch = await mkdtemp(join(tmpdir(), 'winbox-images-'));
   const only = process.argv.slice(2);
@@ -599,6 +693,35 @@ async function main() {
       ['imghdd.img', makeHardDisk],
       ['imgcd.iso', makeDisc],
       ['imgwrite.img', makeWriteFloppy],
+      ['imgcd.bin', async () => rawSectors(await discBytes(), 1)],
+      [
+        'imgcd.cue',
+        async () =>
+          cueText(['FILE "imgcd.bin" BINARY', '  TRACK 01 MODE1/2352', '    INDEX 01 00:00:00']),
+      ],
+      ['imgcd2.bin', async () => rawSectors(await discBytes(), 2)],
+      [
+        'imgcd2.cue',
+        async () =>
+          cueText(['FILE imgcd2.bin BINARY', '  TRACK 01 MODE2/2352', '    INDEX 01 00:00:00']),
+      ],
+      ['imgtrk audio.wav', async () => silence(30)],
+      [
+        'imgtrk.cue',
+        async () =>
+          cueText([
+            'REM a data track and an audio track, each its own file',
+            'CATALOG 0000000000000',
+            'TITLE "WinBox CD"',
+            'FILE "imgcd.bin" BINARY',
+            '  TRACK 01 MODE1/2352',
+            '    INDEX 01 00:00:00',
+            'FILE "imgtrk audio.wav" WAVE',
+            '  TRACK 02 AUDIO',
+            '    PREGAP 00:02:00',
+            '    INDEX 01 00:00:00',
+          ]),
+      ],
     ].filter(([name]) => !only.length || only.includes(name))) {
       const bytes = await make(scratch);
 

@@ -245,6 +245,17 @@ impl Engine {
                 return Round::Again;
             }
 
+            // An install run's shell waiting alone, the installer and what
+            // it started ended: the run is over as though every task had
+            // ended (`System::shell_task`).
+            if self.system().shell_alone() {
+                if self.system().stays_up && !self.system().ended {
+                    return Round::Idle(f64::INFINITY);
+                }
+
+                return Round::Stopped(Stop::Ended);
+            }
+
             tasks.passing = Some(spawn.pass());
         }
 

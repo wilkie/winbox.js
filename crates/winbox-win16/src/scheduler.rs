@@ -132,6 +132,22 @@ impl System {
         })
     }
 
+    /// Whether an install run's shell is the only task left of several
+    /// (`System::shell_task`): another has run and every other has ended.
+    pub fn shell_alone(&self) -> bool {
+        let Some(shell) = self.shell_task else {
+            return false;
+        };
+        let others = || {
+            self.scheduler
+                .slots
+                .iter()
+                .filter(move |slot| slot.handle != shell)
+        };
+
+        others().next().is_some() && others().all(|slot| slot.ended)
+    }
+
     /// How many tasks have not ended.
     pub fn task_count(&self) -> usize {
         self.scheduler

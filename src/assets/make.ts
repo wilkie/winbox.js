@@ -18,8 +18,11 @@
  *   `MIDIMAP.CFG` and `SETUP.REG` of `[win.other]`; and the sounds of
  *   `[win.bmps]`.
  * - The modules: `USER.EXE` (`[windows.system]`), `SHELL.DLL`
- *   (`[win.other]`) and each display's driver (`[display]`, or a driver
- *   disk's `OEMSETUP.INF`), with their segments made nought (`ne.ts`).
+ *   (`[win.other]`), `PROGMAN.EXE` (`[win.shell]`) -- whose icons WinBox's
+ *   own Program Manager gives the items of DOS programs and of programs not
+ *   found, by the owner's decision of 2026-10-22 -- and each display's
+ *   driver (`[display]`, or a driver disk's `OEMSETUP.INF`), with their
+ *   segments made nought (`ne.ts`).
  *
  * Nothing is written to C: here; which pool file goes where for a display
  * is the composer's (`compose.ts`).
@@ -312,7 +315,7 @@ export async function makeAssets(
     }
   }
 
-  const modules = new Set(['USER.EXE', 'SHELL.DLL']);
+  const modules = new Set(['USER.EXE', 'SHELL.DLL', 'PROGMAN.EXE']);
   const displays: string[] = [];
 
   for (const [display, { profile, oem: fromOem }] of Object.entries(DISPLAY_PROFILES)) {

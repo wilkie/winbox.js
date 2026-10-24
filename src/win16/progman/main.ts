@@ -7,8 +7,9 @@ import { streamOf } from '../library.js';
 import { WINMAIN_SLOT, image } from './image.js';
 import { Progman } from './index.js';
 import { dde, isDde } from './dde.js';
-import { forget, load } from './loaded.js';
+import { forget, groups, load, save } from './loaded.js';
 import { startUpKeys } from '../../layers/groups.js';
+import { D_STARTED_IN, D_WINDOWS, currentDirectory, startPrograms } from './shell.js';
 
 /**
  * Program Manager's `WinMain` and its frame's window procedure, as
@@ -19,33 +20,61 @@ import { startUpKeys } from '../../layers/groups.js';
  * is kept at the same places in the instance's own (`D_*`). As
  * `crates/winbox-win16/src/progman/main.rs`.
  *
- * What it does not do yet, each left where the file does it: its icons,
- * accelerators and fonts (it has no resources); the groups' windows (the
- * groups are read into the group model, `loaded.ts`, which its DDE, `dde.ts`,
- * reads) and what its commands change; saving the settings (seg4 `2845`); as the shell, `load=` and `run=` and ending Windows; its
- * command line; and the messages of its menus and help. WinBox's is hidden,
- * by the owner's decision: its frame is never shown, so it is not painted or
- * made active.
+ * Its groups are `loaded.ts`'s, their items `items.ts`'s, their windows'
+ * procedure `window.ts`'s. What it does not do yet, each left where the file
+ * does it: its own icons 2 and 7 and its accelerators (its icons are
+ * `PROGMAN.EXE`'s in the asset bundle's store, `stored.ts`); as the shell,
+ * `load=` and `run=` and ending Windows; its command line; and the messages
+ * of its menus and help. WinBox's is hidden, by the owner's decision: its
+ * frame is never shown, so it is not painted or made active.
  */
 
 /* What `PROGMAN.EXE` keeps in its data segment (seg8), by its places. */
-const D_MIN_ON_RUN = 0x12;
-const D_AUTO_ARRANGE = 0x14;
+export const D_MIN_ON_RUN = 0x12;
+export const D_AUTO_ARRANGE = 0x14;
 const D_SAVE_SETTINGS = 0x1c;
 export const D_SHELL = 0x18;
 const D_NO_RUN = 0x28;
 const D_NO_CLOSE = 0x2a;
-const D_NO_SAVE_SETTINGS = 0x2c;
+export const D_NO_SAVE_SETTINGS = 0x2c;
 const D_NO_FILE_MENU = 0x2e;
 const D_EDIT_LEVEL = 0x12e;
-const D_CLOSING = 0x32;
+export const D_CLOSING = 0x32;
+/** Set while a group's window is made (seg4 `1e44`). */
+export const D_CREATING = 0x16;
+/** `PROGMAN.INI` found read-only as start-up read it. */
+export const D_INI_READ_ONLY = 0x1e;
+/** Saving's errors shown (seg4 `285c`), and an item left with no icon (seg4 `1ae9`). */
+export const D_SAVE_ERRORS = 0x30;
+export const D_LOST_ICONS = 0x34;
+/** Set while a group's file is read as it loads (seg4 `1e77`). */
+export const D_LOADING = 0x162;
+/** Set while a group's scroll bars are fitted (seg2 `0b29`). */
+export const D_SCROLLING = 0x15c;
+/**
+ * The metrics start-up keeps (seg3 `0a43`-`0b07`): `SM_CYBORDER`; two
+ * `SM_CXBORDER`s and two `SM_CYBORDER`s; `SM_CXICON` and `SM_CYICON`; an
+ * icon's cell, the icon and four borders each way; the icons' spacing across
+ * and down; `IconTitleWrap`; and the font of the icons' titles.
+ */
+export const D_BORDER_Y = 0x798;
+export const D_BORDER_X = 0x446;
+const D_BORDERS_Y = 0x44c;
+const D_CX_ICON = 0x76e;
+const D_CY_ICON = 0x770;
+export const D_CELL_X = 0x444;
+export const D_CELL_Y = 0x44a;
+export const D_ACROSS = 0x4d4;
+export const D_DOWN = 0x558;
+export const D_TITLE_WRAP = 0x24;
+export const D_TITLE_FONT = 0x124;
 /** The frame, which a second instance asks for by `GetInstanceData`. */
 export const D_FRAME = 0x126;
 const D_OTHER_WINDOW = 0x132;
 const D_ACTIVATE_SHELL = 0x134;
 const D_SHELL_HELP = 0x81c;
 const D_COMMDLG_HELP = 0x450;
-const D_INSTANCE = 0x72a;
+export const D_INSTANCE = 0x72a;
 /** The MDI client. */
 export const D_CLIENT = 0x76c;
 
@@ -63,6 +92,7 @@ const SIZE_MINIMIZED = 1;
 /** The ordinals of `Progman`'s exports. */
 const WINMAIN_ORDINAL = 1;
 const FRAME_PROC = 2;
+const GROUP_PROC = 3;
 
 /** The file's name, and where it says it is. */
 export const FILE = 'PROGMAN.EXE';
@@ -204,6 +234,64 @@ export async function startProgman(
   });
 }
 
+/**
+ * Program Manager started as the shell of an install run, as Windows started
+ * as `WIN SETUP.EXE` starts it: the first task, before any other, so the only
+ * one as it starts (seg3 `0b88`), given the installer as its command line,
+ * which it starts itself once its groups are loaded, in the installer's own
+ * directory (`shell.ts`). Microsoft's, where the drive has
+ * `C:\WINDOWS\PROGMAN.EXE`; else WinBox's own, made as `startProgman` makes
+ * it. Its task kept as the run's shell (`_shellTask`), and run. As
+ * `progman::start_shell`.
+ */
+export async function startShell(system: any, commandLine: string): Promise<number> {
+  const file = await system.dos.files.query('C')?.open(['WINDOWS', FILE]);
+  const own = !file || file.info?.directory;
+  const executable: any = new Executable('PROGMAN', PATH, own ? streamOf(image()) : file);
+
+  await executable.parse();
+
+  const handle = await system.load(executable);
+
+  system.link(handle);
+  system._shellTask = handle;
+  system.run(handle, { commandLine });
+
+  /* Written once the task is made, as `startProgman` writes it. */
+  if (own) {
+    const kept = keep(system);
+    const loader = system.handles.resolve(handle).loader;
+    const selector = segmentSelector(loader.translate(loader.ds));
+    const winmain = exportAddress(system, WINMAIN_ORDINAL);
+    const core = system.machine.cpu.core;
+
+    core.write16(selector, WINMAIN_SLOT, winmain & 0xffff);
+    core.write16(selector, WINMAIN_SLOT + 2, winmain >>> 16);
+    system._modules._handles[PATH] = kept;
+  }
+
+  return handle;
+}
+
+/**
+ * Whether an install run's shell is the only task left of several
+ * (`startShell`): another has run and every other has ended. As
+ * `System::shell_alone`.
+ */
+export function shellAlone(system: any): boolean {
+  const shell = system?._shellTask;
+
+  if (!shell) {
+    return false;
+  }
+
+  const others = Object.entries(system.scheduler._tasks ?? {})
+    .filter(([handle]) => Number(handle) !== shell)
+    .map(([, task]) => task as any);
+
+  return others.length > 0 && others.every((task) => task.ended);
+}
+
 /** One instance's Program Manager, as its calls are made: the system and its data segment. */
 export class Pm {
   declare system: any;
@@ -228,6 +316,28 @@ export class Pm {
       { length },
       (_, i) => this.core.read8(selector, (offset + i) & 0xffff) & 0xff
     );
+  }
+
+  /** A place in its data, as a far address. */
+  at(offset: number): number {
+    return ((this.ds << 16) | (offset & 0xffff)) >>> 0;
+  }
+
+  /** A string at a far address, up to its nought. */
+  readString(far: number): number[] {
+    const bytes: number[] = [];
+
+    for (let at = far & 0xffff; bytes.length < 0x10000; at = (at + 1) & 0xffff) {
+      const byte = this.core.read8(far >>> 16, at) & 0xff;
+
+      if (!byte) {
+        break;
+      }
+
+      bytes.push(byte);
+    }
+
+    return bytes;
   }
 
   /** Bytes written at a far address. */
@@ -338,9 +448,17 @@ export async function WINMAIN(
   show: number
 ) {
   const pm = new Pm(this, instance & 0xffff);
-  const given = line !== 0 && pm.core.read8(line >>> 16, line & 0xffff) !== 0;
+  const commandLine = line === 0 ? '' : latin(pm.readString(line >>> 0));
 
-  if (!(await start(pm, instance & 0xffff, previous & 0xffff, given ? 7 : show & 0xffff))) {
+  if (
+    !(await start(
+      pm,
+      instance & 0xffff,
+      previous & 0xffff,
+      commandLine ? 7 : show & 0xffff,
+      commandLine
+    ))
+  ) {
     return 0;
   }
 
@@ -376,7 +494,13 @@ async function messageLoop(pm: Pm): Promise<number> {
 }
 
 /** The start-up (seg3 `09fd`): whether it went on to the loop. */
-async function start(pm: Pm, instance: number, previous: number, show: number): Promise<boolean> {
+async function start(
+  pm: Pm,
+  instance: number,
+  previous: number,
+  show: number,
+  commandLine: string
+): Promise<boolean> {
   pm.sd16(D_INSTANCE, instance);
 
   /* A second instance: the first's frame by `GetInstanceData`, sent 464h,
@@ -393,12 +517,24 @@ async function start(pm: Pm, instance: number, previous: number, show: number): 
     return false;
   }
 
-  /* SYSTEM.INI's path: the Windows directory, a backslash where it is longer
-   * than a root's, and `system.ini` (`0b3c`-`0b78`). */
+  if (!(await keepMetrics(pm))) {
+    return false;
+  }
+
+  /* The directory current as it starts (`0b31`-`0b37`). */
+  pm.writeFar(pm.at(D_STARTED_IN), [...bytesOf(await currentDirectory(pm)), 0]);
+
+  /* SYSTEM.INI's path: the Windows directory, kept (`0b3c`-`0b43`), a
+   * backslash where it is longer than a root's, and `system.ini`
+   * (`0b48`-`0b78`). */
   const directory = latin(
     stringOf(await pm.call('KERNEL', 'GetWindowsDirectory', [buffer(0x81), W(0x81)]), 0)
   );
+
+  pm.writeFar(pm.at(D_WINDOWS), [...bytesOf(directory), 0]);
   const systemIni = `${directory}${directory.length > 3 ? '\\' : ''}system.ini`;
+
+  groups(pm).systemIni = systemIni;
 
   /* The shell: the only task, or `shell=` holding `PROGMAN.EXE` at any place
    * along it, without regard to case (`0b88`-`0c0a`). */
@@ -419,7 +555,7 @@ async function start(pm: Pm, instance: number, previous: number, show: number): 
     pm.sd16(place, await pm.user('RegisterWindowMessage', [string(name)]));
   }
 
-  if (!(await registerFrame(pm, instance))) {
+  if (!(await registerFrame(pm, instance)) || !(await registerGroup(pm, instance))) {
     return false;
   }
 
@@ -436,6 +572,9 @@ async function start(pm: Pm, instance: number, previous: number, show: number): 
 
   await loadGroups(pm, systemIni);
   await pm.user('ShowWindow', [W(pm.d16(D_CLIENT)), W(1)]);
+
+  /* As the shell, `load=` and `run=`; then its command line (`0e15`-`0ecd`). */
+  await startPrograms(pm, commandLine);
 
   return true;
 }
@@ -470,6 +609,142 @@ async function registerFrame(pm: Pm, instance: number): Promise<boolean> {
     return ((await pm.user('RegisterClass', [B(wndclass)])) & 0xffff) !== 0;
   } finally {
     pm.release(saved);
+  }
+}
+
+/**
+ * `RegisterClass` of the groups' class, `PMGroup` (string 3): double clicks
+ * (`CS_DBLCLKS`), its procedure WinBox's `GROUPWNDPROC`, a word of its own for
+ * the group, the arrow cursor, `COLOR_WINDOW + 1` its background (seg3
+ * `0d73`-`0dd6`). Its icon, PROGMAN.EXE's icon 1, it has not.
+ */
+async function registerGroup(pm: Pm, instance: number): Promise<boolean> {
+  const cursor = (await pm.user('LoadCursor', [W(0), D(0x7f00)])) & 0xffff;
+  const procedure = exportAddress(pm.system, GROUP_PROC);
+  const [name, saved] = pm.reserve([...bytesOf('PMGroup'), 0]);
+  const words = (values: number[]) =>
+    values.flatMap((value) => [value & 0xff, (value >> 8) & 0xff]);
+  const longs = (value: number) => words([value & 0xffff, value >>> 16]);
+  const wndclass = [
+    ...words([0x0008]),
+    ...longs(procedure),
+    ...words([0, 2, instance, 0, cursor, 6]),
+    ...longs(0),
+    ...longs(name),
+  ];
+
+  try {
+    return ((await pm.user('RegisterClass', [B(wndclass)])) & 0xffff) !== 0;
+  } finally {
+    pm.release(saved);
+  }
+}
+
+/**
+ * The metrics start-up keeps for placing icons (seg3 `0a43`-`0b0c`):
+ * `SM_CYBORDER`; `SM_CXICON`, `SM_CYICON`; two `SM_CXBORDER`s and two
+ * `SM_CYBORDER`s; a cell each way, the icon and twice those; the icons'
+ * spacing across and down and `IconTitleWrap` (`SystemParametersInfo` 13, 18h,
+ * 19h); and the icons' title font, made from `SPI_GETICONTITLELOGFONT` --
+ * without which it does not start.
+ *
+ * Not followed: its icons 2 and 7 and its accelerators, which it has not.
+ */
+async function keepMetrics(pm: Pm): Promise<boolean> {
+  const metric = async (index: number) => (await pm.user('GetSystemMetrics', [W(index)])) & 0xffff;
+
+  pm.sd16(D_BORDER_Y, await metric(6));
+  pm.sd16(D_CX_ICON, await metric(11));
+  pm.sd16(D_CY_ICON, await metric(12));
+  pm.sd16(D_BORDER_X, (await metric(5)) * 2);
+  pm.sd16(D_BORDERS_Y, (await metric(6)) * 2);
+  pm.sd16(D_CELL_X, pm.d16(D_BORDER_X) * 2 + pm.d16(D_CX_ICON));
+  pm.sd16(D_CELL_Y, pm.d16(D_BORDERS_Y) * 2 + pm.d16(D_CY_ICON));
+
+  for (const [action, place] of [
+    [13, D_ACROSS],
+    [0x18, D_DOWN],
+    [0x19, D_TITLE_WRAP],
+  ]) {
+    const called = await pm.call('USER', 'SystemParametersInfo', [
+      W(action),
+      W(0),
+      buffer(2),
+      W(0),
+    ]);
+
+    pm.sd16(place, called.buffers[0][0] | (called.buffers[0][1] << 8));
+  }
+
+  const logfont = (
+    await pm.call('USER', 'SystemParametersInfo', [W(0x1f), W(0x32), buffer(0x32), W(0)])
+  ).buffers[0];
+  const font = (await pm.call('GDI', 'CreateFontIndirect', [B(logfont)])).value & 0xffff;
+
+  pm.sd16(D_TITLE_FONT, font);
+
+  return font !== 0;
+}
+
+/**
+ * A DOS call on a path, as seg5's helpers make one: AX as given, DS:DX the
+ * path with its nought on the stack. The carry, and AX after.
+ */
+export async function dosPath(pm: Pm, ax: number, path: string) {
+  const core = pm.core;
+  const [far, savedSp] = pm.reserve([...bytesOf(path), 0]);
+  const saved = { ax: core.ax, dx: core.dx, ds: core.ds, carry: core.flags.carry };
+
+  core.ax = ax;
+  core.dx = far & 0xffff;
+  core.ds = far >>> 16;
+
+  try {
+    await pm.call('KERNEL', 'Dos3Call', []);
+
+    return { carry: !!core.flags.carry, ax: core.ax & 0xffff };
+  } finally {
+    core.ax = saved.ax;
+    core.dx = saved.dx;
+    core.ds = saved.ds;
+    core.flags.carry = saved.carry;
+    pm.release(savedSp);
+  }
+}
+
+/**
+ * A DOS call as seg5's helpers make one with no path: AX and DX as given, and
+ * DS:SI a buffer of `buffer`'s bytes on the stack, for function 47h. The
+ * carry, AX after, and the buffer as DOS left it. As `main.rs`'s `dos`.
+ */
+export async function dos(pm: Pm, ax: number, dx: number, buffer: number[]) {
+  const core = pm.core;
+  const [far, savedSp] = pm.reserve(buffer);
+  const saved = { ax: core.ax, dx: core.dx, si: core.si, ds: core.ds, carry: core.flags.carry };
+
+  core.ax = ax;
+  core.dx = dx;
+  core.si = far & 0xffff;
+  core.ds = far >>> 16;
+
+  try {
+    await pm.call('KERNEL', 'Dos3Call', []);
+
+    return {
+      carry: !!core.flags.carry,
+      ax: core.ax & 0xffff,
+      bytes: Array.from(
+        { length: buffer.length },
+        (_, i) => core.read8(far >>> 16, ((far & 0xffff) + i) & 0xffff) & 0xff
+      ),
+    };
+  } finally {
+    core.ax = saved.ax;
+    core.dx = saved.dx;
+    core.si = saved.si;
+    core.ds = saved.ds;
+    core.flags.carry = saved.carry;
+    pm.release(savedSp);
   }
 }
 
@@ -616,7 +891,7 @@ async function createFrame(pm: Pm, instance: number, place: number[], _show: num
  * `load`); then `[Settings]` `display.drv=` written with `SYSTEM.INI`'s
  * `[boot]` `display.drv=` (`08ab`-`08d8`).
  */
-async function loadGroups(pm: Pm, systemIni: string) {
+export async function loadGroups(pm: Pm, systemIni: string) {
   const list = (
     await pm.call('KERNEL', 'GetPrivateProfileString', [
       string('Groups'),
@@ -639,7 +914,7 @@ async function loadGroups(pm: Pm, systemIni: string) {
         n = (n * 10 + digit.charCodeAt(0) - 0x30) & 0xffff;
       }
 
-      await load(pm, n, path);
+      await load(pm, path, n);
     }
   }
 
@@ -703,9 +978,9 @@ async function frameMessage(
       return close(pm, hwnd, message, wParam, lParam);
     case WM_ENDSESSION:
       /* `2353`: the settings saved where Windows ends, `SaveSettings` is on
-       * and `NoClose` is not -- not yet (`save`). */
+       * and `NoClose` is not (`save`). */
       if (wParam && !pm.d16(D_NO_CLOSE) && pm.d16(D_SAVE_SETTINGS)) {
-        save(pm);
+        await save(pm);
       }
 
       return 0;
@@ -796,12 +1071,12 @@ async function close(pm: Pm, hwnd: number, message: number, wParam: number, lPar
   }
 
   if ((await pm.user('GetKeyState', [W(0x10)])) & 0x8000) {
-    save(pm);
+    await save(pm);
     return 0;
   }
 
   if (pm.d16(D_SAVE_SETTINGS)) {
-    save(pm);
+    await save(pm);
   }
 
   pm.sd16(D_CLOSING, 1);
@@ -814,12 +1089,6 @@ async function close(pm: Pm, hwnd: number, message: number, wParam: number, lPar
 
   return 0;
 }
-
-/**
- * Saving the settings (seg4 `2845`): `Window=`, the groups and their files.
- * Not yet: what it would write is `pmstart`'s and `pmbare`'s records.
- */
-export function save(_pm: Pm) {}
 
 /**
  * 464h (`2762`-`287f`), from a second instance: with no item starting,

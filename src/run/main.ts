@@ -53,6 +53,24 @@ import {
 } from './drive.js';
 import { type Engine, type Page } from './engines/engine.js';
 import { TypeScriptEngine } from './engines/ts.js';
+import {
+  assignLetters,
+  type Disk,
+  type DriveSet,
+  imageKey,
+  type ImageKind,
+  imageKind,
+  missingOf,
+  pairCues,
+  type Wanting,
+  installerOn,
+  isKnownMedia,
+  type KnownFiles,
+  orderSet,
+  programsOn,
+  setText,
+  volumeOf,
+} from './drives.js';
 import { classify, installerOf, makeFromMedia } from './media.js';
 import {
   assetsIdentity,
@@ -67,16 +85,21 @@ import {
   type Kept,
   type KeptProgram,
   keptCounts,
+  imageCounts,
+  type Medium,
   programChangesKey,
   programIdentity,
   recallAssets,
   recallChanges,
   recallChangesAt,
   recallLayers,
+  recallImage,
   recallPrograms,
   recallWindows,
   rememberAssets,
   rememberChanges,
+  rememberImage,
+  rememberProgram,
   rememberWindows,
 } from './store.js';
 import './run.css';
@@ -107,6 +130,12 @@ const elements = {
   keepAsProgram: $<HTMLButtonElement>('#keep-as-program'),
   installKeep: $<HTMLButtonElement>('#install-keep'),
   installDiscard: $<HTMLButtonElement>('#install-discard'),
+  drivesNote: $<HTMLElement>('#drives-note'),
+  drives: $<HTMLElement>('#drives'),
+  needed: $<HTMLElement>('#needed'),
+  chooseImages: $<HTMLButtonElement>('#choose-images'),
+  imagePicker: $<HTMLInputElement>('#image-picker'),
+  keepImages: $<HTMLInputElement>('#keep-images'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -130,7 +159,10 @@ const state: {
   programs: KeptProgram[];
   program: string | null;
   offer: Archive | null;
+  driveOffer: DriveOffer | null;
   installing: Installing | null;
+  drives: DriveSet[];
+  needed: Needed[];
 } = {
   archives: [],
   windows: null,
@@ -140,8 +172,37 @@ const state: {
   programs: [],
   program: null,
   offer: null,
+  driveOffer: null,
   installing: null,
+  drives: [],
+  needed: [],
 };
+
+/**
+ * An installer on a drive of images offered to install
+ * (`kb/formats/layer.md`, "Media on another drive"): run from its floppy
+ * or disc, nothing of its media put on C:.
+ */
+interface DriveOffer {
+  letter: string;
+  installer: Program;
+
+  /** The program's name: its first image's, without its extension. */
+  name: string;
+}
+
+/** An image a kept program is run with, not yet had on this visit: asked for again by its name. */
+interface Needed extends Medium {
+  /** The kept program that wants it. */
+  program: string;
+
+  /** Its bytes, once had; its set is mounted when every one of it is. */
+  disk: Disk | null;
+
+  /** A cue sheet's own file once had, and the files it names had so far, in its order (`tracks`). */
+  have?: Disk | null;
+  trackDisks?: (Disk | null)[];
+}
 
 /**
  * Where an installer's media are put on C: while it runs: a folder of
@@ -164,10 +225,13 @@ interface Installing {
   /** The archive dropped, as it was named. */
   from: string;
 
-  /** The media, as `planDrive` lays them: the archive named for their folder. */
-  media: Archive;
+  /** The media, as `planDrive` lays them: the archive named for their folder; none for an installer run from a drive of images. */
+  media: Archive | null;
 
-  /** Its installer, where the plan puts it: `C:\WBSETUP\SETUP.EXE`. */
+  /** The drive of images it runs from, `A`; none for one whose media are at `C:\WBSETUP`. */
+  drive: string | null;
+
+  /** Its installer, where the plan puts it: `C:\WBSETUP\SETUP.EXE`, or on its drive: `A:\SETUP.EXE`. */
   installer: string;
 
   /** The kept program it installs into, in turn; none for a program of its own. */
@@ -554,7 +618,7 @@ async function rebuild({ keeping = true } = {}) {
 
   try {
     plan = planDrive(
-      installing ? [installing.media] : program ? [] : state.archives,
+      installing ? (installing.media ? [installing.media] : []) : program ? [] : state.archives,
       state.windows,
       composed,
       stack
@@ -576,11 +640,15 @@ async function rebuild({ keeping = true } = {}) {
     display,
     coprocessor: elements.coprocessor.checked,
     changes: installing ? [] : kept.changes,
+    drives: state.drives,
   };
 
   try {
     const current = await engine;
 
+    /* What programs wrote to the disks of the machine made last kept,
+     * for this one to be given. */
+    current.carry();
     await current.rebuild(setup);
   } catch (error: any) {
     console.error(error);
@@ -595,8 +663,9 @@ async function rebuild({ keeping = true } = {}) {
   return true;
 }
 
-async function run(program: Program) {
-  await (await engine).run(program);
+/** A program run; an installer as Windows runs one, Program Manager the shell starting it. */
+async function run(program: Program, options: { install?: boolean } = {}) {
+  await (await engine).run(program, options);
 }
 
 /* ---- the page ---- */
@@ -716,8 +785,16 @@ function render() {
   renderChanges();
   renderKept();
 
+  renderDrives();
+
+  /* C:'s programs, then those on the drives of images. */
+  const programs = [
+    ...(plan?.programs ?? []),
+    ...state.drives.flatMap((set) => drivePrograms.get(set.letter) ?? []),
+  ];
+
   elements.programs.replaceChildren(
-    ...(plan?.programs ?? []).map((program) => {
+    ...programs.map((program) => {
       const row = document.createElement('li');
       const label = document.createElement('code');
       const button = document.createElement('button');
@@ -739,7 +816,7 @@ function render() {
     })
   );
 
-  if (plan && !plan.programs.length) {
+  if (plan && !programs.length) {
     const row = document.createElement('li');
     row.className = 'empty';
     row.textContent =
@@ -837,12 +914,142 @@ async function bundleFrom(media: AssetInput[]) {
   }
 }
 
-async function accept(files: File[]) {
+/** What came with files dropped or chosen. */
+interface Accepting {
+  /** Their File System Access handles, where the browser gave them, matched by name. */
+  handles?: unknown[];
+
+  /** A drive's row they were dropped on, to go in its set. */
+  into?: string | null;
+
+  /** Whether they were given as drives -- added, or chosen again -- and so are no media for the maker. */
+  drives?: boolean;
+}
+
+/** The known media's files, read once. */
+let knownFiles: Promise<KnownFiles> | null = null;
+
+/**
+ * Files dropped or chosen. A disk or CD image (`imageKind`) is a drive
+ * beside Windows (`kb/topics/drives-and-disks.md`, "The page's drives"),
+ * mounted on the machine as it is, with nothing else made afresh; it is
+ * the user's Windows 3.1 setup disk for the asset maker only where there is
+ * no Windows yet, or it is one of the media WinBox knows (`isKnownMedia`).
+ * An image a kept program asked for again is taken for it. Anything else
+ * is read as before (`classify`).
+ */
+async function accept(
+  files: File[],
+  { handles: given = [], into = null, drives = false }: Accepting = {}
+) {
   if (!files.length) {
     return;
   }
 
   status(`Reading ${files.map((file) => file.name).join(', ')}…`);
+
+  const handleOf = (file: File) =>
+    given.find((handle: any) => handle?.kind === 'file' && handle?.name === file.name) ?? null;
+  const images: Taken[] = [];
+  const rest: { file: File; bytes: Uint8Array }[] = [];
+  const read: Read[] = [];
+  let filled = false;
+  let classified: Awaited<ReturnType<typeof classify>>[];
+  let paired: string[] = [];
+
+  try {
+    for (const file of files) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const handle = handleOf(file);
+
+      if (fillNeeded(file, bytes, handle)) {
+        filled = true;
+        continue;
+      }
+
+      read.push({ file, bytes, handle });
+    }
+
+    /* Cue sheets with their files, and files for those still wanting them. */
+    const cues = await takeCues(read);
+
+    images.push(...cues.taken);
+    paired = cues.said;
+
+    for (const { file, bytes, handle } of read.filter((one) => !cues.used.has(one))) {
+      const zip = bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
+      const kind = zip ? null : await imageKind(file.name, bytes);
+
+      if (kind) {
+        const disk = diskOf(file, bytes);
+
+        if (handle) {
+          handles.set(keyOf(disk), handle);
+        }
+
+        images.push({ disk, kind });
+      } else {
+        rest.push({ file, bytes });
+      }
+    }
+
+    classified = await Promise.all(rest.map(({ file, bytes }) => classify(file.name, bytes)));
+  } catch (error: any) {
+    status(`Could not read that: ${error?.message ?? error}`, 'error');
+    return;
+  }
+
+  /* A floppy is the maker's where there is no Windows to run it beside,
+   * or it is one of Windows' own disks; a disc or a hard disk never is. */
+  const windowsHere =
+    Boolean(baseNow()) ||
+    classified.some((one) => one.kind === 'bundle' || one.kind === 'installation');
+  const asDrives: Taken[] = [];
+  const asMedia: Taken[] = [];
+  const guessed: Taken[] = [];
+
+  for (const image of images) {
+    if (drives || image.kind !== 'floppy') {
+      asDrives.push(image);
+    } else if (!windowsHere) {
+      asMedia.push(image);
+      guessed.push(image);
+    } else {
+      knownFiles ??= import('../../scripts/assets/known-media.json').then(
+        (json) => json.default as KnownFiles
+      );
+      ((await isKnownMedia(image.disk.bytes, await knownFiles).catch(() => false))
+        ? asMedia
+        : asDrives
+      ).push(image);
+    }
+  }
+
+  /* Drives alone: put in, with nothing made afresh, so a program running
+   * -- an installer asking for its next disk -- goes on. */
+  if (!rest.length && !asMedia.length) {
+    const said = [
+      ...paired,
+      ...(asDrives.length
+        ? into
+          ? await addToDrive(into, asDrives)
+          : await mountTaken(asDrives)
+        : []),
+    ];
+
+    render();
+
+    if (filled) {
+      await mountNeeded();
+      await mediaChanged();
+      said.push(
+        state.needed.some((one) => !one.disk) ? 'More images are asked for.' : 'Every image is had.'
+      );
+    }
+
+    status(said.join(' ') || 'Ready.');
+    return;
+  }
 
   /* What the machine wrote kept, against the Windows it ran. */
   await hold();
@@ -851,12 +1058,14 @@ async function accept(files: File[]) {
   let offered: string | null = null;
 
   try {
-    const media: AssetInput[] = [];
+    const media: AssetInput[] = asMedia.map((image) => ({
+      name: image.disk.name,
+      bytes: image.disk.bytes,
+    }));
     const archives: Archive[] = [];
 
-    for (const file of files) {
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      const dropped = await classify(file.name, bytes);
+    for (const [at, dropped] of classified.entries()) {
+      const { file, bytes } = rest[at];
 
       switch (dropped.kind) {
         case 'bundle':
@@ -890,9 +1099,22 @@ async function accept(files: File[]) {
     if (media.length) {
       status(`Making the asset bundle from ${media.map((one) => one.name).join(', ')}…`);
 
-      const made = await bundleFrom(media);
+      try {
+        const made = await bundleFrom(media);
 
-      note = await takeAssets('winbox-assets.zip', made.zip);
+        note = await takeAssets('winbox-assets.zip', made.zip);
+      } catch (error) {
+        /* Floppies taken for Windows' disks for want of Windows, and not
+         * Windows' disks after all: drives, once there is Windows. */
+        if (media.length !== guessed.length) {
+          throw error;
+        }
+
+        asDrives.push(...guessed);
+        note =
+          `${guessed.map((image) => image.disk.name).join(', ')}: not Windows 3.1's setup disks, ` +
+          'and mounted as drives. Drop Windows to run programs from them.';
+      }
     }
 
     /* The programs kept over the Windows dropped with them, if any; the
@@ -901,12 +1123,30 @@ async function accept(files: File[]) {
     for (const archive of archives) {
       if (installerOf(archive.entries) && baseNow()) {
         state.offer = archive;
+        state.driveOffer = null;
         state.installing = null;
         offered = offerText(archive);
         continue;
       }
 
       note = (await takeProgram(archive)) ?? note;
+    }
+
+    if (asDrives.length || paired.length) {
+      const said = [
+        ...paired,
+        ...(asDrives.length
+          ? into
+            ? await addToDrive(into, asDrives)
+            : await mountTaken(asDrives)
+          : []),
+      ];
+
+      offered ??= said.join(' ');
+    }
+
+    if (filled) {
+      await mountNeeded();
     }
   } catch (error: any) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
@@ -964,6 +1204,7 @@ async function takeProgram(archive: Archive) {
     exes: made.programs,
     orders: { [id]: made.order },
     kept: Date.now(),
+    media: mediaNow(),
   };
 
   /* What a program of this name wrote on a stack since changed: put on
@@ -983,6 +1224,7 @@ async function takeProgram(archive: Archive) {
 
   try {
     await keepProgram(program, [made.layer]);
+    await rememberImages(program);
   } catch (error: any) {
     loose();
     return `${archive.name} could not be kept in this browser, and is on C: until the page is left: ${error?.message ?? error}`;
@@ -1001,10 +1243,771 @@ async function forgetPrograms() {
   state.programs = [];
   state.program = null;
   state.offer = null;
+  state.driveOffer = null;
   state.installing = null;
+  state.needed = [];
   stacks.clear();
 }
 
+/* ---- the drives of images ---- */
+
+/**
+ * Handles on the images' files, by their keys (`imageKey`), where the
+ * browser gave one -- a File System Access handle, Chromium's -- for a kept
+ * program to remember (`rememberImages`) rather than a copy of the file.
+ */
+const handles = new Map<string, unknown>();
+
+/** The Windows programs on each drive's disk, by its letter, as the page read them (`programsOn`). */
+const drivePrograms = new Map<string, Program[]>();
+
+/** An image read from a file dropped or chosen: its disk, kind and handle. */
+interface Taken {
+  disk: Disk;
+  kind: ImageKind;
+}
+
+/** A file dropped or chosen, read: its bytes, and its handle where the browser gave one. */
+interface Read {
+  file: File;
+  bytes: Uint8Array;
+  handle: unknown;
+}
+
+/**
+ * Cue sheets dropped or chosen whose files are not all had yet, asked for
+ * by name (`renderDrives`) and taken from the files dropped or chosen next.
+ */
+let wanting: Wanting[] = [];
+
+/** A file read made a disk, its handle kept by its key. */
+function diskRead(one: Read) {
+  const disk = diskOf(one.file, one.bytes);
+
+  if (one.handle) {
+    handles.set(keyOf(disk), one.handle);
+  }
+
+  return disk;
+}
+
+/**
+ * Cue sheets among files read, each paired with the files it names among
+ * those read with it (`pairCues`) -- a disc of its own once it has them
+ * all, as DOSBox's `LoadCueSheet` reads it; else asked for by name until
+ * they are dropped or chosen too. What was made discs, which files were
+ * used, and what is said of them.
+ */
+async function takeCues(read: Read[]) {
+  const disks = new Map(read.map((one) => [diskRead(one), one]));
+  const paired = pairCues([...disks.keys()], wanting);
+  const taken: Taken[] = [];
+  const said: string[] = [];
+
+  wanting = paired.wanting;
+
+  for (const disc of paired.discs) {
+    try {
+      await volumeOf('iso', disc);
+      taken.push({ disk: disc, kind: 'iso' });
+    } catch (error: any) {
+      said.push(`${disc.name}: ${error?.message ?? error}.`);
+    }
+  }
+
+  /* Said of a sheet dropped now, or given a file now: the rest were said before. */
+  for (const wait of wanting.filter(
+    (one) => disks.has(one.cue) || one.tracks.some((track) => track && disks.has(track))
+  )) {
+    said.push(`${wait.cue.name} wants ${missingOf(wait).join(', ')}: drop or choose it too.`);
+  }
+
+  const used = new Set([...paired.used].map((disk) => disks.get(disk)!));
+
+  return { taken, used, said };
+}
+
+/** A disk made of a file read. */
+const diskOf = (file: File, bytes: Uint8Array): Disk => ({
+  name: file.name,
+  size: file.size,
+  modified: file.lastModified,
+  bytes,
+  written: false,
+});
+
+/** A disk's key, which tells its file again (`imageKey`). */
+const keyOf = (disk: Disk) => imageKey(disk.name, disk.size, disk.modified);
+
+/**
+ * The drives made these sets, in the order of their letters: in place, as
+ * the engine holds the same array (`Setup.drives`) for the machine it makes
+ * afresh once Windows has ended.
+ */
+function setDrives(sets: DriveSet[]) {
+  const sorted = [...sets].sort((one, other) => one.letter.localeCompare(other.letter));
+
+  state.drives.splice(0, state.drives.length, ...sorted);
+}
+
+/**
+ * The programs on a drive's disk read again: none where it is empty. An
+ * installer on it is offered (`renderDrives`).
+ */
+async function readPrograms(set: DriveSet) {
+  if (set.ejected) {
+    drivePrograms.delete(set.letter);
+    return;
+  }
+
+  try {
+    const volume = await volumeOf(set.kind, set.disks[set.current]);
+
+    drivePrograms.set(set.letter, await programsOn(volume, set.letter));
+  } catch {
+    drivePrograms.delete(set.letter);
+  }
+}
+
+/**
+ * Images taken as drives: floppies dropped together one set, in the order
+ * of their names, as discs are; a hard disk's image a drive of its own;
+ * each set given its letter as the owner chose (`assignLetters`), or the
+ * letter asked for -- a kept program's, pinned. Mounted on the machine as
+ * it is, so a program running sees them at once. What could not be, said.
+ */
+async function mountTaken(taken: Taken[], letters: Record<string, string> = {}) {
+  const groups: { kind: ImageKind; disks: Disk[]; letter?: string }[] = [];
+
+  for (const kind of ['floppy', 'iso'] as const) {
+    const disks = orderSet(taken.filter((one) => one.kind === kind).map((one) => one.disk));
+
+    if (disks.length) {
+      groups.push({ kind, disks, letter: letters[keyOf(disks[0])] });
+    }
+  }
+
+  for (const one of taken.filter((image) => image.kind === 'hdd')) {
+    groups.push({ kind: 'hdd', disks: [one.disk], letter: letters[keyOf(one.disk)] });
+  }
+
+  const given = assignLetters(groups, state.drives);
+  const said: string[] = [];
+  const current = made;
+
+  for (const [at, group] of groups.entries()) {
+    const letter = given[at];
+
+    if (letter instanceof Error) {
+      said.push(`${group.disks.map((disk) => disk.name).join(', ')}: ${letter.message}.`);
+      continue;
+    }
+
+    const set: DriveSet = {
+      letter,
+      kind: group.kind,
+      disks: group.disks,
+      current: 0,
+      ejected: false,
+    };
+    const refused = await current?.mount(set);
+
+    if (refused) {
+      current?.unmount(letter);
+      said.push(`${refused}.`);
+      continue;
+    }
+
+    setDrives([...state.drives, set]);
+    await readPrograms(set);
+    said.push(`${letter}: ${setText(set)}.`);
+  }
+
+  await mediaChanged();
+  render();
+  return said;
+}
+
+/**
+ * Images dropped on a drive's row put in its set, after its disks, in
+ * the order of their names; the first of them put in the drive.
+ */
+async function addToDrive(letter: string, taken: Taken[]) {
+  const set = state.drives.find((one) => one.letter === letter);
+
+  if (!set) {
+    return mountTaken(taken);
+  }
+
+  if (taken.some((one) => one.kind !== set.kind) || set.kind === 'hdd') {
+    return [
+      set.kind === 'hdd'
+        ? `${letter}: is a hard disk's image, which is alone.`
+        : `${letter}: takes ${set.kind === 'iso' ? 'discs' : 'floppies'} alone.`,
+    ];
+  }
+
+  const first = set.disks.length;
+
+  for (const disk of orderSet(taken.map((one) => one.disk))) {
+    set.disks.push(disk);
+
+    const refused = await made?.addDisk(set, set.disks.length - 1);
+
+    if (refused) {
+      set.disks.pop();
+      render();
+      return [`${refused}.`];
+    }
+  }
+
+  await mediaChanged();
+  return [await insertDisk(letter, first)];
+}
+
+/** A drive's disk, from nought, put in it; what is said of it. */
+async function insertDisk(letter: string, disk: number) {
+  const set = state.drives.find((one) => one.letter === letter);
+
+  if (!set || disk >= set.disks.length) {
+    return `${letter}: has no disk ${disk + 1}.`;
+  }
+
+  const refused = made?.insert(letter, disk) ?? null;
+
+  if (refused) {
+    return `${refused}.`;
+  }
+
+  set.current = disk;
+  set.ejected = false;
+  await readPrograms(set);
+  render();
+  return `${letter}: ${setText(set)}.`;
+}
+
+/** A drive's next disk put in, the first after the last; the one after the disk taken out where it is empty. */
+const nextDisk = (set: DriveSet) => insertDisk(set.letter, (set.current + 1) % set.disks.length);
+
+/** A drive's disk taken out, the drive left empty. */
+async function ejectDisk(set: DriveSet) {
+  const refused = made?.eject(set.letter) ?? null;
+
+  if (refused) {
+    return `${refused}.`;
+  }
+
+  set.ejected = true;
+  await readPrograms(set);
+  render();
+  return `${set.letter}: ${setText(set)}.`;
+}
+
+/** A drive's images let go of, and the drive with them. */
+async function removeDrive(set: DriveSet) {
+  made?.unmount(set.letter);
+  setDrives(state.drives.filter((one) => one !== set));
+  drivePrograms.delete(set.letter);
+
+  if (state.driveOffer?.letter === set.letter) {
+    state.driveOffer = null;
+  }
+
+  await mediaChanged();
+  render();
+  return `${set.letter}: is no more.`;
+}
+
+/**
+ * The disk in a drive saved as programs have written it, as a new file
+ * the browser downloads (the owner's decision 1): the image dropped is
+ * never written, and is not offered to be written over.
+ */
+function saveImage(set: DriveSet) {
+  const disk = set.disks[set.current];
+  const bytes = made?.diskImage(set.letter, set.current) ?? null;
+
+  if (!bytes) {
+    return `${set.letter}: has nothing to save.`;
+  }
+
+  const dot = disk.name.lastIndexOf('.');
+  const name =
+    dot > 0 ? `${disk.name.slice(0, dot)}-saved${disk.name.slice(dot)}` : `${disk.name}-saved`;
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(new Blob([bytes as BlobPart]));
+
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+  const changed = made?.diskChanged(set.letter, set.current) || disk.written;
+
+  return `${set.letter}: saved as ${name}${changed ? ', as programs wrote it' : ', as it was'}.`;
+}
+
+/**
+ * The images in the drives, as a kept program remembers them: each set's
+ * in order, its letter pinned; but the drive `except`.
+ */
+function mediaNow(except?: string): Medium[] {
+  return state.drives
+    .filter((set) => set.letter !== except)
+    .flatMap((set) =>
+      set.disks.map((disk) => ({
+        letter: set.letter,
+        kind: set.kind,
+        name: disk.name,
+        size: disk.size,
+        key: keyOf(disk),
+        ...(disk.tracks ? { tracks: disk.tracks.map(trackOf) } : {}),
+      }))
+    );
+}
+
+/** A cue sheet's file as a kept program remembers it. */
+const trackOf = (disk: Disk) => ({ name: disk.name, size: disk.size, key: keyOf(disk) });
+
+/**
+ * What is kept of a kept program's images: a handle on each file, where
+ * the browser gave one, and its bytes where a copy is asked for; nothing
+ * else (the owner's decision 2: no copy of a read-only image unless asked
+ * for).
+ */
+async function rememberImages(program: KeptProgram) {
+  const copy = elements.keepImages.checked;
+
+  const disks = state.drives.flatMap((set) => set.disks);
+  const files = [...disks, ...disks.flatMap((disk) => disk.tracks ?? [])];
+
+  for (const medium of (program.media ?? []).flatMap((one) => [one, ...(one.tracks ?? [])])) {
+    const disk = files.find((one) => keyOf(one) === medium.key);
+    const handle = handles.get(medium.key);
+    const was = await recallImage(medium.key);
+
+    if (!disk || (!handle && !copy && !was)) {
+      continue;
+    }
+
+    await rememberImage(medium.key, {
+      name: disk.name,
+      size: disk.size,
+      modified: disk.modified,
+      ...(handle ? { handle } : was?.handle ? { handle: was.handle } : {}),
+      ...(copy ? { bytes: disk.bytes } : was?.bytes ? { bytes: was.bytes } : {}),
+    }).catch((error) =>
+      status(`${disk.name} could not be kept in this browser: ${error?.message ?? error}`, 'error')
+    );
+  }
+}
+
+/**
+ * The drives changed -- a set added or let go -- while a kept program is
+ * open: it is run with them from now on, and remembers them.
+ */
+async function mediaChanged() {
+  const program = programNow();
+
+  if (!program || state.installing) {
+    return;
+  }
+
+  /* Those it is run with and not had yet, still asked for, are kept. */
+  const media = [
+    ...mediaNow(),
+    ...state.needed
+      .filter((one) => one.program === program.name && !one.disk)
+      .map(({ letter, kind, name, size, key, tracks }) => ({
+        letter,
+        kind,
+        name,
+        size,
+        key,
+        ...(tracks ? { tracks } : {}),
+      })),
+  ].sort((one, other) => one.letter.localeCompare(other.letter));
+
+  if (JSON.stringify(media) === JSON.stringify(program.media ?? [])) {
+    return;
+  }
+
+  program.media = media;
+
+  try {
+    await rememberProgram(program);
+    await rememberImages(program);
+  } catch (error: any) {
+    status(`${program.name}'s images could not be kept: ${error?.message ?? error}`, 'error');
+  }
+}
+
+/**
+ * A kept program's images put in their drives as it is opened, each from
+ * what is kept of it: its handle, the browser asked again for leave to
+ * read it, or its copy. One not had is asked for by its name (`needed`);
+ * a set is mounted once every one of its images is had.
+ */
+async function mountMedia(program: KeptProgram) {
+  state.needed = state.needed.filter((one) => one.program !== program.name);
+
+  const media = (program.media ?? []).filter(
+    (medium) =>
+      !state.drives.some(
+        (set) =>
+          set.letter === medium.letter && set.disks.some((disk) => keyOf(disk) === medium.key)
+      )
+  );
+
+  const recall = async (medium: Medium): Promise<Disk | null> => {
+    const kept = await recallImage(medium.key);
+
+    if (kept?.bytes) {
+      return {
+        name: kept.name,
+        size: kept.size,
+        modified: kept.modified,
+        bytes: kept.bytes,
+        written: false,
+      };
+    }
+
+    return kept?.handle ? fromHandle(kept.handle, medium) : null;
+  };
+
+  for (const medium of media) {
+    const needed: Needed = {
+      ...medium,
+      program: program.name,
+      disk: null,
+      have: await recall(medium),
+      trackDisks: [],
+    };
+
+    for (const track of medium.tracks ?? []) {
+      needed.trackDisks!.push(await recall({ ...medium, ...track }));
+    }
+
+    state.needed.push(completed(needed));
+  }
+
+  await mountNeeded();
+}
+
+/** An image asked for made whole once it and every file its cue sheet names are had. */
+function completed(needed: Needed) {
+  const tracks = needed.trackDisks ?? [];
+
+  if (needed.have && (needed.tracks ?? []).every((_, at) => tracks[at])) {
+    needed.disk = needed.tracks ? { ...needed.have, tracks: tracks as Disk[] } : needed.have;
+  }
+
+  return needed;
+}
+
+/** The files an image asked for still wants: itself, and those its cue sheet names. */
+const stillWanted = (needed: Needed) => [
+  ...(needed.have ? [] : [{ name: needed.name, size: needed.size }]),
+  ...(needed.tracks ?? []).filter((_, at) => !needed.trackDisks?.[at]),
+];
+
+/** A disk read through a handle kept, where the browser gives leave and the file is still the one kept. */
+async function fromHandle(handle: any, medium: Medium): Promise<Disk | null> {
+  try {
+    let leave = await handle.queryPermission?.({ mode: 'read' });
+
+    if (leave !== 'granted') {
+      leave = await handle.requestPermission?.({ mode: 'read' });
+    }
+
+    if (leave !== 'granted') {
+      return null;
+    }
+
+    const file: File = await handle.getFile();
+
+    if (file.name !== medium.name || file.size !== medium.size) {
+      return null;
+    }
+
+    handles.set(medium.key, handle);
+    return diskOf(file, new Uint8Array(await file.arrayBuffer()));
+  } catch {
+    return null;
+  }
+}
+
+/** The sets whose images are all had mounted, at the letters kept; the rest still asked for. */
+async function mountNeeded() {
+  const letters = [...new Set(state.needed.map((one) => `${one.program}\n${one.letter}`))];
+
+  for (const both of letters) {
+    const [program, letter] = both.split('\n');
+    const wanted = state.needed.filter((one) => one.program === program && one.letter === letter);
+
+    if (wanted.some((one) => !one.disk)) {
+      continue;
+    }
+
+    state.needed = state.needed.filter((one) => !wanted.includes(one));
+
+    /* Whatever is at its letter now makes way for it. */
+    for (const set of state.drives.filter((one) => one.letter === letter)) {
+      await removeDrive(set);
+    }
+
+    const set: DriveSet = {
+      letter,
+      kind: wanted[0].kind,
+      disks: wanted.map((one) => one.disk!),
+      current: 0,
+      ejected: false,
+    };
+    const refused = await made?.mount(set);
+
+    if (refused) {
+      status(`${refused}.`, 'error');
+      continue;
+    }
+
+    setDrives([...state.drives, set]);
+    await readPrograms(set);
+  }
+
+  render();
+}
+
+/**
+ * A file dropped or chosen that a kept program's image asked for is: the
+ * same name and size. Taken for it, and its set mounted once it is whole.
+ */
+function fillNeeded(file: File, bytes: Uint8Array, handle: unknown) {
+  const same = (one: { name: string; size: number }) =>
+    one.name === file.name && one.size === file.size;
+  const needed = state.needed.find((one) => !one.disk && stillWanted(one).some(same));
+
+  if (!needed) {
+    return false;
+  }
+
+  const disk = diskOf(file, bytes);
+  const track = (needed.tracks ?? []).findIndex((one, at) => !needed.trackDisks?.[at] && same(one));
+
+  if (!needed.have && same(needed)) {
+    needed.have = disk;
+  } else {
+    needed.trackDisks![track] = disk;
+  }
+
+  completed(needed);
+
+  /* Its key is the file's as it is now, which the program keeps from now on. */
+  const key = keyOf(disk);
+
+  if (handle) {
+    handles.set(key, handle);
+  }
+
+  return true;
+}
+
+/** The drives, each with what may be done with it, and the images asked for. */
+function renderDrives() {
+  const base = baseNow();
+
+  elements.drivesNote.textContent = state.drives.length
+    ? 'Disk and CD images, read where they are, never written: what programs write to a disk is kept for the visit, and saved as a new file.'
+    : 'No drives but C:. Drop disk or CD images (.img, .iso, or a .cue with its .bin files) here beside Windows, or add them: several floppies dropped together are one set, in the order of their names.';
+
+  elements.drives.replaceChildren(
+    ...state.drives.map((set) => {
+      const row = document.createElement('li');
+      const label = document.createElement('code');
+      const actions = document.createElement('span');
+      const kind = set.kind === 'iso' ? 'CD-ROM' : set.kind === 'hdd' ? 'hard disk' : 'floppy';
+      const button = (text: string, aria: string, act: () => Promise<string> | string) => {
+        const one = document.createElement('button');
+
+        one.type = 'button';
+        one.textContent = text;
+        one.setAttribute('aria-label', aria);
+        one.addEventListener('click', async () => status(await act()));
+        return one;
+      };
+
+      label.textContent = `${set.letter}: ${setText(set)}`;
+      label.title = kind;
+      actions.className = 'actions';
+      row.setAttribute('aria-label', `${set.letter}: ${kind}, ${setText(set)}`);
+
+      if (set.disks.length > 1) {
+        const pick = document.createElement('select');
+
+        pick.setAttribute('aria-label', `Disk in ${set.letter}:`);
+        pick.append(
+          ...set.disks.map((disk, at) => {
+            const option = document.createElement('option');
+
+            option.value = String(at);
+            option.textContent = `${at + 1}: ${disk.name}`;
+            return option;
+          })
+        );
+        pick.value = String(set.current);
+        pick.addEventListener('change', async () =>
+          status(await insertDisk(set.letter, Number(pick.value)))
+        );
+        actions.append(
+          pick,
+          button('Next', `Next disk in ${set.letter}:`, () => nextDisk(set))
+        );
+      } else if (set.ejected) {
+        actions.append(button('Insert', `Insert the disk in ${set.letter}:`, () => nextDisk(set)));
+      }
+
+      if (set.kind !== 'hdd' && !set.ejected) {
+        actions.append(button('Eject', `Eject ${set.letter}:`, () => ejectDisk(set)));
+      }
+
+      if (set.kind !== 'iso' && !set.ejected) {
+        actions.append(
+          button('Save image…', `Save the image in ${set.letter}:`, () => saveImage(set))
+        );
+      }
+
+      const installer = installerOn(drivePrograms.get(set.letter) ?? []);
+
+      if (installer && base && !state.installing) {
+        actions.append(
+          button('Install', `Install from ${set.letter}:`, () => offerDrive(set, installer))
+        );
+      }
+
+      actions.append(button('Remove', `Remove ${set.letter}:`, () => removeDrive(set)));
+
+      /* Images dropped on a drive go in it. */
+      row.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        row.classList.add('over');
+      });
+      row.addEventListener('dragleave', () => row.classList.remove('over'));
+      row.addEventListener('drop', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        row.classList.remove('over');
+        dropped(event, set.letter);
+      });
+
+      row.append(label, actions);
+      return row;
+    })
+  );
+
+  const needed = [
+    ...state.needed
+      .filter((one) => !one.disk)
+      .flatMap((one) =>
+        stillWanted(one).map((file) => ({
+          letter: one.letter,
+          name: file.name,
+          text: `${one.letter}: ${file.name} (${Math.ceil(file.size / 1024)} KB) for ${one.program}`,
+        }))
+      ),
+    ...wanting.flatMap((wait) =>
+      missingOf(wait).map((name) => ({
+        letter: '',
+        name,
+        text: `${name} for ${wait.cue.name}`,
+      }))
+    ),
+  ];
+
+  elements.needed.hidden = !needed.length;
+  elements.needed.replaceChildren(
+    ...needed.map((one) => {
+      const row = document.createElement('li');
+      const label = document.createElement('code');
+      const choose = document.createElement('button');
+      const input = document.createElement('input');
+
+      label.textContent = one.text;
+      input.type = 'file';
+      input.hidden = true;
+      input.accept = one.name.slice(one.name.lastIndexOf('.'));
+      input.setAttribute('aria-label', `Choose ${one.name} again`);
+      input.addEventListener('change', () => accept([...(input.files ?? [])], { drives: true }));
+      choose.type = 'button';
+      choose.textContent = 'Choose…';
+      choose.setAttribute(
+        'aria-label',
+        one.letter ? `Choose ${one.name} for ${one.letter}: again` : `Choose ${one.name}`
+      );
+      choose.addEventListener('click', () => chooseImages(input));
+      row.append(label, choose, input);
+      return row;
+    })
+  );
+}
+
+/** An installer on a drive offered to install, as an archive's is. */
+function offerDrive(set: DriveSet, installer: Program) {
+  const name = set.disks[0].name.replace(/\.[^.]*$/, '');
+
+  state.offer = null;
+  state.driveOffer = { letter: set.letter, installer, name };
+  render();
+  return `${set.letter}: holds an installer, ${installer.path}: install it.`;
+}
+
+/**
+ * Images chosen to add as drives: through the browser's file picker of
+ * handles where it has one (`showOpenFilePicker`, Chromium), so that a
+ * kept program can be run with them again without a copy; else the
+ * page's own file input.
+ */
+async function chooseImages(input: HTMLInputElement) {
+  const picker = (globalThis as any).showOpenFilePicker;
+
+  if (typeof picker !== 'function') {
+    input.click();
+    return;
+  }
+
+  try {
+    const chosen: any[] = await picker({
+      multiple: true,
+      types: [
+        {
+          description: 'Disk and CD images',
+          accept: {
+            'application/octet-stream': ['.img', '.ima', '.dsk', '.vfd', '.iso', '.bin', '.cue'],
+          },
+        },
+      ],
+    });
+    const files = await Promise.all(chosen.map((handle) => handle.getFile()));
+
+    await accept(files, { drives: true, handles: chosen });
+  } catch {
+    /* Nothing chosen. */
+  }
+}
+
+/**
+ * Files dropped: with their File System Access handles, where the browser
+ * gives them -- asked for at once, as a drop's items are had only while
+ * its event is handled -- onto a drive's row, or the page's drop.
+ */
+function dropped(event: DragEvent, letter: string | null = null) {
+  const items = [...(event.dataTransfer?.items ?? [])].filter((item) => item.kind === 'file');
+  const asked = items.map((item) => (item as any).getAsFileSystemHandle?.() ?? null);
+  const files = [...(event.dataTransfer?.files ?? [])];
+
+  Promise.all(
+    asked.map((one: Promise<unknown> | null) => (one ?? Promise.resolve(null)).catch(() => null))
+  ).then((got) => accept(files, { handles: got, into: letter, drives: letter !== null }));
+}
 /* ---- installing ---- */
 
 /** A program's name, as its archive names it. */
@@ -1049,6 +2052,10 @@ function freeName(name: string) {
  * so (`keepInstalled`).
  */
 async function install() {
+  if (state.driveOffer) {
+    return installFromDrive(state.driveOffer);
+  }
+
   const archive = state.offer;
   const installer = archive && installerOf(archive.entries);
 
@@ -1065,6 +2072,7 @@ async function install() {
     name: into ?? programName(archive),
     from: archive.name,
     media,
+    drive: null,
     installer: '',
     into,
     ended: false,
@@ -1091,7 +2099,45 @@ async function install() {
 
   state.installing.installer = program.path;
   renderInstall();
-  await run(program);
+  await run(program, { install: true });
+}
+
+/**
+ * An installer on a drive of images run (`kb/formats/layer.md`, "Media on
+ * another drive"): from its floppy or disc, its drive current, over the
+ * stack of the program chosen to install into, or the base alone, with an
+ * empty top; nothing of its media is put on C:. What it writes is kept
+ * only once its task has ended, and the user says so (`keepInstalled`).
+ */
+async function installFromDrive(offer: DriveOffer) {
+  const into = elements.installInto.value || null;
+  const set = state.drives.find((one) => one.letter === offer.letter);
+
+  if (!set || set.ejected) {
+    status(`${offer.letter}: has no disk in it to install from.`, 'error');
+    return;
+  }
+
+  await hold();
+  state.driveOffer = null;
+  state.installing = {
+    name: into ?? offer.name,
+    from: `${offer.letter}: ${set.disks[set.current].name}`,
+    media: null,
+    drive: offer.letter,
+    installer: offer.installer.path,
+    into,
+    ended: false,
+  };
+
+  if (!(await rebuild({ keeping: false }))) {
+    state.installing = null;
+    renderInstall();
+    return;
+  }
+
+  renderInstall();
+  await run(offer.installer, { install: true });
 }
 
 /**
@@ -1145,7 +2191,7 @@ async function keepInstalled() {
 
   const into = state.programs.find((one) => one.name === installing.into) ?? null;
   const { layer, references } = await installedLayer(changes, {
-    media: [MEDIA],
+    media: installing.drive ? [`${installing.drive}:\\`] : [MEDIA],
     over: [base, ...(into?.layers ?? [])],
     made: { by: 'WinBox run page', from: installing.from },
   });
@@ -1157,11 +2203,23 @@ async function keepInstalled() {
 
   const { id } = layer.manifest;
   const exes = layerPrograms(layer);
+  /* The images it is run with: those in the drives, but the floppies it
+   * was installed from, which a program installed needs no more; a disc
+   * installed from is kept, as a program on a CD reads it as it runs. */
+  const media = mediaNow(
+    state.drives.find((set) => set.letter === installing.drive && set.kind === 'floppy')?.letter
+  );
   const program: KeptProgram = into
     ? {
         ...into,
         layers: [...into.layers, id],
         exes: [...into.exes, ...exes.filter((exe) => !into.exes.includes(exe))],
+        media: [
+          ...(into.media ?? []).filter(
+            (one) => !media.some((other) => other.letter === one.letter)
+          ),
+          ...media,
+        ],
       }
     : {
         name: freeName(installing.name),
@@ -1171,10 +2229,12 @@ async function keepInstalled() {
         exes,
         orders: {},
         kept: Date.now(),
+        media,
       };
 
   try {
     await keepProgram(program, [layer]);
+    await rememberImages(program);
 
     if (into) {
       await carryChanges(into, program, layer.manifest);
@@ -1191,17 +2251,24 @@ async function keepInstalled() {
   state.installing = null;
 
   if (await rebuild({ keeping: false })) {
-    status(installedText(program.name, layer.manifest, references));
+    status(installedText(program.name, layer.manifest, references, installing.drive));
   }
 }
 
-/** What the page says of a program installed and kept. */
-function installedText(name: string, manifest: LayerManifest, references: MediaReference[]) {
+/** What the page says of a program installed and kept: from its drive of images, where it was. */
+function installedText(
+  name: string,
+  manifest: LayerManifest,
+  references: MediaReference[],
+  drive: string | null = null
+) {
   const files = manifest.entries.filter((entry) => entry.kind === 'file').length;
   const naming = references.map((reference) => `C:\\${reference.path}: ${reference.line}`);
 
   return (
-    `Installed ${name}, its ${files} files kept as a layer, its setup files let go of.` +
+    (drive
+      ? `Installed ${name} from ${drive}:, its ${files} files kept as a layer.`
+      : `Installed ${name}, its ${files} files kept as a layer, its setup files let go of.`) +
     (naming.length
       ? ` What it wrote still names them, which are not kept: ${naming.join('; ')}.`
       : '')
@@ -1265,25 +2332,29 @@ async function keepAsProgram() {
 
 /** The offer to install, or the installer running, shown with what may be done. */
 function renderInstall() {
-  const { offer, installing } = state;
+  const { offer, driveOffer, installing } = state;
+  const offered = offer ?? driveOffer;
 
-  elements.installSection.hidden = !offer && !installing;
-  elements.installTarget.hidden = !offer;
-  elements.install.hidden = !offer;
+  elements.installSection.hidden = !offered && !installing;
+  elements.installTarget.hidden = !offered;
+  elements.install.hidden = !offered;
   elements.keepAsProgram.hidden = !offer;
   elements.installKeep.hidden = !installing?.ended;
   elements.installDiscard.hidden = !installing;
 
-  if (offer) {
+  if (offered) {
     const chosen = elements.installInto.value;
     const into = programsHere();
+    const name = offer ? programName(offer) : driveOffer!.name;
 
-    elements.installNote.textContent =
-      `${offer.name} holds an installer, ${installerName(offer)}. Installed, what it writes ` +
-      'on C: is kept as a layer, and its setup files let go of; or the archive is kept as it is.';
+    elements.installNote.textContent = offer
+      ? `${offer.name} holds an installer, ${installerName(offer)}. Installed, what it writes ` +
+        'on C: is kept as a layer, and its setup files let go of; or the archive is kept as it is.'
+      : `${driveOffer!.letter}: holds an installer, ${driveOffer!.installer.path}. Installed, ` +
+        'what it writes on C: is kept as a layer; its disks are not kept with it.';
     elements.installInto.replaceChildren(
       ...[
-        { value: '', text: `as ${freeName(programName(offer))}, a program of its own` },
+        { value: '', text: `as ${freeName(name)}, a program of its own` },
         ...into.map((program) => ({ value: program.name, text: `into ${program.name}` })),
       ].map(({ value, text }) => {
         const option = document.createElement('option');
@@ -1297,18 +2368,41 @@ function renderInstall() {
   } else if (installing) {
     elements.installNote.textContent = installing.ended
       ? `The installer has ended. Keep what it installed${installing.into ? ` into ${installing.into}` : ''} as a layer, or discard it.`
-      : `Installing ${installing.name} from ${installing.from}: its setup files are at C:\\${MEDIA} while it runs.`;
+      : installing.drive
+        ? `Installing ${installing.name} from ${installing.from}, run as ${installing.installer}.`
+        : `Installing ${installing.name} from ${installing.from}: its setup files are at C:\\${MEDIA} while it runs.`;
   }
 }
 
 /** A program kept put on C:, its stack, or none: the base alone, with what was dropped loose. */
 async function choose(name: string | null) {
-  await hold();
+  const program = state.programs.find((one) => one.name === name) ?? null;
+
+  /* Its images first, while the click's leave to ask for a file's
+   * handle again holds. */
   state.program = name;
   state.installing = null;
+  state.needed = state.needed.filter((one) => one.program === name);
+
+  if (program?.media?.length) {
+    await mountMedia(program);
+  }
+
+  await hold();
 
   if (await rebuild({ keeping: false })) {
-    status(name ? `${name} is on C:.` : 'Ready.');
+    const needed = state.needed.filter((one) => !one.disk);
+
+    status(
+      !name
+        ? 'Ready.'
+        : needed.length
+          ? `${name} is on C:. Choose again, or drop, the images it is run with: ` +
+            `${needed
+              .flatMap((one) => stillWanted(one).map((file) => `${file.name} for ${one.letter}:`))
+              .join(', ')}.`
+          : `${name} is on C:.`
+    );
   }
 }
 
@@ -1377,9 +2471,23 @@ function start() {
   elements.drop.addEventListener('drop', (event) => {
     event.preventDefault();
     elements.drop.classList.remove('over');
-    accept([...(event.dataTransfer?.files ?? [])]);
+    dropped(event);
   });
   elements.picker.addEventListener('change', () => accept([...(elements.picker.files ?? [])]));
+
+  /* Images added as drives, and copies of a kept program's kept, where asked for. */
+  elements.chooseImages.addEventListener('click', () => chooseImages(elements.imagePicker));
+  elements.imagePicker.addEventListener('change', () => {
+    accept([...(elements.imagePicker.files ?? [])], { drives: true });
+    elements.imagePicker.value = '';
+  });
+  elements.keepImages.addEventListener('change', () => {
+    const program = programNow();
+
+    if (program) {
+      rememberImages(program);
+    }
+  });
 
   /* What programs wrote was written on the installation, or the bundle's
    * base, and goes with it. */
@@ -1490,6 +2598,7 @@ function start() {
         return kept;
       },
       keptCounts,
+      imageCounts,
       keep: keepAll,
       accept,
       run,

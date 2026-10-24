@@ -593,10 +593,14 @@ pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<A
 /// with the parameters after it, a text file with Notepad. Another verb
 /// for a program, or a file with no association, answers 31.
 ///
+/// A directory given is the current one while the program is found and
+/// started, so that it starts there, and the drive and directory current
+/// before are current again after (`enter_directory`).
+///
 /// Not followed: an association that asks for DDE.
 pub fn shell_execute(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (found, show) = {
+        let (found, show, saved) = {
             let mut system = engine.system();
 
             args.word(&system);
@@ -604,15 +608,64 @@ pub fn shell_execute(engine: &Engine, mut args: Args) -> Later<'_> {
             let far = [(); 4].map(|()| args.dword(&system));
             let show = args.word(&system);
             let texts = far.map(|far| text_argument(&system, far));
+            let saved = match &texts[3] {
+                Text::Read(directory) => enter_directory(&mut system, directory),
+                _ => None,
+            };
 
-            (execute(&mut system, texts), show)
+            (execute(&mut system, texts), show, saved)
+        };
+        let answer = match found {
+            Ok(command) => engine.win_exec_line(&command, show).await,
+            Err(error) => Ok(error),
         };
 
-        match found {
-            Ok(command) => Ok(Answer::Word(engine.win_exec_line(&command, show).await?)),
-            Err(error) => Ok(Answer::Word(error)),
+        if let Some((drive, path)) = saved {
+            let mut system = engine.system();
+
+            system.files.drive = drive;
+            system.files.set_current(drive, path);
         }
+
+        Ok(Answer::Word(answer?))
     })
+}
+
+/// **Read out** (`SHELL.DLL` seg4 `093c`-`098a`, `107a`-`1088`): a
+/// directory given to `ShellExecute`, past its leading spaces, made current
+/// before anything else is done -- its drive selected where it names one
+/// (DOS 0Eh, its letter less `a`, a capital's made small; seg1 `00f9`) and
+/// the rest, where there is any, made that drive's directory (DOS 3Bh) --
+/// once the drive and directory current are kept (seg1 `00b0`, DOS 47h);
+/// those made current again as it returns. A directory that is not there
+/// changes nothing. What was current, where a directory is given.
+fn enter_directory(system: &mut System, directory: &[u8]) -> Option<(char, String)> {
+    let start = directory.iter().position(|&b| b != b' ')?;
+    let directory = &directory[start..];
+    let drive = system.files.drive;
+    let saved = (drive, system.files.current(drive));
+    let mut rest = directory;
+
+    if directory.get(1) == Some(&b':') {
+        let letter = directory[0];
+        let index = if letter < b'a' {
+            letter.wrapping_sub(b'a').wrapping_add(0x20)
+        } else {
+            letter - b'a'
+        };
+
+        if index < 26 && system.files.mounted(char::from(b'A' + index)) {
+            system.files.drive = char::from(b'A' + index);
+        }
+
+        rest = &directory[2..];
+    }
+
+    if !rest.is_empty() {
+        system.change_directory_to(&text(rest));
+    }
+
+    Some(saved)
 }
 
 /// `ShellExecute` given its verb, file, parameters and directory as read:
@@ -714,20 +767,49 @@ pub fn extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Word(extract_icon_of(system, &name, index)?))
 }
 
+/// While WinBox's Program Manager runs, the file it says it is,
+/// `C:\WINDOWS\PROGMAN.EXE`, which is on no drive: `PROGMAN.EXE`'s
+/// resources as the asset bundle's store has them, so that its own icons,
+/// which items of DOS programs and items whose program is not found show,
+/// are found where a group names them (`progman`; the owner's decision of
+/// 2026-10-22). Asked for by that path, `\WINDOWS\PROGMAN.EXE`, or the
+/// name alone, as `OpenFile` would find it in the Windows directory.
+fn progman_file(system: &mut System, name: &str) -> Option<Vec<u8>> {
+    let kept = system.kept_named(crate::progman::NAME)?;
+
+    if !(0..system.modules.len()).any(|module| system.progman_kept(module) == Some(kept)) {
+        return None;
+    }
+
+    let upper = name.to_ascii_uppercase();
+    let named = [
+        crate::progman::FILE,
+        "\\WINDOWS\\PROGMAN.EXE",
+        crate::progman::PATH,
+    ]
+    .contains(&upper.as_str());
+
+    named.then(|| system.installed_or_stored("C:\\WINDOWS", crate::progman::FILE))?
+}
+
 /// `ExtractIcon` of a file by its name.
 fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, Stop> {
-    let Some(handle) = system.files.open(name) else {
+    let bytes = if let Some(handle) = system.files.open(name) {
+        let bytes = {
+            let file = system.files.resolve(handle).expect("an open file");
+            let size = file.size() as usize;
+
+            file.seek(std::io::SeekFrom::Start(0));
+            file.read(size)
+        };
+
+        system.files.close(handle);
+        bytes
+    } else if let Some(bytes) = progman_file(system, name) {
+        bytes
+    } else {
         return Ok(0);
     };
-    let bytes = {
-        let file = system.files.resolve(handle).expect("an open file");
-        let size = file.size() as usize;
-
-        file.seek(std::io::SeekFrom::Start(0));
-        file.read(size)
-    };
-
-    system.files.close(handle);
 
     let none = u16::from(index != -1);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);

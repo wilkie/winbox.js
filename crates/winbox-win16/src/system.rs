@@ -128,6 +128,12 @@ pub struct System {
     /// survey run a program: the run ends with its last task, its last
     /// screen kept.
     pub stays_up: bool,
+    /// The task of the shell an install run starts first, Program Manager
+    /// given the installer as its command line (`progman::start_shell`):
+    /// the run is the installer's, and ends once every other task has --
+    /// the installer and what it started -- the shell waiting, as though
+    /// it were not there (`shell_alone`). None in any other run.
+    pub shell_task: Option<u16>,
     /// The code the last task to end gave DOS as it ended (`INT 21h`
     /// AH 4Ch's AL); none before one has.
     pub exit_code: Option<u8>,
@@ -487,6 +493,7 @@ impl System {
             task: None,
             ended: false,
             stays_up: false,
+            shell_task: None,
             exit_code: None,
             instructions: 0,
             log: None,

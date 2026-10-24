@@ -1121,17 +1121,32 @@ fn main() {
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
 
-    let (program, libraries) = system.load(executable, &path);
+    if installing.is_some() {
+        // An installer is run as Windows started as `WIN SETUP.EXE` runs
+        // it: Program Manager the shell, first, given it as its command
+        // line, starting it in its own folder -- an installer on a drive of
+        // images on that drive, made current -- and answering what it asks
+        // over DDE; the run over once it, and what it started, has ended
+        // (`progman::start_shell`).
+        drop(executable);
+        winbox_win16::progman::start_shell(&mut system, &path)
+            .expect("Program Manager's registers");
+    } else {
+        let (program, libraries) = system.load(executable, &path);
 
-    system.link(program);
-    system
-        .start(program, libraries, "")
-        .expect("the program's registers");
+        system.link(program);
+        system
+            .start(program, libraries, "")
+            .expect("the program's registers");
+    }
 
     // Started in its own folder, as Program Manager starts a program whose
-    // item's working directory is where the program is: an installer on a
-    // drive of images on that drive, which is made current.
-    if let Some((folder, _)) = path.rsplit_once('\\') {
+    // item's working directory is where the program is: a program on a
+    // drive of images on that drive, which is made current. An installer
+    // is started so by Program Manager itself.
+    if let Some((folder, _)) = path.rsplit_once('\\')
+        && installing.is_none()
+    {
         let letter = folder.chars().next().map(|c| c.to_ascii_uppercase());
 
         if let Some(letter) = letter.filter(|&letter| letter != 'C') {

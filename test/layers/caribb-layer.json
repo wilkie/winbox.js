@@ -1,13 +1,13 @@
 {
  "stepMarks": [
   {
-   "calls": 1458,
-   "instructions": 35756,
+   "calls": 1469,
+   "instructions": 35808,
    "time": 10000
   },
   {
-   "calls": 1458,
-   "instructions": 35756,
+   "calls": 1469,
+   "instructions": 35808,
    "time": 10000,
    "pointer": {
     "kind": "move",
@@ -19,8 +19,8 @@
    }
   },
   {
-   "calls": 1458,
-   "instructions": 35756,
+   "calls": 1469,
+   "instructions": 35808,
    "time": 10000,
    "pointer": {
     "kind": "down",
@@ -32,8 +32,8 @@
    }
   },
   {
-   "calls": 1458,
-   "instructions": 35756,
+   "calls": 1469,
+   "instructions": 35808,
    "time": 10000,
    "pointer": {
     "kind": "up",
@@ -45,13 +45,13 @@
    }
   },
   {
-   "calls": 2820,
-   "instructions": 69157,
+   "calls": 2827,
+   "instructions": 69175,
    "time": 15016
   },
   {
-   "calls": 2820,
-   "instructions": 69157,
+   "calls": 2827,
+   "instructions": 69175,
    "time": 15016,
    "pointer": {
     "kind": "move",
@@ -63,8 +63,8 @@
    }
   },
   {
-   "calls": 2820,
-   "instructions": 69157,
+   "calls": 2827,
+   "instructions": 69175,
    "time": 15016,
    "pointer": {
     "kind": "down",
@@ -76,8 +76,8 @@
    }
   },
   {
-   "calls": 2820,
-   "instructions": 69157,
+   "calls": 2827,
+   "instructions": 69175,
    "time": 15016,
    "pointer": {
     "kind": "up",
@@ -89,14 +89,14 @@
    }
   },
   {
-   "calls": 2854,
-   "instructions": 70614,
-   "time": 20048
+   "calls": 2861,
+   "instructions": 70632,
+   "time": 20034
   },
   {
-   "calls": 2854,
-   "instructions": 70614,
-   "time": 20048,
+   "calls": 2861,
+   "instructions": 70632,
+   "time": 20034,
    "pointer": {
     "kind": "move",
     "x": 285,
@@ -107,9 +107,9 @@
    }
   },
   {
-   "calls": 2854,
-   "instructions": 70614,
-   "time": 20048,
+   "calls": 2861,
+   "instructions": 70632,
+   "time": 20034,
    "pointer": {
     "kind": "down",
     "x": 285,
@@ -120,9 +120,9 @@
    }
   },
   {
-   "calls": 2854,
-   "instructions": 70614,
-   "time": 20048,
+   "calls": 2861,
+   "instructions": 70632,
+   "time": 20034,
    "pointer": {
     "kind": "up",
     "x": 285,
@@ -133,37 +133,37 @@
    }
   },
   {
-   "calls": 5688,
-   "instructions": 397634385,
-   "time": 170057
+   "calls": 7099,
+   "instructions": 397667966,
+   "time": 170043
   },
   {
-   "calls": 5688,
-   "instructions": 397634385,
-   "time": 170057,
+   "calls": 7099,
+   "instructions": 397667966,
+   "time": 170043,
    "key": "Return",
    "code": "Enter",
    "kind": "down"
   },
   {
-   "calls": 5696,
-   "instructions": 397634637,
-   "time": 170057,
+   "calls": 7104,
+   "instructions": 397668070,
+   "time": 170043,
    "key": "Return",
    "code": "Enter",
    "kind": "up"
   },
   {
-   "calls": 5705,
-   "instructions": 397634807,
-   "time": 180087
+   "calls": 7117,
+   "instructions": 397668392,
+   "time": 180043
   }
  ],
  "layer": {
   "format": 1,
-  "id": "f51e72e567cdc4c2ccd1649927af0fa0cc43ea606b290e5ad0175ef9e6c0c641",
+  "id": "bf70af8b27302abffa287de590068dada973ea874cfeb11f7b85fa8c0ea54e8f",
   "over": [
-   "base:0c542ca6fc6a6f129cf757c6634e25a74db2420bbd5ef5944925af0fd504cdaa:vga"
+   "base:b222724dd5a0e4d0d461c9c6436dfd541192d2ff89e02b78d91857a5883ecf9e:vga"
   ],
   "made": {
    "by": "WinBox",
@@ -184,6 +184,13 @@
     "kind": "folder",
     "path": "WINDOWS\\SYSTEM",
     "modified": 702550834
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\GAMES.GRP",
+    "sha256": "526e26fdf5dc713a64c11718745f523db6cd98318077a847fd4dce2465091570",
+    "size": 833,
+    "modified": 702550952
    },
    {
     "kind": "file",
@@ -239,6 +246,13 @@
     "path": "WINDOWS\\KNP.INI",
     "sha256": "f8599e65a3fbd3bc5002119ee9f3bca65795a54d7f3478f96850d9848184faa5",
     "size": 19,
+    "modified": 702550952
+   },
+   {
+    "kind": "file",
+    "path": "WINDOWS\\PROGMAN.INI",
+    "sha256": "b37077f6164d50df4a2fdd75ad5dfb5c6fef3f9f28bd83faf2276918b53b13cb",
+    "size": 84,
     "modified": 702550952
    },
    {

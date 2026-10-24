@@ -5,6 +5,7 @@
 //! disc image's ISO 9660 one (`IsoVolume`), its names found without regard
 //! to case, as DOS finds them.
 
+mod cue;
 mod empty;
 mod fat;
 mod host;
@@ -18,6 +19,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
+pub use cue::{AUDIO_TYPES, CdImage, CdTrack, CueError, CueFailure};
 pub use empty::EmptyDrive;
 use fat::same_name;
 pub use fat::{FatError, FatVolume, ImageFile};
@@ -1153,6 +1155,14 @@ impl Files {
         let empty = EmptyDrive::after(drive.as_ref());
 
         self.swap(letter, Box::new(empty))
+    }
+
+    /// A drive taken away, its letter no drive's any more, as the
+    /// TypeScript engine's `FileManager.unmount`: the page's Drives strip
+    /// removing a set of images. The volume it had; none where no drive
+    /// was.
+    pub fn unmount(&mut self, letter: char) -> Option<Box<dyn Volume>> {
+        self.drives.remove(&letter.to_ascii_uppercase())
     }
 
     /// Whether a drive's disk has been written to (`Volume::changed`).

@@ -22,9 +22,12 @@
 mod commands;
 mod dde;
 pub mod image;
+mod items;
 mod loaded;
 pub(crate) mod main;
 mod parse;
+mod shell;
+mod window;
 
 use std::collections::BTreeMap;
 
@@ -66,18 +69,26 @@ pub static MODULE: Kept = Kept {
             returns: 4,
             stub: false,
         }),
+        Some(Export {
+            name: "GROUPWNDPROC",
+            pops: 10,
+            returns: 4,
+            stub: false,
+        }),
     ],
 };
 
 /// The ordinals of `MODULE`'s exports.
 pub(crate) const WINMAIN: u16 = 1;
 pub(crate) const FRAME_PROC: u16 = 2;
+pub(crate) const GROUP_PROC: u16 = 3;
 
 /// The function that answers an export.
 pub(crate) fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "WINMAIN" => Implementation::Async(main::win_main),
         "FRAMEWNDPROC" => Implementation::Async(main::frame_proc),
+        "GROUPWNDPROC" => Implementation::Async(window::group_proc),
         _ => return None,
     })
 }
@@ -136,4 +147,52 @@ impl Engine {
 
         self.run_started(child).await
     }
+}
+
+/// Program Manager started as the shell of an install run, as Windows
+/// started as `WIN SETUP.EXE` starts it: the first task, before any other,
+/// so the only one as it starts (seg3 `0b88`), given the installer as its
+/// command line, which it starts itself once its groups are loaded, in the
+/// installer's own directory (`shell.rs`). Microsoft's, where the drive has
+/// `C:\WINDOWS\PROGMAN.EXE`; else WinBox's own, made as `start_progman`
+/// makes it. Its task kept as the run's shell (`System::shell_task`).
+///
+/// # Errors
+///
+/// Where its registers cannot be set.
+pub fn start_shell(system: &mut System, command_line: &str) -> Result<(), winbox_cpu::Exit> {
+    let file = system
+        .files
+        .read_from("C:\\WINDOWS", FILE)
+        .and_then(|(_, bytes)| winbox_ne::Executable::parse(bytes).ok());
+    let own = file.is_none();
+    let executable = file.unwrap_or_else(|| {
+        winbox_ne::Executable::parse(image::image()).expect("Program Manager's image")
+    });
+    let (program, libraries) = system.load(executable, PATH);
+
+    system.link(program);
+
+    if own {
+        let kept = system.keep_on_load(&MODULE);
+        let winmain = export_address(system, WINMAIN);
+
+        if let Some(data) = system.modules[program].data() {
+            let at = (data as u32) << 16 | u32::from(image::WINMAIN_SLOT);
+
+            system.cpu.bus.write(at, &winmain.to_le_bytes());
+        }
+
+        system.modules[program].handle = system.kept[kept].handle();
+    }
+
+    system.shell_task = Some(system.task_handle);
+    system.start_with(
+        program,
+        libraries,
+        command_line,
+        crate::task::SW_SHOWNORMAL,
+        0,
+        None,
+    )
 }

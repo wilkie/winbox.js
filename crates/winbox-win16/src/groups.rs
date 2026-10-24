@@ -235,7 +235,7 @@ fn set_word(data: &mut [u8], at: usize, value: u16) {
 }
 
 /// The string at an offset, to its nought or the end of the data.
-fn c_string(data: &[u8], at: usize) -> Vec<u8> {
+pub fn c_string(data: &[u8], at: usize) -> Vec<u8> {
     let rest = data.get(at..).unwrap_or(&[]);
     let end = rest
         .iter()

@@ -28,6 +28,7 @@
 import { AriaMirror } from '../aria-mirror.js';
 import { type Change, orderChanges } from '../changes.js';
 import { type Program } from '../drive.js';
+import { type Disk, type DriveSet, findIn } from '../drives.js';
 import {
   attachInput,
   type Engine,
@@ -58,6 +59,8 @@ interface WasmMachine {
   changes(drive: string): WasmChange[];
   /** Why the program could not be started; nothing where it was. */
   start(path: string): string | undefined;
+  /** An installer run, Program Manager the shell starting it; why not, where it could not be. */
+  install(path: string): string | undefined;
   take_exits(): Uint8Array;
   step(deadlineMs: number): number;
   wake_at(): number;
@@ -79,7 +82,42 @@ interface WasmMachine {
   take_sound(): SoundEvent[];
   take_calls(counts: boolean): string;
   accessible_tree(): string;
+  add_disk(drive: string, image: ImageBytes, kind: string): string | undefined;
+  insert_disk(drive: string, disk: number): string | undefined;
+  eject_disk(drive: string): string | undefined;
+  remove_disks(drive: string): boolean;
+  disk_image(drive: string, disk: number): Uint8Array | undefined;
+  disk_changed(drive: string, disk: number): boolean;
 }
+
+/**
+ * A disk image's bytes as the module reads them (`ImageBytes` in
+ * `crates/winbox-web/src/lib.rs`): from the page's own bytes, where they
+ * are, a slice at a time, so a disc is never copied into the module's
+ * memory. The image is held in memory all the same, as the module reads
+ * it synchronously; a worker reading the file itself is a later step.
+ */
+interface ImageBytes {
+  readonly size: number;
+  read(offset: number, into: Uint8Array): void;
+
+  /** A file its cue sheet names, among the disk's tracks (`findIn`); none where there is none. */
+  file(name: string): ImageBytes | undefined;
+}
+
+/** Bytes as the module reads them. */
+const bytesOf = (bytes: Uint8Array, find: (name: string) => Uint8Array | null): ImageBytes => ({
+  size: bytes.length,
+  read: (offset, into) => into.set(bytes.subarray(offset, offset + into.length)),
+  file: (name) => {
+    const found = find(name);
+
+    return found ? bytesOf(found, () => null) : undefined;
+  },
+});
+
+/** A disk's bytes as the module reads them, and a cue sheet's files. */
+const imageBytes = (disk: Disk): ImageBytes => bytesOf(disk.bytes, findIn(disk));
 
 /** A change on a drive, as `crates/winbox-web/src/lib.rs` hands it over (`DriveChange`). */
 interface WasmChange {
@@ -258,6 +296,13 @@ export class RustEngine implements Engine {
   /** The program run last, while the run goes on. */
   #running: Program | null = null;
 
+  /**
+   * Whether the run is an installer's, Program Manager the shell: once the
+   * installer, and what it started, has ended, the run waits, the shell
+   * left, and the page is told so again (`#step`).
+   */
+  #installing = false;
+
   /** The canvas, where there is a screen, and the image over the module's memory it is drawn from. */
   #canvas: HTMLCanvasElement | null = null;
   #image: ImageData | null = null;
@@ -319,7 +364,7 @@ export class RustEngine implements Engine {
     }
   }
 
-  async run(program: Program) {
+  async run(program: Program, options: { install?: boolean } = {}) {
     const page = this.#page;
 
     if (!this.#setup || !this.#wasm) {
@@ -341,6 +386,7 @@ export class RustEngine implements Engine {
        * one's programs wrote. */
       if (this.#started || !this.#machine) {
         await this.changes();
+        this.carry();
         this.#halt();
         await this.#fresh();
         this.#machine = this.#make();
@@ -357,7 +403,13 @@ export class RustEngine implements Engine {
 
       this.#started = true;
 
-      const refused = this.#machine.start(program.path);
+      /* An installer: Program Manager the shell, starting it
+       * (`progman::start_shell`). */
+      this.#installing = Boolean(options.install);
+
+      const refused = options.install
+        ? this.#machine.install(program.path)
+        : this.#machine.start(program.path);
 
       if (refused !== undefined) {
         throw new Error(refused);
@@ -410,6 +462,79 @@ export class RustEngine implements Engine {
     } catch {
       /* A lost instance answers nothing (`Lost`). */
       return null;
+    }
+  }
+
+  /* ---- the drives of images ---- */
+
+  /** A set's disks added to a machine, the one in the drive put in, or the drive emptied. */
+  #mountOn(machine: WasmMachine, set: DriveSet) {
+    for (const disk of set.disks) {
+      const refused = machine.add_disk(set.letter, imageBytes(disk), set.kind);
+
+      if (refused !== undefined) {
+        machine.remove_disks(set.letter);
+        return `${set.letter}: ${refused}`;
+      }
+    }
+
+    return (
+      (set.ejected
+        ? machine.eject_disk(set.letter)
+        : set.current > 0
+          ? machine.insert_disk(set.letter, set.current)
+          : undefined) ?? null
+    );
+  }
+
+  async mount(set: DriveSet) {
+    return this.#machine ? this.#mountOn(this.#machine, set) : null;
+  }
+
+  async addDisk(set: DriveSet, disk: number) {
+    const machine = this.#machine;
+
+    if (!machine) {
+      return null;
+    }
+
+    const refused = machine.add_disk(set.letter, imageBytes(set.disks[disk]), set.kind);
+
+    return refused === undefined ? null : `${set.letter}: ${refused}`;
+  }
+
+  insert(letter: string, disk: number) {
+    return this.#machine?.insert_disk(letter, disk) ?? null;
+  }
+
+  eject(letter: string) {
+    return this.#machine?.eject_disk(letter) ?? null;
+  }
+
+  unmount(letter: string) {
+    this.#machine?.remove_disks(letter);
+  }
+
+  diskImage(letter: string, disk: number) {
+    return this.#machine?.disk_image(letter, disk) ?? null;
+  }
+
+  diskChanged(letter: string, disk: number) {
+    return this.#machine?.disk_changed(letter, disk) ?? false;
+  }
+
+  carry() {
+    try {
+      for (const set of this.#setup?.drives ?? []) {
+        set.disks.forEach((disk, at) => {
+          if (this.diskChanged(set.letter, at)) {
+            disk.bytes = this.diskImage(set.letter, at)!;
+            disk.written = true;
+          }
+        });
+      }
+    } catch {
+      /* A lost instance answers nothing (`Lost`): what it wrote is lost with it. */
     }
   }
 
@@ -470,6 +595,15 @@ export class RustEngine implements Engine {
     }
 
     machine.mark_planned();
+
+    /* The drives of images, each set's disk in its drive, or none. */
+    for (const set of this.#setup!.drives) {
+      const refused = this.#mountOn(machine, set);
+
+      if (refused) {
+        this.#page.status(refused, 'error');
+      }
+    }
 
     for (const change of orderChanges(changes)) {
       switch (change.kind) {
@@ -629,9 +763,16 @@ export class RustEngine implements Engine {
           this.#stopped(machine, program);
           break;
         /* Every program has ended, each told as it did, and Windows stays
-         * up for the next. */
+         * up for the next -- an installer's shell apart, which waits too:
+         * the page told again, the installer having ended in an earlier
+         * frame, maybe, than the one its shell came to wait in. */
         case WAITING:
           this.#running = null;
+
+          if (this.#installing) {
+            this.#installing = false;
+            this.#page.ended();
+          }
           break;
       }
     } catch (error) {

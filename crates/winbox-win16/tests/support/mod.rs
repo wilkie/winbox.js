@@ -217,6 +217,10 @@ pub const AGREEING: &[&str] = &[
     "imgwrite",
     "drvioctl",
     "imgcd",
+    "imgbin",
+    "imgcue",
+    "imgcue2",
+    "imgtrk",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -559,6 +563,11 @@ pub struct Setup {
     /// recorder makes it, unless its preset keeps another (`[oracle
     /// shell]`, `pmshell`), which is then what is started.
     pub shell: String,
+    /// Started as an install run is: Program Manager first, the shell,
+    /// given the program as its command line, which it starts itself
+    /// (`progman::start_shell`); the run over once every other task has
+    /// ended.
+    pub install: bool,
 }
 
 /// What drive C: has beneath it.
@@ -856,18 +865,24 @@ impl Setup {
             placed,
             without: Vec::new(),
             shell,
+            install: false,
         })
     }
 
     /// The probe loaded and started from where `program` says, `C:\` its
     /// own, the system made ready by `prepare` first.
     fn start(mut self, prepare: impl FnOnce(&mut System)) -> System {
-        let (program, libraries) = self
-            .system
-            .load(Executable::parse(self.bytes).unwrap(), &self.program);
+        if self.install {
+            winbox_win16::progman::start_shell(&mut self.system, &self.program).unwrap();
+        } else {
+            let (program, libraries) = self
+                .system
+                .load(Executable::parse(self.bytes).unwrap(), &self.program);
 
-        self.system.link(program);
-        self.system.start(program, libraries, "").unwrap();
+            self.system.link(program);
+            self.system.start(program, libraries, "").unwrap();
+        }
+
         prepare(&mut self.system);
         self.system
     }
@@ -985,16 +1000,22 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
 }
 
 /// An image as a drive: a FAT image, a floppy's or a hard disk's
-/// (`FatVolume`), or an ISO 9660 disc (`IsoVolume`). A probe whose image
-/// is not mounted runs without it, and is left out of `AGREEING`.
+/// (`FatVolume`), or a CD image (`IsoVolume`) -- a cue sheet's files found
+/// beside it, as `record.mjs` copies them and DOSBox finds them
+/// (`GetRealFileName`). A probe whose image is not mounted runs without
+/// it, and is left out of `AGREEING`.
 fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
     match mount.kind.as_str() {
         "floppy" | "hdd" => FatVolume::new(bytes, mount.kind == "floppy")
             .ok()
             .map(|volume| Box::new(volume) as Box<dyn Volume>),
-        "iso" => IsoVolume::new(bytes)
-            .ok()
-            .map(|volume| Box::new(volume) as Box<dyn Volume>),
+        "iso" => IsoVolume::open(Box::new(bytes), &mut |name| {
+            std::fs::read(root().join("oracle/probes/images").join(name))
+                .ok()
+                .map(|bytes| Box::new(bytes) as Box<dyn winbox_machine::Sectors>)
+        })
+        .ok()
+        .map(|volume| Box::new(volume) as Box<dyn Volume>),
         _ => None,
     }
 }
@@ -1184,4 +1205,17 @@ fn set_shell(text: &[u8], program: &str) -> Vec<u8> {
     }
 
     text.to_vec()
+}
+
+/// The asset bundle's modules as the store behind drive C, where a run on
+/// the installation has none: for a run with `PROGMAN.EXE` taken off it,
+/// WinBox's Program Manager's icons are the bundle's `PROGMAN.EXE`'s, as on
+/// the bundle's base (the owner's decision of 2026-10-22,
+/// `kb/topics/program-manager-dde.md`). The installation's own files are
+/// still read first.
+#[allow(dead_code)]
+pub fn bundle_store(system: &mut System) {
+    if system.assets.is_none() {
+        system.assets = bundle();
+    }
 }

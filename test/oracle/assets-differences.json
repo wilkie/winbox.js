@@ -23,12 +23,6 @@
         "reason": "CARDFILE.EXE is not on the base: WinExec answers 2, and there is no Cardfile to read"
       }
     ],
-    "ddeinst": [
-      {
-        "records": ["DdeConnect(PROGMAN,PROGMAN)", "execute(*", "request(*", "DdeDisconnect(*"],
-        "reason": "PROGMAN.EXE is not on the base: no Program Manager answers the DDE conversation"
-      }
-    ],
     "diskfree": [
       {
         "engine": "typescript",
@@ -105,17 +99,82 @@
         "reason": "NOTEPAD.EXE is not on the base: WinExec answers 2"
       }
     ],
-    "pmatom": [
+    "pmbare-ega": [
       {
-        "records": [
-          "WinExec(PROGMAN.EXE)",
-          "FindWindow(Progman)",
-          "count(*",
-          "raw(*",
-          "DdeConnect(*",
-          "clear(*"
-        ],
-        "reason": "PROGMAN.EXE is not on the base: no Program Manager, so none of its atoms, windows or DDE answers"
+        "records": ["delete(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: nothing to delete"
+      },
+      {
+        "records": ["windows(*"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      },
+      {
+        "records": ["request(Rows)", "size(ROWS.GRP)", "bytes(ROWS.GRP@*"],
+        "reason": "The accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
+      }
+    ],
+    "pmbare-vga": [
+      {
+        "records": ["delete(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: nothing to delete"
+      },
+      {
+        "records": ["windows(*"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      },
+      {
+        "records": ["request(Rows)", "size(ROWS.GRP)", "bytes(ROWS.GRP@*"],
+        "reason": "The accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
+      }
+    ],
+    "pmfiles": [
+      {
+        "records": ["size(*", "bytes(*", "copy(*", "text(*", "request(*"],
+        "reason": "MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP and PROGMAN.INI are not on the base: there is no group file to copy in, and WinBox's own Program Manager, answering there, loads none of them"
+      },
+      {
+        "records": ["windows(*"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      }
+    ],
+    "pmgroups": [
+      {
+        "records": ["windows(*"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      },
+      {
+        "records": ["request(*", "copy(*", "text(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: WinBox's own Program Manager, answering there, loads no Main, Accessories or StartUp, so the groups listed, written to PROGMAN.INI and copied from them differ; and the accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
+      }
+    ],
+    "pmraw": [
+      {
+        "records": ["request(*", "copy(*", "text(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: WinBox's own Program Manager, answering there, loads no Main, Accessories or StartUp, so the groups listed, written to PROGMAN.INI and copied from them differ; and the accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
+      },
+      {
+        "records": ["windows(*"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      }
+    ],
+    "pmstart": [
+      {
+        "records": ["delete(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: nothing to delete"
+      },
+      {
+        "records": ["visible(frame)"],
+        "reason": "On the base WinBox's own Program Manager answers, PROGMAN.EXE not being there; its frame is hidden, by the owner's decision, and its groups' windows in it: IsWindowVisible answers nought for each, where their places, icons and zooms are Microsoft's"
+      },
+      {
+        "records": ["module(PROGMAN)"],
+        "reason": "On the installation Microsoft's PROGMAN.EXE runs, loaded from its file, and WinBox's GetModuleHandle answers nought for a program so loaded (kb/kernel/getmodulehandle.md); on the base WinBox's own answers, whose module has its kept module's handle"
+      }
+    ],
+    "pmsyntax": [
+      {
+        "records": ["text(*", "request(*", "size(*", "bytes(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: WinBox's own Program Manager, answering there, loads no Main, Accessories or StartUp, so the groups listed, written to PROGMAN.INI and copied from them differ; and the accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
       }
     ],
     "prnote": [
@@ -126,20 +185,8 @@
     ],
     "progdde": [
       {
-        "records": [
-          "files(*",
-          "WinExec(PROGMAN.EXE)",
-          "DdeConnect(*",
-          "initiate(*",
-          "request(*",
-          "transaction(*",
-          "execute(*",
-          "layout(*",
-          "waited(*",
-          "FindWindow(*",
-          "plain(*"
-        ],
-        "reason": "PROGMAN.EXE, PROGMAN.INI and the groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: no Program Manager to start or talk to, and no groups named"
+        "records": ["files(*", "request(*", "layout(*"],
+        "reason": "PROGMAN.INI and the installation's groups (MAIN.GRP, ACCESSOR.GRP, STARTUP.GRP) are not on the base: WinBox's own Program Manager, answering there, loads no Main, Accessories or StartUp, so the groups listed, written to PROGMAN.INI and copied from them differ; and the accessories (NOTEPAD.EXE, CALC.EXE, CARDFILE.EXE and the rest) and DOSPRMPT.PIF are not on the base: their items have no program for FindExecutable to find, so no icon path, and take Program Manager's own icon, index 6, from PROGMAN.EXE in the bundle's store; the group's text and file differ so"
       }
     ],
     "shell2": [

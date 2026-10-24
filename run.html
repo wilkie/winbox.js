@@ -19,7 +19,8 @@
           <strong>Drop zip archives here</strong>
           <span
             >or choose them: programs, and your Windows 3.1 -- its setup disks' images, or an
-            installed copy. Nothing leaves this browser.</span
+            installed copy. Disk and CD images (.img, .iso, .cue with its .bin) beside Windows
+            become drives. Nothing leaves this browser.</span
           >
         </label>
 
@@ -49,6 +50,27 @@
             <label><input id="sound" type="checkbox" /> Sound</label>
             <p>WinBox's own sound card, from the next program run. MIDI is not played yet.</p>
           </div>
+        </section>
+
+        <section id="drives-section" aria-labelledby="drives-heading">
+          <h2 id="drives-heading">Drives</h2>
+          <p id="drives-note"></p>
+          <ul id="drives" class="programs drives" aria-label="Drives of images"></ul>
+          <ul id="needed" class="programs drives" aria-label="Images to choose again" hidden></ul>
+          <p class="actions">
+            <button id="choose-images" type="button">Add images…</button>
+            <input
+              id="image-picker"
+              type="file"
+              multiple
+              accept=".img,.ima,.dsk,.vfd,.iso,.bin,.cue"
+              hidden
+            />
+          </p>
+          <label
+            ><input id="keep-images" type="checkbox" /> Keep copies of a kept program's images in
+            this browser</label
+          >
         </section>
 
         <section id="kept-section" hidden>
