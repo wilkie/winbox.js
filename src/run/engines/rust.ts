@@ -28,7 +28,7 @@
 import { AriaMirror } from '../aria-mirror.js';
 import { type Change, orderChanges } from '../changes.js';
 import { type Program } from '../drive.js';
-import { type DriveSet } from '../drives.js';
+import { type Disk, type DriveSet, findIn } from '../drives.js';
 import {
   attachInput,
   type Engine,
@@ -100,13 +100,24 @@ interface WasmMachine {
 interface ImageBytes {
   readonly size: number;
   read(offset: number, into: Uint8Array): void;
+
+  /** A file its cue sheet names, among the disk's tracks (`findIn`); none where there is none. */
+  file(name: string): ImageBytes | undefined;
 }
 
-/** A disk's bytes as the module reads them. */
-const imageBytes = (bytes: Uint8Array): ImageBytes => ({
+/** Bytes as the module reads them. */
+const bytesOf = (bytes: Uint8Array, find: (name: string) => Uint8Array | null): ImageBytes => ({
   size: bytes.length,
   read: (offset, into) => into.set(bytes.subarray(offset, offset + into.length)),
+  file: (name) => {
+    const found = find(name);
+
+    return found ? bytesOf(found, () => null) : undefined;
+  },
 });
+
+/** A disk's bytes as the module reads them, and a cue sheet's files. */
+const imageBytes = (disk: Disk): ImageBytes => bytesOf(disk.bytes, findIn(disk));
 
 /** A change on a drive, as `crates/winbox-web/src/lib.rs` hands it over (`DriveChange`). */
 interface WasmChange {
@@ -459,7 +470,7 @@ export class RustEngine implements Engine {
   /** A set's disks added to a machine, the one in the drive put in, or the drive emptied. */
   #mountOn(machine: WasmMachine, set: DriveSet) {
     for (const disk of set.disks) {
-      const refused = machine.add_disk(set.letter, imageBytes(disk.bytes), set.kind);
+      const refused = machine.add_disk(set.letter, imageBytes(disk), set.kind);
 
       if (refused !== undefined) {
         machine.remove_disks(set.letter);
@@ -487,7 +498,7 @@ export class RustEngine implements Engine {
       return null;
     }
 
-    const refused = machine.add_disk(set.letter, imageBytes(set.disks[disk].bytes), set.kind);
+    const refused = machine.add_disk(set.letter, imageBytes(set.disks[disk]), set.kind);
 
     return refused === undefined ? null : `${set.letter}: ${refused}`;
   }

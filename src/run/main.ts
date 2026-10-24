@@ -60,6 +60,9 @@ import {
   imageKey,
   type ImageKind,
   imageKind,
+  missingOf,
+  pairCues,
+  type Wanting,
   installerOn,
   isKnownMedia,
   type KnownFiles,
@@ -195,6 +198,10 @@ interface Needed extends Medium {
 
   /** Its bytes, once had; its set is mounted when every one of it is. */
   disk: Disk | null;
+
+  /** A cue sheet's own file once had, and the files it names had so far, in its order (`tracks`). */
+  have?: Disk | null;
+  trackDisks?: (Disk | null)[];
 }
 
 /**
@@ -945,8 +952,10 @@ async function accept(
     given.find((handle: any) => handle?.kind === 'file' && handle?.name === file.name) ?? null;
   const images: Taken[] = [];
   const rest: { file: File; bytes: Uint8Array }[] = [];
+  const read: Read[] = [];
   let filled = false;
   let classified: Awaited<ReturnType<typeof classify>>[];
+  let paired: string[] = [];
 
   try {
     for (const file of files) {
@@ -958,6 +967,16 @@ async function accept(
         continue;
       }
 
+      read.push({ file, bytes, handle });
+    }
+
+    /* Cue sheets with their files, and files for those still wanting them. */
+    const cues = await takeCues(read);
+
+    images.push(...cues.taken);
+    paired = cues.said;
+
+    for (const { file, bytes, handle } of read.filter((one) => !cues.used.has(one))) {
       const zip = bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
       const kind = zip ? null : await imageKind(file.name, bytes);
 
@@ -1009,11 +1028,16 @@ async function accept(
   /* Drives alone: put in, with nothing made afresh, so a program running
    * -- an installer asking for its next disk -- goes on. */
   if (!rest.length && !asMedia.length) {
-    const said = asDrives.length
-      ? into
-        ? await addToDrive(into, asDrives)
-        : await mountTaken(asDrives)
-      : [];
+    const said = [
+      ...paired,
+      ...(asDrives.length
+        ? into
+          ? await addToDrive(into, asDrives)
+          : await mountTaken(asDrives)
+        : []),
+    ];
+
+    render();
 
     if (filled) {
       await mountNeeded();
@@ -1108,8 +1132,15 @@ async function accept(
       note = (await takeProgram(archive)) ?? note;
     }
 
-    if (asDrives.length) {
-      const said = into ? await addToDrive(into, asDrives) : await mountTaken(asDrives);
+    if (asDrives.length || paired.length) {
+      const said = [
+        ...paired,
+        ...(asDrives.length
+          ? into
+            ? await addToDrive(into, asDrives)
+            : await mountTaken(asDrives)
+          : []),
+      ];
 
       offered ??= said.join(' ');
     }
@@ -1236,6 +1267,66 @@ interface Taken {
   kind: ImageKind;
 }
 
+/** A file dropped or chosen, read: its bytes, and its handle where the browser gave one. */
+interface Read {
+  file: File;
+  bytes: Uint8Array;
+  handle: unknown;
+}
+
+/**
+ * Cue sheets dropped or chosen whose files are not all had yet, asked for
+ * by name (`renderDrives`) and taken from the files dropped or chosen next.
+ */
+let wanting: Wanting[] = [];
+
+/** A file read made a disk, its handle kept by its key. */
+function diskRead(one: Read) {
+  const disk = diskOf(one.file, one.bytes);
+
+  if (one.handle) {
+    handles.set(keyOf(disk), one.handle);
+  }
+
+  return disk;
+}
+
+/**
+ * Cue sheets among files read, each paired with the files it names among
+ * those read with it (`pairCues`) -- a disc of its own once it has them
+ * all, as DOSBox's `LoadCueSheet` reads it; else asked for by name until
+ * they are dropped or chosen too. What was made discs, which files were
+ * used, and what is said of them.
+ */
+async function takeCues(read: Read[]) {
+  const disks = new Map(read.map((one) => [diskRead(one), one]));
+  const paired = pairCues([...disks.keys()], wanting);
+  const taken: Taken[] = [];
+  const said: string[] = [];
+
+  wanting = paired.wanting;
+
+  for (const disc of paired.discs) {
+    try {
+      await volumeOf('iso', disc);
+      taken.push({ disk: disc, kind: 'iso' });
+    } catch (error: any) {
+      said.push(`${disc.name}: ${error?.message ?? error}.`);
+    }
+  }
+
+  /* Said of a sheet dropped now, or given a file now: the rest were said before. */
+  for (const wait of wanting.filter(
+    (one) => disks.has(one.cue) || one.tracks.some((track) => track && disks.has(track))
+  )) {
+    said.push(`${wait.cue.name} wants ${missingOf(wait).join(', ')}: drop or choose it too.`);
+  }
+
+  const used = new Set([...paired.used].map((disk) => disks.get(disk)!));
+
+  return { taken, used, said };
+}
+
 /** A disk made of a file read. */
 const diskOf = (file: File, bytes: Uint8Array): Disk => ({
   name: file.name,
@@ -1270,7 +1361,7 @@ async function readPrograms(set: DriveSet) {
   }
 
   try {
-    const volume = await volumeOf(set.kind, set.disks[set.current].bytes);
+    const volume = await volumeOf(set.kind, set.disks[set.current]);
 
     drivePrograms.set(set.letter, await programsOn(volume, set.letter));
   } catch {
@@ -1470,9 +1561,13 @@ function mediaNow(except?: string): Medium[] {
         name: disk.name,
         size: disk.size,
         key: keyOf(disk),
+        ...(disk.tracks ? { tracks: disk.tracks.map(trackOf) } : {}),
       }))
     );
 }
+
+/** A cue sheet's file as a kept program remembers it. */
+const trackOf = (disk: Disk) => ({ name: disk.name, size: disk.size, key: keyOf(disk) });
 
 /**
  * What is kept of a kept program's images: a handle on each file, where
@@ -1483,8 +1578,11 @@ function mediaNow(except?: string): Medium[] {
 async function rememberImages(program: KeptProgram) {
   const copy = elements.keepImages.checked;
 
-  for (const medium of program.media ?? []) {
-    const disk = state.drives.flatMap((set) => set.disks).find((one) => keyOf(one) === medium.key);
+  const disks = state.drives.flatMap((set) => set.disks);
+  const files = [...disks, ...disks.flatMap((disk) => disk.tracks ?? [])];
+
+  for (const medium of (program.media ?? []).flatMap((one) => [one, ...(one.tracks ?? [])])) {
+    const disk = files.find((one) => keyOf(one) === medium.key);
     const handle = handles.get(medium.key);
     const was = await recallImage(medium.key);
 
@@ -1520,7 +1618,14 @@ async function mediaChanged() {
     ...mediaNow(),
     ...state.needed
       .filter((one) => one.program === program.name && !one.disk)
-      .map(({ letter, kind, name, size, key }) => ({ letter, kind, name, size, key })),
+      .map(({ letter, kind, name, size, key, tracks }) => ({
+        letter,
+        kind,
+        name,
+        size,
+        key,
+        ...(tracks ? { tracks } : {}),
+      })),
   ].sort((one, other) => one.letter.localeCompare(other.letter));
 
   if (JSON.stringify(media) === JSON.stringify(program.media ?? [])) {
@@ -1554,27 +1659,57 @@ async function mountMedia(program: KeptProgram) {
       )
   );
 
-  for (const medium of media) {
-    let disk: Disk | null = null;
+  const recall = async (medium: Medium): Promise<Disk | null> => {
     const kept = await recallImage(medium.key);
 
     if (kept?.bytes) {
-      disk = {
+      return {
         name: kept.name,
         size: kept.size,
         modified: kept.modified,
         bytes: kept.bytes,
         written: false,
       };
-    } else if (kept?.handle) {
-      disk = await fromHandle(kept.handle, medium);
     }
 
-    state.needed.push({ ...medium, program: program.name, disk });
+    return kept?.handle ? fromHandle(kept.handle, medium) : null;
+  };
+
+  for (const medium of media) {
+    const needed: Needed = {
+      ...medium,
+      program: program.name,
+      disk: null,
+      have: await recall(medium),
+      trackDisks: [],
+    };
+
+    for (const track of medium.tracks ?? []) {
+      needed.trackDisks!.push(await recall({ ...medium, ...track }));
+    }
+
+    state.needed.push(completed(needed));
   }
 
   await mountNeeded();
 }
+
+/** An image asked for made whole once it and every file its cue sheet names are had. */
+function completed(needed: Needed) {
+  const tracks = needed.trackDisks ?? [];
+
+  if (needed.have && (needed.tracks ?? []).every((_, at) => tracks[at])) {
+    needed.disk = needed.tracks ? { ...needed.have, tracks: tracks as Disk[] } : needed.have;
+  }
+
+  return needed;
+}
+
+/** The files an image asked for still wants: itself, and those its cue sheet names. */
+const stillWanted = (needed: Needed) => [
+  ...(needed.have ? [] : [{ name: needed.name, size: needed.size }]),
+  ...(needed.tracks ?? []).filter((_, at) => !needed.trackDisks?.[at]),
+];
 
 /** A disk read through a handle kept, where the browser gives leave and the file is still the one kept. */
 async function fromHandle(handle: any, medium: Medium): Promise<Disk | null> {
@@ -1647,18 +1782,27 @@ async function mountNeeded() {
  * same name and size. Taken for it, and its set mounted once it is whole.
  */
 function fillNeeded(file: File, bytes: Uint8Array, handle: unknown) {
-  const needed = state.needed.find(
-    (one) => !one.disk && one.name === file.name && one.size === file.size
-  );
+  const same = (one: { name: string; size: number }) =>
+    one.name === file.name && one.size === file.size;
+  const needed = state.needed.find((one) => !one.disk && stillWanted(one).some(same));
 
   if (!needed) {
     return false;
   }
 
-  needed.disk = diskOf(file, bytes);
+  const disk = diskOf(file, bytes);
+  const track = (needed.tracks ?? []).findIndex((one, at) => !needed.trackDisks?.[at] && same(one));
+
+  if (!needed.have && same(needed)) {
+    needed.have = disk;
+  } else {
+    needed.trackDisks![track] = disk;
+  }
+
+  completed(needed);
 
   /* Its key is the file's as it is now, which the program keeps from now on. */
-  const key = keyOf(needed.disk);
+  const key = keyOf(disk);
 
   if (handle) {
     handles.set(key, handle);
@@ -1673,7 +1817,7 @@ function renderDrives() {
 
   elements.drivesNote.textContent = state.drives.length
     ? 'Disk and CD images, read where they are, never written: what programs write to a disk is kept for the visit, and saved as a new file.'
-    : 'No drives but C:. Drop disk or CD images (.img, .iso) here beside Windows, or add them: several floppies dropped together are one set, in the order of their names.';
+    : 'No drives but C:. Drop disk or CD images (.img, .iso, or a .cue with its .bin files) here beside Windows, or add them: several floppies dropped together are one set, in the order of their names.';
 
   elements.drives.replaceChildren(
     ...state.drives.map((set) => {
@@ -1760,7 +1904,24 @@ function renderDrives() {
     })
   );
 
-  const needed = state.needed.filter((one) => !one.disk);
+  const needed = [
+    ...state.needed
+      .filter((one) => !one.disk)
+      .flatMap((one) =>
+        stillWanted(one).map((file) => ({
+          letter: one.letter,
+          name: file.name,
+          text: `${one.letter}: ${file.name} (${Math.ceil(file.size / 1024)} KB) for ${one.program}`,
+        }))
+      ),
+    ...wanting.flatMap((wait) =>
+      missingOf(wait).map((name) => ({
+        letter: '',
+        name,
+        text: `${name} for ${wait.cue.name}`,
+      }))
+    ),
+  ];
 
   elements.needed.hidden = !needed.length;
   elements.needed.replaceChildren(
@@ -1770,7 +1931,7 @@ function renderDrives() {
       const choose = document.createElement('button');
       const input = document.createElement('input');
 
-      label.textContent = `${one.letter}: ${one.name} (${Math.ceil(one.size / 1024)} KB) for ${one.program}`;
+      label.textContent = one.text;
       input.type = 'file';
       input.hidden = true;
       input.accept = one.name.slice(one.name.lastIndexOf('.'));
@@ -1778,7 +1939,10 @@ function renderDrives() {
       input.addEventListener('change', () => accept([...(input.files ?? [])], { drives: true }));
       choose.type = 'button';
       choose.textContent = 'Choose…';
-      choose.setAttribute('aria-label', `Choose ${one.name} for ${one.letter}: again`);
+      choose.setAttribute(
+        'aria-label',
+        one.letter ? `Choose ${one.name} for ${one.letter}: again` : `Choose ${one.name}`
+      );
       choose.addEventListener('click', () => chooseImages(input));
       row.append(label, choose, input);
       return row;
@@ -1816,7 +1980,9 @@ async function chooseImages(input: HTMLInputElement) {
       types: [
         {
           description: 'Disk and CD images',
-          accept: { 'application/octet-stream': ['.img', '.ima', '.dsk', '.vfd', '.iso'] },
+          accept: {
+            'application/octet-stream': ['.img', '.ima', '.dsk', '.vfd', '.iso', '.bin', '.cue'],
+          },
         },
       ],
     });
@@ -2232,7 +2398,9 @@ async function choose(name: string | null) {
         ? 'Ready.'
         : needed.length
           ? `${name} is on C:. Choose again, or drop, the images it is run with: ` +
-            `${needed.map((one) => `${one.name} for ${one.letter}:`).join(', ')}.`
+            `${needed
+              .flatMap((one) => stillWanted(one).map((file) => `${file.name} for ${one.letter}:`))
+              .join(', ')}.`
           : `${name} is on C:.`
     );
   }

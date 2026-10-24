@@ -279,7 +279,13 @@ async function imageDrive(kind: 'floppy' | 'iso' | 'hdd', bytes: Uint8Array): Pr
   }
 
   if (kind === 'iso') {
-    return ISO9660.of(bytes);
+    /* A cue sheet's files beside it, as `record.mjs` copies them and DOSBox
+     * finds them (`GetRealFileName`). */
+    return ISO9660.of(bytes, (name) => {
+      const path = join(__dirname, '..', '..', 'oracle', 'probes', 'images', name);
+
+      return existsSync(path) ? new Uint8Array(readFileSync(path)) : null;
+    });
   }
 
   return null;

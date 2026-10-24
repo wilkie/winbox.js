@@ -15,7 +15,9 @@
 #include "probe.h"
 #include "imgprobe.h"
 
+#ifndef OUTPUT
 #define OUTPUT "C:\\ORACLE\\IMGCD.OUT"
+#endif
 
 static void multiplex(LPCSTR name, LPCSTR args, unsigned ax, unsigned cx)
 {

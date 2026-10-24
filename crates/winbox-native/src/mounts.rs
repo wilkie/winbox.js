@@ -22,7 +22,7 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
-use winbox_machine::{FatVolume, Files, IsoVolume, Sectors, Volume, is_floppy};
+use winbox_machine::{FatVolume, Files, IsoError, IsoVolume, Sectors, Volume, is_floppy};
 
 /// What an image is: DOSBox's `imgmount -t` kinds, as a probe's `.mounts`
 /// names them.
@@ -98,26 +98,63 @@ impl Sectors for FileSectors {
     }
 }
 
-/// An image opened as a drive: a disc for `.iso`, else a FAT volume -- a
-/// floppy's where DOSBox takes the image for one (`is_floppy`: 2,880 KB or
-/// less), a hard disk's else -- and a disc where it holds no FAT.
-pub fn open_image(path: &Path) -> Result<(Kind, Box<dyn Volume>), String> {
-    let disc = || {
-        IsoVolume::new(FileSectors::open(path)?)
-            .map(|volume| (Kind::Disc, Box::new(volume) as Box<dyn Volume>))
-            .map_err(|error| {
-                format!(
-                    "{}: not a FAT or ISO 9660 image ({error:?})",
-                    path.display()
-                )
-            })
-    };
-    let is_iso = path
-        .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("iso"));
+/// A cue sheet's file as DOSBox's `GetRealFileName` finds it
+/// (`cdrom_image.cpp` 618-647): the name as the sheet gives it, from the
+/// working folder; else beside the cue sheet, its folder and the name
+/// joined. (DOSBox's last try, the name as a DOS path through its own
+/// mounted folders, has no counterpart for an image of the host's.) The
+/// host's own rules for case, as DOSBox's `stat`.
+fn real_file_name(name: &str, cue: &Path) -> Option<PathBuf> {
+    let given = PathBuf::from(name);
 
-    if is_iso {
-        return disc();
+    if given.exists() {
+        return Some(given);
+    }
+
+    let beside = cue.parent().unwrap_or(Path::new("")).join(name);
+
+    beside.exists().then_some(beside)
+}
+
+/// A CD image as DOSBox's `SetDevice` reads one (`cdrom_image.cpp`
+/// 167-178): a cue sheet, its files found as `GetRealFileName` finds them,
+/// else one data track of 2,048-, 2,352- or 2,336-byte sectors.
+fn open_disc(path: &Path) -> Result<(Kind, Box<dyn Volume>), String> {
+    let image = FileSectors::open(path)?;
+    let volume = IsoVolume::open(Box::new(image), &mut |name| {
+        let found = real_file_name(name, path)?;
+
+        FileSectors::open(&found)
+            .ok()
+            .map(|file| Box::new(file) as Box<dyn Sectors>)
+    })
+    .map_err(|error| {
+        let path = path.display();
+
+        match error {
+            IsoError::Cue(error) => format!("{path}: a cue sheet DOSBox does not take: {error}"),
+            IsoError::AudioOnly => format!("{path}: a disc of audio tracks alone, not mounted yet"),
+            IsoError::Corrupt => format!("{path}: no ISO 9660 volume at sector 16 of its tracks"),
+            IsoError::NotIso => format!("{path}: not a FAT or ISO 9660 image, nor a cue sheet"),
+        }
+    })?;
+
+    Ok((Kind::Disc, Box::new(volume)))
+}
+
+/// An image opened as a drive: a disc for `.iso`, `.cue` and `.bin`
+/// (`open_disc`); else a FAT volume -- a floppy's where DOSBox takes the
+/// image for one (`is_floppy`: 2,880 KB or less), a hard disk's else -- and
+/// a disc where it holds no FAT.
+pub fn open_image(path: &Path) -> Result<(Kind, Box<dyn Volume>), String> {
+    let is_disc = path.extension().is_some_and(|extension| {
+        ["iso", "cue", "bin"]
+            .iter()
+            .any(|disc| extension.eq_ignore_ascii_case(disc))
+    });
+
+    if is_disc {
+        return open_disc(path);
     }
 
     let sectors = FileSectors::open(path)?;
@@ -129,7 +166,7 @@ pub fn open_image(path: &Path) -> Result<(Kind, Box<dyn Volume>), String> {
 
     match FatVolume::new(sectors, kind == Kind::Floppy) {
         Ok(volume) => Ok((kind, Box::new(volume))),
-        Err(_) => disc(),
+        Err(_) => open_disc(path),
     }
 }
 

@@ -6,12 +6,17 @@ import { join } from 'node:path';
 import { FATImage } from '../../src/file-systems/fat-image.js';
 import {
   assignLetters,
+  cueFile,
+  cueFileNames,
+  type Disk,
   type DriveSet,
   imageKey,
   imageKind,
   installerOn,
   isKnownMedia,
+  missingOf,
   orderSet,
+  pairCues,
   programsOn,
   setText,
   volumeOf,
@@ -28,6 +33,13 @@ import { classify } from '../../src/run/media.js';
 const ROOT = join(__dirname, '..', '..');
 const IMAGES = join(ROOT, 'oracle', 'probes', 'images');
 const image = (name: string) => new Uint8Array(readFileSync(join(IMAGES, name)));
+
+/** A disk of a file dropped, by its name, its bytes the image's of that name (or another's). */
+const disk = (name: string, from = name): Disk => {
+  const bytes = image(from);
+
+  return { name, size: bytes.length, modified: 0, bytes, written: false };
+};
 const FLOPPIES = join(ROOT, 'oracle', '.cache', 'floppies');
 
 /** The first Windows 3.1 setup disk's image under the oracle's cache, if it is there. */
@@ -179,7 +191,10 @@ describe("The page's drives of images", () => {
       file.close();
     }
 
-    const programs = await programsOn(await volumeOf('floppy', flop.image()), 'A');
+    const programs = await programsOn(
+      await volumeOf('floppy', { ...disk('imgflop.img'), bytes: flop.image() }),
+      'A'
+    );
 
     expect(programs.map((one) => `${one.path} ${one.kind}`)).toEqual([
       'A:\\INSTALL\\SETUP.EXE windows',
@@ -190,6 +205,67 @@ describe("The page's drives of images", () => {
     expect(installerOn(programs.filter((one) => !/SETUP/.test(one.path)))).toBeNull();
 
     /* The disc's, read where it is. */
-    expect(await programsOn(await volumeOf('iso', image('imgcd.iso')), 'D')).toEqual([]);
+    expect(await programsOn(await volumeOf('iso', disk('imgcd.iso')), 'D')).toEqual([]);
+  });
+
+  it('takes a raw image or a cue sheet for a disc, a sheet with the files it names', async () => {
+    expect(await imageKind('imgcd.bin', image('imgcd.bin'))).toBe('iso');
+    expect(await imageKind('IMGCD.BIN', image('imgcd.bin'))).toBe('iso');
+    expect(await imageKind('imgcd.cue', image('imgcd.cue'))).toBeNull();
+    expect(
+      await imageKind('imgcd.cue', image('imgcd.cue'), (name) =>
+        name === 'imgcd.bin' ? image('imgcd.bin') : null
+      )
+    ).toBe('iso');
+
+    expect(cueFileNames(image('imgtrk.cue'))).toEqual(['imgcd.bin', 'imgtrk audio.wav']);
+    expect(cueFileNames(image('imgcd.iso'))).toEqual([]);
+
+    /* By its whole name, else its last part, case set aside. */
+    const named = ['GAME.BIN', 'Track 2.wav'].map((name) => ({ name }));
+
+    expect(cueFile('game.bin', named)?.name).toBe('GAME.BIN');
+    expect(cueFile('CD\\Game.bin', named)?.name).toBe('GAME.BIN');
+    expect(cueFile('../audio/track 2.WAV', named)?.name).toBe('Track 2.wav');
+    expect(cueFile('other.bin', named)).toBeNull();
+  });
+
+  it('pairs a cue sheet with its files dropped with it, or asks for them by name', async () => {
+    /* Dropped together, in any case: one disc, its tracks the files, a
+     * lone raw image left to be a disc of its own. */
+    const cue = disk('IMGTRK.CUE', 'imgtrk.cue');
+    const bin = disk('IMGCD.BIN', 'imgcd.bin');
+    const wav = disk('imgtrk audio.wav');
+    const lone = disk('other.bin', 'imgcd.bin');
+    const together = pairCues([lone, wav, cue, bin]);
+
+    expect(together.discs.map((one) => [one.name, one.tracks?.map((track) => track.name)])).toEqual(
+      [['IMGTRK.CUE', ['IMGCD.BIN', 'imgtrk audio.wav']]]
+    );
+    expect(together.wanting).toEqual([]);
+    expect([...together.used].map((one) => one.name).sort()).toEqual([
+      'IMGCD.BIN',
+      'IMGTRK.CUE',
+      'imgtrk audio.wav',
+    ]);
+    expect(await programsOn(await volumeOf('iso', together.discs[0]), 'D')).toEqual([]);
+
+    /* Dropped alone: wanting what it names, had as they are dropped later. */
+    const alone = pairCues([cue]);
+
+    expect(alone.discs).toEqual([]);
+    expect(alone.wanting.map(missingOf)).toEqual([['imgcd.bin', 'imgtrk audio.wav']]);
+
+    const half = pairCues([bin], alone.wanting);
+
+    expect(half.wanting.map(missingOf)).toEqual([['imgtrk audio.wav']]);
+
+    const whole = pairCues([wav], half.wanting);
+
+    expect(whole.wanting).toEqual([]);
+    expect(whole.discs[0].tracks?.map((track) => track.name)).toEqual([
+      'IMGCD.BIN',
+      'imgtrk audio.wav',
+    ]);
   });
 });

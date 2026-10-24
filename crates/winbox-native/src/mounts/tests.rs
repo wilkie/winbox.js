@@ -377,3 +377,62 @@ fn a_programs_images_are_remembered_with_their_letters() {
     assert_eq!(letters(&again), [('D', "iso", 1), ('A', "floppy", 2)]);
     assert_eq!(again.media(), media);
 }
+
+/// A file's bytes on a drive's volume, by its name in the root.
+fn file_on(volume: &dyn Volume, name: &str) -> Option<Vec<u8>> {
+    volume.read(&[name.to_string()])
+}
+
+#[test]
+fn a_cue_sheet_or_a_raw_image_is_a_disc() {
+    let scratch = Scratch::new("cue");
+    let iso = scratch.image("imgcd.iso", "imgcd.iso");
+    let (_, disc) = open_image(&iso).unwrap();
+    let readme = file_on(disc.as_ref(), "README.TXT").unwrap();
+
+    // A raw image alone, its 2,352-byte sectors found as `LoadIsoFile`
+    // finds them; a cue sheet of one track, of mode 1 and of mode 2; and
+    // one of a data track and an audio track, each its own file.
+    let bin = scratch.image("imgcd.bin", "imgcd.bin");
+
+    scratch.image("imgcd2.bin", "imgcd2.bin");
+    scratch.image("imgtrk audio.wav", "imgtrk audio.wav");
+
+    for image in [
+        bin.clone(),
+        scratch.image("imgcd.cue", "imgcd.cue"),
+        scratch.image("imgcd2.cue", "imgcd2.cue"),
+        scratch.image("imgtrk.cue", "imgtrk.cue"),
+    ] {
+        let (kind, volume) = open_image(&image).unwrap();
+
+        assert_eq!(kind, Kind::Disc, "{}", image.display());
+        assert_eq!(
+            file_on(volume.as_ref(), "README.TXT").as_ref(),
+            Some(&readme)
+        );
+        assert_eq!(volume.label(), disc.label());
+    }
+
+    // A cue sheet's file found beside it, wherever the working folder is;
+    // one not there named.
+    let folder = scratch.0.join("elsewhere");
+
+    std::fs::create_dir_all(&folder).unwrap();
+    std::fs::copy(scratch.0.join("imgcd.cue"), folder.join("game.cue")).unwrap();
+
+    let error = open_image(&folder.join("game.cue")).err().unwrap();
+
+    assert!(error.contains("line 1: imgcd.bin not found"), "{error}");
+
+    std::fs::copy(&bin, folder.join("imgcd.bin")).unwrap();
+    assert!(open_image(&folder.join("game.cue")).is_ok());
+
+    // Remembered by the cue sheet's path.
+    let mounts = Mounts::open(&[request(None, &[&folder.join("game.cue")])]).unwrap();
+    let media = mounts.media();
+
+    assert_eq!(letters(&mounts), [('D', "iso", 1)]);
+    assert_eq!(media[0].name, "game.cue");
+    assert!(media[0].path.ends_with("game.cue"));
+}

@@ -16,6 +16,7 @@
 
 import { FATImage } from '../file-systems/fat-image.js';
 import { readFat12 } from '../file-systems/fat12.js';
+import { CdImage } from '../file-systems/cue.js';
 import { ISO9660 } from '../file-systems/iso9660.js';
 import { type Program } from './drive.js';
 
@@ -40,6 +41,12 @@ export interface Disk {
 
   /** Whether programs have written to it, so that its bytes are the image as written. */
   written: boolean;
+
+  /**
+   * A cue sheet's files, in the order it names them, each as the page holds
+   * it: its `.bin`s, an audio track's file. None for any other image.
+   */
+  tracks?: Disk[];
 }
 
 /** A drive's images, in order, and which is in it. */
@@ -54,30 +61,44 @@ export interface DriveSet {
   ejected: boolean;
 }
 
-/** The names images go by: floppies' and hard disks' `.img` and the rest, discs' `.iso`. */
-export const IMAGE_NAME = /\.(img|ima|dsk|vfd|iso)$/i;
+/**
+ * The names images go by: floppies' and hard disks' `.img` and the rest,
+ * discs' `.iso`, a raw image's `.bin`, a cue sheet's `.cue`.
+ */
+export const IMAGE_NAME = /\.(img|ima|dsk|vfd|iso|bin|cue)$/i;
+
+/** A disc's names: an ISO 9660 image, a raw image, a cue sheet. */
+const DISC_NAME = /\.(iso|bin|cue)$/i;
+
+/** A cue sheet's name. */
+export const CUE_NAME = /\.cue$/i;
 
 /** The largest image DOSBox takes for a floppy, in whole KB (`drive_fat.cpp` 645-654). */
 const FLOPPY_KB = 2880;
 
 /**
  * What an image is, as DOSBox's `imgmount` would mount it, read with the
- * engine's own readers: an `.iso` a disc; else a FAT volume -- a floppy's
- * where it is 2,880 KB or less, as DOSBox takes one (`is_floppy`), a hard
- * disk's else -- and a disc where it holds no FAT. Null for anything
- * neither reader takes.
+ * engine's own readers: an `.iso`, `.bin` or `.cue` a disc, as `SetDevice`
+ * reads one (a cue sheet, else one data track), a cue sheet's files found
+ * by `find`; else a FAT volume -- a floppy's where it is 2,880 KB or less,
+ * as DOSBox takes one (`is_floppy`), a hard disk's else -- and a disc where
+ * it holds no FAT. Null for anything neither reader takes.
  */
-export async function imageKind(name: string, bytes: Uint8Array): Promise<ImageKind | null> {
+export async function imageKind(
+  name: string,
+  bytes: Uint8Array,
+  find: (name: string) => Uint8Array | null = () => null
+): Promise<ImageKind | null> {
   const disc = () => {
     try {
-      ISO9660.of(bytes);
+      ISO9660.of(bytes, find);
       return 'iso' as const;
     } catch {
       return null;
     }
   };
 
-  if (/\.iso$/i.test(name)) {
+  if (DISC_NAME.test(name)) {
     return disc();
   }
 
@@ -89,6 +110,109 @@ export async function imageKind(name: string, bytes: Uint8Array): Promise<ImageK
   } catch {
     return disc();
   }
+}
+
+/**
+ * The files a cue sheet names, in its order, as `LoadCueSheet` reads its
+ * `FILE` lines (`GetCueString`): each name as the sheet gives it, as far
+ * as the sheet reads.
+ */
+export function cueFileNames(bytes: Uint8Array): string[] {
+  const names: string[] = [];
+
+  try {
+    CdImage.loadCueSheet(bytes, (name) => {
+      names.push(name);
+      return new Uint8Array(0);
+    });
+  } catch {
+    /* The names read before it failed. */
+  }
+
+  return names;
+}
+
+/** A name's last part, after its last slash or backslash. */
+const lastPart = (name: string) => name.split(/[\\/]/).pop() ?? name;
+
+/**
+ * The file a cue sheet names among those the page has: by its whole name,
+ * else by the name's last part -- a sheet naming `CD\GAME.BIN` finds
+ * `game.bin` -- without regard to case, as files dropped together are
+ * matched. Not DOSBox's rule, which looks on the host's disk
+ * (`GetRealFileName`), but the page's, which has only the files it is given.
+ */
+export function cueFile<T extends { name: string }>(name: string, files: T[]): T | null {
+  const same = (one: string, other: string) => one.toUpperCase() === other.toUpperCase();
+
+  return (
+    files.find((file) => same(file.name, name)) ??
+    files.find((file) => same(file.name, lastPart(name))) ??
+    null
+  );
+}
+
+/** A disc's cue sheet's files found among its tracks, as the engines' `find` asks for them. */
+export const findIn =
+  (disk: Disk) =>
+  (name: string): Uint8Array | null =>
+    cueFile(name, disk.tracks ?? [])?.bytes ?? null;
+
+/** A cue sheet whose files are not all had yet: the names it gives them, in its order, and those had. */
+export interface Wanting {
+  cue: Disk;
+  names: string[];
+  tracks: (Disk | null)[];
+}
+
+/** The names a cue sheet still wants. */
+export const missingOf = (wait: Wanting) => wait.names.filter((_, at) => !wait.tracks[at]);
+
+/**
+ * Cue sheets among disks read together paired with the files they name
+ * among them (`cueFile`): a disc, its tracks those files, for each sheet
+ * that has them all; the rest still wanting. Sheets wanting files from
+ * before are given those among these first. Which disks were used.
+ */
+export function pairCues(disks: Disk[], waiting: Wanting[] = []) {
+  const used = new Set<Disk>();
+  const files = disks.filter((disk) => !CUE_NAME.test(disk.name));
+  const discs: Disk[] = [];
+  const wanting: Wanting[] = [];
+  const pair = (cue: Disk, names: string[], had: (Disk | null)[]) => {
+    const tracks = names.map((name, at) => {
+      const found = had[at] ?? cueFile(name, files);
+
+      if (found && !had[at]) {
+        used.add(found);
+      }
+
+      return found;
+    });
+
+    if (tracks.every(Boolean)) {
+      discs.push({ ...cue, tracks: tracks as Disk[] });
+    } else {
+      wanting.push({ cue, names, tracks });
+    }
+  };
+
+  for (const wait of waiting) {
+    pair(wait.cue, wait.names, wait.tracks);
+  }
+
+  for (const cue of disks.filter((disk) => CUE_NAME.test(disk.name))) {
+    const names = cueFileNames(cue.bytes);
+
+    used.add(cue);
+    pair(
+      cue,
+      names,
+      names.map(() => null)
+    );
+  }
+
+  return { discs, wanting, used };
 }
 
 /**
@@ -242,8 +366,10 @@ export async function isKnownMedia(bytes: Uint8Array, known: KnownFiles) {
 }
 
 /** An image's volume as the TypeScript engine reads one, for the page to look over. */
-export async function volumeOf(kind: ImageKind, bytes: Uint8Array): Promise<any> {
-  return kind === 'iso' ? ISO9660.of(bytes) : FATImage.of(bytes, kind === 'floppy');
+export async function volumeOf(kind: ImageKind, disk: Disk): Promise<any> {
+  return kind === 'iso'
+    ? ISO9660.of(disk.bytes, findIn(disk))
+    : FATImage.of(disk.bytes, kind === 'floppy');
 }
 
 /** Bytes of a file opened on a volume. */

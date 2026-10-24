@@ -1,4 +1,5 @@
 import { File, FileSystem } from '../file-system.js';
+import { CdImage, type FindFile } from './cue.js';
 import { wildFileCmp } from './fat-drive.js';
 
 /**
@@ -20,9 +21,6 @@ import { wildFileCmp } from './fat-drive.js';
 /** A sector's bytes as a drive reads them, cooked (`ISO_FRAMESIZE`). */
 const ISO_FRAMESIZE = 2048;
 
-/** A raw sector's bytes, sync and header with them (`RAW_SECTOR_SIZE`). */
-const RAW_SECTOR_SIZE = 2352;
-
 /** The first volume descriptor's sector (`ISO_FIRST_VD`). */
 const ISO_FIRST_VD = 16;
 
@@ -42,42 +40,6 @@ const DOS_ATTR_SYSTEM = 0x04;
 const DOS_ATTR_VOLUME = 0x08;
 const DOS_ATTR_DIRECTORY = 0x10;
 const DOS_ATTR_ARCHIVE = 0x20;
-
-/** The disc's one data track as `LoadIsoFile` finds it (`cdrom_image.cpp` 350-382). */
-interface Track {
-  sectorSize: number;
-  skip: number;
-  length: number;
-}
-
-/**
- * The first layout whose sector 16 is a primary volume descriptor
- * (`CanReadPVD`, 395-404): cooked 2,048-byte sectors, raw 2,352 (their data
- * 16 in), mode 2 of 2,336 or 2,352 (24 in). An image too short to hold it
- * fails the stream's read.
- */
-function detectTrack(bytes: Uint8Array): Track | null {
-  for (const [sectorSize, skip] of [
-    [2048, 0],
-    [RAW_SECTOR_SIZE, 16],
-    [2336, 24],
-    [RAW_SECTOR_SIZE, 24],
-  ]) {
-    const seek = 16 * sectorSize + skip;
-
-    if (seek + ISO_FRAMESIZE > bytes.byteLength) {
-      continue;
-    }
-
-    const pvd = bytes.subarray(seek, seek + ISO_FRAMESIZE);
-
-    if (pvd[0] === 1 && String.fromCharCode(...pvd.subarray(1, 6)) === 'CD001' && pvd[6] === 1) {
-      return { sectorSize, skip, length: Math.floor(bytes.byteLength / sectorSize) };
-    }
-  }
-
-  return null;
-}
 
 /**
  * A directory record as DOSBox's `isoDirEntry` holds it, its bytes as the
@@ -336,8 +298,7 @@ interface DirIterator {
 
 /** The disc as DOSBox's `isoDrive` holds it. As `iso.rs`'s `Disc`. */
 export class IsoDrive {
-  readonly #bytes: Uint8Array;
-  readonly #track: Track;
+  readonly image: CdImage;
   rootEntry = new DirEntry();
   /** The label `Set_Label` makes of the volume's name (`discLabel`). */
   discLabel = '';
@@ -350,23 +311,17 @@ export class IsoDrive {
   }));
   nextFreeDirIterator = 0;
 
-  constructor(bytes: Uint8Array, track: Track) {
-    this.#bytes = bytes;
-    this.#track = track;
+  constructor(image: CdImage) {
+    this.image = image;
   }
 
   /**
-   * A cooked sector of the data track (`CDROM_Interface_Image::ReadSector`,
-   * `cdrom_image.cpp` 301-313); null past the track's whole sectors.
+   * A cooked sector of the disc (`isoDrive::readSector`, 472-474, through
+   * `CDROM_Interface_Image::ReadSector`); null where no track holds it or
+   * its file cannot be read there (`CdImage.readSector`).
    */
   readSector(sector: number): Uint8Array | null {
-    if (sector >= this.#track.length) {
-      return null;
-    }
-
-    const at = sector * this.#track.sectorSize + this.#track.skip;
-
-    return this.#bytes.subarray(at, at + ISO_FRAMESIZE);
+    return this.image.readSector(sector);
   }
 
   /** `GetDirIterator` (390-408). */
@@ -690,22 +645,40 @@ export class ISO9660 extends FileSystem {
 
   /**
    * The disc an image holds, as `isoDrive`'s constructor mounts it
-   * (141-177): its track found, sector 16 a primary volume descriptor whose
-   * root record is read (`loadImage`), its label from the volume's name.
+   * (141-177): the image read as `SetDevice` reads it -- a cue sheet, else
+   * one data track (`CdImage.setDevice`) -- a cue sheet's files found by
+   * `find` as `GetRealFileName` finds them (`cdrom_image.cpp` 618-647).
    */
-  static of(bytes: Uint8Array) {
-    const track = detectTrack(bytes);
+  static of(bytes: Uint8Array, find: FindFile = () => null) {
+    return ISO9660.fromImage(CdImage.setDevice(bytes, find));
+  }
 
-    if (!track) {
-      throw new Error('not an ISO 9660 disc');
+  /**
+   * The disc a CD image's tracks hold: sector 16 of the disc a primary
+   * volume descriptor whose root record is read (`loadImage`), its label
+   * from the volume's name; a corrupt image where it is not and a track is
+   * data, a disc of audio alone -- which DOSBox mounts with no files,
+   * labelled `Audio_CD` (`drive_iso.cpp` 167-174) -- not yet mounted here.
+   * As `iso.rs`'s `IsoVolume::from_image`.
+   */
+  static fromImage(image: CdImage) {
+    const drive = new IsoDrive(image);
+    const pvd = drive.readSector(ISO_FIRST_VD);
+    const root = new DirEntry();
+    const notData = () =>
+      new Error(image.hasDataTrack() ? 'a corrupt disc image' : 'a disc of audio alone');
+
+    if (
+      !pvd ||
+      pvd[0] !== 1 ||
+      String.fromCharCode(...pvd.subarray(1, 6)) !== 'CD001' ||
+      pvd[6] !== 1
+    ) {
+      throw notData();
     }
 
-    const drive = new IsoDrive(bytes, track);
-    const pvd = drive.readSector(ISO_FIRST_VD)!;
-    const root = new DirEntry();
-
     if (readDirEntry(root, pvd.subarray(156)) <= 0) {
-      throw new Error('a corrupt disc image');
+      throw notData();
     }
 
     drive.rootEntry = root;

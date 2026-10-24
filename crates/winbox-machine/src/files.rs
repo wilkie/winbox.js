@@ -5,6 +5,7 @@
 //! disc image's ISO 9660 one (`IsoVolume`), its names found without regard
 //! to case, as DOS finds them.
 
+mod cue;
 mod empty;
 mod fat;
 mod host;
@@ -18,6 +19,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::io::{ErrorKind, SeekFrom};
 
+pub use cue::{AUDIO_TYPES, CdImage, CdTrack, CueError, CueFailure};
 pub use empty::EmptyDrive;
 use fat::same_name;
 pub use fat::{FatError, FatVolume, ImageFile};

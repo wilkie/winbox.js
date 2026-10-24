@@ -27,6 +27,16 @@ impl Sectors for Vec<u8> {
     }
 }
 
+impl Sectors for Box<dyn Sectors> {
+    fn size(&self) -> u64 {
+        self.as_ref().size()
+    }
+
+    fn read_at(&self, offset: u64, into: &mut [u8]) {
+        self.as_ref().read_at(offset, into);
+    }
+}
+
 impl Sectors for Rc<Vec<u8>> {
     fn size(&self) -> u64 {
         self.len() as u64

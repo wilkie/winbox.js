@@ -2609,6 +2609,88 @@ for (const { engine, page: at } of ENGINES) {
       expect(await counts()).toEqual({ images: 0, copies: 0 });
       expect(errors).toEqual([]);
     });
+
+    test('mounts a cue sheet with the files it names, asking for those not dropped with it', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(IMGCD) || !existsSync(NOTEPAD),
+        'the imgcd probe, or the installation, has not been built here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const drives = page.locator('#drives li');
+      const files = [probeImage('imgcd.bin'), probeImage('imgtrk audio.wav')];
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'windows.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await expect(page.locator('#windows')).toContainText('windows.zip');
+
+      /* The sheet alone wants its files, by the names it gives them. */
+      await page.locator('#picker').setInputFiles(probeImage('imgtrk.cue'));
+      await expect(page.locator('#status')).toHaveText(
+        'imgtrk.cue wants imgcd.bin, imgtrk audio.wav: drop or choose it too.'
+      );
+      await expect(page.locator('#needed li code')).toHaveText([
+        'imgcd.bin for imgtrk.cue',
+        'imgtrk audio.wav for imgtrk.cue',
+      ]);
+      await expect(drives).toHaveCount(0);
+
+      /* Given them, it is a disc. */
+      await page.locator('#picker').setInputFiles(files);
+      await expect(page.locator('#status')).toHaveText('D: imgtrk.cue.');
+      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(page.locator('#needed')).toBeHidden();
+
+      /* A program kept with it remembers the sheet and its files. */
+      await page.locator('#picker').setInputFiles({
+        name: 'cdgame.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'IMGCD.EXE', data: new Uint8Array(readFileSync(IMGCD)) }]),
+      });
+      await expect(page.getByRole('button', { name: 'Close cdgame' })).toBeVisible();
+      expect(
+        await page.evaluate(() =>
+          (globalThis as any).winbox.state.programs[0].media.map(
+            (one: any) =>
+              `${one.letter} ${one.kind} ${one.name} ${one.size} ` +
+              one.tracks.map((track: any) => `${track.name} ${track.size}`).join(', ')
+          )
+        )
+      ).toEqual(['D iso imgtrk.cue 261 imgcd.bin 453936, imgtrk audio.wav 70604']);
+
+      /* Opened on the next visit, all three are asked for, and taken. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered windows.zip.', {
+        timeout: 30000,
+      });
+      await page.getByRole('button', { name: 'Open cdgame' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'cdgame is on C:. Choose again, or drop, the images it is run with: ' +
+          'imgtrk.cue for D:, imgcd.bin for D:, imgtrk audio.wav for D:.'
+      );
+      await page.locator('#picker').setInputFiles([probeImage('imgtrk.cue'), ...files]);
+      await expect(page.locator('#status')).toHaveText('Every image is had.');
+      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+
+      await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The program asked Windows to end the session, and has finished.',
+        { timeout: 30000 }
+      );
+
+      await page.getByRole('button', { name: 'Forget cdgame' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
+      expect(errors).toEqual([]);
+    });
   });
 }
 

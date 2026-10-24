@@ -170,7 +170,7 @@ export class TypeScriptEngine implements Engine {
     }
 
     try {
-      const volumes = await Promise.all(set.disks.map((disk) => volumeOf(set.kind, disk.bytes)));
+      const volumes = await Promise.all(set.disks.map((disk) => volumeOf(set.kind, disk)));
       const volume = volumes[set.current];
 
       this.#sets.set(set.letter, volumes);
@@ -189,7 +189,7 @@ export class TypeScriptEngine implements Engine {
     }
 
     try {
-      volumes[disk] = await volumeOf(set.kind, set.disks[disk].bytes);
+      volumes[disk] = await volumeOf(set.kind, set.disks[disk]);
       return null;
     } catch (error: any) {
       return `${set.letter}: ${error?.message ?? error}`;
