@@ -1,0 +1,590 @@
+{
+  "probe": "imgswap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "label",
+      "args": "D:\\*.*",
+      "result": "SWAPDISC.1 08 0 0000 0000",
+      "section": "the first disc"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0000 0800 ea60 0",
+      "section": "the first disc"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the first disc"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0004 0c0c 1000 0",
+      "section": "the first disc"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "0001 0004 0860 0360 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "section": "the first disc"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the first disc"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "4",
+      "section": "the first disc"
+    },
+    {
+      "function": "150b",
+      "args": "3",
+      "result": "5ad8 adad 0003 0d0d 0",
+      "section": "the first disc"
+    },
+    {
+      "function": "1500",
+      "args": "",
+      "result": "15ff 0001 0003 0d0d 0",
+      "section": "the first disc"
+    },
+    {
+      "function": "cwd",
+      "args": "D:",
+      "result": "D:\\",
+      "section": "the first disc"
+    },
+    {
+      "function": "chdir",
+      "args": "D:\\SUB1",
+      "result": "0",
+      "section": "the first disc"
+    },
+    {
+      "function": "cwd",
+      "args": "D:",
+      "result": "D:\\SUB1",
+      "section": "the first disc"
+    },
+    {
+      "function": "match",
+      "args": "D:*.* 37",
+      "result": ".,..,IN1.TXT",
+      "section": "the first disc"
+    },
+    {
+      "function": "open",
+      "args": "0 D:\\BIG.DAT",
+      "result": "0",
+      "section": "the first disc"
+    },
+    {
+      "function": "read",
+      "args": "0 32",
+      "result": "32 32 [disc1 sector 0\r\n] [disc1 sector 0\r\n]",
+      "section": "the first disc"
+    },
+    {
+      "function": "read",
+      "args": "0 2048",
+      "result": "2048 2080 [disc1 sector 0\r\n] [disc1 sector 1\r\n]",
+      "section": "the first disc"
+    },
+    {
+      "function": "open",
+      "args": "1 D:\\ONLY1.TXT",
+      "result": "0",
+      "section": "the first disc"
+    },
+    {
+      "function": "open",
+      "args": "2 D:\\SUB1\\IN1.TXT",
+      "result": "0",
+      "section": "the first disc"
+    },
+    {
+      "function": "read",
+      "args": "2 8",
+      "result": "8 8 [SUB1/IN1] [SUB1/IN1]",
+      "section": "the first disc"
+    },
+    {
+      "function": "find",
+      "args": "first",
+      "result": "BIG.DAT 20 2000",
+      "section": "the first disc"
+    },
+    {
+      "function": "find",
+      "args": "next",
+      "result": "ONLY1.TXT 20 24",
+      "section": "the first disc"
+    },
+    {
+      "function": "swap",
+      "args": "1",
+      "result": "request",
+      "section": "the first disc"
+    },
+    {
+      "function": "swap",
+      "args": "1",
+      "result": "done",
+      "section": "the first disc"
+    },
+    {
+      "function": "find",
+      "args": "next",
+      "result": "error 18",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "0 16",
+      "result": "16 2096 [disc1 sector 1\r\n] [disc1 sector 1\r\n]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "0 2048",
+      "result": "2048 4144 [disc1 sector 1\r\n] [disc2 sector 2\r\n]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "2 8",
+      "result": "8 16 [.TXT lin] [.TXT lin]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "2 64",
+      "result": "5 21 [e 1\r\n] [e 1\r\n]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "1 64",
+      "result": "36 36 [ONLY2.TXT line 1] [LY2.TXT line 2\r\n]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "seek",
+      "args": "0 0 0",
+      "result": "0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "0 16",
+      "result": "16 16 [disc2 sector 0\r\n] [disc2 sector 0\r\n]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "stamp",
+      "args": "0",
+      "result": "0 1c21 0842",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "stamp",
+      "args": "1",
+      "result": "0 1c41 1062",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "seek",
+      "args": "0 0 2",
+      "result": "8192",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "label",
+      "args": "D:\\*.*",
+      "result": "SWAPDISC.2 08 0 0000 0000",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0000 0800 ea60 0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0004 0c0c 1000 0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "0001 0004 0860 0360 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "4",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "150b",
+      "args": "3",
+      "result": "5ad8 adad 0003 0d0d 0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "1500",
+      "args": "",
+      "result": "15ff 0001 0003 0d0d 0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "cwd",
+      "args": "D:",
+      "result": "D:\\SUB1",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "match",
+      "args": "D:*.* 37",
+      "result": "error 3",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D: 0",
+      "result": "BIG.DAT 20 2000 1c22 0842",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D: 1",
+      "result": "ONLY2.TXT 20 24 1c42 1062",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D: 2",
+      "result": "SHARED 10 800 1ca2 28c4",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D: end",
+      "result": "3 18",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 0",
+      "result": ". 10 800 1ca2 28c4",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 1",
+      "result": ".. 10 800 1ce2 3905",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 2",
+      "result": "S.TXT 20 1b 1c62 1883",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED end",
+      "result": "3 18",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\ONLY1.TXT",
+      "result": "error 2",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\ONLY2.TXT",
+      "result": "21",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "attr",
+      "args": "D:\\SUB1",
+      "result": "error 2",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "open",
+      "args": "3 D:\\ONLY2.TXT",
+      "result": "0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "3 16",
+      "result": "16 16 [ONLY2.TXT line 1] [ONLY2.TXT line 1]",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "chdir",
+      "args": "D:\\",
+      "result": "0",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "cwd",
+      "args": "D:",
+      "result": "D:\\",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "swap",
+      "args": "2",
+      "result": "request",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "swap",
+      "args": "2",
+      "result": "done",
+      "section": "the second disc, files open on the first"
+    },
+    {
+      "function": "read",
+      "args": "3 4",
+      "result": "4 20 [\r\nON] [\r\nON]",
+      "section": "the first disc again"
+    },
+    {
+      "function": "seek",
+      "args": "3 0 0",
+      "result": "0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "read",
+      "args": "3 16",
+      "result": "16 16 [ONLY2.TXT line 1] [ONLY2.TXT line 1]",
+      "section": "the first disc again"
+    },
+    {
+      "function": "seek",
+      "args": "0 0 0",
+      "result": "0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "read",
+      "args": "0 16",
+      "result": "16 16 [disc2 sector 0\r\n] [disc2 sector 0\r\n]",
+      "section": "the first disc again"
+    },
+    {
+      "function": "read",
+      "args": "1 64",
+      "result": "0 36 [] []",
+      "section": "the first disc again"
+    },
+    {
+      "function": "stamp",
+      "args": "3",
+      "result": "0 1c42 1062",
+      "section": "the first disc again"
+    },
+    {
+      "function": "label",
+      "args": "D:\\*.*",
+      "result": "SWAPDISC.1 08 0 0000 0000",
+      "section": "the first disc again"
+    },
+    {
+      "function": "space",
+      "args": "36",
+      "result": "0001 0000 0800 ea60 0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "ioctl",
+      "args": "4408",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the first disc again"
+    },
+    {
+      "function": "ioctl",
+      "args": "4409",
+      "result": "0300 0004 0c0c 1000 0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "ioctl",
+      "args": "440d 0860",
+      "result": "0001 0004 0860 0360 1 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "section": "the first disc again"
+    },
+    {
+      "function": "ioctl",
+      "args": "440e",
+      "result": "0001 0004 0c0c 0d0d 1",
+      "section": "the first disc again"
+    },
+    {
+      "function": "ioctl",
+      "args": "type",
+      "result": "4",
+      "section": "the first disc again"
+    },
+    {
+      "function": "150b",
+      "args": "3",
+      "result": "5ad8 adad 0003 0d0d 0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "1500",
+      "args": "",
+      "result": "15ff 0001 0003 0d0d 0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "cwd",
+      "args": "D:",
+      "result": "D:\\",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D: 0",
+      "result": "BIG.DAT 20 2000 1c21 0842",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D: 1",
+      "result": "ONLY1.TXT 20 24 1c41 1062",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D: 2",
+      "result": "SHARED 10 800 1ca1 28c4",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D: 3",
+      "result": "SUB1 10 800 1cc1 30e4",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D: end",
+      "result": "4 18",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 0",
+      "result": ". 10 800 1ca1 28c4",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 1",
+      "result": ".. 10 800 1ce1 3905",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED 2",
+      "result": "S.TXT 20 1b 1c61 1883",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SHARED end",
+      "result": "3 18",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUB1 0",
+      "result": ". 10 800 1cc1 30e4",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUB1 1",
+      "result": ".. 10 800 1ce1 3905",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUB1 2",
+      "result": "IN1.TXT 20 15 1c81 20a3",
+      "section": "the first disc again"
+    },
+    {
+      "function": "entry",
+      "args": "D:\\SUB1 end",
+      "result": "3 18",
+      "section": "the first disc again"
+    },
+    {
+      "function": "close",
+      "args": "0",
+      "result": "0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "close",
+      "args": "1",
+      "result": "0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "close",
+      "args": "2",
+      "result": "0",
+      "section": "the first disc again"
+    },
+    {
+      "function": "close",
+      "args": "3",
+      "result": "0",
+      "section": "the first disc again"
+    }
+  ]
+}

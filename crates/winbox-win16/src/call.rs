@@ -319,6 +319,10 @@ impl System {
                 });
             }
         };
+        if let Some(watch) = self.call_watch {
+            watch(self, module.name, export.name, stack + sp + 4);
+        }
+
         let mut args = Args {
             stack,
             at: sp + 4 + u32::from(export.pops),

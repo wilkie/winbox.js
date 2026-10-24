@@ -351,6 +351,70 @@ async function runCapturing(config, probe, capture) {
 }
 
 /**
+ * A probe with a set of discs on a drive (`<probe>.mounts`), run on a
+ * virtual X display as for `--shoot`: each time it writes a record of
+ * `swap` whose result is `request`, DOSBox's swap key is pressed --
+ * Ctrl+F4, the mapper's `swapimg` (`bios_disk.cpp` 124-135, 527), which
+ * puts the next disc in each drive with a set (`DriveManager::
+ * CycleAllDisks`, `drives.cpp` 173-191). The probe waits for the disc
+ * itself, by a file of it (`imgswap.c`), so when the key comes does not
+ * change what it records.
+ */
+async function runSwapping(config, probe) {
+  const displayName = ':95';
+  const name = basename(probe, '.EXE');
+  const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
+  const xvfb = spawn('Xvfb', [displayName, '-screen', '0', '800x600x24', '-extension', 'GLX'], {
+    stdio: 'ignore',
+  });
+
+  await new Promise((done) => setTimeout(done, 1000));
+
+  const dosbox = spawn('dosbox', ['-conf', config, '-exit'], {
+    stdio: 'ignore',
+    env: {
+      ...process.env,
+      DISPLAY: displayName,
+      SDL_VIDEODRIVER: 'x11',
+      SDL_AUDIODRIVER: 'dummy',
+      SDL_VIDEO_WINDOW_POS: '0,0',
+    },
+  });
+  const exited = new Promise((done) => dosbox.on('exit', done));
+  let pressed = 0;
+
+  try {
+    const started = Date.now();
+
+    while (dosbox.exitCode === null) {
+      const text = await readFile(output, 'latin1').catch(() => '');
+      const requests = text
+        .split(/\r?\n/)
+        .filter((line) => line.startsWith('swap\t') && line.endsWith('\trequest')).length;
+
+      while (pressed < requests) {
+        await run('python3', [
+          join(ROOT, 'scripts', 'oracle', 'xkeys.py'),
+          displayName,
+          'Control_L+F4',
+        ]);
+        pressed++;
+        log(`  swap key pressed (${pressed}) at ${((Date.now() - started) / 1000).toFixed(1)}s`);
+      }
+
+      if (Date.now() - started > TIMEOUT_SECONDS * 1000) {
+        throw new Error(`${name} did not finish within ${TIMEOUT_SECONDS}s`);
+      }
+
+      await Promise.race([exited, new Promise((done) => setTimeout(done, 250))]);
+    }
+  } finally {
+    dosbox.kill('SIGKILL');
+    xvfb.kill('SIGKILL');
+  }
+}
+
+/**
  * What a capture caught, kept as `oracle/fixtures/opl/<probe>.json`: the
  * `.dro` files' writes, decoded (`dro.mjs`), and the `.wav` files
  * described -- the sound itself stays in `oracle/build/captures/<probe>/`.
@@ -432,7 +496,10 @@ async function keepCapture(name, display, source, capture) {
  * its kind -- `floppy`, `iso` or `hdd` -- as `a:imgflop.img floppy`. Each is
  * copied into the build first, since DOSBox writes a disk image's changes
  * straight into its file (`drive_fat.cpp`), and mounted with `imgmount`
- * before Windows starts. `#` starts a comment.
+ * before Windows starts. `#` starts a comment. Several images joined by
+ * commas are one drive's set, as `d: imgsw1.iso,imgsw2.iso iso`: DOSBox
+ * takes a set only of discs (`dos_programs.cpp` 1204-1207), and swaps in
+ * the next as its swap key is pressed (`runSwapping`).
  */
 async function mountsOf(probe) {
   const text = await readFile(join(ROOT, 'oracle', 'probes', `${probe}.mounts`), 'latin1').catch(
@@ -450,7 +517,14 @@ async function mountsOf(probe) {
         throw new Error(`${probe}.mounts: cannot read ${JSON.stringify(line)}`);
       }
 
-      return { letter: match[1].toUpperCase(), image: match[2], kind: match[3].toLowerCase() };
+      const images = match[2].split(',');
+
+      return {
+        letter: match[1].toUpperCase(),
+        image: images[0],
+        images,
+        kind: match[3].toLowerCase(),
+      };
     });
 }
 
@@ -461,29 +535,34 @@ async function imgmountLines(probe) {
 
   await rm(into, { recursive: true, force: true });
 
-  for (const { letter, image, kind } of await mountsOf(probe)) {
-    const copy = join(into, `${letter}-${image}`);
+  for (const { letter, images, kind } of await mountsOf(probe)) {
+    const copies = [];
 
-    await mkdir(into, { recursive: true });
-    await cp(join(ROOT, 'oracle', 'probes', 'images', image), copy);
+    for (const image of images) {
+      const copy = join(into, `${letter}-${image}`);
 
-    /* A cue sheet's files beside it, by their own names, where DOSBox
-     * looks for them after the working folder (`GetRealFileName`,
-     * `cdrom_image.cpp` 618-647). */
-    if (/\.cue$/i.test(image)) {
-      const sheet = await readFile(join(ROOT, 'oracle', 'probes', 'images', image), 'latin1');
+      await mkdir(into, { recursive: true });
+      await cp(join(ROOT, 'oracle', 'probes', 'images', image), copy);
+      copies.push(copy);
 
-      for (const [, quoted, bare] of sheet.matchAll(/^\s*FILE\s+(?:"([^"]*)"|(\S+))/gim)) {
-        const file = quoted ?? bare;
+      /* A cue sheet's files beside it, by their own names, where DOSBox
+       * looks for them after the working folder (`GetRealFileName`,
+       * `cdrom_image.cpp` 618-647). */
+      if (/\.cue$/i.test(image)) {
+        const sheet = await readFile(join(ROOT, 'oracle', 'probes', 'images', image), 'latin1');
 
-        await cp(join(ROOT, 'oracle', 'probes', 'images', file), join(into, file));
-        log(`  ${letter}: ${file} (the cue sheet's)`);
+        for (const [, quoted, bare] of sheet.matchAll(/^\s*FILE\s+(?:"([^"]*)"|(\S+))/gim)) {
+          const file = quoted ?? bare;
+
+          await cp(join(ROOT, 'oracle', 'probes', 'images', file), join(into, file));
+          log(`  ${letter}: ${file} (the cue sheet's)`);
+        }
       }
     }
     /* An `hdd` is sized from its file, whole cylinders of 16 heads and 63
      * sectors (`dos_programs.cpp` 1213-1236). */
-    lines.push(`imgmount ${letter.toLowerCase()} ${copy} -t ${kind}`);
-    log(`  ${letter}: ${image} (${kind})`);
+    lines.push(`imgmount ${letter.toLowerCase()} ${copies.join(' ')} -t ${kind}`);
+    log(`  ${letter}: ${images.join(', ')} (${kind})`);
   }
 
   return lines;
@@ -493,6 +572,9 @@ async function imgmountLines(probe) {
 async function runProbe(probe, display, shoot = null, capture = null) {
   const config = join(BUILD, 'record.conf');
   const mounts = await imgmountLines(basename(probe, '.EXE').toLowerCase());
+  const swapping = (await mountsOf(basename(probe, '.EXE').toLowerCase())).some(
+    ({ images }) => images.length > 1
+  );
 
   await writeFile(
     config,
@@ -531,6 +613,11 @@ async function runProbe(probe, display, shoot = null, capture = null) {
 
   if (shoot) {
     await runShooting(config, probe, shoot);
+    return;
+  }
+
+  if (swapping) {
+    await runSwapping(config, probe);
     return;
   }
 
