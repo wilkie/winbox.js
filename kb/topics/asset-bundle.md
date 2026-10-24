@@ -87,7 +87,7 @@ The pool's files keep the date and time of their files on the disk, as `LZCopy` 
 
 [[measured]] For each of the ten displays -- `vga`, `svga`, `ega`, `hercules`, `vga256`, `8514`, `8514s`, `xga256`, `xga256s`, `xga640` -- every file the base places is the installation's file byte for byte: the fonts, `MIDIMAP.CFG`, `SETUP.REG`, both profiles and the 2,556 bytes of `REG.DAT`. No file of the installation's that is in the pool, nor a profile, nor `REG.DAT`, is left out. The two engines' bases are the same listing, path, size, CRC and stamp (`test/assets/composed.json`).
 
-What the base lacks of an installation is its code and what only code reads: `WIN.COM`, the accessories, `TASKMAN`, `WINHELP`, `CONTROL.EXE`, every `.DRV`, `.DLL`, `.386` and grabber, the help files, the groups, `PROGMAN.INI`, `CONTROL.INI` and the `.PIF` files.
+What the base lacks of an installation is its code and what only code reads: `WIN.COM`, the accessories, `TASKMAN`, `WINHELP`, `CONTROL.EXE`, every `.DRV`, `.DLL`, `.386` and grabber, the help files, the groups, `PROGMAN.INI`, `CONTROL.INI` and the `.PIF` files. `PROGMAN.INI`, which only Program Manager reads, is written by an install run's Program Manager as it starts, so a program installed on the base keeps it in its layer ([[topic:program-manager-dde]]).
 
 ## Starting from the bundle
 
@@ -146,7 +146,7 @@ ASSETS_SWEEP=1 cargo test --release -p winbox-win16 --test assets_sweep -- --noc
 ASSETS_SWEEP=1 npx jest test/assets/sweep_test.ts
 ```
 
-Neither runs without `ASSETS_SWEEP=1`. [[measured]] The Rust engine's sweep, every fixture run twice, takes some 100 seconds on eight threads. The TypeScript engine's runs the 529 fixtures whose probe and installation image it has, all but those recorded with a sound card (it has no sound),, in some five hours of one CPU, shared out with `ASSETS_SWEEP_SHARD=k/n`; nearly three of them are `verinst` on the base, which, with no `SYSTEM.DRV` to find its version block in, writes its sources at an offset of some 400 MB and copies them, a read at a time.
+Neither runs without `ASSETS_SWEEP=1`. [[measured]] The Rust engine's sweep, every fixture run twice, takes some 100 seconds on eight threads. The TypeScript engine's runs the 529 fixtures whose probe and installation image it has, all but those recorded with a sound card (it has no sound), in some five hours of one CPU, shared out with `ASSETS_SWEEP_SHARD=k/n`; nearly three of them are `verinst` on the base, which, with no `SYSTEM.DRV` to find its version block in, writes its sources at an offset of some 400 MB and copies them, a read at a time.
 
 [[measured]] 23 fixtures differed in the Rust engine and 21 in the TypeScript engine (it runs no `vgasound` fixture: not `mapcpl`, `mplopen-vgasound`, `sndrec-vgasound`; and `diskfree` differs in it alone), before the Program Manager probes were recorded and WinBox's own Program Manager answered on the base. Since, `ddeinst` and `pmatom` agree there whole, and `pmbare` on both its displays, `pmfiles`, `pmgroups`, `pmraw`, `pmstart`, `pmsyntax` and `progdde` differ as the table says, in both engines. All but `diskfree` are a file the base does not have: each claim checked against what the probe or the program it starts opens, and that the file is on the installation and not on the base.
 
@@ -186,6 +186,5 @@ So a new installation's files from the disks keep the disks' stamp, and those of
 - Native's `--assets` has not been run with a window yet.
 - The page reads no folder dropped on it: the driver's files are chosen or dropped one by one, or zipped.
 - A bundle the page makes from media `known-media.json` does not list is taken, and said to be so, but nothing measures what programs see on it.
-- `PROGMAN.INI`, which only Program Manager reads: an install run's Program Manager writes one as it starts, so a program installed on the base keeps it in its layer ([[topic:program-manager-dde]]).
 - An oracle installation with Setup's `bitmaps` installed, which would ground placing the sounds and wallpapers.
 - What `REGEDIT`'s `/U` does is not read out; with it, the database made from nothing is the installation's byte for byte.

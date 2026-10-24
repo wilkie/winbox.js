@@ -2,10 +2,10 @@
 kind: topic
 name: CD-ROM drives
 summary: What a Windows 3.1 program sees of a CD-ROM drive under DOSBox — MSCDEX's register calls with and without a disc, a disc's drive as IOCTL and GetDriveType answer for it, an ISO 9660 image's names, stamps, attributes and room, and a disc as a raw image or a cue sheet of tracks — measured, read out of DOSBox's isoDrive and CDROM_Interface_Image, and followed function by function in both engines.
-probes: [mscdex, imgcd, drvioctl, imgbin, imgcue, imgcue2, imgtrk]
+probes: [mscdex, imgcd, drvioctl, imgbin, imgcue, imgcue2, imgtrk, imgswap]
 ---
 
-Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then read its files through DOS like any drive's. Under DOSBox, where the oracle's Windows runs, a disc is an image mounted with `IMGMOUNT -t iso` -- an `.iso`, a raw `.bin`, or a `.cue` sheet of tracks (see [[topic:drives-and-disks]], "Disk and CD images", for how the probes mount one and the design that will mount one here).
+Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then read its files through DOS like any drive's. Under DOSBox, where the oracle's Windows runs, a disc is an image mounted with `IMGMOUNT -t iso` -- an `.iso`, a raw `.bin`, or a `.cue` sheet of tracks (see [[topic:drives-and-disks]], "Disk and CD images", for how the probes mount one and how both engines, the native build and the page mount one).
 
 ## MSCDEX
 
@@ -58,9 +58,8 @@ Programs of the time find their CD-ROM by asking MSCDEX through `INT 2Fh`, then 
 - MSCDEX counts a drive removable and remote a CD-ROM, so a disc mounted answers 1500h and 150Bh as `imgcd` recorded.
 - A disc's image is a `CdImage` (`crates/winbox-machine/src/files/cue.rs`, `src/file-systems/cue.ts`), `CDROM_Interface_Image`'s functions by their names: `set_device` / `setDevice` a cue sheet first, then one data track (`load_iso_file`); `load_cue_sheet` line by line as `getline` and `>>` read it; `add_track`; `get_track`; `read_sector`; each file a `BinaryFile` whose failed read fails it for good. An audio track's file is kept and not read, and its length not measured: a track after one is marked not `known`, and no sector is found past it. `IsoVolume::open` / `ISO9660.of(bytes, find)` take a function finding a sheet's files by the names it gives them: both harnesses look beside the sheet, in `oracle/probes/images/`, as `record.mjs` copies them there.
 - [[probe:imgbin]], [[probe:imgcue]], [[probe:imgcue2]] and [[probe:imgtrk]] agree wholly, 91 of 91 records each, in both engines.
-- The native build mounts a disc as `--mount D:game.cue` or `--mount D:game.bin` (`open_disc`, `crates/winbox-native/src/mounts.rs`), a sheet's files found as `GetRealFileName` finds them: as named, from the working folder, then beside the sheet. The page takes a `.cue` with the files it names dropped or chosen with it ([[topic:drives-and-disks]], "The page's drives").
 - What a user with discs of their own should know: a sheet of one or more `BINARY` files whose first track is the data track, `MODE1/2352` or `MODE2/2352` -- the common rips, one `.bin` or a `.bin` to a track -- mounts; a lone `.bin` of 2,352-byte sectors mounts as it is. A sheet DOSBox refuses is refused, its line and why said: `line 3: GAME.BIN not found`, `line 1: DOSBox knows no command "ï»¿FILE"` (a byte-order mark; save the sheet without one), `DOSBox knows no track type "MODE2/2048"`. Where the data track is not first -- an enhanced CD, audio first -- there is no volume at sector 16, and the disc is refused as DOSBox refuses it. Audio tracks are not played.
-- The page mounts a disc from its Drives strip, at the first free letter after the hard disks', and remembers a kept program's ([[topic:drives-and-disks]], "The page's drives"); [[probe:imgcd]] reads it there on both engines. The native build mounts one with `--mount D:GAME.ISO`, read from its file as sectors are asked for.
+- The native build mounts a disc as `--mount D:GAME.ISO`, `--mount D:game.cue` or `--mount D:game.bin` (`open_disc`, `crates/winbox-native/src/mounts.rs`), read from its file as sectors are asked for, a sheet's files found as `GetRealFileName` finds them: as named, from the working folder, then beside the sheet. The page mounts a disc from its Drives strip, at the first free letter after the hard disks', takes a `.cue` with the files it names dropped or chosen with it, and remembers a kept program's ([[topic:drives-and-disks]], "The page's drives"); [[probe:imgcd]] reads it there on both engines.
 
 ## Swapping a disc
 

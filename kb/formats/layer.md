@@ -105,7 +105,7 @@ A base given by `--assets` is named `base:<assets id>:<display>`, as on the page
 
 **From floppies.** `winbox-native --install NAME A: [SETUP.EXE] --mount A:DISK1.IMG,DISK2.IMG`. The installer is run from the images mounted at A: (`Store::stage_drive`), that drive and the installer's folder current, and nothing of the media is put on C: -- nothing is laid beneath the empty top, so `drop_media` drops nothing, and the media are named `A:\`, so `media_references` tells the lines that name `A:\` ([[topic:drives-and-disks]], "The native build's drives"). The disks are swapped as the installer asks, by `a next` on the console or Ctrl+Shift+F12.
 
-**A program's images.** A program installed or run with `--mount` keeps its images in its record, `media`: each image's `letter`, `kind` (`floppy`, `hdd`, `iso`), `name`, `size` and `path`, the file's full path on the host, a set's images in order under one letter. The page's record is to keep the same, a key to its own store in place of the path (phase 7). `--program NAME` with no `--mount` mounts them again at the same letters; one given replaces them. A record with no images has no `media` field, as before.
+**A program's images.** A program installed or run with `--mount` keeps its images in its record, `media`: each image's `letter`, `kind` (`floppy`, `hdd`, `iso`), `name`, `size` and `path`, the file's full path on the host, a set's images in order under one letter. The page's record keeps the same, a key to its own store in place of the path ([[topic:drives-and-disks]], "The page's drives"). `--program NAME` with no `--mount` mounts them again at the same letters; one given replaces them. A record with no images has no `media` field, as before.
 
 **A layer from the user's files.** `winbox-native --layer-from DIR|LAYER.zip NAME`. A folder laid out as C: has it gives a layer of each of its files and of each folder the stack has not, over the program's stack. A file the stack has already, with the same bytes and stamp, is left out. SimTower's `WAVMIX16.DLL` in `WINDOWS\SYSTEM`, `WAVEMIX.INI` and `SIMTOWER.INI` are such files ([[topic:wavemix]]): WinBox never writes their contents. A zip is a layer's exchange zip, read as `Layer::from_zip` reads it. Either is put on the stack only where `stack_refusal` lets it.
 
@@ -199,16 +199,13 @@ The probe found three things in the TypeScript engine, each now as DOSBox and th
 
 **The native build.** Its `installed()` (`crates/winbox-native/src/programs.rs`) puts the media at `C:\WBSETUP` and makes the layer with `Layer::installed`, as the page and the harnesses do, so the three make the same layer for the same installer: every entry at or beneath the media's folder is dropped, files the installer wrote there included, and the lines that name the media are told on the console after keeping.
 
-## The rest of the design
+## The design's decisions
 
-Decided, and not built yet:
-
-- **Installing.** Done on the page and in the probe harnesses (An installer into a layer, above), and natively (The native build's programs, above). The owner chose to discard the media after installing: only the installer's top is kept, and its entries that name the media's paths are dropped. A program that later reads its setup folder will not find it.
+- **Installing.** Built on the page and in the probe harnesses (An installer into a layer, above), and natively (The native build's programs, above). The owner chose to discard the media after installing: only the installer's top is kept, and its entries that name the media's paths are dropped. A program that later reads its setup folder will not find it.
 - **The owner's decisions (2026-10-21).** Layers are materialised on disk and stacked by the host drive, rather than read live from blobs or flattened into one folder per stack. The Rust engine has its own sha256. Installer media are discarded after installing. A program's layer is bound to its display. One user layer per stack. Programs sharing a machine are installed in turn, and a stack of layers made apart that touch one path is refused. Today's records are kept as the "loose programs" stack. Programs' archives are kept as layers. An installation may be a base. A layer is taken on an explicit "Keep".
 
 ## Not yet done
 
-- Everything under "The rest of the design".
 - The TypeScript engine's whole sweep on the layers: its file probes are run, and the rest are some hours of one CPU (`LAYERS_SWEEP_SHARD=k/n` shares them out). `verinst` alone is hours on the bundle's base ([[topic:asset-bundle]]).
 - A sweep on a stack with a program's layer installed by its installer, rather than one cut from the base.
 - Exporting a kept program's layer as its exchange zip from the page, and taking one dropped.
@@ -217,6 +214,6 @@ Decided, and not built yet:
 - An installer that restarts Windows (`ExitWindowsExec`, `_MSSETUP`).
 - The stamps an installer gives its files. DOSBox fakes function 5701h, so installed files carry the time of installing, and a layer's id depends on the clock unless it runs on the virtual one. A layer installed on the page takes the stamps of the host's clock, so two installs of one program are two layers.
 - A layer installed natively takes its folders' stamps from the host's folders (`changes_from` of the layered host drive), where the page and the harnesses take the stamps DOS gave the program (`changes_seen`); its files' paths and bytes are the same.
-- The page offers Keep once no program is running: an installer that leaves running a program it does not wait for is offered Keep only once that program ends.
+- Keep is offered once the installer's task has ended, and a program it started and left running holds Keep back: an installer that leaves running a program it does not wait for is offered Keep only once that program ends.
 - Natively: forgetting a program, and collecting the blobs and materialised layers no program names, as the page's `collect` does; exporting a kept program's layer as its exchange zip; a name of the media's or the user's files that is not 8.3, which the page shortens and the native build refuses; a layer from the user's files deleting a path of the stack (a folder holds no whiteouts, so it only adds and writes).
-- Running a group's item from the page's list or the native build: it needs a command line's arguments, a working directory and a show state, where `run()` and `System::launch` take a program's path alone.
+- Running a group's item from the page's list or the native build's `--list`: it needs a command line's arguments, a working directory and a show state, where `run()` and `System::launch` take a program's path alone.
