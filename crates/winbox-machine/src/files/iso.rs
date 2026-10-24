@@ -19,15 +19,13 @@ use std::cell::RefCell;
 use std::io::{ErrorKind, SeekFrom};
 use std::rc::Rc;
 
+use super::cue::{CdImage, CueError};
 use super::fat::wild_file_cmp;
 use super::mbr::Sectors;
 use super::{Allocation, Begun, Body, Entry, Listing, Volume};
 
 /// A sector's bytes as a drive reads them, cooked (`ISO_FRAMESIZE`).
 pub const ISO_FRAMESIZE: usize = 2048;
-
-/// A raw sector's bytes, sync and header with them (`RAW_SECTOR_SIZE`).
-const RAW_SECTOR_SIZE: u64 = 2352;
 
 /// The first volume descriptor's sector (`ISO_FIRST_VD`).
 const ISO_FIRST_VD: u32 = 16;
@@ -53,57 +51,23 @@ const DOS_ATTR_DIRECTORY: u8 = 0x10;
 const DOS_ATTR_ARCHIVE: u8 = 0x20;
 
 /// Why an image could not be mounted as a disc.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IsoError {
     /// No primary volume descriptor at sector 16 in any layout DOSBox
     /// tries (`LoadIsoFile`, `cdrom_image.cpp` 366-379): "could not load
     /// image file".
     NotIso,
+    /// A cue sheet DOSBox does not take (`LoadCueSheet`, 422-556), nor an
+    /// image either: "could not load image file", and why the sheet was
+    /// not taken.
+    Cue(CueError),
+    /// A disc of audio tracks alone, which DOSBox mounts as a drive with
+    /// no files labelled `Audio_CD` (`drive_iso.cpp` 167-174): not yet
+    /// mounted here.
+    AudioOnly,
     /// A descriptor whose root record DOSBox cannot read (`loadImage`,
     /// `drive_iso.cpp` 516-526): error 6, a corrupt image.
     Corrupt,
-}
-
-/// The disc's one data track as `LoadIsoFile` finds it (`cdrom_image.cpp`
-/// 350-382): its sectors' size, where a sector's 2,048 bytes begin in it,
-/// and how many whole sectors the image holds.
-#[derive(Debug, Clone, Copy)]
-struct Track {
-    sector_size: u64,
-    skip: u64,
-    length: u64,
-}
-
-impl Track {
-    /// The first layout whose sector 16 is a primary volume descriptor
-    /// (`CanReadPVD`, 395-404): cooked 2,048-byte sectors, raw 2,352 (their
-    /// data 16 in), mode 2 of 2,336 or 2,352 (24 in).
-    fn detect(sectors: &dyn Sectors) -> Option<Self> {
-        [
-            (2048, 0),
-            (RAW_SECTOR_SIZE, 16),
-            (2336, 24),
-            (RAW_SECTOR_SIZE, 24),
-        ]
-        .into_iter()
-        .map(|(sector_size, skip)| Self {
-            sector_size,
-            skip,
-            length: sectors.size() / sector_size,
-        })
-        .find(|track| {
-            let seek = 16 * track.sector_size + track.skip;
-            let mut pvd = [0u8; ISO_FRAMESIZE];
-
-            // An image too short to hold it fails the stream's read.
-            if seek + ISO_FRAMESIZE as u64 > sectors.size() {
-                return false;
-            }
-
-            sectors.read_at(seek, &mut pvd);
-            pvd[0] == 1 && &pvd[1..6] == b"CD001" && pvd[6] == 1
-        })
-    }
 }
 
 /// A directory record as DOSBox's `isoDirEntry` holds it, its bytes as
@@ -309,8 +273,7 @@ struct DirIterator {
 /// The disc as DOSBox's `isoDrive` holds it.
 #[derive(Debug)]
 struct Disc {
-    sectors: Box<dyn Sectors>,
-    track: Track,
+    image: CdImage,
     root_entry: DirEntry,
     /// The label `Set_Label` makes of the volume's name (`discLabel`).
     label: String,
@@ -319,21 +282,11 @@ struct Disc {
 }
 
 impl Disc {
-    /// A cooked sector of the data track (`CDROM_Interface_Image::
-    /// ReadSector`, `cdrom_image.cpp` 301-313); none past the track's
-    /// whole sectors (`GetTrack`).
+    /// A cooked sector of the disc (`isoDrive::readSector`, 472-474,
+    /// through `CDROM_Interface_Image::ReadSector`); none where no track
+    /// holds it or its file cannot be read there (`CdImage::read_sector`).
     fn read_sector(&self, sector: u32) -> Option<[u8; ISO_FRAMESIZE]> {
-        if u64::from(sector) >= self.track.length {
-            return None;
-        }
-
-        let mut buffer = [0u8; ISO_FRAMESIZE];
-
-        self.sectors.read_at(
-            u64::from(sector) * self.track.sector_size + self.track.skip,
-            &mut buffer,
-        );
-        Some(buffer)
+        self.image.read_sector(sector)
     }
 
     /// `GetDirIterator` (390-408): the next iterator in turn, at the
@@ -553,30 +506,56 @@ pub struct IsoVolume {
 
 impl IsoVolume {
     /// The disc an image holds, as `isoDrive`'s constructor mounts it
-    /// (141-177): its track found, sector 16 a primary volume descriptor
-    /// whose root record is read (`loadImage`), its label from the volume's
-    /// name.
+    /// (141-177): the image read as `SetDevice` reads it -- a cue sheet,
+    /// else one data track (`CdImage::set_device`) -- with no other file
+    /// to be found.
     pub fn new(sectors: impl Sectors + 'static) -> Result<Self, IsoError> {
-        let sectors: Box<dyn Sectors> = Box::new(sectors);
-        let track = Track::detect(sectors.as_ref()).ok_or(IsoError::NotIso)?;
+        Self::open(Box::new(sectors), &mut |_| None)
+    }
+
+    /// The disc an image holds, a cue sheet's files found by `open` as
+    /// `GetRealFileName` finds them (`cdrom_image.cpp` 618-647).
+    pub fn open(
+        image: Box<dyn Sectors>,
+        open: &mut dyn FnMut(&str) -> Option<Box<dyn Sectors>>,
+    ) -> Result<Self, IsoError> {
+        let image = CdImage::set_device(image, open)
+            .map_err(|error| error.map_or(IsoError::NotIso, IsoError::Cue))?;
+
+        Self::from_image(image)
+    }
+
+    /// The disc a CD image's tracks hold (141-177): sector 16 of the disc
+    /// a primary volume descriptor whose root record is read
+    /// (`loadImage`), its label from the volume's name; a corrupt image
+    /// where it is not and a track is data, a disc of audio alone where
+    /// none is.
+    pub fn from_image(image: CdImage) -> Result<Self, IsoError> {
+        let has_data = image.has_data_track();
         let mut disc = Disc {
-            sectors,
-            track,
+            image,
             root_entry: DirEntry::EMPTY,
             label: String::new(),
             dir_iterators: vec![DirIterator::default(); MAX_OPENDIRS],
             next_free_dir_iterator: 0,
         };
-        let pvd = disc.read_sector(ISO_FIRST_VD).ok_or(IsoError::NotIso)?;
+        let not_data = if has_data {
+            IsoError::Corrupt
+        } else {
+            IsoError::AudioOnly
+        };
+        let Some(pvd) = disc.read_sector(ISO_FIRST_VD) else {
+            return Err(not_data);
+        };
 
         if pvd[0] != 1 || &pvd[1..6] != b"CD001" || pvd[6] != 1 {
-            return Err(IsoError::NotIso);
+            return Err(not_data);
         }
 
         let mut root = DirEntry::EMPTY;
 
         if read_dir_entry(&mut root, &pvd[156..]) <= 0 {
-            return Err(IsoError::Corrupt);
+            return Err(not_data);
         }
 
         disc.root_entry = root;
