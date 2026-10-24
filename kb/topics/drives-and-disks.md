@@ -231,7 +231,7 @@ Each step has its probe agreeing in both engines:
 The owner's decisions (2026-10-22):
 
 - **Floppy writes:** copy-on-write. The user's image is never changed; what is written is kept beside it, and saved as a new image on request ("Save image…", `--write-back`).
-- **ISO storage on the page:** no copy of a read-only image. Where the browser offers it, a File System Access handle, whose permission is asked again each visit; elsewhere the file is chosen or dropped again each visit. A copy in the browser's storage only when asked for. As built, the image is read once into the page's memory and the engines read that copy, the Rust engine a slice at a time; reading the file itself by slices, from a worker, is a later step (The page's drives, "Where the bytes are"; Not yet done).
+- **ISO storage on the page:** no copy of a read-only image. Where the browser offers it, a File System Access handle, whose permission is asked again each visit; elsewhere the file is chosen or dropped again each visit and read where it is, by slices. A copy in the browser's storage only when asked for. Not yet as decided: the page reads the image once into its memory and the engines read that copy, the Rust engine a slice at a time; reading the file itself by slices, from a worker, is still to do (The page's drives, "Where the bytes are"; Not yet done).
 - **Drive letters:** floppies A: and B:; hard disk images from D:; CD-ROMs at the first free letter after, one after another, each program's kept.
 - **DOSBox's quirks on a FAT image** -- creation stamps listed, nought stamps written, no label found -- followed as recorded.
 - **CUE/BIN:** the data track only, after ISO; audio later. **Hard disk images:** later, raw only.
