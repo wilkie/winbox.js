@@ -217,6 +217,10 @@ pub const AGREEING: &[&str] = &[
     "imgwrite",
     "drvioctl",
     "imgcd",
+    "imgbin",
+    "imgcue",
+    "imgcue2",
+    "imgtrk",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -985,16 +989,22 @@ pub fn mounts_of(probe: &str) -> Vec<Mount> {
 }
 
 /// An image as a drive: a FAT image, a floppy's or a hard disk's
-/// (`FatVolume`), or an ISO 9660 disc (`IsoVolume`). A probe whose image
-/// is not mounted runs without it, and is left out of `AGREEING`.
+/// (`FatVolume`), or a CD image (`IsoVolume`) -- a cue sheet's files found
+/// beside it, as `record.mjs` copies them and DOSBox finds them
+/// (`GetRealFileName`). A probe whose image is not mounted runs without
+/// it, and is left out of `AGREEING`.
 fn image_volume(mount: &Mount, bytes: Vec<u8>) -> Option<Box<dyn Volume>> {
     match mount.kind.as_str() {
         "floppy" | "hdd" => FatVolume::new(bytes, mount.kind == "floppy")
             .ok()
             .map(|volume| Box::new(volume) as Box<dyn Volume>),
-        "iso" => IsoVolume::new(bytes)
-            .ok()
-            .map(|volume| Box::new(volume) as Box<dyn Volume>),
+        "iso" => IsoVolume::open(Box::new(bytes), &mut |name| {
+            std::fs::read(root().join("oracle/probes/images").join(name))
+                .ok()
+                .map(|bytes| Box::new(bytes) as Box<dyn winbox_machine::Sectors>)
+        })
+        .ok()
+        .map(|volume| Box::new(volume) as Box<dyn Volume>),
         _ => None,
     }
 }

@@ -1,0 +1,2 @@
+# D: the raw image of imgcd.iso, mounted as it is: see imgbin.c.
+d: imgcd.bin iso
