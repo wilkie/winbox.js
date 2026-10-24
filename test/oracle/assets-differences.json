@@ -62,6 +62,12 @@
         "reason": "MIDIMAP.DRV is not on the base: WinBox's mapper has no applet without it (CPL_INIT answers nought, `wbmapper/applet.rs`), so no dialog, the current setup is not changed, and the mapper opens on the installation's own setup's channels"
       }
     ],
+    "modnum": [
+      {
+        "records": ["expwinver(cpl)", "usage(loaded twice)", "usage(freed by instance)"],
+        "reason": "MAIN.CPL is not in the base's SYSTEM: LoadLibrary answers 2, so GetExpWinVer is asked of the error code (0 8007, not MAIN.CPL's 30a 0) and no module is found by the name MAINCPL (usage 0 gone, not 2 and 1 found); the later records agree, the module being gone on the installation too"
+      }
+    ],
     "mplopen": [
       {
         "records": [
