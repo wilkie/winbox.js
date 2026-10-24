@@ -118,6 +118,12 @@ export interface Medium {
 
   /** What tells its file again (`imageKey`): its name, size and last change. */
   key: string;
+
+  /**
+   * A cue sheet's files, in the order it names them: each kept, and asked
+   * for again, as the sheet itself is.
+   */
+  tracks?: { name: string; size: number; key: string }[];
 }
 
 /**
@@ -436,7 +442,11 @@ export function collect() {
   return across([BLOBS, LAYERS, PROGRAMS, IMAGES], 'readwrite', async (stores) => {
     const programs = await answer<KeptProgram[]>(stores[PROGRAMS].getAll());
     const used = new Set(programs.flatMap((program) => program.layers));
-    const media = new Set(programs.flatMap((program) => program.media ?? []).map((one) => one.key));
+    const media = new Set(
+      programs
+        .flatMap((program) => program.media ?? [])
+        .flatMap((one) => [one.key, ...(one.tracks ?? []).map((track) => track.key)])
+    );
 
     for (const key of await answer<IDBValidKey[]>(stores[IMAGES].getAllKeys())) {
       if (!media.has(String(key))) {

@@ -11,8 +11,8 @@ use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::rc::Rc;
 
 use winbox_machine::{
-    Change, Clock, EmptyDrive, FatVolume, HostTime, IsoVolume, MemoryDrive, Sectors, Volume,
-    WallTime,
+    Change, Clock, EmptyDrive, FatVolume, HostTime, IsoError, IsoVolume, MemoryDrive, Sectors,
+    Volume, WallTime,
 };
 use winbox_ne::Executable;
 use winbox_win16::assets::Assets;
@@ -403,6 +403,19 @@ impl Session {
         sectors: impl Sectors + 'static,
         kind: DiskKind,
     ) -> Result<usize, String> {
+        self.add_image(letter, Box::new(sectors), kind, &mut |_| None)
+    }
+
+    /// A disk or disc image added to a drive's set, as `add_disk`; a disc's
+    /// a cue sheet whose files `files` finds by the names it gives them
+    /// (the page's files dropped with it, `GetRealFileName`'s part).
+    pub fn add_image(
+        &mut self,
+        letter: char,
+        sectors: Box<dyn Sectors>,
+        kind: DiskKind,
+        files: &mut dyn FnMut(&str) -> Option<Box<dyn Sectors>>,
+    ) -> Result<usize, String> {
         let letter = letter.to_ascii_uppercase();
 
         if letter == 'C' || self.drives.contains_key(&letter) {
@@ -418,10 +431,12 @@ impl Session {
         }
 
         let volume: Box<dyn Volume> = match kind {
-            DiskKind::Iso => Box::new(
-                IsoVolume::new(sectors)
-                    .map_err(|error| format!("not an ISO 9660 disc: {error:?}"))?,
-            ),
+            DiskKind::Iso => Box::new(IsoVolume::open(sectors, files).map_err(
+                |error| match error {
+                    IsoError::Cue(error) => format!("a cue sheet DOSBox does not take: {error}"),
+                    error => format!("not an ISO 9660 disc: {error:?}"),
+                },
+            )?),
             DiskKind::Floppy | DiskKind::Hdd => Box::new(
                 FatVolume::new(sectors, kind == DiskKind::Floppy)
                     .map_err(|error| format!("not a FAT image: {error:?}"))?,

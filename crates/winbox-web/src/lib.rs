@@ -10,6 +10,7 @@
 
 pub mod session;
 
+use wasm_bindgen::JsCast;
 use wasm_bindgen::prelude::*;
 use winbox_machine::{Change, Sectors};
 use winbox_win16::audio::{MidiOutput, Sound};
@@ -72,6 +73,21 @@ extern "C" {
 
     #[wasm_bindgen(method)]
     fn read(this: &ImageBytes, offset: f64, into: &mut [u8]);
+
+    /// A file a cue sheet names, found among those the page has with it,
+    /// by the name the sheet gives it; none where it has none.
+    #[wasm_bindgen(method)]
+    fn file(this: &ImageBytes, name: &str) -> Option<ImageBytes>;
+}
+
+impl PageSectors {
+    // An image's size is a whole number of bytes far inside a double's.
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    fn of(image: ImageBytes) -> Self {
+        let size = image.size().max(0.0) as u64;
+
+        Self { image, size }
+    }
 }
 
 /// An image's sectors read from the page's bytes as they are asked for.
@@ -395,19 +411,23 @@ impl Machine {
         self.session.mark_planned();
     }
 
-    /// A disk or disc image added to a drive's set (`Session::add_disk`):
-    /// `kind` `floppy`, `hdd` or `iso`, its bytes the page's. Nothing
-    /// where it was added; else why not, told rather than thrown.
-    // An image's size is a whole number of bytes far inside a double's.
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    /// A disk or disc image added to a drive's set (`Session::add_image`):
+    /// `kind` `floppy`, `hdd` or `iso`, its bytes the page's, and a cue
+    /// sheet's files those its `file` finds. Nothing where it was added;
+    /// else why not, told rather than thrown.
     pub fn add_disk(&mut self, drive: &str, image: ImageBytes, kind: &str) -> Option<String> {
         let Some(kind) = DiskKind::of(kind) else {
             return Some(format!("no kind of image {kind}"));
         };
-        let size = image.size().max(0.0) as u64;
+        let files: ImageBytes = image.clone().unchecked_into();
+        let sectors = PageSectors::of(image);
 
         self.session
-            .add_disk(letter(drive), PageSectors { image, size }, kind)
+            .add_image(letter(drive), Box::new(sectors), kind, &mut |name| {
+                files
+                    .file(name)
+                    .map(|file| Box::new(PageSectors::of(file)) as Box<dyn Sectors>)
+            })
             .err()
     }
 

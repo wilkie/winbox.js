@@ -278,3 +278,40 @@ fn a_program_on_a_floppy_runs_from_it_its_drive_current() {
     assert_eq!(session.stop(), Some(&Stop::Ended));
     assert!(file(&session, "C:\\ORACLE", "IMGFLOP.OUT").contains("A: 0\t"));
 }
+
+#[test]
+fn a_cue_sheet_is_a_disc_its_files_found_by_the_page() {
+    let mut session = session();
+    let files = |name: &str| {
+        std::fs::read(root().join("oracle/probes/images").join(name))
+            .ok()
+            .map(|bytes| Box::new(bytes) as Box<dyn winbox_machine::Sectors>)
+    };
+
+    // Refused, and the file named, where the page has not its files.
+    let refused = session
+        .add_image(
+            'D',
+            Box::new(image("imgtrk.cue")),
+            DiskKind::Iso,
+            &mut |_| None,
+        )
+        .unwrap_err();
+
+    assert!(refused.contains("line 4: imgcd.bin not found"), "{refused}");
+    assert_eq!(
+        session.add_image(
+            'D',
+            Box::new(image("imgtrk.cue")),
+            DiskKind::Iso,
+            &mut |name| { files(name) }
+        ),
+        Ok(0)
+    );
+
+    // A raw image alone is a disc too.
+    assert_eq!(
+        session.add_disk('E', image("imgcd.bin"), DiskKind::Iso),
+        Ok(0)
+    );
+}
