@@ -57,7 +57,8 @@ can be dropped instead (see `kb/topics/asset-bundle.md`). With Windows there,
 a zip of programs dropped is kept too, as a program of its own: a layer laid at
 `C:\<NAME>` over Windows, for the display it was dropped on, listed under Kept
 programs on every visit, where Open puts it on C: and Forget lets it go (see
-`kb/formats/layer.md`). What programs write on C: -- changes to WIN.INI, a
+`kb/formats/layer.md`); under each, the Program Manager groups its installer
+made, each item with its icon from the group file and its command line. What programs write on C: -- changes to WIN.INI, a
 game's high scores, a saved document -- is kept there too, as the changes
 against what was dropped (each kept program's apart, and on the bundle's base
 each display's), and put back on either engine each time the page is opened,
@@ -146,6 +147,7 @@ Programs can also be kept as layers of drive C:, as the page keeps them
 winbox-native --install NAME MEDIA [SETUP.EXE] (--assets FILE.zip|DIR | --windows DIR) [--display MODE] [--keep]
 winbox-native --layer-from DIR|LAYER.zip NAME (--assets FILE.zip|DIR | --windows DIR) [--display MODE]
 winbox-native --program NAME [C:\PATH.EXE] (--assets FILE.zip|DIR | --windows DIR) [and a run's switches]
+winbox-native --list
 ```
 
 `--install` runs an installer: its media, a folder or a zip archive (or the
@@ -161,7 +163,9 @@ of your own files laid out as C: has them (SimTower's `WAVMIX16.DLL` in
 zip. `--program` runs a kept program on its stack, the `.EXE` named or its
 only one; what it writes and deletes is kept for it in
 `winbox/users/NAME/`. A program's layers are bound to the display it was
-installed on, and to its base.
+installed on, and to its base. `--list` prints the programs kept, and
+under each the Program Manager groups its installer made: each item's name,
+command line and working directory.
 
 Floppy, hard disk and CD-ROM images are mounted beside C: for any run
 (`kb/topics/drives-and-disks.md`, "The native build's drives"):
