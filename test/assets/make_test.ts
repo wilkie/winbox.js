@@ -215,6 +215,7 @@ describe('the asset bundle', () => {
           '8514.DRV',
           'EGA.DRV',
           'HERCULES.DRV',
+          'PROGMAN.EXE',
           'SHELL.DLL',
           'SUPERVGA.DRV',
           'SVGA256.DRV',
