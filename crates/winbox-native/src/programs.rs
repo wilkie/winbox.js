@@ -934,6 +934,105 @@ fn ids(stack: &[Layer]) -> Vec<String> {
         .collect()
 }
 
+/// Bytes as text, a character a byte (Latin-1), as Program Manager's
+/// strings are kept.
+fn latin1(bytes: &[u8]) -> String {
+    bytes.iter().map(|&byte| char::from(byte)).collect()
+}
+
+/// A kept program's own Program Manager groups (`groups::program_groups`):
+/// those whose files its layers hold, found on its layers alone, flattened
+/// over an empty base (`groups::program_files`), as the page shows them
+/// under each kept program.
+pub fn program_groups(
+    store: &Store,
+    program: &Program,
+) -> Result<Vec<winbox_win16::groups::StackGroup>, String> {
+    let layers = program
+        .layers
+        .iter()
+        .map(|id| store.layer(id))
+        .collect::<Result<Vec<_>, _>>()?;
+    let flat = winbox_win16::groups::program_files(&layers)?;
+    let files: BTreeMap<&str, &[u8]> = flat
+        .files
+        .iter()
+        .map(|file| (file.path.as_str(), file.data.as_slice()))
+        .collect();
+
+    Ok(winbox_win16::groups::program_groups(|path| {
+        files.get(path).copied()
+    }))
+}
+
+/// What `--list` says: each program kept, its display and programs, and
+/// its own Program Manager groups, each item's name, command line and
+/// working directory -- or why a group file would not load, as Program
+/// Manager would refuse it.
+pub fn listing(store: &Store) -> String {
+    let programs = store.programs();
+    let mut text = String::new();
+
+    if programs.is_empty() {
+        return "No programs are kept: --install or --layer-from keeps one.\n".to_string();
+    }
+
+    for program in programs {
+        let _ = writeln!(
+            text,
+            "{} ({}): {}",
+            program.name,
+            program.display,
+            if program.exes.is_empty() {
+                "no programs".to_string()
+            } else {
+                program.exes.join(", ")
+            }
+        );
+
+        match program_groups(store, &program) {
+            Err(error) => {
+                let _ = writeln!(text, "  its groups could not be read: {error}");
+            }
+            Ok(groups) => {
+                for stacked in groups {
+                    let file = stacked.file.unwrap_or_default();
+
+                    match (&stacked.group, &stacked.refusal) {
+                        (Some(group), _) => {
+                            let _ = writeln!(text, "  {} ({file})", latin1(&group.name));
+
+                            for item in &group.items {
+                                let _ = write!(
+                                    text,
+                                    "    {}: {}",
+                                    latin1(&item.name),
+                                    latin1(&item.command)
+                                );
+
+                                if !item.directory.is_empty() {
+                                    let _ = write!(text, ", in {}", latin1(&item.directory));
+                                }
+
+                                text.push('\n');
+                            }
+                        }
+                        (None, refusal) => {
+                            let _ = writeln!(
+                                text,
+                                "  {file}: would not load, as Program Manager would refuse it: {}",
+                                refusal.as_deref().unwrap_or("unread")
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    text
+}
+
 /// What an installer left in its top, as a layer over the stack it ran
 /// on (`Layer::installed`): the drive as it stands told against the stack
 /// with the media laid on it (`MemoryDrive::changes_from`), and of that,

@@ -17,6 +17,7 @@ use std::path::PathBuf;
 
 use winbox_machine::MemoryDrive;
 use winbox_win16::assets::STAMP;
+use winbox_win16::groups::{program_files, program_groups};
 use winbox_win16::layers::{Layer, Made, base_name, flatten, install_into_layer};
 use winbox_win16::survey::Survey;
 
@@ -150,10 +151,48 @@ fn caribbean_treasures_installer_into_a_layer() {
         made, fixture["layer"],
         "the layer, as the TypeScript engine's"
     );
+    assert_group(&installed.layer);
     assert!(installed.dropped.is_empty(), "{:?}", installed.dropped);
     assert!(
         installed.references.is_empty(),
         "{:?}",
         installed.references
+    );
+}
+
+/// The group as the page and `--list` show it under the program kept:
+/// its file the layer's, its item as the TypeScript engine reads it.
+fn assert_group(layer: &Layer) {
+    let flat = program_files(std::slice::from_ref(layer)).unwrap();
+    let groups = program_groups(|path| {
+        flat.files
+            .iter()
+            .find(|file| file.path == path)
+            .map(|file| file.data.as_slice())
+    });
+    let text = |bytes: &[u8]| {
+        bytes
+            .iter()
+            .map(|&byte| char::from(byte))
+            .collect::<String>()
+    };
+
+    assert_eq!(groups.len(), 1);
+    assert_eq!(groups[0].file.as_deref(), Some("WINDOWS\\GAMES.GRP"));
+
+    let group = groups[0].group.as_ref().expect("the group loads");
+
+    assert_eq!(text(&group.name), "Games");
+    assert_eq!(
+        group
+            .items
+            .iter()
+            .map(|item| [text(&item.name), text(&item.command), text(&item.directory)])
+            .collect::<Vec<_>>(),
+        [[
+            "Caribbean Treasure".to_string(),
+            "c:\\windows\\games\\carrib.exe".to_string(),
+            "c:\\windows\\games".to_string()
+        ]]
     );
 }

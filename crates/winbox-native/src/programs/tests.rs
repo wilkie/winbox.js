@@ -795,3 +795,92 @@ fn an_installer_run_from_a_floppy_image_drops_nothing_and_names_a() {
     assert_eq!(again.media[0].kind, "floppy");
     assert_eq!(again.exes, ["C:\\INSTLAY\\INSTLAYC.EXE"]);
 }
+
+#[test]
+fn an_installers_group_is_listed_under_the_program_kept() {
+    let (Ok(bundle), Ok(installer)) = (
+        Assets::open(&root().join("oracle/build/assets")),
+        std::fs::read(root().join("oracle/build/probes/DDEINST.EXE")),
+    ) else {
+        eprintln!("skipped: the asset bundle, or the ddeinst probe, is not made");
+        return;
+    };
+    let bundle = Rc::new(bundle);
+    let scratch = Scratch::new("groups");
+    let store = Store::new(scratch.0.join("winbox"));
+
+    std::fs::create_dir_all(&store.root).unwrap();
+
+    assert_eq!(
+        listing(&store),
+        "No programs are kept: --install or --layer-from keeps one.\n"
+    );
+
+    let base = Base::of_assets(&bundle, "vga", &store.root).unwrap();
+    let mut program = Program::new("Ddeinst", &base);
+    let mut system = System::new();
+
+    system.display = winbox_win16::display::mode("vga").unwrap();
+    system.assets = Some(Rc::clone(&bundle));
+
+    // The probe as an installer's last step: Program Manager, the run's
+    // shell, WinBox's own on the bundle's base, asked for a group of two.
+    let media = scratch.0.join("media");
+
+    write_files(&media, &[("SETUP.EXE", &installer, 800_000_000)]);
+
+    let stack = store.stack(&base, &program).unwrap();
+    let lowers = store.lowers(&base, &stack).unwrap();
+    let staging = store.stage("Ddeinst", &media, None).unwrap();
+
+    drop(run_on(
+        system,
+        staging.drive(lowers.clone()).unwrap(),
+        &staging.setup,
+        true,
+    ));
+
+    let kept = installed(&staging, &stack, lowers)
+        .unwrap()
+        .expect("the installer left its group");
+
+    staging.discard();
+    store.add_layer(&mut program, &stack, &kept.layer).unwrap();
+
+    let groups = program_groups(&store, &program).unwrap();
+
+    assert_eq!(groups.len(), 1);
+    assert_eq!(groups[0].file.as_deref(), Some("WINDOWS\\WINBOXGA.GRP"));
+    assert_eq!(
+        listing(&store),
+        "Ddeinst (vga): no programs\n  WinBox Games (WINDOWS\\WINBOXGA.GRP)\n    Solitaire: C:\\WINDOWS\\SOL.EXE, in C:\\WINDOWS\n    Minesweeper: C:\\WINDOWS\\WINMINE.EXE, in C:\\WINDOWS\n"
+    );
+
+    // A group whose file the program's layers do not carry -- the base's,
+    // or none -- is not its own.
+    let mut text = String::from_utf8(
+        kept.layer.blobs[&kept
+            .layer
+            .manifest
+            .entries
+            .iter()
+            .find_map(|entry| match entry {
+                LayerEntry::File { path, sha256, .. } if path == "WINDOWS\\PROGMAN.INI" => {
+                    Some(sha256.clone())
+                }
+                _ => None,
+            })
+            .unwrap()]
+            .to_vec(),
+    )
+    .unwrap();
+
+    text.push_str("Group9=C:\\WINDOWS\\MAIN.GRP\r\n");
+    assert!(
+        winbox_win16::groups::program_groups(|path| match path {
+            "WINDOWS\\PROGMAN.INI" => Some(text.as_bytes()),
+            _ => None,
+        })
+        .is_empty()
+    );
+}

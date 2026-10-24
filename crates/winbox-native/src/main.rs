@@ -130,6 +130,8 @@ enum Mode {
     /// `--layer-from DIR|ZIP NAME`: a layer of the user's own files, or an
     /// exchange zip, put on a program's stack.
     LayerFrom { from: PathBuf, name: String },
+    /// `--list`: the programs kept, and each one's Program Manager groups.
+    List,
 }
 
 /// What the command line asks for.
@@ -171,7 +173,8 @@ struct Options {
 const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
 winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [and a run's switches]
 winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--keep] [and a run's switches]
-winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE]";
+winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE]
+winbox-native --list";
 
 fn usage() -> ! {
     eprintln!("{USAGE}");
@@ -242,6 +245,7 @@ fn options() -> Options {
                     name,
                 });
             }
+            "--list" => mode = Some(Mode::List),
             "--keep" => options.keep = true,
             "--drive" => options.drive = arguments.next().map(PathBuf::from),
             "--path" => options.path = arguments.next(),
@@ -298,7 +302,7 @@ fn options() -> Options {
         (None, None) => usage(),
     };
 
-    if !matches!(mode, Mode::File(_)) {
+    if !matches!(mode, Mode::File(_) | Mode::List) {
         if options.drive.is_some() || options.path.is_some() {
             refuse("--drive and --path are for a program's file: a kept program's C: is its stack");
         }
@@ -1026,6 +1030,11 @@ fn main() {
         return;
     }
 
+    if let Mode::List = options.mode {
+        print!("{}", programs::listing(&programs::Store::new(made_cache())));
+        return;
+    }
+
     let mut system = System::new();
     let mut made = None;
     let mut installing = None;
@@ -1050,7 +1059,7 @@ fn main() {
             installing = Some(install);
             (c, path)
         }
-        Mode::LayerFrom { .. } => unreachable!("made above"),
+        Mode::LayerFrom { .. } | Mode::List => unreachable!("made above"),
     };
     let mut mounts = mount_images(&options, kept.as_mut(), installing.as_mut());
 
