@@ -13,6 +13,8 @@ import { WinExec } from '../kernel/WinExec.js';
 import { searchFile, taskDirectory } from '../kernel/search.js';
 import { queryValue } from './reg-api.js';
 import { progmanFile } from '../progman/stored.js';
+import { chdir } from '../../dos/syscall/directory.js';
+import { selectDisk } from '../../dos/syscall/selectDisk.js';
 
 /**
  * SHELL's calls about programs and their files: the environment's
@@ -466,6 +468,10 @@ export async function ExtractAssociatedIcon(
  * parameters after it, a text file with Notepad. Another verb for a
  * program, or a file with no association, answers 31.
  *
+ * A directory given is the current one while the program is found and
+ * started, so that it starts there, and the drive and directory current
+ * before are current again after (`enterDirectory`).
+ *
  * Not followed: an association that asks for DDE.
  *
  * @param {Types.HWND} _hwnd - The window to report to.
@@ -486,19 +492,69 @@ export async function ShellExecute(
   lpszDir: string | null,
   fsShowCmd: number
 ) {
-  const found = await commandFor(
-    this,
-    String(lpszFile ?? ''),
-    String(lpszDir ?? '').trim(),
-    lpszOp ? String(lpszOp) : 'open',
-    String(lpszParams ?? '')
-  );
+  const saved = typeof lpszDir === 'string' ? await enterDirectory(this, lpszDir) : null;
 
-  if ('error' in found) {
-    return found.error;
+  try {
+    const found = await commandFor(
+      this,
+      String(lpszFile ?? ''),
+      String(lpszDir ?? '').trim(),
+      lpszOp ? String(lpszOp) : 'open',
+      String(lpszParams ?? '')
+    );
+
+    if ('error' in found) {
+      return found.error;
+    }
+
+    return await WinExec.call(this, found.command, fsShowCmd);
+  } finally {
+    if (saved) {
+      this.dos.files.drive = saved.drive;
+      this.dos.files._pwd[saved.drive] = saved.path;
+    }
+  }
+}
+
+/**
+ * **Read out** (`SHELL.DLL` seg4 `093c`-`098a`, `107a`-`1088`): a directory
+ * given to `ShellExecute`, past its leading spaces, made current before
+ * anything else is done -- its drive selected where it names one (DOS 0Eh,
+ * its letter less `a`, a capital's made small; seg1 `00f9`) and the rest,
+ * where there is any, made that drive's directory (DOS 3Bh) -- once the
+ * drive and directory current are kept (seg1 `00b0`, DOS 47h); those made
+ * current again as it returns. A directory that is not there changes
+ * nothing. What was current, where a directory is given. As `programs.rs`'s
+ * `enter_directory`.
+ */
+async function enterDirectory(system: any, given: string) {
+  const directory = given.replace(/^ +/, '');
+
+  if (!directory) {
+    return null;
   }
 
-  return WinExec.call(this, found.command, fsShowCmd);
+  const files = system.dos.files;
+  const saved = { drive: files.drive, path: files._pwd[files.drive] ?? `${files.drive}:\\` };
+  let rest = directory;
+
+  if (directory[1] === ':') {
+    const letter = directory.charCodeAt(0) & 0xff;
+    const index = (letter < 0x61 ? letter - 0x61 + 0x20 : letter - 0x61) & 0xff;
+
+    selectDisk.call(system.dos, index);
+    rest = directory.slice(2);
+  }
+
+  if (rest) {
+    try {
+      await chdir.call(system.dos, rest);
+    } catch {
+      /* Not there: nothing changed. */
+    }
+  }
+
+  return saved;
 }
 
 /**
