@@ -61,8 +61,8 @@ programs on every visit, where Open puts it on C: and Forget lets it go (see
 game's high scores, a saved document -- is kept there too, as the changes
 against what was dropped (each kept program's apart, and on the bundle's base
 each display's), and put back on either engine each time the page is opened,
-until Forget changes clears them. Disk and CD images (`.img`, `.iso`) dropped
-beside Windows become drives, in the Drives strip: floppies dropped together
+until Forget changes clears them. Disk and CD images (`.img`, `.iso`, or a
+`.cue` dropped with the `.bin` files it names) dropped beside Windows become drives, in the Drives strip: floppies dropped together
 are one set at A:, swapped with Next and Eject, a hard disk image D:, a CD the
 letter after; programs on them run from there, an installer on a floppy
 installs into a layer, what programs write to a disk is saved only as a new
@@ -167,12 +167,14 @@ Floppy, hard disk and CD-ROM images are mounted beside C: for any run
 (`kb/topics/drives-and-disks.md`, "The native build's drives"):
 
 ```shell
-winbox-native ... --mount A:DISK1.IMG,DISK2.IMG --mount GAME.ISO [--write-back DIR]
+winbox-native ... --mount A:DISK1.IMG,DISK2.IMG --mount GAME.ISO|GAME.CUE|GAME.BIN [--write-back DIR]
 winbox-native --install NAME A: [SETUP.EXE] --mount A:DISK1.IMG,DISK2.IMG,DISK3.IMG (--assets FILE.zip|DIR | --windows DIR)
 ```
 
-An `.iso` is a CD-ROM; any other image a FAT floppy (2,880 KB or less) or
-hard disk. Without a letter, floppies take A: then B:, a hard disk the first
+An `.iso` is a CD-ROM, and so are a raw `.bin` and a `.cue` sheet, its
+`.bin` files found as it names them, from the working folder or beside it, as
+DOSBox finds them (a sheet DOSBox refuses is refused, its line and why said);
+any other image a FAT floppy (2,880 KB or less) or hard disk. Without a letter, floppies take A: then B:, a hard disk the first
 free from D:, a disc the first free after that. Several images for one letter
 are a set, the first in the drive: type `a next`, `a 2` or `a eject` on the
 console while the program runs (`drives` lists them), or press
