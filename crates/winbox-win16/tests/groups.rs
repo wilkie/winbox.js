@@ -18,7 +18,7 @@ use serde_json::{Value, json};
 use winbox_win16::groups::{
     Block, Extracted, Group, GroupFile, IconMetrics, IniWrite, NewItem, Placed, Placement,
     apply_ini_writes, command_of, delete_group_write, group_keys, groups_ini_writes, groups_of,
-    read_group, store_command, write_group,
+    program_groups, read_group, store_command, write_group,
 };
 use winbox_win16::layers::{Flat, FlatFile};
 
@@ -448,6 +448,36 @@ fn a_stacks_groups_are_those_start_up_would_load() {
         .collect();
 
     assert_eq!(Value::Array(now), fixture["expected"]["stack"]);
+}
+
+#[test]
+fn a_kept_programs_own_groups_are_those_whose_files_its_layers_hold() {
+    let fixture = fixture();
+    let flat = stack(&fixture);
+    let base: Vec<&str> = fixture["stack"]["base"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|path| path.as_str().unwrap())
+        .collect();
+    let now: Vec<Value> = program_groups(|path| {
+        flat.files
+            .iter()
+            .find(|file| file.path == path && !base.contains(&path))
+            .map(|file| file.data.as_slice())
+    })
+    .iter()
+    .map(|group| {
+        json!({
+            "key": text(&group.key.key),
+            "file": group.file,
+            "refusal": group.refusal,
+            "name": group.group.as_ref().map(|group| text(&group.name)),
+        })
+    })
+    .collect();
+
+    assert_eq!(Value::Array(now), fixture["expected"]["program"]);
 }
 
 /// The Windows directories of the oracle's display installations.

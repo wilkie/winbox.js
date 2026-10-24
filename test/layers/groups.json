@@ -507,7 +507,8 @@
         "script": "made",
         "damage": 40
       }
-    }
+    },
+    "base": ["WINDOWS\\MADE.GRP"]
   },
   "expected": {
     "scripts": [
@@ -3649,6 +3650,32 @@
           "Item 48",
           "Item 49"
         ]
+      }
+    ],
+    "program": [
+      {
+        "key": "GROUP3",
+        "file": "GAMES\\RENAMED.GRP",
+        "refusal": null,
+        "name": "A New Name"
+      },
+      {
+        "key": "GROUP2",
+        "file": "WINDOWS\\SAVED.GRP",
+        "refusal": null,
+        "name": "Rows"
+      },
+      {
+        "key": "GROUP6",
+        "file": "WINDOWS\\DAMAGED.GRP",
+        "refusal": "checksum",
+        "name": null
+      },
+      {
+        "key": "GROUP",
+        "file": "WINDOWS\\FULL.GRP",
+        "refusal": null,
+        "name": "Full"
       }
     ]
   }

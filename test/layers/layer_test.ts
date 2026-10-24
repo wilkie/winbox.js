@@ -18,6 +18,7 @@ import {
   type Layer,
   type LayerManifest,
 } from '../../src/layers/layer.js';
+import { programFiles } from '../../src/layers/groups.js';
 import { orderChanges, type Change } from '../../src/run/changes.js';
 
 /**
@@ -218,4 +219,32 @@ test('the flattened stack shows the opaque folder alone and the whiteouts gone',
   expect(lines.some((line) => line.includes('WINDOWS\\README.TXT'))).toBe(false);
   expect(lines.some((line) => line.includes('LEVEL1.DAT'))).toBe(false);
   expect(lines).toContain('folder GAME\\DATA 789039010');
+});
+
+test("a kept program's own files are its layers' alone, found from their manifests", async () => {
+  const made = await layers();
+  const names = ['A', 'B', 'D'];
+  const full = new Map(
+    flattenStack(['base', ...names].map((name) => made.get(name)!)).files.map((file) => [
+      file.path,
+      file.sha256,
+    ])
+  );
+  const own = programFiles(names.map((name) => made.get(name)!.manifest));
+  const written = (path: string) =>
+    names.some((name) =>
+      made.get(name)!.manifest.entries.some((entry) => entry.kind === 'file' && entry.path === path)
+    );
+
+  /* Each as the whole stack has it; the base's files, and those the layers
+   * delete, not among them; every file the layers write and keep there. */
+  expect(own.size).toBeGreaterThan(0);
+
+  for (const [path, hash] of own) {
+    expect([path, full.get(path)]).toEqual([path, hash]);
+  }
+
+  expect(own.has('WINDOWS\\README.TXT')).toBe(false);
+  expect([...own.keys()].some((path) => path.includes('ONE.HLP'))).toBe(false);
+  expect([...full.keys()].filter((path) => !own.has(path) && written(path))).toEqual([]);
 });

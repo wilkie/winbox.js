@@ -11,6 +11,7 @@ import {
   groupKeys,
   groupsIniWrites,
   groupsOf,
+  programGroups,
   readGroup,
   storeCommand,
   writeGroup,
@@ -233,6 +234,16 @@ function computed() {
       name: group.group?.name ?? null,
       items: group.group?.items.map((item) => item.name) ?? null,
     })),
+    program: programGroups((path) =>
+      fixture.stack.base.includes(path)
+        ? undefined
+        : stack().files.find((file) => file.path === path)?.data
+    ).map((group) => ({
+      key: group.key,
+      file: group.file,
+      refusal: group.refusal,
+      name: group.group?.name ?? null,
+    })),
   };
 }
 
@@ -285,5 +296,9 @@ describe('groups.json', () => {
 
   it("gives a stack's groups", () => {
     expect(now.stack).toEqual(fixture.expected.stack);
+  });
+
+  it("gives a kept program's own groups, those whose files its layers hold", () => {
+    expect(now.program).toEqual(fixture.expected.program);
   });
 });

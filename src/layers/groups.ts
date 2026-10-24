@@ -25,7 +25,7 @@
  */
 
 import { Profile } from '../win16/profile.js';
-import { type Flat } from './layer.js';
+import { flattenStack, LAYER_FORMAT, type Flat, type Layer, type LayerManifest } from './layer.js';
 
 /** `PMCC`, the first four bytes of a group file and of its tag section. */
 const MAGIC = [0x50, 0x4d, 0x43, 0x43];
@@ -1571,7 +1571,19 @@ export interface Groups {
  */
 export function groupsOf(flat: Flat): Groups {
   const files = new Map(flat.files.map((file) => [file.path, file.data]));
-  const ini = files.get(`${WINDOWS}\\PROGMAN.INI`);
+
+  return groupsFrom((path) => files.get(path));
+}
+
+/** `PROGMAN.INI`'s path on a stack, in the Windows directory. */
+export const PROGMAN_INI = `${WINDOWS}\\PROGMAN.INI`;
+
+/**
+ * The groups of the files `read` finds, by their paths on the flattened
+ * drive (`WINDOWS\PROGMAN.INI`), as `groupsOf` has them.
+ */
+export function groupsFrom(read: (path: string) => Uint8Array | undefined): Groups {
+  const ini = read(PROGMAN_INI);
 
   if (!ini) {
     return { order: '', groups: [] };
@@ -1591,7 +1603,7 @@ export function groupsOf(flat: Flat): Groups {
     }
 
     const file = groupPath(key.path);
-    const data = file === null ? undefined : files.get(file);
+    const data = file === null ? undefined : read(file);
     const refusal = data ? groupRefusal(data) : 'cannot be opened';
     const group = data && !refusal ? readGroup(data) : null;
 
@@ -1603,4 +1615,60 @@ export function groupsOf(flat: Flat): Groups {
   }
 
   return { order, groups };
+}
+
+/**
+ * The group files `PROGMAN.INI` names, by their paths on the flattened
+ * drive, in its keys' order: what `groupsFrom` reads besides it.
+ */
+export function groupFiles(ini: Uint8Array) {
+  return groupKeys(text(ini))
+    .keys.map((key) => groupPath(key.path))
+    .filter((file): file is string => file !== null);
+}
+
+/**
+ * A kept program's own groups: `groupsFrom` over the files its layers hold,
+ * `read` finding only those -- `PROGMAN.INI` as its layers have it -- and
+ * of its groups those whose file the layers carry, loaded or refused. A
+ * group whose file is the base's is left out: an installation's own groups
+ * are Windows', not a program's kept over it. Shown under each kept program
+ * on the page and listed by the native build's `--list`; the Rust engine's
+ * twin is `program_groups`.
+ */
+export function programGroups(read: (path: string) => Uint8Array | undefined): StackGroup[] {
+  return groupsFrom(read).groups.filter(
+    (group) => group.file !== null && read(group.file) !== undefined
+  );
+}
+
+/**
+ * A kept program's own files: its layers, the lowest first, flattened over
+ * an empty base of the name they were made on, each path's sha256. Only
+ * the manifests are read, so a program's groups are found without its
+ * other files' bytes: the page then reads `PROGMAN.INI` and the group
+ * files alone. Refused as `flattenStack` refuses the layers.
+ */
+export function programFiles(manifests: LayerManifest[]): Map<string, string> {
+  const empty = new Uint8Array(0);
+  const base: Layer = {
+    manifest: {
+      format: LAYER_FORMAT,
+      id: manifests[0]?.over[0] ?? '',
+      over: [],
+      made: { by: 'WinBox' },
+      entries: [],
+    },
+    blobs: new Map(),
+  };
+  const hollow = manifests.map((manifest): Layer => ({
+    manifest,
+    blobs: new Map(
+      manifest.entries.flatMap((entry) =>
+        entry.kind === 'file' ? [[entry.sha256, empty] as [string, Uint8Array]] : []
+      )
+    ),
+  }));
+
+  return new Map(flattenStack([base, ...hollow]).files.map((file) => [file.path, file.sha256]));
 }

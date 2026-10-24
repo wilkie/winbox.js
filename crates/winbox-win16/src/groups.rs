@@ -1744,7 +1744,17 @@ pub fn groups_of(flat: &Flat) -> Groups {
         .iter()
         .map(|file| (file.path.as_str(), file.data.as_slice()))
         .collect();
-    let Some(ini) = files.get(format!("{WINDOWS}\\PROGMAN.INI").as_str()) else {
+
+    groups_from(|path| files.get(path).copied())
+}
+
+/// `PROGMAN.INI`'s path on a stack, in the Windows directory.
+pub const PROGMAN_INI: &str = "WINDOWS\\PROGMAN.INI";
+
+/// The groups of the files `read` finds, by their paths on the flattened
+/// drive (`WINDOWS\PROGMAN.INI`), as `groups_of` has them.
+pub fn groups_from<'a>(read: impl Fn(&str) -> Option<&'a [u8]>) -> Groups {
+    let Some(ini) = read(PROGMAN_INI) else {
         return Groups {
             order: Vec::new(),
             groups: Vec::new(),
@@ -1760,7 +1770,7 @@ pub fn groups_of(flat: &Flat) -> Groups {
         }
 
         let file = group_path(&key.path);
-        let data = file.as_deref().and_then(|file| files.get(file).copied());
+        let data = file.as_deref().and_then(&read);
         let refusal = data.map_or_else(|| Some("cannot be opened".to_string()), group_refusal);
         let group = data
             .filter(|_| refusal.is_none())
@@ -1779,4 +1789,56 @@ pub fn groups_of(flat: &Flat) -> Groups {
     }
 
     Groups { order, groups }
+}
+
+/// The group files `PROGMAN.INI` names, by their paths on the flattened
+/// drive, in its keys' order: what `groups_from` reads besides it.
+pub fn group_files(ini: &[u8]) -> Vec<String> {
+    group_keys(ini)
+        .keys
+        .iter()
+        .filter_map(|key| group_path(&key.path))
+        .collect()
+}
+
+/// A kept program's own groups: `groups_from` over the files its layers
+/// hold, `read` finding only those -- `PROGMAN.INI` as its layers have it
+/// -- and of its groups those whose file the layers carry, loaded or
+/// refused. A group whose file is the base's is left out: an
+/// installation's own groups are Windows', not a program's kept over it.
+/// Listed by the native build's `--list` and shown under each kept program
+/// on the page; the TypeScript engine's twin is `programGroups`.
+pub fn program_groups<'a>(read: impl Fn(&str) -> Option<&'a [u8]>) -> Vec<StackGroup> {
+    groups_from(&read)
+        .groups
+        .into_iter()
+        .filter(|group| group.file.as_deref().and_then(&read).is_some())
+        .collect()
+}
+
+/// A kept program's own files: its layers, the lowest first, flattened
+/// over an empty base of the name they were made on. Refused as `flatten`
+/// refuses the layers. The TypeScript engine's `programFiles` has only
+/// each path's sha256, the page reading the bytes it needs alone.
+pub fn program_files(layers: &[crate::layers::Layer]) -> Result<Flat, String> {
+    use crate::layers::{FORMAT, Layer, Made, Manifest, flatten};
+
+    let base = Layer {
+        manifest: Manifest {
+            format: FORMAT,
+            id: layers
+                .first()
+                .and_then(|layer| layer.manifest.over.first().cloned())
+                .unwrap_or_default(),
+            over: Vec::new(),
+            made: Made::default(),
+            entries: Vec::new(),
+        },
+        blobs: BTreeMap::new(),
+    };
+    let stack: Vec<Layer> = std::iter::once(base)
+        .chain(layers.iter().cloned())
+        .collect();
+
+    flatten(&stack)
 }
