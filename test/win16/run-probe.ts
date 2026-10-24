@@ -13,6 +13,7 @@ import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
+import { startShell } from '../../src/win16/progman/main.js';
 import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
 import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
 import { withCursor } from '../../src/win16/user/cursor-api.js';
@@ -341,13 +342,17 @@ export async function runProbe(
     /* The folder the program is started in, as Program Manager starts an
      * item: `C:\CARIBB` for an installer run from its media. */
     directory = null as string | null,
-    /* `PROGMAN.EXE` in the store behind C:, where the store has none, as the
-     * asset bundle carries it for WinBox's Program Manager's icons: the
-     * installation's (`kb/topics/program-manager-dde.md`). */
-    progmanStore = false,
+    /* The asset bundle's modules as the store behind C: on the installation,
+     * which has none: for a run with `PROGMAN.EXE` taken off it, WinBox's
+     * Program Manager's icons are the bundle's `PROGMAN.EXE`'s, as on the
+     * bundle's base (`kb/topics/program-manager-dde.md`). */
+    bundleStore = false,
     /* Whether `SYSTEM.INI`'s `shell=` names the probe, as the recorder makes
      * it: not for a program of the corpus run as Program Manager would. */
     shell = true,
+    /* Started as an install run is: Program Manager first, the shell, given
+     * `start` as its command line, which it starts itself (`startShell`). */
+    install = false,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -613,7 +618,7 @@ export async function runProbe(
   const win16: any = new Win16(new DOS(machine), machine, {
     ...(display === 'vga' ? {} : { display }),
     ...(raster?.driver && raster.user ? { raster } : {}),
-    ...(storeOf(assets, progmanStore) ? { assets: storeOf(assets, progmanStore) } : {}),
+    ...((assets ?? (bundleStore ? bundle() : null)) ? { assets: assets ?? bundle() } : {}),
     nextFrame: (callback: any) => {
       pending = callback;
     },
@@ -770,12 +775,16 @@ export async function runProbe(
     }, 0);
   };
 
-  const handle = await win16.load(executable);
-  win16.link(handle);
-  /* Started in its own folder, as Program Manager starts a program whose
-   * item's working directory is where the program is: the directory
-   * Program Manager gives a new item. */
-  win16.run(handle, (home ?? directory) ? { directory: home ?? directory } : {});
+  if (install) {
+    await startShell(win16, start!);
+  } else {
+    const handle = await win16.load(executable);
+    win16.link(handle);
+    /* Started in its own folder, as Program Manager starts a program whose
+     * item's working directory is where the program is: the directory
+     * Program Manager gives a new item. */
+    win16.run(handle, (home ?? directory) ? { directory: home ?? directory } : {});
+  }
 
   /* The API can suspend on a promise -- writing a file does -- so driving this
    * means letting the timer and microtask queues drain between slices, not
@@ -1169,24 +1178,4 @@ export function recordsFrom(text: string) {
     .map((line) => line.split('\t').map(unescape))
     .filter(([name]) => name !== '#')
     .map(([name, args, value]) => `${name}(${args}) = ${value}`);
-}
-
-/** The installation's `PROGMAN.EXE`, as the asset bundle's store carries it. */
-const PROGMAN = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'PROGMAN.EXE');
-
-/**
- * The store behind C: given to `Win16`: the bundle's, with `PROGMAN.EXE`
- * where it is asked for and the bundle has none -- the installation's.
- */
-function storeOf(assets: Assets | null, progman: boolean) {
-  if (!progman || assets?.module('PROGMAN.EXE') || !existsSync(PROGMAN)) {
-    return assets;
-  }
-
-  const bytes = new Uint8Array(readFileSync(PROGMAN));
-
-  return {
-    module: (name: string) =>
-      name.toUpperCase() === 'PROGMAN.EXE' ? bytes : (assets?.module(name) ?? undefined),
-  };
 }

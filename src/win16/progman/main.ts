@@ -9,6 +9,7 @@ import { Progman } from './index.js';
 import { dde, isDde } from './dde.js';
 import { forget, groups, load, save } from './loaded.js';
 import { startUpKeys } from '../../layers/groups.js';
+import { D_STARTED_IN, D_WINDOWS, currentDirectory, startPrograms } from './shell.js';
 
 /**
  * Program Manager's `WinMain` and its frame's window procedure, as
@@ -29,7 +30,7 @@ import { startUpKeys } from '../../layers/groups.js';
  */
 
 /* What `PROGMAN.EXE` keeps in its data segment (seg8), by its places. */
-const D_MIN_ON_RUN = 0x12;
+export const D_MIN_ON_RUN = 0x12;
 export const D_AUTO_ARRANGE = 0x14;
 const D_SAVE_SETTINGS = 0x1c;
 export const D_SHELL = 0x18;
@@ -233,6 +234,64 @@ export async function startProgman(
   });
 }
 
+/**
+ * Program Manager started as the shell of an install run, as Windows started
+ * as `WIN SETUP.EXE` starts it: the first task, before any other, so the only
+ * one as it starts (seg3 `0b88`), given the installer as its command line,
+ * which it starts itself once its groups are loaded, in the installer's own
+ * directory (`shell.ts`). Microsoft's, where the drive has
+ * `C:\WINDOWS\PROGMAN.EXE`; else WinBox's own, made as `startProgman` makes
+ * it. Its task kept as the run's shell (`_shellTask`), and run. As
+ * `progman::start_shell`.
+ */
+export async function startShell(system: any, commandLine: string): Promise<number> {
+  const file = await system.dos.files.query('C')?.open(['WINDOWS', FILE]);
+  const own = !file || file.info?.directory;
+  const executable: any = new Executable('PROGMAN', PATH, own ? streamOf(image()) : file);
+
+  await executable.parse();
+
+  const handle = await system.load(executable);
+
+  system.link(handle);
+  system._shellTask = handle;
+  system.run(handle, { commandLine });
+
+  /* Written once the task is made, as `startProgman` writes it. */
+  if (own) {
+    const kept = keep(system);
+    const loader = system.handles.resolve(handle).loader;
+    const selector = segmentSelector(loader.translate(loader.ds));
+    const winmain = exportAddress(system, WINMAIN_ORDINAL);
+    const core = system.machine.cpu.core;
+
+    core.write16(selector, WINMAIN_SLOT, winmain & 0xffff);
+    core.write16(selector, WINMAIN_SLOT + 2, winmain >>> 16);
+    system._modules._handles[PATH] = kept;
+  }
+
+  return handle;
+}
+
+/**
+ * Whether an install run's shell is the only task left of several
+ * (`startShell`): another has run and every other has ended. As
+ * `System::shell_alone`.
+ */
+export function shellAlone(system: any): boolean {
+  const shell = system?._shellTask;
+
+  if (!shell) {
+    return false;
+  }
+
+  const others = Object.entries(system.scheduler._tasks ?? {})
+    .filter(([handle]) => Number(handle) !== shell)
+    .map(([, task]) => task as any);
+
+  return others.length > 0 && others.every((task) => task.ended);
+}
+
 /** One instance's Program Manager, as its calls are made: the system and its data segment. */
 export class Pm {
   declare system: any;
@@ -257,6 +316,28 @@ export class Pm {
       { length },
       (_, i) => this.core.read8(selector, (offset + i) & 0xffff) & 0xff
     );
+  }
+
+  /** A place in its data, as a far address. */
+  at(offset: number): number {
+    return ((this.ds << 16) | (offset & 0xffff)) >>> 0;
+  }
+
+  /** A string at a far address, up to its nought. */
+  readString(far: number): number[] {
+    const bytes: number[] = [];
+
+    for (let at = far & 0xffff; bytes.length < 0x10000; at = (at + 1) & 0xffff) {
+      const byte = this.core.read8(far >>> 16, at) & 0xff;
+
+      if (!byte) {
+        break;
+      }
+
+      bytes.push(byte);
+    }
+
+    return bytes;
   }
 
   /** Bytes written at a far address. */
@@ -367,9 +448,17 @@ export async function WINMAIN(
   show: number
 ) {
   const pm = new Pm(this, instance & 0xffff);
-  const given = line !== 0 && pm.core.read8(line >>> 16, line & 0xffff) !== 0;
+  const commandLine = line === 0 ? '' : latin(pm.readString(line >>> 0));
 
-  if (!(await start(pm, instance & 0xffff, previous & 0xffff, given ? 7 : show & 0xffff))) {
+  if (
+    !(await start(
+      pm,
+      instance & 0xffff,
+      previous & 0xffff,
+      commandLine ? 7 : show & 0xffff,
+      commandLine
+    ))
+  ) {
     return 0;
   }
 
@@ -405,7 +494,13 @@ async function messageLoop(pm: Pm): Promise<number> {
 }
 
 /** The start-up (seg3 `09fd`): whether it went on to the loop. */
-async function start(pm: Pm, instance: number, previous: number, show: number): Promise<boolean> {
+async function start(
+  pm: Pm,
+  instance: number,
+  previous: number,
+  show: number,
+  commandLine: string
+): Promise<boolean> {
   pm.sd16(D_INSTANCE, instance);
 
   /* A second instance: the first's frame by `GetInstanceData`, sent 464h,
@@ -426,11 +521,17 @@ async function start(pm: Pm, instance: number, previous: number, show: number): 
     return false;
   }
 
-  /* SYSTEM.INI's path: the Windows directory, a backslash where it is longer
-   * than a root's, and `system.ini` (`0b3c`-`0b78`). */
+  /* The directory current as it starts (`0b31`-`0b37`). */
+  pm.writeFar(pm.at(D_STARTED_IN), [...bytesOf(await currentDirectory(pm)), 0]);
+
+  /* SYSTEM.INI's path: the Windows directory, kept (`0b3c`-`0b43`), a
+   * backslash where it is longer than a root's, and `system.ini`
+   * (`0b48`-`0b78`). */
   const directory = latin(
     stringOf(await pm.call('KERNEL', 'GetWindowsDirectory', [buffer(0x81), W(0x81)]), 0)
   );
+
+  pm.writeFar(pm.at(D_WINDOWS), [...bytesOf(directory), 0]);
   const systemIni = `${directory}${directory.length > 3 ? '\\' : ''}system.ini`;
 
   groups(pm).systemIni = systemIni;
@@ -471,6 +572,9 @@ async function start(pm: Pm, instance: number, previous: number, show: number): 
 
   await loadGroups(pm, systemIni);
   await pm.user('ShowWindow', [W(pm.d16(D_CLIENT)), W(1)]);
+
+  /* As the shell, `load=` and `run=`; then its command line (`0e15`-`0ecd`). */
+  await startPrograms(pm, commandLine);
 
   return true;
 }
@@ -602,6 +706,42 @@ export async function dosPath(pm: Pm, ax: number, path: string) {
   } finally {
     core.ax = saved.ax;
     core.dx = saved.dx;
+    core.ds = saved.ds;
+    core.flags.carry = saved.carry;
+    pm.release(savedSp);
+  }
+}
+
+/**
+ * A DOS call as seg5's helpers make one with no path: AX and DX as given, and
+ * DS:SI a buffer of `buffer`'s bytes on the stack, for function 47h. The
+ * carry, AX after, and the buffer as DOS left it. As `main.rs`'s `dos`.
+ */
+export async function dos(pm: Pm, ax: number, dx: number, buffer: number[]) {
+  const core = pm.core;
+  const [far, savedSp] = pm.reserve(buffer);
+  const saved = { ax: core.ax, dx: core.dx, si: core.si, ds: core.ds, carry: core.flags.carry };
+
+  core.ax = ax;
+  core.dx = dx;
+  core.si = far & 0xffff;
+  core.ds = far >>> 16;
+
+  try {
+    await pm.call('KERNEL', 'Dos3Call', []);
+
+    return {
+      carry: !!core.flags.carry,
+      ax: core.ax & 0xffff,
+      bytes: Array.from(
+        { length: buffer.length },
+        (_, i) => core.read8(far >>> 16, ((far & 0xffff) + i) & 0xffff) & 0xff
+      ),
+    };
+  } finally {
+    core.ax = saved.ax;
+    core.dx = saved.dx;
+    core.si = saved.si;
     core.ds = saved.ds;
     core.flags.carry = saved.carry;
     pm.release(savedSp);

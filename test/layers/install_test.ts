@@ -30,7 +30,9 @@ import {
  * empty, and writes what Windows wrote. Its changes are made a layer over
  * the base, the media discarded (`installedLayer`), and the installed
  * program run alone on the base and that layer reads back what it read
- * back on Windows, record for record. The Rust engine's twin is
+ * back on Windows, record for record. It is run as an install run is,
+ * Program Manager the shell and starting it (`startShell`). The Rust
+ * engine's twin is
  * `crates/winbox-win16/tests/install_layer.rs`.
  */
 
@@ -62,6 +64,7 @@ async function install(): Promise<{ records: string[]; installed: Installed; fai
     ...options,
     own: false,
     start: 'C:\\WINDOWS\\INSTLAY.EXE',
+    install: true,
     prepare: async (fileSystem) => {
       await fileSystem.map(
         ['WINDOWS', 'INSTLAY.EXE'],
@@ -109,6 +112,9 @@ async function installedProgram(installed: Installed) {
     expect(failure ?? null).toBeNull();
     expect(records).toEqual(recorded);
 
+    /* Program Manager, the run's shell, writes `PROGMAN.INI`'s `display.drv=`
+     * as it starts, a change only on the bundle's base, which has no
+     * `PROGMAN.INI` (`kb/topics/program-manager-dde.md`). */
     expect(installed.layer.manifest.entries.map((entry) => `${entry.kind} ${entry.path}`)).toEqual([
       'removed WINDOWS\\SYSTEM\\SETUP.REG',
       'folder INSTLAY',
@@ -119,6 +125,7 @@ async function installedProgram(installed: Installed) {
       'file INSTLAY\\INSTLAYC.EXE',
       'file INSTLAY\\README.TXT',
       'file WINDOWS\\INSTLAY.INI',
+      ...(base === 'installed' ? [] : ['file WINDOWS\\PROGMAN.INI']),
       'file WINDOWS\\SYSTEM\\INSTLAY.DLL',
       'file WINDOWS\\WIN.INI',
     ]);

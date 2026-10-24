@@ -9,6 +9,7 @@ import { baseName } from '../../src/layers/layer.js';
 import { Fat16Changes } from '../../src/run/changes.js';
 import { type Plan } from '../../src/run/drive.js';
 import { bundle, runProbe } from '../win16/run-probe.js';
+import { shellAlone } from '../../src/win16/progman/main.js';
 
 /**
  * A program of the corpus installed by its own installer into a layer
@@ -21,9 +22,11 @@ import { bundle, runProbe } from '../win16/run-probe.js';
  * dropped, and held to `test/layers/caribb-layer.json` -- which the Rust
  * engine's run of the same installer, its clicks and keys where this run
  * made them (`stepMarks`), is held to as well
- * (`crates/winbox-win16/tests/install_caribb.rs`). There is no Program
- * Manager on the base: the installer's three `DdeConnect`s to `PROGMAN`
- * fail, and it goes on without a group.
+ * (`crates/winbox-win16/tests/install_caribb.rs`). It runs as the page
+ * runs an installer: WinBox's Program Manager the shell, started first and
+ * starting it (`startShell`), there being none on the base. The installer
+ * asks it over DDE for its group, so the layer holds `PROGMAN.INI` and
+ * `GAMES.GRP` with what it installed.
  *
  * Skipped without the corpus's program or the bundle; `CARIBB_LAYER_WRITE=1`
  * writes the fixture from this run.
@@ -54,7 +57,7 @@ const STEPS = [
       own: false,
       brought: false,
       start: 'C:\\CARIBB\\SETUP.EXE',
-      directory: 'C:\\CARIBB',
+      install: true,
       markPointers: true,
       shell: false,
       steps: STEPS,
@@ -94,10 +97,14 @@ const STEPS = [
 
     const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8'));
 
-    /* The installer ended, its task gone, once Enter was pressed. */
-    const tasks = Object.values(run.win16.scheduler._tasks ?? {}) as any[];
+    /* The installer ended, its task gone, once Enter was pressed: Program
+     * Manager, the shell, alone left. */
+    expect(shellAlone(run.win16)).toBe(true);
+    /* The group the installer asked Program Manager for, in the layer. */
+    const paths = made.layer.entries.map((entry: any) => entry.path);
 
-    expect(tasks.length > 0 && tasks.every((task) => task.ended)).toBe(true);
+    expect(paths).toContain('WINDOWS\\PROGMAN.INI');
+    expect(paths).toContain('WINDOWS\\GAMES.GRP');
     expect(made.layer).toEqual(fixture.layer);
     expect(made.dropped).toEqual(fixture.dropped);
     expect(made.references).toEqual(fixture.references);

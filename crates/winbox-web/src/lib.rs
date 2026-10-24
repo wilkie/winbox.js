@@ -473,6 +473,15 @@ impl Machine {
         self.session.start(path).err()
     }
 
+    /// An installer at a DOS path run as the first program, as Windows
+    /// started as `WIN SETUP.EXE` runs one: Program Manager the shell,
+    /// starting it; stepped as `start`'s run is, and waiting (3) once the
+    /// installer and what it started have ended. Nothing where it started;
+    /// else why it could not be, told rather than thrown.
+    pub fn install(&mut self, path: &str) -> Option<String> {
+        self.session.install(path).err()
+    }
+
     /// The codes the programs gave DOS as they ended, since this was last
     /// asked, 255 for one that faulted: every one, the last too, as
     /// Windows stays up once it has ended.

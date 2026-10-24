@@ -107,7 +107,7 @@ fn run_probe(name: &str) -> Option<(Stop, Vec<[String; 3]>, bool)> {
         setup,
         |system| {
             system.box_hand = Some(box_hand(name));
-            support::progman_in_store(system);
+            support::bundle_store(system);
         },
         |system| {
             let engine = winbox_win16::Engine::new(system);

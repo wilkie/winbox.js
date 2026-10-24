@@ -633,6 +633,40 @@ impl Session {
         Ok(())
     }
 
+    /// An installer at `path`, as DOS names it, run as Windows started as
+    /// `WIN SETUP.EXE` runs it: Program Manager the shell, started first and
+    /// given it as its command line, starting it in its own folder -- on a
+    /// drive of images, that drive made current -- and answering what it
+    /// asks over DDE (`progman::start_shell`). The drives are mounted as
+    /// they are now, and the run begun: once the installer, and what it
+    /// started, has ended, the run waits as though every task had
+    /// (`State::Waiting`), the shell left as it is.
+    pub fn install(&mut self, path: &str) -> Result<(), String> {
+        if self.run.is_some() {
+            return Err("a program has started".to_string());
+        }
+
+        let mut system = self.engine.system();
+
+        self.mount(&mut system);
+        Self::mount_disks(&mut self.disks, &mut system);
+
+        let (folder, file) = path
+            .rsplit_once('\\')
+            .ok_or_else(|| format!("no folder in {path}"))?;
+
+        if system.files.read_from(folder, file).is_none() {
+            return Err(format!("no file {path}"));
+        }
+
+        system.log = Some(Vec::new());
+        winbox_win16::progman::start_shell(&mut system, path)
+            .map_err(|exit| format!("Program Manager's registers: {exit:?}"))?;
+        drop(system);
+        self.run = Some(self.engine.begin(u64::MAX / 2, f64::INFINITY));
+        Ok(())
+    }
+
     /// The program at `path` started on the machine running, beside the
     /// programs there, as Program Manager starts one (`System::launch`):
     /// a task of its own, sharing USER, GDI and the drives with the others

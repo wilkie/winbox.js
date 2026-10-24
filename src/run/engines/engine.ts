@@ -73,8 +73,14 @@ export interface Engine {
   /** A machine made afresh, its drive filled from the plan, its screen shown. */
   rebuild(setup: Setup): Promise<void>;
 
-  /** A program on the drive run. */
-  run(program: Program): Promise<void>;
+  /**
+   * A program on the drive run. An installer (`install`) is run as Windows
+   * started as `WIN SETUP.EXE` runs one, on a machine made afresh: Program
+   * Manager the shell, started first and given it as its command line,
+   * starting it and answering what it asks over DDE -- WinBox's own where
+   * the drive has no `PROGMAN.EXE` (`kb/topics/program-manager-dde.md`).
+   */
+  run(program: Program, options?: { install?: boolean }): Promise<void>;
 
   /**
    * What differs on C: from the drive as planned, as it stands: what
@@ -83,7 +89,10 @@ export interface Engine {
    */
   changes(): Promise<Change[] | null>;
 
-  /** Whether no program is running: every one started has ended, or none has. */
+  /**
+   * Whether no program is running: every one started has ended, or none has
+   * -- an installer's shell apart, which runs on as the installer ends.
+   */
   idle(): boolean;
 
   /**

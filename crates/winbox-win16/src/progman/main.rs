@@ -26,7 +26,7 @@ pub(super) type R<T> = Result<T, Stop>;
 // What `PROGMAN.EXE` keeps in its data segment (seg8), by its places.
 
 /// `[Settings]` `MinOnRun`, `AutoArrange`, `SaveSettings`.
-const D_MIN_ON_RUN: u16 = 0x12;
+pub(super) const D_MIN_ON_RUN: u16 = 0x12;
 pub(super) const D_AUTO_ARRANGE: u16 = 0x14;
 const D_SAVE_SETTINGS: u16 = 0x1c;
 /// Whether it is the shell.
@@ -321,10 +321,14 @@ pub(crate) fn win_main(engine: &Engine, mut args: Args) -> Later<'_> {
             )
         };
         let pm = Pm::new(engine, instance);
-        let given = line != 0 && engine.system().read_far(line, 1)[0] != 0;
-        let show = if given { 7 } else { show };
+        let command_line = if line == 0 {
+            Vec::new()
+        } else {
+            engine.system().read_string(line)
+        };
+        let show = if command_line.is_empty() { show } else { 7 };
 
-        if !start(&pm, instance, previous, show).await? {
+        if !start(&pm, instance, previous, show, &command_line).await? {
             return Ok(Answer::Word(0));
         }
 
@@ -371,7 +375,13 @@ async fn message_loop(pm: &Pm<'_>) -> R<u16> {
 }
 
 /// The start-up (seg3 `09fd`): whether it went on to the loop.
-async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> {
+async fn start(
+    pm: &Pm<'_>,
+    instance: u16,
+    previous: u16,
+    show: u16,
+    command_line: &[u8],
+) -> R<bool> {
     pm.sd16(D_INSTANCE, instance);
 
     // A second instance: the first's frame by `GetInstanceData`, sent 464h,
@@ -396,8 +406,17 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
         return Ok(false);
     }
 
-    // SYSTEM.INI's path: the Windows directory, a backslash where it is
-    // longer than a root's, and `system.ini` (`0b3c`-`0b78`).
+    // The directory current as it starts (`0b31`-`0b37`).
+    let started_in = super::shell::current_directory(pm).await?;
+
+    pm.e.system().write_far(
+        pm.at(super::shell::D_STARTED_IN),
+        &[&started_in[..], b"\0"].concat(),
+    );
+
+    // SYSTEM.INI's path: the Windows directory, kept (`0b3c`-`0b43`), a
+    // backslash where it is longer than a root's, and `system.ini`
+    // (`0b48`-`0b78`).
     let directory = pm
         .call(
             "KERNEL",
@@ -406,6 +425,11 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
         )
         .await?
         .string(0);
+
+    pm.e.system().write_far(
+        pm.at(super::shell::D_WINDOWS),
+        &[&directory[..], b"\0"].concat(),
+    );
     let mut system_ini = directory;
 
     if system_ini.len() > 3 {
@@ -465,6 +489,10 @@ async fn start(pm: &Pm<'_>, instance: u16, previous: u16, show: u16) -> R<bool> 
     load_groups(pm, &system_ini).await?;
     pm.user("ShowWindow", &[Arg::W(pm.d16(D_CLIENT)), Arg::W(1)])
         .await?;
+
+    // As the shell, `load=` and `run=`; then its command line
+    // (`0e15`-`0ecd`).
+    super::shell::start_programs(pm, command_line).await?;
 
     Ok(true)
 }
@@ -634,6 +662,50 @@ pub(super) async fn dos_path(pm: &Pm<'_>, ax: u16, path: &[u8]) -> R<(bool, u16)
     };
 
     pm.load_ds(saved.3)?;
+    pm.release(saved_sp);
+    called?;
+    Ok(after)
+}
+
+/// A DOS call as seg5's helpers make one with no path: AX and DX as given,
+/// and DS:SI a buffer of `buffer`'s bytes on the stack, for function 47h.
+/// The carry, AX after, and the buffer as DOS left it.
+pub(super) async fn dos(pm: &Pm<'_>, ax: u16, dx: u16, buffer: &[u8]) -> R<(bool, u16, Vec<u8>)> {
+    use winbox_cpu::{AX, DX, SI};
+
+    let (far, saved_sp) = pm.reserve(buffer);
+    let saved = {
+        let mut system = pm.e.system();
+        let cpu = &mut system.cpu;
+        let saved = (
+            cpu.regs[AX],
+            cpu.regs[DX],
+            cpu.regs[SI],
+            cpu.flags,
+            cpu.segments[DS].selector,
+        );
+
+        cpu.regs[AX] = ax;
+        cpu.regs[DX] = dx;
+        cpu.regs[SI] = far as u16;
+        saved
+    };
+
+    pm.load_ds((far >> 16) as u16)?;
+
+    let called = api::api(pm.e, "KERNEL", "Dos3Call", &[]).await;
+    let after = {
+        let mut system = pm.e.system();
+        let bytes = system.read_far(far, buffer.len());
+        let cpu = &mut system.cpu;
+        let after = (cpu.flags & 1 != 0, cpu.regs[AX], bytes);
+
+        (cpu.regs[AX], cpu.regs[DX], cpu.regs[SI], cpu.flags) =
+            (saved.0, saved.1, saved.2, saved.3);
+        after
+    };
+
+    pm.load_ds(saved.4)?;
     pm.release(saved_sp);
     called?;
     Ok(after)

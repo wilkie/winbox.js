@@ -6,6 +6,9 @@
 //! (`test/layers/caribb-layer.json`'s `stepMarks`). Its top's changes made a
 //! layer over the base, the media dropped, are the TypeScript engine's
 //! layer, entry for entry, stamps and all (`test/layers/caribb_test.ts`).
+//! It runs as the page runs an installer, WinBox's Program Manager the
+//! shell (`progman::start_shell`), so the layer holds the group the
+//! installer asks it for.
 //!
 //! Skipped without the corpus's program, the bundle (`pnpm assets`) or the
 //! fixture.
@@ -13,10 +16,9 @@
 use std::path::PathBuf;
 
 use winbox_machine::MemoryDrive;
-use winbox_ne::Executable;
 use winbox_win16::assets::STAMP;
 use winbox_win16::layers::{Layer, Made, base_name, flatten, install_into_layer};
-use winbox_win16::survey::{self, Survey};
+use winbox_win16::survey::Survey;
 
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -99,14 +101,9 @@ fn caribbean_treasures_installer_into_a_layer() {
     system.files.mount('C', before.clone());
     system.files.mount('Z', MemoryDrive::new());
 
-    let setup = std::fs::read(media.join("SETUP.EXE")).unwrap();
-
-    survey::start(
-        &mut system,
-        Executable::parse(setup).unwrap(),
-        "C:\\CARIBB\\SETUP.EXE",
-    )
-    .unwrap();
+    // Run as the page runs an installer: Program Manager the shell, first,
+    // starting it.
+    winbox_win16::progman::start_shell(&mut system, "C:\\CARIBB\\SETUP.EXE").unwrap();
 
     let surveyed = survey.run(system);
     let installed = install_into_layer(
@@ -123,13 +120,26 @@ fn caribbean_treasures_installer_into_a_layer() {
     )
     .unwrap();
 
-    // The installer ended, once Enter was pressed on its last page.
+    // The installer ended, once Enter was pressed on its last page,
+    // Program Manager, the shell, alone left.
     assert_eq!(
         surveyed.stop,
         winbox_win16::Stop::Ended,
         "the installer stopped"
     );
+    assert!(surveyed.system.shell_alone(), "the shell alone left");
     let made = serde_json::to_value(&installed.layer.manifest).unwrap();
+
+    // The group the installer asked Program Manager for, in the layer.
+    let paths: Vec<&str> = made["entries"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|entry| entry["path"].as_str())
+        .collect();
+
+    assert!(paths.contains(&"WINDOWS\\PROGMAN.INI"), "{paths:?}");
+    assert!(paths.contains(&"WINDOWS\\GAMES.GRP"), "{paths:?}");
 
     assert_eq!(
         lines(&made["entries"]),

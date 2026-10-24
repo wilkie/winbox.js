@@ -656,8 +656,9 @@ async function rebuild({ keeping = true } = {}) {
   return true;
 }
 
-async function run(program: Program) {
-  await (await engine).run(program);
+/** A program run; an installer as Windows runs one, Program Manager the shell starting it. */
+async function run(program: Program, options: { install?: boolean } = {}) {
+  await (await engine).run(program, options);
 }
 
 /* ---- the page ---- */
@@ -1932,7 +1933,7 @@ async function install() {
 
   state.installing.installer = program.path;
   renderInstall();
-  await run(program);
+  await run(program, { install: true });
 }
 
 /**
@@ -1970,7 +1971,7 @@ async function installFromDrive(offer: DriveOffer) {
   }
 
   renderInstall();
-  await run(offer.installer);
+  await run(offer.installer, { install: true });
 }
 
 /**

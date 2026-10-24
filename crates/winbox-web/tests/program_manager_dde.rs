@@ -182,3 +182,80 @@ fn an_installer_makes_its_group_through_winboxs_ddeml_with_the_file() {
 fn an_installer_makes_its_group_through_winboxs_ddeml_with_no_file() {
     installs(true);
 }
+
+/// An install run, as the page's Install runs one: Program Manager the
+/// shell, started first and starting the installer -- WinBox's own, the
+/// installation's `PROGMAN.EXE` taken off the drive -- and answering its
+/// DDE, hidden. The group's file and `PROGMAN.INI` are written to the
+/// drive, and the run is the installer's, ending as it ends Windows.
+#[test]
+fn an_installer_run_as_the_page_installs_makes_its_group_with_winboxs_program_manager() {
+    let windows = root().join("oracle/build/drive-c");
+    let installer = root().join("oracle/build/probes/DDEINST.EXE");
+
+    if !windows.join("WINDOWS").join("PROGMAN.EXE").is_file() || !installer.is_file() {
+        eprintln!("skipped: the oracle's build is not here");
+        return;
+    }
+
+    NOW.with(|now| now.set(0.0));
+
+    let mut session = Session::new(Made {
+        display: "vga",
+        coprocessor: true,
+        host: host_ms,
+        wall: || 0,
+        epoch_ms: 0,
+    })
+    .unwrap();
+
+    // The asset bundle's PROGMAN.EXE in the store, as the page gives it the
+    // bundle's modules: WinBox's Program Manager's icons.
+    let Ok(progman) = std::fs::read(root().join("oracle/build/assets/modules/PROGMAN.EXE")) else {
+        eprintln!("skipped: the asset bundle carries no PROGMAN.EXE");
+        return;
+    };
+
+    session.add_module("PROGMAN.EXE", progman);
+    session.stay_up();
+    hold(&mut session, &windows, "");
+    assert!(session.add_folder('C', "\\ORACLE", 0));
+    assert!(session.add_file(
+        'C',
+        "\\WINDOWS\\DDEINST.EXE",
+        std::fs::read(&installer).unwrap(),
+        0
+    ));
+    session.mark_planned();
+    assert!(session.remove('C', "WINDOWS\\PROGMAN.EXE"));
+    session.install("C:\\WINDOWS\\DDEINST.EXE").unwrap();
+
+    for _ in 0..2000 {
+        if session.step(host_ms() + 10.0) == State::Stopped {
+            break;
+        }
+
+        assert!(!shown(&session, "Program Manager"), "the shell is hidden");
+    }
+
+    assert_eq!(session.stop(), Some(&winbox_win16::Stop::Ended));
+    assert!(session.system().modules.iter().any(|module| {
+        module.name == "PROGMAN"
+            && module.executable.description() == Some("WinBox Program Manager")
+    }));
+
+    let group = written(&session, "WINDOWS\\WINBOXGA.GRP").unwrap_or_default();
+
+    assert!(
+        group.contains("Solitaire") && group.contains("Minesweeper"),
+        "{group}"
+    );
+
+    let ini = written(&session, "WINDOWS\\PROGMAN.INI").unwrap_or_default();
+
+    assert!(ini.contains("WINBOXGA.GRP"), "{ini}");
+
+    let report = written(&session, "ORACLE\\DDEINST.OUT").unwrap_or_default();
+
+    assert!(report.contains("1,0,8000"), "{report}");
+}

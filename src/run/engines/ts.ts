@@ -13,6 +13,7 @@ import { Executable } from '../../executable.js';
 import { Machine } from '../../emulator/machine.js';
 import { Win16 } from '../../win16.js';
 import { previousInstance } from '../../win16/kernel/WinExec.js';
+import { startShell } from '../../win16/progman/main.js';
 import { Presenter } from '../../raster/presenter.js';
 import { DISPLAY_MODES } from '../../win16/display-modes.js';
 import { accessibleTree } from '../../win16/user/accessible-tree.js';
@@ -135,7 +136,10 @@ export class TypeScriptEngine implements Engine {
   }
 
   idle() {
-    const tasks = Object.values(this.session?.win16.scheduler._tasks ?? {}) as any[];
+    const win16 = this.session?.win16;
+    const tasks = Object.entries(win16?.scheduler._tasks ?? {})
+      .filter(([handle]) => Number(handle) !== win16?._shellTask)
+      .map(([, task]) => task as any);
 
     return tasks.every((task) => task.ended);
   }
@@ -240,7 +244,7 @@ export class TypeScriptEngine implements Engine {
     }
   }
 
-  async run(program: Program) {
+  async run(program: Program, options: { install?: boolean } = {}) {
     const session = this.session;
 
     if (!session) {
@@ -259,6 +263,13 @@ export class TypeScriptEngine implements Engine {
 
       if (!file) {
         throw new Error(`no file ${program.path}`);
+      }
+
+      /* An installer: Program Manager the shell, starting it (`startShell`). */
+      if (options.install) {
+        await startShell(session.win16, program.path);
+        page.status(`${program.path} is running.`);
+        return;
       }
 
       const name = program.parts[program.parts.length - 1].replace(/\.EXE$/, '');

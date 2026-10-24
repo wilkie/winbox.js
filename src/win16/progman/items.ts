@@ -698,6 +698,11 @@ export function directoryOf(command: string) {
     : command.slice(0, file - 1);
 }
 
+/** seg6 `0416`: a command from its file's name on -- past its path, to its first space -- or the whole of a network path. */
+export function filePart(command: string) {
+  return command.startsWith('\\\\') ? command : command.slice(pathParts(command)[0]);
+}
+
 /**
  * `AddItem`'s defaults, after its arguments are read (seg7 `04ba`-`069d`): the
  * command's environment variables put in and cut at its first space for

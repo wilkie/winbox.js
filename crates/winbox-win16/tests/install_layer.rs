@@ -48,6 +48,7 @@ fn install() -> Option<(Stop, Vec<[String; 3]>, Installed)> {
     // The installer where the recorder puts it, beside Windows, and the
     // program it installs from there.
     setup.program = "C:\\WINDOWS\\INSTLAY.EXE".to_string();
+    setup.install = true;
     assert!(before.add_file("WINDOWS\\INSTLAY.EXE", setup.bytes.clone(), now));
 
     for (path, bytes) in &setup.placed {
@@ -133,23 +134,28 @@ fn an_installer_into_a_layer_and_the_program_it_installed() {
         })
         .collect();
 
-    assert_eq!(
-        entries,
-        [
-            "removed WINDOWS\\SYSTEM\\SETUP.REG",
-            "folder INSTLAY",
-            "folder WINDOWS",
-            "folder WINDOWS\\SYSTEM",
-            "folder WINDOWS\\TEMP",
-            "file INSTLAY\\INSTLAY.INI",
-            "file INSTLAY\\INSTLAYC.EXE",
-            "file INSTLAY\\README.TXT",
-            "file WINDOWS\\INSTLAY.INI",
-            "file WINDOWS\\SYSTEM\\INSTLAY.DLL",
-            "file WINDOWS\\WIN.INI",
-        ],
-        "the installer's layer"
-    );
+    // Program Manager, the run's shell, writes `PROGMAN.INI`'s
+    // `display.drv=` as it starts, a change only on the bundle's base, which
+    // has no `PROGMAN.INI` (`kb/topics/program-manager-dde.md`).
+    let mut expected = vec![
+        "removed WINDOWS\\SYSTEM\\SETUP.REG",
+        "folder INSTLAY",
+        "folder WINDOWS",
+        "folder WINDOWS\\SYSTEM",
+        "folder WINDOWS\\TEMP",
+        "file INSTLAY\\INSTLAY.INI",
+        "file INSTLAY\\INSTLAYC.EXE",
+        "file INSTLAY\\README.TXT",
+        "file WINDOWS\\INSTLAY.INI",
+        "file WINDOWS\\SYSTEM\\INSTLAY.DLL",
+        "file WINDOWS\\WIN.INI",
+    ];
+
+    if Base::chosen() != Base::Installed {
+        expected.insert(9, "file WINDOWS\\PROGMAN.INI");
+    }
+
+    assert_eq!(entries, expected, "the installer's layer");
     // Of the media, only the harness's records were written: `ORACLE`'s
     // own stamp moves where the run's first record is written in a later
     // second of the host's than the folder was made in.

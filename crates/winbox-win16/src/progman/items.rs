@@ -915,6 +915,16 @@ pub(crate) fn directory_of(command: &[u8]) -> Vec<u8> {
     directory
 }
 
+/// seg6 `0416`: a command from its file's name on -- past its path, to its
+/// first space -- or the whole of a network path.
+pub(crate) fn file_part(command: &[u8]) -> &[u8] {
+    if command.starts_with(b"\\\\") {
+        return command;
+    }
+
+    &command[path_parts(command).0..]
+}
+
 /// `AddItem`'s defaults, after its arguments are read (seg7 `04ba`-`069d`):
 /// the command's environment variables put in and cut at its first space
 /// for finding its program; the directory's, where it is given; else the

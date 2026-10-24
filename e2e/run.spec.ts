@@ -82,6 +82,10 @@ const FAULTC = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULTC.EXE');
 const INSTLAY = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAY.EXE');
 const INSTLAYC = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAYC.EXE');
 
+/* The `ddeinst` probe, an installer's last step: a group asked of Program
+ * Manager over DDE. */
+const DDEINST = join(process.cwd(), 'oracle', 'build', 'probes', 'DDEINST.EXE');
+
 /* The probes that read a floppy's image at A: and a CD-ROM's at D:, as
  * DOSBox mounted them for the oracle (`imgflop.mounts`, `imgcd.mounts`), and
  * the committed images they read. */
@@ -2193,8 +2197,10 @@ for (const { engine, page: at } of ENGINES) {
       );
       await expect(page.locator('#files')).toContainText('C:\\WBSETUP\\SETUP.EXE');
       await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      /* Its six, and PROGMAN.INI, which Program Manager, the installer's
+       * shell, wrote as it started: the bundle's base has none. */
       await expect(page.locator('#status')).toHaveText(
-        'Installed instlay, its 6 files kept as a layer, its setup files let go of. ' +
+        'Installed instlay, its 7 files kept as a layer, its setup files let go of. ' +
           'What it wrote still names them, which are not kept: ' +
           'C:\\WINDOWS\\WIN.INI: Media=C:\\WBSETUP\\INSTLAYC.EXE.'
       );
@@ -2203,10 +2209,19 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#install-section')).toBeHidden();
       await expect(page.locator('#files')).not.toContainText('WBSETUP');
       await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
-      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 6 });
+      /* PROGMAN.INI on C: as the kept program's stack plans it: the
+       * bundle's base has none of its own. */
+      expect(
+        await page.evaluate(() => (globalThis as any).winbox.plan.files as string[])
+      ).toContain('C:\\WINDOWS\\PROGMAN.INI');
+      expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 7 });
 
       /* Installed in turn into it: a second layer over the first, the one
-       * program's stack. */
+       * program's stack. It writes the same files again, the same bytes, so
+       * what makes them a change is their stamps, the host's time to DOS's
+       * two seconds: in the same two seconds as the first, it would write
+       * nothing new. */
+      await page.waitForTimeout(2100);
       await page.locator('#picker').setInputFiles(media('again.zip'));
       await page.locator('#install-into').selectOption('instlay');
       await page.getByRole('button', { name: 'Install', exact: true }).click();
@@ -2249,6 +2264,58 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Forget instlay' }).click();
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
+      expect(errors).toEqual([]);
+    });
+
+    test('installs an installer that asks Program Manager for its group, the group kept in its layer', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(DDEINST),
+        'the asset bundle, or the ddeinst probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      /* The probe's installer's last step, shipped as an installer is: it
+       * finds Program Manager running -- WinBox's own, the run's shell, the
+       * bundle's base having none -- and asks it over DDE for a group of
+       * two items. */
+      await page.locator('#picker').setInputFiles({
+        name: 'ddeinst.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'SETUP.EXE', data: new Uint8Array(readFileSync(DDEINST)) }]),
+      });
+      await expect(page.locator('#status')).toHaveText(
+        'ddeinst.zip holds an installer, SETUP.EXE: install it, or keep it as a program.'
+      );
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+
+      /* The group's file and PROGMAN.INI naming it, kept as its layer. */
+      await expect(page.locator('#status')).toContainText(
+        'Installed ddeinst, its 2 files kept as a layer'
+      );
+      const planned = await page.evaluate(() => (globalThis as any).winbox.plan.files as string[]);
+
+      expect(planned).toContain('C:\\WINDOWS\\WINBOXGA.GRP');
+      expect(planned).toContain('C:\\WINDOWS\\PROGMAN.INI');
+      await page.getByRole('button', { name: 'Forget ddeinst' }).click();
+      await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);
     });
 
@@ -2439,7 +2506,7 @@ for (const { engine, page: at } of ENGINES) {
       );
       await page.getByRole('button', { name: 'Keep', exact: true }).click();
       await expect(page.locator('#status')).toHaveText(
-        'Installed instlay-disk1 from A:, its 6 files kept as a layer. ' +
+        'Installed instlay-disk1 from A:, its 7 files kept as a layer. ' +
           'What it wrote still names them, which are not kept: ' +
           'C:\\WINDOWS\\WIN.INI: Media=A:\\INSTALL\\INSTLAYC.EXE.'
       );

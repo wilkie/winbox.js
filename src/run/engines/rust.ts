@@ -59,6 +59,8 @@ interface WasmMachine {
   changes(drive: string): WasmChange[];
   /** Why the program could not be started; nothing where it was. */
   start(path: string): string | undefined;
+  /** An installer run, Program Manager the shell starting it; why not, where it could not be. */
+  install(path: string): string | undefined;
   take_exits(): Uint8Array;
   step(deadlineMs: number): number;
   wake_at(): number;
@@ -283,6 +285,13 @@ export class RustEngine implements Engine {
   /** The program run last, while the run goes on. */
   #running: Program | null = null;
 
+  /**
+   * Whether the run is an installer's, Program Manager the shell: once the
+   * installer, and what it started, has ended, the run waits, the shell
+   * left, and the page is told so again (`#step`).
+   */
+  #installing = false;
+
   /** The canvas, where there is a screen, and the image over the module's memory it is drawn from. */
   #canvas: HTMLCanvasElement | null = null;
   #image: ImageData | null = null;
@@ -344,7 +353,7 @@ export class RustEngine implements Engine {
     }
   }
 
-  async run(program: Program) {
+  async run(program: Program, options: { install?: boolean } = {}) {
     const page = this.#page;
 
     if (!this.#setup || !this.#wasm) {
@@ -383,7 +392,13 @@ export class RustEngine implements Engine {
 
       this.#started = true;
 
-      const refused = this.#machine.start(program.path);
+      /* An installer: Program Manager the shell, starting it
+       * (`progman::start_shell`). */
+      this.#installing = Boolean(options.install);
+
+      const refused = options.install
+        ? this.#machine.install(program.path)
+        : this.#machine.start(program.path);
 
       if (refused !== undefined) {
         throw new Error(refused);
@@ -737,9 +752,16 @@ export class RustEngine implements Engine {
           this.#stopped(machine, program);
           break;
         /* Every program has ended, each told as it did, and Windows stays
-         * up for the next. */
+         * up for the next -- an installer's shell apart, which waits too:
+         * the page told again, the installer having ended in an earlier
+         * frame, maybe, than the one its shell came to wait in. */
         case WAITING:
           this.#running = null;
+
+          if (this.#installing) {
+            this.#installing = false;
+            this.#page.ended();
+          }
           break;
       }
     } catch (error) {

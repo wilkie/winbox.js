@@ -414,21 +414,27 @@ fn root() -> PathBuf {
 }
 
 /// A program run on a drive C: to its end, on the virtual clock, as the
-/// probe harnesses run one: the system as it ended.
-fn run_on(system: System, c: HostDrive, path: &str) -> System {
+/// probe harnesses run one -- an installer as `main` runs one, Program
+/// Manager the shell starting it (`progman::start_shell`): the system as
+/// it ended.
+fn run_on(system: System, c: HostDrive, path: &str, install: bool) -> System {
     let mut system = system;
     let bytes = c.read(&parts(path)).expect("the program on C:");
 
     system.files.mount('C', c);
 
-    let executable = winbox_ne::Executable::parse(bytes).unwrap();
-    let (program, libraries) = system.load(executable, path);
+    if install {
+        winbox_win16::progman::start_shell(&mut system, path).unwrap();
+    } else {
+        let executable = winbox_ne::Executable::parse(bytes).unwrap();
+        let (program, libraries) = system.load(executable, path);
 
-    system.link(program);
-    system.start(program, libraries, "").unwrap();
+        system.link(program);
+        system.start(program, libraries, "").unwrap();
 
-    if let Some((folder, _)) = path.rsplit_once('\\') {
-        system.files.set_path(folder);
+        if let Some((folder, _)) = path.rsplit_once('\\') {
+            system.files.set_path(folder);
+        }
     }
 
     let engine = winbox_win16::Engine::new(system);
@@ -501,6 +507,7 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
         system(),
         staging.drive(lowers.clone()).unwrap(),
         &staging.setup,
+        true,
     );
 
     drop(ended);
@@ -542,6 +549,9 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
             "file INSTLAY\\INSTLAYC.EXE",
             "file INSTLAY\\README.TXT",
             "file WINDOWS\\INSTLAY.INI",
+            // Program Manager's, the shell's, `display.drv=` written as it
+            // started, the base having no `PROGMAN.INI`.
+            "file WINDOWS\\PROGMAN.INI",
             "file WINDOWS\\SYSTEM\\INSTLAY.DLL",
             "file WINDOWS\\WIN.INI",
         ]
@@ -594,6 +604,7 @@ fn an_installer_run_into_a_layer_and_the_program_run_from_its_stack() {
         system(),
         store.user_drive(&program, lowers.clone()).unwrap(),
         &program.exes[0],
+        false,
     );
 
     drop(ended);
@@ -703,8 +714,8 @@ fn an_installer_run_from_a_floppy_image_drops_nothing_and_names_a() {
     assert!(staging.laid.is_empty());
     assert!(store.stage_drive("Floppy", 'C', None).is_err());
 
-    // Run from A:, that drive current, as `main` starts an installer on a
-    // drive of images.
+    // Run from A:, as `main` starts an installer on a drive of images:
+    // Program Manager the shell, starting it there, that drive current.
     let mut mounts = crate::mounts::Mounts::open(&[crate::mounts::Request {
         letter: Some('A'),
         paths: vec![disk.clone()],
@@ -719,14 +730,7 @@ fn an_installer_run_from_a_floppy_image_drops_nothing_and_names_a() {
         .mount('C', staging.drive(lowers.clone()).unwrap());
     mounts.mount(&mut system.files);
 
-    let (_, bytes) = system.files.read_from("A:\\SETUP", "INSTLAY.EXE").unwrap();
-    let executable = winbox_ne::Executable::parse(bytes).unwrap();
-    let (loaded, libraries) = system.load(executable, &staging.setup);
-
-    system.link(loaded);
-    system.start(loaded, libraries, "").unwrap();
-    system.files.drive = 'A';
-    system.files.set_path("A:\\SETUP");
+    winbox_win16::progman::start_shell(&mut system, &staging.setup).unwrap();
 
     let engine = winbox_win16::Engine::new(system);
 

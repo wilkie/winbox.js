@@ -140,7 +140,7 @@ describe("WinBox's Program Manager's DDE", () => {
           without: [['WINDOWS', 'PROGMAN.EXE']],
           virtual: VIRTUAL.has(probe),
           display,
-          progmanStore: true,
+          bundleStore: true,
         });
         const gaps = Object.keys(GAPS[fixture] ?? {});
         const written = recordsFrom((await outputOf(fileSystem, probe)) ?? '');
