@@ -503,16 +503,26 @@ class DiscFolder {
 
 /**
  * A file of the disc open, as DOSBox's `isoFile` keeps one (31-132): where
- * it begins and ends in the image, where the next read is, and its record's
- * stamp. As `iso.rs`'s `DiscFile`.
+ * it begins and ends in the image, where the next read is, its record's
+ * stamp, and the sector it last read, kept (`buffer`, `cachedSector`).
+ *
+ * It reads the disc its drive holds now, not the one it was opened on:
+ * DOSBox's `isoFile` reads through its drive's `readSector` (472-474), which
+ * asks MSCDEX's unit for the drive -- and a disc swapped in points that unit
+ * at its own image (`Activate`, `UpdateMscdex`, 181-202). So a swap hands
+ * the file the disc swapped in (`giveDisc`): none, for a drive left empty,
+ * and a read then reads nothing, as a sector not read does. **Measured** by
+ * `imgswap`. As `iso.rs`'s `DiscFile`.
  */
-class DiscFile extends File {
+export class DiscFile extends File {
   readonly path: string;
-  readonly #drive: IsoDrive;
+  #drive: IsoDrive | null;
   readonly #fileBegin: number;
   readonly #fileEnd: number;
   #filePos: number;
   readonly #stamp: [number, number];
+  #buffer = new Uint8Array(ISO_FRAMESIZE);
+  #cachedSector = -1;
 
   constructor(drive: IsoDrive, parts: string[], de: DirEntry) {
     super(de.findInfo);
@@ -568,30 +578,64 @@ class DiscFile extends File {
   }
 
   /**
+   * The disc it reads from now on: the one swapped into its drive, none where
+   * the drive was left empty. The sector it last read stays kept.
+   */
+  readFrom(drive: IsoDrive | null) {
+    this.#drive = drive;
+  }
+
+  /** A sector of the disc its drive holds into its buffer (`isoDrive::readSector`); whether there was one. */
+  #readSector(sector: number) {
+    const bytes = this.#drive?.readSector(sector) ?? null;
+
+    if (bytes) {
+      this.#buffer.set(bytes);
+    }
+
+    return bytes !== null;
+  }
+
+  /**
    * Bytes read from where it is (`isoFile::Read`, 63-98): no more than is
-   * left of it, a sector at a time, stopping at a sector the image does not
-   * hold.
+   * left of it, a sector at a time, the sector last read taken from its
+   * buffer, stopping at a sector the image does not hold.
    */
   readHere(count: number) {
-    const length = Math.min(count & 0xffff, (this.#fileEnd - this.#filePos) >>> 0);
-    const data = new Uint8Array(length);
+    let size = Math.min(count & 0xffff, (this.#fileEnd - this.#filePos) >>> 0);
+    const data = new Uint8Array(size);
     let done = 0;
     let sector = Math.floor(this.#filePos / ISO_FRAMESIZE);
     let sectorPos = this.#filePos % ISO_FRAMESIZE;
 
-    while (done < length) {
-      const buffer = this.#drive.readSector(sector);
-
-      if (!buffer) {
-        break;
+    if (sector !== this.#cachedSector) {
+      if (this.#readSector(sector)) {
+        this.#cachedSector = sector;
+      } else {
+        size = 0;
+        this.#cachedSector = -1;
       }
+    }
 
-      const take = Math.min(ISO_FRAMESIZE - sectorPos, length - done);
+    while (done < size) {
+      const remSector = ISO_FRAMESIZE - sectorPos;
+      const remSize = size - done;
 
-      data.set(buffer.subarray(sectorPos, sectorPos + take), done);
-      done += take;
-      sectorPos = 0;
-      sector++;
+      if (remSector < remSize) {
+        data.set(this.#buffer.subarray(sectorPos), done);
+        done += remSector;
+        sectorPos = 0;
+        sector++;
+        this.#cachedSector++;
+
+        if (!this.#readSector(sector)) {
+          size = done;
+          this.#cachedSector = -1;
+        }
+      } else {
+        data.set(this.#buffer.subarray(sectorPos, sectorPos + remSize), done);
+        done += remSize;
+      }
     }
 
     this.#filePos = (this.#filePos + done) >>> 0;
@@ -708,6 +752,11 @@ export class ISO9660 extends FileSystem {
 
   get listing(): 'sorted' | 'stored' {
     return 'stored';
+  }
+
+  /** A file of the disc this one was swapped in for reads this one (`DiscFile`). As `iso.rs`'s `give_disc`. */
+  giveDisc(file: DiscFile) {
+    file.readFrom(this.drive);
   }
 
   /** The record a path names, as `lookup` finds it. */

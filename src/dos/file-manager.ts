@@ -142,12 +142,28 @@ export class FileManager {
    * set's disks (`DriveManager::CycleAllDisks`, `drives.cpp` 173-191): the
    * drive's current folder is kept, whether or not the new disk has it. The
    * disk that was in, to be put back later with what was written to it;
-   * undefined where no drive was. A file open on the old disk keeps it. As
-   * `Files::swap`.
+   * undefined where no drive was.
+   *
+   * A file open on a disk image keeps reading and writing the disk it was
+   * opened on, as DOSBox's `fatFile` keeps its `myDrive` (`drive_fat.cpp`
+   * 64, 92). A file open on a disc reads the disc swapped in, at its own
+   * sectors, but for the sector it last read, which it keeps (`DiscFile`,
+   * `giveDisc`; none to read from where the new one is no disc): **measured**
+   * by `imgswap`. As `Files::swap`.
    */
   swap(letter: string, fileSystem: any) {
     const drive = letter.toUpperCase();
     const old = this._map[drive];
+
+    for (const file of this._descriptors) {
+      if (file?.onDisc && String(file.mount).toUpperCase() === drive) {
+        if (fileSystem?.giveDisc) {
+          fileSystem.giveDisc(file);
+        } else {
+          file.readFrom(null);
+        }
+      }
+    }
 
     this._map[drive] = fileSystem;
     this._pwd[drive] ??= `${drive}:\\`;
