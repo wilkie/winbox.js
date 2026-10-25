@@ -226,6 +226,18 @@ pub const AGREEING: &[&str] = &[
     "sysdrv",
     "snddrv",
     "kbdrv",
+    "wnetall",
+    "usermisc",
+    "curmake",
+    "dragq",
+    "userint",
+    "replym",
+    "endmenu",
+    "usermore",
+    "intpos",
+    "sysdbg",
+    "iconid",
+    "loadalt",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

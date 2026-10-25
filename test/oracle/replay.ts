@@ -5244,6 +5244,11 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
+  /* `getdcex`'s child, its context asked for with `DCX_PARENTCLIP`: Windows
+   * lets it draw anywhere in its parent's client area; WinBox's context
+   * of a window draws in its own client area only (`get-dc-ex.ts`). */
+  'getdcex:parentclip': "a window's context draws in its own client area only, not its parent's",
+
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
    * is made active, and where the focus goes, agree (`state`); the messages
    * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
@@ -5896,6 +5901,19 @@ const RUN_WHOLE = new Set<string>([
   'sysdrv',
   'snddrv',
   'kbdrv',
+  'wnetall',
+  'usermisc',
+  'curmake',
+  'dragq',
+  'userint',
+  'replym',
+  'endmenu',
+  'usermore',
+  'intpos',
+  'getdcex',
+  'sysdbg',
+  'iconid',
+  'loadalt',
 ]);
 
 /**

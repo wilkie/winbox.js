@@ -114,6 +114,16 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 }
 
 impl System {
+    /// The formats on the clipboard, in the order put on.
+    pub(crate) fn clipboard_formats(&self) -> Vec<u16> {
+        self.controls
+            .clipboard
+            .formats
+            .iter()
+            .map(|(format, _)| *format)
+            .collect()
+    }
+
     /// Opened, for no other window having it open: whether it opened.
     pub(crate) fn open_clipboard(&mut self, hwnd: u16) -> bool {
         if self.controls.clipboard.open != 0 {

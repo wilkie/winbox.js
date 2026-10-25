@@ -65,7 +65,7 @@ export function noteActivation(system: any) {
 /** The system timer of ten seconds, given USER's task list's window. */
 export function startScreenSaveTimer(system: any, hwnd: number) {
   setTimer(system, hwnd, SCREEN_SAVE_TIMER, EVERY, () => {
-    look(system);
+    screenSaveLook(system);
     return 0;
   });
 
@@ -73,7 +73,7 @@ export function startScreenSaveTimer(system: any, hwnd: number) {
 }
 
 /** The timer's look: `SC_SCREENSAVE` posted where it is due. */
-function look(system: any) {
+export function screenSaveLook(system: any) {
   const buttons: Uint8Array = system._asyncKeys ?? new Uint8Array(256);
 
   if (

@@ -509,6 +509,15 @@ impl System {
             .unwrap_or(0)
     }
 
+    /// The picture of a cursor kept as data, where it has one.
+    pub(crate) fn cursor_data_image(&self, handle: u16) -> Option<CursorImage> {
+        let Some(Object::Cursor(index)) = self.handles.resolve(handle) else {
+            return None;
+        };
+
+        self.cursors.get(index)?.image.clone()
+    }
+
     /// The cursor set: the arrow until one is.
     pub(crate) fn current_cursor(&mut self) -> u16 {
         if let Some(cursor) = self.cursor {
@@ -783,6 +792,11 @@ pub fn create_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
 pub fn copy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let _instance = args.word(system);
     let hicon = args.word(system);
+
+    // A block's bytes copied as they are (`USER.EXE` seg12 `0260`).
+    if system.icon_blocks.contains(&hicon) {
+        return Ok(Answer::Word(crate::cursor_make::copy_of(system, hicon)));
+    }
     let Some(icon) = system.icon_of(hicon) else {
         return Ok(Answer::Word(0));
     };

@@ -1,0 +1,54 @@
+{
+  "probe": "usermore",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "lookup",
+      "args": "bar command",
+      "result": "bar"
+    },
+    {
+      "function": "lookup",
+      "args": "file command",
+      "result": "file"
+    },
+    {
+      "function": "lookup",
+      "args": "inner command",
+      "result": "inner"
+    },
+    {
+      "function": "lookup",
+      "args": "twice",
+      "result": "file"
+    },
+    {
+      "function": "lookup",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "lookup",
+      "args": "file asked for inner",
+      "result": "inner"
+    },
+    {
+      "function": "lookup",
+      "args": "minus one",
+      "result": "0"
+    },
+    {
+      "function": "iconheader",
+      "args": "cursor 32x32 at 7,9",
+      "result": "070009002000200004000101aaaaaaaa"
+    }
+  ]
+}

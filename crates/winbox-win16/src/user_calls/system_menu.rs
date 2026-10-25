@@ -241,7 +241,20 @@ pub(super) fn get_system_menu(system: &mut System, args: &mut Args) -> Result<An
 
     if revert {
         system.forget_system_menu(index);
+        system.user_calls.system_menu_bars.remove(&index);
         return Ok(Answer::Word(0));
+    }
+
+    // A menu `SetSystemMenu` gave: its first item's pop-up (seg9 `0f44`).
+    if let Some(&bar) = system.user_calls.system_menu_bars.get(&index) {
+        let popup = system
+            .menu_of(bar)
+            .and_then(|inside| system.menus[inside].items.first())
+            .and_then(|item| item.popup);
+
+        return Ok(Answer::Word(
+            popup.map_or(0, |popup| system.menu_handle_of(popup)),
+        ));
     }
 
     let menu = system.system_menu_of(index)?;

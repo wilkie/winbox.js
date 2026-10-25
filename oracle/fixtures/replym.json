@@ -1,0 +1,94 @@
+{
+  "probe": "replym",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "insend",
+      "args": "own send",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "own send",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "own send, after reply",
+      "result": "0"
+    },
+    {
+      "function": "own",
+      "args": "SendMessage answered",
+      "result": "66"
+    },
+    {
+      "function": "insend",
+      "args": "sent, before",
+      "result": "nonzero"
+    },
+    {
+      "function": "query",
+      "args": "sent",
+      "result": "1:P:0401:0011:22223333"
+    },
+    {
+      "function": "query",
+      "args": "sent, first argument",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "sent, after reply",
+      "result": "nonzero"
+    },
+    {
+      "function": "insend",
+      "args": "sent, after second reply",
+      "result": "nonzero"
+    },
+    {
+      "function": "insend",
+      "args": "sent, no reply",
+      "result": "nonzero"
+    },
+    {
+      "function": "query",
+      "args": "sent, no reply",
+      "result": "1:P:0402:0012:44445555"
+    },
+    {
+      "function": "insend",
+      "args": "posted",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "posted",
+      "result": "0"
+    },
+    {
+      "function": "insend",
+      "args": "posted, after reply",
+      "result": "0"
+    },
+    {
+      "function": "child",
+      "args": "line",
+      "result": "send 1 answered 42"
+    },
+    {
+      "function": "child",
+      "args": "line",
+      "result": "send 2 answered 77"
+    }
+  ]
+}

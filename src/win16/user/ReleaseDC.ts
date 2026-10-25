@@ -1,6 +1,7 @@
 'use strict';
 
 import { releaseToCache } from './GetDC.js';
+import { releaseDCExRegion } from './get-dc-ex.js';
 import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
@@ -61,6 +62,9 @@ export function ReleaseDC(hwnd, hdc) {
    * five, as USER's does; the one released longest ago goes. */
   releaseToCache(this, hdc, released);
   released.liveDCs = Math.max(0, (released.liveDCs ?? 1) - 1);
+
+  /* And the region `GetDCEx` was given, deleted (`getdcex`). */
+  releaseDCExRegion(this, hdc);
 
   return TRUE;
 }

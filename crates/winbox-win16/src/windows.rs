@@ -135,6 +135,10 @@ pub struct Window {
     /// it goes back to minimized again (`iconclk`).
     pub icon_title: Option<usize>,
     pub icon_place: Option<(i32, i32)>,
+    /// Where its icon was when it last stopped being one, or was set to
+    /// go, on the screen: `GetInternalWindowPos`'s point
+    /// (`window_state.rs`).
+    pub icon_was: Option<(i32, i32)>,
     /// Whether the computer-based training hooks have been asked about
     /// its icon's title, which USER makes once (`window_state.rs`,
     /// `title_made`).

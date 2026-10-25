@@ -3,7 +3,19 @@
 /** @namespace CommDlg */
 
 import { Module } from '../module.js';
-import { BOOL, DWORD, FARPTR, HWND, INT, LPARAM, LRESULT, UINT, WPARAM } from '../types.js';
+import {
+  BOOL,
+  DWORD,
+  FARPTR,
+  HBITMAP,
+  HWND,
+  INT,
+  LPARAM,
+  LRESULT,
+  UINT,
+  WPARAM,
+} from '../types.js';
+import { LoadAlterBitmap } from './pictures.js';
 import { GetOpenFileName, GetSaveFileName } from './file-dialogs.js';
 import { FileOpenDlgProc, FileSaveDlgProc, dwLBSubclass, dwOKSubclass } from './file-init.js';
 import { procAddressOf, registerCommDlg } from './proc-address.js';
@@ -92,7 +104,7 @@ export class CommDlg extends Module {
       [FileOpenDlgProc, 'FileOpenDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [FileSaveDlgProc, 'FileSaveDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [ColorDlgProc, 'ColorDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], UINT],
-      [CommDlg.stub, 'LoadAlterBitmap', 10],
+      [LoadAlterBitmap, 'LoadAlterBitmap', 10, [UINT, DWORD, DWORD], HBITMAP],
       // 10 //
       [CommDlg.stub, 'unknown'],
       [FindText, 'FindText', 4, [FARPTR], HWND],

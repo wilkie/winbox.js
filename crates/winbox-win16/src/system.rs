@@ -384,6 +384,12 @@ pub struct System {
     /// The device contexts `GetWindowDC` made, by index, and the window each
     /// is over, for `ReleaseDC` to take back.
     pub window_dcs: HashMap<usize, u16>,
+    /// The regions `GetDCEx` was given, by the context given with each,
+    /// to be deleted as it is released (`get_dc.rs`).
+    pub dc_ex_regions: HashMap<u16, u16>,
+    /// Whether a dialog is active, as `DefDlgProc` keeps it for
+    /// `GetSystemDebugState` (`dialogs.rs`).
+    pub dialog_active: bool,
     /// WinG's bitmaps, whose pixels are kept in step with their bits.
     pub wing_bitmaps: Vec<crate::wing::WinGBitmap>,
     /// GDI's objects and device contexts.
@@ -553,6 +559,8 @@ impl System {
             lock_my_task: 0,
             locked_input: None,
             window_dcs: HashMap::new(),
+            dc_ex_regions: HashMap::new(),
+            dialog_active: false,
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),
             driver: None,

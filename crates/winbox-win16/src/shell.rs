@@ -11,6 +11,7 @@
 //! `shell/about.rs`.
 
 pub mod about;
+pub mod drag;
 pub mod programs;
 pub mod reg_api;
 pub mod registry;
@@ -41,6 +42,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "RegQueryValue" => Implementation::Sync(reg_api::reg_query_value),
         "RegEnumKey" => Implementation::Sync(reg_api::reg_enum_key),
         "DragAcceptFiles" => Implementation::Sync(drag_accept_files),
+        "DragQueryFile" => Implementation::Sync(drag::drag_query_file),
+        "DragQueryPoint" => Implementation::Sync(drag::drag_query_point),
+        "DragFinish" => Implementation::Sync(drag::drag_finish),
         // 1, once the registration database is written out where it has
         // changed (`SHELL.DLL` seg7 `0000`, `01ca`-`0230`); WinBox's is
         // written as it changes.

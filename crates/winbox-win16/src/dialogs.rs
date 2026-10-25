@@ -1330,6 +1330,17 @@ impl Engine {
             Param::Struct(_) => 0,
         };
 
+        // Whether a dialog is active, the word `GetSystemDebugState`
+        // answers `SDS_DIALOG` of: set as a dialog whose procedure leaves
+        // `WM_ACTIVATE` to this is activated or deactivated (seg25
+        // `050b`-`0511`), cleared as one is destroyed (`0621`).
+        // **Recorded** by `sysdbg`.
+        if message == WM_ACTIVATE {
+            self.system().dialog_active = wparam != 0;
+        } else if message == crate::messages::WM_NCDESTROY {
+            self.system().dialog_active = false;
+        }
+
         match message {
             WM_INITDIALOG => return Ok(0),
             // The background: the brush the dialog answers itself for

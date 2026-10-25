@@ -1,0 +1,219 @@
+{
+  "probe": "usermisc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "desktop",
+      "args": "GetDesktopHwnd",
+      "result": "desktop"
+    },
+    {
+      "function": "extra",
+      "args": "after a posted message",
+      "result": "00000000"
+    },
+    {
+      "function": "idle",
+      "args": "IsUserIdle",
+      "result": "1"
+    },
+    {
+      "function": "idle",
+      "args": "UserYield",
+      "result": "returned"
+    },
+    {
+      "function": "getmessage2",
+      "args": "peek noremove",
+      "result": "1:0402"
+    },
+    {
+      "function": "getmessage2",
+      "args": "peek remove",
+      "result": "1:0402:4:5"
+    },
+    {
+      "function": "getmessage2",
+      "args": "peek none",
+      "result": "0"
+    },
+    {
+      "function": "getmessage2",
+      "args": "wait",
+      "result": "1:0403:6:7"
+    },
+    {
+      "function": "getmessage2",
+      "args": "quit peek",
+      "result": "1:0012:9"
+    },
+    {
+      "function": "getmessage2",
+      "args": "quit wait",
+      "result": "0:0012:9"
+    },
+    {
+      "function": "cpinfo",
+      "args": "1",
+      "result": "1:1 spi 1"
+    },
+    {
+      "function": "cpinfo",
+      "args": "10",
+      "result": "1:31 spi 31"
+    },
+    {
+      "function": "cpinfo",
+      "args": "14",
+      "result": "1:120 spi 120"
+    },
+    {
+      "function": "repaint",
+      "args": "A after RepaintScreen",
+      "result": "1:0,0,192,123"
+    },
+    {
+      "function": "priority",
+      "args": "empty",
+      "result": "0"
+    },
+    {
+      "function": "priority",
+      "args": "bitmap text",
+      "result": "1"
+    },
+    {
+      "function": "priority",
+      "args": "bitmap",
+      "result": "-1"
+    },
+    {
+      "function": "priority",
+      "args": "zero text",
+      "result": "1"
+    },
+    {
+      "function": "priority",
+      "args": "oemtext text",
+      "result": "7"
+    },
+    {
+      "function": "priority",
+      "args": "none",
+      "result": "-1"
+    },
+    {
+      "function": "priority",
+      "args": "bitmap text, one",
+      "result": "-1"
+    },
+    {
+      "function": "sysmenu",
+      "args": "A",
+      "result": "1"
+    },
+    {
+      "function": "sysmenu",
+      "args": "A GetSystemMenu",
+      "result": "other"
+    },
+    {
+      "function": "sysmenu",
+      "args": "child",
+      "result": "0"
+    },
+    {
+      "function": "queue",
+      "args": "A next",
+      "result": "B"
+    },
+    {
+      "function": "queue",
+      "args": "A previous",
+      "result": "B"
+    },
+    {
+      "function": "queue",
+      "args": "B next",
+      "result": "A"
+    },
+    {
+      "function": "queue",
+      "args": "B previous",
+      "result": "A"
+    },
+    {
+      "function": "queue",
+      "args": "child next",
+      "result": "B"
+    },
+    {
+      "function": "brush",
+      "args": "GetControlBrush child",
+      "result": "mine, A from child type 3"
+    },
+    {
+      "function": "brush",
+      "args": "GetControlBrush popup",
+      "result": "mine, B from popup type 6"
+    },
+    {
+      "function": "brush",
+      "args": "GetControlBrush A",
+      "result": "other, "
+    },
+    {
+      "function": "brush",
+      "args": "PaintRect type",
+      "result": "0000ff"
+    },
+    {
+      "function": "brush",
+      "args": "PaintRect type sent",
+      "result": "A from child type 6"
+    },
+    {
+      "function": "brush",
+      "args": "PaintRect brush",
+      "result": "000000"
+    },
+    {
+      "function": "brush",
+      "args": "PaintRect desktop",
+      "result": "ffffff"
+    },
+    {
+      "function": "brush",
+      "args": "PaintRect desktop sent",
+      "result": "none"
+    },
+    {
+      "function": "brush",
+      "args": "FillWindow",
+      "result": "0000ff"
+    },
+    {
+      "function": "brush",
+      "args": "FillWindow sent",
+      "result": "A from child type 3"
+    },
+    {
+      "function": "brush",
+      "args": "FillWindow itself",
+      "result": "0000ff"
+    },
+    {
+      "function": "brush",
+      "args": "FillWindow itself sent",
+      "result": "child from child type 3"
+    }
+  ]
+}

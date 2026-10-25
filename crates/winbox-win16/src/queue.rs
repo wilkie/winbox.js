@@ -770,7 +770,7 @@ impl Engine {
         Ok(self.system().due_timer(false, filter).is_some())
     }
 
-    async fn next_message(
+    pub(crate) async fn next_message(
         &self,
         remove: bool,
         wait: bool,

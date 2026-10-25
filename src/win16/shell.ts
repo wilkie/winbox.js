@@ -2,6 +2,7 @@
 
 /** @namespace Shell */
 
+import { DragFinish, DragQueryFile, DragQueryPoint } from './shell/drag.js';
 import { ShellAbout } from './shell/about.js';
 import {
   DoEnvironmentSubst,
@@ -18,6 +19,7 @@ import {
   BOOL,
   DWORD,
   FARPTR,
+  HANDLE,
   HICON,
   HINSTANCE,
   HWND,
@@ -74,9 +76,9 @@ export class Shell extends Module {
      * written as it changes. */
     exports[8] = [() => 1, 'WEP', 2, [INT], INT];
     exports[9] = [DragAcceptFiles, 'DragAcceptFiles', 4, [HWND, BOOL]];
-    exports[11] = [Shell.stub, 'DragQueryFile', 10];
-    exports[12] = [Shell.stub, 'DragFinish', 2];
-    exports[13] = [Shell.stub, 'DragQueryPoint', 6];
+    exports[11] = [DragQueryFile, 'DragQueryFile', 10, [HANDLE, UINT, FARPTR, UINT], UINT];
+    exports[12] = [DragFinish, 'DragFinish', 2, [HANDLE], UINT];
+    exports[13] = [DragQueryPoint, 'DragQueryPoint', 6, [HANDLE, FARPTR], BOOL];
     exports[20] = [
       ShellExecute,
       'ShellExecute',

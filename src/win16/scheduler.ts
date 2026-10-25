@@ -597,19 +597,32 @@ export class Scheduler {
 
       /* Handling it, the task is in a message another sent it: USER's
        * `InSendMessage` word (`USER.EXE` seg1 `3dba`), which its looks
-       * meanwhile let the input go for (`queue.ts`). */
+       * meanwhile let the input go for (`queue.ts`). The message is kept
+       * for `QuerySendMessage`, and `ReplyMessage` may answer it before its
+       * procedure returns (`user/reply-message.ts`). */
       task.inSent = (task.inSent ?? 0) + 1;
+      (task.answering ??= []).push(item);
 
       try {
-        item.done(await item.run());
+        const value = await item.run();
+
+        if (!item.replied) {
+          item.done(value);
+        }
       } catch (error) {
-        item.done(0);
+        if (!item.replied) {
+          item.done(0);
+        }
+
         this.fail(error);
       } finally {
         task.inSent--;
+        task.answering.pop();
       }
 
-      await this.handBack(item.from);
+      if (!item.replied) {
+        await this.handBack(item.from);
+      }
     }
   }
 
@@ -656,7 +669,11 @@ export class Scheduler {
    * this one waits -- answering what is sent to it meanwhile -- for the
    * answer.
    */
-  async sendAcross(target, run: () => Promise<number>) {
+  async sendAcross(
+    target,
+    run: () => Promise<number>,
+    message: { hwnd: number; message: number; wParam: number; lParam: number } | null = null
+  ) {
     const task = this.taskAt(target);
     const self = this._currentTask;
     const me = this.taskAt(self);
@@ -666,7 +683,7 @@ export class Scheduler {
       me.signal();
     };
 
-    (task.sent ??= []).push({ run, done, from: self });
+    (task.sent ??= []).push({ run, done, from: self, message });
     task.signal();
 
     /* The task sent to has the processor next: USER hands it over with
@@ -998,10 +1015,13 @@ export class Scheduler {
     ) {
       /* Taken by that task later: a window destroyed meanwhile is sent
        * nothing. */
-      return this.sendAcross(target, async () =>
-        this.handles?.resolve(hwnd)
-          ? this.callWindowProc(proc, hwnd, message, wParam, lParam, ax)
-          : 0
+      return this.sendAcross(
+        target,
+        async () =>
+          this.handles?.resolve(hwnd)
+            ? this.callWindowProc(proc, hwnd, message, wParam, lParam, ax)
+            : 0,
+        { hwnd, message, wParam, lParam }
       );
     }
 

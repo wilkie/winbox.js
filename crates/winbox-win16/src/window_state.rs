@@ -2006,6 +2006,7 @@ pub fn set_window_placement(engine: &Engine, mut args: Args) -> Later<'_> {
 
                 if let Some(window) = system.windows[index].as_mut() {
                     window.icon_place = Some((word(6) + x, word(8) + y));
+                    window.icon_was = window.icon_place;
                 }
             }
 
@@ -2037,6 +2038,155 @@ pub fn set_window_placement(engine: &Engine, mut args: Args) -> Later<'_> {
             if let Some(window) = system.windows[index].as_mut() {
                 window.restore_rect = Some([left + x, top + y, width, height]);
             }
+        }
+
+        engine.show_raster(hwnd, index, show, true, false).await?;
+        Ok(Answer::Word(1))
+    })
+}
+
+/// Ordinal 460: what `GetWindowPlacement` gives, three parts of it -- its
+/// `showCmd` the answer, its normal place written to a `RECT` and its
+/// icon's point to a `POINT`, each where given (**read out of
+/// `USER.EXE`**, seg14 `0a85`-`0aec`, which fills a `WINDOWPLACEMENT` by
+/// seg14 `06a5`). **Recorded** by `intpos`: the point -1,-1 until it has
+/// been an icon, then where its icon is or last was.
+pub fn get_internal_window_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let rect = args.dword(system);
+    let point = args.dword(system);
+    let Some(index) = system.window_named(hwnd) else {
+        return Ok(Answer::Word(0));
+    };
+    let (x, y) = placement_origin(system, index);
+    let window = system.windows[index].as_ref().expect("a window");
+    let [left, top, width, height] = match window.restore_rect {
+        Some(rect) if window.placement != Placement::Normal => rect,
+        _ => [window.left, window.top, window.width, window.height],
+    };
+    let icon = if window.placement == Placement::Minimized {
+        Some((window.left, window.top))
+    } else {
+        window.icon_was
+    };
+    let show = match window.placement {
+        Placement::Maximized => SW_SHOWMAXIMIZED,
+        Placement::Minimized => SW_SHOWMINIMIZED,
+        Placement::Normal => SW_SHOWNORMAL,
+    };
+    let words = |values: &[i32]| -> Vec<u8> {
+        values
+            .iter()
+            .flat_map(|value| (*value as i16).to_le_bytes())
+            .collect()
+    };
+
+    if rect != 0 {
+        let bytes = words(&[left - x, top - y, left - x + width, top - y + height]);
+
+        system.write_far(rect, &bytes);
+    }
+
+    if point != 0 {
+        let bytes = match icon {
+            Some((left, top)) => words(&[left - x, top - y]),
+            None => words(&[-1, -1]),
+        };
+
+        system.write_far(point, &bytes);
+    }
+
+    Ok(Answer::Word(show))
+}
+
+/// Ordinal 461: the window's normal place and its icon's point set, then
+/// shown as `nCmdShow` says; 1 (**read out of `USER.EXE`**, seg14
+/// `0aef`-`0bef`). The point, where given and its x not -1, is where its
+/// icon goes; else it has none. An icon with a point goes there; a window
+/// neither an icon nor maximized goes to the rectangle. **Recorded** by
+/// `intpos`.
+pub fn set_internal_window_pos(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, show, rect_far, point_far) = {
+            let system = engine.system();
+
+            (
+                args.word(&system),
+                args.word(&system),
+                args.dword(&system),
+                args.dword(&system),
+            )
+        };
+        let (index, rect, point, placement) = {
+            let mut system = engine.system();
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(Answer::Word(0));
+            };
+            let read = |system: &System, far: u32, count: usize| -> Vec<i32> {
+                let bytes = system.read_far(far, count * 2);
+
+                bytes
+                    .chunks(2)
+                    .map(|pair| i32::from(i16::from_le_bytes([pair[0], pair[1]])))
+                    .collect()
+            };
+            let rect = (rect_far != 0).then(|| read(&system, rect_far, 4));
+            // The point -1 in x is none (`0b3c`).
+            let point = (point_far != 0)
+                .then(|| read(&system, point_far, 2))
+                .filter(|point| point[0] != -1);
+            let (x, y) = placement_origin(&system, index);
+            let window = system.windows[index].as_mut().expect("a window");
+            let placement = window.placement;
+
+            if let Some(rect) = &rect
+                && placement != Placement::Normal
+            {
+                window.restore_rect = Some([
+                    rect[0] + x,
+                    rect[1] + y,
+                    rect[2] - rect[0],
+                    rect[3] - rect[1],
+                ]);
+            }
+
+            window.icon_place = point.as_ref().map(|point| (point[0] + x, point[1] + y));
+            window.icon_was = window.icon_place;
+            (index, rect, point, placement)
+        };
+
+        match (placement, &point, &rect) {
+            (Placement::Minimized, Some(point), _) => {
+                engine
+                    .position_raster(
+                        hwnd,
+                        index,
+                        0,
+                        point[0] as i16,
+                        point[1] as i16,
+                        0,
+                        0,
+                        crate::position::SWP_NOSIZE
+                            | crate::position::SWP_NOZORDER
+                            | crate::position::SWP_NOACTIVATE,
+                    )
+                    .await?;
+            }
+            (Placement::Normal, _, Some(rect)) => {
+                engine
+                    .position_raster(
+                        hwnd,
+                        index,
+                        0,
+                        rect[0] as i16,
+                        rect[1] as i16,
+                        (rect[2] - rect[0]) as i16,
+                        (rect[3] - rect[1]) as i16,
+                        crate::position::SWP_NOZORDER,
+                    )
+                    .await?;
+            }
+            _ => {}
         }
 
         engine.show_raster(hwnd, index, show, true, false).await?;

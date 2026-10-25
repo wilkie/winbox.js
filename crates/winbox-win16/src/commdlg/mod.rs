@@ -84,6 +84,7 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "dwUpArrowHack" => Implementation::Async(print_dlg::dw_up_arrow_hack),
         "WantArrows" => Implementation::Async(choose_color::want_arrows),
         "GetFileTitle" => Implementation::Sync(parse::get_file_title),
+        "LoadAlterBitmap" => Implementation::Async(pictures::load_alter_bitmap),
         // 1, its own objects let go first unless Windows is ending
         // (`COMMDLG.DLL` seg6 `01ad`-`01db`): WinBox's hold none.
         "WEP" => Implementation::Sync(|system, args| {

@@ -1456,6 +1456,12 @@ impl System {
     /// sent `WM_PAINT`, its frame drawn by `WM_NCPAINT` in `BeginPaint`
     /// before its `WM_ERASEBKGND`.
     pub fn repaint_all(&mut self) {
+        self.repaint_all_frames(true);
+    }
+
+    /// Everything to be drawn again, the frames too only with `frames`:
+    /// `RepaintScreen` leaves them.
+    pub fn repaint_all_frames(&mut self, frames: bool) {
         self.background_due = true;
 
         for index in self.z_order.clone().into_iter().rev() {
@@ -1466,7 +1472,7 @@ impl System {
             let shown = self.shown_mut(index);
 
             if shown.paints_itself() {
-                shown.needs_nc_paint = true;
+                shown.needs_nc_paint |= frames;
                 shown.dirty = None;
                 shown.needs_erase = true;
                 shown.needs_paint = true;
@@ -1534,6 +1540,7 @@ impl System {
             )
         };
 
+        self.keep_icon_place(index);
         self.leave_icon(index);
 
         if placement == Placement::Normal {
@@ -1589,6 +1596,7 @@ impl System {
             return Ok(());
         };
 
+        self.keep_icon_place(index);
         self.leave_icon(index);
         self.shown_mut(index).placement = Placement::Normal;
         self.place_window(index, left, top, width, height)
@@ -1673,6 +1681,16 @@ impl System {
 
         self.lose_focus(title);
         self.windows[title] = None;
+    }
+
+    /// Where an icon was, kept as it stops being one: **recorded** by
+    /// `intpos`, whose window restored answers the point its icon was at.
+    fn keep_icon_place(&mut self, index: usize) {
+        let shown = self.shown_mut(index);
+
+        if shown.placement == Placement::Minimized {
+            shown.icon_was = Some((shown.left, shown.top));
+        }
     }
 
     /// A window's icon title taken away, as it stops being an icon.

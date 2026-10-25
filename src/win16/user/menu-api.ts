@@ -86,7 +86,13 @@ export function GetSystemMenu(hwnd, fRevert) {
 
   if (fRevert) {
     window.window.systemMenu = null;
+    window.window.systemMenuBar = undefined;
     return NULL;
+  }
+
+  /* A menu `SetSystemMenu` gave: its first item's pop-up (seg9 `0f44`). */
+  if (window.window.systemMenuBar) {
+    return GetSubMenu.call(this, window.window.systemMenuBar, 0);
   }
 
   return handleOf(this, systemMenuOf(window.window));

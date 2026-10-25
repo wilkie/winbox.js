@@ -4,6 +4,9 @@
 
 use winbox_raster::{decode_dib, dib_to_device, palette_for_display};
 
+use super::guest_calls::{A, Call, api, call};
+use crate::call::{Answer, Args, Later};
+use crate::engine::Engine;
 use crate::shell::programs::resources_of;
 use crate::system::System;
 
@@ -24,26 +27,8 @@ pub(super) fn pictures(
     window: u32,
     highlight: u32,
 ) -> Option<crate::gdi::ddb::Bitmap> {
-    let path = system.module_named(super::NAME).map_or_else(
-        || "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL".to_string(),
-        |library| system.modules[library].path.clone(),
-    );
-    let handle = system.files.open(&path)?;
-    let bytes = {
-        let file = system.files.resolve(handle).expect("an open file");
-        let size = file.size() as usize;
-
-        file.seek(std::io::SeekFrom::Start(0));
-        file.read(size)
-    };
-
-    system.files.close(handle);
-
-    let resources = resources_of(&bytes)?;
-    let resource = resources
-        .iter()
-        .find(|each| each.kind == RT_BITMAP && each.id == Some(PICTURES))?;
-    let mut dib = decode_dib(resource.data).ok()?;
+    let data = bitmap_resource(system, PICTURES)?;
+    let mut dib = decode_dib(&data).ok()?;
     let blue = [0, 0, 0xff];
     let replaced = |colours: &[[u8; 3]], with: u32| {
         let mut colours = colours.to_vec();
@@ -87,5 +72,83 @@ pub(super) fn pictures(
         ),
         padding: None,
         dimension: None,
+    })
+}
+
+/// One of the installation's `COMMDLG.DLL`'s bitmaps, as data; none
+/// without the file.
+fn bitmap_resource(system: &mut System, id: u16) -> Option<Vec<u8>> {
+    let path = system.module_named(super::NAME).map_or_else(
+        || "C:\\WINDOWS\\SYSTEM\\COMMDLG.DLL".to_string(),
+        |library| system.modules[library].path.clone(),
+    );
+    let handle = system.files.open(&path)?;
+    let bytes = {
+        let file = system.files.resolve(handle).expect("an open file");
+        let size = file.size() as usize;
+
+        file.seek(std::io::SeekFrom::Start(0));
+        file.read(size)
+    };
+
+    system.files.close(handle);
+
+    let resources = resources_of(&bytes)?;
+
+    resources
+        .iter()
+        .find(|each| each.kind == RT_BITMAP && each.id == Some(id))
+        .map(|resource| resource.data.to_vec())
+}
+
+/// A bitmap of COMMDLG's own, by its number, made for the screen with the
+/// first entry of its colour table that is one colour made another
+/// (**read out of `COMMDLG.DLL`**, seg6 `0000`-`0135`), as `pictures.ts`
+/// says more of. **Recorded** by `loadalt`.
+pub(super) fn load_alter_bitmap(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (id, replace, instead) = {
+            let system = engine.system();
+
+            (args.word(&system), args.dword(&system), args.dword(&system))
+        };
+        let Some(mut dib) = bitmap_resource(&mut engine.system(), id) else {
+            return Ok(Answer::Word(0));
+        };
+        let quad = |color: u32| [(color >> 16) as u8, (color >> 8) as u8, color as u8, 0];
+        let wanted = quad(replace);
+        let mut at = usize::from(u16::from_le_bytes([dib[0], dib[1]]));
+
+        while at + 4 <= dib.len() {
+            if dib[at..at + 4] == wanted {
+                dib[at..at + 4].copy_from_slice(&quad(instead));
+                break;
+            }
+
+            at += 4;
+        }
+
+        let bits_at = (1usize << (dib[0x0e] + 2)) + 0x28;
+        let info = dib[..bits_at].to_vec();
+        let bits = dib[bits_at..].to_vec();
+        let hdc = api(engine, "USER", "GetDC", &[A::W(0)]).await? as u16;
+
+        if hdc == 0 {
+            return Ok(Answer::Word(0));
+        }
+
+        let (bitmap, _) = call(
+            engine,
+            Call {
+                module: "GDI",
+                name: "CreateDIBitmap",
+                args: &[A::W(hdc), A::S(0), A::D(4), A::S(1), A::S(0), A::W(0)],
+                structs: vec![info, bits],
+            },
+        )
+        .await?;
+
+        api(engine, "USER", "ReleaseDC", &[A::W(0), A::W(hdc)]).await?;
+        Ok(Answer::Word(bitmap as u16))
     })
 }
