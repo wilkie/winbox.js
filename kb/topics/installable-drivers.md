@@ -46,8 +46,7 @@ An installable driver is a library that exports a function named `DriverProc`, w
 
 - The messages USER sends every driver as Windows ends (`DRV_EXITSESSION`, then `DRV_DISABLE` and `DRV_FREE`) and as a program ends (`DRV_EXITAPPLICATION`).
 - The stack check around the call of message nought. A driver that fails it is still loaded.
-- MMSYSTEM's wave, MIDI and auxiliary drivers from files, and their mappers.
 
 ## In winbox.js
 
-`src/win16/user/drivers.ts` keeps the table, and `InitApp` loads the boot drivers. MMSYSTEM's `DriverProc` is in `src/win16/mmsystem/driver.ts`. `TIMER.DRV` is kept by winbox.js, as MMSYSTEM is, in `src/win16/timer.ts`. Its `DriverProc` answers as the file's does, and drives nothing, since winbox.js's MMSYSTEM keeps its own time. A driver winbox.js keeps is called as the function it is. One from a file runs on the processor.
+`src/win16/user/drivers.ts` keeps the table, and `InitApp` loads the boot drivers. MMSYSTEM installs the wave, MIDI and auxiliary drivers `[drivers]` names, and their mappers, as [[topic:sound-devices]] says; its `DrvOpen`, `DrvClose`, `DrvSendMessage`, `DrvGetModuleHandle` and `DrvDefDriverProc` are USER's calls under its own names ([[fn:MMSYSTEM.DrvOpen]]). MMSYSTEM's `DriverProc` is in `src/win16/mmsystem/driver.ts`. `TIMER.DRV` is kept by winbox.js, as MMSYSTEM is, in `src/win16/timer.ts`. Its `DriverProc` answers as the file's does, and drives nothing, since winbox.js's MMSYSTEM keeps its own time. A driver winbox.js keeps is called as the function it is. One from a file runs on the processor.

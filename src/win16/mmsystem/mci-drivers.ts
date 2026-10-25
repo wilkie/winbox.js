@@ -4,8 +4,8 @@ import { Module } from '../module.js';
 import { DWORD, LPARAM, LRESULT, UINT } from '../types.js';
 import { DefDriverProc } from '../user/drivers.js';
 import { PostMessage } from '../user/PostMessage.js';
-import { midiOutGetNumDevs } from './midiOutGetNumDevs.js';
-import { waveInGetNumDevs, waveOutGetNumDevs } from './devices.js';
+import { midiOutGetNumDevs } from './midi.js';
+import { waveInGetNumDevs, waveOutGetNumDevs } from './wave.js';
 
 /**
  * The MCI drivers, kept by winbox.js as TIMER is: `MCIWAVE.DRV`, the
@@ -534,7 +534,10 @@ async function driverProc(
   switch (message) {
     case 1: // DRV_LOAD
       if (kind === 'wave') {
-        system._mciWave = { out: waveOutGetNumDevs(), in: waveInGetNumDevs() };
+        system._mciWave = {
+          out: waveOutGetNumDevs.call(system),
+          in: waveInGetNumDevs.call(system),
+        };
       }
       return 1;
 
@@ -836,7 +839,7 @@ async function seqCommand(system: any, id: number, message: number, flags: numbe
         return MCIERR_MISSING_PARAMETER;
       }
 
-      const midi = midiOutGetNumDevs() !== 0 ? YES : NO;
+      const midi = midiOutGetNumDevs.call(system) !== 0 ? YES : NO;
       const answer = [NO, midi, NO, 0x020b020b, midi, midi, NO, midi, NO][item - 1];
 
       core.write16(segment, (offset + 4) & 0xffff, answer & 0xffff);

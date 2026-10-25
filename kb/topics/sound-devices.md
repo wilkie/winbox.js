@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mcidevs, mcifile, sndplay, mplopen]
+probes: [mmdevs, mmnodev, mcidevs, mcifile, sndplay, mplopen, mmmisc]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -16,6 +16,17 @@ The oracle also has an installation with a Sound Blaster. What its Ad Lib driver
 - [[measured]] [[fn:MMSYSTEM.waveOutGetNumDevs]], [[fn:MMSYSTEM.waveInGetNumDevs]], [[fn:MMSYSTEM.midiOutGetNumDevs]], [[fn:MMSYSTEM.midiInGetNumDevs]] and [[fn:MMSYSTEM.auxGetNumDevs]] all answer 0.
 - [[measured]] [[fn:MMSYSTEM.waveOutOpen]] and [[fn:MMSYSTEM.waveInOpen]] answer 2, `MMSYSERR_BADDEVICEID`, whether asked for device 0 or the mapper, and whether querying a format or opening for real. Where a handle is asked for, it is written, as 0.
 - [[measured]] [[fn:MMSYSTEM.waveOutGetDevCaps]] and [[fn:MMSYSTEM.waveInGetDevCaps]] of device 0 answer 2 as well.
+
+## Before a driver hears of it
+
+[[measured]] [[probe:mmnodev]] calls every waveform, MIDI and auxiliary function the way MMSYSTEM refuses it, on the installation with no sound driver and on the one with the Sound Blaster. Both engines agree with all 170 of its records on each.
+
+- [[measured]] Every call on a handle given 1234h, or nought, answers `MMSYSERR_INVALHANDLE` (5) on both installations -- but [[fn:MMSYSTEM.waveOutMessage]] and its kin, which answer nought -- and leaves the words it would have written as they were.
+- [[measured]] Device 5 answers `MMSYSERR_BADDEVICEID` (2) on both. The mapper's number answers `MMSYSERR_NODRIVER` (6) where no mapper is installed: every kind with no sound driver, MIDI input and the auxiliary devices with the Sound Blaster. A size of nought for capabilities answers nought.
+- [[measured]] Opening refuses a flag it does not know (10), and a callback that is none of what it claims to be (11) -- a window that is not, a window's with a high word, a task that is not, a function in a program's code, a kind past 3 -- before it looks at the device.
+- [[read out]] A callback function must be in a code segment of a library: KERNEL makes every segment of a program moveable as it reads the program's segment table (`KRNL386.EXE` seg2 `0f4b`-`0f6b`), and MMSYSTEM refuses a moveable or discardable one (seg4 `477`).
+
+The device layer itself -- how drivers are installed, numbered and sent messages -- is read out of `MMSYSTEM.DLL` seg2 `101`-`6e8` and seg3 `79c`-`864`; [[fn:MMSYSTEM.mmDrvInstall]] has it.
 
 ## Error texts
 
@@ -84,8 +95,13 @@ Everything MMSYSTEM, `MCIWAVE` and `sndPlaySound` do over the device is as befor
 
 What the card plays is handed to the host with its rate, channels and bits: winbox-native mixes it into the host's device by cpal, the page resamples each of its lanes to the context's rate as one unbroken stream and mixes them in an AudioWorklet of its own (`src/run/engines/mixer.ts`).
 
+## Not yet done
+
+- `mciLoadCommandResource`, `mciFreeCommandResource` and the command tables they keep, and `mciParseCommand`.
+- A sound card in the TypeScript engine: it installs only drivers from files, and the installation it runs names none.
+
 ## In winbox.js
 
-`src/win16/mmsystem/devices.ts` holds the device counts, the opens, the capabilities and the error texts.
+The device layer is `src/win16/mmsystem/devices.ts` and `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `checks.ts` and `checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The TypeScript engine has no driver of its own and installs only drivers from files, which run on the processor; the Rust engine has its own sound card as well (`wbsound`).
 
 MCI is `src/win16/mmsystem/mci.ts`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `src/win16/mmsystem/mci-drivers.ts`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.

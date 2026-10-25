@@ -847,6 +847,17 @@ fn a_midi_device_calls_a_function_back() {
         ))
     };
 
+    // A program's code is moveable, as KERNEL keeps it (`KRNL386.EXE` seg2
+    // `0f4b`-`0f6b`; `mmnodev`), and refused; a library's fixed code is not.
+    assert_eq!(open(CALLBACK_FUNCTION), 11);
+
+    for module in &mut engine.system().modules {
+        let mut executable = (*module.executable).clone();
+
+        executable.header.flags |= 0x8000;
+        module.executable = Rc::new(executable);
+    }
+
     // A flag in the low word.
     assert_eq!(open(CALLBACK_FUNCTION | 1), 10);
     assert_eq!(open(CALLBACK_FUNCTION), 0);

@@ -270,16 +270,20 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 /// answered here, but it is no export -- `GetProcAddress` does not find it,
 /// and the export table has nothing there.
 pub fn hidden(module: &str, ordinal: u16) -> Option<Export> {
-    let name = match ordinal {
-        DOS_ORDINAL => "mmioDOSIOProc",
-        MEM_ORDINAL => "mmioMEMIOProc",
+    let (name, pops, returns) = match ordinal {
+        DOS_ORDINAL => ("mmioDOSIOProc", 14, 4),
+        MEM_ORDINAL => ("mmioMEMIOProc", 14, 4),
+        // MMSYSTEM's own yield procedure, the break key's (`mci.rs`).
+        super::mci::BREAK_ORDINAL => ("mciBreakYield", 6, 2),
+        // The joystick capture's timer procedure (`joystick.rs`).
+        super::joystick::TIMER_ORDINAL => ("joyTimer", 10, 0),
         _ => return None,
     };
 
     module.eq_ignore_ascii_case("MMSYSTEM").then_some(Export {
         name,
-        pops: 14,
-        returns: 4,
+        pops,
+        returns,
         stub: false,
     })
 }
@@ -292,7 +296,7 @@ fn data(system: &System) -> u32 {
 }
 
 /// The address of one of winbox.js's own procedures, by its ordinal.
-fn own_address(system: &mut System, ordinal: u16) -> u32 {
+pub(crate) fn own_address(system: &mut System, ordinal: u16) -> u32 {
     let Some(kept) = system.kept_named("MMSYSTEM") else {
         return 0;
     };
@@ -780,7 +784,7 @@ fn free_block(system: &mut System, handle: u16) {
 }
 
 /// Whether a procedure's address is no code to call (`IsBadCodePtr`).
-fn bad_code(system: &System, pointer: u32) -> bool {
+pub(crate) fn bad_code(system: &System, pointer: u32) -> bool {
     let selector = (pointer >> 16) as u16;
     let code = system
         .peek_descriptor(selector)
