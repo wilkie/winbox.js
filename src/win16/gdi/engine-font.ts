@@ -5,6 +5,7 @@ import { enumerateTrueType, placement } from './EnumFontFamilies.js';
 import { GetDeviceCaps } from './GetDeviceCaps.js';
 import { MulDiv } from './MulDiv.js';
 import { FontManager } from '../font-manager.js';
+import { GlobalFree } from '../kernel/GlobalFree.js';
 
 /**
  * GDI's TrueType engine as a printer driver asks it: `EngineRealizeFont`.
@@ -261,6 +262,39 @@ export async function EngineEnumerateFont(
   );
 
   return answer ?? 1;
+}
+
+/**
+ * A font the engine realized let go: `EngineDeleteFont` (`GDI.EXE` seg6
+ * `0560`). For a `FONTINFO` of type 3 whose face's name is at 6Eh (its word
+ * 27h pointing there), the block the engine keeps of it at +54h is freed
+ * and the word made nought; 1 answered, whatever was given. Windows reads
+ * the pointer unchecked; WinBox answers 1 for none.
+ */
+export function EngineDeleteFont(this: any, lpFontInfo: number) {
+  const far = lpFontInfo >>> 0;
+
+  if (!(far >>> 16)) {
+    return 1;
+  }
+
+  const core = this.machine.cpu.core;
+  const segment = far >>> 16;
+  const at = (offset: number) => ((far & 0xffff) + offset) & 0xffff;
+
+  if (
+    (core.read8(segment, at(0)) & 3) === 3 &&
+    (core.read16(segment, at(0x27)) & 0xffff) === at(0x6e)
+  ) {
+    const block = core.read16(segment, at(0x54)) & 0xffff;
+
+    if (block) {
+      core.write16(segment, at(0x54), 0);
+      GlobalFree.call(this, block);
+    }
+  }
+
+  return 1;
 }
 
 const DEVICE_FONTTYPE = 2;

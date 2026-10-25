@@ -3421,8 +3421,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DMEnumDFonts",
                 pops: 16,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DMEnumObj",
@@ -3686,7 +3686,7 @@ pub static KEPT: &[Kept] = &[
                 name: "Copy",
                 pops: 10,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -3991,8 +3991,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EngineDeleteFont",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "EngineRealizeFont",

@@ -245,6 +245,38 @@ fn realize_true_type(system: &mut System, logfont: u32, transform: u32, font_inf
     0x96
 }
 
+/// A font the engine realized let go (`GDI.EXE` seg6 `0560`): for a
+/// `FONTINFO` of type 3 whose word 27h points at its name at 6Eh, the block
+/// at +54h freed and the word made nought; 1 answered. As
+/// `EngineDeleteFont` in `engine-font.ts`.
+fn engine_delete_font(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+
+    if far >> 16 == 0 {
+        return Ok(Answer::Word(1));
+    }
+
+    let at = |offset: u16| (far & 0xffff_0000) | u32::from((far as u16).wrapping_add(offset));
+    let word = |system: &System, offset: u16| {
+        let bytes = system.read_far(at(offset), 2);
+
+        u16::from_le_bytes([bytes[0], bytes[1]])
+    };
+
+    if system.read_far(at(0), 1)[0] & 3 == 3
+        && word(system, 0x27) == (far as u16).wrapping_add(0x6e)
+    {
+        let block = word(system, 0x54);
+
+        if block != 0 {
+            system.write_far(at(0x54), &[0, 0]);
+            crate::memory::global_free(system, &mut Args::repeat(block))?;
+        }
+    }
+
+    Ok(Answer::Word(1))
+}
+
 fn engine_realize_font_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let logfont = args.dword(system);
     let transform = args.dword(system);
@@ -259,6 +291,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "EngineRealizeFont" => Implementation::Sync(engine_realize_font_call),
         "EngineEnumerateFont" => Implementation::Async(engine_enumerate_font),
+        "EngineDeleteFont" => Implementation::Sync(engine_delete_font),
         _ => return None,
     })
 }

@@ -11,12 +11,12 @@ GDI exports a small priority queue, which the spooler keeps its jobs in: [[fn:GD
 
 [[read out]] A global block, `GMEM_MOVEABLE | GMEM_DDESHARE` (`GDI.EXE` seg1 `1f6d`), of four words and then entries of two words each, the key and then the tag (seg27 `0000`):
 
-| Word | Holds |
-| --- | --- |
-| 0 | Where the entries end, in bytes from the first. |
-| 1 | The room for entries, in bytes: four for each. |
-| 2 | The last key appended; 4000h once the entries are a heap. |
-| 3 | Where the first entry still queued starts, in bytes. |
+| Word | Holds                                                     |
+| ---- | --------------------------------------------------------- |
+| 0    | Where the entries end, in bytes from the first.           |
+| 1    | The room for entries, in bytes: four for each.            |
+| 2    | The last key appended; 4000h once the entries are a heap. |
+| 3    | Where the first entry still queued starts, in bytes.      |
 
 ## In order, then a heap
 

@@ -5588,6 +5588,11 @@ export const KNOWN_GAPS: Record<string, string> = {
   'dchook:hookcall': "GDI does not call a device context's hook",
   'gdimisc:physfont':
     'GetPhysicalFontHandle is a stub: WinBox keeps no realized font object for a context to name',
+  'prtt:extent':
+    "the PostScript driver's GetTextExtent of a TrueType face it downloads through GDI's engine answers no width",
+  'prtt:size': 'the document differs where the downloaded face does',
+  'prtt:line':
+    "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
 };
 
 /**
@@ -5915,6 +5920,8 @@ const RUN_WHOLE = new Set<string>([
   'bounds',
   'gdipq',
   'gdimisc',
+  'prtt',
+  'gdicopy',
 ]);
 
 /**

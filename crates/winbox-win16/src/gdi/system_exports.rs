@@ -13,6 +13,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "WEP" => wep,
         "SelectBitmap" => select_bitmap,
         "GDIMoveBitmap" => gdi_move_bitmap,
+        "DMEnumDFonts" => dm_enum_dfonts,
+        "Copy" => copy,
         _ => return None,
     }))
 }
@@ -56,6 +58,34 @@ fn select_bitmap(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     } else {
         super::dc::select_object(system, hdc, bitmap)
     }))
+}
+
+/// Bytes copied for the spooler (seg28 `0000`): `rep movsb`, forward a
+/// byte at a time, so a copy onto bytes just past its source repeats them.
+/// Nothing is answered.
+fn copy(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let to = args.dword(system);
+    let from = args.dword(system);
+    let count = args.word(system);
+
+    for at in 0..count {
+        let step = |far: u32| (far & 0xffff_0000) | u32::from((far as u16).wrapping_add(at));
+        let byte = system.read_far(step(from), 1);
+
+        system.write_far(step(to), &byte);
+    }
+
+    Ok(Answer::Nothing)
+}
+
+/// A memory bitmap's fonts walked for a driver (seg13 `0163`): 1, and no
+/// font walked.
+fn dm_enum_dfonts(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    for _ in 0..4 {
+        args.dword(system);
+    }
+
+    Ok(Answer::Word(1))
 }
 
 /// `GlobalWire` and `GlobalUnWire` of the bitmap's bits (seg2 `0403`):

@@ -208,7 +208,7 @@ import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
-import { EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
+import { EngineDeleteFont, EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
 import { GetEnvironment, SetEnvironment } from './gdi/environment.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
@@ -231,7 +231,14 @@ import {
 } from './gdi/dc-internals.js';
 import { GetBoundsRect, IsDCDirty, SetBoundsRect, SetDCStatus } from './gdi/bounds.js';
 import { CreatePQ, DeletePQ, ExtractPQ, InsertPQ, MinPQ, SizePQ } from './gdi/priority-queue.js';
-import { GDIMoveBitmap, MakeObjectPrivate, SelectBitmap, WEP } from './gdi/system-exports.js';
+import {
+  Copy,
+  DMEnumDFonts,
+  GDIMoveBitmap,
+  MakeObjectPrivate,
+  SelectBitmap,
+  WEP,
+} from './gdi/system-exports.js';
 import { ExtTextOut } from './gdi/ExtTextOut.js';
 
 /**
@@ -551,7 +558,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'DMEnumDFonts', 16],
+      [DMEnumDFonts, 'DMEnumDFonts', 16, [FARPTR, FARPTR, FARPTR, FARPTR], INT],
       [Gdi.stub, 'DMEnumObj', 0],
       [Gdi.stub, 'DMOutput', 0],
       [Gdi.stub, 'DMPixel', 0],
@@ -600,7 +607,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'QueryJob', 4],
       [Gdi.stub, 'unknown'],
       // 250 //
-      [Gdi.stub, 'Copy', 10],
+      [Copy, 'Copy', 10, [FARPTR, FARPTR, UINT]],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'DeleteSpoolPage', 2],
@@ -656,7 +663,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 300 //
       [EngineEnumerateFont, 'EngineEnumerateFont', 12, [LPCSTR, FARPTR, DWORD], INT],
-      [Gdi.stub, 'EngineDeleteFont', 4],
+      [EngineDeleteFont, 'EngineDeleteFont', 4, [FARPTR], INT],
       [EngineRealizeFont, 'EngineRealizeFont', 12, [FARPTR, FARPTR, FARPTR], DWORD],
       [Gdi.stub, 'EngineGetCharWidth', 12],
       [Gdi.stub, 'EngineSetFontContext', 6], // TODO: this errored by disassembler

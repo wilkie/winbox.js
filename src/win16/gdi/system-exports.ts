@@ -54,6 +54,39 @@ export function SelectBitmap(this: any, hdc: number, hbm: number) {
  * -1, its count back to nought, for a block no one has locked. WinBox's
  * bitmaps keep their bits in no global block: -1.
  */
+/**
+ * Bytes copied for the spooler (seg28 `0000`): `rep movsb` of `count` bytes
+ * from `lpSource` to `lpDestination`, forward a byte at a time, so a copy
+ * onto bytes just past its source repeats them. Nothing is answered.
+ */
+export function Copy(this: any, lpDestination: number, lpSource: number, count: number) {
+  const core = this.machine.cpu.core;
+  const to = lpDestination >>> 0;
+  const from = lpSource >>> 0;
+
+  for (let at = 0; at < (count & 0xffff); at++) {
+    core.write8(
+      to >>> 16,
+      ((to & 0xffff) + at) & 0xffff,
+      core.read8(from >>> 16, ((from & 0xffff) + at) & 0xffff)
+    );
+  }
+}
+
+/**
+ * A memory bitmap's fonts walked for a driver (seg13 `0163`): `mov ax,1`
+ * and `retf 10h` -- a bitmap has no fonts of its own, and none is walked.
+ */
+export function DMEnumDFonts(
+  this: any,
+  _lpDestDev: number,
+  _lpFaceName: number,
+  _lpCallbackFunc: number,
+  _lpClientData: number
+) {
+  return 1;
+}
+
 export function GDIMoveBitmap(this: any, _hbm: number) {
   return 0xffff;
 }

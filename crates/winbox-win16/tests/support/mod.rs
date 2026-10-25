@@ -228,6 +228,7 @@ pub const AGREEING: &[&str] = &[
     "dcinner-vga256",
     "bounds",
     "gdipq",
+    "gdicopy",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -255,7 +256,7 @@ fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
 
     if [
         "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
-        "prnote", "prtabs", "prmeta", "prband", "prblt",
+        "prnote", "prtabs", "prmeta", "prband", "prblt", "prtt",
     ]
     .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)
