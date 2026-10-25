@@ -20,6 +20,8 @@ topics: [standard-controls]
 
 The device contexts `GetDC` gives out are USER's cache of a few, lent and given back. A handle given back is one of them still, so what is asked of it is answered.
 
+[[measured]] [[probe:dcreuse]] asks which handle comes next for another place, records only whether two handles are the same, and found none given again for a place other than its own: a window's given back, the screen's is another handle; the screen's given back, another window's is another; two windows' given back in either order, the screen's is neither; a window's given back, a minimized window's is another, and that one's given back, the screen's another. Held at once, six of the screen's are five distinct handles: with the five all lent, Windows lends one of them again. Both engines answer the first six so; the sixth they make anew (`dcreuse:held`, a known gap). Widget Workshop's installer, run under both engines, led here: the Rust engine let go of a different handle from the TypeScript engine's, through erasing a minimized window's title, which is now passed over in both as a window that paints itself is not.
+
 ## Why it matters
 
 Reversi asks `GetNearestColor` of a device context it has given back, and makes its board's brushes of the answer. winbox.js freed the handle, answered -1, and the board's grey came out white. The screen went from 53,676 pixels unlike Windows' to 19,349.
