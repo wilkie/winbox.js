@@ -102,6 +102,9 @@ export const PER_DISPLAY = new Set([
   /* Program Manager's group file holds the display's resolution and its
    * icons' format, and its windows are placed by the screen's size. */
   'pmbare',
+  /* The palette internals are a palette device's on the 256-colour
+   * display and next to nothing on the VGA. */
+  'dcinner',
 ]);
 
 /**

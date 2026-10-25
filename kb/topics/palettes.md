@@ -2,7 +2,7 @@
 kind: topic
 name: Palettes on a display of fixed colours
 summary: What Windows 3.1's palette calls answer, and what a colour given as a palette index draws as, on displays whose colours cannot change — the VGA, the EGA, the Super VGA and the Hercules.
-probes: [palette, dibpal, palsys, palreal, paldib, palshot]
+probes: [palette, dibpal, palsys, palreal, paldib, palshot, dcinner]
 ---
 
 A program that shows pictures of many colours makes a **logical palette**, selects it into a device context and realizes it. On a display with a palette of its own, that changes the colours the screen can show. None of the four displays winbox.js records have one. [[fn:GDI.GetDeviceCaps]] answers no `RC_PALETTE` and a palette size of 0, so the calls do less, and what they answer is what a program has to cope with. Windows Help makes a palette as it starts.
@@ -51,24 +51,39 @@ Windows can be recorded on one: Microsoft's Super VGA 256-colour driver, `SVGA25
 [[probe:palreal]] realizes a palette of eight entries in the foreground of an active window on the 256-colour display, then a second palette of four in the background, then animates. [[probe:paldib]] draws DIBs and WinG bitmaps with a palette realized. winbox.js agrees with all their records.
 
 - [[measured]] Realized in the foreground, a palette's colours take the slots between the static colours in order from 10, whatever was there. The driver's own `5f3f3f`, already at 10, is put at 12 when it comes third. A colour that is one of the static colours, `ff0000`, is drawn as that, and takes no slot. A colour the palette has already had shares its slot. `PC_NOCOLLAPSE` and `PC_RESERVED` entries take slots of their own.
-- [[measured]] [[fn:USER.RealizePalette]] answers the palette's count of entries: 8, then 4 for the second. Realizing the same palette again answers 0. After [[fn:GDI.UnrealizeObject]] it answers 8 again, into the same slots.
+- [[measured]] [[fn:USER.RealizePalette]] answers how many of the palette's entries are in a slot they were not in: 8, then 4 for the second, all of each the first time. Realizing the same palette again answers 0. After [[fn:GDI.UnrealizeObject]] it answers 8 again, into the same slots.
 - [[measured]] Realized in the background, with `SelectPalette`'s last argument TRUE, a palette's colours take the free slots after the foreground's, 16 to 19, and leave the foreground's alone.
 - [[measured]] With the palette selected, `PALETTEINDEX(n)` draws in entry `n`'s slot, and in entry 0's past the palette's end. `PALETTERGB` draws in its nearest entry's slot. [[fn:GDI.GetPixel]] and [[fn:GDI.GetNearestColor]] answer the slot's colour.
 - [[measured]] A colour given as plain `RGB` is still drawn as the nearest static colour, even one that is now in a slot: `RGB(12h, 34h, 56h)` is navy.
 - [[measured]] A DIB's colours, drawn with [[fn:GDI.SetDIBitsToDevice]] and `DIB_RGB_COLORS`, and a WinG bitmap's, blitted, are drawn in the slots of the realized palette's nearest entries: `808080` comes out `5f3f3f`, the palette's nearest, not the static grey. With `DIB_PAL_COLORS` the colour table is indices into the realized palette, and an index past its end is entry 0.
 - [[measured]] [[fn:GDI.AnimatePalette]] changes a `PC_RESERVED` entry's slot in place: a pixel drawn in it before reads back in the new colour.
-- [[measured]] The top-level windows are sent `WM_PALETTECHANGED` when a realization changes a slot's colour: twice in `palreal`, for the foreground palette and the background one, and not when the first is realized again into the slots it had.
+- [[measured]] The top-level windows are sent `WM_PALETTECHANGED` twice in `palreal`, and not when the first palette is realized again. Which two realizations send it is GDI's foreground palette's: see below.
 - [[measured]] [[fn:GDI.GetSystemPaletteUse]] answers 1, `SYSPAL_STATIC`, and [[fn:GDI.SetSystemPaletteUse]] answers the use before it. What `SYSPAL_NOSTATIC` does to the static colours is not followed.
 - A pen of a palette's colour draws in its slot too. SimTower frames its dialog with such pens, and Windows' screen shows them in the palette's greys. That is from the corpus, not a probe.
 - [[fn:GDI.SetBkColor]] and [[fn:GDI.SetTextColor]] of a palette's colour are that entry's colour, in its slot, though they answer the colour as it was given. SimTower sets `PALETTEINDEX(0)`, its white, before its buttons draw. winbox.js had taken the reference for black.
 - A colour given as RGB is the nearest static colour wherever the driver matches one: the dots of a focus rectangle drawn on white are drawn in the static white, though SimTower's palette has put a white of its own at 10.
 - SimTower realizes its palette and draws its title as one DIB. With all this, its title screen is Windows' pixel for pixel, but for where the mouse cursor is: the recorder moves the pointer to press keys.
 
+## GDI's half of selecting and realizing
+
+USER's `SelectPalette` and `RealizePalette` are thin: each decides what USER decides and hands the rest to GDI's own export, which a program may call too. [[measured]] [[probe:dcinner]] calls GDI's on the VGA and the 256-colour display, and both engines agree with every record.
+
+- [[read out]] GDI keeps two palettes in its data segment: the one last selected for the foreground, `[480h]`, and the one last realized, `[482h]` (`GDI.EXE` seg22). No palette is the foreground one until one is selected for it.
+- [[read out]] [[fn:GDI.GDISelectPalette]] selects a palette for the foreground or the background. For the foreground, a palette not already GDI's foreground palette becomes it, and none is then the one realized last.
+- [[read out]] USER's [[fn:USER.SelectPalette]] (`USER.EXE` seg6 `00a2`) asks for the background where the program did, where the palette is the stock one, and where the device context is no window's or its window is neither the active one nor in it. A memory context's palette is selected for the background.
+- [[read out]] [[fn:GDI.GDIRealizePalette]] does nothing for the palette realized last. Any other becomes that, and is realized in the foreground if it is GDI's foreground palette, in the background otherwise — a memory context's too. It answers in AX the entries now in a slot they were not in, and in DX the slots it gave a colour. A palette realized before keeps its slots in the foreground, putting their colours back where another palette took them.
+- [[read out]] USER's [[fn:USER.RealizePalette]] (`USER.EXE` seg6 `0134`) answers AX, and sends `WM_PALETTECHANGED` with the device context's window only where DX was not nought and the palette is GDI's foreground palette. In [[probe:palreal]] that is the foreground palette's first realization and its realization after [[fn:GDI.UnrealizeObject]]: the background palette's is not sent.
+- [[measured]] [[fn:GDI.IsDCCurrentPalette]] answers whether a context's palette is GDI's foreground palette, whichever context it was selected into for the foreground.
+- [[measured]] [[fn:GDI.RealizeDefaultPalette]] on the 256-colour display frees every slot between the static colours, keeping their colours, makes the stock palette the foreground one and the one realized last, and answers nought. On the VGA it does nothing.
+- [[measured]] [[fn:GDI.UpdateColors]] answers nought on both.
+
 ## Not yet followed
 
-- `SYSPAL_NOSTATIC`, `RealizeDefaultPalette` and `UpdateColors` on the 256-colour display. The `palette` probe's own recording there is not kept: the entries a resized palette gains are whatever memory held, and on a palette device they are realized and drawn.
+- `SYSPAL_NOSTATIC` on the 256-colour display. The `palette` probe's own recording there is not kept: the entries a resized palette gains are whatever memory held, and on a palette device they are realized and drawn.
+- `UpdateColors`' redrawing of a window, slot by slot, on the 256-colour display.
+- A palette realized in the background again in a later round of realizations, which GDI tells by a count of rounds (seg22 `0e63`); WinBox tells it by the palette still holding every slot it took.
 - `PALETTEINDEX` colours in pens, text, and the brushes of `Rectangle`, `Ellipse` and `Polygon`.
-- `AnimatePalette`, `UpdateColors`, `RealizeDefaultPalette`, and palettes in DIBs.
+- `AnimatePalette` beyond reserved entries, and palettes in DIBs.
 
 ## In winbox.js
 

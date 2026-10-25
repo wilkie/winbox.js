@@ -92,8 +92,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalNotify",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalAlloc",
@@ -259,8 +259,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FreeModule",
                 pops: 2,
-                returns: 2,
-                stub: true,
+                returns: 0,
+                stub: false,
             }),
             Some(Export {
                 name: "GetModuleHandle",
@@ -307,8 +307,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetInstanceData",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Catch",
@@ -949,14 +949,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalCountFree",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LocalHeapSize",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalLRUOldest",
@@ -985,7 +985,7 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetExpWinVer",
                 pops: 2,
-                returns: 2,
+                returns: 4,
                 stub: false,
             }),
             Some(Export {
@@ -2215,8 +2215,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetRelAbs",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetPolyFillMode",
@@ -2701,8 +2701,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetRelAbs",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetStockObject",
@@ -3199,14 +3199,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IsDCDirty",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetDCStatus",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -3223,8 +3223,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetClipRgn",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -3325,32 +3325,32 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetDCHook",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetDCHook",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "SetHookFlags",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "SetBoundsRect",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetBoundsRect",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SelectBitmap",
@@ -4027,14 +4027,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetCharAbcWidths",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetOutlineTextMetrics",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetGlyphOutline",
@@ -4051,8 +4051,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetFontData",
                 pops: 18,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "ConvertOutlineFontFile",
@@ -4177,8 +4177,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetKerningPairs",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4351,14 +4351,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GDISelectPalette",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GDIRealizePalette",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetPaletteEntries",
@@ -4375,14 +4375,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "RealizeDefaultPalette",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "UpdateColors",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "AnimatePalette",
@@ -4441,8 +4441,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ResetDC",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "StartDoc",
@@ -4651,14 +4651,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetCurLogFont",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "IsDCCurrentPalette",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",

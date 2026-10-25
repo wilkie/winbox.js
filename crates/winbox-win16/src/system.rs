@@ -264,7 +264,9 @@ pub struct System {
     /// device context's palette was selected for the background, by its
     /// handle; and the system palette's use, where set.
     pub system_palette: Option<crate::gdi::palettes::SystemPalette>,
-    pub palette_background: HashMap<u16, bool>,
+    /// GDI's palettes: the one last selected in the foreground and the one
+    /// last realized (`gdi::palettes`).
+    pub palette_state: (u16, u16),
     pub system_palette_use: Option<u16>,
     /// GDI's segment as a program reads it, and where it starts.
     pub gdi_heap: crate::gdi::heap::Heap,
@@ -569,7 +571,7 @@ impl System {
             accelerators: Vec::new(),
             gdi_heap: crate::gdi::heap::Heap::new(),
             system_palette: None,
-            palette_background: HashMap::new(),
+            palette_state: (0, 0),
             system_palette_use: None,
             gdi_data: None,
             capture: None,

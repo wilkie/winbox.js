@@ -26,8 +26,9 @@ const LAST = 245;
  *   `PC_NOCOLLAPSE` or `PC_RESERVED`.
  * * Realized in the background, a palette's colours take the free slots
  *   after those the foreground took, and leave the foreground's alone.
- * * `RealizePalette` answers the palette's count of entries, or nought for a
- *   palette realized already.
+ * * `RealizePalette` answers how many of the palette's entries are in a
+ *   slot they were not in before: all of them the first time, nought for a
+ *   palette realized already (`palreal`, `dcinner`).
  * * `AnimatePalette` changes a reserved entry's slot in place: a pixel drawn
  *   in it before reads back in the new colour.
  * * Where a slot changes colour, the top-level windows are sent
@@ -49,13 +50,44 @@ export class SystemPalette {
    * what `RealizePalette` answers, with whether a slot changed colour.
    */
   realize(palette: LogicalPalette, entries: PaletteEntries, foreground: boolean) {
-    /* Realized already, and every slot it took still its own. */
-    if (palette.slots && palette.taken?.every((slot) => this.#owners[slot] === palette)) {
-      return { answer: 0, changed: false };
+    const before = palette.slots;
+    const ownSlots = palette.taken?.every((slot) => this.#owners[slot] === palette);
+
+    /* Realized already in the background, and every slot it took still its
+     * own: nothing to do (`GDI.EXE` seg22 `0e63`, the palette's realization
+     * still the current one). */
+    if (!foreground && before && ownSlots) {
+      return { answer: 0, changed: false, written: 0 };
     }
 
     if (foreground) {
       this.#owners.fill(null);
+    }
+
+    /* Realized before, now in the foreground: each entry keeps the slot it
+     * had, the slot's colour put back where another palette took it since,
+     * and nothing is mapped anew (seg22 `0dd2`-`0e2e`). */
+    if (foreground && before && palette.taken) {
+      let written = 0;
+
+      for (const slot of palette.taken) {
+        const index = before.indexOf(slot);
+        const [red, green, blue] = entries[index] ?? [0, 0, 0];
+        const [r, g, b] = this.colours.colours[slot];
+
+        if (r !== red || g !== green || b !== blue) {
+          this.colours.recolour(slot, red, green, blue);
+          written++;
+        }
+
+        this.#owners[slot] = palette;
+      }
+
+      if (written) {
+        this.colours.rewritten = true;
+      }
+
+      return { answer: 0, changed: written > 0, written };
     }
 
     const slots: number[] = [];
@@ -142,7 +174,19 @@ export class SystemPalette {
       this.colours.rewritten = true;
     }
 
-    return { answer: entries.length, changed };
+    /* The entries whose slot is not the one they had (seg22 `0f86`), and
+     * the slots given a colour (`0f14`). */
+    const answer = slots.filter((slot, at) => before?.[at] !== slot).length;
+
+    return { answer, changed, written: taken.length };
+  }
+
+  /**
+   * The default palette realized (seg22 `101d`): every slot between the
+   * static colours freed, keeping its colour.
+   */
+  freeAll() {
+    this.#owners.fill(null);
   }
 
   /**

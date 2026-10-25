@@ -1,0 +1,299 @@
+{
+  "probe": "dchook",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "curfont",
+      "args": "new memory context",
+      "result": "same"
+    },
+    {
+      "function": "curfont",
+      "args": "a font selected",
+      "result": "same"
+    },
+    {
+      "function": "relabs",
+      "args": "new memory context",
+      "result": "00010001"
+    },
+    {
+      "function": "relabs",
+      "args": "set 2",
+      "result": "0001"
+    },
+    {
+      "function": "relabs",
+      "args": "after 2",
+      "result": "00010002"
+    },
+    {
+      "function": "relabs",
+      "args": "set 7",
+      "result": "0002"
+    },
+    {
+      "function": "relabs",
+      "args": "after 7",
+      "result": "00010007"
+    },
+    {
+      "function": "relabs",
+      "args": "winding",
+      "result": "00020007"
+    },
+    {
+      "function": "relabs",
+      "args": "restored",
+      "result": "00020007"
+    },
+    {
+      "function": "relabs",
+      "args": "no context",
+      "result": "00000000"
+    },
+    {
+      "function": "hook",
+      "args": "get, new memory context",
+      "result": "00000000 proc=00000000"
+    },
+    {
+      "function": "hook",
+      "args": "flags 1, no hook",
+      "result": "00020002"
+    },
+    {
+      "function": "hook",
+      "args": "flags 0",
+      "result": "00010001"
+    },
+    {
+      "function": "hook",
+      "args": "flags 0 again",
+      "result": "00020002"
+    },
+    {
+      "function": "hook",
+      "args": "set",
+      "result": "cafe0001"
+    },
+    {
+      "function": "hook",
+      "args": "get, set",
+      "result": "cafe1234 proc=same"
+    },
+    {
+      "function": "hookcall",
+      "args": "clip box, flags clear",
+      "result": "calls=0 code=0 data=00000000 param=00000000 samedc=0"
+    },
+    {
+      "function": "hook",
+      "args": "flags 1",
+      "result": "00020002"
+    },
+    {
+      "function": "hookcall",
+      "args": "clip box",
+      "result": "calls=1 code=1 data=cafe1234 param=00000000 samedc=1"
+    },
+    {
+      "function": "hookcall",
+      "args": "text colour",
+      "result": "calls=1 code=1 data=cafe1234 param=00000000 samedc=1"
+    },
+    {
+      "function": "hookcall",
+      "args": "rectangle",
+      "result": "calls=1 code=1 data=cafe1234 param=00000000 samedc=1"
+    },
+    {
+      "function": "hook",
+      "args": "flags 1 again",
+      "result": "00010001"
+    },
+    {
+      "function": "hook",
+      "args": "flags 2",
+      "result": "00010001"
+    },
+    {
+      "function": "hookcall",
+      "args": "clip box, flags 2",
+      "result": "calls=0 code=0 data=00000000 param=00000000 samedc=0"
+    },
+    {
+      "function": "hook",
+      "args": "set none",
+      "result": "00000001"
+    },
+    {
+      "function": "hookcall",
+      "args": "clip box, no hook",
+      "result": "calls=0 code=0 data=00000000 param=00000000 samedc=0"
+    },
+    {
+      "function": "hook",
+      "args": "flags after none",
+      "result": "00020002"
+    },
+    {
+      "function": "hook",
+      "args": "get, a window's",
+      "result": "data=some proc=USER's DCHOOK"
+    },
+    {
+      "function": "hook",
+      "args": "a window's flags 2",
+      "result": "00020002"
+    },
+    {
+      "function": "hook",
+      "args": "a window's flags 2 again",
+      "result": "00020002"
+    },
+    {
+      "function": "cliprgn",
+      "args": "new memory context",
+      "result": "nought kind=0 box=-1,-1,-1,-1"
+    },
+    {
+      "function": "cliprgn",
+      "args": "a region selected",
+      "result": "other kind=2 box=10,10,50,40"
+    },
+    {
+      "function": "cliprgn",
+      "args": "offset",
+      "result": "other kind=2 box=15,15,55,45"
+    },
+    {
+      "function": "cliprgn",
+      "args": "none selected",
+      "result": "nought kind=0 box=-1,-1,-1,-1"
+    },
+    {
+      "function": "cliprgn",
+      "args": "intersected",
+      "result": "other kind=1 box=0,0,0,0"
+    },
+    {
+      "function": "cliprgn",
+      "args": "excluded",
+      "result": "other kind=1 box=0,0,0,0"
+    },
+    {
+      "function": "cliprgn",
+      "args": "a window's",
+      "result": "nought kind=0 box=-1,-1,-1,-1"
+    },
+    {
+      "function": "cliprgn",
+      "args": "a window's intersected",
+      "result": "other kind=2 box=19,38,74,83"
+    },
+    {
+      "function": "reset",
+      "args": "memory context",
+      "result": "nought"
+    },
+    {
+      "function": "reset",
+      "args": "a window's",
+      "result": "nought"
+    },
+    {
+      "function": "reset",
+      "args": "the screen's",
+      "result": "nought"
+    },
+    {
+      "function": "palette",
+      "args": "current, new memory context",
+      "result": "0000"
+    },
+    {
+      "function": "palette",
+      "args": "USER's select",
+      "result": "stock"
+    },
+    {
+      "function": "palette",
+      "args": "current after USER's",
+      "result": "0000"
+    },
+    {
+      "function": "palette",
+      "args": "GDI's select, foreground",
+      "result": "same"
+    },
+    {
+      "function": "palette",
+      "args": "current after GDI's",
+      "result": "0001"
+    },
+    {
+      "function": "palette",
+      "args": "current, another context",
+      "result": "0000"
+    },
+    {
+      "function": "palette",
+      "args": "GDI's realize",
+      "result": "00000000"
+    },
+    {
+      "function": "palette",
+      "args": "GDI's realize again",
+      "result": "00000000"
+    },
+    {
+      "function": "palette",
+      "args": "GDI's select, background",
+      "result": "stock"
+    },
+    {
+      "function": "palette",
+      "args": "current, background",
+      "result": "0001"
+    },
+    {
+      "function": "palette",
+      "args": "realize default",
+      "result": "some"
+    },
+    {
+      "function": "palette",
+      "args": "current after default",
+      "result": "0001"
+    },
+    {
+      "function": "palette",
+      "args": "current, a window's",
+      "result": "0001"
+    },
+    {
+      "function": "palette",
+      "args": "USER's realize, a window's",
+      "result": "0"
+    },
+    {
+      "function": "palette",
+      "args": "GDI's realize, a window's",
+      "result": "00000000"
+    },
+    {
+      "function": "palette",
+      "args": "update colours, a window's",
+      "result": "0"
+    }
+  ]
+}

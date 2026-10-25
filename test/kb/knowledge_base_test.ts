@@ -103,8 +103,8 @@ describe('the knowledge base', () => {
         [
           'kind: function',
           'module: GDI',
-          'name: UpdateColors',
-          'ordinal: 366',
+          'name: FTrapping0',
+          'ordinal: 355',
           'versions:',
           '  "3.1": exact',
         ],

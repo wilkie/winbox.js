@@ -162,9 +162,11 @@ impl System {
     }
 
     /// A logical palette realized into the system palette: each entry's
-    /// slot kept on the palette; what `RealizePalette` answers, and whether
-    /// a slot changed colour.
-    fn realize(&mut self, object: usize, foreground: bool) -> (u16, bool) {
+    /// slot kept on the palette; how many entries are in a slot they were
+    /// not in before, and how many slots were given a colour
+    /// (`system-palette.ts`).
+    #[allow(clippy::too_many_lines)]
+    fn realize(&mut self, object: usize, foreground: bool) -> (u16, u16) {
         let entries = self.entries_of(object);
         let (slots_were, taken_were) = {
             let palette = self.palette_mut(object);
@@ -172,20 +174,47 @@ impl System {
             (palette.slots.clone(), palette.taken.clone())
         };
         let system = self.system_palette.as_mut().expect("the system palette");
+        let own_slots = taken_were.as_ref().is_some_and(|taken| {
+            taken
+                .iter()
+                .all(|&slot| system.owners[slot] == Some(object))
+        });
 
-        // Realized already, and every slot it took still its own.
-        if slots_were.is_some()
-            && taken_were.as_ref().is_some_and(|taken| {
-                taken
-                    .iter()
-                    .all(|&slot| system.owners[slot] == Some(object))
-            })
-        {
-            return (0, false);
+        // Realized already in the background, and every slot it took still
+        // its own: nothing to do (`GDI.EXE` seg22 `0e63`).
+        if !foreground && slots_were.is_some() && own_slots {
+            return (0, 0);
         }
 
         if foreground {
             system.owners.fill(None);
+        }
+
+        // Realized before, now in the foreground: each entry keeps the slot
+        // it had, the slot's colour put back where another palette took it
+        // since, and nothing is mapped anew (seg22 `0dd2`-`0e2e`).
+        if foreground && let (Some(before), Some(taken)) = (&slots_were, &taken_were) {
+            let mut written = 0u16;
+
+            for &slot in taken {
+                let index = before.iter().position(|&at| at == slot);
+                let colour = index
+                    .and_then(|index| entries.get(index))
+                    .map_or([0, 0, 0], |&[r, g, b, _]| [r, g, b]);
+
+                if system.colours.borrow().colours[slot] != colour {
+                    system.colours.borrow_mut().recolour(slot, colour);
+                    written += 1;
+                }
+
+                system.owners[slot] = Some(object);
+            }
+
+            if written > 0 {
+                system.colours.borrow_mut().rewritten = true;
+            }
+
+            return (0, written);
         }
 
         let mut slots: Vec<usize> = Vec::with_capacity(entries.len());
@@ -262,13 +291,179 @@ impl System {
             system.colours.borrow_mut().rewritten = true;
         }
 
-        let count = entries.len() as u16;
+        // The entries whose slot is not the one they had (seg22 `0f86`), and
+        // the slots given a colour (`0f14`).
+        let moved = slots
+            .iter()
+            .enumerate()
+            .filter(|&(at, &slot)| {
+                slots_were
+                    .as_ref()
+                    .and_then(|before| before.get(at))
+                    .is_none_or(|&was| was != slot)
+            })
+            .count() as u16;
+        let written = taken.len() as u16;
         let palette = self.palette_mut(object);
 
         palette.slots = Some(slots);
         palette.taken = Some(taken);
-        (count, changed)
+        (moved, written)
     }
+
+    /// GDI's palettes: the one last selected in the foreground, `[480h]`,
+    /// and the one last realized, `[482h]` (`GDI.EXE` seg22 `0271`, `1088`).
+    fn palette_state(&mut self) -> &mut (u16, u16) {
+        &mut self.palette_state
+    }
+
+    /// The palette selected into a device context: its handle, the stock
+    /// one's where none was selected.
+    fn palette_handle_of(&mut self, dc: usize) -> u16 {
+        match self.gdi.dcs[dc].palette {
+            Some(object) => self.handles.lookup(Object::Gdi(object)).unwrap_or(0),
+            None => super::objects::default_palette(self),
+        }
+    }
+
+    /// The window whose device context this is, by its index.
+    fn window_of_dc(&self, dc: usize) -> Option<usize> {
+        self.z_order.iter().copied().find(|&index| {
+            self.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.dc == Some(dc))
+        })
+    }
+}
+
+/// `GDISelectPalette`: **read out** of `GDI.EXE` seg22 `0271`; the palette
+/// before answered, and one selected for the foreground, not the one there
+/// already, GDI's foreground palette, no palette then realized last
+/// (`dcinner`).
+pub fn gdi_select_palette(system: &mut System, hdc: u16, handle: u16, background: bool) -> u16 {
+    let (Some(dc), Some(object)) = (super::dc::dc_of(system, hdc), system.palette_of(handle))
+    else {
+        return 0;
+    };
+    let before = system.palette_handle_of(dc);
+
+    system.gdi.dcs[dc].palette = Some(object);
+
+    if !background && handle != system.palette_state().0 {
+        *system.palette_state() = (handle, 0);
+    }
+
+    before
+}
+
+pub fn gdi_select_palette_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hdc = args.word(system);
+    let handle = args.word(system);
+    let background = args.word(system) != 0;
+
+    Ok(Answer::Word(gdi_select_palette(
+        system, hdc, handle, background,
+    )))
+}
+
+/// `GDIRealizePalette`: **read out** of seg22 `1088` and `0cfb`. Nought on
+/// a display with fixed colours and for the palette realized last;
+/// otherwise it becomes that, realized in the foreground if it is GDI's
+/// foreground palette. The entries moved, the slots written above them
+/// (`dcinner`).
+pub fn gdi_realize_palette(system: &mut System, hdc: u16) -> u32 {
+    if system.system_palette().is_none() {
+        return 0;
+    }
+
+    let Some(dc) = super::dc::dc_of(system, hdc) else {
+        return 0;
+    };
+    let Some(object) = system.gdi.dcs[dc].palette else {
+        return 0;
+    };
+
+    if !matches!(
+        &system.gdi.objects[object],
+        GdiObject::Palette(Palette {
+            entries: Some(_),
+            ..
+        })
+    ) {
+        return 0;
+    }
+
+    let handle = system.palette_handle_of(dc);
+    let (foreground, realized) = *system.palette_state();
+
+    if handle == realized {
+        return 0;
+    }
+
+    system.palette_state().1 = handle;
+
+    let (moved, written) = system.realize(object, handle == foreground);
+
+    u32::from(moved) | (u32::from(written) << 16)
+}
+
+pub fn gdi_realize_palette_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hdc = args.word(system);
+
+    Ok(Answer::Dword(gdi_realize_palette(system, hdc)))
+}
+
+/// `IsDCCurrentPalette`: **read out** of seg22 `0b0c`, the device context's
+/// palette compared with GDI's foreground palette (`dcinner`).
+pub fn is_dc_current_palette(system: &mut System, hdc: u16) -> bool {
+    let Some(dc) = super::dc::dc_of(system, hdc) else {
+        return false;
+    };
+    let handle = system.palette_handle_of(dc);
+
+    handle == system.palette_state().0
+}
+
+pub fn is_dc_current_palette_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hdc = args.word(system);
+
+    Ok(Answer::Word(u16::from(is_dc_current_palette(system, hdc))))
+}
+
+/// `RealizeDefaultPalette`: **read out** of seg22 `101d`. On a display with
+/// a palette every slot between the static colours freed, keeping its
+/// colour, the stock palette GDI's foreground palette and the one realized
+/// last, and nought; on one with fixed colours, what AX held, GDI's data
+/// segment (`dcinner`).
+pub fn realize_default_palette_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hdc = args.word(system);
+
+    if system.system_palette().is_none() {
+        return Ok(Answer::Dword(u32::from(
+            super::text::enumerate::gdi_data_selector(system),
+        )));
+    }
+
+    if super::dc::dc_of(system, hdc).is_none() {
+        return Ok(Answer::Dword(0));
+    }
+
+    if let Some(palette) = system.system_palette() {
+        palette.owners.fill(None);
+    }
+
+    let stock = super::objects::default_palette(system);
+
+    *system.palette_state() = (stock, stock);
+    Ok(Answer::Dword(0))
+}
+
+/// `UpdateColors`: **read out** of seg22 `0109` and `0773`; nought either
+/// way, the redrawing on a display with a palette not followed (`dcinner`).
+pub fn update_colors_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+
+    Ok(Answer::Word(0))
 }
 
 /// A palette of the entries a `LOGPALETTE` gives: its version, its count,
@@ -379,91 +574,58 @@ pub fn get_nearest_palette_index(system: &mut System, args: &mut Args) -> Result
     Ok(Answer::Word(best as u16))
 }
 
-/// The palette the device context had, the stock one to begin with; kept
-/// by the context's handle whether it is for the background (`palreal`).
+/// USER's `SelectPalette`: **read out** of `USER.EXE` seg6 `00a2`. A
+/// palette is selected for the background when asked, when it is the stock
+/// one, and when the device context is no window's, or the window is
+/// neither the active one nor in it; then GDI's `GDISelectPalette`
+/// (`dcinner`, `palreal`).
 pub fn select_palette(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let handle = args.word(system);
-    let background = args.word(system) != 0;
-    let (Some(dc), Some(object)) = (super::dc::dc_of(system, hdc), system.palette_of(handle))
-    else {
-        return Ok(Answer::Word(0));
-    };
-    let before = match system.gdi.dcs[dc].palette {
-        Some(was) => system.handles.lookup(Object::Gdi(was)).unwrap_or(0),
-        None => super::objects::default_palette(system),
-    };
+    let force = args.word(system) != 0;
+    let mut background = true;
 
-    system.gdi.dcs[dc].palette = Some(object);
-    system.palette_background.insert(hdc, background);
-    Ok(Answer::Word(before))
+    if !force
+        && handle != super::objects::default_palette(system)
+        && let Some(dc) = super::dc::dc_of(system, hdc)
+    {
+        let active = system.active_window();
+        let mut at = system.window_of_dc(dc);
+
+        while let Some(index) = at.filter(|_| background) {
+            background = Some(index) != active;
+            at = system.windows[index]
+                .as_ref()
+                .and_then(|window| window.parent);
+        }
+    }
+
+    Ok(Answer::Word(gdi_select_palette(
+        system, hdc, handle, background,
+    )))
 }
 
-/// Nought on a display with fixed colours, or into a memory device context;
-/// on the 256-colour display the palette realized, in the foreground unless
-/// it was selected for the background or its window is not the active one
-/// or in it, and where a slot changed colour the top-level windows sent
-/// `WM_PALETTECHANGED` (`palreal`).
+/// USER's `RealizePalette`: **read out** of `USER.EXE` seg6 `0134`. GDI's
+/// `GDIRealizePalette`, and where it gave a slot a colour and the palette
+/// is GDI's foreground palette, the top-level windows sent
+/// `WM_PALETTECHANGED` with the device context's window (`palreal`).
 pub fn realize_palette(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (changed, window, answer) = {
+        let (answer, window) = {
             let mut system = engine.system();
             let hdc = args.word(&system);
-
-            if system.system_palette().is_none() {
-                return Ok(Answer::Word(0));
-            }
-
-            let Some(dc) = super::dc::dc_of(&system, hdc) else {
-                return Ok(Answer::Word(0));
-            };
-            let Some(object) = system.gdi.dcs[dc]
-                .palette
-                .filter(|_| !system.gdi.dcs[dc].memory)
-            else {
-                return Ok(Answer::Word(0));
-            };
-
-            if !matches!(
-                &system.gdi.objects[object],
-                GdiObject::Palette(Palette {
-                    entries: Some(_),
-                    ..
-                })
-            ) {
-                return Ok(Answer::Word(0));
-            }
-
-            let window = system.z_order.iter().copied().find(|&index| {
-                system.windows[index]
-                    .as_ref()
-                    .is_some_and(|window| window.dc == Some(dc))
-            });
-            let active = system.active_window();
-            let mut in_active = window.is_none();
-            let mut at = window;
-
-            while let Some(index) = at.filter(|_| !in_active) {
-                in_active = Some(index) == active;
-                at = system.windows[index]
-                    .as_ref()
-                    .and_then(|window| window.parent);
-            }
-
-            let background = system
-                .palette_background
-                .get(&hdc)
-                .copied()
-                .unwrap_or(false);
-            let (answer, changed) = system.realize(object, !background && in_active);
-            let hwnd = window
+            let answer = gdi_realize_palette(&mut system, hdc);
+            let current = answer >> 16 != 0 && is_dc_current_palette(&mut system, hdc);
+            let window = super::dc::dc_of(&system, hdc)
+                .and_then(|dc| system.window_of_dc(dc))
                 .and_then(|index| system.windows[index].as_ref())
-                .map_or(0, |window| window.hwnd);
+                .map(|window| window.hwnd)
+                .filter(|_| current);
 
-            (changed, hwnd, answer)
+            (answer as u16, window)
         };
 
-        if changed {
+        if let Some(window) = window {
             let tops: Vec<u16> = {
                 let system = engine.system();
 
