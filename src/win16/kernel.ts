@@ -34,6 +34,7 @@ import {
   InitAtomTable,
 } from './atoms.js';
 import { Module } from './module.js';
+import { KERNEL_CONSTANTS } from './kernel/constants.js';
 
 import {
   BYTE,
@@ -356,8 +357,8 @@ export class Kernel extends Module {
       [Kernel.stub, 'PatchCodeHandle', 2, [UINT]],
       [GlobalWire, 'GlobalWire', 2, [HGLOBAL], FARPTR],
       [GlobalUnWire, 'GlobalUnwire', 2, [HGLOBAL], BOOL],
-      [Kernel.stub, '__AHSHIFT'],
-      [Kernel.stub, '__AHINCR'],
+      [KERNEL_CONSTANTS[113], '__AHSHIFT', 0],
+      [KERNEL_CONSTANTS[114], '__AHINCR', 0],
       [OutputDebugString, 'OutputDebugString', 4, [LPCSTR]],
       [Kernel.stub, 'InitLib', 0],
       [Kernel.stub, 'OldYield', 0],
@@ -434,18 +435,18 @@ export class Kernel extends Module {
       [AllocCSToDSAlias, 'AllocCSToDSAlias', 2, [UINT], UINT],
       [AllocDSToCSAlias, 'AllocDSToCSAlias', 2, [UINT], UINT],
       [Kernel.stub, 'AllocAlias', 2],
-      [Kernel.stub, '__ROMBIOS', 2],
-      [Kernel.stub, '__A000H', 6],
+      [KERNEL_CONSTANTS[173], '__ROMBIOS', 0],
+      [KERNEL_CONSTANTS[174], '__A000H', 0],
       [AllocSelector, 'AllocSelector', 2, [UINT], UINT],
       [FreeSelector, 'FreeSelector', 2, [UINT], UINT],
       [PrestoChangoSelector, 'PrestoChangoSelector', 4, [UINT, UINT], UINT],
-      [Kernel.stub, '__WINFLAGS'],
-      [Kernel.stub, '__D000H', 4],
+      [KERNEL_CONSTANTS[178], '__WINFLAGS', 0],
+      [KERNEL_CONSTANTS[179], '__D000H', 0],
       // 180 //
       [Kernel.stub, 'LONGPTRADD', 8],
-      [Kernel.stub, '__B000H', 2],
-      [Kernel.stub, '__B800H', 4],
-      [Kernel.stub, '__0000H', 2],
+      [KERNEL_CONSTANTS[181], '__B000H', 0],
+      [KERNEL_CONSTANTS[182], '__B800H', 0],
+      [KERNEL_CONSTANTS[183], '__0000H', 0],
       [Kernel.stub, 'GlobalDosAlloc', 4],
       [Kernel.stub, 'GlobalDosFree', 2],
       [GetSelectorBase, 'GetSelectorBase', 2, [UINT], DWORD],
@@ -453,12 +454,12 @@ export class Kernel extends Module {
       [GetSelectorLimit, 'GetSelectorLimit', 2, [UINT], DWORD],
       [Kernel.stub, 'SetSelectorLimit', 6],
       // 190 //
-      [Kernel.stub, '__E000H', 6],
+      [KERNEL_CONSTANTS[190], '__E000H', 0],
       [GlobalPageLock, 'GlobalPageLock', 2, [HGLOBAL], UINT],
       [GlobalPageUnlock, 'GlobalPageUnlock', 2, [HGLOBAL], UINT],
-      [Kernel.stub, '__0040H', 2],
-      [Kernel.stub, '__F000H', 2],
-      [Kernel.stub, '__C000H', 2],
+      [KERNEL_CONSTANTS[193], '__0040H', 0],
+      [KERNEL_CONSTANTS[194], '__F000H', 0],
+      [KERNEL_CONSTANTS[195], '__C000H', 0],
       [Kernel.stub, 'SelectorAccessRights', 6],
       [GlobalFix, 'GlobalFix', 2, [HGLOBAL], HGLOBAL],
       [GlobalUnfix, 'GlobalUnfix', 2, [HGLOBAL], HGLOBAL],
@@ -611,7 +612,10 @@ export class Kernel extends Module {
       // 340 //
       [Kernel.stub, 'DiagOutput', 4],
       [Kernel.stub, 'ToolHelpHook', 4],
-      [Kernel.stub, 'unknown', 14],
+      /* KERNEL's own table of the places in its code that handle a
+       * general protection fault, which `HasGPHandler` reads: data in its
+       * code segment (`KRNL386.EXE` seg1 `a820`), not a function. */
+      [Kernel.stub, '__GP', 14],
       [Kernel.stub, 'RegisterWinOldApHook', 6],
       [Kernel.stub, 'GetWinOldApHooks', 0],
       [Kernel.stub, 'IsSharedSelector', 2],

@@ -26,12 +26,56 @@ const GDT_BASE = 0xfffef000;
 const GDT_ENTRIES = 32;
 
 /**
- * Selector 40h: the BIOS's data area, at 400h, as Windows gives it to
- * programs and exports it as `__0040H`. A C runtime clears the BIOS's
- * midnight flag through it when the clock says a day has turned; Hearts,
- * Cribbage and Solitaire programs of the corpus do, as they start.
+ * Selector 40h: the BIOS's data area, at 400h of the first megabyte, as
+ * DOS's extender gives it to programs in the global table. A C runtime
+ * clears the BIOS's midnight flag through it when the clock says a day has
+ * turned; Hearts, Cribbage and Solitaire programs of the corpus do, as
+ * they start. KERNEL exports another for it, `__0040H`
+ * (`FIRST_MEGABYTE_SELECTORS`).
  */
 export const BIOS_DATA_SELECTOR = 0x40;
+
+/**
+ * Where the machine's first megabyte is, as the selectors for its fixed
+ * places reach it: not at nought, where a program's segments are, one to a
+ * 64 KiB from index 1 -- 0A0000h is index 0Ah's -- but above anything a
+ * program is given, just below the global table. What a program reads
+ * there is the machine's, as the selectors' bases are; how far each is
+ * from the first is Windows' (`kconst`).
+ */
+export const FIRST_MEGABYTE = 0xffe00000;
+
+/**
+ * The selectors KERNEL makes for the first megabyte's fixed places as it
+ * starts and exports as constants -- `__E000H`, `__D000H`, `__C000H`,
+ * `__B800H`, `__B000H`, `__A000H`, `__F000H` (and `__ROMBIOS`), `__0040H`
+ * and `__0000H` -- each with the paragraph its entry in `KRNL386.EXE`'s
+ * file holds, in the order KERNEL gives them, one after another in the
+ * local table. **Recorded** by `kconst`: 227h up to 267h, each a data
+ * segment of 64 KiB from its paragraph, not yet accessed (F2h). Here they
+ * are the nine indices below the interrupt descriptor table's, 0FFDh, where
+ * no block reaches: not the table's last, which stay empty, as the
+ * selectors past the end of Windows' smaller table are, which a program may
+ * count on faulting (`fault`, `badptr`, `badarg` load 0FFF7h).
+ */
+export const FIRST_MEGABYTE_SELECTORS: [paragraph: number, index: number][] = [
+  [0xe000, 0xff4],
+  [0xd000, 0xff5],
+  [0xc000, 0xff6],
+  [0xb800, 0xff7],
+  [0xb000, 0xff8],
+  [0xa000, 0xff9],
+  [0xf000, 0xffa],
+  [0x0040, 0xffb],
+  [0x0000, 0xffc],
+];
+
+/** The selector for a paragraph of the first megabyte KERNEL exports one for. */
+export function firstMegabyteSelector(paragraph: number) {
+  const found = FIRST_MEGABYTE_SELECTORS.find(([each]) => each === paragraph);
+
+  return found ? (found[1] << 3) | 7 : undefined;
+}
 
 export class GlobalAllocator {
   declare _cpu: any;
@@ -62,15 +106,24 @@ export class GlobalAllocator {
     this._cpu.core.gdtLimit = 8 * GDT_ENTRIES - 1;
     this._memory.zero(GDT_BASE, 8 * GDT_ENTRIES);
 
-    /* 64 KiB of data from 400h, writable at a program's privilege. */
-    const bios = GDT_BASE + (BIOS_DATA_SELECTOR & 0xfff8);
+    const describe = (at: number, base: number, access: number) => {
+      this._memory.write16(at, 0xffff);
+      this._memory.write16(at + 2, base & 0xffff);
+      this._memory.write8(at + 4, (base >>> 16) & 0xff);
+      this._memory.write8(at + 5, access);
+      this._memory.write8(at + 6, 0);
+      this._memory.write8(at + 7, (base >>> 24) & 0xff);
+    };
 
-    this._memory.write16(bios, 0xffff);
-    this._memory.write16(bios + 2, 0x0400);
-    this._memory.write8(bios + 4, 0);
-    this._memory.write8(bios + 5, 0xf3);
-    this._memory.write8(bios + 6, 0);
-    this._memory.write8(bios + 7, 0);
+    /* 64 KiB of data from 400h of the first megabyte, writable at a
+     * program's privilege. */
+    describe(GDT_BASE + (BIOS_DATA_SELECTOR & 0xfff8), FIRST_MEGABYTE + 0x400, 0xf3);
+
+    /* The first megabyte's selectors, never given to a block. */
+    for (const [paragraph, index] of FIRST_MEGABYTE_SELECTORS) {
+      this._usedMap[index] = true;
+      describe(LDT_BASE + 8 * index, FIRST_MEGABYTE + paragraph * 16, 0xf2);
+    }
   }
 
   /**

@@ -355,7 +355,7 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
     if module.name == "KERNEL"
         && let Some(constant) = kernel_constant(ordinal, system.coprocessor)
     {
-        return u32::from(constant);
+        return u32::from(crate::linker::CONSTANT_SEGMENT) << 16 | u32::from(constant);
     }
 
     let stubs = system.stubs(kept);

@@ -364,7 +364,7 @@ function renderModule(module: ModulePage) {
 <th scope="row"><a href="${page.slug}/index.html"><code>${escape(page.name)}</code></a>${
         page.conflict ? ' <span class="note">disagrees</span>' : ''
       }</th>
-<td class="num">${page.entry?.argumentBytes ?? '—'}</td>
+<td class="num">${page.entry?.kind === 'constant' ? 'constant' : (page.entry?.argumentBytes ?? '—')}</td>
 <td>${badge(page.versions['3.1'])}</td>
 </tr>`
     )
@@ -476,19 +476,24 @@ function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
   ).join('\n');
 
   const entry = page.entry;
+  const constant = entry?.kind === 'constant';
   const bytes = !entry
     ? 'Not yet known'
-    : entry.argumentBytes === null
-      ? 'Not declared'
-      : `${entry.argumentBytes}${entry.implemented ? '' : ' <span class="note">as declared; not yet checked against the binary</span>'}`;
+    : constant
+      ? 'None: a number a program reads where its relocation puts it, not a function it calls'
+      : entry.argumentBytes === null
+        ? 'Not declared'
+        : `${entry.argumentBytes}${entry.implemented ? '' : ' <span class="note">as declared; not yet checked against the binary</span>'}`;
 
   const source = page.source
     ? `<a href="${SOURCE_URL}/${page.source}"><code>${escape(page.source)}</code></a>`
-    : entry?.implemented
-      ? 'Implemented, source not located'
-      : entry
-        ? 'None: calls reach the module stub'
-        : 'None: winbox.js does not declare it';
+    : constant
+      ? 'A constant in the export table'
+      : entry?.implemented
+        ? 'Implemented, source not located'
+        : entry
+          ? 'None: calls reach the module stub'
+          : 'None: winbox.js does not declare it';
 
   const unnamed =
     page.surveyed && !page.surveyed.name
@@ -513,9 +518,10 @@ function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
         .join('')}</ul>`
     : '';
 
-  const signature = page.entry?.implemented
-    ? readSignature(ROOT, page.source, page.entry.implementation ?? page.name)
-    : null;
+  const signature =
+    page.entry?.implemented && !constant
+      ? readSignature(ROOT, page.source, page.entry.implementation ?? page.name)
+      : null;
   /* Only what is factual about the signature: the parameters' names and types
    * and the return type. The descriptions in the source's JSDoc follow the
    * SDK reference's wording, which the site does not republish; the page's

@@ -20,9 +20,51 @@ pub const SELECTORS: usize = 8192;
 pub const GDT_BASE: u32 = 0xfffe_f000;
 pub const GDT_ENTRIES: u32 = 32;
 
-/// Selector 40h: the BIOS's data area, at 400h, as Windows gives it to
-/// programs and exports it as `__0040H`.
+/// Selector 40h: the BIOS's data area, at 400h of the first megabyte, as
+/// DOS's extender gives it to programs in the global table. KERNEL exports
+/// another for it, `__0040H` (`FIRST_MEGABYTE_SELECTORS`).
 pub const BIOS_DATA_SELECTOR: u16 = 0x40;
+
+/// Where the machine's first megabyte is, as the selectors for its fixed
+/// places reach it: not at nought, where a program's segments are, one to
+/// a 64 KiB from index 1 -- 0A0000h is index 0Ah's -- but above anything
+/// a program is given, just below the global table. What a program reads
+/// there is the machine's, as the selectors' bases are; how far each is
+/// from the first is Windows' (`kconst`).
+pub const FIRST_MEGABYTE: u32 = 0xffe0_0000;
+
+/// The selectors KERNEL makes for the first megabyte's fixed places as it
+/// starts and exports as constants -- `__E000H`, `__D000H`, `__C000H`,
+/// `__B800H`, `__B000H`, `__A000H`, `__F000H` (and `__ROMBIOS`),
+/// `__0040H` and `__0000H` -- each with the paragraph its entry in
+/// `KRNL386.EXE`'s file holds, in the order KERNEL gives them, one after
+/// another in the local table. **Recorded** by `kconst`: 227h up to 267h,
+/// each a data segment of 64 KiB from its paragraph, not yet accessed
+/// (`F2h`). Here they are the nine indices below the interrupt
+/// descriptor table's, 0FFDh, where no block reaches: not the table's
+/// last, which stay empty, as the selectors past the end of Windows'
+/// smaller table are, which a program may count on faulting (`fault`,
+/// `badptr`, `badarg` load 0FFF7h).
+pub const FIRST_MEGABYTE_SELECTORS: [(u16, usize); 9] = [
+    (0xe000, 0xff4),
+    (0xd000, 0xff5),
+    (0xc000, 0xff6),
+    (0xb800, 0xff7),
+    (0xb000, 0xff8),
+    (0xa000, 0xff9),
+    (0xf000, 0xffa),
+    (0x0040, 0xffb),
+    (0x0000, 0xffc),
+];
+
+/// The selector for a paragraph of the first megabyte KERNEL exports one
+/// for, as a program is given it.
+pub fn first_megabyte_selector(paragraph: u16) -> Option<u16> {
+    FIRST_MEGABYTE_SELECTORS
+        .iter()
+        .find(|(each, _)| *each == paragraph)
+        .map(|&(_, index)| segment_selector(index))
+}
 
 /// The descriptors given out, by index.
 #[derive(Debug, Clone)]
@@ -52,20 +94,44 @@ impl Descriptors {
     pub fn new() -> Self {
         let mut used = vec![false; SELECTORS];
 
-        // Index nought is never given.
+        // Index nought is never given, nor the first megabyte's.
         used[0] = true;
+
+        for (_, index) in FIRST_MEGABYTE_SELECTORS {
+            used[index] = true;
+        }
+
         Self { used }
     }
 
-    /// The tables made empty, but for the BIOS's data area: 64 KiB of data
-    /// from 400h, writable at a program's privilege.
+    /// The tables made empty, but for the BIOS's data area -- 64 KiB of
+    /// data from 400h of the first megabyte, writable at a program's
+    /// privilege -- and the first megabyte's selectors.
     pub fn reset(&mut self, memory: &mut Memory) {
         memory.zero(LDT_BASE, 8 * SELECTORS);
         memory.zero(GDT_BASE, 8 * GDT_ENTRIES as usize);
 
-        let bios = GDT_BASE + u32::from(BIOS_DATA_SELECTOR & 0xfff8);
+        let describe = |memory: &mut Memory, at: u32, base: u32, access: u8| {
+            let [b0, b1, b2, b3] = base.to_le_bytes();
 
-        memory.write(bios, &[0xff, 0xff, 0x00, 0x04, 0x00, DATA, 0x00, 0x00]);
+            memory.write(at, &[0xff, 0xff, b0, b1, b2, access, 0x00, b3]);
+        };
+
+        describe(
+            memory,
+            GDT_BASE + u32::from(BIOS_DATA_SELECTOR & 0xfff8),
+            FIRST_MEGABYTE + 0x400,
+            DATA,
+        );
+
+        for (paragraph, index) in FIRST_MEGABYTE_SELECTORS {
+            describe(
+                memory,
+                entry(index),
+                FIRST_MEGABYTE + (u32::from(paragraph) << 4),
+                0xf2,
+            );
+        }
     }
 
     /// The local table's base and the offset of its last byte.

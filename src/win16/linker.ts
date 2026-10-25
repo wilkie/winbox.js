@@ -2,25 +2,20 @@
 
 import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
-import { winFlags } from './kernel/GetWinFlags.js';
+import { CONSTANT_SEGMENT, ExportedConstant, KERNEL_CONSTANTS } from './kernel/constants.js';
 import { redirect } from './own-modules.js';
 
 /**
- * KERNEL's exports that are numbers rather than functions, which a program
- * reads where its relocation puts them: in protected mode a huge pointer's
- * selector steps by 8, a shift of 3 (`__AHINCR`, `__AHSHIFT`), and
- * `__WINFLAGS` is what `GetWinFlags` answers. `COMMDLG.DLL`'s entry point
- * reads `__WINFLAGS` and takes another path when bit 15 is set.
+ * The modules' exports that are numbers rather than functions, by ordinal:
+ * KERNEL's (`kernel/constants.ts`). `COMMDLG.DLL`'s entry point reads
+ * `__WINFLAGS` and takes another path when bit 15 is set.
  */
-const CONSTANTS: Record<string, Record<number, (coprocessor: boolean) => number>> = {
-  KERNEL: {
-    113: () => 3,
-    114: () => 8,
-    178: (coprocessor) => winFlags(coprocessor) & 0xffff,
-    /* `__0040H`: the BIOS data area's selector (see `global-allocator.ts`). */
-    193: () => 0x40,
-  },
+const CONSTANTS: Record<string, Record<number, ExportedConstant>> = {
+  KERNEL: KERNEL_CONSTANTS,
 };
+
+/** A relocation of a word's low byte, added to the byte there. */
+const LOW_BYTE = 0;
 
 /**
  * How many sites one chain of fixups can link, so a chain that loops ends:
@@ -49,7 +44,7 @@ const OS_FIXUPS: Record<number, { without: [number, number]; with: [number, numb
 
 /** A number a module exports rather than a function, by its ordinal: undefined for none. */
 export function exportedConstant(module: string, ordinal: number, coprocessor = true) {
-  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.(coprocessor);
+  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.value(coprocessor);
 }
 
 /**
@@ -156,8 +151,24 @@ export class Linker {
           const constant = CONSTANTS[String(relocation.from).toUpperCase()]?.[relocation.ordinal];
 
           if (constant !== undefined && !(module instanceof Loader)) {
-            /* A number, not a function: written where the program reads it. */
-            this.writeRelocation16(relocation, segmentIndex, constant(this.coprocessor));
+            /* A number, not a function, written as KERNEL's loader writes
+             * its FFFFh:number (`KRNL386.EXE` seg1 `748d`-`74ef`): the
+             * number at an offset, FFFFh at a selector, both for a far
+             * pointer, and the number's low byte added at a byte, always
+             * where it is (seg1 `74b9`). */
+            const value = constant.value(this.coprocessor) & 0xffff;
+
+            if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
+              this.writeRelocation16(relocation, segmentIndex, value);
+            } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
+              this.writeRelocation16(relocation, segmentIndex, CONSTANT_SEGMENT);
+            } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
+              this.writeRelocation32(relocation, segmentIndex, CONSTANT_SEGMENT, value);
+            } else if (relocation.addressType == LOW_BYTE) {
+              const at = (segmentIndex << 16) + relocation.offset;
+
+              this._memory.write8(at, (this._memory.read8(at) + value) & 0xff);
+            }
           } else if (module) {
             module = this.modules.load(module);
 

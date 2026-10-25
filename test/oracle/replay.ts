@@ -5893,6 +5893,7 @@ const RUN_WHOLE = new Set<string>([
   'biosmem',
   'dcreuse',
   'winexpe',
+  'kconst',
 ]);
 
 /**

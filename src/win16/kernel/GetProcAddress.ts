@@ -1,5 +1,6 @@
 import { redirect } from '../own-modules.js';
 import { exportedConstant } from '../linker.js';
+import { CONSTANT_SEGMENT } from './constants.js';
 import { segmentSelector } from '../selectors.js';
 
 export function GetProcAddress(hinst, lpszProcName) {
@@ -45,11 +46,11 @@ export function GetProcAddress(hinst, lpszProcName) {
   }
 
   /* A number rather than a function -- `__WINFLAGS`, `__AHINCR` -- is its
-   * own value. */
+   * own value, with FFFFh above it (`KRNL386.EXE` seg1 `502c`; `kconst`). */
   const constant = exportedConstant(module.name, ordinal, this.machine?.coprocessor !== false);
 
   if (constant !== undefined) {
-    return constant & 0xffff;
+    return ((CONSTANT_SEGMENT << 16) | (constant & 0xffff)) >>> 0;
   }
 
   const info = this.modules.load(module).lookup(ordinal);

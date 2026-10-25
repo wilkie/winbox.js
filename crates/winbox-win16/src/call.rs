@@ -571,12 +571,21 @@ mod tests {
         let mut total = 0;
 
         for kept in crate::kept::KEPT {
+            // KERNEL's constants are numbers the linker writes, not calls.
             let missing: Vec<&str> = kept
                 .exports
                 .iter()
-                .flatten()
-                .filter(|export| !export.stub && implementation(kept.name, export.name).is_none())
-                .map(|export| export.name)
+                .enumerate()
+                .filter_map(|(ordinal, export)| Some((ordinal, export.as_ref()?)))
+                .filter(|(ordinal, export)| {
+                    !export.stub
+                        && implementation(kept.name, export.name).is_none()
+                        && !(kept.name == "KERNEL"
+                            && u16::try_from(*ordinal).is_ok_and(|ordinal| {
+                                crate::linker::kernel_constant(ordinal, true).is_some()
+                            }))
+                })
+                .map(|(_, export)| export.name)
                 .collect();
 
             if !missing.is_empty() {

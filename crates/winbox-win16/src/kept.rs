@@ -92,8 +92,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalNotify",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalAlloc",
@@ -259,8 +259,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FreeModule",
                 pops: 2,
-                returns: 2,
-                stub: true,
+                returns: 0,
+                stub: false,
             }),
             Some(Export {
                 name: "GetModuleHandle",
@@ -307,8 +307,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetInstanceData",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Catch",
@@ -662,13 +662,13 @@ pub static KEPT: &[Kept] = &[
                 name: "__AHSHIFT",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__AHINCR",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "OutputDebugString",
@@ -949,14 +949,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalCountFree",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LocalHeapSize",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalLRUOldest",
@@ -985,7 +985,7 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetExpWinVer",
                 pops: 2,
-                returns: 2,
+                returns: 4,
                 stub: false,
             }),
             Some(Export {
@@ -1020,15 +1020,15 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "__ROMBIOS",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__A000H",
-                pops: 6,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "AllocSelector",
@@ -1052,13 +1052,13 @@ pub static KEPT: &[Kept] = &[
                 name: "__WINFLAGS",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__D000H",
-                pops: 4,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "LONGPTRADD",
@@ -1068,21 +1068,21 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "__B000H",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__B800H",
-                pops: 4,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__0000H",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalDosAlloc",
@@ -1122,9 +1122,9 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "__E000H",
-                pops: 6,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalPageLock",
@@ -1140,21 +1140,21 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "__0040H",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__F000H",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "__C000H",
-                pops: 2,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SelectorAccessRights",
@@ -2033,7 +2033,7 @@ pub static KEPT: &[Kept] = &[
                 stub: true,
             }),
             Some(Export {
-                name: "unknown",
+                name: "__GP",
                 pops: 14,
                 returns: 0,
                 stub: true,

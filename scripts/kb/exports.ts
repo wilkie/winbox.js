@@ -24,6 +24,7 @@ import { User } from '../../src/win16/user.js';
 import { Ver } from '../../src/win16/ver/index.js';
 import { Win87EM } from '../../src/win16/win87em.js';
 import { WinG } from '../../src/win16/wing.js';
+import { ExportedConstant } from '../../src/win16/kernel/constants.js';
 
 export interface ExportEntry {
   /** The ordinal the module exports it at. */
@@ -35,8 +36,14 @@ export interface ExportEntry {
   /** The bytes of arguments the table says it pops, if it says. */
   argumentBytes: number | null;
 
-  /** Whether anything but the module's stub answers the call. */
+  /** Whether anything but the module's stub answers the call, or, for a
+   * constant, whether the table gives its number. */
   implemented: boolean;
+
+  /** A function a program calls, or a number it reads where its relocation
+   * puts it: an entry of segment FEh in the module's file, as KERNEL's
+   * `__AHINCR` and `__A000H` are. */
+  kind: 'function' | 'constant';
 
   /** The implementing function's own name, where it has one. */
   implementation: string | null;
@@ -89,14 +96,17 @@ export function collectExports(): ModuleEntry[] {
       }
 
       const [implementation, name, argumentBytes] = entry;
-      const implemented = typeof implementation === 'function' && implementation !== module.stub;
+      const constant = implementation instanceof ExportedConstant;
+      const implemented =
+        constant || (typeof implementation === 'function' && implementation !== module.stub);
 
       exports.push({
         ordinal,
         name,
-        argumentBytes: typeof argumentBytes === 'number' ? argumentBytes : null,
+        argumentBytes: constant ? null : typeof argumentBytes === 'number' ? argumentBytes : null,
         implemented,
-        implementation: implemented ? implementation.name || null : null,
+        kind: constant ? 'constant' : 'function',
+        implementation: implemented && !constant ? implementation.name || null : null,
       });
     });
 

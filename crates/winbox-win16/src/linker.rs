@@ -3,7 +3,7 @@
 //! references to its own segments to where they were put, KERNEL's
 //! constants written in, and its floating-point instructions fixed up.
 
-use winbox_machine::segment_selector;
+use winbox_machine::{first_megabyte_selector, segment_selector};
 use winbox_ne::{Relocation, Target};
 
 use crate::system::{STEP, System};
@@ -17,6 +17,8 @@ const CHAIN_LIMIT: u32 = 0x8000;
 const SELECTOR: u8 = 2;
 /// A far pointer: offset, then selector.
 const FAR: u8 = 3;
+/// The low byte of a word, added to the byte there.
+const LOW_BYTE: u8 = 0;
 /// A 16-bit offset.
 const OFFSET: u8 = 5;
 
@@ -40,21 +42,38 @@ fn os_fixup(kind: u16, coprocessor: bool) -> Option<(u16, u16)> {
     Some(if coprocessor { with } else { without })
 }
 
-/// KERNEL's exports that are numbers rather than functions, which a
-/// program reads where its relocation puts them: in protected mode a huge
-/// pointer's selector steps by 8, a shift of 3 (`__AHSHIFT`, `__AHINCR`);
-/// `__WINFLAGS` is what `GetWinFlags` answers; `__0040H` the BIOS data
-/// area's selector.
+/// KERNEL's exports that are numbers rather than functions, entries of
+/// segment `FEh` in its file, which a program reads where its relocation
+/// puts them: in protected mode a huge pointer's selector steps by 8, a
+/// shift of 3 (`__AHSHIFT`, `__AHINCR`); `__WINFLAGS` is what `GetWinFlags`
+/// answers; and the selectors KERNEL makes for the first megabyte's fixed
+/// places, the file's paragraphs (`kconst`; `first_megabyte_selector`).
+/// As `kernel/constants.ts`'s.
 pub(crate) fn kernel_constant(ordinal: u16, coprocessor: bool) -> Option<u16> {
-    match ordinal {
-        113 => Some(3),
-        114 => Some(8),
+    let paragraph = match ordinal {
+        113 => return Some(3),
+        114 => return Some(8),
         // WF_PMODE, WF_STANDARD, WF_CPU486, and WF_80x87 with a coprocessor.
-        178 => Some(0x0001 | 0x0010 | 0x0008 | if coprocessor { 0x0400 } else { 0 }),
-        193 => Some(0x40),
-        _ => None,
-    }
+        178 => return Some(0x0001 | 0x0010 | 0x0008 | if coprocessor { 0x0400 } else { 0 }),
+        173 | 194 => 0xf000,
+        174 => 0xa000,
+        179 => 0xd000,
+        181 => 0xb000,
+        182 => 0xb800,
+        183 => 0x0000,
+        190 => 0xe000,
+        193 => 0x0040,
+        195 => 0xc000,
+        _ => return None,
+    };
+
+    first_megabyte_selector(paragraph)
 }
+
+/// What KERNEL answers for a constant, as for any entry of its: the number
+/// in AX and `FFFFh` in DX (`KRNL386.EXE` seg1 `502c`-`502f`), which
+/// `GetProcAddress` answers and the loader writes (`kconst`).
+pub(crate) const CONSTANT_SEGMENT: u16 = 0xffff;
 
 /// What a relocation writes: a selector and an offset, or a number.
 enum Value {
@@ -121,7 +140,23 @@ impl System {
         };
 
         match value {
-            Value::Number(number) => self.write16(at, relocation, number),
+            // As KERNEL's loader writes a constant's FFFFh:number
+            // (`KRNL386.EXE` seg1 `748d`-`74ef`): the number at an
+            // offset, FFFFh at a selector, both for a far pointer, and the
+            // number's low byte added at a byte, always where it is (seg1
+            // `74b9`).
+            Value::Number(number) => match relocation.address_type {
+                OFFSET => self.write16(at, relocation, number),
+                SELECTOR => self.write16(at, relocation, CONSTANT_SEGMENT),
+                FAR => self.write32(at, relocation, CONSTANT_SEGMENT, number),
+                LOW_BYTE => {
+                    let site = ((at as u32) << 16) + u32::from(relocation.offset);
+                    let memory = &mut self.cpu.bus;
+
+                    memory.write8(site, memory.read8(site).wrapping_add(number as u8));
+                }
+                _ => {}
+            },
             Value::Place(segment, offset) => match relocation.address_type {
                 SELECTOR => self.write16(at, relocation, segment_selector(segment)),
                 FAR => self.write32(at, relocation, segment_selector(segment), offset),

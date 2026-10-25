@@ -1,0 +1,139 @@
+{
+  "probe": "kconst",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "proc",
+      "args": "__AHSHIFT",
+      "result": "ffff0003"
+    },
+    {
+      "function": "proc",
+      "args": "__AHINCR",
+      "result": "ffff0008"
+    },
+    {
+      "function": "proc",
+      "args": "__WINFLAGS",
+      "result": "ffff0419"
+    },
+    {
+      "function": "proc",
+      "args": "__0000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__0040H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__A000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__B000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__B800H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__C000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__D000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__E000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__F000H",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "proc",
+      "args": "__ROMBIOS",
+      "result": "ffff,ldt,rpl=3"
+    },
+    {
+      "function": "sel",
+      "args": "__0000H",
+      "result": "base=0,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__0040H",
+      "result": "base=400,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__A000H",
+      "result": "base=a0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__B000H",
+      "result": "base=b0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__B800H",
+      "result": "base=b8000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__C000H",
+      "result": "base=c0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__D000H",
+      "result": "base=d0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__E000H",
+      "result": "base=e0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__F000H",
+      "result": "base=f0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "sel",
+      "args": "__ROMBIOS",
+      "result": "base=f0000,limit=ffff,lar=f200"
+    },
+    {
+      "function": "order",
+      "args": "selectors",
+      "result": "__E000H __D000H __C000H __B800H __B000H __A000H __F000H __0040H __0000H adjacent"
+    },
+    {
+      "function": "same",
+      "args": "__ROMBIOS",
+      "result": "__F000H"
+    }
+  ]
+}
