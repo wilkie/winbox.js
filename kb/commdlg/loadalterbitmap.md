@@ -5,13 +5,18 @@ name: LoadAlterBitmap
 ordinal: 9
 summary: Loads one of COMMDLG's own bitmaps with one colour of its table made another — how the file dialogs' folders and drives take the window's and highlight's colours.
 versions:
-  '3.1': stub
+  '3.1': exact
+probes: [loadalt]
+records: [bitmap]
 topics: [common-dialogs, file-dialogs]
+source: src/win16/commdlg/pictures.ts
 ---
 
 ## Observed behaviour
 
-COMMDLG calls it for itself: [[fn:COMMDLG.Ordinal 42]] loads bitmap 576 twice with it, pure blue made the window's colour and then the highlight's ([[topic:file-dialogs]]). Not yet measured: no probe calls it.
+COMMDLG calls it for itself: [[fn:COMMDLG.Ordinal 42]] loads bitmap 576 twice with it, pure blue made the window's colour and then the highlight's ([[topic:file-dialogs]]).
+
+- [[measured]] [[probe:loadalt]], on the VGA: bitmaps 576, 38 and 30, a colour made red or green, each a bitmap of the screen's format, four planes of one bit, its pixels as `GetPixel` reads them through a memory device context alike in WinBox; a number COMMDLG has no bitmap of, nought.
 
 - [[read out]] The arguments, as pushed: the bitmap's id, a word; the colour to replace, a `COLORREF`; the colour to put in its place, a `COLORREF`. It pops 10 bytes (`COMMDLG.DLL` seg6 `0000`, `retf 0Ah`).
 - [[read out]] The bitmap is COMMDLG's own: `FindResource` on COMMDLG's instance, type `RT_BITMAP`, and `LoadResource`; either failing answers nought.
@@ -31,4 +36,4 @@ COMMDLG calls it for itself: [[fn:COMMDLG.Ordinal 42]] loads bitmap 576 twice wi
 
 ## Implementation
 
-Not WinBox's own: a stub in WinBox's table (`src/win16/commdlg/index.ts`, popping 10 bytes), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. WinBox's file dialogs make the same pictures from the file's bitmap 576 read as data, the first entry of pure blue replaced (`pictures.ts`, `pictures.rs`), and need no export for it.
+`src/win16/commdlg/pictures.ts`; the Rust engine's `crates/winbox-win16/src/commdlg/pictures.rs`. The bitmap is the installation's `COMMDLG.DLL`'s, read as data, as the file dialogs' pictures are; none without the file. A colour not in the bitmap's data changes nothing, where COMMDLG's search runs on past it. The file dialogs make their pictures without the export (`pictures.ts`, `pictures.rs`).
