@@ -27,3 +27,13 @@ The survey runs each program on the raster desktop from its own folder, `C:\CORP
 The sample is chosen for variety rather than taken whole: small programs whose every import is either part of Windows or brought in their own archive, spread over what they exercise — only KERNEL, USER and GDI; the floating-point emulator; the sound driver; multimedia; the common dialogs and the shell; DDE and TOOLHELP; Borland's and Microsoft's control libraries; libraries of their own; and the Visual Basic and Klik & Play runtimes they bring. A program that needs a library it does not bring is left out.
 
 To add one, put its entry in `manifest.json` with an empty `sha256`, run `node scripts/corpus/fetch.mjs --hash <id>`, and fill it in.
+
+## Programs on a disc
+
+An entry with `source.image` is a disc image (`"iso"`), fetched to `corpus/cache/<id>/<id>.iso` and not unpacked: it is mounted at the letter its `disc` gives, as DOSBox's `IMGMOUNT` mounts it, and `run` is a path on it. With `install`, the program is started as Windows started as `WIN D:\INSTALL.EXE` starts it, Program Manager the shell, and its `survey.steps` type into it; the oracle records what it changed of C: (`record.mjs launch --corpus <id>`, written into `corpus/reports/windows/<id>.json`). `widget`, Maxis' Widget Workshop, is one: its installer is surveyed, as its program is a Win32 one ([kb: CD-ROM drives](../kb/topics/cd-rom.md), "Installing from a disc"). The image is never committed, nor anything taken from it.
+
+```sh
+node scripts/corpus/fetch.mjs widget
+CORPUS=widget npx jest test/corpus --forceExit
+WIDGET_INSTALL=1 npx jest test/layers/widget_test.ts      # the install, held to Windows'
+```

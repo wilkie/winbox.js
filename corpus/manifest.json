@@ -736,6 +736,46 @@
         "TOOLHELP"
       ],
       "kind": "Klik & Play runtime"
+    },
+    {
+      "id": "widget",
+      "title": "Widget Workshop: A Mad Scientist's Laboratory",
+      "year": 1996,
+      "source": {
+        "archiveOrg": {
+          "identifier": "widget-workshop",
+          "file": "Widget Workshop - A Mad Scientist's Laboratory (1996)(Maxis)[Mac-PC].iso",
+          "sha1": "cc9695cb4382751f2bdc10b475a6d81f80c1661d",
+          "md5": "c866fa01cd2fd6a1d8dfd19c5056ff4a"
+        },
+        "sha256": "f8152796774eb1851a903721ac96e24cdd9a09e9ef0d30189b60c02c2c363a48",
+        "size": 327419904,
+        "image": "iso"
+      },
+      "disc": "D",
+      "install": true,
+      "run": "D:\\INSTALL.EXE",
+      "imports": [
+        "KERNEL",
+        "USER"
+      ],
+      "kind": "an installer on a CD-ROM: its launcher, InstallShield 2's Setup, WinG, Microsoft's Win32s Setup; the program it installs is Win32",
+      "survey": {
+        "display": "vga256",
+        "seconds": 20,
+        "steps": [
+          "Return:5",
+          "Return:5",
+          "w,i,n,b,o,x,Return:5",
+          "space:5",
+          "Return:5",
+          "Return:60",
+          "n:10",
+          "Return:30",
+          "Return:20"
+        ],
+        "timeout": 1500
+      }
     }
   ]
 }

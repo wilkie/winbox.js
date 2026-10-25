@@ -1,6 +1,13 @@
 'use strict';
 
-import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 
@@ -39,7 +46,9 @@ const local = existsSync(join(CORPUS, 'manifest.local.json'))
   ? JSON.parse(readFileSync(join(CORPUS, 'manifest.local.json'), 'utf8'))
   : { programs: [] };
 const entries = [
-  ...manifest.programs.filter((entry: any) => wanted === '1' || wanted.split(',').includes(entry.id)),
+  ...manifest.programs.filter(
+    (entry: any) => wanted === '1' || wanted.split(',').includes(entry.id)
+  ),
   ...local.programs.filter((entry: any) => wanted.split(',').includes(entry.id)),
 ];
 
@@ -176,120 +185,143 @@ const reports: any[] = [];
   }
 
   for (const entry of entries) {
-    it(`runs ${entry.id}`, async () => {
-      const directory = join(CORPUS, 'programs', entry.id);
+    it(
+      `runs ${entry.id}`,
+      async () => {
+        const directory = join(CORPUS, 'programs', entry.id);
+        /* A program on a disc of its own (`disc`): its image, kept whole by
+         * `fetch.mjs`, mounted at the entry's letter, as the recorder's
+         * `imgmount` mounts it. */
+        const image = entry.disc
+          ? join(CORPUS, 'cache', entry.id, `${entry.id}.${entry.source.image}`)
+          : null;
 
-      if (!existsSync(join(directory, entry.run))) {
-        throw new Error(`${entry.id} is not fetched: node scripts/corpus/fetch.mjs ${entry.id}`);
-      }
-
-      const run: any = await runProbe(
-        entry.id,
-        entry.survey?.frames ?? 3000,
-        false,
-        true,
-        /* As long as Windows' screen had run for: `record.mjs --shoot
-         * starting:10` takes it ten seconds after the program is started,
-         * on DOSBox's clock, which keeps the host's time. */
-        entry.survey?.seconds ?? 10,
-        {
-          boxKeys: [['Enter'], ['Enter'], ['Enter']],
-          program: { directory, file: entry.run, folder: entry.id.toUpperCase().slice(0, 8) },
-          /* The screen compared is the same each run: a program that reads
-           * the time -- SkiFree does, starting -- reads the instructions run,
-           * not how busy the host was. */
-          virtual: true,
-          keepCalls: 100_000,
-          /* A program that wants a palette display names it: `vga256`. */
-          display: entry.survey?.display ?? 'vga',
-          /* And keys pressed after, as `record.mjs --then` presses them:
-           * `"y:30"` is y, then thirty seconds. */
-          steps: (entry.survey?.steps ?? []).map((step: string) => ({
-            keys: step.split(':')[0].split(','),
-            seconds: Number(step.split(':')[1] ?? 3),
-          })),
+        if (!existsSync(image ?? join(directory, entry.run))) {
+          throw new Error(`${entry.id} is not fetched: node scripts/corpus/fetch.mjs ${entry.id}`);
         }
-      );
 
-      const stubs: Record<string, number> = run.stubs;
-      const last = [...run.calls, ...run.tail];
+        const run: any = await runProbe(
+          entry.id,
+          entry.survey?.frames ?? 3000,
+          false,
+          true,
+          /* As long as Windows' screen had run for: `record.mjs --shoot
+           * starting:10` takes it ten seconds after the program is started,
+           * on DOSBox's clock, which keeps the host's time. */
+          entry.survey?.seconds ?? 10,
+          {
+            boxKeys: [['Enter'], ['Enter'], ['Enter']],
+            /* Started as an install is (`install`): as Windows started as `WIN
+             * D:\INSTALL.EXE` runs it, Program Manager the shell, given it as
+             * its command line, as the recorder starts it. Else from its own
+             * folder on C:, as Program Manager starts a program. */
+            ...(entry.install
+              ? { start: entry.run, install: true, own: false, brought: false, shell: false }
+              : {
+                  program: {
+                    directory,
+                    file: entry.run,
+                    folder: entry.id.toUpperCase().slice(0, 8),
+                  },
+                }),
+            mounts: image ? [{ letter: entry.disc, path: image, kind: entry.source.image }] : [],
+            /* The screen compared is the same each run: a program that reads
+             * the time -- SkiFree does, starting -- reads the instructions run,
+             * not how busy the host was. */
+            virtual: true,
+            keepCalls: 100_000,
+            /* A program that wants a palette display names it: `vga256`. */
+            display: entry.survey?.display ?? 'vga',
+            /* And keys pressed after, as `record.mjs --then` presses them:
+             * `"y:30"` is y, then thirty seconds. */
+            steps: (entry.survey?.steps ?? []).map((step: string) => ({
+              keys: step.split(':')[0].split(','),
+              seconds: Number(step.split(':')[1] ?? 3),
+            })),
+          }
+        );
 
-      const tasks = Object.values(run.win16.scheduler._tasks ?? {}) as any[];
-      const report = {
-        id: entry.id,
-        title: entry.title,
-        calls: run.callCount,
-        functions: run.functions.size,
-        stubs,
-        faulted: run.shots.length > 0,
-        ended: tasks.length > 0 && tasks.every((task) => task.ended),
-        failure: run.failure
-          ? String(run.failure.message ?? run.failure)
-              .split('\n')[0]
-              .slice(0, 200)
-          : null,
-        last: last.slice(-15).map((call: any) => `${call.module}.${call.name}`),
-        /* Where each step's keys went in and its screen was taken. */
-        ...(run.stepMarks.length ? { stepMarks: run.stepMarks } : {}),
-      };
+        const stubs: Record<string, number> = run.stubs;
+        const last = [...run.calls, ...run.tail];
 
-      mkdirSync(REPORTS, { recursive: true });
-      writeFileSync(join(REPORTS, `${entry.id}.json`), `${JSON.stringify(report, null, 1)}\n`);
+        const tasks = Object.values(run.win16.scheduler._tasks ?? {}) as any[];
+        const report = {
+          id: entry.id,
+          title: entry.title,
+          calls: run.callCount,
+          functions: run.functions.size,
+          stubs,
+          faulted: run.shots.length > 0,
+          ended: tasks.length > 0 && tasks.every((task) => task.ended),
+          failure: run.failure
+            ? String(run.failure.message ?? run.failure)
+                .split('\n')[0]
+                .slice(0, 200)
+            : null,
+          last: last.slice(-15).map((call: any) => `${call.module}.${call.name}`),
+          /* Where each step's keys went in and its screen was taken. */
+          ...(run.stepMarks.length ? { stepMarks: run.stepMarks } : {}),
+        };
 
-      /* Every call in order, what was asked and answered, to read beside the report. */
-      const line = (call: any) =>
-        `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}${call.caller ? ` @${call.caller.segment.toString(16)}:${call.caller.offset.toString(16)}` : ''}`;
-      const skipped = run.callCount - run.calls.length - run.tail.length;
+        mkdirSync(REPORTS, { recursive: true });
+        writeFileSync(join(REPORTS, `${entry.id}.json`), `${JSON.stringify(report, null, 1)}\n`);
 
-      /* The first calls kept and the last, the rest counted between. */
-      writeFileSync(
-        join(REPORTS, `${entry.id}.calls.txt`),
-        [
-          ...run.calls.map(line),
-          ...(skipped > 0 ? [`... ${skipped} calls not kept ...`] : []),
-          ...run.tail.map(line),
-        ].join('\n')
-      );
+        /* Every call in order, what was asked and answered, to read beside the report. */
+        const line = (call: any) =>
+          `${call.module}.${call.name}(${(call.args ?? []).map(shown).join(', ')}) = ${shown(call.result)}${call.stub ? ' stub' : ''}${call.caller ? ` @${call.caller.segment.toString(16)}:${call.caller.offset.toString(16)}` : ''}`;
+        const skipped = run.callCount - run.calls.length - run.tail.length;
 
-      const screen = run.win16.rasterDesktop.screen;
-
-      /* With steps, the screen after the main run, and after each step as
-       * `<id>-2.png` on, as the recorder names Windows'. */
-      const screens: Uint8Array[] = run.stepShots.length ? run.stepShots : [screen.indices];
-
-      screens.forEach((indices: Uint8Array, at: number) =>
+        /* The first calls kept and the last, the rest counted between. */
         writeFileSync(
-          join(REPORTS, at ? `${entry.id}-${at + 1}.png` : `${entry.id}.png`),
-          png(
-            screen.width,
-            screen.height,
-            withCursor(run.win16, indices, screen.width, screen.height),
-            shownColours(run.win16.display, screen.devicePalette.colours)
+          join(REPORTS, `${entry.id}.calls.txt`),
+          [
+            ...run.calls.map(line),
+            ...(skipped > 0 ? [`... ${skipped} calls not kept ...`] : []),
+            ...run.tail.map(line),
+          ].join('\n')
+        );
+
+        const screen = run.win16.rasterDesktop.screen;
+
+        /* With steps, the screen after the main run, and after each step as
+         * `<id>-2.png` on, as the recorder names Windows'. */
+        const screens: Uint8Array[] = run.stepShots.length ? run.stepShots : [screen.indices];
+
+        screens.forEach((indices: Uint8Array, at: number) =>
+          writeFileSync(
+            join(REPORTS, at ? `${entry.id}-${at + 1}.png` : `${entry.id}.png`),
+            png(
+              screen.width,
+              screen.height,
+              withCursor(run.win16, indices, screen.width, screen.height),
+              shownColours(run.win16.display, screen.devicePalette.colours)
+            )
           )
-        )
-      );
-      /* Each box USER put up, as it was when it came up -- and none an
-       * earlier run left that this one did not put up again. */
-      for (const name of readdirSync(REPORTS)) {
-        if (name.startsWith(`${entry.id}.box`) && name.endsWith('.png')) {
-          unlinkSync(join(REPORTS, name));
+        );
+        /* Each box USER put up, as it was when it came up -- and none an
+         * earlier run left that this one did not put up again. */
+        for (const name of readdirSync(REPORTS)) {
+          if (name.startsWith(`${entry.id}.box`) && name.endsWith('.png')) {
+            unlinkSync(join(REPORTS, name));
+          }
         }
-      }
 
-      run.shots.forEach((indices: Uint8Array, at: number) =>
-        writeFileSync(
-          join(REPORTS, `${entry.id}.box${at + 1}.png`),
-          png(
-            screen.width,
-            screen.height,
-            indices,
-            shownColours(run.win16.display, screen.devicePalette.colours)
+        run.shots.forEach((indices: Uint8Array, at: number) =>
+          writeFileSync(
+            join(REPORTS, `${entry.id}.box${at + 1}.png`),
+            png(
+              screen.width,
+              screen.height,
+              indices,
+              shownColours(run.win16.display, screen.devicePalette.colours)
+            )
           )
-        )
-      );
-      reports.push(report);
-      /* A program surveyed into a game runs longer than a screen takes: its
-       * entry may give itself more, in seconds. */
-    }, (entry.survey?.timeout ?? 600) * 1000);
+        );
+        reports.push(report);
+        /* A program surveyed into a game runs longer than a screen takes: its
+         * entry may give itself more, in seconds. */
+      },
+      (entry.survey?.timeout ?? 600) * 1000
+    );
   }
 });

@@ -166,10 +166,13 @@ async function runShooting(config, probe, shoot) {
   try {
     const started = Date.now();
 
+    /* `start`: no record waited for -- a program of the corpus started
+     * as an install is, with no probe -- but the seconds from Windows'
+     * start. */
     for (;;) {
       const text = await readFile(output, 'latin1').catch(() => '');
 
-      if (text.split(/\r?\n/).some((line) => line.startsWith(`${after}\t`))) {
+      if (after === 'start' || text.split(/\r?\n/).some((line) => line.startsWith(`${after}\t`))) {
         break;
       }
 
@@ -568,10 +571,29 @@ async function imgmountLines(probe) {
   return lines;
 }
 
+/**
+ * A program of the corpus on a disc of its own (`disc` in its entry): its
+ * image, as `scripts/corpus/fetch.mjs` keeps it, mounted with `imgmount` at
+ * the letter its entry gives, as a probe's `.mounts` are. DOSBox reads a
+ * disc and never writes it, so the image is mounted where it is.
+ */
+function corpusMounts(corpus) {
+  if (!corpus?.disc) {
+    return [];
+  }
+
+  const image = join(ROOT, 'corpus', 'cache', corpus.id, `${corpus.id}.${corpus.source.image}`);
+
+  return [`imgmount ${corpus.disc.toLowerCase()} ${image} -t ${corpus.source.image}`];
+}
+
 /** Boots Windows with the probe as its shell and waits for it to finish. */
-async function runProbe(probe, display, shoot = null, capture = null) {
+async function runProbe(probe, display, shoot = null, capture = null, corpus = null) {
   const config = join(BUILD, 'record.conf');
-  const mounts = await imgmountLines(basename(probe, '.EXE').toLowerCase());
+  const mounts = [
+    ...(await imgmountLines(basename(probe, '.EXE').toLowerCase())),
+    ...corpusMounts(corpus),
+  ];
   const swapping = (await mountsOf(basename(probe, '.EXE').toLowerCase())).some(
     ({ images }) => images.length > 1
   );
@@ -600,7 +622,10 @@ async function runProbe(probe, display, shoot = null, capture = null) {
       ...mounts,
       'c:',
       'cd \\WINDOWS',
-      'win /s',
+      /* A program of the corpus started as an install is (`install` in its
+       * entry): as Windows started as `WIN SETUP.EXE` runs one, Program
+       * Manager the shell, given the program as its command line. */
+      corpus?.install ? `win /s ${corpus.run}` : 'win /s',
       'exit',
       '',
     ].join('\n')
@@ -769,6 +794,73 @@ async function setIni(probe, preset) {
   return preset;
 }
 
+/**
+ * What a run changed of the drive: each folder made, each file made or
+ * written, by its path (DOS's, upper case, back slashes) with its size and
+ * its SHA-256, and each file or folder of the installation that is gone --
+ * the drive set beside the installation it was copied from, `C:\ORACLE`
+ * left out. An installer's work, as Windows did it, for a layer to be held
+ * to.
+ */
+async function driveChanges(base, drive) {
+  const { createHash } = await import('node:crypto');
+  const list = async (root, at = '') => {
+    const out = new Map();
+    const entries = (await readdir(join(root, at), { withFileTypes: true })).sort((a, b) =>
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+    );
+
+    for (const entry of entries) {
+      const path = at ? `${at}/${entry.name}` : entry.name;
+
+      if (!at && entry.name.toUpperCase() === OUTPUT_DIR) {
+        continue;
+      }
+
+      if (entry.isDirectory()) {
+        out.set(path, null);
+
+        for (const [inner, value] of await list(root, path)) {
+          out.set(inner, value);
+        }
+      } else {
+        out.set(path, await readFile(join(root, path)));
+      }
+    }
+
+    return out;
+  };
+  const before = await list(base);
+  const after = await list(drive);
+  const dos = (path) => path.toUpperCase().replace(/\//g, '\\');
+  const changes = [];
+
+  for (const [path, bytes] of after) {
+    const was = before.get(path);
+
+    if (bytes === null) {
+      if (!before.has(path)) {
+        changes.push({ kind: 'folder', path: dos(path) });
+      }
+    } else if (!was || !was.equals(bytes)) {
+      changes.push({
+        kind: 'file',
+        path: dos(path),
+        size: bytes.length,
+        sha256: createHash('sha256').update(bytes).digest('hex'),
+      });
+    }
+  }
+
+  for (const path of before.keys()) {
+    if (!after.has(path)) {
+      changes.push({ kind: 'removed', path: dos(path) });
+    }
+  }
+
+  return changes.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+}
+
 async function record(
   probe,
   source,
@@ -779,6 +871,16 @@ async function record(
   capture = null
 ) {
   const name = basename(source, '.EXE');
+
+  /* A program of the corpus started as an install is, from its disc:
+   * Program Manager, the installation's shell, starts it (`runProbe`), and
+   * no probe runs. What it changed of the drive is its record. */
+  if (corpus?.install) {
+    await rm(join(SCRATCH, OUTPUT_DIR), { recursive: true, force: true });
+    await runProbe(basename(source), display, shoot, capture, corpus);
+
+    return { records: [], changes: await driveChanges(driveFor(display), SCRATCH) };
+  }
 
   /* A program of the corpus, started by the launcher from its own folder
    * on the drive, `C:\CORPUS\<ID>`. */
@@ -839,7 +941,7 @@ async function record(
     await mkdir(capture.into, { recursive: true });
   }
 
-  await runProbe(basename(source), display, shoot, capture);
+  await runProbe(basename(source), display, shoot, capture, corpus);
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 
@@ -1029,7 +1131,7 @@ async function main() {
       ...capture,
       into: join(BUILD, 'captures', capture.dosbox ? `${name}-traced` : name),
     };
-    const records = await record(
+    const recorded = await record(
       name,
       join(PROBES, executable),
       display,
@@ -1038,6 +1140,10 @@ async function main() {
       corpus,
       caught
     );
+    /* A program started as an install is answers what it changed of the
+     * drive, with no records. */
+    const records = Array.isArray(recorded) ? recorded : recorded.records;
+    const changes = Array.isArray(recorded) ? null : recorded.changes;
     const functions = new Set(records.map((entry) => entry.function));
 
     /* A probe whose answers belong to the driver gets a fixture per driver;
@@ -1053,9 +1159,13 @@ async function main() {
       await mkdir(into, { recursive: true });
       await writeFile(
         join(into, `${corpus.id}.json`),
-        `${JSON.stringify({ program: corpus.id, display, source, records }, null, 2)}\n`
+        `${JSON.stringify({ program: corpus.id, display, source, records, ...(changes ? { changes } : {}) }, null, 2)}\n`
       );
-      log(`  ${records.length} records -> corpus/reports/windows/${corpus.id}.json`);
+      log(
+        changes
+          ? `  ${changes.length} changes of the drive -> corpus/reports/windows/${corpus.id}.json`
+          : `  ${records.length} records -> corpus/reports/windows/${corpus.id}.json`
+      );
       continue;
     }
 

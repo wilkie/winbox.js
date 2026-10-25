@@ -25,14 +25,18 @@
 //! keys and clicks every second and a half of its clock, the same for the
 //! same seed (`scripted_input`); given with `--marks`, only after the
 //! report's last key, and the report's screens not kept. `--summary` prints how many calls there
-//! were and only the last twenty.
+//! were and only the last twenty. `--mount D:IMAGE` mounts an image of the
+//! host's as that drive, as the recorder's `imgmount` does for a program
+//! of the corpus on its CD-ROM: an `.iso`, `.bin` or `.cue` a disc, else a
+//! FAT image. A program whose `--path` is on such a drive is read from it,
+//! and its file is not given: `trace --mount D:GAME.ISO --path D:\SETUP.EXE`.
 //!
 //! The run itself is the survey's (`winbox_win16::survey`), as a browser's
 //! page and the tests make it; here are only the host's files.
 
 use std::path::{Path, PathBuf};
 
-use winbox_machine::HostDrive;
+use winbox_machine::{FatVolume, HostDrive, IsoVolume, Volume};
 use winbox_ne::Executable;
 use winbox_win16::survey::{Screen, Survey};
 
@@ -114,7 +118,42 @@ struct Options {
     oracle_drives: bool,
     screen: Option<PathBuf>,
     marks: Option<PathBuf>,
+    mounts: Vec<(char, PathBuf)>,
+    shell: bool,
     survey: Survey,
+}
+
+/// An image of the host's as a drive (`--mount`): a disc by its name's
+/// extension, as the native build's `open_disc` takes one, else a FAT
+/// image, a floppy where DOSBox takes it for one.
+fn image_volume(path: &Path) -> Box<dyn Volume> {
+    let bytes = std::fs::read(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    let disc = path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| {
+            ["iso", "bin", "cue"].contains(&extension.to_ascii_lowercase().as_str())
+        });
+
+    if disc {
+        let folder = path.parent().map(Path::to_path_buf).unwrap_or_default();
+
+        Box::new(
+            IsoVolume::open(Box::new(bytes), &mut |name| {
+                std::fs::read(folder.join(name))
+                    .ok()
+                    .map(|bytes| Box::new(bytes) as Box<dyn winbox_machine::Sectors>)
+            })
+            .unwrap_or_else(|error| panic!("{}: {error:?}", path.display())),
+        )
+    } else {
+        let floppy = winbox_machine::is_floppy(&bytes);
+
+        Box::new(
+            FatVolume::new(bytes, floppy)
+                .unwrap_or_else(|error| panic!("{}: {error:?}", path.display())),
+        )
+    }
 }
 
 fn options() -> Options {
@@ -128,6 +167,8 @@ fn options() -> Options {
         oracle_drives: false,
         screen: None,
         marks: None,
+        mounts: Vec::new(),
+        shell: false,
         survey: Survey::default(),
     };
     let survey = &mut options.survey;
@@ -139,9 +180,20 @@ fn options() -> Options {
             "--windows" => options.windows = arguments.next().map(PathBuf::from),
             "--assets" => options.assets = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
+            "--shell" => options.shell = true,
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
             "--calls" => survey.calls = arguments.next().and_then(|n| n.parse().ok()),
             "--marks" => options.marks = arguments.next().map(PathBuf::from),
+            "--mount" => {
+                if let Some(mount) = arguments.next()
+                    && let Some((letter, image)) = mount.split_once(':')
+                    && let Some(letter) = letter.chars().next()
+                {
+                    options
+                        .mounts
+                        .push((letter.to_ascii_uppercase(), PathBuf::from(image)));
+                }
+            }
             "--input" => survey.input = arguments.next().and_then(|n| n.parse().ok()),
             "--summary" => survey.summary = true,
             "--boxes" => {
@@ -174,6 +226,7 @@ fn options() -> Options {
     options
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let Options {
         file,
@@ -184,11 +237,22 @@ fn main() {
         oracle_drives,
         screen,
         marks,
+        mounts,
+        shell,
         mut survey,
     } = options();
-    let file = file.expect("a program's file");
-    let bytes = std::fs::read(&file).expect("the program's file");
-    let executable = Executable::parse(bytes).expect("a New Executable");
+    // A program on a drive of images is read from there, with no file of
+    // the host's.
+    let on_image = path.as_deref().is_some_and(|path| {
+        mounts
+            .iter()
+            .any(|(letter, _)| path.to_ascii_uppercase().starts_with(&format!("{letter}:")))
+    });
+    let file = if on_image {
+        PathBuf::new()
+    } else {
+        file.expect("a program's file")
+    };
     let name = file.file_name().map_or(String::new(), |name| {
         name.to_string_lossy().to_ascii_uppercase()
     });
@@ -207,6 +271,14 @@ fn main() {
     let mut made = Vec::new();
     let root = drive.unwrap_or_else(|| {
         let root = std::env::temp_dir().join(format!("winbox-trace-{}", std::process::id()));
+
+        // A program on a drive of images brings nothing to C:.
+        if on_image {
+            std::fs::create_dir_all(&root).expect("the run's drive");
+            made.push(root.clone());
+            return root;
+        }
+
         let folders: Vec<&str> = path.split('\\').skip(1).collect();
         let (last, parents) = folders[..folders.len() - 1].split_last().unzip();
         let parent = parents
@@ -267,7 +339,38 @@ fn main() {
         }
     }
 
-    winbox_win16::survey::start(&mut system, executable, &path).expect("the program's registers");
+    for (letter, image) in &mounts {
+        system.files.mount_boxed(*letter, image_volume(image));
+    }
+
+    let bytes = if on_image {
+        let (folder, name) = path.rsplit_once('\\').expect("a program's path");
+        let folder = if folder.len() == 2 {
+            format!("{folder}\\")
+        } else {
+            folder.to_string()
+        };
+
+        system
+            .files
+            .read_from(&folder, name)
+            .map_or_else(|| panic!("{path} is not on its drive"), |(_, bytes)| bytes)
+    } else {
+        std::fs::read(&file).expect("the program's file")
+    };
+    let executable = Executable::parse(bytes).expect("a New Executable");
+
+    if shell {
+        winbox_win16::progman::start_shell(&mut system, &path)
+            .expect("Program Manager's registers");
+        // The run goes on for its seconds, as the TypeScript engine's
+        // survey runs one, not over once the shell is left alone: the
+        // shell is a task as any other here.
+        system.shell_task = None;
+    } else {
+        winbox_win16::survey::start(&mut system, executable, &path)
+            .expect("the program's registers");
+    }
 
     let surveyed = survey.run(system);
 

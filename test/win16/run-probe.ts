@@ -401,6 +401,10 @@ export async function runProbe(
     /* Started as an install run is: Program Manager first, the shell, given
      * `start` as its command line, which it starts itself (`startShell`). */
     install = false,
+    /* Images of the host's mounted beside C:, each a drive: a program of
+     * the corpus on its CD-ROM, `{ letter: 'D', path, kind: 'iso' }`, as
+     * the recorder mounts the corpus entry's `mounts` with `imgmount`. */
+    mounts = [] as { letter: string; path: string; kind: 'floppy' | 'iso' | 'hdd' }[],
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -759,6 +763,16 @@ export async function runProbe(
     }
   }
 
+  for (const mount of mounts) {
+    const drive = await imageDrive(mount.kind, new Uint8Array(readFileSync(mount.path)));
+
+    if (!drive) {
+      throw new Error(`${mount.path}: not a ${mount.kind} image this engine mounts`);
+    }
+
+    win16.dos.files.mount(mount.letter.toUpperCase(), drive);
+  }
+
   const upper = name.toUpperCase();
 
   /* A program of the corpus: its folder on the drive as `C:\CORPUS\<id>`,
@@ -777,6 +791,26 @@ export async function runProbe(
   /* A program on the drive, read from there. */
   const onDrive = start
     ? await (async () => {
+        /* On another drive, a disc mounted: read from its volume. */
+        if (!/^C:/i.test(start)) {
+          const volume = win16.dos.files.query(start[0].toUpperCase());
+          const file = volume ? await volume.open(start.slice(3).toUpperCase().split('\\')) : null;
+
+          if (!file) {
+            throw new Error(`${start} is not on its drive`);
+          }
+
+          const data = new Uint8Array(await file.read(0, file.size));
+
+          return {
+            module: start
+              .replace(/^.*\\/, '')
+              .replace(/\.[^.]*$/, '')
+              .toUpperCase(),
+            data,
+          };
+        }
+
         const parts = start.replace(/^C:\\/i, '').split('\\');
         const file = await fileSystem.open(parts);
 

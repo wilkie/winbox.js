@@ -8,6 +8,9 @@
  *   node scripts/corpus/fetch.mjs            # everything
  *   node scripts/corpus/fetch.mjs skifree hearts # just these
  *   node scripts/corpus/fetch.mjs --hash     # print each download's SHA-256, for a new entry
+ *
+ * A disc's image is kept whole, as `corpus/cache/<id>/<id>.iso`, and not
+ * unpacked: it is mounted as a drive (`cachedPath`).
  */
 
 import { createHash } from 'node:crypto';
@@ -93,11 +96,25 @@ function unpack(archive, into) {
   return members.map((member) => member.name);
 }
 
+/**
+ * Where an entry's download is kept: an archive as `corpus/cache/<id>.zip`;
+ * a disc's image (`source.image`, `iso`) as `corpus/cache/<id>/<id>.iso`, a
+ * folder of its own, and never unpacked -- it is mounted as a drive
+ * (`disc`), as the recorder's `imgmount` mounts it.
+ */
+export function cachedPath(entry) {
+  if (entry.source.image) {
+    return join(CACHE, entry.id, `${entry.id}.${entry.source.image}`);
+  }
+
+  return join(CACHE, `${entry.id}${entry.source.zip === false ? '' : '.zip'}`);
+}
+
 async function fetchEntry(entry, { hashOnly }) {
   const url = sourceUrl(entry);
-  const archive = join(CACHE, `${entry.id}${entry.source.zip === false ? '' : '.zip'}`);
+  const archive = cachedPath(entry);
 
-  mkdirSync(CACHE, { recursive: true });
+  mkdirSync(dirname(archive), { recursive: true });
 
   if (!existsSync(archive)) {
     const response = await fetch(url);
@@ -118,6 +135,12 @@ async function fetchEntry(entry, { hashOnly }) {
 
   if (hash !== entry.source.sha256) {
     throw new Error(`${entry.id}: ${url} is ${hash}, the manifest says ${entry.source.sha256}`);
+  }
+
+  /* A disc is kept as its image, nothing unpacked. */
+  if (entry.source.image) {
+    console.log(`${entry.id}: ${archive}, mounted at ${entry.disc}:, runs ${entry.run}`);
+    return;
   }
 
   const into = join(PROGRAMS, entry.id);

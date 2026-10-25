@@ -1,0 +1,524 @@
+{
+ "program": "widget",
+ "display": "vga256",
+ "source": {
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+  "host": "dosbox, standard mode",
+  "display": "8et4480",
+  "displayDescription": "Super VGA, 640x480, 256 colours"
+ },
+ "recorded": "node scripts/oracle/record.mjs launch --corpus widget --display vga256 --shoot start:30 --then Return:5 --then Return:5 --then w,i,n,b,o,x,Return:5 --then space:5 --then Return:5 --then Return:60 --then n:10 --then Return:30 --then Return:20",
+ "changes": [
+  {
+   "kind": "folder",
+   "path": "WIDGET"
+  },
+  {
+   "kind": "folder",
+   "path": "WIDGET\\AUDIO"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID00.AIF",
+   "size": 510,
+   "sha256": "3d174327f7e1a4d239c9255b7f5f15c1b2f4d82d28131e53c06de83da9eb83be"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID01.AIF",
+   "size": 478,
+   "sha256": "bdd29c151c96820fd9a2bcd9ec966ff1b69b8e67b8b5854c2a26135b5398edcd"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID02.AIF",
+   "size": 478,
+   "sha256": "4597b7c467fc798206c67e08a74622fbc7d3e9a3c6b6b562727d83adc1fa9bc9"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID03.AIF",
+   "size": 478,
+   "sha256": "eb079a69ab2f8ae60bf6ac7fa88b1034086ae5f314b6a949d85da25b63db9adc"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID04.AIF",
+   "size": 478,
+   "sha256": "b84725fef0b7dee250799ba0496ee35179b17ad350b6b5b589c9d0f6cf875517"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID05.AIF",
+   "size": 478,
+   "sha256": "be89700ba23a846bea65ea456c93ca21ee386860aa241e4ddababe6e8c7ba9ec"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID06.AIF",
+   "size": 510,
+   "sha256": "9da420906dd17ddd5b85b835ee051648775cc43464eba6929a11352dd88c3a1a"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID07.AIF",
+   "size": 478,
+   "sha256": "ad26d18d391016e78b3ea0adc82249cafe59bf43cb159fb5bb2e9311e014953f"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID08.AIF",
+   "size": 478,
+   "sha256": "83785ce838e8352a5d43b7c9737d35590249352d45f215cc7e0c7c76d00a80ae"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID09.AIF",
+   "size": 478,
+   "sha256": "9e560afa280d591984e83360b21e1fa5681423d042270a93254ce43715ef67ad"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID10.AIF",
+   "size": 478,
+   "sha256": "4b9bda0ae341158e23130ca6c4835f4da1371a20a67705ba9f363b3667c11fbd"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID11.AIF",
+   "size": 510,
+   "sha256": "f9a323aa861f4fb67820a55d3fd47917408813bef9e7e162fdb9bd6f82c03844"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID12.AIF",
+   "size": 478,
+   "sha256": "cd1e8f38820abdccfc10cfb38e7ce67331e480283da1a9f1e544faa0578ca4db"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID13.AIF",
+   "size": 478,
+   "sha256": "ee98a277bd1328d4114d18e2b07853e7b0275598ac35c1d06908c00b18defb6b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID14.AIF",
+   "size": 510,
+   "sha256": "a39d20fb024e26a6fe8d4a746ebb434ca933158989e4181786ebc58f442e4792"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID15.AIF",
+   "size": 478,
+   "sha256": "39143d718e8883f511c3922c66380cd75b34f0653b04197f9eae08a5ed771330"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID16.AIF",
+   "size": 478,
+   "sha256": "1878e73ed3ed40bef76026c78cc63341c3ddbcc49ba5956c6f859b46e6aa8bd5"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID17.AIF",
+   "size": 478,
+   "sha256": "9f8d5f4fd1de8d5b695c20a2f56f8017a164ff7105ca78922405fe6ac1f4767b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID18.AIF",
+   "size": 478,
+   "sha256": "58d974c96c899c5a0d798439c6c76bbed9f4833981bb1a8d55154df08ceeb5ce"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID19.AIF",
+   "size": 478,
+   "sha256": "ba2b1ffddec7fc86ca43ba1715a6a8d0107c15a9d461613e8828c8ec27536699"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID20.AIF",
+   "size": 478,
+   "sha256": "a289f862dd2abb06a5ad8c29de530747dc9654760cc2b4c75f4d2c34566a34c5"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID21.AIF",
+   "size": 478,
+   "sha256": "901a0f43fc1b6b2154aa8e986f408462dae4bf33006ebdd21d7e9bce8b2e107b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID22.AIF",
+   "size": 478,
+   "sha256": "ffdacc3e8228b39513d78d25966df31429976f89ebd1ca87bc3d64d1ccc82135"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID23.AIF",
+   "size": 478,
+   "sha256": "50cfa7a5696529ebceec5a610a1b5003bbb843bf2e6a074e2cf002b85f8c5ca0"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID24.AIF",
+   "size": 478,
+   "sha256": "ad31d4a01c010314e73a6e6fb86da0c9abd573359f838decf21d07f281f4f432"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID25.AIF",
+   "size": 478,
+   "sha256": "d1bb13f884f14714a63a3115c29c1e9159ee100504af76e2bc645067aa182cec"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID26.AIF",
+   "size": 478,
+   "sha256": "75e41b0c4d32fea7021b447003ab63ab63a130496e3b9dece4c3d1fa6ded441d"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID27.AIF",
+   "size": 478,
+   "sha256": "870fabc195752bf5f28e84478c8582b3d3700f90bad6b1b01b59eb4c4b5c78d0"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID28.AIF",
+   "size": 478,
+   "sha256": "ab94748d06c36b1dcf572ec2adc691080755f71a938d57d53999498e6b83b5d8"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID29.AIF",
+   "size": 478,
+   "sha256": "2ab183f0c44811d3eb87e81257c6c1b72586410528814dfff9c51c85c8e56dc1"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID30.AIF",
+   "size": 478,
+   "sha256": "6fea60e3444ec4c45dd07982636db5c90d8dfc1659310d844f1e7f7ef17872bc"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID31.AIF",
+   "size": 478,
+   "sha256": "e94247d7c604665d7aa1f189c50820132acd97ddd67f3427c6ec634a4e2855c1"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID32.AIF",
+   "size": 478,
+   "sha256": "e0e886fbeefb9de9bf9471dac63dfeb57d5b0ae3394dd47713eb7b27edf23163"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID33.AIF",
+   "size": 478,
+   "sha256": "46f1ecb31f9b5b662e94c614685e2dd4e8e413590fc96b386d85fcf8661dc26b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID34.AIF",
+   "size": 478,
+   "sha256": "33440207e1cdcee61376ceb5047053276c683f9000cf78ee030f4ccbe5184dba"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID35.AIF",
+   "size": 478,
+   "sha256": "957eccace84f62e54f4a6decd119e9683dea9ef298920b1815523167803b4b04"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID36.AIF",
+   "size": 478,
+   "sha256": "8e82086c2abb54c0571fbb532c1be1dd91cdef14cc892923a39ec1054364d220"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID37.AIF",
+   "size": 478,
+   "sha256": "6e02796cc4011ddce6fb3f17922f7de9f62ba6749c991ded31204455d653c3d4"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID38.AIF",
+   "size": 478,
+   "sha256": "b37e8dacb44fbcdbff4a1eeb4a6434bba1ead2967b580c6ace161fd3b3d2dbab"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID39.AIF",
+   "size": 478,
+   "sha256": "9ed3bd7a1074651b1792fb5bcebb948393c6b2b5caf04a2ff64e85a914af8e8f"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID40.AIF",
+   "size": 478,
+   "sha256": "3b7e813d884eed08dc42028810f10e5d54d9e3d5878d26bcfcf4111a2f448341"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID41.AIF",
+   "size": 478,
+   "sha256": "fdc9456d1d9d11c3e4aaca69dad69b3c7305dc6736e5f8d0a66eb36faf74b79f"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID42.AIF",
+   "size": 478,
+   "sha256": "2353a103f3b39e37b7e20870a894b6e828d1768fc2675a969dbe14148f84745e"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID43.AIF",
+   "size": 478,
+   "sha256": "8db665f7c6fe6678810c3e186412e220df365edd20e4ce34c4aec3e63cea7760"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID44.AIF",
+   "size": 478,
+   "sha256": "b07b6d118e956b6f696f6b3d0374edd9e6dcd1cc3d2f8348328803d618d59340"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID45.AIF",
+   "size": 478,
+   "sha256": "ede2bb07b10f989fef7fa32475a3a24ed9bf8d3e00bb8e4a7e024097b5b61a06"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID46.AIF",
+   "size": 478,
+   "sha256": "667a111383765c5b66d16b8fd67e4c70baa2ef3c54b1e6a61fc0dc6dfa68e680"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID47.AIF",
+   "size": 510,
+   "sha256": "5f07223fd49c1d606caa703b85ed4397a541f0853e3878735da40c85c81928e0"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID48.AIF",
+   "size": 510,
+   "sha256": "17288ee0482a024c2aba765c3aacdb68f4736e60c480c978ebc9cadc0b8aabce"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\AUDIO\\WID49.AIF",
+   "size": 510,
+   "sha256": "e2f62f7dab685c491e8acaf9768fbe4d925167cc1f7b2ada44d0448ef87a7bf9"
+  },
+  {
+   "kind": "folder",
+   "path": "WIDGET\\FUNWIDGE"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\CLOCK.WGT",
+   "size": 12520,
+   "sha256": "f5178894fae683b7e0faa8a3c144bde555f385ff38bdcccc68e71b875e4dcf18"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\DOGYEAR.WGT",
+   "size": 20392,
+   "sha256": "2ec48241509b293053e5ba4452ab3afa828590857b3b0c2549fa80cbb94a2b8b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\ESPTEST.WGT",
+   "size": 12796,
+   "sha256": "9f450a528b28434daa0383e0e2a2972a074bbe1f08606444c68b432c6bf1883b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\HIMOM.WGT",
+   "size": 37216,
+   "sha256": "7614c5f0faa13f53684bd53663d7982f143a47f2ae0219e37285dd987a41041c"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\MESSAGE.WGT",
+   "size": 7812,
+   "sha256": "8b9c73c94a550c00f39760df634540b5d9cb781d89406564de0bda3c8bd52ff8"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\NAME.WGT",
+   "size": 9576,
+   "sha256": "b693cc9a18866205b94aada2706f3eaccfd7327caf9c20967813f43713b139db"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\OSCILLA.WGT",
+   "size": 11300,
+   "sha256": "ce0ded15b207ef8a71838be1fea1226301dc985927b7114d218090c285a307e5"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\SHOOT.TXT",
+   "size": 301,
+   "sha256": "f8b06a888e8e4dc82cd714252d9edf058f8966e27df7258ca63f74f9c6f18d35"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\SHOTMOON.WGT",
+   "size": 65984,
+   "sha256": "41131c848afa4648bf6baf1adb310e646c9abafd3e57a5baaf34572479486909"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\SINCOS.WGT",
+   "size": 10316,
+   "sha256": "2539a42bd19c32131348658fe2fcfeb8c43a08b0c40b0e203c0df6eb835a8d69"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\FUNWIDGE\\SLOTMACH.WGT",
+   "size": 31800,
+   "sha256": "2e6cc59973bad8117d33a4f1e181d64aa16fecbdaaf8db6f75e8ff16dd8f131a"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\INFO.EXE",
+   "size": 28801,
+   "sha256": "e9173fb13035f81eddd17c3dd2159b526a4cb2aefc6f77a479f10c087fef8911"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\README.WRI",
+   "size": 79872,
+   "sha256": "f31a89baf8029ae458ed3a55c7dd4939cd27542a82f6ee69204e65ce63dfa51d"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\UNIVBE.EXE",
+   "size": 64208,
+   "sha256": "2808110f05b376a610e3733e4a46396912be0146c9bd93648ed1b7094cdb6447"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.EXE",
+   "size": 684032,
+   "sha256": "46333307d84b4fc7dfe714a463d6b1a5482edef1cf6f95a540efc9e8799a67ba"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.HLP",
+   "size": 327985,
+   "sha256": "08a7adcec3f3a4f60baf66aea93ee82f2426f4667c853819687ef801eb212896"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.ICO",
+   "size": 766,
+   "sha256": "a5ca3b88a81eea2f6ff2e5bcb2cfba1c379d17a203ed6c8b265767a4ad7af74b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.PZL",
+   "size": 242671,
+   "sha256": "b995986959644448bffca8bf5a77b04fbbe0e7e2770ffe1edf5af2625d84df63"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.SLF",
+   "size": 446217,
+   "sha256": "99a699b4c108dc72050185b189a1ba2263f5aace81c3cc0c1219b852c0173446"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIDGET.WAV",
+   "size": 1918266,
+   "sha256": "4ad1e52f4a4fdb813bfc4f5f8dabf5cebd670287123391b9a877c6ddb8f802df"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WIN3_1.EXE",
+   "size": 1689687,
+   "sha256": "773f9281e19c802078b9b300c2e403d25ea25ad1cef2aa9f724f58cc74d8bd4b"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WWGADGET.DLL",
+   "size": 1007616,
+   "sha256": "dee1182d41ec0c917d1f37498151c179b4fab955cce286b2df0a839307824a12"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WWINTRO.DLL",
+   "size": 3321856,
+   "sha256": "746973b685ae3f6377a50b1ae79b3f21fd9a16b17d2af9761e73725451f09810"
+  },
+  {
+   "kind": "file",
+   "path": "WIDGET\\WWSOUND.DLL",
+   "size": 667648,
+   "sha256": "a8b923898e820de8bf71f081d96f9eb12e7196feeabcb7976a053d52d5a25a66"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\MAXIS.GRP",
+   "size": 7654,
+   "sha256": "cb045d665c7fe9b34f60e4cc08812705d0e1d44378795977f9c0d48b70247fb9"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\PROGMAN.INI",
+   "size": 209,
+   "sha256": "f718d60257a2e99bc0d16e8b3e5d95de431b9edfb5d0ed0c0c1c2007edf0cbc2"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\REG.DAT",
+   "size": 2633,
+   "sha256": "d32e78ee543b734a8a0d8737daff3075d7c6e09368000331980a3dd230dc087a"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\SYSTEM.MXS",
+   "size": 1680,
+   "sha256": "5d69e626daff249d51fe5a320dba15e2233b1cd3d7267e435989250ba1e494b5"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\SYSTEM\\CTL3D.DLL",
+   "size": 21008,
+   "sha256": "de6ae72b0795ae2eebd864d3aafacbbb629ce0f9fd20cb20cba5f822be0f420d"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\SYSTEM\\CTL3D32.DLL",
+   "size": 26112,
+   "sha256": "c62223ccc6d3ba138fc4e8f202629ea1fc0503243ef685a304b29f9d82b01644"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\SYSTEM\\D2HTOOLS.DLL",
+   "size": 44464,
+   "sha256": "a0413602e7bba407905230e896fe2bdd6771f578327af8227c773fa6291a93b8"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\WIDGET.INI",
+   "size": 3497,
+   "sha256": "5a644d114566b8b15ede2a64c2f9cefb6ab500e34f082baad55d9442c2bcc454"
+  },
+  {
+   "kind": "file",
+   "path": "WINDOWS\\~INS0363.~MP",
+   "size": 10240,
+   "sha256": "fb0c2c301d5d767f4322733bec6e44c60e9e207c8cfa51ae93e797f002a741f6"
+  }
+ ]
+}

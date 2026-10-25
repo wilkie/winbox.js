@@ -46,6 +46,23 @@ struct Program {
     run: String,
     #[serde(default)]
     survey: Option<Survey>,
+    /// The letter of its disc, for a program on a disc of its own: its
+    /// image, kept whole by `fetch.mjs`, mounted there.
+    #[serde(default)]
+    disc: Option<String>,
+    /// Started as an install is: Program Manager the shell, given it as its
+    /// command line (`trace --shell`).
+    #[serde(default)]
+    install: bool,
+    #[serde(default)]
+    source: Option<Source>,
+}
+
+#[derive(Deserialize, Default)]
+struct Source {
+    /// A disc's image's kind, `iso`, where the download is one.
+    #[serde(default)]
+    image: Option<String>,
 }
 
 #[derive(Deserialize, Default)]
@@ -55,6 +72,9 @@ struct Survey {
     /// Keys pressed at set times after the main run.
     #[serde(default)]
     steps: Vec<String>,
+    /// The main run's seconds, where not the survey's ten.
+    #[serde(default)]
+    seconds: Option<f64>,
 }
 
 /// A call of the TypeScript engine's as the comparison reads it: `normal`,
@@ -203,6 +223,12 @@ struct Run {
     seconds: f64,
     /// Its report, where it pressed keys and kept screens at steps.
     marks: Option<std::path::PathBuf>,
+    /// Images mounted beside C:, `D:corpus/cache/<id>/<id>.iso`.
+    mounts: Vec<String>,
+    /// Started as an install is, Program Manager the shell, with the
+    /// oracle's A: and Z: beside C: as the TypeScript engine's run has
+    /// them.
+    install: bool,
 }
 
 /// The trace of a program, as the trace example prints it; what it printed
@@ -215,8 +241,10 @@ fn trace(run: &Run) -> String {
 
     command
         .args(words)
+        // A program on a disc has no file of the host's: it is read from
+        // its drive, by its path.
+        .args((!run.exe.is_empty()).then_some(run.exe.as_str()))
         .args([
-            run.exe.as_str(),
             "--path",
             &run.path,
             run.base.0,
@@ -244,6 +272,14 @@ fn trace(run: &Run) -> String {
     // were.
     if let Some(marks) = &run.marks {
         command.arg("--marks").arg(marks);
+    }
+
+    for mount in &run.mounts {
+        command.arg("--mount").arg(mount);
+    }
+
+    if run.install {
+        command.arg("--shell").arg("--oracle-drives");
     }
 
     let Ok(mut child) = command.stdout(Stdio::piped()).stderr(Stdio::null()).spawn() else {
@@ -295,16 +331,19 @@ fn kept_out() -> Option<std::path::PathBuf> {
     std::env::var_os("WINBOX_TRACE_OUT").map(std::path::PathBuf::from)
 }
 
-/// How long a program is surveyed for, in seconds: ten, then each step's,
-/// three where it gives none.
+/// How long a program is surveyed for, in seconds: its own, else ten, then
+/// each step's, three where it gives none.
 fn seconds_of(survey: &Survey) -> f64 {
-    survey.steps.iter().fold(10.0, |seconds, step| {
-        seconds
-            + step
-                .split_once(':')
-                .and_then(|(_, seconds)| seconds.parse::<f64>().ok())
-                .unwrap_or(3.0)
-    })
+    survey
+        .steps
+        .iter()
+        .fold(survey.seconds.unwrap_or(10.0), |seconds, step| {
+            seconds
+                + step
+                    .split_once(':')
+                    .and_then(|(_, seconds)| seconds.parse::<f64>().ok())
+                    .unwrap_or(3.0)
+        })
 }
 
 /// When the TypeScript engine's run came to its last place, in
@@ -493,6 +532,7 @@ fn on_assets() -> bool {
         .any(|pair| pair[0] == "--base" && pair[1] == "assets")
 }
 
+#[allow(clippy::too_many_lines)]
 fn main() {
     let assets = on_assets();
     let programs = manifest("corpus/manifest.json")
@@ -508,10 +548,24 @@ fn main() {
     std::fs::create_dir_all(&screens).expect("a folder for the screens");
 
     for program in programs {
-        let exe = format!("corpus/programs/{}/{}", program.id, program.run);
+        // A program on a disc of its own is read from the disc, not from a
+        // file of the host's.
+        let image = program.disc.as_ref().map(|_| {
+            let kind = program
+                .source
+                .as_ref()
+                .and_then(|source| source.image.clone())
+                .unwrap_or_else(|| "iso".to_string());
+
+            format!("corpus/cache/{0}/{0}.{kind}", program.id)
+        });
+        let exe = match &image {
+            Some(_) => String::new(),
+            None => format!("corpus/programs/{}/{}", program.id, program.run),
+        };
         let report = format!("corpus/reports/{}.calls.txt", program.id);
 
-        if !Path::new(&exe).exists() || !Path::new(&report).exists() {
+        if !Path::new(image.as_deref().unwrap_or(&exe)).exists() || !Path::new(&report).exists() {
             continue;
         }
 
@@ -521,7 +575,11 @@ fn main() {
                 .map(|line| wanted(line))
                 .collect();
         let short: String = program.id.to_ascii_uppercase().chars().take(8).collect();
-        let path = format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase());
+        let path = if image.is_some() {
+            program.run.to_ascii_uppercase()
+        } else {
+            format!("C:\\CORPUS\\{short}\\{}", program.run.to_ascii_uppercase())
+        };
         let survey = program.survey.unwrap_or_default();
         let display = survey.display.clone().unwrap_or_else(|| "vga".to_string());
         let base = base_of(assets, &display);
@@ -544,6 +602,11 @@ fn main() {
             seconds,
             marks: (!survey.steps.is_empty())
                 .then(|| Path::new("corpus/reports").join(format!("{}.json", program.id))),
+            mounts: match (&program.disc, &image) {
+                (Some(letter), Some(image)) => vec![format!("{letter}:{image}")],
+                _ => Vec::new(),
+            },
+            install: program.install,
         });
         let got: Vec<String> = out
             .lines()
