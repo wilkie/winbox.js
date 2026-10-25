@@ -1,6 +1,7 @@
 'use strict';
 
 import { GetTextExtent } from './GetTextExtent.js';
+import { textBounds } from './bounds.js';
 import { currentPositionText } from './MoveTo.js';
 
 import { justifiedSpacing } from './justify.js';
@@ -50,6 +51,19 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
   );
 
   [nXStart, nYStart] = [place.x, place.y];
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  textBounds(
+    this,
+    hdc,
+    surface,
+    nXStart,
+    nYStart,
+    () => GetTextExtent.call(this, hdc, text, text.length) & 0xffff,
+    false,
+    null,
+    0
+  );
 
   if (mapped(surface)) {
     [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);

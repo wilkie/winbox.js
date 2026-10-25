@@ -11,6 +11,7 @@
 //! indices in place: the TypeScript engine's other kind, an RGBA canvas of a
 //! page, is not here, and nothing of the raster desktop reaches it.
 
+use super::bounds::{accumulate, rect_bounds};
 use std::rc::Rc;
 
 use winbox_raster::blit::{self, Brush as Paintbrush, Pattern, Source, Target};
@@ -418,6 +419,9 @@ pub fn pat_blt(system: &mut System, hdc: u16, rect: [i32; 4], rop: u32) -> u16 {
         height = -height;
     }
 
+    // What it draws in, taken into the bounds (`bounds`).
+    accumulate(system, dc, x, y, x + width, y + height);
+
     let code = (rop >> 16) & 0xff;
 
     if ((code >> 2) ^ code) & 0x33 != 0 {
@@ -485,9 +489,13 @@ pub fn bit_blt(
             device_box(&mapping_of(system, from), sx, sy, width, height)
         });
 
+        // What it draws in, taken into the bounds (`bounds`).
+        rect_bounds(system, dc, [to.0, to.1, to.0 + to.2, to.1 + to.3]);
         stretch_device(system, dc, to, from, at, rop);
         return 1;
     }
+
+    rect_bounds(system, dc, [x, y, x + width, y + height]);
 
     let Some(bitmap) = canvas(system, dc) else {
         return 1;
@@ -572,6 +580,8 @@ pub fn stretch_blt(
         None => (sx, sy, swidth, sheight),
     };
 
+    // What it draws in, taken into the bounds (`bounds`).
+    rect_bounds(system, dc, [to.0, to.1, to.0 + to.2, to.1 + to.3]);
     stretch_device(system, dc, to, src, at, rop);
     1
 }
@@ -810,6 +820,13 @@ pub fn set_pixel(system: &mut System, hdc: u16, x: i32, y: i32, colorref: u32) -
         Some(m) => device_point(&m, x, y),
         None => (x, y),
     };
+
+    // Where it is drawn, the pixel is taken into the bounds (`GDI.EXE` seg23
+    // `020f`; `bounds`).
+    if super::regions::clip_of(system, dc).contains(x, y) {
+        accumulate(system, dc, x, y, x + 1, y + 1);
+    }
+
     let Some(mut bitmap) = canvas(system, dc) else {
         return CLR_INVALID;
     };
@@ -1002,6 +1019,9 @@ pub fn fill_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) -> R
         realise(system, dc, object);
     }
 
+    // GDI's `PatBlt` takes what it draws in into the bounds (`bounds`).
+    rect_bounds(system, dc, [left, top, right, bottom]);
+
     if let Some(bitmap) = canvas(system, dc) {
         raster_op(
             system,
@@ -1058,6 +1078,9 @@ pub fn frame_rect(system: &mut System, hdc: u16, rect: [i32; 4], brush: u16) -> 
         realise(system, dc, object);
     }
 
+    // GDI's `PatBlt`s take what they draw in into the bounds (`bounds`).
+    rect_bounds(system, dc, [left, top, right, bottom]);
+
     let Some(bitmap) = canvas(system, dc) else {
         return Ok(());
     };
@@ -1094,6 +1117,9 @@ pub fn invert_rect(system: &mut System, hdc: u16, rect: [i32; 4]) {
         return;
     };
     let [left, top, right, bottom] = rect;
+
+    // GDI's `PatBlt` takes what it draws in into the bounds (`bounds`).
+    rect_bounds(system, dc, [left, top, right, bottom]);
 
     if let Some(bitmap) = canvas(system, dc) {
         raster_op(
@@ -1253,6 +1279,10 @@ pub fn set_dibits_to_device(
         Some(m) => device_point(&m, dest.0, dest.1),
         None => dest,
     };
+
+    // The destination, taken into the bounds (`bounds`).
+    rect_bounds(system, dc, [x_dest, y_dest, x_dest + cx, y_dest + cy]);
+
     let first = start.max(y_src);
     let end = (start + lines).min(y_src + cy);
     let width = cx.min(dib.width - x_src);
@@ -1342,6 +1372,9 @@ pub fn stretch_dibits(
         None => (x, y, width, height),
     };
     let [sx, sy, swidth, sheight] = source;
+
+    // The destination, taken into the bounds (`bounds`).
+    rect_bounds(system, dc, [to.0, to.1, to.0 + to.2, to.1 + to.3]);
 
     stretch_into(
         system,

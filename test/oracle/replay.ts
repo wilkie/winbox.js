@@ -5573,6 +5573,19 @@ export const KNOWN_GAPS: Record<string, string> = {
    * (1 record). */
   'winexpe:exec':
     'Windows starts a file that is no Windows program in a DOS session, which WinBox has not got',
+  /* `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
+   * font's height in the device context's units; both engines take it as
+   * pixels, so the widths, the pairs' amounts and the outline metrics are
+   * a larger font's (`kb/topics/truetype-queries.md`). `GetFontData`
+   * agrees. */
+  'ttqmap:kern': "a font's height under a mapping mode is taken as pixels",
+  'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
+  'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
+  /* `dchook`'s hook calls: GDI calls a device context's hook from the
+   * calls that use the context while its flag is set (`GDI.EXE` seg1
+   * `4423`); WinBox keeps the hook and the flag and calls nothing
+   * (3 records). */
+  'dchook:hookcall': "GDI does not call a device context's hook",
 };
 
 /**
@@ -5893,6 +5906,11 @@ const RUN_WHOLE = new Set<string>([
   'biosmem',
   'dcreuse',
   'winexpe',
+  'ttquery',
+  'ttqmap',
+  'dcinner',
+  'dchook',
+  'bounds',
 ]);
 
 /**

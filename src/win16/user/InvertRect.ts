@@ -1,6 +1,7 @@
 'use strict';
 
 import { rasterOp } from '../../raster/raster-op.js';
+import { rectBounds } from '../gdi/bounds.js';
 
 /**
  * Inverts every pixel of a rectangle, each bit of its colour's index as the
@@ -16,6 +17,9 @@ export function InvertRect(hdc, lprc) {
   if (!surface || !lprc) {
     return;
   }
+
+  /* GDI's `PatBlt` takes what it draws in into the bounds (`bounds.ts`). */
+  rectBounds(this, surface, lprc.left, lprc.top, lprc.right, lprc.bottom);
 
   rasterOp(
     this.display,

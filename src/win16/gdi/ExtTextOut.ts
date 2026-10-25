@@ -1,4 +1,5 @@
 import { GetTextExtent } from './GetTextExtent.js';
+import { textBounds } from './bounds.js';
 import { currentPositionText } from './MoveTo.js';
 import { TRUE, FALSE } from '../consts.js';
 
@@ -98,12 +99,28 @@ export function ExtTextOut(hdc, nXStart, nYStart, fuOptions, lpRect, lpszString,
 
   [nXStart, nYStart] = [place.x, place.y];
 
+  const textX = nXStart;
+  const textY = nYStart;
+
   /* In device terms, where a mapping mode says otherwise. The spacing is not
    * mapped: not followed. */
   if (mapped(surface)) {
     [nXStart, nYStart] = devicePoint(surface, nXStart, nYStart);
     rect = rect && deviceRect(surface, rect.left, rect.top, rect.right, rect.bottom);
   }
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  textBounds(
+    this,
+    hdc,
+    surface,
+    textX,
+    textY,
+    () => GetTextExtent.call(this, hdc, text, text.length) & 0xffff,
+    !!given,
+    rect,
+    fuOptions
+  );
 
   /* `ETO_OPAQUE` paints the rectangle it is given, and changes what the text
    * paints behind itself: the glyphs' own boxes rather than the run's

@@ -223,6 +223,10 @@ pub const AGREEING: &[&str] = &[
     "imgtrk",
     "imgswap",
     "biosmem",
+    "ttquery",
+    "dcinner-vga",
+    "dcinner-vga256",
+    "bounds",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

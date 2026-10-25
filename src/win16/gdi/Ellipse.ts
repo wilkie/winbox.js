@@ -1,6 +1,7 @@
 'use strict';
 
 import { deviceRect, mapped, scale } from './mapping.js';
+import { shapeBounds } from './bounds.js';
 
 import { FALSE, TRUE } from '../consts.js';
 import { shapeOf } from '../../raster/curves.js';
@@ -79,6 +80,19 @@ export function paintShape(
   }
 
   const [penWidth, penHeight] = penSize(context, surface.pen, surface);
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  shapeBounds(
+    context,
+    surface,
+    left,
+    top,
+    right,
+    bottom,
+    penWidth,
+    penHeight,
+    surface.pen?.style === PS_INSIDEFRAME
+  );
 
   /* `PS_INSIDEFRAME` wider than a pixel keeps a rectangle's frame inside it:
    * the rectangle drawn is the one given less the pen's reach, half the

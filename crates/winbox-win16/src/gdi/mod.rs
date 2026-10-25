@@ -9,9 +9,11 @@
 #![allow(clippy::unnecessary_wraps)]
 
 pub mod bitmaps;
+pub mod bounds;
 pub mod brushes;
 pub mod calls;
 pub mod dc;
+pub mod dc_internals;
 pub mod ddb;
 pub mod dib;
 pub mod draw;
@@ -209,6 +211,11 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
         "ResizePalette" => palettes::resize_palette,
         "GetNearestPaletteIndex" => palettes::get_nearest_palette_index,
         "SelectPalette" => palettes::select_palette,
+        "GDISelectPalette" => palettes::gdi_select_palette_call,
+        "GDIRealizePalette" => palettes::gdi_realize_palette_call,
+        "IsDCCurrentPalette" => palettes::is_dc_current_palette_call,
+        "RealizeDefaultPalette" => palettes::realize_default_palette_call,
+        "UpdateColors" => palettes::update_colors_call,
         "AnimatePalette" => palettes::animate_palette,
         "GetSystemPaletteEntries" => palettes::get_system_palette_entries,
         "GetSystemPaletteUse" => palettes::get_system_palette_use,
@@ -229,6 +236,8 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
         "SetDIBits" => dib::set_dibits_call,
         _ => {
             return printer_driver::implementation(name)
+                .or_else(|| dc_internals::implementation(name))
+                .or_else(|| bounds::implementation(name))
                 .or_else(|| draw::implementation(name))
                 .or_else(|| text::implementation(name))
                 .or_else(|| text_out::implementation(name))

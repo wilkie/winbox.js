@@ -3,6 +3,7 @@
 import { rasterOp } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { deviceRect, mapped } from '../gdi/mapping.js';
+import { rectBounds } from '../gdi/bounds.js';
 
 const PATCOPY = 0x00f00021;
 
@@ -34,6 +35,8 @@ export function FrameRect(hdc, lprc, hbr) {
 
   surface.brush = brush;
   realiseBrush(surface, brush);
+  /* GDI's `PatBlt`s take what they draw in into the bounds (`bounds.ts`). */
+  rectBounds(this, surface, box.left, box.top, box.right, box.bottom);
 
   for (const [x, y, w, h] of [
     [box.left, box.top, width, 1],

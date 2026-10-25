@@ -5,6 +5,7 @@ import { devicePoint, mapped } from './mapping.js';
 import { ropOfMode } from './SetROP2.js';
 import { wideStroke } from './LineTo.js';
 import { penSize } from './Ellipse.js';
+import { fillBounds, lineBounds } from './bounds.js';
 
 import { FALSE, TRUE } from '../consts.js';
 import { polygonSpans } from '../../raster/polygon.js';
@@ -94,6 +95,17 @@ function wedge(this: any, kind: 'arc' | 'chord' | 'pie', hdc: number, args: numb
 
   if (points.length < 2) {
     return FALSE;
+  }
+
+  /* What it draws in, taken into the bounds (`bounds.ts`): a chord's or a
+   * pie's points as they are filled, and the outline's as a chain of lines
+   * is. */
+  if (kind !== 'arc') {
+    fillBounds(this, surface, points);
+  }
+
+  if (surface.pen?.color?.alpha) {
+    lineBounds(this, surface, points, penWidth);
   }
 
   const rop = ropOfMode(surface.rop2 ?? 13);

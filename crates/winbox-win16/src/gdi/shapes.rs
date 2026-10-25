@@ -5,6 +5,7 @@
 //! `line`, `polygon`, `curves`, `wedges` and `wide_lines`, each pixel put
 //! through the drawing mode `SetROP2` set.
 
+use super::bounds::{accumulate, fill_bounds, line_bounds, shape_bounds};
 use winbox_cpu::{AX, DS, ES, SS};
 use winbox_raster::curves::{Point, shape_of};
 use winbox_raster::line::{Tie, Walk};
@@ -352,6 +353,10 @@ pub fn line_to(system: &mut System, hdc: u16, x: i32, y: i32) -> u16 {
     let start = std::mem::replace(&mut system.gdi.dcs[dc].state.position, (x, y));
     let from = to_device(system, dc, start);
     let to = to_device(system, dc, (x, y));
+    let width = pen_size(system, dc).0;
+
+    // What it draws in, taken into the bounds (`bounds`).
+    line_bounds(system, dc, &[from, to], width);
 
     if let Some(mut bitmap) = canvas(system, dc)
         && !wide_stroke(system, dc, &bitmap, &[from, to], false)
@@ -415,6 +420,11 @@ pub fn polyline(system: &mut System, hdc: u16, far: u32, count: i16) -> u16 {
         && let Some(bitmap) = canvas(system, dc)
         && wide_stroke(system, dc, &bitmap, &points, false)
     {
+        // What it drew in, taken into the bounds (`bounds`); a narrow
+        // chain's are its `LineTo`s'.
+        let width = pen_size(system, dc).0;
+
+        line_bounds(system, dc, &points, width);
         return 1;
     }
 
@@ -461,6 +471,17 @@ pub fn polygon(system: &mut System, hdc: u16, far: u32, count: i16) -> u16 {
         .into_iter()
         .map(|point| to_device(system, dc, point))
         .collect();
+
+    // What it draws in, taken into the bounds (`bounds`): the points' box
+    // as it is filled, and the outline's as a chain of lines is.
+    fill_bounds(system, dc, &points);
+
+    if pen_of(system, dc).color[3] != 0 {
+        let width = pen_size(system, dc).0;
+
+        line_bounds(system, dc, &points, width);
+    }
+
     let Some(mut bitmap) = canvas(system, dc) else {
         return 1;
     };
@@ -531,6 +552,17 @@ pub fn poly_polygon(system: &mut System, hdc: u16, far: u32, counts: u32, rings:
 
         at += count;
         all.push(points);
+    }
+
+    // What it draws in, taken into the bounds (`bounds`).
+    let every: Vec<Point> = all.iter().flatten().copied().collect();
+
+    fill_bounds(system, dc, &every);
+
+    if pen_of(system, dc).color[3] != 0 {
+        let width = pen_size(system, dc).0;
+
+        line_bounds(system, dc, &every, width);
     }
 
     let Some(mut bitmap) = canvas(system, dc) else {
@@ -637,6 +669,16 @@ pub fn paint_shape(
     let (pen_width, pen_height) = pen_size(system, dc);
     let pen = pen_of(system, dc);
     let inside = pen.style == Some(PS_INSIDEFRAME) && pen_width > 1;
+
+    // What it draws in, taken into the bounds (`bounds`).
+    shape_bounds(
+        system,
+        dc,
+        [left, top, right, bottom],
+        pen_width,
+        pen_height,
+        pen.style == Some(PS_INSIDEFRAME),
+    );
 
     if inside && corner == Some((0, 0)) {
         let across = left.max(right) - left.min(right);
@@ -831,6 +873,17 @@ pub fn wedge(system: &mut System, kind: Kind, hdc: u16, args: [i32; 8]) -> u16 {
         return 0;
     }
 
+    // What it draws in, taken into the bounds (`bounds`): a chord's or a
+    // pie's points as they are filled, and the outline's as a chain of
+    // lines is.
+    if kind != Kind::Arc {
+        fill_bounds(system, dc, &points);
+    }
+
+    if pen_of(system, dc).color[3] != 0 {
+        line_bounds(system, dc, &points, pen_width);
+    }
+
     let rop = rop_of_mode(i32::from(system.gdi.dcs[dc].state.rop2.unwrap_or(13)));
     let Some(mut bitmap) = canvas(system, dc) else {
         return 1;
@@ -988,12 +1041,25 @@ pub fn ext_flood_fill(
         _ => [0, 0, 0, 0],
     };
 
+    let mut extent = [i32::MAX, i32::MAX, i32::MIN, i32::MIN];
+
     for row in 0..height {
         for column in 0..width {
             if seen[(row * width + column) as usize] {
                 bitmap.context.set_pixel(column, row, paint);
+                extent[0] = extent[0].min(column);
+                extent[1] = extent[1].min(row);
+                extent[2] = extent[2].max(column + 1);
+                extent[3] = extent[3].max(row);
             }
         }
+    }
+
+    // What it filled, taken into the bounds (`bounds`): the runs' left and
+    // right, and their top and bottom rows -- the bottom row's own
+    // (`GDI.EXE` seg15 `013c`, `01fa`).
+    if extent[0] <= extent[2] {
+        accumulate(system, dc, extent[0], extent[1], extent[2], extent[3]);
     }
 
     1

@@ -1,5 +1,6 @@
 'use strict';
 
+import { rectBounds } from './bounds.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { rasterOp, tableOf, usesSource } from '../../raster/raster-op.js';
@@ -129,6 +130,9 @@ export function StretchBlt(
       height: nHeightSrc,
     } = deviceBox(source, nXSrc, nYSrc, nWidthSrc, nHeightSrc));
   }
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  rectBounds(this, destination, nXDest, nYDest, nXDest + nWidthDest, nYDest + nHeightDest);
 
   stretchDevice(
     this,

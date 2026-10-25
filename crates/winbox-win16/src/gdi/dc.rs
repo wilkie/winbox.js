@@ -60,6 +60,8 @@ pub struct DcState {
     /// A printer driver's context's realized pen and brush and physical
     /// colours (`printer_output.rs`).
     pub driver: Option<super::printer_output::DriverState>,
+    /// `SetRelAbs`' mode, where set: `ABSOLUTE` else (`dc_internals`).
+    pub rel_abs: Option<u16>,
 }
 
 /// The bitmap a device context draws into, as far as its state goes.
@@ -76,6 +78,15 @@ pub enum DcBitmap {
     /// The whole of a window on the screen, its frame, caption and menu
     /// bar as well as its client area (`GetWindowDC`).
     Whole(usize),
+}
+
+/// The hook a device context calls (`dc_internals`): its procedure and
+/// data, where `SetDCHook` set them, and whether `SetHookFlags` has GDI
+/// call it.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct DcHook {
+    pub set: Option<(u32, u32)>,
+    pub flag: bool,
 }
 
 /// A device context.
@@ -102,6 +113,13 @@ pub struct Dc {
     /// USER's cache gives a context of its own then (`choosclr`, COMMDLG's
     /// Color drawing its focus rectangle in `WM_PAINT`).
     pub unclipped: bool,
+    /// The hook `SetDCHook` set (`dc_internals`).
+    pub hook: DcHook,
+    /// The region object `GetClipRgn` answers for the clip region, once
+    /// asked: its handle and its object.
+    pub clip_handle: Option<(u16, usize)>,
+    /// The bounds of what is drawn in it (`bounds`).
+    pub bounds: super::bounds::Bounds,
 }
 
 impl System {
@@ -147,6 +165,7 @@ impl System {
                 justification: None,
                 clip: None,
                 driver: None,
+                rel_abs: None,
             },
             saved: Vec::new(),
             bitmap,
@@ -156,6 +175,9 @@ impl System {
             palette: None,
             wing: false,
             unclipped: false,
+            hook: DcHook::default(),
+            clip_handle: None,
+            bounds: super::bounds::Bounds::default(),
         });
         self.gdi.dcs.len() - 1
     }
