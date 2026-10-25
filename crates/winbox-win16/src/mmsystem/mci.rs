@@ -109,6 +109,10 @@ pub struct Device {
     yield_data: u32,
     /// The element ID it was opened by, with `MCI_OPEN_ELEMENT_ID`.
     element_id: Option<u32>,
+    /// Its type's command table, and its driver's own (seg5 `+20h`,
+    /// `+22h`; `mci_tables.rs`).
+    type_table: u16,
+    custom_table: u16,
 }
 
 /// The devices open, by ID, and the ID past the last.
@@ -313,6 +317,7 @@ impl Engine {
             return Ok(MCIERR_NULL_PARAMETER_BLOCK);
         }
 
+        let given = flags;
         let (mut kind, mut element, alias, task, type_far) = {
             let system = self.system();
             let type_far = long_at(&system, parms.wrapping_add(8));
@@ -476,6 +481,8 @@ impl Engine {
                     yield_proc: 0,
                     yield_data: 0,
                     element_id,
+                    type_table: 0,
+                    custom_table: 0,
                 }),
             );
 
@@ -495,8 +502,9 @@ impl Engine {
             (id, file, block, words_block, open_parms)
         };
         let driver = self.open_driver(&file, Some(b"mci"), open_parms).await?;
+        let custom_table = word_at(&self.system(), far_at(open_parms, 6));
 
-        {
+        let w_type = {
             let mut system = self.system();
             let w_type = word_at(&system, far_at(open_parms, 8));
 
@@ -520,6 +528,36 @@ impl Engine {
                 device.module = module;
                 device.w_type = w_type;
             }
+
+            w_type
+        };
+
+        // The driver's own command table, as it left it in the parameters
+        // -- FFFFh for none -- and its type's: the first table of its type,
+        // else MMSYSTEM's resource named as the type the program gave
+        // (seg5 `20bb`-`210b`).
+        let mut type_table = super::mci_tables::type_table(self, w_type).await?;
+
+        if type_table == 0xffff && given & MCI_OPEN_TYPE != 0 && given & MCI_OPEN_TYPE_ID == 0 {
+            let named = string_at(&self.system(), type_far);
+
+            type_table = match named {
+                Some(named) => {
+                    super::mci_tables::load_table(
+                        self,
+                        super::mci_tables::Source::Own("MMSYSTEM"),
+                        super::mci_tables::Name::Text(named),
+                        w_type,
+                    )
+                    .await?
+                }
+                None => 0xffff,
+            };
+        }
+
+        if let Some(device) = self.system().mmsystem.mci.device_mut(id) {
+            device.custom_table = custom_table;
+            device.type_table = type_table;
         }
 
         let answer =
@@ -578,6 +616,19 @@ impl Engine {
             }
         }
 
+        // Its type's table let go before its driver is closed (seg5
+        // `298c`).
+        let types = self
+            .system()
+            .mmsystem
+            .mci
+            .device_mut(id)
+            .map_or(0, |device| {
+                device.custom_table = 0;
+                std::mem::take(&mut device.type_table)
+            });
+
+        super::mci_tables::free_table(self, types).await?;
         self.close_driver(driver, 0, 0).await?;
         self.system().mmsystem.mci.release(id);
         Ok(answer)
@@ -904,6 +955,18 @@ fn mci_break(system: &mut System, id: u16, flags: u32, parms: u32) -> u32 {
     }
 
     MCIERR_MISSING_PARAMETER
+}
+
+/// Whether an open device has a command table, as its type's or its
+/// driver's (seg5 `2fd5`).
+pub(crate) fn table_in_use(system: &System, number: u16) -> bool {
+    system
+        .mmsystem
+        .mci
+        .devices
+        .iter()
+        .flatten()
+        .any(|device| device.type_table == number || device.custom_table == number)
 }
 
 /// MMSYSTEM's own yield procedure's address.
@@ -1362,6 +1425,8 @@ mod tests {
                 yield_proc: 0,
                 yield_data: 3,
                 element_id: None,
+                type_table: 0,
+                custom_table: 0,
             }),
         );
         system.mmsystem.mci.count = 2;

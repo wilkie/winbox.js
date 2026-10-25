@@ -2,7 +2,7 @@
 kind: topic
 name: Sound devices
 summary: What MMSYSTEM answers on a Windows 3.1 installation with no sound driver — no waveform, MIDI or auxiliary devices, every open refused as a bad device, and its own error texts — measured.
-probes: [mmdevs, mmnodev, mcidevs, mcifile, sndplay, mplopen, mmmisc]
+probes: [mmdevs, mmnodev, mcidevs, mcifile, sndplay, mplopen, mmmisc, mmcmd]
 ---
 
 A Windows 3.1 installation has only the multimedia devices its `SYSTEM.INI` names drivers for. The installation winbox.js runs, and the oracle records, names only the timer and the MIDI mapper: there is no sound card driver. So there is nothing to play waveform sound on or record it from. Programs ask before they try, and must be told the truth.
@@ -48,6 +48,15 @@ The media control interface sits above the devices. A program opens a device by 
 - [[read out]] MMSYSTEM looks the type up in `[mci]`: as a key, as a key with a digit after it, or as a driver's file name (`MMSYSTEM.DLL` seg5 `1e77`). It opens the driver in the section `mci`, handing it the new device's ID, which counts from 1. It then sends the driver `MCI_OPEN_DRIVER`. `MCI_CLOSE`, `MCI_SYSINFO` and `MCI_BREAK` it answers itself. Every other command goes to the driver as it is.
 - [[read out]] A driver answers a capability as the value with a string's number in its high word, and a flag of 10000h, and MMSYSTEM clears that high word in the caller's `dwReturn`. That is why the device type reads 20Ah, not 20A020Ah.
 - [[measured]] Media Player, finding no device it can play, says there are no MCI device drivers installed, in a box of its own. [[probe:mplopen]] starts it: the box stays up, a posted `IDOK` does not close it, and Media Player keeps running. Its File Open, asked for from outside meanwhile, lists only all files. With the Sound Blaster, it lists `Sound (*.wav)`, `MIDI Sequencer (*.mid;*.rmi)` and `All files (*.*)`, the last chosen. Either way its file controls are enabled ([[topic:dynamic-link-libraries]]).
+
+## Command tables
+
+An MCI command table is an `RCDATA` resource listing commands and their keywords, which MCI reads to parse a command string. [[measured]] [[probe:mmcmd]] loads tables of its own with [[fn:MMSYSTEM.mciLoadCommandResource]], frees them with [[fn:MMSYSTEM.mciFreeCommandResource]], and opens and closes a waveaudio device between. Both engines agree with all 23 records.
+
+- [[measured]] The first table a program loads is 1: MMSYSTEM's `core` table is loaded first and is nought. A resource with no command, or none of the name, answers FFFFh. A number freed is given again.
+- [[measured]] Opening a waveaudio device loads MCIWAVE's own table and, unless a table of type 20Ah is loaded already, MMSYSTEM's `waveaudio` table; neither can be freed while the device is open. Closing frees both.
+- [[measured]] Freeing nought, or a number past the end, answers nought; freeing a table twice answers 1 twice.
+- [[read out]] `MMSYSTEM.DLL` seg5 `2c30`-`307e`, `2f4c`, `20dd`-`210b`, `2926`-`29cd`. [[fn:MMSYSTEM.mciParseCommand]] is exported but is a near procedure no program can call.
 
 ## Opening a file
 
@@ -97,7 +106,7 @@ What the card plays is handed to the host with its rate, channels and bits: winb
 
 ## Not yet done
 
-- `mciLoadCommandResource`, `mciFreeCommandResource` and the command tables they keep, and `mciParseCommand`.
+- The command tables' contents: `mciSendString` here parses its commands itself, and does not load the core table as it first looks a command up (seg5 `3095`).
 - A sound card in the TypeScript engine: it installs only drivers from files, and the installation it runs names none.
 
 ## In winbox.js

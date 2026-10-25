@@ -12539,8 +12539,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "mciLoadCommandResource",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "mciGetErrorString",
@@ -12580,10 +12580,10 @@ pub static KEPT: &[Kept] = &[
                 stub: false,
             }),
             Some(Export {
-                name: "MCIFREECOMMANDRESOURCE",
+                name: "mciFreeCommandResource",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "mciSetYieldProc",

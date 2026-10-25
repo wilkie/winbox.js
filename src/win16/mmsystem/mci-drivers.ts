@@ -4,6 +4,8 @@ import { Module } from '../module.js';
 import { DWORD, LPARAM, LRESULT, UINT } from '../types.js';
 import { DefDriverProc } from '../user/drivers.js';
 import { PostMessage } from '../user/PostMessage.js';
+import { tableInUse } from './mci.js';
+import { freeTable, loadTable } from './mci-tables.js';
 import { midiOutGetNumDevs } from './midi.js';
 import { waveInGetNumDevs, waveOutGetNumDevs } from './wave.js';
 
@@ -538,6 +540,12 @@ async function driverProc(
           out: waveOutGetNumDevs.call(system),
           in: waveInGetNumDevs.call(system),
         };
+
+        /* Its own command table, named by its string 2, `mciwave`; without
+         * it the driver does not load (`MCIWAVE.DRV` seg1 `46`). */
+        system._mciWaveTable = await loadTable(system, { own: 'MCIWAVE' }, 'mciwave', 0);
+
+        return system._mciWaveTable === 0xffff ? 0 : 1;
       }
       return 1;
 
@@ -550,14 +558,26 @@ async function driverProc(
       const segment = lParam2 >>> 16;
       const offset = lParam2 & 0xffff;
 
-      core.write16(segment, (offset + 6) & 0xffff, kind === 'wave' ? 0 : 0xffff);
+      /* MCIWAVE's own command table (`MCIWAVE.DRV` seg1 `16f`); MCISEQ
+       * has none, and leaves the FFFFh MMSYSTEM put there. */
+      if (kind === 'wave') {
+        core.write16(segment, (offset + 6) & 0xffff, system._mciWaveTable ?? 0xffff);
+      }
+
       core.write16(segment, (offset + 8) & 0xffff, kind === 'wave' ? 0x20a : 0x20b);
 
       return core.read16(segment, offset);
     }
 
-    case 4: // DRV_CLOSE
     case 6: // DRV_FREE
+      /* MCIWAVE lets its command table go (`MCIWAVE.DRV` seg1 `92`). */
+      if (kind === 'wave' && (system._mciWaveTable ?? 0xffff) !== 0xffff) {
+        freeTable(system, system._mciWaveTable, (number) => tableInUse(system, number));
+        system._mciWaveTable = 0xffff;
+      }
+      return 1;
+
+    case 4: // DRV_CLOSE
     case 9: // DRV_INSTALL
     case 10: // DRV_REMOVE
       return 1;

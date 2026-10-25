@@ -41,6 +41,7 @@ pub mod mci;
 pub mod mci_drivers;
 pub mod mci_execute;
 pub mod mci_string;
+pub mod mci_tables;
 pub mod mci_wave;
 pub mod midi;
 pub mod mmio;
@@ -83,6 +84,7 @@ pub struct State {
     pub sequencer: sequencer::Sequencer,
     pub mmio: mmio::Mmio,
     pub stacks: stacks::Stacks,
+    pub mci_tables: mci_tables::Tables,
     pub joysticks: joystick::Joysticks,
 }
 
@@ -126,6 +128,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "mciBreakYield" => Implementation::Async(mci::mci_break_yield),
         "mciDriverNotify" => Implementation::Async(mci::mci_driver_notify),
         "mciExecute" => Implementation::Async(mci_execute::mci_execute),
+        "mciLoadCommandResource" => Implementation::Async(mci_tables::mci_load_command_resource),
+        "mciFreeCommandResource" => Implementation::Async(mci_tables::mci_free_command_resource),
         "mciGetDeviceIDFromElementID" => {
             Implementation::Async(mci::mci_get_device_id_from_element_id)
         }

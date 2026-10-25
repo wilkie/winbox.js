@@ -5873,6 +5873,7 @@ const RUN_WHOLE = new Set<string>([
   'mmmisc',
   'mmnodev',
   'mmdevs',
+  'mmcmd',
 ]);
 
 /**

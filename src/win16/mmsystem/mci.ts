@@ -19,6 +19,7 @@ import { GetActiveWindow } from '../user/placement.js';
 import { PeekMessage } from '../user/PeekMessage.js';
 import { PostMessage } from '../user/PostMessage.js';
 import { moduleString, mmsystemString } from './devices.js';
+import { freeTable, loadTable, sourceOf, typeTable } from './mci-tables.js';
 import { exportAddress } from './mmio.js';
 import { withMsg } from './tasks.js';
 
@@ -111,6 +112,9 @@ interface Device {
   yieldData: number;
   /** The element ID it was opened by, with `MCI_OPEN_ELEMENT_ID`; else null. */
   elementId: number | null;
+  /** Its type's command table, and its driver's own (seg5 `+20h`, `+22h`; `mci-tables.ts`). */
+  typeTable: number;
+  customTable: number;
 }
 
 /** The hidden ordinal of MMSYSTEM's own yield procedure, the break key's (seg5 `2bbf`). */
@@ -288,6 +292,7 @@ async function open(system: any, flags: number, parms: number) {
   }
 
   const c = core(system);
+  const given = flags;
   const segment = parms >>> 16;
   const offset = parms & 0xffff;
   const typeFar = readFar(system, (parms + 8) >>> 0);
@@ -402,6 +407,8 @@ async function open(system: any, flags: number, parms: number) {
     yieldProc: 0,
     yieldData: 0,
     elementId: flags & MCI_OPEN_ELEMENT_ID ? readFar(system, (parms + 0x0c) >>> 0) >>> 0 : null,
+    typeTable: 0,
+    customTable: 0,
   };
 
   /* MCI_OPEN_DRIVER_PARMS: the ID, the words after the driver's name, the
@@ -418,6 +425,7 @@ async function open(system: any, flags: number, parms: number) {
 
   const hDriver = await OpenDriver.call(system, file, 'mci', openParms);
   const wType = c.read16(openParms >>> 16, (openParms & 0xffff) + 8);
+  const customTable = c.read16(openParms >>> 16, (openParms & 0xffff) + 6);
 
   GlobalFree.call(system, block);
   GlobalFree.call(system, params.block);
@@ -435,6 +443,20 @@ async function open(system: any, flags: number, parms: number) {
   device.hDriver = hDriver;
   device.module = GetDriverModuleHandle.call(system, hDriver);
   device.wType = wType;
+
+  /* The driver's own command table, as it left it in the parameters --
+   * FFFFh for none -- and its type's: the first table of its type, else
+   * MMSYSTEM's resource named as the type the program gave (seg5
+   * `20bb`-`210b`). */
+  device.customTable = customTable;
+  device.typeTable = await typeTable(system, wType);
+
+  if (device.typeTable === 0xffff && given & MCI_OPEN_TYPE && !(given & MCI_OPEN_TYPE_ID)) {
+    const named = readString(system, typeFar);
+
+    device.typeTable =
+      named === null ? 0xffff : await loadTable(system, { own: 'MMSYSTEM' }, named, wType);
+  }
 
   const answer = (await mciSendCommand.call(system, id, MCI_OPEN_DRIVER, flags, parms)) & 0xffff;
 
@@ -477,10 +499,49 @@ async function close(system: any, id: number, flags: number, parms: number, send
     }
   }
 
+  /* Its type's table let go before its driver is closed (seg5 `298c`). */
+  const types = device.typeTable;
+
+  device.typeTable = 0;
+  device.customTable = 0;
+  freeTable(system, types, (number) => tableInUse(system, number));
+
   await CloseDriver.call(system, device.hDriver, 0, 0);
   release(table, id);
 
   return answer;
+}
+
+/** Whether an open device has a command table, as its type's or its driver's (seg5 `2fd5`). */
+export function tableInUse(system: any, number: number) {
+  return tableOf(system).devices.some(
+    (device) => !!device && (device.typeTable === number || device.customTable === number)
+  );
+}
+
+/**
+ * A command table loaded from a module's resources (`mci-tables.ts`).
+ *
+ * @returns {Types.UINT} Its number, or FFFFh.
+ */
+export function mciLoadCommandResource(
+  this: any,
+  hInstance: number,
+  lpResName: any,
+  wType: number
+) {
+  const name = typeof lpResName === 'number' ? lpResName : String(lpResName ?? '');
+
+  return loadTable(this, sourceOf(this, hInstance & 0xffff), name, wType & 0xffff);
+}
+
+/**
+ * A command table let go (`mci-tables.ts`).
+ *
+ * @returns {Types.BOOL} Whether it was.
+ */
+export function mciFreeCommandResource(this: any, wTable: number) {
+  return freeTable(this, wTable, (number) => tableInUse(this, number));
 }
 
 /** `MCI_SYSINFO` (seg5 `16bb`): the devices installed, or open. */
