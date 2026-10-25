@@ -223,6 +223,9 @@ pub const AGREEING: &[&str] = &[
     "imgtrk",
     "imgswap",
     "biosmem",
+    "sysdrv",
+    "snddrv",
+    "kbdrv",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

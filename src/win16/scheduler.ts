@@ -45,7 +45,12 @@ export class Scheduler {
   /** Looked at between slices of a task's instructions: what has come due (`pollTimeEvents`). */
   declare onSlice: (() => void) | undefined;
   /** Procedures waiting to be called as at interrupt time; see `atInterrupt`. */
-  declare _interrupts: { proc: number; args: any[]; key?: unknown }[];
+  declare _interrupts: {
+    proc: number;
+    args: any[];
+    key?: unknown;
+    registers?: Record<string, number>;
+  }[];
   /** Whether one is being called now. */
   declare _inInterrupt: boolean;
 
@@ -192,10 +197,17 @@ export class Scheduler {
    *
    * Not recorded: the registers and the stack Windows calls it with; here
    * DS and AX are the stack's segment, as for a hook, and the stack is the
-   * task's.
+   * task's -- but for `registers` given, as SYSTEM.DRV's timers give AX and
+   * DS (`system-driver.ts`).
    */
-  atInterrupt(proc: number, args: any[], key?: unknown, task?: number) {
-    (this._interrupts ??= []).push({ proc, args, key });
+  atInterrupt(
+    proc: number,
+    args: any[],
+    key?: unknown,
+    task?: number,
+    registers?: Record<string, number>
+  ) {
+    (this._interrupts ??= []).push({ proc, args, key, registers });
 
     if (task !== undefined) {
       this.taskAt(task)?.signal?.();
@@ -232,11 +244,11 @@ export class Scheduler {
       return;
     }
 
-    const { proc, args } = this._interrupts.shift()!;
+    const { proc, args, registers } = this._interrupts.shift()!;
     const handle = this.active;
 
     this._inInterrupt = true;
-    this.callProc(proc, args, this.stackRegisters()).finally(() => {
+    this.callProc(proc, args, { ...this.stackRegisters(), ...registers }).finally(() => {
       this._inInterrupt = false;
       this.resume(handle);
     });
@@ -248,12 +260,12 @@ export class Scheduler {
    */
   async takeInterrupts() {
     while (!this._inInterrupt && this._interrupts?.length && this.task && !this.task.ended) {
-      const { proc, args } = this._interrupts.shift()!;
+      const { proc, args, registers } = this._interrupts.shift()!;
 
       this._inInterrupt = true;
 
       try {
-        await this.callProc(proc, args, this.stackRegisters());
+        await this.callProc(proc, args, { ...this.stackRegisters(), ...registers });
       } finally {
         this._inInterrupt = false;
       }

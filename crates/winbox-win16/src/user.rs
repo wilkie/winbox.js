@@ -21,6 +21,11 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateWindowEx" => Implementation::Async(create::create_window_ex),
         "_WSPRINTF" => Implementation::Sync(wsprintf),
         "ExitWindows" => Implementation::Sync(exit_windows),
+        // 1, and nothing else (`USER.EXE` seg3 `0232`).
+        "WEP" => Implementation::Sync(|system, args| {
+            let _ = args.word(system);
+            Ok(Answer::Word(1))
+        }),
         // Through the language driver, where one is loaded
         // (`language_driver.rs`).
         "lstrcmp" | "lstrcmpi" => return crate::language_driver::implementation(name),

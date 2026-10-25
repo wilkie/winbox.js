@@ -84,6 +84,12 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "dwUpArrowHack" => Implementation::Async(print_dlg::dw_up_arrow_hack),
         "WantArrows" => Implementation::Async(choose_color::want_arrows),
         "GetFileTitle" => Implementation::Sync(parse::get_file_title),
+        // 1, its own objects let go first unless Windows is ending
+        // (`COMMDLG.DLL` seg6 `01ad`-`01db`): WinBox's hold none.
+        "WEP" => Implementation::Sync(|system, args| {
+            let _ = args.word(system);
+            Ok(Answer::Word(1))
+        }),
         "GetOpenFileName" => Implementation::Async(file_dialogs::get_open_file_name),
         "GetSaveFileName" => Implementation::Async(file_dialogs::get_save_file_name),
         "FileOpenDlgProc" => Implementation::Async(file_init::file_open_dlg_proc),

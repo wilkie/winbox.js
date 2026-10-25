@@ -91,6 +91,21 @@ const LAYOUT: [(&[u8], &[u8], u16); 4] = [
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(Implementation::Sync(match name {
+        "Inquire" => inquire,
+        "ToAscii" => to_ascii,
+        "SetSpeed" => set_speed,
+        "WEP" => |system, args| {
+            let _ = args.word(system);
+            Ok(Answer::Nothing)
+        },
+        "ScreenSwitchEnable" => screen_switch_enable,
+        "GetTableSeg" => get_table_seg,
+        "NewTable" => new_table_call,
+        "OemKeyScan" => oem_key_scan,
+        "GetKeyboardType" => get_keyboard_type,
+        "GetKeyNameText" => get_key_name_text,
+        "EnableKBSysReq" => enable_kb_sys_req,
+        "GetBIOSKeyProc" => get_bios_key_proc,
         "AnsiToOem" => ansi_to_oem,
         "OemToAnsi" => oem_to_ansi,
         "AnsiToOemBuff" => ansi_to_oem_buff,
@@ -225,16 +240,21 @@ fn oem_to_ansi_buff(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 fn vk_key_scan(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let character = args.word(system) as u8;
 
+    Ok(Answer::Word(vk_key_scan_of(character)))
+}
+
+/// `VkKeyScan`'s answer for a character.
+fn vk_key_scan_of(character: u8) -> u16 {
     if character == 0xff {
-        return Ok(Answer::Word(0xffff));
+        return 0xffff;
     }
 
     if character.is_ascii_uppercase() {
-        return Ok(Answer::Word(0x100 | u16::from(character)));
+        return 0x100 | u16::from(character);
     }
 
     if character.is_ascii_lowercase() {
-        return Ok(Answer::Word(u16::from(character - 0x20)));
+        return u16::from(character - 0x20);
     }
 
     for (n, (keys, characters, shift)) in LAYOUT.iter().enumerate() {
@@ -242,18 +262,18 @@ fn vk_key_scan(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
             continue;
         };
 
-        return Ok(Answer::Word(if n == 0 {
+        return if n == 0 {
             (shift + (index as u16 & 1)) << 8 | u16::from(keys[index >> 1])
         } else {
             shift << 8 | u16::from(keys[index])
-        }));
+        };
     }
 
     if (0x01..=0x1a).contains(&character) {
-        return Ok(Answer::Word(0x200 | u16::from(character + 0x40)));
+        return 0x200 | u16::from(character + 0x40);
     }
 
-    Ok(Answer::Word(0xffff))
+    0xffff
 }
 
 /// A key's scan code, a scan code's virtual key, or a key's character.
@@ -266,9 +286,15 @@ fn vk_key_scan(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 fn map_virtual_key(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let code = args.word(system);
     let kind = args.word(system) as u8;
+
+    Ok(Answer::Word(map_virtual_key_of(code, kind)))
+}
+
+/// `MapVirtualKey`'s answer for a code and a type.
+fn map_virtual_key_of(code: u16, kind: u8) -> u16 {
     let low = code as u8;
 
-    Ok(Answer::Word(match kind {
+    match kind {
         0 => match SCAN_TO_VK[..usize::from(SCAN_LIMIT)]
             .iter()
             .position(|&vk| vk == low)
@@ -295,5 +321,539 @@ fn map_virtual_key(system: &mut System, args: &mut Args) -> Result<Answer, Stop>
                 }
             }
         }
+    }
+}
+
+// The rest of the driver's exports: what it answers of the keyboard and
+// its tables, `ToAscii`, `OemKeyScan` and `GetKeyNameText`. **Read out of
+// `KEYBOARD.DRV`** (the US driver the installation has) and **recorded** by
+// `kbdrv`. The driver's state is kept in its data segment where the driver
+// keeps it (seg11). As `src/win16/keyboard/driver.ts`, which says more.
+
+const TYPE: u16 = 0x0c;
+const SUBTYPE: u16 = 0x0f;
+const SWITCH: u16 = 0x104;
+const BIOS_PROC: u16 = 0x108;
+const ALT_TYPED: u16 = 0x128;
+const PAD_KEY: u16 = 0x129;
+const ENABLED: u16 = 0x12e;
+const SYSREQ: u16 = 0x130;
+const INQUIRE_AT: u16 = 0x131;
+const KEYS: u16 = 0x137;
+
+impl System {
+    /// The driver's data segment's selector.
+    fn keyboard_data(&self) -> u16 {
+        self.kept_named("KEYBOARD").map_or(0, |kept| {
+            winbox_machine::segment_selector(self.kept[kept].data)
+        })
+    }
+
+    fn keyboard_byte(&self, at: u16) -> u8 {
+        let base = self.base_of(self.keyboard_data());
+
+        self.cpu.bus.read8(base + u32::from(at))
+    }
+
+    fn set_keyboard_byte(&mut self, at: u16, value: u8) {
+        let base = self.base_of(self.keyboard_data());
+
+        self.cpu.bus.write8(base + u32::from(at), value);
+    }
+
+    fn keyboard_word(&self, at: u16) -> u16 {
+        let base = self.base_of(self.keyboard_data());
+
+        self.cpu.bus.read16(base + u32::from(at))
+    }
+
+    fn set_keyboard_word(&mut self, at: u16, value: u16) {
+        let base = self.base_of(self.keyboard_data());
+
+        self.cpu.bus.write16(base + u32::from(at), value);
+    }
+
+    /// The driver's state as USER leaves it once Windows has started:
+    /// enabled, the BIOS's INT 9 handler kept as DOS answers for it here,
+    /// the type read (`new_table`), the `SysRq` flags 2 (**recorded**).
+    fn keyboard_started(&mut self) {
+        if self.keyboard_data() == 0 || self.keyboard_byte(ENABLED) != 0 {
+            return;
+        }
+
+        self.set_keyboard_byte(ENABLED, 0xff);
+
+        for (i, byte) in crate::keyboard_tables::INQUIRE.iter().enumerate() {
+            self.set_keyboard_byte(INQUIRE_AT + i as u16, *byte);
+        }
+
+        self.set_keyboard_byte(SWITCH, 1);
+        self.set_keyboard_byte(SYSREQ, 2);
+
+        let vector = IDT + 9 * 4;
+        let (offset, segment) = (self.cpu.bus.read16(vector), self.cpu.bus.read16(vector + 2));
+
+        self.set_keyboard_word(BIOS_PROC, offset);
+        self.set_keyboard_word(BIOS_PROC + 2, segment);
+        self.new_table();
+    }
+
+    /// The type read again (seg3 `00cd`-`0151`): one already known, 1 to
+    /// 6, taken for 4; none, the BIOS's -- 4 on DOSBox's machine -- then
+    /// `SYSTEM.INI`'s `[keyboard]` `type=` unless past 4. The function keys
+    /// are the type's.
+    fn new_table(&mut self) {
+        let mut kind = self.keyboard_byte(TYPE);
+
+        if (1..=6).contains(&kind) {
+            kind = 4;
+        } else {
+            let given = crate::profiles_kernel::private_profile_int(
+                self,
+                b"keyboard",
+                b"type",
+                4,
+                b"SYSTEM.INI",
+            ) as u8;
+
+            kind = if given == 0 { 4 } else { given };
+
+            if kind > 4 {
+                self.set_keyboard_byte(TYPE, 4);
+                return;
+            }
+        }
+
+        self.set_keyboard_byte(TYPE, kind);
+        self.set_keyboard_word(
+            KEYS,
+            u16::from(crate::keyboard_tables::FUNCTION_KEYS[usize::from(kind) - 1]),
+        );
+    }
+}
+
+/// Where the interrupt descriptor table is kept: see `task.rs`.
+const IDT: u32 = 0xffd << 16;
+
+/// What the keyboard is: six bytes copied, and 6 (seg10 `09b8`).
+fn inquire(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+
+    system.keyboard_started();
+
+    let bytes: Vec<u8> = (0..6)
+        .map(|i| system.keyboard_byte(INQUIRE_AT + i))
+        .collect();
+
+    system.write_far(far, &bytes);
+    Ok(Answer::Word(6))
+}
+
+/// The type read again. What it leaves in AX is no answer.
+fn new_table_call(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.keyboard_started();
+    system.new_table();
+    Ok(Answer::Nothing)
+}
+
+/// The keyboard's type (0), its subtype (1), its function keys (2); nought
+/// for anything else, by the low byte (seg7 `000c`-`002a`).
+fn get_keyboard_type(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let flag = args.word(system) as u8;
+
+    system.keyboard_started();
+    Ok(Answer::Word(match flag {
+        0 => u16::from(system.keyboard_byte(TYPE)),
+        1 => u16::from(system.keyboard_byte(SUBTYPE)),
+        2 => system.keyboard_word(KEYS),
+        _ => 0,
     }))
+}
+
+/// The typematic rate set: the rate given, or nought for -1 (seg6
+/// `002a`-`006a`); DOSBox's controller takes it.
+fn set_speed(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let rate = args.word(system);
+
+    system.keyboard_started();
+    Ok(Answer::Word(if rate == 0xffff { 0 } else { rate }))
+}
+
+/// Whether a screen switch is allowed: the word's bytes or-ed together
+/// kept, and the word answered with its low byte so (seg10 `095c`).
+fn screen_switch_enable(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let word = args.word(system);
+    let low = (word as u8) | (word >> 8) as u8;
+
+    system.keyboard_started();
+    system.set_keyboard_byte(SWITCH, low);
+    Ok(Answer::Word(word & 0xff00 | u16::from(low)))
+}
+
+/// The `SysRq` flags: 1 sets bit 0, 2 clears it, 4 sets bit 1, 8 clears it;
+/// the flags then (seg10 `0977`-`09a0`).
+fn enable_kb_sys_req(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let given = args.word(system);
+
+    system.keyboard_started();
+
+    let mut flags = system.keyboard_byte(SYSREQ);
+
+    if given & 1 != 0 {
+        flags |= 1;
+    }
+
+    if given & 2 != 0 {
+        flags &= !1;
+    }
+
+    if given & 4 != 0 {
+        flags |= 2;
+    }
+
+    if given & 8 != 0 {
+        flags &= !2;
+    }
+
+    system.set_keyboard_byte(SYSREQ, flags);
+    Ok(Answer::Word(u16::from(flags)))
+}
+
+/// The BIOS's INT 9 handler the driver found as it was enabled (seg10
+/// `0028`).
+fn get_bios_key_proc(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.keyboard_started();
+    Ok(Answer::Dword(
+        u32::from(system.keyboard_word(BIOS_PROC + 2)) << 16
+            | u32::from(system.keyboard_word(BIOS_PROC)),
+    ))
+}
+
+/// A selector of the segment the layout's tables are in (seg2 `0094`):
+/// here a block of WinBox's own holding them, made as it is first asked
+/// for.
+fn get_table_seg(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.keyboard_started();
+
+    if system.keyboard_tables == 0 {
+        let table = crate::keyboard_tables::TABLE_SEGMENT;
+        let (_, far) = system.scratch_block(table.len() as u32);
+
+        system.write_far(far, &table);
+        system.keyboard_tables = (far >> 16) as u16;
+    }
+
+    Ok(Answer::Word(system.keyboard_tables))
+}
+
+/// The character a key types (seg10 `0430`-`06c5`); see `driver.ts`'s
+/// `ToAscii`.
+fn to_ascii(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let vk = args.word(system);
+    let scan = args.word(system);
+    let states = args.dword(system);
+    let target = args.dword(system);
+    let flags = args.word(system);
+
+    system.keyboard_started();
+
+    let key = |system: &System, at: u16| {
+        system.read_far(
+            states & 0xffff_0000 | u32::from((states as u16).wrapping_add(at)),
+            1,
+        )[0]
+    };
+    let nothing = |system: &mut System| {
+        system.write_far(target, &[0, 0]);
+        Ok(Answer::Word(0))
+    };
+    let typed = |system: &mut System, character: u8| {
+        system.write_far(target, &[character]);
+        Ok(Answer::Word(1))
+    };
+    let low = vk as u8;
+
+    if vk == 0 {
+        return nothing(system);
+    }
+
+    if scan & 0x8000 != 0 {
+        if low == 0x12 {
+            system.set_keyboard_byte(PAD_KEY, 0);
+
+            let pending = system.keyboard_byte(ALT_TYPED);
+
+            system.set_keyboard_byte(ALT_TYPED, 0);
+
+            if system.read_far(target, 1)[0] == 0 {
+                return nothing(system);
+            }
+
+            if pending == 0 {
+                string(system, &OEM_TO_ANSI, target, target);
+            }
+
+            return Ok(Answer::Word(1));
+        }
+
+        if scan as u8 == system.keyboard_byte(PAD_KEY) {
+            system.set_keyboard_byte(PAD_KEY, 0);
+        }
+
+        return Ok(Answer::Word(0));
+    }
+
+    if low == 0x12 {
+        system.write_far(target, &[0, 0]);
+        system.set_keyboard_byte(ALT_TYPED, 0);
+    }
+
+    let mut shift = u8::from(key(system, 0x10) & 0x80 != 0)
+        + 2 * u8::from(key(system, 0x11) & 0x80 != 0)
+        + 4 * u8::from(key(system, 0x12) & 0x80 != 0);
+
+    if shift == 4 || shift == 5 {
+        if let Some(answer) = alt_digit(system, scan as u8, target, flags) {
+            return answer;
+        }
+
+        shift &= 3;
+    }
+
+    let pair: (u8, u8);
+
+    if shift <= 3 && low.is_ascii_uppercase() {
+        if shift >= 2 {
+            return typed(system, low & 0x1f);
+        }
+
+        pair = (low + 0x20, low);
+    } else if (0x60..=0x69).contains(&low) {
+        return if shift <= 1 {
+            typed(system, low.wrapping_add(0xd0))
+        } else {
+            nothing(system)
+        };
+    } else {
+        let table = crate::keyboard_tables::SHIFT_TABLES[usize::from(shift)];
+
+        if table == 0xff {
+            return nothing(system);
+        }
+
+        let (keys, characters, _) = LAYOUT[usize::from(table >> 1)];
+        let Some(index) = keys.iter().position(|&each| each == low) else {
+            return nothing(system);
+        };
+
+        if shift > 1 {
+            let character = characters[index];
+
+            return match shift {
+                2 if character & 0x80 != 0 => nothing(system),
+                3 if character & 0x80 == 0 => nothing(system),
+                3 => typed(system, character & 0x1f),
+                _ => typed(system, character),
+            };
+        }
+
+        pair = (characters[index * 2], characters[index * 2 + 1]);
+    }
+
+    let mut character = if shift != 0 { pair.1 } else { pair.0 };
+
+    if key(system, 0x14) & 1 != 0 && low.is_ascii_uppercase() {
+        character = if character == pair.0 { pair.1 } else { pair.0 };
+    }
+
+    if character == 0xff {
+        nothing(system)
+    } else {
+        typed(system, character)
+    }
+}
+
+/// A digit of the numeric keypad typed with Alt (seg10 `0515`-`056a`):
+/// the byte at `target` ten times itself plus the digit, in a byte, and
+/// nought; the same key again nought and nothing written; with flag 2
+/// nothing typed. None where the key is no digit, or with flag 1.
+fn alt_digit(
+    system: &mut System,
+    code: u8,
+    target: u32,
+    flags: u16,
+) -> Option<Result<Answer, Stop>> {
+    let digit = if (0x47..=0x52).contains(&code) {
+        crate::keyboard_tables::PAD_DIGITS[usize::from(code - 0x47)]
+    } else {
+        0xff
+    };
+
+    if flags & 1 != 0 || digit == 0xff {
+        return None;
+    }
+
+    if flags & 2 != 0 {
+        system.write_far(target, &[0, 0]);
+        return Some(Ok(Answer::Word(0)));
+    }
+
+    let last = system.keyboard_byte(PAD_KEY);
+
+    system.set_keyboard_byte(PAD_KEY, code);
+
+    if last == code {
+        return Some(Ok(Answer::Word(0)));
+    }
+
+    let old = system.read_far(target, 1)[0];
+    let value = old.wrapping_mul(10).wrapping_add(digit);
+
+    system.write_far(target, &[value, 0]);
+
+    if value == old {
+        system.set_keyboard_byte(ALT_TYPED, 1);
+    }
+
+    Some(Ok(Answer::Word(0)))
+}
+
+/// The scan code and shift state that type an OEM character (seg4
+/// `000c`-`00b6`); see `driver.ts`'s `OemKeyScan`.
+fn oem_key_scan(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let mut character = args.word(system) as u8;
+    let mut shifts = 0u8;
+    let mut via_scan = false;
+
+    system.keyboard_started();
+
+    if character >= 0x80 {
+        let ansi = translate(&OEM_TO_ANSI, character);
+
+        if ansi < 0x80 || translate(&ANSI_TO_OEM, ansi) != character {
+            return Ok(Answer::Dword(0xffff_ffff));
+        }
+
+        character = ansi;
+        via_scan = true;
+    } else if character.is_ascii_uppercase() {
+        shifts = 2;
+    } else if matches!(character, 0x20 | 0x0d | 0x09 | 0x08) {
+        // their own keys
+    } else if character.is_ascii_lowercase() {
+        character -= 0x20;
+    } else if character != 0x0a && (0x01..=0x1a).contains(&character) {
+        character += 0x40;
+        shifts = 4;
+    } else {
+        via_scan = true;
+    }
+
+    if via_scan {
+        let found = vk_key_scan_of(character);
+
+        if found == 0xffff || (found >> 8) & 4 != 0 {
+            return Ok(Answer::Dword(0xffff_ffff));
+        }
+
+        shifts = ((found >> 8) << 1) as u8;
+        character = found as u8;
+    }
+
+    Ok(Answer::Dword(
+        match SCAN_TO_VK[..0x3a].iter().position(|&vk| vk == character) {
+            Some(scan) => u32::from(shifts) << 16 | scan as u32,
+            None => 0xffff_ffff,
+        },
+    ))
+}
+
+/// A byte's partner in a pair of tables: `to`'s byte where `from` has it
+/// first.
+fn partner(from: &[u8], to: &[u8], byte: u8) -> Option<u8> {
+    from.iter().position(|&each| each == byte).map(|at| to[at])
+}
+
+/// A key's name (seg9 `0311`-`040c`); see `driver.ts`'s `GetKeyNameText`.
+fn get_key_name_text(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    use crate::keyboard_tables::{
+        DEAD_NAME_CHARACTERS, DEAD_NAME_INDEX, DONT_CARE_FROM, DONT_CARE_TO, EXTENDED_NAME_INDEX,
+        EXTENDED_NAME_SCANS, KEY_NAMES, PLAIN_NAME_INDEX, PLAIN_NAME_SCANS,
+    };
+
+    let l_param = args.dword(system);
+    let buffer = args.dword(system);
+    let size = args.signed(system);
+
+    system.keyboard_started();
+
+    if size < 1 {
+        return Ok(Answer::Word(0));
+    }
+
+    let code = (l_param >> 16) as u8;
+    let mut flags = (l_param >> 24) as u8;
+    let mut index = None;
+
+    if code == 0x56 || code < 0x35 || (code == 0x35 && flags & 1 == 0) {
+        let vk = map_virtual_key_of(u16::from(code), 1) as u8;
+
+        if vk != 0 {
+            let typed = map_virtual_key_of(u16::from(vk), 2);
+
+            if typed & 0x8000 != 0 {
+                flags = (typed >> 8) as u8;
+                index = partner(&DEAD_NAME_CHARACTERS, &DEAD_NAME_INDEX, typed as u8);
+
+                if index.is_none() {
+                    return Ok(Answer::Word(0));
+                }
+            } else if typed as u8 > 0x20 {
+                system.write_far(buffer, &[typed as u8]);
+                system.write_far(
+                    buffer & 0xffff_0000 | u32::from((buffer as u16).wrapping_add(1)),
+                    &[0],
+                );
+
+                return Ok(Answer::Word(1));
+            }
+        }
+    }
+
+    let index = if let Some(index) = index {
+        index
+    } else {
+        let found = if (l_param >> 24) & 1 != 0 {
+            partner(&EXTENDED_NAME_SCANS, &EXTENDED_NAME_INDEX, code)
+        } else {
+            partner(&PLAIN_NAME_SCANS, &PLAIN_NAME_INDEX, code)
+        };
+
+        match found {
+            Some(index) => index,
+            None => return Ok(Answer::Word(0)),
+        }
+    };
+    let index = if flags & 2 != 0 {
+        partner(&DONT_CARE_FROM, &DONT_CARE_TO, index).unwrap_or(index)
+    } else {
+        index
+    };
+    let name = KEY_NAMES
+        .get(usize::from(index))
+        .map_or(&b""[..], |name| name.as_bytes());
+    let size = size as usize;
+    let at = |offset: usize| {
+        buffer & 0xffff_0000 | u32::from((buffer as u16).wrapping_add(offset as u16))
+    };
+
+    if name.len() < size {
+        system.write_far(at(0), name);
+        system.write_far(at(name.len()), &[0]);
+        return Ok(Answer::Word(name.len() as u16));
+    }
+
+    system.write_far(at(0), &name[..size - 1]);
+    system.write_far(at(size - 1), &[0]);
+    Ok(Answer::Word(size as u16))
 }

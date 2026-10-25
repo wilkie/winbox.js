@@ -648,6 +648,7 @@ impl Engine {
         // MMSYSTEM's timer events come due, which wake the task; the serial
         // ports' transmitters; and the sound card's interrupts.
         system.poll_time_events();
+        system.poll_system_timers();
         system.poll_comm();
         system.poll_sound();
 

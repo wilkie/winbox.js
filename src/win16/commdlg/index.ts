@@ -113,7 +113,9 @@ export class CommDlg extends Module {
       [WantArrows, 'WantArrows', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [CommDlgExtendedError, 'CommDlgExtendedError', 0, [], DWORD],
       [GetFileTitle, 'GetFileTitle', 10, [FARPTR, FARPTR, INT], INT],
-      [CommDlg.stub, 'WEP', 2],
+      // `COMMDLG.DLL` seg6 `01ad`-`01db`: 1 once its objects are let go
+      // unless Windows is ending; WinBox's hold none.
+      [() => 1, 'WEP', 2, [INT], INT],
       [dwLBSubclass, 'dwLBSubclass', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       // 30 //
       [dwUpArrowHack, 'dwUpArrowHack', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],

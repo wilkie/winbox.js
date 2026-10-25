@@ -3,9 +3,22 @@
 /** @namespace Keyboard */
 
 import { Module } from './module.js';
-import { FARPTR, UINT } from './types.js';
+import { DWORD, FARPTR, INT, LONG, UINT } from './types.js';
 import { AnsiToOem, AnsiToOemBuff, OemToAnsi, OemToAnsiBuff } from './keyboard/oem.js';
 import { MapVirtualKey, VkKeyScan } from './keyboard/scan.js';
+import {
+  EnableKBSysReq,
+  GetBIOSKeyProc,
+  GetKeyboardType,
+  GetKeyNameText,
+  GetTableSeg,
+  Inquire,
+  NewTable,
+  OemKeyScan,
+  ScreenSwitchEnable,
+  SetSpeed,
+  ToAscii,
+} from './keyboard/driver.js';
 
 /**
  * The keyboard's OEM code page: the word the driver keeps at seg10 `06fc`,
@@ -23,8 +36,11 @@ export function GetKbCodePage() {
  * The ordinals and names are the installation's own export table. Notepad
  * imports `AnsiToOem` and `OemToAnsi` from it, which translate through the
  * driver's own tables (see `keyboard/oem.ts`), and `VkKeyScan` reads its
- * layout (see `keyboard/scan.ts`). The rest are stubs -- marked
- * as stubs in a trace -- that at least take their arguments off the stack.
+ * layout (see `keyboard/scan.ts`); the rest of what it answers is in
+ * `keyboard/driver.ts`. `Enable` and `Disable`, which USER calls to take
+ * the keyboard's interrupt and give it back, are stubs: WinBox's input
+ * does not come through a keyboard driver. `WEP` returns with AX as it
+ * was (seg10 `0afc`).
  *
  * @memberof Win16
  */
@@ -40,27 +56,27 @@ export class Keyboard extends Module {
   static get exports() {
     const exports: any[] = [];
 
-    exports[1] = [Keyboard.stub, 'Inquire', 4];
+    exports[1] = [Inquire, 'Inquire', 4, [FARPTR], INT];
     exports[2] = [Keyboard.stub, 'Enable', 8];
     exports[3] = [Keyboard.stub, 'Disable', 0];
-    exports[4] = [Keyboard.stub, 'ToAscii', 14];
+    exports[4] = [ToAscii, 'ToAscii', 14, [UINT, UINT, FARPTR, FARPTR, UINT], INT];
     exports[5] = [AnsiToOem, 'AnsiToOem', 8, [FARPTR, FARPTR], UINT];
     exports[6] = [OemToAnsi, 'OemToAnsi', 8, [FARPTR, FARPTR], UINT];
-    exports[7] = [Keyboard.stub, 'SetSpeed', 2];
-    exports[8] = [Keyboard.stub, 'WEP', 2];
-    exports[100] = [Keyboard.stub, 'ScreenSwitchEnable', 2];
-    exports[126] = [Keyboard.stub, 'GetTableSeg', 0];
-    exports[127] = [Keyboard.stub, 'NewTable', 0];
-    exports[128] = [Keyboard.stub, 'OemKeyScan', 2];
+    exports[7] = [SetSpeed, 'SetSpeed', 2, [INT], INT];
+    exports[8] = [() => undefined, 'WEP', 2, [INT]];
+    exports[100] = [ScreenSwitchEnable, 'ScreenSwitchEnable', 2, [UINT], UINT];
+    exports[126] = [GetTableSeg, 'GetTableSeg', 0, [], UINT];
+    exports[127] = [NewTable, 'NewTable', 0, []];
+    exports[128] = [OemKeyScan, 'OemKeyScan', 2, [UINT], DWORD];
     exports[129] = [VkKeyScan, 'VkKeyScan', 2, [UINT], UINT];
-    exports[130] = [Keyboard.stub, 'GetKeyboardType', 2];
+    exports[130] = [GetKeyboardType, 'GetKeyboardType', 2, [INT], INT];
     exports[131] = [MapVirtualKey, 'MapVirtualKey', 4, [UINT, UINT], UINT];
     exports[132] = [GetKbCodePage, 'GetKbCodePage', 0, [], UINT];
-    exports[133] = [Keyboard.stub, 'GetKeyNameText', 10];
+    exports[133] = [GetKeyNameText, 'GetKeyNameText', 10, [LONG, FARPTR, INT], INT];
     exports[134] = [AnsiToOemBuff, 'AnsiToOemBuff', 10, [FARPTR, FARPTR, UINT]];
     exports[135] = [OemToAnsiBuff, 'OemToAnsiBuff', 10, [FARPTR, FARPTR, UINT]];
-    exports[136] = [Keyboard.stub, 'EnableKBSysReq', 2];
-    exports[137] = [Keyboard.stub, 'GetBIOSKeyProc', 0];
+    exports[136] = [EnableKBSysReq, 'EnableKBSysReq', 2, [UINT], UINT];
+    exports[137] = [GetBIOSKeyProc, 'GetBIOSKeyProc', 0, [], DWORD];
 
     return exports;
   }

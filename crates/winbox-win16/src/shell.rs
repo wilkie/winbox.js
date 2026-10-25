@@ -41,6 +41,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "RegQueryValue" => Implementation::Sync(reg_api::reg_query_value),
         "RegEnumKey" => Implementation::Sync(reg_api::reg_enum_key),
         "DragAcceptFiles" => Implementation::Sync(drag_accept_files),
+        // 1, once the registration database is written out where it has
+        // changed (`SHELL.DLL` seg7 `0000`, `01ca`-`0230`); WinBox's is
+        // written as it changes.
+        "WEP" => Implementation::Sync(|system, args| {
+            let _ = args.word(system);
+            Ok(Answer::Word(1))
+        }),
         "ShellExecute" => Implementation::Async(programs::shell_execute),
         "FindExecutable" => Implementation::Sync(programs::find_executable),
         "ShellAbout" => Implementation::Async(about::shell_about),

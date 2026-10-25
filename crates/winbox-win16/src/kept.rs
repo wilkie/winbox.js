@@ -92,8 +92,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalNotify",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalAlloc",
@@ -259,8 +259,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FreeModule",
                 pops: 2,
-                returns: 2,
-                stub: true,
+                returns: 0,
+                stub: false,
             }),
             Some(Export {
                 name: "GetModuleHandle",
@@ -307,8 +307,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetInstanceData",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Catch",
@@ -949,14 +949,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LocalCountFree",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LocalHeapSize",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalLRUOldest",
@@ -985,7 +985,7 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetExpWinVer",
                 pops: 2,
-                returns: 2,
+                returns: 4,
                 stub: false,
             }),
             Some(Export {
@@ -5155,10 +5155,10 @@ pub static KEPT: &[Kept] = &[
                 stub: false,
             }),
             Some(Export {
-                name: "Unknown",
+                name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",
@@ -13302,8 +13302,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetThresholdEvent",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetThresholdStatus",
@@ -13321,13 +13321,13 @@ pub static KEPT: &[Kept] = &[
                 name: "DoBeep",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
         ],
     },
@@ -14608,8 +14608,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "dwLBSubclass",
@@ -14814,8 +14814,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DragAcceptFiles",
@@ -15131,8 +15131,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Inquire",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Enable",
@@ -15149,8 +15149,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ToAscii",
                 pops: 14,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "AnsiToOem",
@@ -15167,14 +15167,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetSpeed",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "WEP",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             None,
             None,
@@ -15270,8 +15270,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ScreenSwitchEnable",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             None,
@@ -15301,20 +15301,20 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetTableSeg",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "NewTable",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "OemKeyScan",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "VkKeyScan",
@@ -15325,8 +15325,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetKeyboardType",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "MapVirtualKey",
@@ -15343,8 +15343,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetKeyNameText",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "AnsiToOemBuff",
@@ -15361,14 +15361,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EnableKBSysReq",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetBIOSKeyProc",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
         ],
     },
@@ -15381,62 +15381,62 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "InquireSystem",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "CreateSystemTimer",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "KillSystemTimer",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "EnableSystemTimers",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "DisableSystemTimers",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetSystemMSecCount",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "Get80x87SaveSize",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Save80x87State",
                 pops: 4,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "Restore80x87State",
                 pops: 4,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             None,
@@ -15450,8 +15450,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "A20_Proc",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
         ],
     },

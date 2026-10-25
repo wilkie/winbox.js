@@ -5893,6 +5893,9 @@ const RUN_WHOLE = new Set<string>([
   'biosmem',
   'dcreuse',
   'winexpe',
+  'sysdrv',
+  'snddrv',
+  'kbdrv',
 ]);
 
 /**

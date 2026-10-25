@@ -739,7 +739,8 @@ export class User extends Module {
       [InitApp, 'InitApp', 2, [HANDLE], BOOL],
       [PostQuitMessage, 'PostQuitMessage', 2, [INT]],
       [ExitWindows, 'ExitWindows', 6, [DWORD, UINT], BOOL],
-      [User.stub, 'Unknown', 2],
+      // `USER.EXE` seg3 `0232`: 1 and nothing else.
+      [() => 1, 'WEP', 2, [INT], INT],
       [User.stub, 'Unknown'],
       // 10 //
       [SetTimer, 'SetTimer', 10, [HWND, UINT, UINT, FARPTR], UINT],

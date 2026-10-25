@@ -464,6 +464,10 @@ pub struct System {
     pub fm: crate::fm::Fm,
     /// The machine's CMOS, its register chosen (`cmos.rs`).
     pub cmos: crate::cmos::Cmos,
+    /// SYSTEM.DRV's timers' tick (`system_driver.rs`).
+    pub system_driver: crate::system_driver::State,
+    /// KEYBOARD.DRV's segment of tables, once asked for (`keyboard.rs`).
+    pub keyboard_tables: u16,
 }
 
 impl Default for System {
@@ -638,6 +642,8 @@ impl System {
             mapper_applet: crate::wbmapper::applet::Applet::default(),
             fm: crate::fm::Fm::new(),
             cmos: crate::cmos::Cmos::default(),
+            system_driver: crate::system_driver::State::default(),
+            keyboard_tables: 0,
         };
 
         for module in KEPT {

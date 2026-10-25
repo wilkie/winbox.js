@@ -516,6 +516,7 @@ pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation>
         "WING" => crate::wing::implementation(name),
         "SOUND" => crate::sound::implementation(name),
         "TIMER" => crate::timer::implementation(name),
+        "SYSTEM" => crate::system_driver::implementation(name),
         "MCIWAVE" => crate::mmsystem::mci_drivers::implementation(name),
         "MCISEQ" => crate::mmsystem::sequencer::implementation(name),
         crate::wbsound::NAME => crate::wbsound::implementation(name),

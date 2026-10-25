@@ -1,5 +1,7 @@
 'use strict';
 
+import { DoBeep } from '../sound.js';
+import { loadParameters } from './system-parameters.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { User } from '../user.js';
@@ -380,9 +382,19 @@ export function noteAsyncKey(system: any, vk: number, down: boolean) {
 }
 
 /**
- * A beep of a kind. The sound driver plays it; winbox.js has none to play
- * it with, and nothing is answered.
+ * A beep of a kind: the sound driver's `DoBeep`, while USER's `Beep`
+ * setting is on (`[14Ch]`, `USER.EXE` seg1 `1bb4`-`1bc9`) -- `WIN.INI`'s
+ * `Beep` as USER read it as it started, or as `SPI_SETBEEP` last set it.
+ * -1, the speaker's, where USER's system error box is up (`[E0h]`); no
+ * program runs then. Nothing is answered. As the Rust engine's
+ * `mmsystem::sound::beep`.
  *
  * @param {Types.UINT} uAlert - The kind.
  */
-export function MessageBeep(this: any, _uAlert: number) {}
+export async function MessageBeep(this: any, uAlert: number) {
+  const parameters = this._parameters ?? (await loadParameters(this));
+
+  if (parameters.beep) {
+    await DoBeep.call(this, uAlert);
+  }
+}
