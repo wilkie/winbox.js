@@ -27,6 +27,7 @@
 mod added;
 pub mod enumerate;
 mod glyphs;
+pub mod queries;
 pub mod scalable;
 
 use winbox_raster::logical_font::round;
@@ -55,6 +56,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "EnumFontFamilies" => Implementation::Async(enumerate::enum_font_families),
         "EnumFonts" => Implementation::Async(enumerate::enum_fonts),
         "GetGlyphOutline" => Implementation::Sync(glyphs::get_glyph_outline_call),
+        "GetFontData" => Implementation::Sync(queries::get_font_data_call),
+        "GetKerningPairs" => Implementation::Sync(queries::get_kerning_pairs_call),
+        "GetCharAbcWidths" => Implementation::Sync(queries::get_char_abc_widths_call),
+        "GetOutlineTextMetrics" => Implementation::Sync(queries::get_outline_text_metrics_call),
         "AddFontResource" => Implementation::Sync(added::add_font_resource_call),
         "RemoveFontResource" => Implementation::Sync(added::remove_font_resource_call),
         "CreateScalableFontResource" => {

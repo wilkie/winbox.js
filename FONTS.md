@@ -6825,6 +6825,52 @@ per cut and no arithmetic.
 
 ---
 
+## 5a. What GDI answers about a TrueType font beside drawing it
+
+Four calls ask about the TrueType font selected rather than draw with it:
+`GetFontData`, `GetKerningPairs`, `GetCharABCWidths` and
+`GetOutlineTextMetrics`. **Read out** of `GDI.EXE`: GDI's side is seg7 `07fc`
+to `1f54`; the TrueType engine's entry points are a table at seg47 `001e`,
+reached through seg36's stubs. **Recorded** by `ttquery` -- Arial, Arial Bold
+and Bold Italic, Times New Roman Italic and Bold, Courier New, Symbol and
+Wingdings at a few sizes, and the System font -- whose 226 records agree in
+both engines. The knowledge base's `truetype-queries` topic has the whole of it.
+
+- **The realised font's characters** are 1Eh to FFh, default 1Fh, break 20h
+  (seg3 `21fb`), so `GetTextMetrics` answers 30, 255, 31 and 32 for a TrueType
+  face: it had answered 32 and 128, never recorded until now.
+- **ABC widths** are the engine's box and advance for each character, the same
+  `GetGlyphOutline` gives: A the box's left edge, C the rest of the advance, B
+  what is left. GDI keeps them as an advance and two signed bytes a character
+  (seg3 `2fd8`). The first character's entry is never asked of the engine: the
+  realisation writes 8, 0 and 8 there (seg3 `3146`), so 1Eh is 0, 0, 8 in every
+  face at every size. A character outside the font has 1Fh's, the missing glyph.
+- **Kerning pairs** are `kern`'s first horizontal subtable of the first format,
+  in the file's order. A glyph becomes the highest code that reaches it, so the
+  space comes back as A0h; the code becomes an ANSI character through GDI's
+  table of the set (seg48 `067e`), and a pair with a character the set lacks is
+  dropped. The amount is `v * ppem / units`, a half away from nought: the sums of
+  the 549 pairs of five faces, weighted by position, agree exactly.
+- **Outline metrics** are built by the engine (seg40 `0606`) in font units and
+  scaled by GDI as `(v * ppem + units / 2) / units`, the division truncating:
+  Arial's descent of -431 at sixteen per em is -2, not -3. The pixel size is the
+  em, the cell less its internal leading: 34 for Arial asked for a cell of 40.
+  Every one of twenty-five sizes is scaled, even `lowestRecPPEM`, which comes
+  back nought. The cap height and the x height are half and a quarter of the em:
+  the engine has nowhere else to take them from, the faces' `OS/2` being of
+  version 0. The italic angle is `post`'s in tenths of a degree, the fraction
+  floored: -164 for Times New Roman Italic's -16.33. A fixed pitch sets bit 0 of
+  `fsType`: Courier New answers 1 where its `OS/2` says 0.
+- **Refused**: the cap and x heights as any one value in font units scaled at
+  the pixel size first assumed, the request's height: Arial at a cell of 40
+  needs a value under 1024 and Courier New at 13 one of 1024 or more. Taking the
+  pixel size as the em, both are 1024 and 512 exactly.
+
+Not followed: a font's height under a mapping mode, which Windows realises in
+the device context's units and both engines take as pixels; `ttqmap` records
+the four calls under `MM_LOMETRIC`, and its widths, pairs and metrics are a
+larger font's.
+
 ## 6. Rasterisation
 
 **Non-zero winding, sampled at the exact centre of each pixel.** Established by
@@ -19963,9 +20009,9 @@ ones worth writing down, because they are not a realised font's:
   by name come out exactly as from `EnumFontFamilies` on all four displays, the
   callback given the `LOGFONT` and `TEXTMETRIC` alone. Write fills its font list
   this way.
-- The first, last, default and break characters are 30, 255, 31 and 32. What
-  `GetTextMetrics` answers for these on a realised TrueType font has not been
-  recorded; winbox.js answers 32 and 128 there.
+- The first, last, default and break characters are 30, 255, 31 and 32. A
+  realised TrueType font answers the same to `GetTextMetrics`: `ttquery`
+  records it inside `GetOutlineTextMetrics`, for all five faces (section 5a).
 
 How the callback is called is recorded by `enumregs`, through a callback of the
 probe's own making with no prologue:

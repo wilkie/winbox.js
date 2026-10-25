@@ -67,6 +67,11 @@ pub struct FontData {
 }
 
 impl FontData {
+    /// The whole file, as `GetFontData` reads it.
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
     pub(crate) fn read(bytes: Vec<u8>) -> Self {
         let mut data = Self {
             bytes,

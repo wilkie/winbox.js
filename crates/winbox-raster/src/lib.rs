@@ -29,6 +29,7 @@ pub mod scan_walk;
 pub mod stretch;
 pub mod text_draw;
 pub mod truetype;
+pub mod truetype_queries;
 pub mod wedges;
 pub mod wide_lines;
 
