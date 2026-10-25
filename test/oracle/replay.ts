@@ -5586,6 +5586,8 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `4423`); WinBox keeps the hook and the flag and calls nothing
    * (3 records). */
   'dchook:hookcall': "GDI does not call a device context's hook",
+  'gdimisc:physfont':
+    'GetPhysicalFontHandle is a stub: WinBox keeps no realized font object for a context to name',
 };
 
 /**
@@ -5911,6 +5913,8 @@ const RUN_WHOLE = new Set<string>([
   'dcinner',
   'dchook',
   'bounds',
+  'gdipq',
+  'gdimisc',
 ]);
 
 /**

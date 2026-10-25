@@ -22,6 +22,7 @@ A program asks USER and GDI many small questions that nobody thinks of as part o
 - `GetBkMode` is `OPAQUE` for a new device context, `GetTextAlign` and `GetTextCharacterExtra` nought, and each reads back what was set.
 - `GetDCOrg` is nought for the screen and a window's client area's corner on the screen for its device context.
 - [[fn:GDI.IsGDIObject]] answers what kind of object a handle is, not just whether it is one.
+- [[fn:GDI.MakeObjectPrivate]] answers the private mark as it was, 2000h or nought, and [[fn:GDI.WEP]] answers 1 ([[probe:gdimisc]]).
 - `CreateBitmapIndirect` makes the bitmap its `BITMAP` describes, bits and all.
 - `SetBitmapDimension` answers the dimension a bitmap had, nought for a new one, and `GetBitmapDimension` the one set, the width in the low word. The `Ex` forms write a `SIZE` and answer 1.
 - `SetMapperFlags` answers the flags it replaces, nought for a new device context. `GetAspectRatioFilter` is nought until bit 1 is set, and then 96 by 96 on the VGA. winbox.js takes that from the display's logical pixels an inch; the documentation says the display's aspect ratio, and on the VGA the two agree.

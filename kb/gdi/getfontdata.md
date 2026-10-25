@@ -5,8 +5,9 @@ name: GetFontData
 ordinal: 311
 summary: Copies bytes of the selected TrueType font's file — a table, or the whole file — or answers how many there are.
 versions:
-  '3.1': partial
+  '3.1': exact
 probes: [ttquery, ttqmap]
+records: [data]
 topics: [truetype-queries]
 ---
 

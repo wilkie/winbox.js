@@ -227,6 +227,7 @@ pub const AGREEING: &[&str] = &[
     "dcinner-vga",
     "dcinner-vga256",
     "bounds",
+    "gdipq",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

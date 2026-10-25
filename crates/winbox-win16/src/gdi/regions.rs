@@ -64,7 +64,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "OffsetRgn" => offset_rgn,
         "SetRectRgn" => set_rect_rgn,
         "PtInRegion" => pt_in_region,
-        "RectInRegion" => rect_in_region,
+        "RectInRegion" | "RectInRegion_Ehh" => rect_in_region,
         "GetRgnBox" => get_rgn_box,
         "FillRgn" => fill_rgn_call,
         "PaintRgn" => paint_rgn,
@@ -75,7 +75,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ExcludeClipRect" => exclude_clip_rect,
         "OffsetClipRgn" => offset_clip_rgn,
         "GetClipBox" => get_clip_box,
-        "RectVisible" => rect_visible,
+        "RectVisible" | "RectVisible_Ehh" => rect_visible,
         "PtVisible" => pt_visible,
         _ => return None,
     }))
@@ -366,7 +366,10 @@ fn pt_in_region(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 }
 
 /// Whether any of a rectangle is in a region. **Recorded**: a rectangle the
-/// wrong way round is turned, and the answer for yes is 101h.
+/// wrong way round is turned, and the answer for yes is 101h. For a caller
+/// made for Windows 3.00 or before its right and bottom are moved on a
+/// pixel first, so an empty rectangle can be in (`GDI.EXE` seg1 `2aab`,
+/// which `RectInRegion` at `4ce6` jumps to; **recorded** by `gdimisc`).
 fn rect_in_region(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let far = args.dword(system);
@@ -374,12 +377,16 @@ fn rect_in_region(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
         return Ok(Answer::Word(0));
     };
     let [left, top, right, bottom] = rect;
-    let rect = ClipRegion::rect(
-        left.min(right),
-        top.min(bottom),
-        left.max(right),
-        top.max(bottom),
+    let [left, top, right, bottom] = grown_for_old(
+        system,
+        [
+            left.min(right),
+            top.min(bottom),
+            left.max(right),
+            top.max(bottom),
+        ],
     );
+    let rect = ClipRegion::rect(left, top, right, bottom);
 
     Ok(Answer::Word(
         if shape(system, object).intersect(&rect).kind() > 1 {
@@ -713,7 +720,11 @@ fn get_clip_box(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 /// Whether any of a rectangle lies where the device context can draw:
 /// inside its clip region, within its bitmap. Program Manager asks this of
-/// each item before drawing it.
+/// each item before drawing it. Mapped to the device, put in order, and
+/// for a caller made for Windows 3.00 or before grown a pixel at its right
+/// and bottom; 101h where any of it is in, nought where none (`GDI.EXE`
+/// seg1 `29b7`, which `RectVisible` at `4d06` jumps to; **recorded** by
+/// `gdimisc`).
 fn rect_visible(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let far = args.dword(system);
@@ -729,13 +740,54 @@ fn rect_visible(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     }
 
     let [left, top, right, bottom] = rect;
+    let [left, top, right, bottom] = grown_for_old(
+        system,
+        [
+            left.min(right),
+            top.min(bottom),
+            left.max(right),
+            top.max(bottom),
+        ],
+    );
     let clip = clip_of(system, dc);
+    let visible = clip
+        .intersect(&ClipRegion::rect(left, top, right, bottom))
+        .kind()
+        > 1;
 
-    Ok(Answer::Word(u16::from(
-        clip.intersect(&ClipRegion::rect(left, top, right, bottom))
-            .kind()
-            > 1,
-    )))
+    Ok(Answer::Word(if visible { 0x101 } else { 0 }))
+}
+
+/// A rectangle in order, its right and bottom moved on a pixel where the
+/// module whose code called was made for Windows 3.00 or before, as
+/// `RectVisible` and `RectInRegion` do (`GDI.EXE` seg1 `29fc`-`2a0b`,
+/// `2aab`-`2abd`, `2af6`). As `grownForOld` in `RectVisible.ts`.
+fn grown_for_old(system: &System, [left, top, right, bottom]: [i32; 4]) -> [i32; 4] {
+    let more = i32::from(caller_expected_version(system).is_some_and(|version| version <= 0x300));
+
+    [left, top, right + more, bottom + more]
+}
+
+/// The Windows version the module whose code called was made for: the
+/// return address's segment found among the running task's program and
+/// its libraries; none for WinBox's own code. As `callerExpectedVersion`
+/// in `RectVisible.ts`.
+fn caller_expected_version(system: &System) -> Option<u16> {
+    let stack = system.cpu.segments[winbox_cpu::SS].base;
+    let sp = u32::from(system.cpu.regs[winbox_cpu::SP]);
+    let cs = system.cpu.bus.read16(stack + ((sp + 2) & 0xffff)) & 0xfff8;
+    let task = system.task.as_ref()?;
+
+    std::iter::once(&task.program)
+        .chain(&task.libraries)
+        .filter_map(|&index| system.modules.get(index))
+        .find(|module| {
+            module
+                .segments
+                .iter()
+                .any(|&descriptor| winbox_machine::segment_selector(descriptor) & 0xfff8 == cs)
+        })
+        .map(|module| module.executable.header.expected_windows_version)
 }
 
 /// Whether a point lies where the device context can draw. **Recorded** by

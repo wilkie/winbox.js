@@ -1,0 +1,104 @@
+{
+  "probe": "gdimisc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "private",
+      "args": "set",
+      "result": "0000"
+    },
+    {
+      "function": "private",
+      "args": "set again",
+      "result": "2000"
+    },
+    {
+      "function": "private",
+      "args": "clear",
+      "result": "2000"
+    },
+    {
+      "function": "private",
+      "args": "clear again",
+      "result": "0000"
+    },
+    {
+      "function": "private",
+      "args": "two",
+      "result": "0000"
+    },
+    {
+      "function": "private",
+      "args": "after two",
+      "result": "2000"
+    },
+    {
+      "function": "wep",
+      "args": "0",
+      "result": "1"
+    },
+    {
+      "function": "userbitmap",
+      "args": "user 16x8",
+      "result": "some got=14 type=0 w=16 h=8 wb=2 planes=1 bits=1"
+    },
+    {
+      "function": "userbitmap",
+      "args": "user discardable 20x10",
+      "result": "some got=14 type=0 w=20 h=10 wb=4 planes=4 bits=1"
+    },
+    {
+      "function": "ehh",
+      "args": "0,0,10,10",
+      "result": "257 257 257 257"
+    },
+    {
+      "function": "ehh",
+      "args": "5,5,5,5",
+      "result": "257 257 257 257"
+    },
+    {
+      "function": "ehh",
+      "args": "20,20,10,10",
+      "result": "257 257 257 257"
+    },
+    {
+      "function": "ehh",
+      "args": "-5,-5,0,0",
+      "result": "257 257 0 0"
+    },
+    {
+      "function": "selectbitmap",
+      "args": "another",
+      "result": "the bitmap"
+    },
+    {
+      "function": "selectbitmap",
+      "args": "nought",
+      "result": "the other"
+    },
+    {
+      "function": "selectbitmap",
+      "args": "selected after nought",
+      "result": "stock"
+    },
+    {
+      "function": "movebitmap",
+      "args": "a bitmap",
+      "result": "-1"
+    },
+    {
+      "function": "physfont",
+      "args": "system then arial",
+      "result": "first=some second=other"
+    }
+  ]
+}

@@ -47,6 +47,7 @@ Every call that makes or changes a region answers its kind: 1 for an empty regio
 - [[measured]] [[fn:GDI.GetRgnBox]] answers the kind, and the box is all nought for an empty region.
 - [[measured]] [[fn:GDI.PtInRegion]] counts the right and bottom edges as outside, as every rectangle does.
 - [[measured]] [[fn:GDI.RectInRegion]] answers **101h** when any of the rectangle is in the region. A rectangle given the wrong way round is turned.
+- [[measured]] For a program made for Windows 3.00 or before, the rectangle's right and bottom are moved on a pixel first, so an empty rectangle inside a region is in it ([[probe:gdimisc]]). [[read out]] `GDI.EXE` seg1 `2aab` asks `GetExpWinVer` of the caller's code segment; `RectInRegion_Ehh` is the same body without the handle checked.
 - [[measured]] [[fn:GDI.EqualRgn]] compares pixels.
 - [[measured]] [[fn:GDI.OffsetRgn]] answers the kind.
 - [[measured]] [[fn:GDI.SetRectRgn]] with an empty rectangle makes an empty region.

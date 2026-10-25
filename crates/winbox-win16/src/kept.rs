@@ -2539,8 +2539,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "WEP",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "CreatePatternBrush",
@@ -3355,8 +3355,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SelectBitmap",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetMetafileBitsBetter",
@@ -3565,38 +3565,38 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "CreatePQ",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "MinPQ",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ExtractPQ",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "InsertPQ",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SizePQ",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DeletePQ",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4591,8 +4591,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GDIMoveBitmap",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4627,8 +4627,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "CreateUserBitmap",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4639,8 +4639,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "CreateUserDiscardableBitmap",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "IsValidMetafile",
@@ -4963,8 +4963,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "MakeObjectPrivate",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "FixUpBogusPublisherMetafile",
@@ -4975,14 +4975,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "RectVisible_Ehh",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "RectInRegion_Ehh",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "UnicodeToAnsi",

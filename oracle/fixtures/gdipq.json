@@ -1,0 +1,199 @@
+{
+  "probe": "gdipq",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "create",
+      "args": "4",
+      "result": "1 [0 16 0 0]"
+    },
+    {
+      "function": "size",
+      "args": "asked",
+      "result": "0 [0 16 0 0]"
+    },
+    {
+      "function": "min",
+      "args": "empty",
+      "result": "-1 [0 16 0 0]"
+    },
+    {
+      "function": "extract",
+      "args": "empty",
+      "result": "-1 [0 16 0 0]"
+    },
+    {
+      "function": "insert",
+      "args": "tag 100 key 5",
+      "result": "1 [4 16 5 0] 5:100"
+    },
+    {
+      "function": "insert",
+      "args": "tag 101 key 7",
+      "result": "1 [8 16 7 0] 5:100 7:101"
+    },
+    {
+      "function": "insert",
+      "args": "tag 102 key 7",
+      "result": "1 [12 16 7 0] 5:100 7:101 7:102"
+    },
+    {
+      "function": "min",
+      "args": "in order",
+      "result": "100 [12 16 7 0] 5:100 7:101 7:102"
+    },
+    {
+      "function": "extract",
+      "args": "in order",
+      "result": "100 [12 16 7 4] 5:100 7:101 7:102"
+    },
+    {
+      "function": "insert",
+      "args": "tag 103 key 9",
+      "result": "1 [16 16 9 4] 5:100 7:101 7:102 9:103"
+    },
+    {
+      "function": "insert",
+      "args": "tag 104 key 2",
+      "result": "1 [16 16 16384 0] 2:104 7:101 9:103 7:102"
+    },
+    {
+      "function": "insert",
+      "args": "tag 105 key 6",
+      "result": "-1 [16 16 16384 0] 2:104 7:101 9:103 7:102"
+    },
+    {
+      "function": "min",
+      "args": "heaped",
+      "result": "104 [16 16 16384 0] 2:104 7:101 9:103 7:102"
+    },
+    {
+      "function": "extract",
+      "args": "1",
+      "result": "104 [12 16 16384 0] 7:102 7:101 9:103"
+    },
+    {
+      "function": "insert",
+      "args": "tag 106 key 6",
+      "result": "1 [16 16 16384 0] 6:106 7:102 9:103 7:101"
+    },
+    {
+      "function": "insert",
+      "args": "tag 107 key 1",
+      "result": "-1 [16 16 16384 0] 6:106 7:102 9:103 7:101"
+    },
+    {
+      "function": "extract",
+      "args": "2",
+      "result": "106 [12 16 16384 0] 7:101 7:102 9:103"
+    },
+    {
+      "function": "extract",
+      "args": "3",
+      "result": "101 [8 16 16384 0] 7:102 9:103"
+    },
+    {
+      "function": "extract",
+      "args": "4",
+      "result": "102 [4 16 16384 0] 9:103"
+    },
+    {
+      "function": "extract",
+      "args": "5",
+      "result": "103 [0 16 0 0]"
+    },
+    {
+      "function": "extract",
+      "args": "6",
+      "result": "-1 [0 16 0 0]"
+    },
+    {
+      "function": "extract",
+      "args": "7",
+      "result": "-1 [0 16 0 0]"
+    },
+    {
+      "function": "insert",
+      "args": "tag 108 key 4",
+      "result": "1 [4 16 4 0] 4:108"
+    },
+    {
+      "function": "insert",
+      "args": "tag 109 key 3",
+      "result": "1 [8 16 16384 0] 3:109 4:108"
+    },
+    {
+      "function": "insert",
+      "args": "tag 110 key 8",
+      "result": "1 [12 16 16384 0] 3:109 4:108 8:110"
+    },
+    {
+      "function": "insert",
+      "args": "tag 111 key 8",
+      "result": "1 [16 16 16384 0] 3:109 4:108 8:110 8:111"
+    },
+    {
+      "function": "insert",
+      "args": "tag 112 key 0",
+      "result": "-1 [16 16 16384 0] 3:109 4:108 8:110 8:111"
+    },
+    {
+      "function": "size",
+      "args": "grown by 2",
+      "result": "0 [16 24 16384 0] 3:109 4:108 8:110 8:111"
+    },
+    {
+      "function": "insert",
+      "args": "tag 113 key 0",
+      "result": "1 [20 24 16384 0] 0:113 3:109 8:110 8:111 4:108"
+    },
+    {
+      "function": "insert",
+      "args": "tag 114 key -5",
+      "result": "1 [24 24 -5 0] 0:113 3:109 8:110 8:111 4:108 -5:114"
+    },
+    {
+      "function": "size",
+      "args": "shrunk by 5",
+      "result": "0 [24 24 -5 0] 0:113 3:109 8:110 8:111 4:108 -5:114"
+    },
+    {
+      "function": "size",
+      "args": "shrunk by 1",
+      "result": "0 [24 24 -5 0] 0:113 3:109 8:110 8:111 4:108 -5:114"
+    },
+    {
+      "function": "size",
+      "args": "asked again",
+      "result": "0 [24 24 -5 0] 0:113 3:109 8:110 8:111 4:108 -5:114"
+    },
+    {
+      "function": "extract",
+      "args": "8",
+      "result": "113 [20 24 -5 0] 3:109 4:108 8:110 8:111 -5:114"
+    },
+    {
+      "function": "extract",
+      "args": "9",
+      "result": "109 [16 24 -5 0] 4:108 8:111 8:110 -5:114"
+    },
+    {
+      "function": "extract",
+      "args": "10",
+      "result": "108 [12 24 -5 0] 8:110 8:111 -5:114"
+    },
+    {
+      "function": "delete",
+      "args": "the queue",
+      "result": "0"
+    }
+  ]
+}

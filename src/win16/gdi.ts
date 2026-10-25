@@ -230,6 +230,8 @@ import {
   SetRelAbs,
 } from './gdi/dc-internals.js';
 import { GetBoundsRect, IsDCDirty, SetBoundsRect, SetDCStatus } from './gdi/bounds.js';
+import { CreatePQ, DeletePQ, ExtractPQ, InsertPQ, MinPQ, SizePQ } from './gdi/priority-queue.js';
+import { GDIMoveBitmap, MakeObjectPrivate, SelectBitmap, WEP } from './gdi/system-exports.js';
 import { ExtTextOut } from './gdi/ExtTextOut.js';
 
 /**
@@ -387,7 +389,7 @@ export class Gdi extends Module {
       ],
       [CreateFontIndirect, 'CreateFontIndirect', 4, [[LOGFONT]], HGDIOBJ],
       [CreateHatchBrush, 'CreateHatchBrush', 6, [INT, COLORREF], HBRUSH],
-      [Gdi.stub, 'WEP', 2],
+      [WEP, 'WEP', 2, [INT], INT],
       // 60 //
       [CreatePatternBrush, 'CreatePatternBrush', 2, [HBITMAP], HBRUSH],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
@@ -537,7 +539,7 @@ export class Gdi extends Module {
       [SetHookFlags, 'SetHookFlags', 4, [HDC, UINT], DWORD],
       [SetBoundsRect, 'SetBoundsRect', 8, [HDC, FARPTR, UINT], UINT],
       [GetBoundsRect, 'GetBoundsRect', 8, [HDC, FARPTR, UINT], UINT],
-      [Gdi.stub, 'SelectBitmap', 4],
+      [SelectBitmap, 'SelectBitmap', 4, [HDC, HBITMAP], HBITMAP],
       [SetMetaFileBits, 'SetMetafileBitsBetter', 2, [HANDLE], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -576,12 +578,12 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 230 //
-      [Gdi.stub, 'CreatePQ', 2],
-      [Gdi.stub, 'MinPQ', 2],
-      [Gdi.stub, 'ExtractPQ', 2],
-      [Gdi.stub, 'InsertPQ', 6],
-      [Gdi.stub, 'SizePQ', 4],
-      [Gdi.stub, 'DeletePQ', 2],
+      [CreatePQ, 'CreatePQ', 2, [UINT], HANDLE],
+      [MinPQ, 'MinPQ', 2, [HANDLE], INT],
+      [ExtractPQ, 'ExtractPQ', 2, [HANDLE], INT],
+      [InsertPQ, 'InsertPQ', 6, [HANDLE, UINT, UINT], INT],
+      [SizePQ, 'SizePQ', 4, [HANDLE, UINT], INT],
+      [DeletePQ, 'DeletePQ', 2, [HANDLE], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -776,15 +778,15 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 400 //
       [Gdi.stub, 'FastWindowFrame', 14],
-      [Gdi.stub, 'GDIMoveBitmap', 2],
+      [GDIMoveBitmap, 'GDIMoveBitmap', 2, [HBITMAP], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GDIInit2', 4],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'FinalGDIInit', 2],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'CreateUserBitmap', 12],
+      [CreateBitmap, 'CreateUserBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'CreateUserDiscardableBitmap', 6],
+      [CreateCompatibleBitmap, 'CreateUserDiscardableBitmap', 6, [HDC, INT, INT], HBITMAP],
       // 410 //
       [IsValidMetaFile, 'IsValidMetafile', 2, [HANDLE], BOOL],
       [GetCurLogFont, 'GetCurLogFont', 2, [HDC], HANDLE],
@@ -856,10 +858,10 @@ export class Gdi extends Module {
       [Gdi.stub, 'GDITaskTermination', 2],
       [SetObjectOwner, 'SetObjectOwner', 4, [HGDIOBJ, HANDLE]],
       [IsGDIObject, 'IsGDIObject', 2, [HANDLE], BOOL],
-      [Gdi.stub, 'MakeObjectPrivate', 4],
+      [MakeObjectPrivate, 'MakeObjectPrivate', 4, [HGDIOBJ, UINT], UINT],
       [Gdi.stub, 'FixUpBogusPublisherMetafile', 6],
-      [Gdi.stub, 'RectVisible_Ehh', 6],
-      [Gdi.stub, 'RectInRegion_Ehh', 6],
+      [RectVisible, 'RectVisible_Ehh', 6, [HDC, FARPTR], BOOL],
+      [RectInRegion, 'RectInRegion_Ehh', 6, [HRGN, [RECT]], BOOL],
       [UnicodeToAnsi, 'UnicodeToAnsi', 8, [DWORD, DWORD], INT],
       [GetBitmapDimensionEx, 'GetBitmapDimensionEx', 6, [HBITMAP, FARPTR], BOOL],
       [GetBrushOrgEx, 'GetBrushOrgEx', 6, [HDC, FARPTR], BOOL],
