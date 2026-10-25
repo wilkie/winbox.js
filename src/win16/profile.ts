@@ -87,22 +87,33 @@ export class Profile {
 
   /**
    * What loading a file does to it: the whitespace at the start of every line
-   * is dropped, and an entry is compacted to `name=value` with a return
-   * written over the first of the value's trailing whitespace, the rest of it
-   * left where it was. Recorded on every line of the probe's file.
+   * is dropped, and a line with an `=` is compacted to `name=value` with a
+   * return written over the first of the value's trailing whitespace, the
+   * rest of it left where it was. Recorded on every line of the probe's file.
+   * **Read out** (`KRNL386.EXE` seg1 `6b77`-`6c89`): a comment, and a
+   * section's line, are compacted as any other -- under Windows in protected
+   * mode, `WF_PMODE` in its flags (`[324h]`, `6b92`), always so in 3.1; in
+   * real mode a comment is dropped whole. Widget Workshop's installer
+   * writes its `WIDGET.INI`, and Windows made `; (the =1 is necessary)` of
+   * it `; (the=1 is necessary)` (`widget-windows.json`).
    */
   static normalise(text: string) {
     let out = '';
 
     for (const { text: raw, end } of Profile.split(text)) {
       let line = raw.replace(/^[ \t]+/, '');
+      const at = line.indexOf('=');
 
-      if (!line.startsWith('[') && !line.startsWith(';')) {
-        const at = line.indexOf('=');
+      if (at >= 0) {
+        const name = line.substring(0, at).replace(/[ \t]+$/, '');
+        const rest = line.substring(at + 1).replace(/^[ \t]+/, '');
 
-        if (at >= 0) {
-          const name = line.substring(0, at).replace(/[ \t]+$/, '');
-          const rest = line.substring(at + 1).replace(/^[ \t]+/, '');
+        /* A comment's trailing blanks are kept as they were, no return
+         * over the first: Windows left `; cmixit=0 (default) ` so
+         * (`widget-windows.json`). A section's line is taken so too. */
+        if (line.startsWith(';') || line.startsWith('[')) {
+          line = `${name}=${rest}`;
+        } else {
           const kept = rest.replace(/[ \t]+$/, '');
 
           line = `${name}=${kept}`;
@@ -346,25 +357,24 @@ export class Profile {
     }
 
     if (!sectionSeen) {
-      /* After the last complete line: a final line with no return stays at
-       * the end, after what is added.
-       */
-      let at = lines.length;
+      /* **Read out** (`KRNL386.EXE` seg1 `6e49`-`6e7b`, `726a`): from the
+       * buffer's end, back over every return and line feed to the last
+       * other byte; three on from it -- itself, a return and a line feed --
+       * the section goes, `\r\n` before its heading unless that is the
+       * buffer's start. What was after stays after it: the blank lines a
+       * file ends in, or the line feed a value's return left
+       * (`profile`'s snapshots; Widget Workshop's `WIDGET.INI`). */
+      const text = lines.map((line) => line.text + line.end).join('');
+      let last = text.length - 1;
 
-      if (at && !lines[at - 1].end.startsWith('\r')) {
-        at--;
+      while (last >= 0 && (text[last] === '\r' || text[last] === '\n')) {
+        last--;
       }
 
-      const added: Line[] = [
-        { text: `[${section}]`, end: '\r\n' },
-        { text: `${entry}=${value}`, end: '\r\n' },
-      ];
+      const at = last < 0 ? 0 : Math.min(last + 3, text.length);
+      const added = `${at ? '\r\n' : ''}[${section}]\r\n${entry}=${value}\r\n`;
 
-      if (at) {
-        added.unshift({ text: '', end: '\r\n' });
-      }
-
-      lines.splice(at, 0, ...added);
+      this._lines = Profile.split(text.slice(0, at) + added + text.slice(at));
     } else {
       /* Back up over the blank lines that separate this section from the
        * next, so the entry lands inside its own section.

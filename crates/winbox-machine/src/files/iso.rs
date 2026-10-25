@@ -628,8 +628,24 @@ impl Volume for IsoVolume {
     fn read(&self, parts: &[String]) -> Option<Vec<u8>> {
         let de = self.file(parts)?;
         let mut file = DiscFile::new(&self.disc, &de);
+        let length = de.data_length() as usize;
+        let mut bytes = Vec::with_capacity(length);
 
-        Some(file.read(de.data_length() as usize))
+        // `isoFile::Read` reads a word's worth at most, as DOS asks: a
+        // file read whole -- a program's, to be loaded -- is read so, up
+        // to where a read comes short.
+        while bytes.len() < length {
+            let part = file.read(length - bytes.len());
+            let short = part.len() < 0xffff;
+
+            bytes.extend_from_slice(&part);
+
+            if short {
+                break;
+            }
+        }
+
+        Some(bytes)
     }
 
     /// `FileOpen` (204-223): a file there and not a folder. Its mode is the

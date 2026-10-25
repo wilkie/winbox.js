@@ -546,6 +546,13 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
             return Ok(system.modules[library].handle);
         }
 
+        // `LoadLibrary` is `LoadModule` with no parameter block, its 11
+        // answered as 20 (`KRNL286.EXE` seg2 `155c`-`157b`): `sysdirs`'
+        // `WIN.INI` 20, `winexpe`'s Win32 program 21.
+        if let Some(error) = load_error(&bytes) {
+            return Ok(if error == 11 { 20 } else { error });
+        }
+
         let Ok(executable) = Executable::parse(bytes) else {
             return Ok(20);
         };
@@ -772,4 +779,76 @@ pub fn global_notify(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     }
 
     Ok(Answer::Nothing)
+}
+
+/// What `LoadModule` answers of a file that is no Windows module, from its
+/// first bytes; `None` for one whose new header is `NE`. **Read out**
+/// (`KRNL286.EXE` seg2 `0db2`-`0e1e`; `KRNL386.EXE` the same at `e9d5` in
+/// the file): the first 40h bytes read; `MZ` and a new header's place at
+/// 3Ch, its double word nought 11; the new header's first word `NE` a
+/// module, `PE` 21 -- a Win32 program, for Win32s -- else 11; a file
+/// COMPRESS made (`SZDD`, 88h F0h 27h 33h) 19; anything else, or a read
+/// come short, 11. **Recorded** by `winexpe`: `LoadModule` and
+/// `LoadLibrary` of a Win32 program answer 21. `LoadLibrary` answers 20
+/// for this 11 (seg2 `155c`-`157b`).
+pub(crate) fn load_error(bytes: &[u8]) -> Option<u16> {
+    let word = |at: usize| {
+        bytes
+            .get(at..at + 2)
+            .map(|pair| u16::from_le_bytes([pair[0], pair[1]]))
+    };
+
+    if bytes.len() < 0x40 {
+        return Some(11);
+    }
+
+    if bytes.starts_with(b"SZDD\x88\xf0\x27\x33") {
+        return Some(19);
+    }
+
+    if !bytes.starts_with(b"MZ") {
+        return Some(11);
+    }
+
+    let at = u32::from_le_bytes([bytes[0x3c], bytes[0x3d], bytes[0x3e], bytes[0x3f]]) as usize;
+
+    if at == 0 || bytes.len() < at.saturating_add(0x40) {
+        return Some(11);
+    }
+
+    match word(at) {
+        Some(0x454e) => None,
+        Some(0x4550) => Some(21),
+        _ => Some(11),
+    }
+}
+
+#[cfg(test)]
+mod load_error_tests {
+    use super::load_error;
+
+    #[test]
+    fn a_file_that_is_no_windows_module_answers_as_kernel_does() {
+        let mut image = vec![0u8; 0x80];
+
+        image[..2].copy_from_slice(b"MZ");
+        image[0x3c] = 0x40;
+        image[0x40..0x42].copy_from_slice(b"NE");
+        assert_eq!(load_error(&image), None);
+
+        image[0x40..0x42].copy_from_slice(b"PE");
+        assert_eq!(load_error(&image), Some(21));
+
+        image[0x40..0x42].copy_from_slice(b"LE");
+        assert_eq!(load_error(&image), Some(11));
+
+        image[0x3c] = 0;
+        assert_eq!(load_error(&image), Some(11));
+
+        let mut compressed = b"SZDD\x88\xf0\x27\x33".to_vec();
+
+        compressed.resize(0x40, 0);
+        assert_eq!(load_error(&compressed), Some(19));
+        assert_eq!(load_error(b"MZ"), Some(11));
+    }
 }

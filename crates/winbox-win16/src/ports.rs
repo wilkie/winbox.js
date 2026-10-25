@@ -1,12 +1,13 @@
 //! A program's own `IN` and `OUT`: the I/O ports the machine answers.
 //!
-//! Only the FM chip's are answered (`fm.rs`): 388h to 38Bh, the Ad Lib's,
+//! The FM chip's are answered (`fm.rs`): 388h to 38Bh, the Ad Lib's,
 //! and 228h and 229h, the Sound Blaster 2.0's way to the same chip, as the
 //! oracle's DOSBox decodes them. So a program, or a driver of its own, that
 //! writes the chip is heard, and one that looks for the card by its timers
-//! finds it. A write to any other port is passed over, as the processor
-//! passed every `OUT` over before; a read of any other stops the run, as
-//! every `IN` did.
+//! finds it. And the CMOS's (`cmos.rs`): a register chosen at 70h and read
+//! at 71h, where it is one answered. A write to any other port is passed
+//! over, as the processor passed every `OUT` over before; a read of any
+//! other stops the run, as every `IN` did.
 //!
 //! The processor stops before each `IN` and `OUT` for this (`Cpu::ports`),
 //! and the instruction is run here: one byte, a word or a doubleword, to
@@ -19,7 +20,22 @@ use winbox_cpu::{AX, CS, DX};
 use crate::fm::Fm;
 use crate::system::System;
 
+/// The CMOS's ports: the register chosen, and its byte.
+const CMOS_INDEX: u16 = 0x70;
+const CMOS_DATA: u16 = 0x71;
+
 impl System {
+    /// A port's byte, where the machine answers it.
+    fn port_read(&mut self, port: u16) -> Option<u8> {
+        if Fm::decodes(port, true) {
+            Some(self.fm_read(port))
+        } else if port == CMOS_DATA {
+            self.cmos.read()
+        } else {
+            None
+        }
+    }
+
     /// The `IN` or `OUT` at CS:IP run, `opcode` its own byte; false where
     /// it reads a port the machine does not answer, nothing done.
     pub(crate) fn port_instruction(&mut self, opcode: u8) -> bool {
@@ -67,17 +83,19 @@ impl System {
 
                 if Fm::decodes(each, false) {
                     self.fm_write(each, (value >> (8 * at)) as u8);
+                } else if each == CMOS_INDEX {
+                    self.cmos.select((value >> (8 * at)) as u8);
                 }
             }
         } else {
-            if !(0..size).all(|at| Fm::decodes(port.wrapping_add(at), true)) {
-                return false;
-            }
-
             let mut value = 0u32;
 
             for at in 0..size {
-                value |= u32::from(self.fm_read(port.wrapping_add(at))) << (8 * at);
+                let Some(byte) = self.port_read(port.wrapping_add(at)) else {
+                    return false;
+                };
+
+                value |= u32::from(byte) << (8 * at);
             }
 
             match size {

@@ -182,6 +182,16 @@ impl Clock {
         self.pending.retain(|pending| pending.id != id);
     }
 
+    /// Whether a timer has come due by now; one cancelled or taken off the
+    /// clock never has.
+    pub fn is_due(&self, instructions: u64, id: TimerId) -> bool {
+        let now = self.now(instructions);
+
+        self.pending
+            .iter()
+            .any(|pending| pending.id == id && pending.due <= now)
+    }
+
     /// When the next timer is due; infinity for none.
     pub fn next_due(&self) -> f64 {
         self.pending

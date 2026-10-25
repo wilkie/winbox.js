@@ -14,6 +14,7 @@ pub mod call_marks;
 pub mod caret;
 pub mod classes;
 pub mod clipboard;
+pub mod cmos;
 pub mod combobox;
 pub mod comm;
 pub mod commdlg;

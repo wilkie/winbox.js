@@ -1,7 +1,7 @@
 'use strict';
 
 import { Executable } from '../../executable.js';
-import { missingLibrary, streamOf } from '../library.js';
+import { loadError, missingLibrary, streamOf } from '../library.js';
 import { directoryOf, environmentBlock } from './search.js';
 import { segmentSelector } from '../selectors.js';
 import { locate } from '../shell/programs.js';
@@ -98,6 +98,13 @@ export async function startProgram(
     bytes = new Uint8Array(await file.read(0, file.size));
   } finally {
     system.dos.files.close(handle);
+  }
+
+  /* No Windows program: what `LoadModule` answers of it (`loadError`). */
+  const failed = loadError(bytes);
+
+  if (failed !== null) {
+    return failed;
   }
 
   const module = path.slice(path.lastIndexOf('\\') + 1).replace(/\.[^.]*$/, '');

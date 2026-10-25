@@ -648,7 +648,34 @@ export class DiscFile extends File {
       this.dosSeek(offset, 0);
     }
 
-    const bytes = this.readHere(length);
+    /* DOS asks for a word's worth at most, which `readHere` reads as
+     * `isoFile::Read` does; more -- a program's whole file read to start it
+     * (`WinExec`), as the Rust engine's volume reads one whole -- is read a
+     * word's worth at a time, up to where a read comes short. */
+    const parts: Uint8Array[] = [];
+    let total = 0;
+
+    do {
+      const part = this.readHere(Math.min(length - total, 0xffff));
+
+      parts.push(part);
+      total += part.length;
+
+      if (part.length < 0xffff) {
+        break;
+      }
+    } while (total < length);
+
+    const bytes = parts.length === 1 ? parts[0] : new Uint8Array(total);
+
+    if (parts.length > 1) {
+      let at = 0;
+
+      for (const part of parts) {
+        bytes.set(part, at);
+        at += part.length;
+      }
+    }
 
     return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
   }

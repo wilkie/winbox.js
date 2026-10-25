@@ -122,28 +122,37 @@ impl Profile {
         lines
     }
 
-    /// What loading a file does to it.
+    /// What loading a file does to it: the whitespace at the start of
+    /// every line dropped, and a line with an `=` compacted -- a comment's
+    /// and a section's too, under Windows in protected mode (`KRNL386.EXE`
+    /// seg1 `6b77`-`6c89`, `WF_PMODE` at `6b92`), as `profile.ts`'s
+    /// `normalise`.
     fn normalise(text: &[u8]) -> Vec<u8> {
         let mut out = Vec::new();
 
         for Line { text: raw, end } in Self::split(text) {
             let mut line = trim_start_blanks(&raw).to_vec();
 
-            if !line.starts_with(b"[")
-                && !line.starts_with(b";")
-                && let Some(at) = line.iter().position(|&byte| byte == b'=')
-            {
+            if let Some(at) = line.iter().position(|&byte| byte == b'=') {
                 let name = trim_end_blanks(&line[..at]).to_vec();
                 let rest = trim_start_blanks(&line[at + 1..]).to_vec();
-                let kept = trim_end_blanks(&rest).to_vec();
                 let mut compact = name;
 
                 compact.push(b'=');
-                compact.extend_from_slice(&kept);
 
-                if kept.len() < rest.len() {
-                    compact.push(b'\r');
-                    compact.extend_from_slice(&rest[kept.len() + 1..]);
+                // A comment's trailing blanks kept, no return over the
+                // first (`widget-windows.json`); a section's line so too.
+                if line.starts_with(b";") || line.starts_with(b"[") {
+                    compact.extend_from_slice(&rest);
+                } else {
+                    let kept = trim_end_blanks(&rest).to_vec();
+
+                    compact.extend_from_slice(&kept);
+
+                    if kept.len() < rest.len() {
+                        compact.push(b'\r');
+                        compact.extend_from_slice(&rest[kept.len() + 1..]);
+                    }
                 }
 
                 line = compact;
@@ -314,24 +323,33 @@ impl Profile {
 
             lines.insert(at, line(entry_line));
         } else {
-            let mut at = lines.len();
-
-            if at > 0 && !lines[at - 1].end.starts_with(b"\r") {
-                at -= 1;
-            }
-
-            let mut heading = vec![b'['];
-
-            heading.extend_from_slice(section);
-            heading.push(b']');
-
-            let mut added = vec![line(heading), line(entry_line)];
+            // From the buffer's end, back over every return and line feed
+            // to the last other byte; three on from it the section goes,
+            // `\r\n` before its heading unless that is the buffer's start
+            // (`KRNL386.EXE` seg1 `6e49`-`6e7b`, `726a`), as `profile.ts`'s
+            // `set`.
+            let text = self.text();
+            let at = text
+                .iter()
+                .rposition(|&byte| byte != b'\r' && byte != b'\n')
+                .map_or(0, |last| (last + 3).min(text.len()));
+            let mut added = Vec::new();
 
             if at > 0 {
-                added.insert(0, line(Vec::new()));
+                added.extend_from_slice(b"\r\n");
             }
 
-            lines.splice(at..at, added);
+            added.push(b'[');
+            added.extend_from_slice(section);
+            added.extend_from_slice(b"]\r\n");
+            added.extend_from_slice(&entry_line);
+            added.extend_from_slice(b"\r\n");
+
+            let mut whole = text[..at].to_vec();
+
+            whole.extend_from_slice(&added);
+            whole.extend_from_slice(&text[at..]);
+            self.lines = Self::split(&whole);
         }
     }
 }

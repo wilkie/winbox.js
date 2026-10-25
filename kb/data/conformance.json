@@ -703,6 +703,36 @@
   },
   "gaps": {}
  },
+ "biosmem": {
+  "probe": "biosmem",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 9,
+  "functions": {
+   "3305": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cmos": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "int12": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "bitbits": {
   "probe": "bitbits",
   "display": "vga",
@@ -2690,6 +2720,59 @@
    }
   },
   "gaps": {}
+ },
+ "dcreuse": {
+  "probe": "dcreuse",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "held": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "minimized": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "order": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "reverse": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "window": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "held": "with USER's five cached contexts all lent, Windows lends one again; WinBox makes another"
+  }
  },
  "ddefail": {
   "probe": "ddefail",
@@ -4840,14 +4923,14 @@
    },
    "space": {
     "total": 6,
-    "agreed": 3,
-    "disagreed": 3,
+    "agreed": 5,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
   "gaps": {
-   "space": "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+   "space": "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
    "allocation": "DOS function 1Ch is not answered",
    "segment": "DOS function 1Ch is not answered",
    "media": "DOS function 1Ch is not answered"
@@ -22283,6 +22366,38 @@
    }
   },
   "gaps": {}
+ },
+ "winexpe": {
+  "probe": "winexpe",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "exec": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "library": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "load": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "exec": "Windows starts a file that is no Windows program in a DOS session, which WinBox has not got"
+  }
  },
  "winflags": {
   "probe": "winflags",

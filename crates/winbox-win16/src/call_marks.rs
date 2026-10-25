@@ -57,14 +57,12 @@ impl System {
     pub(crate) fn take_call_marks(&mut self) -> bool {
         let now = self.clock.now(self.instructions);
         let instructions = self.instructions;
+        let calls = self.calls_made();
         let mut taken = false;
 
-        while self
-            .call_marks
-            .marks
-            .front()
-            .is_some_and(|mark| mark.instructions <= instructions && mark.time <= now)
-        {
+        while self.call_marks.marks.front().is_some_and(|mark| {
+            mark.instructions <= instructions && mark.time <= now && mark.calls <= calls
+        }) {
             taken = true;
 
             let Some(mark) = self.call_marks.marks.pop_front() else {
@@ -97,7 +95,19 @@ impl System {
         let mark = self.call_marks.marks.front()?;
         let left = mark.instructions.saturating_sub(self.instructions);
 
+        // Not before the calls made by then: the mark comes as the next
+        // call is made (`api_call`).
+        if mark.calls > self.calls_made() {
+            return None;
+        }
+
         (left > 0 || mark.time <= self.clock.now(self.instructions)).then_some(left)
+    }
+
+    /// The calls made so far, as the log has them: where nothing is
+    /// logged, as many as any mark asks.
+    fn calls_made(&self) -> usize {
+        self.log.as_ref().map_or(usize::MAX, Vec::len)
     }
 
     /// Palette indices of the screen's as a host shows them now, the cursor

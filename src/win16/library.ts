@@ -442,13 +442,19 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
 
     directoryFound = true;
 
-    const entry = entries.find(
-      (one: any) => String(one.name ?? '').toUpperCase() === name.toUpperCase()
-    );
+    /* A disc's folder lists its files' records (`DiscFolder`), named in
+     * their `info`: the file itself is opened by its path. */
+    const named = (one: any) => String(one.name ?? one.info?.name ?? '');
+    const listed = entries.find((one: any) => named(one).toUpperCase() === name.toUpperCase());
 
-    if (entry) {
-      found = { path: `${place.replace(/\\$/, '')}\\${String(entry.name).toUpperCase()}`, entry };
-      break;
+    if (listed) {
+      const path = `${place.replace(/\\$/, '')}\\${named(listed).toUpperCase()}`;
+      const entry = typeof listed.read === 'function' ? listed : await wholeFile(system, path);
+
+      if (entry) {
+        found = { path, entry };
+        break;
+      }
     }
   }
 
@@ -495,20 +501,14 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
     return known;
   }
 
-  /* Not a program: no new-format header. */
-  const head = new Uint8Array(await found.entry.read(0, Math.min(found.entry.size, 0x40)));
-  const at = head[0x3c] | (head[0x3d] << 8);
-  const signature =
-    at + 2 <= found.entry.size ? new Uint8Array(await found.entry.read(at, 2)) : null;
+  /* Not a Windows module: what `LoadModule` answers of it. */
+  const loadFailed = loadError(new Uint8Array(await found.entry.read(0, found.entry.size)));
 
-  if (
-    head[0] !== 0x4d ||
-    head[1] !== 0x5a ||
-    !signature ||
-    signature[0] !== 0x4e ||
-    signature[1] !== 0x45
-  ) {
-    return 20;
+  /* `LoadLibrary` is `LoadModule` with no parameter block, its 11 answered
+   * as 20 (`KRNL286.EXE` seg2 `155c`-`157b`): `sysdirs`' `WIN.INI` 20,
+   * `winexpe`'s Win32 program 21. */
+  if (loadFailed !== null) {
+    return loadFailed === 11 ? 20 : loadFailed;
   }
 
   const order: Library[] = [];
@@ -523,6 +523,70 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
   await system.startLibraries({ libraries: order });
 
   return library.instance;
+}
+
+/**
+ * What `LoadModule` answers of a file that is no Windows module, from its
+ * first bytes; null for one whose new header is `NE`. **Read out**
+ * (`KRNL286.EXE` seg2 `0db2`-`0e1e`; `KRNL386.EXE` the same at `e9d5` in the
+ * file): the first 40h bytes read; `MZ` and a new header's place at 3Ch, its
+ * double word nought 11; the new header's first word `NE` a module, `PE` 21
+ * -- a Win32 program, for Win32s -- else 11; a file COMPRESS made (`SZDD`,
+ * 88h F0h 27h 33h) 19; anything else, or a read come short, 11. **Recorded**
+ * by `winexpe`: `LoadModule` and `LoadLibrary` of a Win32 program answer 21.
+ * As `modules_kernel.rs`'s `load_error`.
+ */
+export function loadError(bytes: Uint8Array): number | null {
+  if (bytes.length < 0x40) {
+    return 11;
+  }
+
+  const compressed = [0x53, 0x5a, 0x44, 0x44, 0x88, 0xf0, 0x27, 0x33];
+
+  if (compressed.every((byte, at) => bytes[at] === byte)) {
+    return 19;
+  }
+
+  if (bytes[0] !== 0x4d || bytes[1] !== 0x5a) {
+    return 11;
+  }
+
+  const at = (bytes[0x3c] | (bytes[0x3d] << 8) | (bytes[0x3e] << 16) | (bytes[0x3f] << 24)) >>> 0;
+
+  if (at === 0 || bytes.length < at + 0x40) {
+    return 11;
+  }
+
+  if (bytes[at] === 0x4e && bytes[at + 1] === 0x45) {
+    return null;
+  }
+
+  return bytes[at] === 0x50 && bytes[at + 1] === 0x45 ? 21 : 11;
+}
+
+/** A file read whole through DOS's files, as a listed file reads: its size and its bytes. */
+async function wholeFile(system: any, path: string) {
+  const handle = await system.files.open(path);
+
+  if (!handle) {
+    return null;
+  }
+
+  let bytes: Uint8Array;
+
+  try {
+    const file = system.files.resolve(handle);
+
+    bytes = new Uint8Array(await file.read(0, file.size));
+  } finally {
+    system.files.close(handle);
+  }
+
+  return {
+    name: path.slice(path.lastIndexOf('\\') + 1),
+    size: bytes.length,
+    read: async (offset: number, length: number) => bytes.slice(offset, offset + length).buffer,
+  };
 }
 
 /** A module winbox.js keeps itself whose file has this name, if there is one. */

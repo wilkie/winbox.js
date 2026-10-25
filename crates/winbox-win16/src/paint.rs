@@ -348,7 +348,11 @@ impl Engine {
                     continue;
                 };
 
-                if !window.visible
+                // An icon's title is drawn by USER, not erased as a window
+                // that paints itself is, as the TypeScript engine's
+                // `eraseDue` passes it over (`paintsItself`).
+                if !window.paints_itself()
+                    || !window.visible
                     || !(window.needs_erase || window.needs_nc_paint)
                     || window.parent.is_some()
                 {

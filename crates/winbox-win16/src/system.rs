@@ -462,6 +462,8 @@ pub struct System {
     pub mapper_applet: crate::wbmapper::applet::Applet,
     /// The machine's FM chip, the Ad Lib's OPL2 (`fm.rs`).
     pub fm: crate::fm::Fm,
+    /// The machine's CMOS, its register chosen (`cmos.rs`).
+    pub cmos: crate::cmos::Cmos,
 }
 
 impl Default for System {
@@ -635,6 +637,7 @@ impl System {
             sound_card: crate::wbsound::Card::default(),
             mapper_applet: crate::wbmapper::applet::Applet::default(),
             fm: crate::fm::Fm::new(),
+            cmos: crate::cmos::Cmos::default(),
         };
 
         for module in KEPT {
@@ -760,13 +763,18 @@ impl System {
             // the module from the instance (`GetExePtr`), whichever task
             // asks. Recorder, about to play a macro back, asks for the path
             // of the window active as it was recorded, from its own task.
-            _ if let Some(slot) = self.slot_of(handle).or_else(|| {
-                self.windows
-                    .iter()
-                    .flatten()
-                    .find(|window| window.instance == handle)
-                    .and_then(|window| self.slot_of(window.task))
-            }) =>
+            // Nought is the task asking's own, as the TypeScript engine's
+            // `GetModuleFilename` answers it, not that of a window of no
+            // instance -- Microsoft Setup's `_MSTEST.EXE` looks for its
+            // libraries beside itself so.
+            _ if handle != 0
+                && let Some(slot) = self.slot_of(handle).or_else(|| {
+                    self.windows
+                        .iter()
+                        .flatten()
+                        .find(|window| window.instance == handle)
+                        .and_then(|window| self.slot_of(window.task))
+                }) =>
             {
                 self.modules[self.scheduler.slots[slot].program]
                     .path

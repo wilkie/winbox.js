@@ -823,7 +823,7 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     // `030e`-`035c`): nought unless the next word, its type, is 1; then -1
     // answers 1, its one icon, and another index but the first nought. A
     // PIF begins so, and is no icon file: `DOSPRMPT.PIF` answers nought
-    // (`pmbare`). The first icon of an icon file itself is not yet read here.
+    // (`pmbare`).
     if bytes[0] == 0 && bytes[1] == 0 {
         if bytes.len() < 6 || word(2) != 1 {
             return Ok(0);
@@ -833,7 +833,7 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
             return Ok(u16::from(index == -1));
         }
 
-        return Ok(none);
+        return Ok(icon_file_icon(system, &bytes).unwrap_or(0));
     }
 
     if bytes.len() < 0x40 || bytes[0] != 0x4d || bytes[1] != 0x5a {
@@ -894,6 +894,42 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     let icon = scale_icon(decode_icon(image, &mut palette), 32);
 
     Ok(system.icon_block(&icon))
+}
+
+/// An icon file's icon, as `ExtractIcon` makes it for index nought: its
+/// entries, ten at most, made a group's directory, each numbered by its
+/// place from one; the icon for the display picked from it as from a
+/// program's group, and its image made the icon (`SHELL.DLL` seg10
+/// `0360`-`04ea`), as `programs.ts`'s `iconFileIcon`. None where it cannot
+/// be read.
+fn icon_file_icon(system: &mut System, bytes: &[u8]) -> Option<u16> {
+    let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
+    let long = |at: usize| u32::from(word(at)) | u32::from(word(at + 2)) << 16;
+    let count = usize::from(word(4)).min(10);
+    let mut group = bytes[..6].to_vec();
+
+    group[4..6].copy_from_slice(&(count as u16).to_le_bytes());
+
+    for at in 0..count {
+        let from = 6 + at * 16;
+
+        if from + 16 > bytes.len() {
+            return None;
+        }
+
+        group.extend_from_slice(&bytes[from..from + 12]);
+        group.extend_from_slice(&(at as u16 + 1).to_le_bytes());
+    }
+
+    let entry = pick_icon(&icon_entries(&group), 32, system.display.colors)?;
+    let from = 6 + (usize::from(entry.id) - 1) * 16;
+    let size = long(from + 8) as usize;
+    let offset = long(from + 12) as usize;
+    let image = bytes.get(offset..offset.checked_add(size)?)?;
+    let mut palette = system.palette();
+    let icon = scale_icon(decode_icon(image, &mut palette), 32);
+
+    Some(system.icon_block(&icon))
 }
 
 #[cfg(test)]

@@ -49,6 +49,13 @@ export class DOS {
 
     /* Absolute disk reads and writes, which File Manager makes of a drive's
      * boot sector. */
+    /* The BIOS's conventional memory, in KB: 640, as DOSBox's
+     * `INT12_Handler` answers the word it set (`ints/bios.cpp` 413-414,
+     * 873), **recorded** by `biosmem` through Windows. As `run.rs`. */
+    machine.interrupts.on(0x12, () => {
+      this._machine.cpu.core.ax = 640;
+      return true;
+    });
     machine.interrupts.on(0x25, () => this.absoluteDisk(false));
     machine.interrupts.on(0x26, () => this.absoluteDisk(true));
   }

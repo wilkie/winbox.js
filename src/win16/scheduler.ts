@@ -447,6 +447,15 @@ export class Scheduler {
    */
   start(handle, first = false) {
     const entry = { handle, granted: () => this.resume(handle) };
+    const task = this.taskAt(handle);
+
+    /* A task made is given DOS's drive and directory as they are then,
+     * its starter's (`KRNL386.EXE` seg1 `af1d`), as the Rust engine's
+     * `add_task` takes them: kept now, not as it is first granted the
+     * processor, by when `ShellExecute` has put its caller's back. */
+    if (task && !task.directory) {
+      this.keepDirectory(task);
+    }
 
     this._waiting ??= [];
 

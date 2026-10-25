@@ -6,6 +6,7 @@ import { Memory } from './memory.js';
 import { InterruptManager } from './interrupt-manager.js';
 import { FAT16 } from '../file-systems/fat16.js';
 import { Clock } from './clock.js';
+import { Ports } from './cmos.js';
 
 /**
  * This class represents the virtual machine.
@@ -66,6 +67,9 @@ export class Machine {
      * everything else dispatches through the guest's interrupt table.
      */
     this._cpu.interrupts = this._interrupts;
+
+    /* The ports a program's own `IN` and `OUT` reach: the CMOS's (`cmos.ts`). */
+    this._cpu.ports = new Ports();
 
     // 40MiB disk, 32KiB block size
     this._disks = [new Disk(40 * 1024 * 1024, 512, 32 * 1024)];

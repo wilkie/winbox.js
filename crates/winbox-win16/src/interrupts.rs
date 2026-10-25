@@ -65,6 +65,9 @@ impl System {
     /// where each call of the API returns to the program, are as good as
     /// the program's own code.
     pub(crate) fn interrupt_due(&mut self) -> Option<Interrupt> {
+        // A task waiting with a timeout woken as its time comes
+        // (`wake_due_waits`).
+        self.wake_due_waits();
         self.poll_time_events();
         self.poll_comm();
         self.poll_sound();

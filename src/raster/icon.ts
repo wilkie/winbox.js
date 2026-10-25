@@ -1,7 +1,7 @@
 'use strict';
 
 import { DevicePalette } from './device-palette.js';
-import { matchedIndex } from './colour-match.js';
+import { matchedIndex, nearestStatic } from './colour-match.js';
 
 /**
  * An icon as Windows 3.1 keeps one in a resource, and draws it.
@@ -88,7 +88,11 @@ export function decodeIcon(bytes: Uint8Array, palette: DevicePalette): IconData 
   /* On a display of sixteen colours each colour of the table is the one the
    * driver draws it as, by its own matching, not the nearest: on the EGA a
    * light grey, `c0c0c0`, is its grey `82`, index 7, not white (`pmbare` on
-   * the EGA: Program Manager's own icon in a group file). */
+   * the EGA: Program Manager's own icon in a group file). On one of 256, so
+   * too: the static colour nearest (`nearestStatic`), not one of the
+   * driver's own between them -- SimTown's demo's icon of 256 colours, in
+   * the group Widget Workshop's installer made, holds 3, `808000`, where
+   * the nearest of all is 51 (`widget-windows.json`). */
   const ega = palette.colours.every((colour, index) =>
     colour.every((value, at) => value === DevicePalette.EGA.colours[index]?.[at])
   );
@@ -101,7 +105,9 @@ export function decodeIcon(bytes: Uint8Array, palette: DevicePalette): IconData 
     map.push(
       palette.size === 16
         ? matchedIndex(display, palette, red, green, blue)
-        : palette.index(red, green, blue)
+        : palette.size === 256
+          ? nearestStatic(palette, red, green, blue)
+          : palette.index(red, green, blue)
     );
   }
 

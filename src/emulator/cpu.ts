@@ -20,6 +20,9 @@ export class CPU implements CpuCoreHost {
   /** The Rust core beside this one, once `useWasm` gave it; and how many
    * instructions this one runs before asking it again, after it ran none. */
   declare _wasm: WasmCore | null;
+  /** The ports a program's own `IN` and `OUT` reach (`cmos.ts`). */
+  declare ports:
+    { read(port: number): number | null; write(port: number, value: number): void } | undefined;
   /** The calls the Rust core may answer itself, as `Win16` gives them; see `wasm-core.ts`. */
   quickCalls: QuickCalls | null = null;
   declare _wasmBackoff: number;

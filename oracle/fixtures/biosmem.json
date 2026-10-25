@@ -1,0 +1,59 @@
+{
+  "probe": "biosmem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "3305",
+      "args": "",
+      "result": "3305 0b0b 0c0c 0d03 0"
+    },
+    {
+      "function": "int12",
+      "args": "",
+      "result": "0280"
+    },
+    {
+      "function": "cmos",
+      "args": "14",
+      "result": "26"
+    },
+    {
+      "function": "cmos",
+      "args": "15",
+      "result": "80"
+    },
+    {
+      "function": "cmos",
+      "args": "16",
+      "result": "02"
+    },
+    {
+      "function": "cmos",
+      "args": "17",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "18",
+      "result": "3c"
+    },
+    {
+      "function": "cmos",
+      "args": "30",
+      "result": "00"
+    },
+    {
+      "function": "cmos",
+      "args": "31",
+      "result": "3c"
+    }
+  ]
+}

@@ -3085,28 +3085,50 @@ export class I286 implements CpuCore16 {
         }
         break;
 
-        //case 0xe4:    // IN AL,db
-        //case 0xe5:    // IN AX,db
-        //case 0xec:    // IN AL,DX
-        //case 0xed:    // IN AX,DX
-        // TODO: implement
-        //this.fromPort(port, value);
+      /* A program's own `IN` and `OUT`, to the ports the machine answers
+       * (`Ports`, `cmos.ts`): a byte, or a word to the port and the one
+       * after it, low byte first. A read of a port not answered is not run,
+       * as no `IN` was before. As the Rust engine's `ports.rs`. */
+      case 0xe4: // IN AL,db
+      case 0xe5: // IN AX,db
+      case 0xec: // IN AL,DX
+      case 0xed: // IN AX,DX
+        {
+          const port = opcode === 0xe4 || opcode === 0xe5 ? instruction.immediate : this.dx;
+          const size = opcode & 1 ? 2 : 1;
+          let value = 0;
+
+          for (let at = 0; at < size; at++) {
+            const byte = this._cpu.ports?.read((port + at) & 0xffff) ?? null;
+
+            if (byte === null) {
+              throw new InvalidInstruction(instruction);
+            }
+
+            value |= byte << (8 * at);
+          }
+
+          if (size === 1) {
+            this.al = value;
+          } else {
+            this.ax = value;
+          }
+        }
         break;
 
       case 0xe6: // OUT db,AL
-        this.debug('OUT', this.immediate, this.al);
-        break;
-
       case 0xe7: // OUT db,AX
-        this.debug('OUT', this.immediate, this.ax);
-        break;
-
       case 0xee: // OUT DX,AL
-        this.debug('OUT', this.dx, this.al);
-        break;
-
       case 0xef: // OUT DX,AX
-        this.debug('OUT', this.dx, this.ax);
+        {
+          const port = opcode === 0xe6 || opcode === 0xe7 ? instruction.immediate : this.dx;
+          const size = opcode & 1 ? 2 : 1;
+          const value = size === 1 ? this.al : this.ax;
+
+          for (let at = 0; at < size; at++) {
+            this._cpu.ports?.write((port + at) & 0xffff, (value >> (8 * at)) & 0xff);
+          }
+        }
         break;
 
       case 0xe8: // CALL cw

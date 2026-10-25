@@ -5233,14 +5233,13 @@ export const KNOWN_GAPS: Record<string, string> = {
   'solodata:flags': 'no module header is kept in memory at the module handle',
   /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
    * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
-   * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C: is a
-   * FAT16 volume of 40 MB, the oracle's drive copied, which answers its own
-   * geometry, and it has no Z:. A:, B: and the numbers past Z: agree. And
+   * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C:, a
+   * FAT16 volume, answers the folder's figures too; it has no Z:. A:, B:
+   * and the numbers past Z: agree. And
    * function 1Ch, which winbox.js does not answer: under DOSBox it gives a
    * drive's geometry without the room, and DS:BX a selector of DOSX's own
    * over the media byte, F8h for C: (`diskfree`). */
-  'diskfree:space':
-    "C: is a 40 MB FAT16 volume here, which answers its own geometry, and there is no Z:; DOSBox's folder answers a fixed one",
+  'diskfree:space': "there is no Z: here, DOSBox's own drive, 512,127,16513,0",
   'diskfree:allocation': 'DOS function 1Ch is not answered',
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
@@ -5563,6 +5562,17 @@ export const KNOWN_GAPS: Record<string, string> = {
    * own, with no PROGMAN.EXE, has its kept module's and agrees
    * (`test/win16/progman_test.ts`). */
   'pmstart:module': 'a program loaded from its file has no module handle in winbox.js',
+  /* `dcreuse`'s six of the screen's held at once: Windows lends five
+   * handles, one of them twice, its cache's five all lent; both engines
+   * make a sixth (1 record). */
+  'dcreuse:held':
+    "with USER's five cached contexts all lent, Windows lends one again; WinBox makes another",
+  /* `winexpe`'s `WinExec` of a Win32 program: Windows starts it as a DOS
+   * program, its stub, in a DOS session (WINOLDAP), and answers that
+   * instance; WinBox has no DOS sessions and answers `LoadModule`'s 21
+   * (1 record). */
+  'winexpe:exec':
+    'Windows starts a file that is no Windows program in a DOS session, which WinBox has not got',
 };
 
 /**
@@ -5880,6 +5890,9 @@ const RUN_WHOLE = new Set<string>([
   'imgwrite',
   ...['imgbin', 'imgcue', 'imgcue2', 'imgtrk'],
   'imgswap',
+  'biosmem',
+  'dcreuse',
+  'winexpe',
 ]);
 
 /**

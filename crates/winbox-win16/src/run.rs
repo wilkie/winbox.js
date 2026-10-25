@@ -32,6 +32,7 @@ pub(crate) enum Event {
 impl System {
     /// Runs until an event, the instructions reach `end`, the clock
     /// `until`, or the host's time `deadline`.
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn run_until_event(&mut self, end: u64, until: f64, deadline: f64) -> Event {
         while self.instructions < end {
             // The run's caller given the thread back as the host's time
@@ -145,6 +146,7 @@ impl System {
                             self.absolute_disk();
                             self.instructions += 1;
                         }
+                        0x12 => self.memory_size_interrupt(),
                         vector => return Event::Stop(Stop::Interrupt(vector)),
                     }
                 }
@@ -175,6 +177,41 @@ impl System {
 }
 
 impl System {
+    /// The BIOS's conventional memory, in KB, `INT 12h`: 640, as DOSBox's
+    /// `INT12_Handler` answers the word it set (`ints/bios.cpp` 413-414,
+    /// 873), **recorded** by `biosmem` through Windows.
+    fn memory_size_interrupt(&mut self) {
+        self.cpu.regs[winbox_cpu::AX] = 640;
+        self.cpu.ip += 2;
+        self.instructions += 1;
+    }
+
+    /// Each task waiting with a timeout -- in `GetMessage`, for its timer
+    /// -- whose time has come, woken, the earliest first, between two
+    /// slices, as the TypeScript engine's scheduler ticks its clock
+    /// (`clock.tick`): it has the processor as the task running gives it
+    /// up. `Engine::time_passed` wakes them so once time passes with every
+    /// task waiting.
+    pub(crate) fn wake_due_waits(&mut self) {
+        let instructions = self.instructions;
+        let mut due: Vec<(usize, u64)> = self
+            .scheduler
+            .slots
+            .iter()
+            .enumerate()
+            .filter_map(|(slot, state)| state.wait_timer.map(|timer| (slot, timer)))
+            .filter(|&(_, timer)| self.clock.is_due(instructions, timer))
+            .collect();
+
+        due.sort_by_key(|&(_, timer)| timer);
+
+        for (slot, timer) in due {
+            self.clock.cancel(timer);
+            self.scheduler.slots[slot].wait_timer = None;
+            self.signal_slot(slot);
+        }
+    }
+
     /// A program's `INT 21h`, answered: the event the run stops at, where
     /// it stops. The task ending with files of MMSYSTEM's open, USER's
     /// `DRV_EXITAPPLICATION` lets them go first, and the interrupt is taken

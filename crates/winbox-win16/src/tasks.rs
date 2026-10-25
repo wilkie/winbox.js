@@ -295,6 +295,10 @@ impl System {
         let Some((_, bytes)) = self.files.read_from(folder, file) else {
             return Ok(Err(2));
         };
+        if let Some(error) = crate::modules_kernel::load_error(&bytes) {
+            return Ok(Err(error));
+        }
+
         let Ok(executable) = winbox_ne::Executable::parse(bytes) else {
             return Ok(Err(11));
         };

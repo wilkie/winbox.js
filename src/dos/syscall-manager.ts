@@ -228,13 +228,9 @@ export class SyscallManager {
       // Change current directory
       // DS:DX: Directory path
       // CF set on error
-      // AX <- error code
-      0x3b: [
-        chdir,
-        [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]],
-        [[I286.REGISTER_AX, 2]],
-        true,
-      ],
+      // AX <- error code; as it was where it is changed, as DOSBox leaves
+      // it (`dos.cpp` 539-547), and the Rust engine's `dos.rs`
+      0x3b: [chdir, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]], [], true],
 
       // Create file with handle
       // DS:DX: path

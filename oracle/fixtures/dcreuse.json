@@ -1,0 +1,49 @@
+{
+  "probe": "dcreuse",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "after a",
+      "result": "other"
+    },
+    {
+      "function": "window",
+      "args": "b after screen",
+      "result": "other"
+    },
+    {
+      "function": "order",
+      "args": "a then b given back",
+      "result": "other"
+    },
+    {
+      "function": "reverse",
+      "args": "b then a given back",
+      "result": "other"
+    },
+    {
+      "function": "minimized",
+      "args": "c after a",
+      "result": "other"
+    },
+    {
+      "function": "minimized",
+      "args": "screen after c",
+      "result": "other"
+    },
+    {
+      "function": "held",
+      "args": "six of the screen's",
+      "result": "5"
+    }
+  ]
+}

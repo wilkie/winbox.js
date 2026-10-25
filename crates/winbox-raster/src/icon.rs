@@ -2,6 +2,7 @@
 //! entries, the one that fits a display, and its picture as the display's
 //! palette indices and a mask.
 
+use crate::colour_match::nearest_static;
 use crate::{DevicePalette, DisplayKind, matched_index};
 
 /// An icon's picture: an index of the display's palette a pixel, and its
@@ -144,6 +145,12 @@ pub fn decode_icon(bytes: &[u8], palette: &mut DevicePalette) -> IconData {
 
             if palette.size() == 16 {
                 matched_index(display, palette, red, green, blue) as u8
+            } else if palette.size() == 256 {
+                // On a display of 256 colours, the static colour nearest,
+                // not one of the driver's own between them: SimTown's
+                // demo's icon in Widget Workshop's group, as Windows wrote
+                // it (`icon.ts`).
+                nearest_static(palette, red, green, blue) as u8
             } else {
                 palette.index(red, green, blue) as u8
             }

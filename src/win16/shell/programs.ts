@@ -492,7 +492,10 @@ export async function ShellExecute(
   lpszDir: string | null,
   fsShowCmd: number
 ) {
-  const saved = typeof lpszDir === 'string' ? await enterDirectory(this, lpszDir) : null;
+  /* A program's string comes as a `String` with its address, WinBox's own
+   * Program Manager's as text: either is a directory given. */
+  const saved =
+    lpszDir !== null && lpszDir !== undefined ? await enterDirectory(this, String(lpszDir)) : null;
 
   try {
     const found = await commandFor(
@@ -558,6 +561,60 @@ async function enterDirectory(system: any, given: string) {
 }
 
 /**
+ * An icon file's icon, as `ExtractIcon` makes it for index nought.
+ * **Read out** (`SHELL.DLL` seg10 `0360`-`04ea`): its entries, ten at most
+ * (`039c`-`03aa`), each read as 16 bytes -- one come short ends it with no
+ * icon (`03e5`-`03ef`) -- are made a group's directory, 14 bytes an entry and
+ * its number the entry's place counted from one (`03f2`-`0437`); the icon
+ * for the display picked from it as from a program's group (`044c`), and
+ * its image, where the entry says it is in the file, made the icon
+ * (`0474`-`04b4`). **Recorded**: Widget Workshop's installer asks Program
+ * Manager for an item whose icon is `WIDGET.ICO`, and the group Windows
+ * wrote holds that icon, at index nought (`widget-windows.json`). None
+ * where it cannot be read.
+ */
+function iconFileIcon(system: any, bytes: Uint8Array): number | null {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const count = Math.min(view.getUint16(4, true), 10);
+  const group = new Uint8Array(6 + count * 14);
+
+  group.set(bytes.subarray(0, 6));
+  new DataView(group.buffer).setUint16(4, count, true);
+
+  for (let at = 0; at < count; at++) {
+    const from = 6 + at * 16;
+
+    if (from + 16 > bytes.length) {
+      return null;
+    }
+
+    group.set(bytes.subarray(from, from + 12), 6 + at * 14);
+    new DataView(group.buffer).setUint16(6 + at * 14 + 12, at + 1, true);
+  }
+
+  const entry = pickIcon(iconEntries(group), 32, system.display?.colors ?? 16);
+
+  if (!entry) {
+    return null;
+  }
+
+  const from = 6 + (entry.id - 1) * 16;
+  const size = view.getUint32(from + 8, true);
+  const offset = view.getUint32(from + 12, true);
+
+  if (offset + size > bytes.length) {
+    return null;
+  }
+
+  const palette = DevicePalette.forDisplay(system.display);
+
+  return (
+    iconBlock(system, scaleIcon(decodeIcon(bytes.subarray(offset, offset + size), palette), 32)) ??
+    null
+  );
+}
+
+/**
  * A program's icon, by its place among the icons, or with -1 how many it
  * has. **Read out** (seg10 `026e`) and **recorded**: a file not there
  * answers nought; a file that is no Windows program answers 1, or for -1
@@ -606,8 +663,7 @@ export async function ExtractIcon(this: any, _hinst: number, lpszExeName: string
   /* A first word of nought is an icon file's (seg10 `084a`, `030e`-`035c`):
    * nought unless the next word, its type, is 1; then -1 answers 1, its one
    * icon, and another index but the first nought. A PIF begins so, and is
-   * no icon file: `DOSPRMPT.PIF` answers nought (`pmbare`). The first icon
-   * of an icon file itself is not yet read here. */
+   * no icon file: `DOSPRMPT.PIF` answers nought (`pmbare`). */
   if (bytes[0] === 0 && bytes[1] === 0) {
     if (bytes.length < 6 || view.getUint16(2, true) !== 1) {
       return 0;
@@ -617,7 +673,7 @@ export async function ExtractIcon(this: any, _hinst: number, lpszExeName: string
       return index === -1 ? 1 : 0;
     }
 
-    return none;
+    return iconFileIcon(this, bytes) ?? 0;
   }
 
   if (bytes.length < 0x40 || bytes[0] !== 0x4d || bytes[1] !== 0x5a) {
