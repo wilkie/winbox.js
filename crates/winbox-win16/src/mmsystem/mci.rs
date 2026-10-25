@@ -23,17 +23,23 @@
 //!   word of the caller's `dwReturn` is cleared; an error of 200h and up has
 //!   the device's ID in its high word.
 //!
+//! * A device opened has a yield procedure, which its driver calls while it
+//!   waits (`mciDriverYield`): MMSYSTEM's own, which yields until the key
+//!   `MCI_BREAK` names is pressed -- `VK_CANCEL` to begin with -- in the
+//!   window it names, if any (seg5 `2bbf`, `2c16`, `20dd`-`2208`;
+//!   `mmmisc`).
+//!
 //! Not followed: `MCI_SOUND`, whose sound winbox.js does not play; opening
-//! by element ID; the devices `mciSendString` opens itself; the command
-//! tables, which only `mciSendString` reads.
+//! by element ID, but for the ID kept; the devices `mciSendString` opens
+//! itself; the command tables, which only `mciSendString` reads.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use crate::call::{Answer, Args, Later, Stop};
+use crate::call::{Answer, Args, Later, Stop, call_named};
 use crate::drivers::lpcstr;
-use crate::engine::Engine;
+use crate::engine::{Engine, GuestArg};
 use crate::handles::Object;
 use crate::profile::lower;
 use crate::system::System;
@@ -49,6 +55,13 @@ const MCI_CLOSE: u16 = 0x804;
 const MCI_SYSINFO: u16 = 0x810;
 const MCI_BREAK: u16 = 0x811;
 const MCI_SOUND: u16 = 0x812;
+
+const MCI_WAIT: u32 = 0x2;
+const MM_MCINOTIFY: u16 = 0x3b9;
+
+/// The hidden ordinal of MMSYSTEM's own yield procedure, the break key's
+/// (seg5 `2bbf`).
+pub const BREAK_ORDINAL: u16 = 1202;
 
 const MCI_OPEN_ELEMENT: u32 = 0x200;
 const MCI_OPEN_ALIAS: u32 = 0x400;
@@ -91,7 +104,15 @@ pub struct Device {
     task: u16,
     closing: bool,
     data: u32,
-    break_key: Option<u16>,
+    /// The yield procedure, and its doubleword (seg5 `+14h`, `+18h`).
+    yield_proc: u32,
+    yield_data: u32,
+    /// The element ID it was opened by, with `MCI_OPEN_ELEMENT_ID`.
+    element_id: Option<u32>,
+    /// Its type's command table, and its driver's own (seg5 `+20h`,
+    /// `+22h`; `mci_tables.rs`).
+    type_table: u16,
+    custom_table: u16,
 }
 
 /// The devices open, by ID, and the ID past the last.
@@ -296,6 +317,7 @@ impl Engine {
             return Ok(MCIERR_NULL_PARAMETER_BLOCK);
         }
 
+        let given = flags;
         let (mut kind, mut element, alias, task, type_far) = {
             let system = self.system();
             let type_far = long_at(&system, parms.wrapping_add(8));
@@ -439,6 +461,8 @@ impl Engine {
                 None => (value.clone(), Vec::new()),
             };
             let id = system.mmsystem.mci.allocate();
+            let element_id = (flags & MCI_OPEN_ELEMENT_ID != 0)
+                .then(|| long_at(&system, parms.wrapping_add(0x0c)));
 
             system.mmsystem.mci.set(
                 id,
@@ -454,7 +478,11 @@ impl Engine {
                     task,
                     closing: false,
                     data: 0,
-                    break_key: None,
+                    yield_proc: 0,
+                    yield_data: 0,
+                    element_id,
+                    type_table: 0,
+                    custom_table: 0,
                 }),
             );
 
@@ -474,8 +502,9 @@ impl Engine {
             (id, file, block, words_block, open_parms)
         };
         let driver = self.open_driver(&file, Some(b"mci"), open_parms).await?;
+        let custom_table = word_at(&self.system(), far_at(open_parms, 6));
 
-        {
+        let w_type = {
             let mut system = self.system();
             let w_type = word_at(&system, far_at(open_parms, 8));
 
@@ -499,6 +528,36 @@ impl Engine {
                 device.module = module;
                 device.w_type = w_type;
             }
+
+            w_type
+        };
+
+        // The driver's own command table, as it left it in the parameters
+        // -- FFFFh for none -- and its type's: the first table of its type,
+        // else MMSYSTEM's resource named as the type the program gave
+        // (seg5 `20bb`-`210b`).
+        let mut type_table = super::mci_tables::type_table(self, w_type).await?;
+
+        if type_table == 0xffff && given & MCI_OPEN_TYPE != 0 && given & MCI_OPEN_TYPE_ID == 0 {
+            let named = string_at(&self.system(), type_far);
+
+            type_table = match named {
+                Some(named) => {
+                    super::mci_tables::load_table(
+                        self,
+                        super::mci_tables::Source::Own("MMSYSTEM"),
+                        super::mci_tables::Name::Text(named),
+                        w_type,
+                    )
+                    .await?
+                }
+                None => 0xffff,
+            };
+        }
+
+        if let Some(device) = self.system().mmsystem.mci.device_mut(id) {
+            device.custom_table = custom_table;
+            device.type_table = type_table;
         }
 
         let answer =
@@ -509,10 +568,11 @@ impl Engine {
             return Ok(answer);
         }
 
-        if let Some(device) = self.system().mmsystem.mci.device_mut(id) {
-            device.break_key = Some(3);
-        }
+        // The break key, `VK_CANCEL`, in no window (seg5 `2208`).
+        let mut system = self.system();
+        let procedure = break_address(&mut system);
 
+        set_yield_proc(&mut system, id, procedure, 3);
         Ok(0)
     }
 
@@ -556,6 +616,19 @@ impl Engine {
             }
         }
 
+        // Its type's table let go before its driver is closed (seg5
+        // `298c`).
+        let types = self
+            .system()
+            .mmsystem
+            .mci
+            .device_mut(id)
+            .map_or(0, |device| {
+                device.custom_table = 0;
+                std::mem::take(&mut device.type_table)
+            });
+
+        super::mci_tables::free_table(self, types).await?;
         self.close_driver(driver, 0, 0).await?;
         self.system().mmsystem.mci.release(id);
         Ok(answer)
@@ -572,12 +645,25 @@ impl Engine {
             // answers FALSE.
             MCI_SOUND => Ok(MCIERR_HARDWARE),
             _ => {
-                let driver = self
-                    .system()
-                    .mmsystem
-                    .mci
-                    .device(id)
-                    .map_or(0, |device| device.driver);
+                let driver = {
+                    let mut system = self.system();
+                    let procedure = break_address(&mut system);
+                    let (driver, yield_proc, yield_data) =
+                        system.mmsystem.mci.device(id).map_or((0, 0, 0), |device| {
+                            (device.driver, device.yield_proc, device.yield_data)
+                        });
+
+                    // A command waited on, with MMSYSTEM's own yield
+                    // procedure: the break key's press until now forgotten
+                    // (seg5 `1b1`).
+                    if flags & MCI_WAIT != 0 && yield_proc == procedure {
+                        let key = usize::from(yield_data as u8);
+
+                        system.user_state.async_keys[key] &= !0x01;
+                    }
+
+                    driver
+                };
 
                 self.send_to_driver(driver, message, flags, parms).await
             }
@@ -830,34 +916,283 @@ fn mci_sysinfo(system: &mut System, id: u16, flags: u32, parms: u32) -> Result<u
     Ok(0)
 }
 
-/// `MCI_BREAK` (seg5 `bc`): the key that breaks a wait, or none.
+/// `MCI_BREAK` (seg5 `bc`): MMSYSTEM's own yield procedure set, with the
+/// key and the window -- or none -- in its doubleword; `MCI_BREAK_OFF` sets
+/// no procedure, which `mciSetYieldProc` refuses, and leaves the one there.
 fn mci_break(system: &mut System, id: u16, flags: u32, parms: u32) -> u32 {
     const KEY: u32 = 0x100;
+    const HWND: u32 = 0x200;
     const OFF: u32 = 0x400;
 
-    if flags & KEY != 0 && flags & OFF != 0 {
-        return MCIERR_FLAGS_NOT_COMPATIBLE;
-    }
-
     if flags & KEY != 0 {
-        let key = word_at(system, far_at(parms, 4));
-        let Some(device) = system.mmsystem.mci.device_mut(id) else {
-            return 0x0b;
-        };
+        if flags & OFF != 0 {
+            return MCIERR_FLAGS_NOT_COMPATIBLE;
+        }
 
-        device.break_key = Some(key);
-        return 0;
+        let hwnd = if flags & HWND != 0 {
+            word_at(system, far_at(parms, 8))
+        } else {
+            0
+        };
+        let key = word_at(system, far_at(parms, 4));
+        let procedure = break_address(system);
+
+        return if set_yield_proc(
+            system,
+            id,
+            procedure,
+            u32::from(hwnd) << 16 | u32::from(key),
+        ) {
+            0
+        } else {
+            0x0b
+        };
     }
 
     if flags & OFF != 0 {
-        if let Some(device) = system.mmsystem.mci.device_mut(id) {
-            device.break_key = None;
-        }
-
+        set_yield_proc(system, id, 0, 0);
         return 0;
     }
 
     MCIERR_MISSING_PARAMETER
+}
+
+/// Whether an open device has a command table, as its type's or its
+/// driver's (seg5 `2fd5`).
+pub(crate) fn table_in_use(system: &System, number: u16) -> bool {
+    system
+        .mmsystem
+        .mci
+        .devices
+        .iter()
+        .flatten()
+        .any(|device| device.type_table == number || device.custom_table == number)
+}
+
+/// MMSYSTEM's own yield procedure's address.
+fn break_address(system: &mut System) -> u32 {
+    super::mmio::own_address(system, BREAK_ORDINAL)
+}
+
+/// A device's yield procedure set (seg5 `2acd`): refused for a procedure
+/// that is no code -- nought among them -- or a device that is not open.
+fn set_yield_proc(system: &mut System, id: u16, procedure: u32, data: u32) -> bool {
+    if super::mmio::bad_code(system, procedure) {
+        return false;
+    }
+
+    let Some(device) = system.mmsystem.mci.device_mut(id) else {
+        return false;
+    };
+
+    device.yield_proc = procedure;
+    device.yield_data = data;
+    true
+}
+
+/// `mciSetYieldProc`: whether the procedure was set.
+pub fn mci_set_yield_proc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let id = args.word(system);
+    let procedure = args.dword(system);
+    let data = args.dword(system);
+
+    Ok(Answer::Word(u16::from(set_yield_proc(
+        system, id, procedure, data,
+    ))))
+}
+
+/// `mciGetYieldProc` (seg5 `2b3c`): the procedure, or nought; its
+/// doubleword written where asked, if that can be written.
+pub fn mci_get_yield_proc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let id = args.word(system);
+    let far = args.dword(system);
+    let Some((procedure, data)) = system
+        .mmsystem
+        .mci
+        .device(id)
+        .map(|device| (device.yield_proc, device.yield_data))
+    else {
+        return Ok(Answer::Dword(0));
+    };
+
+    if far != 0 {
+        if system.bad_huge(far, 4, true) {
+            return Ok(Answer::Dword(0));
+        }
+
+        system.write_far(far, &data.to_le_bytes());
+    }
+
+    Ok(Answer::Dword(procedure))
+}
+
+/// `mciGetCreatorTask` (seg5 `15a5`): the task that opened a device.
+pub fn mci_get_creator_task(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let id = args.word(system);
+
+    Ok(Answer::Word(
+        system
+            .mmsystem
+            .mci
+            .device(id)
+            .map_or(0, |device| device.task),
+    ))
+}
+
+/// `mciDriverYield` (seg5 `2a6f`): the device's yield procedure called with
+/// its ID and doubleword; with none, `Yield`.
+pub fn mci_driver_yield(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let id = args.word(&engine.system());
+        let found = engine
+            .system()
+            .mmsystem
+            .mci
+            .device(id)
+            .map(|device| (device.yield_proc, device.yield_data))
+            .filter(|&(procedure, _)| procedure != 0);
+
+        if let Some((procedure, data)) = found {
+            let args = [GuestArg::Word(id), GuestArg::Long(data)];
+            let (answer, _) = Box::pin(engine.call_with(procedure, &args, &[])).await?;
+
+            return Ok(Answer::Word(answer as u16));
+        }
+
+        Box::pin(call_named(engine, "KERNEL", "Yield", &[])).await?;
+        Ok(Answer::Word(0))
+    })
+}
+
+/// MMSYSTEM's own yield procedure (seg5 `2bbf`): with a window in its
+/// doubleword's high word that is not the active one, or its key not
+/// pressed since it was last asked, `Yield` and nought; else the window's
+/// keys taken from its queue, and `FFFFh`.
+pub fn mci_break_yield(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let data = {
+            let system = engine.system();
+
+            args.word(&system);
+            args.dword(&system)
+        };
+        let hwnd = (data >> 16) as u16;
+        let key = data as u16;
+        let active = if hwnd != 0 {
+            Box::pin(call_named(engine, "USER", "GetActiveWindow", &[]))
+                .await?
+                .0
+                .value()
+                .unwrap_or(0) as u16
+        } else {
+            0
+        };
+        let pressed = hwnd == 0 || active == hwnd;
+        let pressed = pressed && {
+            let (answer, _) = Box::pin(call_named(
+                engine,
+                "USER",
+                "GetAsyncKeyState",
+                &[GuestArg::Word(key)],
+            ))
+            .await?;
+
+            answer.value().unwrap_or(0) & 1 != 0
+        };
+
+        if !pressed {
+            Box::pin(call_named(engine, "KERNEL", "Yield", &[])).await?;
+            return Ok(Answer::Word(0));
+        }
+
+        loop {
+            let args = [
+                GuestArg::Struct(vec![0; 0x12]),
+                GuestArg::Word(hwnd),
+                GuestArg::Word(0x100),
+                GuestArg::Word(0x108),
+                GuestArg::Word(1),
+            ];
+            let (answer, _) = Box::pin(call_named(engine, "USER", "PeekMessage", &args)).await?;
+
+            if answer.value().unwrap_or(0) == 0 {
+                break;
+            }
+        }
+
+        Ok(Answer::Word(0xffff))
+    })
+}
+
+/// `mciGetDeviceIDFromElementID` (seg5 `1454`): the device opened with an
+/// element ID, of a type compared as MMSYSTEM's string of the device's type
+/// is; nought for none, or no type.
+pub fn mci_get_device_id_from_element_id(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (element, kind) = {
+            let system = engine.system();
+
+            (args.dword(&system), args.dword(&system))
+        };
+
+        if kind == 0 {
+            return Ok(Answer::Word(0));
+        }
+
+        let found: Vec<(u16, u16)> = {
+            let system = engine.system();
+            let table = &system.mmsystem.mci;
+
+            (1..table.count)
+                .filter_map(|id| {
+                    table
+                        .device(id)
+                        .filter(|device| device.element_id == Some(element))
+                        .map(|device| (id, device.w_type))
+                })
+                .collect()
+        };
+
+        for (id, w_type) in found {
+            let Some(name) = strings::string(w_type) else {
+                continue;
+            };
+            let name = name[..name.len().min(0x4f)].to_vec();
+            let args = [
+                GuestArg::Struct([&name[..], &[0]].concat()),
+                GuestArg::Long(kind),
+            ];
+            let (answer, _) = Box::pin(call_named(engine, "USER", "lstrcmpi", &args)).await?;
+
+            if answer.value().unwrap_or(1) as u16 == 0 {
+                return Ok(Answer::Word(id));
+            }
+        }
+
+        Ok(Answer::Word(0))
+    })
+}
+
+/// `mciDriverNotify` (seg1 `275`): `MM_MCINOTIFY` posted to the window,
+/// the status its wParam and the device its lParam; what posting answered.
+pub fn mci_driver_notify(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, id, status) = {
+            let system = engine.system();
+
+            (args.word(&system), args.word(&system), args.word(&system))
+        };
+        let args = [
+            GuestArg::Word(hwnd),
+            GuestArg::Word(MM_MCINOTIFY),
+            GuestArg::Word(status),
+            GuestArg::Long(u32::from(id)),
+        ];
+
+        Ok(Box::pin(call_named(engine, "USER", "PostMessage", &args))
+            .await?
+            .0)
+    })
 }
 
 /// Sends a device a command: the device, `FFFFh` for all the task's, or
@@ -1087,7 +1422,11 @@ mod tests {
                 task: 0,
                 closing: false,
                 data: 0,
-                break_key: Some(3),
+                yield_proc: 0,
+                yield_data: 3,
+                element_id: None,
+                type_table: 0,
+                custom_table: 0,
             }),
         );
         system.mmsystem.mci.count = 2;

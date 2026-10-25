@@ -106,18 +106,25 @@ pub fn callback_ok(system: &mut System, callback: u32, kind: u16) -> bool {
 }
 
 /// A code segment's flags, as `GetCodeInfo` gives them: its module's
-/// segment table's. None for a selector no module's segment is.
+/// segment table's as KERNEL keeps it, every segment of a program's -- a
+/// module not a library, its flags' 8000h clear -- made moveable as the
+/// table is read (`KRNL386.EXE` seg2 `0f4b`-`0f6b`; `mmnodev`: 4556h for a
+/// program's fixed code). None for a selector no module's segment is.
 fn code_flags(system: &System, selector: u16) -> Option<u16> {
+    const LIBRARY: u16 = 0x8000;
+    const MOVEABLE: u16 = 0x10;
+
     let index = index_for(selector);
 
     system.modules.iter().find_map(|module| {
         let number = module.segments.iter().position(|&each| each == index)?;
+        let program = module.executable.header.flags & LIBRARY == 0;
 
         module
             .executable
             .segments
             .get(number)
-            .map(|segment| segment.flags)
+            .map(|segment| segment.flags | if program { MOVEABLE } else { 0 })
     })
 }
 

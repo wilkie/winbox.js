@@ -1,0 +1,25 @@
+---
+kind: function
+module: MMSYSTEM
+name: mmGetCurrentTask
+ordinal: 904
+summary: The task running: KERNEL's GetCurrentTask.
+versions:
+  '3.1': exact
+probes: [mmmisc]
+records: [task]
+source: src/win16/mmsystem/tasks.ts
+topics: [multimedia-services]
+---
+
+## Observed behaviour
+
+- [[measured]] [[probe:mmmisc]]: the probe's own task.
+
+## Inside Windows
+
+- [[read out]] seg4 `5b9`: a jump to `GetCurrentTask`.
+
+## Implementation
+
+Both engines, as read out: `src/win16/mmsystem/tasks.ts` and `crates/winbox-win16/src/mmsystem/tasks.rs`, each calling USER and KERNEL as MMSYSTEM calls them.

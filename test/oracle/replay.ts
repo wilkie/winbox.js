@@ -48,7 +48,6 @@ import {
   activateCapture,
   atomsCapture,
   selinfoCapture,
-  mmdevsCapture,
   handbitsCapture,
   msgboxCapture,
   stretchCapture,
@@ -617,10 +616,6 @@ function editRecords(context: any) {
 
   if (context.probe === 'selinfo') {
     return selinfoCapture(context);
-  }
-
-  if (context.probe === 'mmdevs') {
-    return mmdevsCapture(context);
   }
 
   if (context.probe === 'msgbox') {
@@ -2908,24 +2903,6 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`text:${args.join(',')}`) ?? '';
   },
 
-  /** `mmdevs`: how many devices of a kind. `environ`'s count is not replayed. */
-  async count(context, args) {
-    if (context.probe !== 'mmdevs') {
-      throw new NoAdapter();
-    }
-
-    return (await editRecords(context)).get(`count:${args.join(',')}`) ?? '';
-  },
-
-  /** `mmdevs`: what opening a device answers. */
-  async open(context, args) {
-    if (context.probe !== 'mmdevs') {
-      throw new NoAdapter();
-    }
-
-    return (await editRecords(context)).get(`open:${args.join(',')}`) ?? '';
-  },
-
   /** `escapes`: what the display driver answers `QUERYESCSUPPORT` for, on the screen or a bitmap. */
   support(context, [what]) {
     if (context.probe !== 'escapes') {
@@ -2984,9 +2961,9 @@ const ADAPTERS: Record<
     return String(Escape.call(context, hdc, 7777, 0, 0, 0));
   },
 
-  /** `mmdevs`: what asking a device's capabilities answers. */
+  /** `palette`: what asking a device's capabilities answers. */
   async caps(context, args) {
-    if (context.probe !== 'mmdevs' && context.probe !== 'palette') {
+    if (context.probe !== 'palette') {
       throw new NoAdapter();
     }
 
@@ -5914,6 +5891,10 @@ const RUN_WHOLE = new Set<string>([
   'sysdbg',
   'iconid',
   'loadalt',
+  'mmmisc',
+  'mmnodev',
+  'mmdevs',
+  'mmcmd',
 ]);
 
 /**

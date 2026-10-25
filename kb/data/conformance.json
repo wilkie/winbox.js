@@ -13730,6 +13730,43 @@
   },
   "gaps": {}
  },
+ "mmcmd": {
+  "probe": "mmcmd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 23,
+  "functions": {
+   "close": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "load": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "mmdevs": {
   "probe": "mmdevs",
   "display": "vga",
@@ -14114,6 +14151,252 @@
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mmmisc": {
+  "probe": "mmmisc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 95,
+  "functions": {
+   "box": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "debugstr": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "drv": {
+    "total": 16,
+    "agreed": 16,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "joy": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mci": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "notify": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stack": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "task": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "version": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wep": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "yieldproc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mmmisc-vgasound": {
+  "probe": "mmmisc",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 95,
+  "functions": {
+   "box": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "debugstr": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "drv": {
+    "total": 16,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 16
+   },
+   "joy": {
+    "total": 25,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 25
+   },
+   "mci": {
+    "total": 32,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 32
+   },
+   "notify": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "stack": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "task": {
+    "total": 10,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 10
+   },
+   "version": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "wep": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "yieldproc": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   }
+  },
+  "gaps": {}
+ },
+ "mmnodev": {
+  "probe": "mmnodev",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 170,
+  "functions": {
+   "handle": {
+    "total": 92,
+    "agreed": 92,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "id": {
+    "total": 38,
+    "agreed": 38,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "open": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "text": {
+    "total": 27,
+    "agreed": 27,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "mmnodev-vgasound": {
+  "probe": "mmnodev",
+  "display": "vgasound",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 170,
+  "functions": {
+   "handle": {
+    "total": 92,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 92
+   },
+   "id": {
+    "total": 38,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 38
+   },
+   "open": {
+    "total": 13,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 13
+   },
+   "text": {
+    "total": 27,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 27
    }
   },
   "gaps": {}

@@ -16,13 +16,14 @@
 //! it is linked while MMSYSTEM, whose load opened it, is not yet.
 //!
 //! The wave, MIDI and auxiliary drivers are opened and installed as
-//! `devices.rs` says. Not followed: the stacks MMSYSTEM readies for
-//! interrupt time once there is any device, which winbox.js has no need
-//! of; the window it makes for itself; and what it does with a joystick
-//! driver once opened, which the installation does not have.
+//! `devices.rs` says, the interrupt stacks made as `stacks.rs` says, and
+//! the joystick's driver opened as `joystick.rs` says. Not followed: the
+//! window MMSYSTEM makes for itself.
 
 use crate::call::Stop;
 use crate::engine::Engine;
+
+use super::devices::Kind;
 
 /// What MMSYSTEM keeps as a driver: whether its first load is still to
 /// come, and the drivers it opened.
@@ -62,11 +63,31 @@ pub async fn driver_proc(
 
             engine.system().mmsystem.driver.timer = timer;
 
-            super::devices::open_drivers(engine).await?;
+            // The waveform and MIDI drivers, then the interrupt stacks if
+            // any device came of them, then the auxiliary drivers (seg2
+            // `101`).
+            super::devices::open_wave_and_midi(engine).await?;
+
+            let any = {
+                let system = engine.system();
+                let devices = &system.mmsystem.devices;
+
+                [Kind::WaveOut, Kind::WaveIn, Kind::MidiOut, Kind::MidiIn]
+                    .iter()
+                    .fold(0u16, |sum, &kind| sum.wrapping_add(devices.count(kind)))
+                    != 0
+            };
+
+            if any {
+                super::stacks::make_stacks(engine).await?;
+            }
+
+            super::devices::open_auxiliary(engine).await?;
 
             let joystick = engine.open_driver(b"joystick", None, 0).await?;
 
             engine.system().mmsystem.driver.joystick = joystick;
+            super::joystick::open_joysticks(engine, joystick).await?;
             Ok(1)
         }
         2 => {

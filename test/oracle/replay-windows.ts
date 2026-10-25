@@ -157,7 +157,11 @@ import {
   SetBrushOrg,
   UnrealizeObject,
 } from '../../src/win16/gdi/CreatePatternBrush.js';
-import { GetStretchBltMode, SetStretchBltMode, StretchBlt } from '../../src/win16/gdi/StretchBlt.js';
+import {
+  GetStretchBltMode,
+  SetStretchBltMode,
+  StretchBlt,
+} from '../../src/win16/gdi/StretchBlt.js';
 import { Surface } from '../../src/raster/surface.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { AppendMenu } from '../../src/win16/user/AppendMenu.js';
@@ -194,7 +198,11 @@ import {
   SetErrorMode,
   SetHandleCount,
 } from '../../src/win16/kernel/misc.js';
-import { GetDoubleClickTime, SetDoubleClickTime, SetMessageQueue } from '../../src/win16/user/misc.js';
+import {
+  GetDoubleClickTime,
+  SetDoubleClickTime,
+  SetMessageQueue,
+} from '../../src/win16/user/misc.js';
 import { VkKeyScan } from '../../src/win16/keyboard/scan.js';
 import { EnumObjects } from '../../src/win16/gdi/EnumObjects.js';
 import { AccessResource, SizeofResource } from '../../src/win16/kernel/AccessResource.js';
@@ -214,16 +222,6 @@ import { Task } from '../../src/win16/task.js';
 import { MessageBox } from '../../src/win16/user/MessageBox.js';
 import { GetWindowLong } from '../../src/win16/user/window-words.js';
 import {
-  waveGetDevCaps,
-  waveGetErrorText,
-  waveInGetNumDevs,
-  midiInGetNumDevs,
-  auxGetNumDevs,
-  waveOpen,
-  waveOutGetNumDevs,
-} from '../../src/win16/mmsystem/devices.js';
-import { midiOutGetNumDevs } from '../../src/win16/mmsystem/midiOutGetNumDevs.js';
-import {
   AddAtom,
   DeleteAtom,
   FindAtom,
@@ -233,12 +231,20 @@ import {
   GlobalFindAtom,
   GlobalGetAtomName,
 } from '../../src/win16/atoms.js';
-import { GetClipboardFormatName, RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
+import {
+  GetClipboardFormatName,
+  RegisterWindowMessage,
+} from '../../src/win16/user/RegisterWindowMessage.js';
 import { GetClassName, GetTopWindow, GetWindow } from '../../src/win16/user/GetWindow.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { InvertRect } from '../../src/win16/user/InvertRect.js';
 import { CheckRadioButton } from '../../src/win16/user/dialog-items.js';
-import { GetCaretBlinkTime, GetCaretPos, HideCaret, ShowCaret } from '../../src/win16/user/caret.js';
+import {
+  GetCaretBlinkTime,
+  GetCaretPos,
+  HideCaret,
+  ShowCaret,
+} from '../../src/win16/user/caret.js';
 import {
   EnableScrollBar,
   GetScrollPos,
@@ -1475,10 +1481,49 @@ async function captureEdit(system: any) {
   kind.lpszClassName = 'EditHost';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'EditHost', 'Edit', 0x00cf0000 | 0x10000000, 40, 40, 300, 160, 0, 0, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'EditHost',
+    'Edit',
+    0x00cf0000 | 0x10000000,
+    40,
+    40,
+    300,
+    160,
+    0,
+    0,
+    0,
+    0
+  );
   const editStyle = 0x40000000 | 0x10000000 | 0x00800000 | 0x0080;
-  const first = await CreateWindow.call(system, 'EDIT', '', editStyle, 8, 8, 120, 20, host, 100, 0, 0);
-  const second = await CreateWindow.call(system, 'EDIT', 'Sans', editStyle, 8, 40, 120, 20, host, 101, 0, 0);
+  const first = await CreateWindow.call(
+    system,
+    'EDIT',
+    '',
+    editStyle,
+    8,
+    8,
+    120,
+    20,
+    host,
+    100,
+    0,
+    0
+  );
+  const second = await CreateWindow.call(
+    system,
+    'EDIT',
+    'Sans',
+    editStyle,
+    8,
+    40,
+    120,
+    20,
+    host,
+    101,
+    0,
+    0
+  );
 
   const screen = GetDC.call(system, 0);
   const font = CreateFontIndirect.call(system, {
@@ -1529,7 +1574,9 @@ async function captureEdit(system: any) {
       let row = '';
 
       for (let x = 0; x < 120 && window.left + x < window.right; x++) {
-        const index = PALETTE.indexOf(GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff);
+        const index = PALETTE.indexOf(
+          GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff
+        );
 
         row += index < 0 ? '?' : index.toString(16);
       }
@@ -1654,7 +1701,13 @@ async function captureEdit(system: any) {
 async function windowText(system: any, hwnd: number, size = 80) {
   const length = await SendMessage.call(system, hwnd, User.WM_GETTEXTLENGTH, 0, 0);
   const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, size + 16));
-  const count = await SendMessage.call(system, hwnd, User.WM_GETTEXT, Math.min(length + 1, size), buffer);
+  const count = await SendMessage.call(
+    system,
+    hwnd,
+    User.WM_GETTEXT,
+    Math.min(length + 1, size),
+    buffer
+  );
   const core = system.machine.cpu.core;
   let text = '';
 
@@ -1727,9 +1780,48 @@ async function captureMlEdit(system: any) {
   await RegisterClass.call(system, kind);
 
   const child = 0x40000000 | 0x10000000;
-  const host = await CreateWindow.call(system, 'MlHost', 'Lines', 0x00cf0000 | 0x10000000, 20, 20, 360, 220, 0, 0, 0, 0);
-  const pad = await CreateWindow.call(system, 'EDIT', '', child | 0x00200000 | 0x00100000 | 0x0004 | 0x0080 | 0x0040, 8, 8, 200, 80, host, 100, 0, 0);
-  const wrap = await CreateWindow.call(system, 'EDIT', '', child | 0x00800000 | 0x0004 | 0x0040, 220, 8, 120, 60, host, 101, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'MlHost',
+    'Lines',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    360,
+    220,
+    0,
+    0,
+    0,
+    0
+  );
+  const pad = await CreateWindow.call(
+    system,
+    'EDIT',
+    '',
+    child | 0x00200000 | 0x00100000 | 0x0004 | 0x0080 | 0x0040,
+    8,
+    8,
+    200,
+    80,
+    host,
+    100,
+    0,
+    0
+  );
+  const wrap = await CreateWindow.call(
+    system,
+    'EDIT',
+    '',
+    child | 0x00800000 | 0x0004 | 0x0040,
+    220,
+    8,
+    120,
+    60,
+    host,
+    101,
+    0,
+    0
+  );
 
   await UpdateWindow.call(system, host);
   await pumpAll(system);
@@ -1746,7 +1838,10 @@ async function captureMlEdit(system: any) {
     GetCaretPos.call(system, caret);
     records.set(`caret:${step}`, `${caret.x}:${caret.y}`);
     records.set(`sel:${step}`, `${selection & 0xffff}:${selection >>> 16}`);
-    records.set(`text:${step}`, (await windowText(system, edit, 600)).replace(/\r/g, '\\r').replace(/\n/g, '\\n'));
+    records.set(
+      `text:${step}`,
+      (await windowText(system, edit, 600)).replace(/\r/g, '\\r').replace(/\n/g, '\\n')
+    );
     records.set(
       `lines:${step}`,
       `count=${signed(await send(edit, EM.GETLINECOUNT))},first=${signed(await send(edit, EM.GETFIRSTVISIBLELINE))},` +
@@ -1768,7 +1863,9 @@ async function captureMlEdit(system: any) {
       let row = '';
 
       for (let x = 0; x < 200 && window.left + x < window.right; x++) {
-        const index = PALETTE.indexOf(GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff);
+        const index = PALETTE.indexOf(
+          GetPixel.call(system, dc, window.left + x, window.top + y) & 0xffffff
+        );
 
         row += index < 0 ? '?' : index.toString(16);
       }
@@ -2011,8 +2108,12 @@ async function captureGroupbox(system: any) {
       core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value)
     );
 
-    const dialog = await CreateDialogIndirect.call(system, 0, far, 0, (_: number, message: number) =>
-      message === User.WM_INITDIALOG ? 1 : 0
+    const dialog = await CreateDialogIndirect.call(
+      system,
+      0,
+      far,
+      0,
+      (_: number, message: number) => (message === User.WM_INITDIALOG ? 1 : 0)
     );
 
     await CheckRadioButton.call(system, dialog, 101, 102, 102);
@@ -2202,12 +2303,64 @@ async function captureListbox(system: any) {
   kind.lpszClassName = 'ListHost';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'ListHost', 'Lists', 0x00cf0000 | 0x10000000, 20, 20, 400, 200, 0, 0, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'ListHost',
+    'Lists',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    400,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
 
   const style = 0x40000000 | 0x10000000 | 0x00800000 | 0x00200000 | 0x0001;
-  const a = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0002, 8, 8, 100, 84, host, 100, 0, 0);
-  const b = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0008, 120, 8, 100, 84, host, 101, 0, 0);
-  const c = await CreateWindow.call(system, 'LISTBOX', '', style | 0x0002 | 0x0010 | 0x0040, 232, 8, 100, 84, host, 102, 0, 0);
+  const a = await CreateWindow.call(
+    system,
+    'LISTBOX',
+    '',
+    style | 0x0002,
+    8,
+    8,
+    100,
+    84,
+    host,
+    100,
+    0,
+    0
+  );
+  const b = await CreateWindow.call(
+    system,
+    'LISTBOX',
+    '',
+    style | 0x0008,
+    120,
+    8,
+    100,
+    84,
+    host,
+    101,
+    0,
+    0
+  );
+  const c = await CreateWindow.call(
+    system,
+    'LISTBOX',
+    '',
+    style | 0x0002 | 0x0010 | 0x0040,
+    232,
+    8,
+    100,
+    84,
+    host,
+    102,
+    0,
+    0
+  );
 
   await UpdateWindow.call(system, host);
   await pumpAll(system);
@@ -2215,7 +2368,8 @@ async function captureListbox(system: any) {
 
   const send = (box: number, message: number, wParam = 0, lParam: any = 0) =>
     SendMessage.call(system, box, message, wParam, lParam);
-  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const answer = (what: string, value: number) =>
+    records.set(`answer:${what}`, String(signed(value)));
   const state = async (box: number, step: string, multiple: boolean) => {
     records.set(
       `state:${step}`,
@@ -2254,7 +2408,22 @@ async function captureListbox(system: any) {
     await send(box, 0x0201, 0x0001, x | (y << 16));
     await send(box, 0x0202, 0, x | (y << 16));
   };
-  const WORDS = ['pear', 'apple', 'fig', 'banana', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'olive', 'peach', 'plum', 'date', 'lime'];
+  const WORDS = [
+    'pear',
+    'apple',
+    'fig',
+    'banana',
+    'cherry',
+    'grape',
+    'kiwi',
+    'lemon',
+    'mango',
+    'olive',
+    'peach',
+    'plum',
+    'date',
+    'lime',
+  ];
 
   for (let index = 0; index < WORDS.length; index++) {
     answer(`add${index}`, await send(a, LB.ADDSTRING, 0, WORDS[index]));
@@ -2470,16 +2639,83 @@ export async function captureCombobox(system: any, version = 0x300) {
   kind.lpszClassName = 'ComboHost';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'ComboHost', 'Combos', 0x00cf0000 | 0x10000000, 20, 20, 520, 280, 0, 0, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'ComboHost',
+    'Combos',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    520,
+    280,
+    0,
+    0,
+    0,
+    0
+  );
   const style = 0x40000000 | 0x10000000 | 0x00200000 | 0x0100;
   /* The probe's own instance: `COMBOBOX.EXE` is made for Windows 3.0, as
    * every probe is, so its combo boxes tell neither `CBN_SELENDOK` nor
    * `CBN_SELENDCANCEL` (`USER.EXE` seg8 `0428`-`0432`, seg33 `0b47`). */
-  const probe = system.handles.allocate(new Task({ neHeader: { expectedWindowsVersion: version } }, null));
-  const a = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3, 8, 8, 100, 90, host, 100, probe, 0);
-  const b = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x2, 130, 8, 100, 90, host, 101, probe, 0);
-  const c = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x1, 250, 8, 100, 90, host, 102, probe, 0);
-  const d = await CreateWindow.call(system, 'COMBOBOX', '', style | 0x3 | 0x10 | 0x200, 370, 8, 100, 90, host, 103, probe, 0);
+  const probe = system.handles.allocate(
+    new Task({ neHeader: { expectedWindowsVersion: version } }, null)
+  );
+  const a = await CreateWindow.call(
+    system,
+    'COMBOBOX',
+    '',
+    style | 0x3,
+    8,
+    8,
+    100,
+    90,
+    host,
+    100,
+    probe,
+    0
+  );
+  const b = await CreateWindow.call(
+    system,
+    'COMBOBOX',
+    '',
+    style | 0x2,
+    130,
+    8,
+    100,
+    90,
+    host,
+    101,
+    probe,
+    0
+  );
+  const c = await CreateWindow.call(
+    system,
+    'COMBOBOX',
+    '',
+    style | 0x1,
+    250,
+    8,
+    100,
+    90,
+    host,
+    102,
+    probe,
+    0
+  );
+  const d = await CreateWindow.call(
+    system,
+    'COMBOBOX',
+    '',
+    style | 0x3 | 0x10 | 0x200,
+    370,
+    8,
+    100,
+    90,
+    host,
+    103,
+    probe,
+    0
+  );
 
   await UpdateWindow.call(system, host);
   await pumpAll(system);
@@ -2496,14 +2732,21 @@ export async function captureCombobox(system: any, version = 0x300) {
     const r: any = new RECT();
 
     GetWindowRect.call(system, window, r);
-    records.set(`rect:${name}`, `${r.left - corner.x}:${r.top - corner.y}:${r.right - corner.x}:${r.bottom - corner.y}`);
+    records.set(
+      `rect:${name}`,
+      `${r.left - corner.x}:${r.top - corner.y}:${r.right - corner.x}:${r.bottom - corner.y}`
+    );
   };
   const parts = (name: string, box: number) => {
     rect(name, box);
 
     let index = 0;
 
-    for (let child = GetWindow.call(system, box, 5); child; child = GetWindow.call(system, child, 2)) {
+    for (
+      let child = GetWindow.call(system, box, 5);
+      child;
+      child = GetWindow.call(system, child, 2)
+    ) {
       core.write8(seg, off, 0);
       GetClassName.call(system, child, scratch, 16);
       rect(`${name},child${index++},${textAt(scratch)}`, child);
@@ -2673,18 +2916,84 @@ async function captureNoScroll(system: any) {
   await RegisterClass.call(system, kind);
 
   const child = 0x40000000 | 0x10000000;
-  const host = await CreateWindow.call(system, 'NoScroll', 'Scroll', 0x00cf0000 | 0x10000000, 20, 20, 440, 220, 0, 0, 0, 0);
-  const list = await CreateWindow.call(system, 'LISTBOX', '', child | 0x00800000 | 0x00200000 | 0x0001 | 0x1000, 8, 8, 100, 84, host, 100, 0, 0);
-  const vertical = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0001, 120, 8, 16, 100, host, 101, 0, 0);
-  const horizontal = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0000, 148, 8, 100, 16, host, 102, 0, 0);
-  const own = await CreateWindow.call(system, 'NoScroll', '', child | 0x00800000 | 0x00200000, 260, 8, 80, 100, host, 103, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'NoScroll',
+    'Scroll',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    440,
+    220,
+    0,
+    0,
+    0,
+    0
+  );
+  const list = await CreateWindow.call(
+    system,
+    'LISTBOX',
+    '',
+    child | 0x00800000 | 0x00200000 | 0x0001 | 0x1000,
+    8,
+    8,
+    100,
+    84,
+    host,
+    100,
+    0,
+    0
+  );
+  const vertical = await CreateWindow.call(
+    system,
+    'SCROLLBAR',
+    '',
+    child | 0x0001,
+    120,
+    8,
+    16,
+    100,
+    host,
+    101,
+    0,
+    0
+  );
+  const horizontal = await CreateWindow.call(
+    system,
+    'SCROLLBAR',
+    '',
+    child | 0x0000,
+    148,
+    8,
+    100,
+    16,
+    host,
+    102,
+    0,
+    0
+  );
+  const own = await CreateWindow.call(
+    system,
+    'NoScroll',
+    '',
+    child | 0x00800000 | 0x00200000,
+    260,
+    8,
+    80,
+    100,
+    host,
+    103,
+    0,
+    0
+  );
 
   await UpdateWindow.call(system, host);
   await pumpAll(system);
 
   const send = (box: number, message: number, wParam = 0, lParam: any = 0) =>
     SendMessage.call(system, box, message, wParam, lParam);
-  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const answer = (what: string, value: number) =>
+    records.set(`answer:${what}`, String(signed(value)));
   const state = async (step: string) =>
     records.set(
       `state:${step}`,
@@ -2710,7 +3019,22 @@ async function captureNoScroll(system: any) {
 
     ReleaseDC.call(system, 0, dc);
   };
-  const WORDS = ['pear', 'apple', 'fig', 'banana', 'cherry', 'grape', 'kiwi', 'lemon', 'mango', 'olive', 'peach', 'plum', 'date', 'lime'];
+  const WORDS = [
+    'pear',
+    'apple',
+    'fig',
+    'banana',
+    'cherry',
+    'grape',
+    'kiwi',
+    'lemon',
+    'mango',
+    'olive',
+    'peach',
+    'plum',
+    'date',
+    'lime',
+  ];
 
   capture(list, 'made');
   await state('made');
@@ -2861,8 +3185,34 @@ async function captureSbTrack(system: any) {
   kind.lpszClassName = 'SbTrack';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'SbTrack', 'Track', 0x00cf0000 | 0x00200000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
-  const control = await CreateWindow.call(system, 'SCROLLBAR', '', 0x40000000 | 0x10000000 | 0x0001, 20, 8, 16, 100, host, 101, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'SbTrack',
+    'Track',
+    0x00cf0000 | 0x00200000 | 0x10000000,
+    20,
+    20,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
+  const control = await CreateWindow.call(
+    system,
+    'SCROLLBAR',
+    '',
+    0x40000000 | 0x10000000 | 0x0001,
+    20,
+    8,
+    16,
+    100,
+    host,
+    101,
+    0,
+    0
+  );
 
   SetScrollRange.call(system, control, 2, 0, 10, 0);
   SetScrollPos.call(system, control, 2, 3, 1);
@@ -2932,7 +3282,12 @@ async function captureSbTrack(system: any) {
   const window: any = new RECT();
 
   GetWindowRect.call(system, control, window);
-  Object.assign(area, { left: window.left, top: window.top, right: window.right, bottom: window.bottom });
+  Object.assign(area, {
+    left: window.left,
+    top: window.top,
+    right: window.right,
+    bottom: window.bottom,
+  });
 
   await pressControl('c-up', 8, 5, 5, 0);
   await pressControl('c-down', 8, 94, 94, 0);
@@ -3153,13 +3508,16 @@ async function captureRegistry(system: any) {
     return out;
   };
   const dword = (far: number) =>
-    (core.read16((far >>> 16) & 0xffff, far & 0xffff) | (core.read16((far >>> 16) & 0xffff, (far & 0xffff) + 2) << 16)) >>> 0;
+    (core.read16((far >>> 16) & 0xffff, far & 0xffff) |
+      (core.read16((far >>> 16) & 0xffff, (far & 0xffff) + 2) << 16)) >>>
+    0;
   const setDword = (far: number, value: number) => {
     core.write16((far >>> 16) & 0xffff, far & 0xffff, value & 0xffff);
     core.write16((far >>> 16) & 0xffff, (far & 0xffff) + 2, (value >>> 16) & 0xffff);
   };
   const signed = (value: number) => value | 0;
-  const answer = (what: string, value: number) => records.set(`answer:${what}`, String(signed(value)));
+  const answer = (what: string, value: number) =>
+    records.set(`answer:${what}`, String(signed(value)));
   const HKCR = 1;
 
   const query = async (key: number, name: string, path: string | null, size: number) => {
@@ -3170,7 +3528,10 @@ async function captureRegistry(system: any) {
     const result = await RegQueryValue.call(system, key, path, buffer, cbAt);
 
     core.write8(seg, off + 40, 0);
-    records.set(`query:${name},${path === null ? 'NULL' : path || '(empty)'},${size}`, `${signed(result)},cb=${signed(dword(cbAt))},text=${text(buffer)}`);
+    records.set(
+      `query:${name},${path === null ? 'NULL' : path || '(empty)'},${size}`,
+      `${signed(result)},cb=${signed(dword(cbAt))},text=${text(buffer)}`
+    );
   };
   const enumerate = async (key: number, label: string, index: number) => {
     core.write8(seg, off, 0);
@@ -3271,9 +3632,48 @@ async function captureLbErr(system: any) {
   kind.lpszClassName = 'LbErr';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'LbErr', 'Errors', 0x00cf0000, 20, 20, 300, 200, 0, 0, 0, 0);
-  const list = await CreateWindow.call(system, 'LISTBOX', '', 0x40000000 | 0x10000000 | 0x00800000 | 0x0001, 8, 8, 100, 80, host, 100, 0, 0);
-  const combo = await CreateWindow.call(system, 'COMBOBOX', '', 0x40000000 | 0x10000000 | 0x0003, 120, 8, 100, 80, host, 101, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'LbErr',
+    'Errors',
+    0x00cf0000,
+    20,
+    20,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
+  const list = await CreateWindow.call(
+    system,
+    'LISTBOX',
+    '',
+    0x40000000 | 0x10000000 | 0x00800000 | 0x0001,
+    8,
+    8,
+    100,
+    80,
+    host,
+    100,
+    0,
+    0
+  );
+  const combo = await CreateWindow.call(
+    system,
+    'COMBOBOX',
+    '',
+    0x40000000 | 0x10000000 | 0x0003,
+    120,
+    8,
+    100,
+    80,
+    host,
+    101,
+    0,
+    0
+  );
   const send = (hwnd: number, message: number, wParam: number, lParam: any) =>
     SendMessage.call(system, hwnd, message, wParam, lParam);
   const answer = (what: string, value: number) =>
@@ -3318,7 +3718,10 @@ export async function netcapsCapture(system: any) {
 
   for (const drive of ['A:', 'C:', 'Z:']) {
     /* Nothing is written, so the size and text are the probe's own. */
-    records.set(`answer:connection,${drive}`, `${WNetGetConnection.call(system, drive, 0, 0)},size=64,text=#`);
+    records.set(
+      `answer:connection,${drive}`,
+      `${WNetGetConnection.call(system, drive, 0, 0)},size=64,text=#`
+    );
   }
 
   for (const index of [...Array(14).keys(), 65535]) {
@@ -3371,7 +3774,16 @@ async function captureDrawText(system: any) {
   SetTextColor.call(system, memory, 0x000000);
   SetBkColor.call(system, memory, 0xffffff);
 
-  const draw = (name: string, text: string, count: number, left: number, top: number, right: number, bottom: number, format: number) => {
+  const draw = (
+    name: string,
+    text: string,
+    count: number,
+    left: number,
+    top: number,
+    right: number,
+    bottom: number,
+    format: number
+  ) => {
     const all: any = new RECT();
 
     all.left = 0;
@@ -3389,7 +3801,10 @@ async function captureDrawText(system: any) {
 
     const answer = DrawText.call(system, memory, text, count & 0xffff, rect, format);
 
-    records.set(`answer:${name}`, `${answer},rect=${rect.left}:${rect.top}:${rect.right}:${rect.bottom}`);
+    records.set(
+      `answer:${name}`,
+      `${answer},rect=${rect.left}:${rect.top}:${rect.right}:${rect.bottom}`
+    );
 
     for (let y = 0; y < HEIGHT; y++) {
       let row = '';
@@ -3404,7 +3819,21 @@ async function captureDrawText(system: any) {
     }
   };
 
-  const DT = { LEFT: 0, CENTER: 1, RIGHT: 2, VCENTER: 4, BOTTOM: 8, WORDBREAK: 0x10, SINGLELINE: 0x20, EXPANDTABS: 0x40, TABSTOP: 0x80, NOCLIP: 0x100, EXTERNALLEADING: 0x200, CALCRECT: 0x400, NOPREFIX: 0x800 };
+  const DT = {
+    LEFT: 0,
+    CENTER: 1,
+    RIGHT: 2,
+    VCENTER: 4,
+    BOTTOM: 8,
+    WORDBREAK: 0x10,
+    SINGLELINE: 0x20,
+    EXPANDTABS: 0x40,
+    TABSTOP: 0x80,
+    NOCLIP: 0x100,
+    EXTERNALLEADING: 0x200,
+    CALCRECT: 0x400,
+    NOPREFIX: 0x800,
+  };
 
   draw('left', 'Hello', -1, 4, 4, 164, 54, DT.LEFT);
   draw('center', 'Hello', -1, 4, 4, 164, 54, DT.CENTER);
@@ -3562,7 +3991,20 @@ async function captureActivate(system: any) {
   };
 
   begin('create');
-  windows.A = await CreateWindow.call(system, 'ProbeActivate', 'A', 0x00cf0000, 20, 20, 300, 200, 0, 0, 0, 0);
+  windows.A = await CreateWindow.call(
+    system,
+    'ProbeActivate',
+    'A',
+    0x00cf0000,
+    20,
+    20,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
   await state();
 
   begin('dialog');
@@ -3582,7 +4024,20 @@ async function captureActivate(system: any) {
   await state();
 
   begin('showB');
-  windows.B = await CreateWindow.call(system, 'ProbeActivate', 'B', 0x00cf0000, 60, 60, 300, 200, 0, 0, 0, 0);
+  windows.B = await CreateWindow.call(
+    system,
+    'ProbeActivate',
+    'B',
+    0x00cf0000,
+    60,
+    60,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
   await ShowWindow.call(system, windows.B, User.SW_SHOWNORMAL);
   await state();
 
@@ -3651,7 +4106,8 @@ async function captureAtoms(system: any) {
   const buffer = (fill: string) => {
     const at = str(fill.padEnd(300, '\0'));
 
-    for (let i = 0; i < fill.length; i++) core.write8(segment, (at & 0xffff) + i, fill.charCodeAt(i));
+    for (let i = 0; i < fill.length; i++)
+      core.write8(segment, (at & 0xffff) + i, fill.charCodeAt(i));
     core.write8(segment, (at & 0xffff) + fill.length, 0);
 
     return at;
@@ -3676,8 +4132,10 @@ async function captureAtoms(system: any) {
     return `new=A${seen.length}`;
   };
   const kind = (atom: number) => (!atom ? '0' : atom < 0xc000 ? `#${atom}` : 'string');
-  const record = (fn: string, step: string, atom: number) => records.set(`${fn}:${step}`, describe(atom & 0xffff));
-  const named = (step: string, answer: number, text: string) => records.set(`name:${step}`, `${answer},${text}`);
+  const record = (fn: string, step: string, atom: number) =>
+    records.set(`${fn}:${step}`, describe(atom & 0xffff));
+  const named = (step: string, answer: number, text: string) =>
+    records.set(`name:${step}`, `${answer},${text}`);
 
   /* The globals. */
   const one = GlobalAddAtom.call(system, str('WinboxAtomOne'));
@@ -3756,7 +4214,10 @@ async function captureAtoms(system: any) {
 
   records.set('format:register', format >= 0xc000 ? 'C000+' : 'low');
   records.set('format:same-as-message', format === message ? 'yes' : 'no');
-  records.set('format:again-upper', RegisterWindowMessage.call(system, 'WINBOXFORMAT') === format ? 'same' : 'different');
+  records.set(
+    'format:again-upper',
+    RegisterWindowMessage.call(system, 'WINBOXFORMAT') === format ? 'same' : 'different'
+  );
   record('format', 'global-find', GlobalFindAtom.call(system, str('WinboxFormat')));
   b = buffer('');
   records.set('format:name', `${GetClipboardFormatName.call(system, format, b, 64)},${read(b)}`);
@@ -3789,7 +4250,14 @@ async function captureSelinfo(system: any) {
    * as the probe runs them: the selector in AX, the answer in BX. */
   const code = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 32)) >>> 16;
   const run = (bytes: number[], selector: number) => {
-    const saved = { cs: core.cs, ip: core.ip, ax: core.ax, bx: core.bx, zero: core.flags.zero, msw: core.msw };
+    const saved = {
+      cs: core.cs,
+      ip: core.ip,
+      ax: core.ax,
+      bx: core.bx,
+      zero: core.flags.zero,
+      msw: core.msw,
+    };
 
     /* In protected mode, as a program runs: the replay's machine is not. */
     core.msw = saved.msw | 1;
@@ -3822,7 +4290,9 @@ async function captureSelinfo(system: any) {
 
     records.set(
       `${fn}:${name}`,
-      limits ? `lar=${rights},lsl=${limit},verr=${verr},verw=${verw}` : `lar=${rights},verr=${verr},verw=${verw}`
+      limits
+        ? `lar=${rights},lsl=${limit},verr=${verr},verw=${verw}`
+        : `lar=${rights},verr=${verr},verw=${verw}`
     );
   };
   const selectorOf = (handle: number) => GlobalLock.call(system, handle) >>> 16;
@@ -3856,94 +4326,6 @@ async function captureSelinfo(system: any) {
   return records;
 }
 
-/* ---- mmdevs ---- */
-
-const mmdevsCaptures = new Map<string, Promise<Map<string, string>>>();
-
-/** The `mmdevs` probe: an installation with no sound driver. */
-export function mmdevsCapture(context: any) {
-  const key = context.display.name;
-
-  if (!mmdevsCaptures.has(key)) {
-    mmdevsCaptures.set(key, captureMmdevs(context));
-  }
-
-  return mmdevsCaptures.get(key)!;
-}
-
-async function captureMmdevs(system: any) {
-  const records = new Map<string, string>();
-  const core = system.machine.cpu.core;
-  const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256));
-  const segment = far >>> 16;
-
-  /* The error texts are MMSYSTEM.DLL's: the installation's own file. */
-  const bytes = readFileSync(join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM', 'MMSYSTEM.DLL'));
-  const files = system.dos.files;
-  const MMSYSTEM = 0x7fff;
-
-  system.dos.files = {
-    ...files,
-    open: (path: string) => (/MMSYSTEM\.DLL$/i.test(path) ? MMSYSTEM : files.open(path)),
-    resolve: (handle: number) =>
-      handle === MMSYSTEM
-        ? { read: async (at: number, length: number) => bytes.buffer.slice(bytes.byteOffset + at, bytes.byteOffset + at + length) }
-        : files.resolve(handle),
-  };
-
-  try {
-    records.set('count:waveout', String(waveOutGetNumDevs()));
-    records.set('count:wavein', String(waveInGetNumDevs()));
-    records.set('count:midiout', String(midiOutGetNumDevs()));
-    records.set('count:midiin', String(midiInGetNumDevs()));
-    records.set('count:aux', String(auxGetNumDevs()));
-
-    const handle = (writes: boolean, answer: () => number, name: string) => {
-      core.write8(segment, far & 0xffff, 0x34);
-      core.write8(segment, (far & 0xffff) + 1, 0x12);
-      records.set(`open:${name}`, String(answer()));
-
-      if (writes) {
-        const value = core.read8(segment, far & 0xffff) | (core.read8(segment, (far & 0xffff) + 1) << 8);
-
-        records.set(`open:${name}-handle`, value === 0x1234 ? 'untouched' : value === 0 ? 'zero' : 'nonzero');
-      }
-    };
-
-    handle(false, () => waveOpen.call(system, 0), 'out-query-mapper');
-    handle(false, () => waveOpen.call(system, 0), 'out-query-0');
-    handle(true, () => waveOpen.call(system, far), 'out-open-0');
-    handle(true, () => waveOpen.call(system, far), 'out-open-mapper');
-    handle(false, () => waveOpen.call(system, 0), 'in-query-mapper');
-    handle(true, () => waveOpen.call(system, far), 'in-open-0');
-    handle(true, () => waveOpen.call(system, far), 'in-open-mapper');
-
-    records.set('caps:waveout-0', String(waveGetDevCaps()));
-    records.set('caps:wavein-0', String(waveGetDevCaps()));
-
-    for (const error of [0, 2, 6, 32]) {
-      for (const way of ['out', 'in']) {
-        const text = far + 16;
-        const answer = await waveGetErrorText.call(system, error, text, 128);
-        let out = '';
-
-        for (let at = 0; ; at++) {
-          const c = core.read8(segment, (text & 0xffff) + at);
-
-          if (!c) break;
-          out += String.fromCharCode(c);
-        }
-
-        records.set(`text:${way},${error}`, `${answer},${out}`);
-      }
-    }
-  } finally {
-    system.dos.files = files;
-  }
-
-  return records;
-}
-
 /* ---- handbits ---- */
 
 /** The `handbits` probe: the low two bits of each kind of handle, four of each. */
@@ -3971,7 +4353,9 @@ export async function handbitsCapture(system: any) {
   const windows = [];
 
   for (let index = 0; index < 4; index++) {
-    windows.push(await CreateWindow.call(system, 'ProbeBits', '', 0x00000000, 0, 0, 50, 50, 0, 0, 0, 0));
+    windows.push(
+      await CreateWindow.call(system, 'ProbeBits', '', 0x00000000, 0, 0, 50, 50, 0, 0, 0, 0)
+    );
   }
 
   records.set('bits:dc', low(...dcs));
@@ -4036,7 +4420,20 @@ async function captureMsgbox(system: any) {
 
   await probeClass(system, 'ProbeOwner', 0);
 
-  const owner = await CreateWindow.call(system, 'ProbeOwner', 'Owner', 0x00cf0000, 10, 10, 200, 120, 0, 0, 0, 0);
+  const owner = await CreateWindow.call(
+    system,
+    'ProbeOwner',
+    'Owner',
+    0x00cf0000,
+    10,
+    10,
+    200,
+    120,
+    0,
+    0,
+    0,
+    0
+  );
 
   await ShowWindow.call(system, owner, User.SW_SHOWNORMAL);
   await UpdateWindow.call(system, owner);
@@ -4054,7 +4451,8 @@ async function captureMsgbox(system: any) {
     ClientToScreen.call(system, box, corner);
 
     const focus = GetFocus.call(system);
-    const focusId = focus && GetParent.call(system, focus) === box ? GetDlgCtrlID.call(system, focus) : -1;
+    const focusId =
+      focus && GetParent.call(system, focus) === box ? GetDlgCtrlID.call(system, focus) : -1;
 
     records.set(
       `box:${phase}`,
@@ -4066,7 +4464,11 @@ async function captureMsgbox(system: any) {
 
     let index = 0;
 
-    for (let child = GetWindow.call(system, box, 5); child; child = GetWindow.call(system, child, 2)) {
+    for (
+      let child = GetWindow.call(system, box, 5);
+      child;
+      child = GetWindow.call(system, child, 2)
+    ) {
       const place: any = new RECT();
 
       GetWindowRect.call(system, child, place);
@@ -4124,7 +4526,11 @@ async function captureMsgbox(system: any) {
       await ShowWindow.call(system, box, User.SW_SHOWNORMAL);
       await UpdateWindow.call(system, box);
 
-      for (let child = GetWindow.call(system, box, 5); child; child = GetWindow.call(system, child, 2)) {
+      for (
+        let child = GetWindow.call(system, box, 5);
+        child;
+        child = GetWindow.call(system, child, 2)
+      ) {
         await UpdateWindow.call(system, child);
       }
     }
@@ -4139,10 +4545,19 @@ async function captureMsgbox(system: any) {
     PostMessage.call(system, focus || box, User.WM_KEYUP, 0x0d, 0xc01c0001);
   };
 
-  const box = async (name: string, parent: number, text: string, title: string | null, style: number) => {
+  const box = async (
+    name: string,
+    parent: number,
+    text: string,
+    title: string | null,
+    style: number
+  ) => {
     phase = name;
     SetTimer.call(system, 0, 0, 200, looker);
-    records.set(`answer:${name}`, String(await MessageBox.call(system, parent, text, title, style)));
+    records.set(
+      `answer:${name}`,
+      String(await MessageBox.call(system, parent, text, title, style))
+    );
   };
 
   await box('ok', owner, 'Hello', 'Title', 0x0000);
@@ -4362,7 +4777,9 @@ async function capturePatbrush(system: any) {
   let brush = CreatePatternBrush.call(system, bitmap);
   const logical = (far + 32) >>> 0;
   const size = GetObject.call(system, brush, 8, logical);
-  const word = (at: number) => core.read8(segment, (logical & 0xffff) + at) | (core.read8(segment, (logical & 0xffff) + at + 1) << 8);
+  const word = (at: number) =>
+    core.read8(segment, (logical & 0xffff) + at) |
+    (core.read8(segment, (logical & 0xffff) + at + 1) << 8);
   const colour = ((word(4) << 16) | word(2)) >>> 0;
 
   records.set(
@@ -4431,7 +4848,10 @@ async function capturePatbrush(system: any) {
   FillRect.call(system, dc, rect(2, 1, 14, 15), brush);
   const old = SelectObject.call(system, dc, GetStockObject.call(system, Gdi.BLACK_BRUSH));
 
-  records.set('brush:after-fillrect', old === brush ? 'pattern' : old === white ? 'white' : 'other');
+  records.set(
+    'brush:after-fillrect',
+    old === brush ? 'pattern' : old === white ? 'white' : 'other'
+  );
   end('fillrect');
 
   begin();
@@ -4491,7 +4911,10 @@ async function captureClipdc(system: any) {
     const rect: any = new RECT();
     const kind = GetClipBox.call(system, dc, rect);
 
-    records.set(`clip:${name}`, `${answer},box=${kind}:${rect.left},${rect.top},${rect.right},${rect.bottom}`);
+    records.set(
+      `clip:${name}`,
+      `${answer},box=${kind}:${rect.left},${rect.top},${rect.right},${rect.bottom}`
+    );
   };
   const save = (name: string, answer: number) => {
     const rect: any = new RECT();
@@ -4581,7 +5004,10 @@ async function captureClipdc(system: any) {
     ['restore-minus-one-after-zero', () => RestoreDC.call(system, dc, -1)],
     ['save-1', () => SaveDC.call(system, dc)],
     ['save-2', () => SaveDC.call(system, dc)],
-    ['restore-2-of-2', () => (SetTextColor.call(system, dc, 0x008000), RestoreDC.call(system, dc, 2))],
+    [
+      'restore-2-of-2',
+      () => (SetTextColor.call(system, dc, 0x008000), RestoreDC.call(system, dc, 2)),
+    ],
     ['restore-minus-one-last', () => RestoreDC.call(system, dc, -1)],
     ['save-a', () => SaveDC.call(system, dc)],
     ['save-b', () => SaveDC.call(system, dc)],
@@ -4591,7 +5017,10 @@ async function captureClipdc(system: any) {
     ['restore-minus-one-empty', () => RestoreDC.call(system, dc, -1)],
     ['save-x', () => SaveDC.call(system, dc)],
     ['save-y', () => (SetTextColor.call(system, dc, 0x008000), SaveDC.call(system, dc))],
-    ['restore-zero-of-2', () => (SetTextColor.call(system, dc, 0x000080), RestoreDC.call(system, dc, 0))],
+    [
+      'restore-zero-of-2',
+      () => (SetTextColor.call(system, dc, 0x000080), RestoreDC.call(system, dc, 0)),
+    ],
     ['restore-minus-one-after', () => RestoreDC.call(system, dc, -1)],
     ['restore-minus-one-after-2', () => RestoreDC.call(system, dc, -1)],
   ];
@@ -4691,7 +5120,8 @@ async function captureMapmode(system: any) {
     `map=${GetMapMode.call(system, dc)},wo=${words(GetWindowOrg.call(system, dc))},` +
     `we=${words(GetWindowExt.call(system, dc))},vo=${words(GetViewportOrg.call(system, dc))},` +
     `ve=${words(GetViewportExt.call(system, dc))}`;
-  const setting = (name: string, answer: number) => records.set(`set:${name}`, `${words(answer >>> 0)},${state()}`);
+  const setting = (name: string, answer: number) =>
+    records.set(`set:${name}`, `${words(answer >>> 0)},${state()}`);
   const points = (name: string) => {
     for (let x = -7; x <= 7; x++) {
       for (const [kind, call] of [
@@ -4899,11 +5329,50 @@ async function captureShowsb(system: any) {
   await RegisterClass.call(system, kind);
 
   const child = 0x40000000 | 0x10000000;
-  const frame = await CreateWindow.call(system, 'ShowHost', 'Show', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+  const frame = await CreateWindow.call(
+    system,
+    'ShowHost',
+    'Show',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
 
-  card = await CreateWindow.call(system, 'ShowCard', '', child | 0x00800000 | 0x00300000, 10, 10, 80, 60, frame, 100, 0, 0);
+  card = await CreateWindow.call(
+    system,
+    'ShowCard',
+    '',
+    child | 0x00800000 | 0x00300000,
+    10,
+    10,
+    80,
+    60,
+    frame,
+    100,
+    0,
+    0
+  );
 
-  const bar = await CreateWindow.call(system, 'SCROLLBAR', '', child | 0x0001, 120, 10, 16, 60, frame, 101, 0, 0);
+  const bar = await CreateWindow.call(
+    system,
+    'SCROLLBAR',
+    '',
+    child | 0x0001,
+    120,
+    10,
+    16,
+    60,
+    frame,
+    101,
+    0,
+    0
+  );
 
   await UpdateWindow.call(system, frame);
   await pumpAll(system);
@@ -5022,7 +5491,9 @@ async function captureMinis(system: any) {
   const string = (what: string, item: number, size: number, flags: number) => {
     const at = (far + 32) >>> 0;
 
-    'untouched\0'.split('').forEach((c, i) => core.write8(segment, (at & 0xffff) + i, c.charCodeAt(0) & 0xff));
+    'untouched\0'
+      .split('')
+      .forEach((c, i) => core.write8(segment, (at & 0xffff) + i, c.charCodeAt(0) & 0xff));
     const answer = GetMenuString.call(system, menu, item, at, size, flags);
 
     records.set(`menu:${what}`, `${signed(answer)},${text(at)}`);
@@ -5075,7 +5546,11 @@ async function captureMinis(system: any) {
     const answer = (upper ? AnsiUpperBuff : AnsiLowerBuff).call(system, far, count);
     let bytes = '';
 
-    for (let i = 0; i < 10; i++) bytes += core.read8(segment, (far & 0xffff) + i).toString(16).padStart(2, '0');
+    for (let i = 0; i < 10; i++)
+      bytes += core
+        .read8(segment, (far & 0xffff) + i)
+        .toString(16)
+        .padStart(2, '0');
     records.set(`ansi:${what}`, `${answer},${bytes}`);
   };
 
@@ -5102,10 +5577,70 @@ async function captureMinis(system: any) {
 
   const windows: number[] = [];
 
-  windows.push(await CreateWindow.call(system, 'Minis', 'A', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0));
-  windows.push(await CreateWindow.call(system, 'Minis', 'B', 0x00cf0000 | 0x10000000, 60, 60, 300, 200, 0, 0, 0, 0));
-  windows.push(await CreateWindow.call(system, 'Minis', '', 0x40000000 | 0x10000000 | 0x00800000, 10, 10, 50, 50, windows[0], 1, 0, 0));
-  windows.push(await CreateWindow.call(system, 'Minis', '', 0x40000000 | 0x10000000 | 0x00800000, 30, 30, 50, 50, windows[0], 2, 0, 0));
+  windows.push(
+    await CreateWindow.call(
+      system,
+      'Minis',
+      'A',
+      0x00cf0000 | 0x10000000,
+      20,
+      20,
+      300,
+      200,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+  windows.push(
+    await CreateWindow.call(
+      system,
+      'Minis',
+      'B',
+      0x00cf0000 | 0x10000000,
+      60,
+      60,
+      300,
+      200,
+      0,
+      0,
+      0,
+      0
+    )
+  );
+  windows.push(
+    await CreateWindow.call(
+      system,
+      'Minis',
+      '',
+      0x40000000 | 0x10000000 | 0x00800000,
+      10,
+      10,
+      50,
+      50,
+      windows[0],
+      1,
+      0,
+      0
+    )
+  );
+  windows.push(
+    await CreateWindow.call(
+      system,
+      'Minis',
+      '',
+      0x40000000 | 0x10000000 | 0x00800000,
+      30,
+      30,
+      50,
+      50,
+      windows[0],
+      2,
+      0,
+      0
+    )
+  );
   await pumpAll(system);
 
   records.set(
@@ -5167,7 +5702,9 @@ async function captureHooks(system: any) {
   void system.rasterDesktop;
 
   const note = (which: string, code: number, lParam: number) => {
-    const message = lParam ? core.read16((lParam >>> 16) & 0xffff, ((lParam & 0xffff) + 2) & 0xffff) : 0;
+    const message = lParam
+      ? core.read16((lParam >>> 16) & 0xffff, ((lParam & 0xffff) + 2) & 0xffff)
+      : 0;
 
     if (!logging || log.length >= 40 || message === User.WM_MOUSEMOVE) return;
     log.push(`${which}:${(code << 16) >> 16}:${message.toString(16)}`);
@@ -5220,7 +5757,20 @@ async function captureHooks(system: any) {
   kind.lpszClassName = 'Hooks';
   await RegisterClass.call(system, kind);
 
-  const host = await CreateWindow.call(system, 'Hooks', 'Hooks', 0x00cf0000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+  const host = await CreateWindow.call(
+    system,
+    'Hooks',
+    'Hooks',
+    0x00cf0000 | 0x10000000,
+    20,
+    20,
+    300,
+    200,
+    0,
+    0,
+    0,
+    0
+  );
 
   await UpdateWindow.call(system, host);
 
@@ -5290,7 +5840,10 @@ async function captureHooks(system: any) {
   };
 
   begin();
-  records.set('answer:dialog', String(await DialogBoxIndirect.call(system, 0, memory, host, dialogProc)));
+  records.set(
+    'answer:dialog',
+    String(await DialogBoxIndirect.call(system, 0, memory, host, dialogProc))
+  );
   end('dialog');
 
   /* The menu. */
@@ -5300,7 +5853,10 @@ async function captureHooks(system: any) {
   AppendMenu.call(system, menu, 0, 11, 'Two');
   SetTimer.call(system, host, 2, 50, 0);
   begin();
-  records.set('answer:menu', String(await TrackPopupMenu.call(system, menu, 0, 40, 40, 0, host, 0)));
+  records.set(
+    'answer:menu',
+    String(await TrackPopupMenu.call(system, menu, 0, 40, 40, 0, host, 0))
+  );
   end('menu');
 
   /* Directly. */
@@ -5349,7 +5905,8 @@ async function captureMdiscrl(system: any) {
   const far = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 128)) >>> 0;
   const segment = far >>> 16;
   const base = far & 0xffff;
-  const w16 = (at: number, value: number) => core.write16(segment, (base + at) & 0xffff, value & 0xffff);
+  const w16 = (at: number, value: number) =>
+    core.write16(segment, (base + at) & 0xffff, value & 0xffff);
   const text = (at: number, value: string) => {
     for (let i = 0; i < value.length; i++) core.write8(segment, base + at + i, value.charCodeAt(i));
     core.write8(segment, base + at + value.length, 0);
@@ -5377,7 +5934,20 @@ async function captureMdiscrl(system: any) {
   childClass.lpszClassName = 'ScrlChild';
   await RegisterClass.call(system, childClass);
 
-  const frame = await CreateWindow.call(system, 'ScrlFrame', 'Frame', 0x00cf0000 | 0x02000000 | 0x10000000, 20, 20, 400, 300, 0, 0, 0, 0);
+  const frame = await CreateWindow.call(
+    system,
+    'ScrlFrame',
+    'Frame',
+    0x00cf0000 | 0x02000000 | 0x10000000,
+    20,
+    20,
+    400,
+    300,
+    0,
+    0,
+    0,
+    0
+  );
   const inside: any = new RECT();
 
   GetClientRect.call(system, frame, inside);
@@ -5386,7 +5956,20 @@ async function captureMdiscrl(system: any) {
   w16(0, 0);
   w16(2, 0);
   w16(4, 100);
-  client = await CreateWindow.call(system, 'MDICLIENT', null, 0x40000000 | 0x02000000 | 0x10000000 | 0x00100000 | 0x00200000, 0, 0, inside.right, inside.bottom, frame, 1, 0, far + 2);
+  client = await CreateWindow.call(
+    system,
+    'MDICLIENT',
+    null,
+    0x40000000 | 0x02000000 | 0x10000000 | 0x00100000 | 0x00200000,
+    0,
+    0,
+    inside.right,
+    inside.bottom,
+    frame,
+    1,
+    0,
+    far + 2
+  );
   text(40, 'ScrlChild');
   text(60, 'Doc');
   w16(8, base + 40);
@@ -5405,7 +5988,7 @@ async function captureMdiscrl(system: any) {
   const scratch = (far + 96) >>> 0;
   const range = (bar: number) => {
     GetScrollRange.call(system, client, bar, scratch, (scratch + 2) >>> 0);
-    const lo = (core.read16(segment, (scratch & 0xffff)) << 16) >> 16;
+    const lo = (core.read16(segment, scratch & 0xffff) << 16) >> 16;
     const hi = (core.read16(segment, (scratch & 0xffff) + 2) << 16) >> 16;
 
     return `${lo}:${hi}@${(GetScrollPos.call(system, client, bar) << 16) >> 16}`;
@@ -5438,7 +6021,8 @@ async function captureMdiscrl(system: any) {
     await MoveWindow.call(system, child, x, y, 120, 90, 1);
     await step(name);
   };
-  const send = (message: number, wParam: number, lParam = 0) => SendMessage.call(system, client, message, wParam, lParam);
+  const send = (message: number, wParam: number, lParam = 0) =>
+    SendMessage.call(system, client, message, wParam, lParam);
 
   await step('made');
   await place('inside', 20, 20);
@@ -5508,7 +6092,8 @@ async function captureClip(system: any) {
     const handle = GlobalAlloc.call(system, 0x2002, text.length + 1);
     const far = GlobalLock.call(system, handle);
 
-    for (let i = 0; i <= text.length; i++) core.write8(far >>> 16, (far & 0xffff) + i, i < text.length ? text.charCodeAt(i) : 0);
+    for (let i = 0; i <= text.length; i++)
+      core.write8(far >>> 16, (far & 0xffff) + i, i < text.length ? text.charCodeAt(i) : 0);
     return handle;
   };
   const textOf = (handle: number) => {
@@ -5536,8 +6121,10 @@ async function captureClip(system: any) {
       case 0x0307:
       case 0x0308:
         log.push(`${name(hwnd)}:${message.toString(16)}`);
-        if (message === 0x0308 && hwnd === viewer && nextOfV) await SendMessage.call(system, nextOfV, message, wParam, lParam);
-        if (message === 0x0308 && hwnd === second && nextOfW) await SendMessage.call(system, nextOfW, message, wParam, lParam);
+        if (message === 0x0308 && hwnd === viewer && nextOfV)
+          await SendMessage.call(system, nextOfV, message, wParam, lParam);
+        if (message === 0x0308 && hwnd === second && nextOfW)
+          await SendMessage.call(system, nextOfW, message, wParam, lParam);
         return 0;
       case 0x030d:
         log.push(`${name(hwnd)}:30d`);
@@ -5554,14 +6141,28 @@ async function captureClip(system: any) {
   kind.lpszClassName = 'Clip';
   await RegisterClass.call(system, kind);
 
-  const owner = await CreateWindow.call(system, 'Clip', 'O', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
+  const owner = await CreateWindow.call(
+    system,
+    'Clip',
+    'O',
+    0x00cf0000,
+    0,
+    0,
+    100,
+    100,
+    0,
+    0,
+    0,
+    0
+  );
 
   viewer = await CreateWindow.call(system, 'Clip', 'V', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
   second = await CreateWindow.call(system, 'Clip', 'W', 0x00cf0000, 0, 0, 100, 100, 0, 0, 0, 0);
   names.set(owner, 'O').set(viewer, 'V').set(second, 'W');
 
   const privateFormat = RegisterWindowMessage.call(system, 'Probe Format');
-  const answer = (what: string, value: number) => records.set(`answer:${what}`, String((value << 16) >> 16));
+  const answer = (what: string, value: number) =>
+    records.set(`answer:${what}`, String((value << 16) >> 16));
   const window = (what: string, value: number) => records.set(`answer:${what}`, name(value));
   let given = 0;
   const handle = (what: string, value: number) =>
@@ -5573,7 +6174,11 @@ async function captureClip(system: any) {
   const text = (what: string, value: number) => records.set(`text:${what}`, textOf(value));
   const formats = (what: string) => {
     const out: string[] = [];
-    for (let format = EnumClipboardFormats.call(system, 0); format && out.length < 20; format = EnumClipboardFormats.call(system, format)) {
+    for (
+      let format = EnumClipboardFormats.call(system, 0);
+      format && out.length < 20;
+      format = EnumClipboardFormats.call(system, format)
+    ) {
       out.push(format === privateFormat ? 'private' : String(format));
     }
     records.set(`formats:${what}`, out.join(','));
@@ -5706,7 +6311,11 @@ async function captureJustify(system: any) {
   const record = (name: string) => {
     GetBitmapBits.call(system, canvas, 256, buffer);
     let hex = '';
-    for (let i = 0; i < 256; i++) hex += core.read8(buffer >>> 16, (buffer & 0xffff) + i).toString(16).padStart(2, '0');
+    for (let i = 0; i < 256; i++)
+      hex += core
+        .read8(buffer >>> 16, (buffer & 0xffff) + i)
+        .toString(16)
+        .padStart(2, '0');
     records.set(`glyph:${name}`, hex);
   };
   const extent = (name: string, text: string) => {
@@ -5726,7 +6335,11 @@ async function captureJustify(system: any) {
     ['MS Sans Serif', 13],
     ['Arial', 16],
   ] as const) {
-    const font = CreateFontIndirect.call(system, { lfHeight: height, lfWeight: 400, lfFaceName: face });
+    const font = CreateFontIndirect.call(system, {
+      lfHeight: height,
+      lfWeight: 400,
+      lfFaceName: face,
+    });
 
     SelectObject.call(system, memory, font);
     line(`${face},${height},even`, 'a b c', 8, 2, 0);
@@ -5779,18 +6392,24 @@ async function capturePalette(system: any) {
   let made = 0;
   let stock = 0;
 
-  const which = (handle: number) => (!handle ? '0' : handle === made ? 'pal' : handle === stock ? 'default' : 'other');
+  const which = (handle: number) =>
+    !handle ? '0' : handle === made ? 'pal' : handle === stock ? 'default' : 'other';
   const answer = (what: string, value: number) => records.set(`answer:${what}`, String(value));
   const readList = (count: number) => {
     const out: string[] = [];
     for (let i = 0; i < count; i++) {
       const at = (far & 0xffff) + i * 4;
-      out.push(`${hex2(core.read8(segment, at))}${hex2(core.read8(segment, at + 1))}${hex2(core.read8(segment, at + 2))}/${hex2(core.read8(segment, at + 3))}`);
+      out.push(
+        `${hex2(core.read8(segment, at))}${hex2(core.read8(segment, at + 1))}${hex2(core.read8(segment, at + 2))}/${hex2(core.read8(segment, at + 3))}`
+      );
     }
     return out.join(',');
   };
   const fill = (count: number) => {
-    for (let i = 0; i < count; i++) [0x11, 0x22, 0x33, 0x44].forEach((v, k) => core.write8(segment, (far & 0xffff) + i * 4 + k, v));
+    for (let i = 0; i < count; i++)
+      [0x11, 0x22, 0x33, 0x44].forEach((v, k) =>
+        core.write8(segment, (far & 0xffff) + i * 4 + k, v)
+      );
   };
   const entries = (what: string, palette: number, start: number, count: number) => {
     fill(Math.min(count, 24));
@@ -5817,7 +6436,8 @@ async function capturePalette(system: any) {
 
   /* A LOGPALETTE of four at 128. */
   const logical = (far + 128) >>> 0;
-  const put = (offset: number, values: number[]) => values.forEach((v, k) => core.write8(segment, (logical & 0xffff) + offset + k, v));
+  const put = (offset: number, values: number[]) =>
+    values.forEach((v, k) => core.write8(segment, (logical & 0xffff) + offset + k, v));
   put(0, [0x00, 0x03, 4, 0]);
   put(4, [255, 0, 0, 0]);
   put(8, [0, 255, 0, 0]);
@@ -5920,11 +6540,29 @@ async function captureMisc(system: any) {
   answer('double-click-zero', await GetDoubleClickTime.call(system));
 
   const keys: [string, number][] = [
-    ['a', 0x61], ['A', 0x41], ['z', 0x7a], ['1', 0x31], ['!', 0x21], ['space', 0x20],
-    ['return', 0x0d], ['tab', 0x09], ['backspace', 0x08], ['escape', 0x1b], ['period', 0x2e],
-    ['slash', 0x2f], ['question', 0x3f], ['semicolon', 0x3b], ['quote', 0x27], ['tilde', 0x7e],
-    ['bracket', 0x5b], ['equals', 0x3d], ['plus', 0x2b], ['minus', 0x2d], ['ctrl-a', 0x01],
-    ['e-acute', 0xe9], ['pound', 0xa3],
+    ['a', 0x61],
+    ['A', 0x41],
+    ['z', 0x7a],
+    ['1', 0x31],
+    ['!', 0x21],
+    ['space', 0x20],
+    ['return', 0x0d],
+    ['tab', 0x09],
+    ['backspace', 0x08],
+    ['escape', 0x1b],
+    ['period', 0x2e],
+    ['slash', 0x2f],
+    ['question', 0x3f],
+    ['semicolon', 0x3b],
+    ['quote', 0x27],
+    ['tilde', 0x7e],
+    ['bracket', 0x5b],
+    ['equals', 0x3d],
+    ['plus', 0x2b],
+    ['minus', 0x2d],
+    ['ctrl-a', 0x01],
+    ['e-acute', 0xe9],
+    ['pound', 0xa3],
   ];
 
   for (const [what, character] of keys) {
@@ -6088,10 +6726,17 @@ async function captureAccres(system: any) {
     const loaded = await LoadResource.call(system, self, found);
     const locked = LockResource.call(system, loaded) >>> 0;
     const compared = Math.min(got, 4, size);
-    const read = Array.from({ length: compared }, (_, i) => core.read8(buffer >>> 16, (buffer & 0xffff) + i));
-    const same = !!locked && read.every((byte, i) => core.read8(locked >>> 16, (locked & 0xffff) + i) === byte);
+    const read = Array.from({ length: compared }, (_, i) =>
+      core.read8(buffer >>> 16, (buffer & 0xffff) + i)
+    );
+    const same =
+      !!locked &&
+      read.every((byte, i) => core.read8(locked >>> 16, (locked & 0xffff) + i) === byte);
 
-    records.set(`access:${name}`, `ok,at=${at},read=${got},${read.map(hex2).join('')},${same ? 'same' : 'differ'}`);
+    records.set(
+      `access:${name}`,
+      `ok,at=${at},read=${got},${read.map(hex2).join('')},${same ? 'same' : 'differ'}`
+    );
   };
 
   await one('one', 1);
@@ -6103,7 +6748,10 @@ async function captureAccres(system: any) {
   const found = FindResource.call(system, self, 2, RT_RCDATA);
   const first = (((await AccessResource.call(system, self, found)) & 0xffff) << 16) >> 16;
   const second = (((await AccessResource.call(system, self, found)) & 0xffff) << 16) >> 16;
-  records.set('twice:handles', first < 0 || second < 0 ? 'failed' : first === second ? 'same' : 'two');
+  records.set(
+    'twice:handles',
+    first < 0 || second < 0 ? 'failed' : first === second ? 'same' : 'two'
+  );
   _lclose.call(system, first);
   _lclose.call(system, second);
 
@@ -6146,7 +6794,10 @@ async function captureSpooljob(system: any) {
   records.set(
     'buffer:14',
     Array.from({ length: 256 }, (_, i) =>
-      core.read8(buffer >>> 16, (buffer & 0xffff) + i).toString(16).padStart(2, '0')
+      core
+        .read8(buffer >>> 16, (buffer & 0xffff) + i)
+        .toString(16)
+        .padStart(2, '0')
     ).join('')
   );
 

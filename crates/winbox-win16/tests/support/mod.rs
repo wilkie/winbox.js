@@ -238,6 +238,11 @@ pub const AGREEING: &[&str] = &[
     "sysdbg",
     "iconid",
     "loadalt",
+    "mmmisc",
+    "mmmisc-vgasound",
+    "mmnodev",
+    "mmnodev-vgasound",
+    "mmcmd",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

@@ -2,6 +2,7 @@
 
 import { clockOf } from '../../emulator/clock.js';
 import { DWORD, UINT } from '../types.js';
+import { makeStacksForTimer } from './stacks.js';
 
 /**
  * MMSYSTEM's timer services. **Recorded** by `mmtime`:
@@ -26,6 +27,28 @@ import { DWORD, UINT } from '../types.js';
  */
 
 const TIMERR_NOCANDO = 97;
+const MMSYSERR_INVALPARAM = 11;
+
+/**
+ * Whether a timer event's procedure is one MMSYSTEM takes (seg1 `21e`): in a
+ * code segment, within its limit, and not starting with an exported
+ * function's prologue that takes its data segment from AX -- `push ds; pop
+ * ax` or `mov ax, ds` at its third byte -- which no thunk has given it.
+ */
+function timerProcOk(system: any, proc: number) {
+  const core = system.machine.cpu.core;
+  const selector = (proc >>> 16) & 0xffff;
+  const offset = proc & 0xffff;
+  const descriptor = selector & 0xfffc ? core.peekDescriptor(selector) : null;
+
+  if (!descriptor || !descriptor.type || !descriptor.executable || offset >= descriptor.limit) {
+    return false;
+  }
+
+  const word = core.read16(selector, (offset + 2) & 0xffff);
+
+  return word !== 0x581e && word !== 0xd88c;
+}
 const TIME_PERIODIC = 1;
 const TIME_MS = 1;
 
@@ -157,7 +180,7 @@ export function timeGetSystemTime(this: any, lpTime: number, _uSize: number) {
 }
 
 /** Calls a procedure after a delay, or every period. */
-export function timeSetEvent(
+export async function timeSetEvent(
   this: any,
   uDelay: number,
   _uResolution: number,
@@ -165,7 +188,15 @@ export function timeSetEvent(
   dwUser: number,
   uFlags: number
 ) {
-  if (!uDelay || !lpFunction) {
+  /* The procedure as MMSYSTEM checks it (seg1 `21e`), then its interrupt
+   * stacks made if they are not (seg1 `2bd`, `stacks.ts`). */
+  if (!timerProcOk(this, lpFunction >>> 0)) {
+    return MMSYSERR_INVALPARAM;
+  }
+
+  await makeStacksForTimer(this);
+
+  if (!uDelay) {
     return 0;
   }
 
