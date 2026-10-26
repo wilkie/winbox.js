@@ -1,0 +1,319 @@
+{
+  "probe": "visfam",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "start",
+      "args": "GetDC",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "start",
+      "args": "drawn",
+      "result": "100-200:100-300;"
+    },
+    {
+      "function": "start",
+      "args": "InquireVisRgn again, same handle",
+      "result": "yes"
+    },
+    {
+      "function": "save",
+      "args": "SaveVisRgn 1",
+      "result": "0"
+    },
+    {
+      "function": "save",
+      "args": "SaveVisRgn 2",
+      "result": "handle"
+    },
+    {
+      "function": "save",
+      "args": "after two",
+      "result": "org 100,100 clip 2 0,0,20,20 vis 2 100,100,120,120 100-120:100-120;"
+    },
+    {
+      "function": "save",
+      "args": "InquireVisRgn after, same handle",
+      "result": "yes"
+    },
+    {
+      "function": "save",
+      "args": "RestoreVisRgn 1",
+      "result": "2"
+    },
+    {
+      "function": "save",
+      "args": "after one restored",
+      "result": "org 100,100 clip 2 0,0,50,50 vis 2 100,100,150,150 100-150:100-150;"
+    },
+    {
+      "function": "save",
+      "args": "RestoreVisRgn 2",
+      "result": "2"
+    },
+    {
+      "function": "save",
+      "args": "after two restored",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "save",
+      "args": "InquireVisRgn restored, same handle",
+      "result": "no"
+    },
+    {
+      "function": "save",
+      "args": "RestoreVisRgn, none saved",
+      "result": "-1"
+    },
+    {
+      "function": "save",
+      "args": "after none",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "intersect",
+      "args": "IntersectVisRect 150,120,250,170",
+      "result": "2"
+    },
+    {
+      "function": "intersect",
+      "args": "after",
+      "result": "org 100,100 clip 2 50,20,150,70 vis 2 150,120,250,170 120-170:150-250;"
+    },
+    {
+      "function": "intersect",
+      "args": "drawn",
+      "result": "120-170:150-250;"
+    },
+    {
+      "function": "intersect",
+      "args": "IntersectVisRect wrong way round",
+      "result": "1"
+    },
+    {
+      "function": "intersect",
+      "args": "after wrong way round",
+      "result": "org 100,100 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "exclude",
+      "args": "ExcludeVisRect 150,120,250,170",
+      "result": "3"
+    },
+    {
+      "function": "exclude",
+      "args": "after",
+      "result": "org 100,100 clip 3 0,0,200,100 vis 3 100,100,300,200 100-120:100-300;120-170:100-150,250-300;170-200:100-300;"
+    },
+    {
+      "function": "exclude",
+      "args": "drawn",
+      "result": "100-120:100-300;120-170:100-150,250-300;170-200:100-300;"
+    },
+    {
+      "function": "offset",
+      "args": "OffsetVisRgn -30,-20",
+      "result": "2"
+    },
+    {
+      "function": "offset",
+      "args": "after",
+      "result": "org 100,100 clip 2 -30,-20,170,80 vis 2 70,80,270,180 80-180:70-270;"
+    },
+    {
+      "function": "offset",
+      "args": "drawn",
+      "result": "80-180:70-270;"
+    },
+    {
+      "function": "select",
+      "args": "SelectVisRgn 60,70,160,130",
+      "result": "2"
+    },
+    {
+      "function": "select",
+      "args": "after",
+      "result": "org 100,100 clip 2 -40,-30,60,30 vis 2 60,70,160,130 70-130:60-160;"
+    },
+    {
+      "function": "select",
+      "args": "region still its own",
+      "result": "yes"
+    },
+    {
+      "function": "select",
+      "args": "region given, after",
+      "result": "2 60,70,160,130 70-130:60-160;"
+    },
+    {
+      "function": "select",
+      "args": "drawn",
+      "result": "70-130:60-160;"
+    },
+    {
+      "function": "select",
+      "args": "after the region given is changed",
+      "result": "org 100,100 clip 2 -40,-30,60,30 vis 2 60,70,160,130 70-130:60-160;"
+    },
+    {
+      "function": "again",
+      "args": "got again",
+      "result": "org 100,100 clip 2 -40,-30,60,30 vis 2 60,70,160,130 70-130:60-160;"
+    },
+    {
+      "function": "again",
+      "args": "drawn",
+      "result": "70-130:60-160;"
+    },
+    {
+      "function": "hook",
+      "args": "selected",
+      "result": "org 100,100 clip 2 10,10,30,30 vis 2 110,110,130,130 110-130:110-130;"
+    },
+    {
+      "function": "hook",
+      "args": "SetHookFlags INVALIDATE",
+      "result": "2"
+    },
+    {
+      "function": "hook",
+      "args": "after",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "hook",
+      "args": "SetHookFlags INVALIDATE, one saved",
+      "result": "2"
+    },
+    {
+      "function": "hook",
+      "args": "after, one saved",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "hook",
+      "args": "RestoreVisRgn",
+      "result": "2"
+    },
+    {
+      "function": "hook",
+      "args": "restored",
+      "result": "org 100,100 clip 2 10,10,30,30 vis 2 110,110,130,130 110-130:110-130;"
+    },
+    {
+      "function": "origin",
+      "args": "SetDCOrg 10,20",
+      "result": "100,100"
+    },
+    {
+      "function": "origin",
+      "args": "after",
+      "result": "org 10,20 clip 2 90,80,290,180 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "origin",
+      "args": "drawn",
+      "result": "100-180:100-270;"
+    },
+    {
+      "function": "origin",
+      "args": "SetDCOrg 150,120",
+      "result": "10,20"
+    },
+    {
+      "function": "origin",
+      "args": "after",
+      "result": "org 150,120 clip 2 -50,-20,150,80 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "origin",
+      "args": "drawn at 150,120",
+      "result": "100-200:100-300;"
+    },
+    {
+      "function": "origin",
+      "args": "got again",
+      "result": "org 150,120 clip 2 -50,-20,150,80 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "origin",
+      "args": "made again by the hook",
+      "result": "org 100,100 clip 2 0,0,200,100 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "cliprgn",
+      "args": "GetClipRgn",
+      "result": "2 100,100,120,120 100-120:100-120;"
+    },
+    {
+      "function": "cliprgn",
+      "args": "GetClipRgn after SetDCOrg 130,110",
+      "result": "2 130,110,150,130 110-130:130-150;"
+    },
+    {
+      "function": "cliprgn",
+      "args": "after SetDCOrg",
+      "result": "org 130,110 clip 2 0,0,20,20 vis 2 100,100,300,200 100-200:100-300;"
+    },
+    {
+      "function": "cliprgn",
+      "args": "drawn",
+      "result": "110-130:130-150;"
+    },
+    {
+      "function": "cliprgn",
+      "args": "GetClipRgn got again",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "GetDCState",
+      "result": "handle"
+    },
+    {
+      "function": "state",
+      "args": "GetTextColor after SetDCState",
+      "result": "255"
+    },
+    {
+      "function": "state",
+      "args": "after SetDCState",
+      "result": "org 100,100 clip 2 0,0,30,30 vis 2 100,100,130,130 100-130:100-130;"
+    },
+    {
+      "function": "frame",
+      "args": "FastWindowFrame window",
+      "result": "-1"
+    },
+    {
+      "function": "frame",
+      "args": "drawn",
+      "result": "110-113:110-210;113-157:110-114,206-210;157-160:110-210;"
+    },
+    {
+      "function": "frame",
+      "args": "FastWindowFrame, not a rectangle",
+      "result": "0"
+    },
+    {
+      "function": "frame",
+      "args": "drawn, not a rectangle",
+      "result": "-"
+    },
+    {
+      "function": "frame",
+      "args": "FastWindowFrame memory",
+      "result": "0"
+    }
+  ]
+}

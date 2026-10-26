@@ -1,0 +1,185 @@
+{
+  "probe": "viscost",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours",
+    "cycles": 80000
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79783,275,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "kind",
+      "args": "nothing over the window",
+      "result": "2"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/nothing over the window,1",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/nothing over the window,2",
+      "result": "271066,7500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/nothing over the window,3",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/nothing over the window,1",
+      "result": "26949,75400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/nothing over the window,2",
+      "result": "26701,76100,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/nothing over the window,3",
+      "result": "26736,76000,2032"
+    },
+    {
+      "function": "kind",
+      "args": "a pop-up over the window clear of the drawing",
+      "result": "3"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over the window clear of the drawing,1",
+      "result": "271066,7500,2033"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over the window clear of the drawing,2",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over the window clear of the drawing,3",
+      "result": "274594,7400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over the window clear of the drawing,1",
+      "result": "26913,75500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over the window clear of the drawing,2",
+      "result": "26891,75600,2033"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over the window clear of the drawing,3",
+      "result": "26878,75600,2032"
+    },
+    {
+      "function": "kind",
+      "args": "a pop-up over half the drawing",
+      "result": "3"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over half the drawing,1",
+      "result": "247804,8200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over half the drawing,2",
+      "result": "247804,8200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/a pop-up over half the drawing,3",
+      "result": "247804,8200,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over half the drawing,1",
+      "result": "20702,98200,2033"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over half the drawing,2",
+      "result": "20587,98700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/a pop-up over half the drawing,3",
+      "result": "20608,98600,2032"
+    },
+    {
+      "function": "kind",
+      "args": "eight pop-ups over the window clear of the drawing",
+      "result": "3"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/eight pop-ups over the window clear of the drawing,1",
+      "result": "270933,7500,2032"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/eight pop-ups over the window clear of the drawing,2",
+      "result": "274729,7400,2033"
+    },
+    {
+      "function": "cost",
+      "args": "BitBlt/eight pop-ups over the window clear of the drawing,3",
+      "result": "274594,7400,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/eight pop-ups over the window clear of the drawing,1",
+      "result": "26842,75700,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/eight pop-ups over the window clear of the drawing,2",
+      "result": "26878,75600,2032"
+    },
+    {
+      "function": "cost",
+      "args": "PatBlt/eight pop-ups over the window clear of the drawing,3",
+      "result": "26891,75600,2033"
+    },
+    {
+      "function": "rate",
+      "args": "alu,1",
+      "result": "79822,275,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,2",
+      "result": "80112,276,2032"
+    },
+    {
+      "function": "rate",
+      "args": "alu,3",
+      "result": "79822,275,2032"
+    }
+  ]
+}
