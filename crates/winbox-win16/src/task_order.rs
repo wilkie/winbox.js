@@ -30,6 +30,9 @@ pub struct TaskRecord {
     pub queue: u16,
     /// Its compatibility flags (TDB 4Eh), once read (`GetAppCompatFlags`).
     pub compatibility: Option<u32>,
+    /// The procedure KERNEL signals for it (TDB 2Ah), once given
+    /// (`SetTaskSignalProc`).
+    pub signal: Option<u32>,
 }
 
 /// The order and the records.

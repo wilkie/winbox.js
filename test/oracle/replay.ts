@@ -5892,6 +5892,7 @@ const RUN_WHOLE = new Set<string>([
   'thtask',
   'thheap',
   'ktask',
+  'ktask2',
 ]);
 
 /**

@@ -253,6 +253,9 @@ pub struct System {
     pub fatal_exit_hook: u32,
     /// The count `TimerCount` answered last.
     pub timer_count: u32,
+    /// The room given for code to be swapped through, in paragraphs
+    /// (`SetSwapAreaSize`).
+    pub swap_area: u16,
     pub interrupt_handlers: Vec<(u16, u32)>,
     /// The sets of moves begun and not yet made: each window, the window it
     /// goes after, its place and size, and the flags.
@@ -594,6 +597,7 @@ impl System {
             block_owners: HashMap::new(),
             fatal_exit_hook: 0,
             timer_count: 0,
+            swap_area: 0,
             interrupt_handlers: Vec::new(),
             hooks: Vec::new(),
             next_hook: 0,

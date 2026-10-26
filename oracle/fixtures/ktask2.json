@@ -1,0 +1,69 @@
+{
+  "probe": "ktask2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "code",
+      "args": "GetCodeHandle",
+      "result": "ax=handle,dx=selector"
+    },
+    {
+      "function": "code",
+      "args": "GetCodeHandle-thunk",
+      "result": "ax=handle,dx=selector"
+    },
+    {
+      "function": "code",
+      "args": "GetCodeInfo-proc",
+      "result": "1:offset=8b,size=a50,alloc=a50,handle=handle,shift=1"
+    },
+    {
+      "function": "code",
+      "args": "GetCodeInfo-2",
+      "result": "2400:offset=670,size=2d0,alloc=3160,shift=1"
+    },
+    {
+      "function": "heap",
+      "args": "GetHeapSpaces",
+      "result": "free=d22e,room=d26f,count=3ae,size=3f4"
+    },
+    {
+      "function": "small",
+      "args": "GetLastDiskChange",
+      "result": "0"
+    },
+    {
+      "function": "small",
+      "args": "MemoryFreed",
+      "result": "0"
+    },
+    {
+      "function": "small",
+      "args": "SetSwapAreaSize",
+      "result": "ffff0000"
+    },
+    {
+      "function": "small",
+      "args": "SetTaskSignalProc",
+      "result": "first=set,second=proc"
+    },
+    {
+      "function": "small",
+      "args": "GlobalLRU",
+      "result": "oldest=block,newest=block,bad=0"
+    },
+    {
+      "function": "dos",
+      "args": "drive",
+      "result": "nohook=1902,dos3=1902"
+    }
+  ]
+}

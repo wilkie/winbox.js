@@ -100,6 +100,16 @@ import { GetProfileInt } from './kernel/GetProfileInt.js';
 import { GetProfileString } from './kernel/GetProfileString.js';
 import { WriteProfileString } from './kernel/WriteProfileString.js';
 import { Dos3Call } from './kernel/Dos3Call.js';
+import {
+  GetCodeHandle,
+  GetCodeInfo,
+  GetHeapSpaces,
+  GetLastDiskChange,
+  GlobalLRU,
+  MemoryFreed,
+  SetSwapAreaSize,
+  SetTaskSignalProc,
+} from './kernel/code-calls.js';
 import { IsDBCSLeadByte } from './kernel/IsDBCSLeadByte.js';
 import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetTempDrive, GetTempFileName } from './kernel/GetTempFileName.js';
@@ -304,7 +314,7 @@ export class Kernel extends Module {
       [GetTaskQueue, 'GetTaskQueue', 2, [HANDLE], HANDLE],
       [GetCurrentTask, 'GetCurrentTask', 0, [], HANDLE],
       [GetCurrentPDB, 'GetCurrentPDB', 0, [], UINT],
-      [Kernel.stub, 'SetTaskSignalProc', 6],
+      [SetTaskSignalProc, 'SetTaskSignalProc', 6, [HANDLE, FARPTR], FARPTR],
       null, // was SetTaskSwitchProc; Windows 3.1 exports nothing at this ordinal
       // 40 //
       null, // was SetTaskInterchange; Windows 3.1 exports nothing at this ordinal
@@ -366,21 +376,21 @@ export class Kernel extends Module {
       [lstrlen, 'lstrlen', 4, [FARPTR], UINT],
       [InitTask, 'InitTask', 0, [], UINT],
       [GetTempDrive, 'GetTempDrive', 2, [BYTE], UINT],
-      [Kernel.stub, 'GetCodeHandle', 4, [FARPTR], HGLOBAL],
+      [GetCodeHandle, 'GetCodeHandle', 4, [FARPTR], DWORD],
       [Kernel.stub, 'DefineHandleTable', 2],
       [LoadLibrary, 'LoadLibrary', 4, [LPCSTR], HINSTANCE],
       [FreeLibrary, 'FreeLibrary', 2, [HINSTANCE]],
       [GetTempFileName, 'GetTempFileName', 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
-      [Kernel.stub, 'GetLastDiskChange', 0],
+      [GetLastDiskChange, 'GetLastDiskChange', 0, [], BYTE],
       [Kernel.stub, 'GetLPErrMode', 0],
       // 100 //
       [nothing, 'ValidateCodeSegments', 0, []],
-      [Kernel.stub, 'NoHookDosCall', 0],
+      [Dos3Call, 'NoHookDosCall', 0],
       [Dos3Call, 'Dos3Call', 0],
       [Kernel.stub, 'NetBiosCall', 0],
-      [Kernel.stub, 'GetCodeInfo', 8, [FARPTR, FARPTR]],
+      [GetCodeInfo, 'GetCodeInfo', 8, [FARPTR, FARPTR], UINT],
       [GetExeVersion, 'GetExeVersion', 0, [], UINT],
-      [Kernel.stub, 'SetSwapAreaSize', 2, [UINT], LONG],
+      [SetSwapAreaSize, 'SetSwapAreaSize', 2, [UINT], DWORD],
       [SetErrorMode, 'SetErrorMode', 2, [UINT], UINT],
       [Kernel.stub, 'SwitchStackTo', 0],
       [Kernel.stub, 'SwitchStackBack', 0, []],
@@ -402,7 +412,7 @@ export class Kernel extends Module {
       [nothing, 'KbdRst', 0, []],
       [nothing, 'EnableKernel', 0, []],
       [Kernel.stub, 'DisableKernel', 0],
-      [Kernel.stub, 'MemoryFreed', 2],
+      [MemoryFreed, 'MemoryFreed', 2, [UINT], DWORD],
       [GetPrivateProfileInt, 'GetPrivateProfileInt', 14, [LPCSTR, LPCSTR, INT, LPCSTR], UINT],
       [
         GetPrivateProfileString,
@@ -427,7 +437,7 @@ export class Kernel extends Module {
       [GetSystemDirectory, 'GetSystemDirectory', 6, [FARPTR, UINT], UINT],
       [GetDriveType, 'GetDriveType', 2, [INT], UINT],
       [FatalAppExit, 'FatalAppExit', 6, [UINT, LPCSTR]],
-      [Kernel.stub, 'GetHeapSpaces', 2],
+      [GetHeapSpaces, 'GetHeapSpaces', 2, [HANDLE], DWORD],
       [Kernel.stub, 'DoSignal', 0],
       // 140 //
       [Kernel.stub, 'SetSigHandler', 16],
@@ -455,8 +465,8 @@ export class Kernel extends Module {
       [Kernel.stub, 'EMSCopy', 14],
       [LocalCountFree, 'LocalCountFree', 0, [], UINT],
       [LocalHeapSize, 'LocalHeapSize', 0, [], UINT],
-      [Kernel.stub, 'GlobalLRUOldest', 2],
-      [Kernel.stub, 'GlobalLRUNewest', 2],
+      [GlobalLRU, 'GlobalLRUOldest', 2, [HGLOBAL], HGLOBAL],
+      [GlobalLRU, 'GlobalLRUNewest', 2, [HGLOBAL], HGLOBAL],
       [Kernel.stub, 'A20Proc', 2],
       [WinExec, 'WinExec', 6, [LPCSTR, UINT], UINT],
       [GetExpWinVer, 'GetExpWinVer', 2, [HANDLE], DWORD],

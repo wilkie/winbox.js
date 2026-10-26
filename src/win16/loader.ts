@@ -298,6 +298,7 @@ export class Loader {
       segment.offset = segmentOffset;
       segment.length = segmentLength;
       segment.minAllocation = segmentMinAllocation;
+      segment.flags = segmentFlags;
 
       if (segmentFlags & 0x2) {
         // Bit 1 Set: Loader has allocated memory for the segment.

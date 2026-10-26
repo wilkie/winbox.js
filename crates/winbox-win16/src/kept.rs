@@ -231,8 +231,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetTaskSignalProc",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             None,
             None,
@@ -541,8 +541,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetCodeHandle",
                 pops: 4,
-                returns: 2,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "DefineHandleTable",
@@ -571,8 +571,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetLastDiskChange",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 1,
+                stub: false,
             }),
             Some(Export {
                 name: "GetLPErrMode",
@@ -590,7 +590,7 @@ pub static KEPT: &[Kept] = &[
                 name: "NoHookDosCall",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "Dos3Call",
@@ -607,8 +607,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetCodeInfo",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetExeVersion",
@@ -620,7 +620,7 @@ pub static KEPT: &[Kept] = &[
                 name: "SetSwapAreaSize",
                 pops: 2,
                 returns: 4,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SetErrorMode",
@@ -739,8 +739,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "MemoryFreed",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetPrivateProfileInt",
@@ -811,8 +811,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetHeapSpaces",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "DoSignal",
@@ -961,14 +961,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GlobalLRUOldest",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalLRUNewest",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "A20Proc",

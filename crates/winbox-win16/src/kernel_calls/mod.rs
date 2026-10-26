@@ -6,6 +6,7 @@
 #![allow(clippy::unnecessary_wraps)]
 
 mod catch_throw;
+mod code;
 pub mod file_cdr;
 mod retail;
 pub(crate) mod tasks;
@@ -30,6 +31,14 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetTempDrive" => Implementation::Sync(temp_files::get_temp_drive),
         "GetTempFileName" => Implementation::Sync(temp_files::get_temp_file_name),
         "IsTask" => Implementation::Sync(tasks::is_task),
+        "GetCodeHandle" => Implementation::Sync(code::get_code_handle),
+        "GetCodeInfo" => Implementation::Sync(code::get_code_info),
+        "GetHeapSpaces" => Implementation::Sync(code::get_heap_spaces),
+        "GetLastDiskChange" => Implementation::Sync(code::get_last_disk_change),
+        "MemoryFreed" => Implementation::Sync(code::memory_freed),
+        "SetSwapAreaSize" => Implementation::Sync(code::set_swap_area_size),
+        "SetTaskSignalProc" => Implementation::Sync(code::set_task_signal_proc),
+        "GlobalLRUOldest" | "GlobalLRUNewest" => Implementation::Sync(code::global_lru),
         "GetTaskQueue" => Implementation::Sync(tasks::get_task_queue),
         "SetTaskQueue" => Implementation::Sync(tasks::set_task_queue),
         "PostEvent" => Implementation::Sync(tasks::post_event),

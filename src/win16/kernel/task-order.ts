@@ -28,6 +28,9 @@ export interface TaskRecord {
   queue: number;
   /** Its compatibility flags (TDB 4Eh), once read (`GetAppCompatFlags`). */
   compatibility: number | null;
+  /** The procedure KERNEL signals for it (TDB 2Ah), once given
+   * (`SetTaskSignalProc`). */
+  signal?: number;
 }
 
 function records(system: any): Map<number, TaskRecord> {

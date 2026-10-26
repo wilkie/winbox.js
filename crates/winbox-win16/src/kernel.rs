@@ -64,7 +64,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LSTRCPYN" => Implementation::Sync(lstrcpyn),
         "lstrcat" => Implementation::Sync(lstrcat),
         "lstrlen" => Implementation::Sync(lstrlen),
-        "Dos3Call" => Implementation::Async(crate::kernel_calls::dos3_call),
+        "Dos3Call" | "NoHookDosCall" => Implementation::Async(crate::kernel_calls::dos3_call),
         "GetWinFlags" => Implementation::Sync(get_win_flags),
         "GetWindowsDirectory" => Implementation::Sync(get_windows_directory),
         "GetSystemDirectory" => Implementation::Sync(get_system_directory),
