@@ -252,6 +252,17 @@ pub const AGREEING: &[&str] = &[
     "mmnodev",
     "mmnodev-vgasound",
     "mmcmd",
+    "kmore",
+    "kevent",
+    "thswch",
+    "mmtaskc",
+    "reshand",
+    "kbreak",
+    "kbenable",
+    "wplace",
+    "iextract",
+    "aboutdp",
+    "gfreeal",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

@@ -40,11 +40,14 @@ A multimedia driver runs at interrupt time and needs a stack it can trust. An MC
 - [[measured]] [[fn:MMSYSTEM.mmsystemGetVersion]] is 101h. MMSYSTEM's [[fn:MMSYSTEM.WEP]] answers 1. [[fn:MMSYSTEM.OutputDebugStr]] does nothing in the retail MMSYSTEM.
 - [[read out]] `DrvOpen`, `DrvClose`, `DrvSendMessage`, `DrvGetModuleHandle` and `DrvDefDriverProc` are USER's driver calls, jumped to ([[topic:installable-drivers]]).
 
+## Tasks of their own
+
+[[fn:MMSYSTEM.mmTaskCreate]] starts `MMTASK.TSK` with `LoadModule`, a procedure and a double word in its command tail; the task waits for its first event and calls the procedure with the double word on itself (MMSYSTEM seg4 `05fa`; `MMTASK.TSK` seg1). The new task is `LoadModule`'s DX. [[measured]] [[probe:mmtaskc]]. Where the drive has no `MMTASK.TSK`, WinBox starts its own `MMTASK`, made in memory, its start-up calling a procedure of WinBox's kept at MMSYSTEM's ordinal 1204.
+
 ## Not yet done
 
-- [[fn:MMSYSTEM.mmTaskCreate]], which starts `MMTASK.TSK` with a procedure to run.
 - The joystick's calibration MMSYSTEM sets as it loads, from `[joystick.drv]`'s `JoyCal` keys: no installation here has a joystick driver for it to go to.
 
 ## In winbox.js
 
-The stacks are `src/win16/mmsystem/stacks.ts` and `crates/winbox-win16/src/mmsystem/stacks.rs`; the tasks `tasks.ts` and `tasks.rs`; the joystick `joystick.ts` and `joystick.rs`. The joystick capture's timer procedure has no export in Windows; both engines keep it at an ordinal where MMSYSTEM exports nothing (1203), as they keep MCI's break-key yield procedure (1202) and the I/O procedures of `mmio`.
+The stacks are `src/win16/mmsystem/stacks.ts` and `crates/winbox-win16/src/mmsystem/stacks.rs`; the tasks `tasks.ts` and `tasks.rs`; the joystick `joystick.ts` and `joystick.rs`. The joystick capture's timer procedure has no export in Windows; both engines keep it at an ordinal where MMSYSTEM exports nothing (1203), as they keep MCI's break-key yield procedure (1202), `MMTASK`'s own (1204, `mmtask.ts`, `mmtask.rs`) and the I/O procedures of `mmio`.

@@ -1,0 +1,84 @@
+{
+  "probe": "reshand",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "set",
+      "args": "rcdata",
+      "result": "sel=kernel,off=88c8"
+    },
+    {
+      "function": "set",
+      "args": "rcdata-again",
+      "result": "chained"
+    },
+    {
+      "function": "set",
+      "args": "bitmap",
+      "result": "0"
+    },
+    {
+      "function": "set",
+      "args": "300",
+      "result": "kernel"
+    },
+    {
+      "function": "set",
+      "args": "mytype",
+      "result": "kernel"
+    },
+    {
+      "function": "load",
+      "args": "first",
+      "result": "calls=1,block=some,instance=module,resource=found,answer=made,text=resource one"
+    },
+    {
+      "function": "load",
+      "args": "again",
+      "result": "calls=0,same=yes"
+    },
+    {
+      "function": "load",
+      "args": "freed",
+      "result": "calls=0,block=0,same=yes,text=resource one"
+    },
+    {
+      "function": "own",
+      "args": "300",
+      "result": "calls=0,1,answer=given,given=some,flags=4100,text=made here,made-size=20"
+    },
+    {
+      "function": "own",
+      "args": "mytype",
+      "result": "calls=0,1,answer=given,given=some,flags=4100,text=made here,made-size=20"
+    },
+    {
+      "function": "alloc",
+      "args": "0",
+      "result": "size=40,flags=100,odd=0,res=2c"
+    },
+    {
+      "function": "alloc",
+      "args": "100",
+      "result": "size=80,flags=100,odd=0"
+    },
+    {
+      "function": "direct",
+      "args": "0",
+      "result": "size=40,flags=0,odd=0"
+    },
+    {
+      "function": "direct",
+      "args": "1030",
+      "result": "size=40,flags=100,odd=0"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+#include <windows.h>
+
+100 DIALOG 20, 20, 220, 158
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "About %s"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON "", 111, 3, 18, 16, 16
+    LTEXT "Microsoft Windows %s", 101, 45, 5, 127, 10
+    LTEXT "", 115, 45, 25, 145, 20
+    LTEXT "", 102, 45, 120, 150, 10
+    LTEXT "", 104, 45, 130, 70, 10
+    DEFPUSHBUTTON "OK", 1, 177, 5, 40, 14
+END

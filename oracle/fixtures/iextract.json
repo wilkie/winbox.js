@@ -1,0 +1,59 @@
+{
+  "probe": "iextract",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "extract",
+      "args": "progman-count",
+      "result": "46"
+    },
+    {
+      "function": "extract",
+      "args": "progman-0-3",
+      "result": "size=20,flags=0: icon icon icon"
+    },
+    {
+      "function": "extract",
+      "args": "progman-1-2",
+      "result": "size=20,flags=0: icon icon"
+    },
+    {
+      "function": "extract",
+      "args": "progman-minus1-2",
+      "result": "size=20,flags=0: 2e 0"
+    },
+    {
+      "function": "extract",
+      "args": "progman-past-2",
+      "result": "size=20,flags=0: icon 0"
+    },
+    {
+      "function": "extract",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "missing",
+      "result": "0"
+    },
+    {
+      "function": "extract",
+      "args": "text-0",
+      "result": "size=20,flags=0: 1 0"
+    },
+    {
+      "function": "extract",
+      "args": "text-minus1",
+      "result": "size=20,flags=0: 0 0"
+    }
+  ]
+}

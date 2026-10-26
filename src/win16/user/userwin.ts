@@ -8,7 +8,7 @@ import {
   WH_JOURNALRECORD,
 } from './system-queue.js';
 
-import { postMessage } from './queue.js';
+import { message_, postTo } from './queue.js';
 import { MenuData } from './menu-data.js';
 import { parseMenu } from './LoadMenu.js';
 import { OBM_CHECK } from './menus.js';
@@ -118,7 +118,11 @@ export function PostAppMessage(
     return 0;
   }
 
-  const posted = postMessage(this, 0, uMsg, wParam, lParam);
+  /* To the task's own queue (`USER.EXE` seg1 `a7e8`, `23a0`-`23c8`: its
+   * queue from `GetTaskQueue`), with no window: as it once was, to the
+   * queue of the task posting, a program waiting in `GetMessage` for it was
+   * never woken (`thswch`). */
+  const posted = postTo(this, task, message_(this, 0, uMsg, wParam, lParam));
 
   return posted ? 1 : 0;
 }

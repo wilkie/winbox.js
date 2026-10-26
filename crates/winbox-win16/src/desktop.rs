@@ -1691,6 +1691,12 @@ impl System {
         if shown.placement == Placement::Minimized {
             shown.icon_was = Some((shown.left, shown.top));
         }
+
+        // And where it was maximized, kept as it stops being so
+        // (`wplace`).
+        if shown.placement == Placement::Maximized {
+            shown.max_was = Some((shown.left, shown.top));
+        }
     }
 
     /// A window's icon title taken away, as it stops being an icon.
@@ -1783,6 +1789,8 @@ impl System {
         if placement == Placement::Minimized {
             return Ok(());
         }
+
+        self.keep_icon_place(index);
 
         if placement == Placement::Normal {
             self.shown_mut(index).restore_rect = Some(place);

@@ -58,20 +58,48 @@ export function iconEntries(group: Uint8Array): IconEntry[] {
 }
 
 /**
- * The icon of a group for a display: its size, and as many colours as the
- * display has or the most below that. Not measured: which a display takes
- * when a group has none of its size.
+ * The icon of a group for a display, as USER chooses one -- `GetIconID`'s
+ * choice, which `LoadIcon` and SHELL's `ExtractIcon` make too (**read out**
+ * of `USER.EXE` seg12 `040c`-`04f4`; **recorded** by `iconid`): the
+ * display's colours, 7D00h from 16 bits up; of `size` square, one of that
+ * many colours at once, else the one of most colours below; else, of any
+ * size, the one of most colours not more than the display's; else the
+ * first. A count of colours is the entry's own byte, nought for 256. As
+ * `cursor-make.ts`'s `iconIndex`, which reads the directory in memory.
  */
 export function pickIcon(entries: IconEntry[], size: number, displayColours: number) {
-  const colours = (entry: IconEntry) => entry.colours || 1 << (entry.bitCount || 4);
-  const sized = entries.filter((entry) => entry.width === size && entry.height === size);
-  const candidates = sized.length ? sized : entries;
-  const fitting = candidates.filter((entry) => colours(entry) <= displayColours);
+  const most = displayColours >= 0x10000 ? 0x7d00 : displayColours;
+  let fit = 0;
+  let fitAt = 0;
+  let any = 0;
+  let anyAt = 0;
 
-  return (fitting.length ? fitting : candidates).reduce(
-    (best, entry) => (colours(entry) > colours(best) ? entry : best),
-    (fitting.length ? fitting : candidates)[0]
-  );
+  for (let at = 0; at < entries.length; at++) {
+    const entry = entries[at];
+    const colours = entry.colours;
+
+    if (colours <= most && any < colours) {
+      any = colours;
+      anyAt = at;
+    }
+
+    if (entry.width !== size || entry.height !== size) {
+      continue;
+    }
+
+    if (colours === most) {
+      return entry;
+    }
+
+    /* Among those with more colours than the display's USER keeps the
+     * fewest, but starts from nought and so never takes one (`04b6`). */
+    if (colours < most && fit < colours) {
+      fit = colours;
+      fitAt = at;
+    }
+  }
+
+  return entries[fit ? fitAt : any ? anyAt : 0];
 }
 
 /** An icon resource, its colours matched to a display's palette. */

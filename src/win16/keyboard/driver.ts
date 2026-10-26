@@ -48,6 +48,7 @@ import { MapVirtualKey } from './scan.js';
 import { readProfile, toInteger } from '../kernel/profiles.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
+import { segmentSelector } from '../selectors.js';
 
 const TYPE = 0x0c;
 const SUBTYPE = 0x0f;
@@ -56,6 +57,17 @@ const BIOS_PROC = 0x108;
 const ALT_TYPED = 0x128;
 const PAD_KEY = 0x129;
 const ENABLED = 0x12e;
+const TABLE_READ = 0x12f;
+const EVENT_PROC = 0xfa;
+const ENHANCED_KEPT = 0x13a;
+
+/** The BIOS's data: its shift flags at 17h, its keyboard's at 96h. */
+const BIOS_DATA = 0x40;
+const SHIFT_FLAGS = 0x17;
+const KEYBOARD_FLAGS = 0x96;
+
+/** USER's `keybd_event`, which USER enables the driver with (`kbenable`). */
+const KEYBD_EVENT = 289;
 const SYSREQ = 0x130;
 const INQUIRE_AT = 0x131;
 const KEYS = 0x137;
@@ -81,7 +93,9 @@ async function started(system: any) {
   const segment = data(system);
   const memory = core(system);
 
-  if (!segment || memory.read8(segment, ENABLED)) {
+  /* Laid out once: the type read (12Fh) marks it, as `Disable` leaves
+   * the driver not enabled. */
+  if (!segment || memory.read8(segment, TABLE_READ)) {
     return segment;
   }
 
@@ -94,6 +108,18 @@ async function started(system: any) {
 
   memory.write16(segment, BIOS_PROC, idt ? memory.read16(idt, 9 * 4) : 0);
   memory.write16(segment, BIOS_PROC + 2, idt ? memory.read16(idt, 9 * 4 + 2) : 0);
+
+  /* The event procedure USER enabled it with: its own `keybd_event`
+   * (**recorded** by `kbenable`). */
+  const user = system.modules.fromName('USER');
+  const info = user ? system.modules.load(user).lookup(KEYBD_EVENT) : null;
+
+  if (info) {
+    memory.write16(segment, EVENT_PROC, info.offset);
+    memory.write16(segment, EVENT_PROC + 2, segmentSelector(info.segment));
+  }
+
+  memory.write8(segment, TABLE_READ, 1);
   await newTable(system);
 
   return segment;
@@ -556,4 +582,77 @@ function lookup(from: Uint8Array, to: Uint8Array, byte: number) {
   const at = from.indexOf(byte);
 
   return at < 0 ? -1 : to[at];
+}
+
+/**
+ * The driver enabled (`KEYBOARD.DRV` seg10 `09d0`-`0a65`): the event
+ * procedure kept (FAh), the key-state table given set from the BIOS's
+ * shift flags at 40:17h -- 80h or nought for Shift, Ctrl and Alt (10h,
+ * 11h, 12h), 1 or nought for Scroll, Num and Caps Lock (91h, 90h, 14h) --
+ * and, where it was not, enabled: the keyboard's interrupt taken, the type
+ * read once (`NewTable`), and, for an enhanced keyboard, the BIOS's
+ * keyboard flags at 40:96h kept and their bit 4 cleared. **Recorded** by
+ * `kbenable`. WinBox's keyboard comes to USER by no interrupt, and the
+ * procedure is not called.
+ */
+export async function Enable(this: any, lpEventProc: number, lpKeyState: number) {
+  const segment = await started(this);
+  const memory = core(this);
+
+  memory.write16(segment, EVENT_PROC, lpEventProc & 0xffff);
+  memory.write16(segment, EVENT_PROC + 2, (lpEventProc >>> 16) & 0xffff);
+
+  const flags = memory.read8(BIOS_DATA, SHIFT_FLAGS);
+  const keys: [number, number, number][] = [
+    [0x03, 0x10, 0x80],
+    [0x04, 0x11, 0x80],
+    [0x08, 0x12, 0x80],
+    [0x10, 0x91, 0x01],
+    [0x20, 0x90, 0x01],
+    [0x40, 0x14, 0x01],
+  ];
+
+  for (const [bit, key, on] of keys) {
+    memory.write8(lpKeyState >>> 16, ((lpKeyState & 0xffff) + key) & 0xffff, flags & bit ? on : 0);
+  }
+
+  if (memory.read8(segment, ENABLED)) {
+    return;
+  }
+
+  if (!memory.read8(segment, TABLE_READ)) {
+    memory.write8(segment, TABLE_READ, 1);
+    await newTable(this);
+  }
+
+  if (memory.read8(segment, TYPE) === 4) {
+    const kept = memory.read8(BIOS_DATA, KEYBOARD_FLAGS);
+
+    memory.write8(BIOS_DATA, KEYBOARD_FLAGS, kept & 0xef);
+    memory.write8(segment, ENHANCED_KEPT, kept);
+  }
+
+  memory.write8(segment, ENABLED, 0xff);
+}
+
+/**
+ * The driver disabled (`KEYBOARD.DRV` seg10 `0aac`-`0afb`), where it was
+ * enabled: the BIOS's keyboard flags put back for an enhanced keyboard, the
+ * keyboard's interrupt given back, bits 8 and 9 of the shift flags at
+ * 40:17h cleared, and not enabled. **Recorded** by `kbenable`.
+ */
+export async function Disable(this: any) {
+  const segment = await started(this);
+  const memory = core(this);
+
+  if (!memory.read8(segment, ENABLED)) {
+    return;
+  }
+
+  if (memory.read8(segment, TYPE) === 4) {
+    memory.write8(BIOS_DATA, KEYBOARD_FLAGS, memory.read8(segment, ENHANCED_KEPT));
+  }
+
+  memory.write16(BIOS_DATA, SHIFT_FLAGS, memory.read16(BIOS_DATA, SHIFT_FLAGS) & 0xfcff);
+  memory.write8(segment, ENABLED, 0);
 }

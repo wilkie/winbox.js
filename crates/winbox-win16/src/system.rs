@@ -1026,7 +1026,11 @@ impl System {
         }
 
         let module = self.module_of(&self.kept[kept]);
-        let ordinals = module.exports.len().max(1000);
+        let ordinals = module
+            .exports
+            .len()
+            .max(1000)
+            .max(crate::mmsystem::mmio::hidden_extent(module.name));
         let step = usize::from(STEP);
         let mut code = vec![0u8; (ordinals + 1) * step];
 

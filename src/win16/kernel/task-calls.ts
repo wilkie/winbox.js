@@ -55,9 +55,53 @@ export function PostEvent(this: any, hTask: number) {
 
   if (record) {
     record.events++;
+
+    /* A task waiting in `WaitEvent` for it woken. */
+    for (const waiter of record.eventWaiters?.splice(0) ?? []) {
+      const task = this.scheduler.taskAt?.(waiter);
+      const wake = task?.onWake;
+
+      if (wake) {
+        task.onWake = null;
+        wake();
+      }
+    }
   }
 
   return handle;
+}
+
+/**
+ * A task's event taken (`KRNL386.EXE` seg1 `7ca8`-`7cfc`): TDB 6 counted
+ * down, nought answered, where it has one; else the count left at nought
+ * and the processor given up until `PostEvent` gives it one, then taken,
+ * FFh answered (AL set as the reschedule returns, `7cee`). A task starts
+ * with one, which a program's start-up takes (`taskMade`). Under Windows
+ * USER waits for a message so, and posts its own task an event as one
+ * comes (`USER.EXE` seg1 `3d31`-`3da3`); here USER waits in its own way,
+ * and only `PostEvent` gives a task an event.
+ */
+export async function WaitEvent(this: any, hTask: number) {
+  const handle = taskOrCurrent(this, hTask);
+  let answer = 0;
+
+  for (;;) {
+    const record = taskRecord(this, handle);
+
+    if (!record) {
+      return 0;
+    }
+
+    if (record.events > 0) {
+      record.events--;
+      return answer;
+    }
+
+    record.events = 0;
+    (record.eventWaiters ??= []).push(this.scheduler.active ?? 0);
+    await this.scheduler.waitForWake();
+    answer = 0xff;
+  }
 }
 
 /**

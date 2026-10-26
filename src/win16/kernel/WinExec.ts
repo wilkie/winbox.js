@@ -6,6 +6,7 @@ import { directoryOf, environmentBlock } from './search.js';
 import { segmentSelector } from '../selectors.js';
 import { locate } from '../shell/programs.js';
 import { startProgman, wanted } from '../progman/main.js';
+import { startMmtask, wantedMmtask } from '../mmsystem/mmtask.js';
 
 /**
  * Starts a program. **Recorded** by `winexec`, a program of the probe's own
@@ -82,7 +83,8 @@ export async function startProgram(
   path: string,
   commandLine: string,
   show: number,
-  environment?: Uint8Array
+  environment?: Uint8Array,
+  out?: { task?: number }
 ) {
   const handle = await system.dos.files.open(path);
 
@@ -112,7 +114,7 @@ export async function startProgram(
 
   await executable.parse();
 
-  return startExecutable(system, executable, path, commandLine, show, environment);
+  return startExecutable(system, executable, path, commandLine, show, environment, undefined, out);
 }
 
 /**
@@ -127,7 +129,8 @@ export async function startExecutable(
   commandLine: string,
   show: number,
   environment?: Uint8Array,
-  loaded?: (task: any) => void
+  loaded?: (task: any) => void,
+  out?: { task?: number }
 ) {
   if (await missingLibrary(system, executable, directoryOf(path))) {
     return 2;
@@ -138,6 +141,10 @@ export async function startExecutable(
   const inherited = environment ?? environmentBlock(system);
   const previous = previousInstance(system, path);
   const task = await system.load(executable);
+
+  if (out) {
+    out.task = task;
+  }
 
   system.link(task);
   system.run(task, { commandLine, show, previous, environment: inherited });
@@ -170,6 +177,19 @@ export async function startExecutable(
  */
 export async function Yield(this: any) {
   await this.scheduler.yieldTurn?.();
+}
+
+/**
+ * The processor given up as KERNEL gives it up itself, with no look at
+ * USER's queue (`KRNL386.EXE` seg1 `7d3e`-`7d6f`): an event given the task
+ * and taken back around the switch, and FFFFh answered -- nought, with no
+ * switch, while KERNEL's word at 24Bh says it may not. `Yield` comes here
+ * for a task with no queue. `MMTASK.TSK` calls it.
+ */
+export async function OldYield(this: any) {
+  await this.scheduler.yieldTurn?.();
+
+  return 0xffff;
 }
 
 /**
@@ -225,15 +245,6 @@ export async function LoadModule(
     name += '.EXE';
   }
 
-  const found = await locate(this, name, '');
-  /* `PROGMAN.EXE` found nowhere: WinBox's own (`progman/`), started once
-   * the block is read. */
-  const progman = 'error' in found && found.error === 2 && wanted(name);
-
-  if ('error' in found && !progman) {
-    return found.error;
-  }
-
   const core = this.machine.cpu.core;
   const word = (far: number, at: number) => core.read16(far >>> 16, ((far & 0xffff) + at) & 0xffff);
   const far = (at: number) => ((word(block, at + 2) << 16) | word(block, at)) >>> 0;
@@ -264,11 +275,41 @@ export async function LoadModule(
     }
   }
 
-  if (progman || 'error' in found) {
-    return startProgman(this, commandLine, show, environment);
+  return startNamed(this, name, commandLine, show, environment);
+}
+
+/**
+ * A program named started, as `LoadModule` starts it once its block is
+ * read: found as KERNEL looks for it, or, for `PROGMAN.EXE` and
+ * `MMTASK.TSK` found nowhere, WinBox's own (`progman/`,
+ * `mmsystem/mmtask.ts`). The instance in AX, or an error below 32; the new
+ * task in DX: `KRNL386.EXE` seg2 `1d4f`, the task `1321` made (`1374`,
+ * `1b59`, `1c30`), nought where none was (**recorded** by `mmtaskc`).
+ */
+export async function startNamed(
+  system: any,
+  name: string,
+  commandLine: string,
+  show: number,
+  environment?: Uint8Array
+) {
+  const found = await locate(system, name, '');
+  const progman = 'error' in found && found.error === 2 && wanted(name);
+  const mmtask = 'error' in found && found.error === 2 && wantedMmtask(name);
+
+  if ('error' in found && !progman && !mmtask) {
+    return found.error;
   }
 
-  return startProgram(this, found.path, commandLine, show, environment);
+  const out: { task?: number } = {};
+  const instance = mmtask
+    ? await startMmtask(system, commandLine, show, environment, out)
+    : 'error' in found
+      ? await startProgman(system, commandLine, show, environment, out)
+      : await startProgram(system, found.path, commandLine, show, environment, out);
+  const task = (instance & 0xffff) >= 32 ? (out.task ?? 0) : 0;
+
+  return (((task & 0xffff) << 16) | (instance & 0xffff)) >>> 0;
 }
 
 /** An environment's strings from a segment, to the nought that ends them, then a count of nought and no path. */

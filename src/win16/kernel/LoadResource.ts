@@ -2,6 +2,7 @@
 
 import { NULL } from '../consts.js';
 import { handleFor, selectorFor } from '../selectors.js';
+import { loadThroughHandler } from './resource-handlers.js';
 
 /**
  * The **LoadResource** function loads a resource into memory.
@@ -40,6 +41,14 @@ export async function LoadResource(hinst, hResInfo) {
   if (loaded && loaded.uses > 0) {
     loaded.uses++;
     return loaded.handle;
+  }
+
+  /* Through a handler a program set for the resource's type
+   * (`resource-handlers.ts`). */
+  const handled = await loadThroughHandler(this, hinst, hResInfo, found);
+
+  if (handled !== undefined) {
+    return handled;
   }
 
   const bytes = new Uint8Array(await found.executable.readResource(found.entry));

@@ -5924,6 +5924,17 @@ const RUN_WHOLE = new Set<string>([
   'mmnodev',
   'mmdevs',
   'mmcmd',
+  'kmore',
+  'kevent',
+  'thswch',
+  'mmtaskc',
+  'reshand',
+  'kbreak',
+  'kbenable',
+  'wplace',
+  'iextract',
+  'aboutdp',
+  'gfreeal',
 ]);
 
 /**

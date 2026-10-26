@@ -53,6 +53,12 @@ pub struct Frame {
 }
 
 impl Context {
+    /// Where the task goes on from changed (`TaskSetCSIP`).
+    pub(crate) fn set_code(&mut self, segment: Segment, ip: u16) {
+        self.segments[winbox_cpu::CS] = segment;
+        self.ip = ip;
+    }
+
     /// Where the task was as it gave the processor up.
     pub fn frame(&self) -> Frame {
         Frame {

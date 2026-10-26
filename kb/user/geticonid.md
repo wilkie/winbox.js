@@ -32,4 +32,4 @@ source: src/win16/user/cursor-make.ts
 
 ## Implementation
 
-`src/win16/user/cursor-make.ts`; the Rust engine's `cursor_make.rs`. [[fn:USER.LoadIcon]]'s own choice of a group's member is not yet this one.
+`src/win16/user/cursor-make.ts`; the Rust engine's `cursor_make.rs`. The same choice is `pickIcon` (`src/raster/icon.ts`, `winbox-raster`'s `pick_icon`), which [[fn:USER.LoadIcon]], SHELL's [[fn:SHELL.ExtractIcon]] and WinBox's own icons make.

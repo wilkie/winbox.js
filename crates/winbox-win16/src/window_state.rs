@@ -2213,17 +2213,39 @@ pub fn get_window_placement(system: &mut System, args: &mut Args) -> Result<Answ
         Placement::Minimized => SW_SHOWMINIMIZED,
         Placement::Normal => SW_SHOWNORMAL,
     };
+    // USER's checkpoint (`USER.EXE` seg14 `06a5`-`0738`): the icon's point
+    // and the maximized one as they are or last were, -1,-1 for none; the
+    // flag to restore to maximized (2) while the window is so. **Recorded**
+    // by `wplace`.
+    let icon = if window.placement == Placement::Minimized {
+        Some((window.left, window.top))
+    } else {
+        window.icon_was
+    };
+    let max = if window.placement == Placement::Maximized {
+        Some((window.left, window.top))
+    } else {
+        window.max_was
+    };
+    let flags = if window.placement == Placement::Maximized {
+        2
+    } else {
+        0
+    };
+    let point = |place: Option<(i32, i32)>| place.map_or((-1, -1), |(px, py)| (px - x, py - y));
+    let (min_x, min_y) = point(icon);
+    let (max_x, max_y) = point(max);
     let mut bytes = Vec::with_capacity(22);
 
-    for word in [22, 0, show] {
+    for word in [22, flags, show] {
         bytes.extend_from_slice(&word.to_le_bytes());
     }
 
     for value in [
-        -1,
-        -1,
-        -1,
-        -1,
+        min_x,
+        min_y,
+        max_x,
+        max_y,
         left - x,
         top - y,
         left - x + width,

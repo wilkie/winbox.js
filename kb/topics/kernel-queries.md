@@ -2,7 +2,7 @@
 kind: topic
 name: KERNEL's small calls
 summary: KERNEL's calls about tasks, modules and selectors — its list of tasks and what each task's database keeps, a module found from any handle, selectors set straight in their descriptors — and the calls the retail Windows 3.1 makes do nothing, as the ktask probe recorded them.
-probes: [ktask, ktask2, thtask]
+probes: [ktask, ktask2, thtask, kmore, kevent, reshand, kbreak, mmtaskc, gfreeal]
 ---
 
 KERNEL keeps a database for each task and each module, and many of its small calls just read or write a word of one. Others write a descriptor directly, or do nothing at all in the retail build. Each is [[read out]] of `KRNL386.EXE` and recorded by [[probe:ktask]], which reaches each call by its ordinal through `GetProcAddress`. Both engines agree with all its records but one, KERNEL's own prefix.
@@ -45,10 +45,35 @@ winbox.js keeps these beside its own tasks (`src/win16/kernel/task-order.ts`, `c
 
 `EnableDos`, `DisableDos`, `EnableKernel`, `KbdRst`, `_DEBUGOUTPUT`, `K329` and `ValidateCodeSegments` are bare returns. `LogError` and `LogParamError` tell a debugger through `INT 41h` where one is there, and otherwise do nothing. `GetWinDebugInfo` and `SetWinDebugInfo` answer nought, `DiagQuery` answers nought, and `LimitEmsPages` and `GetCurPID` answer nought. `GetFreeMemInfo` answers FFFFFFFFh in standard mode. [[measured]] [[probe:ktask]] for those that answer anything. KERNEL's ordinals 77 to 80, `Reserved1` to `Reserved4`, hand on to USER's `AnsiNext`, `AnsiPrev`, `AnsiUpper` and `AnsiLower`. `Reserved5` compares two strings without regard to case.
 
+## Events
+
+A task's database counts its events at 6. [[fn:KERNEL.PostEvent]] counts one up; [[fn:KERNEL.WaitEvent]] takes one, or gives the processor up until one comes (seg1 `7ca8`-`7cfc`). `LoadModule` gives a task it makes one (seg2 `1383`), which a program's start-up takes. [[measured]] [[probe:kevent]].
+
+## The rest of the documented calls
+
+[[measured]] [[probe:kmore]], which agrees whole in both engines:
+
+- [[fn:KERNEL.GetLPErrMode]] answers a far pointer to the byte at 32Ah of KERNEL's data, one while KERNEL passes a program's DOS call on.
+- [[fn:KERNEL.LONGPTRADD]] moves a pointer on by moving its selector's base, and each of a block's selectors after it.
+- [[fn:KERNEL.NetBiosCall]] is `INT 5Ch`, which with no network changes nothing.
+- [[fn:KERNEL.DefineHandleTable]] keeps a table of handles in the task's data segment, its entries cleared.
+- [[fn:KERNEL.GlobalDosAlloc]] gives a fixed block in the first megabyte, its selector and real-mode segment; [[fn:KERNEL.GlobalDosFree]] frees one. WinBox gives them from segment 16D2h, where Windows gave the first, one after another.
+- [[fn:KERNEL.CallProcInstance]] jumps to a procedure as a `MakeProcInstance` thunk does, ES:BX the instance and the procedure.
+- [[fn:KERNEL.SwitchStackTo]] and [[fn:KERNEL.SwitchStackBack]] move the stack into a segment of the program's own, the caller's frame copied, and back.
+- [[fn:KERNEL.OpenPathName]] and [[fn:KERNEL.DeletePathName]] open or delete a file as named, or else in each of PATH's directories.
+- [[fn:KERNEL.GlobalFreeAll]] frees every block a task owns, not those it made with `GMEM_SHARE` ([[probe:gfreeal]]).
+- [[fn:KERNEL.DebugBreak]] is `INT 3`, which with no debugger goes on ([[probe:kbreak]]). [[fn:KERNEL.OldYield]] gives the processor up with no look at USER's queue.
+- [[fn:KERNEL.FatalExit]] is, in the retail build, [[fn:KERNEL.FatalAppExit]] with KERNEL's own text: USER's Application Error box, then the task ended. The hook [[fn:KERNEL.FatalExitHook]] keeps is never called.
+
+## Resource handlers
+
+Each type of a module's resources has a handler, which [[fn:KERNEL.LoadResource]] and [[fn:KERNEL.LockResource]] call to load one: KERNEL's own (seg1 `88c8`) until [[fn:KERNEL.SetResourceHandler]] sets another. A handler makes the resource's block with [[fn:KERNEL.AllocResource]] or [[fn:KERNEL.DirectResAlloc]]. A discardable resource is loaded only as it is locked. [[measured]] [[probe:reshand]]. WinBox calls a program's handler, and loads at once with its own.
+
 ## Not yet done
 
 - KERNEL's own prefix in [[fn:KERNEL.GetCurrentPDB]]'s DX.
 - A queue of nought before `InitApp`.
-- `WaitEvent` taking an event that `PostEvent` gave.
-- [[fn:KERNEL.FatalExit]] calling the procedure `FatalExitHook` set.
-- `GlobalDosAlloc` and `GlobalDosFree`, which need DOS memory in the first megabyte. `LongPtrAdd`, `SwitchStackTo` and `SwitchStackBack`, `CallProcInstance`, `DebugBreak` and `GetLPErrMode` are still stubs. So are the resource handlers (`AllocResource`, `SetResourceHandler`, `DirectResAlloc`), and the internals only Windows' own parts call.
+- The internals only Windows' own parts call.
+- A discardable resource loaded with KERNEL's own handler: Windows leaves it discarded until it is locked; WinBox loads it at once. USER's own resource loads read the resource with no handler.
+- `GlobalMasterHandle`: [[read out]] seg1 `1190`-`119e`, the handle and selector of KERNEL's own block that heads its global heap (the words at 218h and 21Ah of its data), its arenas inside. Measured on Windows: AX the block's handle, its limit 257BFh, its words 0, 0, the count of arenas (one less than TOOLHELP's `wcItems`), the first and last arenas' offsets (80h, E0h), and 4000h. WinBox keeps its blocks itself and has no such block; TOOLHELP answers the walk from them.
+- Windows' own blocks in the first megabyte, between those `GlobalDosAlloc` gives.

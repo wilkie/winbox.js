@@ -25,6 +25,14 @@ use crate::call::{Answer, Args, Implementation, Stop};
 use crate::system::System;
 
 pub fn implementation(name: &str) -> Option<Implementation> {
+    if name == "TerminateApp" {
+        return Some(Implementation::Async(misc::terminate_app));
+    }
+
+    if name == "TaskSwitch" {
+        return Some(Implementation::Async(tasks::task_switch));
+    }
+
     Some(Implementation::Sync(match name {
         "GlobalHandleToSel" => global_handle_to_sel,
         "SystemHeapInfo" => system_heap_info,
@@ -49,13 +57,13 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "TaskNext" => tasks::task_next,
         "TaskFindHandle" => tasks::task_find_handle,
         "TaskGetCSIP" => tasks::task_get_csip,
+        "TaskSetCSIP" => tasks::task_set_csip,
         "StackTraceFirst" => stack::stack_trace_first,
         "StackTraceCSIPFirst" => stack::stack_trace_csip_first,
         "StackTraceNext" => stack::stack_trace_next,
         "ClassFirst" => classes::class_first,
         "ClassNext" => classes::class_next,
         "MemManInfo" => misc::mem_man_info,
-        "TerminateApp" => misc::terminate_app,
         "MemoryRead" => memory::memory_read,
         "MemoryWrite" => memory::memory_write,
         "TimerCount" => misc::timer_count,

@@ -3,11 +3,12 @@
 /** @namespace Shell */
 
 import { DragFinish, DragQueryFile, DragQueryPoint } from './shell/drag.js';
-import { ShellAbout } from './shell/about.js';
+import { AboutDlgProc, ShellAbout } from './shell/about.js';
 import {
   DoEnvironmentSubst,
   ExtractAssociatedIcon,
   ExtractIcon,
+  InternalExtractIcon,
   FindEnvironmentString,
   FindExecutable,
   ShellExecute,
@@ -20,6 +21,7 @@ import {
   DWORD,
   FARPTR,
   HANDLE,
+  HGLOBAL,
   HICON,
   HINSTANCE,
   HWND,
@@ -88,7 +90,7 @@ export class Shell extends Module {
     ];
     exports[21] = [FindExecutable, 'FindExecutable', 12, [LPCSTR, LPCSTR, FARPTR], UINT];
     exports[22] = [ShellAbout, 'ShellAbout', 12, [HWND, FARPTR, LPCSTR, UINT], INT];
-    exports[33] = [Shell.stub, 'AboutDlgProc', 10];
+    exports[33] = [AboutDlgProc, 'AboutDlgProc', 10, [HWND, UINT, UINT, DWORD], BOOL];
     exports[34] = [ExtractIcon, 'ExtractIcon', 8, [UINT, LPCSTR, UINT], UINT];
     exports[36] = [
       ExtractAssociatedIcon,
@@ -99,7 +101,7 @@ export class Shell extends Module {
     ];
     exports[37] = [DoEnvironmentSubst, 'DoEnvironmentSubst', 6, [FARPTR, UINT], DWORD];
     exports[38] = [FindEnvironmentString, 'FindEnvironmentString', 4, [FARPTR], FARPTR];
-    exports[39] = [Shell.stub, 'InternalExtractIcon', 10];
+    exports[39] = [InternalExtractIcon, 'InternalExtractIcon', 10, [UINT, LPCSTR, UINT, UINT], HGLOBAL];
     exports[101] = [Shell.stub, 'FindExeDlgProc', 10];
     exports[102] = [RegisterShellHook, 'RegisterShellHook', 4, [HWND, UINT], BOOL];
     exports[103] = [ShellHookProc, 'ShellHookProc', 8, [INT, WPARAM, LPARAM], LRESULT];

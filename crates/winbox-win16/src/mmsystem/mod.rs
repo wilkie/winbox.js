@@ -45,6 +45,7 @@ pub mod mci_tables;
 pub mod mci_wave;
 pub mod midi;
 pub mod mmio;
+pub mod mmtask;
 pub mod seq_box;
 pub mod sequencer;
 pub mod sound;
@@ -124,6 +125,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "mmTaskSignal" => Implementation::Async(tasks::mm_task_signal),
         "mmTaskYield" => Implementation::Async(tasks::mm_task_yield),
         "mmTaskBlock" => Implementation::Async(tasks::mm_task_block),
+        "mmTaskCreate" => Implementation::Async(mmtask::mm_task_create),
+        "mmTaskMain" => Implementation::Async(mmtask::mm_task_main),
         "mciDriverYield" => Implementation::Async(mci::mci_driver_yield),
         "mciBreakYield" => Implementation::Async(mci::mci_break_yield),
         "mciDriverNotify" => Implementation::Async(mci::mci_driver_notify),

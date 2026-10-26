@@ -125,3 +125,59 @@ export function TaskGetCSIP(this: any, hTask: number) {
 
   return (((registers?.cs ?? 0) << 16) | (registers?.ip ?? 0)) >>> 0;
 }
+
+/**
+ * Where a task will go on from changed (`TOOLHELP.DLL` seg1 `0d68`-`0d94`):
+ * nought for the running task; else the CS and IP in the frame its switch
+ * left exchanged for those given, the old answered, IP in AX and CS in DX.
+ * The task goes on there, its registers otherwise as they were, when it is
+ * next run. **Recorded** by `thswch`: the answer is what `TaskGetCSIP`
+ * gave, `TaskGetCSIP` gives the new place after, nought for the probe's own
+ * task; the program, sent to a procedure of its own while it waits in
+ * `GetMessage`, goes there once a message is posted to it. Here the call it
+ * waits in comes back first, and the place is where it comes back to.
+ */
+export function TaskSetCSIP(this: any, hTask: number, wCS: number, wIP: number) {
+  const handle = hTask & 0xffff;
+  const task = liveTask(this, handle);
+
+  if (!task || handle === this.scheduler.active) {
+    return 0;
+  }
+
+  const registers = task.context?.registers ?? task.context;
+
+  if (!registers) {
+    return 0;
+  }
+
+  const before = (((registers.cs ?? 0) << 16) | (registers.ip ?? 0)) >>> 0;
+
+  registers.cs = wCS & 0xffff;
+  registers.ip = wIP & 0xffff;
+
+  return before;
+}
+
+/**
+ * A task sent somewhere else and run there at once (`TOOLHELP.DLL` seg1
+ * `0dc0`-`0e62`): nought for the running task or a handle that is no task
+ * (`TD` at FAh); else its place changed as `TaskSetCSIP` changes it -- to
+ * TOOLHELP's own `0e34`, which goes on to the place given -- an event given
+ * it, which that code takes back, and `DirectedYield` to it; one. **Recorded**
+ * by `thswch`: a program giving the processor up with `Yield` goes to the
+ * procedure given before `TaskSwitch` comes back, one. A task waiting for a
+ * message goes there here only once its wait is over.
+ */
+export async function TaskSwitch(this: any, hTask: number, dwNewCSIP: number) {
+  const handle = hTask & 0xffff;
+
+  if (!liveTask(this, handle) || handle === this.scheduler.active) {
+    return 0;
+  }
+
+  TaskSetCSIP.call(this, handle, (dwNewCSIP >>> 16) & 0xffff, dwNewCSIP & 0xffff);
+  await this.scheduler.yieldTurn?.(handle);
+
+  return 1;
+}

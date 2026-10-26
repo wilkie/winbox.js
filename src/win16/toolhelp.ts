@@ -18,7 +18,14 @@ import { MemoryRead, MemoryWrite } from './toolhelp/memory.js';
 import { MemManInfo, TerminateApp, TimerCount, WEP } from './toolhelp/misc.js';
 import { ModuleFindHandle, ModuleFindName, ModuleFirst, ModuleNext } from './toolhelp/modules.js';
 import { StackTraceCSIPFirst, StackTraceFirst, StackTraceNext } from './toolhelp/stack.js';
-import { TaskFindHandle, TaskFirst, TaskGetCSIP, TaskNext } from './toolhelp/tasks.js';
+import {
+  TaskFindHandle,
+  TaskFirst,
+  TaskGetCSIP,
+  TaskNext,
+  TaskSetCSIP,
+  TaskSwitch,
+} from './toolhelp/tasks.js';
 
 /**
  * The tool helper library, `TOOLHELP.DLL`, as a module programs import from.
@@ -85,9 +92,9 @@ export class ToolHelp extends Module {
     exports[78] = [MemoryRead, 'MemoryRead', 14, [UINT, DWORD, FARPTR, DWORD], DWORD];
     exports[79] = [MemoryWrite, 'MemoryWrite', 14, [UINT, DWORD, FARPTR, DWORD], DWORD];
     exports[80] = [TimerCount, 'TimerCount', 4, [FARPTR], BOOL];
-    exports[81] = [ToolHelp.stub, 'TaskSetCSIP', 6];
+    exports[81] = [TaskSetCSIP, 'TaskSetCSIP', 6, [HANDLE, UINT, UINT], DWORD];
     exports[82] = [TaskGetCSIP, 'TaskGetCSIP', 2, [HANDLE], DWORD];
-    exports[83] = [ToolHelp.stub, 'TaskSwitch', 6];
+    exports[83] = [TaskSwitch, 'TaskSwitch', 6, [HANDLE, DWORD], BOOL];
 
     return exports;
   }

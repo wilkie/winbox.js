@@ -32,5 +32,11 @@ export function GlobalHandle(uGlobalSel) {
     return 0;
   }
 
+  /* A block in the first megabyte: its handle is its selector
+   * (`GlobalDosAlloc`, `kmore`). */
+  if (this.allocator._objects?.[index]?.dos !== undefined) {
+    return ((selectorFor(uGlobalSel) << 16) | selectorFor(uGlobalSel)) >>> 0;
+  }
+
   return ((selectorFor(uGlobalSel) << 16) | handleFor(index)) >>> 0;
 }

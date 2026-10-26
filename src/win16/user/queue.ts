@@ -197,7 +197,7 @@ export function queueOf(system: any, hwnd: number) {
   return (owner && !owner.ended ? owner : null) || system.scheduler.task;
 }
 
-function message_(system: any, hwnd: number, message: number, wParam: number, lParam: number) {
+export function message_(system: any, hwnd: number, message: number, wParam: number, lParam: number) {
   const msg: any = new MSG();
 
   msg.hwnd = hwnd;

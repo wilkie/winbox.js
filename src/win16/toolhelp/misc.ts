@@ -4,6 +4,8 @@ import { clockOf } from '../../emulator/clock.js';
 import { tickCount } from '../user/GetTickCount.js';
 import { liveTask } from '../kernel/task-order.js';
 import { structure } from './structures.js';
+import { SEB_CLOSE, SEB_DEFBUTTON, sysErrorBox } from '../user/sys-error-box.js';
+import { CLOSING } from '../kernel/FatalAppExit.js';
 
 /** `TIMERINFO`'s size. */
 const TIMERINFO = 0x0c;
@@ -15,7 +17,7 @@ const COUNTS_PER_MS = 0x4a9;
 const PIT_HZ = 1193180;
 
 /** `TerminateApp`'s flag that has it return to its caller. */
-const RETURN = 0x8000;
+const NO_UAE_BOX = 0x0001;
 
 /**
  * The library's exit procedure (`TOOLHELP.DLL` seg1 `018a`-`01d3`): what it
@@ -87,21 +89,30 @@ export function MemManInfo(this: any, lpInfo: number) {
 
 /**
  * A task ended (`TOOLHELP.DLL` seg1 `26ea`-`27a0`): nought for the running
- * task. Another is switched to, to end itself; `NO_UAE_BOX` marks it to be
- * ended with no Application Error box (TDB 18h's bit 2), `FatalAppExit` is
- * called, and unless `wFlags` has bit 15 the task's signal procedure is
- * told and it ends through DOS, `INT 21h` 4CFFh, its code FFh. **Recorded**
- * by `thtask`: a program of the probe's own ended with `NO_UAE_BOX` is no
- * task after, and its window is gone. winbox.js ends the task as DOS's
- * function 4Ch ends one, with code FFh, its windows taken away with it, and
- * shows no box.
+ * task. Another is switched to, to end itself. `NO_UAE_BOX` (bit 0) marks
+ * it in its database (TDB 18h, bit 1) to be ended with no box; then
+ * `FatalAppExit(0, NULL)` is called (`275a`-`2760`), which shows USER's box
+ * -- "Application Error", "Closing current application.", Close -- unless
+ * the task is so marked, and ends it through DOS, `INT 21h` 4CFFh, its code
+ * FFh (`KRNL386.EXE` seg1 `5c80`, `5e01`). Bit 15, to return, is looked at
+ * only once `FatalAppExit` has come back, which in the retail build it does
+ * not. **Recorded** by `thtask`: a program of the probe's own ended with
+ * `NO_UAE_BOX` is no task after, and its window is gone. winbox.js shows the
+ * box from the running task, then ends the task as DOS's function 4Ch ends
+ * one, its windows taken away with it.
  */
-export function TerminateApp(this: any, hTask: number, wFlags: number) {
+export async function TerminateApp(this: any, hTask: number, wFlags: number) {
   const handle = hTask & 0xffff || (this.scheduler.active ?? 0);
 
-  if (!liveTask(this, handle) || wFlags & RETURN) {
+  if (!liveTask(this, handle)) {
     return;
   }
 
-  this.exitTask(0xff, handle);
+  if (!(wFlags & NO_UAE_BOX)) {
+    await sysErrorBox(this, CLOSING, 'Application Error', [0, SEB_CLOSE | SEB_DEFBUTTON, 0]);
+  }
+
+  if (liveTask(this, handle)) {
+    this.exitTask(0xff, handle);
+  }
 }

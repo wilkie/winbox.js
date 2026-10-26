@@ -229,14 +229,14 @@ impl Engine {
 
     /// A program started from its file: loaded, linked and set going, and
     /// run until it waits for a message, this task answering what it sends
-    /// meanwhile; its instance, or the DOS error.
+    /// meanwhile; its instance, or the DOS error, and its task.
     pub(crate) async fn start_program(
         &self,
         path: &str,
         command_line: &str,
         show: u16,
         strings: Option<Vec<u8>>,
-    ) -> Result<u16, Stop> {
+    ) -> Result<(u16, u16), Stop> {
         let child = {
             let mut system = self.system();
             // The parent's environment, as its segment holds it -- changed,
@@ -245,7 +245,7 @@ impl Engine {
 
             match system.add_program(path, command_line, show, strings, true)? {
                 Ok(child) => child,
-                Err(error) => return Ok(error),
+                Err(error) => return Ok((error, 0)),
             }
         };
 
@@ -254,8 +254,8 @@ impl Engine {
 
     /// A task just made run until it waits for a message: the new program
     /// has the processor first, and this one has it back when the new one
-    /// waits for a message. Its instance.
-    pub(crate) async fn run_started(&self, child: usize) -> Result<u16, Stop> {
+    /// waits for a message. Its instance, and its task.
+    pub(crate) async fn run_started(&self, child: usize) -> Result<(u16, u16), Stop> {
         self.yield_turn(None).await?;
 
         loop {
@@ -277,11 +277,14 @@ impl Engine {
         let system = self.system();
         let program = system.scheduler.slots[child].program;
 
-        Ok(system.modules[program]
-            .data()
-            .map_or(system.scheduler.slots[child].handle, |data| {
-                segment_selector(data) - 1
-            }))
+        let task = system.scheduler.slots[child].handle;
+
+        Ok((
+            system.modules[program]
+                .data()
+                .map_or(task, |data| segment_selector(data) - 1),
+            task,
+        ))
     }
 }
 
@@ -535,13 +538,45 @@ impl Engine {
         let found = crate::shell::programs::locate(&mut self.system(), &name, "");
 
         match found {
-            Ok(path) => self.start_program(&path, command_line, show, None).await,
+            Ok(path) => Ok(self.start_program(&path, command_line, show, None).await?.0),
             // `PROGMAN.EXE` found nowhere: WinBox's own (`progman`).
             Err(2) if crate::progman::wanted(&name) => {
-                self.start_progman(command_line, show, None).await
+                Ok(self.start_progman(command_line, show, None).await?.0)
             }
             Err(error) => Ok(error),
         }
+    }
+
+    /// A program named started, as `LoadModule` starts it once its block is
+    /// read: found as KERNEL looks for it, or, for `PROGMAN.EXE` and
+    /// `MMTASK.TSK` found nowhere, WinBox's own. The instance in the low
+    /// word, or an error below 32; the new task in the high, `LoadModule`'s
+    /// DX (`KRNL386.EXE` seg2 `1d4f`), nought where none was. As
+    /// `WinExec.ts`'s `startNamed`.
+    pub(crate) async fn start_named(
+        &self,
+        name: &str,
+        command_line: &str,
+        show: u16,
+        strings: Option<Vec<u8>>,
+    ) -> Result<u32, Stop> {
+        let found = crate::shell::programs::locate(&mut self.system(), name, "");
+        let (instance, task) = match found {
+            Ok(path) => {
+                self.start_program(&path, command_line, show, strings)
+                    .await?
+            }
+            Err(2) if crate::mmsystem::mmtask::wanted(name) => {
+                self.start_mmtask(command_line, show, strings).await?
+            }
+            Err(2) if crate::progman::wanted(name) => {
+                self.start_progman(command_line, show, strings).await?
+            }
+            Err(error) => return Ok(u32::from(error)),
+        };
+        let task = if instance >= 32 { task } else { 0 };
+
+        Ok(u32::from(task) << 16 | u32::from(instance))
     }
 }
 
@@ -565,7 +600,7 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
         }
 
         let (path, command_line, show, strings) = {
-            let mut system = engine.system();
+            let system = engine.system();
             let mut name: String = if name_far == 0 {
                 String::new()
             } else {
@@ -587,13 +622,6 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
                 name.push_str(".EXE");
             }
 
-            let path = match crate::shell::programs::locate(&mut system, &name, "") {
-                Ok(path) => path,
-                // `PROGMAN.EXE` found nowhere: WinBox's own (`progman`),
-                // started once the block is read.
-                Err(2) if crate::progman::wanted(&name) => String::new(),
-                Err(error) => return Ok(Answer::Word(error)),
-            };
             let word = |system: &System, far: u32, at: u32| {
                 let bytes =
                     system.read_far((far & 0xffff_0000) | (far.wrapping_add(at) & 0xffff), 2);
@@ -644,18 +672,12 @@ pub fn load_module(engine: &Engine, mut args: Args) -> Later<'_> {
                 }
             }
 
-            (path, command_line, show, strings)
+            (name, command_line, show, strings)
         };
 
-        if path.is_empty() {
-            return Ok(Answer::Word(
-                engine.start_progman(&command_line, show, strings).await?,
-            ));
-        }
-
-        Ok(Answer::Word(
+        Ok(Answer::Dword(
             engine
-                .start_program(&path, &command_line, show, strings)
+                .start_named(&path, &command_line, show, strings)
                 .await?,
         ))
     })
@@ -666,6 +688,16 @@ pub fn yield_call(engine: &Engine, _: Args) -> Later<'_> {
     Box::pin(async move {
         engine.yield_turn(None).await?;
         Ok(Answer::Nothing)
+    })
+}
+
+/// The processor given up as KERNEL gives it up itself, with no look at
+/// USER's queue (`KRNL386.EXE` seg1 `7d3e`-`7d6f`): `FFFFh`. As
+/// `WinExec.ts`'s `OldYield`.
+pub fn old_yield(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        engine.yield_turn(None).await?;
+        Ok(Answer::Word(0xffff))
     })
 }
 

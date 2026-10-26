@@ -91,18 +91,25 @@ export function GetWindowPlacement(this: any, hwnd: number, lpwndpl: any) {
       ? { left: shown.left, top: shown.top, width: shown.width, height: shown.height }
       : shown.restoreRect;
 
+  /* USER's checkpoint (`USER.EXE` seg14 `06a5`-`0738`): the icon's point
+   * and the maximized one as they are or last were, -1,-1 for none; the
+   * flag to restore to maximized (2) while the window is so. **Recorded**
+   * by `wplace`. */
+  const icon = shown.state === 'minimized' ? { left: shown.left, top: shown.top } : shown.iconWas;
+  const max = shown.state === 'maximized' ? { left: shown.left, top: shown.top } : shown.maxWas;
+
   lpwndpl.length = 22;
-  lpwndpl.flags = 0;
+  lpwndpl.flags = shown.state === 'maximized' ? 2 : 0;
   lpwndpl.showCmd =
     shown.state === 'maximized'
       ? User.SW_SHOWMAXIMIZED
       : shown.state === 'minimized'
         ? User.SW_SHOWMINIMIZED
         : User.SW_SHOWNORMAL;
-  lpwndpl.ptMinPosition.x = -1;
-  lpwndpl.ptMinPosition.y = -1;
-  lpwndpl.ptMaxPosition.x = -1;
-  lpwndpl.ptMaxPosition.y = -1;
+  lpwndpl.ptMinPosition.x = icon ? icon.left - x : -1;
+  lpwndpl.ptMinPosition.y = icon ? icon.top - y : -1;
+  lpwndpl.ptMaxPosition.x = max ? max.left - x : -1;
+  lpwndpl.ptMaxPosition.y = max ? max.top - y : -1;
   lpwndpl.rcNormalPosition.left = normal.left - x;
   lpwndpl.rcNormalPosition.top = normal.top - y;
   lpwndpl.rcNormalPosition.right = normal.left - x + normal.width;

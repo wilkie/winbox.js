@@ -2,7 +2,8 @@
 //! `toolhelp/tasks.ts`.
 
 use super::structures::structure;
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
 use crate::kernel_calls::tasks::module_of_task;
 use crate::system::System;
 
@@ -130,4 +131,67 @@ pub fn task_get_csip(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Dword(system.frame_of(task).map_or(0, |frame| {
         u32::from(frame.cs) << 16 | u32::from(frame.ip)
     })))
+}
+
+/// Where a task will go on from changed (seg1 `0d68`-`0d94`): nought for
+/// the running task; else the old place, IP in AX and CS in DX. As
+/// `toolhelp/tasks.ts`. **Recorded** by `thswch`.
+pub fn task_set_csip(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let task = args.word(system);
+    let cs = args.word(system);
+    let ip = args.word(system);
+
+    Ok(Answer::Dword(set_csip(system, task, cs, ip)))
+}
+
+fn set_csip(system: &mut System, task: u16, cs: u16, ip: u16) -> u32 {
+    if !system.live_task(task) || system.current_task() == Some(task) {
+        return 0;
+    }
+
+    let Some(slot) = system.slot_of(task) else {
+        return 0;
+    };
+
+    // The code segment as the processor would load it, the running task's
+    // own put back.
+    let kept = system.cpu.segments[winbox_cpu::CS];
+    let loaded = system.cpu.load_segment(winbox_cpu::CS, cs);
+    let segment = system.cpu.segments[winbox_cpu::CS];
+
+    system.cpu.segments[winbox_cpu::CS] = kept;
+
+    let Some(context) = system.scheduler.slots[slot].saved.as_mut() else {
+        return 0;
+    };
+    let frame = context.frame();
+
+    if loaded.is_ok() {
+        context.set_code(segment, ip);
+    }
+
+    u32::from(frame.cs) << 16 | u32::from(frame.ip)
+}
+
+/// A task sent somewhere else and run there at once (seg1 `0dc0`-`0e62`):
+/// one, or nought for the running task or one that is no task. As
+/// `toolhelp/tasks.ts`. **Recorded** by `thswch`.
+pub fn task_switch(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let task = {
+            let mut system = engine.system();
+            let task = args.word(&system);
+            let place = args.dword(&system);
+
+            if !system.live_task(task) || system.current_task() == Some(task) {
+                return Ok(Answer::Word(0));
+            }
+
+            set_csip(&mut system, task, (place >> 16) as u16, place as u16);
+            task
+        };
+
+        engine.yield_turn(Some(task)).await?;
+        Ok(Answer::Word(1))
+    })
 }

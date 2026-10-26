@@ -1,5 +1,7 @@
 'use strict';
 
+import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
+
 import { decodeIcon, iconEntries, pickIcon } from '../../raster/icon.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { GetDOSEnvironment } from '../kernel/GetDOSEnvironment.js';
@@ -615,11 +617,141 @@ function iconFileIcon(system: any, bytes: Uint8Array): number | null {
 }
 
 /**
+ * The icons `InternalExtractIcon` gives (`SHELL.DLL` seg10 `026e`-`0881`):
+ * null where it makes no block -- a file not there, none asked for, or not
+ * two bytes to read -- else its words, `count` of them, noughts but those
+ * set. The first is 1 for a file that is no Windows program, or nought for
+ * -1 (`02ed`-`0301`). An icon file sets the first alone. A program of
+ * Windows 3 sets one icon a word from `index` on, each its group's member
+ * for the display (`USER`'s `GetIconID`, `071d`) made an icon
+ * (`LoadIconHandler`, `07a3`), stopping at the first group there is not
+ * (`06ee`-`07c4`); with -1 the first is how many groups it has
+ * (`06a3`-`06d4`). An older program sets the first alone (`0812`-`083a`).
+ */
+async function extractIcons(
+  system: any,
+  lpszExeName: string,
+  iIcon: number,
+  count: number
+): Promise<number[] | null> {
+  const index = (iIcon << 16) >> 16;
+  const handle = await system.dos.files.open(String(lpszExeName ?? ''));
+  let bytes: Uint8Array;
+
+  if (handle) {
+    try {
+      const file = system.dos.files.resolve(handle);
+
+      bytes = new Uint8Array(await file.read(0, file.size));
+    } finally {
+      system.dos.files.close(handle);
+    }
+  } else {
+    /* While WinBox's Program Manager runs, the file it says it is
+     * (`progman/stored.ts`). */
+    const stored = await progmanFile(system, String(lpszExeName ?? ''));
+
+    if (!stored) {
+      return null;
+    }
+
+    bytes = stored;
+  }
+
+  /* None asked for, or not two bytes to read: no block (seg10 `02a8`,
+   * `02b7`-`02c1`). */
+  if (!count || bytes.length < 2) {
+    return null;
+  }
+
+  const words: number[] = new Array(count).fill(0);
+  const first = (value: number) => {
+    words[0] = value & 0xffff;
+    return words;
+  };
+  const none = index === -1 ? 0 : 1;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+  /* A first word of nought is an icon file's (seg10 `084a`, `030e`-`035c`):
+   * nought unless the next word, its type, is 1; then -1 answers 1, its one
+   * icon, and another index but the first nought. A PIF begins so, and is
+   * no icon file: `DOSPRMPT.PIF` answers nought (`pmbare`). */
+  if (bytes[0] === 0 && bytes[1] === 0) {
+    if (bytes.length < 6 || view.getUint16(2, true) !== 1) {
+      return first(0);
+    }
+
+    if (index !== 0) {
+      return first(index === -1 ? 1 : 0);
+    }
+
+    return first(iconFileIcon(system, bytes) ?? 0);
+  }
+
+  if (bytes.length < 0x40 || bytes[0] !== 0x4d || bytes[1] !== 0x5a) {
+    return first(none);
+  }
+
+  const ne = view.getUint32(0x3c, true);
+
+  if (!ne || ne + 0x40 > bytes.length || view.getUint16(ne, true) !== 0x454e) {
+    return first(none);
+  }
+
+  if (![0, 2, 4].includes(bytes[ne + 0x36])) {
+    return first(none);
+  }
+
+  if (view.getUint16(ne + 0x24, true) === view.getUint16(ne + 0x26, true)) {
+    return first(0);
+  }
+
+  const modern = view.getUint16(ne + 0x3e, true) >= 0x300;
+  const resources = resourcesOf(bytes);
+  const groups = resources.filter((each) => each.type === (modern ? RT_GROUP_ICON : RT_ICON));
+
+  if (index === -1) {
+    return first(groups.length);
+  }
+
+  const palette = DevicePalette.forDisplay(system.display);
+  const iconOf = (group: any) => {
+    let image = group.data;
+
+    if (modern) {
+      const entry = pickIcon(iconEntries(group.data), 32, system.display?.colors ?? 16);
+      const icon = resources.find((each) => each.type === RT_ICON && each.id === entry?.id);
+
+      if (!icon) {
+        return 0;
+      }
+
+      image = icon.data;
+    }
+
+    return iconBlock(system, scaleIcon(decodeIcon(image, palette), 32)) ?? 0;
+  };
+
+  for (let at = 0; at < (modern ? count : 1); at++) {
+    const group = groups[index + at];
+
+    if (!group) {
+      break;
+    }
+
+    words[at] = iconOf(group) & 0xffff;
+  }
+
+  return words;
+}
+
+/**
  * A program's icon, by its place among the icons, or with -1 how many it
- * has. **Read out** (seg10 `026e`) and **recorded**: a file not there
- * answers nought; a file that is no Windows program answers 1, or for -1
- * nought; an index past the last answers nought. The icons are counted in
- * the order of the resource table, and the image is the one for the display.
+ * has: `InternalExtractIcon` of one, its word, the block freed (`SHELL.DLL`
+ * seg10 `021a`-`026a`). **Recorded**: a file not there answers nought; a
+ * file that is no Windows program answers 1, or for -1 nought; an index
+ * past the last answers nought. The icons are counted in the order of the
+ * resource table, and the image is the one for the display.
  *
  * @param {Types.HINSTANCE} hinst - The caller.
  * @param {Types.LPCSTR} lpszExeName - The program.
@@ -628,99 +760,40 @@ function iconFileIcon(system: any, bytes: Uint8Array): number | null {
  * @returns {Types.HICON} The icon, a count, 1, or nought.
  */
 export async function ExtractIcon(this: any, _hinst: number, lpszExeName: string, iIcon: number) {
-  const index = (iIcon << 16) >> 16;
-  const handle = await this.dos.files.open(String(lpszExeName ?? ''));
-  let bytes: Uint8Array;
+  return (await extractIcons(this, lpszExeName, iIcon, 1))?.[0] ?? 0;
+}
 
-  if (handle) {
-    try {
-      const file = this.dos.files.resolve(handle);
+/**
+ * Icons of a file, a block of `nIcons` words (`SHELL.DLL` seg10
+ * `026e`-`0881`, `extractIcons`): fixed, its words noughts but those set;
+ * nought where none is made.
+ */
+/** `GMEM_ZEROINIT`, fixed (seg10 `02c4`). */
+const GMEM_ZEROINIT = 0x0040;
 
-      bytes = new Uint8Array(await file.read(0, file.size));
-    } finally {
-      this.dos.files.close(handle);
-    }
-  } else {
-    /* While WinBox's Program Manager runs, the file it says it is
-     * (`progman/stored.ts`). */
-    const stored = await progmanFile(this, String(lpszExeName ?? ''));
+export async function InternalExtractIcon(
+  this: any,
+  _hinst: number,
+  lpszExeName: string,
+  iIcon: number,
+  nIcons: number
+) {
+  const words = await extractIcons(this, lpszExeName, iIcon, nIcons & 0xffff);
 
-    if (!stored) {
-      return 0;
-    }
-
-    bytes = stored;
-  }
-
-  const none = index === -1 ? 0 : 1;
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-
-  /* Not two bytes to read: nought (seg10 `02b7`-`02c1`). */
-  if (bytes.length < 2) {
+  if (!words) {
     return 0;
   }
 
-  /* A first word of nought is an icon file's (seg10 `084a`, `030e`-`035c`):
-   * nought unless the next word, its type, is 1; then -1 answers 1, its one
-   * icon, and another index but the first nought. A PIF begins so, and is
-   * no icon file: `DOSPRMPT.PIF` answers nought (`pmbare`). */
-  if (bytes[0] === 0 && bytes[1] === 0) {
-    if (bytes.length < 6 || view.getUint16(2, true) !== 1) {
-      return 0;
-    }
+  const handle = GlobalAlloc.call(this, GMEM_ZEROINIT, words.length * 2);
 
-    if (index !== 0) {
-      return index === -1 ? 1 : 0;
-    }
-
-    return iconFileIcon(this, bytes) ?? 0;
-  }
-
-  if (bytes.length < 0x40 || bytes[0] !== 0x4d || bytes[1] !== 0x5a) {
-    return none;
-  }
-
-  const ne = view.getUint32(0x3c, true);
-
-  if (!ne || ne + 0x40 > bytes.length || view.getUint16(ne, true) !== 0x454e) {
-    return none;
-  }
-
-  if (![0, 2, 4].includes(bytes[ne + 0x36])) {
-    return none;
-  }
-
-  if (view.getUint16(ne + 0x24, true) === view.getUint16(ne + 0x26, true)) {
+  if (!handle) {
     return 0;
   }
 
-  const modern = view.getUint16(ne + 0x3e, true) >= 0x300;
-  const resources = resourcesOf(bytes);
-  const groups = resources.filter((each) => each.type === (modern ? RT_GROUP_ICON : RT_ICON));
+  const core = this.machine.cpu.core;
+  const selector = handle | 1;
 
-  if (index === -1) {
-    return groups.length;
-  }
+  words.forEach((word, at) => core.write16(selector, at * 2, word));
 
-  const group = groups[index];
-
-  if (!group) {
-    return 0;
-  }
-
-  const palette = DevicePalette.forDisplay(this.display);
-  let image = group.data;
-
-  if (modern) {
-    const entry = pickIcon(iconEntries(group.data), 32, this.display?.colors ?? 16);
-    const icon = resources.find((each) => each.type === RT_ICON && each.id === entry?.id);
-
-    if (!icon) {
-      return 0;
-    }
-
-    image = icon.data;
-  }
-
-  return iconBlock(this, scaleIcon(decodeIcon(image, palette), 32)) ?? 0;
+  return handle;
 }

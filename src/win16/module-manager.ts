@@ -74,7 +74,11 @@ export class ModuleManager {
 
     /* As many ordinals as the module has, a thousand at least: WinG's are
      * 1001 to 1010, and a call to one past the stubs ran into noughts. */
-    const ordinals = Math.max(1000, module.exports.length);
+    const ordinals = Math.max(
+      1000,
+      module.exports.length,
+      ...Object.keys(module.hiddenExports ?? {}).map((ordinal) => Number(ordinal) + 1)
+    );
     const code = new Uint8Array((ordinals + 1) * loadedModule.step);
 
     // We start after the callback function

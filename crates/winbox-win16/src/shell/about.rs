@@ -448,6 +448,56 @@ async fn hide_item(engine: &Engine, dialog: u16, id: u16) -> Result<(), Stop> {
     engine.show(hwnd, SW_HIDE).await
 }
 
+/// The About box's procedure as SHELL exports it (`SHELL.DLL` seg9
+/// `0136`-`0725`), for a box made with it: `WM_INITDIALOG` reads the block
+/// `ShellAbout` hands `DialogBoxParam` (seg9 `0000`-`004d`) -- the icon at
+/// 0, the program's name at 2, the other text at 6. As `about.ts`'s
+/// `AboutDlgProc`. **Recorded** by `aboutdp`.
+pub fn about_dlg_proc(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, message, about) = {
+            let system = engine.system();
+            let hwnd = args.word(&system);
+            let message = args.word(&system);
+            let _wparam = args.word(&system);
+            // The block is read for `WM_INITDIALOG` alone: another
+            // message's lParam is no pointer.
+            let block = args.dword(&system) * u32::from(message == WM_INITDIALOG);
+            let word = |at: u32| -> u16 {
+                if block == 0 {
+                    return 0;
+                }
+
+                let bytes =
+                    system.read_far((block & 0xffff_0000) | (block.wrapping_add(at) & 0xffff), 2);
+
+                u16::from_le_bytes([bytes[0], bytes[1]])
+            };
+            let initial = message == WM_INITDIALOG;
+            let other = u32::from(word(8)) << 16 | u32::from(word(6));
+            let about = AboutProc {
+                app: if initial {
+                    u32::from(word(4)) << 16 | u32::from(word(2))
+                } else {
+                    0
+                },
+                other: if initial && other >> 16 != 0 {
+                    system.read_string(other).into()
+                } else {
+                    Vec::new().into()
+                },
+                icon: if initial { word(0) } else { 0 },
+            };
+
+            (hwnd, message, about)
+        };
+
+        Ok(Answer::Word(
+            about.answer(engine, hwnd, message).await? as u16,
+        ))
+    })
+}
+
 /// Shows the About box for a program, its owner, its name -- and after a
 /// `#` the first line -- text of its own or none, and an icon or none for
 /// the Windows logo: 1 once it is closed. A string that cannot be read

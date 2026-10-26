@@ -113,6 +113,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "VkKeyScan" => vk_key_scan,
         "MapVirtualKey" => map_virtual_key,
         "GetKbCodePage" => get_kb_code_page,
+        "Enable" => enable,
+        "Disable" => disable,
         _ => return None,
     }))
 }
@@ -337,6 +339,16 @@ const BIOS_PROC: u16 = 0x108;
 const ALT_TYPED: u16 = 0x128;
 const PAD_KEY: u16 = 0x129;
 const ENABLED: u16 = 0x12e;
+const TABLE_READ: u16 = 0x12f;
+const EVENT_PROC: u16 = 0xfa;
+const ENHANCED_KEPT: u16 = 0x13a;
+
+/// The BIOS's shift flags, and its keyboard's, in its data at 400h.
+const SHIFT_FLAGS: u32 = 0x417;
+const KEYBOARD_FLAGS: u32 = 0x496;
+
+/// USER's `keybd_event`, which USER enables the driver with (`kbenable`).
+const KEYBD_EVENT: u16 = 289;
 const SYSREQ: u16 = 0x130;
 const INQUIRE_AT: u16 = 0x131;
 const KEYS: u16 = 0x137;
@@ -377,7 +389,9 @@ impl System {
     /// enabled, the BIOS's INT 9 handler kept as DOS answers for it here,
     /// the type read (`new_table`), the `SysRq` flags 2 (**recorded**).
     fn keyboard_started(&mut self) {
-        if self.keyboard_data() == 0 || self.keyboard_byte(ENABLED) != 0 {
+        // Laid out once: the type read (12Fh) marks it, as `Disable`
+        // leaves the driver not enabled.
+        if self.keyboard_data() == 0 || self.keyboard_byte(TABLE_READ) != 0 {
             return;
         }
 
@@ -395,6 +409,17 @@ impl System {
 
         self.set_keyboard_word(BIOS_PROC, offset);
         self.set_keyboard_word(BIOS_PROC + 2, segment);
+
+        // The event procedure USER enabled it with: its own `keybd_event`
+        // (**recorded** by `kbenable`).
+        if let Some(user) = self.kept_named("USER") {
+            let stubs = self.stubs(user);
+
+            self.set_keyboard_word(EVENT_PROC, crate::system::STEP * (KEYBD_EVENT + 1));
+            self.set_keyboard_word(EVENT_PROC + 2, winbox_machine::segment_selector(stubs));
+        }
+
+        self.set_keyboard_byte(TABLE_READ, 1);
         self.new_table();
     }
 
@@ -856,4 +881,79 @@ fn get_key_name_text(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     system.write_far(at(0), &name[..size - 1]);
     system.write_far(at(size - 1), &[0]);
     Ok(Answer::Word(size as u16))
+}
+
+/// The driver enabled (`KEYBOARD.DRV` seg10 `09d0`-`0a65`), as
+/// `keyboard/driver.ts`'s `Enable`. **Recorded** by `kbenable`.
+fn enable(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let procedure = args.dword(system);
+    let state = args.dword(system);
+
+    system.keyboard_started();
+    system.set_keyboard_word(EVENT_PROC, procedure as u16);
+    system.set_keyboard_word(EVENT_PROC + 2, (procedure >> 16) as u16);
+
+    let flags = system
+        .cpu
+        .bus
+        .read8(winbox_machine::FIRST_MEGABYTE + SHIFT_FLAGS);
+
+    for (bit, key, on) in [
+        (0x03, 0x10, 0x80),
+        (0x04, 0x11, 0x80),
+        (0x08, 0x12, 0x80),
+        (0x10, 0x91, 0x01),
+        (0x20, 0x90, 0x01),
+        (0x40, 0x14, 0x01),
+    ] {
+        let at = (state & 0xffff_0000) | (state.wrapping_add(key) & 0xffff);
+
+        system.write_far(at, &[if flags & bit != 0 { on } else { 0 }]);
+    }
+
+    if system.keyboard_byte(ENABLED) != 0 {
+        return Ok(Answer::Nothing);
+    }
+
+    if system.keyboard_byte(TABLE_READ) == 0 {
+        system.set_keyboard_byte(TABLE_READ, 1);
+        system.new_table();
+    }
+
+    if system.keyboard_byte(TYPE) == 4 {
+        let at = winbox_machine::FIRST_MEGABYTE + KEYBOARD_FLAGS;
+        let kept = system.cpu.bus.read8(at);
+
+        system.cpu.bus.write8(at, kept & 0xef);
+        system.set_keyboard_byte(ENHANCED_KEPT, kept);
+    }
+
+    system.set_keyboard_byte(ENABLED, 0xff);
+    Ok(Answer::Nothing)
+}
+
+/// The driver disabled (`KEYBOARD.DRV` seg10 `0aac`-`0afb`), as
+/// `keyboard/driver.ts`'s `Disable`. **Recorded** by `kbenable`.
+fn disable(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    system.keyboard_started();
+
+    if system.keyboard_byte(ENABLED) == 0 {
+        return Ok(Answer::Nothing);
+    }
+
+    if system.keyboard_byte(TYPE) == 4 {
+        let kept = system.keyboard_byte(ENHANCED_KEPT);
+
+        system
+            .cpu
+            .bus
+            .write8(winbox_machine::FIRST_MEGABYTE + KEYBOARD_FLAGS, kept);
+    }
+
+    let at = winbox_machine::FIRST_MEGABYTE + SHIFT_FLAGS;
+    let flags = system.cpu.bus.read16(at);
+
+    system.cpu.bus.write16(at, flags & 0xfcff);
+    system.set_keyboard_byte(ENABLED, 0);
+    Ok(Answer::Nothing)
 }

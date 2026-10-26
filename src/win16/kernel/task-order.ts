@@ -24,6 +24,8 @@ export interface TaskRecord {
   priority: number;
   /** Its events (TDB 6), which `PostEvent` adds to and `WaitEvent` takes. */
   events: number;
+  /** The tasks waiting in `WaitEvent` for an event of this one's. */
+  eventWaiters?: number[];
   /** Its queue (TDB 20h), once asked for; see `queueOf`. */
   queue: number;
   /** Its compatibility flags (TDB 4Eh), once read (`GetAppCompatFlags`). */
@@ -31,6 +33,9 @@ export interface TaskRecord {
   /** The procedure KERNEL signals for it (TDB 2Ah), once given
    * (`SetTaskSignalProc`). */
   signal?: number;
+  /** Its table of handles, offset and DS (TDB 5Ch, 5Eh), once given
+   * (`DefineHandleTable`). */
+  handleTable?: [number, number];
 }
 
 function records(system: any): Map<number, TaskRecord> {
@@ -100,6 +105,10 @@ export function taskMade(system: any, handle: number, parent: number) {
   }
 
   record.parent = parent & 0xffff;
+  /* One event to begin with, as `LoadModule` sets TDB 6 of the task it
+   * makes (`KRNL386.EXE` seg2 `1383`): what a program's start-up takes with
+   * `WaitEvent`. */
+  record.events = 1;
   insert(system, handle, record.priority);
 }
 

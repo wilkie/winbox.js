@@ -92,7 +92,7 @@ impl System {
     /// What was kept for each selector of a block let go -- a local heap
     /// made in it -- let go with it, or the next block given the selector
     /// finds it (`lheapseg`).
-    fn forget_heaps(&mut self, index: usize, selectors: usize) {
+    pub(crate) fn forget_heaps(&mut self, index: usize, selectors: usize) {
         for tile in index..index + selectors {
             self.heaps.remove(&tile);
             self.heap_blocks.remove(&tile);

@@ -33,6 +33,9 @@ pub struct TaskRecord {
     /// The procedure KERNEL signals for it (TDB 2Ah), once given
     /// (`SetTaskSignalProc`).
     pub signal: Option<u32>,
+    /// Its table of handles, offset and DS (TDB 5Ch, 5Eh), once given
+    /// (`DefineHandleTable`).
+    pub handle_table: (u16, u16),
 }
 
 /// The order and the records.
@@ -91,6 +94,9 @@ impl System {
         };
 
         record.parent = parent;
+        // One event to begin with, as `LoadModule` sets TDB 6 of the task
+        // it makes (`KRNL386.EXE` seg2 `1383`).
+        record.events = 1;
 
         let priority = i16::from(record.priority);
 

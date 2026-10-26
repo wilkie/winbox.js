@@ -1,0 +1,34 @@
+{
+  "probe": "kbenable",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "kb",
+      "args": "before",
+      "result": "proc=keybd_event,enabled=ff"
+    },
+    {
+      "function": "kb",
+      "args": "enable",
+      "result": "shift=bios,control=bios,alt=bios,caps=bios,num=bios,scroll=bios,13=ee"
+    },
+    {
+      "function": "kb",
+      "args": "disable",
+      "result": "enabled=0,bits=0,0"
+    },
+    {
+      "function": "kb",
+      "args": "enable-again",
+      "result": "enabled=ff"
+    }
+  ]
+}

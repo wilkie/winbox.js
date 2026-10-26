@@ -792,8 +792,21 @@ fn progman_file(system: &mut System, name: &str) -> Option<Vec<u8>> {
     named.then(|| system.installed_or_stored("C:\\WINDOWS", crate::progman::FILE))?
 }
 
-/// `ExtractIcon` of a file by its name.
+/// `ExtractIcon` of a file by its name: `InternalExtractIcon`'s first
+/// word, or nought (`SHELL.DLL` seg10 `021a`-`026a`).
 fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, Stop> {
+    Ok(extract_icons(system, name, index, 1)?.map_or(0, |words| words[0]))
+}
+
+/// The icons `InternalExtractIcon` gives (`SHELL.DLL` seg10 `026e`-`0881`),
+/// as `programs.ts`'s `extractIcons`: `None` where it makes no block, else
+/// its `count` words.
+fn extract_icons(
+    system: &mut System,
+    name: &str,
+    index: i16,
+    count: u16,
+) -> Result<Option<Vec<u16>>, Stop> {
     let bytes = if let Some(handle) = system.files.open(name) {
         let bytes = {
             let file = system.files.resolve(handle).expect("an open file");
@@ -808,16 +821,22 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     } else if let Some(bytes) = progman_file(system, name) {
         bytes
     } else {
-        return Ok(0);
+        return Ok(None);
     };
 
+    // None asked for, or not two bytes to read: no block (seg10 `02a8`,
+    // `02b7`-`02c1`).
+    if count == 0 || bytes.len() < 2 {
+        return Ok(None);
+    }
+
+    let mut words = vec![0u16; usize::from(count)];
+    let first = |mut words: Vec<u16>, value: u16| {
+        words[0] = value;
+        Ok(Some(words))
+    };
     let none = u16::from(index != -1);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
-
-    // Not two bytes to read: nought (seg10 `02b7`-`02c1`).
-    if bytes.len() < 2 {
-        return Ok(0);
-    }
 
     // A first word of nought is an icon file's (seg10 `084a`,
     // `030e`-`035c`): nought unless the next word, its type, is 1; then -1
@@ -826,32 +845,34 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
     // (`pmbare`).
     if bytes[0] == 0 && bytes[1] == 0 {
         if bytes.len() < 6 || word(2) != 1 {
-            return Ok(0);
+            return first(words, 0);
         }
 
         if index != 0 {
-            return Ok(u16::from(index == -1));
+            return first(words, u16::from(index == -1));
         }
 
-        return Ok(icon_file_icon(system, &bytes).unwrap_or(0));
+        let icon = icon_file_icon(system, &bytes).unwrap_or(0);
+
+        return first(words, icon);
     }
 
     if bytes.len() < 0x40 || bytes[0] != 0x4d || bytes[1] != 0x5a {
-        return Ok(none);
+        return first(words, none);
     }
 
     let ne = u32::from_le_bytes([bytes[0x3c], bytes[0x3d], bytes[0x3e], bytes[0x3f]]) as usize;
 
     if ne == 0 || ne + 0x40 > bytes.len() || word(ne) != 0x454e {
-        return Ok(none);
+        return first(words, none);
     }
 
     if ![0, 2, 4].contains(&bytes[ne + 0x36]) {
-        return Ok(none);
+        return first(words, none);
     }
 
     if word(ne + 0x24) == word(ne + 0x26) {
-        return Ok(0);
+        return first(words, 0);
     }
 
     let modern = word(ne + 0x3e) >= 0x300;
@@ -865,35 +886,74 @@ fn extract_icon_of(system: &mut System, name: &str, index: i16) -> Result<u16, S
         .collect();
 
     if index == -1 {
-        return Ok(groups.len() as u16);
+        return first(words, groups.len() as u16);
     }
 
-    let Some(group) = usize::try_from(index)
-        .ok()
-        .and_then(|index| groups.get(index))
-    else {
-        return Ok(0);
+    let Ok(start) = usize::try_from(index) else {
+        return Ok(Some(words));
     };
-    let mut image = group.data;
+    let wanted_words = if modern { usize::from(count) } else { 1 };
 
-    if modern {
-        let entry = pick_icon(&icon_entries(group.data), 32, system.display.colors);
-        let icon = entry.and_then(|entry| {
-            resources
-                .iter()
-                .find(|each| each.kind == RT_ICON && each.id == Some(entry.id))
-        });
-        let Some(icon) = icon else {
-            return Ok(0);
+    for (at, word_place) in words.iter_mut().enumerate().take(wanted_words) {
+        let Some(group) = groups.get(start + at) else {
+            break;
         };
+        let mut image = group.data;
 
-        image = icon.data;
+        if modern {
+            let entry = pick_icon(&icon_entries(group.data), 32, system.display.colors);
+            let icon = entry.and_then(|entry| {
+                resources
+                    .iter()
+                    .find(|each| each.kind == RT_ICON && each.id == Some(entry.id))
+            });
+            let Some(icon) = icon else {
+                continue;
+            };
+
+            image = icon.data;
+        }
+
+        let mut palette = system.palette();
+        let icon = scale_icon(decode_icon(image, &mut palette), 32);
+
+        *word_place = system.icon_block(&icon);
     }
 
-    let mut palette = system.palette();
-    let icon = scale_icon(decode_icon(image, &mut palette), 32);
+    Ok(Some(words))
+}
 
-    Ok(system.icon_block(&icon))
+/// Icons of a file, a block of `nIcons` words (`SHELL.DLL` seg10
+/// `026e`-`0881`): fixed, zeroed, its words those `extract_icons` sets;
+/// nought where none is made. As `programs.ts`'s `InternalExtractIcon`.
+pub fn internal_extract_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+
+    let far = args.dword(system);
+    let index = args.signed(system);
+    let count = args.word(system);
+    let Some(name) = string_argument(system, far) else {
+        return Ok(Answer::Word(0));
+    };
+    let Some(words) = extract_icons(system, &name, index, count)? else {
+        return Ok(Answer::Word(0));
+    };
+    let Some(block) = system.global.allocate(
+        &mut system.cpu.bus,
+        &mut system.descriptors,
+        u32::from(count) * 2,
+        0x0040,
+    ) else {
+        return Ok(Answer::Word(0));
+    };
+    let task = system.current_task().unwrap_or(0);
+
+    system.block_owners.insert(block, task);
+
+    let bytes: Vec<u8> = words.iter().flat_map(|word| word.to_le_bytes()).collect();
+
+    system.cpu.bus.write((block as u32) << 16, &bytes);
+    Ok(Answer::Word(winbox_machine::handle_for(block)))
 }
 
 /// An icon file's icon, as `ExtractIcon` makes it for index nought: its

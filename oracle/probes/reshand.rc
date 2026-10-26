@@ -1,0 +1,4 @@
+1 RCDATA { "resource one" }
+2 RCDATA { "resource two, a little longer than the first" }
+300 300 { "custom" }
+NAMED MYTYPE { "named type" }

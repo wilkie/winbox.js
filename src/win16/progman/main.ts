@@ -214,7 +214,8 @@ export async function startProgman(
   system: any,
   commandLine: string,
   show: number,
-  environment?: Uint8Array
+  environment?: Uint8Array,
+  out?: { task?: number }
 ): Promise<number> {
   const { startExecutable } = await import('../kernel/WinExec.js');
   const handle = keep(system);
@@ -231,7 +232,7 @@ export async function startProgman(
     core.write16(selector, WINMAIN_SLOT, winmain & 0xffff);
     core.write16(selector, WINMAIN_SLOT + 2, winmain >>> 16);
     system._modules._handles[PATH] = handle;
-  });
+  }, out);
 }
 
 /**

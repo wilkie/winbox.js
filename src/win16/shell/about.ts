@@ -161,6 +161,163 @@ export async function logo(system: any) {
 }
 
 /**
+ * The About box's procedure (`SHELL.DLL` seg9 `0136`-`0725`), a program's
+ * as `ShellAbout`'s: `WM_INITDIALOG` fills it from the block `ShellAbout`
+ * hands `DialogBoxParam` (seg9 `0000`-`004d`) -- the icon at 0, the
+ * program's name at 2 and the other text at 6 --, `WM_PAINT` draws the
+ * Windows logo where it shows no icon, and `WM_COMMAND` ends it. Nought for
+ * any other message.
+ */
+async function aboutAnswer(
+  system: any,
+  hDlg: number,
+  message: number,
+  szApp: number,
+  szOtherStuff: string | null,
+  hIcon: number
+) {
+  const template = parseDialogTemplate((at) => ABOUT_DIALOG[at] ?? 0);
+  const item = (id: number) =>
+    String(template.items.find((each: any) => each.id === id)?.text ?? '');
+
+  switch (message) {
+    case User.WM_INITDIALOG: {
+      const app = readString(system, szApp);
+      const hash = app.indexOf('#');
+      let line = app;
+
+      if (hash >= 0) {
+        core(system).write8(szApp >>> 16, ((szApp & 0xffff) + hash) & 0xffff, 0);
+        await SetWindowText.call(system, hDlg, app.slice(0, hash));
+        line = app.slice(hash + 1);
+      } else {
+        await SetWindowText.call(system, hDlg, filled(template.caption ?? '', app));
+      }
+
+      await SetDlgItemText.call(system, hDlg, ID_LINE, filled(item(ID_LINE), line));
+      await SetDlgItemText.call(system, hDlg, ID_OTHER, szOtherStuff ?? '');
+      await SendDlgItemMessage.call(system, hDlg, ID_ICON, STM_SETICON, hIcon, 0);
+
+      if (!hIcon) {
+        await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_ICON), SW_HIDE);
+      }
+
+      await SetDlgItemText.call(system, hDlg, ID_SERIAL, USER_STRINGS.get(0x205) ?? '');
+      await SetDlgItemText.call(
+        system,
+        hDlg,
+        ID_VERSION,
+        (SHELL_STRINGS.get(0xd8) ?? '')
+          .replace('%s', USER_STRINGS.get(0x204) ?? '')
+          .replace('%s', '')
+      );
+
+      const flags = GetWinFlags.call(system);
+      const mode = !(flags & WF_PMODE) ? 0xd1 : flags & WF_STANDARD ? 0xd4 : 0xd5;
+
+      await SetDlgItemText.call(system, hDlg, ID_MODE, SHELL_STRINGS.get(mode) ?? '');
+
+      const profile = await readProfile(system, 'WIN.INI');
+      const separator = (profile.get('intl', 'sThousand') ?? ',')[0] ?? '\0';
+      const free = Math.floor((GetFreeSpace.call(system, 0x1000) >>> 0) / 1024);
+
+      await SetDlgItemText.call(
+        system,
+        hDlg,
+        ID_MEMORY,
+        filled(SHELL_STRINGS.get(0xda) ?? '', thousands(free, separator))
+      );
+      await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_SMARTDRIVE), SW_HIDE);
+
+      if (flags & WF_PMODE && !(flags & WF_WLO)) {
+        await SetDlgItemText.call(
+          system,
+          hDlg,
+          ID_RESOURCES_LABEL,
+          SHELL_STRINGS.get(0xd7) ?? ''
+        );
+        await SetDlgItemText.call(
+          system,
+          hDlg,
+          ID_RESOURCES,
+          (SHELL_STRINGS.get(0xdc) ?? '')
+            .replace('%d', String(GetFreeSystemResources.call(system, 0)))
+            .replace('%%', '%')
+        );
+      } else {
+        await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_RESOURCES_LABEL), SW_HIDE);
+      }
+
+      await SetDlgItemText.call(system, hDlg, ID_NAME, USER_STRINGS.get(0x202) ?? '');
+      await SetDlgItemText.call(system, hDlg, ID_COMPANY, USER_STRINGS.get(0x203) ?? '');
+
+      return 1;
+    }
+
+    case User.WM_PAINT: {
+      const paint: any = new PAINTSTRUCT();
+      const hdc = await BeginPaint.call(system, hDlg, paint);
+
+      if (!(await SendDlgItemMessage.call(system, hDlg, ID_ICON, STM_GETICON, 0, 0))) {
+        const memory = CreateCompatibleDC.call(system, hdc);
+        const bitmap = memory ? await logo(system) : null;
+
+        if (bitmap) {
+          const hbm = system.handles.allocate(bitmap);
+          const old = SelectObject.call(system, memory, hbm);
+
+          BitBlt.call(system, hdc, 10, 10, 64, 64, memory, 0, 0, SRCCOPY);
+          SelectObject.call(system, memory, old);
+          DeleteObject.call(system, hbm);
+        }
+
+        if (memory) {
+          DeleteDC.call(system, memory);
+        }
+      }
+
+      EndPaint.call(system, hDlg, paint);
+      return 1;
+    }
+
+    case User.WM_COMMAND:
+      await EndDialog.call(system, hDlg, 1);
+      return 1;
+  }
+
+  return 0;
+}
+
+/** The procedure as SHELL exports it, for a box made with it. */
+export async function AboutDlgProc(
+  this: any,
+  hDlg: number,
+  message: number,
+  _wParam: number,
+  lParam: number
+) {
+  const core = this.machine.cpu.core;
+  /* The block is read for `WM_INITDIALOG` alone: another message's lParam
+   * is no pointer. */
+  const far = message === User.WM_INITDIALOG ? lParam >>> 0 : 0;
+  const word = (at: number) => (far ? core.read16(far >>> 16, ((far & 0xffff) + at) & 0xffff) : 0);
+  const other = ((word(8) << 16) | word(6)) >>> 0;
+  const text =
+    message === User.WM_INITDIALOG && other >>> 16
+      ? this.machine.memory.readCString(core.translateAddress(other >>> 16, other & 0xffff))
+      : null;
+
+  return aboutAnswer(
+    this,
+    hDlg,
+    message,
+    message === User.WM_INITDIALOG ? ((word(4) << 16) | word(2)) >>> 0 : 0,
+    text,
+    message === User.WM_INITDIALOG ? word(0) : 0
+  );
+}
+
+/**
  * Shows the About box for a program.
  *
  * @param {Types.HWND} hWnd - Its owner.
@@ -179,117 +336,9 @@ export async function ShellAbout(
 ) {
   const system = this;
   const template = parseDialogTemplate((at) => ABOUT_DIALOG[at] ?? 0);
-  const item = (id: number) =>
-    String(template.items.find((each: any) => each.id === id)?.text ?? '');
 
-  const proc = async (hDlg: number, message: number, _wParam: number, _lParam: number) => {
-    switch (message) {
-      case User.WM_INITDIALOG: {
-        const app = readString(system, szApp);
-        const hash = app.indexOf('#');
-        let line = app;
-
-        if (hash >= 0) {
-          core(system).write8(szApp >>> 16, ((szApp & 0xffff) + hash) & 0xffff, 0);
-          await SetWindowText.call(system, hDlg, app.slice(0, hash));
-          line = app.slice(hash + 1);
-        } else {
-          await SetWindowText.call(system, hDlg, filled(template.caption ?? '', app));
-        }
-
-        await SetDlgItemText.call(system, hDlg, ID_LINE, filled(item(ID_LINE), line));
-        await SetDlgItemText.call(system, hDlg, ID_OTHER, szOtherStuff ?? '');
-        await SendDlgItemMessage.call(system, hDlg, ID_ICON, STM_SETICON, hIcon, 0);
-
-        if (!hIcon) {
-          await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_ICON), SW_HIDE);
-        }
-
-        await SetDlgItemText.call(system, hDlg, ID_SERIAL, USER_STRINGS.get(0x205) ?? '');
-        await SetDlgItemText.call(
-          system,
-          hDlg,
-          ID_VERSION,
-          (SHELL_STRINGS.get(0xd8) ?? '')
-            .replace('%s', USER_STRINGS.get(0x204) ?? '')
-            .replace('%s', '')
-        );
-
-        const flags = GetWinFlags.call(system);
-        const mode = !(flags & WF_PMODE) ? 0xd1 : flags & WF_STANDARD ? 0xd4 : 0xd5;
-
-        await SetDlgItemText.call(system, hDlg, ID_MODE, SHELL_STRINGS.get(mode) ?? '');
-
-        const profile = await readProfile(system, 'WIN.INI');
-        const separator = (profile.get('intl', 'sThousand') ?? ',')[0] ?? '\0';
-        const free = Math.floor((GetFreeSpace.call(system, 0x1000) >>> 0) / 1024);
-
-        await SetDlgItemText.call(
-          system,
-          hDlg,
-          ID_MEMORY,
-          filled(SHELL_STRINGS.get(0xda) ?? '', thousands(free, separator))
-        );
-        await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_SMARTDRIVE), SW_HIDE);
-
-        if (flags & WF_PMODE && !(flags & WF_WLO)) {
-          await SetDlgItemText.call(
-            system,
-            hDlg,
-            ID_RESOURCES_LABEL,
-            SHELL_STRINGS.get(0xd7) ?? ''
-          );
-          await SetDlgItemText.call(
-            system,
-            hDlg,
-            ID_RESOURCES,
-            (SHELL_STRINGS.get(0xdc) ?? '')
-              .replace('%d', String(GetFreeSystemResources.call(system, 0)))
-              .replace('%%', '%')
-          );
-        } else {
-          await ShowWindow.call(system, GetDlgItem.call(system, hDlg, ID_RESOURCES_LABEL), SW_HIDE);
-        }
-
-        await SetDlgItemText.call(system, hDlg, ID_NAME, USER_STRINGS.get(0x202) ?? '');
-        await SetDlgItemText.call(system, hDlg, ID_COMPANY, USER_STRINGS.get(0x203) ?? '');
-
-        return 1;
-      }
-
-      case User.WM_PAINT: {
-        const paint: any = new PAINTSTRUCT();
-        const hdc = await BeginPaint.call(system, hDlg, paint);
-
-        if (!(await SendDlgItemMessage.call(system, hDlg, ID_ICON, STM_GETICON, 0, 0))) {
-          const memory = CreateCompatibleDC.call(system, hdc);
-          const bitmap = memory ? await logo(system) : null;
-
-          if (bitmap) {
-            const hbm = system.handles.allocate(bitmap);
-            const old = SelectObject.call(system, memory, hbm);
-
-            BitBlt.call(system, hdc, 10, 10, 64, 64, memory, 0, 0, SRCCOPY);
-            SelectObject.call(system, memory, old);
-            DeleteObject.call(system, hbm);
-          }
-
-          if (memory) {
-            DeleteDC.call(system, memory);
-          }
-        }
-
-        EndPaint.call(system, hDlg, paint);
-        return 1;
-      }
-
-      case User.WM_COMMAND:
-        await EndDialog.call(system, hDlg, 1);
-        return 1;
-    }
-
-    return 0;
-  };
+  const proc = (hDlg: number, message: number, _wParam: number, _lParam: number) =>
+    aboutAnswer(system, hDlg, message, szApp, szOtherStuff, hIcon);
 
   /* Made with SHELL's own instance, which its entry point keeps at [350h]
    * (`SHELL.DLL` seg1 `0069` calling seg2 `0000`, which stores it at

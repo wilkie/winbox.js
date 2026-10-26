@@ -13,7 +13,7 @@ import { NULL } from '../consts.js';
  * @param {object} entry - A parsed resource or resource type.
  * @param {string|number} wanted - What the program asked for.
  */
-function matches(entry, wanted) {
+export function matches(entry, wanted) {
   if (typeof wanted === 'number') {
     return entry.id === wanted;
   }

@@ -1312,9 +1312,19 @@ pub fn post_app_message(system: &mut System, args: &mut Args) -> Result<Answer, 
         return Ok(Answer::Word(0));
     }
 
-    Ok(Answer::Word(u16::from(
-        system.post_message(0, message, wparam, lparam),
-    )))
+    // To the task's own queue (`USER.EXE` seg1 `a7e8`, `23a0`-`23c8`), with
+    // no window, as `userwin.ts` posts it (`thswch`).
+    let Some(slot) = system.slot_of(task) else {
+        return Ok(Answer::Word(0));
+    };
+    let made = system.message_now(0, message, wparam, lparam);
+    let place = system.post_to(slot, made);
+
+    if place != 0 {
+        system.signal_slot(slot);
+    }
+
+    Ok(Answer::Word(u16::from(place != 0)))
 }
 
 /// What the queue holds now, and what came since this was last asked or a

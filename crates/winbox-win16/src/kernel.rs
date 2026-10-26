@@ -25,7 +25,6 @@ const HFILE_ERROR: u16 = 0xffff;
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
         "InitTask" => Implementation::Async(init_task),
-        "WaitEvent" => Implementation::Sync(wait_event),
         "IsWinOldApTask" => Implementation::Sync(is_win_old_ap_task),
         "GetVersion" => Implementation::Sync(get_version),
         "GetExpWinVer" => Implementation::Sync(get_exp_win_ver),
@@ -56,7 +55,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LocalCountFree" => Implementation::Sync(memory::local_count_free),
         "LocalHeapSize" => Implementation::Sync(memory::local_heap_size),
         "GetInstanceData" => Implementation::Sync(memory::get_instance_data),
-        "OutputDebugString" | "FatalAppExit" => Implementation::Sync(nothing_shown),
+        "OutputDebugString" => Implementation::Sync(nothing_shown),
+        "FatalAppExit" => Implementation::Async(fatal_app_exit),
         "IsDBCSLeadByte" => Implementation::Sync(is_dbcs_lead_byte),
         "FatalExit" => Implementation::Async(fatal_exit),
         "GetModuleHandle" => Implementation::Sync(get_module_handle),
@@ -79,6 +79,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "WinExec" => Implementation::Async(crate::tasks::win_exec),
         "LoadModule" => Implementation::Async(crate::tasks::load_module),
         "Yield" => Implementation::Async(crate::tasks::yield_call),
+        "OldYield" => Implementation::Async(crate::tasks::old_yield),
         "DirectedYield" => Implementation::Async(crate::tasks::directed_yield),
         "GetModuleUsage" => Implementation::Sync(modules_kernel::get_module_usage),
         "GetDOSEnvironment" => Implementation::Sync(modules_kernel::get_dos_environment),
@@ -120,8 +121,12 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GlobalCompact" => Implementation::Sync(pointers::global_compact),
         "LocalHandleDelta" => Implementation::Sync(pointers::local_handle_delta),
         "FindResource" => Implementation::Sync(resources::find_resource),
-        "LoadResource" => Implementation::Sync(resources::load_resource),
-        "LockResource" => Implementation::Sync(resources::lock_resource),
+        "LoadResource" => Implementation::Async(resources::load_resource),
+        "LockResource" => Implementation::Async(resources::lock_resource),
+        "SetResourceHandler" => Implementation::Sync(resources::set_resource_handler),
+        "ResourceHandler" => Implementation::Sync(resources::resource_handler),
+        "AllocResource" => Implementation::Sync(resources::alloc_resource),
+        "DirectResAlloc" => Implementation::Sync(resources::direct_res_alloc),
         "FreeResource" => Implementation::Sync(resources::free_resource),
         "AccessResource" => Implementation::Sync(resources::access_resource),
         "SizeofResource" => Implementation::Sync(resources::sizeof_resource),
@@ -302,12 +307,6 @@ fn init_task_registers(system: &mut System) -> Result<Answer, Stop> {
     Ok(Answer::Word(1))
 }
 
-/// Nothing waited for: nought.
-fn wait_event(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
-    Ok(Answer::Word(0))
-}
-
 /// Windows 3.1 on DOS 6.22.
 fn get_version(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Dword(0x0616_0a03))
@@ -359,6 +358,16 @@ fn global_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
     if system.global.size_of(index) == 0 && system.global.flags_of(index) == 0 {
         return Ok(Answer::Dword(0));
+    }
+
+    // A block in the first megabyte: its handle is its selector
+    // (`GlobalDosAlloc`, `kmore`).
+    if system.kernel_calls.dos_blocks.contains_key(&index) {
+        let selector = segment_selector(index);
+
+        return Ok(Answer::Dword(
+            u32::from(selector) << 16 | u32::from(selector),
+        ));
     }
 
     Ok(Answer::Dword(
@@ -662,9 +671,8 @@ fn set_error_mode(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     )))
 }
 
-/// The debugging calls, which go to no debugger here: `OutputDebugString`
-/// shows nothing, and `FatalAppExit` shows no box and goes on, as the
-/// TypeScript engine answers them.
+/// `OutputDebugString`, which goes to no debugger here: it shows nothing,
+/// as the TypeScript engine answers it.
 fn nothing_shown(_: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Nothing)
 }
@@ -677,14 +685,64 @@ fn is_dbcs_lead_byte(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Word(0))
 }
 
-/// `FatalExit`: the program halted, never to be resumed, as the TypeScript
-/// engine halts it -- here it waits for ever.
-fn fatal_exit(engine: &Engine, _: Args) -> Later<'_> {
+/// `FatalExit`: `FatalAppExit(0, "Application requested abnormal
+/// termination")` in the retail build (`KRNL386.EXE` seg1 `93ce`-`93e4`),
+/// the code shown nowhere; the procedure `FatalExitHook` keeps is never
+/// called. As `FatalExit.ts`.
+fn fatal_exit(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        loop {
-            engine.wait_for_wake(None).await;
-        }
+        args.word(&engine.system());
+        ended_in_box(engine, b"Application requested abnormal termination").await
     })
+}
+
+/// USER's system error box, "Application Error" and the text given (or
+/// KERNEL's "Closing current application." for none), its one button
+/// Close; then the task ended through DOS with code `FFh` (seg1
+/// `5cdf`-`5d09`, `5c80`-`5cdc`, `5e01`-`5e19`). As `FatalAppExit.ts`.
+fn fatal_app_exit(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let text = {
+            let system = engine.system();
+            let _action = args.word(&system);
+            let far = args.dword(&system);
+
+            if far >> 16 == 0 {
+                b"Closing current application.".to_vec()
+            } else {
+                system.read_string(far)
+            }
+        };
+
+        ended_in_box(engine, &text).await
+    })
+}
+
+/// The box `FatalAppExit` shows, and the task ended as at `INT 21h` 4Ch.
+async fn ended_in_box(engine: &Engine, text: &[u8]) -> Result<Answer, Stop> {
+    engine
+        .sys_error_box(
+            text,
+            b"Application Error",
+            [
+                0,
+                crate::sys_error_box::SEB_CLOSE | crate::sys_error_box::SEB_DEFBUTTON,
+                0,
+            ],
+        )
+        .await?;
+
+    let mut system = engine.system();
+
+    system.exit_code = Some(0xff);
+
+    if system.task_count() > 1 || system.stays_up {
+        system.exit_task(0xff);
+    } else {
+        system.ended = true;
+    }
+
+    Err(Stop::Ended)
 }
 
 /// Whether a task is `WinOldAp`'s, running a DOS program in a window: bit 0

@@ -69,50 +69,57 @@ pub fn icon_entries(group: &[u8]) -> Vec<IconEntry> {
         .collect()
 }
 
-/// The icon of a group for a display: of its size, and as many colours as
-/// the display has or the most below that. Not measured: which a display
-/// takes when a group has none of its size.
+/// The icon of a group for a display, as USER chooses one -- `GetIconID`'s
+/// choice, which `LoadIcon` and SHELL's `ExtractIcon` make too (**read
+/// out** of `USER.EXE` seg12 `040c`-`04f4`; **recorded** by `iconid`): the
+/// display's colours, 7D00h from 16 bits up; of `size` square, one of that
+/// many colours at once, else the one of most colours below; else, of any
+/// size, the one of most colours not more than the display's; else the
+/// first. A count of colours is the entry's own byte, nought for 256. As
+/// `icon.ts`'s `pickIcon`.
+#[must_use]
 pub fn pick_icon(entries: &[IconEntry], size: usize, display_colours: u32) -> Option<IconEntry> {
-    let colours = |entry: &IconEntry| {
-        if entry.colours != 0 {
-            entry.colours
-        } else {
-            1u32 << (if entry.bit_count == 0 {
-                4
-            } else {
-                entry.bit_count.min(31)
-            })
-        }
-    };
-    let sized: Vec<IconEntry> = entries
-        .iter()
-        .filter(|entry| entry.width == size && entry.height == size)
-        .copied()
-        .collect();
-    let candidates = if sized.is_empty() {
-        entries.to_vec()
+    let most = if display_colours >= 0x1_0000 {
+        0x7d00
     } else {
-        sized
+        display_colours
     };
-    let fitting: Vec<IconEntry> = candidates
-        .iter()
-        .filter(|entry| colours(entry) <= display_colours)
-        .copied()
-        .collect();
-    let pool = if fitting.is_empty() {
-        candidates
-    } else {
-        fitting
-    };
-    let first = *pool.first()?;
+    let (mut fit, mut fit_at) = (0u32, 0usize);
+    let (mut any, mut any_at) = (0u32, 0usize);
 
-    Some(pool.iter().fold(first, |best, entry| {
-        if colours(entry) > colours(&best) {
-            *entry
-        } else {
-            best
+    for (at, entry) in entries.iter().enumerate() {
+        let colours = entry.colours;
+
+        if colours <= most && any < colours {
+            any = colours;
+            any_at = at;
         }
-    }))
+
+        if entry.width != size || entry.height != size {
+            continue;
+        }
+
+        if colours == most {
+            return Some(*entry);
+        }
+
+        // Among those with more colours than the display's USER keeps the
+        // fewest, but starts from nought and so never takes one (`04b6`).
+        if colours < most && fit < colours {
+            fit = colours;
+            fit_at = at;
+        }
+    }
+
+    let at = if fit != 0 {
+        fit_at
+    } else if any != 0 {
+        any_at
+    } else {
+        0
+    };
+
+    entries.get(at).copied()
 }
 
 /// An icon resource, its colours matched to a display's palette: bottom

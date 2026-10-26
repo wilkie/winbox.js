@@ -300,6 +300,9 @@ export class DesktopWindow {
    * on the screen: `GetInternalWindowPos`'s point (`placement.ts`).
    */
   iconWas: { left: number; top: number } | null = null;
+  /** Where it was last maximized, on the screen: `GetWindowPlacement`'s
+   * maximized point (`wplace`). */
+  maxWas: { left: number; top: number } | null = null;
 
   /** A minimized window's icon, and the window its title is shown in. */
   icon: IconData | null = null;
@@ -3122,6 +3125,8 @@ export class Desktop {
       return;
     }
 
+    this.#keepIconPlace(window);
+
     if (window.state === 'normal') {
       window.restoreRect = {
         left: window.left,
@@ -3227,6 +3232,11 @@ export class Desktop {
   #keepIconPlace(window: DesktopWindow) {
     if (window.state === 'minimized') {
       window.iconWas = { left: window.left, top: window.top };
+    }
+
+    /* And where it was maximized, kept as it stops being so (`wplace`). */
+    if (window.state === 'maximized') {
+      window.maxWas = { left: window.left, top: window.top };
     }
   }
 

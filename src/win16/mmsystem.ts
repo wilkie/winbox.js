@@ -47,6 +47,7 @@ import { mciExecute } from './mmsystem/mci-execute.js';
 import { DriverCallback } from './mmsystem/callback.js';
 import { StackEnter, StackLeave } from './mmsystem/stacks.js';
 import { mmGetCurrentTask, mmTaskBlock, mmTaskSignal, mmTaskYield } from './mmsystem/tasks.js';
+import { MAIN_ORDINAL, mmTaskCreate, mmTaskMain } from './mmsystem/mmtask.js';
 import {
   JOY_TIMER_ORDINAL,
   joyGetDevCaps,
@@ -1125,7 +1126,7 @@ export class MMSystem extends Module {
       null,
       null,
       null,
-      [MMSystem.stub, 'MMTASKCREATE', 12],
+      [mmTaskCreate, 'mmTaskCreate', 12, [FARPTR, FARPTR, DWORD], UINT],
       null,
       [mmTaskBlock, 'mmTaskBlock', 2, [HANDLE], UINT],
       [mmTaskSignal, 'mmTaskSignal', 2, [HANDLE], BOOL],
@@ -1469,6 +1470,7 @@ export class MMSystem extends Module {
       [MEM_ORDINAL]: [mmioMEMIOProc, 'mmioMEMIOProc', 14, [FARPTR, UINT, DWORD, DWORD], LRESULT],
       [BREAK_ORDINAL]: [mciBreakYield, 'mciBreakYield', 6, [UINT, DWORD], UINT],
       [JOY_TIMER_ORDINAL]: [joyTimer, 'joyTimer', 10, [HWND, UINT, UINT, DWORD]],
+      [MAIN_ORDINAL]: [mmTaskMain, 'mmTaskMain', 2, [HANDLE], UINT],
     };
   }
 

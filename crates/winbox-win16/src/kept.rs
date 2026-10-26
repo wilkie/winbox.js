@@ -164,8 +164,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GlobalFreeAll",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             Some(Export {
@@ -253,7 +253,7 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LoadModule",
                 pops: 8,
-                returns: 2,
+                returns: 4,
                 stub: false,
             }),
             Some(Export {
@@ -300,9 +300,9 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "CallProcInstance",
-                pops: 4,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetInstanceData",
@@ -380,13 +380,13 @@ pub static KEPT: &[Kept] = &[
                 name: "AllocResource",
                 pops: 8,
                 returns: 2,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SetResourceHandler",
                 pops: 10,
                 returns: 4,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "InitAtomTable",
@@ -433,14 +433,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "OpenPathName",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DeletePathName",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Reserved1",
@@ -547,8 +547,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DefineHandleTable",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LoadLibrary",
@@ -577,8 +577,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetLPErrMode",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "ValidateCodeSegments",
@@ -602,7 +602,7 @@ pub static KEPT: &[Kept] = &[
                 name: "NetBiosCall",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetCodeInfo",
@@ -632,13 +632,13 @@ pub static KEPT: &[Kept] = &[
                 name: "SwitchStackTo",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SwitchStackBack",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "PatchCodeHandle",
@@ -685,8 +685,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "OldYield",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetTaskQueueDS",
@@ -991,8 +991,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DirectResAlloc",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetFreeSpace",
@@ -1063,8 +1063,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LONGPTRADD",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "__B000H",
@@ -1087,14 +1087,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GlobalDosAlloc",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalDosFree",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetSelectorBase",
@@ -1202,7 +1202,7 @@ pub static KEPT: &[Kept] = &[
                 name: "DebugBreak",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SwapRecording",
@@ -12792,10 +12792,10 @@ pub static KEPT: &[Kept] = &[
             None,
             None,
             Some(Export {
-                name: "MMTASKCREATE",
+                name: "mmTaskCreate",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             Some(Export {
@@ -14924,8 +14924,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "AboutDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "ExtractIcon",
@@ -14955,8 +14955,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "InternalExtractIcon",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             None,
@@ -15178,13 +15178,13 @@ pub static KEPT: &[Kept] = &[
                 name: "Enable",
                 pops: 8,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "Disable",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "ToAscii",
@@ -16423,8 +16423,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "TaskSetCSIP",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "TaskGetCSIP",
@@ -16435,8 +16435,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "TaskSwitch",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
         ],
     },

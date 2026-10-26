@@ -19,7 +19,7 @@ topics: [kernel-queries]
 
 ## Nuances
 
-- Not yet done: [[fn:KERNEL.FatalExit]] calling the hook.
+- [[read out]] Nothing else in the retail `KRNL386.EXE` reads the double word: [[fn:KERNEL.FatalExit]] does not call the hook.
 
 ## Implementation
 

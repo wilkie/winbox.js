@@ -1,0 +1,184 @@
+{
+  "probe": "kmore",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "errmode",
+      "args": "GetLPErrMode",
+      "result": "sel=kernel,off=32a,byte=0"
+    },
+    {
+      "function": "longptr",
+      "args": "add-10",
+      "result": "off=4,sel=same,moved=1240,limit=1fff"
+    },
+    {
+      "function": "longptr",
+      "args": "add-1000000",
+      "result": "0,moved=0"
+    },
+    {
+      "function": "longptr",
+      "args": "huge",
+      "result": "off=0,sel=same,moved=100,100,limit=1ffff,ffff"
+    },
+    {
+      "function": "netbios",
+      "args": "7f",
+      "result": "ax=1234,bx=ncb,cx=5678,dx=9abc,es=ds,cf=0,ncb=7f ee"
+    },
+    {
+      "function": "handles",
+      "args": "table",
+      "result": "1:3 0 0 0 0 eeee"
+    },
+    {
+      "function": "handles",
+      "args": "0",
+      "result": "ds"
+    },
+    {
+      "function": "dos",
+      "args": "100",
+      "result": "base=segment,low=yes,size=100,flags=0,handle=selector,limit=ff"
+    },
+    {
+      "function": "dos",
+      "args": "20",
+      "result": "base=segment,low=yes,size=20,flags=0,handle=selector,limit=1f"
+    },
+    {
+      "function": "dos",
+      "args": "first-less-second",
+      "result": "fff0"
+    },
+    {
+      "function": "dos",
+      "args": "first-segment",
+      "result": "16d2"
+    },
+    {
+      "function": "dos",
+      "args": "100000",
+      "result": "0"
+    },
+    {
+      "function": "dos",
+      "args": "10000",
+      "result": "base=segment,low=yes,size=10000,flags=0,handle=selector,limit=ffff"
+    },
+    {
+      "function": "dos",
+      "args": "40000",
+      "result": "base=segment,low=yes,size=40000,flags=0,handle=selector,limit=3ffff"
+    },
+    {
+      "function": "dos",
+      "args": "free-100",
+      "result": "0"
+    },
+    {
+      "function": "dos",
+      "args": "free-20",
+      "result": "0"
+    },
+    {
+      "function": "dos",
+      "args": "free-again",
+      "result": "0"
+    },
+    {
+      "function": "dos",
+      "args": "20-after",
+      "result": "base=segment,low=yes,size=20,flags=0,handle=selector,limit=1f"
+    },
+    {
+      "function": "dos",
+      "args": "after-less-first",
+      "result": "0"
+    },
+    {
+      "function": "cpi",
+      "args": "0",
+      "result": "ax=ds,ds=ds"
+    },
+    {
+      "function": "cpi",
+      "args": "1234",
+      "result": "ax=1235,ds=ds"
+    },
+    {
+      "function": "cpi",
+      "args": "1235",
+      "result": "ax=1235,ds=ds"
+    },
+    {
+      "function": "stack",
+      "args": "switch",
+      "result": "ss=block,sp=efa,bp=f00,frame=0 2222 3333",
+      "section": "stack"
+    },
+    {
+      "function": "stack",
+      "args": "back",
+      "result": "ss=ds,sp=before,bp=before,ax=7777",
+      "section": "stack"
+    },
+    {
+      "function": "stack",
+      "args": "between",
+      "result": "0 sp-2 ds 0 0 100 f00 f00",
+      "section": "stack"
+    },
+    {
+      "function": "stack",
+      "args": "after",
+      "result": "0 0 0 0 0 100 f00 f00",
+      "section": "stack"
+    },
+    {
+      "function": "path",
+      "args": "open-there",
+      "result": "handle",
+      "section": "path"
+    },
+    {
+      "function": "path",
+      "args": "open-win.ini",
+      "result": "handle",
+      "section": "path"
+    },
+    {
+      "function": "path",
+      "args": "open-nowhere",
+      "result": "ffff",
+      "section": "path"
+    },
+    {
+      "function": "path",
+      "args": "open-3d02",
+      "result": "handle",
+      "section": "path"
+    },
+    {
+      "function": "path",
+      "args": "delete",
+      "result": "4100",
+      "section": "path"
+    },
+    {
+      "function": "path",
+      "args": "delete-again",
+      "result": "ffff",
+      "section": "path"
+    }
+  ]
+}

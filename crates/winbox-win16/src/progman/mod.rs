@@ -120,7 +120,7 @@ impl Engine {
         command_line: &str,
         show: u16,
         strings: Option<Vec<u8>>,
-    ) -> Result<u16, Stop> {
+    ) -> Result<(u16, u16), Stop> {
         let child = {
             let mut system = self.system();
             let kept = system.keep_on_load(&MODULE);
@@ -130,7 +130,7 @@ impl Engine {
             let child =
                 match system.add_executable(executable, PATH, command_line, show, strings, true)? {
                     Ok(child) => child,
-                    Err(error) => return Ok(error),
+                    Err(error) => return Ok((error, 0)),
                 };
             let program = system.scheduler.slots[child].program;
             let winmain = export_address(&mut system, WINMAIN);

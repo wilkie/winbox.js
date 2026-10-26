@@ -1,6 +1,6 @@
 'use strict';
 
-import { GlobalLock } from './GlobalLock.js';
+import { lockThroughHandler } from './resource-handlers.js';
 
 /**
  * The **LockResource** function gives a pointer to a loaded resource.
@@ -21,8 +21,9 @@ import { GlobalLock } from './GlobalLock.js';
  *
  * @return {Types.FARPTR} A pointer to the resource.
  */
-export function LockResource(hglbResource) {
+export function LockResource(this: any, hglbResource: number) {
   /* KERNEL's own locks the resource with `GlobalLock`, counted as a
-   * program's lock is (`KRNL386.EXE` seg1 `8768`). */
-  return GlobalLock.call(this, hglbResource);
+   * program's lock is (`KRNL386.EXE` seg1 `8768`); a discarded resource's
+   * block is loaded by its type's handler (`resource-handlers.ts`). */
+  return lockThroughHandler(this, hglbResource);
 }

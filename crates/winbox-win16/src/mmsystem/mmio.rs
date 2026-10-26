@@ -269,7 +269,29 @@ pub fn implementation(name: &str) -> Option<Implementation> {
 /// Windows exports nothing: its stub pops its arguments and its call is
 /// answered here, but it is no export -- `GetProcAddress` does not find it,
 /// and the export table has nothing there.
+/// One past the last ordinal a module keeps a procedure at where it
+/// exports nothing: its stubs reach so far.
+pub fn hidden_extent(module: &str) -> usize {
+    if module.eq_ignore_ascii_case("MMSYSTEM") {
+        usize::from(super::mmtask::MAIN_ORDINAL) + 1
+    } else if module.eq_ignore_ascii_case("KERNEL") {
+        usize::from(crate::resources::DEFAULT_ORDINAL) + 1
+    } else {
+        0
+    }
+}
+
 pub fn hidden(module: &str, ordinal: u16) -> Option<Export> {
+    // KERNEL's own resource handler (`resources.rs`).
+    if module.eq_ignore_ascii_case("KERNEL") {
+        return (ordinal == crate::resources::DEFAULT_ORDINAL).then_some(Export {
+            name: "ResourceHandler",
+            pops: 6,
+            returns: 2,
+            stub: false,
+        });
+    }
+
     let (name, pops, returns) = match ordinal {
         DOS_ORDINAL => ("mmioDOSIOProc", 14, 4),
         MEM_ORDINAL => ("mmioMEMIOProc", 14, 4),
@@ -277,6 +299,8 @@ pub fn hidden(module: &str, ordinal: u16) -> Option<Export> {
         super::mci::BREAK_ORDINAL => ("mciBreakYield", 6, 2),
         // The joystick capture's timer procedure (`joystick.rs`).
         super::joystick::TIMER_ORDINAL => ("joyTimer", 10, 0),
+        // `MMTASK`'s own (`mmtask.rs`).
+        super::mmtask::MAIN_ORDINAL => ("mmTaskMain", 2, 2),
         _ => return None,
     };
 

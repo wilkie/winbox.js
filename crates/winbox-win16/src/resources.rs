@@ -10,7 +10,8 @@ use winbox_machine::{handle_for, index_for};
 
 use winbox_ne::{Executable, Resource, ResourceId};
 
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::{Engine, GuestArg, Register};
 use crate::handles::{Object, Owner};
 use crate::memory;
 use crate::system::System;
@@ -62,11 +63,15 @@ fn matches(id: &ResourceId, name: Option<&String>, wanted: &Wanted) -> bool {
     }
 }
 
-/// A loaded resource: its block's handle, and its uses.
+/// A loaded resource: its block's handle, and its uses; whether a handler
+/// a program set has been called for it (its resource table entry's flag
+/// 4, `KRNL386.EXE` seg1 `8a03`, `87f1`), and the module it was loaded for.
 #[derive(Debug, Clone, Copy)]
 pub struct Loaded {
     pub handle: u16,
     pub uses: u32,
+    pub called: bool,
+    pub module: u16,
 }
 
 impl System {
@@ -196,10 +201,25 @@ pub fn find_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 }
 
 /// A resource loaded into a block of its own: its block's handle. Loaded
-/// again, the same handle, its uses counted.
-pub fn load_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let _instance = args.word(system);
-    let handle = args.word(system);
+/// again, the same handle, its uses counted. Through a handler a program
+/// set for its type, as `resource-handlers.ts`'s `loadThroughHandler`.
+pub fn load_resource(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (instance, handle) = {
+            let system = engine.system();
+
+            (args.word(&system), args.word(&system))
+        };
+
+        if let Some(answer) = load_through_handler(engine, instance, handle).await? {
+            return Ok(Answer::Word(answer));
+        }
+
+        load_resource_here(&mut engine.system(), handle)
+    })
+}
+
+fn load_resource_here(system: &mut System, handle: u16) -> Result<Answer, Stop> {
     let Some((_, executable, resource)) = system.resource(handle) else {
         return Ok(Answer::Word(0));
     };
@@ -243,6 +263,8 @@ pub fn load_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         Loaded {
             handle: block,
             uses: 1,
+            called: false,
+            module: 0,
         },
     );
     system.resource_blocks.insert(block, handle);
@@ -250,9 +272,54 @@ pub fn load_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 }
 
 /// A resource's block locked, as `GlobalLock` locks one: KERNEL's own
-/// counts it as a program's lock is (`KRNL386.EXE` seg1 `8768`).
-pub fn lock_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    memory::global_lock(system, args)
+/// counts it as a program's lock is (`KRNL386.EXE` seg1 `8768`); a
+/// discarded resource's block loaded by its type's handler, as
+/// `resource-handlers.ts`'s `lockThroughHandler`.
+pub fn lock_resource(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let block = args.word(&engine.system());
+        let far = lock(&mut engine.system(), block);
+
+        if far != 0 {
+            return Ok(Answer::Dword(far));
+        }
+
+        let (handler, loaded, resource) = {
+            let system = engine.system();
+            let Some(&resource) = system.resource_blocks.get(&block) else {
+                return Ok(Answer::Dword(0));
+            };
+            let Some(handler) = system.program_handler(resource) else {
+                return Ok(Answer::Dword(0));
+            };
+            let Some(&loaded) = system.loaded_resources.get(&resource) else {
+                return Ok(Answer::Dword(0));
+            };
+
+            (handler, loaded, resource)
+        };
+        let answer = call_handler(engine, handler, block, loaded.module, resource).await?;
+
+        if answer == 0 {
+            return Ok(Answer::Dword(0));
+        }
+
+        let mut system = engine.system();
+
+        if let Some(loaded) = system.loaded_resources.get_mut(&resource) {
+            loaded.called = true;
+        }
+
+        Ok(Answer::Dword(lock(&mut system, answer)))
+    })
+}
+
+/// `GlobalLock`'s answer for a block.
+fn lock(system: &mut System, block: u16) -> u32 {
+    match memory::global_lock(system, &mut Args::repeat(block)) {
+        Ok(Answer::Dword(far)) => far,
+        _ => 0,
+    }
 }
 
 /// A resource's use counted down: nought when none are left, else its
@@ -345,4 +412,336 @@ pub fn find_by<'a>(
         })?;
 
     Some(executable.resource_bytes(resource))
+}
+
+/// KERNEL's own handler's ordinal: its stub is at 8 times one more, 88C8h,
+/// where KERNEL's own is in its code (seg2 `27de`-`27e4`).
+pub const DEFAULT_ORDINAL: u16 = 0x88c8 / 8 - 1;
+
+const GMEM_MOVEABLE: u16 = 0x0002;
+const GMEM_DISCARDABLE: u16 = 0x0100;
+const GMEM_SHARE: u16 = 0x2000;
+
+/// A resource's flag: discardable.
+const DISCARDABLE: u16 = 0x1000;
+
+impl System {
+    /// KERNEL's own handler's far address: its stub.
+    fn default_handler(&mut self) -> u32 {
+        let Some(kept) = self.kept_named("KERNEL") else {
+            return 0;
+        };
+        let stubs = self.stubs(kept);
+
+        u32::from(winbox_machine::segment_selector(stubs)) << 16
+            | u32::from(crate::system::STEP * (DEFAULT_ORDINAL + 1))
+    }
+
+    /// The handler a program set for a resource's type, or `None` for
+    /// KERNEL's own.
+    fn program_handler(&self, resource: u16) -> Option<u32> {
+        let Some(Object::Resource(owner, kind, _)) = self.handles.resolve(resource) else {
+            return None;
+        };
+
+        self.kernel_calls
+            .resource_handlers
+            .get(&(owner, kind))
+            .copied()
+            .filter(|&handler| handler != self.kernel_calls.default_resource_handler)
+    }
+
+    /// The resource table's alignment shift: its first word.
+    fn resource_shift(executable: &Executable) -> u32 {
+        let at = executable.header_offset as usize
+            + usize::from(executable.header.resource_table_offset);
+        let bytes = executable.bytes();
+
+        bytes
+            .get(at..at + 2)
+            .map_or(0, |word| u32::from(u16::from_le_bytes([word[0], word[1]])))
+    }
+
+    /// A block for a resource: moveable, discardable as it is, the size given
+    /// or its own, in its table's units.
+    fn alloc_for(&mut self, executable: &Executable, resource: &Resource, size: u32) -> u16 {
+        let unit = 1u32 << Self::resource_shift(executable);
+        let units = if size == 0 {
+            resource.length.div_ceil(unit)
+        } else {
+            size.div_ceil(unit)
+        };
+        let flags = GMEM_MOVEABLE
+            | GMEM_SHARE
+            | if resource.flags & DISCARDABLE != 0 {
+                GMEM_DISCARDABLE
+            } else {
+                0
+            };
+
+        self.allocate_owned(units * unit, flags)
+    }
+
+    /// A block of the running task's, its flags as given.
+    fn allocate_owned(&mut self, size: u32, flags: u16) -> u16 {
+        let Some(index) =
+            self.global
+                .allocate(&mut self.cpu.bus, &mut self.descriptors, size, flags)
+        else {
+            return 0;
+        };
+        let task = self.current_task().unwrap_or(0);
+
+        self.block_owners.insert(index, task);
+        handle_for(index)
+    }
+}
+
+/// A handler called as KERNEL calls one (seg1 `89dc`-`89fb`, `87c5`-`87e0`).
+async fn call_handler(
+    engine: &Engine,
+    handler: u32,
+    block: u16,
+    module: u16,
+    resource: u16,
+) -> Result<u16, Stop> {
+    let ss = engine.system().cpu.segments[winbox_cpu::SS].selector;
+    let (answer, _) = engine
+        .call_with(
+            handler,
+            &[
+                GuestArg::Word(block),
+                GuestArg::Word(module),
+                GuestArg::Word(resource),
+            ],
+            &[
+                Register::Word(winbox_cpu::AX, ss),
+                Register::Segment(winbox_cpu::DS, ss),
+                Register::Segment(winbox_cpu::ES, ss),
+            ],
+        )
+        .await?;
+
+    Ok(answer as u16)
+}
+
+/// `LoadResource` through a handler a program set (seg1 `8957`-`8a07`), as
+/// `resource-handlers.ts`'s: `None` where none is set for its type.
+async fn load_through_handler(
+    engine: &Engine,
+    instance: u16,
+    resource: u16,
+) -> Result<Option<u16>, Stop> {
+    let (handler, loaded, module, discardable) = {
+        let mut system = engine.system();
+        let Some(handler) = system.program_handler(resource) else {
+            return Ok(None);
+        };
+        let Some((_, _, entry)) = system.resource(resource) else {
+            return Ok(None);
+        };
+        let loaded = system.loaded_resources.get(&resource).copied();
+
+        if let Some(loaded) = loaded
+            && loaded.uses > 0
+        {
+            return Ok(None);
+        }
+
+        let module = crate::kernel_calls::tasks::exe_ptr(&mut system, instance);
+
+        (handler, loaded, module, entry.flags & DISCARDABLE != 0)
+    };
+
+    if let Some(loaded) = loaded {
+        let mut system = engine.system();
+
+        if loaded.called && !system.global.is_discarded(index_for(loaded.handle)) {
+            system.loaded_resources.insert(
+                resource,
+                Loaded {
+                    uses: loaded.uses + 1,
+                    ..loaded
+                },
+            );
+            return Ok(Some(loaded.handle));
+        }
+    } else if discardable {
+        let mut system = engine.system();
+        let handle = system.allocate_owned(0, GMEM_MOVEABLE | GMEM_SHARE | GMEM_DISCARDABLE);
+
+        if handle == 0 {
+            return Ok(Some(0));
+        }
+
+        system.global.discard(index_for(handle));
+        system.loaded_resources.insert(
+            resource,
+            Loaded {
+                handle,
+                uses: 1,
+                called: false,
+                module,
+            },
+        );
+        system.resource_blocks.insert(handle, resource);
+        return Ok(Some(handle));
+    }
+
+    let block = loaded.map_or(0, |loaded| loaded.handle);
+    let answer = call_handler(engine, handler, block, module, resource).await?;
+
+    if answer == 0 {
+        return Ok(Some(0));
+    }
+
+    let mut system = engine.system();
+
+    system.loaded_resources.insert(
+        resource,
+        Loaded {
+            handle: answer,
+            uses: loaded.map_or(0, |loaded| loaded.uses) + 1,
+            called: true,
+            module,
+        },
+    );
+    system.resource_blocks.insert(answer, resource);
+    Ok(Some(answer))
+}
+
+/// A type's handler changed (`KRNL386.EXE` seg3 `0b3d`-`0bb0`): the one it
+/// had answered, nought where the module has no such type. **Recorded** by
+/// `reshand`.
+pub fn set_resource_handler(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+    let kind = wanted(system, args.dword(system));
+    let handler = args.dword(system);
+    let (Some(owner), Some(kind)) = (system.resources_of(instance), kind) else {
+        return Ok(Answer::Dword(0));
+    };
+    let Some(executable) = system.resource_file(owner) else {
+        return Ok(Answer::Dword(0));
+    };
+    let Some(index) = executable
+        .resources
+        .iter()
+        .position(|resource_type| matches(&resource_type.id, resource_type.name.as_ref(), &kind))
+    else {
+        return Ok(Answer::Dword(0));
+    };
+    let default = system.default_handler();
+
+    system.kernel_calls.default_resource_handler = default;
+
+    let before = system
+        .kernel_calls
+        .resource_handlers
+        .insert((owner, index), handler)
+        .unwrap_or(default);
+
+    Ok(Answer::Dword(before))
+}
+
+/// KERNEL's own handler (seg1 `88c8`-`8921`): a block given that is there
+/// answered as it is; else the resource read into it, or into a block of
+/// its own, and that answered.
+pub fn resource_handler(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let block = args.word(system);
+    let _module = args.word(system);
+    let resource = args.word(system);
+    let Some((_, executable, entry)) = system.resource(resource) else {
+        return Ok(Answer::Word(0));
+    };
+    let index = index_for(block);
+
+    if block != 0 && system.global.size_of(index) != 0 && !system.global.is_discarded(index) {
+        return Ok(Answer::Word(block));
+    }
+
+    let bytes = executable.resource_bytes(&entry).to_vec();
+    let handle = if block != 0 && system.global.block(index).is_some() {
+        system.global.resize(
+            &mut system.cpu.bus,
+            &mut system.descriptors,
+            index,
+            bytes.len() as u32,
+        );
+        block
+    } else {
+        system.alloc_for(&executable, &entry, 0)
+    };
+
+    if handle == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    system
+        .cpu
+        .bus
+        .write((index_for(handle) as u32) << 16, &bytes);
+    Ok(Answer::Word(handle))
+}
+
+/// A block for a resource (`KRNL386.EXE` seg1 `851e`-`85c3`). **Recorded**
+/// by `reshand`.
+pub fn alloc_resource(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+    let resource = args.word(system);
+    let size = args.dword(system);
+
+    if crate::kernel_calls::tasks::exe_ptr(system, instance) == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let Some((_, executable, entry)) = system.resource(resource) else {
+        return Ok(Answer::Word(0));
+    };
+    let held = system
+        .loaded_resources
+        .get(&resource)
+        .map(|loaded| loaded.handle)
+        .filter(|&handle| system.global.block(index_for(handle)).is_some());
+
+    if let Some(held) = held {
+        let unit = 1u32 << System::resource_shift(&executable);
+        let units = if size == 0 {
+            entry.length.div_ceil(unit)
+        } else {
+            size.div_ceil(unit)
+        };
+
+        system.global.resize(
+            &mut system.cpu.bus,
+            &mut system.descriptors,
+            index_for(held),
+            units * unit,
+        );
+        return Ok(Answer::Word(held));
+    }
+
+    Ok(Answer::Word(system.alloc_for(&executable, &entry, size)))
+}
+
+/// A block for a resource of the module's, of the size and the resource
+/// flags given (`KRNL386.EXE` seg1 `84b8`-`84e8`). **Recorded** by
+/// `reshand`.
+pub fn direct_res_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let instance = args.word(system);
+    let flags = args.word(system);
+    let size = args.word(system);
+
+    if crate::kernel_calls::tasks::exe_ptr(system, instance) == 0 {
+        return Ok(Answer::Word(0));
+    }
+
+    let flags = GMEM_MOVEABLE
+        | GMEM_SHARE
+        | if flags & DISCARDABLE != 0 {
+            GMEM_DISCARDABLE
+        } else {
+            0
+        };
+
+    Ok(Answer::Word(system.allocate_owned(u32::from(size), flags)))
 }

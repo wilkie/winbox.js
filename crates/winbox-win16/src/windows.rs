@@ -139,6 +139,9 @@ pub struct Window {
     /// go, on the screen: `GetInternalWindowPos`'s point
     /// (`window_state.rs`).
     pub icon_was: Option<(i32, i32)>,
+    /// Where it was last maximized, on the screen: `GetWindowPlacement`'s
+    /// maximized point (`wplace`).
+    pub max_was: Option<(i32, i32)>,
     /// Whether the computer-based training hooks have been asked about
     /// its icon's title, which USER makes once (`window_state.rs`,
     /// `title_made`).

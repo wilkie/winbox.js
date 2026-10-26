@@ -5,7 +5,8 @@
 use winbox_cpu::{DS, DX, ES};
 use winbox_machine::index_for;
 
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
 use crate::handles::Object;
 use crate::system::System;
 use crate::toolhelp::global::global_blocks;
@@ -68,9 +69,64 @@ pub fn post_event(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 
     if let Some(record) = system.task_record(task) {
         record.events = record.events.wrapping_add(1);
+
+        // A task waiting in `WaitEvent` for it woken.
+        let waiters = &mut system.kernel_calls.event_waiters;
+        let woken: Vec<usize> = waiters
+            .iter()
+            .filter(|&&(on, _)| on == task)
+            .map(|&(_, slot)| slot)
+            .collect();
+
+        waiters.retain(|&(on, _)| on != task);
+
+        for slot in woken {
+            if slot < system.scheduler.slots.len() {
+                system.signal_slot(slot);
+            }
+        }
     }
 
     Ok(Answer::Word(task))
+}
+
+/// A task's event taken (seg1 `7ca8`-`7cfc`): nought where it has one,
+/// else the processor given up until `PostEvent` gives it one, then `FFh`.
+/// As `task-calls.ts`.
+pub fn wait_event(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let task = {
+            let system = engine.system();
+            let task = args.word(&system);
+
+            task_or_current(&system, task)
+        };
+        let mut answer = 0;
+
+        loop {
+            {
+                let mut system = engine.system();
+                let slot = system.current_slot();
+                let Some(record) = system.task_record(task) else {
+                    return Ok(Answer::Word(0));
+                };
+
+                if record.events > 0 {
+                    record.events -= 1;
+                    return Ok(Answer::Word(answer));
+                }
+
+                record.events = 0;
+
+                if let Some(slot) = slot {
+                    system.kernel_calls.event_waiters.push((task, slot));
+                }
+            }
+
+            engine.wait_for_wake(None).await;
+            answer = 0xff;
+        }
+    })
 }
 
 /// A task's priority moved, the new priority answered (seg1 `7df0`-

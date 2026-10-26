@@ -50,6 +50,7 @@ import {
   IsTask,
   PostEvent,
   SetPriority,
+  WaitEvent,
   SetTaskQueue,
 } from './kernel/task-calls.js';
 import {
@@ -101,6 +102,27 @@ import { GetProfileString } from './kernel/GetProfileString.js';
 import { WriteProfileString } from './kernel/WriteProfileString.js';
 import { Dos3Call } from './kernel/Dos3Call.js';
 import {
+  AllocResource,
+  DEFAULT_ORDINAL,
+  DirectResAlloc,
+  ResourceHandler,
+  SetResourceHandler,
+} from './kernel/resource-handlers.js';
+import {
+  CallProcInstance,
+  DefineHandleTable,
+  DeletePathName,
+  GetLPErrMode,
+  GlobalDosAlloc,
+  GlobalDosFree,
+  GlobalFreeAll,
+  LongPtrAdd,
+  NetBIOSCall,
+  OpenPathName,
+  SwitchStackBack,
+  SwitchStackTo,
+} from './kernel/more-calls.js';
+import {
   GetCodeHandle,
   GetCodeInfo,
   GetHeapSpaces,
@@ -144,7 +166,7 @@ import { FreeLibrary, GetModuleUsage, LoadLibrary } from './kernel/LoadLibrary.j
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalShrink } from './kernel/LocalShrink.js';
-import { DirectedYield, LoadModule, WinExec, Yield } from './kernel/WinExec.js';
+import { DirectedYield, LoadModule, OldYield, WinExec, Yield } from './kernel/WinExec.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
 import { LocalFree } from './kernel/LocalFree.js';
 import { LocalHandle } from './kernel/LocalHandle.js';
@@ -173,7 +195,6 @@ import { OpenFile } from './kernel/OpenFile.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
 import { Throw } from './kernel/Throw.js';
 import { UnlockSegment } from './kernel/UnlockSegment.js';
-import { WaitEvent } from './kernel/WaitEvent.js';
 import { WritePrivateProfileString } from './kernel/WritePrivateProfileString.js';
 import {
   IsBadCodePtr,
@@ -301,12 +322,12 @@ export class Kernel extends Module {
       [LockSegment, 'LockSegment', 2, [UINT], HGLOBAL],
       [UnlockSegment, 'UnlockSegment', 2, [UINT]],
       [GlobalCompact, 'GlobalCompact', 4, [DWORD], DWORD],
-      [Kernel.stub, 'GlobalFreeAll', 2],
+      [GlobalFreeAll, 'GlobalFreeAll', 2, [UINT], UINT],
       null, // was SetSwapHook; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'GlobalMasterHandle', 0],
       [Yield, 'Yield', 0, []],
       // 30 //
-      [WaitEvent, 'WaitEvent', 2, [HANDLE], BOOL],
+      [WaitEvent, 'WaitEvent', 2, [HANDLE], UINT],
       [PostEvent, 'PostEvent', 2, [HANDLE], HANDLE],
       [SetPriority, 'SetPriority', 4, [HANDLE, INT], INT],
       [LockCurrentTask, 'LockCurrentTask', 2, [BOOL], HANDLE],
@@ -322,7 +343,7 @@ export class Kernel extends Module {
       [nothing, 'DisableDos', 0, []],
       null, // was IsScreenGrab; Windows 3.1 exports nothing at this ordinal
       null, // was BuildPDB; Windows 3.1 exports nothing at this ordinal
-      [LoadModule, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
+      [LoadModule, 'LoadModule', 8, [LPCSTR, FARPTR], DWORD],
       /* The same code as `FreeLibrary` (`KRNL386.EXE` seg2 `0176`, `018a`). */
       [FreeLibrary, 'FreeModule', 2, [HINSTANCE]],
       [GetModuleHandle, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
@@ -332,7 +353,7 @@ export class Kernel extends Module {
       [GetProcAddress, 'GetProcAddress', 6, [HINSTANCE, LPCSTR], FARPTR],
       [MakeProcInstance, 'MakeProcInstance', 6, [FARPTR, HINSTANCE], FARPTR],
       [FreeProcInstance, 'FreeProcInstance', 4, [FARPTR]],
-      [Kernel.stub, 'CallProcInstance', 4],
+      [CallProcInstance, 'CallProcInstance', 0],
       [GetInstanceData, 'GetInstanceData', 6, [HINSTANCE, NEARPTR, INT], INT],
       [Catch, 'Catch', 4, [FARPTR], INT],
       [Throw, 'Throw', 6, [FARPTR, INT], INT], // Return value must match Catch
@@ -346,8 +367,8 @@ export class Kernel extends Module {
       [FreeResource, 'FreeResource', 2, [HGLOBAL], BOOL],
       [AccessResource, 'AccessResource', 4, [HINSTANCE, HANDLE], INT],
       [SizeofResource, 'SizeofResource', 4, [HINSTANCE, HANDLE], DWORD],
-      [Kernel.stub, 'AllocResource', 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
-      [Kernel.stub, 'SetResourceHandler', 10, [HINSTANCE, LPCSTR, FARPTR], FARPTR],
+      [AllocResource, 'AllocResource', 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
+      [SetResourceHandler, 'SetResourceHandler', 10, [HINSTANCE, LPCSTR, FARPTR], DWORD],
       [InitAtomTable, 'InitAtomTable', 2, [INT], BOOL],
       [FindAtom, 'FindAtom', 4, [FARPTR], ATOM],
       // 70 //
@@ -356,8 +377,8 @@ export class Kernel extends Module {
       [GetAtomName, 'GetAtomName', 8, [ATOM, FARPTR, INT], UINT],
       [GetAtomHandle, 'GetAtomHandle', 2, [ATOM], HANDLE],
       [OpenFile, 'OpenFile', 10, [LPCSTR, [OFSTRUCT], UINT], HFILE],
-      [Kernel.stub, 'OpenPathName', 6],
-      [Kernel.stub, 'DeletePathName', 4],
+      [OpenPathName, 'OpenPathName', 6, [FARPTR, UINT], UINT],
+      [DeletePathName, 'DeletePathName', 4, [FARPTR], UINT],
       [AnsiNext, 'Reserved1', 4, [FARPTR], FARPTR],
       [AnsiPrev, 'Reserved2', 8, [FARPTR, FARPTR], FARPTR],
       [AnsiUpperDriven, 'Reserved3', 4, [FARPTR], FARPTR],
@@ -377,23 +398,23 @@ export class Kernel extends Module {
       [InitTask, 'InitTask', 0, [], UINT],
       [GetTempDrive, 'GetTempDrive', 2, [BYTE], UINT],
       [GetCodeHandle, 'GetCodeHandle', 4, [FARPTR], DWORD],
-      [Kernel.stub, 'DefineHandleTable', 2],
+      [DefineHandleTable, 'DefineHandleTable', 2, [UINT], UINT],
       [LoadLibrary, 'LoadLibrary', 4, [LPCSTR], HINSTANCE],
       [FreeLibrary, 'FreeLibrary', 2, [HINSTANCE]],
       [GetTempFileName, 'GetTempFileName', 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
       [GetLastDiskChange, 'GetLastDiskChange', 0, [], BYTE],
-      [Kernel.stub, 'GetLPErrMode', 0],
+      [GetLPErrMode, 'GetLPErrMode', 0, [], DWORD],
       // 100 //
       [nothing, 'ValidateCodeSegments', 0, []],
       [Dos3Call, 'NoHookDosCall', 0],
       [Dos3Call, 'Dos3Call', 0],
-      [Kernel.stub, 'NetBiosCall', 0],
+      [NetBIOSCall, 'NetBiosCall', 0],
       [GetCodeInfo, 'GetCodeInfo', 8, [FARPTR, FARPTR], UINT],
       [GetExeVersion, 'GetExeVersion', 0, [], UINT],
       [SetSwapAreaSize, 'SetSwapAreaSize', 2, [UINT], DWORD],
       [SetErrorMode, 'SetErrorMode', 2, [UINT], UINT],
-      [Kernel.stub, 'SwitchStackTo', 0],
-      [Kernel.stub, 'SwitchStackBack', 0, []],
+      [SwitchStackTo, 'SwitchStackTo', 0],
+      [SwitchStackBack, 'SwitchStackBack', 0],
       // 110 //
       [Kernel.stub, 'PatchCodeHandle', 2, [UINT]],
       [GlobalWire, 'GlobalWire', 2, [HGLOBAL], FARPTR],
@@ -402,7 +423,7 @@ export class Kernel extends Module {
       [KERNEL_CONSTANTS[114], '__AHINCR', 0],
       [OutputDebugString, 'OutputDebugString', 4, [LPCSTR]],
       [Kernel.stub, 'InitLib', 0],
-      [Kernel.stub, 'OldYield', 0],
+      [OldYield, 'OldYield', 0, [], UINT],
       [GetTaskQueueDS, 'GetTaskQueueDS', 0, []],
       [GetTaskQueueES, 'GetTaskQueueES', 0, []],
       // 120 //
@@ -470,7 +491,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'A20Proc', 2],
       [WinExec, 'WinExec', 6, [LPCSTR, UINT], UINT],
       [GetExpWinVer, 'GetExpWinVer', 2, [HANDLE], DWORD],
-      [Kernel.stub, 'DirectResAlloc', 6],
+      [DirectResAlloc, 'DirectResAlloc', 6, [HINSTANCE, UINT, UINT], HGLOBAL],
       [GetFreeSpace, 'GetFreeSpace', 2, [UINT], DWORD],
       // 170 //
       [AllocCSToDSAlias, 'AllocCSToDSAlias', 2, [UINT], UINT],
@@ -484,12 +505,12 @@ export class Kernel extends Module {
       [KERNEL_CONSTANTS[178], '__WINFLAGS', 0],
       [KERNEL_CONSTANTS[179], '__D000H', 0],
       // 180 //
-      [Kernel.stub, 'LONGPTRADD', 8],
+      [LongPtrAdd, 'LONGPTRADD', 8, [DWORD, DWORD], DWORD],
       [KERNEL_CONSTANTS[181], '__B000H', 0],
       [KERNEL_CONSTANTS[182], '__B800H', 0],
       [KERNEL_CONSTANTS[183], '__0000H', 0],
-      [Kernel.stub, 'GlobalDosAlloc', 4],
-      [Kernel.stub, 'GlobalDosFree', 2],
+      [GlobalDosAlloc, 'GlobalDosAlloc', 4, [DWORD], DWORD],
+      [GlobalDosFree, 'GlobalDosFree', 2, [UINT], UINT],
       [GetSelectorBase, 'GetSelectorBase', 2, [UINT], DWORD],
       [SetSelectorBase, 'SetSelectorBase', 6, [UINT, DWORD], UINT],
       [GetSelectorLimit, 'GetSelectorLimit', 2, [UINT], DWORD],
@@ -509,7 +530,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'ValidateFreeSpaces', 0],
       [Kernel.stub, 'ReplaceInst', 6],
       [Kernel.stub, 'RegisterPtrace', 4],
-      [Kernel.stub, 'DebugBreak', 0],
+      [nothing, 'DebugBreak', 0, []],
       [Kernel.stub, 'SwapRecording', 2],
       [Kernel.stub, 'CVWBreak', 2],
       [AllocSelectorArray, 'AllocSelectorArray', 2, [UINT], UINT],
@@ -724,6 +745,17 @@ export class Kernel extends Module {
       //Kernel.stub, // K403,
       //Kernel.stub, // K404,
     ];
+  }
+
+  /**
+   * The resource handler of KERNEL itself, at the ordinal whose stub is at 88C8h,
+   * where that of KERNEL is in its code (resource-handlers.ts). No export: a
+   * program is handed its address by SetResourceHandler.
+   */
+  static get hiddenExports(): Record<number, any[]> {
+    return {
+      [DEFAULT_ORDINAL]: [ResourceHandler, 'ResourceHandler', 6, [HANDLE, HANDLE, HANDLE], HGLOBAL],
+    };
   }
 
   static stub() {

@@ -131,7 +131,10 @@ impl System {
         // command line -- its length, its characters and a nought, with no
         // carriage return (`winexec`).
         let prefix = (program_segment as u32) << 16;
-        let tail = &command_line.as_bytes()[..command_line.len().min(126)];
+        // A character a byte, as the TypeScript engine's `charCodeAt`
+        // gives them: a tail may carry any byte (`mmTaskCreate`'s).
+        let tail: Vec<u8> = command_line.chars().take(126).map(|c| c as u8).collect();
+        let tail = &tail[..];
 
         memory.write(prefix, &[0xcd, 0x20]);
         memory.write16(prefix + 0x2c, segment_selector(environment));

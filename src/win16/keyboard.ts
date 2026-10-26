@@ -7,6 +7,8 @@ import { DWORD, FARPTR, INT, LONG, UINT } from './types.js';
 import { AnsiToOem, AnsiToOemBuff, OemToAnsi, OemToAnsiBuff } from './keyboard/oem.js';
 import { MapVirtualKey, VkKeyScan } from './keyboard/scan.js';
 import {
+  Disable,
+  Enable,
   EnableKBSysReq,
   GetBIOSKeyProc,
   GetKeyboardType,
@@ -57,8 +59,8 @@ export class Keyboard extends Module {
     const exports: any[] = [];
 
     exports[1] = [Inquire, 'Inquire', 4, [FARPTR], INT];
-    exports[2] = [Keyboard.stub, 'Enable', 8];
-    exports[3] = [Keyboard.stub, 'Disable', 0];
+    exports[2] = [Enable, 'Enable', 8, [FARPTR, FARPTR]];
+    exports[3] = [Disable, 'Disable', 0, []];
     exports[4] = [ToAscii, 'ToAscii', 14, [UINT, UINT, FARPTR, FARPTR, UINT], INT];
     exports[5] = [AnsiToOem, 'AnsiToOem', 8, [FARPTR, FARPTR], UINT];
     exports[6] = [OemToAnsi, 'OemToAnsi', 8, [FARPTR, FARPTR], UINT];

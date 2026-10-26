@@ -31,7 +31,9 @@ Every call checks the structure it is handed the same way. The pointer must not 
 
 `TaskGetCSIP` answers nought for the running task (seg1 `0d97`-`0dbd`). For another task it answers the CS:IP from the frame its switch left on the stack. [[measured]] That is not nought for the waiting child. winbox.js answers where the task gave up the processor.
 
-`TerminateApp` ends a task (seg1 `26ea`-`27a0`). It switches to the task, sets TDB 18h's bit 2 for `NO_UAE_BOX`, calls `FatalAppExit`, then tells the task's signal procedure and ends it through `INT 21h` 4CFFh. [[measured]] With `NO_UAE_BOX` on the child, the child is no task after and its window is gone. winbox.js ends the task as DOS's function 4Ch would, with code FFh. Not yet done: the Application Error box that `TerminateApp` shows without `NO_UAE_BOX`.
+`TerminateApp` ends a task (seg1 `26ea`-`27a0`). It switches to the task, sets TDB 18h's bit 1 for `NO_UAE_BOX`, and calls `FatalAppExit(0, NULL)`, which shows the "Application Error" box with "Closing current application." unless that bit is set and ends the task through `INT 21h` 4CFFh ([[fn:KERNEL.FatalAppExit]]). [[measured]] With `NO_UAE_BOX` on the child, the child is no task after and its window is gone. WinBox shows the box from the task that called, then ends the task as DOS's function 4Ch would, with code FFh.
+
+`TaskSetCSIP` changes where a task goes on from: the CS and IP in the frame its switch left on its stack, exchanged for those given (seg1 `0d68`-`0d94`). `TaskSwitch` does so too, to TOOLHELP's own code that goes on to the place given, gives the task an event and runs it at once with `DirectedYield` (seg1 `0dc0`-`0e62`). [[measured]] [[probe:thswch]]: a program waiting in `GetMessage`, sent to a procedure of its own, goes there once it is posted a message; one giving the processor up with `Yield` goes there before `TaskSwitch` comes back. In WinBox the place is in the task's saved state: a task waiting in a call of the API goes on from it once that call comes back.
 
 ## Modules
 
@@ -63,7 +65,6 @@ Every call checks the structure it is handed the same way. The pointer must not 
 
 ## Not yet done
 
-- `TaskSetCSIP` and `TaskSwitch`, which make a task go on somewhere else.
-- `TerminateApp`'s Application Error box.
+- A task waiting for a message, sent elsewhere by `TaskSwitch`: Windows runs it there at once; WinBox once a message comes.
 - The types of USER's and GDI's local blocks, and resources' global blocks.
 - Telling a notification procedure what happens (`NotifyRegister`).

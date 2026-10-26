@@ -2,7 +2,9 @@
 //! `toolhelp/misc.ts`, which cites the read-outs.
 
 use super::structures::structure;
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
+use crate::sys_error_box::{SEB_CLOSE, SEB_DEFBUTTON};
 use crate::system::System;
 
 /// `TIMERINFO`'s size.
@@ -14,7 +16,7 @@ const COUNTS_PER_MS: u32 = 0x4a9;
 const PIT_HZ: f64 = 1_193_180.0;
 
 /// `TerminateApp`'s flag that has it return to its caller.
-const RETURN: u16 = 0x8000;
+const NO_UAE_BOX: u16 = 0x0001;
 
 /// The library's exit procedure: TRUE (seg1 `018a`-`01d3`).
 pub fn wep(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -67,18 +69,45 @@ pub fn mem_man_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     Ok(Answer::Word(1))
 }
 
-/// A task ended, with code `FFh`, as DOS's function 4Ch ends one, no box
-/// shown (seg1 `26ea`-`27a0`). **Recorded** by `thtask`.
-pub fn terminate_app(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let task = args.word(system);
-    let flags = args.word(system);
-    let task = if task == 0 {
-        system.current_task().unwrap_or(0)
-    } else {
-        task
-    };
+/// A task ended (seg1 `26ea`-`27a0`): `FatalAppExit(0, NULL)`'s box
+/// shown unless `NO_UAE_BOX`, then the task ended with code `FFh`, as DOS's
+/// function 4Ch ends one. As `misc.ts`. **Recorded** by `thtask`.
+pub fn terminate_app(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (task, flags) = {
+            let system = engine.system();
+            let task = args.word(&system);
+            let flags = args.word(&system);
+            let task = if task == 0 {
+                system.current_task().unwrap_or(0)
+            } else {
+                task
+            };
 
-    if !system.live_task(task) || flags & RETURN != 0 {
+            (task, flags)
+        };
+
+        if !engine.system().live_task(task) {
+            return Ok(Answer::Nothing);
+        }
+
+        if flags & NO_UAE_BOX == 0 {
+            engine
+                .sys_error_box(
+                    b"Closing current application.",
+                    b"Application Error",
+                    [0, SEB_CLOSE | SEB_DEFBUTTON, 0],
+                )
+                .await?;
+        }
+
+        end_task(&mut engine.system(), task)
+    })
+}
+
+/// The task ended as DOS's function 4Ch ends one.
+fn end_task(system: &mut System, task: u16) -> Result<Answer, Stop> {
+    if !system.live_task(task) {
         return Ok(Answer::Nothing);
     }
 
