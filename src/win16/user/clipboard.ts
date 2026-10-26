@@ -72,6 +72,11 @@ function clipboardOf(system: any): Clipboard {
   });
 }
 
+/** The formats on the clipboard, in the order put on. */
+export function clipboardFormats(system: any): number[] {
+  return [...clipboardOf(system).formats.keys()];
+}
+
 /** @returns {Types.BOOL} Whether it opened, for no other window having it open. */
 export function OpenClipboard(this: any, hwnd: number) {
   const clipboard = clipboardOf(this);

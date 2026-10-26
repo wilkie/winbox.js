@@ -20,6 +20,7 @@ import { Shell } from '../../src/win16/shell.js';
 import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { MMSystem } from '../../src/win16/mmsystem.js';
 import { Sound } from '../../src/win16/sound.js';
+import { SystemDriver } from '../../src/win16/system-driver.js';
 import { User } from '../../src/win16/user.js';
 import { Ver } from '../../src/win16/ver/index.js';
 import { Win87EM } from '../../src/win16/win87em.js';
@@ -66,6 +67,7 @@ const MODULES: [any, boolean][] = [
   [User, false],
   [Gdi, false],
   [Keyboard, false],
+  [SystemDriver, false],
   [Sound, false],
   [CommDlg, false],
   [Shell, false],

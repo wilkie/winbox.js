@@ -35,6 +35,9 @@ pub struct UserCalls {
     /// The system menu every window shows that has none of its own, once
     /// made.
     pub default_system_menu: Option<usize>,
+    /// The menus `SetSystemMenu` gave, by the window's index: the menu's
+    /// handle, whose first item's pop-up is the system menu.
+    pub system_menu_bars: HashMap<usize, u16>,
     /// The system menus made as an MDI document window's.
     pub document_menus: std::collections::HashSet<usize>,
     /// The window `LockWindowUpdate` locked.

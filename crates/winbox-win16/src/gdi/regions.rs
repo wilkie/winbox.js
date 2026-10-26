@@ -89,6 +89,11 @@ fn region_of(system: &System, handle: u16) -> Option<usize> {
     }
 }
 
+/// The shape of the region a handle stands for, if it stands for one.
+pub(crate) fn region_shape(system: &System, handle: u16) -> Option<ClipRegion> {
+    region_of(system, handle).map(|object| shape(system, object).clone())
+}
+
 /// No pixels, for an object that is no region.
 static NOTHING: ClipRegion = ClipRegion::EMPTY;
 

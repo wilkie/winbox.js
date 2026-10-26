@@ -1,0 +1,99 @@
+{
+  "probe": "dragq",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "two",
+      "result": "2"
+    },
+    {
+      "function": "file",
+      "args": "0 in 40",
+      "result": "10:C:\\ONE.TXT"
+    },
+    {
+      "function": "file",
+      "args": "1 in 40",
+      "result": "14:C:\\DIR\\TWO.DOC"
+    },
+    {
+      "function": "file",
+      "args": "1 in 5",
+      "result": "14:C:\\D"
+    },
+    {
+      "function": "file",
+      "args": "1 in 1",
+      "result": "14:"
+    },
+    {
+      "function": "file",
+      "args": "1 in 0",
+      "result": "14:###################"
+    },
+    {
+      "function": "file",
+      "args": "1 no buffer",
+      "result": "14:###################"
+    },
+    {
+      "function": "file",
+      "args": "2 in 40",
+      "result": "0:###################"
+    },
+    {
+      "function": "file",
+      "args": "7 in 40",
+      "result": "0:###################"
+    },
+    {
+      "function": "point",
+      "args": "inside",
+      "result": "1:12,34"
+    },
+    {
+      "function": "finish",
+      "args": "size after",
+      "result": "0"
+    },
+    {
+      "function": "count",
+      "args": "two at 20",
+      "result": "2"
+    },
+    {
+      "function": "file",
+      "args": "1 at 20",
+      "result": "14:C:\\DIR\\TWO.DOC"
+    },
+    {
+      "function": "point",
+      "args": "outside",
+      "result": "0:-3,500"
+    },
+    {
+      "function": "count",
+      "args": "none",
+      "result": "0"
+    },
+    {
+      "function": "file",
+      "args": "0 of none",
+      "result": "0:###################"
+    },
+    {
+      "function": "point",
+      "args": "flag 5",
+      "result": "0:0,0"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ import { resourceBytes } from './resources.js';
 import { cursorOf } from './cursor-pos.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { decodeCursor, type CursorImage } from '../../raster/icon.js';
+import { blockCursorImage } from './cursor-make.js';
 
 /**
  * Cursors: what `LoadCursor` hands out and `SetCursor` makes current.
@@ -41,6 +42,10 @@ function standardHandles(system: any): Map<number, number> {
 }
 
 /** A standard cursor's handle, the same each time it is asked for. */
+export function standardCursor(system: any, id: number) {
+  return standardHandle(system, id);
+}
+
 function standardHandle(system: any, id: number) {
   const handles = standardHandles(system);
 
@@ -136,11 +141,13 @@ export function cursorOnScreen(system: any) {
     return null;
   }
 
-  const cursor = system.handles.resolve(current(system));
+  const handle = current(system);
+  const cursor = system.handles.resolve(handle);
+  /* A cursor made of a block (`cursor-make.ts`) shows its block. */
   const image: CursorImage | undefined =
     cursor instanceof CursorData
       ? (cursor.image ?? system.rasterDesktop?.environment.cursorImages?.get(cursor.id))
-      : undefined;
+      : (blockCursorImage(system, handle) ?? undefined);
 
   if (!image) {
     return null;

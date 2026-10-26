@@ -1,6 +1,7 @@
 'use strict';
 
 import { blockFromBits, iconBlock, iconOf } from './icon-block.js';
+import { CopyCursor } from './cursor-make.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { FALSE, NULL, TRUE } from '../consts.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -189,7 +190,12 @@ export function standardIcon(system: any, hicon: number): IconData | null {
 }
 
 /** A copy of an icon, a block of its own (seg12 `0260`). */
-export function CopyIcon(this: any, _hinst: number, hicon: number) {
+export function CopyIcon(this: any, hinst: number, hicon: number) {
+  /* A block's bytes copied as they are (`USER.EXE` seg12 `0260`). */
+  if (this._iconBlocks?.has(hicon)) {
+    return CopyCursor.call(this, hinst, hicon);
+  }
+
   const icon = iconOf(this, hicon);
 
   return icon ? iconBlock(this, icon) : 0;

@@ -288,6 +288,9 @@ export class Loader {
       const segmentFlags = await this._stream.read16(offset + 4, true);
       const segmentMinAllocation = await this._stream.read16(offset + 6, true);
 
+      /* The flags as the file has them, which `GetCodeInfo` gives. */
+      segment.flags = segmentFlags;
+
       if (segmentFlags & 0x1) {
         // Bit 0 Set: Data segment, Clear: Code segment
         segment.data = true;

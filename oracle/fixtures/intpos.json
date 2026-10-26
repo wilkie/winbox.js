@@ -1,0 +1,64 @@
+{
+  "probe": "intpos",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "normal",
+      "result": "1: 30,40,230,160 -1,-1"
+    },
+    {
+      "function": "get",
+      "args": "minimized",
+      "result": "2: 30,40,230,160 21,408"
+    },
+    {
+      "function": "get",
+      "args": "maximized",
+      "result": "3: 30,40,230,160 21,408"
+    },
+    {
+      "function": "get",
+      "args": "restored",
+      "result": "1: 30,40,230,160 21,408"
+    },
+    {
+      "function": "set",
+      "args": "normal rect",
+      "result": "1: 50,60,250,160 "
+    },
+    {
+      "function": "get",
+      "args": "after normal rect",
+      "result": "1: 50,60,250,160 -1,-1"
+    },
+    {
+      "function": "set",
+      "args": "minimize at point",
+      "result": "1: 100,400,136,436 iconic"
+    },
+    {
+      "function": "get",
+      "args": "after minimize at point",
+      "result": "2: 50,60,250,160 100,400"
+    },
+    {
+      "function": "set",
+      "args": "restore",
+      "result": "1: 50,60,250,160 "
+    },
+    {
+      "function": "get",
+      "args": "after restore",
+      "result": "1: 50,60,250,160 100,400"
+    }
+  ]
+}

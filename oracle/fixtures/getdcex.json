@@ -1,0 +1,99 @@
+{
+  "probe": "getdcex",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dc",
+      "args": "GetDC",
+      "result": "org 44,53 clip 2 0,0,192,123"
+    },
+    {
+      "function": "dc",
+      "args": "GetWindowDC",
+      "result": "org 40,30 clip 2 0,0,200,150"
+    },
+    {
+      "function": "dc",
+      "args": "0",
+      "result": "null"
+    },
+    {
+      "function": "dc",
+      "args": "WINDOW",
+      "result": "null"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE",
+      "result": "org 44,53 clip 2 0,0,192,123"
+    },
+    {
+      "function": "dc",
+      "args": "WINDOW CACHE",
+      "result": "org 40,30 clip 2 0,0,200,150"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE CLIPCHILDREN",
+      "result": "org 44,53 clip 3 0,0,192,123"
+    },
+    {
+      "function": "parentclip",
+      "args": "child CACHE PARENTCLIP",
+      "result": "org 54,63 clip 2 -10,-10,182,113"
+    },
+    {
+      "function": "dc",
+      "args": "null window CACHE",
+      "result": "null"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE INTERSECTRGN",
+      "result": "org 44,53 clip 2 0,0,36,7"
+    },
+    {
+      "function": "region",
+      "args": "after INTERSECTRGN",
+      "result": "0"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE EXCLUDERGN",
+      "result": "org 44,53 clip 3 0,0,192,123"
+    },
+    {
+      "function": "region",
+      "args": "after EXCLUDERGN",
+      "result": "0"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE region, no flag",
+      "result": "org 44,53 clip 2 0,0,192,123"
+    },
+    {
+      "function": "region",
+      "args": "after no flag",
+      "result": "6"
+    },
+    {
+      "function": "dc",
+      "args": "CACHE INTERSECTRGN KEEPCLIPRGN",
+      "result": "org 44,53 clip 2 0,0,36,7"
+    },
+    {
+      "function": "region",
+      "args": "after KEEPCLIPRGN",
+      "result": "6"
+    }
+  ]
+}

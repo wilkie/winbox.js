@@ -61,7 +61,7 @@ import { CommDlg } from './win16/commdlg/index.js';
 import { Ver } from './win16/ver/index.js';
 import { LzExpand } from './win16/lzexpand/index.js';
 import { Ddeml } from './win16/ddeml/index.js';
-import { SystemDriver } from './win16/system-driver.js';
+import { SystemDriver, pollSystemTimers } from './win16/system-driver.js';
 import { displayDriverFor } from './win16/display-driver.js';
 import { Keyboard } from './win16/keyboard.js';
 import { ToolHelp } from './win16/toolhelp.js';
@@ -269,7 +269,10 @@ export class Win16 {
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
     this._scheduler.handles = this._handles;
     this._scheduler.files = this._dos.files;
-    this._scheduler.onSlice = () => pollTimeEvents(this);
+    this._scheduler.onSlice = () => {
+      pollTimeEvents(this);
+      pollSystemTimers(this);
+    };
 
     /* The calls a program polls with, answered by the Rust core where it
      * runs beside this one (`quick-calls.ts`). */

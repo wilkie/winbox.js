@@ -58,6 +58,19 @@ pub struct Sent {
     pub from: usize,
 }
 
+/// A message another task sent, as its procedure answers it: what
+/// `QuerySendMessage` reads, and whether `ReplyMessage` has answered it.
+#[derive(Debug, Clone)]
+pub struct Answering {
+    pub hwnd: u16,
+    pub message: u16,
+    pub wparam: u16,
+    pub lparam: u32,
+    pub answer: Rc<RefCell<Option<(u32, Param)>>>,
+    pub replied: Rc<std::cell::Cell<bool>>,
+    pub from: usize,
+}
+
 /// A task, as the scheduler keeps it.
 #[derive(Debug)]
 pub struct Slot {
@@ -78,6 +91,9 @@ pub struct Slot {
     pub exit_code: Option<u8>,
     /// What other tasks sent it, to be taken in order.
     pub sent: VecDeque<Sent>,
+    /// The messages other tasks sent it that it is answering, the latest
+    /// last (`reply_message.rs`).
+    pub answering: Vec<Answering>,
     /// How deep the task is in messages other tasks sent it: USER's
     /// `InSendMessage` word (`USER.EXE` seg1 `3dba`), which its looks
     /// meanwhile let the input go for (`system_queue.rs`).
@@ -212,6 +228,7 @@ impl System {
             exit_code: None,
             sent: VecDeque::new(),
             in_sent: 0,
+            answering: Vec::new(),
             saved: None,
         });
         self.scheduler.current = Some(self.scheduler.slots.len() - 1);
@@ -287,6 +304,7 @@ impl System {
             exit_code: None,
             sent: VecDeque::new(),
             in_sent: 0,
+            answering: Vec::new(),
             saved: Some(Box::new(theirs)),
         });
 

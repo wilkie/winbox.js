@@ -131,12 +131,18 @@ pub fn is_bad_huge_write_ptr(system: &mut System, args: &mut Args) -> Result<Ans
 /// Whether a procedure's address is not in a readable code segment.
 pub fn is_bad_code_ptr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let pointer = args.dword(system);
+
+    answer(bad_code(system, pointer))
+}
+
+/// `IsBadCodePtr`'s answer for an address.
+pub(crate) fn bad_code(system: &System, pointer: u32) -> bool {
     let selector = (pointer >> 16) as u16;
     let code = system
         .peek_descriptor(selector)
         .is_some_and(|descriptor| descriptor.segment && descriptor.executable);
 
-    answer(!code || !system.reaches(selector, pointer & 0xffff, false))
+    !code || !system.reaches(selector, pointer & 0xffff, false)
 }
 
 /// Whether a string is not readable to its nought, or is longer than the

@@ -34,6 +34,9 @@ use super::strings;
 const MCI_OPEN: u16 = 0x803;
 const MCI_CLOSE: u16 = 0x804;
 const MCI_PLAY: u16 = 0x806;
+const MCI_BREAK: u16 = 0x811;
+const MCI_BREAK_KEY: u32 = 0x100;
+const MCI_BREAK_OFF: u32 = 0x400;
 const MCI_SEEK: u16 = 0x807;
 const MCI_STOP: u16 = 0x808;
 const MCI_PAUSE: u16 = 0x809;
@@ -430,6 +433,31 @@ impl Engine {
                 self.write32(parms, 0, callback);
                 Ok((
                     self.mci_send_command(id, message, waiting, parms).await?,
+                    Vec::new(),
+                ))
+            }
+            // `break`, as MMSYSTEM's core command table has it: `on` and
+            // the key, `MCI_BREAK_KEY`, or `off`, `MCI_BREAK_OFF`.
+            b"break" => {
+                let parms = self.take(scratch, 12);
+                let mut flags = 0;
+
+                self.write32(parms, 0, callback);
+
+                while !words.is_empty() {
+                    if takes(&mut words, &[b"on"]) && !words.is_empty() {
+                        flags |= MCI_BREAK_KEY;
+                        self.write32(parms, 4, number(&words.remove(0)));
+                    } else if takes(&mut words, &[b"off"]) {
+                        flags |= MCI_BREAK_OFF;
+                    } else {
+                        return refused(MCIERR_UNRECOGNIZED_KEYWORD);
+                    }
+                }
+
+                Ok((
+                    self.mci_send_command(id, MCI_BREAK, flags | waiting, parms)
+                        .await?,
                     Vec::new(),
                 ))
             }

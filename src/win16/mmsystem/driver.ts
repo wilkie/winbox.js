@@ -1,7 +1,9 @@
 'use strict';
 
-import { readProfile } from '../kernel/profiles.js';
 import { DefDriverProc, OpenDriver } from '../user/drivers.js';
+import { Kind, count, openAuxiliary, openWaveAndMidi } from './devices.js';
+import { openJoysticks } from './joystick.js';
+import { makeStacks } from './stacks.js';
 
 /**
  * MMSYSTEM as an installable driver: `SYSTEM.INI`'s `[boot]` names it in
@@ -21,10 +23,10 @@ import { DefDriverProc, OpenDriver } from '../user/drivers.js';
  * `timer` opening first is why it comes first in USER's list of drivers:
  * it is linked while MMSYSTEM, whose load opened it, is not yet.
  *
- * Not followed: wave, MIDI and auxiliary drivers, which winbox.js's MMSYSTEM
- * does not take from files -- the installation names none, and so opens no
- * mapper; and what MMSYSTEM does with a joystick driver once opened, which
- * the installation does not have.
+ * The wave, MIDI and auxiliary drivers are opened and installed as
+ * `devices.ts` says, the interrupt stacks made as `stacks.ts` says, and the
+ * joystick's driver opened as `joystick.ts` says. Not followed: the window
+ * MMSYSTEM makes for itself.
  */
 export async function DriverProc(
   this: any,
@@ -44,19 +46,23 @@ export async function DriverProc(
 
       state.timer = await OpenDriver.call(this, 'timer', null, 0);
 
-      /* The drivers of devices it would install, looked for as MMSYSTEM
-       * looks: none here. */
-      const profile = await readProfile(this, 'system.ini');
+      /* The waveform and MIDI drivers, then the interrupt stacks if any
+       * device came of them, then the auxiliary drivers (seg2 `101`). */
+      await openWaveAndMidi(this);
 
-      for (const kind of ['wave', 'midi', 'aux']) {
-        for (const key of [kind, ...Array.from({ length: 9 }, (_, i) => `${kind}${i + 1}`)]) {
-          if (profile.get('Drivers', key)) {
-            this.debug?.('MMSYSTEM does not load device driver', key);
-          }
-        }
+      if (
+        count(this, Kind.WaveOut) +
+        count(this, Kind.WaveIn) +
+        count(this, Kind.MidiOut) +
+        count(this, Kind.MidiIn)
+      ) {
+        await makeStacks(this);
       }
 
+      await openAuxiliary(this);
+
       state.joystick = await OpenDriver.call(this, 'joystick', null, 0);
+      await openJoysticks(this, state.joystick);
 
       return 1;
     }

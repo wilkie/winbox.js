@@ -283,6 +283,8 @@ export class DesktopWindow {
 
   /** The window's own system menu, once a program or a menu asked for it. */
   systemMenu: MenuData | null = null;
+  /** The menu `SetSystemMenu` gave, whose first item's pop-up is the system menu. */
+  systemMenuBar: number | undefined = undefined;
 
   /** Whether the window is as it was made, maximized, or minimized to an icon. */
   state: 'normal' | 'maximized' | 'minimized' = 'normal';
@@ -292,6 +294,12 @@ export class DesktopWindow {
 
   /** Where its icon was put by a move while it was one: its icon's place from then on. */
   iconPlace: { left: number; top: number } | null = null;
+
+  /**
+   * Where its icon was when it last stopped being one, or was set to go,
+   * on the screen: `GetInternalWindowPos`'s point (`placement.ts`).
+   */
+  iconWas: { left: number; top: number } | null = null;
 
   /** A minimized window's icon, and the window its title is shown in. */
   icon: IconData | null = null;
@@ -2482,7 +2490,7 @@ export class Desktop {
    * `WM_PAINT`, its frame drawn by `WM_NCPAINT` in `BeginPaint` before its
    * `WM_ERASEBKGND`.
    */
-  repaintAll() {
+  repaintAll(frames = true) {
     this.backgroundDue = true;
 
     for (const window of [...this.windows].reverse()) {
@@ -2490,7 +2498,8 @@ export class Desktop {
         /* An icon's title, which has no window procedure: with the desktop. */
         (window as any).needsFrame = true;
       } else if (this.#showing(window)) {
-        (window as any).needsNcPaint = true;
+        /* Without `frames`, as `RepaintScreen` asks, the frames are left. */
+        (window as any).needsNcPaint ||= frames;
         (window as any).dirtyRect = undefined;
         window.needsErase = true;
         window.needsPaint = true;
@@ -3020,6 +3029,7 @@ export class Desktop {
     window: DesktopWindow,
     to?: { left: number; top: number; width: number; height: number }
   ) {
+    this.#keepIconPlace(window);
     this.#leaveIcon(window);
 
     if (window.state === 'normal') {
@@ -3082,6 +3092,7 @@ export class Desktop {
       return;
     }
 
+    this.#keepIconPlace(window);
     this.#leaveIcon(window);
     window.state = 'normal';
 
@@ -3209,6 +3220,16 @@ export class Desktop {
   }
 
   /** Takes a window's icon title away, as it stops being an icon. */
+  /**
+   * Where an icon was, kept as it stops being one: **recorded** by
+   * `intpos`, whose window restored answers the point its icon was at.
+   */
+  #keepIconPlace(window: DesktopWindow) {
+    if (window.state === 'minimized') {
+      window.iconWas = { left: window.left, top: window.top };
+    }
+  }
+
   #leaveIcon(window: DesktopWindow) {
     if (window.iconTitle) {
       this.destroy(window.iconTitle);

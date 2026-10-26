@@ -10,7 +10,18 @@ import {
   OpenDriver,
   SendDriverMessage,
 } from '../user/drivers.js';
+import { IsBadCodePtr, IsBadHugeWritePtr } from '../kernel/bad-pointers.js';
+import { Yield } from '../kernel/WinExec.js';
+import { DWORD, UINT } from '../types.js';
+import { GetAsyncKeyState } from '../user/enumerate.js';
+import { lstrcmpi } from '../user/lstrcmpi.js';
+import { GetActiveWindow } from '../user/placement.js';
+import { PeekMessage } from '../user/PeekMessage.js';
+import { PostMessage } from '../user/PostMessage.js';
 import { moduleString, mmsystemString } from './devices.js';
+import { freeTable, loadTable, sourceOf, typeTable } from './mci-tables.js';
+import { exportAddress } from './mmio.js';
+import { withMsg } from './tasks.js';
 
 /**
  * MCI, MMSYSTEM's media control interface: `mciSendCommand` and the calls
@@ -38,9 +49,14 @@ import { moduleString, mmsystemString } from './devices.js';
  *   word of the caller's `dwReturn` is cleared; an error of 200h and up has
  *   the device's ID in its high word.
  *
+ * * A device opened has a yield procedure, which its driver calls while it
+ *   waits (`mciDriverYield`): MMSYSTEM's own, which yields until the key
+ *   `MCI_BREAK` names is pressed -- `VK_CANCEL` to begin with -- in the
+ *   window it names, if any (seg5 `2bbf`, `2c16`, `20dd`-`2208`; `mmmisc`).
+ *
  * Not followed: `MCI_SOUND`, whose `sndPlaySound` winbox.js does not have;
- * opening by element ID; the devices `mciSendString` opens itself; the
- * command tables, which only `mciSendString` reads.
+ * opening by element ID, but for the ID kept; the devices `mciSendString`
+ * opens itself; the command tables, which only `mciSendString` reads.
  */
 
 const MCI_ALL_DEVICE_ID = 0xffff;
@@ -54,6 +70,7 @@ const MCI_BREAK = 0x811;
 const MCI_SOUND = 0x812;
 
 const MCI_NOTIFY = 0x1;
+const MCI_WAIT = 0x2;
 const MCI_OPEN_ELEMENT = 0x200;
 const MCI_OPEN_ALIAS = 0x400;
 const MCI_OPEN_ELEMENT_ID = 0x800;
@@ -90,7 +107,29 @@ interface Device {
   task: number;
   closing: boolean;
   data: number;
-  breakKey: number | null;
+  /** The yield procedure, and its doubleword (seg5 `+14h`, `+18h`). */
+  yieldProc: number;
+  yieldData: number;
+  /** The element ID it was opened by, with `MCI_OPEN_ELEMENT_ID`; else null. */
+  elementId: number | null;
+  /** Its type's command table, and its driver's own (seg5 `+20h`, `+22h`; `mci-tables.ts`). */
+  typeTable: number;
+  customTable: number;
+}
+
+/** The hidden ordinal of MMSYSTEM's own yield procedure, the break key's (seg5 `2bbf`). */
+export const BREAK_ORDINAL = 1202;
+
+/** MMSYSTEM's own yield procedure's address. */
+function breakAddress(system: any) {
+  return exportAddress(system, 'MMSYSTEM', BREAK_ORDINAL);
+}
+
+/** The device with an ID, if there is one. */
+function deviceOf(system: any, id: number) {
+  id &= 0xffff;
+
+  return id ? (tableOf(system).devices[id] ?? null) : null;
 }
 
 interface Table {
@@ -253,6 +292,7 @@ async function open(system: any, flags: number, parms: number) {
   }
 
   const c = core(system);
+  const given = flags;
   const segment = parms >>> 16;
   const offset = parms & 0xffff;
   const typeFar = readFar(system, (parms + 8) >>> 0);
@@ -364,7 +404,11 @@ async function open(system: any, flags: number, parms: number) {
     task,
     closing: false,
     data: 0,
-    breakKey: null,
+    yieldProc: 0,
+    yieldData: 0,
+    elementId: flags & MCI_OPEN_ELEMENT_ID ? readFar(system, (parms + 0x0c) >>> 0) >>> 0 : null,
+    typeTable: 0,
+    customTable: 0,
   };
 
   /* MCI_OPEN_DRIVER_PARMS: the ID, the words after the driver's name, the
@@ -381,6 +425,7 @@ async function open(system: any, flags: number, parms: number) {
 
   const hDriver = await OpenDriver.call(system, file, 'mci', openParms);
   const wType = c.read16(openParms >>> 16, (openParms & 0xffff) + 8);
+  const customTable = c.read16(openParms >>> 16, (openParms & 0xffff) + 6);
 
   GlobalFree.call(system, block);
   GlobalFree.call(system, params.block);
@@ -399,6 +444,20 @@ async function open(system: any, flags: number, parms: number) {
   device.module = GetDriverModuleHandle.call(system, hDriver);
   device.wType = wType;
 
+  /* The driver's own command table, as it left it in the parameters --
+   * FFFFh for none -- and its type's: the first table of its type, else
+   * MMSYSTEM's resource named as the type the program gave (seg5
+   * `20bb`-`210b`). */
+  device.customTable = customTable;
+  device.typeTable = await typeTable(system, wType);
+
+  if (device.typeTable === 0xffff && given & MCI_OPEN_TYPE && !(given & MCI_OPEN_TYPE_ID)) {
+    const named = readString(system, typeFar);
+
+    device.typeTable =
+      named === null ? 0xffff : await loadTable(system, { own: 'MMSYSTEM' }, named, wType);
+  }
+
   const answer = (await mciSendCommand.call(system, id, MCI_OPEN_DRIVER, flags, parms)) & 0xffff;
 
   if (answer) {
@@ -406,7 +465,8 @@ async function open(system: any, flags: number, parms: number) {
     return answer;
   }
 
-  device.breakKey = 3;
+  /* The break key, `VK_CANCEL`, in no window (seg5 `2208`). */
+  mciSetYieldProc.call(system, id, breakAddress(system), 3);
 
   return 0;
 }
@@ -439,10 +499,49 @@ async function close(system: any, id: number, flags: number, parms: number, send
     }
   }
 
+  /* Its type's table let go before its driver is closed (seg5 `298c`). */
+  const types = device.typeTable;
+
+  device.typeTable = 0;
+  device.customTable = 0;
+  freeTable(system, types, (number) => tableInUse(system, number));
+
   await CloseDriver.call(system, device.hDriver, 0, 0);
   release(table, id);
 
   return answer;
+}
+
+/** Whether an open device has a command table, as its type's or its driver's (seg5 `2fd5`). */
+export function tableInUse(system: any, number: number) {
+  return tableOf(system).devices.some(
+    (device) => !!device && (device.typeTable === number || device.customTable === number)
+  );
+}
+
+/**
+ * A command table loaded from a module's resources (`mci-tables.ts`).
+ *
+ * @returns {Types.UINT} Its number, or FFFFh.
+ */
+export function mciLoadCommandResource(
+  this: any,
+  hInstance: number,
+  lpResName: any,
+  wType: number
+) {
+  const name = typeof lpResName === 'number' ? lpResName : String(lpResName ?? '');
+
+  return loadTable(this, sourceOf(this, hInstance & 0xffff), name, wType & 0xffff);
+}
+
+/**
+ * A command table let go (`mci-tables.ts`).
+ *
+ * @returns {Types.BOOL} Whether it was.
+ */
+export function mciFreeCommandResource(this: any, wTable: number) {
+  return freeTable(this, wTable, (number) => tableInUse(this, number));
 }
 
 /** `MCI_SYSINFO` (seg5 `16bb`): the devices installed, or open. */
@@ -562,30 +661,32 @@ async function sysinfo(system: any, id: number, flags: number, parms: number) {
   return 0;
 }
 
-/** `MCI_BREAK` (seg5 `bc`): the key that breaks a wait, or none. */
+/**
+ * `MCI_BREAK` (seg5 `bc`): MMSYSTEM's own yield procedure set, with the key
+ * and the window -- or none -- in its doubleword; `MCI_BREAK_OFF` sets no
+ * procedure, which `mciSetYieldProc` refuses, and leaves the one there.
+ */
 function breakKey(system: any, id: number, flags: number, parms: number) {
   const KEY = 0x100;
+  const HWND = 0x200;
   const OFF = 0x400;
-  const device = tableOf(system).devices[id];
-
-  if (flags & KEY && flags & OFF) {
-    return MCIERR_FLAGS_NOT_COMPATIBLE;
-  }
 
   if (flags & KEY) {
-    if (!device) {
-      return 0x0b;
+    if (flags & OFF) {
+      return MCIERR_FLAGS_NOT_COMPATIBLE;
     }
 
-    device.breakKey = core(system).read16(parms >>> 16, ((parms & 0xffff) + 4) & 0xffff);
-    return 0;
+    const c = core(system);
+    const hwnd = flags & HWND ? c.read16(parms >>> 16, ((parms & 0xffff) + 8) & 0xffff) : 0;
+    const key = c.read16(parms >>> 16, ((parms & 0xffff) + 4) & 0xffff);
+
+    return mciSetYieldProc.call(system, id, breakAddress(system), ((hwnd << 16) | key) >>> 0)
+      ? 0
+      : 0x0b;
   }
 
   if (flags & OFF) {
-    if (device) {
-      device.breakKey = null;
-    }
-
+    mciSetYieldProc.call(system, id, 0, 0);
     return 0;
   }
 
@@ -611,16 +712,17 @@ async function route(system: any, id: number, message: number, flags: number, pa
       /* `sndPlaySound`, which winbox.js does not have: it answers FALSE. */
       return 0x106;
 
-    default:
-      return (
-        (await SendDriverMessage.call(
-          system,
-          tableOf(system).devices[id]!.hDriver,
-          message,
-          flags,
-          parms
-        )) >>> 0
-      );
+    default: {
+      const device = tableOf(system).devices[id]!;
+
+      /* A command waited on, with MMSYSTEM's own yield procedure: the break
+       * key's press until now forgotten (seg5 `1b1`). */
+      if (flags & MCI_WAIT && device.yieldProc === breakAddress(system)) {
+        GetAsyncKeyState.call(system, device.yieldData & 0xffff);
+      }
+
+      return (await SendDriverMessage.call(system, device.hDriver, message, flags, parms)) >>> 0;
+    }
   }
 }
 
@@ -803,3 +905,171 @@ export function mciSetDriverData(this: any, wDeviceID: number, dwData: number) {
 }
 
 export { MCI_NOTIFY };
+
+/**
+ * The task that opened a device (seg5 `15a5`): nought for none.
+ *
+ * @returns {Types.HANDLE} The task.
+ */
+export function mciGetCreatorTask(this: any, wDeviceID: number) {
+  return deviceOf(this, wDeviceID)?.task ?? 0;
+}
+
+/**
+ * A device's yield procedure set (seg5 `2acd`): refused for a procedure that
+ * is no code -- nought among them -- or a device that is not open.
+ *
+ * @returns {Types.BOOL} Whether it was set.
+ */
+export function mciSetYieldProc(
+  this: any,
+  wDeviceID: number,
+  fpYieldProc: number,
+  dwYieldData: number
+) {
+  if (IsBadCodePtr.call(this, fpYieldProc >>> 0)) {
+    return 0;
+  }
+
+  const device = deviceOf(this, wDeviceID);
+
+  if (!device) {
+    return 0;
+  }
+
+  device.yieldProc = fpYieldProc >>> 0;
+  device.yieldData = dwYieldData >>> 0;
+
+  return 1;
+}
+
+/**
+ * A device's yield procedure (seg5 `2b3c`), its doubleword written where
+ * asked, if that can be written.
+ *
+ * @returns {Types.DWORD} The procedure, or nought.
+ */
+export function mciGetYieldProc(this: any, wDeviceID: number, lpdwYieldData: number) {
+  const device = deviceOf(this, wDeviceID);
+
+  if (!device) {
+    return 0;
+  }
+
+  const far = lpdwYieldData >>> 0;
+
+  if (far) {
+    if (IsBadHugeWritePtr.call(this, far, 4)) {
+      return 0;
+    }
+
+    core(this).write16(far >>> 16, far & 0xffff, device.yieldData & 0xffff);
+    core(this).write16(far >>> 16, ((far & 0xffff) + 2) & 0xffff, device.yieldData >>> 16);
+  }
+
+  return device.yieldProc >>> 0;
+}
+
+/**
+ * What a driver calls while it waits (seg5 `2a6f`): the device's yield
+ * procedure, with its ID and doubleword; with none, `Yield`.
+ *
+ * @returns {Types.UINT} The procedure's answer, or nought.
+ */
+export async function mciDriverYield(this: any, wDeviceID: number) {
+  const id = wDeviceID & 0xffff;
+  const device = deviceOf(this, id);
+
+  if (device?.yieldProc) {
+    const answer = await this.scheduler.callProc(device.yieldProc, [
+      [id, UINT],
+      [device.yieldData >>> 0, DWORD],
+    ]);
+
+    return Number(answer ?? 0) & 0xffff;
+  }
+
+  await Yield.call(this);
+
+  return 0;
+}
+
+/**
+ * MMSYSTEM's own yield procedure (seg5 `2bbf`): with a window in its
+ * doubleword's high word that is not the active one, or its key not pressed
+ * since it was last asked, `Yield` and nought; else the window's keys taken
+ * from its queue, and FFFFh.
+ *
+ * @returns {Types.UINT} FFFFh to break the wait, else nought.
+ */
+export async function mciBreakYield(this: any, _wDeviceID: number, dwYieldData: number) {
+  const hwnd = (dwYieldData >>> 16) & 0xffff;
+  const key = dwYieldData & 0xffff;
+
+  if ((hwnd && GetActiveWindow.call(this) !== hwnd) || !(GetAsyncKeyState.call(this, key) & 1)) {
+    await Yield.call(this);
+    return 0;
+  }
+
+  await withMsg(this, async (msg) => {
+    while (await PeekMessage.call(this, msg, hwnd, 0x100, 0x108, 1)) {
+      // The keys taken, and nothing done with them.
+    }
+  });
+
+  return 0xffff;
+}
+
+/**
+ * The device opened with an element ID, of a type (seg5 `1454`): its ID, the
+ * type compared as MMSYSTEM's string of the device's type is; nought for
+ * none, or no type.
+ *
+ * @returns {Types.UINT} The device's ID.
+ */
+export async function mciGetDeviceIDFromElementID(this: any, dwElementID: number, lpstrType: any) {
+  if (lpstrType === null || lpstrType === undefined) {
+    return 0;
+  }
+
+  const table = tableOf(this);
+
+  for (let id = 1; id < table.count; id++) {
+    const device = table.devices[id];
+
+    if (!device || device.elementId === null || device.elementId !== dwElementID >>> 0) {
+      continue;
+    }
+
+    const name = await mmsystemString(this, device.wType);
+
+    if (name && !lstrcmpi.call(this, name.slice(0, 0x4f), String(lpstrType))) {
+      return id;
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * A driver's notice that a command is done (seg1 `275`): `MM_MCINOTIFY`
+ * posted to the window, the status its wParam and the device its lParam.
+ *
+ * @returns {Types.BOOL} What posting answered.
+ */
+export function mciDriverNotify(
+  this: any,
+  hwndCallback: number,
+  wDeviceID: number,
+  uStatus: number
+) {
+  return PostMessage.call(
+    this,
+    hwndCallback & 0xffff,
+    MM_MCINOTIFY,
+    uStatus & 0xffff,
+    wDeviceID & 0xffff
+  );
+}
+
+const MM_MCINOTIFY = 0x3b9;

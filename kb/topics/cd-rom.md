@@ -77,7 +77,7 @@ What the install needed, found on the way and now in both engines:
 - [[measured]] [[probe:winexpe]]: `LoadModule` and `LoadLibrary` of a PE file answer 21, as `KRNL286.EXE` seg2 `0db2`-`0e1e` decides (an MZ file's `e_lfanew`: `NE` loads, `PE` 21, `SZDD` 19, anything else 11).
 - A task's current folder is its own from the start (`KRNL386.EXE` seg1 `af1d`), so `INSTALL.EXE`'s change to `WIN31` is not Program Manager's; DOS's 3Bh leaves AX as it was on success (`dos.cpp` 539-547); `GetModuleFileName(NULL)` names the caller's own module, which MS Setup's `_MSTEST` needs to find `MSCOMSTF.DLL`; a profile's comments and new sections as Windows writes them ([[topic:profile-files]]); and 36h on C: answers DOSBox's folder's figures ([[topic:drives-and-disks]]).
 
-What is not there: the program itself. Without Win32s and enhanced mode, which neither engine has, `WIDGET.EXE` cannot run; `WinExec` of it, under Windows without Win32s, starts its DOS stub in a DOS session and answers that session's instance ([[probe:winexpe]]), which neither engine does. The corpus runs the installer.
+What is not there: the program itself. Without Win32s and enhanced mode, which neither engine has, `WIDGET.EXE` cannot run; `WinExec` of it, under Windows without Win32s, starts its DOS stub in a DOS session and answers that session's instance ([[probe:winexpe]]), which neither engine does. The corpus runs the installer. What Win32s 1.25 is made of, and every function Widget Workshop's 32-bit files import (399, all exported by files Win32s installs), is inventoried in [[topic:win32s]]; Win32s support is deferred.
 
 ## Swapping a disc
 

@@ -35,6 +35,9 @@ import { MMSYSTEM_STRINGS } from './strings.js';
 const MCI_OPEN = 0x803;
 const MCI_CLOSE = 0x804;
 const MCI_PLAY = 0x806;
+const MCI_BREAK = 0x811;
+const MCI_BREAK_KEY = 0x100;
+const MCI_BREAK_OFF = 0x400;
 const MCI_SEEK = 0x807;
 const MCI_STOP = 0x808;
 const MCI_PAUSE = 0x809;
@@ -332,6 +335,28 @@ async function run(system: any, command: string, hwnd: number): Promise<[number,
 
         scratch.write32(parms, 0, callback);
         return [await send(id, message, 0, parms), ''];
+      }
+
+      /* `break`, as MMSYSTEM's core command table has it: `on` and the key,
+       * `MCI_BREAK_KEY`, or `off`, `MCI_BREAK_OFF`. */
+      case 'break': {
+        const parms = scratch.take(12);
+        let flags = 0;
+
+        scratch.write32(parms, 0, callback);
+
+        while (words.length) {
+          if (takes(words, 'on') && words.length) {
+            flags |= MCI_BREAK_KEY;
+            scratch.write32(parms, 4, Number(words.shift()) >>> 0);
+          } else if (takes(words, 'off')) {
+            flags |= MCI_BREAK_OFF;
+          } else {
+            return [MCIERR_UNRECOGNIZED_KEYWORD, ''];
+          }
+        }
+
+        return [await send(id, MCI_BREAK, flags, parms), ''];
       }
 
       case 'play': {

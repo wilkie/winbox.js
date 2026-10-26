@@ -442,6 +442,27 @@ pub(crate) fn profile_int(system: &mut System, section: &[u8], entry: &[u8], def
     answer.value().map_or(default, |value| value as u16)
 }
 
+/// An entry of a profile as a number, as `GetPrivateProfileInt` reads it,
+/// for a driver's own settings.
+pub(crate) fn private_profile_int(
+    system: &mut System,
+    section: &[u8],
+    entry: &[u8],
+    default: u16,
+    file: &[u8],
+) -> u16 {
+    match get_int(
+        system,
+        Some(section.to_vec()),
+        Some(entry.to_vec()),
+        default,
+        file,
+    ) {
+        Answer::Word(word) => word,
+        _ => default,
+    }
+}
+
 pub fn get_profile_int(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let section = args.dword(system);
     let entry = args.dword(system);

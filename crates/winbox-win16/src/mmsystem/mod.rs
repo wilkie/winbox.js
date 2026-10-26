@@ -7,8 +7,9 @@
 //! and the MCI drivers it opens (`mci_drivers.rs`, the sequencer's playing
 //! `sequencer.rs` and its warning `seq_box.rs`); `sndPlaySound`
 //! (`sound.rs`); its buffered file I/O, the `mmio` functions (`mmio.rs`);
-//! and itself as an installable driver (`driver.rs`). The rest of its
-//! exports are stubs.
+//! its tasks (`tasks.rs`), interrupt stacks (`stacks.rs`) and joysticks
+//! (`joystick.rs`); `mciExecute` (`mci_execute.rs`); and itself as an
+//! installable driver (`driver.rs`).
 //!
 //! The devices are those of the drivers `SYSTEM.INI` names. The Windows
 //! here names only the timer and the MIDI mapper, and so has none, unless
@@ -35,16 +36,21 @@ pub mod callback;
 pub mod checks;
 pub mod devices;
 pub mod driver;
+pub mod joystick;
 pub mod mci;
 pub mod mci_drivers;
+pub mod mci_execute;
 pub mod mci_string;
+pub mod mci_tables;
 pub mod mci_wave;
 pub mod midi;
 pub mod mmio;
 pub mod seq_box;
 pub mod sequencer;
 pub mod sound;
+pub mod stacks;
 pub mod strings;
+pub mod tasks;
 pub mod time;
 pub mod wave;
 
@@ -77,6 +83,9 @@ pub struct State {
     pub wave_files: mci_wave::WaveFiles,
     pub sequencer: sequencer::Sequencer,
     pub mmio: mmio::Mmio,
+    pub stacks: stacks::Stacks,
+    pub mci_tables: mci_tables::Tables,
+    pub joysticks: joystick::Joysticks,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -84,8 +93,23 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         .or_else(|| midi::implementation(name))
         .or_else(|| auxiliary::implementation(name))
         .or_else(|| mmio::implementation(name))
+        .or_else(|| joystick::implementation(name))
     {
         return Some(implementation);
+    }
+
+    // USER's driver calls, jumped to (seg4 `57e`-`592`).
+    let user = match name {
+        "DrvOpen" => Some("OpenDriver"),
+        "DrvClose" => Some("CloseDriver"),
+        "DrvSendMessage" => Some("SendDriverMessage"),
+        "DrvGetModuleHandle" => Some("GetDriverModuleHandle"),
+        "DrvDefDriverProc" => Some("DefDriverProc"),
+        _ => None,
+    };
+
+    if let Some(user) = user {
+        return crate::drivers::implementation(user);
     }
 
     Some(match name {
@@ -95,9 +119,22 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "mciSendCommand" => Implementation::Async(mci::mci_send_command_call),
         "mciSendString" => Implementation::Async(mci_string::mci_send_string),
         "sndPlaySound" => Implementation::Async(sound::snd_play_sound),
+        "timeSetEvent" => Implementation::Async(time::time_set_event),
+        "mmGetCurrentTask" => Implementation::Async(tasks::mm_get_current_task),
+        "mmTaskSignal" => Implementation::Async(tasks::mm_task_signal),
+        "mmTaskYield" => Implementation::Async(tasks::mm_task_yield),
+        "mmTaskBlock" => Implementation::Async(tasks::mm_task_block),
+        "mciDriverYield" => Implementation::Async(mci::mci_driver_yield),
+        "mciBreakYield" => Implementation::Async(mci::mci_break_yield),
+        "mciDriverNotify" => Implementation::Async(mci::mci_driver_notify),
+        "mciExecute" => Implementation::Async(mci_execute::mci_execute),
+        "mciLoadCommandResource" => Implementation::Async(mci_tables::mci_load_command_resource),
+        "mciFreeCommandResource" => Implementation::Async(mci_tables::mci_free_command_resource),
+        "mciGetDeviceIDFromElementID" => {
+            Implementation::Async(mci::mci_get_device_id_from_element_id)
+        }
         _ => Implementation::Sync(match name {
             "timeGetSystemTime" => time::time_get_system_time,
-            "timeSetEvent" => time::time_set_event,
             "timeKillEvent" => time::time_kill_event,
             "timeGetDevCaps" => time::time_get_dev_caps,
             "timeBeginPeriod" => time::time_begin_period,
@@ -107,6 +144,16 @@ pub fn implementation(name: &str) -> Option<Implementation> {
             "mciGetErrorString" => mci::mci_get_error_string,
             "mciSetDriverData" => mci::mci_set_driver_data,
             "mciGetDriverData" => mci::mci_get_driver_data,
+            "mciSetYieldProc" => mci::mci_set_yield_proc,
+            "mciGetYieldProc" => mci::mci_get_yield_proc,
+            "mciGetCreatorTask" => mci::mci_get_creator_task,
+            "StackEnter" => stacks::stack_enter,
+            "StackLeave" => stacks::stack_leave,
+            // Nothing to let go: 1 (seg2 `14`).
+            "WEP" => |_, _| Ok(Answer::Word(1)),
+            "mmsystemGetVersion" => |_, _| Ok(Answer::Word(0x101)),
+            // The retail MMSYSTEM's returns at once (seg1 `30a`).
+            "OutputDebugStr" => |_, _| Ok(Answer::Nothing),
             _ => return None,
         }),
     })

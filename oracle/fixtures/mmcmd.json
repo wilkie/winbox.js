@@ -1,0 +1,129 @@
+{
+  "probe": "mmcmd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "none-yet,1",
+      "result": "0"
+    },
+    {
+      "function": "load",
+      "args": "first,MMCMDTBL,0",
+      "result": "1"
+    },
+    {
+      "function": "load",
+      "args": "empty,EMPTYTBL,0",
+      "result": "ffff"
+    },
+    {
+      "function": "load",
+      "args": "missing,NOSUCH,0",
+      "result": "ffff"
+    },
+    {
+      "function": "load",
+      "args": "second,MMCMDTBL,20a",
+      "result": "2"
+    },
+    {
+      "function": "free",
+      "args": "core,0",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "past,20",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "first,1",
+      "result": "1"
+    },
+    {
+      "function": "free",
+      "args": "first-again,1",
+      "result": "1"
+    },
+    {
+      "function": "load",
+      "args": "third,MMCMDTBL,0",
+      "result": "1"
+    },
+    {
+      "function": "open",
+      "args": "waveaudio",
+      "result": "0,1"
+    },
+    {
+      "function": "load",
+      "args": "fourth,MMCMDTBL,0",
+      "result": "4"
+    },
+    {
+      "function": "free",
+      "args": "two,2",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "three,3",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "four,4",
+      "result": "1"
+    },
+    {
+      "function": "free",
+      "args": "five,5",
+      "result": "0"
+    },
+    {
+      "function": "close",
+      "args": "waveaudio",
+      "result": "0"
+    },
+    {
+      "function": "load",
+      "args": "after-close,MMCMDTBL,0",
+      "result": "2"
+    },
+    {
+      "function": "free",
+      "args": "two-after,2",
+      "result": "1"
+    },
+    {
+      "function": "free",
+      "args": "three-after,3",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "second,2",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "third,1",
+      "result": "1"
+    },
+    {
+      "function": "free",
+      "args": "fourth,4",
+      "result": "0"
+    }
+  ]
+}

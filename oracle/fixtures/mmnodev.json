@@ -1,0 +1,864 @@
+{
+  "probe": "mmnodev",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "handle",
+      "args": "waveOutClose,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutPrepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutUnprepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutWrite,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutPause,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutRestart,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutReset,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutBreakLoop,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPosition,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPitch,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutSetPitch,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPlaybackRate,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutSetPlaybackRate,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetID,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutMessage,1234",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "waveOut-left,1234",
+      "result": "12345678,4321"
+    },
+    {
+      "function": "handle",
+      "args": "waveInClose,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInPrepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInUnprepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInAddBuffer,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInStart,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInStop,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInReset,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInGetPosition,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInGetID,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInMessage,1234",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutClose,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutPrepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutUnprepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutShortMsg,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutLongMsg,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutReset,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutCachePatches,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutCacheDrumPatches,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutGetID,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutMessage,1234",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midiInClose,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInPrepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInUnprepareHeader,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInAddBuffer,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInStart,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInStop,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInReset,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInGetID,1234",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInMessage,1234",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midi-left,1234",
+      "result": "4321"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutClose,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutPrepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutUnprepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutWrite,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutPause,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutRestart,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutReset,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutBreakLoop,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPosition,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPitch,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutSetPitch,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetPlaybackRate,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutSetPlaybackRate,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutGetID,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveOutMessage,0",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "waveOut-left,0",
+      "result": "12345678,4321"
+    },
+    {
+      "function": "handle",
+      "args": "waveInClose,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInPrepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInUnprepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInAddBuffer,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInStart,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInStop,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInReset,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInGetPosition,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInGetID,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "waveInMessage,0",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutClose,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutPrepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutUnprepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutShortMsg,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutLongMsg,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutReset,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutCachePatches,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutCacheDrumPatches,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutGetID,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiOutMessage,0",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midiInClose,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInPrepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInUnprepareHeader,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInAddBuffer,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInStart,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInStop,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInReset,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInGetID,0",
+      "result": "5"
+    },
+    {
+      "function": "handle",
+      "args": "midiInMessage,0",
+      "result": "0"
+    },
+    {
+      "function": "handle",
+      "args": "midi-left,0",
+      "result": "4321"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps-0,0",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveInGetDevCaps,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps-0,0",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "midiInGetDevCaps,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps-0,0",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetVolume,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetVolume,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetVolume,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxSetVolume,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxOutMessage,0",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps-0,5",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveInGetDevCaps,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps-0,5",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "midiInGetDevCaps,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps-0,5",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetVolume,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetVolume,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxGetVolume,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxSetVolume,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "auxOutMessage,5",
+      "result": "2"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetDevCaps-0,ffff",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveInGetDevCaps,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "midiOutGetDevCaps-0,ffff",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "midiInGetDevCaps,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "auxGetDevCaps-0,ffff",
+      "result": "0"
+    },
+    {
+      "function": "id",
+      "args": "waveOutGetVolume,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "auxGetVolume,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "auxSetVolume,ffff",
+      "result": "6"
+    },
+    {
+      "function": "id",
+      "args": "auxOutMessage,ffff",
+      "result": "6"
+    },
+    {
+      "function": "open",
+      "args": "wave-flags",
+      "result": "10,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-window",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-window-high",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-task",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-task-own",
+      "result": "2,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-function",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-kind",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "wave-device",
+      "result": "2,untouched"
+    },
+    {
+      "function": "open",
+      "args": "midi-flags",
+      "result": "10,untouched"
+    },
+    {
+      "function": "open",
+      "args": "midi-window",
+      "result": "11,untouched"
+    },
+    {
+      "function": "open",
+      "args": "midi-device",
+      "result": "2,untouched"
+    },
+    {
+      "function": "open",
+      "args": "midiin-device",
+      "result": "2,untouched"
+    },
+    {
+      "function": "open",
+      "args": "midiin-mapper",
+      "result": "6,untouched"
+    },
+    {
+      "function": "text",
+      "args": "wave,0,128",
+      "result": "0,The specified command was carried out."
+    },
+    {
+      "function": "text",
+      "args": "midi,0,128",
+      "result": "0,The specified command was carried out."
+    },
+    {
+      "function": "text",
+      "args": "wave,11,128",
+      "result": "0,An invalid parameter was passed to a system function."
+    },
+    {
+      "function": "text",
+      "args": "midi,11,128",
+      "result": "0,An invalid parameter was passed to a system function."
+    },
+    {
+      "function": "text",
+      "args": "wave,12,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,12,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,31,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,31,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,32,128",
+      "result": "0,The specified format is not supported or cannot be translated. Use the Capabilities function to determine the supported formats"
+    },
+    {
+      "function": "text",
+      "args": "midi,32,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,35,128",
+      "result": "0,Cannot open the device without using the WAVE_ALLOWSYNC flag. Use the flag, and then try again."
+    },
+    {
+      "function": "text",
+      "args": "midi,35,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,36,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,36,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,64,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,64,128",
+      "result": "0,The MIDI header was not prepared. Use the Prepare function to prepare the header, and then try again."
+    },
+    {
+      "function": "text",
+      "args": "wave,69,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,69,128",
+      "result": "0,The current MIDI setup is damaged. Copy the original MIDIMAP.CFG file to the Windows SYSTEM directory, and then try again."
+    },
+    {
+      "function": "text",
+      "args": "wave,70,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,70,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,256,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "midi,256,128",
+      "result": "9,"
+    },
+    {
+      "function": "text",
+      "args": "wave,2,1",
+      "result": "0,"
+    },
+    {
+      "function": "text",
+      "args": "wave,2,5",
+      "result": "0,A de"
+    },
+    {
+      "function": "text",
+      "args": "wave,2,0",
+      "result": "0,untouched"
+    },
+    {
+      "function": "text",
+      "args": "midi,65,5",
+      "result": "0,Cann"
+    },
+    {
+      "function": "text",
+      "args": "wave,99,1",
+      "result": "9,"
+    }
+  ]
+}

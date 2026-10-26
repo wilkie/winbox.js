@@ -6,9 +6,11 @@
 //! and the next `GetDC` of the same window answers the last of them again
 //! (`reldc`).
 
+use winbox_raster::ClipRegion;
+
 use crate::call::{Answer, Args, Stop};
 use crate::gdi::dc::DcBitmap;
-use crate::gdi::objects::get_stock_object;
+use crate::gdi::objects::{delete_object, get_stock_object};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
@@ -16,6 +18,12 @@ const BLACK_PEN: i16 = 7;
 const WHITE_BRUSH: i16 = 0;
 const CS_OWNDC: u16 = 0x0020;
 const CS_CLASSDC: u16 = 0x0040;
+const DCX_WINDOW: u32 = 0x0000_0001;
+const DCX_CACHE: u32 = 0x0000_0002;
+const DCX_CLIPCHILDREN: u32 = 0x0000_0008;
+const DCX_EXCLUDERGN: u32 = 0x0000_0040;
+const DCX_INTERSECTRGN: u32 = 0x0000_0080;
+const DCX_KEEPCLIPRGN: u32 = 0x0004_0000;
 
 /// How many released contexts USER keeps.
 const CACHED: usize = 5;
@@ -271,15 +279,119 @@ impl System {
             (Some(released), _) if whole => {
                 self.release_to_cache(hdc, released);
                 self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
+                self.release_dc_ex_region(hdc);
                 Ok(true)
             }
             (Some(released), Some(surface)) if released == surface => {
                 self.release_to_cache(hdc, released);
                 self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
+                self.release_dc_ex_region(hdc);
                 Ok(true)
             }
             _ => Ok(false),
         }
+    }
+
+    /// The region `GetDCEx` was given, deleted as its context is released
+    /// (`getdcex`).
+    fn release_dc_ex_region(&mut self, hdc: u16) {
+        if let Some(region) = self.dc_ex_regions.remove(&hdc) {
+            delete_object(self, region);
+        }
+    }
+
+    /// A device context of a window's, as `GetDC` and `GetWindowDC` give
+    /// one, with what drawing in it is kept to said by the flags
+    /// (`USER.EXE` seg1 `a64c`, then `847b`-`87b7`), as the TypeScript
+    /// engine's `get-dc-ex.ts` says more of. **Recorded** by `getdcex`.
+    pub fn get_dc_ex(&mut self, hwnd: u16, region: u16, flags: u32) -> u16 {
+        if hwnd == 0 {
+            return 0;
+        }
+
+        let index = match self.surface_of(hwnd) {
+            Surface::Window(index) => Some(index),
+            _ => None,
+        };
+
+        // Without `DCX_CACHE`, only a window whose class has a context of
+        // its own gets one (`8560`-`85b6`).
+        if let Some(index) = index
+            && flags & DCX_CACHE == 0
+            && self.windows[index]
+                .as_ref()
+                .and_then(|window| self.class_named(&window.class))
+                .map_or(0, |class| self.classes[class].style)
+                & (CS_OWNDC | CS_CLASSDC)
+                == 0
+        {
+            return 0;
+        }
+
+        let hdc = if flags & DCX_WINDOW == 0 {
+            self.get_dc(hwnd)
+        } else {
+            self.get_window_dc(hwnd)
+        };
+        let (Some(index), Some(Object::Dc(dc))) = (index, self.handles.resolve(hdc)) else {
+            return hdc;
+        };
+        let window = self.windows[index].as_ref().expect("a window");
+        let (x, y, width, height) = if flags & DCX_WINDOW == 0 {
+            (
+                window.left + window.client.left,
+                window.top + window.client.top,
+                window.client_width(),
+                window.client_height(),
+            )
+        } else {
+            (window.left, window.top, window.width, window.height)
+        };
+        let whole = ClipRegion::rect(0, 0, width, height);
+        let mut clip = None;
+
+        if flags & DCX_CLIPCHILDREN != 0 {
+            let mut region = whole.clone();
+
+            for child in self.windows.iter().flatten() {
+                if child.parent == Some(index) && child.visible && child.title_of.is_none() {
+                    region = region.subtract(&ClipRegion::rect(
+                        child.left - x,
+                        child.top - y,
+                        child.left - x + child.width,
+                        child.top - y + child.height,
+                    ));
+                }
+            }
+
+            clip = Some(region);
+        }
+
+        let intersect = flags & DCX_INTERSECTRGN != 0;
+
+        // 1 is no region (`86f0`).
+        if (intersect || flags & DCX_EXCLUDERGN != 0) && region != 1 {
+            let base = clip.clone().unwrap_or_else(|| whole.clone());
+
+            match crate::gdi::regions::region_shape(self, region) {
+                Some(shape) if intersect => clip = Some(base.intersect(&shape.offset(-x, -y))),
+                Some(shape) => clip = Some(base.subtract(&shape.offset(-x, -y))),
+                // Nought with `DCX_INTERSECTRGN` leaves nothing
+                // (`8711`-`871d`).
+                None if region == 0 && intersect => clip = Some(ClipRegion::EMPTY),
+                None => {}
+            }
+
+            if region != 0 && flags & DCX_KEEPCLIPRGN == 0 {
+                self.dc_ex_regions.insert(hdc, region);
+            }
+        }
+
+        if let Some(clip) = clip {
+            self.gdi.dcs[dc].state.clip = Some(clip);
+        }
+
+        hdc
     }
 
     /// A window's own device context, as `BeginPaint` makes ready to paint
@@ -313,6 +425,15 @@ pub fn release_dc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     let hdc = args.word(system);
 
     Ok(Answer::Word(u16::from(system.release_dc(hwnd, hdc)?)))
+}
+
+/// A device context of a window's, by flags and a region.
+pub fn get_dc_ex(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let region = args.word(system);
+    let flags = args.dword(system);
+
+    Ok(Answer::Word(system.get_dc_ex(hwnd, region, flags)))
 }
 
 /// The whole of a window's device context, or the screen's with nought.

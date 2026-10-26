@@ -275,7 +275,7 @@ function badCode(system: any, pointer: number) {
 }
 
 /** An export's address: a module of winbox.js's own, by its name. */
-function exportAddress(system: any, moduleName: string, name: string | number) {
+export function exportAddress(system: any, moduleName: string, name: string | number) {
   const module = system.modules.fromName(moduleName);
   const ordinal = typeof name === 'number' ? name : ordinalFor(module, name);
   const info = system.modules.load(module).lookup(ordinal);

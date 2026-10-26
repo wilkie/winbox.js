@@ -475,15 +475,24 @@ fn decimal(value: u16) -> Vec<u8> {
 pub fn system_parameters_info(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (action, param, far, ini) = {
-            let mut system = engine.system();
+            let system = engine.system();
             let action = args.word(&system);
             let param = args.word(&system);
             let far = args.dword(&system);
             let ini = args.word(&system);
 
-            system.raster();
             (action, param, far, ini)
         };
+
+        spi(engine, action, param, far, ini).await
+    })
+}
+
+/// `SystemParametersInfo`'s body, which `ControlPanelInfo` calls with
+/// `WIN.INI` not to be written (`USER.EXE` seg41 `0ed6`).
+pub(crate) fn spi(engine: &Engine, action: u16, param: u16, far: u32, ini: u16) -> Later<'_> {
+    Box::pin(async move {
+        engine.system().raster();
 
         // The language driver loaded (`language_driver.rs`).
         if action == SPI_LANGDRIVER {

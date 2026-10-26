@@ -696,7 +696,20 @@ fn write_extra(bytes: &mut [u8], at: i16, size: usize, value: u32) -> u32 {
 pub fn get_window_word(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let offset = args.signed(system);
-    let Named::Window(index) = system.named(hwnd) else {
+    let named = system.named(hwnd);
+
+    // The desktop window's instance is USER's, one below its data
+    // segment's selector (**recorded** by `userint`: ordinal 285, USER's
+    // DS, answers one more than it).
+    if matches!(named, Named::Desktop) && offset == GWW_HINSTANCE {
+        let instance = system
+            .kept_named("USER")
+            .map_or(0, |kept| system.kept[kept].instance());
+
+        return Ok(Answer::Word(instance));
+    }
+
+    let Named::Window(index) = named else {
         return Ok(Answer::Word(0));
     };
     let window = system.window(index);
