@@ -1,0 +1,184 @@
+{
+  "probe": "visrgn",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "style",
+      "args": "high words",
+      "result": "A 5000 B 5400 C 5000 P 14cf"
+    },
+    {
+      "function": "style",
+      "args": "high words, top",
+      "result": "Q 9400 R 9400 O 9400 P2 16cf"
+    },
+    {
+      "function": "kind",
+      "args": "A GetDC",
+      "result": "org 54,63 clip 2 0,0,80,60 vis 2 54,63,134,123 63-123:54-134;"
+    },
+    {
+      "function": "kind",
+      "args": "A GetWindowDC",
+      "result": "org 54,63 clip 2 0,0,80,60 vis 2 54,63,134,123 63-123:54-134;"
+    },
+    {
+      "function": "kind",
+      "args": "A CACHE CLIPSIBLINGS",
+      "result": "org 54,63 clip 3 0,0,80,60 vis 3 54,63,134,123 63-93:54-134;93-123:54-104;"
+    },
+    {
+      "function": "kind",
+      "args": "A CACHE PARENTCLIP",
+      "result": "org 54,63 clip 2 -10,-10,282,163 vis 2 44,53,336,226 53-226:44-336;"
+    },
+    {
+      "function": "kind",
+      "args": "B GetDC",
+      "result": "org 144,63 clip 3 0,0,80,60 vis 3 144,63,224,123 63-93:144-224;93-123:184-224;"
+    },
+    {
+      "function": "kind",
+      "args": "B GetWindowDC",
+      "result": "org 144,63 clip 3 0,0,80,60 vis 3 144,63,224,123 63-93:144-224;93-123:184-224;"
+    },
+    {
+      "function": "kind",
+      "args": "C GetDC",
+      "result": "org 104,93 clip 2 0,0,80,60 vis 2 104,93,184,153 93-153:104-184;"
+    },
+    {
+      "function": "kind",
+      "args": "D GetDC (CS_PARENTDC)",
+      "result": "org 244,153 clip 2 -200,-100,92,73 vis 2 44,53,336,226 53-226:44-336;"
+    },
+    {
+      "function": "kind",
+      "args": "D GetWindowDC (CS_PARENTDC)",
+      "result": "org 244,153 clip 2 0,0,40,30 vis 2 244,153,284,183 153-183:244-284;"
+    },
+    {
+      "function": "kind",
+      "args": "D CACHE",
+      "result": "org 244,153 clip 2 0,0,40,30 vis 2 244,153,284,183 153-183:244-284;"
+    },
+    {
+      "function": "kind",
+      "args": "P GetDC",
+      "result": "org 44,53 clip 2 0,0,292,173 vis 2 44,53,336,226 53-226:44-336;"
+    },
+    {
+      "function": "kind",
+      "args": "P GetWindowDC",
+      "result": "org 40,30 clip 2 0,0,300,200 vis 2 40,30,340,230 30-230:40-340;"
+    },
+    {
+      "function": "kind",
+      "args": "P CACHE CLIPCHILDREN",
+      "result": "org 44,53 clip 3 0,0,292,173 vis 3 44,53,336,226 53-63:44-336;63-93:44-54,134-144,224-336;93-123:44-54,224-336;123-153:44-104,184-336;153-183:44-244,284-336;183-226:44-336;"
+    },
+    {
+      "function": "kind",
+      "args": "P2 GetDC (CLIPCHILDREN)",
+      "result": "org 384,53 clip 3 0,0,192,123 vis 3 384,53,576,176 53-63:384-576;63-103:384-394,444-576;103-176:384-576;"
+    },
+    {
+      "function": "kind",
+      "args": "P2 GetWindowDC (CLIPCHILDREN)",
+      "result": "org 380,30 clip 2 0,0,200,150 vis 2 380,30,580,180 30-180:380-580;"
+    },
+    {
+      "function": "kind",
+      "args": "P2 CACHE",
+      "result": "org 384,53 clip 2 0,0,192,123 vis 2 384,53,576,176 53-176:384-576;"
+    },
+    {
+      "function": "kind",
+      "args": "E GetDC",
+      "result": "org 394,63 clip 2 0,0,50,40 vis 2 394,63,444,103 63-103:394-444;"
+    },
+    {
+      "function": "kind",
+      "args": "Q GetDC",
+      "result": "org -30,300 clip 3 30,0,150,100 vis 3 0,300,120,400 300-350:0-120;350-400:0-60;"
+    },
+    {
+      "function": "kind",
+      "args": "Q GetWindowDC",
+      "result": "org -30,300 clip 3 30,0,150,100 vis 3 0,300,120,400 300-350:0-120;350-400:0-60;"
+    },
+    {
+      "function": "kind",
+      "args": "R GetDC",
+      "result": "org 60,350 clip 2 0,0,100,80 vis 2 60,350,160,430 350-430:60-160;"
+    },
+    {
+      "function": "kind",
+      "args": "H GetDC (hidden)",
+      "result": "org 104,123 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "kind",
+      "args": "desktop GetDC(NULL)",
+      "result": "org 0,0 clip 2 0,0,640,480 vis 2 0,0,640,480 0-480:0-640;"
+    },
+    {
+      "function": "kind",
+      "args": "desktop GetWindowDC(desktop)",
+      "result": "org 0,0 clip 2 0,0,640,480 vis 2 0,0,640,480 0-480:0-640;"
+    },
+    {
+      "function": "kind",
+      "args": "memory, new",
+      "result": "org 0,0 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "kind",
+      "args": "memory, 30 by 20",
+      "result": "org 0,0 clip 2 0,0,30,20 vis 2 0,0,30,20 0-20:0-30;"
+    },
+    {
+      "function": "paint",
+      "args": "BeginPaint",
+      "result": "org 44,53 clip 3 20,20,260,140 vis 3 64,73,304,193 73-93:244-304;153-193:64-104;"
+    },
+    {
+      "function": "paint",
+      "args": "rcPaint",
+      "result": "20,20,260,140"
+    },
+    {
+      "function": "own",
+      "args": "got",
+      "result": "org 400,250 clip 2 0,0,150,100 vis 2 400,250,550,350 250-350:400-550;"
+    },
+    {
+      "function": "own",
+      "args": "after O moved",
+      "result": "org 420,270 clip 2 0,0,150,100 vis 2 420,270,570,370 270-370:420-570;"
+    },
+    {
+      "function": "own",
+      "args": "after R moved over it",
+      "result": "org 420,270 clip 3 0,0,150,100 vis 3 420,270,570,370 270-300:420-570;300-370:480-570;"
+    },
+    {
+      "function": "own",
+      "args": "after R hidden",
+      "result": "org 420,270 clip 2 0,0,150,100 vis 2 420,270,570,370 270-370:420-570;"
+    },
+    {
+      "function": "own",
+      "args": "got again",
+      "result": "org 420,270 clip 2 0,0,150,100 vis 2 420,270,570,370 270-370:420-570;"
+    }
+  ]
+}

@@ -5207,7 +5207,8 @@ export const KNOWN_GAPS: Record<string, string> = {
    * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
    * winbox.js's database holds the file's header, which reads 201h. What
    * the bit does -- the prologue and the thunk -- agrees. */
-  'solodata:flags': "the module's database holds its file's header, not the bits KERNEL sets in its flags",
+  'solodata:flags':
+    "the module's database holds its file's header, not the bits KERNEL sets in its flags",
   /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
    * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
    * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C:, a
@@ -5570,6 +5571,15 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prtt:size': 'the document differs where the downloaded face does',
   'prtt:line':
     "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
+  /* `visrgn` and `visfam`, not run whole: GDI's visible-region family is
+   * stubs and USER keeps no visible region (`kb/topics/visible-regions.md`,
+   * a design). Their records whose function names another probe's adapter
+   * answers are held here; the rest have no adapter. */
+  'visrgn:style': 'not run whole: recorded for the visible-region design',
+  'visfam:again': 'GDI keeps no visible region: the family is stubs',
+  'visfam:intersect': 'GDI keeps no visible region: the family is stubs',
+  'visfam:offset': 'GDI keeps no visible region: the family is stubs',
+  'visfam:state': 'GDI keeps no visible region: the family is stubs',
 };
 
 /**

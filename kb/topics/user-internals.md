@@ -26,7 +26,7 @@ USER exports some sixty functions no program is meant to call: KERNEL calls them
 - [[read out]] `UserSeeUserDo` (seg41 `181e`): `LocalAlloc`, `LocalFree` and `LocalCompact` in USER's own heap, and two of USER's words, by a request's number; -1 for another. WinBox keeps USER's objects in itself, and USER's data segment holds no heap.
 - [[read out]] `StringFunc` (seg11 `02e7`): a table of string helpers chosen by CX, not by its arguments.
 - [[read out]] `_FFFE_FARFRAME` (seg1 `1798`): begins with `INT 3`, a debugger's breakpoint.
-- [[read out]] `DCHook` (seg1 `8a00`): the procedure USER gives GDI for its windows' device contexts; for `DCHC_INVALIDVISRGN` it makes the context's visible region again. It waits on GDI's visible regions, a later wave.
+- [[read out]] `DCHook` (seg1 `8a00`): the procedure USER gives GDI for its windows' device contexts; for `DCHC_INVALIDVISRGN` it makes the context's visible region again. It waits on GDI's visible regions: designed in [[topic:visible-regions]].
 - [[read out]] `Hardware_Event` (seg1 `4d6c`): a driver's registers put into the system queue as a message, the time `GetSystemMSecCount`'s, a beep where the queue is full. WinBox's drivers are its own and put input in the queue themselves.
 - [[read out]] `Bear11` and `Bear182` (seg1 `744c`, `74f4`): USER's own timers looked up by window and identifier, and one killed or its count let go. They reach USER's timer table, which WinBox keeps itself.
 - [[read out]] `GetFilePortName` (seg1 `9c7c`): USER's "Print To File" box (its dialog 10) for a printer's driver writing to FILE:, its file's name checked with `OpenFile` and a box asking before one there is replaced; -1 while one is up. Not yet done: it needs USER's dialog and strings laid out for WinBox's own USER.
@@ -40,4 +40,4 @@ SHELL's [[fn:SHELL.AboutDlgProc]] and [[fn:SHELL.InternalExtractIcon]], [[fn:USE
 ## Not yet done
 
 - Every export of the list just above.
-- [[fn:USER.GetDCEx]]'s `DCX_PARENTCLIP` and `DCX_USESTYLE`.
+- [[fn:USER.GetDCEx]]'s `DCX_PARENTCLIP` and `DCX_USESTYLE`: read out and recorded in [[topic:visible-regions]], phases 2 and 3.

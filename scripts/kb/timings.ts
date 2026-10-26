@@ -1,7 +1,7 @@
 /**
  * How long calls take Windows, from the timing recordings in
  * `oracle/fixtures/timings/` -- `speed`, `callcost`, `wingcost`, `wingxlat`,
- * `twrcost` and `twrcall` -- for each function's page: the time a call took
+ * `twrcost`, `twrcall` and `viscost` -- for each function's page: the time a call took
  * under the recorder's DOSBox, and the same as the instructions Windows ran
  * in that time, at the rate the recording measured in the same run. A
  * recording at a fixed rate (`cycles` in its source) says how many
@@ -95,9 +95,15 @@ const MADE: Record<string, string> = {
   'twrcall:FillRect': '10 by 10 in a window',
   'twrcall:FrameRect': '10 by 10 in a window',
   'twrcall:DrawFocusRect': '10 by 10 in a window',
+  'viscost:BitBlt': '16 by 16 within a window, `SRCCOPY`',
+  'viscost:PatBlt': '16 by 16 within a window, `PATCOPY`',
 };
 
-/** A variant as the recordings name it, in words: `16x16` as 16 by 16, and so on. */
+/**
+ * A variant as the recordings name it, in words: `16x16` as 16 by 16, a
+ * range's dash between figures as "to", and so on. A dash between words, as
+ * in `viscost`'s "a pop-up over half the drawing", stays.
+ */
 function variantText(_name: string, variant: string) {
   if (variant === 'noyield') {
     return 'and `PM_NOYIELD`';
@@ -107,7 +113,7 @@ function variantText(_name: string, variant: string) {
     return `${variant} entries`;
   }
 
-  return variant.replace(/(\d)x(\d)/g, '$1 by $2').replace(/-/g, ' to ');
+  return variant.replace(/(\d)x(\d)/g, '$1 by $2').replace(/(\d)-(\d)/g, '$1 to $2');
 }
 
 /** Every timing recorded, by the function it times. */
