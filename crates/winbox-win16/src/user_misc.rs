@@ -29,6 +29,10 @@ pub struct UserState {
     /// The character each virtual key typed last, for `TranslateMessage`
     /// (`key_input.rs`).
     pub typed: std::collections::HashMap<u16, u8>,
+    /// The procedure `SetEventHook` set (`small_calls.rs`).
+    pub event_hook: u32,
+    /// WINOLDAP's flag of USER's menus (`WinOldAppHackomatic`).
+    pub win_old_ap_hack: bool,
 }
 
 impl Default for UserState {
@@ -39,6 +43,8 @@ impl Default for UserState {
             async_keys: [0; 256],
             keys_with_alt: 0,
             typed: std::collections::HashMap::new(),
+            event_hook: 0,
+            win_old_ap_hack: false,
         }
     }
 }

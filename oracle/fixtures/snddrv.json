@@ -1,0 +1,74 @@
+{
+  "probe": "snddrv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "threshold",
+      "args": "before",
+      "result": "0000"
+    },
+    {
+      "function": "open",
+      "args": "first",
+      "result": "1"
+    },
+    {
+      "function": "open",
+      "args": "again",
+      "result": "-1"
+    },
+    {
+      "function": "threshold",
+      "args": "open",
+      "result": "0084=0"
+    },
+    {
+      "function": "status",
+      "args": "open",
+      "result": "0"
+    },
+    {
+      "function": "threshold",
+      "args": "closed",
+      "result": "0000"
+    },
+    {
+      "function": "status",
+      "args": "closed",
+      "result": "0"
+    },
+    {
+      "function": "open",
+      "args": "after close",
+      "result": "1"
+    },
+    {
+      "function": "threshold",
+      "args": "open again",
+      "result": "0084=0"
+    },
+    {
+      "function": "beep",
+      "args": "-1",
+      "result": "returned"
+    },
+    {
+      "function": "beep",
+      "args": "30h",
+      "result": "returned"
+    },
+    {
+      "function": "wep",
+      "args": "0",
+      "result": "1"
+    }
+  ]
+}

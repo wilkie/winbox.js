@@ -20,6 +20,8 @@ const KEPT = [
   'justification',
   'pageStarted',
   'banding',
+  /* `SetRelAbs`' mode (`dcinner`). */
+  'relAbs',
 ];
 
 /**

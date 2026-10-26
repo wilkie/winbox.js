@@ -207,16 +207,8 @@ pub fn message_beep(engine: &Engine, mut args: Args) -> Later<'_> {
 pub async fn beep(engine: &Engine, kind: u16) -> Result<(), Stop> {
     let on = engine.system().parameters().beep != 0;
 
-    if on && kind != 0xffff {
-        let name: &[u8] = match (kind & 0xf0) >> 4 {
-            1 => b"SystemHand",
-            2 => b"SystemQuestion",
-            3 => b"SystemExclamation",
-            4 => b"SystemAsterisk",
-            _ => b"SystemDefault",
-        };
-
-        play_named(engine, name, SND_ASYNC).await?;
+    if on {
+        crate::sound::do_beep(engine, kind).await?;
     }
 
     Ok(())

@@ -3,6 +3,8 @@
 import { FALSE, TRUE } from '../consts.js';
 import { LineTo, wideStroke } from './LineTo.js';
 import { devicePoint, mapped } from './mapping.js';
+import { lineBounds } from './bounds.js';
+import { penSize } from './Ellipse.js';
 
 /**
  * Draws a chain of lines through points, with the selected pen.
@@ -59,6 +61,9 @@ export function Polyline(this: any, hdc: number, lpPoints: number, nCount: numbe
   }
 
   if (surface.pen?.color?.alpha && wideStroke(this, surface, points)) {
+    /* What it drew in, taken into the bounds (`bounds.ts`); a narrow
+     * chain's are its `LineTo`s'. */
+    lineBounds(this, surface, points, penSize(this, surface.pen, surface)[0]);
     return TRUE;
   }
 

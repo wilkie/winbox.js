@@ -26,7 +26,7 @@ async function tables(_system: any): Promise<{ toOem: Uint8Array; toAnsi: Uint8A
 }
 
 /** One byte through a table: 80h up from its last 128, 01h to 1Fh from its first 32. */
-function translate(table: Uint8Array | null, byte: number) {
+export function translate(table: Uint8Array | null, byte: number) {
   if (!table) {
     return byte;
   }
@@ -108,11 +108,21 @@ export function OemToAnsi(this: any, lpszOemStr: number, lpszWindowsStr: number)
   return string(this, 'toAnsi', lpszOemStr, lpszWindowsStr);
 }
 
-export function AnsiToOemBuff(this: any, lpszWindowsStr: number, lpszOemStr: number, cbLen: number) {
+export function AnsiToOemBuff(
+  this: any,
+  lpszWindowsStr: number,
+  lpszOemStr: number,
+  cbLen: number
+) {
   return buffer(this, 'toOem', lpszWindowsStr, lpszOemStr, cbLen);
 }
 
-export function OemToAnsiBuff(this: any, lpszOemStr: number, lpszWindowsStr: number, cbLen: number) {
+export function OemToAnsiBuff(
+  this: any,
+  lpszOemStr: number,
+  lpszWindowsStr: number,
+  cbLen: number
+) {
   return buffer(this, 'toAnsi', lpszOemStr, lpszWindowsStr, cbLen);
 }
 

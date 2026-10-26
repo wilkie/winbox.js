@@ -6,6 +6,7 @@ import { DEFAULT_ENTRIES, type PaletteEntries } from '../../raster/palette-colou
 import { defaultPalette, LogicalPalette } from './gdi-objects.js';
 import { type SystemPalette } from './system-palette.js';
 import { SendMessage } from '../user/SendMessage.js';
+import { gdiDataSelector } from './gdi-data.js';
 
 const WM_PALETTECHANGED = 0x0311;
 
@@ -183,8 +184,42 @@ export function GetNearestPaletteIndex(this: any, hpal: number, crColor: number)
   return best;
 }
 
-/** @returns {Types.HANDLE} The palette the device context had. */
-export function SelectPalette(this: any, hdc: number, hpal: number, bForceBackground: number) {
+/** A device context's palette's handle: the stock one's where none was selected. */
+function paletteHandleOf(system: any, surface: any): number {
+  return surface.palette ? (system.handles.lookup(surface.palette) ?? 0) : defaultPalette(system);
+}
+
+/** The window whose surface a device context draws on, where it is one's. */
+function windowOf(system: any, surface: any) {
+  return system.rasterDesktop?.windows.find(
+    (w: any) => system.handles.resolve(w.hwnd)?.surface === surface
+  );
+}
+
+/**
+ * GDI's palettes, as `GDI.EXE` keeps them in its data segment: the palette
+ * last selected in the foreground, `[480h]`, and the one last realized,
+ * `[482h]` (seg22 `0271`, `1088`).
+ */
+interface PaletteState {
+  foreground: number;
+  realized: number;
+}
+
+function stateOf(system: any): PaletteState {
+  return (system._paletteState ??= { foreground: 0, realized: 0 });
+}
+
+/**
+ * Selects a palette into a device context, for the foreground or the
+ * background. **Read out** of `GDI.EXE` seg22 `0271`: the palette before
+ * answered; a palette selected for the foreground, and not the one there
+ * already, becomes GDI's foreground palette, and no palette is then the one
+ * realized last. **Recorded** by `dcinner`.
+ *
+ * @returns {Types.HPALETTE} The palette the device context had.
+ */
+export function GDISelectPalette(this: any, hdc: number, hpal: number, wBackground: number) {
   const surface = this.handles.resolve(hdc);
   const palette = paletteOf(this, hpal);
 
@@ -192,58 +227,166 @@ export function SelectPalette(this: any, hdc: number, hpal: number, bForceBackgr
     return 0;
   }
 
-  const before = surface.palette ? this.handles.lookup(surface.palette) : defaultPalette(this);
+  const before = paletteHandleOf(this, surface);
+  const state = stateOf(this);
 
   surface.palette = palette;
 
-  /* Kept by the device context's handle, not its surface: two of a window's
-   * are one surface here, and a palette selected into one for the background
-   * leaves the other's as it was (`palreal`). */
-  (this._paletteBackground ??= new Map<number, boolean>()).set(hdc & 0xffff, !!bForceBackground);
+  if (!wBackground && (hpal & 0xffff) !== state.foreground) {
+    state.foreground = hpal & 0xffff;
+    state.realized = 0;
+  }
 
-  return before ?? 0;
+  return before;
 }
 
 /**
- * Nought on a display with fixed colours, or into a memory device context.
- * On the 256-colour display, the palette realized into the system palette
- * (`system-palette.ts`): in the foreground unless it was selected for the
- * background or its window is not the active one or in it, and where a slot
- * changed colour, the top-level windows are sent `WM_PALETTECHANGED`
- * (`palreal`).
+ * USER's `SelectPalette`. **Read out** of `USER.EXE` seg6 `00a2`: a palette
+ * is selected for the background when asked, when it is the stock one, and
+ * when the device context is no window's, or the window is neither the
+ * active one nor in it; then GDI's `GDISelectPalette` (`dcinner`,
+ * `palreal`).
  *
- * @returns {Types.UINT} The palette's entries realized, or nought.
+ * @returns {Types.HANDLE} The palette the device context had.
  */
-export async function RealizePalette(this: any, hdc: number) {
+export function SelectPalette(this: any, hdc: number, hpal: number, bForceBackground: number) {
+  const surface = this.handles.resolve(hdc);
+
+  let background = 1;
+
+  if (surface && !bForceBackground && (hpal & 0xffff) !== defaultPalette(this)) {
+    const active = this.rasterDesktop?.active;
+
+    for (let at = windowOf(this, surface); at && background; at = at.parent) {
+      if (at === active) {
+        background = 0;
+      }
+    }
+  }
+
+  return GDISelectPalette.call(this, hdc, hpal, background);
+}
+
+/**
+ * Realizes a device context's palette into the system palette. **Read
+ * out** of `GDI.EXE` seg22 `1088` and `0cfb`: nought on a display with
+ * fixed colours, and for the palette realized last; otherwise it becomes
+ * that, and is realized in the foreground if it is GDI's foreground palette,
+ * else in the background (`system-palette.ts`). The answer is how many of
+ * its entries are in a slot they were not in, and above it how many slots
+ * were given a colour. **Recorded** by `dcinner`: a memory context's
+ * palette is realized as any other's.
+ *
+ * @returns {Types.DWORD} The entries moved, and above them the slots written.
+ */
+export function GDIRealizePalette(this: any, hdc: number) {
   const surface = this.handles.resolve(hdc);
   const system: SystemPalette | null = this.systemPalette;
   const palette: LogicalPalette | undefined = surface?.palette;
 
-  if (!system || !surface || surface.memoryContext || !palette?.entries) {
+  if (!system || !surface || !palette?.entries) {
     return 0;
   }
 
-  const desktop = this.rasterDesktop;
-  const window = desktop?.windows.find(
-    (w: any) => this.handles.resolve(w.hwnd)?.surface === surface
-  );
-  const active = desktop?.active;
-  let inActive = !window;
+  const state = stateOf(this);
+  const handle = paletteHandleOf(this, surface);
 
-  for (let at = window; at && !inActive; at = at.parent) {
-    inActive = at === active;
+  if (handle === state.realized) {
+    return 0;
   }
 
-  const background = this._paletteBackground?.get(hdc & 0xffff) ?? false;
-  const { answer, changed } = system.realize(palette, palette.entries, !background && inActive);
+  state.realized = handle;
 
-  if (changed && desktop) {
+  const { answer, written } = system.realize(palette, palette.entries, handle === state.foreground);
+
+  return ((answer & 0xffff) | ((written & 0xffff) << 16)) >>> 0;
+}
+
+/**
+ * USER's `RealizePalette`. **Read out** of `USER.EXE` seg6 `0134`: GDI's
+ * `GDIRealizePalette`, and where it gave a slot a colour and the palette is
+ * GDI's foreground palette, the top-level windows are sent
+ * `WM_PALETTECHANGED` with the device context's window (`palreal`).
+ *
+ * @returns {Types.UINT} The palette's entries realized, or nought.
+ */
+export async function RealizePalette(this: any, hdc: number) {
+  const answer = GDIRealizePalette.call(this, hdc);
+  const surface = this.handles.resolve(hdc);
+  const desktop = this.rasterDesktop;
+  const window = surface ? windowOf(this, surface) : null;
+
+  if (answer >>> 16 && IsDCCurrentPalette.call(this, hdc) && window && desktop) {
     for (const top of desktop.windows.filter((w: any) => !w.parent && w.hwnd)) {
-      await SendMessage.call(this, top.hwnd, WM_PALETTECHANGED, window?.hwnd ?? 0, 0);
+      await SendMessage.call(this, top.hwnd, WM_PALETTECHANGED, window.hwnd ?? 0, 0);
     }
   }
 
-  return answer;
+  return answer & 0xffff;
+}
+
+/**
+ * Whether a device context's palette is GDI's foreground palette. **Read
+ * out** of seg22 `0b0c`: the palette's handle compared, not the context's;
+ * no palette is GDI's foreground palette until one is selected for it.
+ * **Recorded** by `dcinner`.
+ *
+ * @returns {Types.BOOL} Whether it is.
+ */
+export function IsDCCurrentPalette(this: any, hdc: number) {
+  const surface = this.handles.resolve(hdc);
+
+  if (!surface) {
+    return 0;
+  }
+
+  return paletteHandleOf(this, surface) === stateOf(this).foreground ? 1 : 0;
+}
+
+/**
+ * Realizes the stock palette. **Read out** of seg22 `101d`: on a display
+ * with a palette, every slot between the static colours is freed, keeping
+ * its colour, the stock palette becomes GDI's foreground palette and the one
+ * realized last, and the answer is nought; on one with fixed colours
+ * nothing is done, and the answer is what AX held, GDI's data segment.
+ * **Recorded** by `dcinner`. DX is nought on the 256-colour display, the
+ * realization's count of slots.
+ *
+ * @returns {Types.DWORD} Nought, or GDI's data segment.
+ */
+export function RealizeDefaultPalette(this: any, hdc: number) {
+  const surface = this.handles.resolve(hdc);
+  const system: SystemPalette | null = this.systemPalette;
+
+  if (!system) {
+    return gdiDataSelector(this);
+  }
+
+  if (!surface) {
+    return 0;
+  }
+
+  const state = stateOf(this);
+
+  system.freeAll();
+  state.foreground = defaultPalette(this);
+  state.realized = state.foreground;
+
+  return 0;
+}
+
+/**
+ * Redraws a device context's area for its palette's realization.
+ * **Read out** of seg22 `0109` and `0773`: on a display with a palette the
+ * driver's `UpdateColors` is given each rectangle of the visible region and
+ * a table from each of the palette's old slots to its new; the answer is
+ * nought either way. **Recorded** by `dcinner`. The redrawing is not
+ * followed.
+ *
+ * @returns {Types.INT} Nought.
+ */
+export function UpdateColors(this: any, _hdc: number) {
+  return 0;
 }
 
 /**

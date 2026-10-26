@@ -102,6 +102,9 @@ export const PER_DISPLAY = new Set([
   /* Program Manager's group file holds the display's resolution and its
    * icons' format, and its windows are placed by the screen's size. */
   'pmbare',
+  /* The palette internals are a palette device's on the 256-colour
+   * display and next to nothing on the VGA. */
+  'dcinner',
 ]);
 
 /**
@@ -110,7 +113,7 @@ export const PER_DISPLAY = new Set([
  * device there is beside what they do with none. A probe recorded only with
  * a card, `wavedev`, needs no suffix.
  */
-export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen', 'sndrec']);
+export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen', 'sndrec', 'mmmisc', 'mmnodev']);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
 export const fixtureFor = (probe, display) =>

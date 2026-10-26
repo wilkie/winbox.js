@@ -45,7 +45,12 @@ export class Scheduler {
   /** Looked at between slices of a task's instructions: what has come due (`pollTimeEvents`). */
   declare onSlice: (() => void) | undefined;
   /** Procedures waiting to be called as at interrupt time; see `atInterrupt`. */
-  declare _interrupts: { proc: number; args: any[]; key?: unknown }[];
+  declare _interrupts: {
+    proc: number;
+    args: any[];
+    key?: unknown;
+    registers?: Record<string, number>;
+  }[];
   /** Whether one is being called now. */
   declare _inInterrupt: boolean;
 
@@ -192,10 +197,17 @@ export class Scheduler {
    *
    * Not recorded: the registers and the stack Windows calls it with; here
    * DS and AX are the stack's segment, as for a hook, and the stack is the
-   * task's.
+   * task's -- but for `registers` given, as SYSTEM.DRV's timers give AX and
+   * DS (`system-driver.ts`).
    */
-  atInterrupt(proc: number, args: any[], key?: unknown, task?: number) {
-    (this._interrupts ??= []).push({ proc, args, key });
+  atInterrupt(
+    proc: number,
+    args: any[],
+    key?: unknown,
+    task?: number,
+    registers?: Record<string, number>
+  ) {
+    (this._interrupts ??= []).push({ proc, args, key, registers });
 
     if (task !== undefined) {
       this.taskAt(task)?.signal?.();
@@ -232,11 +244,11 @@ export class Scheduler {
       return;
     }
 
-    const { proc, args } = this._interrupts.shift()!;
+    const { proc, args, registers } = this._interrupts.shift()!;
     const handle = this.active;
 
     this._inInterrupt = true;
-    this.callProc(proc, args, this.stackRegisters()).finally(() => {
+    this.callProc(proc, args, { ...this.stackRegisters(), ...registers }).finally(() => {
       this._inInterrupt = false;
       this.resume(handle);
     });
@@ -248,12 +260,12 @@ export class Scheduler {
    */
   async takeInterrupts() {
     while (!this._inInterrupt && this._interrupts?.length && this.task && !this.task.ended) {
-      const { proc, args } = this._interrupts.shift()!;
+      const { proc, args, registers } = this._interrupts.shift()!;
 
       this._inInterrupt = true;
 
       try {
-        await this.callProc(proc, args, this.stackRegisters());
+        await this.callProc(proc, args, { ...this.stackRegisters(), ...registers });
       } finally {
         this._inInterrupt = false;
       }
@@ -589,19 +601,32 @@ export class Scheduler {
 
       /* Handling it, the task is in a message another sent it: USER's
        * `InSendMessage` word (`USER.EXE` seg1 `3dba`), which its looks
-       * meanwhile let the input go for (`queue.ts`). */
+       * meanwhile let the input go for (`queue.ts`). The message is kept
+       * for `QuerySendMessage`, and `ReplyMessage` may answer it before its
+       * procedure returns (`user/reply-message.ts`). */
       task.inSent = (task.inSent ?? 0) + 1;
+      (task.answering ??= []).push(item);
 
       try {
-        item.done(await item.run());
+        const value = await item.run();
+
+        if (!item.replied) {
+          item.done(value);
+        }
       } catch (error) {
-        item.done(0);
+        if (!item.replied) {
+          item.done(0);
+        }
+
         this.fail(error);
       } finally {
         task.inSent--;
+        task.answering.pop();
       }
 
-      await this.handBack(item.from);
+      if (!item.replied) {
+        await this.handBack(item.from);
+      }
     }
   }
 
@@ -648,7 +673,11 @@ export class Scheduler {
    * this one waits -- answering what is sent to it meanwhile -- for the
    * answer.
    */
-  async sendAcross(target, run: () => Promise<number>) {
+  async sendAcross(
+    target,
+    run: () => Promise<number>,
+    message: { hwnd: number; message: number; wParam: number; lParam: number } | null = null
+  ) {
     const task = this.taskAt(target);
     const self = this._currentTask;
     const me = this.taskAt(self);
@@ -658,7 +687,7 @@ export class Scheduler {
       me.signal();
     };
 
-    (task.sent ??= []).push({ run, done, from: self });
+    (task.sent ??= []).push({ run, done, from: self, message });
     task.signal();
 
     /* The task sent to has the processor next: USER hands it over with
@@ -990,10 +1019,13 @@ export class Scheduler {
     ) {
       /* Taken by that task later: a window destroyed meanwhile is sent
        * nothing. */
-      return this.sendAcross(target, async () =>
-        this.handles?.resolve(hwnd)
-          ? this.callWindowProc(proc, hwnd, message, wParam, lParam, ax)
-          : 0
+      return this.sendAcross(
+        target,
+        async () =>
+          this.handles?.resolve(hwnd)
+            ? this.callWindowProc(proc, hwnd, message, wParam, lParam, ax)
+            : 0,
+        { hwnd, message, wParam, lParam }
       );
     }
 

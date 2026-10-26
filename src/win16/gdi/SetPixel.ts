@@ -1,5 +1,7 @@
 'use strict';
 
+import { accumulate } from './bounds.js';
+import { clipOf } from './clipping.js';
 import { colourOf } from '../../raster/palette-colour.js';
 
 import { devicePoint, mapped } from './mapping.js';
@@ -96,6 +98,12 @@ export function SetPixel(hdc, nXPos, nYPos, clrref) {
   }
 
   surface.brush = old;
+
+  /* Where it is drawn, the pixel is taken into the bounds (`GDI.EXE` seg23
+   * `020f`; `bounds.ts`). */
+  if (clipOf(surface).contains(nXPos, nYPos)) {
+    accumulate(this, surface, nXPos, nYPos, nXPos + 1, nYPos + 1);
+  }
 
   return palette.colorref(index);
 }

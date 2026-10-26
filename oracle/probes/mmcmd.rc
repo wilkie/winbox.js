@@ -1,0 +1,15 @@
+MMCMDTBL RCDATA
+BEGIN
+    "mmcmdtest\0", 0x0900L, 0,
+    "notify\0", 0x0001L, 5,
+    "wait\0", 0x0002L, 5,
+    "\0", 0x0000L, 3,
+    "mmcmdmore\0", 0x0901L, 0,
+    "\0", 0x0000L, 3,
+    "\0", 0x0000L, 6
+END
+
+EMPTYTBL RCDATA
+BEGIN
+    "\0", 0x0000L, 6
+END

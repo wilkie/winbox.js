@@ -12,7 +12,8 @@
 //!   waveform device came of it, `wavemapper` is opened and installed the
 //!   same two ways as each kind's mapper. `midi` to `midi9` and
 //!   `midimapper` follow, output then input; then, if there is any device
-//!   at all, MMSYSTEM readies its interrupt stacks; then `aux` to `aux9`,
+//!   at all, MMSYSTEM readies its interrupt stacks (`stacks.rs`); then
+//!   `aux` to `aux9`,
 //!   and `auxmapper` if an auxiliary device came of them.
 //! * Installing (`mmDrvInstall`, seg2 `484`) finds the driver's entry point
 //!   by its name -- `wodMessage`, `widMessage`, `modMessage`, `midMessage`
@@ -51,8 +52,8 @@
 //!
 //! A driver of winbox.js's own (`OwnDriver`) is a kept module whose
 //! `wodMessage` and the like winbox.js answers; one from a file runs on the
-//! processor. Not followed: the interrupt stacks; and the handles of a task
-//! closed as it ends (`DRV_EXITAPPLICATION`), which USER does not send.
+//! processor. Not followed: the handles of a task closed as it ends
+//! (`DRV_EXITAPPLICATION`), which USER does not send.
 
 use std::fmt;
 use std::future::Future;
@@ -958,9 +959,9 @@ async fn open_kinds(
     Ok(())
 }
 
-/// The waveform, MIDI and auxiliary drivers opened and installed, as
-/// MMSYSTEM's first load readies them after the timer's.
-pub async fn open_drivers(engine: &Engine) -> Result<(), Stop> {
+/// The waveform and MIDI drivers opened and installed, as MMSYSTEM's
+/// first load readies them after the timer's.
+pub async fn open_wave_and_midi(engine: &Engine) -> Result<(), Stop> {
     open_kinds(
         engine,
         b"wave",
@@ -976,6 +977,10 @@ pub async fn open_drivers(engine: &Engine) -> Result<(), Stop> {
         Some(Kind::MidiIn),
         b"midimapper",
     )
-    .await?;
+    .await
+}
+
+/// The auxiliary drivers, which follow the interrupt stacks.
+pub async fn open_auxiliary(engine: &Engine) -> Result<(), Stop> {
     open_kinds(engine, b"aux", Kind::Aux, None, b"auxmapper").await
 }

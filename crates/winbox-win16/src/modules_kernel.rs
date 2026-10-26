@@ -156,8 +156,18 @@ pub fn get_drive_type(system: &mut System, args: &mut Args) -> Result<Answer, St
 
 /// `GetDriveType`'s answer for a drive, nought for A:.
 pub fn drive_type(system: &System, drive: i32) -> u16 {
+    drive_inquiry(system, drive).0
+}
+
+/// What SYSTEM.DRV's `InquireSystem` answers for a drive (code 1): the
+/// kind in AX, as `GetDriveType` answers it, and in DX the drive, counted
+/// from 1, whose disk this one's letter is another name for -- 1, A:, for
+/// B: where there is one floppy drive and 440Eh fails (`00fb`-`010b`),
+/// else nought. **Recorded** by `sysdrv`: B: `00010000`. As
+/// `GetDriveType.ts`'s `driveInquiry`.
+pub fn drive_inquiry(system: &System, drive: i32) -> (u16, u16) {
     if !(0..=25).contains(&drive) {
-        return 0;
+        return (0, 0);
     }
 
     let letter = char::from(b'A' + drive as u8);
@@ -165,15 +175,17 @@ pub fn drive_type(system: &System, drive: i32) -> u16 {
     let equipment_floppy = floppies > 0;
     let floppies_less_one = u16::from(floppies >= 2);
 
+    // No drive here; DOSBox's B: with nothing in it, which it selects, is
+    // the one floppy drive's other letter all the same.
     if !system.files.mounted(letter) {
-        return 0;
+        return (0, u16::from(drive == 1 && floppies_less_one == 0));
     }
 
     let dos = system.files.has_disk(letter);
     let compact_disc = system.files.removable(letter) && system.files.remote(letter);
 
     if dos && system.files.remote(letter) {
-        return 4;
+        return (4, 0);
     }
 
     // 4408h.
@@ -186,20 +198,20 @@ pub fn drive_type(system: &System, drive: i32) -> u16 {
     } else if drive >= 2 {
         3
     } else if !equipment_floppy {
-        return 0;
+        return (0, 0);
     } else {
         2
     };
 
     // 440Eh.
     if dos && !compact_disc {
-        return kind;
+        return (kind, 0);
     }
 
     if drive == 1 && floppies_less_one == 0 {
-        u16::from(kind != 2)
+        (u16::from(kind != 2), 1)
     } else {
-        kind
+        (kind, 0)
     }
 }
 

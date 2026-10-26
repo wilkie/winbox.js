@@ -69,6 +69,7 @@ impl System {
         // (`wake_due_waits`).
         self.wake_due_waits();
         self.poll_time_events();
+        self.poll_system_timers();
         self.poll_comm();
         self.poll_sound();
 
@@ -99,11 +100,16 @@ impl Engine {
         let registers = {
             let mut system = self.system();
             let stack = system.cpu.segments[SS].selector;
+            // SYSTEM.DRV's timers are called with AX their handle and DS
+            // the driver's data (`system_driver.rs`).
+            let (ax, ds) = system
+                .system_timer_registers(interrupt.key)
+                .unwrap_or((stack, stack));
 
             system.interrupts.inside = true;
             [
-                Register::Word(AX, stack),
-                Register::Segment(DS, stack),
+                Register::Word(AX, ax),
+                Register::Segment(DS, ds),
                 Register::Segment(ES, stack),
             ]
         };

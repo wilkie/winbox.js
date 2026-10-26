@@ -44,7 +44,8 @@
 //!
 //! Not followed: a file that is not waveform or MIDI inside, and how a MIDI
 //! length rounds, which were not recorded; the configuration dialog; the
-//! drivers' command tables, which only `mciSendString` reads.
+//! drivers' command tables' contents, which only `mciSendString` reads;
+//! MCIWAVE's own table is loaded and freed (`mci_tables.rs`).
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
@@ -53,6 +54,7 @@
 use std::collections::HashMap;
 
 use crate::call::{Answer, Args, Implementation, Stop};
+use crate::engine::Engine;
 use crate::system::System;
 
 use super::mci::{RESOURCE_RETURNED, far_at, long_at};
@@ -130,6 +132,8 @@ impl Opened {
 pub struct DriverState {
     opened: HashMap<u16, Opened>,
     wave: Option<(u16, u16)>,
+    /// `MCIWAVE.DRV`'s own command table, loaded as it loads.
+    wave_table: Option<u16>,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -378,6 +382,65 @@ fn file_command(
     }
 }
 
+/// `MCIWAVE.DRV`'s answer to USER's messages: its own command table loaded
+/// as it is loaded -- named by its string 2, `mciwave`, without which it
+/// does not load -- and let go as it is freed (`MCIWAVE.DRV` seg1 `46`,
+/// `92`); the rest as `driver_proc` answers.
+pub async fn wave_driver_proc(
+    engine: &Engine,
+    id: u32,
+    handle: u16,
+    message: u16,
+    first: u32,
+    second: u32,
+) -> Result<u32, Stop> {
+    match message {
+        // DRV_LOAD
+        1 => {
+            driver_proc(
+                &mut engine.system(),
+                "MCIWAVE",
+                id,
+                handle,
+                message,
+                first,
+                second,
+            )?;
+
+            let table = super::mci_tables::load_table(
+                engine,
+                super::mci_tables::Source::Own("MCIWAVE"),
+                super::mci_tables::Name::Text(b"mciwave".to_vec()),
+                0,
+            )
+            .await?;
+
+            engine.system().mmsystem.drivers.wave_table = Some(table);
+            Ok(u32::from(table != 0xffff))
+        }
+        // DRV_FREE
+        6 => {
+            let table = engine.system().mmsystem.drivers.wave_table.take();
+
+            if let Some(table) = table.filter(|&table| table != 0xffff) {
+                super::mci_tables::free_table(engine, table).await?;
+            }
+
+            engine.system().mmsystem.drivers.wave_table = Some(0xffff);
+            Ok(1)
+        }
+        _ => driver_proc(
+            &mut engine.system(),
+            "MCIWAVE",
+            id,
+            handle,
+            message,
+            first,
+            second,
+        ),
+    }
+}
+
 /// A driver's answer to USER's messages; MCI's own, 800h to 17FFh, to the
 /// driver's commands.
 pub fn driver_proc(
@@ -415,12 +478,18 @@ pub fn driver_proc(
                 return Ok(10000);
             }
 
-            let (command_table, device_type) = match kind {
-                Kind::Wave => (0u16, 0x20au16),
-                Kind::Seq => (0xffff, 0x20b),
+            // MCIWAVE's own command table (`MCIWAVE.DRV` seg1 `16f`);
+            // MCISEQ has none, and leaves the FFFFh MMSYSTEM put there.
+            let device_type: u16 = match kind {
+                Kind::Wave => {
+                    let table = system.mmsystem.drivers.wave_table.unwrap_or(0xffff);
+
+                    system.write_far(far_at(second, 6), &table.to_le_bytes());
+                    0x20a
+                }
+                Kind::Seq => 0x20b,
             };
 
-            system.write_far(far_at(second, 6), &command_table.to_le_bytes());
             system.write_far(far_at(second, 8), &device_type.to_le_bytes());
 
             let bytes = system.read_far(second, 2);

@@ -1,5 +1,6 @@
 'use strict';
 
+import { rectBounds } from '../gdi/bounds.js';
 import { rasterOp } from '../../raster/raster-op.js';
 import { realiseBrush } from '../gdi/CreatePatternBrush.js';
 import { deviceRect, mapped } from '../gdi/mapping.js';
@@ -61,6 +62,8 @@ export function FillRect(hdc, lprc, hbr) {
    * the grey stock brush fills a monochrome bitmap with a checkerboard,
    * recorded by `regions`. */
   realiseBrush(surface, brush);
+  /* GDI's `PatBlt` takes what it draws in into the bounds (`bounds.ts`). */
+  rectBounds(this, surface, box.left, box.top, box.right, box.bottom);
   rasterOp(this.display, surface, box.left, box.top, width, height, PATCOPY, null, 0, 0);
 
   surface.brush = old;

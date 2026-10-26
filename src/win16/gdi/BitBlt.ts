@@ -5,6 +5,7 @@ import { rasterOp } from '../../raster/raster-op.js';
 import { TRUE, FALSE } from '../consts.js';
 
 import { deviceBox, mapped } from './mapping.js';
+import { rectBounds } from './bounds.js';
 import { stretchDevice } from './StretchBlt.js';
 
 /**
@@ -69,6 +70,9 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, 
     const to = deviceBox(destination, nXDest, nYDest, nWidth, nHeight);
     const from = source ? deviceBox(source, nXSrc, nYSrc, nWidth, nHeight) : to;
 
+    /* What it draws in, taken into the bounds (`bounds.ts`). */
+    rectBounds(this, destination, to.x, to.y, to.x + to.width, to.y + to.height);
+
     stretchDevice(
       this,
       destination,
@@ -86,6 +90,8 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, 
 
     return TRUE;
   }
+
+  rectBounds(this, destination, nXDest, nYDest, nXDest + nWidth, nYDest + nHeight);
 
   rasterOp(
     this.display,

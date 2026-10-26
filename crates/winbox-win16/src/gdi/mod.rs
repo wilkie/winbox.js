@@ -9,9 +9,11 @@
 #![allow(clippy::unnecessary_wraps)]
 
 pub mod bitmaps;
+pub mod bounds;
 pub mod brushes;
 pub mod calls;
 pub mod dc;
+pub mod dc_internals;
 pub mod ddb;
 pub mod dib;
 pub mod draw;
@@ -28,11 +30,13 @@ pub mod printer_driver;
 pub mod printer_output;
 pub mod printer_stretch;
 pub mod printing;
+pub mod priority_queue;
 pub mod regions;
 pub mod shapes;
 pub mod spool_job;
 pub mod spooler;
 pub mod strings;
+pub mod system_exports;
 pub mod text;
 pub mod text_out;
 
@@ -74,6 +78,9 @@ pub struct Gdi {
     pub data: Option<u16>,
     /// Every metafile device context made, by index: `None` once closed.
     pub metafiles: Vec<Option<metafile::Recording>>,
+    /// The objects `MakeObjectPrivate` has marked private to the system:
+    /// flag 2000h of each one's header in Windows (`system_exports.rs`).
+    pub private: std::collections::HashSet<crate::handles::Object>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
@@ -209,13 +216,18 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
         "ResizePalette" => palettes::resize_palette,
         "GetNearestPaletteIndex" => palettes::get_nearest_palette_index,
         "SelectPalette" => palettes::select_palette,
+        "GDISelectPalette" => palettes::gdi_select_palette_call,
+        "GDIRealizePalette" => palettes::gdi_realize_palette_call,
+        "IsDCCurrentPalette" => palettes::is_dc_current_palette_call,
+        "RealizeDefaultPalette" => palettes::realize_default_palette_call,
+        "UpdateColors" => palettes::update_colors_call,
         "AnimatePalette" => palettes::animate_palette,
         "GetSystemPaletteEntries" => palettes::get_system_palette_entries,
         "GetSystemPaletteUse" => palettes::get_system_palette_use,
         "SetSystemPaletteUse" => palettes::set_system_palette_use,
-        "CreateBitmap" => bitmaps::create_bitmap_call,
+        "CreateBitmap" | "CreateUserBitmap" => bitmaps::create_bitmap_call,
         "CreateBitmapIndirect" => bitmaps::create_bitmap_indirect,
-        "CreateCompatibleBitmap" | "CreateDiscardableBitmap" => {
+        "CreateCompatibleBitmap" | "CreateDiscardableBitmap" | "CreateUserDiscardableBitmap" => {
             bitmaps::create_compatible_bitmap_call
         }
         "GetBitmapBits" => bitmaps::get_bitmap_bits_call,
@@ -229,6 +241,8 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
         "SetDIBits" => dib::set_dibits_call,
         _ => {
             return printer_driver::implementation(name)
+                .or_else(|| dc_internals::implementation(name))
+                .or_else(|| bounds::implementation(name))
                 .or_else(|| draw::implementation(name))
                 .or_else(|| text::implementation(name))
                 .or_else(|| text_out::implementation(name))
@@ -237,7 +251,9 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| printing::implementation(name))
                 .or_else(|| spooler::implementation(name))
                 .or_else(|| environment::implementation(name))
-                .or_else(|| engine_font::implementation(name));
+                .or_else(|| engine_font::implementation(name))
+                .or_else(|| priority_queue::implementation(name))
+                .or_else(|| system_exports::implementation(name));
         }
     }))
 }

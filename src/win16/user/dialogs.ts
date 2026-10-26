@@ -987,6 +987,16 @@ export async function DefDlgProc(
     }
   }
 
+  /* Whether a dialog is active, the word `GetSystemDebugState` answers
+   * `SDS_DIALOG` of: set as a dialog whose procedure leaves `WM_ACTIVATE`
+   * to this is activated or deactivated (seg25 `050b`-`0511`), cleared as
+   * one is destroyed (`0621`). **Recorded** by `sysdbg`. */
+  if (message === User.WM_ACTIVATE) {
+    this._dialogActive = (wParam & 0xffff) !== 0;
+  } else if (message === User.WM_NCDESTROY) {
+    this._dialogActive = false;
+  }
+
   switch (message) {
     case User.WM_INITDIALOG:
       return 0;

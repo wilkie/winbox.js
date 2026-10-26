@@ -24,8 +24,8 @@
 
 use winbox_machine::TimerId;
 
-use crate::call::{Answer, Args, Stop};
-use crate::engine::GuestArg;
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::{Engine, GuestArg};
 use crate::interrupts::Interrupt;
 use crate::system::System;
 
@@ -204,16 +204,62 @@ pub fn time_get_system_time(system: &mut System, args: &mut Args) -> Result<Answ
     Ok(Answer::Word(0))
 }
 
-/// Calls a procedure after a delay, or every period: the event's id, or
-/// nought for no delay or no procedure.
-pub fn time_set_event(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let delay = args.word(system);
-    let _resolution = args.word(system);
-    let proc = args.dword(system);
-    let user = args.dword(system);
-    let flags = args.word(system);
+/// Whether a timer event's procedure is one MMSYSTEM takes (seg1 `21e`): in
+/// a code segment, within its limit, and not starting with an exported
+/// function's prologue that takes its data segment from AX -- `push ds; pop
+/// ax` or `mov ax, ds` at its third byte -- which no thunk has given it.
+fn timer_proc_ok(system: &System, proc: u32) -> bool {
+    let selector = (proc >> 16) as u16;
+    let offset = proc & 0xffff;
+    let Some(descriptor) = system.peek_descriptor(selector) else {
+        return false;
+    };
 
-    if delay == 0 || proc == 0 {
+    if !descriptor.segment || !descriptor.executable || offset >= descriptor.limit {
+        return false;
+    }
+
+    let bytes = system.read_far((proc & 0xffff_0000) | (proc.wrapping_add(2) & 0xffff), 2);
+    let word = u16::from_le_bytes([bytes[0], bytes[1]]);
+
+    word != 0x581e && word != 0xd88c
+}
+
+/// Calls a procedure after a delay, or every period: the event's id; nought
+/// for no delay; `MMSYSERR_INVALPARAM` (11) for a procedure MMSYSTEM does not
+/// take. MMSYSTEM's interrupt stacks are made first if they are not (seg1
+/// `2bd`, `stacks.rs`).
+pub fn time_set_event(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (delay, proc, user, flags) = {
+            let system = engine.system();
+            let delay = args.word(&system);
+            let _resolution = args.word(&system);
+            let proc = args.dword(&system);
+            let user = args.dword(&system);
+            let flags = args.word(&system);
+
+            (delay, proc, user, flags)
+        };
+
+        if !timer_proc_ok(&engine.system(), proc) {
+            return Ok(Answer::Word(11));
+        }
+
+        super::stacks::make_stacks_for_timer(engine).await?;
+        set_event(&mut engine.system(), delay, proc, user, flags)
+    })
+}
+
+/// The event set, as `timeSetEvent` sets it once its procedure is taken.
+fn set_event(
+    system: &mut System,
+    delay: u16,
+    proc: u32,
+    user: u32,
+    flags: u16,
+) -> Result<Answer, Stop> {
+    if delay == 0 {
         return Ok(Answer::Word(0));
     }
 

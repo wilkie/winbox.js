@@ -11,6 +11,8 @@ import { dibAt } from './dib-to-device.js';
 import { wideStroke } from './LineTo.js';
 import { fillRings, outlineSide } from './polygon-mode.js';
 import { devicePoint, mapped } from './mapping.js';
+import { accumulate, fillBounds, lineBounds } from './bounds.js';
+import { penSize } from './Ellipse.js';
 
 /**
  * GDI's drawing functions `gdidraw` recorded first: `FloodFill`,
@@ -110,6 +112,8 @@ export function ExtFloodFill(
   }
 
   /* Painted with the brush a row's run at a time, as it lies. */
+  const extent = [Infinity, Infinity, -Infinity, -Infinity];
+
   for (let row = 0; row < height; row++) {
     let start = -1;
 
@@ -120,10 +124,19 @@ export function ExtFloodFill(
         start = column;
       } else if (!inside && start >= 0) {
         surface.fillRect(start, row, column - start, 1);
+        extent[0] = Math.min(extent[0], start);
+        extent[1] = Math.min(extent[1], row);
+        extent[2] = Math.max(extent[2], column);
+        extent[3] = Math.max(extent[3], row);
         start = -1;
       }
     }
   }
+
+  /* What it filled, taken into the bounds (`bounds.ts`): the runs' left and
+   * right, and their top and bottom rows -- the bottom row's own, not the
+   * one past it (`GDI.EXE` seg15 `013c`, `01fa`). */
+  accumulate(this, surface, extent[0], extent[1], extent[2], extent[3]);
 
   return TRUE;
 }
@@ -207,6 +220,15 @@ export function PolyPolygon(
     }
 
     rings.push(points);
+  }
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  const all = rings.flat() as [number, number][];
+
+  fillBounds(this, surface, all);
+
+  if (surface.pen?.color?.alpha) {
+    lineBounds(this, surface, all, penSize(this, surface.pen, surface)[0]);
   }
 
   fillRings(this, surface, rings, (surface.polyFillMode ?? 1) === 2, false);

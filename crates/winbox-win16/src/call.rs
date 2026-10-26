@@ -507,7 +507,12 @@ pub(crate) async fn call_named(
 pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation> {
     match module {
         "KERNEL" => kernel::implementation(name),
-        "USER" => user::implementation(name).or_else(|| crate::drivers::implementation(name)),
+        "USER" => user::implementation(name)
+            .or_else(|| crate::drivers::implementation(name))
+            .or_else(|| crate::small_calls::implementation(name))
+            .or_else(|| crate::wnet::implementation(name))
+            .or_else(|| crate::cursor_make::implementation(name))
+            .or_else(|| crate::reply_message::implementation(name)),
         "WIN87EM" => win87em_implementation(name),
         "GDI" => gdi::implementation(name),
         "TOOLHELP" => crate::toolhelp::implementation(name),
@@ -516,6 +521,7 @@ pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation>
         "WING" => crate::wing::implementation(name),
         "SOUND" => crate::sound::implementation(name),
         "TIMER" => crate::timer::implementation(name),
+        "SYSTEM" => crate::system_driver::implementation(name),
         "MCIWAVE" => crate::mmsystem::mci_drivers::implementation(name),
         "MCISEQ" => crate::mmsystem::sequencer::implementation(name),
         crate::wbsound::NAME => crate::wbsound::implementation(name),

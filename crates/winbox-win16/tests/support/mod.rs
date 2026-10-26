@@ -226,6 +226,32 @@ pub const AGREEING: &[&str] = &[
     "kconst",
     "thtask",
     "ktask2",
+    "ttquery",
+    "dcinner-vga",
+    "dcinner-vga256",
+    "bounds",
+    "gdipq",
+    "gdicopy",
+    "sysdrv",
+    "snddrv",
+    "kbdrv",
+    "wnetall",
+    "usermisc",
+    "curmake",
+    "dragq",
+    "userint",
+    "replym",
+    "endmenu",
+    "usermore",
+    "intpos",
+    "sysdbg",
+    "iconid",
+    "loadalt",
+    "mmmisc",
+    "mmmisc-vgasound",
+    "mmnodev",
+    "mmnodev-vgasound",
+    "mmcmd",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -253,7 +279,7 @@ fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
 
     if [
         "prdlg", "chfontpr", "prdlgx", "pric", "prdoc", "prspool", "prabort", "prdraw", "prlpt",
-        "prnote", "prtabs", "prmeta", "prband", "prblt",
+        "prnote", "prtabs", "prmeta", "prband", "prblt", "prtt",
     ]
     .contains(&probe)
         && let Ok(bytes) = std::fs::read(driver)

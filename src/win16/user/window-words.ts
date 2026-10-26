@@ -158,6 +158,13 @@ export function GetWindowWord(this: any, hwnd: number, nOffset: number) {
 
   const offset = signed(nOffset);
 
+  /* The desktop window's instance is USER's, one below its data segment's
+   * selector (**recorded** by `userint`: ordinal 285, USER's DS, answers
+   * one more than it). */
+  if (dialog instanceof DesktopHandle && offset === GWW_HINSTANCE) {
+    return ((this._moduleData?.USER ?? 1) - 1) & 0xffff;
+  }
+
   switch (offset) {
     /* A window USER makes itself, with no `CreateWindow` of a program's --
      * a message box and its buttons -- has no instance here, as in the Rust

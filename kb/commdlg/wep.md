@@ -5,8 +5,9 @@ name: WEP
 ordinal: 28
 summary: COMMDLG's exit procedure, which KERNEL calls as the library is let go — each dialog's segment frees what it kept, and it answers 1.
 versions:
-  '3.1': stub
+  '3.1': unrecorded
 topics: [common-dialogs, dynamic-link-libraries]
+source: src/win16/commdlg/index.ts
 ---
 
 ## Observed behaviour
@@ -27,4 +28,4 @@ KERNEL calls it as COMMDLG is freed, with one word saying why; no program calls 
 
 ## Implementation
 
-Not WinBox's own: a stub in WinBox's table (`src/win16/commdlg/index.ts`, popping 2 bytes), with no arm in `crates/winbox-win16/src/commdlg/mod.rs`. With `COMMDLG.DLL` on the drive, the file's library is let go as KERNEL lets one go ([[topic:dynamic-link-libraries]]).
+WinBox's own answers 1 (`src/win16/commdlg/index.ts`; the Rust engine's `commdlg/mod.rs`): its COMMDLG holds none of those objects. A program's import of it links there. With `COMMDLG.DLL` on the drive, KERNEL calls the file's own as its library is let go ([[topic:dynamic-link-libraries]]).

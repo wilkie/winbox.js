@@ -48,7 +48,6 @@ import {
   activateCapture,
   atomsCapture,
   selinfoCapture,
-  mmdevsCapture,
   handbitsCapture,
   msgboxCapture,
   stretchCapture,
@@ -617,10 +616,6 @@ function editRecords(context: any) {
 
   if (context.probe === 'selinfo') {
     return selinfoCapture(context);
-  }
-
-  if (context.probe === 'mmdevs') {
-    return mmdevsCapture(context);
   }
 
   if (context.probe === 'msgbox') {
@@ -2908,24 +2903,6 @@ const ADAPTERS: Record<
     return (await editRecords(context)).get(`text:${args.join(',')}`) ?? '';
   },
 
-  /** `mmdevs`: how many devices of a kind. `environ`'s count is not replayed. */
-  async count(context, args) {
-    if (context.probe !== 'mmdevs') {
-      throw new NoAdapter();
-    }
-
-    return (await editRecords(context)).get(`count:${args.join(',')}`) ?? '';
-  },
-
-  /** `mmdevs`: what opening a device answers. */
-  async open(context, args) {
-    if (context.probe !== 'mmdevs') {
-      throw new NoAdapter();
-    }
-
-    return (await editRecords(context)).get(`open:${args.join(',')}`) ?? '';
-  },
-
   /** `escapes`: what the display driver answers `QUERYESCSUPPORT` for, on the screen or a bitmap. */
   support(context, [what]) {
     if (context.probe !== 'escapes') {
@@ -2984,9 +2961,9 @@ const ADAPTERS: Record<
     return String(Escape.call(context, hdc, 7777, 0, 0, 0));
   },
 
-  /** `mmdevs`: what asking a device's capabilities answers. */
+  /** `palette`: what asking a device's capabilities answers. */
   async caps(context, args) {
-    if (context.probe !== 'mmdevs' && context.probe !== 'palette') {
+    if (context.probe !== 'palette') {
       throw new NoAdapter();
     }
 
@@ -5244,6 +5221,11 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
+  /* `getdcex`'s child, its context asked for with `DCX_PARENTCLIP`: Windows
+   * lets it draw anywhere in its parent's client area; WinBox's context
+   * of a window draws in its own client area only (`get-dc-ex.ts`). */
+  'getdcex:parentclip': "a window's context draws in its own client area only, not its parent's",
+
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
    * is made active, and where the focus goes, agree (`state`); the messages
    * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
@@ -5568,6 +5550,26 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* USER's and GDI's local heaps, which TOOLHELP walks: WinBox keeps their
    * objects in itself, and their data segments hold no heap (2 records). */
   'thheap:lsystem': "USER's and GDI's data segments hold no local heap in WinBox",
+  /* `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
+   * font's height in the device context's units; both engines take it as
+   * pixels, so the widths, the pairs' amounts and the outline metrics are
+   * a larger font's (`kb/topics/truetype-queries.md`). `GetFontData`
+   * agrees. */
+  'ttqmap:kern': "a font's height under a mapping mode is taken as pixels",
+  'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
+  'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
+  /* `dchook`'s hook calls: GDI calls a device context's hook from the
+   * calls that use the context while its flag is set (`GDI.EXE` seg1
+   * `4423`); WinBox keeps the hook and the flag and calls nothing
+   * (3 records). */
+  'dchook:hookcall': "GDI does not call a device context's hook",
+  'gdimisc:physfont':
+    'GetPhysicalFontHandle is a stub: WinBox keeps no realized font object for a context to name',
+  'prtt:extent':
+    "the PostScript driver's GetTextExtent of a TrueType face it downloads through GDI's engine answers no width",
+  'prtt:size': 'the document differs where the downloaded face does',
+  'prtt:line':
+    "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
 };
 
 /**
@@ -5893,6 +5895,35 @@ const RUN_WHOLE = new Set<string>([
   'thheap',
   'ktask',
   'ktask2',
+  'ttquery',
+  'ttqmap',
+  'dcinner',
+  'dchook',
+  'bounds',
+  'gdipq',
+  'gdimisc',
+  'prtt',
+  'gdicopy',
+  'sysdrv',
+  'snddrv',
+  'kbdrv',
+  'wnetall',
+  'usermisc',
+  'curmake',
+  'dragq',
+  'userint',
+  'replym',
+  'endmenu',
+  'usermore',
+  'intpos',
+  'getdcex',
+  'sysdbg',
+  'iconid',
+  'loadalt',
+  'mmmisc',
+  'mmnodev',
+  'mmdevs',
+  'mmcmd',
 ]);
 
 /**

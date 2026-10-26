@@ -1,0 +1,284 @@
+{
+  "probe": "ttqmap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "data",
+      "args": "Arial/-60/400 whole,null",
+      "result": "0001009c",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,null",
+      "result": "00000036",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,0,20",
+      "result": "00000014 0001000000010000979fbeee5f0f3cf500190800aaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,40,40",
+      "result": "0000000e 0800072c0000000b000100000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,54,8",
+      "result": "ffffffff aaaaaaaaaaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,60,null",
+      "result": "ffffffff",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,10,null,4",
+      "result": "0000002c",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 head,0,buffer,0",
+      "result": "00000000 aaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 kern,null",
+      "result": "00000288",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 XYZW,null",
+      "result": "ffffffff",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 whole,0,16",
+      "result": "00000010 0001000000110100000400604c545348",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Arial/-60/400 cmap,4,32",
+      "result": "00000020 0001000000000014000300010000011a00000106000001000000000000000102",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "kern",
+      "args": "Arial/-60/400 null",
+      "result": "105",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "kern",
+      "args": "Arial/-60/400 8",
+      "result": "8 a0004100fdffa00054000000a0005900000031003100fdff4100a000fdff41005400fdff41005600fdff41005700fdffaaaaaaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "kern",
+      "args": "Arial/-60/400 all",
+      "result": "105 first=532429 second=525078 amount=-15704 negative=76 after=aaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "kern",
+      "args": "last 8",
+      "result": "77002c00fdff77002e00fdff79002c00fdff79002e00fdff9100910000009200a000fdff920073000000920092000000",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "abc",
+      "args": "Arial/-60/400 0-63",
+      "result": "1 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 7,33,7 0,0,26 7,33,7 0,0,16 7,7,7 3,16,0 0,36,-3 3,29,0 3,46,3 3,36,0 0,7,3 3,16,0 0,16,3 3,16,3 3,33,0 7,7,3 0,16,3 7,7,3 0,20,-3 3,26,3 7,16,10 3,26,3 3,26,3 0,29,3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 7,7,3 7,7,3 3,29,3 3,29,3 3,29,3 3,26,3",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "abc",
+      "args": "Arial/-60/400 64-127",
+      "result": "1 3,55,0 0,36,0 3,33,3 3,36,3 3,36,3 3,33,3 3,29,3 3,39,3 3,36,3 3,7,3 3,23,3 3,36,0 3,26,3 3,42,3 3,36,3 3,39,3 3,33,3 3,39,3 3,39,0 3,33,3 3,33,3 3,36,3 0,36,0 0,55,0 0,36,0 0,39,0 0,33,3 3,13,0 0,20,-3 0,13,3 0,23,0 0,33,0 3,10,7 3,26,3 3,26,3 3,23,3 3,26,3 3,26,3 0,20,-3 3,26,3 3,26,3 3,7,3 -3,13,3 3,26,0 3,7,3 3,39,3 3,26,3 3,26,3 3,26,3 3,26,3 3,16,0 3,23,3 0,13,3 3,26,3 0,29,0 -3,49,-3 0,26,0 0,29,0 0,26,0 0,20,0 7,7,7 0,20,0 0,33,3 7,33,7",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "abc",
+      "args": "Arial/-60/400 128-191",
+      "result": "1 7,33,7 7,33,7 3,7,3 0,29,3 3,16,3 7,46,7 0,33,0 0,33,0 0,26,-7 0,55,0 3,33,3 0,16,3 3,52,3 7,33,7 7,33,7 7,33,7 7,33,7 3,7,3 3,7,3 3,16,3 3,16,3 3,13,3 0,33,0 0,59,0 0,16,0 7,42,10 3,26,0 3,16,0 3,52,0 7,33,7 7,33,7 0,39,0 0,0,16 7,7,7 3,26,3 0,29,3 0,29,3 0,33,0 7,7,7 3,26,3 0,20,0 0,42,0 0,20,0 3,29,0 3,29,3 0,16,3 0,42,0 -3,36,0 3,16,3 0,33,0 0,16,3 0,16,3 7,10,3 3,26,3 0,33,0 7,7,3 3,10,7 3,13,3 0,23,0 0,29,3 3,46,0 3,46,0 0,49,0 3,29,3",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "abc",
+      "args": "Arial/-60/400 192-255",
+      "result": "1 0,36,3 0,36,3 0,36,3 0,36,3 0,36,3 0,36,3 -3,59,3 3,36,3 3,33,3 3,33,3 3,33,3 3,33,3 0,10,7 3,10,3 -7,26,-3 -3,20,0 0,39,3 3,36,3 3,39,3 3,39,3 3,39,3 3,39,3 3,39,3 7,23,7 3,39,3 3,36,3 3,36,3 3,36,3 3,36,3 0,39,0 3,33,3 3,29,3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 3,49,0 3,23,3 3,26,3 3,26,3 3,26,3 3,26,3 3,10,3 7,10,0 -3,26,-7 0,20,-3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 0,33,0 3,26,3 3,26,3 3,26,3 3,26,3 3,26,3 0,29,0 3,26,3 0,29,0",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "abc",
+      "args": "Arial/-60/400 70-65",
+      "result": "0 aaaaaaaaaaaaaaaaaaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "otm",
+      "args": "Arial/-60/400 null",
+      "result": "179",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "otm",
+      "args": "Arial/-60/400 full",
+      "result": "1 b400440037000d000a0003001a003e0090010000001eff1f202700000060006000??020b06040202020202044000000001000000000000082a00f6ff0a001d001000000034003b00f6ff3400f6ff030000002a002700000007002a00270000001d0003001000fdff0300720078007e008600417269616c00417269616c00526567756c6172004d6f6e6f747970653a417269616c20526567756c61723a56657273696f6e203120284d6963726f736f66742900aaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "otm",
+      "args": "Arial/-60/400 40",
+      "result": "1 b400440037000d000a0003001a003e0090010000001eff1f202700000060006000??020b06040202aaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "otm",
+      "args": "Arial/-60/400 120",
+      "result": "1 b400440037000d000a0003001a003e0090010000001eff1f202700000060006000??020b06040202020202044000000001000000000000082a00f6ff0a001d001000000034003b00f6ff3400f6ff030000002a002700000007002a00270000001d0003001000fdff0300720078007e008600417269616c00aaaaaaaa",
+      "section": "Arial/-60/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 whole,null",
+      "result": "0001453c",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,null",
+      "result": "00000036",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,0,20",
+      "result": "00000014 0001000000010000a92387e75f0f3cf500190800aaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,40,40",
+      "result": "0000000e 081207050000000b000100000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,54,8",
+      "result": "ffffffff aaaaaaaaaaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,60,null",
+      "result": "ffffffff",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,10,null,4",
+      "result": "0000002c",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 head,0,buffer,0",
+      "result": "00000000 aaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 kern,null",
+      "result": "000002b8",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 XYZW,null",
+      "result": "ffffffff",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 whole,0,16",
+      "result": "00000010 0001000000110100000400604c545348",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "data",
+      "args": "Times New Roman/-100/400 cmap,4,32",
+      "result": "00000020 0001000000000014000300010000011a00000106000001000000000000000102",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "kern",
+      "args": "Times New Roman/-100/400 null",
+      "result": "113",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "kern",
+      "args": "Times New Roman/-100/400 8",
+      "result": "8 a0004100f9ffa0005400fdffa0005600fdffa0005700fdffa0005900fdff31003100fdff4100a000f9ff41005400f6ffaaaaaaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "kern",
+      "args": "Times New Roman/-100/400 all",
+      "result": "113 first=623893 second=627393 amount=-44660 negative=111 after=aaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "kern",
+      "args": "last 8",
+      "result": "77002e00f9ff79002c00f9ff79002e00f9ff91009100f9ff9200a000f9ff92007300f9ff92007400fdff92009200f9ff",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "otm",
+      "args": "Times New Roman/-100/400 null",
+      "result": "209",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "otm",
+      "args": "Times New Roman/-100/400 full",
+      "result": "1 d20072005b0017000d00030027006f0090010000001eff1f201700000060006000??020206030504050203044000000001000000000000084400ecff100034001a00fdff58006500ecff5b00ecff030000004800410000000d004800410000002e0007001a00f9ff07007200820092009a0054696d6573204e657720526f6d616e0054696d6573204e657720526f6d616e00526567756c6172004d6f6e6f747970653a54696d6573204e657720526f6d616e20526567756c61723a56657273696f6e203120284d6963726f736f66742900aaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "otm",
+      "args": "Times New Roman/-100/400 40",
+      "result": "1 d20072005b0017000d00030027006f0090010000001eff1f201700000060006000??020206030504aaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    },
+    {
+      "function": "otm",
+      "args": "Times New Roman/-100/400 120",
+      "result": "1 d20072005b0017000d00030027006f0090010000001eff1f201700000060006000??020206030504050203044000000001000000000000084400ecff100034001a00fdff58006500ecff5b00ecff030000004800410000000d004800410000002e0007001a00f9ff07007200820092009a0054696d657320aaaaaaaa",
+      "section": "Times New Roman/-100/400"
+    }
+  ]
+}

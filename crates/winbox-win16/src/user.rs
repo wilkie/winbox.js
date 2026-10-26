@@ -21,6 +21,11 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CreateWindowEx" => Implementation::Async(create::create_window_ex),
         "_WSPRINTF" => Implementation::Sync(wsprintf),
         "ExitWindows" => Implementation::Sync(exit_windows),
+        // 1, and nothing else (`USER.EXE` seg3 `0232`).
+        "WEP" => Implementation::Sync(|system, args| {
+            let _ = args.word(system);
+            Ok(Answer::Word(1))
+        }),
         // Through the language driver, where one is loaded
         // (`language_driver.rs`).
         "lstrcmp" | "lstrcmpi" => return crate::language_driver::implementation(name),
@@ -49,7 +54,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "LockMyTask" => Implementation::Sync(crate::lock_input::lock_my_task),
         "EnableHardwareInput" => Implementation::Sync(crate::lock_input::enable_hardware_input),
         "LoadBitmap" => Implementation::Sync(crate::gdi::bitmaps::load_bitmap_call),
-        "GetDesktopWindow" => Implementation::Sync(get_desktop_window),
+        "GetDesktopWindow" | "GetDesktopHWnd" => Implementation::Sync(get_desktop_window),
         "GetWindowRect" => Implementation::Sync(window_queries::get_window_rect),
         "GetClientRect" => Implementation::Sync(window_queries::get_client_rect),
         "ClientToScreen" => Implementation::Sync(window_queries::client_to_screen),
@@ -162,7 +167,14 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetFocus" => Implementation::Async(crate::def_window::set_focus),
         "ReleaseDC" => Implementation::Sync(get_dc::release_dc),
         "GetWindowDC" => Implementation::Sync(get_dc::get_window_dc),
+        "GetDCEx" => Implementation::Sync(get_dc::get_dc_ex),
         "GetWindowPlacement" => Implementation::Sync(crate::window_state::get_window_placement),
+        "GetInternalWindowPos" => {
+            Implementation::Sync(crate::window_state::get_internal_window_pos)
+        }
+        "SetInternalWindowPos" => {
+            Implementation::Async(crate::window_state::set_internal_window_pos)
+        }
         "SetWindowPlacement" => Implementation::Async(crate::window_state::set_window_placement),
         "DrawFocusRect" => Implementation::Sync(crate::control_paint::draw_focus_rect),
         _ => {
@@ -215,6 +227,14 @@ fn init_app(engine: &Engine, _: Args) -> Later<'_> {
 /// full screen less a caption; the mouse's buttons swapped where
 /// `SwapMouseButton` was given; everything else the `chrome` probe
 /// recorded; else the driver's own metrics; else nought.
+/// A system metric by its index, as `GetSystemMetrics` answers it.
+pub(crate) fn system_metric(system: &mut System, index: i16) -> u16 {
+    match get_system_metrics(system, &mut Args::repeat(index as u16)) {
+        Ok(Answer::Word(word)) => word,
+        _ => 0,
+    }
+}
+
 fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = args.signed(system);
     let display = &system.display;

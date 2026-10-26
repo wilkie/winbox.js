@@ -30,13 +30,26 @@ import { hasDisk, isCompactDisc } from '../../dos/syscall/ioctl.js';
  * with a floppy image as B: 2, a CD-ROM image as D: 4.
  */
 export function GetDriveType(this: any, nDrive: number) {
+  return driveInquiry(this, nDrive).kind;
+}
+
+/**
+ * What SYSTEM.DRV's `InquireSystem` answers for a drive (code 1): the kind
+ * in AX, as `GetDriveType` answers it, and in DX the drive, counted from 1,
+ * whose disk this one's letter is another name for -- 1, A:, for B: where
+ * there is one floppy drive and 440Eh fails (`00fb`-`010b`), else nought.
+ * **Recorded** by `sysdrv`: B: `00010000`. As `modules_kernel.rs`'s
+ * `drive_inquiry`.
+ */
+export function driveInquiry(system: any, nDrive: number): { kind: number; alias: number } {
+  const answer = (value: number, alias = 0) => ({ kind: value, alias });
   const drive = (nDrive << 16) >> 16;
 
   if (drive < 0 || drive > 25) {
-    return 0;
+    return answer(0);
   }
 
-  const files = this.dos.files;
+  const files = system.dos.files;
   let floppies = 0;
 
   for (let other = 0; other < 26; other++) {
@@ -50,15 +63,17 @@ export function GetDriveType(this: any, nDrive: number) {
   const floppiesLessOne = floppies >= 2 ? 1 : 0;
   const fileSystem = files.query(String.fromCharCode(0x41 + drive));
 
+  /* No drive here; DOSBox's B: with nothing in it, which it selects, is
+   * the one floppy drive's other letter all the same. */
   if (!fileSystem) {
-    return 0;
+    return answer(0, drive === 1 && floppiesLessOne === 0 ? 1 : 0);
   }
 
   const dos = hasDisk(fileSystem);
   const compactDisc = isCompactDisc(fileSystem);
 
   if (dos && fileSystem.remote) {
-    return 4;
+    return answer(4);
   }
 
   /* 4408h. */
@@ -69,19 +84,19 @@ export function GetDriveType(this: any, nDrive: number) {
   } else if (drive >= 2) {
     kind = 3;
   } else if (floppies === 0) {
-    return 0;
+    return answer(0);
   } else {
     kind = 2;
   }
 
   /* 440Eh. */
   if (dos && !compactDisc) {
-    return kind;
+    return answer(kind);
   }
 
   if (drive === 1 && floppiesLessOne === 0) {
-    return kind === 2 ? 0 : 1;
+    return answer(kind === 2 ? 0 : 1, 1);
   }
 
-  return kind;
+  return answer(kind);
 }

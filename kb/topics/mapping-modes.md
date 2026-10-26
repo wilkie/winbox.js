@@ -39,7 +39,7 @@ winbox.js agrees with all of them on all four displays.
 
 ## Not yet followed
 
-- Sizes: a font's height, a pen's width and `ExtTextOut`'s spacing are taken as device units.
+- Sizes: a font's height, a pen's width and `ExtTextOut`'s spacing are taken as device units. [[probe:ttqmap]] shows a font's height under `MM_LOMETRIC` realised in logical units by Windows, and what that does to the widths and metrics GDI answers ([[topic:truetype-queries]]).
 - Clip regions are kept in device terms, and `GetClipBox` answers in logical terms. Neither is recorded through a mapping.
 - Regions, `Polygon`, `Polyline` and the other calls that take lists of points.
 

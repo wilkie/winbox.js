@@ -25,6 +25,10 @@ A device context can be told to draw only inside a region: [[fn:GDI.IntersectCli
 
 [[measured]] `PatBlt`, `FillRect`, `Rectangle`, `LineTo`, `TextOut`, `SetPixel`, `BitBlt` and `StretchBlt` all stay inside the region, pixel for pixel. A line crossing the hole stops at its edge and carries on past it. A `BitBlt` from a smaller bitmap draws only as much as the source has.
 
+## Asking
+
+[[measured]] [[fn:GDI.RectVisible]] answers **101h** where any of the rectangle is in the clip, nought where none ([[probe:gdimisc]]). [[read out]] The rectangle is mapped to the device, put in order, and for a program made for Windows 3.00 or before grown a pixel at its right and bottom (`GDI.EXE` seg1 `29b7`): an empty rectangle, or -5, -5, 0, 0, is visible in a bitmap from nought. [[fn:GDI.RectVisible_Ehh]] is the same body without the handle checked.
+
 ## Saved levels
 
 - [[measured]] `SaveDC` answers the new level: 1 for the first, then 2 and 3.

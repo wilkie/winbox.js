@@ -1,0 +1,94 @@
+{
+  "probe": "iconid",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "icon",
+      "args": "32x32x2 10, 32x32x16 11, 32x32x8 12",
+      "result": "11"
+    },
+    {
+      "function": "icon",
+      "args": "32x32x2 10, 32x32x8 12",
+      "result": "12"
+    },
+    {
+      "function": "icon",
+      "args": "32x32x8 12, 32x32x2 10",
+      "result": "12"
+    },
+    {
+      "function": "icon",
+      "args": "16x16x16 20, 64x64x2 21",
+      "result": "20"
+    },
+    {
+      "function": "icon",
+      "args": "32x32x0 30, 48x48x0 31",
+      "result": "30"
+    },
+    {
+      "function": "icon",
+      "args": "32x32x200 40, 16x16x2 41",
+      "result": "41"
+    },
+    {
+      "function": "icon",
+      "args": "48x48x200 42, 32x32x200 43",
+      "result": "42"
+    },
+    {
+      "function": "icon",
+      "args": "64x64x16 50, 32x32x200 51",
+      "result": "50"
+    },
+    {
+      "function": "icon",
+      "args": "0x0x16 52, 32x32x4 53",
+      "result": "53"
+    },
+    {
+      "function": "icon",
+      "args": "type 2: 32x32x2 54, 32x32x16 55",
+      "result": "55"
+    },
+    {
+      "function": "cursor",
+      "args": "32x64 60",
+      "result": "60"
+    },
+    {
+      "function": "cursor",
+      "args": "16x32 70, 32x64 71",
+      "result": "71"
+    },
+    {
+      "function": "cursor",
+      "args": "16x32 80, 32x32 81",
+      "result": "80"
+    },
+    {
+      "function": "header",
+      "args": "reserved 1",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "type 0",
+      "result": "0"
+    },
+    {
+      "function": "header",
+      "args": "type 3",
+      "result": "0"
+    }
+  ]
+}

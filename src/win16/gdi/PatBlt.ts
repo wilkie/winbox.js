@@ -1,5 +1,6 @@
 'use strict';
 
+import { accumulate } from './bounds.js';
 import { deviceRect, mapped } from './mapping.js';
 
 import { rasterOp } from '../../raster/raster-op.js';
@@ -76,6 +77,9 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
     nTopRect += nheight;
     nheight = -nheight;
   }
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  accumulate(this, surface, nLeftRect, nTopRect, nLeftRect + nwidth, nTopRect + nheight);
 
   /* An operation that reads a source, which `PatBlt` has not got, draws
    * nothing, and succeeds: `SRCCOPY`, `SRCPAINT`, `SRCINVERT` and

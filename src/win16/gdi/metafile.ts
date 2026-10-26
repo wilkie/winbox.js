@@ -118,6 +118,7 @@ const BY_STACK = new Set([
   'FloodFill',
   'Pie',
   'Chord',
+  'SetRelAbs',
 ]);
 
 const META_SELECTOBJECT = 0x012d;

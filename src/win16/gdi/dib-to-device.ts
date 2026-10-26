@@ -1,5 +1,6 @@
 'use strict';
 
+import { rectBounds } from './bounds.js';
 import { hugeRead8 } from '../huge.js';
 import { realizedMatch } from '../../raster/palette-colour.js';
 
@@ -197,6 +198,9 @@ export function SetDIBitsToDevice(
     [xDest, yDest] = devicePoint(surface, xDest, yDest);
   }
 
+  /* The destination, taken into the bounds (`bounds.ts`). */
+  rectBounds(this, surface, xDest, yDest, xDest + cx, yDest + cy);
+
   const first = Math.max(uStartScan, ySrc);
   const end = Math.min(uStartScan + cScanLines, ySrc + cy);
   const width = Math.min(cx, dib.width - xSrc);
@@ -298,6 +302,9 @@ export function StretchDIBits(
       height: cyDest,
     } = deviceBox(surface, xDest, yDest, cxDest, cyDest));
   }
+
+  /* The destination, taken into the bounds (`bounds.ts`). */
+  rectBounds(this, surface, xDest, yDest, xDest + cxDest, yDest + cyDest);
 
   stretchDevice(
     this,

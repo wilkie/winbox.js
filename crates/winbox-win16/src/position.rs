@@ -18,7 +18,7 @@ use crate::moved::{Insert, Kept};
 use crate::system::System;
 use crate::windows::Placement;
 
-const SWP_NOSIZE: u16 = 0x0001;
+pub(crate) const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
 pub(crate) const SWP_NOZORDER: u16 = 0x0004;
 pub(crate) const SWP_NOACTIVATE: u16 = 0x0010;

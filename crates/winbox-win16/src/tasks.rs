@@ -85,9 +85,25 @@ impl Engine {
             // (`InSendMessage`, `USER.EXE` seg1 `3dba`), which its looks
             // meanwhile let the input go for (`system_queue.rs`).
             let slot = self.system().current_slot();
+            let replied = Rc::new(std::cell::Cell::new(false));
 
             if let Some(slot) = slot {
-                self.system().scheduler.slots[slot].in_sent += 1;
+                let mut system = self.system();
+                let each = &mut system.scheduler.slots[slot];
+
+                each.in_sent += 1;
+                each.answering.push(crate::scheduler::Answering {
+                    hwnd,
+                    message,
+                    wparam,
+                    lparam: match &lparam {
+                        Param::Value(value) => *value,
+                        Param::Struct(_) => 0,
+                    },
+                    answer: Rc::clone(&answer),
+                    replied: Rc::clone(&replied),
+                    from,
+                });
             }
 
             let value = self
@@ -106,10 +122,17 @@ impl Engine {
 
                 if let Some(each) = system.scheduler.slots.get_mut(slot) {
                     each.in_sent = each.in_sent.saturating_sub(1);
+                    each.answering.pop();
                 }
             }
 
             let value = value?;
+
+            // Answered already by `ReplyMessage`: what the procedure
+            // answers after is not taken.
+            if replied.get() {
+                continue;
+            }
 
             *answer.borrow_mut() = Some((value, lparam));
             self.system().signal_slot(from);
@@ -123,7 +146,7 @@ impl Engine {
     /// line behind every task already waiting, as a directed yield leaves
     /// it (`tasks2`). Where the sender is not waiting for the processor,
     /// this one goes on.
-    async fn hand_back(&self, to: usize) {
+    pub(crate) async fn hand_back(&self, to: usize) {
         let slot = {
             let mut system = self.system();
             let Some(slot) = system.current_slot() else {

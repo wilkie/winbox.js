@@ -99,6 +99,18 @@ impl System {
         }
 
         let handle = self.current_cursor();
+
+        // A cursor made of a block (`cursor_make.rs`) shows its block.
+        if let Some(image) = self.block_cursor_image(handle) {
+            let (x, y) = self.cursor_of();
+
+            return Some(ShownCursor {
+                left: i32::from(x) - i32::from(image.hotspot.0 as i16),
+                top: i32::from(y) - i32::from(image.hotspot.1 as i16),
+                image,
+            });
+        }
+
         let Some(Object::Cursor(index)) = self.handles.resolve(handle) else {
             return None;
         };

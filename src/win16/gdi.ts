@@ -34,6 +34,11 @@ import {
 } from './gdi/queries.js';
 import {
   CreatePalette,
+  GDIRealizePalette,
+  GDISelectPalette,
+  IsDCCurrentPalette,
+  RealizeDefaultPalette,
+  UpdateColors,
   GetNearestPaletteIndex,
   GetPaletteEntries,
   GetSystemPaletteEntries,
@@ -203,11 +208,37 @@ import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
-import { EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
+import { EngineDeleteFont, EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
 import { GetEnvironment, SetEnvironment } from './gdi/environment.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
+import {
+  GetCharABCWidths,
+  GetFontData,
+  GetKerningPairs,
+  GetOutlineTextMetrics,
+} from './gdi/outline-queries.js';
+import {
+  GetClipRgn,
+  GetCurLogFont,
+  GetDCHook,
+  GetRelAbs,
+  ResetDC,
+  SetDCHook,
+  SetHookFlags,
+  SetRelAbs,
+} from './gdi/dc-internals.js';
+import { GetBoundsRect, IsDCDirty, SetBoundsRect, SetDCStatus } from './gdi/bounds.js';
+import { CreatePQ, DeletePQ, ExtractPQ, InsertPQ, MinPQ, SizePQ } from './gdi/priority-queue.js';
+import {
+  Copy,
+  DMEnumDFonts,
+  GDIMoveBitmap,
+  MakeObjectPrivate,
+  SelectBitmap,
+  WEP,
+} from './gdi/system-exports.js';
 import { ExtTextOut } from './gdi/ExtTextOut.js';
 
 /**
@@ -294,7 +325,7 @@ export class Gdi extends Module {
       [SetBkMode, 'SetBkMode', 4, [HDC, INT], INT],
       [SetMapMode, 'SetMapMode', 4, [HDC, INT], INT],
       [SetROP2, 'SetRop2', 4, [HDC, INT], INT],
-      [Gdi.stub, 'SetRelAbs', 4],
+      [SetRelAbs, 'SetRelAbs', 4, [HDC, INT], INT],
       [SetPolyFillMode, 'SetPolyFillMode', 4, [HDC, INT], INT],
       [SetStretchBltMode, 'SetStretchBltMode', 4, [HDC, INT], INT],
       [SetTextCharacterExtra, 'SetTextCharacterExtra', 4, [HDC, INT], INT],
@@ -365,7 +396,7 @@ export class Gdi extends Module {
       ],
       [CreateFontIndirect, 'CreateFontIndirect', 4, [[LOGFONT]], HGDIOBJ],
       [CreateHatchBrush, 'CreateHatchBrush', 6, [INT, COLORREF], HBRUSH],
-      [Gdi.stub, 'WEP', 2],
+      [WEP, 'WEP', 2, [INT], INT],
       // 60 //
       [CreatePatternBrush, 'CreatePatternBrush', 2, [HBITMAP], HBRUSH],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
@@ -395,7 +426,7 @@ export class Gdi extends Module {
       [GetPixel, 'GetPixel', 6, [HDC, INT, INT], COLORREF],
       [GetPolyFillMode, 'GetPolyFillMode', 2, [HDC], INT],
       [GetROP2, 'GetRop2', 2, [HDC], INT],
-      [Gdi.stub, 'GetRelAbs', 2],
+      [GetRelAbs, 'GetRelAbs', 2, [HDC], DWORD],
       [GetStockObject, 'GetStockObject', 2, [INT], HGDIOBJ],
       [GetStretchBltMode, 'GetStretchBltMode', 2, [HDC], INT],
       [GetTextCharacterExtra, 'GetTextCharacterExtra', 2, [HDC], INT],
@@ -486,12 +517,12 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'IsDCDirty', 6],
+      [IsDCDirty, 'IsDCDirty', 6, [HDC, FARPTR], INT],
       // 170 //
-      [Gdi.stub, 'SetDCStatus', 8],
+      [SetDCStatus, 'SetDCStatus', 8, [HDC, INT, FARPTR], INT],
       [Gdi.stub, 'unknown'],
       [SetRectRgn, 'SetRectRgn', 10, [HRGN, INT, INT, INT, INT]],
-      [Gdi.stub, 'GetClipRgn', 2],
+      [GetClipRgn, 'GetClipRgn', 2, [HDC], HRGN],
       [Gdi.stub, 'unknown'],
       [EnumMetaFile, 'EnumMetafile', 12, [HDC, HANDLE, FARPTR, LPARAM], BOOL],
       [PlayMetaFileRecord, 'PlayMetafileRecord', 12, [HDC, FARPTR, FARPTR, UINT]],
@@ -510,12 +541,12 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 190 //
-      [Gdi.stub, 'SetDCHook', 10],
-      [Gdi.stub, 'GetDCHook', 6],
-      [Gdi.stub, 'SetHookFlags', 4],
-      [Gdi.stub, 'SetBoundsRect', 8],
-      [Gdi.stub, 'GetBoundsRect', 8],
-      [Gdi.stub, 'SelectBitmap', 4],
+      [SetDCHook, 'SetDCHook', 10, [HDC, FARPTR, DWORD], DWORD],
+      [GetDCHook, 'GetDCHook', 6, [HDC, FARPTR], DWORD],
+      [SetHookFlags, 'SetHookFlags', 4, [HDC, UINT], DWORD],
+      [SetBoundsRect, 'SetBoundsRect', 8, [HDC, FARPTR, UINT], UINT],
+      [GetBoundsRect, 'GetBoundsRect', 8, [HDC, FARPTR, UINT], UINT],
+      [SelectBitmap, 'SelectBitmap', 4, [HDC, HBITMAP], HBITMAP],
       [SetMetaFileBits, 'SetMetafileBitsBetter', 2, [HANDLE], HANDLE],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -527,7 +558,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'DMEnumDFonts', 16],
+      [DMEnumDFonts, 'DMEnumDFonts', 16, [FARPTR, FARPTR, FARPTR, FARPTR], INT],
       [Gdi.stub, 'DMEnumObj', 0],
       [Gdi.stub, 'DMOutput', 0],
       [Gdi.stub, 'DMPixel', 0],
@@ -554,12 +585,12 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 230 //
-      [Gdi.stub, 'CreatePQ', 2],
-      [Gdi.stub, 'MinPQ', 2],
-      [Gdi.stub, 'ExtractPQ', 2],
-      [Gdi.stub, 'InsertPQ', 6],
-      [Gdi.stub, 'SizePQ', 4],
-      [Gdi.stub, 'DeletePQ', 2],
+      [CreatePQ, 'CreatePQ', 2, [UINT], HANDLE],
+      [MinPQ, 'MinPQ', 2, [HANDLE], INT],
+      [ExtractPQ, 'ExtractPQ', 2, [HANDLE], INT],
+      [InsertPQ, 'InsertPQ', 6, [HANDLE, UINT, UINT], INT],
+      [SizePQ, 'SizePQ', 4, [HANDLE, UINT], INT],
+      [DeletePQ, 'DeletePQ', 2, [HANDLE], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -576,7 +607,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'QueryJob', 4],
       [Gdi.stub, 'unknown'],
       // 250 //
-      [Gdi.stub, 'Copy', 10],
+      [Copy, 'Copy', 10, [FARPTR, FARPTR, UINT]],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'DeleteSpoolPage', 2],
@@ -632,14 +663,14 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 300 //
       [EngineEnumerateFont, 'EngineEnumerateFont', 12, [LPCSTR, FARPTR, DWORD], INT],
-      [Gdi.stub, 'EngineDeleteFont', 4],
+      [EngineDeleteFont, 'EngineDeleteFont', 4, [FARPTR], INT],
       [EngineRealizeFont, 'EngineRealizeFont', 12, [FARPTR, FARPTR, FARPTR], DWORD],
       [Gdi.stub, 'EngineGetCharWidth', 12],
       [Gdi.stub, 'EngineSetFontContext', 6], // TODO: this errored by disassembler
       [Gdi.stub, 'EngineGetGlyphBmp', 22],
       [Gdi.stub, 'EngineMakeFontDir', 10],
-      [Gdi.stub, 'GetCharAbcWidths', 10],
-      [Gdi.stub, 'GetOutlineTextMetrics', 8],
+      [GetCharABCWidths, 'GetCharAbcWidths', 10, [HDC, UINT, UINT, FARPTR], BOOL],
+      [GetOutlineTextMetrics, 'GetOutlineTextMetrics', 8, [HDC, UINT, FARPTR], UINT],
       [
         GetGlyphOutline,
         'GetGlyphOutline',
@@ -655,7 +686,7 @@ export class Gdi extends Module {
         [UINT, LPCSTR, LPCSTR, LPCSTR],
         BOOL,
       ],
-      [Gdi.stub, 'GetFontData', 18],
+      [GetFontData, 'GetFontData', 18, [HDC, DWORD, DWORD, FARPTR, DWORD], DWORD],
       [Gdi.stub, 'ConvertOutlineFontFile', 12],
       [GetRasterizerCaps, 'GetRasterizerCaps', 6, [[RASTERIZER_STATUS], INT], BOOL],
       [Gdi.stub, 'EngineExtTextOut', 42],
@@ -678,7 +709,7 @@ export class Gdi extends Module {
       // 330 //
       [EnumFontFamilies, 'EnumFontFamilies', 14, [HDC, LPCSTR, FARPTR, LPARAM], INT],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'GetKerningPairs', 8],
+      [GetKerningPairs, 'GetKerningPairs', 8, [HDC, INT, FARPTR], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -710,12 +741,12 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 360 //
       [CreatePalette, 'CreatePalette', 4, [FARPTR], HANDLE],
-      [Gdi.stub, 'GDISelectPalette', 6],
-      [Gdi.stub, 'GDIRealizePalette', 2],
+      [GDISelectPalette, 'GDISelectPalette', 6, [HDC, HANDLE, UINT], HANDLE],
+      [GDIRealizePalette, 'GDIRealizePalette', 2, [HDC], DWORD],
       [GetPaletteEntries, 'GetPaletteEntries', 10, [HANDLE, UINT, UINT, FARPTR], UINT],
       [SetPaletteEntries, 'SetPaletteEntries', 10, [HANDLE, UINT, UINT, FARPTR], UINT],
-      [Gdi.stub, 'RealizeDefaultPalette', 2],
-      [Gdi.stub, 'UpdateColors', 2],
+      [RealizeDefaultPalette, 'RealizeDefaultPalette', 2, [HDC], DWORD],
+      [UpdateColors, 'UpdateColors', 2, [HDC], INT],
       [AnimatePalette, 'AnimatePalette', 10, [HANDLE, UINT, UINT, FARPTR]],
       [ResizePalette, 'ResizePalette', 4, [HANDLE, UINT], BOOL],
       [Gdi.stub, 'unknown'],
@@ -726,7 +757,7 @@ export class Gdi extends Module {
       [SetSystemPaletteUse, 'SetSystemPaletteUse', 4, [HDC, UINT], UINT],
       [GetSystemPaletteUse, 'GetSystemPaletteUse', 2, [HDC], UINT],
       [GetSystemPaletteEntries, 'GetSystemPaletteEntries', 10, [HDC, UINT, UINT, FARPTR], UINT],
-      [Gdi.stub, 'ResetDC', 6],
+      [ResetDC, 'ResetDC', 6, [HDC, FARPTR], HDC],
       [StartDoc, 'StartDoc', 6, [HDC, FARPTR], INT],
       [EndDoc, 'EndDoc', 2, [HDC], INT],
       [StartPage, 'StartPage', 2, [HDC], INT],
@@ -754,19 +785,19 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 400 //
       [Gdi.stub, 'FastWindowFrame', 14],
-      [Gdi.stub, 'GDIMoveBitmap', 2],
+      [GDIMoveBitmap, 'GDIMoveBitmap', 2, [HBITMAP], INT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GDIInit2', 4],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'FinalGDIInit', 2],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'CreateUserBitmap', 12],
+      [CreateBitmap, 'CreateUserBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'CreateUserDiscardableBitmap', 6],
+      [CreateCompatibleBitmap, 'CreateUserDiscardableBitmap', 6, [HDC, INT, INT], HBITMAP],
       // 410 //
       [IsValidMetaFile, 'IsValidMetafile', 2, [HANDLE], BOOL],
-      [Gdi.stub, 'GetCurLogFont', 2],
-      [Gdi.stub, 'IsDCCurrentPalette', 2],
+      [GetCurLogFont, 'GetCurLogFont', 2, [HDC], HANDLE],
+      [IsDCCurrentPalette, 'IsDCCurrentPalette', 2, [HDC], BOOL],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -834,10 +865,10 @@ export class Gdi extends Module {
       [Gdi.stub, 'GDITaskTermination', 2],
       [SetObjectOwner, 'SetObjectOwner', 4, [HGDIOBJ, HANDLE]],
       [IsGDIObject, 'IsGDIObject', 2, [HANDLE], BOOL],
-      [Gdi.stub, 'MakeObjectPrivate', 4],
+      [MakeObjectPrivate, 'MakeObjectPrivate', 4, [HGDIOBJ, UINT], UINT],
       [Gdi.stub, 'FixUpBogusPublisherMetafile', 6],
-      [Gdi.stub, 'RectVisible_Ehh', 6],
-      [Gdi.stub, 'RectInRegion_Ehh', 6],
+      [RectVisible, 'RectVisible_Ehh', 6, [HDC, FARPTR], BOOL],
+      [RectInRegion, 'RectInRegion_Ehh', 6, [HRGN, [RECT]], BOOL],
       [UnicodeToAnsi, 'UnicodeToAnsi', 8, [DWORD, DWORD], INT],
       [GetBitmapDimensionEx, 'GetBitmapDimensionEx', 6, [HBITMAP, FARPTR], BOOL],
       [GetBrushOrgEx, 'GetBrushOrgEx', 6, [HDC, FARPTR], BOOL],

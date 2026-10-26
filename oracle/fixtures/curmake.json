@@ -1,0 +1,84 @@
+{
+  "probe": "curmake",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "create",
+      "args": "CreateCursor 32x32",
+      "result": "288 030005002000200004000101 bits"
+    },
+    {
+      "function": "create",
+      "args": "CreateCursor 17x2",
+      "result": "32 010001001100020004000101 bits"
+    },
+    {
+      "function": "create",
+      "args": "CreateCursorIconIndirect 16x16 1x1",
+      "result": "96 010002001000100002000101 bits"
+    },
+    {
+      "function": "create",
+      "args": "CreateCursorIconIndirect 16x16 4x1",
+      "result": "192 010002001000100002000401 bits"
+    },
+    {
+      "function": "create",
+      "args": "CreateCursorIconIndirect 10x16 1x8",
+      "result": "224 010002000a00100002000108 bits"
+    },
+    {
+      "function": "copy",
+      "args": "CopyCursor",
+      "result": "same 288"
+    },
+    {
+      "function": "current",
+      "args": "SetCursor made, before",
+      "result": "arrow"
+    },
+    {
+      "function": "current",
+      "args": "GetCursor",
+      "result": "made"
+    },
+    {
+      "function": "destroy",
+      "args": "made, current",
+      "result": "1"
+    },
+    {
+      "function": "current",
+      "args": "GetCursor after",
+      "result": "arrow"
+    },
+    {
+      "function": "destroy",
+      "args": "made, size after",
+      "result": "0"
+    },
+    {
+      "function": "destroy",
+      "args": "copy",
+      "result": "1"
+    },
+    {
+      "function": "destroy",
+      "args": "copy again",
+      "result": "0"
+    },
+    {
+      "function": "destroy",
+      "args": "0",
+      "result": "0"
+    }
+  ]
+}

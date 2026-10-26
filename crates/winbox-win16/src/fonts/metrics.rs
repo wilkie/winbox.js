@@ -287,9 +287,12 @@ pub fn outline_metrics(font: &LogicalFont, outline: &Outline) -> TextMetric {
         },
         underlined: flag(style.underline),
         struck_out: flag(style.strikeout),
-        first_char: 32,
+        // The characters a TrueType font's information names (seg3
+        // `21fb`), which the realised font keeps: **recorded** by
+        // `ttquery`, whose `GetOutlineTextMetrics` carries this structure.
+        first_char: 30,
         last_char: 255,
-        default_char: 128,
+        default_char: 31,
         break_char: 32,
         // `TMPF_TRUETYPE` and `TMPF_VECTOR` both, and the family, where the
         // stub does not say outright.

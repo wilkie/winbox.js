@@ -874,6 +874,10 @@ pub fn text_out(system: &mut System, hdc: u16, x: i64, y: i64, text: &[u8]) -> R
     };
     let mut writer = Writer::of(system, index)?;
     let place = place_of(system, index, x, y);
+
+    // What it draws in, taken into the bounds (`bounds`).
+    super::bounds::text_bounds(system, hdc, index, (place.x, place.y), text, false, None, 0)?;
+
     let (x, y) = device_point(system, index, place.x, place.y);
     let spacing = justified_spacing(system, index, &writer.font.clone(), text, None)?;
 
@@ -948,10 +952,30 @@ pub fn ext_text_out(
     };
     let mut writer = Writer::of(system, index)?;
     let font = writer.font.clone();
+    let spaced = extra.dx.is_some();
     let dx = justified_spacing(system, index, &font, text, extra.dx.as_deref())?.or(extra.dx);
     let place = place_of(system, index, x, y);
     let (x, y) = device_point(system, index, place.x, place.y);
     let rect = extra.rect.map(|rect| device_rect(system, index, rect));
+
+    // What it draws in, taken into the bounds (`bounds`).
+    super::bounds::text_bounds(
+        system,
+        hdc,
+        index,
+        (place.x, place.y),
+        text,
+        spaced,
+        rect.map(|rect| {
+            [
+                rect.left as i32,
+                rect.top as i32,
+                rect.right as i32,
+                rect.bottom as i32,
+            ]
+        }),
+        extra.options,
+    )?;
 
     if extra.options & ETO_OPAQUE != 0
         && let Some(rect) = rect

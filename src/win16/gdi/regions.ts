@@ -6,6 +6,7 @@ import { polygonSpans } from '../../raster/polygon.js';
 import { FillRect } from '../user/FillRect.js';
 import { InvertRect } from '../user/InvertRect.js';
 import { Region } from './gdi-objects.js';
+import { grownForOld } from './RectVisible.js';
 
 /**
  * Regions: made from rectangles, ellipses, rounded rectangles and polygons,
@@ -138,7 +139,10 @@ export function PtInRegion(this: any, hrgn: number, x: number, y: number) {
 
 /**
  * Whether any of a rectangle is in a region. **Recorded**: a rectangle the
- * wrong way round is turned, and the answer for yes is 101h.
+ * wrong way round is turned, and the answer for yes is 101h. For a caller
+ * made for Windows 3.00 or before its right and bottom are moved on a pixel
+ * first, so an empty rectangle can be in (`GDI.EXE` seg1 `2aab`, which
+ * `RectInRegion` at `4ce6` jumps to; **recorded** by `gdimisc`).
  *
  * @param {Types.HRGN} hrgn - The region.
  * @param {Types.RECT} lprc - The rectangle.
@@ -152,12 +156,14 @@ export function RectInRegion(this: any, hrgn: number, lprc: any) {
     return 0;
   }
 
-  const rect = ClipRegion.rect(
+  const [left, top, right, bottom] = grownForOld(
+    this,
     Math.min(lprc.left, lprc.right),
     Math.min(lprc.top, lprc.bottom),
     Math.max(lprc.left, lprc.right),
     Math.max(lprc.top, lprc.bottom)
   );
+  const rect = ClipRegion.rect(left, top, right, bottom);
 
   return region.shape.intersect(rect).kind > 1 ? 0x101 : 0;
 }

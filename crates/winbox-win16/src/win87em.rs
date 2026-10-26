@@ -215,7 +215,7 @@ pub fn info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 
 /// The unit as `FNSAVE` writes it -- the environment, then ST(0) to ST(7)
 /// as ten bytes each -- and then reset, as `FNINIT` leaves it.
-fn save_unit(system: &mut System, far: u32) -> Result<(), Stop> {
+pub(crate) fn save_unit(system: &mut System, far: u32) -> Result<(), Stop> {
     let fpu = unit(system)?.clone();
     let mut bytes = Vec::with_capacity(FSAVE_SIZE as usize);
 
@@ -238,7 +238,7 @@ fn save_unit(system: &mut System, far: u32) -> Result<(), Stop> {
 }
 
 /// The unit as `FRSTOR` reads it back.
-fn restore_unit(system: &mut System, far: u32) -> Result<(), Stop> {
+pub(crate) fn restore_unit(system: &mut System, far: u32) -> Result<(), Stop> {
     let bytes = system.read_far(far, FSAVE_SIZE as usize);
     let word = |at: usize| u16::from_le_bytes([bytes[at], bytes[at + 1]]);
     let fpu = unit(system)?;

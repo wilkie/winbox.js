@@ -5,6 +5,8 @@ import { wideStroke } from './LineTo.js';
 import { FALSE, TRUE } from '../consts.js';
 import { fillRings, outlineSide } from './polygon-mode.js';
 import { devicePoint, mapped } from './mapping.js';
+import { fillBounds, lineBounds } from './bounds.js';
+import { penSize } from './Ellipse.js';
 
 /**
  * Fills a closed shape with the selected brush and outlines it with the
@@ -72,6 +74,14 @@ export function Polygon(hdc, lpPoints, nCount) {
   /* `WINDING`, 2, fills what is wound round; any other mode as `ALTERNATE`
    * (`fillext` recorded 1 and 2 only). Under the drawing mode: see
    * `polygon-mode.ts`. */
+  /* What it draws in, taken into the bounds (`bounds.ts`): the points' box
+   * as it is filled, and the outline's as a chain of lines is. */
+  fillBounds(this, surface, points as [number, number][]);
+
+  if (surface.pen?.color?.alpha) {
+    lineBounds(this, surface, points as [number, number][], penSize(this, surface.pen, surface)[0]);
+  }
+
   fillRings(this, surface, [points], (surface.polyFillMode ?? 1) === 2, true);
 
   /* A pen wider than a pixel: the outline, back to its first point, as one

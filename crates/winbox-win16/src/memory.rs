@@ -289,26 +289,33 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
     let handle = args.word(system);
     let size = args.dword(system);
     let flags = args.word(system);
+
+    Ok(Answer::Word(reallocate(system, handle, size, flags)))
+}
+
+/// `GlobalReAlloc`'s work, for a function that reallocates a block as it
+/// would: the block's handle, its new one, or nought.
+pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16) -> u16 {
     let index = index_for(handle);
 
     if flags & GMEM_MODIFY != 0 {
         let kept = system.global.modify(index, flags & GMEM_DISCARDABLE != 0);
 
-        return Ok(Answer::Word(if kept { handle } else { 0 }));
+        return if kept { handle } else { 0 };
     }
 
     if size == 0 && flags & GMEM_MOVEABLE != 0 {
         // Not while it is locked: a block whose lock count is not nought is
         // not discarded, and NULL is answered (`KRNL386.EXE` seg1 `4129`).
         if system.is_moveable(index) && system.global.locks_of(index) != 0 {
-            return Ok(Answer::Word(0));
+            return 0;
         }
 
-        return Ok(Answer::Word(if system.global.discard(index) {
+        return if system.global.discard(index) {
             handle
         } else {
             0
-        }));
+        };
     }
 
     let before = system.global.size_of(index);
@@ -321,7 +328,7 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
             .global
             .resize(&mut system.cpu.bus, &mut system.descriptors, index, size)
     else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
     let after = system.global.size_of(moved);
 
@@ -338,14 +345,14 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
 
         let moved_handle = handle_for(moved);
 
-        return Ok(Answer::Word(if handle & 1 != 0 {
+        return if handle & 1 != 0 {
             selector_for(moved_handle)
         } else {
             moved_handle
-        }));
+        };
     }
 
-    Ok(Answer::Word(handle))
+    handle
 }
 
 /// Its discardable flag, `GMEM_DISCARDED` for a block discarded, and its

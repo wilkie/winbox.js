@@ -189,9 +189,12 @@ export function GetTextMetrics(hdc, lptm) {
     lptm.tmStruckOut = style.strikeout ? 0xff : 0;
     lptm.tmOverhang = bold ? 1 : 0;
 
-    lptm.tmFirstChar = 32;
+    /* The characters a TrueType font's information names (seg3 `21fb`),
+     * which the realised font keeps: **recorded** by `ttquery`, whose
+     * `GetOutlineTextMetrics` carries this structure, for all five faces. */
+    lptm.tmFirstChar = 30;
     lptm.tmLastChar = 255;
-    lptm.tmDefaultChar = 128;
+    lptm.tmDefaultChar = 31;
     lptm.tmBreakChar = 32;
 
     /* `TMPF_TRUETYPE` and `TMPF_VECTOR` both, since an outline is a vector

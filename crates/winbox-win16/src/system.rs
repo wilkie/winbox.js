@@ -277,7 +277,9 @@ pub struct System {
     /// device context's palette was selected for the background, by its
     /// handle; and the system palette's use, where set.
     pub system_palette: Option<crate::gdi::palettes::SystemPalette>,
-    pub palette_background: HashMap<u16, bool>,
+    /// GDI's palettes: the one last selected in the foreground and the one
+    /// last realized (`gdi::palettes`).
+    pub palette_state: (u16, u16),
     pub system_palette_use: Option<u16>,
     /// GDI's segment as a program reads it, and where it starts.
     pub gdi_heap: crate::gdi::heap::Heap,
@@ -397,6 +399,12 @@ pub struct System {
     /// The device contexts `GetWindowDC` made, by index, and the window each
     /// is over, for `ReleaseDC` to take back.
     pub window_dcs: HashMap<usize, u16>,
+    /// The regions `GetDCEx` was given, by the context given with each,
+    /// to be deleted as it is released (`get_dc.rs`).
+    pub dc_ex_regions: HashMap<u16, u16>,
+    /// Whether a dialog is active, as `DefDlgProc` keeps it for
+    /// `GetSystemDebugState` (`dialogs.rs`).
+    pub dialog_active: bool,
     /// WinG's bitmaps, whose pixels are kept in step with their bits.
     pub wing_bitmaps: Vec<crate::wing::WinGBitmap>,
     /// GDI's objects and device contexts.
@@ -477,6 +485,10 @@ pub struct System {
     pub fm: crate::fm::Fm,
     /// The machine's CMOS, its register chosen (`cmos.rs`).
     pub cmos: crate::cmos::Cmos,
+    /// SYSTEM.DRV's timers' tick (`system_driver.rs`).
+    pub system_driver: crate::system_driver::State,
+    /// KEYBOARD.DRV's segment of tables, once asked for (`keyboard.rs`).
+    pub keyboard_tables: u16,
 }
 
 impl Default for System {
@@ -562,6 +574,8 @@ impl System {
             lock_my_task: 0,
             locked_input: None,
             window_dcs: HashMap::new(),
+            dc_ex_regions: HashMap::new(),
+            dialog_active: false,
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),
             driver: None,
@@ -582,7 +596,7 @@ impl System {
             accelerators: Vec::new(),
             gdi_heap: crate::gdi::heap::Heap::new(),
             system_palette: None,
-            palette_background: HashMap::new(),
+            palette_state: (0, 0),
             system_palette_use: None,
             gdi_data: None,
             capture: None,
@@ -656,6 +670,8 @@ impl System {
             mapper_applet: crate::wbmapper::applet::Applet::default(),
             fm: crate::fm::Fm::new(),
             cmos: crate::cmos::Cmos::default(),
+            system_driver: crate::system_driver::State::default(),
+            keyboard_tables: 0,
         };
 
         for module in KEPT {

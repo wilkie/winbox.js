@@ -14,6 +14,7 @@ import { rasterOp } from '../../raster/raster-op.js';
 
 import { TRUE, FALSE } from '../consts.js';
 import { penSize } from './Ellipse.js';
+import { lineBounds } from './bounds.js';
 import { polygonSpans } from '../../raster/polygon.js';
 import { penPoints, wideOutline } from '../../raster/wide-lines.js';
 
@@ -64,6 +65,17 @@ export function LineTo(hdc, x, y) {
   // Draw the line, in device terms
   const [fromX, fromY] = mapped(surface) ? devicePoint(surface, startX, startY) : [startX, startY];
   const [toX, toY] = mapped(surface) ? devicePoint(surface, x, y) : [x, y];
+
+  /* What it draws in, taken into the bounds (`bounds.ts`). */
+  lineBounds(
+    this,
+    surface,
+    [
+      [fromX, fromY],
+      [toX, toY],
+    ],
+    penSize(this, surface.pen, surface)[0]
+  );
 
   if (
     !wideStroke(this, surface, [

@@ -283,15 +283,12 @@ impl Engine {
                 crate::mmsystem::sequencer::driver_proc(self, id, handle, message, first, second)
                     .await
             }
-            "MCIWAVE" => crate::mmsystem::mci_drivers::driver_proc(
-                &mut self.system(),
-                module,
-                id,
-                handle,
-                message,
-                first,
-                second,
-            ),
+            "MCIWAVE" => {
+                crate::mmsystem::mci_drivers::wave_driver_proc(
+                    self, id, handle, message, first, second,
+                )
+                .await
+            }
             crate::wbsound::NAME => Ok(crate::wbsound::driver_proc(
                 &mut self.system(),
                 handle,

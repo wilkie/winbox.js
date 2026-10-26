@@ -97,6 +97,7 @@ pub struct Recording {
 /// they are exported by: those a call into a metafile's device context is
 /// kept as a record of, or answered nought by.
 const DC_FIRST: &[&str] = &[
+    "SetRelAbs",
     "SetBkColor",
     "SetBkMode",
     "SetMapMode",
@@ -271,6 +272,7 @@ const BY_STACK: &[&str] = &[
     "FloodFill",
     "Pie",
     "Chord",
+    "SetRelAbs",
 ];
 
 const META_SELECTOBJECT: u16 = 0x012d;
