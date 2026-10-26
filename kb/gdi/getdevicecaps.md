@@ -44,7 +44,7 @@ topics: [display-drivers, printer-drivers]
 ## Inside Windows
 
 - [[read out]] The index is the byte offset of a word in the driver's `GDIINFO`. The font mapper reads `ASPECTY` and `ASPECTX` directly at offsets `0x2a` and `0x28` and uses them for its off-square penalty. See [[fonts:3]] and [[topic:font-mapper]].
-- [[read out]] `GDI.EXE` seg1 `44a6`: an index past 6Ch answers nought, and past 66h for a `GDIINFO` older than 300h; a metafile's DC answers 5 for `TECHNOLOGY` and nought for the rest; any other reads the word at the index in the device's `GDIINFO`.
+- [[read out]] `GDI.EXE` seg1 `44a6`: an index past 6Ch answers nought, and past 66h for a `GDIINFO` older than 300h; a metafile's DC answers 5 for `TECHNOLOGY` and nought for the rest; any other reads the word at the index in the device's `GDIINFO`. [[measured]] [[probe:metarec]] reads every index from nought to 70h of a metafile's DC: 5 at 2, nought at every other. Nothing is kept in the metafile ([[topic:metafiles]]).
 - [[read out]] GDI checks the capability bits itself. Without `RC_BIGFONT`, a stretched strike has to fit in one segment ([[fonts:3]]). Without `TC_EA_DOUBLE`, GDI makes a bold by drawing twice. Without `TC_CR_ANY`, GDI also does that for turned text on a VGA ([[fonts:8u]], [[topic:synthetic-bold]]).
 
 ## Implementation

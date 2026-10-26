@@ -20,3 +20,5 @@ topics: [metafiles]
 - **The size:** a copy to its own kind keeps the header's size. A copy from disk to memory, or from memory to disk, says three words more than it holds. The copy from memory writes 130 bytes to its file, but its header says 44h words, 136 bytes. Played, both copies draw what the original draws.
 
 winbox.js agrees with every record. It had not made a copy on disk.
+
+[[read out]] A copy of a metafile in memory to memory is a block as long as the original's, every byte of it copied (`GDI.EXE` seg20 `207d`-`20ad`), so it is nine words longer than the metafile too ([[topic:metafiles]]).

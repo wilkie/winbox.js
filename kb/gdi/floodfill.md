@@ -6,7 +6,7 @@ ordinal: 25
 summary: Fills outward from a point with the brush, to four neighbours at a time, up to a border colour; ExtFloodFill can instead fill all of one colour.
 versions:
   '3.1': exact
-probes: [gdidraw]
+probes: [gdidraw, metarec]
 source: src/win16/gdi/gdi-draw.ts
 ---
 
@@ -19,3 +19,5 @@ source: src/win16/gdi/gdi-draw.ts
 - `ExtFloodFill` with `FLOODFILLBORDER` is the same. With `FLOODFILLSURFACE` it fills the pixels of the colour given, joined to the point: red half covered by blue fills only the red.
 
 winbox.js agrees with all of these records. Both functions were stubs.
+
+[[measured]] Into a metafile's context ([[probe:metarec]]), `FloodFill` is kept as `ExtFloodFill` of `FLOODFILLBORDER`, 0548h with nought before its words. Both answer nought there ([[topic:metafiles]]). [[read out]] `GDI.EXE` seg15 `0172`: `FloodFill` calls `ExtFloodFill` with nought.
