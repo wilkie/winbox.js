@@ -23885,6 +23885,143 @@
   },
   "gaps": {}
  },
+ "visfam": {
+  "probe": "visfam",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 61,
+  "functions": {
+   "again": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "cliprgn": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "exclude": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "frame": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "hook": {
+    "total": 7,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 7
+   },
+   "intersect": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "offset": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "origin": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "save": {
+    "total": 11,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 11
+   },
+   "select": {
+    "total": 6,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 6
+   },
+   "start": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "state": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "intersect": "GDI keeps no visible region: the family is stubs",
+   "offset": "GDI keeps no visible region: the family is stubs",
+   "again": "GDI keeps no visible region: the family is stubs",
+   "state": "GDI keeps no visible region: the family is stubs"
+  }
+ },
+ "visrgn": {
+  "probe": "visrgn",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 34,
+  "functions": {
+   "kind": {
+    "total": 25,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 25
+   },
+   "own": {
+    "total": 5,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 5
+   },
+   "paint": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "style": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "style": "not run whole: recorded for the visible-region design"
+  }
+ },
  "wavedev": {
   "probe": "wavedev",
   "display": "vgasound",

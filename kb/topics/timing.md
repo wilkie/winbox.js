@@ -3,7 +3,19 @@ kind: topic
 name: Timing
 summary: How fast Windows 3.1 runs a program's own instructions under DOSBox, how long its commonest calls take there and how many instructions each is, how GetTickCount steps, what a WinG blit costs by its size and its colours, and what that does to a game that paces itself by its work.
 probes:
-  [cpurate, callcost, wingcost, wingxlat, twrcost, twrcall, tickstep, adlibgap, jrnlplay, spiidle]
+  [
+    cpurate,
+    callcost,
+    wingcost,
+    wingxlat,
+    twrcost,
+    twrcall,
+    tickstep,
+    adlibgap,
+    jrnlplay,
+    spiidle,
+    viscost,
+  ]
 ---
 
 A program for Windows 3.1 sees time pass by `GetTickCount` and by its timers, and how much passes depends on what it did meanwhile: its own instructions, and the calls it made. A call to Windows is not a moment. Inside it Windows runs instructions of its own, hundreds for the quickest and hundreds of thousands for a large blit, and the time they take is time the program sees go by.
@@ -95,6 +107,21 @@ What a call does with messages takes the same time whatever the display. What it
 [[measured]] Run with `cycles=fixed 80000`, DOSBox runs 80,000 instructions a millisecond: the same register arithmetic the probes time measures 79,947. A call's time there is the instructions Windows runs for it, whatever the host. [[probe:callcost]] (on both displays), [[probe:wingcost]], [[probe:twrcost]] and [[probe:twrcall]] are recorded so as well. As fast as the host allows, DOSBox runs most of their calls at 150,000 to 200,000 instructions a millisecond, not the 400,000 their own arithmetic runs at; and a blit of the whole screen slower again, 542 µs against 233 µs at the fixed rate, its time spent on the host's side. So a time recorded as fast as the host allows says only roughly how many instructions a call is.
 
 A few of the calls at the fixed rate, as instructions: `GetTickCount` 11, `GetActiveWindow` 8, `SetRect` 28, `PeekMessage` finding nothing 206 (121 with `PM_NOYIELD`), `SendMessage` 206, `SetCursor` alone 40 (816 with `LoadCursor`), `SetWindowPos` moving nothing 1,076, `GetNearestColor` 8,595, `FrameRect` of 10 by 10 7,775, `AnimatePalette` 260 and 193 an entry. The rest are on each function's page.
+
+## What a window's visible region costs
+
+[[measured]] [[probe:viscost]] times `BitBlt` of 16 by 16 within a window, `SRCCOPY`, and `PatBlt` of 16 by 16, `PATCOPY`, at a fixed 80,000 instructions a millisecond, through a context got once, with other windows over the window or not. GDI draws through each rectangle of the window's visible region in turn ([[topic:visible-regions]]). As instructions:
+
+| What lies over the window                    | `BitBlt` | `PatBlt` |
+| -------------------------------------------- | -------- | -------- |
+| Nothing                                      | 21,705   | 2,142    |
+| A pop-up, clear of the drawing               | 21,716   | 2,154    |
+| Eight pop-ups 10 by 10, clear of the drawing | 21,998   | 2,153    |
+| A pop-up over the right half of the drawing  | 19,852   | 1,651    |
+
+A region of many rectangles costs a call next to nothing: some 300 instructions for a `BitBlt` with eight windows over its window. What costs is the pixels drawn, and a drawing half covered has fewer.
+
+winbox.js on the development machine (a Ryzen 9 3950X), drawing a pixel through a window's view of the screen: the Rust engine's raster 6 ns with nothing to test, 8 with one test of the pixel -- today's, of the window's pixels, or a region's -- 9.5 with a region of eight holes, 11.3 with today's two tests, the window's pixels and the clip region; the TypeScript engine's about 570 ns, in which the tests do not show. A benchmark of the raster alone, not kept.
 
 ## What winbox.js does
 
