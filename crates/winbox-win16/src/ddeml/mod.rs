@@ -141,8 +141,11 @@ fn ready(system: &mut System) {
     let selector = winbox_machine::segment_selector(index);
 
     system.ddeml.ready = true;
-    system.write_far(far(selector, 0), resources::DATA);
-    system.write_far(far(selector, 0x170), &selector.to_le_bytes());
+    system.write_far(far(selector, 0), &resources::data());
+    system.write_far(
+        far(selector, resources::XPARAMS_SELECTOR_AT),
+        &selector.to_le_bytes(),
+    );
     system.local_init(index, HEAP_START, HEAP_END);
 
     let hinstance = instance(system);
