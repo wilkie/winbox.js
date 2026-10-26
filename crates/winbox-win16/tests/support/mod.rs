@@ -224,6 +224,7 @@ pub const AGREEING: &[&str] = &[
     "imgswap",
     "biosmem",
     "kconst",
+    "thtask",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

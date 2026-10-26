@@ -147,6 +147,11 @@ impl GlobalHeap {
         self.blocks.get(&index)
     }
 
+    /// The blocks given out, by their first descriptor index, in no order.
+    pub fn indices(&self) -> impl Iterator<Item = usize> + '_ {
+        self.blocks.keys().copied()
+    }
+
     /// A block's size, or a module segment's.
     pub fn size_of(&self, index: usize) -> u32 {
         self.blocks

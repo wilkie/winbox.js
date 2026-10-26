@@ -5228,9 +5228,9 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* `solodata` reads its module's flags from the header KERNEL keeps in
    * memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
    * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
-   * winbox.js keeps no header there, and reads nought. What the bit does --
-   * the prologue and the thunk -- agrees. */
-  'solodata:flags': 'no module header is kept in memory at the module handle',
+   * winbox.js's database holds the file's header, which reads 201h. What
+   * the bit does -- the prologue and the thunk -- agrees. */
+  'solodata:flags': "the module's database holds its file's header, not the bits KERNEL sets in its flags",
   /* DOSBox's C:, where the oracle's Windows ran, is a folder of the host's,
    * whose room is the fixed "512,127,16383,4031" `MOUNT` gives one; its Z:
    * is its own, "512,127,16513,0" (`drive_virtual.cpp`). winbox.js's C:, a
@@ -5545,23 +5545,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * winbox.js keeps no heap for the atoms, and answers nought: 1 record,
    * where Windows' freed entry still held the string. */
   'ddeleft:DdeFreeStringHandle': 'an atom deleted once too often answers nought',
-  /* `GetModuleHandle` given the probe's task: `GetExePtr` finds no module
-   * for a task's handle, and Windows answers nought where the name finds
-   * the module (`KRNL386.EXE` seg1 `4e78`-`4eff`). A program's task is its
-   * instance here, and a program's module is found by its name as nought,
-   * so the two agree as `module`: 1 record of `modnum`'s. */
-  'modnum:bytask': "a program's task is its instance, and its module answers nought by its name",
   /* KERNEL's own notify procedure is `8de2` in KERNEL's first code
    * segment; `LocalNotify` answers it as `LocalInit` left it. WinBox has
    * no such segment, and keeps the offset with the segment nought: 1
    * record of `locinfo`'s. */
   'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
-  /* `pmstart`'s `GetModuleHandle("PROGMAN")`, Microsoft's Program Manager
-   * running: winbox.js gives a program loaded from its file no module handle,
-   * and answers nought for its name (`kb/kernel/getmodulehandle.md`). WinBox's
-   * own, with no PROGMAN.EXE, has its kept module's and agrees
-   * (`test/win16/progman_test.ts`). */
-  'pmstart:module': 'a program loaded from its file has no module handle in winbox.js',
   /* `dcreuse`'s six of the screen's held at once: Windows lends five
    * handles, one of them twice, its cache's five all lent; both engines
    * make a sixth (1 record). */
@@ -5573,6 +5561,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * (1 record). */
   'winexpe:exec':
     'Windows starts a file that is no Windows program in a DOS session, which WinBox has not got',
+  /* `GetCurrentPDB`'s DX is the word at 220h of KERNEL's data: the prefix
+   * DOS made for KERNEL as WIN.COM started it (`KRNL386.EXE` seg3 `0252`).
+   * WinBox's KERNEL was started by no DOS and has no prefix (1 record). */
+  'ktask:kernelpsp': "KERNEL's own prefix, which DOS made for it, is not there in WinBox",
+  /* USER's and GDI's local heaps, which TOOLHELP walks: WinBox keeps their
+   * objects in itself, and their data segments hold no heap (2 records). */
+  'thheap:lsystem': "USER's and GDI's data segments hold no local heap in WinBox",
 };
 
 /**
@@ -5894,6 +5889,9 @@ const RUN_WHOLE = new Set<string>([
   'dcreuse',
   'winexpe',
   'kconst',
+  'thtask',
+  'thheap',
+  'ktask',
 ]);
 
 /**

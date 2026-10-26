@@ -7,6 +7,8 @@
 
 mod catch_throw;
 pub mod file_cdr;
+mod retail;
+pub(crate) mod tasks;
 mod temp_files;
 
 pub(crate) use file_cdr::{dos3_call, lcreat, open_file, tells};
@@ -27,6 +29,36 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "Throw" => Implementation::Sync(catch_throw::throw),
         "GetTempDrive" => Implementation::Sync(temp_files::get_temp_drive),
         "GetTempFileName" => Implementation::Sync(temp_files::get_temp_file_name),
+        "IsTask" => Implementation::Sync(tasks::is_task),
+        "GetTaskQueue" => Implementation::Sync(tasks::get_task_queue),
+        "SetTaskQueue" => Implementation::Sync(tasks::set_task_queue),
+        "PostEvent" => Implementation::Sync(tasks::post_event),
+        "SetPriority" => Implementation::Sync(tasks::set_priority),
+        "GetCurrentPDB" => Implementation::Sync(tasks::get_current_pdb),
+        "GetTaskDS" => Implementation::Sync(tasks::get_task_ds),
+        "GetTaskQueueDS" => Implementation::Sync(tasks::get_task_queue_ds),
+        "GetTaskQueueES" => Implementation::Sync(tasks::get_task_queue_es),
+        "GetExeVersion" => Implementation::Sync(tasks::get_exe_version),
+        "GetAppCompatFlags" => Implementation::Sync(tasks::get_app_compat_flags),
+        "GetExePtr" => Implementation::Sync(tasks::get_exe_ptr),
+        "IsSharedSelector" => Implementation::Sync(tasks::is_shared_selector),
+        "GlobalHandleNoRIP" => return crate::kernel::implementation("GlobalHandle"),
+        "EnableDos"
+        | "DisableDos"
+        | "EnableKernel"
+        | "KbdRst"
+        | "_DEBUGOUTPUT"
+        | "K329"
+        | "ValidateCodeSegments"
+        | "LogError"
+        | "LogParamError" => Implementation::Sync(retail::nothing),
+        "LimitEmsPages" | "GetCurPID" => Implementation::Sync(retail::nought),
+        "GetWinDebugInfo" | "SetWinDebugInfo" | "DiagQuery" => {
+            Implementation::Sync(retail::nought_word)
+        }
+        "FatalExitHook" => Implementation::Sync(retail::fatal_exit_hook),
+        "GetFreeMemInfo" => Implementation::Sync(retail::get_free_mem_info),
+        "Reserved5" => Implementation::Sync(retail::reserved5),
         _ => return None,
     })
 }

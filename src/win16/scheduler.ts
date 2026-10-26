@@ -419,6 +419,7 @@ export class Scheduler {
       this.restore(task.context);
       this.putDirectory(task);
       this._currentTask = next.handle;
+      this.onGrant?.(next.handle);
       next.granted();
 
       return;
@@ -477,6 +478,9 @@ export class Scheduler {
     this._waiting = (this._waiting ?? []).filter((entry) => entry.handle !== handle);
     this.grant();
   }
+
+  /** Told of each task granted the processor (see `Win16`). */
+  declare onGrant: ((handle: number) => void) | undefined;
 
   /** Told of each task giving the processor up (see `Win16`). */
   declare onRelease: ((handle: number) => void) | undefined;

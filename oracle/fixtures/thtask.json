@@ -1,0 +1,219 @@
+{
+  "probe": "thtask",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "task",
+      "args": "self",
+      "result": "inst=same,module=same,ss=inst+1,top=ef6,min=2e60,bottom=2e60,events=0,queue=same,name=THTASK,psp=same,parent=-"
+    },
+    {
+      "function": "task",
+      "args": "walk",
+      "result": "last self "
+    },
+    {
+      "function": "task",
+      "args": "find-self",
+      "result": "1:inst=same,module=same,ss=inst+1,top=ef6,min=2e60,bottom=2e60,events=0,queue=same,name=THTASK,psp=same,parent=-"
+    },
+    {
+      "function": "task",
+      "args": "find-1234",
+      "result": "0"
+    },
+    {
+      "function": "task",
+      "args": "find-size",
+      "result": "0"
+    },
+    {
+      "function": "child",
+      "args": "entry",
+      "result": "inst=same,module=same,ss=inst+1,top=1b6,min=2120,bottom=2120,events=0,queue=same,name=THTASKC,psp=-,parent=same"
+    },
+    {
+      "function": "child",
+      "args": "walk",
+      "result": "last child self "
+    },
+    {
+      "function": "child",
+      "args": "csip",
+      "result": "nonzero"
+    },
+    {
+      "function": "child",
+      "args": "csip-self",
+      "result": "0"
+    },
+    {
+      "function": "child",
+      "args": "terminated",
+      "result": "istask=0,window=0"
+    },
+    {
+      "function": "task",
+      "args": "self",
+      "result": "inst=same,module=same,ss=inst+1,top=ef6,min=2e60,bottom=2e60,events=0,queue=same,name=THTASK,psp=same,parent=-"
+    },
+    {
+      "function": "child",
+      "args": "walk-after",
+      "result": "last self "
+    },
+    {
+      "function": "module",
+      "args": "first",
+      "result": "1:KERNEL"
+    },
+    {
+      "function": "module",
+      "args": "walk-self",
+      "result": "1"
+    },
+    {
+      "function": "module",
+      "args": "find-USER",
+      "result": "same,name=USER,path=C:\\WINDOWS\\SYSTEM\\USER.EXE"
+    },
+    {
+      "function": "module",
+      "args": "find-user",
+      "result": "0"
+    },
+    {
+      "function": "module",
+      "args": "find-self",
+      "result": "same,name=THTASK,file=THTASK.EXE,usage=1,module=same"
+    },
+    {
+      "function": "module",
+      "args": "find-0",
+      "result": "0"
+    },
+    {
+      "function": "module",
+      "args": "first-size",
+      "result": "0"
+    },
+    {
+      "function": "class",
+      "args": "walk",
+      "result": "ThTaskP #42 #32772 #32771 #32769 MDIClient ComboBox ComboLBox ScrollBar ListBox Edit #32770 Static Button #32768 "
+    },
+    {
+      "function": "class",
+      "args": "first-size",
+      "result": "0"
+    },
+    {
+      "function": "stack",
+      "args": "first",
+      "result": "1:task=same,ss=same,bp=0,cs=same,module=same,segment=1,flags=0"
+    },
+    {
+      "function": "stack",
+      "args": "next-1",
+      "result": "1:bp=4,cs=same,module=same,segment=1,flags=1"
+    },
+    {
+      "function": "stack",
+      "args": "next-2",
+      "result": "0"
+    },
+    {
+      "function": "stack",
+      "args": "first-size",
+      "result": "0"
+    },
+    {
+      "function": "memory",
+      "args": "read-0",
+      "result": "50:1"
+    },
+    {
+      "function": "memory",
+      "args": "read-10",
+      "result": "50:11"
+    },
+    {
+      "function": "memory",
+      "args": "read-90",
+      "result": "38:91"
+    },
+    {
+      "function": "memory",
+      "args": "read-100",
+      "result": "28:0"
+    },
+    {
+      "function": "memory",
+      "args": "read-127",
+      "result": "1:0"
+    },
+    {
+      "function": "memory",
+      "args": "read-128",
+      "result": "0:117"
+    },
+    {
+      "function": "memory",
+      "args": "read-200",
+      "result": "0:117"
+    },
+    {
+      "function": "memory",
+      "args": "write-60",
+      "result": "50:160,199"
+    },
+    {
+      "function": "memory",
+      "args": "write-128",
+      "result": "0"
+    },
+    {
+      "function": "memory",
+      "args": "read-handle",
+      "result": "4:1"
+    },
+    {
+      "function": "memory",
+      "args": "read-code",
+      "result": "8:same"
+    },
+    {
+      "function": "memory",
+      "args": "write-code",
+      "result": "2:same"
+    },
+    {
+      "function": "memory",
+      "args": "read-0",
+      "result": "0"
+    },
+    {
+      "function": "timer",
+      "args": "count",
+      "result": "1:equal=1,between=1"
+    },
+    {
+      "function": "timer",
+      "args": "size",
+      "result": "0"
+    },
+    {
+      "function": "memman",
+      "args": "info",
+      "result": "1:page=1000,size=0"
+    }
+  ]
+}

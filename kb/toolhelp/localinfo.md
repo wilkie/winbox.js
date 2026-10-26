@@ -1,0 +1,22 @@
+---
+kind: function
+module: TOOLHELP
+name: LocalInfo
+ordinal: 56
+summary: How many arenas a local heap has.
+versions:
+  '3.1': exact
+probes: [thheap]
+records: [linfo]
+source: src/win16/toolhelp/local.ts
+topics: [tool-helper]
+---
+
+## Observed behaviour
+
+- [[read out]] `TOOLHELP.DLL` seg1 `090e`, `06f6`: the heap information's word 4.
+- [[measured]] [[probe:thheap]]: 7 for the probe's heap. FALSE for a wrong size.
+
+## Implementation
+
+`src/win16/toolhelp/local.ts`, and the Rust engine's `crates/winbox-win16/src/toolhelp/`. See [[topic:tool-helper]].

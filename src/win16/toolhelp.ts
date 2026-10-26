@@ -4,15 +4,31 @@
 
 import { Module } from './module.js';
 import { GetFreeSystemResources } from './user/GetFreeSystemResources.js';
-import { BOOL, FARPTR, HANDLE, UINT } from './types.js';
+import { BOOL, DWORD, FARPTR, HANDLE, INT, LPCSTR, UINT } from './types.js';
+import { ClassFirst, ClassNext } from './toolhelp/classes.js';
+import {
+  GlobalEntryHandle,
+  GlobalEntryModule,
+  GlobalFirst,
+  GlobalInfo,
+  GlobalNext,
+} from './toolhelp/global.js';
+import { LocalFirst, LocalInfo, LocalNext } from './toolhelp/local.js';
+import { MemoryRead, MemoryWrite } from './toolhelp/memory.js';
+import { MemManInfo, TerminateApp, TimerCount, WEP } from './toolhelp/misc.js';
+import { ModuleFindHandle, ModuleFindName, ModuleFirst, ModuleNext } from './toolhelp/modules.js';
+import { StackTraceCSIPFirst, StackTraceFirst, StackTraceNext } from './toolhelp/stack.js';
+import { TaskFindHandle, TaskFirst, TaskGetCSIP, TaskNext } from './toolhelp/tasks.js';
 
 /**
  * The tool helper library, `TOOLHELP.DLL`, as a module programs import from.
  *
  * Windows' own file walks KERNEL's private structures -- its start-up asks
- * `GlobalMasterHandle` for the global heap's arena -- which winbox.js's
- * KERNEL does not have, so it is kept here instead, as KERNEL, USER and GDI
- * are. The ordinals, names and argument sizes are the installation's own
+ * `GlobalMasterHandle` for the global heap's arena and `ThHook` for the
+ * heads of KERNEL's lists -- which winbox.js's KERNEL does not have, so it
+ * is kept here instead, as KERNEL, USER and GDI are, answering from
+ * winbox.js's own tasks, modules, heaps and classes in the shapes Windows'
+ * structures give (`toolhelp/`). The ordinals, names and argument sizes are the installation's own
  * file's. Object Packager imports `NotifyRegister` and `NotifyUnRegister`,
  * and Dr. Watson `InterruptRegister`, which answering nought made it say it
  * could not install itself.
@@ -31,40 +47,46 @@ export class ToolHelp extends Module {
   static get exports() {
     const exports: any[] = [];
 
-    exports[1] = [ToolHelp.stub, 'WEP', 2];
+    exports[1] = [WEP, 'WEP', 2, [INT], BOOL];
     exports[50] = [GlobalHandleToSel, 'GlobalHandleToSel', 2, [HANDLE], UINT];
-    exports[51] = [ToolHelp.stub, 'GlobalFirst', 6];
-    exports[52] = [ToolHelp.stub, 'GlobalNext', 6];
-    exports[53] = [ToolHelp.stub, 'GlobalInfo', 4];
-    exports[54] = [ToolHelp.stub, 'GlobalEntryHandle', 6];
-    exports[55] = [ToolHelp.stub, 'GlobalEntryModule', 8];
-    exports[56] = [ToolHelp.stub, 'LocalInfo', 6];
-    exports[57] = [ToolHelp.stub, 'LocalFirst', 6];
-    exports[58] = [ToolHelp.stub, 'LocalNext', 4];
-    exports[59] = [ToolHelp.stub, 'ModuleFirst', 4];
-    exports[60] = [ToolHelp.stub, 'ModuleNext', 4];
-    exports[61] = [ToolHelp.stub, 'ModuleFindName', 8];
-    exports[62] = [ToolHelp.stub, 'ModuleFindHandle', 6];
-    exports[63] = [ToolHelp.stub, 'TaskFirst', 4];
-    exports[64] = [ToolHelp.stub, 'TaskNext', 4];
-    exports[65] = [ToolHelp.stub, 'TaskFindHandle', 6];
-    exports[66] = [ToolHelp.stub, 'StackTraceFirst', 6];
-    exports[67] = [ToolHelp.stub, 'StackTraceCSIPFirst', 12];
-    exports[68] = [ToolHelp.stub, 'StackTraceNext', 4];
-    exports[69] = [ToolHelp.stub, 'ClassFirst', 4];
-    exports[70] = [ToolHelp.stub, 'ClassNext', 4];
+    exports[51] = [GlobalFirst, 'GlobalFirst', 6, [FARPTR, UINT], BOOL];
+    exports[52] = [GlobalNext, 'GlobalNext', 6, [FARPTR, UINT], BOOL];
+    exports[53] = [GlobalInfo, 'GlobalInfo', 4, [FARPTR], BOOL];
+    exports[54] = [GlobalEntryHandle, 'GlobalEntryHandle', 6, [FARPTR, HANDLE], BOOL];
+    exports[55] = [GlobalEntryModule, 'GlobalEntryModule', 8, [FARPTR, HANDLE, UINT], BOOL];
+    exports[56] = [LocalInfo, 'LocalInfo', 6, [FARPTR, HANDLE], BOOL];
+    exports[57] = [LocalFirst, 'LocalFirst', 6, [FARPTR, HANDLE], BOOL];
+    exports[58] = [LocalNext, 'LocalNext', 4, [FARPTR], BOOL];
+    exports[59] = [ModuleFirst, 'ModuleFirst', 4, [FARPTR], BOOL];
+    exports[60] = [ModuleNext, 'ModuleNext', 4, [FARPTR], BOOL];
+    exports[61] = [ModuleFindName, 'ModuleFindName', 8, [FARPTR, LPCSTR], HANDLE];
+    exports[62] = [ModuleFindHandle, 'ModuleFindHandle', 6, [FARPTR, HANDLE], HANDLE];
+    exports[63] = [TaskFirst, 'TaskFirst', 4, [FARPTR], BOOL];
+    exports[64] = [TaskNext, 'TaskNext', 4, [FARPTR], BOOL];
+    exports[65] = [TaskFindHandle, 'TaskFindHandle', 6, [FARPTR, HANDLE], BOOL];
+    exports[66] = [StackTraceFirst, 'StackTraceFirst', 6, [FARPTR, HANDLE], BOOL];
+    exports[67] = [
+      StackTraceCSIPFirst,
+      'StackTraceCSIPFirst',
+      12,
+      [FARPTR, UINT, UINT, UINT, UINT],
+      BOOL,
+    ];
+    exports[68] = [StackTraceNext, 'StackTraceNext', 4, [FARPTR], BOOL];
+    exports[69] = [ClassFirst, 'ClassFirst', 4, [FARPTR], BOOL];
+    exports[70] = [ClassNext, 'ClassNext', 4, [FARPTR], BOOL];
     exports[71] = [SystemHeapInfo, 'SystemHeapInfo', 4, [FARPTR], BOOL];
-    exports[72] = [ToolHelp.stub, 'MemManInfo', 4];
+    exports[72] = [MemManInfo, 'MemManInfo', 4, [FARPTR], BOOL];
     exports[73] = [NotifyRegister, 'NotifyRegister', 8, [HANDLE, FARPTR, UINT], BOOL];
     exports[74] = [NotifyUnRegister, 'NotifyUnRegister', 2, [HANDLE], BOOL];
     exports[75] = [InterruptRegister, 'InterruptRegister', 6, [HANDLE, FARPTR], BOOL];
     exports[76] = [InterruptUnRegister, 'InterruptUnRegister', 2, [HANDLE], BOOL];
-    exports[77] = [ToolHelp.stub, 'TerminateApp', 4];
-    exports[78] = [ToolHelp.stub, 'MemoryRead', 14];
-    exports[79] = [ToolHelp.stub, 'MemoryWrite', 14];
-    exports[80] = [ToolHelp.stub, 'TimerCount', 4];
+    exports[77] = [TerminateApp, 'TerminateApp', 4, [HANDLE, UINT]];
+    exports[78] = [MemoryRead, 'MemoryRead', 14, [UINT, DWORD, FARPTR, DWORD], DWORD];
+    exports[79] = [MemoryWrite, 'MemoryWrite', 14, [UINT, DWORD, FARPTR, DWORD], DWORD];
+    exports[80] = [TimerCount, 'TimerCount', 4, [FARPTR], BOOL];
     exports[81] = [ToolHelp.stub, 'TaskSetCSIP', 6];
-    exports[82] = [ToolHelp.stub, 'TaskGetCSIP', 2];
+    exports[82] = [TaskGetCSIP, 'TaskGetCSIP', 2, [HANDLE], DWORD];
     exports[83] = [ToolHelp.stub, 'TaskSwitch', 6];
 
     return exports;

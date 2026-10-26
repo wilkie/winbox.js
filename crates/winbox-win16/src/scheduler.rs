@@ -42,6 +42,71 @@ pub struct Context {
     pub(crate) directory: (char, String),
 }
 
+/// Where a task was as it gave the processor up: CS, IP, SS, SP and BP.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct Frame {
+    pub cs: u16,
+    pub ip: u16,
+    pub ss: u16,
+    pub sp: u16,
+    pub bp: u16,
+}
+
+impl Context {
+    /// Where the task was as it gave the processor up.
+    pub fn frame(&self) -> Frame {
+        Frame {
+            cs: self.segments[winbox_cpu::CS].selector,
+            ip: self.ip,
+            ss: self.segments[winbox_cpu::SS].selector,
+            sp: self.regs[winbox_cpu::SP],
+            bp: self.regs[winbox_cpu::BP],
+        }
+    }
+}
+
+impl System {
+    /// Where a task is: the running one in the processor, another as it
+    /// gave the processor up.
+    pub(crate) fn frame_of(&self, handle: u16) -> Option<Frame> {
+        let slot = self.slot_of(handle)?;
+
+        if self.scheduler.current == Some(slot) {
+            return Some(Frame {
+                cs: self.cpu.segments[winbox_cpu::CS].selector,
+                ip: self.cpu.ip,
+                ss: self.cpu.segments[winbox_cpu::SS].selector,
+                sp: self.cpu.regs[winbox_cpu::SP],
+                bp: self.cpu.regs[winbox_cpu::BP],
+            });
+        }
+
+        self.scheduler.slots[slot]
+            .saved
+            .as_ref()
+            .map(|context| context.frame())
+    }
+
+    /// A task's prefix's selector.
+    pub(crate) fn prefix_of(&self, handle: u16) -> u16 {
+        let Some(slot) = self.slot_of(handle) else {
+            return 0;
+        };
+        let task = if self.scheduler.current == Some(slot) {
+            self.task.as_ref()
+        } else {
+            self.scheduler.slots[slot]
+                .saved
+                .as_ref()
+                .and_then(|context| context.task.as_ref())
+        };
+
+        task.map_or(0, |task| {
+            winbox_machine::segment_selector(task.program_segment)
+        })
+    }
+}
+
 /// A message another task sent this one's window, waiting for this one to
 /// take it where it waits, and the answer, once it has.
 #[derive(Debug)]
@@ -215,6 +280,8 @@ impl System {
             saved: None,
         });
         self.scheduler.current = Some(self.scheduler.slots.len() - 1);
+        // In KERNEL's list of tasks, with no parent.
+        self.task_made(handle, 0);
     }
 
     /// The running task's state taken out of the system.
@@ -292,6 +359,9 @@ impl System {
 
         let slot = self.scheduler.slots.len() - 1;
 
+        // In KERNEL's list of tasks, the task running now its parent.
+        self.task_made(handle, task_handle);
+
         if first {
             self.scheduler.waiting.push_front(slot);
         } else {
@@ -351,6 +421,7 @@ impl System {
 
             self.task_handle = self.scheduler.slots[slot].handle;
             self.scheduler.current = Some(slot);
+            self.task_ran(self.task_handle);
             return;
         }
     }

@@ -1,12 +1,18 @@
 'use strict';
 
+import { headTask } from './task-calls.js';
+
 /**
  * The running task's handle: the one its windows belong to, as
- * `GetWindowTask` answers for them. **Recorded** by `minis`.
+ * `GetWindowTask` answers for them. **Recorded** by `minis`. In DX, the
+ * first task in KERNEL's list (`KRNL386.EXE` seg1 `842c`-`843c`, the word
+ * at 226h of its data). **Recorded** by `ktask`.
  *
  * @returns {Types.HANDLE} The task.
  */
 export function GetCurrentTask() {
+  this.machine.cpu.core.dx = headTask(this);
+
   return this.scheduler.active ?? 0;
 }
 

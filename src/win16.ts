@@ -1,6 +1,8 @@
 'use strict';
 
 // File System
+import { MODULE_DATABASES } from './win16/global-allocator.js';
+import { taskMade, taskRan } from './win16/kernel/task-order.js';
 import { CALL_INSTRUCTIONS } from './emulator/clock.js';
 import { UNRECORDED, callInstructions } from './win16/call-costs.js';
 import { applicationFault } from './win16/kernel/fault.js';
@@ -123,6 +125,7 @@ export class Win16 {
   declare _handles: any;
   declare _linker: any;
   declare _machine: any;
+  declare _lastGranted: number | undefined;
   declare _memory: any;
   declare _modules: any;
   declare _scheduler: any;
@@ -267,6 +270,15 @@ export class Win16 {
     /* A task giving the processor up: the others with a window due to paint
      * look again (see `RasterInput.wake`). */
     this._scheduler.onRelease = (handle) => this.rasterInput?.wake(handle);
+    /* A task switched to goes after the others of its priority in KERNEL's
+     * list, where it is not the one that ran last (`task-order.ts`). */
+    this._scheduler.onGrant = (handle) => {
+      if (handle !== this._lastGranted) {
+        taskRan(this, handle);
+      }
+
+      this._lastGranted = handle;
+    };
     this._scheduler.handles = this._handles;
     this._scheduler.files = this._dos.files;
     this._scheduler.onSlice = () => pollTimeEvents(this);
@@ -572,8 +584,7 @@ export class Win16 {
    * task's windows as it ends it; whether their procedures are called then is
    * not recorded, and here there is no program left to call.
    */
-  exitTask(code: number) {
-    const handle = this.scheduler.active;
+  exitTask(code: number, handle = this.scheduler.active) {
     const task = this.handles.resolve(handle);
 
     if (!task) {
@@ -606,16 +617,17 @@ export class Win16 {
     this.scheduler.ended(handle);
 
     /* Its module gone with its last instance: `GetModuleHandle` finds it no
-     * more. Only WinBox's Program Manager has a handle to lose (`progman/`);
-     * a program loaded from its file has none yet. As `exit_task`. */
+     * more, and its handle is let go -- but WinBox's Program Manager's, the
+     * module it keeps (`progman/`). As `exit_task`. */
     const path = task.executable?.path;
+    const module = typeof path === 'string' ? this._modules._handles[path] : undefined;
 
-    if (
-      typeof path === 'string' &&
-      this._modules._handles[path] !== undefined &&
-      this._modules._handles[path] === (this as any)._progmanKept &&
-      !previousInstance(this, path)
-    ) {
+    if (module !== undefined && !previousInstance(this, path)) {
+      if (module !== (this as any)._progmanKept && this.handles.resolve(module)?.executable) {
+        this.handles.free(module);
+        this._globalAllocator.release(module >> 3);
+      }
+
       this._modules._handles[path] = undefined;
     }
     (this._options as any).onExit?.(handle, code);
@@ -840,6 +852,28 @@ export class Win16 {
     /* Those it counted, let go as it ends (`exitTask`). */
     (task as any).brought = brought;
 
+    /* Its module's handle, as `GetModuleHandle` finds it by its name and
+     * TOOLHELP's walks find it: the selector of its database, which every
+     * instance of the program shares -- **recorded** by `thtask`, the
+     * probe's own module found by its handle and in the chain; its low two
+     * bits 3, as Windows' are (`modhand`). A program reads its module's
+     * header through it (`solodata`): the block holds the file's, from its
+     * `NE` to the end of its entry table, as KERNEL loads it, though KERNEL
+     * lays its tables out in memory a little otherwise. From descriptors of
+     * their own, where no block reaches; let go with its last instance
+     * (`exitTask`). */
+    const path = String(executable.path ?? '');
+
+    if (this._modules._handles[path] === undefined) {
+      const index = this._globalAllocator.find(MODULE_DATABASES);
+      const start = executable.headerOffset;
+      const end = start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
+      const bytes = new Uint8Array(executable._view.buffer.slice(start, end));
+
+      this._globalAllocator.map(index, new DataView(bytes.buffer), { limit: bytes.length - 1 });
+      this._modules._handles[path] = this.handles.aliasAt(segmentSelector(index), task);
+    }
+
     /* Its local heap is made as it calls `InitTask`, at the end of its data
      * segment (`initTask`). */
 
@@ -905,6 +939,8 @@ export class Win16 {
     const first = !this.scheduler.active;
 
     this.scheduler.register(handle, task);
+    /* In KERNEL's list of tasks, the task running now its parent. */
+    taskMade(this, handle, first ? 0 : (this.scheduler.active ?? 0));
     task.show = show;
     task.previousInstance = previous;
 

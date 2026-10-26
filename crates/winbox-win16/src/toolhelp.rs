@@ -1,12 +1,23 @@
 //! The tool helper library, `TOOLHELP.DLL`, as winbox.js keeps it beside
 //! KERNEL: Windows' own file walks KERNEL's private structures, which
-//! winbox.js's KERNEL does not have. Object Packager imports
-//! `NotifyRegister` and `NotifyUnRegister`, and Dr. Watson
-//! `InterruptRegister`.
+//! winbox.js's KERNEL does not have, so it answers from winbox.js's own
+//! tasks, modules, heaps and classes in the shapes Windows' structures give
+//! (`toolhelp/`). Object Packager imports `NotifyRegister` and
+//! `NotifyUnRegister`, and Dr. Watson `InterruptRegister`.
 
 // Each has the signature every function that answers a call has, whether
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
+
+pub(crate) mod classes;
+pub(crate) mod global;
+pub(crate) mod local;
+pub(crate) mod memory;
+pub(crate) mod misc;
+pub(crate) mod modules;
+pub(crate) mod stack;
+pub(crate) mod structures;
+pub(crate) mod tasks;
 
 use winbox_machine::segment_selector;
 
@@ -21,6 +32,33 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "NotifyUnRegister" => notify_unregister,
         "InterruptRegister" => interrupt_register,
         "InterruptUnRegister" => interrupt_unregister,
+        "WEP" => misc::wep,
+        "GlobalFirst" => global::global_first,
+        "GlobalNext" => global::global_next,
+        "GlobalInfo" => global::global_info,
+        "GlobalEntryHandle" => global::global_entry_handle,
+        "GlobalEntryModule" => global::global_entry_module,
+        "LocalInfo" => local::local_info,
+        "LocalFirst" => local::local_first,
+        "LocalNext" => local::local_next,
+        "ModuleFirst" => modules::module_first,
+        "ModuleNext" => modules::module_next,
+        "ModuleFindName" => modules::module_find_name,
+        "ModuleFindHandle" => modules::module_find_handle,
+        "TaskFirst" => tasks::task_first,
+        "TaskNext" => tasks::task_next,
+        "TaskFindHandle" => tasks::task_find_handle,
+        "TaskGetCSIP" => tasks::task_get_csip,
+        "StackTraceFirst" => stack::stack_trace_first,
+        "StackTraceCSIPFirst" => stack::stack_trace_csip_first,
+        "StackTraceNext" => stack::stack_trace_next,
+        "ClassFirst" => classes::class_first,
+        "ClassNext" => classes::class_next,
+        "MemManInfo" => misc::mem_man_info,
+        "TerminateApp" => misc::terminate_app,
+        "MemoryRead" => memory::memory_read,
+        "MemoryWrite" => memory::memory_write,
+        "TimerCount" => misc::timer_count,
         _ => return None,
     }))
 }

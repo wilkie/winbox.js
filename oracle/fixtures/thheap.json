@@ -1,0 +1,154 @@
+{
+  "probe": "thheap",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ginfo",
+      "args": "info",
+      "result": "1:items=1"
+    },
+    {
+      "function": "ginfo",
+      "args": "size",
+      "result": "0"
+    },
+    {
+      "function": "gentry",
+      "args": "moveable",
+      "result": "1:base=1,size=80,block=1,lock=0,pagelock=0,flags=100,heap=0,owner=task,type=0,data=0"
+    },
+    {
+      "function": "gentry",
+      "args": "moveable-locked",
+      "result": "1:base=1,size=80,block=1,lock=0,pagelock=0,flags=100,heap=0,owner=task,type=0,data=0"
+    },
+    {
+      "function": "gentry",
+      "args": "fixed",
+      "result": "1:base=1,size=80,block=1,lock=0,pagelock=0,flags=100,heap=0,owner=task,type=0,data=0"
+    },
+    {
+      "function": "gentry",
+      "args": "shared",
+      "result": "1:base=1,size=80,block=1,lock=0,pagelock=0,flags=0,heap=0,owner=module,type=0,data=0"
+    },
+    {
+      "function": "gentry",
+      "args": "data",
+      "result": "1:base=1,size=3100,block=1,lock=0,pagelock=0,flags=4,heap=1,owner=module,type=1,data=2"
+    },
+    {
+      "function": "gentry",
+      "args": "code",
+      "result": "1:base=1,size=c40,block=1,lock=0,pagelock=0,flags=0,heap=0,owner=module,type=3,data=1"
+    },
+    {
+      "function": "gentry",
+      "args": "module",
+      "result": "1:base=1,block=minus1,owner=module,type=6"
+    },
+    {
+      "function": "gtask",
+      "args": "task",
+      "result": "1:base=1,block=same,owner=task,type=4"
+    },
+    {
+      "function": "gentry",
+      "args": "1234",
+      "result": "0"
+    },
+    {
+      "function": "gmodule",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "gmodule",
+      "args": "1",
+      "result": "1:base=1,size=c40,block=1,lock=0,pagelock=0,flags=0,heap=0,owner=module,type=3,data=1"
+    },
+    {
+      "function": "gmodule",
+      "args": "2",
+      "result": "1:base=1,size=3100,block=1,lock=0,pagelock=0,flags=4,heap=1,owner=module,type=1,data=2"
+    },
+    {
+      "function": "gmodule",
+      "args": "3",
+      "result": "0"
+    },
+    {
+      "function": "gwalk",
+      "args": "all",
+      "result": "first=9,last=9,block=1,data=1"
+    },
+    {
+      "function": "gwalk",
+      "args": "size",
+      "result": "0"
+    },
+    {
+      "function": "linfo",
+      "args": "ds",
+      "result": "1:items=7"
+    },
+    {
+      "function": "linfo",
+      "args": "size",
+      "result": "0"
+    },
+    {
+      "function": "lwalk",
+      "args": "0",
+      "result": "handle=addr,address=2d04,size=8,flags=1,lock=0,type=0,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lwalk",
+      "args": "1",
+      "result": "handle=addr,address=2d10,size=2c,flags=1,lock=0,type=0,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lwalk",
+      "args": "2",
+      "result": "handle=addr,address=2d40,size=c,flags=1,lock=0,type=0,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lwalk",
+      "args": "3",
+      "result": "handle=addr,address=2d50,size=84,flags=1,lock=0,type=0,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lwalk",
+      "args": "4",
+      "result": "handle=other,address=2dd8,size=300,flags=2,lock=0,type=255,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lwalk",
+      "args": "5",
+      "result": "handle=moveable,address=30de,size=16,flags=4,lock=1,type=0,heap=ds,heaptype=0"
+    },
+    {
+      "function": "lsystem",
+      "args": "user",
+      "result": "1:heaptype=1"
+    },
+    {
+      "function": "lsystem",
+      "args": "gdi",
+      "result": "1:heaptype=2"
+    },
+    {
+      "function": "lwalk",
+      "args": "size",
+      "result": "0"
+    }
+  ]
+}

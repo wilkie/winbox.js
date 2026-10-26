@@ -1,6 +1,7 @@
 'use strict';
 
 import { ownInUse, wantsFile } from '../library.js';
+import { Task } from '../task.js';
 
 /**
  * The handle of a module the system has. **Recorded** by the `freelib` probe
@@ -27,6 +28,13 @@ export function GetModuleHandle(this: any, lpszModule: any) {
    * task is its instance here. */
   if (typeof lpszModule === 'number') {
     const item = this.handles.resolve(lpszModule);
+
+    /* A task's own handle -- not its instance's, nor its module's -- names
+     * no module (**recorded** by `modnum`). */
+    if (item instanceof Task && this.handles.lookup(item) === (lpszModule & 0xffff)) {
+      return 0;
+    }
+
     const path = item?.executable?.path ?? item?.loader?.path ?? item?.path;
 
     if (typeof path !== 'string') {

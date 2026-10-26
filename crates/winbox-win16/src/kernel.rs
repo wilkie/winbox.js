@@ -72,7 +72,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "IsRomModule" | "IsRomFile" => Implementation::Sync(is_rom),
         "LockSegment" => Implementation::Sync(modules_kernel::lock_segment),
         "UnlockSegment" => Implementation::Sync(modules_kernel::unlock_segment),
-        "GetCurrentTask" => Implementation::Sync(modules_kernel::get_current_task),
+        "GetCurrentTask" => Implementation::Sync(crate::kernel_calls::tasks::get_current_task),
         "LockCurrentTask" => Implementation::Sync(crate::lock_input::lock_current_task),
         "IsTaskLocked" => Implementation::Sync(crate::lock_input::is_task_locked),
         "GetNumTasks" => Implementation::Sync(modules_kernel::get_num_tasks),
@@ -86,6 +86,17 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "AllocDSToCSAlias" => Implementation::Sync(modules_kernel::alloc_ds_to_cs_alias),
         "AllocCSToDSAlias" => Implementation::Sync(modules_kernel::alloc_cs_to_ds_alias),
         "AllocSelector" => Implementation::Sync(modules_kernel::alloc_selector),
+        "AllocAlias" => Implementation::Sync(modules_kernel::alloc_alias),
+        "SetSelectorBase" => Implementation::Sync(modules_kernel::set_selector_base),
+        "SetSelectorLimit" => Implementation::Sync(modules_kernel::set_selector_limit),
+        "SelectorAccessRights" => Implementation::Sync(modules_kernel::selector_access_rights),
+        "AllocSelectorArray" => Implementation::Sync(modules_kernel::alloc_selector_array),
+        // KERNEL's ordinals 77 to 80 handed to USER's (`KRNL386.EXE` seg1
+        // `83c4`-`83e6`).
+        "Reserved1" => return crate::user::implementation("AnsiNext"),
+        "Reserved2" => return crate::user::implementation("AnsiPrev"),
+        "Reserved3" => return crate::user::implementation("AnsiUpper"),
+        "Reserved4" => return crate::user::implementation("AnsiLower"),
         "PrestoChangoSelector" => Implementation::Sync(modules_kernel::presto_chango_selector),
         "FreeSelector" => Implementation::Sync(modules_kernel::free_selector),
         "GetSelectorBase" => Implementation::Sync(modules_kernel::get_selector_base),
@@ -457,6 +468,14 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     }
 
     let text = String::from_utf8_lossy(&system.read_string(name)).to_ascii_uppercase();
+
+    Ok(Answer::Word(module_handle_named(system, &text)))
+}
+
+/// A module's handle by its name, upper case, or by its file's name where
+/// the name has a dot, as `GetModuleHandle` finds it: TOOLHELP's walk of
+/// the modules finds them so too.
+pub(crate) fn module_handle_named(system: &System, text: &str) -> u16 {
     let wanted = text
         .rsplit(['\\', '/', ':'])
         .next()
@@ -476,8 +495,7 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     };
 
     if let Some(module) = loaded {
-        // The TypeScript engine registers a program with no handle: nought.
-        return Ok(Answer::Word(system.modules[module].handle));
+        return system.modules[module].handle;
     }
 
     let kept = if dotted {
@@ -493,13 +511,13 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     // file's, or counted as their file would be with no file
     // (`own_modules::use_own`): DDEML while a program that imports it runs
     // (**recorded** by `ddewep`).
-    Ok(Answer::Word(kept.map_or(0, |kept| {
+    kept.map_or(0, |kept| {
         if crate::own_modules::own_with_file(kept.module.name) && kept.usage == 0 {
             0
         } else {
             kept.handle()
         }
-    })))
+    })
 }
 
 /// `GetModuleHandle` given a number in the offset, its segment nought:
@@ -511,6 +529,13 @@ fn get_module_handle(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 /// `GetModuleHandle.ts`.
 fn module_by_number(system: &System, number: u16) -> u16 {
     match system.handles.resolve(number) {
+        // A task's own handle -- not its instance's, nor its module's --
+        // names no module (**recorded** by `modnum`).
+        Some(Object::Task(module))
+            if system.handles.lookup(Object::Task(module)) == Some(number) =>
+        {
+            0
+        }
         Some(Object::Task(module) | Object::Library(module)) => system.modules[module].handle,
         Some(Object::Kept(kept)) => {
             let kept = &system.kept[kept];

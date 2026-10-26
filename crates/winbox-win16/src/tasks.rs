@@ -10,6 +10,7 @@ use winbox_machine::segment_selector;
 
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::{Engine, Held};
+use crate::handles::Object;
 use crate::messages::Param;
 use crate::scheduler::Sent;
 use crate::system::System;
@@ -398,6 +399,20 @@ impl System {
             return;
         };
 
+        self.exit_slot(slot, code);
+    }
+
+    /// A task ended by its handle, as `exit_task` ends the running one --
+    /// TOOLHELP's `TerminateApp` ends another so -- with `code`.
+    pub(crate) fn end_task_of(&mut self, handle: u16, code: u8) {
+        if let Some(slot) = self.slot_of(handle) {
+            self.exit_slot(slot, code);
+        }
+    }
+
+    fn exit_slot(&mut self, slot: usize, code: u8) {
+        let running = self.scheduler.current == Some(slot);
+
         self.scheduler.slots[slot].exit_code = Some(code);
         let handle = self.scheduler.slots[slot].handle;
         let left: Vec<usize> = self
@@ -415,7 +430,7 @@ impl System {
             self.forget_window(index);
         }
 
-        if let Some(task) = self.task.as_mut() {
+        if running && let Some(task) = self.task.as_mut() {
             task.queue.quit_code = None;
         }
 
@@ -427,14 +442,24 @@ impl System {
         self.end_task(slot);
 
         // Its module gone with its last instance: `GetModuleHandle` finds
-        // it no more. Only WinBox's Program Manager has a handle to lose
-        // (`progman`); a program loaded from its file has none yet.
+        // it no more, and its handle is let go -- but WinBox's Program
+        // Manager's, the module it keeps (`progman`). As `exitTask`.
         if self.running_instances(program) == 0 {
             let path = self.modules[program].path.clone();
+            let mut handles = Vec::new();
 
             for module in &mut self.modules {
                 if !module.is_library() && module.path.eq_ignore_ascii_case(&path) {
+                    handles.push(module.handle);
                     module.handle = 0;
+                }
+            }
+
+            for handle in handles {
+                if handle != 0 && matches!(self.handles.resolve(handle), Some(Object::Task(_))) {
+                    self.handles.free(handle);
+                    self.descriptors
+                        .release(&mut self.cpu.bus, winbox_machine::index_for(handle));
                 }
             }
         }

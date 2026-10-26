@@ -6,7 +6,7 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use winbox_machine::{index_for, segment_selector};
+use winbox_machine::{Descriptors, index_for, segment_selector};
 use winbox_ne::Executable;
 
 use crate::call::{Answer, Args, Later, Stop};
@@ -84,10 +84,6 @@ pub fn unlock_segment(system: &mut System, args: &mut Args) -> Result<Answer, St
     Ok(Answer::Nothing)
 }
 
-pub fn get_current_task(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    Ok(Answer::Word(system.task_handle))
-}
-
 /// The tasks running: the one.
 pub fn get_num_tasks(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     let running = if system.ended { 0 } else { system.task_count() };
@@ -99,7 +95,12 @@ pub fn get_num_tasks(system: &mut System, _: &mut Args) -> Result<Answer, Stop> 
 pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
 
-    Ok(Answer::Word(match system.handles.resolve(handle) {
+    Ok(Answer::Word(module_usage(system, handle)))
+}
+
+/// A module's count, as `GetModuleUsage` answers it.
+pub(crate) fn module_usage(system: &System, handle: u16) -> u16 {
+    match system.handles.resolve(handle) {
         Some(Object::Library(module)) => system.modules[module].usage as u16,
         // One of WinBox's own with no file: counted as its file would be.
         Some(Object::Kept(kept))
@@ -111,7 +112,7 @@ pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, 
         // Anything else it can name, 1, as the TypeScript engine answers.
         Some(_) => 1,
         None => 0,
-    }))
+    }
 }
 
 pub fn get_dos_environment(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
@@ -225,6 +226,94 @@ pub fn alloc_cs_to_ds_alias(system: &mut System, args: &mut Args) -> Result<Answ
     let selector = args.word(system);
 
     Ok(Answer::Word(alias_of(system, selector, false)))
+}
+
+/// A code selector for a segment's memory, the given one in DX (seg1
+/// `21fb`-`2220`). **Recorded** by `ktask`.
+pub fn alloc_alias(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let selector = args.word(system);
+
+    Ok(Answer::Dword(
+        u32::from(selector) << 16 | u32::from(alias_of(system, selector, true)),
+    ))
+}
+
+/// A selector's base moved, straight into its descriptor, and the
+/// selector answered (`KRNL386.EXE` seg1 `2725`-`2752`). **Recorded** by
+/// `ktask`.
+pub fn set_selector_base(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let selector = args.word(system);
+    let base = args.dword(system);
+    let index = index_for(selector);
+
+    if index != 0 {
+        Descriptors::set_base(&mut system.cpu.bus, index, base);
+    }
+
+    Ok(Answer::Word(selector))
+}
+
+/// A selector's limit, its low word and the low four bits of its high
+/// word, straight into its descriptor; nought (seg1 `276d`-`2798`).
+/// **Recorded** by `ktask`.
+pub fn set_selector_limit(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let selector = args.word(system);
+    let limit = args.dword(system);
+    let index = index_for(selector);
+
+    if index != 0 {
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, index, limit & 0xfffff);
+    }
+
+    Ok(Answer::Word(0))
+}
+
+/// The bits of a selector's rights a program may change: its type and its
+/// flags.
+const CHANGEABLE: u16 = 0xd01e;
+
+/// A selector's rights held to `D01Eh` for `op` nought; else those bits set
+/// from `rights`, the rest kept, and nought answered (seg1 `279b`-`27cb`).
+/// **Recorded** by `ktask`.
+pub fn selector_access_rights(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let selector = args.word(system);
+    let op = args.word(system);
+    let rights = args.word(system);
+    let index = index_for(selector);
+    let now = if index == 0 {
+        0
+    } else {
+        Descriptors::rights_of(&system.cpu.bus, index)
+    };
+
+    if op == 0 {
+        return Ok(Answer::Word(now & CHANGEABLE));
+    }
+
+    if index != 0 {
+        Descriptors::set_rights(
+            &mut system.cpu.bus,
+            index,
+            rights & CHANGEABLE | now & !CHANGEABLE,
+        );
+    }
+
+    Ok(Answer::Word(0))
+}
+
+/// Selectors one after another, each data at nought of no limit: the
+/// first, or nought (seg1 `1df5`-`1e28`). **Recorded** by `ktask`.
+pub fn alloc_selector_array(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let count = usize::from(args.word(system));
+    let made = if count == 0 {
+        None
+    } else {
+        system.descriptors.blank_run(&mut system.cpu.bus, count)
+    };
+
+    Ok(Answer::Word(made.map_or(0, segment_selector)))
 }
 
 /// A selector: a data alias of one given, or a blank one for nought.

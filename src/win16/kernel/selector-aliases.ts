@@ -61,6 +61,81 @@ export function FreeSelector(this: any, wSelector: number) {
   return 0;
 }
 
+/**
+ * A selector's base moved, straight into its descriptor, and the selector
+ * answered (`KRNL386.EXE` seg1 `2725`-`2752`). **Recorded** by `ktask`.
+ */
+export function SetSelectorBase(this: any, wSelector: number, dwBase: number) {
+  const index = (wSelector & 0xffff) >> 3;
+
+  if (index) {
+    this.allocator.globalAllocator.setBase(index, dwBase >>> 0);
+  }
+
+  return wSelector & 0xffff;
+}
+
+/**
+ * A selector's limit, its low word and the low four bits of its high word,
+ * straight into its descriptor; nought (seg1 `276d`-`2798`). **Recorded**
+ * by `ktask`.
+ */
+export function SetSelectorLimit(this: any, wSelector: number, dwLimit: number) {
+  const index = (wSelector & 0xffff) >> 3;
+
+  if (index) {
+    this.allocator.globalAllocator.setLimit(index, dwLimit & 0xfffff);
+  }
+
+  return 0;
+}
+
+/** The bits of a selector's rights a program may change: its type and its flags. */
+const CHANGEABLE = 0xd01e;
+
+/**
+ * A selector's rights, as `LAR` reads them shifted down a byte -- the
+ * access byte and the flags' -- held to its type and flags, D01Eh, for
+ * `wOp` nought; else those bits set from `wRights` through DPMI's 0009h,
+ * the rest kept, and nought answered (`KRNL386.EXE` seg1 `279b`-`27cb`).
+ * **Recorded** by `ktask`.
+ */
+export function SelectorAccessRights(this: any, wSelector: number, wOp: number, wRights: number) {
+  const index = (wSelector & 0xffff) >> 3;
+  const allocator = this.allocator.globalAllocator;
+  const rights = index ? allocator.rightsOf(index) : 0;
+
+  if (!(wOp & 0xffff)) {
+    return rights & CHANGEABLE;
+  }
+
+  if (index) {
+    allocator.setRights(index, (wRights & CHANGEABLE) | (rights & ~CHANGEABLE & 0xffff));
+  }
+
+  return 0;
+}
+
+/**
+ * Selectors one after another, each a data segment at nought of no limit:
+ * the first, or nought (seg1 `1df5`-`1e28`). **Recorded** by `ktask`.
+ */
+export function AllocSelectorArray(this: any, uSelectors: number) {
+  const count = uSelectors & 0xffff;
+  const index = count ? this.allocator.globalAllocator.blankRun(count) : -1;
+
+  return index < 0 ? 0 : segmentSelector(index);
+}
+
+/**
+ * A code selector for a segment's memory, the given one in DX (seg1
+ * `21fb`-`2220`). **Recorded** by `ktask`: code, its base and limit the
+ * data segment's.
+ */
+export function AllocAlias(this: any, wSelector: number) {
+  return (((wSelector & 0xffff) << 16) | aliasOf(this, wSelector, true)) >>> 0;
+}
+
 function aliasOf(system: any, selector: number, code: boolean) {
   const index = (selector & 0xffff) >> 3;
 

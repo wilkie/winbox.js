@@ -135,6 +135,46 @@ impl System {
 
         self.load_libraries_for(program, beside.as_deref(), &mut order);
 
+        // Its module's handle, as `GetModuleHandle` finds it by its name and
+        // TOOLHELP's walks find it: the selector of its database, which
+        // every instance of the program shares (**recorded** by `thtask`),
+        // its low two bits 3 as Windows' are (`modhand`). The block holds
+        // the file's header from its `NE` to the end of its entry table,
+        // which a program reads through it (`solodata`). From descriptors of
+        // their own, where no block reaches; let go with its last instance
+        // (`exit_task`). As `Win16.load`.
+        let shared = self
+            .modules
+            .iter()
+            .find(|module| {
+                !module.is_library()
+                    && module.handle != 0
+                    && module.path == self.modules[program].path
+            })
+            .map(|module| module.handle);
+
+        self.modules[program].handle = shared.unwrap_or_else(|| {
+            let executable = std::rc::Rc::clone(&self.modules[program].executable);
+            let start = executable.header_offset as usize;
+            let end = start
+                + usize::from(executable.header.entry_table_offset)
+                + usize::from(executable.header.entry_table_length);
+            let bytes = executable.bytes()[start..end.min(executable.bytes().len())].to_vec();
+            let Some(index) = self.descriptors.find(winbox_machine::MODULE_DATABASES, 1) else {
+                return 0;
+            };
+
+            self.descriptors
+                .map(&mut self.cpu.bus, index, &bytes, false);
+            self.descriptors.set_limit(
+                &mut self.cpu.bus,
+                index,
+                (bytes.len() as u32).saturating_sub(1),
+            );
+            self.handles
+                .alias_at(segment_selector(index), Object::Task(program))
+        });
+
         // Its local heap is made as it calls `InitTask`, at the end of its
         // data segment (`kernel::task_heap`).
         let handle = self

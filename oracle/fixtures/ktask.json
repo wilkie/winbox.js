@@ -1,0 +1,184 @@
+{
+  "probe": "ktask",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "task",
+      "args": "GetCurrentTask",
+      "result": "ax=task,dx=task"
+    },
+    {
+      "function": "task",
+      "args": "IsTask",
+      "result": "task=task,0=0"
+    },
+    {
+      "function": "identity",
+      "args": "instance",
+      "result": "istask=0,exeptr=0,same=0"
+    },
+    {
+      "function": "task",
+      "args": "GetTaskDS",
+      "result": "ax=instance,dx=instance"
+    },
+    {
+      "function": "task",
+      "args": "GetCurrentPDB",
+      "result": "pdb"
+    },
+    {
+      "function": "kernelpsp",
+      "args": "GetCurrentPDB",
+      "result": "psp"
+    },
+    {
+      "function": "task",
+      "args": "GetTaskQueue",
+      "result": "toolhelp"
+    },
+    {
+      "function": "task",
+      "args": "SetTaskQueue",
+      "result": "queue,then=1234"
+    },
+    {
+      "function": "task",
+      "args": "PostEvent",
+      "result": "before=0,answer=task,after=1"
+    },
+    {
+      "function": "task",
+      "args": "SetPriority",
+      "result": "15,10,15,-32,15"
+    },
+    {
+      "function": "module",
+      "args": "GetExePtr",
+      "result": "instance=module,module=module,block=module,user=user,code=module,1234=0"
+    },
+    {
+      "function": "module",
+      "args": "GetExeVersion",
+      "result": "300"
+    },
+    {
+      "function": "module",
+      "args": "GetAppCompatFlags",
+      "result": "0"
+    },
+    {
+      "function": "module",
+      "args": "IsSharedSelector",
+      "result": "data=0,user=1,block=0"
+    },
+    {
+      "function": "memory",
+      "args": "GlobalHandleNoRIP",
+      "result": "same"
+    },
+    {
+      "function": "memory",
+      "args": "GetFreeMemInfo",
+      "result": "ffffffff"
+    },
+    {
+      "function": "memory",
+      "args": "LimitEmsPages",
+      "result": "0"
+    },
+    {
+      "function": "memory",
+      "args": "GetCurPID",
+      "result": "0"
+    },
+    {
+      "function": "debug",
+      "args": "GetWinDebugInfo",
+      "result": "0"
+    },
+    {
+      "function": "debug",
+      "args": "SetWinDebugInfo",
+      "result": "0"
+    },
+    {
+      "function": "debug",
+      "args": "DiagQuery",
+      "result": "0"
+    },
+    {
+      "function": "debug",
+      "args": "FatalExitHook",
+      "result": "first=0,second=proc"
+    },
+    {
+      "function": "string",
+      "args": "Reserved1",
+      "result": "1"
+    },
+    {
+      "function": "string",
+      "args": "Reserved2",
+      "result": "2"
+    },
+    {
+      "function": "string",
+      "args": "Reserved3",
+      "result": "414243c0c9d75a"
+    },
+    {
+      "function": "string",
+      "args": "Reserved4",
+      "result": "616263e0e9d77a"
+    },
+    {
+      "function": "string",
+      "args": "Reserved5",
+      "result": "-1 1 0 0 1 -1 0 -1 1 "
+    },
+    {
+      "function": "selector",
+      "args": "SetSelectorBase",
+      "result": "selector:lar=f300,base=10,limit=fff"
+    },
+    {
+      "function": "selector",
+      "args": "SetSelectorLimit",
+      "result": "0:lar=f300,base=10,limit=12345"
+    },
+    {
+      "function": "selector",
+      "args": "SelectorAccessRights",
+      "result": "get=12,set=0,then=d01e,code=0,then=18:lar=f900,base=10,limit=12345"
+    },
+    {
+      "function": "selector",
+      "args": "AllocSelectorArray-0",
+      "result": "0:lar=f300,base=0,limit=0"
+    },
+    {
+      "function": "selector",
+      "args": "AllocSelectorArray-1",
+      "result": "8:lar=f300,base=0,limit=0"
+    },
+    {
+      "function": "selector",
+      "args": "AllocSelectorArray-2",
+      "result": "16:lar=f300,base=0,limit=0"
+    },
+    {
+      "function": "selector",
+      "args": "AllocAlias",
+      "result": "dx=given:lar=fb00,base=0,limit=fff"
+    }
+  ]
+}

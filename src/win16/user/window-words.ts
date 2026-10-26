@@ -159,8 +159,11 @@ export function GetWindowWord(this: any, hwnd: number, nOffset: number) {
   const offset = signed(nOffset);
 
   switch (offset) {
+    /* A window USER makes itself, with no `CreateWindow` of a program's --
+     * a message box and its buttons -- has no instance here, as in the Rust
+     * engine (`window_queries.rs`): its task is not one. */
     case GWW_HINSTANCE:
-      return (dialog._createStruct?.hInstance ?? dialog.data?.hInstance ?? 0) & 0xffff;
+      return (dialog._createStruct?.hInstance ?? 0) & 0xffff;
     case GWW_HWNDPARENT:
       return dialog instanceof RasterWindow ? parentOrOwner(dialog) : 0;
     /* A window at the top keeps its menu where a child keeps its identifier:

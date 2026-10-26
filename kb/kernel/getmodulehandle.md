@@ -25,10 +25,9 @@ topics: [dynamic-link-libraries]
 
 ## Implementation
 
-Both engines answer a number from the handle's object: a program's instance its module's handle as its name finds it, a library's instance or module its module's, a module WinBox keeps its own, one of WinBox's own libraries with a file only while it is in use, as by name. `module_by_number` in `crates/winbox-win16/src/kernel.rs` is the Rust twin.
+A program loaded from its file has a module handle, the selector of its database ([[topic:kernel-queries]]), shared by its instances and let go with the last. A task's own handle names no module. Both engines answer a number from the handle's object: a program's instance its module's handle as its name finds it, a library's instance or module its module's, a module WinBox keeps its own, one of WinBox's own libraries with a file only while it is in use, as by name. `module_by_number` in `crates/winbox-win16/src/kernel.rs` is the Rust twin.
 
 Not yet done:
 
-- A program's task is its instance in WinBox, and a program's module answers nought by its name, so `modnum`'s task record agrees only by that: a known gap.
 - `GetExePtr`'s last step, a block's owner: a block of global memory a program allocated finds nothing here.
 - DX is not answered.

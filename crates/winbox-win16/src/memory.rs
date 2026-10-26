@@ -112,6 +112,14 @@ pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         .global
         .allocate(&mut system.cpu.bus, &mut system.descriptors, size, flags);
 
+    // Its owner: the task allocating it, as Windows' is the task's prefix
+    // (TOOLHELP's `GlobalEntryHandle`, `thheap`).
+    if let Some(index) = index {
+        let task = system.current_task().unwrap_or(0);
+
+        system.block_owners.insert(index, task);
+    }
+
     Ok(Answer::Word(index.map_or(0, handle_for)))
 }
 

@@ -243,6 +243,16 @@ pub struct System {
     /// TOOLHELP's registrations: each task's notification procedure and
     /// its flags, and its interrupt procedure.
     pub notifications: Vec<(u16, u32, u16)>,
+    /// KERNEL's list of tasks, and what each task's database holds that
+    /// the scheduler does not (`task_order.rs`).
+    pub task_order: crate::task_order::TaskOrder,
+    /// The task each block of `GlobalAlloc`'s was allocated by, by its
+    /// first descriptor index: TOOLHELP's owner (`toolhelp/global.rs`).
+    pub block_owners: HashMap<usize, u16>,
+    /// The procedure `FatalExitHook` set.
+    pub fatal_exit_hook: u32,
+    /// The count `TimerCount` answered last.
+    pub timer_count: u32,
     pub interrupt_handlers: Vec<(u16, u32)>,
     /// The sets of moves begun and not yet made: each window, the window it
     /// goes after, its place and size, and the flags.
@@ -580,6 +590,10 @@ impl System {
             background_due: false,
             deferred: Vec::new(),
             notifications: Vec::new(),
+            task_order: crate::task_order::TaskOrder::default(),
+            block_owners: HashMap::new(),
+            fatal_exit_hook: 0,
+            timer_count: 0,
             interrupt_handlers: Vec::new(),
             hooks: Vec::new(),
             next_hook: 0,

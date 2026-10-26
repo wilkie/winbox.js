@@ -57,6 +57,10 @@ pub const FIRST_MEGABYTE_SELECTORS: [(u16, usize); 9] = [
     (0x0000, 0xffc),
 ];
 
+/// Where the descriptors of programs' module databases are found from:
+/// above any block, program or module winbox.js keeps (`load_program`).
+pub const MODULE_DATABASES: usize = 0x1e00;
+
 /// The selector for a paragraph of the first megabyte KERNEL exports one
 /// for, as a program is given it.
 pub fn first_megabyte_selector(paragraph: u16) -> Option<u16> {
@@ -193,6 +197,46 @@ impl Descriptors {
             at + 6,
             (memory.read8(at + 6) & 0xf0) | ((limit >> 16) & 0x0f) as u8,
         );
+    }
+
+    /// A descriptor's base changed, its limit and rights kept, as
+    /// `SetSelectorBase` writes one.
+    pub fn set_base(memory: &mut Memory, index: usize, base: u32) {
+        let at = entry(index);
+        let [b0, b1, b2, b3] = base.to_le_bytes();
+
+        memory.write(at + 2, &[b0, b1, b2]);
+        memory.write8(at + 7, b3);
+    }
+
+    /// A descriptor's access byte (5) and its byte 6, its limit's top and
+    /// its flags, as a word.
+    pub fn rights_of(memory: &Memory, index: usize) -> u16 {
+        let at = entry(index);
+
+        u16::from(memory.read8(at + 5)) | u16::from(memory.read8(at + 6)) << 8
+    }
+
+    /// A descriptor's access byte and byte 6 set from a word.
+    pub fn set_rights(memory: &mut Memory, index: usize, rights: u16) {
+        let [access, flags] = rights.to_le_bytes();
+
+        memory.write(entry(index) + 5, &[access, flags]);
+    }
+
+    /// `count` descriptors one after another, each data at nought with no
+    /// limit, its access byte `F3h`: what `AllocSelectorArray` makes. The
+    /// first's index, or `None`.
+    pub fn blank_run(&mut self, memory: &mut Memory, count: usize) -> Option<usize> {
+        let index = self.find(1, count)?;
+
+        for at in index..index + count {
+            self.used[at] = true;
+            memory.zero(entry(at), 8);
+            memory.write8(entry(at) + 5, DATA);
+        }
+
+        Some(index)
     }
 
     /// A freed segment's descriptor emptied: `LAR`, `LSL`, `VERR` and `VERW`

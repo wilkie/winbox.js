@@ -15,8 +15,8 @@ pub use clock::{
 };
 pub use descriptors::{
     BIOS_DATA_SELECTOR, CODE, DATA, Descriptors, FIRST_MEGABYTE, FIRST_MEGABYTE_SELECTORS,
-    GDT_BASE, LDT_BASE, SELECTORS, first_megabyte_selector, handle_for, index_for,
-    segment_selector,
+    GDT_BASE, LDT_BASE, MODULE_DATABASES, SELECTORS, first_megabyte_selector, handle_for,
+    index_for, segment_selector,
 };
 pub use files::{
     AUDIO_TYPES, Allocation, Begun, Body, CdImage, CdTrack, Change, CueError, CueFailure, DiscFile,

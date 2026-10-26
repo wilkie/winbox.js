@@ -173,6 +173,13 @@ impl Handles {
         self.given.get(&handle).map(|entry| entry.object)
     }
 
+    /// Every handle given out and what it stands for, in no order.
+    pub fn objects(&self) -> impl Iterator<Item = (u16, Object)> + '_ {
+        self.given
+            .iter()
+            .map(|(&handle, entry)| (handle, entry.object))
+    }
+
     /// An object's own handle.
     pub fn lookup(&self, object: Object) -> Option<u16> {
         self.lookup.get(&object).copied()

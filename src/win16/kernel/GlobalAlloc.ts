@@ -109,6 +109,10 @@ export function GlobalAlloc(fuAlloc, cbAlloc) {
     return NULL;
   }
 
+  /* Its owner: the task allocating it, as Windows' is the task's prefix
+   * (TOOLHELP's `GlobalEntryHandle`, `thheap`). */
+  this.allocator._objects[index].owner = this.scheduler?.active ?? 0;
+
   /* What the caller gets is a handle rather than the index the allocator deals
    * in: the same descriptor, at a lower privilege level. See selectors.ts.
    */

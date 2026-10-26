@@ -70,6 +70,12 @@ export const FIRST_MEGABYTE_SELECTORS: [paragraph: number, index: number][] = [
   [0x0000, 0xffc],
 ];
 
+/**
+ * Where the descriptors of programs' module databases are found from: above
+ * any block, program or module winbox.js keeps (`Win16.load`).
+ */
+export const MODULE_DATABASES = 0x1e00;
+
 /** The selector for a paragraph of the first megabyte KERNEL exports one for. */
 export function firstMegabyteSelector(paragraph: number) {
   const found = FIRST_MEGABYTE_SELECTORS.find(([each]) => each === paragraph);
@@ -294,6 +300,59 @@ export class GlobalAllocator {
     }
 
     this._memory.write8(base + 5, 0xf2);
+
+    return index;
+  }
+
+  /** A descriptor's base changed, its limit and rights kept. */
+  setBase(segment, base) {
+    const entry = this._cpu.core.ldtBase + 8 * segment;
+
+    this.#forget(segment);
+    this._memory.write16(entry + 2, base & 0xffff);
+    this._memory.write8(entry + 4, (base >>> 16) & 0xff);
+    this._memory.write8(entry + 7, (base >>> 24) & 0xff);
+  }
+
+  /** A descriptor's access byte (5) and its byte 6, its limit's top and its flags. */
+  rightsOf(segment) {
+    const entry = this._cpu.core.ldtBase + 8 * segment;
+
+    return this._memory.read8(entry + 5) | (this._memory.read8(entry + 6) << 8);
+  }
+
+  setRights(segment, rights) {
+    const entry = this._cpu.core.ldtBase + 8 * segment;
+
+    this.#forget(segment);
+    this._memory.write8(entry + 5, rights & 0xff);
+    this._memory.write8(entry + 6, (rights >>> 8) & 0xff);
+  }
+
+  /**
+   * `count` descriptors one after another, each data at nought with no
+   * limit, its access byte F3h: what `AllocSelectorArray` makes. The first's
+   * index, or -1.
+   */
+  blankRun(count) {
+    const index = this.find(1, count);
+
+    if (index < 0) {
+      return -1;
+    }
+
+    for (let at = index; at < index + count; at++) {
+      this._usedMap[at] = true;
+      this.#forget(at);
+
+      const entry = this._cpu.core.ldtBase + 8 * at;
+
+      for (let byte = 0; byte < 8; byte++) {
+        this._memory.write8(entry + byte, 0);
+      }
+
+      this._memory.write8(entry + 5, 0xf3);
+    }
 
     return index;
   }
