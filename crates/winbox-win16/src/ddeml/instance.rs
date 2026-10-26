@@ -560,11 +560,11 @@ async fn wait_for_partners(d: &Dd<'_>, instance: u16) -> R<()> {
 /// `TermDialog` (`049c`-`04cb`), from DDEML's own template, `TERMDLGPROC`
 /// its procedure: the button it was ended with.
 async fn term_dialog(d: &Dd<'_>) -> R<u16> {
-    let template = super::resources::TERM_DIALOG;
+    let template = super::resources::term_dialog();
     let block = d.global_alloc(0x0042, template.len() as u32).await?;
     let at = d.global_lock(block).await?;
 
-    d.write(at, template);
+    d.write(at, &template);
     d.global_unlock(block).await?;
 
     let procedure = super::export_address(d, 39);

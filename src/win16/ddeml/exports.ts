@@ -8,7 +8,7 @@ import * as conv from './conv.js';
 import * as data from './data.js';
 import * as instance from './instance.js';
 import * as monitor from './monitor.js';
-import { DATA } from './resources.js';
+import { DATA, XPARAMS_SELECTOR_AT } from './resources.js';
 import * as xact from './xact.js';
 
 /**
@@ -49,7 +49,7 @@ function ready(system: any): Dd {
 
     system._ddemlReady = true;
     d.write(far(selector, 0), DATA);
-    d.w16(far(selector, 0x170), selector);
+    d.w16(far(selector, XPARAMS_SELECTOR_AT), selector);
     LocalInit.call(system, selector, HEAP_START, HEAP_END);
     d.w16(far(selector, D_HINSTANCE), instanceHandle(system));
   }
