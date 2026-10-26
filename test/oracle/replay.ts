@@ -5935,6 +5935,7 @@ const RUN_WHOLE = new Set<string>([
   'iextract',
   'aboutdp',
   'gfreeal',
+  'metarec',
 ]);
 
 /**

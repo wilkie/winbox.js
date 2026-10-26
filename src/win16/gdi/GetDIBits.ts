@@ -126,6 +126,50 @@ function getOwnDIBits(
   core.write16(segment, at(12), 1);
   write32(20, stride * height);
 
+  const { table, row } = dibOf(this, bitmap, count);
+
+  table.forEach(([red, green, blue], n) => {
+    const entry = at(size + n * 4);
+
+    core.write8(segment, entry, blue);
+    core.write8(segment, (entry + 1) & 0xffff, green);
+    core.write8(segment, (entry + 2) & 0xffff, red);
+    core.write8(segment, (entry + 3) & 0xffff, 0);
+  });
+
+  const lines = Math.max(0, Math.min(cScanLines, height - uStartScan));
+
+  if (!lpvBits) {
+    return lines;
+  }
+
+  const bits = { segment: (lpvBits >>> 16) & 0xffff, offset: lpvBits & 0xffff };
+
+  for (let line = 0; line < lines; line++) {
+    const pixels = row(uStartScan + line);
+
+    /* Through the selector's steps, as a huge pointer is; only the bytes the
+     * pixels take, the padding after them left as it was. */
+    for (let n = 0; n < (width * count + 7) >> 3; n++) {
+      const linear = bits.offset + line * stride + n;
+
+      core.write8(bits.segment + (linear >>> 16) * 8, linear & 0xffff, pixels[n]);
+    }
+  }
+
+  return lines;
+}
+
+/**
+ * A bitmap's pixels as a DIB of `count` bits to a pixel: its colour table,
+ * and each line, counted from the bottom, as the DIB's bytes, the padding
+ * after its pixels nought. What `GetDIBits` writes, and what a metafile
+ * keeps of a bitmap (`metafile.ts`).
+ */
+export function dibOf(system: any, bitmap: DeviceBitmap, count: number) {
+  const { width, height } = bitmap;
+  const stride = ((width * count + 31) >> 5) << 2;
+
   /* The colour table, and each device index's entry in it. */
   const mono = bitmap.depth === 1;
   const entries = count === 24 ? 0 : 1 << count;
@@ -140,7 +184,7 @@ function getOwnDIBits(
     entryOf = (index) => {
       const [red, green, blue] = bitmap.devicePalette.colours[index] ?? [0, 0, 0];
 
-      return mono ? index : matchedIndex(this.display, white, red, green, blue);
+      return mono ? index : matchedIndex(system.display, white, red, green, blue);
     };
   } else if (mono) {
     for (let n = 0; n < entries; n++) {
@@ -161,26 +205,9 @@ function getOwnDIBits(
     };
   }
 
-  table.forEach(([red, green, blue], n) => {
-    const entry = at(size + n * 4);
-
-    core.write8(segment, entry, blue);
-    core.write8(segment, (entry + 1) & 0xffff, green);
-    core.write8(segment, (entry + 2) & 0xffff, red);
-    core.write8(segment, (entry + 3) & 0xffff, 0);
-  });
-
-  const lines = Math.max(0, Math.min(cScanLines, height - uStartScan));
-
-  if (!lpvBits) {
-    return lines;
-  }
-
-  const bits = { segment: (lpvBits >>> 16) & 0xffff, offset: lpvBits & 0xffff };
-
-  for (let line = 0; line < lines; line++) {
-    const y = height - 1 - (uStartScan + line);
-    const row = new Uint8Array(stride);
+  const row = (scan: number) => {
+    const y = height - 1 - scan;
+    const pixels = new Uint8Array(stride);
 
     for (let x = 0; x < width; x++) {
       const index = bitmap.indexAt(x, y) ?? 0;
@@ -192,24 +219,49 @@ function getOwnDIBits(
             : [0, 0, 0]
           : (bitmap.devicePalette.colours[index] ?? [0, 0, 0]);
 
-        row.set([blue, green, red], x * 3);
+        pixels.set([blue, green, red], x * 3);
       } else if (count === 8) {
-        row[x] = entryOf(index);
+        pixels[x] = entryOf(index);
       } else if (count === 4) {
-        row[x >> 1] |= entryOf(index) << (x & 1 ? 0 : 4);
+        pixels[x >> 1] |= entryOf(index) << (x & 1 ? 0 : 4);
       } else {
-        row[x >> 3] |= entryOf(index) << (7 - (x & 7));
+        pixels[x >> 3] |= entryOf(index) << (7 - (x & 7));
       }
     }
 
-    /* Through the selector's steps, as a huge pointer is; only the bytes the
-     * pixels take, the padding after them left as it was. */
-    for (let n = 0; n < (width * count + 7) >> 3; n++) {
-      const linear = bits.offset + line * stride + n;
+    return pixels;
+  };
 
-      core.write8(bits.segment + (linear >>> 16) * 8, linear & 0xffff, row[n]);
-    }
+  return { table, row, stride };
+}
+
+/**
+ * A bitmap as a packed DIB, as GDI makes one of it for a metafile (seg20
+ * `231c`, `23da`, then `GetDIBits`): 1, 4, 8 or 24 bits to a pixel for
+ * planes times bits of 1, to 4, to 8 and more; its header's size, width,
+ * height, one plane, bits and image size, the rest nought; its colours;
+ * its rows from the bottom.
+ */
+export function packedDibOf(system: any, bitmap: DeviceBitmap) {
+  const depth = bitmap.depth;
+  const count = depth === 1 ? 1 : depth <= 4 ? 4 : depth <= 8 ? 8 : 24;
+  const { table, row, stride } = dibOf(system, bitmap, count);
+  const words = [40, 0, bitmap.width, 0, bitmap.height, 0, 1, count, 0, 0];
+  const image = stride * bitmap.height;
+  const bytes = [...words, image & 0xffff, image >>> 16].flatMap((word) => [
+    word & 0xff,
+    (word >>> 8) & 0xff,
+  ]);
+
+  bytes.push(...new Array(16).fill(0));
+
+  for (const [red, green, blue] of table) {
+    bytes.push(blue, green, red, 0);
   }
 
-  return lines;
+  for (let scan = 0; scan < bitmap.height; scan++) {
+    bytes.push(...row(scan));
+  }
+
+  return bytes;
 }

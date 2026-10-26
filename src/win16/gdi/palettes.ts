@@ -7,6 +7,11 @@ import { defaultPalette, LogicalPalette } from './gdi-objects.js';
 import { type SystemPalette } from './system-palette.js';
 import { SendMessage } from '../user/SendMessage.js';
 import { gdiDataSelector } from './gdi-data.js';
+import {
+  realizePaletteInMetafile,
+  resizeInMetafiles,
+  selectPaletteInMetafile,
+} from './metafile.js';
 
 const WM_PALETTECHANGED = 0x0311;
 
@@ -157,6 +162,9 @@ export function ResizePalette(this: any, hpal: number, nEntries: number) {
 
   palette.entries = entries;
 
+  /* Kept in each metafile being recorded that holds it (`metafile.ts`). */
+  resizeInMetafiles(this, hpal & 0xffff, nEntries & 0xffff);
+
   return 1;
 }
 
@@ -220,6 +228,13 @@ function stateOf(system: any): PaletteState {
  * @returns {Types.HPALETTE} The palette the device context had.
  */
 export function GDISelectPalette(this: any, hdc: number, hpal: number, wBackground: number) {
+  /* A metafile's context keeps it, and answers 1 (`metafile.ts`). */
+  const kept = selectPaletteInMetafile(this, hdc, hpal);
+
+  if (kept !== null) {
+    return kept;
+  }
+
   const surface = this.handles.resolve(hdc);
   const palette = paletteOf(this, hpal);
 
@@ -280,6 +295,13 @@ export function SelectPalette(this: any, hdc: number, hpal: number, bForceBackgr
  * @returns {Types.DWORD} The entries moved, and above them the slots written.
  */
 export function GDIRealizePalette(this: any, hdc: number) {
+  /* A metafile's context keeps it, and answers 1 (`metafile.ts`). */
+  const kept = realizePaletteInMetafile(this, hdc);
+
+  if (kept !== null) {
+    return kept;
+  }
+
   const surface = this.handles.resolve(hdc);
   const system: SystemPalette | null = this.systemPalette;
   const palette: LogicalPalette | undefined = surface?.palette;

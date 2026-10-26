@@ -49,6 +49,10 @@ pub struct Brush {
     pub realised: Option<(i32, i32)>,
     /// A pattern brush's pixels, which it keeps of its bitmap.
     pub pattern: Option<winbox_raster::blit::Pattern>,
+    /// What a metafile keeps of a pattern brush: the words of its
+    /// `DIBCreatePatternBrush` record, its style, how its colours are given,
+    /// and its DIB (`metarec`; `GDI.EXE` seg20 `1792`-`1932`).
+    pub dib_record: Option<Vec<u8>>,
 }
 
 /// A `LOGBRUSH`: its style, colour and hatch.
@@ -219,6 +223,7 @@ fn solid(red: u8, green: u8, blue: u8) -> GdiObject {
         stock: None,
         realised: None,
         pattern: None,
+        dib_record: None,
     })
 }
 
@@ -269,6 +274,7 @@ pub fn get_stock_object(system: &mut System, index: i16) -> u16 {
             stock: None,
             realised: None,
             pattern: None,
+            dib_record: None,
         }),
         WHITE_PEN => stock_pen([0xff, 0xff, 0xff, 0xff], 0, 0x00ff_ffff),
         BLACK_PEN => stock_pen([0x00, 0x00, 0x00, 0xff], 0, 0),
@@ -369,6 +375,7 @@ pub fn create_solid_brush(system: &mut System, colorref: u32) -> u16 {
         stock: None,
         realised: None,
         pattern: None,
+        dib_record: None,
     }))
 }
 
@@ -444,6 +451,7 @@ pub fn brush_of(system: &mut System, style: u16, colorref: u32, hatch: i32) -> u
         stock: None,
         realised: None,
         pattern: None,
+        dib_record: None,
     }))
 }
 

@@ -102,7 +102,7 @@ impl System {
     }
 
     /// A palette's entries, the stock one's where it has none of its own.
-    fn entries_of(&self, object: usize) -> Vec<[u8; 4]> {
+    pub(crate) fn entries_of(&self, object: usize) -> Vec<[u8; 4]> {
         match &self.gdi.objects[object] {
             GdiObject::Palette(palette) => palette
                 .entries
@@ -341,6 +341,11 @@ impl System {
 /// already, GDI's foreground palette, no palette then realized last
 /// (`dcinner`).
 pub fn gdi_select_palette(system: &mut System, hdc: u16, handle: u16, background: bool) -> u16 {
+    // A metafile's context keeps it, and answers 1 (`metafile.rs`).
+    if let Some(kept) = super::metafile::select_palette_in_metafile(system, hdc, handle) {
+        return kept;
+    }
+
     let (Some(dc), Some(object)) = (super::dc::dc_of(system, hdc), system.palette_of(handle))
     else {
         return 0;
@@ -372,6 +377,11 @@ pub fn gdi_select_palette_call(system: &mut System, args: &mut Args) -> Result<A
 /// foreground palette. The entries moved, the slots written above them
 /// (`dcinner`).
 pub fn gdi_realize_palette(system: &mut System, hdc: u16) -> u32 {
+    // A metafile's context keeps it, and answers 1 (`metafile.rs`).
+    if let Some(kept) = super::metafile::realize_palette_in_metafile(system, hdc) {
+        return kept;
+    }
+
     if system.system_palette().is_none() {
         return 0;
     }
@@ -543,6 +553,9 @@ pub fn resize_palette(system: &mut System, args: &mut Args) -> Result<Answer, St
 
     entries.resize(length, [0; 4]);
     system.palette_mut(object).entries = Some(entries);
+
+    // Kept in each metafile being recorded that holds it (`metafile.rs`).
+    super::metafile::resize_in_metafiles(system, handle, length as u16);
     Ok(Answer::Word(1))
 }
 

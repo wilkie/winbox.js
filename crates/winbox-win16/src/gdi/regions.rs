@@ -109,6 +109,10 @@ fn set_shape(system: &mut System, object: usize, region: ClipRegion) {
 }
 
 /// A region given one of GDI's handles: nought where there are none left.
+pub(crate) fn allocate_region(system: &mut System, region: ClipRegion) -> u16 {
+    allocate(system, region)
+}
+
 fn allocate(system: &mut System, region: ClipRegion) -> u16 {
     let object = system.gdi_object(GdiObject::Region(region));
 
@@ -472,6 +476,11 @@ fn fill_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 fn paint_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let handle = args.word(system);
+
+    Ok(Answer::Word(paint_rgn_of(system, hdc, handle)?))
+}
+
+pub(crate) fn paint_rgn_of(system: &mut System, hdc: u16, handle: u16) -> Result<u16, Stop> {
     let brush = dc_of(system, hdc)
         .and_then(|dc| {
             system
@@ -480,11 +489,11 @@ fn paint_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         })
         .unwrap_or(0);
 
-    Ok(Answer::Word(if brush == 0 {
+    Ok(if brush == 0 {
         0
     } else {
         fill_rgn(system, hdc, handle, brush)?
-    }))
+    })
 }
 
 /// Turns every pixel of a region, a rectangle at a time as `InvertRect`
@@ -492,19 +501,24 @@ fn paint_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 fn invert_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let handle = args.word(system);
+
+    Ok(Answer::Word(invert_rgn_of(system, hdc, handle)))
+}
+
+pub(crate) fn invert_rgn_of(system: &mut System, hdc: u16, handle: u16) -> u16 {
     let Some(object) = region_of(system, handle) else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
 
     if system.handles.resolve(hdc).is_none() {
-        return Ok(Answer::Word(0));
+        return 0;
     }
 
     for rect in rects_of(shape(system, object)) {
         super::draw::invert_rect(system, hdc, rect);
     }
 
-    Ok(Answer::Word(1))
+    1
 }
 
 /// Draws a frame inside a region's edge with a brush, `width` across and

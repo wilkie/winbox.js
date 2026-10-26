@@ -77,7 +77,7 @@ import { Shell } from './win16/shell.js';
 
 // Other useful types
 import { UINT, LRESULT, HDC } from './win16/types.js';
-import { MetafileDC, recordCall } from './win16/gdi/metafile.js';
+import { MADE_ON_METAFILES, MetafileDC, recordCall } from './win16/gdi/metafile.js';
 import { bandingCall } from './win16/gdi/printer-bands.js';
 import { MoveTo } from './win16/gdi/MoveTo.js';
 
@@ -1352,7 +1352,7 @@ export class Win16 {
      * what most records hold (`metafile.ts`). */
     const firstType = module.instance.name === 'GDI' ? (table[ip][3] ?? [])[0] : null;
     const metafile =
-      firstType === HDC && !rejected && called !== 'CloseMetafile'
+      firstType === HDC && !rejected && !MADE_ON_METAFILES.has(called)
         ? this.handles.resolve(args[0])
         : null;
 
