@@ -6,7 +6,7 @@ import { Color } from './color.js';
 import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
-import { type ClipRegion } from './clip-region.js';
+import { ClipRegion } from './clip-region.js';
 import { colourOf } from './palette-colour.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { IndexedContext } from './indexed-context.js';
@@ -317,8 +317,25 @@ export class Surface {
    */
   #clip: ClipRegion | null = null;
 
+  /**
+   * The visible region GDI was given, in the screen's terms, or `null`
+   * for what the surface shows -- its window's rectangle, the screen, the
+   * bitmap -- as USER and `SelectObject` give it (`visible-region.ts`).
+   */
+  #vis: ClipRegion | null = null;
+
+  /** The origin `SetDCOrg` set, in the screen's terms, or `null` for the view's corner. */
+  #origin: [number, number] | null = null;
+
   /** What `SaveDC` saved, the first first. */
   saved: any[] = [];
+
+  /** What `SaveVisRgn` saved, the last on top: each a region's handle and object. */
+  visSaved: { handle: number; region: any }[] = [];
+
+  /** The region `InquireVisRgn` answers, once asked: its handle and object. */
+  visHandle = 0;
+  visObject: any = null;
 
   get clipRegion() {
     return this.#clip;
@@ -329,12 +346,64 @@ export class Surface {
     this.#applyClip();
   }
 
+  get visRegion() {
+    return this.#vis;
+  }
+
+  set visRegion(region: ClipRegion | null) {
+    this.#vis = region;
+    this.#applyClip();
+  }
+
+  get dcOrigin() {
+    return this.#origin;
+  }
+
+  set dcOrigin(origin: [number, number] | null) {
+    this.#origin = origin;
+    this.#applyClip();
+  }
+
+  /** Where the surface's pixels start on the screen: a view's corner, else nought. */
+  get viewOrigin(): [number, number] {
+    const context: any = this._bitmap?.context;
+
+    return [context?.ownerX ?? 0, context?.ownerY ?? 0];
+  }
+
+  /** What the surface shows, in the screen's terms: its pixels from the view's corner. */
+  #shown() {
+    const bitmap = this._bitmap;
+
+    if (bitmap instanceof DeviceBitmap && bitmap.placeholder) {
+      return ClipRegion.EMPTY;
+    }
+
+    const [x, y] = this.viewOrigin;
+
+    return ClipRegion.rect(x, y, x + (this.width || 0), y + (this.height || 0));
+  }
+
+  /**
+   * What drawing is kept to, beside the view's own test: the clip region,
+   * within the visible region moved to the surface's terms by the origin
+   * where GDI was given either (`GDI.EXE` seg1 `17b1`, the region at 1Eh).
+   */
   #applyClip() {
     const bitmap = this._bitmap;
-    const region = this.#clip;
+    let region = this.#clip;
+
+    if (this.#vis || this.#origin) {
+      const [x, y] = this.#origin ?? this.viewOrigin;
+      const own = (this.#vis ?? this.#shown()).offset(-x, -y);
+
+      region = region ? region.intersect(own) : own;
+    }
 
     if (bitmap instanceof DeviceBitmap) {
-      bitmap.context.dcClip = region ? (x, y) => region.contains(x, y) : null;
+      const kept = region;
+
+      bitmap.context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
     }
   }
 

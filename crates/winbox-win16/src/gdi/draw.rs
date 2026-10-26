@@ -72,14 +72,14 @@ pub(crate) fn signed(word: u16) -> i32 {
     i32::from(word as i16)
 }
 
-/// The pixels a device context draws on, kept to its clip region: the
-/// TypeScript engine keeps the region on the bitmap's own context while
-/// the bitmap is the device context's, which every drawing here reaches
-/// the pixels through.
+/// The pixels a device context draws on, kept to its clip region within
+/// its visible region (`regions::draw_clip`): the TypeScript engine keeps
+/// the region on the bitmap's own context while the bitmap is the device
+/// context's, which every drawing here reaches the pixels through.
 pub(crate) fn canvas(system: &mut System, dc: usize) -> Option<DeviceBitmap> {
     let mut bitmap = system.draw_target(dc)?;
 
-    if let Some(clip) = system.gdi.dcs[dc].state.clip.clone() {
+    if let Some(clip) = super::regions::draw_clip(system, dc) {
         bitmap.context.dc_clip = Some(Rc::new(move |x, y| clip.contains(x, y)));
     }
 
@@ -885,7 +885,8 @@ fn set_pixel_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 /// The colour of one pixel, as a `COLORREF`: the palette's colour for the
 /// pixel's index. The `bitblt` probe reads every colour it records this
 /// way. Outside a clip region the program set, `CLR_INVALID`, the pixel
-/// there as it may be (`selrgn`); and outside the pixels.
+/// there as it may be (`selrgn`); outside a visible region GDI was given
+/// (`visible_region`); and outside the pixels.
 pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, Stop> {
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(CLR_INVALID);
@@ -895,7 +896,7 @@ pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, S
         None => (x, y),
     };
 
-    if system.gdi.dcs[dc].state.clip.is_some()
+    if (system.gdi.dcs[dc].state.clip.is_some() || super::regions::vis_given(system, dc))
         && !super::regions::clip_of(system, dc).contains(x, y)
     {
         return Ok(CLR_INVALID);

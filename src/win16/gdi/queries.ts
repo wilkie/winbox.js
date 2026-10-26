@@ -43,13 +43,20 @@ export function GetTextCharacterExtra(this: any, hdc: number) {
 
 /**
  * Where a device context's origin is on the screen, the column in the low
- * word: a window's client area's corner, the screen's nought (`queries`).
+ * word: a window's client area's corner, the screen's nought (`queries`);
+ * where `SetDCOrg` set one, that (`visfam`).
  */
 export function GetDCOrg(this: any, hdc: number) {
   const surface = this.handles.resolve(hdc);
   const context = surface instanceof Surface ? (surface.bitmap as any)?.context : null;
 
-  return context ? pack(context.ownerX ?? 0, context.ownerY ?? 0) : 0;
+  if (!context) {
+    return 0;
+  }
+
+  const [x, y] = surface.dcOrigin ?? [context.ownerX ?? 0, context.ownerY ?? 0];
+
+  return pack(x, y);
 }
 
 /**

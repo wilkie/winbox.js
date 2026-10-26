@@ -6,6 +6,7 @@ import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GetStockObject } from '../gdi/GetStockObject.js';
+import { resetVisible } from '../gdi/visible-region.js';
 import { Surface } from '../../raster/surface.js';
 import { Color } from '../../raster/color.js';
 
@@ -115,6 +116,10 @@ export function GetDC(hwnd) {
       surface.font = this.handles.resolve(font);
     }
   }
+
+  /* Its visible region what it shows, and its origin its corner, as USER
+   * gives them to a context it hands out (`visible-region.ts`). */
+  resetVisible(surface);
 
   /* A clip region or saved levels a program left do not outlive the device
    * context it had: Windows hands out a fresh one. Not recorded. */

@@ -5571,15 +5571,25 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prtt:size': 'the document differs where the downloaded face does',
   'prtt:line':
     "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
-  /* `visrgn` and `visfam`, not run whole: GDI's visible-region family is
-   * stubs and USER keeps no visible region (`kb/topics/visible-regions.md`,
-   * a design). Their records whose function names another probe's adapter
-   * answers are held here; the rest have no adapter. */
-  'visrgn:style': 'not run whole: recorded for the visible-region design',
-  'visfam:again': 'GDI keeps no visible region: the family is stubs',
-  'visfam:intersect': 'GDI keeps no visible region: the family is stubs',
-  'visfam:offset': 'GDI keeps no visible region: the family is stubs',
-  'visfam:state': 'GDI keeps no visible region: the family is stubs',
+  /* `visrgn` and `visfam`: GDI keeps the visible region and its family
+   * answers (phase 1 of `kb/topics/visible-regions.md`); what waits for the
+   * design's later phases is held here, by the phase. */
+  'visfam:offset':
+    "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
+  'visfam:select':
+    "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
+  'visfam:origin':
+    'phase 3: drawing does not move with SetDCOrg; phase 4: the origin does not outlive ReleaseDC',
+  'visfam:cliprgn': 'phase 3: drawing does not move with SetDCOrg',
+  'visfam:again':
+    "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
+  'visfam:hook':
+    "phase 4: GDI does not call USER's hook, which works the region out again and clears the flag",
+  'visrgn:kind':
+    "phase 2: a window's visible region is its rectangle, not worked out by USER's rule (siblings, children, parent's clip, the screen)",
+  'visrgn:paint': "phase 2: BeginPaint's region is not the update region within what shows",
+  'visrgn:own':
+    'phase 2: the region is not worked out from the windows over it; phase 4: nor again as they move',
 };
 
 /**
@@ -5945,6 +5955,8 @@ const RUN_WHOLE = new Set<string>([
   'iextract',
   'aboutdp',
   'gfreeal',
+  'visfam',
+  'visrgn',
 ]);
 
 /**

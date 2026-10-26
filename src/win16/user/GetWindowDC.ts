@@ -3,6 +3,7 @@
 import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
+import { resetVisible } from '../gdi/visible-region.js';
 
 import { RasterWindow } from './raster-window.js';
 
@@ -20,7 +21,8 @@ import { RasterWindow } from './raster-window.js';
 export function GetWindowDC(this: any, hwnd: number) {
   let surface: any;
 
-  if (hwnd == NULL) {
+  /* The desktop window's is the screen's, as nought's (`visrgn`). */
+  if (hwnd == NULL || hwnd === this.desktopWindow) {
     surface = this.screen;
   } else {
     const dialog = this.handles.resolve(hwnd);
@@ -37,6 +39,9 @@ export function GetWindowDC(this: any, hwnd: number) {
   if (!surface) {
     return NULL;
   }
+
+  /* Its visible region what it shows, and its origin its corner (`GetDC`). */
+  resetVisible(surface);
 
   /* A context comes with the system font already in it; see `GetDC`. */
   if (!surface.font) {

@@ -144,6 +144,10 @@ export function SelectObject(hdc, hgdiobj) {
       (first ? (this.stockBitmap ??= this.handles.allocate(surface.bitmap)) : TRUE);
     surface.bitmap = item;
 
+    /* Its visible region the bitmap's rectangle again, from (0, 0)
+     * (`GDI.EXE` seg1 `1cd8`-`1cf7`, `SetRectRgn` on the region at A0h). */
+    surface.visRegion = null;
+
     if (item instanceof DeviceBitmap) {
       item.selected = true;
       item.context.display = this.display;

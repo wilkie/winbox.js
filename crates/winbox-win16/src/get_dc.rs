@@ -212,6 +212,10 @@ impl System {
             self.gdi.dcs[dc].state.font = font;
         }
 
+        // Its visible region what it shows, and its origin its corner, as
+        // USER gives them to a context it hands out (`visible_region`).
+        self.reset_visible(dc);
+
         if let Surface::Window(index) = surface {
             self.gdi.dcs[dc].saved.clear();
             self.gdi.dcs[dc].state.brush_org = None;
@@ -409,6 +413,7 @@ impl System {
         self.gdi.dcs[dc].saved.clear();
         self.gdi.dcs[dc].state.brush_org = None;
         self.gdi.dcs[dc].state.clip = None;
+        self.reset_visible(dc);
         self.reset_common(index, dc);
         dc
     }
