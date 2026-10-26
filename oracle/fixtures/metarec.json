@@ -1,0 +1,853 @@
+{
+  "probe": "metarec",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "CreateMetaFile",
+      "args": "nothing",
+      "result": "0|0 3 64 "
+    },
+    {
+      "function": "SetBkColor",
+      "args": "",
+      "result": "1|0 5 64 05000000010212345600",
+      "section": "set"
+    },
+    {
+      "function": "SetBkMode",
+      "args": "",
+      "result": "1|0 4 64 0400000002010100",
+      "section": "set"
+    },
+    {
+      "function": "SetMapMode",
+      "args": "",
+      "result": "1|0 4 64 0400000003010800",
+      "section": "set"
+    },
+    {
+      "function": "SetROP2",
+      "args": "",
+      "result": "1|0 4 64 0400000004010700",
+      "section": "set"
+    },
+    {
+      "function": "SetRelAbs",
+      "args": "",
+      "result": "1|0 4 64 0400000005010200",
+      "section": "set"
+    },
+    {
+      "function": "SetPolyFillMode",
+      "args": "",
+      "result": "1|0 4 64 0400000006010200",
+      "section": "set"
+    },
+    {
+      "function": "SetStretchBltMode",
+      "args": "",
+      "result": "1|0 4 64 0400000007010300",
+      "section": "set"
+    },
+    {
+      "function": "SetTextCharacterExtra",
+      "args": "",
+      "result": "1|0 4 64 0400000008010300",
+      "section": "set"
+    },
+    {
+      "function": "SetTextColor",
+      "args": "",
+      "result": "1|0 5 64 05000000090265432100",
+      "section": "set"
+    },
+    {
+      "function": "SetTextJustification",
+      "args": "",
+      "result": "1|0 5 64 050000000a0202000700",
+      "section": "set"
+    },
+    {
+      "function": "SetWindowOrg",
+      "args": "",
+      "result": "1|0 5 64 050000000b0216000b00",
+      "section": "set"
+    },
+    {
+      "function": "SetWindowExt",
+      "args": "",
+      "result": "1|0 5 64 050000000c02bc014d01",
+      "section": "set"
+    },
+    {
+      "function": "SetViewportOrg",
+      "args": "",
+      "result": "1|0 5 64 050000000d0206000500",
+      "section": "set"
+    },
+    {
+      "function": "SetViewportExt",
+      "args": "",
+      "result": "1|0 5 64 050000000e0258004d00",
+      "section": "set"
+    },
+    {
+      "function": "OffsetWindowOrg",
+      "args": "",
+      "result": "1|0 5 64 050000000f020400fdff",
+      "section": "set"
+    },
+    {
+      "function": "ScaleWindowExt",
+      "args": "",
+      "result": "1|0 7 64 0700000010040400030002000100",
+      "section": "set"
+    },
+    {
+      "function": "OffsetViewportOrg",
+      "args": "",
+      "result": "1|0 5 64 050000001102f8ff0900",
+      "section": "set"
+    },
+    {
+      "function": "ScaleViewportExt",
+      "args": "",
+      "result": "1|0 7 64 0700000012040800070006000500",
+      "section": "set"
+    },
+    {
+      "function": "SetTextAlign",
+      "args": "",
+      "result": "1|0 4 64 040000002e010a00",
+      "section": "set"
+    },
+    {
+      "function": "SetMapperFlags",
+      "args": "",
+      "result": "1|0 5 64 05000000310278563412",
+      "section": "set"
+    },
+    {
+      "function": "SetWindowOrgEx",
+      "args": "1,0",
+      "result": "1|0 5 64 050000000b0222000c00",
+      "section": "set"
+    },
+    {
+      "function": "SetViewportOrgEx",
+      "args": "1,0",
+      "result": "1|0 5 64 050000000d024e003800",
+      "section": "set"
+    },
+    {
+      "function": "OffsetWindowOrgEx",
+      "args": "1,0",
+      "result": "1|0 5 64 050000000f02ffff0100",
+      "section": "set"
+    },
+    {
+      "function": "OffsetViewportOrgEx",
+      "args": "1,0",
+      "result": "1|0 5 64 0500000011020200feff",
+      "section": "set"
+    },
+    {
+      "function": "MoveToEx",
+      "args": "1,0",
+      "result": "1|0 5 64 0500000014022b001500",
+      "section": "set"
+    },
+    {
+      "function": "SetWindowExtEx",
+      "args": "1,0",
+      "result": "1|0 5 64 050000000c02c8006400",
+      "section": "set"
+    },
+    {
+      "function": "SetViewportExtEx",
+      "args": "1,0",
+      "result": "1|0 5 64 050000000e0290012c01",
+      "section": "set"
+    },
+    {
+      "function": "ScaleWindowExtEx",
+      "args": "1,0",
+      "result": "1|0 7 64 0700000010040500040003000200",
+      "section": "set"
+    },
+    {
+      "function": "ScaleViewportExtEx",
+      "args": "1,0",
+      "result": "1|0 7 64 0700000012040900080007000600",
+      "section": "set"
+    },
+    {
+      "function": "MoveTo",
+      "args": "",
+      "result": "1|0 5 64 05000000140204000300",
+      "section": "draw"
+    },
+    {
+      "function": "LineTo",
+      "args": "",
+      "result": "1|0 5 64 05000000130228001e00",
+      "section": "draw"
+    },
+    {
+      "function": "ExcludeClipRect",
+      "args": "",
+      "result": "1|0 7 64 0700000015040400030002000100",
+      "section": "draw"
+    },
+    {
+      "function": "IntersectClipRect",
+      "args": "",
+      "result": "1|0 7 64 0700000016040800070006000500",
+      "section": "draw"
+    },
+    {
+      "function": "OffsetClipRgn",
+      "args": "",
+      "result": "1|0 5 64 0500000020020a000900",
+      "section": "draw"
+    },
+    {
+      "function": "Arc",
+      "args": "",
+      "result": "1|0 11 64 0b000000170808000700060005000400030002000100",
+      "section": "draw"
+    },
+    {
+      "function": "Chord",
+      "args": "",
+      "result": "1|0 11 64 0b00000030081200110010000f000e000d000c000b00",
+      "section": "draw"
+    },
+    {
+      "function": "Pie",
+      "args": "",
+      "result": "1|0 11 64 0b0000001a081c001b001a0019001800170016001500",
+      "section": "draw"
+    },
+    {
+      "function": "Ellipse",
+      "args": "",
+      "result": "1|0 7 64 07000000180429003c000b000a00",
+      "section": "draw"
+    },
+    {
+      "function": "Rectangle",
+      "args": "",
+      "result": "1|0 7 64 070000001b040e00140003000200",
+      "section": "draw"
+    },
+    {
+      "function": "RoundRect",
+      "args": "",
+      "result": "1|0 9 64 090000001c06050004000c002f0002002800",
+      "section": "draw"
+    },
+    {
+      "function": "SetPixel",
+      "args": "",
+      "result": "1|0 7 64 070000001f040102030002000100",
+      "section": "draw"
+    },
+    {
+      "function": "FloodFill",
+      "args": "",
+      "result": "0|0 8 64 08000000480500000708090006000500",
+      "section": "draw"
+    },
+    {
+      "function": "ExtFloodFill",
+      "args": "border",
+      "result": "0|0 8 64 08000000480500000304050002000100",
+      "section": "draw"
+    },
+    {
+      "function": "ExtFloodFill",
+      "args": "surface",
+      "result": "0|0 8 64 080000004805010008090a0007000600",
+      "section": "draw"
+    },
+    {
+      "function": "PatBlt",
+      "args": "",
+      "result": "1|0 9 64 090000001d062100f0000600080016001e00",
+      "section": "draw"
+    },
+    {
+      "function": "BitBlt",
+      "args": "no source",
+      "result": "1|0 12 96 0c000000400949005a000000000000000400030002000100",
+      "section": "draw"
+    },
+    {
+      "function": "StretchBlt",
+      "args": "no source",
+      "result": "0|0 3 64 ",
+      "section": "draw"
+    },
+    {
+      "function": "SaveDC",
+      "args": "",
+      "result": "1|0 3 64 030000001e00",
+      "section": "draw"
+    },
+    {
+      "function": "RestoreDC",
+      "args": "",
+      "result": "1|0 4 64 040000002701ffff",
+      "section": "draw"
+    },
+    {
+      "function": "TextOut",
+      "args": "odd",
+      "result": "1|0 8 64 08000000210503004869210014000200",
+      "section": "draw"
+    },
+    {
+      "function": "TextOut",
+      "args": "even",
+      "result": "1|0 7 64 0700000021050200416215000400",
+      "section": "draw"
+    },
+    {
+      "function": "ExtTextOut",
+      "args": "plain",
+      "result": "1|0 9 64 09000000320a020001000300000078797a00",
+      "section": "draw"
+    },
+    {
+      "function": "ExtTextOut",
+      "args": "rect",
+      "result": "1|0 12 96 0c000000320a0400030002000600140018001e001e004162",
+      "section": "draw"
+    },
+    {
+      "function": "ExtTextOut",
+      "args": "dx",
+      "result": "1|0 12 96 0c000000320a060005000300000070717200050006000700",
+      "section": "draw"
+    },
+    {
+      "function": "ExtTextOut",
+      "args": "rect dx",
+      "result": "1|0 14 96 0e000000320a0800070002000200140018001e001e00737405000600",
+      "section": "draw"
+    },
+    {
+      "function": "Polygon",
+      "args": "",
+      "result": "1|0 10 64 0a000000240303001800140022001e002c001400",
+      "section": "draw"
+    },
+    {
+      "function": "Polyline",
+      "args": "",
+      "result": "1|0 10 64 0a000000250303001800140022001e002c001400",
+      "section": "draw"
+    },
+    {
+      "function": "PolyPolygon",
+      "args": "",
+      "result": "1|0 20 96 1400000038050200030004000100020003000400050006000a000a0014000a00140014000a001400",
+      "section": "draw"
+    },
+    {
+      "function": "Escape",
+      "args": "QUERYESCSUPPORT",
+      "result": "1|0 6 64 060000002606080002000300",
+      "section": "draw"
+    },
+    {
+      "function": "Escape",
+      "args": "3000",
+      "result": "1|0 7 64 070000002606b80b030061626300",
+      "section": "draw"
+    },
+    {
+      "function": "Escape",
+      "args": "NEWFRAME",
+      "result": "1|0 5 64 05000000260601000000",
+      "section": "draw"
+    },
+    {
+      "function": "StartPage",
+      "args": "",
+      "result": "1|0 3 64 030000005100",
+      "section": "draw"
+    },
+    {
+      "function": "EndPage",
+      "args": "",
+      "result": "1|0 3 64 030000005200",
+      "section": "draw"
+    },
+    {
+      "function": "EndDoc",
+      "args": "",
+      "result": "1|0 3 64 030000005300",
+      "section": "draw"
+    },
+    {
+      "function": "AbortDoc",
+      "args": "",
+      "result": "1|0 3 64 030000005400",
+      "section": "draw"
+    },
+    {
+      "function": "StartDoc",
+      "args": "",
+      "result": "1|0 7 64 0700000026060a000300446f6300",
+      "section": "draw"
+    },
+    {
+      "function": "SelectObject",
+      "args": "pen:stock 7",
+      "result": "0|1 8 96 08000000fa020100010000000000ff00040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "wide pen:stock 7",
+      "result": "0|1 8 96 08000000fa0200000300000001020300040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "solid brush:stock 0",
+      "result": "0|1 7 64 07000000fc02000000ff00000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "hatch brush:stock 0",
+      "result": "0|1 7 64 07000000fc020200ff0000000400040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "mono pattern brush:stock 0",
+      "result": "0|1 45 160 2d0000004201030000002800000008000000080000000100010000000000200000000000000000000000000000000000000000000000ffffff00cc00000033000000f00000000f000000aa00000055000000aa00000055000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "colour pattern brush:stock 0",
+      "result": "0|1 73 224 49000000420103000000280000000800000008000000010004000000000020000000000000000000000000000000000000000000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00fffaffffffffffffffffffffffffffffffffffffffffffcff9ffffffffffffff040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "DIB pattern brush:stock 0",
+      "result": "0|1 85 224 550000004201050000002800000008000000080000000100040000000000200000000000000000000000000000000000000000000000000080000080000000808000800000008000800080800000c0c0c000808080000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00124980b7ee255c93ca01386fa6dd144b82b9f0275e95cc033a71a8df164d84bb000000000000000000000000000000000000000000000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "font:stock 14",
+      "result": "0|1 19 96 13000000fb02080000000000000090010000000000000000536d616c6c20466f6e7473000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "second font:stock 14",
+      "result": "0|1 16 96 10000000fb02f3ff050084030000bc020100000000000022417269616c000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "NULL_BRUSH:stock 0",
+      "result": "0|1 7 64 07000000fc020100000000000000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "WHITE_PEN:stock 7",
+      "result": "0|1 8 96 08000000fa02000000000000ffffff00040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "SYSTEM_FONT:stock 14",
+      "result": "0|1 16 96 10000000fb021000070000000000bc02000000000102022253797374656d0000040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "region:1",
+      "result": "0|1 20 96 14000000ff060000060000000000240001000200010002001e00280002000200280001001e000200040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "bitmap:0",
+      "result": "0|1 3 64 ",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "stock 7",
+      "result": "0|3 8 128 08000000fa020100010000000000ff00040000002d01000007000000fc02000000ff00000000040000002d01010008000000fa0200000000000000000000040000002d010200040000002d010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectObject",
+      "args": "known 0,known 4",
+      "result": "0|4 19 192 08000000fa020100010000000000ff00040000002d01000013000000fb02080000000000000090010000000000000000536d616c6c20466f6e7473000000040000002d01010008000000fa0200000300000001020300040000002d01020010000000fb02f3ff050084030000bc020100000000000022417269616c000000040000002d010300",
+      "section": "object"
+    },
+    {
+      "function": "DeleteObject",
+      "args": "1,1",
+      "result": "1|3 8 128 08000000fa0200000300000001020300040000002d01000007000000fc020200ff0000000400040000002d01010008000000fa0202000100000009090900040000002d010200",
+      "section": "object"
+    },
+    {
+      "function": "DeleteObject",
+      "args": "deselected",
+      "result": "1|2 7 96 07000000fc02000000ff00000000040000002d01000007000000fc020000000000000000040000002d01010004000000f0010000",
+      "section": "object"
+    },
+    {
+      "function": "SelectPalette",
+      "args": ":1",
+      "result": "0|1 11 96 0b000000f700000303000102030004050601070809000400000034020000",
+      "section": "object"
+    },
+    {
+      "function": "RealizePalette",
+      "args": "",
+      "result": "1|1 11 96 0b000000f700000303000102030004050601070809000400000034020000030000003500",
+      "section": "object"
+    },
+    {
+      "function": "SetPaletteEntries",
+      "args": "",
+      "result": "2|1 11 96 0b000000f700000303000102030004050601070809000400000034020000",
+      "section": "object"
+    },
+    {
+      "function": "ResizePalette",
+      "args": "",
+      "result": "1|1 11 96 0b000000f7000003030001020300040506010708090004000000340200000400000039010500",
+      "section": "object"
+    },
+    {
+      "function": "FillRgn",
+      "args": "rect",
+      "result": "1|2 20 128 14000000ff060000060000000000240001000200010002001e00280002000200280001001e00020007000000fc02000000008000000005000000280200000100",
+      "section": "region"
+    },
+    {
+      "function": "FillRgn",
+      "args": "ellipse",
+      "result": "1|2 50 192 32000000ff060000060000000000600006000200000000000b00080002000000010003000800020002000100020002000900020002000200030001000a00020002000300060000000b00020002000600070001000a00020002000700080002000900020007000000fc02000000008000000005000000280200000100",
+      "section": "region"
+    },
+    {
+      "function": "FrameRgn",
+      "args": "rect",
+      "result": "0|0 3 64 ",
+      "section": "region"
+    },
+    {
+      "function": "InvertRgn",
+      "args": "rect",
+      "result": "1|1 20 96 14000000ff060000060000000000240001000200010002001e00280002000200280001001e000200040000002a010000",
+      "section": "region"
+    },
+    {
+      "function": "PaintRgn",
+      "args": "ellipse",
+      "result": "1|1 50 160 32000000ff060000060000000000600006000200000000000b00080002000000010003000800020002000100020002000900020002000200030001000a00020002000300060000000b00020002000600070001000a000200020007000800020009000200040000002b010000",
+      "section": "region"
+    },
+    {
+      "function": "PaintRgn",
+      "args": "empty",
+      "result": "1|1 14 96 0e000000ff0600000600000000001800000000000000000000000000040000002b010000",
+      "section": "region"
+    },
+    {
+      "function": "PaintRgn",
+      "args": "two",
+      "result": "1|1 22 96 16000000ff060000060000000000280001000400000000000c0004000400000004000000040008000c000400040000002b010000",
+      "section": "region"
+    },
+    {
+      "function": "PaintRgn",
+      "args": "L",
+      "result": "1|1 26 128 1a000000ff0600000600000000003000020002000000000009000600020000000400000003000200020004000600000009000200040000002b010000",
+      "section": "region"
+    },
+    {
+      "function": "SelectClipRgn",
+      "args": "rect",
+      "result": "1|1 20 96 14000000ff060000060000000000240001000200010002001e00280002000200280001001e000200040000002d010000",
+      "section": "region"
+    },
+    {
+      "function": "SelectClipRgn",
+      "args": "NULL",
+      "result": "0|0 3 64 ",
+      "section": "region"
+    },
+    {
+      "function": "PaintRgn",
+      "args": "after FillRgn",
+      "result": "1|2 20 128 14000000ff060000060000000000240001000200010002001e00280002000200280001001e00020007000000fc02000000008000000005000000280200000100040000002b010000",
+      "section": "region"
+    },
+    {
+      "function": "BitBlt",
+      "args": "mono",
+      "result": "1|0 51 160 3300000040092000cc000000000008000800020001002800000008000000080000000100010000000000200000000000000000000000000000000000000000000000ffffff00cc00000033000000f00000000f000000aa00000055000000aa00000055000000",
+      "section": "bitmap"
+    },
+    {
+      "function": "StretchBlt",
+      "args": "mono",
+      "result": "1|0 53 160 35000000410bc600880005000600010001000c001000020001002800000008000000080000000100010000000000200000000000000000000000000000000000000000000000ffffff00cc00000033000000f00000000f000000aa00000055000000aa00000055000000",
+      "section": "bitmap"
+    },
+    {
+      "function": "BitBlt",
+      "args": "colour",
+      "result": "1|0 79 224 4f00000040092000cc00020001000600050004000300280000000800000008000000010004000000000020000000000000000000000000000000000000000000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00fffaffffffffffffffffffffffffffffffffffffffffffcff9ffffffffffffff",
+      "section": "bitmap"
+    },
+    {
+      "function": "StretchBlt",
+      "args": "colour",
+      "result": "1|0 81 224 51000000410b8600ee0008000800000000000c000a0004000300280000000800000008000000010004000000000020000000000000000000000000000000000000000000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00fffaffffffffffffffffffffffffffffffffffffffffffcff9ffffffffffffff",
+      "section": "bitmap"
+    },
+    {
+      "function": "SetDIBitsToDevice",
+      "args": "",
+      "result": "1|0 80 224 50000000330d0000080000000000000008000800020001002800000008000000080000000100040000000000200000000000000000000000000000000000000000000000000080000080000000808000800000008000800080800000c0c0c000808080000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00124980b7ee255c93ca01386fa6dd144b82b9f0275e95cc033a71a8df164d84bb",
+      "section": "bitmap"
+    },
+    {
+      "function": "SetDIBitsToDevice",
+      "args": "part",
+      "result": "1|0 72 192 48000000330d0000040002000200010003000500040003002800000008000000080000000100040000000000200000000000000000000000000000000000000000000000000080000080000000808000800000008000800080800000c0c0c000808080000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00124980b7ee255c93ca01386fa6dd144b",
+      "section": "bitmap"
+    },
+    {
+      "function": "StretchDIBits",
+      "args": "",
+      "result": "1|0 82 224 52000000430f2000cc000000080008000000000010001000020001002800000008000000080000000100040000000000200000000000000000000000000000000000000000000000000080000080000000808000800000008000800080800000c0c0c000808080000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00124980b7ee255c93ca01386fa6dd144b82b9f0275e95cc033a71a8df164d84bb",
+      "section": "bitmap"
+    },
+    {
+      "function": "GetTextColor",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetBkColor",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetBkMode",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetMapMode",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetROP2",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetTextAlign",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetPolyFillMode",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetStretchBltMode",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetRelAbs",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetTextCharacterExtra",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetCurrentPosition",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetWindowOrg",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetWindowExt",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetViewportOrg",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetViewportExt",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetBrushOrg",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetDCOrg",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetPixel",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetNearestColor",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "PtVisible",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "SetBrushOrg",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "unchanged",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetTextMetrics",
+      "args": "30583",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetClipBox",
+      "args": "30583,30583,30583,30583",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "RectVisible",
+      "args": "",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "LPtoDP",
+      "args": "10,20,30,40",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "DPtoLP",
+      "args": "10,20,30,40",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "30583,30583",
+      "result": "0|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetCurrentPositionEx",
+      "args": "0,0",
+      "result": "1|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetWindowOrgEx",
+      "args": "0,0",
+      "result": "1|0 3 64 ",
+      "section": "ask"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "0-70",
+      "result": "0 0 5 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+      "section": "caps"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "records",
+      "result": "0|0 3 64 ",
+      "section": "caps"
+    }
+  ]
+}
