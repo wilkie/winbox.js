@@ -4,6 +4,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { Surface } from '../../raster/surface.js';
 import { InvalidateRect } from './InvalidateRect.js';
 import { RasterWindow } from './raster-window.js';
+import { makeStale } from './dc-entries.js';
 
 /**
  * One window at a time kept from drawing on the screen. **Recorded** by
@@ -15,6 +16,11 @@ import { RasterWindow } from './raster-window.js';
  *   show, and nothing is made invalid while it is locked.
  * * Unlocking makes invalid what was drawn -- its rectangle, not the whole
  *   window -- and it is painted as any invalid part is.
+ *
+ * Locking and unlocking make the window's device context entries stale,
+ * as shown or hidden (`USER.EXE` seg13 `22dd`, `2306`; `dc-entries.ts`):
+ * the locked window's and those within it have no region while it is
+ * locked.
  *
  * Here the device context draws on a bitmap of its own, the client area's
  * size, which keeps the rectangle drawn on. Not recorded: the locked
@@ -35,7 +41,7 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
     }
 
     this._windowLock = { hwnd: hwndLock, surfaces: [] } satisfies Lock;
-    changed(this);
+    makeStale(this, hwndLock, 1);
     return 1;
   }
 
@@ -44,7 +50,7 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
   }
 
   this._windowLock = null;
-  changed(this);
+  makeStale(this, lock.hwnd, 1);
 
   let drawn: { left: number; top: number; right: number; bottom: number } | null = null;
 
@@ -68,17 +74,6 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
   }
 
   return 1;
-}
-
-/**
- * The contexts' visible regions worked out again, the locked window's and
- * those within it having none while it is locked (`USER.EXE` seg13 `22dd`,
- * `2306`; `visible-region-rule.ts`).
- */
-function changed(system: any) {
-  if (system.rasterDesktop) {
-    system.rasterDesktop.generation++;
-  }
 }
 
 /** For `GetDC` of the locked window: a surface of its own to draw on, or null for any other window. */

@@ -1,7 +1,7 @@
 'use strict';
 
 import { ShowCaret } from './caret.js';
-import { dropGivenRegion } from './visible-region-rule.js';
+import { releaseEntry } from './dc-entries.js';
 
 /**
  * The **EndPaint** function marks the end of painting in the given window. This
@@ -32,28 +32,19 @@ export function EndPaint(hwnd, lpps) {
     return;
   }
 
-  // Get the surface
-  const surface = dialog.surface;
-
-  /* The paint's clip goes with it, and the update region its context's
-   * visible region was kept within, as `ReleaseDC` restores the region
-   * saved before it (`USER.EXE` seg1 `8805`). */
+  /* The paint's clip goes with it. */
   if (dialog.window) {
     (dialog.window as any).paintClip = undefined;
     (dialog.window as any).paintShape = undefined;
   }
-
-  dropGivenRegion(this, surface);
 
   if (dialog.caretHidden) {
     dialog.caretHidden = false;
     ShowCaret.call(this, hwnd);
   }
 
-  // Deallocate the allocated DC
-  const referredSurface = this.handles.resolve(lpps.hdc);
-  if (surface === referredSurface) {
-    this.handles.free(lpps.hdc);
-    surface.liveDCs = Math.max(0, (surface.liveDCs ?? 1) - 1);
-  }
+  /* The paint's context given back, its region given -- the update
+   * region -- let go even where it is a window's own (`USER.EXE` seg1
+   * `76cc`-`76d4`, `8805` with 1). */
+  releaseEntry(this, lpps.hdc, true);
 }

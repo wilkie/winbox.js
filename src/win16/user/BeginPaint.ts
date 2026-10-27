@@ -1,12 +1,11 @@
 'use strict';
 
-import { resetCommon } from './GetDC.js';
-import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
-import { resetVisible } from '../gdi/visible-region.js';
+import { takeEntry } from './dc-entries.js';
+import { withFont } from './GetDC.js';
 import { NULL } from '../consts.js';
 
 import { RasterWindow } from './raster-window.js';
-import { DCX_INTERSECTRGN, DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
+import { DCX_INTERSECTRGN } from './visible-region-rule.js';
 import { ClipRegion } from '../../raster/clip-region.js';
 import { hideCaretFor } from './caret.js';
 import { eraseNotDone, sendErase, sendNcPaint } from './erase.js';
@@ -59,30 +58,14 @@ export async function BeginPaint(hwnd, lpps) {
     return NULL;
   }
 
-  // Get the surface
-  const surface = dialog.surface;
+  /* One of USER's entries (`dc-entries.ts`): `GetDCEx` with
+   * `DCX_USESTYLE` and `DCX_INTERSECTRGN` of the update region (`USER.EXE`
+   * seg1 `7640`-`7671`; `visrgn`): its visible region USER's rule's within
+   * what is to be painted, where that is known; the whole client area where
+   * it is not. Its origin and brush origin the client area's corner
+   * (`brushorg`), its attributes a common context's (`dcreset`). */
+  let due: ClipRegion | undefined;
 
-  // Allocate a DC
-  /* The System font, if nothing is selected, as `GetDC` gives a context:
-   * Calendar draws text in its paint without selecting one. */
-  if (!surface.font) {
-    const font = stockFontHandle(this, SYSTEM_FONT);
-
-    if (font) {
-      surface.font = this.handles.resolve(font);
-    }
-  }
-
-  /* A clip region or saved levels a program left do not outlive the device
-   * context it had: Windows hands out a fresh one. Not recorded. */
-  surface.clipRegion = null;
-  surface.saved = [];
-
-  /* Its visible region USER's rule's within the update region, as
-   * `GetDCEx` with `DCX_USESTYLE` and `DCX_INTERSECTRGN` of it (`USER.EXE`
-   * seg1 `7671`; `visrgn`), and its origin the client area's corner. The
-   * update region is what is to be painted, where that is known; the whole
-   * client area where it is not. */
   if (dialog instanceof RasterWindow) {
     const shown: any = dialog.window;
     const box: ClipRegion | undefined = shown.paintClip
@@ -94,25 +77,15 @@ export async function BeginPaint(hwnd, lpps) {
         )
       : undefined;
     const shape: ClipRegion | undefined = shown.paintShape;
-    const due = box && shape ? box.intersect(shape) : (box ?? shape);
 
-    selectWindowRegion(
-      this,
-      surface,
-      shown,
-      DCX_USESTYLE | (due ? DCX_INTERSECTRGN : 0),
-      due ? { shape: due, keep: 'intersect' } : null
-    );
-  } else {
-    resetVisible(surface);
+    due = box && shape ? box.intersect(shape) : (box ?? shape);
   }
 
-  /* Its brush origin the client area's corner, as `GetDC` gives it
-   * (`brushorg`). */
-  surface.brushOrg = undefined;
-  resetCommon(this, hwnd, surface);
+  const dc = takeEntry(this, hwnd, 0, 0x00030000 | (due ? DCX_INTERSECTRGN : 0), due);
 
-  const dc = this.handles.allocate(surface);
+  /* The System font, if nothing is selected, as `GetDC` gives a context:
+   * Calendar draws text in its paint without selecting one. */
+  withFont(this, this.handles.resolve(dc));
 
   /* The caret, if it is this window's, is hidden until `EndPaint`, so the
    * painting does not leave it half drawn. */

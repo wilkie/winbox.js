@@ -24,7 +24,7 @@ function contextOf(system: any, hdc: number) {
   return surface && 'font' in surface ? surface : null;
 }
 
-/** Whether a context is one of a window's, which USER lends with its hook. */
+/** Whether a context is one of a window's own surfaces, which stands for a context USER lends. */
 function isWindows(system: any, surface: any) {
   const desktop = system.rasterDesktop;
 
@@ -86,6 +86,17 @@ export function GetRelAbs(this: any, hdc: number) {
   return (((surface.relAbs ?? 1) & 0xffff) | (((surface.polyFillMode ?? 1) & 0xffff) << 16)) >>> 0;
 }
 
+/** Whether a procedure is USER's `DCHOOK`, which WinBox runs itself. */
+function isUserHook(system: any, proc: number) {
+  if (!(proc >>> 0)) {
+    return false;
+  }
+
+  const user = GetModuleHandle.call(system, 'USER');
+
+  return !!user && GetProcAddress.call(system, user, USER_DCHOOK) >>> 0 === proc >>> 0;
+}
+
 /**
  * Sets the procedure GDI calls on a device context before using it, and
  * the dword it is given. **Read out** of seg31 `04ec`: both kept; a
@@ -93,8 +104,8 @@ export function GetRelAbs(this: any, hdc: number) {
  * the data's high word in DX. **Recorded** by `dcinner`.
  *
  * GDI calls the procedure -- the context, `DCHC_INVALIDVISRGN`, the data
- * and nought -- from every call that validates a context while the flag
- * `SetHookFlags` sets is set (seg1 `4423`, `43f3`); that is not followed.
+ * and nought -- before a call uses the context while the flag
+ * `SetHookFlags` sets is set (seg1 `4423`, `43f3`; `callHook`).
  *
  * @returns {Types.DWORD} 1.
  */
@@ -105,7 +116,7 @@ export function SetDCHook(this: any, hdc: number, lpfnHook: number, dwData: numb
     return 0;
   }
 
-  surface.dcHook = { proc: lpfnHook >>> 0, data: dwData >>> 0 };
+  surface.dcHook = { proc: lpfnHook >>> 0, data: dwData >>> 0, user: isUserHook(this, lpfnHook) };
 
   if (!(lpfnHook >>> 0)) {
     surface.dcHookFlag = false;
@@ -132,10 +143,14 @@ export function GetDCHook(this: any, hdc: number, lplpfn: number) {
 
   let hook = surface.dcHook;
 
-  if (!hook && isWindows(this, surface)) {
+  /* USER's own, which WinBox runs itself: its address as USER exports it. */
+  if (hook?.user || (!hook && isWindows(this, surface))) {
     const user = GetModuleHandle.call(this, 'USER');
 
-    hook = { proc: user ? GetProcAddress.call(this, user, USER_DCHOOK) : 0, data: hdc & 0xffff };
+    hook = {
+      proc: user ? GetProcAddress.call(this, user, USER_DCHOOK) : 0,
+      data: hook?.data ?? hdc & 0xffff,
+    };
   }
 
   if (lplpfn >>> 0) {

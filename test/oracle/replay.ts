@@ -5528,11 +5528,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * no such segment, and keeps the offset with the segment nought: 1
    * record of `locinfo`'s. */
   'locinfo:notifyseg': "KERNEL's notify procedure's segment, its code's, which WinBox has none of",
-  /* `dcreuse`'s six of the screen's held at once: Windows lends five
-   * handles, one of them twice, its cache's five all lent; both engines
-   * make a sixth (1 record). */
-  'dcreuse:held':
-    "with USER's five cached contexts all lent, Windows lends one again; WinBox makes another",
   /* `winexpe`'s `WinExec` of a Win32 program: Windows starts it as a DOS
    * program, its stub, in a DOS session (WINOLDAP), and answers that
    * instance; WinBox has no DOS sessions and answers `LoadModule`'s 21
@@ -5554,11 +5549,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'ttqmap:kern': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
-  /* `dchook`'s hook calls: GDI calls a device context's hook from the
-   * calls that use the context while its flag is set (`GDI.EXE` seg1
-   * `4423`); WinBox keeps the hook and the flag and calls nothing
-   * (3 records). */
-  'dchook:hookcall': "GDI does not call a device context's hook",
   'gdimisc:physfont':
     'GetPhysicalFontHandle is a stub: WinBox keeps no realized font object for a context to name',
   'prtt:extent':
@@ -5566,14 +5556,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prtt:size': 'the document differs where the downloaded face does',
   'prtt:line':
     "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
-  /* `visrgn` and `visfam`: GDI keeps the visible region and its family
-   * answers (phase 1 of `kb/topics/visible-regions.md`); what waits for the
-   * design's later phases is held here, by the phase. */
-  'visfam:origin': 'phase 4: the origin does not outlive ReleaseDC',
-  'visfam:again':
-    "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
-  'visfam:hook':
-    "phase 4: GDI does not call USER's hook, which works the region out again and clears the flag",
 };
 
 /**
@@ -5940,6 +5922,7 @@ const RUN_WHOLE = new Set<string>([
   'aboutdp',
   'gfreeal',
   'visfam',
+  'dcentry',
   'visrgn',
   'metarec',
   'visrule',

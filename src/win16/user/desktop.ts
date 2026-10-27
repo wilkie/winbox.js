@@ -20,6 +20,7 @@ import { type MenuData } from './menu-data.js';
 import { type Desk } from './desk.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
 import { DCX_USESTYLE, DCX_WINDOW, regionFlags, windowRegion } from './visible-region-rule.js';
+import { windowDestroyed, windowsChanged } from './dc-entries.js';
 
 /**
  * The screen as USER keeps it: one bitmap of the display's pixels, and the
@@ -404,14 +405,6 @@ export class Desktop {
 
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
-
-  /**
-   * Counted up whenever the windows change -- placed, shown, hidden,
-   * reordered, a style or the lock changed: a context's visible region
-   * worked out before is worked out again (`visible-region-rule.ts`), as
-   * USER marks its contexts' regions stale (`USER.EXE` seg1 `8aa0`).
-   */
-  generation = 0;
 
   /**
    * The system whose windows these are, for USER's rule for a window's
@@ -1306,8 +1299,15 @@ export class Desktop {
     }
 
     /* Its children go first, with nothing to paint again: it covers them.
-     * Then it: found again, as they may have been above it. */
+     * Then it: found again, as they may have been above it. USER's device
+     * context entries of each are let go (`dc-entries.ts`). */
     if (remove) {
+      if (this.system) {
+        for (const gone of this.windows.filter((other) => this.#within(other, window))) {
+          windowDestroyed(this.system, gone.hwnd);
+        }
+      }
+
       for (const child of this.windows.filter((other) => other.parent === window)) {
         this.windows.splice(this.windows.indexOf(child), 1);
         child.visible = false;
@@ -2708,6 +2708,23 @@ export class Desktop {
   }
 
   /**
+   * A device context's view of the whole screen from a window's corner, as
+   * large as its client area or, `whole`, the whole window, as USER's
+   * entries are pointed at the window they are lent for (`dc-entries.ts`).
+   */
+  dcView(window: DesktopWindow, whole: boolean) {
+    return whole
+      ? this.#screenView(window, 0, 0, window.width, window.height)
+      : this.#screenView(
+          window,
+          window.client.left,
+          window.client.top,
+          window.clientWidth,
+          window.clientHeight
+        );
+  }
+
+  /**
    * A surface over a window's client area, as `GetDC` hands out while the
    * window paints: drawn through all of the client area, not only what
    * `BeginPaint` is painting (`choosclr`).
@@ -2808,8 +2825,6 @@ export class Desktop {
   #own() {
     const stride = this.screen.width;
 
-    this.generation++;
-
     this.#byId = new Map(this.windows.map((window) => [window.id, window]));
 
     this.owners.fill(0);
@@ -2856,6 +2871,11 @@ export class Desktop {
       corners.forEach(([cx, cy], index) => {
         this.owners[cy * stride + cx] = beneath[index];
       });
+    }
+
+    /* USER's device context entries the change makes stale (`dc-entries.ts`). */
+    if (this.system) {
+      windowsChanged(this.system, this);
     }
   }
 

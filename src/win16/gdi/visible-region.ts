@@ -37,6 +37,11 @@ function contextOf(system: any, hdc: number): any {
   return surface instanceof Surface ? surface : null;
 }
 
+/** The visible region given, its handle's region kept the same: `SelectVisRgn`'s body, as USER selects one. */
+export function selectVis(surface: any, shape: ClipRegion) {
+  setVis(surface, shape);
+}
+
 /** The visible region given, its handle's region kept the same. */
 function setVis(surface: any, shape: ClipRegion) {
   surface.visRegion = shape;
@@ -182,6 +187,19 @@ export function SaveVisRgn(this: any, hdc: number) {
 }
 
 /**
+ * `SaveVisRgn` as USER makes it for a region given to `GetDCEx`
+ * (`dc-entries.ts`): the copy kept with no handle of its own, which
+ * `InquireVisRgn` makes one for when asked after it is restored. In
+ * Windows it is a region of GDI's heap like any; WinBox's handles are one
+ * table with others', and a handle held by every context USER lends moved
+ * the values programs are given (Widget Workshop's `VER.DLL` came to share
+ * one with a region).
+ */
+export function saveVisQuietly(surface: any) {
+  surface.visSaved.push({ handle: 0, region: new Region(visOf(surface)) });
+}
+
+/**
  * The copy on top of the stack made the visible region, and the region it
  * was deleted (seg1 `07b2`, the old handle let go at `0805`); it answers
  * the visible region's kind (`0811`). With nothing saved, −1 and nothing
@@ -292,17 +310,24 @@ export function GetDCState(this: any, hdc: number) {
 }
 
 /**
- * Puts a state `GetDCState` copied back into a context (seg1 `0615`): its
- * origin set through `SetDCOrg` where it differs, its visible region kept.
- * **Recorded** by `visfam`: the text colour comes back, and a visible
- * region narrowed between stays narrowed.
+ * Puts a state `GetDCState` copied back into a context (seg1 `0615`), its
+ * visible region kept. The origin is copied with the rest and then set
+ * back through `SetDCOrg` to what it was (`072f`-`073f`), which moves the
+ * clip region with it: the context keeps its origin, and the clip region
+ * its place in the context's own terms. **Recorded** by `visfam`: the text
+ * colour comes back, and a visible region narrowed between stays narrowed;
+ * and by `visfam`'s `origin`: an origin set outlives `ReleaseDC`, which
+ * sets a common context's state back with this.
  */
 export function SetDCState(this: any, hdc: number, hSavedDC: number) {
   const surface = contextOf(this, hdc);
   const saved = contextOf(this, hSavedDC);
 
   if (surface && saved) {
+    const origin = surface.dcOrigin;
+
     putState(surface, stateOf(saved));
+    surface.dcOrigin = origin;
   }
 }
 

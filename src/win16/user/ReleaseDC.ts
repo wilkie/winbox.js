@@ -1,8 +1,6 @@
 'use strict';
 
-import { releaseToCache } from './GetDC.js';
-import { releaseDCExRegion } from './get-dc-ex.js';
-import { dropGivenRegion } from './visible-region-rule.js';
+import { entryOf, releaseEntry } from './dc-entries.js';
 import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
@@ -29,45 +27,34 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  *                      Otherwise, it is 0.
  */
 export function ReleaseDC(hwnd, hdc) {
-  /* Which surface the context has to be over for this to be the right window
-   * releasing it. `GetDC(NULL)` hands out the screen, so `ReleaseDC(NULL, ...)`
-   * gives it back -- the documentation is explicit that the two calls have to
-   * agree about the window, and it is a real mistake to catch.
-   */
-  let surface;
-
-  if (hwnd == NULL) {
-    surface = this.screen;
-  } else {
-    const dialog = this.handles.resolve(hwnd);
-
-    if (!dialog) {
-      return FALSE;
-    }
-
-    surface = dialog.surface;
-  }
-
-  const released = this.handles.resolve(hdc);
-
-  /* Or one `GetWindowDC` made over the window's whole rectangle. */
-  if (released !== surface && !(hwnd != NULL && this._windowDCs?.get(released) === hwnd)) {
+  /* The window's handle is checked, and the context's (`USER.EXE` seg1
+   * `a61f`-`a641`), then the entry is found by its context alone: the
+   * window is not asked (`8805`). */
+  if (hwnd != NULL && !this.handles.resolve(hwnd)) {
     return FALSE;
   }
 
-  /* The handle goes back to the cache it came from, and still answers: a
-   * released `GetDC(NULL)` gives the nearest colours and the device's
-   * capabilities as it did, and the next `GetDC(NULL)` answers it again
-   * (`reldc`). Reversi asks `GetNearestColor` of one it has released, and
-   * made its board's brushes of the -1 winbox.js answered. The cache keeps
-   * five, as USER's does; the one released longest ago goes. */
-  releaseToCache(this, hdc, released);
-  released.liveDCs = Math.max(0, (released.liveDCs ?? 1) - 1);
+  /* The locked window's own context (`GetDC`), no entry of USER's. */
+  const released = this.handles.resolve(hdc);
 
-  /* And the region `GetDCEx` was given, deleted (`getdcex`), the visible
-   * region as it was before it (`USER.EXE` seg1 `8805`). */
-  releaseDCExRegion(this, hdc);
-  dropGivenRegion(this, released);
+  if (released && this._windowDCs?.get(released) !== undefined && !entryOf(this, hdc)) {
+    if (this._windowDCs.get(released) !== hwnd) {
+      return FALSE;
+    }
 
-  return TRUE;
+    this._windowDCs.delete(released);
+    this.handles.free(hdc);
+
+    return TRUE;
+  }
+
+  /* Given back to USER's entries (`dc-entries.ts`): a common one's state
+   * set back from USER's copy, its visible region and origin staying, and
+   * the handle still answering -- a released `GetDC(NULL)` gives the
+   * nearest colours and the device's capabilities as it did, and the next
+   * `GetDC(NULL)` answers it again (`reldc`). Reversi asks
+   * `GetNearestColor` of one it has released, and made its board's
+   * brushes of the -1 winbox.js answered. Nought for one not lent
+   * (`dcentry`, `dcreuse`). */
+  return releaseEntry(this, hdc, false) ? TRUE : FALSE;
 }

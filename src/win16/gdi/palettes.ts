@@ -6,6 +6,7 @@ import { DEFAULT_ENTRIES, type PaletteEntries } from '../../raster/palette-colou
 import { defaultPalette, LogicalPalette } from './gdi-objects.js';
 import { type SystemPalette } from './system-palette.js';
 import { SendMessage } from '../user/SendMessage.js';
+import { windowOfContext } from '../user/dc-entries.js';
 import { gdiDataSelector } from './gdi-data.js';
 import {
   realizePaletteInMetafile,
@@ -197,8 +198,17 @@ function paletteHandleOf(system: any, surface: any): number {
   return surface.palette ? (system.handles.lookup(surface.palette) ?? 0) : defaultPalette(system);
 }
 
-/** The window whose surface a device context draws on, where it is one's. */
+/**
+ * The window a device context is lent for, as USER's entries keep it
+ * (`dc-entries.ts`), or whose surface it draws on.
+ */
 function windowOf(system: any, surface: any) {
+  const lent = windowOfContext(system, surface);
+
+  if (lent !== null) {
+    return lent;
+  }
+
   return system.rasterDesktop?.windows.find(
     (w: any) => system.handles.resolve(w.hwnd)?.surface === surface
   );

@@ -8,6 +8,10 @@ import { ddeRefused } from './dde-checks.js';
 
 import { RasterWindow } from './raster-window.js';
 import { MenuData } from './menu-data.js';
+import { makeStale } from './dc-entries.js';
+
+const WS_CLIPCHILDREN = 0x02000000;
+const WS_CLIPSIBLINGS = 0x04000000;
 
 /**
  * What a window keeps for a program, and what its class keeps: the words and
@@ -298,13 +302,16 @@ export function SetWindowLong(this: any, hwnd: number, nOffset: number, dwNewLon
 
   if (offset === GWL_STYLE && dialog instanceof RasterWindow) {
     const previous = styleShown(dialog);
+    const clipping = dialog.window.style ^ (dwNewLong >>> 0);
 
     dialog.window.style = dwNewLong >>> 0;
 
-    /* Its contexts' regions worked out again, as a style's
-     * `WS_CLIPCHILDREN` or `WS_CLIPSIBLINGS` changed makes them stale
-     * (`USER.EXE` seg2 `0bce`). */
-    dialog.desktop.generation++;
+    /* Its contexts made stale where its `WS_CLIPCHILDREN` or
+     * `WS_CLIPSIBLINGS` changed, as it is shown or hidden (`USER.EXE` seg2
+     * `0bbe`-`0bce`; `dc-entries.ts`). */
+    if (clipping & (WS_CLIPCHILDREN | WS_CLIPSIBLINGS)) {
+      makeStale(this, hwnd, 1);
+    }
 
     return previous;
   }

@@ -1,7 +1,9 @@
 'use strict';
 
 import { ClipRegion } from '../../raster/clip-region.js';
-import { DCX_INTERSECTRGN, DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
+import { DCX_USESTYLE, regionByRule } from './visible-region-rule.js';
+import { selectVis } from '../gdi/visible-region.js';
+import { asCommon } from './dc-entries.js';
 import { iconOf } from './icon-block.js';
 import { addFile, fillDirectory, LB_ADDFILE, LB_DIR } from './dlgdir.js';
 import { User, WNDCLASS } from '../user.js';
@@ -690,7 +692,11 @@ function itemDC(system: any, window: RasterWindow) {
   const any = window as any;
   const surface: any = window.surface;
 
-  /* With the list box's font in it, or the System font, as `GetDC` gives. */
+  /* A common context's attributes, as one USER lends has them
+   * (`dc-entries.ts`); then the list box's font in it, or the System font,
+   * as `GetDC` gives. */
+  asCommon(system, surface);
+
   const own = window.window.control?.font?.font;
 
   if (own) {
@@ -717,10 +723,12 @@ function itemDC(system: any, window: RasterWindow) {
     shown.top + shown.client.bottom
   );
 
-  selectWindowRegion(system, surface, shown, DCX_USESTYLE | DCX_INTERSECTRGN, {
-    shape: client,
-    keep: 'intersect',
-  });
+  const region = regionByRule(system, shown, DCX_USESTYLE);
+
+  if (region) {
+    selectVis(surface, region.intersect(client));
+    surface.dcOrigin = null;
+  }
 
   any.itemDC ??= system.handles.allocate(surface);
 

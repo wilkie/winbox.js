@@ -244,6 +244,7 @@ import {
 } from './user/dialog-items.js';
 import { GetDC } from './user/GetDC.js';
 import { GetDCEx } from './user/get-dc-ex.js';
+import { DCHook } from './user/dc-entries.js';
 import { BringWindowToTop, SetWindowPos } from './user/window-state.js';
 import { BeginDeferWindowPos, DeferWindowPos, EndDeferWindowPos } from './user/defer-window-pos.js';
 import { WinHelp } from './user/WinHelp.js';
@@ -1201,7 +1202,7 @@ export class User extends Module {
       // 360 //
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'DCHook', 12],
+      [DCHook, 'DCHook', 12, [HDC, UINT, DWORD, DWORD], DWORD],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

@@ -28,6 +28,7 @@ import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { RasterWindow } from './raster-window.js';
+import { windowCreated } from './dc-entries.js';
 
 /**
  * The **InitApp** function creates the application queue and installs
@@ -286,6 +287,11 @@ export async function CreateWindow(
   const hWnd = this.handles.allocate(dialog);
 
   dialog.window.hwnd = hWnd;
+
+  /* A window of a `CS_OWNDC` class has a device context entry of its own,
+   * its own surface; the first of a `CS_CLASSDC` class makes the class's
+   * (`USER.EXE` seg8 `0707`-`071e`; `dc-entries.ts`). */
+  windowCreated(this, hWnd, shown.surface);
 
   /* The class's icon is what the window shows minimized. */
   const icon = windowClass?.hIcon

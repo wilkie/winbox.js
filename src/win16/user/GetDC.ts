@@ -5,15 +5,8 @@ import { lockedSurface } from './lock-window-update.js';
 import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
-import { GetStockObject } from '../gdi/GetStockObject.js';
 import { resetVisible } from '../gdi/visible-region.js';
-import { DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
-import { RasterWindow } from './raster-window.js';
-import { Surface } from '../../raster/surface.js';
-import { Color } from '../../raster/color.js';
-
-const BLACK_PEN = 7;
-const WHITE_BRUSH = 0;
+import { lendsTo, takeEntry } from './dc-entries.js';
 
 /**
  * The **GetDC** function retrieves the handle of a device context for the
@@ -54,185 +47,52 @@ const WHITE_BRUSH = 0;
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-  let surface;
-  let lockedOne: unknown = null;
-
-  if (hwnd == NULL) {
-    /* The screen itself. This used to answer 1 -- a number that resolves to
-     * nothing, so every GDI call made with it found no surface. Programs ask
-     * the screen how big it is and how wide their text will be before they
-     * have a window to ask, which is what both of the drawing probes do.
-     */
-    surface = this.screen;
-  } else {
-    const dialog = this.handles.resolve(hwnd);
-
-    if (!dialog) {
+  /* The window `LockWindowUpdate` locked draws where it does not show: a
+   * context of its own (`lock-window-update.ts`), not one of USER's
+   * entries -- the design's fifth phase. */
+  if (hwnd != NULL) {
+    if (!lendsTo(this, hwnd)) {
       return NULL;
     }
 
-    /* The window `LockWindowUpdate` locked draws where it does not show. */
     const locked = lockedSurface(this, hwnd);
 
-    lockedOne = locked;
+    if (locked) {
+      (this._windowDCs ??= new WeakMap()).set(locked, hwnd);
+      resetVisible(locked);
+      withFont(this, locked);
 
-    /* While the window paints, a context of its own, which draws through
-     * the whole client area, not only what is being painted: USER's cache
-     * hands out another than `BeginPaint`'s (`choosclr`). */
-    const painting =
-      !locked &&
-      dialog.desktop &&
-      dialog.window &&
-      (dialog.window as any).paintClip &&
-      !(
-        (dialog.options?.windowClass
-          ? (this.handles.retrieve(dialog.options.windowClass)?.style ?? 0)
-          : 0) &
-        (CS_OWNDC | CS_CLASSDC)
-      )
-        ? dialog.desktop.clientSurface(dialog.window)
-        : null;
-
-    surface = locked ?? painting ?? dialog.surface;
-
-    if (locked || painting) {
-      (this._windowDCs ??= new WeakMap()).set(locked ?? painting, hwnd);
+      return this.handles.allocate(locked);
     }
   }
 
-  if (!surface) {
-    return NULL;
+  /* One of USER's entries (`dc-entries.ts`): `GetDCEx` of the window with
+   * `DCX_USESTYLE`, and the high word's 2; of the desktop, with
+   * `DCX_WINDOW | DCX_CACHE` (`USER.EXE` seg1 `8406`-`8428`). */
+  const hdc =
+    hwnd == NULL
+      ? takeEntry(this, this.desktopWindow, 0, 0x00020003)
+      : takeEntry(this, hwnd, 0, 0x00030000);
+
+  if (hdc) {
+    withFont(this, this.handles.resolve(hdc));
   }
 
-  /* A device context comes with the system font already in it. Nothing has to
-   * select a font before asking about text, and a program that never selects
-   * one still draws in something -- so a context with no font is not a state
-   * Windows ever hands out.
-   *
-   * Windows resets a common context's attributes on every `GetDC`, and this
-   * does not: our context is the window's surface rather than a separate thing
-   * borrowed from a pool of five, so what a program selects into it outlives
-   * the release. That divergence is older and wider than this function.
-   */
-  if (!surface.font) {
-    const font = stockFontHandle(this, SYSTEM_FONT);
-
-    if (font) {
-      surface.font = this.handles.resolve(font);
-    }
-  }
-
-  /* Its visible region worked out by USER's rule, as `GetDCEx` with
-   * `DCX_USESTYLE` (`visible-region-rule.ts`), and its origin its corner;
-   * the screen's what it shows. The locked window's context draws on a
-   * bitmap of its own and answers its client area: what it shows. */
-  const shown = hwnd != NULL ? this.handles.resolve(hwnd) : null;
-
-  if (surface !== this.screen && !lockedOne && shown instanceof RasterWindow) {
-    selectWindowRegion(this, surface, shown.window, DCX_USESTYLE);
-  } else {
-    resetVisible(surface);
-  }
-
-  /* A clip region or saved levels a program left do not outlive the device
-   * context it had: Windows hands out a fresh one. Not recorded. */
-  if (surface !== this.screen) {
-    surface.clipRegion = null;
-    surface.saved = [];
-
-    /* And its brush origin, the client area's corner again (`brushorg`). */
-    surface.brushOrg = undefined;
-
-    resetCommon(this, hwnd, surface);
-  }
-
-  return takeFromCache(this, surface) ?? this.handles.allocate(surface);
+  return hdc;
 }
-
-const CACHED = 5;
-
-/** The contexts released and not yet given out again, the oldest first. */
-function cacheOf(system: any): { handle: number; surface: any }[] {
-  return (system._dcCache ??= []);
-}
-
-/** A context given back: kept, still answering, for its surface to be given again. */
-export function releaseToCache(system: any, hdc: number, surface: any) {
-  const cache = cacheOf(system);
-
-  if (cache.some((entry) => entry.handle === hdc)) {
-    return;
-  }
-
-  cache.push({ handle: hdc, surface });
-
-  while (cache.length > CACHED) {
-    system.handles.free(cache.shift()!.handle);
-  }
-}
-
-/** The context released last over a surface, given out again; none if none is. */
-function takeFromCache(system: any, surface: any) {
-  const cache = cacheOf(system);
-
-  for (let at = cache.length - 1; at >= 0; at--) {
-    if (cache[at].surface === surface && system.handles.resolve(cache[at].handle) === surface) {
-      return cache.splice(at, 1)[0].handle;
-    }
-  }
-
-  return null;
-}
-
-const CS_OWNDC = 0x0020;
-const CS_CLASSDC = 0x0040;
 
 /**
- * A common device context as `GetDC` and `BeginPaint` give it: what was
- * selected and set in the last forgotten -- the System font, black text on
- * white, opaque, `R2_COPYPEN`, the black pen and the white brush -- for a
- * window whose class has no device context of its own. One with `CS_OWNDC`
- * keeps everything (`dcreset`). Cribbage draws its status line in a context
- * it selected nothing into, after selecting a fixed font into the one
- * before; Windows draws it in the System font.
+ * A device context comes with the System font already in it, as every
+ * display context starts: nothing has to select a font before asking about
+ * text. USER's copy of a context's state has it; one made before the fonts
+ * were loaded is given it here.
  */
-export function resetCommon(system: any, hwnd: number, surface: any) {
-  const live = surface.liveDCs ?? 0;
+export function withFont(system: any, surface: any) {
+  if (surface && !surface.font) {
+    const font = stockFontHandle(system, SYSTEM_FONT);
 
-  surface.liveDCs = live + 1;
-
-  /* winbox.js keeps one surface for a window, where Windows gives each
-   * context its own: while another context of the window is still out --
-   * a paint's, and a `GetDC` inside it, as Championship Slots' forms do --
-   * resetting would take what that one has selected, and is left. */
-  if (live > 0) {
-    return;
+    if (font) {
+      surface.font = system.handles.resolve(font);
+    }
   }
-
-  const window = hwnd ? system.handles.resolve(hwnd) : null;
-  const style = window?.options
-    ? (system.handles.retrieve(window.options.windowClass)?.style ?? 0)
-    : 0;
-
-  if (!window || style & (CS_OWNDC | CS_CLASSDC)) {
-    return;
-  }
-
-  /* What `dcreset` measured going back to its default, and no more. */
-  const fresh: any = Surface.memory();
-
-  for (const field of ['backMode', 'backcolor', 'rop2']) {
-    surface[field] = fresh[field];
-  }
-
-  surface.textColor = new Color(0, 0, 0);
-
-  const font = stockFontHandle(system, SYSTEM_FONT);
-
-  if (font) {
-    surface.font = system.handles.resolve(font);
-  }
-
-  surface.pen = system.handles.resolve(GetStockObject.call(system, BLACK_PEN));
-  surface.brush = system.handles.resolve(GetStockObject.call(system, WHITE_BRUSH));
 }

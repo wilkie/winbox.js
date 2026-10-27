@@ -30,14 +30,11 @@ function entryOf(font) {
 }
 
 /**
- * USER's rule for a context's visible region (`visible-region-rule.ts`): the
- * region now, in the screen's terms, and whether the one worked out last is
- * still what the windows give.
+ * The hook a device context calls (`dc-internals.ts`): a procedure of the
+ * program's, by its far address, or USER's own `DCHook` (`user`), which
+ * WinBox runs itself; and the dword it is given.
  */
-export interface VisibleSource {
-  region(): ClipRegion;
-  current(): boolean;
-}
+export type DcHook = { proc: number; data: number; user?: boolean };
 
 export class Surface {
   declare boldOverhang: any;
@@ -334,13 +331,22 @@ export class Surface {
   #vis: ClipRegion | null = null;
 
   /**
-   * Where USER works the visible region out from, for a context it handed
-   * out: its rule for the context's window and flags
-   * (`visible-region-rule.ts`), worked out again when the windows have
-   * changed since -- what USER's hook does for a context in use (`USER.EXE`
-   * seg1 `8a00`). `null` where GDI was given a region, or none.
+   * The hook `SetDCHook` set, and whether `SetHookFlags` has GDI call it
+   * before the context is next used (`GDI.EXE` seg1 `4423`, the flag bit 2
+   * of the context's byte at 0Ah). USER sets its own on each context it
+   * lends, and the flag when the windows change under one in use
+   * (`dc-entries.ts`).
    */
-  #visFrom: VisibleSource | null = null;
+  dcHook: DcHook | null = null;
+  #hookFlag = false;
+
+  /**
+   * USER's `DCHook` for this context, run by WinBox itself: where its hook
+   * is USER's and the flag is set, it is called before the visible region
+   * is read or drawn through (`USER.EXE` seg1 `8a00`), as GDI calls it
+   * before a call uses the context.
+   */
+  userHook: (() => void) | null = null;
 
   /** The origin `SetDCOrg` set, in the screen's terms, or `null` for the view's corner. */
   #origin: [number, number] | null = null;
@@ -365,35 +371,28 @@ export class Surface {
   }
 
   get visRegion() {
-    this.#refreshVis();
+    this.refreshVis();
     return this.#vis;
   }
 
-  /** A region GDI was given, the program's or a bitmap's: USER's rule no longer kept to. */
+  /** The visible region GDI was given, USER's or the program's or a bitmap's. */
   set visRegion(region: ClipRegion | null) {
-    this.#visFrom = null;
     this.#vis = region;
     this.#applyClip();
   }
 
-  get visFrom() {
-    return this.#visFrom;
+  get dcHookFlag() {
+    return this.#hookFlag;
   }
 
-  /** USER's rule for the region, worked out now and again whenever the windows change. */
-  set visFrom(source: VisibleSource | null) {
-    this.#visFrom = source;
-    this.#vis = source ? source.region() : null;
-    this.#applyClip();
+  set dcHookFlag(flag: boolean) {
+    this.#hookFlag = flag;
   }
 
-  /** The region worked out again where the windows changed since it last was. */
-  #refreshVis() {
-    const source = this.#visFrom;
-
-    if (source && !source.current()) {
-      this.#vis = source.region();
-      this.#applyClip();
+  /** USER's hook run where its flag is set: the region worked out again (`USER.EXE` seg1 `8a00`). */
+  refreshVis() {
+    if (this.#hookFlag && this.dcHook?.user && this.userHook) {
+      this.userHook();
     }
   }
 
@@ -463,33 +462,24 @@ export class Surface {
       return;
     }
 
-    const source = this.#visFrom;
     const kept = region;
     const context = bitmap.context;
 
     context.dcBox = kept ? kept.box : null;
 
-    if (!source) {
+    if (!this.userHook) {
       context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
       return;
     }
 
-    /* Kept to USER's region, worked out again before a pixel is drawn
-     * where the windows changed since; no test of the region where it
-     * takes in every pixel there is. */
+    /* A context USER lends: kept to its region, with no test of the region
+     * where it takes in every pixel there is. */
     const reach = context.reach;
     const whole =
       !kept ||
       ClipRegion.rect(reach.left, reach.top, reach.right, reach.bottom).subtract(kept).kind === 1;
 
-    context.dcClip = (x, y) => {
-      if (!source.current()) {
-        this.#refreshVis();
-        return context.dcClip ? context.dcClip(x, y) : true;
-      }
-
-      return whole || kept!.contains(x, y);
-    };
+    context.dcClip = whole ? null : (x, y) => kept!.contains(x, y);
   }
 
   get bitmap() {

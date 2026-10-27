@@ -85,6 +85,7 @@ import { MoveTo } from './win16/gdi/MoveTo.js';
 import { LocalInit } from './win16/kernel/LocalInit.js';
 
 import { Surface } from './raster/surface.js';
+import { hookBefore } from './win16/gdi/dc-hook-calls.js';
 import { DeviceBitmap } from './raster/device-bitmap.js';
 import { DevicePalette } from './raster/device-palette.js';
 
@@ -1405,7 +1406,15 @@ export class Win16 {
     /* A bitmap whose bits a program draws into itself is made to agree with
      * them around a call that names it (`gdi-heap.ts`). */
     const named = rejected ? null : loadBitmaps(this, args);
-    let result = rejected ? 0 : implementation.apply(this, args);
+    /* A device context's hook, called before the call uses it where its
+     * flag is set (`dc-hook-calls.ts`): USER's run here, a program's
+     * through the processor first. */
+    const hook = rejected ? null : hookBefore(this, module.instance.name, table[ip], called, args);
+    let result = rejected
+      ? 0
+      : hook
+        ? hook.then(() => implementation.apply(this, args))
+        : implementation.apply(this, args);
 
     if (named) {
       if (result && typeof result.then === 'function') {

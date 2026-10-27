@@ -1,7 +1,6 @@
 'use strict';
 
 import { ClipRegion } from '../../raster/clip-region.js';
-import { Surface, type VisibleSource } from '../../raster/surface.js';
 
 import type { Desktop, DesktopWindow } from './desktop.js';
 import { RasterWindow } from './raster-window.js';
@@ -132,7 +131,7 @@ function rectOf(window: DesktopWindow, client: boolean) {
  * `stop` -- all of them where `stop` is null -- but not those with
  * `WS_EX_TRANSPARENT` (seg1 `16f2`).
  */
-function lessChildren(
+export function lessChildren(
   desktop: Desktop,
   parent: DesktopWindow | null,
   stop: DesktopWindow | null,
@@ -246,93 +245,15 @@ export function windowRegion(
   }
 }
 
-/** How a region given to `GetDCEx` is combined with the window's. */
-export type Given = { shape: ClipRegion; keep: 'intersect' | 'exclude' } | null;
-
-/**
- * USER's rule given to a context it hands out for a window, as
- * `SelectVisRgn` of the region worked out and `SetDCOrg` of the window's
- * corner (`86b2`-`86cd`; the origin is the surface's own view's): the
- * region worked out again whenever the windows change, as USER's hook
- * does for a context in use (seg1 `8a00`). A region `GetDCEx` was given,
- * in the screen's terms, intersected or taken out after (`86e7`-`87a0`).
- */
-export function selectWindowRegion(
-  system: any,
-  surface: Surface,
-  window: DesktopWindow,
-  flags: number,
-  given: Given = null
-) {
-  const { flags: used, of } = regionFlags(system, window, flags);
-
-  select(system, surface, window, of, used, given);
-}
-
-/** What a context's region is worked out from: the rule's terms, and the region given. */
-type Source = VisibleSource & {
-  window: DesktopWindow;
-  of: DesktopWindow;
-  flags: number;
-  given: Given;
-};
-
-function select(
-  system: any,
-  surface: Surface,
-  window: DesktopWindow,
-  of: DesktopWindow,
-  used: number,
-  given: Given
-) {
+/** A window's region by USER's rule, for `GetDCEx`'s flags as `regionFlags` makes them. */
+export function regionByRule(system: any, window: DesktopWindow, flags: number) {
   const desktop: Desktop | undefined = system.rasterDesktop;
 
-  if (!desktop || !(surface instanceof Surface)) {
-    return;
+  if (!desktop) {
+    return null;
   }
 
-  let stamp = -1;
-  const source: Source = {
-    window,
-    of,
-    flags: used,
-    given,
-    region() {
-      stamp = desktop.generation;
+  const { flags: used, of } = regionFlags(system, window, flags);
 
-      /* A window destroyed since has nothing. */
-      if (!desktop.windows.includes(window) || !desktop.windows.includes(of)) {
-        return ClipRegion.EMPTY;
-      }
-
-      const region = windowRegion(system, desktop, window, of, used);
-
-      if (!given) {
-        return region;
-      }
-
-      return given.keep === 'intersect'
-        ? region.intersect(given.shape)
-        : region.subtract(given.shape);
-    },
-    current() {
-      return stamp === desktop.generation;
-    },
-  };
-
-  surface.dcOrigin = null;
-  surface.visFrom = source;
-}
-
-/**
- * A region given to `GetDCEx` let go as its context is released, or a
- * paint's as it ends: `RestoreVisRgn` of what was there before it (seg1
- * `8805`), the window's region by the same rule.
- */
-export function dropGivenRegion(system: any, surface: any) {
-  const source = surface instanceof Surface ? (surface.visFrom as Source | null) : null;
-
-  if (source?.given) {
-    select(system, surface, source.window, source.of, source.flags, null);
-  }
+  return windowRegion(system, desktop, window, of, used);
 }
