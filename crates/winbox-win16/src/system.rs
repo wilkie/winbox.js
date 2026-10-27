@@ -289,11 +289,11 @@ pub struct System {
     /// Which window each pixel of the screen shows, its index plus one;
     /// nought for the desktop.
     pub owners: std::rc::Rc<Vec<u16>>,
-    /// Counted up whenever the windows change -- placed, shown, hidden,
-    /// reordered, a style or the lock changed: a context's visible region
-    /// worked out before is worked out again (`window_vis`), as USER marks
-    /// its contexts' regions stale (`USER.EXE` seg1 `8aa0`).
-    pub vis_generation: u64,
+    /// USER's device context entries (`dc_entries`).
+    pub dc_entries: crate::dc_entries::Entries,
+    /// A program's device context hook to be called, and the call to make
+    /// after it (`gdi::dc_hook_calls`).
+    pub(crate) hook_then: Option<(crate::gdi::dc_hook_calls::Due, crate::call::Implementation)>,
     /// The screen's pixels, made with the raster desktop.
     pub screen: Option<winbox_raster::DeviceBitmap>,
     /// The window that was active before the last change of active window,
@@ -323,9 +323,6 @@ pub struct System {
     pub playback_due: Option<f64>,
     /// The last mark given a box due a paint.
     pub dirty_marks: u64,
-    /// The device contexts released and not yet given out again, the
-    /// oldest first: each handle, and the context it stands for.
-    pub dc_cache: Vec<(u16, usize)>,
     /// The timers set, in the order they were first set.
     pub timers: Vec<crate::queue::Timer>,
     /// Where the cursor was last put; `None` where the mouse driver's reset
@@ -401,12 +398,10 @@ pub struct System {
     pub lock_my_task: u16,
     /// What `LockInput` keeps while it has the input locked (`lock_input.rs`).
     pub locked_input: Option<crate::lock_input::Kept>,
-    /// The device contexts `GetWindowDC` made, by index, and the window each
-    /// is over, for `ReleaseDC` to take back.
+    /// The device contexts `GetDC` made for the window `LockWindowUpdate`
+    /// locked, by index, and the window each is over, for `ReleaseDC` to
+    /// take back.
     pub window_dcs: HashMap<usize, u16>,
-    /// The regions `GetDCEx` was given, by the context given with each,
-    /// to be deleted as it is released (`get_dc.rs`).
-    pub dc_ex_regions: HashMap<u16, u16>,
     /// Whether a dialog is active, as `DefDlgProc` keeps it for
     /// `GetSystemDebugState` (`dialogs.rs`).
     pub dialog_active: bool,
@@ -579,7 +574,6 @@ impl System {
             lock_my_task: 0,
             locked_input: None,
             window_dcs: HashMap::new(),
-            dc_ex_regions: HashMap::new(),
             dialog_active: false,
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),
@@ -621,7 +615,8 @@ impl System {
             hooks: Vec::new(),
             next_hook: 0,
             owners: std::rc::Rc::new(Vec::new()),
-            vis_generation: 0,
+            dc_entries: crate::dc_entries::Entries::default(),
+            hook_then: None,
             screen: None,
             pending_activation: None,
             activating_for_focus: false,
@@ -631,7 +626,6 @@ impl System {
             message_serials: 0,
             input: std::collections::VecDeque::new(),
             playback_due: None,
-            dc_cache: Vec::new(),
             timers: Vec::new(),
             cursor_pos: None,
             cursor_clip: None,

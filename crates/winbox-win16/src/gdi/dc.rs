@@ -92,6 +92,9 @@ pub enum DcBitmap {
 pub struct DcHook {
     pub set: Option<(u32, u32)>,
     pub flag: bool,
+    /// The hook set is USER's own `DCHook`, which WinBox runs itself
+    /// (`dc_entries`).
+    pub user: bool,
 }
 
 /// A device context.
@@ -106,9 +109,6 @@ pub struct Dc {
     pub memory: bool,
     /// The font mapper's flags (`SetMapperFlags`).
     pub mapper_flags: u32,
-    /// A window's: how many of its contexts are out, given by `GetDC` and
-    /// not released.
-    pub live: u32,
     /// The palette selected, by its object; none for the stock one.
     pub palette: Option<usize>,
     /// One of WinG's, whose driver is WinG's own (`wing`).
@@ -123,12 +123,6 @@ pub struct Dc {
     /// screen, the bitmap -- as USER and `SelectObject` give it
     /// (`visible_region`).
     pub vis: Option<winbox_raster::ClipRegion>,
-    /// Where USER works the visible region out from, for a context it
-    /// handed out: its rule for the context's window and flags
-    /// (`window_vis`), worked out again when the windows have changed since
-    /// -- what USER's hook does for a context in use (`USER.EXE` seg1
-    /// `8a00`). None where GDI was given a region, or none.
-    pub vis_from: Option<crate::window_vis::VisFrom>,
     /// What `SaveVisRgn` saved, the last on top: each a region's handle and
     /// object.
     pub vis_saved: Vec<(u16, usize)>,
@@ -190,13 +184,11 @@ impl System {
             bitmap,
             memory,
             mapper_flags: 0,
-            live: 0,
             palette: None,
             wing: false,
             hook: DcHook::default(),
             clip_handle: None,
             vis: None,
-            vis_from: None,
             vis_saved: Vec::new(),
             vis_handle: None,
             bounds: super::bounds::Bounds::default(),

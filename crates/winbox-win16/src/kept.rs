@@ -7281,8 +7281,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DCHook",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",

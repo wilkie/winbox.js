@@ -133,7 +133,7 @@ pub struct Recording {
 /// GDI's functions whose first argument is a device context, by the names
 /// they are exported by: those a call into a metafile's device context is
 /// kept as a record of, or answered nought by.
-const DC_FIRST: &[&str] = &[
+pub(crate) const DC_FIRST: &[&str] = &[
     "SetRelAbs",
     "SetBkColor",
     "SetBkMode",

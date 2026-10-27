@@ -326,8 +326,13 @@ impl System {
         }
     }
 
-    /// The window whose device context this is, by its index.
+    /// The window a device context is lent for, as USER's entries keep it
+    /// (`dc_entries`), or whose own context it is, by its index.
     fn window_of_dc(&self, dc: usize) -> Option<usize> {
+        if let Some(lent) = self.entry_window_of_dc(dc) {
+            return lent;
+        }
+
         self.z_order.iter().copied().find(|&index| {
             self.windows[index]
                 .as_ref()

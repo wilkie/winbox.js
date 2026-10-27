@@ -52,7 +52,11 @@ fn set_vis(system: &mut System, dc: usize, shape: ClipRegion) {
     }
 
     system.gdi.dcs[dc].vis = Some(shape);
-    system.gdi.dcs[dc].vis_from = None;
+}
+
+/// `SelectVisRgn`'s body, as USER selects a region for a context it lends.
+pub(crate) fn select_vis(system: &mut System, dc: usize, shape: ClipRegion) {
+    set_vis(system, dc, shape);
 }
 
 impl System {
@@ -63,7 +67,6 @@ impl System {
     /// `SaveVisRgn` saved stay: neither call touches them.
     pub(crate) fn reset_visible(&mut self, dc: usize) {
         self.gdi.dcs[dc].vis = None;
-        self.gdi.dcs[dc].vis_from = None;
         self.gdi.dcs[dc].state.origin = None;
     }
 }
@@ -138,6 +141,12 @@ fn save_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(Answer::Word(0));
     };
+
+    Ok(Answer::Word(save_vis_rgn(system, dc)))
+}
+
+/// `SaveVisRgn`'s body: the copy that was on top before.
+pub(crate) fn save_vis_rgn(system: &mut System, dc: usize) -> u16 {
     let vis = vis_of(system, dc);
     let before = system.gdi.dcs[dc]
         .vis_saved
@@ -149,7 +158,7 @@ fn save_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         system.gdi.dcs[dc].vis_saved.push((handle, object));
     }
 
-    Ok(Answer::Word(before))
+    before
 }
 
 /// `RestoreVisRgn` (seg1 `07b2`): the copy on top made the visible region
@@ -160,8 +169,24 @@ fn restore_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, 
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(Answer::Word(0));
     };
+
+    Ok(Answer::Word(restore_vis_rgn(system, dc)))
+}
+
+/// `SaveVisRgn` as USER makes it for a region given to `GetDCEx`
+/// (`dc_entries`): the copy kept with no handle of its own, as the
+/// TypeScript engine's `saveVisQuietly` says why.
+pub(crate) fn save_vis_quietly(system: &mut System, dc: usize) {
+    let vis = vis_of(system, dc);
+    let object = system.gdi_object(GdiObject::Region(vis));
+
+    system.gdi.dcs[dc].vis_saved.push((0, object));
+}
+
+/// `RestoreVisRgn`'s body: the visible region's kind, −1 with nothing saved.
+pub(crate) fn restore_vis_rgn(system: &mut System, dc: usize) -> u16 {
     let Some((handle, object)) = system.gdi.dcs[dc].vis_saved.pop() else {
-        return Ok(Answer::Word(0xffff));
+        return 0xffff;
     };
 
     if let Some((old, old_object)) = system.gdi.dcs[dc].vis_handle
@@ -177,9 +202,8 @@ fn restore_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, 
 
     system.gdi.dcs[dc].vis_handle = Some((handle, object));
     system.gdi.dcs[dc].vis = Some(shape);
-    system.gdi.dcs[dc].vis_from = None;
 
-    Ok(Answer::Word(vis_of(system, dc).kind()))
+    vis_of(system, dc).kind()
 }
 
 /// `InquireVisRgn` (seg1 `200a`): the visible region itself, the same
@@ -244,14 +268,19 @@ fn get_dc_state_call(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     ))
 }
 
-/// `SetDCState` (seg1 `0615`): the state copied back, its origin set where
-/// it differs, the visible region kept (`visfam`).
+/// `SetDCState` (seg1 `0615`): the state copied back, the visible region
+/// kept; the origin copied and set back through `SetDCOrg` to what it was
+/// (`072f`-`073f`), so the context keeps its origin (`visfam`'s `origin`:
+/// it outlives `ReleaseDC`, which sets a common context's state back).
 fn set_dc_state_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let saved = args.word(system);
 
     if let (Some(dc), Some(saved)) = (dc_of(system, hdc), dc_of(system, saved)) {
+        let origin = system.gdi.dcs[dc].state.origin;
+
         system.gdi.dcs[dc].state = system.gdi.dcs[saved].state.clone();
+        system.gdi.dcs[dc].state.origin = origin;
     }
 
     Ok(Answer::Nothing)

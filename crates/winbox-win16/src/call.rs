@@ -260,6 +260,7 @@ pub struct Call {
 impl System {
     /// The call at an `INT 80h` of a kept module's stubs: answered, where
     /// its function answers at once; else made ready to be.
+    #[allow(clippy::too_many_lines)]
     pub(crate) fn api_call(&mut self) -> Result<Option<Pending>, Stop> {
         self.take_call_marks();
 
@@ -374,6 +375,19 @@ impl System {
 
         // What a call writes to a file is written now, by DOS's clock.
         self.files.now = Some(self.dos_seconds());
+
+        // A device context's hook, called before the call uses it where its
+        // flag is set (`gdi::dc_hook_calls`): USER's run here, a program's
+        // through the processor first.
+        if let Some(due) = gdi::dc_hook_calls::before(self, module.name, export, stack, sp) {
+            return Ok(Some(gdi::dc_hook_calls::pending(
+                self,
+                due,
+                implementation,
+                args,
+                logged,
+            )));
+        }
 
         match implementation {
             Implementation::Sync(answer) => {

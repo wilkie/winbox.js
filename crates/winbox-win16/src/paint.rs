@@ -15,7 +15,7 @@ use winbox_raster::ClipRegion;
 use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 use crate::gdi::objects::{create_rect_rgn, delete_object};
-use crate::handles::{Kind, Object};
+use crate::handles::Object;
 use crate::messages::Param;
 use crate::system::System;
 use crate::windows::Window;
@@ -384,12 +384,30 @@ impl Engine {
     pub async fn begin_paint(&self, hwnd: u16, index: usize) -> Result<(u16, Vec<u8>), Stop> {
         let hdc = {
             let mut system = self.system();
-            let dc = system.paint_dc(index);
+            // One of USER's entries (`dc_entries`): `GetDCEx` with
+            // `DCX_USESTYLE` and `DCX_INTERSECTRGN` of the update region
+            // (`USER.EXE` seg1 `7640`-`7671`; `visrgn`): its visible region
+            // USER's rule's within what is to be painted, where that is
+            // known; the whole client area where it is not.
+            let window = system.painted(index);
+            let due = match (window.paint_clip, &window.paint_shape) {
+                (Some([left, top, right, bottom]), Some(shape)) => {
+                    Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
+                }
+                (Some([left, top, right, bottom]), None) => {
+                    Some(ClipRegion::rect(left, top, right, bottom))
+                }
+                (None, shape) => shape.clone(),
+            };
+            let flags = 0x0003_0000
+                | if due.is_some() {
+                    crate::window_vis::DCX_INTERSECTRGN
+                } else {
+                    0
+                };
+            let hdc = system.take_entry(hwnd, 0, flags, due);
 
-            let hdc = system
-                .handles
-                .allocate(Kind::Dc, Object::Dc(dc))
-                .unwrap_or(0);
+            system.with_font(hdc);
 
             // The caret, if it is this window's, is hidden until `EndPaint`,
             // so the painting does not leave it half drawn.
@@ -489,23 +507,12 @@ impl System {
             window.paint_shape = None;
         }
 
-        // And the update region its context's visible region was kept
-        // within, as `ReleaseDC` restores the region saved before it
-        // (`USER.EXE` seg1 `8805`).
-        if let Some(own) = self.windows[index].as_ref().and_then(|window| window.dc) {
-            self.drop_given_region(own);
-        }
-
         self.caret_after_paint(hwnd);
 
-        if let (Some(Object::Dc(dc)), Some(own)) = (
-            self.handles.resolve(hdc),
-            self.windows[index].as_ref().and_then(|window| window.dc),
-        ) && dc == own
-        {
-            self.handles.free(hdc);
-            self.gdi.dcs[dc].live = self.gdi.dcs[dc].live.saturating_sub(1);
-        }
+        // The paint's context given back, its region given -- the update
+        // region -- let go even where it is a window's own (`USER.EXE` seg1
+        // `76cc`-`76d4`, `8805` with 1).
+        self.release_entry(hdc, true);
     }
 }
 

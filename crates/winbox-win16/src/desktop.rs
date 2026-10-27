@@ -217,8 +217,6 @@ impl System {
         );
         let mut owners = vec![0u16; (width * height) as usize];
 
-        self.vis_generation += 1;
-
         for &index in self.z_order.iter().rev() {
             if !self.showing(index) {
                 continue;
@@ -280,6 +278,10 @@ impl System {
         }
 
         self.owners = std::rc::Rc::new(owners);
+
+        // USER's device context entries the change makes stale
+        // (`dc_entries`).
+        self.windows_changed();
     }
 
     /// A window due its frame and a paint where `area` is, added to what it
@@ -781,6 +783,22 @@ impl System {
     /// none active, and one hidden stays active, hidden (`USER.EXE` seg8
     /// `0bb7`-`0bc0`, seg14 `0dc2`).
     fn take_away_with(&mut self, index: usize, remove: bool, activate_next: bool) {
+        // USER's device context entries of it and the windows within it let
+        // go as it is destroyed (`dc_entries`).
+        if remove {
+            let gone: Vec<u16> = self
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| self.windows[other].is_some() && self.within(other, index))
+                .filter_map(|other| self.windows[other].as_ref().map(|window| window.hwnd))
+                .collect();
+
+            for hwnd in gone {
+                self.window_destroyed(hwnd);
+            }
+        }
+
         // Its menu, open, has no window any more to end it.
         if self.menu_loop.owner == Some(index) {
             self.menu_loop.owner = None;

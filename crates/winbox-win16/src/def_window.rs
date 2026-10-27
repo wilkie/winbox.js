@@ -7,7 +7,6 @@
 use crate::call::{Args, Stop};
 use crate::engine::Engine;
 use crate::gdi::GdiObject;
-use crate::handles::Object;
 use crate::messages::{Param, WM_GETTEXT, WM_MOVE, WM_SIZE};
 use crate::paint::{
     WM_ERASEBKGND, WM_ICONERASEBKGND, WM_NCPAINT, WM_PAINT, WM_PAINTICON, WM_SYNCPAINT,
@@ -405,28 +404,7 @@ impl Engine {
             system.draw_window_icon(index);
         }
 
-        if let Some(window) = system.windows[index].as_mut() {
-            window.paint_clip = None;
-            window.paint_shape = None;
-        }
-
-        // The update region its context's visible region was kept within
-        // let go, as `EndPaint` lets it go (`paint.rs`).
-        if let Some(own) = system.windows[index].as_ref().and_then(|window| window.dc) {
-            system.drop_given_region(own);
-        }
-
-        system.caret_after_paint(hwnd);
-
-        let own = system.windows[index].as_ref().and_then(|window| window.dc);
-
-        if let (Some(Object::Dc(dc)), Some(own)) = (system.handles.resolve(hdc), own)
-            && dc == own
-        {
-            system.handles.free(hdc);
-            system.gdi.dcs[dc].live = system.gdi.dcs[dc].live.saturating_sub(1);
-        }
-
+        system.end_paint(hwnd, index, hdc);
         Ok(())
     }
 

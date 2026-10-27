@@ -168,6 +168,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ReleaseDC" => Implementation::Sync(get_dc::release_dc),
         "GetWindowDC" => Implementation::Sync(get_dc::get_window_dc),
         "GetDCEx" => Implementation::Sync(get_dc::get_dc_ex),
+        "DCHook" => Implementation::Sync(crate::dc_entries::dc_hook_call),
         "GetWindowPlacement" => Implementation::Sync(crate::window_state::get_window_placement),
         "GetInternalWindowPos" => {
             Implementation::Sync(crate::window_state::get_internal_window_pos)

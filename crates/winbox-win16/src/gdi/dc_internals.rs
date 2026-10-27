@@ -82,15 +82,30 @@ fn set_dc_hook_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(Answer::Dword(0));
     };
+    let user = proc != 0 && proc == user_dc_hook(system);
     let context = &mut system.gdi.dcs[dc];
 
     context.hook.set = Some((proc, data));
+    context.hook.user = user;
 
     if proc == 0 {
         context.hook.flag = false;
     }
 
     Ok(Answer::Dword((data & 0xffff_0000) | 1))
+}
+
+/// USER's `DCHOOK`'s address, as USER exports it.
+fn user_dc_hook(system: &mut System) -> u32 {
+    let user = system
+        .kept_named("USER")
+        .map_or(0, |kept| system.kept[kept].handle());
+
+    if user == 0 {
+        0
+    } else {
+        crate::modules_kernel::proc_numbered(system, user, USER_DCHOOK)
+    }
 }
 
 /// `GetDCHook`: the procedure written, the data answered (seg31 `04b5`);
@@ -106,20 +121,12 @@ fn get_dc_hook_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         system.gdi.dcs[dc].bitmap,
         DcBitmap::Window(_) | DcBitmap::Whole(_)
     );
-    let (proc, data) = match system.gdi.dcs[dc].hook.set {
+    let hook = system.gdi.dcs[dc].hook;
+    // USER's own, which WinBox runs itself: its address as USER exports it.
+    let (proc, data) = match hook.set {
+        Some((_, data)) if hook.user => (user_dc_hook(system), data),
         Some(hook) => hook,
-        None if lent => {
-            let user = system
-                .kept_named("USER")
-                .map_or(0, |kept| system.kept[kept].handle());
-            let proc = if user == 0 {
-                0
-            } else {
-                crate::modules_kernel::proc_numbered(system, user, USER_DCHOOK)
-            };
-
-            (proc, u32::from(hdc))
-        }
+        None if lent => (user_dc_hook(system), u32::from(hdc)),
         None => (0, 0),
     };
 

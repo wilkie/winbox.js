@@ -608,6 +608,11 @@ impl Engine {
             shown.instance = instance;
             shown.extra = vec![0; usize::try_from(class.wnd_extra).unwrap_or(0)];
 
+            // A window of a `CS_OWNDC` class has a device context entry of
+            // its own; the first of a `CS_CLASSDC` class makes the class's
+            // (`USER.EXE` seg8 `0707`-`071e`; `dc_entries`).
+            system.window_created(hwnd, index);
+
             // The class's icon is what the window shows minimized.
             let icon = system.minimized_icon_of(class.icon);
 

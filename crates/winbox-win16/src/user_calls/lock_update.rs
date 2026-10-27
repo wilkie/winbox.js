@@ -43,10 +43,10 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             hwnd,
             dcs: Vec::new(),
         });
-        // The contexts' visible regions worked out again, the locked
-        // window's and those within it having none while it is locked
-        // (`USER.EXE` seg13 `22dd`, `2306`; `window_vis`).
-        system.vis_generation += 1;
+        // The window's contexts made stale, as shown or hidden: the locked
+        // window's and those within it have no region while it is locked
+        // (`USER.EXE` seg13 `22dd`, `2306`; `dc_entries`).
+        system.make_stale(hwnd, 1);
         return Ok(Answer::Word(1));
     }
 
@@ -54,7 +54,7 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
         return Ok(Answer::Word(0));
     };
 
-    system.vis_generation += 1;
+    system.make_stale(lock.hwnd, 1);
 
     let mut drawn: Option<[i32; 4]> = None;
 

@@ -25,6 +25,7 @@ pub mod controls;
 pub mod create;
 pub mod cursor_make;
 pub mod cursor_pos;
+pub mod dc_entries;
 mod dde_checks;
 pub mod ddeml;
 pub mod def_window;

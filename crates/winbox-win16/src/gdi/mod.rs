@@ -13,6 +13,7 @@ pub mod bounds;
 pub mod brushes;
 pub mod calls;
 pub mod dc;
+pub mod dc_hook_calls;
 pub mod dc_internals;
 pub mod ddb;
 pub mod dib;

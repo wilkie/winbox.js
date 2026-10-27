@@ -842,12 +842,18 @@ pub fn set_window_long(system: &mut System, args: &mut Args) -> Result<Answer, S
         }
         GWL_STYLE => {
             let previous = style_shown(system.window(index));
+            let clipping = system.window(index).style ^ value;
 
             system.window_mut(index).style = value;
-            // Its contexts' regions worked out again, as a style's
-            // `WS_CLIPCHILDREN` or `WS_CLIPSIBLINGS` changed makes them
-            // stale (`USER.EXE` seg2 `0bce`).
-            system.vis_generation += 1;
+
+            // Its contexts made stale where its `WS_CLIPCHILDREN` or
+            // `WS_CLIPSIBLINGS` changed, as it is shown or hidden
+            // (`USER.EXE` seg2 `0bbe`-`0bce`; `dc_entries`).
+            if clipping & 0x0600_0000 != 0 {
+                let hwnd = system.window(index).hwnd;
+
+                system.make_stale(hwnd, 1);
+            }
             previous
         }
         _ => write_extra(&mut system.window_mut(index).extra, offset, 4, value),

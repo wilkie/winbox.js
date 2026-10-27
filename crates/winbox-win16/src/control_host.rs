@@ -201,6 +201,10 @@ impl System {
     /// it. Made the first time, a handle of its own, and kept.
     pub(crate) fn item_dc(&mut self, index: usize) -> u16 {
         let dc = self.window_dc(index);
+
+        // A common context's attributes, as one USER lends has them
+        // (`dc_entries`).
+        self.as_common(dc);
         let own = self
             .control_at(index)
             .font
@@ -230,15 +234,11 @@ impl System {
                 shown.top + shown.client.bottom,
             );
 
-            self.select_window_region(
-                dc,
-                index,
-                crate::window_vis::DCX_USESTYLE | crate::window_vis::DCX_INTERSECTRGN,
-                Some(crate::window_vis::Given {
-                    shape: client,
-                    exclude: false,
-                }),
-            );
+            let (flags, of) = self.region_flags(index, crate::window_vis::DCX_USESTYLE);
+            let region = self.window_region(index, of, flags).intersect(&client);
+
+            crate::gdi::visible_region::select_vis(self, dc, region);
+            self.gdi.dcs[dc].state.origin = None;
         }
 
         let kept = self.control_at(index).item_dc;

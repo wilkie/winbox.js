@@ -27,26 +27,6 @@ const CS_OWNDC: u16 = 0x0020;
 const CS_CLASSDC: u16 = 0x0040;
 const CS_PARENTDC: u16 = 0x0080;
 
-/// A region given to `GetDCEx`, in the screen's terms: intersected with
-/// the window's, or taken out of it.
-#[derive(Debug, Clone)]
-pub struct Given {
-    pub shape: ClipRegion,
-    pub exclude: bool,
-}
-
-/// What a context's visible region is worked out from: the window, the
-/// window whose region it is, the flags as `region_flags` gives them, the
-/// region given, and the windows' count it was last worked out at.
-#[derive(Debug, Clone)]
-pub struct VisFrom {
-    pub window: usize,
-    pub of: usize,
-    pub flags: u32,
-    pub given: Option<Given>,
-    pub stamp: u64,
-}
-
 impl System {
     /// A window's class's style and icon.
     fn class_style_icon(&self, index: usize) -> (u16, u16) {
@@ -260,91 +240,9 @@ impl System {
         }
     }
 
-    /// The region a context's rule gives now.
-    fn vis_by_rule(&self, from: &VisFrom) -> ClipRegion {
-        if self.windows.get(from.window).is_none_or(Option::is_none)
-            || self.windows.get(from.of).is_none_or(Option::is_none)
-        {
-            return ClipRegion::EMPTY;
-        }
-
-        let region = self.window_region(from.window, from.of, from.flags);
-
-        match &from.given {
-            None => region,
-            Some(given) if given.exclude => region.subtract(&given.shape),
-            Some(given) => region.intersect(&given.shape),
-        }
-    }
-
-    /// USER's rule given to a context it hands out for a window, as
-    /// `SelectVisRgn` of the region worked out and `SetDCOrg` of the
-    /// window's corner (`86b2`-`86cd`; the origin is the context's own
-    /// view's): worked out again whenever the windows change, as USER's
-    /// hook does for a context in use (seg1 `8a00`). A region `GetDCEx`
-    /// was given, intersected or taken out after (`86e7`-`87a0`).
-    pub fn select_window_region(
-        &mut self,
-        dc: usize,
-        index: usize,
-        flags: u32,
-        given: Option<Given>,
-    ) {
-        let (flags, of) = self.region_flags(index, flags);
-
-        self.select_vis_from(
-            dc,
-            VisFrom {
-                window: index,
-                of,
-                flags,
-                given,
-                stamp: 0,
-            },
-        );
-    }
-
-    fn select_vis_from(&mut self, dc: usize, mut from: VisFrom) {
-        let region = self.vis_by_rule(&from);
-
-        from.stamp = self.vis_generation;
-        self.gdi.dcs[dc].vis = Some(region);
-        self.gdi.dcs[dc].state.origin = None;
-        self.gdi.dcs[dc].vis_from = Some(from);
-    }
-
-    /// A context's region worked out again where the windows changed since
-    /// it last was.
-    pub fn refresh_vis(&mut self, dc: usize) {
-        let Some(from) = &self.gdi.dcs[dc].vis_from else {
-            return;
-        };
-
-        if from.stamp != self.vis_generation {
-            let region = self.vis_by_rule(from);
-
-            self.gdi.dcs[dc].vis = Some(region);
-
-            if let Some(from) = self.gdi.dcs[dc].vis_from.as_mut() {
-                from.stamp = self.vis_generation;
-            }
-        }
-    }
-
-    /// A region given to `GetDCEx` let go as its context is released, or a
-    /// paint's as it ends: `RestoreVisRgn` of what was there before it
-    /// (seg1 `8805`), the window's region by the same rule.
-    pub fn drop_given_region(&mut self, dc: usize) {
-        if let Some(from) = self.gdi.dcs[dc].vis_from.clone()
-            && from.given.is_some()
-        {
-            self.select_vis_from(
-                dc,
-                VisFrom {
-                    given: None,
-                    ..from
-                },
-            );
-        }
+    /// A region less the window rectangles of the visible windows at the
+    /// top, as the desktop's `DCX_CLIPCHILDREN` takes them out.
+    pub(crate) fn less_top_windows(&self, region: ClipRegion) -> ClipRegion {
+        self.less_children(None, None, region)
     }
 }
