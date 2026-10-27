@@ -1,0 +1,204 @@
+{
+  "probe": "dcentry",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "same",
+      "args": "a window's, again",
+      "result": "same"
+    },
+    {
+      "function": "paint",
+      "args": "GetDC inside against BeginPaint's",
+      "result": "other"
+    },
+    {
+      "function": "paint",
+      "args": "GetDC after",
+      "result": "inside"
+    },
+    {
+      "function": "cycle",
+      "args": "window 0",
+      "result": "new"
+    },
+    {
+      "function": "cycle",
+      "args": "window 1",
+      "result": "new"
+    },
+    {
+      "function": "cycle",
+      "args": "window 2",
+      "result": "new"
+    },
+    {
+      "function": "cycle",
+      "args": "window 3",
+      "result": "new"
+    },
+    {
+      "function": "cycle",
+      "args": "window 4",
+      "result": "new"
+    },
+    {
+      "function": "cycle",
+      "args": "window 5",
+      "result": "0"
+    },
+    {
+      "function": "cycle",
+      "args": "window 0 again",
+      "result": "1"
+    },
+    {
+      "function": "cycle",
+      "args": "window 1 again",
+      "result": "2"
+    },
+    {
+      "function": "whole",
+      "args": "GetWindowDC against GetDC",
+      "result": "other"
+    },
+    {
+      "function": "whole",
+      "args": "GetDC after GetWindowDC",
+      "result": "same"
+    },
+    {
+      "function": "held",
+      "args": "screen 0",
+      "result": "new"
+    },
+    {
+      "function": "held",
+      "args": "screen 1",
+      "result": "new"
+    },
+    {
+      "function": "held",
+      "args": "screen 2",
+      "result": "new"
+    },
+    {
+      "function": "held",
+      "args": "screen 3",
+      "result": "new"
+    },
+    {
+      "function": "held",
+      "args": "screen 4",
+      "result": "new"
+    },
+    {
+      "function": "held",
+      "args": "screen 5",
+      "result": "4"
+    },
+    {
+      "function": "held",
+      "args": "a window's, all lent",
+      "result": "4"
+    },
+    {
+      "function": "held",
+      "args": "ReleaseDC each",
+      "result": "1 1 1 1 1 0 0 "
+    },
+    {
+      "function": "own",
+      "args": "GetDC twice",
+      "result": "same"
+    },
+    {
+      "function": "own",
+      "args": "ReleaseDC",
+      "result": "1"
+    },
+    {
+      "function": "own",
+      "args": "ReleaseDC again",
+      "result": "1"
+    },
+    {
+      "function": "own",
+      "args": "GetDC after",
+      "result": "same"
+    },
+    {
+      "function": "own",
+      "args": "text colour kept",
+      "result": "000000ff"
+    },
+    {
+      "function": "own",
+      "args": "a common one's",
+      "result": "new"
+    },
+    {
+      "function": "own",
+      "args": "a class's two windows",
+      "result": "same"
+    },
+    {
+      "function": "own",
+      "args": "ReleaseDC class",
+      "result": "1"
+    },
+    {
+      "function": "reset",
+      "args": "lent again",
+      "result": "same colour=00000000 map=1 bk=2"
+    },
+    {
+      "function": "stale",
+      "args": "first",
+      "result": "3 300,200,500,320 200-220:300-500;220-250:300-320,360-500;250-320:300-500;"
+    },
+    {
+      "function": "stale",
+      "args": "the child moved, same entry",
+      "result": "same"
+    },
+    {
+      "function": "stale",
+      "args": "the child moved",
+      "result": "3 300,200,500,320 200-220:300-500;220-250:300-320,360-500;250-320:300-500;"
+    },
+    {
+      "function": "stale",
+      "args": "SetHookFlags",
+      "result": "2"
+    },
+    {
+      "function": "stale",
+      "args": "after the hook",
+      "result": "3 300,200,500,320 200-260:300-500;260-290:300-400,440-500;290-320:300-500;"
+    },
+    {
+      "function": "stale",
+      "args": "client",
+      "result": "3 300,200,500,320 200-260:300-500;260-290:300-400,440-500;290-320:300-500;"
+    },
+    {
+      "function": "stale",
+      "args": "client, the child moved back, same entry",
+      "result": "same"
+    },
+    {
+      "function": "stale",
+      "args": "client, the child moved back",
+      "result": "3 300,200,500,320 200-220:300-500;220-250:300-320,360-500;250-320:300-500;"
+    }
+  ]
+}
