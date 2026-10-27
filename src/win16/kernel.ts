@@ -25,6 +25,7 @@ import {
   LockCurrentTask,
 } from './kernel/tasks.js';
 import { GlobalCompact, LocalHandleDelta } from './kernel/memory-info.js';
+import { asking } from './kernel/memory-model.js';
 import {
   AddAtom,
   DeleteAtom,
@@ -310,8 +311,8 @@ export class Kernel extends Module {
       [LocalFlags, 'LocalFlags', 2, [HLOCAL], UINT],
       [LocalCompact, 'LocalCompact', 2, [UINT], UINT],
       [LocalNotify, 'LocalNotify', 4, [FARPTR], DWORD],
-      [GlobalAlloc, 'GlobalAlloc', 6, [UINT, DWORD], HGLOBAL],
-      [GlobalReAlloc, 'GlobalReAlloc', 8, [HGLOBAL, DWORD, UINT], HGLOBAL],
+      [asking(GlobalAlloc), 'GlobalAlloc', 6, [UINT, DWORD], HGLOBAL],
+      [asking(GlobalReAlloc), 'GlobalReAlloc', 8, [HGLOBAL, DWORD, UINT], HGLOBAL],
       [GlobalFree, 'GlobalFree', 2, [HGLOBAL], HGLOBAL],
       [GlobalLock, 'GlobalLock', 2, [HGLOBAL], FARPTR],
       [GlobalUnlock, 'GlobalUnlock', 2, [HGLOBAL], FARPTR],
@@ -509,7 +510,7 @@ export class Kernel extends Module {
       [KERNEL_CONSTANTS[181], '__B000H', 0],
       [KERNEL_CONSTANTS[182], '__B800H', 0],
       [KERNEL_CONSTANTS[183], '__0000H', 0],
-      [GlobalDosAlloc, 'GlobalDosAlloc', 4, [DWORD], DWORD],
+      [asking(GlobalDosAlloc), 'GlobalDosAlloc', 4, [DWORD], DWORD],
       [GlobalDosFree, 'GlobalDosFree', 2, [UINT], UINT],
       [GetSelectorBase, 'GetSelectorBase', 2, [UINT], DWORD],
       [SetSelectorBase, 'SetSelectorBase', 6, [UINT, DWORD], UINT],

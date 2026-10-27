@@ -5,7 +5,9 @@
 #![allow(clippy::unnecessary_wraps)]
 
 use winbox_cpu::DS;
-use winbox_machine::{LocalHeap, handle_for, index_for, segment_selector};
+use winbox_machine::{
+    LocalHeap, block_size, handle_for, index_for, segment_selector, within_limit,
+};
 
 use crate::call::{Answer, Args, Stop};
 use crate::system::System;
@@ -105,12 +107,15 @@ impl System {
     }
 }
 
+/// A block of the global heap, as a program asks KERNEL for one: the
+/// model of the machine's memory settled first (`GlobalHeap::settle`).
 pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let flags = args.word(system);
     let size = args.dword(system);
-    let index = system
-        .global
-        .allocate(&mut system.cpu.bus, &mut system.descriptors, size, flags);
+
+    system.global.settle();
+
+    let index = allocate(system, size, flags);
 
     // Its owner: the task allocating it, as Windows' is the task's prefix
     // (TOOLHELP's `GlobalEntryHandle`, `thheap`).
@@ -121,6 +126,20 @@ pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     }
 
     Ok(Answer::Word(index.map_or(0, handle_for)))
+}
+
+/// `GlobalAlloc`'s work: more than `FF0000h` is refused at once, and a block
+/// larger than the machine's largest once KERNEL has looked for room
+/// (`KRNL386.EXE` seg1 `0c7c`, `4025`, `379e`; `galimit`, as OLECLI's
+/// `68000000h` bytes are). See `winbox_machine::GlobalHeap`'s model.
+pub(crate) fn allocate(system: &mut System, size: u32, flags: u16) -> Option<usize> {
+    if !within_limit(size) || block_size(size) > system.global.largest_block() {
+        return None;
+    }
+
+    system
+        .global
+        .allocate(&mut system.cpu.bus, &mut system.descriptors, size, flags)
 }
 
 /// A global block's lock count, as KERNEL keeps it: one byte in the block's
@@ -290,6 +309,8 @@ pub fn global_realloc(system: &mut System, args: &mut Args) -> Result<Answer, St
     let size = args.dword(system);
     let flags = args.word(system);
 
+    system.global.settle();
+
     Ok(Answer::Word(reallocate(system, handle, size, flags)))
 }
 
@@ -304,10 +325,18 @@ pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16
         return if kept { handle } else { 0 };
     }
 
-    if size == 0 && flags & GMEM_MOVEABLE != 0 {
-        // Not while it is locked: a block whose lock count is not nought is
-        // not discarded, and NULL is answered (`KRNL386.EXE` seg1 `4129`).
+    // Nought: the block discarded, its handle kept (documented).
+    // `KRNL386.EXE` seg1 `4121`-`416e`: not while it is locked (`4129`), not
+    // without `GMEM_MOVEABLE` (`413f`), and only a discardable block
+    // (`2da9`, the descriptor's bit for it), else NULL is answered and the
+    // block kept as it was. **Recorded** by `galimit`: a moveable or fixed
+    // block that is not discardable is kept.
+    if size == 0 {
         if system.is_moveable(index) && system.global.locks_of(index) != 0 {
+            return 0;
+        }
+
+        if flags & GMEM_MOVEABLE == 0 || system.global.flags_of(index) & GMEM_DISCARDABLE == 0 {
             return 0;
         }
 
@@ -316,6 +345,27 @@ pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16
         } else {
             0
         };
+    }
+
+    // More than FF0000h is never given (`0c7c`), and a block grown needs
+    // room: all of its new size where it moves to more selectors, what it
+    // grows by where it stays (`galimit`).
+    if !within_limit(size) {
+        return 0;
+    }
+
+    if let Some(block) = system.global.block(index) {
+        let new = block_size(size);
+        let moves = (new as usize).div_ceil(0x10000).max(1) > block.selectors;
+        let needed = if moves {
+            new
+        } else {
+            new.saturating_sub(block.size)
+        };
+
+        if needed > system.global.largest_block() {
+            return 0;
+        }
     }
 
     let before = system.global.size_of(index);

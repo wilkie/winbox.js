@@ -3,6 +3,8 @@
 import { handleFor, indexFor, selectorFor } from '../selectors.js';
 import { NULL } from '../consts.js';
 import { isMoveable, locksOf } from './locks.js';
+import { blockSize } from '../allocator.js';
+import { largestBlock, withinLimit } from './memory-model.js';
 
 /**
  * The **GlobalReAlloc** function changes the size or attributes of a global
@@ -40,18 +42,45 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
     return this.allocator.modify?.(indexFor(hglb), fuAlloc & GMEM_DISCARDABLE) ? hglb : NULL;
   }
 
-  /* Nought, moveable: the block discarded, its handle kept (documented).
-   * Program Manager discards its groups' blocks and reads a group in again
-   * when the lock answers NULL. */
-  if (cbNewSize === 0 && fuAlloc & GMEM_MOVEABLE) {
-    /* Not while it is locked: a block whose lock count is not nought is not
-     * discarded, and NULL is answered (`KRNL386.EXE` seg1 `4129`). See
-     * `locks.ts`. */
-    if (isMoveable(this, indexFor(hglb)) && locksOf(this, indexFor(hglb))) {
+  /* Nought: the block discarded, its handle kept (documented). Program
+   * Manager discards its groups' blocks and reads a group in again when the
+   * lock answers NULL. `KRNL386.EXE` seg1 `4121`-`416e`: not while it is
+   * locked (`4129`; see `locks.ts`), not without `GMEM_MOVEABLE` (`413f`),
+   * and only a discardable block (`2da9`, the descriptor's bit for it), else
+   * NULL is answered and the block kept as it was. **Recorded** by
+   * `galimit`: a moveable or fixed block that is not discardable is kept. */
+  if (cbNewSize === 0) {
+    const index = indexFor(hglb);
+
+    if (isMoveable(this, index) && locksOf(this, index)) {
       return NULL;
     }
 
-    return this.allocator.discard(indexFor(hglb)) ? hglb : NULL;
+    if (!(fuAlloc & GMEM_MOVEABLE) || !(this.allocator.flagsOf(index) & GMEM_DISCARDABLE)) {
+      return NULL;
+    }
+
+    return this.allocator.discard(index) ? hglb : NULL;
+  }
+
+  /* More than FF0000h is never given (`0c7c`), and a block grown needs room:
+   * all of its new size where it moves to more selectors, what it grows by
+   * where it stays. See `memory-model.ts`; recorded by `galimit`. */
+  if (!withinLimit(cbNewSize)) {
+    return NULL;
+  }
+
+  {
+    const object = this.allocator._objects[indexFor(hglb)];
+    const size = blockSize(cbNewSize >>> 0);
+
+    if (object) {
+      const moves = Math.max(1, Math.ceil(size / 0x10000)) > object.selectors;
+
+      if ((moves ? size : size - object.size) > largestBlock(this)) {
+        return NULL;
+      }
+    }
   }
 
   const before = this.allocator.sizeOf(indexFor(hglb));

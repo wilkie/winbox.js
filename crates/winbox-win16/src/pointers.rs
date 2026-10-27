@@ -178,16 +178,21 @@ pub(crate) fn bad_string(system: &System, pointer: u32, most: u16) -> bool {
     true
 }
 
-/// Free memory: 16 MB, as the TypeScript engine answers it.
+/// Free memory: the oracle's machine, as KERNEL told `galimit` of it, less
+/// what has been held since a program first asked (`GlobalHeap`'s model).
 pub fn get_free_space(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
-    Ok(Answer::Dword(0x0100_0000))
+    system.global.settle();
+    Ok(Answer::Dword(system.global.free_space()))
 }
 
-/// The largest block there is room for: all the free memory.
+/// The largest block there could be, as `GlobalCompact` answers it:
+/// **recorded** by `freemem` and `galimit`, 64 KiB less than the largest
+/// block `GlobalAlloc` then grants (`GlobalHeap`'s model).
 pub fn global_compact(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.dword(system);
-    Ok(Answer::Dword(0x0100_0000))
+    system.global.settle();
+    Ok(Answer::Dword(system.global.compact_answer()))
 }
 
 /// How many handles a local heap makes room for at a time, by its data

@@ -5,6 +5,7 @@ import { indexFor, segmentSelector } from '../selectors.js';
 import { dosCall } from './FileCdr.js';
 import { GlobalAlloc } from './GlobalAlloc.js';
 import { GlobalHandle } from './GlobalHandle.js';
+import { withinLimit } from './memory-model.js';
 import { pathDirectories } from './search.js';
 import { taskRecord } from './task-order.js';
 
@@ -208,6 +209,15 @@ function dosPlace(system: any, paragraphs: number) {
  */
 export function GlobalDosAlloc(this: any, dwBytes: number) {
   const size = dwBytes >>> 0;
+
+  /* `GlobalAlloc`'s own limit (`0c7c`; see `memory-model.ts`), and nought
+   * refused: `4025` gives a block of nought only where it is moveable
+   * (`40ab`), and this one is fixed. **Recorded** by `galimit`: nought,
+   * 100000h and more answered nought. */
+  if (size === 0 || !withinLimit(size)) {
+    return 0;
+  }
+
   const rounded = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
   const paragraphs = rounded >>> 4;
   const paragraph = dosPlace(this, paragraphs);

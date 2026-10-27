@@ -1,5 +1,7 @@
 'use strict';
 
+import { freeSpace, settle } from './memory-model.js';
+
 /**
  * Discarded objects always have a lock count of zero.
  *
@@ -23,7 +25,10 @@
  *                         It is `NULL` if the object has been discarded or an
  *                         error occurs.
  */
-export function GetFreeSpace(_fuFlags) {
-  // Resolve global memory pointer
-  return 0x1000000;
+export function GetFreeSpace(this: any, _fuFlags) {
+  /* The oracle's machine, as KERNEL told `galimit` of it, less what has been
+   * held since a program first asked. See `memory-model.ts`. */
+  settle(this);
+
+  return freeSpace(this);
 }

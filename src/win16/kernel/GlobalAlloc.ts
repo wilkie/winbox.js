@@ -6,6 +6,9 @@ import { NULL } from '../consts.js';
 
 import { Kernel } from '../kernel.js';
 
+import { blockSize } from '../allocator.js';
+import { largestBlock, withinLimit } from './memory-model.js';
+
 /**
  * The **GlobalAlloc** function allocates the specified number of bytes from the
  * global heap.
@@ -70,6 +73,14 @@ import { Kernel } from '../kernel.js';
  *                          Otherwise, it is `NULL`.
  */
 export function GlobalAlloc(fuAlloc, cbAlloc) {
+  /* More than FF0000h is refused at once, and a block larger than the
+   * machine's largest once KERNEL has looked for room: `KRNL386.EXE` seg1
+   * `0c7c`, `4025`, `379e`; recorded by `galimit`, as OLECLI's 68000000h
+   * bytes are. See `memory-model.ts`. */
+  if (!withinLimit(cbAlloc) || blockSize(cbAlloc >>> 0) > largestBlock(this)) {
+    return NULL;
+  }
+
   // GlobalAlloc allocates to the system heap.
 
   // We can negotiate flags.

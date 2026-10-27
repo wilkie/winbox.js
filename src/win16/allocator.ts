@@ -8,11 +8,31 @@ import { Heap } from './heap.js';
 /** The first selector a block is given. */
 const FIRST_SELECTOR = 100;
 
+/**
+ * A block's size as KERNEL gives it (`KRNL386.EXE` seg1 `3fde`): rounded up
+ * to 32 bytes, and past 1 MiB up to a 4 KiB page. Nought stays nought, a
+ * handle with no memory (`memory`). **Recorded** by `galimit`: 100001h bytes
+ * are given 101000h.
+ */
+export function blockSize(size: number) {
+  if (size === 0) {
+    return 0;
+  }
+
+  const rounded = Math.ceil(size / 0x20) * 0x20;
+
+  return rounded > 0x100000 ? Math.ceil(rounded / 0x1000) * 0x1000 : rounded;
+}
+
 export class Allocator {
   declare _globalAllocator: any;
   declare _heaps: any;
   declare _memory: any;
   declare _objects: any;
+  /** The bytes the blocks given hold, as `GetFreeSpace` counts them. */
+  held = 0;
+  /** What was held when a program first asked (see `kernel/memory-model.ts`). */
+  baseline: number | undefined = undefined;
   /**
    * Constructs a new allocation manager for the given memory.
    */
@@ -59,7 +79,7 @@ export class Allocator {
      * still costs a selector. Recorded from Windows in
      * oracle/fixtures/memory.json.
      */
-    size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
+    size = blockSize(size);
 
     // Determine how many selectors we need to allocate
     const selectorCount = Math.max(1, (size + 0xffff) >> 16);
@@ -90,6 +110,7 @@ export class Allocator {
       selectors: selectorCount,
       flags: (options as any).flags ?? 0,
     };
+    this.held += size;
 
     // Map it in
     for (let i = nextSelector; i < nextSelector + selectorCount; i++) {
@@ -162,6 +183,7 @@ export class Allocator {
         this._memory.unmapHandler(handle + tile);
       }
 
+      this.held -= object.size;
       delete this._objects[handle];
     }
 
@@ -220,6 +242,7 @@ export class Allocator {
       return false;
     }
 
+    this.held -= object.size;
     object.size = 0;
     object.discarded = true;
 
@@ -283,7 +306,7 @@ export class Allocator {
 
     object.discarded = false;
 
-    size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
+    size = blockSize(size);
 
     const selectors = Math.max(1, (size + 0xffff) >> 16);
 
@@ -301,6 +324,7 @@ export class Allocator {
     }
 
     object.selectors = selectors;
+    this.held += size - object.size;
     object.size = size;
     this.#setLimits(index);
 

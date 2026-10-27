@@ -5949,6 +5949,7 @@ const RUN_WHOLE = new Set<string>([
   'visrgn',
   'metarec',
   'visrule',
+  'galimit',
 ]);
 
 /**
