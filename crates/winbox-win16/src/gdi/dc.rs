@@ -62,6 +62,11 @@ pub struct DcState {
     pub driver: Option<super::printer_output::DriverState>,
     /// `SetRelAbs`' mode, where set: `ABSOLUTE` else (`dc_internals`).
     pub rel_abs: Option<u16>,
+    /// The origin `SetDCOrg` set, in the screen's terms, where it did: the
+    /// view's corner else (`visible_region`). The state GDI copies is the
+    /// context's first A0h bytes, the origin and the clip region -- not the
+    /// visible region (`GDI.EXE` seg1 `0a46`).
+    pub origin: Option<(i32, i32)>,
 }
 
 /// The bitmap a device context draws into, as far as its state goes.
@@ -118,6 +123,17 @@ pub struct Dc {
     /// The region object `GetClipRgn` answers for the clip region, once
     /// asked: its handle and its object.
     pub clip_handle: Option<(u16, usize)>,
+    /// The visible region GDI was given, in the screen's terms, where it
+    /// was: what the context shows else -- a window's rectangle, the
+    /// screen, the bitmap -- as USER and `SelectObject` give it
+    /// (`visible_region`).
+    pub vis: Option<winbox_raster::ClipRegion>,
+    /// What `SaveVisRgn` saved, the last on top: each a region's handle and
+    /// object.
+    pub vis_saved: Vec<(u16, usize)>,
+    /// The region object `InquireVisRgn` answers, once asked: its handle
+    /// and its object.
+    pub vis_handle: Option<(u16, usize)>,
     /// The bounds of what is drawn in it (`bounds`).
     pub bounds: super::bounds::Bounds,
 }
@@ -167,6 +183,7 @@ impl System {
                 clip: None,
                 driver: None,
                 rel_abs: None,
+                origin: None,
             },
             saved: Vec::new(),
             bitmap,
@@ -178,6 +195,9 @@ impl System {
             unclipped: false,
             hook: DcHook::default(),
             clip_handle: None,
+            vis: None,
+            vis_saved: Vec::new(),
+            vis_handle: None,
             bounds: super::bounds::Bounds::default(),
         });
         self.gdi.dcs.len() - 1
@@ -397,6 +417,16 @@ pub(crate) fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
         || screen_origin(system, index),
         |(x, y)| (i32::from(x), i32::from(y)),
     )
+}
+
+/// Where a device context's (0, 0) is on the screen: the origin
+/// `SetDCOrg` set, else its view's corner (`screen_origin`) -- `GDI.EXE`
+/// seg1, the words at A2h and A4h.
+pub(crate) fn origin_of(system: &System, index: usize) -> (i32, i32) {
+    system.gdi.dcs[index]
+        .state
+        .origin
+        .unwrap_or_else(|| screen_origin(system, index))
 }
 
 /// Where a device context's corner is on the screen: a window's client
@@ -863,13 +893,14 @@ pub(crate) fn get_current_position_ex_call(
 
 /// Where a device context's origin is on the screen, the column in the low
 /// word: a window's client area's corner, the screen's nought (`queries`).
-/// A memory context and the screen's are at nought.
+/// A memory context and the screen's are at nought. Where `SetDCOrg` set
+/// one, that (`visfam`).
 pub(crate) fn get_dc_org_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let Some(index) = dc_of(system, hdc) else {
         return Ok(Answer::Dword(0));
     };
-    let (x, y) = screen_origin(system, index);
+    let (x, y) = origin_of(system, index);
 
     Ok(Answer::Dword(pack(i64::from(x), i64::from(y))))
 }

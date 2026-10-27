@@ -31,8 +31,12 @@ export function GetPixel(hdc, x, y) {
   }
 
   /* Outside a clip region the program set, nothing: `CLR_INVALID`, the
-   * pixel there as it may be (`selrgn`). */
-  if (surface.clipRegion && !clipOf(surface).contains(x, y)) {
+   * pixel there as it may be (`selrgn`); and outside a visible region GDI
+   * was given (`visible-region.ts`). */
+  if (
+    (surface.clipRegion || surface.visRegion || surface.dcOrigin) &&
+    !clipOf(surface).contains(x, y)
+  ) {
     return CLR_INVALID;
   }
 

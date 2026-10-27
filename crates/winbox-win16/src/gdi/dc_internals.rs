@@ -11,7 +11,7 @@ use crate::handles::Object;
 use crate::system::System;
 
 use super::GdiObject;
-use super::dc::{DcBitmap, dc_of, screen_origin};
+use super::dc::{DcBitmap, dc_of, origin_of};
 
 /// USER's `DCHOOK`, ordinal 362, the hook USER sets on the contexts it
 /// lends.
@@ -158,7 +158,7 @@ fn get_clip_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let Some(clip) = system.gdi.dcs[dc].state.clip.clone() else {
         return Ok(Answer::Word(0));
     };
-    let (x, y) = screen_origin(system, dc);
+    let (x, y) = origin_of(system, dc);
     let shape = clip.offset(x, y);
 
     if let Some((handle, object)) = system.gdi.dcs[dc].clip_handle

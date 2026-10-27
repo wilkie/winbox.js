@@ -210,6 +210,51 @@ export function displayDriverFor(mode: any) {
 }
 
 /**
+ * What a display driver's `Disable` answers, which GDI's `Death` answers
+ * (`visible-region.ts`), by the driver's file. **Read out**:
+ *
+ * * `VGA.DRV` seg4 `0274`, `EGA.DRV` seg4 `0196`, `SUPERVGA.DRV` seg4
+ *   `03ba`, `HERCULES.DRV` seg2 `0164` and `SVGA256.DRV` seg3 `0000`: the
+ *   text mode set again and their hook on INT 2Fh taken off, then −1
+ *   (`mov ax,0FFFFh`), whatever the state.
+ * * `XGA.DRV` seg3 `0900`: the word at 1816h of its data, which its start
+ *   set from INT 2Fh function 1686h (seg3 `038d`-`0392`), DPMI's "get CPU
+ *   mode": nought in protected mode, where Windows 3.1 always runs.
+ * * `8514.DRV` seg6 `03b7`: what AX holds when its hook on INT 2Fh is
+ *   taken off (seg6 `0225`) -- 252Fh, from the DOS call that sets the
+ *   vector back, while the hook is in, as it is from `Enable` on. **This
+ *   depends on state**: called again with no `Enable` between, the hook is
+ *   already off and AX is what the BIOS's INT 10h calls before it left,
+ *   not measured; this answers 252Fh then too.
+ */
+export function disableAnswer(driverFile: string | undefined) {
+  switch ((driverFile ?? 'VGA.DRV').toUpperCase()) {
+    case 'XGA.DRV':
+      return 0;
+    case '8514.DRV':
+      return 0x252f;
+    default:
+      return 0xffff;
+  }
+}
+
+/**
+ * What a display driver's `Enable` answers to `Resurrection`, which asks
+ * for the device set up (the style's bit 0 clear), by the driver's file:
+ * 1 where the mode is set. **Read out** of `VGA.DRV` seg4 `02b2` (seg4
+ * `008e` answers 1 once BIOS reports mode 12h, nought and a message and
+ * Windows ended where not), `SVGA256.DRV` seg3 `07fc` (seg3 `0174`, 1 at
+ * `02d6`), `8514.DRV` seg6 `030e` (1 at `03a9`) and `XGA.DRV` seg3 `0755`
+ * (1 at `08e8`). The EGA's, the Super VGA's and the Hercules's end as the
+ * VGA's does (`EGA.DRV` seg4 `026a`, `SUPERVGA.DRV` seg4 `048e`,
+ * `HERCULES.DRV` seg2 `01e0`), their mode setting not read. WinBox's
+ * display is never turned off, so is always set.
+ */
+export function enableAnswer(_driverFile: string | undefined) {
+  return 1;
+}
+
+/**
  * The **GetDriverResourceID** function of a display driver: the number of
  * the resource to find for the one asked, by `GetDriverResourceID(id,
  * lpResType)`, as `MAKEINTRESOURCE` -- nought in the high word. The type is

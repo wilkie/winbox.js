@@ -36,7 +36,7 @@ use crate::call::{Answer, Args, Implementation, Stop};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
-use super::dc::{DcBitmap, dc_of};
+use super::dc::{DcBitmap, dc_of, origin_of, screen_origin};
 use super::draw::{device_point, device_rect, mapped, read_rect, signed, write_rect};
 use super::mapping::mapping_of;
 use super::objects::GdiObject;
@@ -559,12 +559,58 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(answer))
 }
 
-/// What can be drawn on at all: the bitmap, or nothing for the one a
-/// memory device context starts with.
-/// What is visible: the area, and on a context of a driver that bands, no
-/// more than the band (`printer_bands.rs`, `IntersectVisRect`).
+/// A device context's visible region, in the screen's terms: what GDI was
+/// given (`visible_region`), else what the context shows -- the area, from
+/// its view's corner, as USER selects a window's rectangle and
+/// `SelectObject` a bitmap's (`GDI.EXE` seg1 `1cd8`-`1cf7`).
+pub(crate) fn vis_of(system: &mut System, dc: usize) -> ClipRegion {
+    if let Some(vis) = &system.gdi.dcs[dc].vis {
+        return vis.clone();
+    }
+
+    let (x, y) = screen_origin(system, dc);
+
+    area(system, dc).offset(x, y)
+}
+
+/// Whether a device context's visible region or origin are GDI's own, not
+/// what it shows from its view's corner.
+pub(crate) fn vis_given(system: &System, dc: usize) -> bool {
+    system.gdi.dcs[dc].vis.is_some() || system.gdi.dcs[dc].state.origin.is_some()
+}
+
+/// The visible region in the context's own terms, moved by its origin.
+fn vis_here(system: &mut System, dc: usize) -> ClipRegion {
+    let (x, y) = origin_of(system, dc);
+
+    vis_of(system, dc).offset(-x, -y)
+}
+
+/// What drawing is kept to, beside the view's own test: the clip region,
+/// within the visible region where GDI was given one or an origin (`GDI.EXE`
+/// seg1 `17b1`, the region at 1Eh); none where neither narrows it.
+pub(crate) fn draw_clip(system: &mut System, dc: usize) -> Option<ClipRegion> {
+    if !vis_given(system, dc) {
+        return system.gdi.dcs[dc].state.clip.clone();
+    }
+
+    let own = vis_here(system, dc);
+
+    Some(match &system.gdi.dcs[dc].state.clip {
+        Some(clip) => clip.intersect(&own),
+        None => own,
+    })
+}
+
+/// What is visible: the visible region in the context's own terms, and on
+/// a context of a driver that bands, no more than the band
+/// (`printer_bands.rs`, `IntersectVisRect`).
 fn visible(system: &mut System, dc: usize) -> ClipRegion {
-    let shown = area(system, dc);
+    let shown = if vis_given(system, dc) {
+        vis_here(system, dc)
+    } else {
+        area(system, dc)
+    };
 
     match super::printer_bands::band_of(system, dc) {
         Some([left, top, right, bottom]) => {
@@ -577,7 +623,7 @@ fn visible(system: &mut System, dc: usize) -> ClipRegion {
 /// What can be drawn on, as a clip region starts: the bitmap, or nothing
 /// for the one a memory device context starts with; a printer driver's
 /// page.
-fn area(system: &mut System, dc: usize) -> ClipRegion {
+pub(crate) fn area(system: &mut System, dc: usize) -> ClipRegion {
     // A printer driver's context: its page, as the driver's `GDIINFO` has
     // it (`printer_driver.rs`).
     if let Some(info) = super::printer_driver::device_info(system, dc) {

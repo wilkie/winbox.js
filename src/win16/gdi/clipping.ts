@@ -34,7 +34,7 @@ import { deviceX, deviceY, logicalX, logicalY, mappingOf } from './mapping.js';
  * What can be drawn on, as a clip region starts: the bitmap, or nothing for
  * the one a memory device context starts with; a printer driver's page.
  */
-function area(surface: any) {
+export function area(surface: any) {
   const bitmap = surface.bitmap;
 
   /* A printer driver's context: its page, as the driver's `GDIINFO` has it
@@ -51,11 +51,39 @@ function area(surface: any) {
 }
 
 /**
- * What is visible: the area, and on a context of a driver that bands, no
- * more than the band (`printer-bands.ts`, `IntersectVisRect`).
+ * Where a device context's (0, 0) is on the screen: the origin `SetDCOrg`
+ * set, else its view's corner -- a window's client area's, nought for the
+ * screen and a memory context (`GDI.EXE` seg1, the words at A2h and A4h).
+ */
+export function originOf(surface: any): [number, number] {
+  return surface?.dcOrigin ?? surface?.viewOrigin ?? [0, 0];
+}
+
+/**
+ * A device context's visible region, in the screen's terms: what GDI was
+ * given (`visible-region.ts`), else what the surface shows -- the area,
+ * from its view's corner, as USER selects a window's rectangle and
+ * `SelectObject` a bitmap's (`GDI.EXE` seg1 `1cd8`-`1cf7`).
+ */
+export function visOf(surface: any): ClipRegion {
+  if (surface?.visRegion) {
+    return surface.visRegion;
+  }
+
+  const [x, y] = surface?.viewOrigin ?? [0, 0];
+
+  return area(surface).offset(x, y);
+}
+
+/**
+ * What is visible: the visible region in the context's own terms, moved by
+ * its origin, and on a context of a driver that bands, no more than the
+ * band (`printer-bands.ts`, `IntersectVisRect`).
  */
 function visible(surface: any) {
-  const shown = area(surface);
+  const [x, y] = originOf(surface);
+  const shown =
+    surface?.visRegion || surface?.dcOrigin ? visOf(surface).offset(-x, -y) : area(surface);
   const band = surface.band?.rect;
 
   return band ? shown.intersect(ClipRegion.rect(band[0], band[1], band[2], band[3])) : shown;

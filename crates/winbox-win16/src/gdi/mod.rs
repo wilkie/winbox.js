@@ -39,6 +39,7 @@ pub mod strings;
 pub mod system_exports;
 pub mod text;
 pub mod text_out;
+pub mod visible_region;
 
 use std::collections::HashMap;
 
@@ -253,7 +254,8 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| environment::implementation(name))
                 .or_else(|| engine_font::implementation(name))
                 .or_else(|| priority_queue::implementation(name))
-                .or_else(|| system_exports::implementation(name));
+                .or_else(|| system_exports::implementation(name))
+                .or_else(|| visible_region::implementation(name));
         }
     }))
 }

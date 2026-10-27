@@ -2,6 +2,7 @@
 
 import { resetCommon } from './GetDC.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
+import { resetVisible } from '../gdi/visible-region.js';
 import { NULL } from '../consts.js';
 
 import { RasterWindow } from './raster-window.js';
@@ -74,6 +75,10 @@ export async function BeginPaint(hwnd, lpps) {
    * context it had: Windows hands out a fresh one. Not recorded. */
   surface.clipRegion = null;
   surface.saved = [];
+
+  /* Its visible region the client area, and its origin the client area's
+   * corner, as USER gives them (`visible-region.ts`). */
+  resetVisible(surface);
 
   /* Its brush origin the client area's corner, as `GetDC` gives it
    * (`brushorg`). */

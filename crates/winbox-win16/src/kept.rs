@@ -2623,8 +2623,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ExcludeVisRect",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetBitmapBits",
@@ -2773,8 +2773,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "IntersectVisRect",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LPToDP",
@@ -2797,8 +2797,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "OffsetVisRgn",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "PtVisible",
@@ -2815,8 +2815,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SelectVisRgn",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetBitmapBits",
@@ -2887,8 +2887,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SetDCOrg",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -2911,14 +2911,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Death",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Resurrection",
                 pops: 14,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "PlayMetafile",
@@ -2959,20 +2959,20 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SaveVisRgn",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "RestoreVisRgn",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "InquireVisRgn",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetEnvironment",
@@ -3259,14 +3259,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetDCState",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "SetDCState",
                 pops: 4,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "RectInRegion",
@@ -4585,8 +4585,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FastWindowFrame",
                 pops: 14,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GDIMoveBitmap",

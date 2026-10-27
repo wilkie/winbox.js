@@ -97,6 +97,33 @@ pub struct ResourceIds {
 }
 
 impl Display {
+    /// What the display driver's `Disable` answers, which GDI's `Death`
+    /// answers (`gdi::visible_region`). **Read out**: `VGA.DRV` seg4
+    /// `0274`, `EGA.DRV` seg4 `0196`, `SUPERVGA.DRV` seg4 `03ba`,
+    /// `HERCULES.DRV` seg2 `0164` and `SVGA256.DRV` seg3 `0000` answer −1
+    /// whatever the state; `XGA.DRV` seg3 `0900` the word its start set from
+    /// INT 2Fh function 1686h (seg3 `038d`-`0392`), nought in protected
+    /// mode; `8514.DRV` seg6 `03b7` what AX holds as its hook on INT 2Fh is
+    /// taken off (seg6 `0225`), 252Fh from the DOS call while the hook is
+    /// in. **That depends on state**: again with no `Enable` between, the
+    /// hook is off and AX is what the BIOS left, not measured; 252Fh then
+    /// too. As `display-driver.ts`' `disableAnswer`.
+    pub fn disable_answer(&self) -> u16 {
+        match self.driver_file.to_ascii_uppercase().as_str() {
+            "XGA.DRV" => 0,
+            "8514.DRV" => 0x252f,
+            _ => 0xffff,
+        }
+    }
+
+    /// What the display driver's `Enable` answers to `Resurrection`, which
+    /// asks for the device set up: 1, the mode set (`VGA.DRV` seg4 `02b2`,
+    /// `SVGA256.DRV` seg3 `07fc`, `8514.DRV` seg6 `030e`, `XGA.DRV` seg3
+    /// `0755`). WinBox's display is never turned off. As `enableAnswer`.
+    pub fn enable_answer(&self) -> u16 {
+        1
+    }
+
     /// What the display driver's `GetDriverResourceID` answers for a
     /// number; none where the driver has not got one.
     ///
