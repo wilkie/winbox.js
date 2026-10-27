@@ -64,9 +64,14 @@ export function ExtFloodFill(
   const surfaceMode = fuFillType === FLOODFILLSURFACE;
   const clip = clipOf(surface);
   const viewClip = bitmap.context.clip;
-  const { width, height } = bitmap;
+  /* Over every pixel there is: a window's context reaches the whole screen
+   * from its origin (`DeviceBitmap.screenView`). */
+  const reach = bitmap.context.reach;
+  const width = reach.right - reach.left;
+  const height = reach.bottom - reach.top;
+  const cell = (x: number, y: number) => (y - reach.top) * width + (x - reach.left);
   const fills = (fx: number, fy: number) => {
-    if (fx < 0 || fy < 0 || fx >= width || fy >= height) {
+    if (!bitmap.context.reaches(fx, fy)) {
       return false;
     }
 
@@ -83,10 +88,10 @@ export function ExtFloodFill(
     return FALSE;
   }
 
-  const seen = new Uint8Array(width * height);
+  const seen = new Uint8Array(Math.max(0, width) * Math.max(0, height));
   const stack = [[px, py]];
 
-  seen[py * width + px] = 1;
+  seen[cell(px, py)] = 1;
 
   while (stack.length) {
     const [cx, cy] = stack.pop()!;
@@ -97,15 +102,8 @@ export function ExtFloodFill(
       [cx, cy + 1],
       [cx, cy - 1],
     ]) {
-      if (
-        nx >= 0 &&
-        ny >= 0 &&
-        nx < width &&
-        ny < height &&
-        !seen[ny * width + nx] &&
-        fills(nx, ny)
-      ) {
-        seen[ny * width + nx] = 1;
+      if (bitmap.context.reaches(nx, ny) && !seen[cell(nx, ny)] && fills(nx, ny)) {
+        seen[cell(nx, ny)] = 1;
         stack.push([nx, ny]);
       }
     }
@@ -114,11 +112,11 @@ export function ExtFloodFill(
   /* Painted with the brush a row's run at a time, as it lies. */
   const extent = [Infinity, Infinity, -Infinity, -Infinity];
 
-  for (let row = 0; row < height; row++) {
+  for (let row = reach.top; row < reach.bottom; row++) {
     let start = -1;
 
-    for (let column = 0; column <= width; column++) {
-      const inside = column < width && seen[row * width + column];
+    for (let column = reach.left; column <= reach.right; column++) {
+      const inside = column < reach.right && seen[cell(column, row)];
 
       if (inside && start < 0) {
         start = column;

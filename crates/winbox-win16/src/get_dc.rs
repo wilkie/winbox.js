@@ -190,7 +190,6 @@ impl System {
             let font = self.system_font();
 
             self.gdi.dcs[dc].state.font = font;
-            self.gdi.dcs[dc].unclipped = true;
             self.select_window_region(dc, index, DCX_USESTYLE, None);
             self.reset_common(index, dc);
             self.window_dcs.insert(dc, hwnd);

@@ -133,7 +133,8 @@ async function scrollWindow(
   }
 
   const window = owner.window;
-  const left = scrollPixels(window.surface.bitmap as DeviceBitmap, dx, dy, scroll, clip);
+  /* Through USER's own view of the client area, kept to its region. */
+  const left = scrollPixels(owner.desktop.clientView(window), dx, dy, scroll, clip);
 
   if (children) {
     for (const child of owner.desktop.windows.filter((other: any) => other.parent === window)) {

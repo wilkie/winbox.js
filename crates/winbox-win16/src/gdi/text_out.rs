@@ -645,29 +645,37 @@ impl Writer {
     }
 }
 
-/// The pixels a device context draws on, kept as they are, so that what is
-/// drawn outside a rectangle can be put back: a copy of the indices, row by
-/// row, from where the pixels start in their store.
-pub(crate) fn keep_pixels(target: &DeviceBitmap) -> Vec<u8> {
-    let (width, height) = (target.width().max(0), target.height().max(0));
+/// The pixels a device context may draw on, kept as they are, so that what
+/// is drawn outside a rectangle can be put back: a copy of the indices of
+/// the rectangle of them it may write (`IndexedContext::writable`) -- on a
+/// window's context, which reaches the whole screen, no more than its
+/// region's box.
+pub(crate) struct Kept {
+    rect: winbox_raster::indexed_context::Rect,
+    pixels: Vec<u8>,
+}
+
+pub(crate) fn keep_pixels(target: &DeviceBitmap) -> Kept {
     let context = &target.context;
+    let rect = context.writable();
+    let (width, height) = (
+        (rect.right - rect.left).max(0),
+        (rect.bottom - rect.top).max(0),
+    );
     let indices = context.indices.borrow();
-    let mut kept = vec![0; (width * height) as usize];
+    let mut pixels = vec![0; (width * height) as usize];
 
     for row in 0..height {
-        let from = context.base + row as isize * context.stride;
-
         for column in 0..width {
-            if let Some(&index) = usize::try_from(from + column as isize)
-                .ok()
-                .and_then(|at| indices.get(at))
-            {
-                kept[(row * width + column) as usize] = index;
+            let at = context.address(rect.left + column, rect.top + row);
+
+            if let Some(&index) = usize::try_from(at).ok().and_then(|at| indices.get(at)) {
+                pixels[(row * width + column) as usize] = index;
             }
         }
     }
 
-    kept
+    Kept { rect, pixels }
 }
 
 /// What was drawn outside a rectangle put back as `keep_pixels` kept it,
@@ -677,10 +685,12 @@ pub(crate) fn keep_pixels(target: &DeviceBitmap) -> Vec<u8> {
 /// refused: (20, 6) to (10, 14) clips exactly as (10, 6) to (20, 14) does.
 /// One whose edges are equal clips everything away. **Recorded** by
 /// `clipedge`, which walks each edge across the text a column at a time.
-pub(crate) fn restore_outside(target: &DeviceBitmap, kept: &[u8], rect: Bounds) {
+pub(crate) fn restore_outside(target: &DeviceBitmap, kept: &Kept, rect: Bounds) {
     let (left, right) = (rect.left.min(rect.right), rect.left.max(rect.right));
     let (top, bottom) = (rect.top.min(rect.bottom), rect.top.max(rect.bottom));
-    let (width, height) = (target.width().max(0), target.height().max(0));
+    let area = kept.rect;
+    let width = (area.right - area.left).max(0);
+    let height = (area.bottom - area.top).max(0);
     let context = &target.context;
 
     {
@@ -688,22 +698,23 @@ pub(crate) fn restore_outside(target: &DeviceBitmap, kept: &[u8], rect: Bounds) 
 
         for row in 0..height {
             for column in 0..width {
-                let (x, y) = (i64::from(column), i64::from(row));
+                let (px, py) = (area.left + column, area.top + row);
+                let (x, y) = (i64::from(px), i64::from(py));
 
                 if x >= left && x < right && y >= top && y < bottom {
                     continue;
                 }
 
-                let at = context.base + row as isize * context.stride + column as isize;
+                let at = context.address(px, py);
 
                 if let Some(pixel) = usize::try_from(at).ok().and_then(|at| indices.get_mut(at)) {
-                    *pixel = kept[(row * width + column) as usize];
+                    *pixel = kept.pixels[(row * width + column) as usize];
                 }
             }
         }
     }
 
-    context.mark_rect(0, 0, width, height);
+    context.mark_rect(area.left, area.top, area.right, area.bottom);
 }
 
 /// Where text drawn at a point goes, and what moving the current position

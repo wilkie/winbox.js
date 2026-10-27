@@ -604,6 +604,42 @@ pub(crate) fn draw_clip(system: &mut System, dc: usize) -> Option<ClipRegion> {
     })
 }
 
+/// What a device context's drawing goes through: on a window's, a view of
+/// the whole screen, its visible region -- what it shows, where GDI was
+/// given none -- moved to its own terms by its origin, within the clip
+/// region (`GDI.EXE` seg1 `17b1`, the region at 1Eh); elsewhere as
+/// `draw_clip`.
+pub(crate) fn drawn_through(system: &mut System, dc: usize) -> Option<ClipRegion> {
+    if !super::dc::on_window(system, dc) {
+        return draw_clip(system, dc);
+    }
+
+    let own = vis_here(system, dc);
+
+    Some(match &system.gdi.dcs[dc].state.clip {
+        Some(clip) => clip.intersect(&own),
+        None => own,
+    })
+}
+
+/// The pixels a device context draws on, kept to its visible region alone
+/// where it is a window's -- no clip region -- as USER's own drawing
+/// through it is: `DrawFocusRect`, `ScrollDC`.
+pub(crate) fn visible_target(
+    system: &mut System,
+    dc: usize,
+) -> Option<winbox_raster::DeviceBitmap> {
+    let mut bitmap = system.draw_target(dc)?;
+
+    if super::dc::on_window(system, dc) {
+        let own = vis_here(system, dc);
+
+        bitmap.context.dc_clip = Some(std::rc::Rc::new(move |x, y| own.contains(x, y)));
+    }
+
+    Some(bitmap)
+}
+
 /// What is visible: the visible region in the context's own terms, and on
 /// a context of a driver that bands, no more than the band
 /// (`printer_bands.rs`, `IntersectVisRect`).

@@ -86,16 +86,20 @@ for (const display of Object.keys(DRIVES)) {
     }
 
     it('keeps a covered window from drawing over the one on top of it', () => {
+      /* Windows at the top have `WS_CLIPSIBLINGS` whether asked for or
+       * not (`visrgn`), which USER's rule goes by. */
       const desktop = make();
-      const under = window(desktop, 0x00cf0000);
-      const over = window(desktop, 0x00cf0000, undefined, [100, 80, 200, 120]);
+      const under = window(desktop, 0x04cf0000);
+      const over = window(desktop, 0x04cf0000, undefined, [100, 80, 200, 120]);
 
       desktop.show(under);
       desktop.show(over);
 
       const before = desktop.screen.indices.slice();
       const black = desktop.screen.devicePalette.index(0, 0, 0);
-      const bitmap = under.surface.bitmap as DeviceBitmap;
+      /* USER's own view of its client area, kept to its region by USER's
+       * rule; a device context's is kept so by its surface. */
+      const bitmap = desktop.clientView(under);
 
       for (let y = 0; y < bitmap.height; y++) {
         for (let x = 0; x < bitmap.width; x++) {

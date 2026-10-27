@@ -268,6 +268,7 @@ pub const AGREEING: &[&str] = &[
     "getdcex",
     "visrule",
     "galimit",
+    "visdraw",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

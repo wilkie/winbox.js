@@ -986,9 +986,8 @@ pub fn ext_flood_fill(
     let surface = kind == FLOODFILLSURFACE;
     let clip = super::regions::clip_of(system, dc);
     let view = bitmap.context.clip.clone();
-    let (width, height) = (bitmap.width(), bitmap.height());
     let fills = |fx: i32, fy: i32| {
-        if fx < 0 || fy < 0 || fx >= width || fy >= height {
+        if !bitmap.context.reaches(fx, fy) {
             return false;
         }
 
@@ -1009,21 +1008,20 @@ pub fn ext_flood_fill(
         return 0;
     }
 
-    let mut seen = vec![false; (width * height) as usize];
+    // Over every pixel there is: a window's context reaches the whole
+    // screen from its origin (`DeviceBitmap::screen_view`).
+    let reach = bitmap.context.reach;
+    let (width, height) = (reach.right - reach.left, reach.bottom - reach.top);
+    let cell = |x: i32, y: i32| ((y - reach.top) * width + (x - reach.left)) as usize;
+    let mut seen = vec![false; (width.max(0) * height.max(0)) as usize];
     let mut stack = vec![(px, py)];
 
-    seen[(py * width + px) as usize] = true;
+    seen[cell(px, py)] = true;
 
     while let Some((cx, cy)) = stack.pop() {
         for (nx, ny) in [(cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)] {
-            if nx >= 0
-                && ny >= 0
-                && nx < width
-                && ny < height
-                && !seen[(ny * width + nx) as usize]
-                && fills(nx, ny)
-            {
-                seen[(ny * width + nx) as usize] = true;
+            if bitmap.context.reaches(nx, ny) && !seen[cell(nx, ny)] && fills(nx, ny) {
+                seen[cell(nx, ny)] = true;
                 stack.push((nx, ny));
             }
         }
@@ -1043,9 +1041,9 @@ pub fn ext_flood_fill(
 
     let mut extent = [i32::MAX, i32::MAX, i32::MIN, i32::MIN];
 
-    for row in 0..height {
-        for column in 0..width {
-            if seen[(row * width + column) as usize] {
+    for row in reach.top..reach.bottom {
+        for column in reach.left..reach.right {
+            if seen[cell(column, row)] {
                 bitmap.context.set_pixel(column, row, paint);
                 extent[0] = extent[0].min(column);
                 extent[1] = extent[1].min(row);

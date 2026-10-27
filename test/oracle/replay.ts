@@ -5569,13 +5569,7 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* `visrgn` and `visfam`: GDI keeps the visible region and its family
    * answers (phase 1 of `kb/topics/visible-regions.md`); what waits for the
    * design's later phases is held here, by the phase. */
-  'visfam:offset':
-    "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
-  'visfam:select':
-    "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
-  'visfam:origin':
-    'phase 3: drawing does not move with SetDCOrg; phase 4: the origin does not outlive ReleaseDC',
-  'visfam:cliprgn': 'phase 3: drawing does not move with SetDCOrg',
+  'visfam:origin': 'phase 4: the origin does not outlive ReleaseDC',
   'visfam:again':
     "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
   'visfam:hook':
@@ -5950,6 +5944,7 @@ const RUN_WHOLE = new Set<string>([
   'metarec',
   'visrule',
   'galimit',
+  'visdraw',
 ]);
 
 /**

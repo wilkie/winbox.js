@@ -216,6 +216,31 @@ impl System {
             self.gdi.dcs[dc].state.font = font;
         }
 
+        // Its region USER's rule's, as `GetDC` gives it, within its client
+        // area: a window's context draws through its region alone, and a
+        // list box's class has `CS_PARENTDC`, whose region is its
+        // parent's. Windows keeps an item's drawing inside the list's
+        // client area -- `listbox`'s owner-drawn list leaves its border as
+        // it was -- by a way of its own not read out.
+        if let Some(shown) = self.windows[index].as_ref() {
+            let client = winbox_raster::ClipRegion::rect(
+                shown.left + shown.client.left,
+                shown.top + shown.client.top,
+                shown.left + shown.client.right,
+                shown.top + shown.client.bottom,
+            );
+
+            self.select_window_region(
+                dc,
+                index,
+                crate::window_vis::DCX_USESTYLE | crate::window_vis::DCX_INTERSECTRGN,
+                Some(crate::window_vis::Given {
+                    shape: client,
+                    exclude: false,
+                }),
+            );
+        }
+
         let kept = self.control_at(index).item_dc;
 
         if kept != 0 {

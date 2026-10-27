@@ -34,7 +34,10 @@ export function GetPixel(hdc, x, y) {
    * pixel there as it may be (`selrgn`); and outside a visible region GDI
    * was given (`visible-region.ts`). */
   if (
-    (surface.clipRegion || surface.visRegion || surface.dcOrigin) &&
+    (surface.clipRegion ||
+      surface.visRegion ||
+      surface.dcOrigin ||
+      (surface.bitmap instanceof DeviceBitmap && surface.bitmap.corner)) &&
     !clipOf(surface).contains(x, y)
   ) {
     return CLR_INVALID;

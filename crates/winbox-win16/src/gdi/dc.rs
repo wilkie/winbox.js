@@ -113,11 +113,6 @@ pub struct Dc {
     pub palette: Option<usize>,
     /// One of WinG's, whose driver is WinG's own (`wing`).
     pub wing: bool,
-    /// A window's `GetDC` gave while the window was painting: drawn through
-    /// all of the client area, not only what `BeginPaint` is painting, as
-    /// USER's cache gives a context of its own then (`choosclr`, COMMDLG's
-    /// Color drawing its focus rectangle in `WM_PAINT`).
-    pub unclipped: bool,
     /// The hook `SetDCHook` set (`dc_internals`).
     pub hook: DcHook,
     /// The region object `GetClipRgn` answers for the clip region, once
@@ -198,7 +193,6 @@ impl System {
             live: 0,
             palette: None,
             wing: false,
-            unclipped: false,
             hook: DcHook::default(),
             clip_handle: None,
             vis: None,
@@ -423,6 +417,15 @@ pub(crate) fn brush_org_of(system: &System, index: usize) -> (i32, i32) {
     system.gdi.dcs[index].state.brush_org.map_or_else(
         || screen_origin(system, index),
         |(x, y)| (i32::from(x), i32::from(y)),
+    )
+}
+
+/// Whether a device context is a window's: a view of the whole screen,
+/// kept to what it may draw on by its region alone (`System::draw_target`).
+pub(crate) fn on_window(system: &System, index: usize) -> bool {
+    matches!(
+        system.gdi.dcs[index].bitmap,
+        DcBitmap::Window(_) | DcBitmap::Whole(_)
     )
 }
 

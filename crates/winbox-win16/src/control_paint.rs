@@ -1016,7 +1016,7 @@ pub fn draw_focus_rect(
     let Some(dc) = crate::gdi::dc::dc_of(system, hdc).filter(|_| far != 0) else {
         return Ok(crate::call::Answer::Nothing);
     };
-    let Some(bitmap) = system.draw_target(dc) else {
+    let Some(bitmap) = crate::gdi::regions::visible_target(system, dc) else {
         return Ok(crate::call::Answer::Nothing);
     };
     let bytes = system.read_far(far, 8);

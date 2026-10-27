@@ -51,6 +51,8 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     },
   });
 
+  desktop.system = system;
+
   desktop.onActivate = (window) => {
     if (window.hwnd) {
       noteActivePopup(system, window.hwnd);
@@ -130,7 +132,13 @@ const HTCAPTION = 2;
  * `WM_ERASEBKGND` and `WM_SHOWWINDOW` drawing and placing it (`6d0b`,
  * `6d67`), which the desktop does.
  */
-async function iconTitleProc(system: any, hwnd: number, message: number, wParam: number, lParam: any) {
+async function iconTitleProc(
+  system: any,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: any
+) {
   if (message === WM_CLOSE) {
     return 0;
   }

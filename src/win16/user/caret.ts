@@ -1,6 +1,7 @@
 'use strict';
 
 import { rasterOp } from '../../raster/raster-op.js';
+import { Surface } from '../../raster/surface.js';
 
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { killTimer, setTimer } from './queue.js';
@@ -44,6 +45,9 @@ function caretOf(system: any): Caret | null {
   return system._caret ?? null;
 }
 
+const CS_OWNDC = 0x0020;
+const CS_CLASSDC = 0x0040;
+
 function blinkTime(system: any) {
   return system._caretBlink ?? 530;
 }
@@ -51,13 +55,35 @@ function blinkTime(system: any) {
 /** Inverts the caret's rectangle in its window, drawing it or taking it away. */
 function invert(system: any, caret: Caret) {
   const window = system.handles.resolve(caret.hwnd);
-  const surface = window?.surface;
-
-  if (!surface) {
+  if (!window?.surface) {
     return;
   }
 
-  rasterOp(system.display, surface, caret.x, caret.y, caret.width, caret.height, 0x550009, null, 0, 0);
+  /* Through the window's own device context where its class has one, as
+   * `DSTINVERT` through it draws; else through USER's own view of the
+   * client area. */
+  const windowClass = window.options?.windowClass
+    ? system.handles.retrieve(window.options.windowClass)
+    : null;
+  const own = (windowClass?.style ?? 0) & (CS_OWNDC | CS_CLASSDC);
+  const surface = own || !window.desktop ? window.surface : Surface.memory();
+
+  if (surface !== window.surface) {
+    surface.bitmap = window.desktop.clientView(window.window);
+  }
+
+  rasterOp(
+    system.display,
+    surface,
+    caret.x,
+    caret.y,
+    caret.width,
+    caret.height,
+    0x550009,
+    null,
+    0,
+    0
+  );
 }
 
 function draw(system: any, caret: Caret, on: boolean) {

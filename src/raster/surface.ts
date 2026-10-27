@@ -408,7 +408,13 @@ export class Surface {
 
   /** Where the surface's pixels start on the screen: a view's corner, else nought. */
   get viewOrigin(): [number, number] {
-    const context: any = this._bitmap?.context;
+    const bitmap: any = this._bitmap;
+
+    if (bitmap instanceof DeviceBitmap && bitmap.corner) {
+      return bitmap.corner;
+    }
+
+    const context: any = bitmap?.context;
 
     return [context?.ownerX ?? 0, context?.ownerY ?? 0];
   }
@@ -427,15 +433,26 @@ export class Surface {
   }
 
   /**
-   * What drawing is kept to, beside the view's own test: the clip region,
-   * within the visible region moved to the surface's terms by the origin
-   * where GDI was given either (`GDI.EXE` seg1 `17b1`, the region at 1Eh).
+   * What drawing is kept to: the clip region, within the visible region
+   * moved to the surface's terms by the origin where GDI was given either
+   * (`GDI.EXE` seg1 `17b1`, the region at 1Eh). A window's context is a
+   * view of the whole screen from its origin (`DeviceBitmap.screenView`),
+   * moved with `SetDCOrg`, and this region is all that keeps it to what it
+   * may draw on: always its visible region, what it shows where GDI was
+   * given none.
    */
   #applyClip() {
     const bitmap = this._bitmap;
+    const screenView = bitmap instanceof DeviceBitmap && !!bitmap.corner;
     let region = this.#clip;
 
-    if (this.#vis || this.#origin) {
+    if (screenView) {
+      const [x, y] = this.#origin ?? bitmap.corner!;
+
+      bitmap.moveOrigin(x, y);
+    }
+
+    if (this.#vis || this.#origin || screenView) {
       const [x, y] = this.#origin ?? this.viewOrigin;
       const own = (this.#vis ?? this.#shown()).offset(-x, -y);
 
@@ -448,18 +465,22 @@ export class Surface {
 
     const source = this.#visFrom;
     const kept = region;
+    const context = bitmap.context;
+
+    context.dcBox = kept ? kept.box : null;
 
     if (!source) {
-      bitmap.context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
+      context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
       return;
     }
 
     /* Kept to USER's region, worked out again before a pixel is drawn
      * where the windows changed since; no test of the region where it
-     * takes in all of the surface. */
+     * takes in every pixel there is. */
+    const reach = context.reach;
     const whole =
-      !kept || ClipRegion.rect(0, 0, this.width || 0, this.height || 0).subtract(kept).kind === 1;
-    const context = bitmap.context;
+      !kept ||
+      ClipRegion.rect(reach.left, reach.top, reach.right, reach.bottom).subtract(kept).kind === 1;
 
     context.dcClip = (x, y) => {
       if (!source.current()) {
@@ -480,6 +501,7 @@ export class Surface {
 
     if (old instanceof DeviceBitmap && old.surface === this) {
       old.context.dcClip = null;
+      old.context.dcBox = null;
     }
 
     this._bitmap = value;
@@ -672,9 +694,7 @@ export class Surface {
 
     for (const [y, left, right] of ringsSpans(rings, winding, closed)) {
       for (let x = left; x < right; x++) {
-        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-          this.context.setPixel(x, y, rgba);
-        }
+        this.context.setPixel(x, y, rgba);
       }
     }
 
@@ -1404,28 +1424,40 @@ export class Surface {
      * bytes, not a round trip through colours, which a whole window would pay
      * on every clipped draw. */
     if (this.context instanceof IndexedContext) {
+      /* What may be written: on a window's context, which reaches the whole
+       * screen, no more than its region's box. */
       const context = this.context;
       const indices = context.indices;
-      const width = this.width;
-      const kept = new Uint8Array(width * this.height);
 
-      for (let row = 0; row < this.height; row++) {
-        const from = context.base + row * context.stride;
+      /* The region worked out again first, where the windows changed. */
+      void this.visRegion;
+
+      const area = context.writable();
+      const width = Math.max(0, area.right - area.left);
+      const height = Math.max(0, area.bottom - area.top);
+      const kept = new Uint8Array(width * height);
+
+      for (let row = 0; row < height; row++) {
+        const from = context.base + (area.top + row) * context.stride + area.left;
 
         kept.set(indices.subarray(from, from + width), row * width);
       }
 
       draw();
 
-      for (let row = 0; row < this.height; row++) {
+      for (let row = 0; row < height; row++) {
+        const y = area.top + row;
+
         for (let column = 0; column < width; column++) {
-          if (column < rect.left || column >= rect.right || row < rect.top || row >= rect.bottom) {
-            indices[context.base + row * context.stride + column] = kept[row * width + column];
+          const x = area.left + column;
+
+          if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+            indices[context.base + y * context.stride + x] = kept[row * width + column];
           }
         }
       }
 
-      this.context.markRect(0, 0, width, this.height);
+      this.context.markRect(area.left, area.top, area.right, area.bottom);
       return;
     }
 

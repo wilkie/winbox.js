@@ -23,7 +23,7 @@ use winbox_raster::{Color, DeviceBitmap, SharedPalette, palette_for_display};
 use crate::call::{Answer, Args, Implementation, Stop};
 use crate::system::System;
 
-use super::dc::{DcBitmap, dc_of, screen_origin};
+use super::dc::{DcBitmap, dc_of};
 use super::mapping::{Mapping, mapping_of};
 use super::objects::GdiObject;
 
@@ -73,20 +73,31 @@ pub(crate) fn signed(word: u16) -> i32 {
 }
 
 /// The pixels a device context draws on, kept to its clip region within
-/// its visible region (`regions::draw_clip`): the TypeScript engine keeps
-/// the region on the bitmap's own context while the bitmap is the device
-/// context's, which every drawing here reaches the pixels through.
+/// its visible region (`regions::drawn_through`): the TypeScript engine
+/// keeps the region on the bitmap's own context while the bitmap is the
+/// device context's, which every drawing here reaches the pixels through.
+/// A window's context is a view of the whole screen, and this region is
+/// all that keeps it to what it may draw on.
 pub(crate) fn canvas(system: &mut System, dc: usize) -> Option<DeviceBitmap> {
     let mut bitmap = system.draw_target(dc)?;
 
-    if let Some(clip) = super::regions::draw_clip(system, dc) {
-        // No test of USER's region where it takes in all of the bitmap
-        // (`window_vis`; the TypeScript engine's `Surface`).
-        let whole = system.gdi.dcs[dc].vis_from.is_some()
-            && winbox_raster::ClipRegion::rect(0, 0, bitmap.width(), bitmap.height())
+    if let Some(clip) = super::regions::drawn_through(system, dc) {
+        // No test where the region takes in every pixel there is.
+        let reach = bitmap.context.reach;
+        let whole =
+            winbox_raster::ClipRegion::rect(reach.left, reach.top, reach.right, reach.bottom)
                 .subtract(&clip)
                 .kind()
                 == 1;
+
+        let bounds = clip.bounds();
+
+        bitmap.context.dc_box = Some(winbox_raster::indexed_context::Rect {
+            left: bounds.left,
+            top: bounds.top,
+            right: bounds.right,
+            bottom: bounds.bottom,
+        });
 
         if !whole {
             bitmap.context.dc_clip = Some(Rc::new(move |x, y| clip.contains(x, y)));
@@ -255,9 +266,15 @@ fn realised(system: &System, dc: usize, palette: &SharedPalette, paint: Paint) -
         |colorref| dc_colour(system, dc, palette, colorref),
     );
     // Where the brush was realised, on the screen, less the device
-    // context's corner there; its corner, for a brush not yet realised.
+    // context's corner there -- for a window's client area, its origin,
+    // where `SetDCOrg` may have moved its pixels, as the TypeScript
+    // engine's `screenOrigin` -- nought for a brush not yet realised.
     let origin = brush.realised.map_or((0, 0), |(x, y)| {
-        let (cx, cy) = screen_origin(system, dc);
+        let (cx, cy) = if matches!(system.gdi.dcs[dc].bitmap, DcBitmap::Window(_)) {
+            super::dc::origin_of(system, dc)
+        } else {
+            super::dc::screen_origin(system, dc)
+        };
 
         (x - cx, y - cy)
     });
@@ -906,7 +923,9 @@ pub fn get_pixel(system: &mut System, hdc: u16, x: i32, y: i32) -> Result<u32, S
         None => (x, y),
     };
 
-    if (system.gdi.dcs[dc].state.clip.is_some() || super::regions::vis_given(system, dc))
+    if (system.gdi.dcs[dc].state.clip.is_some()
+        || super::regions::vis_given(system, dc)
+        || super::dc::on_window(system, dc))
         && !super::regions::clip_of(system, dc).contains(x, y)
     {
         return Ok(CLR_INVALID);

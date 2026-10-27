@@ -19,6 +19,7 @@ import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
 import { type Desk } from './desk.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
+import { DCX_USESTYLE, DCX_WINDOW, regionFlags, windowRegion } from './visible-region-rule.js';
 
 /**
  * The screen as USER keeps it: one bitmap of the display's pixels, and the
@@ -54,6 +55,9 @@ const CS_VREDRAW = 0x0001;
 const CS_HREDRAW = 0x0002;
 
 /** The windows `SetWindowPos` puts a window after that are not windows. */
+/** A system with no classes and no lock, for a desktop with none given (`Desktop.system`). */
+const ALONE = { handles: { resolve: () => null, retrieve: () => null }, _windowLock: null };
+
 export const HWND_TOP = 0;
 export const HWND_BOTTOM = 1;
 export const HWND_TOPMOST = 0xffff;
@@ -338,10 +342,13 @@ export class DesktopWindow {
 
     /* Where its client area is on the screen, which a brush's origin is
      * counted from (`brushorg`). */
-    (this.surface as any).screenOrigin = () => ({
-      x: this.left + this.client.left,
-      y: this.top + this.client.top,
-    });
+    (this.surface as any).screenOrigin = () => {
+      const origin = (this.surface as any).dcOrigin;
+
+      return origin
+        ? { x: origin[0], y: origin[1] }
+        : { x: this.left + this.client.left, y: this.top + this.client.top };
+    };
   }
 
   get clientWidth() {
@@ -405,6 +412,13 @@ export class Desktop {
    * USER marks its contexts' regions stale (`USER.EXE` seg1 `8aa0`).
    */
   generation = 0;
+
+  /**
+   * The system whose windows these are, for USER's rule for a window's
+   * visible region (`visible-region-rule.ts`): its classes and its lock.
+   * Without one, as a desktop alone in a test, no class has a style.
+   */
+  system: any = null;
 
   /** Told of each window made active, as it is: USER notes it on its owners (see `enumerate.ts`). */
   onActivate: ((window: DesktopWindow) => void) | null = null;
@@ -2482,7 +2496,7 @@ export class Desktop {
     }
 
     this.#fill(
-      window.surface.bitmap,
+      this.clientView(window),
       0,
       0,
       window.clientWidth,
@@ -2671,7 +2685,7 @@ export class Desktop {
         ? { ...answer.client }
         : this.#clientOf(window, window.width, window.height);
 
-    window.surface.bitmap = this.#view(
+    window.surface.bitmap = this.#screenView(
       window,
       window.client.left,
       window.client.top,
@@ -2688,7 +2702,7 @@ export class Desktop {
   windowSurface(window: DesktopWindow) {
     const surface: any = Surface.memory();
 
-    surface.bitmap = this.#view(window, 0, 0, window.width, window.height);
+    surface.bitmap = this.#screenView(window, 0, 0, window.width, window.height);
 
     return surface;
   }
@@ -2701,19 +2715,59 @@ export class Desktop {
   clientSurface(window: DesktopWindow) {
     const surface: any = Surface.memory();
 
-    surface.bitmap = this.#view(
+    surface.bitmap = this.#screenView(
       window,
       window.client.left,
       window.client.top,
       window.clientWidth,
-      window.clientHeight,
-      false
+      window.clientHeight
     );
 
     return surface;
   }
 
-  /** A view of the screen over part of a window, drawn only where the window shows. */
+  /**
+   * A view of the screen over a window's client area for USER's own
+   * drawing of it -- a control's face, a list's rows, its background --
+   * drawn only within its region by USER's rule, and while it paints,
+   * within what it paints (`#view`). Twin of the Rust engine's
+   * `window_view`.
+   */
+  clientView(window: DesktopWindow) {
+    return this.#view(
+      window,
+      window.client.left,
+      window.client.top,
+      window.clientWidth,
+      window.clientHeight
+    );
+  }
+
+  /**
+   * A device context's view of the whole screen, from a window's corner
+   * (`left, top` in from the window's), as large as that part of the window
+   * (`DeviceBitmap.screenView`): what it draws is kept to its region by its
+   * surface (`Surface`'s `dcClip`), moved with `SetDCOrg`, and nothing else
+   * (`kb/topics/visible-regions.md`, decision 2).
+   */
+  #screenView(window: DesktopWindow, left: number, top: number, width: number, height: number) {
+    return DeviceBitmap.screenView(
+      this.screen,
+      [window.left + left, window.top + top],
+      width,
+      height
+    );
+  }
+
+  /**
+   * A view of the screen over part of a window, for USER's own drawing:
+   * drawn only within the window's region by USER's rule -- its client
+   * area's, with `DCX_USESTYLE`, or its whole rectangle's, with
+   * `DCX_WINDOW` too, as `GetDC` and `GetWindowDC` work them out
+   * (`visible-region-rule.ts`) -- and, `clipped`, while it paints only
+   * within what it paints: `BeginPaint`'s clip, the region where there is
+   * one (`updrgn`).
+   */
   #view(
     window: DesktopWindow,
     left: number,
@@ -2724,89 +2778,30 @@ export class Desktop {
   ) {
     const x0 = window.left + left;
     const y0 = window.top + top;
-    const stride = this.screen.width;
+    /* The whole window where the part is all of it -- a minimized window's
+     * client area is its whole rectangle too -- else its client area. */
+    const whole = left === 0 && top === 0 && width === window.width && height === window.height;
+    const system = this.system ?? ALONE;
+    const { flags, of } = regionFlags(
+      system,
+      window,
+      whole ? DCX_USESTYLE | DCX_WINDOW : DCX_USESTYLE
+    );
+    let region = windowRegion(system, this, window, of, flags);
+    const clip = clipped ? (window as any).paintClip : undefined;
+    const shape = clipped ? (window as any).paintShape : undefined;
 
-    return DeviceBitmap.view(this.screen, x0, y0, width, height, (x, y) => {
-      const sx = x0 + x;
-      const sy = y0 + y;
-
-      if (sx < 0 || sy < 0 || sx >= stride || sy >= this.screen.height) {
-        return false;
-      }
-
-      /* While it paints, only what was to be painted again: `BeginPaint`'s clip,
-       * the region where there is one (`updrgn`). */
-      const clip = clipped ? (window as any).paintClip : undefined;
-
-      if (clip && (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3])) {
-        return false;
-      }
-
-      const shape = clipped ? (window as any).paintShape : undefined;
-
-      if (shape && !shape.contains(sx, sy)) {
-        return false;
-      }
-
-      const owner = this.owners[sy * stride + sx];
-
-      return owner === window.id || this.#throughSibling(window, owner, sx, sy);
-    });
-  }
-
-  /**
-   * Whether a window draws at a pixel a sibling above it shows at: a window
-   * without `WS_CLIPSIBLINGS` is not clipped by its siblings, only by its
-   * ancestors and by what lies over them. **Recorded** by `groupbox`: a
-   * dialog's radio buttons draw inside the group box made before them, which
-   * lies over them. A parent still does not draw over its children.
-   */
-  #throughSibling(window: DesktopWindow, owner: number, sx: number, sy: number) {
-    const parent = window.parent;
-    const clip = (window as any).clipRect;
-
-    if (!owner || !clip || !this.#showing(window)) {
-      return false;
+    if (clip) {
+      region = region.intersect(ClipRegion.rect(clip[0], clip[1], clip[2], clip[3]));
     }
 
-    if (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3]) {
-      return false;
+    if (shape) {
+      region = region.intersect(shape);
     }
 
-    /* A window without `WS_CLIPCHILDREN` draws over its own children, as a
-     * dialog's erase reaches under its controls. */
-    if (!(window.style & WS_CLIPCHILDREN)) {
-      for (let other = this.#byId.get(owner)?.parent ?? null; other; other = other.parent) {
-        if (other === window) {
-          return true;
-        }
-      }
-    }
+    const own = region.offset(-x0, -y0);
 
-    /* A window without `WS_CLIPSIBLINGS` draws where a sibling above it
-     * shows; and a child where one above its parent does, its parent not
-     * clipped by its siblings either, and so on up: a window is clipped by its
-     * parent's visible region, which takes in what lies over the parent only
-     * where the parent clips its siblings. Control Panel's Desktop has a
-     * drop-down combo box under its Wallpaper group box; its edit control drew
-     * nothing. */
-    for (let level: DesktopWindow = window, up = parent; up; level = up, up = up.parent) {
-      let other = this.#byId.get(owner) ?? null;
-
-      while (other && other.parent !== up) {
-        other = other.parent;
-      }
-
-      if (other) {
-        return other !== level && !(level.style & WS_CLIPSIBLINGS);
-      }
-
-      if (level.style & WS_CLIPSIBLINGS) {
-        return false;
-      }
-    }
-
-    return false;
+    return DeviceBitmap.view(this.screen, x0, y0, width, height, (x, y) => own.contains(x, y));
   }
 
   /** Which window shows at each pixel, the topmost winning. */
@@ -3423,7 +3418,7 @@ export class Desktop {
       return;
     }
 
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     const environment: any = this.#controlEnvironment(window, bitmap);
     const own = window.control.font;
 
@@ -3554,7 +3549,7 @@ export class Desktop {
   ) {
     const control = window.control!;
     const list = (control as any).list;
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     const environment: any = this.#controlEnvironment(window, bitmap);
     const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
     const y = row * list.height;
@@ -3581,7 +3576,7 @@ export class Desktop {
 
   /** Moves a window's client pixels down by `dy`, clearing rows `from` to `to` in the window colour, as `ScrollWindow` and the erase after it do. */
   scrollClient(window: DesktopWindow, dy: number, from: number, to: number) {
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     const width = window.clientWidth;
     const height = window.clientHeight;
     const rows: (number | null)[][] = [];
@@ -3626,7 +3621,7 @@ export class Desktop {
    */
   listFocus(window: DesktopWindow, row: number) {
     const list = (window.control as any).list;
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     const width = window.clientWidth;
     const top = row * list.height;
     const bottom = top + list.height - 1;
@@ -3665,7 +3660,7 @@ export class Desktop {
    * field's item in, three pixels inside the field.
    */
   paintCombo(window: DesktopWindow, combo: any, text: string | null) {
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
 
     const environment: any = this.#frameEnvironment(bitmap);
     const painter = new Painter(bitmap, 0, 0, window.clientWidth, window.clientHeight, environment);
@@ -3776,7 +3771,7 @@ export class Desktop {
     text: number,
     back: number
   ) {
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     /* As the display's driver matches a colour, the static colours only on
      * the 256-colour display (`palsys`): a white a palette put at 10 is not
      * the white the dots are drawn in. */
@@ -3971,7 +3966,7 @@ export class Desktop {
 
   /** A list box's client area cleared in the window colour, as its erase does. */
   listErase(window: DesktopWindow) {
-    const bitmap = window.surface.bitmap as DeviceBitmap;
+    const bitmap = this.clientView(window);
     const painter = new Painter(
       bitmap,
       0,

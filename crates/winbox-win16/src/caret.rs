@@ -86,7 +86,16 @@ impl System {
         let Some(index) = self.window_named(caret.hwnd) else {
             return;
         };
-        let own = self.windows[index].as_ref().and_then(|window| window.dc);
+        // Through the window's own device context where its class has one;
+        // else through USER's own view of the client area (`caret.ts`).
+        let class_style = self.windows[index]
+            .as_ref()
+            .and_then(|window| self.class_named(&window.class))
+            .map_or(0, |class| self.classes[class].style);
+        let own = self.windows[index]
+            .as_ref()
+            .and_then(|window| window.dc)
+            .filter(|_| class_style & (0x0020 | 0x0040) != 0);
         let bitmap = match own {
             Some(dc) => crate::gdi::draw::canvas(self, dc),
             None => self.window_view(index),

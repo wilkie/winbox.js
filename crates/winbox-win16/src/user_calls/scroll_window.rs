@@ -217,7 +217,9 @@ pub(super) fn scroll_dc(system: &mut System, args: &mut Args) -> Result<Answer, 
     let clip = read_rect(system, args.dword(system));
     let hrgn = args.word(system);
     let rect = args.dword(system);
-    let Some(bitmap) = dc_of(system, hdc).and_then(|dc| system.draw_target(dc)) else {
+    let Some(bitmap) =
+        dc_of(system, hdc).and_then(|dc| crate::gdi::regions::visible_target(system, dc))
+    else {
         return Ok(Answer::Word(0));
     };
     let left = scroll_pixels(&bitmap, dx, dy, scroll, clip);

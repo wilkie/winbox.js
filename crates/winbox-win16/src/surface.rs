@@ -1,8 +1,9 @@
 //! Where a device context's drawing lands, as winbox.js's surfaces have it:
 //! the screen's pixels, made with the raster desktop at the display's depth
-//! and in its palette; a memory context's selected bitmap; or a window's
-//! client area, a view of the screen drawn only where the window shows
-//! (`desktop.ts`, `#view`).
+//! and in its palette; a memory context's selected bitmap; or a window's,
+//! a view of the whole screen from the context's origin, drawn through its
+//! region alone (`desktop.ts`, `#screenView`;
+//! `kb/topics/visible-regions.md`, phase 3).
 
 use std::rc::Rc;
 
@@ -10,127 +11,9 @@ use winbox_raster::colour_match::DisplayKind;
 use winbox_raster::{ClipRegion, DeviceBitmap, DevicePalette, palette_for_display};
 
 use crate::gdi::GdiObject;
-use crate::gdi::dc::DcBitmap;
+use crate::gdi::dc::{DcBitmap, origin_of};
 use crate::system::System;
-
-const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
-const WS_CLIPCHILDREN: u32 = 0x0200_0000;
-
-/// What a window's view of the screen knows of the desktop, taken as the
-/// view is made: what it is clipped by.
-struct ViewClip {
-    owners: Rc<Vec<u16>>,
-    /// Each window's parent, by index; for those destroyed, none.
-    parents: Vec<Option<usize>>,
-    /// Each window's style, by index.
-    styles: Vec<u32>,
-    index: usize,
-    x0: i32,
-    y0: i32,
-    width: i32,
-    height: i32,
-    paint_clip: Option<[i32; 4]>,
-    paint_shape: Option<ClipRegion>,
-    clip_rect: [i32; 4],
-    showing: bool,
-    style: u32,
-    parent: Option<usize>,
-}
-
-impl ViewClip {
-    /// Whether the window draws at a pixel of its view: on the screen,
-    /// within what it paints while it paints, and where it shows -- or where
-    /// a child of its own or, without `WS_CLIPSIBLINGS`, a sibling above it
-    /// shows (`groupbox`).
-    fn allows(&self, x: i32, y: i32) -> bool {
-        let (sx, sy) = (self.x0 + x, self.y0 + y);
-
-        if sx < 0 || sy < 0 || sx >= self.width || sy >= self.height {
-            return false;
-        }
-
-        if let Some(clip) = self.paint_clip
-            && (sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3])
-        {
-            return false;
-        }
-
-        if let Some(shape) = &self.paint_shape
-            && !shape.contains(sx, sy)
-        {
-            return false;
-        }
-
-        let owner = self
-            .owners
-            .get((sy * self.width + sx) as usize)
-            .copied()
-            .unwrap_or(0);
-
-        owner == (self.index + 1) as u16 || self.through_sibling(owner, sx, sy)
-    }
-
-    fn through_sibling(&self, owner: u16, sx: i32, sy: i32) -> bool {
-        let clip = self.clip_rect;
-
-        if owner == 0 || !self.showing {
-            return false;
-        }
-
-        if sx < clip[0] || sy < clip[1] || sx >= clip[2] || sy >= clip[3] {
-            return false;
-        }
-
-        let owner = usize::from(owner) - 1;
-        let parent_of = |index: usize| self.parents.get(index).copied().flatten();
-
-        // A window without `WS_CLIPCHILDREN` draws over its own children.
-        if self.style & WS_CLIPCHILDREN == 0 {
-            let mut other = parent_of(owner);
-
-            while let Some(at) = other {
-                if at == self.index {
-                    return true;
-                }
-
-                other = parent_of(at);
-            }
-        }
-
-        // A window without `WS_CLIPSIBLINGS` draws where a sibling above
-        // it shows; and a child where one above its parent does, its parent
-        // not clipped by its siblings either, and so on up: a window is
-        // clipped by its parent's visible region, which takes in what lies
-        // over the parent only where the parent clips its siblings. Control
-        // Panel's Desktop has a drop-down combo box under its Wallpaper
-        // group box; its edit control drew nothing.
-        let mut level = self.index;
-        let mut style = self.style;
-        let mut up = self.parent;
-
-        while let Some(parent) = up {
-            let mut other = Some(owner);
-
-            while let Some(at) = other {
-                if parent_of(at) == Some(parent) {
-                    return at != level && style & WS_CLIPSIBLINGS == 0;
-                }
-
-                other = parent_of(at);
-            }
-
-            if style & WS_CLIPSIBLINGS != 0 {
-                return false;
-            }
-
-            level = parent;
-            style = self.styles.get(parent).copied().unwrap_or(WS_CLIPSIBLINGS);
-            up = parent_of(parent);
-        }
-
-        false
-    }
-}
+use crate::window_vis::{DCX_USESTYLE, DCX_WINDOW};
 
 impl System {
     /// The display's kind, as its driver picks colours.
@@ -172,7 +55,8 @@ impl System {
         screen
     }
 
-    /// A window's client area on the screen, drawn only where it shows.
+    /// A window's client area on the screen, drawn only where it shows,
+    /// as USER draws on it itself.
     pub fn window_view(&mut self, index: usize) -> Option<DeviceBitmap> {
         let window = self.windows[index].as_ref()?;
         let (left, top, width, height) = (
@@ -186,7 +70,10 @@ impl System {
     }
 
     /// A view of the screen over part of a window, `left, top` from its
-    /// corner, drawn only where the window shows -- and while it paints,
+    /// corner, for USER's own drawing: drawn only within the window's
+    /// region by USER's rule -- its client area's, with `DCX_USESTYLE`, or
+    /// its whole rectangle's, with `DCX_WINDOW` too, as `GetDC` and
+    /// `GetWindowDC` work them out (`window_vis`) -- and while it paints,
     /// with `clipped`, only within what it paints (`desktop.ts`, `#view`).
     /// A frame is drawn unclipped: a paint's clip is the client area's.
     pub fn window_part(
@@ -199,33 +86,34 @@ impl System {
         clipped: bool,
     ) -> Option<DeviceBitmap> {
         let screen = self.screen_bitmap();
-        let showing = self.showing(index);
         let window = self.windows[index].as_ref()?;
         let (x0, y0) = (window.left + left, window.top + top);
-        let clip = ViewClip {
-            owners: Rc::clone(&self.owners),
-            parents: self
-                .windows
-                .iter()
-                .map(|window| window.as_ref().and_then(|window| window.parent))
-                .collect(),
-            styles: self
-                .windows
-                .iter()
-                .map(|window| window.as_ref().map_or(0, |window| window.style))
-                .collect(),
-            index,
-            x0,
-            y0,
-            width: screen.width(),
-            height: screen.height(),
-            paint_clip: window.paint_clip.filter(|_| clipped),
-            paint_shape: window.paint_shape.clone().filter(|_| clipped),
-            clip_rect: window.clip_rect,
-            showing,
-            style: window.style,
-            parent: window.parent,
+        // The whole window where the part is all of it -- a minimized
+        // window's client area is its whole rectangle too -- else its
+        // client area.
+        let whole = left == 0 && top == 0 && width == window.width && height == window.height;
+        let (paint_clip, paint_shape) = if clipped {
+            (window.paint_clip, window.paint_shape.clone())
+        } else {
+            (None, None)
         };
+        let asked = if whole {
+            DCX_USESTYLE | DCX_WINDOW
+        } else {
+            DCX_USESTYLE
+        };
+        let (flags, of) = self.region_flags(index, asked);
+        let mut region = self.window_region(index, of, flags);
+
+        if let Some([l, t, r, b]) = paint_clip {
+            region = region.intersect(&ClipRegion::rect(l, t, r, b));
+        }
+
+        if let Some(shape) = &paint_shape {
+            region = region.intersect(shape);
+        }
+
+        let region = region.offset(-x0, -y0);
 
         Some(DeviceBitmap::view(
             &screen,
@@ -233,8 +121,26 @@ impl System {
             y0,
             width,
             height,
-            Some(Rc::new(move |x, y| clip.allows(x, y))),
+            Some(Rc::new(move |x, y| region.contains(x, y))),
         ))
+    }
+
+    /// A device context's view of the whole screen, from its origin --
+    /// `SetDCOrg`'s, else its window's corner -- as large as the window's
+    /// client area, or the whole window's for `Whole`: what it draws is
+    /// kept to its region by GDI (`gdi::draw::canvas`), and nothing else
+    /// (`kb/topics/visible-regions.md`, decision 2).
+    fn dc_view(&mut self, dc: usize, index: usize, whole: bool) -> Option<DeviceBitmap> {
+        let screen = self.screen_bitmap();
+        let window = self.windows[index].as_ref()?;
+        let (width, height) = if whole {
+            (window.width, window.height)
+        } else {
+            (window.client_width(), window.client_height())
+        };
+        let origin = origin_of(self, dc);
+
+        Some(DeviceBitmap::screen_view(&screen, origin, width, height))
     }
 
     /// The pixels a device context draws on, by its index: its selected
@@ -242,20 +148,8 @@ impl System {
     pub fn draw_target(&mut self, dc: usize) -> Option<DeviceBitmap> {
         match self.gdi.dcs[dc].bitmap {
             DcBitmap::Screen => Some(self.screen_bitmap()),
-            DcBitmap::Window(index) if self.gdi.dcs[dc].unclipped => {
-                let window = self.windows[index].as_ref()?;
-                let (left, top) = (window.client.left, window.client.top);
-                let (width, height) = (window.client_width(), window.client_height());
-
-                self.window_part(index, left, top, width, height, false)
-            }
-            DcBitmap::Window(index) => self.window_view(index),
-            DcBitmap::Whole(index) => {
-                let window = self.windows[index].as_ref()?;
-                let (width, height) = (window.width, window.height);
-
-                self.window_part(index, 0, 0, width, height, true)
-            }
+            DcBitmap::Window(index) => self.dc_view(dc, index, false),
+            DcBitmap::Whole(index) => self.dc_view(dc, index, true),
             DcBitmap::Bitmap(object) => match &self.gdi.objects[object] {
                 GdiObject::Bitmap(bitmap) => Some(bitmap.pixels.clone()),
                 _ => None,

@@ -1,5 +1,7 @@
 'use strict';
 
+import { ClipRegion } from '../../raster/clip-region.js';
+import { DCX_INTERSECTRGN, DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
 import { iconOf } from './icon-block.js';
 import { addFile, fillDirectory, LB_ADDFILE, LB_DIR } from './dlgdir.js';
 import { User, WNDCLASS } from '../user.js';
@@ -700,6 +702,25 @@ function itemDC(system: any, window: RasterWindow) {
       surface.font = system.handles.resolve(font);
     }
   }
+
+  /* Its region USER's rule's, as `GetDC` gives it, within its client
+   * area: a window's context draws through its region alone, and a list
+   * box's class has `CS_PARENTDC`, whose region is its parent's. Windows
+   * keeps an item's drawing inside the list's client area -- `listbox`'s
+   * owner-drawn list leaves its border as it was -- by a way of its own not
+   * read out. */
+  const shown = window.window;
+  const client = ClipRegion.rect(
+    shown.left + shown.client.left,
+    shown.top + shown.client.top,
+    shown.left + shown.client.right,
+    shown.top + shown.client.bottom
+  );
+
+  selectWindowRegion(system, surface, shown, DCX_USESTYLE | DCX_INTERSECTRGN, {
+    shape: client,
+    keep: 'intersect',
+  });
 
   any.itemDC ??= system.handles.allocate(surface);
 
