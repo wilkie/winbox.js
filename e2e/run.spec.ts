@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 /* The page for running Windows programs: archives in, programs listed, a
  * program run, its calls traced. The archives are built here, byte by byte and
@@ -2372,27 +2372,14 @@ for (const { engine, page: at } of ENGINES) {
       expect(errors).toEqual([]);
     });
 
-    test('mounts disk and CD images as drives beside Windows: read, swapped, ejected and saved', async ({
-      page,
-    }) => {
-      test.skip(
-        !existsSync(IMGFLOP) || !existsSync(IMGCD) || !existsSync(NOTEPAD),
-        'the imgflop and imgcd probes, or the installation, have not been built here'
-      );
-
-      const errors: string[] = [];
-      page.on('pageerror', (error) => errors.push(error.message));
-
-      const drives = page.locator('#drives li');
-      const output = (name: string) =>
-        page.evaluate(async (name) => {
-          const changes = await (globalThis as any).winbox.engine.changes();
-          const file = changes.find((change: any) => change.path === `ORACLE\\${name}`);
-
-          return file ? new TextDecoder().decode(file.data) : '';
-        }, name);
-      const ended = 'The program asked Windows to end the session, and has finished.';
-
+    /* The mounted-images tests share their start: Windows with the two probe
+     * programs installed, and the images dropped beside it -- two floppies
+     * together one set at A:, in the order of their names, a disc the first
+     * letter after C:. Each test after it checks one stage, because each
+     * program run boots a machine, which under the full run's parallel load
+     * took the whole of one test's 30 s (alone, one test of all stages took
+     * 17 s, two boots 7 s each and the page's load 4). */
+    const mounted = async (page: Page) => {
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
       await expect(page.locator('#drives-note')).toContainText('No drives but C:.');
@@ -2408,9 +2395,6 @@ for (const { engine, page: at } of ENGINES) {
         },
       ]);
       await expect(page.locator('#programs')).toContainText('C:\\ORACLE\\IMGFLOP.EXE');
-
-      /* Beside Windows, two floppies dropped together are one set, in the
-       * order of their names, at A:; a disc the first letter after C:. */
       await page
         .locator('#picker')
         .setInputFiles([
@@ -2418,6 +2402,9 @@ for (const { engine, page: at } of ENGINES) {
           probeImage('imgflop.img'),
           probeImage('imgcd.iso'),
         ]);
+
+      const drives = page.locator('#drives li');
+
       await expect(page.locator('#status')).toHaveText(
         'A: Disk 1 of 2, imgflop.img. D: imgcd.iso.'
       );
@@ -2427,11 +2414,37 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.getByRole('button', { name: 'Eject D:' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save the image in D:' })).toHaveCount(0);
 
+      return drives;
+    };
+    const imageOutput = (page: Page, name: string) =>
+      page.evaluate(async (name) => {
+        const changes = await (globalThis as any).winbox.engine.changes();
+        const file = changes.find((change: any) => change.path === `ORACLE\\${name}`);
+
+        return file ? new TextDecoder().decode(file.data) : '';
+      }, name);
+    const ended = 'The program asked Windows to end the session, and has finished.';
+    const needs = () =>
+      test.skip(
+        !existsSync(IMGFLOP) || !existsSync(IMGCD) || !existsSync(NOTEPAD),
+        'the imgflop and imgcd probes, or the installation, have not been built here'
+      );
+
+    test('mounts a floppy set beside Windows: read, written, saved, swapped and ejected', async ({
+      page,
+    }) => {
+      needs();
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const drives = await mounted(page);
+
       /* The floppy read by its probe, as Windows read it under DOSBox, and
        * written to: its overlay, the image dropped never written. */
       await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGFLOP.EXE' }).click();
       await expect(page.locator('#status')).toHaveText(ended, { timeout: 30000 });
-      expect(await output('IMGFLOP.OUT')).toContain('A: 0\tREADME.TXT 20 39 1a85 30e4');
+      expect(await imageOutput(page, 'IMGFLOP.OUT')).toContain('A: 0\tREADME.TXT 20 39 1a85 30e4');
       expect(await page.evaluate(() => (globalThis as any).winbox.engine.diskChanged('A', 0))).toBe(
         true
       );
@@ -2465,27 +2478,23 @@ for (const { engine, page: at } of ENGINES) {
           Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
         )
       ).toEqual(Array.from(saved));
+      expect(errors).toEqual([]);
+    });
 
-      /* The disc read by its probe, on a machine made afresh -- the
-       * coprocessor changed -- what was written to the floppy kept for it. */
-      await page.getByLabel('Math coprocessor').uncheck();
-      await expect
-        .poll(() =>
-          page.evaluate(() => {
-            const image = (globalThis as any).winbox.engine.diskImage('A', 0);
+    test('mounts a disc beside Windows: read, another dropped on its row, taken away', async ({
+      page,
+    }) => {
+      needs();
 
-            return image ? Array.from(image as Uint8Array).join() : '';
-          })
-        )
-        .toBe(Array.from(saved).join());
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const drives = await mounted(page);
+
+      /* The disc read by its probe. */
       await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGCD.EXE' }).click();
       await expect(page.locator('#status')).toHaveText(ended, { timeout: 30000 });
-      expect(await output('IMGCD.OUT')).toContain('D: 0\tA_VERY_L.TEX');
-      expect(
-        await page.evaluate(() =>
-          Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
-        )
-      ).toEqual(Array.from(saved));
+      expect(await imageOutput(page, 'IMGCD.OUT')).toContain('D: 0\tA_VERY_L.TEX');
 
       /* A disc dropped on D:'s row goes in its set, and in the drive. */
       await page.evaluate(async (data) => {
@@ -2507,6 +2516,43 @@ for (const { engine, page: at } of ENGINES) {
       /* Taken away. */
       await page.getByRole('button', { name: 'Remove D:' }).click();
       await expect(drives).toHaveCount(1);
+      expect(errors).toEqual([]);
+    });
+
+    test('keeps a floppy as a program wrote it for a machine made afresh', async ({ page }) => {
+      needs();
+      /* Two machines are booted and a program run on each: 19 s alone, so
+       * more than the default 30 s allows once the other tests share the CPU. */
+      test.setTimeout(90000);
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await mounted(page);
+
+      const floppy = () =>
+        page.evaluate(() => {
+          const image = (globalThis as any).winbox.engine.diskImage('A', 0);
+
+          return image ? Array.from(image as Uint8Array).join() : '';
+        });
+
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGFLOP.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(ended, { timeout: 60000 });
+
+      const written = await floppy();
+
+      expect(written).not.toBe('');
+      expect(written).not.toBe(Array.from(probeImage('imgflop.img').buffer).join());
+
+      /* The disc read by its probe, on a machine made afresh -- the
+       * coprocessor changed -- what was written to the floppy kept for it. */
+      await page.getByLabel('Math coprocessor').uncheck();
+      await expect.poll(floppy).toBe(written);
+      await page.getByRole('button', { name: 'Run C:\\ORACLE\\IMGCD.EXE' }).click();
+      await expect(page.locator('#status')).toHaveText(ended, { timeout: 60000 });
+      expect(await imageOutput(page, 'IMGCD.OUT')).toContain('D: 0\tA_VERY_L.TEX');
+      expect(await floppy()).toBe(written);
       expect(errors).toEqual([]);
     });
 
