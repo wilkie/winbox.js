@@ -24671,6 +24671,36 @@
   },
   "gaps": {}
  },
+ "visdraw": {
+  "probe": "visdraw",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 25,
+  "functions": {
+   "origin": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "parentclip": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "parentdc": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "visfam": {
   "probe": "visfam",
   "display": "vga",
@@ -24686,8 +24716,8 @@
    },
    "cliprgn": {
     "total": 5,
-    "agreed": 4,
-    "disagreed": 1,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24721,15 +24751,15 @@
    },
    "offset": {
     "total": 3,
-    "agreed": 2,
-    "disagreed": 1,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "origin": {
     "total": 8,
-    "agreed": 5,
-    "disagreed": 3,
+    "agreed": 7,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24742,8 +24772,8 @@
    },
    "select": {
     "total": 6,
-    "agreed": 5,
-    "disagreed": 1,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24763,12 +24793,9 @@
    }
   },
   "gaps": {
-   "offset": "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
-   "select": "phase 3: a window's context draws only on its window's pixels, not where its visible region reaches outside them",
    "again": "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
    "hook": "phase 4: GDI does not call USER's hook, which works the region out again and clears the flag",
-   "origin": "phase 3: drawing does not move with SetDCOrg; phase 4: the origin does not outlive ReleaseDC",
-   "cliprgn": "phase 3: drawing does not move with SetDCOrg"
+   "origin": "phase 4: the origin does not outlive ReleaseDC"
   }
  },
  "visrgn": {

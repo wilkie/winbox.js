@@ -123,6 +123,15 @@ A region of many rectangles costs a call next to nothing: some 300 instructions 
 
 winbox.js on the development machine (a Ryzen 9 3950X), drawing a pixel through a window's view of the screen: the Rust engine's raster 6 ns with nothing to test, 8 with one test of the pixel -- today's, of the window's pixels, or a region's -- 9.5 with a region of eight holes, 11.3 with today's two tests, the window's pixels and the clip region; the TypeScript engine's about 570 ns, in which the tests do not show. A benchmark of the raster alone, not kept.
 
+[[measured]] With drawing through the region alone ([[topic:visible-regions]], phase 3), on the same machine, through the whole engine: a program that fills its window's client area, 200 by 150, with `PatBlt` and `PATINVERT` a thousand times -- 30 million pixels -- run whole, less the same program filling nothing, so that only the pixels are left. Alone on the screen, and with eight pop-ups of 20 by 20 over the window:
+
+| A pixel drawn                       | Rust, before | Rust, after | TypeScript, before | TypeScript, after |
+| ----------------------------------- | ------------ | ----------- | ------------------ | ----------------- |
+| The window alone                    | 6.8 ns       | 6.4 ns      | 42.5 ns            | 36.6 -- 39.2 ns   |
+| Eight pop-ups over it (eight holes) | 11.2 ns      | 8.6 ns      | 74 ns              | 42.7 -- 43.9 ns   |
+
+Before, a pixel was tested against the window's pixels and the region where the region did not take in the whole window; after, against the region alone, and not at all where it takes in every pixel there is. Each a mean of three runs (Rust) or two (TypeScript, the second warm); `PatBlt`'s own loop, not the 570 ns of a pixel drawn by way of a colour. The whole corpus, before and after: the TypeScript survey 807 s and 790 s, SimTower's at the faithful clock 68 s and 64 s, the Rust engine's corpus 106 s and 104 s; SimTower's summary is the same to the byte, its clock charging Windows' instructions whatever the engine does inside. A benchmark not kept.
+
 [[measured]] Working a region out by USER's rule ([[topic:visible-regions]], phase 2), on the same machine, on a tree of 84 windows -- four at the top, one with 40 controls, another with 10 children of 3 each, all shown -- each window's `GetDC` region in turn: the Rust engine 2.7 µs a region, the TypeScript engine 22 µs. A region is worked out as a context is got, and again before it is next used where the windows changed since; a corpus program gets at most some 850 contexts in its run (SimTower), so some 20 ms at most on the TypeScript engine, and a little more where it keeps a context while its windows change. Nothing is charged for it on the faithful clock: Windows' own instructions for `GetDC` are what the call is charged. A benchmark not kept.
 
 ## What winbox.js does
