@@ -6,9 +6,9 @@ ordinal: 359
 summary: A device context of a window's, what it may draw in said by flags and a region.
 versions:
   '3.1': partial
-probes: [getdcex]
+probes: [getdcex, visrgn, visrule]
 records: [dc, parentclip, region]
-topics: [painting, clip-regions]
+topics: [painting, clip-regions, visible-regions]
 source: src/win16/user/get-dc-ex.ts
 ---
 
@@ -22,11 +22,12 @@ source: src/win16/user/get-dc-ex.ts
   - `DCX_PARENTCLIP` on the child: its own origin, and the parent's client area to draw in, a box from -10,-10 past the child's own.
   - `DCX_INTERSECTRGN` with a region in the screen's terms: only where the region and the client area meet. `DCX_EXCLUDERGN`: the client area less it, a complex region.
   - The region given with either is deleted as the context is released; with `DCX_KEEPCLIPRGN` too, it is not. Given with neither, it is not looked at, and stays.
+- [[measured]] [[probe:visrgn]] and [[probe:visrule]] hold each flag's region to the pixel, `InquireVisRgn`'s: `DCX_CLIPSIBLINGS` and `DCX_CLIPCHILDREN` taking out siblings above and children, `DCX_PARENTCLIP` given the parent's but where the parent has `WS_CLIPCHILDREN`, the flags have `DCX_CLIPSIBLINGS` or `DCX_CLIPCHILDREN` too, or the child is hidden and the parent not; `DCX_CACHE` alone keeps what lies over a window, even one at the top; `DCX_LOCKWINDOWUPDATE` gives the locked window and its children their regions. A region given that is not one -- 1 among them -- answers nought. See [[topic:visible-regions]].
 
 ## Nuances
 
-- [[read out]] Nought with `DCX_INTERSECTRGN` leaves nothing to draw in (`USER.EXE` seg1 `8711`-`871d`); 1 is no region (`86f0`). Where both flags are given, `DCX_INTERSECTRGN` wins (`86e7`).
-- [[read out]] `DCX_USESTYLE` takes the clipping flags from the window's and its class's styles: `CS_PARENTDC` for `DCX_PARENTCLIP`, `WS_CLIPCHILDREN` and `WS_CLIPSIBLINGS` for theirs, `DCX_CACHE` unless the class has a context of its own (`8491`-`84fb`).
+- [[read out]] Nought with `DCX_INTERSECTRGN` leaves nothing to draw in (`USER.EXE` seg1 `8711`-`871d`); with `DCX_EXCLUDERGN`, nothing is taken out (`874e`). The body takes 1 for the whole screen (`86f0`, `876b`), but only USER's own callers can pass it: from a program it is no region, and answers nought. Where both flags are given, `DCX_INTERSECTRGN` wins (`86e7`).
+- [[read out]] `DCX_USESTYLE` takes the clipping flags from the window's and its class's styles: `CS_PARENTDC` for `DCX_PARENTCLIP`, `WS_CLIPCHILDREN` and `WS_CLIPSIBLINGS` for theirs, `DCX_CACHE` unless the class has a context of its own (`8491`-`84fb`); for `DCX_WINDOW`, only `WS_CLIPSIBLINGS`.
 
 ## Inside Windows
 
@@ -34,4 +35,4 @@ source: src/win16/user/get-dc-ex.ts
 
 ## Implementation
 
-`src/win16/user/get-dc-ex.ts`; the Rust engine's `crates/winbox-win16/src/get_dc.rs`. The context is `GetDC`'s or `GetWindowDC`'s, its clip region narrowed by the flags; the region is deleted by `ReleaseDC`. Windows keeps what the flags take away in the context's visible region, apart from its clip region: a program's `SelectClipRgn` after takes it away here. Not done: `DCX_PARENTCLIP` -- a window's context draws in its own client area only ([[probe:getdcex]]'s `parentclip` is a known gap) -- and `DCX_USESTYLE`.
+`src/win16/user/get-dc-ex.ts`; the Rust engine's `crates/winbox-win16/src/get_dc.rs`. The context is `GetDC`'s or `GetWindowDC`'s, its visible region worked out again by the flags as USER's rule has it (`visible-region-rule.ts`, `window_vis.rs`), the region given intersected or taken out in the screen's terms; `ReleaseDC` deletes it and lets the context's region go back to the window's. Both engines agree with [[probe:getdcex]], [[probe:visrgn]] and [[probe:visrule]] in every record. Not done: `DCX_PARENTCLIP`'s drawing -- the clip box is the parent's, but the context still draws only within its own client area (phase 3 of [[topic:visible-regions]]) -- and the warning for unknown flags.

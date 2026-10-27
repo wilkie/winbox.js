@@ -24,4 +24,5 @@ winbox.js agrees with all 14 records. While a window is locked, `GetDC` gives it
 
 ## Nuances
 
-- Not recorded: the locked window's children, and `BeginPaint` while it is locked.
+- [[measured]] [[probe:visrule]]: while a window is locked, its children's contexts and its `GetWindowDC` have an empty visible region; `GetDCEx` with `DCX_LOCKWINDOWUPDATE` gives each its region as if nothing were locked; another window's is as it was. winbox.js agrees ([[topic:visible-regions]]); the locked window's own `GetDC`, on its bitmap, answers its client area, where Windows' rule gives it nothing (`USER.EXE` seg1 `15c4`-`15df`).
+- Not recorded: `BeginPaint` while it is locked, and what of the children's drawing is made invalid as it ends.

@@ -29,3 +29,5 @@ Reversi asks `GetNearestColor` of a device context it has given back, and makes 
 ## In winbox.js
 
 A handle given back is kept, still standing for its surface, and given out again for the same surface. Five are kept, as USER's cache has five, the one given back longest ago let go first.
+
+A window's context comes with its visible region worked out by USER's rule, as `GetDCEx` with `DCX_USESTYLE` gives it: what shows of the client area, siblings above taken out where `WS_CLIPSIBLINGS` says, children where `WS_CLIPCHILDREN` does, cut to each parent and the screen, nothing for a hidden or minimized window or one within the window `LockWindowUpdate` locked ([[topic:visible-regions]]; [[probe:visrgn]], [[probe:visrule]]). `GetClipBox`, `RectVisible` and `PtVisible` answer by it.

@@ -27,4 +27,4 @@ topics: [visible-regions]
 
 ## Implementation
 
-In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): a region object the context keeps, given the visible region as it is each time it is asked; a program changing it changes nothing. [[probe:visfam]] agrees in both; [[probe:visrgn]]'s regions of windows covered, clipped or hidden wait for USER to work the region out (the design's phase 2).
+In both engines (`src/win16/gdi/visible-region.ts`, `crates/winbox-win16/src/gdi/visible_region.rs`): a region object the context keeps, given the visible region as it is each time it is asked; a program changing it changes nothing. [[probe:visfam]] agrees in both, and so do [[probe:visrgn]]'s and [[probe:visrule]]'s regions of windows covered, clipped, minimized or hidden, which USER works out by Windows' rule ([[topic:visible-regions]], phase 2).
