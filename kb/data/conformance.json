@@ -8954,8 +8954,8 @@
    },
    "parentclip": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -8967,9 +8967,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "parentclip": "a window's context draws in its own client area only, not its parent's"
-  }
+  "gaps": {}
  },
  "getdib": {
   "probe": "getdib",
@@ -24781,22 +24779,22 @@
   "functions": {
    "kind": {
     "total": 25,
-    "agreed": 15,
-    "disagreed": 10,
+    "agreed": 25,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "own": {
     "total": 5,
-    "agreed": 4,
-    "disagreed": 1,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "paint": {
     "total": 2,
-    "agreed": 1,
-    "disagreed": 1,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24808,11 +24806,72 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "kind": "phase 2: a window's visible region is its rectangle, not worked out by USER's rule (siblings, children, parent's clip, the screen)",
-   "paint": "phase 2: BeginPaint's region is not the update region within what shows",
-   "own": "phase 2: the region is not worked out from the windows over it; phase 4: nor again as they move"
-  }
+  "gaps": {}
+ },
+ "visrule": {
+  "probe": "visrule",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 42,
+  "functions": {
+   "children": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "given": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "hidden": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "lock": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "minimized": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "parentclip": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "siblings": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "top": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "wavedev": {
   "probe": "wavedev",
