@@ -21,7 +21,8 @@ source: src/win16/gdi/SelectObject.ts
 ## Nuances
 
 - Four Seasons' Visual Basic picture boxes select a memory context's first bitmap into the context [[fn:USER.BeginPaint]] gave them, select the answer back, and then draw their card with [[fn:GDI.StretchDIBits]]. Until [[probe:selbmp]], winbox.js let the paint context take the bitmap. The card was drawn into that bitmap, and the screen kept only the picture box's grey background.
-- Not yet measured: a printer's context and a metafile's.
+- Not yet measured: a printer's context.
+- [[measured]] **A metafile's context** ([[probe:metarec]]) keeps the object and answers the object of its kind it selected before. At first that is the stock black pen, white brush and device default font. It answers 1 for a region, which it selects as [[fn:GDI.SelectClipRgn]] does there. It answers nought for a bitmap, which is not kept ([[topic:metafiles]]).
 
 ## On a printer driver's context
 

@@ -8,7 +8,9 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 
 import { NULL, TRUE } from '../consts.js';
 import { globalPointer } from '../kernel/GlobalLock.js';
+import { GlobalSize } from '../kernel/GlobalSize.js';
 import { dibAt } from './dib-to-device.js';
+import { packedDibOf } from './GetDIBits.js';
 
 /**
  * A brush that paints a bitmap's pixels over and over, eight by eight.
@@ -55,6 +57,10 @@ export function CreatePatternBrush(hbmp) {
 
   brush.pattern = { depth: bitmap.depth, palette: bitmap.devicePalette, indices };
   brush.bitmap = hbmp;
+
+  /* The bitmap as a metafile keeps it, from the brush's own copy of it
+   * (`metarec`; `GDI.EXE` seg20 `184d`). */
+  (brush as any).patternDib = packedDibOf(this, bitmap);
 
   return this.handles.allocate(brush);
 }
@@ -107,6 +113,17 @@ export function CreateDIBPatternBrush(hPackedDIB, _fuColorUse) {
   const brush = new Brush(new Color(red, green, blue));
 
   brush.pattern = { depth: bitmap.depth, palette: bitmap.devicePalette, indices };
+
+  /* The brush's own copy of the block, every byte of it, as a metafile
+   * keeps it (`metarec`; `GDI.EXE` seg4 `0039`-`007f`, seg20 `1792`). */
+  const block = GlobalSize.call(this, hPackedDIB) >>> 0;
+
+  (brush as any).packedDib = Array.from({ length: block }, (_, at) => {
+    const segment = ((far >>> 16) + ((at >>> 16) << 3)) & 0xffff;
+
+    return core.read8(segment, ((far & 0xffff) + (at & 0xffff)) & 0xffff);
+  });
+  (brush as any).dibUsage = _fuColorUse & 0xffff;
 
   return this.handles.allocate(brush);
 }

@@ -559,13 +559,7 @@ pub fn get_dibits(
     system.write_far(at(20), &(stride.wrapping_mul(height) as u32).to_le_bytes());
 
     let mono = pixels.depth == 1;
-    let colour_of = |index: u8| {
-        colours
-            .get(usize::from(index))
-            .copied()
-            .unwrap_or([0, 0, 0])
-    };
-    let (table, entry_of) = colour_table(count, mono, colours.clone(), display_kind(system));
+    let (table, entry_of) = colour_table(count, mono, colours, display_kind(system));
 
     for (n, [red, green, blue]) in table.into_iter().enumerate() {
         system.write_far(at(size + n as u32 * 4), &[blue, green, red, 0]);
@@ -581,32 +575,7 @@ pub fn get_dibits(
     let used = ((width * i32::from(count) + 7) >> 3).max(0) as usize;
 
     for line in 0..lines {
-        let y = height - 1 - (i32::from(start) + line);
-        let mut row = vec![0u8; usize::try_from(stride).unwrap_or(0)];
-
-        for x in 0..width {
-            let index = pixels.index_at(x, y).unwrap_or(0);
-            let x = x as usize;
-
-            match count {
-                24 => {
-                    let [red, green, blue] = if mono {
-                        if index == 0 {
-                            [0, 0, 0]
-                        } else {
-                            [255, 255, 255]
-                        }
-                    } else {
-                        colour_of(index)
-                    };
-
-                    row[x * 3..x * 3 + 3].copy_from_slice(&[blue, green, red]);
-                }
-                8 => row[x] = entry_of(index),
-                4 => row[x >> 1] |= entry_of(index) << if x & 1 == 1 { 0 } else { 4 },
-                _ => row[x >> 3] |= entry_of(index) << (7 - (x & 7)),
-            }
-        }
+        let row = dib_row(&pixels, count, &entry_of, i32::from(start) + line);
 
         // Through the selector's steps, as a huge pointer is; only the
         // bytes the pixels take, the padding after them left as it was.
@@ -618,6 +587,96 @@ pub fn get_dibits(
     }
 
     lines as u16
+}
+
+/// A line of a bitmap, counted from the bottom, as a DIB of `count` bits to
+/// a pixel holds it: to a doubleword, the padding after its pixels nought.
+fn dib_row(pixels: &DeviceBitmap, count: u16, entry_of: &EntryOf, scan: i32) -> Vec<u8> {
+    let width = pixels.width();
+    let stride = ((width.wrapping_mul(i32::from(count)).wrapping_add(31)) >> 5) << 2;
+    let y = pixels.height() - 1 - scan;
+    let mono = pixels.depth == 1;
+    let colours = pixels.device_palette.borrow().colours.clone();
+    let mut row = vec![0u8; usize::try_from(stride).unwrap_or(0)];
+
+    for x in 0..width {
+        let index = pixels.index_at(x, y).unwrap_or(0);
+        let x = x as usize;
+
+        match count {
+            24 => {
+                let [red, green, blue] = if mono {
+                    if index == 0 {
+                        [0, 0, 0]
+                    } else {
+                        [255, 255, 255]
+                    }
+                } else {
+                    colours
+                        .get(usize::from(index))
+                        .copied()
+                        .unwrap_or([0, 0, 0])
+                };
+
+                row[x * 3..x * 3 + 3].copy_from_slice(&[blue, green, red]);
+            }
+            8 => row[x] = entry_of(index),
+            4 => row[x >> 1] |= entry_of(index) << if x & 1 == 1 { 0 } else { 4 },
+            _ => row[x >> 3] |= entry_of(index) << (7 - (x & 7)),
+        }
+    }
+
+    row
+}
+
+/// A bitmap as a packed DIB, as GDI makes one of it for a metafile
+/// (`GDI.EXE` seg20 `231c`, `23da`, then `GetDIBits`): 1, 4, 8 or 24 bits
+/// to a pixel for planes times bits of 1, to 4, to 8 and more; its header's
+/// size, width, height, one plane, bits and image size, the rest nought;
+/// its colours; its rows from the bottom.
+pub(crate) fn packed_dib_of(system: &System, pixels: &DeviceBitmap) -> Vec<u8> {
+    let depth = pixels.depth;
+    let count: u16 = match depth {
+        1 => 1,
+        0..=4 => 4,
+        5..=8 => 8,
+        _ => 24,
+    };
+    let (width, height) = (pixels.width(), pixels.height());
+    let stride = ((width.wrapping_mul(i32::from(count)).wrapping_add(31)) >> 5) << 2;
+    let colours = pixels.device_palette.borrow().colours.clone();
+    let (table, entry_of) = colour_table(count, depth == 1, colours, display_kind(system));
+    let image = stride.wrapping_mul(height) as u32;
+    let mut bytes = Vec::new();
+
+    for word in [
+        40,
+        0,
+        width as u16,
+        0,
+        height as u16,
+        0,
+        1,
+        count,
+        0,
+        0,
+        image as u16,
+        (image >> 16) as u16,
+    ] {
+        bytes.extend(word.to_le_bytes());
+    }
+
+    bytes.extend([0; 16]);
+
+    for [red, green, blue] in table {
+        bytes.extend([blue, green, red, 0]);
+    }
+
+    for scan in 0..height {
+        bytes.extend(dib_row(pixels, count, &entry_of, scan));
+    }
+
+    bytes
 }
 
 pub(crate) fn get_dibits_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

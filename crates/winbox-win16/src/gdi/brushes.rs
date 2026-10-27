@@ -36,7 +36,7 @@ fn pattern_of(bitmap: &DeviceBitmap) -> Pattern {
 
 /// A brush of a pattern, its colour its first pixel's: a handle, or nought
 /// where there are none left.
-fn allocate(system: &mut System, pattern: Pattern, logbrush: LogBrush) -> u16 {
+fn allocate(system: &mut System, pattern: Pattern, logbrush: LogBrush, dib_record: Vec<u8>) -> u16 {
     let [red, green, blue] = pattern
         .palette
         .borrow()
@@ -52,6 +52,7 @@ fn allocate(system: &mut System, pattern: Pattern, logbrush: LogBrush) -> u16 {
         stock: None,
         realised: None,
         pattern: Some(pattern),
+        dib_record: Some(dib_record),
     }));
 
     system
@@ -103,7 +104,13 @@ pub fn create_pattern_brush_as(system: &mut System, handle: u16, logbrush: LogBr
 
     let pattern = pattern_of(&bitmap.pixels);
 
-    allocate(system, pattern, logbrush)
+    // The bitmap as a metafile keeps it, from the brush's own copy of it:
+    // 3, nought, and the bitmap made a DIB (`metarec`; `GDI.EXE` seg20
+    // `184d`).
+    let mut dib_record = vec![3, 0, 0, 0];
+
+    dib_record.extend(super::dib::packed_dib_of(system, &bitmap.pixels));
+    allocate(system, pattern, logbrush, dib_record)
 }
 
 pub(crate) fn create_pattern_brush_call(
@@ -122,7 +129,7 @@ pub(crate) fn create_pattern_brush_call(
 /// bitmap's pattern brush does. `DIB_PAL_COLORS` is not recorded, and its
 /// table is taken as colours. `GetObject` answers `BS_PATTERN` and no
 /// bitmap.
-pub fn create_dib_pattern_brush(system: &mut System, block: u16) -> u16 {
+pub fn create_dib_pattern_brush(system: &mut System, block: u16, usage: u16) -> u16 {
     let far = system.global_pointer(block);
 
     if far == 0 {
@@ -175,6 +182,22 @@ pub fn create_dib_pattern_brush(system: &mut System, block: u16) -> u16 {
     };
     let pattern = pattern_of(&bitmap);
 
+    // The brush's own copy of the block, every byte of it, as a metafile
+    // keeps it after 5 and how its colours are given (`metarec`; `GDI.EXE`
+    // seg4 `0039`-`007f`, seg20 `1792`).
+    let length = system.global.size_of(winbox_machine::index_for(block));
+    let mut dib_record = [5u16, usage]
+        .iter()
+        .flat_map(|word| word.to_le_bytes())
+        .collect::<Vec<u8>>();
+
+    dib_record.extend((0..length).map(|at| {
+        system
+            .cpu
+            .bus
+            .read8(system.linear(super::metafile::far_at(far, at)))
+    }));
+
     allocate(
         system,
         pattern,
@@ -183,6 +206,7 @@ pub fn create_dib_pattern_brush(system: &mut System, block: u16) -> u16 {
             color: 0,
             hatch: 0,
         },
+        dib_record,
     )
 }
 
@@ -191,7 +215,7 @@ pub(crate) fn create_dib_pattern_brush_call(
     args: &mut Args,
 ) -> Result<Answer, Stop> {
     let block = args.word(system);
-    let _usage = args.word(system);
+    let usage = args.word(system);
 
-    Ok(Answer::Word(create_dib_pattern_brush(system, block)))
+    Ok(Answer::Word(create_dib_pattern_brush(system, block, usage)))
 }

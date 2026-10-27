@@ -5957,6 +5957,7 @@ const RUN_WHOLE = new Set<string>([
   'gfreeal',
   'visfam',
   'visrgn',
+  'metarec',
 ]);
 
 /**
