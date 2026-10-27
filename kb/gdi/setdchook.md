@@ -23,4 +23,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines the procedure, the data and the flag are kept and answered as read out. GDI does not call the procedure: [[probe:dchook]]'s three records of its calls are known gaps ([[topic:device-context-internals]]). [[probe:dcinner]] agrees in both.
+In both engines the procedure, the data and the flag are kept and answered as read out, and GDI calls the procedure, where the flag is set, before each of its calls that use the context: a program's through the processor, USER's `DCHOOK` run by WinBox itself ([[fn:USER.DCHook]]). Which calls call it is read out in [[topic:visible-regions]]; those not read out one by one are taken to call it as the rest that use the context do [[inferred]]. `DeleteDC`'s call with `DCHC_DELETEDC` is not followed. [[probe:dcinner]] and [[probe:dchook]] agree in both.

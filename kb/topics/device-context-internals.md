@@ -28,12 +28,12 @@ GDI exports calls that USER and the display and printer drivers use to manage a 
 - [[measured]] With a hook of its own and the flag set, a program's procedure is called once from each of `GetClipBox`, `GetTextColor` and `Rectangle`, with the context, `DCHC_INVALIDVISRGN` (1), the data and nought ([[probe:dchook]]). The flag stays set until cleared.
 - [[measured]] A window's context, as `GetDC` lends it, has USER's `DCHOOK` and data of USER's, and its flag clear.
 
+GDI calls the hook so in both engines: a program's through the processor, USER's own `DCHOOK` run by WinBox itself, which works a lent context's visible region out again ([[fn:USER.DCHook]]). Which calls call it, and the visible region USER keeps through GDI, are in [[topic:visible-regions]].
+
 ## Not yet done
 
-- **GDI calling the hook.** Both engines keep the hook and the flag and answer for them as Windows does, but call nothing: WinBox's USER keeps a window's visible region itself. [[probe:dchook]]'s three records of the calls are known gaps; phase 4 of [[topic:visible-regions]].
 - **`ResetDC` on a Windows printer driver's context**, which makes a new context with the `DEVMODE` and exchanges the two; it answers nought.
 - **`GetClipRgn`'s region** is the clip region as it is when asked: a program that changes the region it was given does not change the clip region, as it would in Windows.
-- **The visible region, which USER keeps through GDI in Windows**: `SelectVisRgn` (seg1 `1635`: the region copied into the context's at A0h, then its clip remade), `IntersectVisRect` and `ExcludeVisRect` (`16a2`, `16a5`: one body with `IntersectClipRect`, the rectangle in screen coordinates and not mapped), `OffsetVisRgn` (`2929`), `SaveVisRgn` and `RestoreVisRgn` (`076c`, `07b2`), `InquireVisRgn` (`200a`: the handle at A0h), `SetDCOrg` (`1118`: the origin at A2h and A4h exchanged, the clip moved by the difference), `GetDCState` and `SetDCState` (`0601`, `0615`), `FastWindowFrame` (`420e`) and `Death` and `Resurrection` (`2067`, `208e`). They are stubs: WinBox's USER keeps each window's visible area itself and draws its frames itself, and a context's clip is its clip region within its bitmap ([[topic:clip-regions]]), so there is no visible region of GDI's for them to act on. Each needs that region kept in the context first: the design, and what [[probe:visrgn]] and [[probe:visfam]] record of the family, are in [[topic:visible-regions]].
 - **`GetPhysicalFontHandle`** (seg1 `0a2e`, the word at 28h): WinBox keeps no realized font object.
 
 ## In winbox.js

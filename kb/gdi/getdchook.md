@@ -21,4 +21,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines as read out. A window's context has USER's `DCHOOK`, the address `GetProcAddress` gives for it, and for data its own handle, standing for USER's cache entry. [[probe:dcinner]] agrees in both.
+In both engines as read out. A context USER lends has USER's `DCHOOK`, the address `GetProcAddress` gives for it, and for data its own handle, standing for USER's entry ([[topic:visible-regions]]). [[probe:dcinner]] agrees in both.

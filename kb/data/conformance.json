@@ -2809,6 +2809,71 @@
   },
   "gaps": {}
  },
+ "dcentry": {
+  "probe": "dcentry",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 38,
+  "functions": {
+   "cycle": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "held": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "own": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "reset": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "same": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stale": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "whole": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dchook": {
   "probe": "dchook",
   "display": "vga",
@@ -2838,8 +2903,8 @@
    },
    "hookcall": {
     "total": 6,
-    "agreed": 3,
-    "disagreed": 3,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -2865,9 +2930,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "hookcall": "GDI does not call a device context's hook"
-  }
+  "gaps": {}
  },
  "dcinner-vga": {
   "probe": "dcinner",
@@ -2995,8 +3058,8 @@
   "functions": {
    "held": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -3036,9 +3099,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "held": "with USER's five cached contexts all lent, Windows lends one again; WinBox makes another"
-  }
+  "gaps": {}
  },
  "ddefail": {
   "probe": "ddefail",
@@ -24709,8 +24770,8 @@
   "functions": {
    "again": {
     "total": 2,
-    "agreed": 0,
-    "disagreed": 2,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24737,8 +24798,8 @@
    },
    "hook": {
     "total": 7,
-    "agreed": 3,
-    "disagreed": 4,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24758,8 +24819,8 @@
    },
    "origin": {
     "total": 8,
-    "agreed": 7,
-    "disagreed": 1,
+    "agreed": 8,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24792,11 +24853,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "again": "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
-   "hook": "phase 4: GDI does not call USER's hook, which works the region out again and clears the flag",
-   "origin": "phase 4: the origin does not outlive ReleaseDC"
-  }
+  "gaps": {}
  },
  "visrgn": {
   "probe": "visrgn",

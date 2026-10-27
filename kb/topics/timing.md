@@ -134,6 +134,15 @@ Before, a pixel was tested against the window's pixels and the region where the 
 
 [[measured]] Working a region out by USER's rule ([[topic:visible-regions]], phase 2), on the same machine, on a tree of 84 windows -- four at the top, one with 40 controls, another with 10 children of 3 each, all shown -- each window's `GetDC` region in turn: the Rust engine 2.7 µs a region, the TypeScript engine 22 µs. A region is worked out as a context is got, and again before it is next used where the windows changed since; a corpus program gets at most some 850 contexts in its run (SimTower), so some 20 ms at most on the TypeScript engine, and a little more where it keeps a context while its windows change. Nothing is charged for it on the faithful clock: Windows' own instructions for `GetDC` are what the call is charged. A benchmark not kept.
 
+[[measured]] USER's entries ([[topic:visible-regions]], phase 4), on the same machine, through the whole engine: a program that asks for a window's context and gives it back, then the screen's, 20,000 times each, run whole, less the same program asking nothing. An entry still valid is taken as it is, where before each `GetDC` worked the region out again:
+
+| A `GetDC` and its `ReleaseDC` | Before | After  |
+| ----------------------------- | ------ | ------ |
+| Rust                          | 1.5 µs | 1.3 µs |
+| TypeScript                    | 32 µs  | 24 µs  |
+
+Each the mean of three runs; the program's own instructions and the call's way in and out are in it. The whole corpus, after: the TypeScript survey 906 s (790 s before; 878 s and 1,053 s on other runs of the same day, the machine busier), SimTower's at the faithful clock 65 s (64 s), the Rust engine's corpus 107 s (104 s); SimTower's summary is the same to the byte. A benchmark not kept.
+
 ## What winbox.js does
 
 winbox.js keeps two clocks. The survey's runs 3,000 instructions a millisecond and charges every call 15 instructions: it runs much faster than a faithful one, and the same every time. Most calls are charged less than they are -- a rectangle call about half, `PeekMessage` finding nothing a fourteenth -- and drawing far less: a twelve-hundredth of a WinG blit of the whole screen with its colours one for one, a ninety-thousandth of one without. Its `GetTickCount` steps by the tick, as Windows' does.

@@ -6,7 +6,7 @@ ordinal: 192
 summary: Sets or clears the flag that has GDI call a device context's hook; answers whether it was set.
 versions:
   '3.1': exact
-probes: [dcinner]
+probes: [dcinner, visfam]
 topics: [device-context-internals]
 ---
 
@@ -22,4 +22,4 @@ topics: [device-context-internals]
 
 ## Implementation
 
-In both engines as read out. Setting the flag does not have GDI call the hook ([[fn:GDI.SetDCHook]]). [[probe:dcinner]] agrees in both.
+In both engines as read out. With the flag set, GDI calls the hook before the next call that uses the context ([[fn:GDI.SetDCHook]]); on a context USER lends, USER's hook works its visible region out again ([[fn:USER.DCHook]]; [[probe:visfam]], `hook`). [[probe:dcinner]] agrees in both.
