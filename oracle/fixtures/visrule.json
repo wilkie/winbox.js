@@ -1,0 +1,224 @@
+{
+  "probe": "visrule",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "children",
+      "args": "P GetDC (CLIPCHILDREN)",
+      "result": "org 24,43 clip 3 0,0,392,273 vis 3 24,43,416,316 43-53:24-416;53-83:24-34,234-244,344-416;83-113:24-34,234-244,384-416;113-133:24-34,234-244,404-416;133-163:24-34,234-284,404-416;163-173:24-34,234-324,404-416;173-203:24-34,234-416;203-316:24-416;"
+    },
+    {
+      "function": "children",
+      "args": "K GetDC (CLIPCHILDREN, GT transparent)",
+      "result": "org 34,53 clip 3 0,0,200,150 vis 3 34,53,234,203 53-73:34-234;73-83:34-54,114-234;83-113:34-54,174-234;113-123:34-94,174-234;123-133:34-234;133-193:34-54,154-234;193-203:34-234;"
+    },
+    {
+      "function": "children",
+      "args": "K CACHE",
+      "result": "org 34,53 clip 2 0,0,200,150 vis 2 34,53,234,203 53-203:34-234;"
+    },
+    {
+      "function": "children",
+      "args": "KK GetDC (CLIPCHILDREN)",
+      "result": "org 54,133 clip 3 0,0,100,60 vis 3 54,133,154,193 133-143:54-154;143-163:54-64,94-154;163-193:54-154;"
+    },
+    {
+      "function": "children",
+      "args": "KK GetWindowDC",
+      "result": "org 54,133 clip 2 0,0,100,60 vis 2 54,133,154,193 133-193:54-154;"
+    },
+    {
+      "function": "children",
+      "args": "KKK GetDC",
+      "result": "org 64,143 clip 2 0,0,30,20 vis 2 64,143,94,163 143-163:64-94;"
+    },
+    {
+      "function": "children",
+      "args": "GS GetDC (CLIPSIBLINGS, under G1 and GT)",
+      "result": "org 94,83 clip 3 0,0,80,40 vis 3 94,83,174,123 83-113:114-174;113-123:94-174;"
+    },
+    {
+      "function": "children",
+      "args": "G1 GetDC",
+      "result": "org 54,73 clip 2 0,0,60,40 vis 2 54,73,114,113 73-113:54-114;"
+    },
+    {
+      "function": "siblings",
+      "args": "S1C GetDC (S1 without CLIPSIBLINGS)",
+      "result": "org 274,73 clip 2 0,0,60,50 vis 2 274,73,334,123 73-123:274-334;"
+    },
+    {
+      "function": "siblings",
+      "args": "S2C GetDC (S2 with CLIPSIBLINGS)",
+      "result": "org 314,103 clip 3 0,0,60,50 vis 3 314,103,374,153 103-113:314-374;113-153:314-324;"
+    },
+    {
+      "function": "siblings",
+      "args": "S2C CACHE CLIPSIBLINGS",
+      "result": "org 314,103 clip 3 0,0,60,50 vis 3 314,103,374,153 103-113:314-374;113-153:314-324;"
+    },
+    {
+      "function": "siblings",
+      "args": "S2 GetDC",
+      "result": "org 284,83 clip 3 0,0,100,80 vis 3 284,83,384,163 83-113:284-384;113-163:284-324;"
+    },
+    {
+      "function": "siblings",
+      "args": "S2 GetWindowDC",
+      "result": "org 284,83 clip 3 0,0,100,80 vis 3 284,83,384,163 83-113:284-384;113-163:284-324;"
+    },
+    {
+      "function": "siblings",
+      "args": "S2 CACHE",
+      "result": "org 284,83 clip 2 0,0,100,80 vis 2 284,83,384,163 83-163:284-384;"
+    },
+    {
+      "function": "siblings",
+      "args": "S1 GetDC",
+      "result": "org 244,53 clip 2 0,0,100,80 vis 2 244,53,344,133 53-133:244-344;"
+    },
+    {
+      "function": "parentclip",
+      "args": "G1 CACHE PARENTCLIP (K CLIPCHILDREN)",
+      "result": "org 54,73 clip 2 0,0,60,40 vis 2 54,73,114,113 73-113:54-114;"
+    },
+    {
+      "function": "parentclip",
+      "args": "QA CACHE PARENTCLIP",
+      "result": "org 444,53 clip 2 -10,-10,182,113 vis 2 434,43,626,166 43-166:434-626;"
+    },
+    {
+      "function": "parentclip",
+      "args": "QA CACHE PARENTCLIP CLIPSIBLINGS",
+      "result": "org 444,53 clip 2 0,0,50,40 vis 2 444,53,494,93 53-93:444-494;"
+    },
+    {
+      "function": "parentclip",
+      "args": "QA CACHE PARENTCLIP CLIPCHILDREN",
+      "result": "org 444,53 clip 2 0,0,50,40 vis 2 444,53,494,93 53-93:444-494;"
+    },
+    {
+      "function": "parentclip",
+      "args": "QH CACHE PARENTCLIP (hidden)",
+      "result": "org 504,53 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "parentclip",
+      "args": "QA WINDOW CACHE PARENTCLIP",
+      "result": "org 444,53 clip 2 -14,-33,186,117 vis 2 430,20,630,170 20-170:430-630;"
+    },
+    {
+      "function": "minimized",
+      "args": "M GetDC (icon)",
+      "result": "org 21,408 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "minimized",
+      "args": "M CACHE (icon)",
+      "result": "org 21,408 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "minimized",
+      "args": "M GetWindowDC (icon)",
+      "result": "org 21,408 clip 2 0,0,36,36 vis 2 21,408,57,444 408-444:21-57;"
+    },
+    {
+      "function": "minimized",
+      "args": "MC GetDC (minimized parent)",
+      "result": "org 31,418 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "minimized",
+      "args": "MC GetWindowDC (minimized parent)",
+      "result": "org 31,418 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "minimized",
+      "args": "N GetWindowDC (no icon)",
+      "result": "org 96,408 clip 2 0,0,36,36 vis 2 96,408,132,444 408-444:96-132;"
+    },
+    {
+      "function": "hidden",
+      "args": "HC GetDC (hidden parent)",
+      "result": "org 114,383 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "hidden",
+      "args": "HC GetWindowDC (hidden parent)",
+      "result": "org 114,383 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "hidden",
+      "args": "QH GetDC",
+      "result": "org 504,53 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "top",
+      "args": "T1 GetDC",
+      "result": "org 434,223 clip 3 0,0,192,123 vis 3 434,223,626,346 223-250:434-626;250-330:434-500,600-626;330-346:434-626;"
+    },
+    {
+      "function": "top",
+      "args": "T1 CACHE (no CLIPSIBLINGS)",
+      "result": "org 434,223 clip 2 0,0,192,123 vis 2 434,223,626,346 223-346:434-626;"
+    },
+    {
+      "function": "top",
+      "args": "T1 WINDOW CACHE (no CLIPSIBLINGS)",
+      "result": "org 430,200 clip 2 0,0,200,150 vis 2 430,200,630,350 200-350:430-630;"
+    },
+    {
+      "function": "top",
+      "args": "T2 GetDC",
+      "result": "org 500,250 clip 2 0,0,100,80 vis 2 500,250,600,330 250-330:500-600;"
+    },
+    {
+      "function": "given",
+      "args": "Q CACHE EXCLUDERGN 1",
+      "result": "null"
+    },
+    {
+      "function": "given",
+      "args": "Q CACHE INTERSECTRGN 1",
+      "result": "null"
+    },
+    {
+      "function": "lock",
+      "args": "LC GetDC (L locked)",
+      "result": "org 254,363 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "lock",
+      "args": "L GetWindowDC (locked)",
+      "result": "org 240,330 clip 1 0,0,0,0 vis 1 0,0,0,0 -"
+    },
+    {
+      "function": "lock",
+      "args": "L CACHE LOCKWINDOWUPDATE",
+      "result": "org 244,353 clip 2 0,0,172,73 vis 2 244,353,416,426 353-426:244-416;"
+    },
+    {
+      "function": "lock",
+      "args": "LC CACHE LOCKWINDOWUPDATE",
+      "result": "org 254,363 clip 2 0,0,60,40 vis 2 254,363,314,403 363-403:254-314;"
+    },
+    {
+      "function": "lock",
+      "args": "Q GetDC (another)",
+      "result": "org 434,43 clip 2 0,0,192,123 vis 2 434,43,626,166 43-166:434-626;"
+    },
+    {
+      "function": "lock",
+      "args": "LC GetDC (unlocked)",
+      "result": "org 254,363 clip 2 0,0,60,40 vis 2 254,363,314,403 363-403:254-314;"
+    }
+  ]
+}
