@@ -7,20 +7,24 @@ import { Region } from '../gdi/gdi-objects.js';
 import { GetDC } from './GetDC.js';
 import { GetWindowDC } from './GetWindowDC.js';
 import { RasterWindow } from './raster-window.js';
+import {
+  DCX_CACHE,
+  DCX_EXCLUDERGN,
+  DCX_INTERSECTRGN,
+  DCX_LOCKWINDOWUPDATE,
+  DCX_WINDOW,
+  type Given,
+  selectWindowRegion,
+} from './visible-region-rule.js';
 
-const DCX_WINDOW = 0x00000001;
-const DCX_CACHE = 0x00000002;
-const DCX_CLIPCHILDREN = 0x00000008;
-const DCX_EXCLUDERGN = 0x00000040;
-const DCX_INTERSECTRGN = 0x00000080;
 const DCX_KEEPCLIPRGN = 0x00040000;
 const CS_OWNDC = 0x0020;
 const CS_CLASSDC = 0x0040;
 
 /**
  * A device context of a window's, as `GetDC` and `GetWindowDC` give one,
- * with what drawing in it is kept to said by the flags (`USER.EXE` seg1
- * `a64c`, the checks, then `847b`-`87b7`). **Recorded** by `getdcex`:
+ * its visible region worked out by the flags (`USER.EXE` seg1 `a64c`, the
+ * checks, then `847b`-`87b7`). **Recorded** by `getdcex` and `visrgn`:
  *
  * * No window, nought.
  * * Without `DCX_CACHE`, a window whose class has no context of its own
@@ -29,23 +33,30 @@ const CS_CLASSDC = 0x0040;
  *   (`85b6`).
  * * `DCX_CACHE` gives the client area's, as `GetDC` does; with
  *   `DCX_WINDOW`, the whole window's, as `GetWindowDC` does.
- * * `DCX_CLIPCHILDREN` keeps drawing off the window's children: a complex
- *   region where one shows.
+ * * The region is USER's rule's for the flags (`visible-region-rule.ts`):
+ *   `DCX_CLIPCHILDREN` keeps drawing off the window's children,
+ *   `DCX_CLIPSIBLINGS` off its siblings above, `DCX_PARENTCLIP` gives the
+ *   parent's, `DCX_USESTYLE` takes them from the styles.
  * * `DCX_INTERSECTRGN` keeps it inside a region given in the screen's
  *   terms; `DCX_EXCLUDERGN` out of it (`86e7`, `8745`). The region is
  *   deleted when the context is released, unless `DCX_KEEPCLIPRGN` is
- *   given too (`8703`-`8709`). Nought with `DCX_INTERSECTRGN` leaves
- *   nothing (`8711`-`871d`); 1 is no region (`86f0`).
+ *   given too (`8703`-`8709`). For `DCX_INTERSECTRGN`, nought leaves
+ *   nothing (`8711`-`871d`); for `DCX_EXCLUDERGN`, nought is nothing
+ *   given (`874e`). A handle that is no region answers nought (`a658`):
+ *   1, which the body takes for the whole screen (`86f0`, `876b`), is for
+ *   USER's own callers.
  *
- * WinBox keeps these in the context's clip region, which Windows keeps in
- * its visible region apart from it: `SelectClipRgn` after takes them away
- * here. `DCX_PARENTCLIP`, the parent's client area to draw in, is not done:
- * a window's context draws in its own client area only. Neither is
- * `DCX_USESTYLE`, the flags from the window's and its class's styles
- * (`8491`-`84fb`).
+ * These are in the visible region, as Windows keeps them: `SelectClipRgn`
+ * after leaves them.
  */
 export function GetDCEx(this: any, hwnd: number, hrgnClip: number, flags: number) {
   if (!hwnd) {
+    return 0;
+  }
+
+  /* A region given that is not one, nought (`a658`-`a66d`): even 1, which
+   * USER's own callers pass for the whole screen (`visrule`). */
+  if (hrgnClip && !(this.handles.resolve(hrgnClip) instanceof Region)) {
     return 0;
   }
 
@@ -61,60 +72,40 @@ export function GetDCEx(this: any, hwnd: number, hrgnClip: number, flags: number
     }
   }
 
+  /* With `DCX_LOCKWINDOWUPDATE`, the locked window's context as any
+   * other's, on the screen (seg1 `15cb`; `visrule`). */
+  const lock = flags & DCX_LOCKWINDOWUPDATE ? this._windowLock : null;
+
+  if (lock) {
+    this._windowLock = null;
+  }
+
   const hdc = flags & DCX_WINDOW ? GetWindowDC.call(this, hwnd) : GetDC.call(this, hwnd);
+
+  if (lock) {
+    this._windowLock = lock;
+  }
   const surface = hdc ? this.handles.resolve(hdc) : null;
 
-  if (!hdc || !raster || !surface) {
+  if (!hdc || !raster || !surface || surface.visFrom === null) {
     return hdc;
   }
 
-  const shown: any = raster.window;
-  const x = flags & DCX_WINDOW ? shown.left : shown.left + shown.client.left;
-  const y = flags & DCX_WINDOW ? shown.top : shown.top + shown.client.top;
-  const whole = () => ClipRegion.rect(0, 0, surface.width || 0, surface.height || 0);
-  let clip: ClipRegion | null = null;
+  let given: Given = null;
 
-  if (flags & DCX_CLIPCHILDREN) {
-    clip = whole();
+  const region: Region | null = hrgnClip ? this.handles.resolve(hrgnClip) : null;
 
-    for (const child of raster.desktop.windows as any[]) {
-      if (child.parent === shown && child.visible && !child.titleOf) {
-        clip = clip.subtract(
-          ClipRegion.rect(
-            child.left - x,
-            child.top - y,
-            child.left - x + child.width,
-            child.top - y + child.height
-          )
-        );
-      }
-    }
+  if (flags & DCX_INTERSECTRGN) {
+    given = { shape: region ? region.shape : ClipRegion.EMPTY, keep: 'intersect' };
+  } else if (flags & DCX_EXCLUDERGN && region) {
+    given = { shape: region.shape, keep: 'exclude' };
   }
 
-  const how = flags & DCX_INTERSECTRGN ? 'intersect' : flags & DCX_EXCLUDERGN ? 'exclude' : null;
-
-  if (how && (hrgnClip & 0xffff) !== 1) {
-    const region = hrgnClip ? this.handles.resolve(hrgnClip) : null;
-
-    if (region instanceof Region) {
-      const shape = region.shape.offset(-x, -y);
-
-      clip =
-        how === 'intersect'
-          ? (clip ?? whole()).intersect(shape)
-          : (clip ?? whole()).subtract(shape);
-    } else if (!hrgnClip && how === 'intersect') {
-      clip = ClipRegion.EMPTY;
-    }
-
-    if (hrgnClip && !(flags & DCX_KEEPCLIPRGN)) {
-      (this._dcExRegions ??= new Map()).set(hdc, hrgnClip);
-    }
+  if (flags & (DCX_INTERSECTRGN | DCX_EXCLUDERGN) && region && !(flags & DCX_KEEPCLIPRGN)) {
+    (this._dcExRegions ??= new Map()).set(hdc, hrgnClip);
   }
 
-  if (clip) {
-    surface.clipRegion = clip;
-  }
+  selectWindowRegion(this, surface, raster.window, flags, given);
 
   return hdc;
 }

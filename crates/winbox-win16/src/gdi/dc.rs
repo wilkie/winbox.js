@@ -128,6 +128,12 @@ pub struct Dc {
     /// screen, the bitmap -- as USER and `SelectObject` give it
     /// (`visible_region`).
     pub vis: Option<winbox_raster::ClipRegion>,
+    /// Where USER works the visible region out from, for a context it
+    /// handed out: its rule for the context's window and flags
+    /// (`window_vis`), worked out again when the windows have changed since
+    /// -- what USER's hook does for a context in use (`USER.EXE` seg1
+    /// `8a00`). None where GDI was given a region, or none.
+    pub vis_from: Option<crate::window_vis::VisFrom>,
     /// What `SaveVisRgn` saved, the last on top: each a region's handle and
     /// object.
     pub vis_saved: Vec<(u16, usize)>,
@@ -196,6 +202,7 @@ impl System {
             hook: DcHook::default(),
             clip_handle: None,
             vis: None,
+            vis_from: None,
             vis_saved: Vec::new(),
             vis_handle: None,
             bounds: super::bounds::Bounds::default(),

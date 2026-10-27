@@ -7,6 +7,8 @@ import { NULL } from '../consts.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GetStockObject } from '../gdi/GetStockObject.js';
 import { resetVisible } from '../gdi/visible-region.js';
+import { DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
+import { RasterWindow } from './raster-window.js';
 import { Surface } from '../../raster/surface.js';
 import { Color } from '../../raster/color.js';
 
@@ -53,6 +55,7 @@ const WHITE_BRUSH = 0;
  */
 export function GetDC(hwnd) {
   let surface;
+  let lockedOne: unknown = null;
 
   if (hwnd == NULL) {
     /* The screen itself. This used to answer 1 -- a number that resolves to
@@ -70,6 +73,8 @@ export function GetDC(hwnd) {
 
     /* The window `LockWindowUpdate` locked draws where it does not show. */
     const locked = lockedSurface(this, hwnd);
+
+    lockedOne = locked;
 
     /* While the window paints, a context of its own, which draws through
      * the whole client area, not only what is being painted: USER's cache
@@ -117,9 +122,17 @@ export function GetDC(hwnd) {
     }
   }
 
-  /* Its visible region what it shows, and its origin its corner, as USER
-   * gives them to a context it hands out (`visible-region.ts`). */
-  resetVisible(surface);
+  /* Its visible region worked out by USER's rule, as `GetDCEx` with
+   * `DCX_USESTYLE` (`visible-region-rule.ts`), and its origin its corner;
+   * the screen's what it shows. The locked window's context draws on a
+   * bitmap of its own and answers its client area: what it shows. */
+  const shown = hwnd != NULL ? this.handles.resolve(hwnd) : null;
+
+  if (surface !== this.screen && !lockedOne && shown instanceof RasterWindow) {
+    selectWindowRegion(this, surface, shown.window, DCX_USESTYLE);
+  } else {
+    resetVisible(surface);
+  }
 
   /* A clip region or saved levels a program left do not outlive the device
    * context it had: Windows hands out a fresh one. Not recorded. */

@@ -29,10 +29,19 @@ function entryOf(font) {
   return font instanceof LogicalFont ? font.entry : font.fontFor(12);
 }
 
+/**
+ * USER's rule for a context's visible region (`visible-region-rule.ts`): the
+ * region now, in the screen's terms, and whether the one worked out last is
+ * still what the windows give.
+ */
+export interface VisibleSource {
+  region(): ClipRegion;
+  current(): boolean;
+}
+
 export class Surface {
   declare boldOverhang: any;
   declare _glyphBox: any;
-
 
   /* **And the shear is very probably not this at all.**
    *
@@ -324,6 +333,15 @@ export class Surface {
    */
   #vis: ClipRegion | null = null;
 
+  /**
+   * Where USER works the visible region out from, for a context it handed
+   * out: its rule for the context's window and flags
+   * (`visible-region-rule.ts`), worked out again when the windows have
+   * changed since -- what USER's hook does for a context in use (`USER.EXE`
+   * seg1 `8a00`). `null` where GDI was given a region, or none.
+   */
+  #visFrom: VisibleSource | null = null;
+
   /** The origin `SetDCOrg` set, in the screen's terms, or `null` for the view's corner. */
   #origin: [number, number] | null = null;
 
@@ -347,12 +365,36 @@ export class Surface {
   }
 
   get visRegion() {
+    this.#refreshVis();
     return this.#vis;
   }
 
+  /** A region GDI was given, the program's or a bitmap's: USER's rule no longer kept to. */
   set visRegion(region: ClipRegion | null) {
+    this.#visFrom = null;
     this.#vis = region;
     this.#applyClip();
+  }
+
+  get visFrom() {
+    return this.#visFrom;
+  }
+
+  /** USER's rule for the region, worked out now and again whenever the windows change. */
+  set visFrom(source: VisibleSource | null) {
+    this.#visFrom = source;
+    this.#vis = source ? source.region() : null;
+    this.#applyClip();
+  }
+
+  /** The region worked out again where the windows changed since it last was. */
+  #refreshVis() {
+    const source = this.#visFrom;
+
+    if (source && !source.current()) {
+      this.#vis = source.region();
+      this.#applyClip();
+    }
   }
 
   get dcOrigin() {
@@ -400,11 +442,33 @@ export class Surface {
       region = region ? region.intersect(own) : own;
     }
 
-    if (bitmap instanceof DeviceBitmap) {
-      const kept = region;
-
-      bitmap.context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
+    if (!(bitmap instanceof DeviceBitmap)) {
+      return;
     }
+
+    const source = this.#visFrom;
+    const kept = region;
+
+    if (!source) {
+      bitmap.context.dcClip = kept ? (x, y) => kept.contains(x, y) : null;
+      return;
+    }
+
+    /* Kept to USER's region, worked out again before a pixel is drawn
+     * where the windows changed since; no test of the region where it
+     * takes in all of the surface. */
+    const whole =
+      !kept || ClipRegion.rect(0, 0, this.width || 0, this.height || 0).subtract(kept).kind === 1;
+    const context = bitmap.context;
+
+    context.dcClip = (x, y) => {
+      if (!source.current()) {
+        this.#refreshVis();
+        return context.dcClip ? context.dcClip(x, y) : true;
+      }
+
+      return whole || kept!.contains(x, y);
+    };
   }
 
   get bitmap() {
@@ -648,7 +712,8 @@ export class Surface {
      * length and not the sum across the page: `ExtTextOut` asks for it
      * (`GDI.EXE` seg16 `0679` calls `GetTextExtent`) and halves it for
      * `TA_CENTER` (seg1 `3464`). On a square pixel they are the same. */
-    const width = runWidth ?? turnedLength(font, font.measure(text).width, [...String(text)].length);
+    const width =
+      runWidth ?? turnedLength(font, font.measure(text).width, [...String(text)].length);
     const across = this.textAlign & 6;
     const down = this.textAlign & 24;
 
@@ -658,7 +723,12 @@ export class Surface {
       /* The alignment's own shift down the text, apart from the ascent GDI's
        * turned drawing adds afterwards: nothing for `TA_TOP`, the ascent back
        * up for `TA_BASELINE`, the whole cell back up for `TA_BOTTOM`. */
-      alignDown: down === 8 ? -(font.style.ascent + font.style.descent) : down === 24 ? -font.style.ascent : 0,
+      alignDown:
+        down === 8
+          ? -(font.style.ascent + font.style.descent)
+          : down === 24
+            ? -font.style.ascent
+            : 0,
       bottom: down === 8,
     };
   }
@@ -692,7 +762,8 @@ export class Surface {
     const ascent = style.ascent;
 
     const alignX = away(reference.across * cosine) + away(mulDiv(reference.alignDown, H, V) * sine);
-    const alignY = -away(mulDiv(reference.across, V, H) * sine) + away(reference.alignDown * cosine);
+    const alignY =
+      -away(mulDiv(reference.across, V, H) * sine) + away(reference.alignDown * cosine);
 
     return {
       x: x + alignX + away(toAcross(ascent) * sine),
@@ -711,7 +782,10 @@ export class Surface {
       return [x, y];
     }
 
-    const metrics = { ...this._font.measure(text), width: runWidth ?? this._font.measure(text).width };
+    const metrics = {
+      ...this._font.measure(text),
+      width: runWidth ?? this._font.measure(text).width,
+    };
     const across = this.textAlign & 6;
     const down = this.textAlign & 24;
 
@@ -776,7 +850,8 @@ export class Surface {
     const boldPixel = outline && this.synthesisesBold() ? 1 : 0;
 
     const advanceOf = (character) =>
-      (font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width) + boldPixel;
+      (font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width) +
+      boldPixel;
 
     /* A strike is the advance, and with an array it is the pens the array
      * makes plus the **last glyph's own advance** -- which is where the two
@@ -1059,7 +1134,7 @@ export class Surface {
     if (this.turnedText) {
       const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
       const { sine, cosine } = this.turnedTrig();
-      const width = (runWidth ?? box.right - box.left);
+      const width = runWidth ?? box.right - box.left;
       const { toAcross, toDown } = this.aspectCarries();
       /* The ground's corner is the reference point moved by the alignment
        * alone -- the ascent is what carries the glyphs down from it -- and
@@ -1170,7 +1245,12 @@ export class Surface {
         const fromX = startX + away(mulDiv(down, H, V) * sine);
         const fromY = startY + away(down * cosine);
 
-        return [fromX, fromY, fromX + away(length * cosine), fromY - away(mulDiv(length, V, H) * sine)];
+        return [
+          fromX,
+          fromY,
+          fromX + away(length * cosine),
+          fromY - away(mulDiv(length, V, H) * sine),
+        ];
       };
 
       const band = (down, rows) => {
@@ -1221,11 +1301,17 @@ export class Surface {
       };
 
       if (style.underline) {
-        band(font.style.ascent + across(-outline.underlinePosition), thick(across(outline.underlineThickness)));
+        band(
+          font.style.ascent + across(-outline.underlinePosition),
+          thick(across(outline.underlineThickness))
+        );
       }
 
       if (style.strikeout) {
-        band(font.style.ascent - across(outline.strikeoutPosition), thick(across(outline.strikeoutSize)));
+        band(
+          font.style.ascent - across(outline.strikeoutPosition),
+          thick(across(outline.strikeoutSize))
+        );
       }
 
       return;
@@ -1351,12 +1437,7 @@ export class Surface {
 
     for (let row = 0; row < this.height; row++) {
       for (let column = 0; column < this.width; column++) {
-        if (
-          column >= rect.left &&
-          column < rect.right &&
-          row >= rect.top &&
-          row < rect.bottom
-        ) {
+        if (column >= rect.left && column < rect.right && row >= rect.top && row < rect.bottom) {
           continue;
         }
 
@@ -1828,34 +1909,39 @@ export class Surface {
       /* A made-up slant turned goes through the same transform, with the
        * shear in the matrix rather than applied to the outline afterwards; see
        * `Surface.slantedTurn`. */
-      const fitted = turn && italic
-        ? {
-            ...raw,
-            hinted: true,
-            scaled: true,
-            turnedAlready: true,
-            contours: Surface.transformOutline(
-              outline.outlineOf(glyph),
-              /* The slant's shear is added before the stretch across
-               * (`6f63` comes before `6fa3`), so the stretch applies to the
-               * sheared entries. */
-              (([m00, m01, m10, m11]) => [acrossRow(m00), m01, acrossRow(m10), m11])(
-                Surface.slantedTurn(entryCos, entrySin)
+      const fitted =
+        turn && italic
+          ? {
+              ...raw,
+              hinted: true,
+              scaled: true,
+              turnedAlready: true,
+              contours: Surface.transformOutline(
+                outline.outlineOf(glyph),
+                /* The slant's shear is added before the stretch across
+                 * (`6f63` comes before `6fa3`), so the stretch applies to the
+                 * sheared entries. */
+                (([m00, m01, m10, m11]) => [acrossRow(m00), m01, acrossRow(m10), m11])(
+                  Surface.slantedTurn(entryCos, entrySin)
+                ),
+                outline.unitsPerEm
               ),
-              outline.unitsPerEm
-            ),
-          }
-        : rotated
-        ? {
-            ...raw,
-            hinted: true,
-            scaled: true,
-            turnedAlready: true,
-            contours: Surface.transformOutline(outline.outlineOf(glyph), turnMatrix, outline.unitsPerEm),
-          }
-        : raw.scaled
-          ? raw
-          : { ...raw, contours: across(raw.contours) };
+            }
+          : rotated
+            ? {
+                ...raw,
+                hinted: true,
+                scaled: true,
+                turnedAlready: true,
+                contours: Surface.transformOutline(
+                  outline.outlineOf(glyph),
+                  turnMatrix,
+                  outline.unitsPerEm
+                ),
+              }
+            : raw.scaled
+              ? raw
+              : { ...raw, contours: across(raw.contours) };
       const contours = fitted.contours;
 
       /* A slanted glyph is carried across its side bearing in whole pixels.
@@ -1989,7 +2075,7 @@ export class Surface {
        * Written as the wrap rather than as a size test, so that it is the
        * arithmetic that is being reproduced and not its consequence.
        */
-      const rows = (((raised + 512) % 1024) + 1024) % 1024 - 512;
+      const rows = ((((raised + 512) % 1024) + 1024) % 1024) - 512;
 
       /* And what is really being counted is bytes, not rows.
        *
@@ -2062,23 +2148,25 @@ export class Surface {
          * across, and slanting leans it over by an amount proportional to how
          * far above the baseline each point sits.
          */
-        const slanted = italic && !fitted.turnedAlready
-          ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
-          : contours;
+        const slanted =
+          italic && !fitted.turnedAlready
+            ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
+            : contours;
 
         /* A turned glyph is carried to pixels and then rotated about its own
          * origin, and the scan converter is handed the result with nothing
          * left to scale. 8u.
          */
-        const placed = turn && !fitted.turnedAlready
-          ? slanted.map((contour) =>
-              contour.map((point) => {
-                const [px, py] = turned(point.x * up, point.y * up);
+        const placed =
+          turn && !fitted.turnedAlready
+            ? slanted.map((contour) =>
+                contour.map((point) => {
+                  const [px, py] = turned(point.x * up, point.y * up);
 
-                return { ...point, x: px, y: py };
-              })
-            )
-          : slanted;
+                  return { ...point, x: px, y: py };
+                })
+              )
+            : slanted;
 
         /* Where that origin is: the baseline's, carried along the exact angle
          * by the advances so far and rounded -- see `baseX`. At a right angle
@@ -2268,7 +2356,11 @@ export class Surface {
                * advance, is refused at 0 of either.
                */
               const cellRule = column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0);
-              const overhangRule = !lastGlyph ? true : this.backMode === 2 ? cellRule : column + 1 < box.right;
+              const overhangRule = !lastGlyph
+                ? true
+                : this.backMode === 2
+                  ? cellRule
+                  : column + 1 < box.right;
               if (bold && (turn || spills || overhangRule)) {
                 this.context.setPixel(column + 1, row, colour);
               }
@@ -2318,7 +2410,9 @@ export class Surface {
        * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
       pen += run.advances
         ? run.advances[index] + this.charExtra
-        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? (turn && this.devicePaintsBold() ? 2 : 1) : 0);
+        : font.outlineAdvance(character.charCodeAt(0)) +
+          this.charExtra +
+          (bold ? (turn && this.devicePaintsBold() ? 2 : 1) : 0);
       index++;
     }
   }
@@ -2349,7 +2443,12 @@ export class Surface {
    * entries is eight, and loses both half turns.
    */
   static slantedTurn(entryCos, entrySin) {
-    return [entryCos, entrySin, -entrySin + Math.floor(entryCos / 3), entryCos + Math.floor(entrySin / 3)];
+    return [
+      entryCos,
+      entrySin,
+      -entrySin + Math.floor(entryCos / 3),
+      entryCos + Math.floor(entrySin / 3),
+    ];
   }
 
   static turnEntries(ppem, radians) {
@@ -2394,7 +2493,11 @@ export class Surface {
    * phantom points would move nothing.
    */
   static turnOutline(contours, entryCos, entrySin, unitsPerEm) {
-    return Surface.transformOutline(contours, [entryCos, entrySin, -entrySin, entryCos], unitsPerEm);
+    return Surface.transformOutline(
+      contours,
+      [entryCos, entrySin, -entrySin, entryCos],
+      unitsPerEm
+    );
   }
 
   /**
@@ -2432,7 +2535,10 @@ export class Surface {
     const fixDiv = (numerator, denominator) =>
       Math.sign(numerator) *
       Math.sign(denominator) *
-      Math.floor((Math.abs(numerator) * 65536 + Math.floor(Math.abs(denominator) / 2)) / Math.abs(denominator));
+      Math.floor(
+        (Math.abs(numerator) * 65536 + Math.floor(Math.abs(denominator) / 2)) /
+          Math.abs(denominator)
+      );
     const fixMul = (value, factor) => Math.floor((value * factor + 32768) / 65536);
 
     const m00 = fixDiv(e00, stretchX);
@@ -2790,8 +2896,7 @@ export function turnedLength(font, width, count = 0) {
    * already charged it, so it comes off, and back on afterwards. **Recorded**
    * by `simext` on a Hercules: a turned smeared string measures its plain
    * length plus `count + 1`, 32 of 32, against 4 with the charge scaled. */
-  const simulated =
-    (style.weight ?? 0) > 550 && !style.faceBold && style.boldOverhang === 'always';
+  const simulated = (style.weight ?? 0) > 550 && !style.faceBold && style.boldOverhang === 'always';
 
   if (simulated && count > 0) {
     return turnedLength(font, width - (count + 1)) + count + 1;

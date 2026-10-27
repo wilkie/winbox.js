@@ -13,16 +13,15 @@ use crate::gdi::dc::DcBitmap;
 use crate::gdi::objects::{delete_object, get_stock_object};
 use crate::handles::{Kind, Object};
 use crate::system::System;
+use crate::window_vis::{
+    DCX_CACHE, DCX_EXCLUDERGN, DCX_INTERSECTRGN, DCX_LOCKWINDOWUPDATE, DCX_USESTYLE, DCX_WINDOW,
+    Given,
+};
 
 const BLACK_PEN: i16 = 7;
 const WHITE_BRUSH: i16 = 0;
 const CS_OWNDC: u16 = 0x0020;
 const CS_CLASSDC: u16 = 0x0040;
-const DCX_WINDOW: u32 = 0x0000_0001;
-const DCX_CACHE: u32 = 0x0000_0002;
-const DCX_CLIPCHILDREN: u32 = 0x0000_0008;
-const DCX_EXCLUDERGN: u32 = 0x0000_0040;
-const DCX_INTERSECTRGN: u32 = 0x0000_0080;
 const DCX_KEEPCLIPRGN: u32 = 0x0004_0000;
 
 /// How many released contexts USER keeps.
@@ -192,6 +191,7 @@ impl System {
 
             self.gdi.dcs[dc].state.font = font;
             self.gdi.dcs[dc].unclipped = true;
+            self.select_window_region(dc, index, DCX_USESTYLE, None);
             self.reset_common(index, dc);
             self.window_dcs.insert(dc, hwnd);
 
@@ -212,9 +212,16 @@ impl System {
             self.gdi.dcs[dc].state.font = font;
         }
 
-        // Its visible region what it shows, and its origin its corner, as
-        // USER gives them to a context it hands out (`visible_region`).
-        self.reset_visible(dc);
+        // Its visible region worked out by USER's rule, as `GetDCEx` with
+        // `DCX_USESTYLE` (`window_vis`), and its origin its corner; the
+        // screen's what it shows. The locked window's context draws on a
+        // bitmap of its own and answers its client area: what it shows.
+        match surface {
+            Surface::Window(index) if locked.is_none() => {
+                self.select_window_region(dc, index, DCX_USESTYLE, None);
+            }
+            _ => self.reset_visible(dc),
+        }
 
         if let Surface::Window(index) = surface {
             self.gdi.dcs[dc].saved.clear();
@@ -244,6 +251,12 @@ impl System {
         let font = self.system_font();
 
         self.gdi.dcs[dc].state.font = font;
+
+        // Its visible region by USER's rule for the whole window, as
+        // `GetDCEx` with `DCX_WINDOW` and `DCX_USESTYLE` (`window_vis`).
+        if let DcBitmap::Whole(index) = bitmap {
+            self.select_window_region(dc, index, DCX_WINDOW | DCX_USESTYLE, None);
+        }
 
         if hwnd != 0 {
             self.window_dcs.insert(dc, hwnd);
@@ -284,12 +297,14 @@ impl System {
                 self.release_to_cache(hdc, released);
                 self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
                 self.release_dc_ex_region(hdc);
+                self.drop_given_region(released);
                 Ok(true)
             }
             (Some(released), Some(surface)) if released == surface => {
                 self.release_to_cache(hdc, released);
                 self.gdi.dcs[released].live = self.gdi.dcs[released].live.saturating_sub(1);
                 self.release_dc_ex_region(hdc);
+                self.drop_given_region(released);
                 Ok(true)
             }
             _ => Ok(false),
@@ -313,6 +328,12 @@ impl System {
             return 0;
         }
 
+        // A region given that is not one, nought (`a658`-`a66d`): even 1,
+        // which USER's own callers pass for the whole screen (`visrule`).
+        if region != 0 && crate::gdi::regions::region_shape(self, region).is_none() {
+            return 0;
+        }
+
         let index = match self.surface_of(hwnd) {
             Surface::Window(index) => Some(index),
             _ => None,
@@ -332,69 +353,55 @@ impl System {
             return 0;
         }
 
+        // With `DCX_LOCKWINDOWUPDATE`, the locked window's context as any
+        // other's, on the screen (seg1 `15cb`; `visrule`).
+        let lock = if flags & DCX_LOCKWINDOWUPDATE != 0 {
+            self.user_calls.locked.take()
+        } else {
+            None
+        };
         let hdc = if flags & DCX_WINDOW == 0 {
             self.get_dc(hwnd)
         } else {
             self.get_window_dc(hwnd)
         };
+
+        if lock.is_some() {
+            self.user_calls.locked = lock;
+        }
         let (Some(index), Some(Object::Dc(dc))) = (index, self.handles.resolve(hdc)) else {
             return hdc;
         };
-        let window = self.windows[index].as_ref().expect("a window");
-        let (x, y, width, height) = if flags & DCX_WINDOW == 0 {
-            (
-                window.left + window.client.left,
-                window.top + window.client.top,
-                window.client_width(),
-                window.client_height(),
-            )
+
+        // The locked window's own context answers what it shows.
+        if self.gdi.dcs[dc].vis_from.is_none() {
+            return hdc;
+        }
+
+        let shape = crate::gdi::regions::region_shape(self, region);
+        let given = if flags & DCX_INTERSECTRGN != 0 {
+            // Nought leaves nothing (`8711`-`871d`).
+            Some(Given {
+                shape: shape.clone().unwrap_or(ClipRegion::EMPTY),
+                exclude: false,
+            })
+        } else if flags & DCX_EXCLUDERGN != 0 {
+            shape.clone().map(|shape| Given {
+                shape,
+                exclude: true,
+            })
         } else {
-            (window.left, window.top, window.width, window.height)
+            None
         };
-        let whole = ClipRegion::rect(0, 0, width, height);
-        let mut clip = None;
 
-        if flags & DCX_CLIPCHILDREN != 0 {
-            let mut region = whole.clone();
-
-            for child in self.windows.iter().flatten() {
-                if child.parent == Some(index) && child.visible && child.title_of.is_none() {
-                    region = region.subtract(&ClipRegion::rect(
-                        child.left - x,
-                        child.top - y,
-                        child.left - x + child.width,
-                        child.top - y + child.height,
-                    ));
-                }
-            }
-
-            clip = Some(region);
+        if flags & (DCX_INTERSECTRGN | DCX_EXCLUDERGN) != 0
+            && shape.is_some()
+            && flags & DCX_KEEPCLIPRGN == 0
+        {
+            self.dc_ex_regions.insert(hdc, region);
         }
 
-        let intersect = flags & DCX_INTERSECTRGN != 0;
-
-        // 1 is no region (`86f0`).
-        if (intersect || flags & DCX_EXCLUDERGN != 0) && region != 1 {
-            let base = clip.clone().unwrap_or_else(|| whole.clone());
-
-            match crate::gdi::regions::region_shape(self, region) {
-                Some(shape) if intersect => clip = Some(base.intersect(&shape.offset(-x, -y))),
-                Some(shape) => clip = Some(base.subtract(&shape.offset(-x, -y))),
-                // Nought with `DCX_INTERSECTRGN` leaves nothing
-                // (`8711`-`871d`).
-                None if region == 0 && intersect => clip = Some(ClipRegion::EMPTY),
-                None => {}
-            }
-
-            if region != 0 && flags & DCX_KEEPCLIPRGN == 0 {
-                self.dc_ex_regions.insert(hdc, region);
-            }
-        }
-
-        if let Some(clip) = clip {
-            self.gdi.dcs[dc].state.clip = Some(clip);
-        }
-
+        self.select_window_region(dc, index, flags, given);
         hdc
     }
 
@@ -413,7 +420,28 @@ impl System {
         self.gdi.dcs[dc].saved.clear();
         self.gdi.dcs[dc].state.brush_org = None;
         self.gdi.dcs[dc].state.clip = None;
-        self.reset_visible(dc);
+
+        // Its visible region USER's rule's within the update region, as
+        // `GetDCEx` with `DCX_USESTYLE` and `DCX_INTERSECTRGN` of it
+        // (`USER.EXE` seg1 `7671`; `visrgn`): what is to be painted, where
+        // that is known; the whole client area where it is not.
+        let window = self.windows[index].as_ref().expect("a window");
+        let due = match (window.paint_clip, &window.paint_shape) {
+            (Some([left, top, right, bottom]), Some(shape)) => {
+                Some(ClipRegion::rect(left, top, right, bottom).intersect(shape))
+            }
+            (Some([left, top, right, bottom]), None) => {
+                Some(ClipRegion::rect(left, top, right, bottom))
+            }
+            (None, shape) => shape.clone(),
+        };
+        let flags = DCX_USESTYLE | if due.is_some() { DCX_INTERSECTRGN } else { 0 };
+        let given = due.map(|shape| Given {
+            shape,
+            exclude: false,
+        });
+
+        self.select_window_region(dc, index, flags, given);
         self.reset_common(index, dc);
         dc
     }

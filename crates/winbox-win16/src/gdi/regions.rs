@@ -564,6 +564,8 @@ fn frame_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// its view's corner, as USER selects a window's rectangle and
 /// `SelectObject` a bitmap's (`GDI.EXE` seg1 `1cd8`-`1cf7`).
 pub(crate) fn vis_of(system: &mut System, dc: usize) -> ClipRegion {
+    system.refresh_vis(dc);
+
     if let Some(vis) = &system.gdi.dcs[dc].vis {
         return vis.clone();
     }

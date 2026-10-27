@@ -5222,11 +5222,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
-  /* `getdcex`'s child, its context asked for with `DCX_PARENTCLIP`: Windows
-   * lets it draw anywhere in its parent's client area; WinBox's context
-   * of a window draws in its own client area only (`get-dc-ex.ts`). */
-  'getdcex:parentclip': "a window's context draws in its own client area only, not its parent's",
-
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
    * is made active, and where the focus goes, agree (`state`); the messages
    * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
@@ -5585,11 +5580,6 @@ export const KNOWN_GAPS: Record<string, string> = {
     "phase 4: GetDC selects the window's region again; Windows takes an entry that is still valid as it is",
   'visfam:hook':
     "phase 4: GDI does not call USER's hook, which works the region out again and clears the flag",
-  'visrgn:kind':
-    "phase 2: a window's visible region is its rectangle, not worked out by USER's rule (siblings, children, parent's clip, the screen)",
-  'visrgn:paint': "phase 2: BeginPaint's region is not the update region within what shows",
-  'visrgn:own':
-    'phase 2: the region is not worked out from the windows over it; phase 4: nor again as they move',
 };
 
 /**
@@ -5958,6 +5948,7 @@ const RUN_WHOLE = new Set<string>([
   'visfam',
   'visrgn',
   'metarec',
+  'visrule',
 ]);
 
 /**

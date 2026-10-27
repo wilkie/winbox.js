@@ -52,6 +52,7 @@ fn set_vis(system: &mut System, dc: usize, shape: ClipRegion) {
     }
 
     system.gdi.dcs[dc].vis = Some(shape);
+    system.gdi.dcs[dc].vis_from = None;
 }
 
 impl System {
@@ -62,6 +63,7 @@ impl System {
     /// `SaveVisRgn` saved stay: neither call touches them.
     pub(crate) fn reset_visible(&mut self, dc: usize) {
         self.gdi.dcs[dc].vis = None;
+        self.gdi.dcs[dc].vis_from = None;
         self.gdi.dcs[dc].state.origin = None;
     }
 }
@@ -175,6 +177,7 @@ fn restore_vis_rgn_call(system: &mut System, args: &mut Args) -> Result<Answer, 
 
     system.gdi.dcs[dc].vis_handle = Some((handle, object));
     system.gdi.dcs[dc].vis = Some(shape);
+    system.gdi.dcs[dc].vis_from = None;
 
     Ok(Answer::Word(vis_of(system, dc).kind()))
 }

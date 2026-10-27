@@ -398,6 +398,14 @@ export class Desktop {
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
 
+  /**
+   * Counted up whenever the windows change -- placed, shown, hidden,
+   * reordered, a style or the lock changed: a context's visible region
+   * worked out before is worked out again (`visible-region-rule.ts`), as
+   * USER marks its contexts' regions stale (`USER.EXE` seg1 `8aa0`).
+   */
+  generation = 0;
+
   /** Told of each window made active, as it is: USER notes it on its owners (see `enumerate.ts`). */
   onActivate: ((window: DesktopWindow) => void) | null = null;
 
@@ -2804,6 +2812,8 @@ export class Desktop {
   /** Which window shows at each pixel, the topmost winning. */
   #own() {
     const stride = this.screen.width;
+
+    this.generation++;
 
     this.#byId = new Map(this.windows.map((window) => [window.id, window]));
 

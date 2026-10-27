@@ -489,6 +489,13 @@ impl System {
             window.paint_shape = None;
         }
 
+        // And the update region its context's visible region was kept
+        // within, as `ReleaseDC` restores the region saved before it
+        // (`USER.EXE` seg1 `8805`).
+        if let Some(own) = self.windows[index].as_ref().and_then(|window| window.dc) {
+            self.drop_given_region(own);
+        }
+
         self.caret_after_paint(hwnd);
 
         if let (Some(Object::Dc(dc)), Some(own)) = (

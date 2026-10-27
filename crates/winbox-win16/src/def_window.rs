@@ -410,6 +410,12 @@ impl Engine {
             window.paint_shape = None;
         }
 
+        // The update region its context's visible region was kept within
+        // let go, as `EndPaint` lets it go (`paint.rs`).
+        if let Some(own) = system.windows[index].as_ref().and_then(|window| window.dc) {
+            system.drop_given_region(own);
+        }
+
         system.caret_after_paint(hwnd);
 
         let own = system.windows[index].as_ref().and_then(|window| window.dc);

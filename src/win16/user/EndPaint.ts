@@ -1,6 +1,7 @@
 'use strict';
 
 import { ShowCaret } from './caret.js';
+import { dropGivenRegion } from './visible-region-rule.js';
 
 /**
  * The **EndPaint** function marks the end of painting in the given window. This
@@ -34,11 +35,15 @@ export function EndPaint(hwnd, lpps) {
   // Get the surface
   const surface = dialog.surface;
 
-  /* The paint's clip goes with it. */
+  /* The paint's clip goes with it, and the update region its context's
+   * visible region was kept within, as `ReleaseDC` restores the region
+   * saved before it (`USER.EXE` seg1 `8805`). */
   if (dialog.window) {
     (dialog.window as any).paintClip = undefined;
     (dialog.window as any).paintShape = undefined;
   }
+
+  dropGivenRegion(this, surface);
 
   if (dialog.caretHidden) {
     dialog.caretHidden = false;

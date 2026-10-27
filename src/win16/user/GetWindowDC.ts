@@ -6,6 +6,7 @@ import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { resetVisible } from '../gdi/visible-region.js';
 
 import { RasterWindow } from './raster-window.js';
+import { DCX_USESTYLE, DCX_WINDOW, selectWindowRegion } from './visible-region-rule.js';
 
 /**
  * A device context for the whole of a window, its frame, caption and menu bar
@@ -40,8 +41,16 @@ export function GetWindowDC(this: any, hwnd: number) {
     return NULL;
   }
 
-  /* Its visible region what it shows, and its origin its corner (`GetDC`). */
-  resetVisible(surface);
+  /* Its visible region by USER's rule for the whole window, as `GetDCEx`
+   * with `DCX_WINDOW` and `DCX_USESTYLE`, and its origin its corner; the
+   * screen's what it shows (`GetDC`). */
+  const shown = surface !== this.screen ? this.handles.resolve(hwnd) : null;
+
+  if (shown instanceof RasterWindow) {
+    selectWindowRegion(this, surface, shown.window, DCX_WINDOW | DCX_USESTYLE);
+  } else {
+    resetVisible(surface);
+  }
 
   /* A context comes with the system font already in it; see `GetDC`. */
   if (!surface.font) {

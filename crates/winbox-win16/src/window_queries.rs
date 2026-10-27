@@ -844,6 +844,10 @@ pub fn set_window_long(system: &mut System, args: &mut Args) -> Result<Answer, S
             let previous = style_shown(system.window(index));
 
             system.window_mut(index).style = value;
+            // Its contexts' regions worked out again, as a style's
+            // `WS_CLIPCHILDREN` or `WS_CLIPSIBLINGS` changed makes them
+            // stale (`USER.EXE` seg2 `0bce`).
+            system.vis_generation += 1;
             previous
         }
         _ => write_extra(&mut system.window_mut(index).extra, offset, 4, value),

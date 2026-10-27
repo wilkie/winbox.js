@@ -289,6 +289,11 @@ pub struct System {
     /// Which window each pixel of the screen shows, its index plus one;
     /// nought for the desktop.
     pub owners: std::rc::Rc<Vec<u16>>,
+    /// Counted up whenever the windows change -- placed, shown, hidden,
+    /// reordered, a style or the lock changed: a context's visible region
+    /// worked out before is worked out again (`window_vis`), as USER marks
+    /// its contexts' regions stale (`USER.EXE` seg1 `8aa0`).
+    pub vis_generation: u64,
     /// The screen's pixels, made with the raster desktop.
     pub screen: Option<winbox_raster::DeviceBitmap>,
     /// The window that was active before the last change of active window,
@@ -616,6 +621,7 @@ impl System {
             hooks: Vec::new(),
             next_hook: 0,
             owners: std::rc::Rc::new(Vec::new()),
+            vis_generation: 0,
             screen: None,
             pending_activation: None,
             activating_for_focus: false,

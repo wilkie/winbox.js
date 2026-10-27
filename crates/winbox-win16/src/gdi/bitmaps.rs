@@ -486,6 +486,7 @@ pub(crate) fn select_bitmap(system: &mut System, dc: usize, object: usize) -> u1
     // Its visible region the bitmap's rectangle again, from (0, 0)
     // (`GDI.EXE` seg1 `1cd8`-`1cf7`, `SetRectRgn` on the region at A0h).
     system.gdi.dcs[dc].vis = None;
+    system.gdi.dcs[dc].vis_from = None;
 
     if let GdiObject::Bitmap(bitmap) = &mut system.gdi.objects[object] {
         bitmap.pixels.selected = true;

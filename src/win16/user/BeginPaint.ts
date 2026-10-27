@@ -6,6 +6,8 @@ import { resetVisible } from '../gdi/visible-region.js';
 import { NULL } from '../consts.js';
 
 import { RasterWindow } from './raster-window.js';
+import { DCX_INTERSECTRGN, DCX_USESTYLE, selectWindowRegion } from './visible-region-rule.js';
+import { ClipRegion } from '../../raster/clip-region.js';
 import { hideCaretFor } from './caret.js';
 import { eraseNotDone, sendErase, sendNcPaint } from './erase.js';
 
@@ -76,9 +78,34 @@ export async function BeginPaint(hwnd, lpps) {
   surface.clipRegion = null;
   surface.saved = [];
 
-  /* Its visible region the client area, and its origin the client area's
-   * corner, as USER gives them (`visible-region.ts`). */
-  resetVisible(surface);
+  /* Its visible region USER's rule's within the update region, as
+   * `GetDCEx` with `DCX_USESTYLE` and `DCX_INTERSECTRGN` of it (`USER.EXE`
+   * seg1 `7671`; `visrgn`), and its origin the client area's corner. The
+   * update region is what is to be painted, where that is known; the whole
+   * client area where it is not. */
+  if (dialog instanceof RasterWindow) {
+    const shown: any = dialog.window;
+    const box: ClipRegion | undefined = shown.paintClip
+      ? ClipRegion.rect(
+          shown.paintClip[0],
+          shown.paintClip[1],
+          shown.paintClip[2],
+          shown.paintClip[3]
+        )
+      : undefined;
+    const shape: ClipRegion | undefined = shown.paintShape;
+    const due = box && shape ? box.intersect(shape) : (box ?? shape);
+
+    selectWindowRegion(
+      this,
+      surface,
+      shown,
+      DCX_USESTYLE | (due ? DCX_INTERSECTRGN : 0),
+      due ? { shape: due, keep: 'intersect' } : null
+    );
+  } else {
+    resetVisible(surface);
+  }
 
   /* Its brush origin the client area's corner, as `GetDC` gives it
    * (`brushorg`). */

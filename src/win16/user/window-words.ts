@@ -301,6 +301,11 @@ export function SetWindowLong(this: any, hwnd: number, nOffset: number, dwNewLon
 
     dialog.window.style = dwNewLong >>> 0;
 
+    /* Its contexts' regions worked out again, as a style's
+     * `WS_CLIPCHILDREN` or `WS_CLIPSIBLINGS` changed makes them stale
+     * (`USER.EXE` seg2 `0bce`). */
+    dialog.desktop.generation++;
+
     return previous;
   }
 

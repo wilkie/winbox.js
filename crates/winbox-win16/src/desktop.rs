@@ -217,6 +217,8 @@ impl System {
         );
         let mut owners = vec![0u16; (width * height) as usize];
 
+        self.vis_generation += 1;
+
         for &index in self.z_order.iter().rev() {
             if !self.showing(index) {
                 continue;

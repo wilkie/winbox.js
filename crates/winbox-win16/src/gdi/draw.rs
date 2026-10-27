@@ -80,7 +80,17 @@ pub(crate) fn canvas(system: &mut System, dc: usize) -> Option<DeviceBitmap> {
     let mut bitmap = system.draw_target(dc)?;
 
     if let Some(clip) = super::regions::draw_clip(system, dc) {
-        bitmap.context.dc_clip = Some(Rc::new(move |x, y| clip.contains(x, y)));
+        // No test of USER's region where it takes in all of the bitmap
+        // (`window_vis`; the TypeScript engine's `Surface`).
+        let whole = system.gdi.dcs[dc].vis_from.is_some()
+            && winbox_raster::ClipRegion::rect(0, 0, bitmap.width(), bitmap.height())
+                .subtract(&clip)
+                .kind()
+                == 1;
+
+        if !whole {
+            bitmap.context.dc_clip = Some(Rc::new(move |x, y| clip.contains(x, y)));
+        }
     }
 
     Some(bitmap)

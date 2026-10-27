@@ -139,6 +139,7 @@ pub mod win87em;
 pub mod window_misc;
 pub mod window_queries;
 pub mod window_state;
+pub mod window_vis;
 pub mod windows;
 pub mod wing;
 pub mod wnet;

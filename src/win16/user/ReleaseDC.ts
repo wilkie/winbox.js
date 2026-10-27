@@ -2,6 +2,7 @@
 
 import { releaseToCache } from './GetDC.js';
 import { releaseDCExRegion } from './get-dc-ex.js';
+import { dropGivenRegion } from './visible-region-rule.js';
 import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
@@ -63,8 +64,10 @@ export function ReleaseDC(hwnd, hdc) {
   releaseToCache(this, hdc, released);
   released.liveDCs = Math.max(0, (released.liveDCs ?? 1) - 1);
 
-  /* And the region `GetDCEx` was given, deleted (`getdcex`). */
+  /* And the region `GetDCEx` was given, deleted (`getdcex`), the visible
+   * region as it was before it (`USER.EXE` seg1 `8805`). */
   releaseDCExRegion(this, hdc);
+  dropGivenRegion(this, released);
 
   return TRUE;
 }

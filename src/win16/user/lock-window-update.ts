@@ -35,6 +35,7 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
     }
 
     this._windowLock = { hwnd: hwndLock, surfaces: [] } satisfies Lock;
+    changed(this);
     return 1;
   }
 
@@ -43,6 +44,7 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
   }
 
   this._windowLock = null;
+  changed(this);
 
   let drawn: { left: number; top: number; right: number; bottom: number } | null = null;
 
@@ -66,6 +68,17 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
   }
 
   return 1;
+}
+
+/**
+ * The contexts' visible regions worked out again, the locked window's and
+ * those within it having none while it is locked (`USER.EXE` seg13 `22dd`,
+ * `2306`; `visible-region-rule.ts`).
+ */
+function changed(system: any) {
+  if (system.rasterDesktop) {
+    system.rasterDesktop.generation++;
+  }
 }
 
 /** For `GetDC` of the locked window: a surface of its own to draw on, or null for any other window. */

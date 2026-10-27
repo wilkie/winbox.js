@@ -43,12 +43,18 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             hwnd,
             dcs: Vec::new(),
         });
+        // The contexts' visible regions worked out again, the locked
+        // window's and those within it having none while it is locked
+        // (`USER.EXE` seg13 `22dd`, `2306`; `window_vis`).
+        system.vis_generation += 1;
         return Ok(Answer::Word(1));
     }
 
     let Some(lock) = system.user_calls.locked.take() else {
         return Ok(Answer::Word(0));
     };
+
+    system.vis_generation += 1;
 
     let mut drawn: Option<[i32; 4]> = None;
 
