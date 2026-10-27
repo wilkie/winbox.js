@@ -163,6 +163,25 @@ impl DeviceBitmap {
         view
     }
 
+    /// A device context's view of all of `parent`'s pixels, its (0, 0) at
+    /// `origin` in them: as large as the window it is for, `width` by
+    /// `height`, but reaching every pixel of the parent, left of and above
+    /// nought too -- a window's device context in Windows' terms, a view of
+    /// the whole screen from its origin. What it draws is kept to its
+    /// region by its device context (`dc_clip`), not by the view.
+    pub fn screen_view(parent: &Self, origin: (i32, i32), width: i32, height: i32) -> Self {
+        let (x, y) = origin;
+        let mut view = Self::view(parent, x, y, width, height, None);
+
+        view.context.reach = crate::indexed_context::Rect {
+            left: -x,
+            top: -y,
+            right: parent.width - x,
+            bottom: parent.height - y,
+        };
+        view
+    }
+
     /// Whether this bitmap's pixels are another's.
     pub fn is_view(&self) -> bool {
         self.context.is_owned()

@@ -85,6 +85,43 @@ export class DeviceBitmap extends Bitmap {
     return view;
   }
 
+  /**
+   * A device context's view of all of `parent`'s pixels, its (0, 0) at
+   * `origin` in them: as large as the window it is for, `width` by
+   * `height`, from `corner`, but reaching every pixel of the parent, left
+   * of and above nought too -- a window's device context in Windows'
+   * terms, a view of the whole screen from its origin. What it draws is
+   * kept to its region by its device context (`dcClip`), not by the view.
+   */
+  static screenView(
+    parent: DeviceBitmap,
+    corner: [number, number],
+    width: number,
+    height: number,
+    origin: [number, number] = corner
+  ) {
+    const view = DeviceBitmap.view(parent, corner[0], corner[1], width, height);
+
+    view.corner = corner;
+    view.moveOrigin(origin[0], origin[1]);
+
+    return view;
+  }
+
+  /** Where a screen view's window is on the screen, or `null` for any other bitmap. */
+  corner: [number, number] | null = null;
+
+  /** A screen view's (0, 0) moved to `x, y` of the screen: `SetDCOrg`. */
+  moveOrigin(x: number, y: number) {
+    const context = this.context;
+    const parent = context.owner!;
+
+    context.base = y * context.stride + x;
+    context.ownerX = x;
+    context.ownerY = y;
+    context.reach = { left: -x, top: -y, right: parent.width - x, bottom: parent.height - y };
+  }
+
   /** Whether this bitmap's pixels are another's. */
   get isView() {
     return this.context.owner !== null;

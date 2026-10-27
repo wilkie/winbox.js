@@ -158,6 +158,15 @@ function sideOf(
   };
 }
 
+/** The pixels a destination has: its bitmap's reach, else its size. */
+function reachOf(surface: any) {
+  const bitmap = surface.bitmap;
+
+  return bitmap instanceof DeviceBitmap
+    ? bitmap.context.reach
+    : { left: 0, top: 0, right: surface.width, bottom: surface.height };
+}
+
 /**
  * Carries out one raster operation from `source` (or none) onto `dest`, a
  * rectangle `width` by `height` at `x, y`, the source's at `sx, sy`.
@@ -180,19 +189,27 @@ export function rasterOp(
     return;
   }
 
-  /* Clip to the destination, and to the source where there is one. */
-  let left = Math.max(x, 0);
-  let top = Math.max(y, 0);
-  let right = Math.min(x + width, dest.width);
-  let bottom = Math.min(y + height, dest.height);
+  /* Clip to the destination's pixels, and to the source's where there is
+   * one: a device context's view of the screen reaches all of it
+   * (`DeviceBitmap.screenView`), a source's as a destination's. */
+  const destReach = reachOf(dest);
+  let left = Math.max(x, destReach.left);
+  let top = Math.max(y, destReach.top);
+  let right = Math.min(x + width, destReach.right);
+  let bottom = Math.min(y + height, destReach.bottom);
 
   const readsSource = !!source && usesSource(table);
 
   if (readsSource) {
-    left = Math.max(left, x - sx);
-    top = Math.max(top, y - sy);
-    right = Math.min(right, x - sx + source.width);
-    bottom = Math.min(bottom, y - sy + source.height);
+    const sourceReach =
+      source.bitmap instanceof DeviceBitmap && source.bitmap.isView
+        ? source.bitmap.context.reach
+        : { left: 0, top: 0, right: source.width, bottom: source.height };
+
+    left = Math.max(left, x - sx + sourceReach.left);
+    top = Math.max(top, y - sy + sourceReach.top);
+    right = Math.min(right, x - sx + sourceReach.right);
+    bottom = Math.min(bottom, y - sy + sourceReach.bottom);
   }
 
   if (right <= left || bottom <= top) {

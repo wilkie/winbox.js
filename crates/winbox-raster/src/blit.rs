@@ -156,18 +156,29 @@ pub fn raster_op(
 
     let to = dest.bitmap;
 
-    // Clipped to the destination, and to the source where there is one.
-    let mut left = x.max(0);
-    let mut top = y.max(0);
-    let mut right = (x + width).min(to.width());
-    let mut bottom = (y + height).min(to.height());
+    // Clipped to the destination's pixels, and to the source's where there
+    // is one: a device context's view of the screen reaches all of it
+    // (`DeviceBitmap::screen_view`), a source's as a destination's.
+    let reach = to.context.reach;
+    let mut left = x.max(reach.left);
+    let mut top = y.max(reach.top);
+    let mut right = (x + width).min(reach.right);
+    let mut bottom = (y + height).min(reach.bottom);
     let from = source.filter(|_| uses_source(table));
 
     if let Some(from) = from {
-        left = left.max(x - sx);
-        top = top.max(y - sy);
-        right = right.min(x - sx + from.width);
-        bottom = bottom.min(y - sy + from.height);
+        let (from_left, from_top, from_right, from_bottom) = if from.bitmap.is_view() {
+            let reach = from.bitmap.context.reach;
+
+            (reach.left, reach.top, reach.right, reach.bottom)
+        } else {
+            (0, 0, from.width, from.height)
+        };
+
+        left = left.max(x - sx + from_left);
+        top = top.max(y - sy + from_top);
+        right = right.min(x - sx + from_right);
+        bottom = bottom.min(y - sy + from_bottom);
     }
 
     if right <= left || bottom <= top {

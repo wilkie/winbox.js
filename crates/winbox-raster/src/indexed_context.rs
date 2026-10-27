@@ -102,11 +102,21 @@ pub struct IndexedContext {
     pub base: isize,
     pub stride: isize,
 
+    /// The pixels there are, in this context's terms: its own rectangle,
+    /// from nought; for a device context's view of the screen, the whole
+    /// screen from the context's origin, left of and above nought too, as
+    /// Windows has a window's context (`DeviceBitmap::screen_view`).
+    pub reach: Rect,
+
     /// Whether a pixel may be written, or `None` for all of them.
     pub clip: Option<Clip>,
 
     /// The clip region of the device context the bitmap is selected into.
     pub dc_clip: Option<Clip>,
+
+    /// The smallest rectangle around what `dc_clip` lets through, where it
+    /// is known: no pixel outside it is written.
+    pub dc_box: Option<Rect>,
 
     /// Where the marks are kept: this context's own, or for a view, those
     /// of the context whose pixels these are.
@@ -148,8 +158,10 @@ impl Clone for IndexedContext {
             last: self.last,
             base: self.base,
             stride: self.stride,
+            reach: self.reach,
             clip: self.clip.clone(),
             dc_clip: self.dc_clip.clone(),
+            dc_box: self.dc_box,
             marks: Rc::clone(&self.marks),
             owned: self.owned,
             owner_x: self.owner_x,
@@ -169,8 +181,15 @@ impl IndexedContext {
             last: None,
             base: 0,
             stride: width as isize,
+            reach: Rect {
+                left: 0,
+                top: 0,
+                right: width,
+                bottom: height,
+            },
             clip: None,
             dc_clip: None,
+            dc_box: None,
             marks: Rc::new(RefCell::new(Marks::clean())),
             owned: false,
             owner_x: 0,
@@ -202,11 +221,34 @@ impl IndexedContext {
 
     /// Where a pixel is in `indices`, or -1 outside the context.
     pub fn address(&self, x: i32, y: i32) -> isize {
-        if x < 0 || y < 0 || x >= self.width || y >= self.height {
+        if !self.reaches(x, y) {
             return -1;
         }
 
         self.base + y as isize * self.stride + x as isize
+    }
+
+    /// The pixels that may be written: those there are, within the box of
+    /// the device context's region where it is known.
+    pub fn writable(&self) -> Rect {
+        let reach = self.reach;
+
+        match self.dc_box {
+            Some(dc_box) => Rect {
+                left: reach.left.max(dc_box.left),
+                top: reach.top.max(dc_box.top),
+                right: reach.right.min(dc_box.right),
+                bottom: reach.bottom.min(dc_box.bottom),
+            },
+            None => reach,
+        }
+    }
+
+    /// Whether there is a pixel at a point (`reach`).
+    pub fn reaches(&self, x: i32, y: i32) -> bool {
+        let reach = &self.reach;
+
+        x >= reach.left && y >= reach.top && x < reach.right && y < reach.bottom
     }
 
     /// The index for a colour given as RGBA bytes.
@@ -232,7 +274,7 @@ impl IndexedContext {
     }
 
     pub fn set_pixel(&mut self, x: i32, y: i32, colour: [u8; 4]) {
-        if colour[3] == 0 || x < 0 || y < 0 || x >= self.width || y >= self.height {
+        if colour[3] == 0 || !self.reaches(x, y) {
             return;
         }
 
@@ -357,7 +399,7 @@ impl IndexedContext {
             for column in 0..width {
                 let (sx, sy) = (x + column, y + row);
 
-                if sx < 0 || sy < 0 || sx >= self.width || sy >= self.height {
+                if !self.reaches(sx, sy) {
                     continue;
                 }
 

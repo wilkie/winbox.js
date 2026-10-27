@@ -52,11 +52,23 @@ export class IndexedContext extends BitmapContext {
   base = 0;
   stride: number;
 
+  /**
+   * The pixels there are, in this context's terms: its own rectangle, from
+   * nought; for a device context's view of the screen, the whole screen
+   * from the context's origin, left of and above nought too, as Windows has
+   * a window's context (`DeviceBitmap.screenView`).
+   */
+  reach: { left: number; top: number; right: number; bottom: number };
+
   /** Whether a pixel may be written, or `null` for all of them. */
   clip: ((x: number, y: number) => boolean) | null = null;
 
   /** The clip region of the device context the bitmap is selected into, or `null`. */
   dcClip: ((x: number, y: number) => boolean) | null = null;
+
+  /** The smallest rectangle around what `dcClip` lets through, where it is
+   * known: no pixel outside it is written. */
+  dcBox: { left: number; top: number; right: number; bottom: number } | null = null;
 
   /** The context whose pixels these are, and where this one's start in it. */
   owner: IndexedContext | null = null;
@@ -68,11 +80,35 @@ export class IndexedContext extends BitmapContext {
     this.indices = indices;
     this.palette = palette;
     this.stride = width;
+    this.reach = { left: 0, top: 0, right: width, bottom: height };
+  }
+
+  /** Whether there is a pixel at a point (`reach`). */
+  reaches(x: number, y: number) {
+    const reach = this.reach;
+
+    return x >= reach.left && y >= reach.top && x < reach.right && y < reach.bottom;
+  }
+
+  /** The pixels that may be written: those there are, within the box of the
+   * device context's region where it is known. */
+  writable() {
+    const reach = this.reach;
+    const box = this.dcBox;
+
+    return box
+      ? {
+          left: Math.max(reach.left, box.left),
+          top: Math.max(reach.top, box.top),
+          right: Math.min(reach.right, box.right),
+          bottom: Math.min(reach.bottom, box.bottom),
+        }
+      : reach;
   }
 
   /** Where a pixel is in `indices`, or -1 outside the context. */
   address(x: number, y: number) {
-    if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+    if (!this.reaches(x, y)) {
       return -1;
     }
 
@@ -92,7 +128,7 @@ export class IndexedContext extends BitmapContext {
   }
 
   setPixel(x, y, colour) {
-    if (colour[3] === 0 || x < 0 || y < 0 || x >= this.width || y >= this.height) {
+    if (colour[3] === 0 || !this.reaches(x, y)) {
       return;
     }
 
@@ -174,7 +210,7 @@ export class IndexedContext extends BitmapContext {
         const sx = x + column;
         const sy = y + row;
 
-        if (sx < 0 || sy < 0 || sx >= this.width || sy >= this.height) {
+        if (!this.reaches(sx, sy)) {
           continue;
         }
 
