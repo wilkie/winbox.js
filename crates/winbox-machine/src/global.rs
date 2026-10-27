@@ -1,5 +1,5 @@
 //! The global heap's blocks, as winbox.js's `Allocator` gives them: each a
-//! run of selectors, 64 KiB a selector, its size rounded to 32 bytes.
+//! run of selectors, 64 KiB a selector, its size rounded as KERNEL rounds it ([`block_size`]).
 
 use std::collections::HashMap;
 
@@ -11,7 +11,7 @@ pub const FIRST_SELECTOR: usize = 100;
 /// A block given out.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Block {
-    /// What was asked for, rounded to 32 bytes.
+    /// What was asked for, rounded by [`block_size`].
     pub size: u32,
     /// How many selectors it was given.
     pub selectors: usize,
@@ -34,12 +34,73 @@ pub struct GlobalHeap {
     /// The sizes of segments modules were loaded into, as `GlobalSize`
     /// answers them: KERNEL's allocation for each, not the file's bytes.
     segment_sizes: HashMap<usize, u32>,
+    /// The bytes the blocks given hold, as `GetFreeSpace` counts them.
+    held: u64,
+    /// What was held when a program first asked (see [`MOST`]).
+    baseline: Option<u64>,
 }
 
-/// A size as a block is given it: rounded up to 32 bytes; nought stays
-/// nought, a handle with no memory (`memory`).
-fn rounded(size: u32) -> u32 {
-    if size == 0 { 0 } else { (size + 0x1f) & !0x1f }
+/// The largest size KERNEL lets through: 16 MiB less 64 KiB, the most 255
+/// selectors of a block reach.
+///
+/// **Read out** of `KRNL386.EXE` seg1. `GlobalAlloc` (`022b`, `0d2f`),
+/// `GlobalReAlloc` (`028c`, `0d68`) and `GlobalDosAlloc` (`139a`, which
+/// calls `0d2f` with KERNEL's flag 8000h) all take the size through
+/// `0c7c`: rounded up to 16 bytes, and anything that carries past 32 bits
+/// or comes to more than `FF0000h` made `7FFFFFFFh`, a size no block can have.
+/// `GlobalAlloc`'s `4025` refuses more than `FF0000h` at once, logging
+/// `ERR_GALLOC` and answering nought; `GlobalReAlloc`'s `40f9` refuses it
+/// when no selectors or room are found for it (`20a8` takes no more than
+/// `FEh` selectors).
+///
+/// Within the limit, a block is searched for (`379e`); not found, KERNEL
+/// asks DPMI for more memory (`397e`, `int 31h` `0501h`), compacts the heap
+/// and discards what can be discarded (`34c4`, `2f28`), and searches again;
+/// still not found, the request is refused with nought.
+///
+/// How much there is depends on the machine. **Recorded** by `galimit`
+/// under DOSBox, as the probe started: [`FREE`], [`COMPACT`] and
+/// [`LARGEST`]. A block held makes `GetFreeSpace` less by its size, and
+/// freed gives it back. This machine is the one modelled: what winbox.js
+/// holds when a program first asks KERNEL for memory or how much there is,
+/// through `GlobalAlloc`, `GlobalReAlloc`, `GlobalDosAlloc`, `GetFreeSpace`
+/// or `GlobalCompact`, stands for what Windows held then
+/// ([`GlobalHeap::settle`]); every byte held beyond it is taken from all
+/// three figures, every byte given back returns to them.
+pub const MOST: u32 = 0x00ff_0000;
+
+/// `GetFreeSpace(0)` on the oracle's machine as a program starts.
+pub const FREE: u32 = 0x00eb_b4e0;
+
+/// The largest block `GlobalAlloc` grants there.
+pub const LARGEST: u32 = 0x00e3_4000;
+
+/// `GlobalCompact(0)` there: the largest block less 64 KiB.
+pub const COMPACT: u32 = 0x00e2_4000;
+
+/// Whether a size passes `0c7c`: rounded up to 16 bytes without carrying
+/// past 32 bits, no more than [`MOST`].
+pub fn within_limit(size: u32) -> bool {
+    size.checked_add(0xf)
+        .is_some_and(|rounded| rounded & !0xf <= MOST)
+}
+
+/// A size as a block is given it (`KRNL386.EXE` seg1 `3fde`): rounded up to
+/// 32 bytes, and past 1 MiB up to a 4 KiB page (`galimit`: 100001h bytes
+/// are given 101000h); nought stays nought, a handle with no memory
+/// (`memory`).
+pub fn block_size(size: u32) -> u32 {
+    if size == 0 {
+        return 0;
+    }
+
+    let rounded = size.div_ceil(0x20).saturating_mul(0x20);
+
+    if rounded > 0x0010_0000 {
+        rounded.div_ceil(0x1000).saturating_mul(0x1000)
+    } else {
+        rounded
+    }
 }
 
 fn selectors_for(size: u32) -> usize {
@@ -62,7 +123,7 @@ impl GlobalHeap {
         size: u32,
         flags: u16,
     ) -> Option<usize> {
-        let size = rounded(size);
+        let size = block_size(size);
         let selectors = selectors_for(size);
         let index = if selectors == 1 {
             self.reused(descriptors)
@@ -81,6 +142,7 @@ impl GlobalHeap {
                 locks: 0,
             },
         );
+        self.held += u64::from(size);
 
         let mut left = size;
 
@@ -134,6 +196,8 @@ impl GlobalHeap {
         index: usize,
     ) -> bool {
         if let Some(block) = self.blocks.remove(&index) {
+            self.held -= u64::from(block.size);
+
             for tile in 0..block.selectors {
                 descriptors.release(memory, index + tile);
                 self.freed.push(index + tile);
@@ -141,6 +205,35 @@ impl GlobalHeap {
         }
 
         true
+    }
+
+    /// A program has asked: what is held now stands for what Windows held
+    /// then (see [`MOST`]).
+    pub fn settle(&mut self) {
+        self.baseline.get_or_insert(self.held);
+    }
+
+    /// The bytes held since a program first asked; less than nought where
+    /// more has been given back.
+    fn taken(&self) -> i64 {
+        self.baseline
+            .map_or(0, |baseline| self.held as i64 - baseline as i64)
+    }
+
+    /// `GetFreeSpace`'s answer.
+    pub fn free_space(&self) -> u32 {
+        (i64::from(FREE) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
+    }
+
+    /// The largest block that can be given.
+    pub fn largest_block(&self) -> u32 {
+        (i64::from(LARGEST) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
+    }
+
+    /// `GlobalCompact`'s answer, which goes through `3fde` and so is never
+    /// more than [`MOST`] (`KRNL386.EXE` seg1 `1105`-`111d`).
+    pub fn compact_answer(&self) -> u32 {
+        (i64::from(COMPACT) - self.taken()).clamp(0, i64::from(MOST)) as u32
     }
 
     pub fn block(&self, index: usize) -> Option<&Block> {
@@ -176,6 +269,7 @@ impl GlobalHeap {
             return false;
         };
 
+        self.held -= u64::from(block.size);
         block.size = 0;
         block.discarded = true;
         true
@@ -228,14 +322,14 @@ impl GlobalHeap {
                     return None;
                 }
 
-                *segment = rounded(size);
+                *segment = block_size(size);
                 return Some(index);
             }
 
             return None;
         }
 
-        let size = rounded(size);
+        let size = block_size(size);
         let selectors = selectors_for(size);
         let block = self.blocks.get_mut(&index)?;
 
@@ -251,6 +345,7 @@ impl GlobalHeap {
         }
 
         block.selectors = selectors;
+        self.held = self.held - u64::from(block.size) + u64::from(size);
         block.size = size;
         self.set_limits(memory, descriptors, index);
         Some(index)
@@ -323,6 +418,42 @@ mod tests {
 
         assert_eq!(again, vec![102, 101, 100]);
         assert_eq!(heap.size_of(102), 128);
+    }
+
+    /// `galimit`: the sizes KERNEL lets through, and how it rounds them.
+    #[test]
+    fn limits_and_rounds_sizes_as_kernel_does() {
+        assert!(within_limit(0x00ff_0000));
+        assert!(!within_limit(0x00ff_0001));
+        assert!(!within_limit(0x6800_0000));
+        assert!(!within_limit(u32::MAX));
+        assert_eq!(block_size(1), 0x20);
+        assert_eq!(block_size(0x0010_0000), 0x0010_0000);
+        assert_eq!(block_size(0x0010_0001), 0x0010_1000);
+    }
+
+    /// What is held after a program first asks is taken from the machine's
+    /// free memory, and given back when freed.
+    #[test]
+    fn takes_what_is_held_from_the_machines_memory() {
+        let (mut memory, mut descriptors, mut heap) = machine();
+        let before = heap
+            .allocate(&mut memory, &mut descriptors, 0x100, 0)
+            .unwrap();
+
+        heap.settle();
+        assert_eq!(heap.free_space(), FREE);
+
+        let block = heap
+            .allocate(&mut memory, &mut descriptors, 0x0010_0001, 2)
+            .unwrap();
+
+        assert_eq!(heap.free_space(), FREE - 0x0010_1000);
+        assert_eq!(heap.largest_block(), LARGEST - 0x0010_1000);
+        assert_eq!(heap.compact_answer(), COMPACT - 0x0010_1000);
+        heap.free(&mut memory, &mut descriptors, block);
+        heap.free(&mut memory, &mut descriptors, before);
+        assert_eq!(heap.free_space(), FREE + 0x100);
     }
 
     #[test]

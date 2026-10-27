@@ -5946,6 +5946,7 @@ const RUN_WHOLE = new Set<string>([
   'aboutdp',
   'gfreeal',
   'metarec',
+  'galimit',
 ]);
 
 /**

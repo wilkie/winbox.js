@@ -180,15 +180,23 @@ fn dos_place(system: &System, paragraphs: u32) -> Option<u16> {
 /// the paragraph in DX.
 pub fn global_dos_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let size = args.dword(system);
+
+    system.global.settle();
+
+    // `GlobalAlloc`'s own limit (`0c7c`), and nought refused: `4025` gives
+    // a block of nought only where it is moveable (`40ab`), and this one is
+    // fixed. **Recorded** by `galimit`: nought, 100000h and more answered
+    // nought.
+    if size == 0 || !winbox_machine::within_limit(size) {
+        return Ok(Answer::Dword(0));
+    }
+
     let rounded = if size == 0 { 0 } else { (size + 0x1f) & !0x1f };
     let paragraphs = rounded >> 4;
     let Some(paragraph) = dos_place(system, paragraphs) else {
         return Ok(Answer::Dword(0));
     };
-    let Some(index) = system
-        .global
-        .allocate(&mut system.cpu.bus, &mut system.descriptors, size, 0)
-    else {
+    let Some(index) = crate::memory::allocate(system, size, 0) else {
         return Ok(Answer::Dword(0));
     };
     let task = system.current_task().unwrap_or(0);

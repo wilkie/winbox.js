@@ -6,8 +6,8 @@ ordinal: 184
 summary: A fixed block in the first megabyte: its selector in AX and its real-mode segment in DX.
 versions:
   '3.1': exact
-probes: [kmore]
-records: [dos]
+probes: [kmore, galimit]
+records: [dos, dosalloc]
 source: src/win16/kernel/more-calls.ts
 topics: [kernel-queries]
 ---
@@ -16,6 +16,8 @@ topics: [kernel-queries]
 
 - [[read out]] `KRNL386.EXE` seg1 `139a`-`13d1`: `GlobalAlloc` with flags 8000h, KERNEL's own for the first megabyte, and the size; nought where it fails. Otherwise its base (seg1 `2261`) shifted right four is the segment, in DX, and the selector in AX.
 - [[measured]] [[probe:kmore]]: the base is the segment's paragraph, below the first megabyte; `GlobalSize` is the size asked, `GlobalFlags` nought, `GlobalHandle` the selector itself, and the limit the size less one. A block of 20h after one of 100h is 10h paragraphs on, and once both are freed 20h is given at the first's segment again: blocks go lowest first, one after another. 100000h is refused; 10000h and 40000h are given.
+- [[measured]] [[probe:galimit]]: nought is refused, unlike [[fn:KERNEL.GlobalAlloc]]'s nought; 1, FFFFh and 10000h bytes are given 20h, 10000h and 10000h; 100000h and everything larger, to FFFFFFFFh, are refused.
+- [[read out]] The size goes through [[fn:KERNEL.GlobalAlloc]]'s own `0c7c`, so its limit is the same, FF0000h. The block is fixed, and `4025` gives a block of nought only where it is moveable (`40ab`).
 
 ## Nuances
 

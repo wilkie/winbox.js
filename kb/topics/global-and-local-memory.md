@@ -63,6 +63,7 @@ A library that is handed a pointer can ask the processor about its selector with
 - [[measured]] [[fn:KERNEL.GlobalAlloc]] rounds a request up to a multiple of 32 bytes, with 32 the least, and [[fn:KERNEL.GlobalSize]] reports the rounded size: 1 → 32, 17 → 32, 100 → 128, 1024 → 1024, 65536 → 65536. 17 records, fixed, moveable and `GMEM_ZEROINIT` alike.
 - [[measured]] A request for zero bytes is honoured, not refused. It returns a real handle whose size reads 0, moveable or fixed.
 - [[measured]] A locked block starts at offset 0 of its selector: 2 of 2.
+- [[measured]] [[probe:galimit]]: past 1 MiB a block is rounded to a 4 KiB page, 100001h to 101000h. Nothing over FF0000h, 16 MiB less 64 KiB, is ever given, by [[fn:KERNEL.GlobalAlloc]], [[fn:KERNEL.GlobalReAlloc]] or [[fn:KERNEL.GlobalDosAlloc]]: 68000000h, which OLECLI asks for, and FFFFFFFFh are refused with `NULL` like FF0001h. [[read out]] All three take the size through `KRNL386.EXE` seg1 `0c7c`, which makes anything over FF0000h a size no block can have.
 
 ## Local sizes
 
@@ -151,7 +152,10 @@ Read out of `KRNL386.EXE`, which the oracle's standard mode runs ([[topic:findin
 
 ## How much there is
 
-- [[measured]] [[probe:freemem]], under DOSBox: `GlobalCompact(0)` answers the largest block there could be, 14,480K, a little less than `GetFreeSpace(0)`'s 15,086K. The numbers are the machine's own. winbox.js answers the same for both, and keeps the one within the other.
+- [[measured]] [[probe:freemem]], under DOSBox: `GlobalCompact(0)` answers the largest block there could be, 14,480K, a little less than `GetFreeSpace(0)`'s 15,086K. The numbers are the machine's own.
+- [[measured]] [[probe:galimit]], as it starts: [[fn:KERNEL.GetFreeSpace]] EBB4E0h, [[fn:KERNEL.GlobalCompact]] E24000h, and the largest block [[fn:KERNEL.GlobalAlloc]] grants E34000h, 1000h more refused. A block held makes `GetFreeSpace` less by its size as given, and freed gives it back. A request larger than the largest block is refused with `NULL`, `GetFreeSpace` unchanged.
+- [[read out]] Not finding room, KERNEL asks DPMI for more, compacts the heap, discards what it can and looks again before it refuses (`KRNL386.EXE` seg1 `379e`, `397e`, `34c4`, `2f28`).
+- How much a machine has is its own. WinBox models the oracle's machine as [[probe:galimit]] found it: what WinBox holds when a program first asks KERNEL for memory or how much there is (`GlobalAlloc`, `GlobalReAlloc`, `GlobalDosAlloc`, `GetFreeSpace`, `GlobalCompact`) stands for what Windows held then, and every byte of global blocks held after that is taken from all three figures and returned when freed. Both engines agree with all 93 records. A program's own segments are not counted, so every program is told what `galimit` was told: [[probe:freemem]], 420h bytes smaller, was told 15,086K by Windows and is told 15,085K by WinBox, its one record that differs. Before, both engines answered 16 MiB for both figures and gave any block the selectors could reach: OLECLI's 68000000h bytes were given in the TypeScript engine, and OLECLI went on to copy that many. The Rust engine refused them only because its descriptor table ran out.
 - [[measured]] `LocalHandleDelta(0)` answers 32, how many handles a local heap makes room for at a time. Given a number, it sets it and answers it.
 - Write asks both as it starts, and both were stubs answering 0. Its "Not enough memory" came from elsewhere, the current directory ([[topic:directory-lists]]); answering these was not what cured it.
 
@@ -241,7 +245,9 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 - A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
 - A program's own notify procedure: [[fn:KERNEL.LocalNotify]] puts it in the heap's information, but KERNEL's own is the one told (read out, not recorded); and KERNEL's own procedure's segment is nought there. Discardable blocks discarded by compaction, `LocalShrink` moving blocks, and `LocalReAlloc` of a locked block are read out, not recorded.
 
-`LocalLock`'s lock count, which is kept, and read out, but not recorded. `LocalReAlloc` of a fixed block that shrinks or has room after it. Global discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, blocks and resizes beyond 64 KiB, freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
+`LocalLock`'s lock count, which is kept, and read out, but not recorded. `LocalReAlloc` of a fixed block that shrinks or has room after it. Global discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZEROINIT` zeroes anything, local requests for zero bytes, freeing twice, what a freed handle turns into, and anything recorded in enhanced mode.
+
+The memory model's edges: a program's own segments counted against the free memory (Windows counts them; WinBox gives every program `galimit`'s figures), discardable unlocked blocks counted as free by `GetFreeSpace` (read out, not recorded; WinBox takes them from it), compaction and discarding making room for a request that would otherwise fail, `GMEM_NOCOMPACT` and `GMEM_NODISCARD` refusing sooner, the 254 selectors `GlobalReAlloc` can grow a block to (read out at `20a8`; the oracle's machine has too little memory to reach it), and how the figures fall as many blocks are held, where Windows' heap is fragmented and WinBox's model is not.
 
 ## In winbox.js
 

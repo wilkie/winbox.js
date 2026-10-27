@@ -264,6 +264,7 @@ pub const AGREEING: &[&str] = &[
     "aboutdp",
     "gfreeal",
     "metarec",
+    "galimit",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
