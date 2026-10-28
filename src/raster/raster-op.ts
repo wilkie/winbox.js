@@ -370,9 +370,32 @@ export function rasterOp(
     result = (p, s, d) => combine(table, p, s, d, mask);
   }
 
+  /* A source that is the destination's own pixels -- a window's context
+   * blitting within itself, as `ScrollDC` does -- is read before anything
+   * is written, as the display driver copies the right way round where the
+   * two overlap (`visscrl`). */
+  let read = from ? (px: number, py: number) => from.read(px - x + sx, py - y + sy) : null;
+
+  if (
+    from &&
+    source.bitmap instanceof DeviceBitmap &&
+    dest.bitmap instanceof DeviceBitmap &&
+    source.bitmap.indices === dest.bitmap.indices
+  ) {
+    const kept = new Uint8Array(w * h);
+
+    for (let py = top; py < bottom; py++) {
+      for (let px = left; px < right; px++) {
+        kept[(py - top) * w + (px - left)] = from.read(px - x + sx, py - y + sy);
+      }
+    }
+
+    read = (px, py) => kept[(py - top) * w + (px - left)];
+  }
+
   for (let py = top; py < bottom; py++) {
     for (let px = left; px < right; px++) {
-      const s = from ? carry(from.read(px - x + sx, py - y + sy)) : 0;
+      const s = read ? carry(read(px, py)) : 0;
       const d = to.read(px, py);
 
       to.write!(px, py, result(pattern(px, py), s, d));

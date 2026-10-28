@@ -1,0 +1,314 @@
+{
+  "probe": "visscrl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "start",
+      "result": "100-110:100-110;110-130:130-150;130-140:170-180;150-160:140-160;160-170:140-170;"
+    },
+    {
+      "function": "update",
+      "args": "start",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindow 20,0",
+      "result": "100-110:100-110,120-130;110-120:150-170;120-130:150-160;130-140:170-180;160-170:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindow 20,0",
+      "result": "2 0,0,20,80 0-80:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindow -20,-10",
+      "result": "100-110:110-130;110-120:110-130,140-150;120-130:140-150;130-140:170-180;140-150:120-140;150-160:120-150;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindow -20,-10",
+      "result": "3 0,0,120,80 0-10:100-120;10-20:40-120;20-50:40-60;60-70:100-120;70-80:0-120;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindow 0,-10 rect",
+      "result": "100-110:100-110,130-150;110-120:130-150;130-140:170-180;140-160:140-160;160-170:140-170;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindow 0,-10 rect",
+      "result": "3 10,10,100,70 10-20:60-100;60-70:10-100;"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollWindowEx 20,10",
+      "result": "3 0,0,120,80 3 0,0,120,80 0-10:0-120;10-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindowEx 20,10",
+      "result": "100-110:100-110;110-120:120-130;120-130:150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindowEx 20,10",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollWindowEx 20,10 invalidate",
+      "result": "3 0,0,120,80"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindowEx 20,10 invalidate",
+      "result": "100-110:100-110;110-120:120-130;120-130:150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindowEx 20,10 invalidate",
+      "result": "3 0,0,120,80 0-10:0-120;10-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC 20,10",
+      "result": "1 0,0,120,80 3 0,0,120,80 0-10:0-120;10-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollDC 20,10",
+      "result": "100-110:100-110;110-120:120-130;120-130:150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollDC 20,10",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC -20,0 clip",
+      "result": "1 40,0,90,50 3 40,0,90,50 0-20:70-90;20-50:40-60;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollDC -20,0 clip",
+      "result": "110-120:110-130;120-130:110-130,140-150;130-140:170-180;150-160:140-160;160-170:140-170;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollDC -20,0 clip",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC 0,10 clear",
+      "result": "1 0,0,50,10 2 0,0,50,10 0-10:0-50;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollDC 0,10 clear",
+      "result": "100-120:100-110;120-130:130-150;130-140:130-150,170-180;150-160:150-160;160-170:140-170;170-180:140-150;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollDC 0,10 clear",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC 10,10 clear",
+      "result": "1 0,0,50,80 3 0,0,50,80 0-10:0-50;10-80:0-10;"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC 10,10 clear no region",
+      "result": "1 0,0,50,80"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollDC 30,0 apart",
+      "result": "1 0,0,20,20 2 0,0,20,20 0-20:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollDC clear after",
+      "result": "100-110:100-110,130-140;110-120:100-120,130-150;120-130:110-130;130-140:120-130,170-180;150-160:150-160;160-170:150-170;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollDC clear after",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "screen",
+      "args": "pending ScrollWindow",
+      "result": "100-110:100-110;110-120:120-130;120-130:150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "pending ScrollWindow",
+      "result": "3 0,0,120,80 0-10:0-120;10-30:0-40;30-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "answer",
+      "args": "pending ScrollWindowEx",
+      "result": "3 0,0,120,80 3 0,0,120,80 0-10:0-120;10-30:0-40;30-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "pending ScrollWindowEx",
+      "result": "100-110:100-110;110-120:130-140;120-130:130-140,150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "pending ScrollWindowEx",
+      "result": "2 0,0,20,20 0-20:0-20;"
+    },
+    {
+      "function": "answer",
+      "args": "pending ScrollWindowEx invalidate",
+      "result": "3 0,0,120,80 3 0,0,120,80 0-10:0-120;10-30:0-40;30-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "screen",
+      "args": "pending ScrollWindowEx invalidate",
+      "result": "100-110:100-110;110-120:130-140;120-130:130-140,150-160;130-140:150-160,170-180;160-170:160-180;170-180:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "pending ScrollWindowEx invalidate",
+      "result": "3 0,0,120,80 0-10:0-120;10-30:0-40;30-60:0-20;60-70:0-20,80-120;70-80:0-20;"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollWindowEx 0,0",
+      "result": "1 0,0,0,0 1 0,0,0,0 -"
+    },
+    {
+      "function": "screen",
+      "args": "R start",
+      "result": "110-130:310-330;"
+    },
+    {
+      "function": "update",
+      "args": "R start",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "child",
+      "args": "R start",
+      "result": "310,110,330,130 moves 0 0,0 due 0 0,0,0,0"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindow 15,5",
+      "result": "110-115:310-315;115-130:310-315,325-345;130-135:325-345;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindow 15,5",
+      "result": "3 0,0,100,80 0-5:0-100;5-80:0-15;"
+    },
+    {
+      "function": "child",
+      "args": "ScrollWindow 15,5",
+      "result": "325,115,345,135 moves 1 25,15 due 0 0,0,0,0"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindow 15,5 rect",
+      "result": "110-115:310-315;115-130:310-315,325-345;130-135:325-345;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindow 15,5 rect",
+      "result": "3 0,0,100,80 0-5:0-100;5-80:0-15;"
+    },
+    {
+      "function": "child",
+      "args": "ScrollWindow 15,5 rect",
+      "result": "310,110,330,130 moves 0 0,0 due 1 0,0,20,20"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindowEx 15,5 rect children",
+      "result": "110-115:310-315;115-130:310-315,325-345;130-135:325-345;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindowEx 15,5 rect children",
+      "result": "3 0,0,100,80 0-5:0-100;5-80:0-15;"
+    },
+    {
+      "function": "child",
+      "args": "ScrollWindowEx 15,5 rect children",
+      "result": "325,115,345,135 moves 0 0,0 due 0 0,0,0,0"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindowEx 15,5 children",
+      "result": "110-115:310-315;115-130:310-315,325-345;130-135:325-345;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindowEx 15,5 children",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "child",
+      "args": "ScrollWindowEx 15,5 children",
+      "result": "325,115,345,135 moves 1 25,15 due 0 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "ScrollWindowEx 15,5 no children",
+      "result": "3 0,0,100,80 3 0,0,100,80 0-5:0-100;5-80:0-15;"
+    },
+    {
+      "function": "screen",
+      "args": "ScrollWindowEx 15,5 no children",
+      "result": "110-115:310-315;115-130:310-315,325-345;130-135:325-345;"
+    },
+    {
+      "function": "update",
+      "args": "ScrollWindowEx 15,5 no children",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "child",
+      "args": "ScrollWindowEx 15,5 no children",
+      "result": "310,110,330,130 moves 0 0,0 due 0 0,0,0,0"
+    },
+    {
+      "function": "caret",
+      "args": "ScrollWindow 20,10",
+      "result": "25,15"
+    },
+    {
+      "function": "caret",
+      "args": "ScrollWindowEx rect clear of it",
+      "result": "25,15"
+    },
+    {
+      "function": "caret",
+      "args": "ScrollWindowEx rect over it",
+      "result": "15,10"
+    },
+    {
+      "function": "caret",
+      "args": "ScrollWindowEx no children",
+      "result": "15,10"
+    }
+  ]
+}

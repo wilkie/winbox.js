@@ -1,0 +1,74 @@
+{
+  "probe": "dchkdel",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "delete",
+      "args": "refused",
+      "result": "0"
+    },
+    {
+      "function": "hookcall",
+      "args": "refused",
+      "result": "calls=1 code=2 data=cafe1234 param=00000000 samedc=1"
+    },
+    {
+      "function": "alive",
+      "args": "refused",
+      "result": "1"
+    },
+    {
+      "function": "delete",
+      "args": "allowed",
+      "result": "1"
+    },
+    {
+      "function": "hookcall",
+      "args": "allowed",
+      "result": "calls=1 code=2 data=cafe1234 param=00000000 samedc=1"
+    },
+    {
+      "function": "alive",
+      "args": "allowed",
+      "result": "0"
+    },
+    {
+      "function": "delete",
+      "args": "flag set",
+      "result": "1"
+    },
+    {
+      "function": "hookcall",
+      "args": "flag set",
+      "result": "calls=1 code=2 data=00005678 param=00000000 samedc=1"
+    },
+    {
+      "function": "alive",
+      "args": "flag set",
+      "result": "0"
+    },
+    {
+      "function": "delete",
+      "args": "no hook",
+      "result": "1"
+    },
+    {
+      "function": "hookcall",
+      "args": "no hook",
+      "result": "calls=0 code=0 data=00000000 param=00000000 samedc=0"
+    },
+    {
+      "function": "alive",
+      "args": "no hook",
+      "result": "0"
+    }
+  ]
+}

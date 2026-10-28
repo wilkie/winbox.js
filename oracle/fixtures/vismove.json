@@ -1,0 +1,94 @@
+{
+  "probe": "vismove",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "covered before",
+      "result": "250-270:100-200;270-310:100-150;"
+    },
+    {
+      "function": "screen",
+      "args": "covered",
+      "result": "260-270:120-220;270-320:120-150;"
+    },
+    {
+      "function": "update",
+      "args": "covered A",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "covered B",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "screen",
+      "args": "parentdue",
+      "result": "110-130:110-140,160-170;"
+    },
+    {
+      "function": "update",
+      "args": "parentdue P",
+      "result": "3 10,10,100,40 10-30:10-40,70-100;30-40:70-100;"
+    },
+    {
+      "function": "update",
+      "args": "parentdue K",
+      "result": "2 10,0,30,20 0-20:10-30;"
+    },
+    {
+      "function": "screen",
+      "args": "childdue",
+      "result": "115-125:115-125;155-165:165-175;"
+    },
+    {
+      "function": "update",
+      "args": "childdue P",
+      "result": "2 10,10,40,30 10-30:10-40;"
+    },
+    {
+      "function": "update",
+      "args": "childdue K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "childdue G",
+      "result": "2 0,0,10,10 0-10:0-10;"
+    },
+    {
+      "function": "screen",
+      "args": "siblings before",
+      "result": "120-150:330-370;"
+    },
+    {
+      "function": "screen",
+      "args": "siblings",
+      "result": "120-150:330-370;160-180:420-440;"
+    },
+    {
+      "function": "update",
+      "args": "siblings R",
+      "result": "2 10,10,50,40 10-40:10-50;"
+    },
+    {
+      "function": "update",
+      "args": "siblings L",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "siblings T",
+      "result": "2 0,0,20,20 0-20:0-20;"
+    }
+  ]
+}

@@ -344,14 +344,25 @@ pub fn raster_op(
     let shared = from.is_some_and(|from| Rc::ptr_eq(&from.bitmap.indices, &to.indices));
 
     if shared {
-        // A source that is the destination's own pixels is read a pixel at
-        // a time, as each is written: what is written before is read after,
-        // where the two overlap.
+        // A source that is the destination's own pixels -- a window's
+        // context blitting within itself, as `ScrollDC` does -- is read
+        // before anything is written, as the display driver copies the
+        // right way round where the two overlap (`visscrl`).
+        let width = (right - left) as usize;
+        let mut kept = vec![0u8; width * (bottom - top) as usize];
+
+        if let Some(from) = from {
+            for py in top..bottom {
+                for px in left..right {
+                    kept[(py - top) as usize * width + (px - left) as usize] =
+                        from.bitmap.index_at(px - x + sx, py - y + sy).unwrap_or(0);
+                }
+            }
+        }
+
         for py in top..bottom {
             for px in left..right {
-                let s = from.map_or(0, |from| {
-                    carried(from.bitmap.index_at(px - x + sx, py - y + sy).unwrap_or(0))
-                });
+                let s = carried(kept[(py - top) as usize * width + (px - left) as usize]);
                 let d = to.index_at(px, py).unwrap_or(0);
 
                 to.put(
