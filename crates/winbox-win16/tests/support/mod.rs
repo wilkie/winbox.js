@@ -273,6 +273,9 @@ pub const AGREEING: &[&str] = &[
     "dchook",
     "dcreuse",
     "dcentry",
+    "visscrl",
+    "vismove",
+    "dchkdel",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
