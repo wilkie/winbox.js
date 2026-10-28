@@ -2,6 +2,7 @@
 
 import { ClipRegion } from '../../raster/clip-region.js';
 import { RasterWindow } from './raster-window.js';
+import { tellLock } from './lock-window-update.js';
 import { setUpdate, updateOf } from './update-region.js';
 
 const union = (a: ClipRegion, b: ClipRegion) => ClipRegion.combine(a, b, (x, y) => x || y);
@@ -20,6 +21,10 @@ export async function InvalidateRect(hwnd, lprc, fErase) {
   if (dialog instanceof RasterWindow) {
     const window: any = dialog.window;
     const was = window.needsPaint ? window.dirtyRect : null;
+
+    /* Where a window is locked, what is made due is told to it as drawn
+     * (`USER.EXE` seg1 `3f41`-`3f7c`). */
+    tellLock(this, window, lprc);
 
     if (lprc && was !== undefined) {
       const x = window.left + window.client.left;

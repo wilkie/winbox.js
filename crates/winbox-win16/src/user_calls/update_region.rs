@@ -126,6 +126,18 @@ pub(super) fn invalidate_rgn(system: &mut System, args: &mut Args) -> Result<Ans
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
+    // Where a window is locked, what is made due is told to it as drawn,
+    // the region's box (`USER.EXE` seg1 `3f41`-`3f7c`).
+    let given = (hrgn != 0)
+        .then(|| system.region_named(hrgn))
+        .flatten()
+        .map(|(_, shape)| {
+            let bounds = shape.bounds();
+
+            [bounds.left, bounds.top, bounds.right, bounds.bottom]
+        });
+
+    system.tell_lock(index, given);
 
     if hrgn == 0 {
         let window = system.windows[index].as_mut().expect("a window");

@@ -15,6 +15,7 @@ import { RestoreVisRgn, saveVisQuietly, selectVis } from '../gdi/visible-region.
 
 import type { Desktop, DesktopWindow } from './desktop.js';
 import { DesktopHandle } from './desktop-handle.js';
+import { harvest } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
 import {
   DCX_CACHE,
@@ -482,6 +483,8 @@ export function takeEntry(
       entry.flags |= DCX_INUSE;
 
       if (entry.hwnd !== hwnd) {
+        /* What it drew for the other window, taken back (`8665`). */
+        harvest(system, entry);
         entry.hwnd = hwnd;
         bind(system, entry);
       }
@@ -506,6 +509,11 @@ export function takeEntry(
       if (!free) {
         free = list[0];
         releaseEntry(system, free.hdc, false);
+      }
+
+      /* What it drew, taken back unless it was emptied (`8688`-`868f`). */
+      if (!(free.flags & DCX_EMPTY)) {
+        harvest(system, free);
       }
 
       entry = free;

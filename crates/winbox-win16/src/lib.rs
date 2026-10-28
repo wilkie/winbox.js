@@ -60,6 +60,7 @@ pub mod host;
 pub mod icons;
 mod instruction_length;
 pub mod interrupts;
+pub mod invalidate_through;
 mod kept;
 pub mod kernel;
 pub mod kernel_calls;

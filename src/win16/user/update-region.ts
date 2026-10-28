@@ -5,6 +5,7 @@ import { Surface } from '../../raster/surface.js';
 import { narrow } from '../gdi/clipping.js';
 import { regionOf } from '../gdi/regions.js';
 import { type DesktopWindow } from './desktop.js';
+import { tellLock } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -109,6 +110,9 @@ export function InvalidateRgn(this: any, hwnd: number, hrgn: number, fErase: num
   }
 
   const window: any = owner.window;
+  const given = hrgn ? regionOf(this, hrgn) : null;
+
+  tellLock(this, window, given ? given.shape.box : null);
 
   if (!hrgn) {
     window.dirtyRect = undefined;

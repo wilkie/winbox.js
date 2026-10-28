@@ -9,6 +9,8 @@
 //! windows, the topmost first; a pixel's owner is its window's index plus
 //! one, nought for the desktop.
 
+use winbox_raster::ClipRegion;
+
 use crate::system::System;
 use crate::windows::{Dirty, Placement, Window};
 
@@ -1193,9 +1195,8 @@ impl System {
             let part = match (&shape, dirty) {
                 (_, None) => Some(None),
                 (Some(shape), Some(_)) => {
-                    let part = shape.intersect(&winbox_raster::ClipRegion::rect(
-                        place[0], place[1], place[2], place[3],
-                    ));
+                    let part =
+                        shape.intersect(&ClipRegion::rect(place[0], place[1], place[2], place[3]));
 
                     (part.kind() > 1).then(|| {
                         let bounds = part.bounds();
@@ -1421,6 +1422,109 @@ impl System {
         self.shown_mut(index).client = client;
 
         Ok(())
+    }
+
+    /// A window's children moved with its pixels by a scroll, as `USER.EXE`
+    /// seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
+    /// for none), its rectangles and what it is due moved, and then its own
+    /// children the same way, by the same rectangle. Nothing is drawn or
+    /// sent; the screen's owners are worked out again after. The
+    /// TypeScript engine's `Desktop.scrollChildren`.
+    pub(crate) fn scroll_children_by(
+        &mut self,
+        parent: usize,
+        (dx, dy): (i32, i32),
+        rect: Option<[i32; 4]>,
+    ) -> Result<(), crate::call::Stop> {
+        self.shift_children(parent, (dx, dy), rect)?;
+        self.own();
+        Ok(())
+    }
+
+    fn shift_children(
+        &mut self,
+        of: usize,
+        (dx, dy): (i32, i32),
+        rect: Option<[i32; 4]>,
+    ) -> Result<(), crate::call::Stop> {
+        for child in self.windows_in(Some(of)) {
+            let place = self.window_rect(child);
+
+            if let Some(rect) = rect
+                && !(rect[0].max(place[0]) < rect[2].min(place[2])
+                    && rect[1].max(place[1]) < rect[3].min(place[3]))
+            {
+                continue;
+            }
+
+            {
+                let shown = self.shown_mut(child);
+
+                shown.left += dx;
+                shown.top += dy;
+            }
+
+            self.layout(child)?;
+
+            let shown = self.shown(child);
+
+            if shown.needs_paint && shown.dirty.is_some() {
+                let erase = shown.needs_erase;
+                let shape = self.update_region(child).offset(dx, dy);
+
+                self.set_update_of(child, shape, erase);
+            }
+
+            self.shift_children(child, (dx, dy), rect)?;
+        }
+
+        Ok(())
+    }
+
+    /// A window given a region of the screen as USER's invalidation gives
+    /// it (`USER.EXE` seg1 `4202`; `invalidate_through`): all of itself for
+    /// none, else the region added to what it is due, whole, not cut to the
+    /// window -- `GetUpdateRect` cuts its box to the client area. One due
+    /// all of itself stays so. Marked to be erased with `erase`, its frame
+    /// drawn with `frame`; a window USER draws itself has its frame drawn
+    /// now. The TypeScript engine's `Desktop.dueThrough`.
+    pub(crate) fn due_through(
+        &mut self,
+        index: usize,
+        region: Option<&ClipRegion>,
+        erase: bool,
+        frame: bool,
+    ) {
+        if !self.shown(index).paints_itself() {
+            self.paint_frame(index);
+        } else if frame {
+            self.shown_mut(index).needs_nc_paint = true;
+        }
+
+        let shown = self.shown(index);
+
+        if shown.needs_paint && shown.dirty.is_none() {
+            self.shown_mut(index).needs_erase |= erase;
+            return;
+        }
+
+        let Some(region) = region else {
+            let shown = self.shown_mut(index);
+
+            shown.dirty = None;
+            shown.dirty_shape = None;
+            shown.needs_paint = true;
+            shown.needs_erase |= erase;
+            return;
+        };
+
+        let due = if shown.needs_paint {
+            self.update_region(index).union(region)
+        } else {
+            region.clone()
+        };
+
+        self.set_update_of(index, due, erase);
     }
 
     /// What a window gone from a place uncovered: every window shown that

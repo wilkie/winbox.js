@@ -448,6 +448,43 @@ impl System {
                 (place_of(self, member), due)
             })
             .collect();
+        // What is not copied for being due (`USER.EXE` seg7 `06a5`-`06e9`):
+        // the window's own update region, where it goes with it, and its
+        // parents' up to one with `WS_CLIPCHILDREN`, where they are; nothing
+        // at all where one of them is due all over. The windows in it are
+        // copied, what they are due and all, and what they are due goes
+        // with them.
+        let due_own = was[0]
+            .1
+            .as_ref()
+            .filter(|_| self.shown(index).dirty.is_some())
+            .map(|(due, _)| due.clone());
+        let mut due_there: Option<ClipRegion> = None;
+        let mut due_all = was[0].1.is_some() && due_own.is_none();
+        let mut up = self.shown(index).parent;
+
+        while let Some(parent) = up {
+            let shown = self.shown(parent);
+
+            if shown.style & WS_CLIPCHILDREN != 0 {
+                break;
+            }
+
+            if shown.needs_paint {
+                if shown.dirty.is_none() {
+                    due_all = true;
+                } else {
+                    let due = self.update_region(parent);
+
+                    due_there = Some(match due_there {
+                        Some(there) => there.union(&due),
+                        None => due,
+                    });
+                }
+            }
+
+            up = shown.parent;
+        }
 
         self.relocate(index, left, top, width, height)?;
         self.own();
@@ -516,10 +553,9 @@ impl System {
                                 Some((rect, _)) => inside(rect, x, y) && inside(new_client, x, y),
                                 None => inside(new_client, x, y) && inside(old_client, fx, fy),
                             })
-                        && !was[k]
-                            .1
-                            .as_ref()
-                            .is_some_and(|(due, _)| due.contains(fx, fy));
+                        && !due_all
+                        && !due_own.as_ref().is_some_and(|due| due.contains(fx, fy))
+                        && !due_there.as_ref().is_some_and(|due| due.contains(x, y));
 
                     if !valid {
                         invalid[k].add(x, y);
@@ -634,11 +670,32 @@ impl System {
 
         let parent = self.shown(index).parent;
 
-        for (other, spans) in vacated {
-            if self.windows[other].is_some() {
-                let frame = parent.is_none() || !self.within(index, other);
+        for (other, spans) in &vacated {
+            if self.windows[*other].is_some() {
+                let frame = parent.is_none() || !self.within(index, *other);
 
-                self.due_region(other, &spans.region(), frame);
+                self.due_region(*other, &spans.region(), frame);
+            }
+        }
+
+        // What it uncovered is made due through its parent (seg7
+        // `093f`-`0958`): a parent without `WS_CLIPCHILDREN` is given all of
+        // it, where the windows in it show too (seg1 `40c9`).
+        if let Some(parent) = parent
+            && self.shown(parent).style & WS_CLIPCHILDREN == 0
+        {
+            let spans: Vec<(i32, i32, i32)> = vacated
+                .iter()
+                .filter(|(other, _)| {
+                    self.windows[*other].is_some()
+                        && *other != parent
+                        && self.within(*other, parent)
+                })
+                .flat_map(|(_, some)| some.0.iter().copied())
+                .collect();
+
+            if !spans.is_empty() {
+                self.due_region(parent, &ClipRegion::from_spans(&spans), false);
             }
         }
 

@@ -554,6 +554,8 @@ impl System {
             self.dc_entries.list[found].flags |= DCX_INUSE;
 
             if self.dc_entries.list[found].hwnd != hwnd {
+                // What it drew for the other window, taken back (`8665`).
+                self.harvest(found);
                 self.dc_entries.list[found].hwnd = hwnd;
                 self.bind_entry(found);
             }
@@ -578,14 +580,19 @@ impl System {
             }
         }
 
-        if let Some(place) = free {
-            return (place, true);
+        let place = free.unwrap_or_else(|| {
+            let head = self.dc_entries.list[0].hdc;
+
+            self.release_entry(head, false);
+            0
+        });
+
+        // What it drew, taken back unless it was emptied (`8688`-`868f`).
+        if self.dc_entries.list[place].flags & DCX_EMPTY == 0 {
+            self.harvest(place);
         }
 
-        let head = self.dc_entries.list[0].hdc;
-
-        self.release_entry(head, false);
-        (0, true)
+        (place, true)
     }
 
     /// `SelectVisRgn`'s body, as USER selects a region.

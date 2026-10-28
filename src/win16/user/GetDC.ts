@@ -1,11 +1,8 @@
 'use strict';
 
-import { lockedSurface } from './lock-window-update.js';
-
 import { NULL } from '../consts.js';
 
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
-import { resetVisible } from '../gdi/visible-region.js';
 import { lendsTo, takeEntry } from './dc-entries.js';
 
 /**
@@ -47,23 +44,8 @@ import { lendsTo, takeEntry } from './dc-entries.js';
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-  /* The window `LockWindowUpdate` locked draws where it does not show: a
-   * context of its own (`lock-window-update.ts`), not one of USER's
-   * entries -- the design's fifth phase. */
-  if (hwnd != NULL) {
-    if (!lendsTo(this, hwnd)) {
-      return NULL;
-    }
-
-    const locked = lockedSurface(this, hwnd);
-
-    if (locked) {
-      (this._windowDCs ??= new WeakMap()).set(locked, hwnd);
-      resetVisible(locked);
-      withFont(this, locked);
-
-      return this.handles.allocate(locked);
-    }
+  if (hwnd != NULL && !lendsTo(this, hwnd)) {
+    return NULL;
   }
 
   /* One of USER's entries (`dc-entries.ts`): `GetDCEx` of the window with

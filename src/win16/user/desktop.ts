@@ -2006,6 +2006,26 @@ export class Desktop {
       due: member.needsPaint ? { region: updateOf(member), erase: member.needsErase } : null,
     }));
 
+    /* What is not copied for being due (`USER.EXE` seg7 `06a5`-`06e9`): the
+     * window's own update region, where it goes with it, and its parents'
+     * up to one with `WS_CLIPCHILDREN`, where they are; nothing at all where
+     * one of them is due all over. The windows in it are copied, what they
+     * are due and all, and what they are due goes with them. */
+    const dueOwn: ClipRegion | null =
+      was[0].due && (window as any).dirtyRect ? was[0].due.region : null;
+    let dueThere: ClipRegion | null = null;
+    let dueAll = !!was[0].due && !dueOwn;
+
+    for (let up = window.parent; up && !(up.style & WS_CLIPCHILDREN); up = up.parent) {
+      if (up.needsPaint) {
+        if (!(up as any).dirtyRect) {
+          dueAll = true;
+        } else {
+          dueThere = dueThere ? unite(dueThere, updateOf(up)) : updateOf(up);
+        }
+      }
+    }
+
     this.#relocate(window, left, top, width, height);
     this.#own();
 
@@ -2072,7 +2092,9 @@ export class Desktop {
               (keeps
                 ? inside(keeps.rect, x, y) && inside(newClient, x, y)
                 : inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
-            !was[k].due?.region.contains(fx, fy);
+            !dueAll &&
+            !dueOwn?.contains(fx, fy) &&
+            !dueThere?.contains(x, y);
 
           if (!valid) {
             add(invalid[k], x, y);
@@ -2183,6 +2205,27 @@ export class Desktop {
       }
     }
 
+    /* What it uncovered is made due through its parent (seg7 `093f`-`0958`):
+     * a parent without `WS_CLIPCHILDREN` is given all of it, where the
+     * windows in it show too (seg1 `40c9`). */
+    const parent = window.parent;
+
+    if (parent && !(parent.style & WS_CLIPCHILDREN)) {
+      const spans: [number, number, number][] = [];
+
+      for (const [id, some] of vacated) {
+        const other = this.#byId.get(id);
+
+        if (other && other !== parent && this.#within(other, parent)) {
+          spans.push(...some);
+        }
+      }
+
+      if (spans.length) {
+        this.#dueRegion(parent, ClipRegion.fromSpans(spans), false);
+      }
+    }
+
     /* A parent that paints over its children is due where the child is. */
     for (let child = window; child.parent; child = child.parent) {
       if (child.parent.style & WS_CLIPCHILDREN || notCopied.kind <= 1) {
@@ -2224,6 +2267,80 @@ export class Desktop {
     }
 
     setUpdate(window, window.needsPaint ? unite(updateOf(window), part) : part, true);
+  }
+
+  /**
+   * A window's children moved with its pixels by a scroll, as `USER.EXE`
+   * seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
+   * for null), its rectangles and what it is due moved, and then its own
+   * children the same way, by the same rectangle. Nothing is drawn or
+   * sent; the screen's owners are worked out again after.
+   */
+  scrollChildren(parent: DesktopWindow, dx: number, dy: number, rect: number[] | null) {
+    const shift = (of: DesktopWindow) => {
+      for (const child of this.windows.filter((other) => other.parent === of)) {
+        if (
+          rect &&
+          !(
+            Math.max(rect[0], child.left) < Math.min(rect[2], child.left + child.width) &&
+            Math.max(rect[1], child.top) < Math.min(rect[3], child.top + child.height)
+          )
+        ) {
+          continue;
+        }
+
+        const shown: any = child;
+
+        child.left += dx;
+        child.top += dy;
+        this.#layout(child);
+
+        if (child.needsPaint && shown.dirtyRect) {
+          const shape = updateOf(child).offset(dx, dy);
+
+          setUpdate(child, shape, child.needsErase);
+        }
+
+        shift(child);
+      }
+    };
+
+    shift(parent);
+    this.#own();
+  }
+
+  /**
+   * A window given a region of the screen as USER's invalidation gives it
+   * (`USER.EXE` seg1 `4202`; `invalidate-through.ts`): all of itself for
+   * null, else the region added to what it is due, whole, not cut to the
+   * window -- `GetUpdateRect` cuts its box to the client area. One due all
+   * of itself stays so. Marked to be erased with `erase`, its frame drawn
+   * with `frame`; a window USER draws itself has its frame drawn now.
+   */
+  dueThrough(window: DesktopWindow, region: ClipRegion | null, erase: boolean, frame: boolean) {
+    const shown: any = window;
+
+    if (!paintsItself(window)) {
+      this.paintFrame(window);
+    } else if (frame) {
+      shown.needsNcPaint = true;
+    }
+
+    if (window.needsPaint && !shown.dirtyRect) {
+      window.needsErase ||= erase;
+      return;
+    }
+
+    if (!region) {
+      shown.dirtyRect = undefined;
+      shown.dirtyShape = undefined;
+      shown.dirtyShapeFor = undefined;
+      window.needsPaint = true;
+      window.needsErase ||= erase;
+      return;
+    }
+
+    setUpdate(window, window.needsPaint ? unite(updateOf(window), region) : region, erase);
   }
 
   /** Where the `slot`th icon of a parent's client area goes: its corner. See `minimize`. */

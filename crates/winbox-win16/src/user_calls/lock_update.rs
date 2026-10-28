@@ -1,135 +1,517 @@
-//! One window at a time kept from drawing on the screen
-//! (`LockWindowUpdate`), and the device context `GetDC` gives of it while
-//! it is.
+//! One window at a time kept from drawing on the screen, as `USER.EXE`
+//! keeps it (seg13 `2276`). Twin of the TypeScript engine's
+//! `lock-window-update.ts`. **Read out**:
+//!
+//! * Locking answers 1; locking while a window is locked, and unlocking with
+//!   none locked, nought (`22af`, `22e5`).
+//! * The window locked and those in it have no visible region, unless asked
+//!   with `DCX_LOCKWINDOWUPDATE` (seg1 `15c4`-`15df`; `window_vis`): drawing
+//!   on them shows nothing. Locking and unlocking make their contexts stale
+//!   (`22dd`, `2306`).
+//! * USER keeps the lock as it keeps the bits a `CS_SAVEBITS` window saved
+//!   (seg13 `1e72`, flag 2, no bits): the window's rectangle on the screen,
+//!   and what of it is still as it was, all of it to start with. GDI keeps
+//!   in every context the bounds of what is drawn, Windows' own, whatever
+//!   shows; locking empties them (`1eaa`-`1ec3`), and USER takes them back
+//!   from each of its contexts (seg1 `06ff`) as it lends one for another
+//!   window (`8666`, `868f`), as a window is placed (seg7 `057a`) and as the
+//!   window is unlocked (`22ee`). What a context drew counts where its
+//!   window is the locked window's parent, the locked window, one in it with
+//!   no window before it among its brothers over the drawing, or a window
+//!   behind it with no window between them over the drawing -- not one in
+//!   front, nor drawing with `DCX_LOCKWINDOWUPDATE` (seg1 `087b`); it is
+//!   taken out of what is as it was (`079a`). So is what is made due in a
+//!   window there (`3f41`-`3f7c`) and what a scroll moves (seg13 `159d`).
+//! * As it locks, what the windows from the locked one back, and those in
+//!   them, and its parent, were due within its rectangle is no longer due,
+//!   and counts as drawn (seg13 `206b`).
+//! * Unlocking makes due what was drawn over -- the rectangle less what is
+//!   as it was -- through the desktop: in the windows that show there,
+//!   erased (`2315`-`2374`, `0x85`). Where all of it was drawn over, the
+//!   lock was let go then (`081c`), and unlocking makes everything due.
+//!
+//! **Recorded** by `lockupd` and `vislock`.
 
-use winbox_raster::DeviceBitmap;
+use winbox_raster::ClipRegion;
 
 use crate::call::{Answer, Args, Stop};
-use crate::gdi::GdiObject;
-use crate::gdi::dc::DcBitmap;
-use crate::gdi::ddb::Bitmap;
+use crate::dc_entries::DCX_EMPTY;
+use crate::handles::Object;
+use crate::invalidate_through::{
+    RDW_ALLCHILDREN, RDW_ERASE, RDW_INVALIDATE, Rect, cut, is_empty, region_of,
+};
 use crate::system::System;
+use crate::windows::Placement;
 
-/// The window locked, and the device contexts `GetDC` gave of it since, by
-/// their indices: what they drew is made invalid on unlocking.
+const DCX_WINDOW: u32 = 0x0001;
+const DCX_LOCKWINDOWUPDATE: u32 = 0x0400;
+/// Windows' own bounds set (`gdi::bounds`).
+const WINDOWS_SET: u16 = 1;
+
+/// The window locked, as USER keeps it.
 #[derive(Debug, Clone)]
 pub struct Lock {
     pub hwnd: u16,
-    pub dcs: Vec<usize>,
+    /// The window, by its index.
+    pub window: usize,
+    /// The window's rectangle on the screen as it was locked, none where it
+    /// was off it.
+    pub rect: Option<Rect>,
+    /// What of it is still as it was: none for all of it, until something
+    /// is drawn.
+    pub still: Option<ClipRegion>,
+    /// All of it drawn over: the lock let go of its rectangle (`081c`).
+    pub gone: bool,
 }
 
-/// One window at a time kept from drawing on the screen. **Recorded** by
-/// `lockupd`:
-///
-/// * Locking answers 1; locking while a window is locked, the same one or
-///   another, answers nought, and so does unlocking with none locked.
-/// * What a device context from `GetDC` draws on the locked window does not
-///   show, and nothing is made invalid while it is locked.
-/// * Unlocking makes invalid what was drawn -- its rectangle, not the whole
-///   window -- and it is painted as any invalid part is.
-///
-/// Here the device context draws on a bitmap of its own, the client area's
-/// size, which keeps the rectangle drawn on. Not recorded: the locked
-/// window's children, and `BeginPaint` while it is locked.
+/// What a context of USER's is lent for.
+enum Lent {
+    Desktop,
+    Window(usize),
+}
+
+/// `SubtractRect` (`USER.EXE` seg1 `20b8`): cut only where `b` spans the
+/// whole of `a` one way.
+pub(crate) fn subtract_rect(a: Rect, b: Rect) -> Rect {
+    let mut r = a;
+
+    if is_empty(cut(a, b)) {
+        return r;
+    }
+
+    if b[1] <= a[1] && b[3] >= a[3] {
+        if b[0] <= a[0] {
+            r[0] = b[2].min(a[2]);
+        } else if b[2] >= a[2] {
+            r[2] = b[0].max(a[0]);
+        }
+    }
+
+    if b[0] <= a[0] && b[2] >= a[2] {
+        if b[1] <= a[1] {
+            r[1] = b[3].min(a[3]);
+        } else if b[3] >= a[3] {
+            r[3] = b[1].max(a[1]);
+        }
+    }
+
+    r
+}
+
+impl System {
+    /// Whether a window shows, for USER (seg1 `1c5f`); the desktop, none,
+    /// always.
+    pub(crate) fn user_shows(&self, window: Option<usize>, client: bool) -> bool {
+        let Some(index) = window else {
+            return true;
+        };
+        let mut at = Some(index);
+
+        while let Some(one) = at {
+            let shown = self.shown(one);
+
+            if !shown.visible || (one != index && shown.placement == Placement::Minimized) {
+                return false;
+            }
+
+            at = shown.parent;
+        }
+
+        !(client && self.paints_icon(index))
+    }
+
+    /// Whether drawing in `window` (none, the desktop) over `rect` counts
+    /// against the lock, and the part that does (seg1 `087b`).
+    fn lock_counts(
+        &self,
+        lock: &Lock,
+        window: Option<usize>,
+        mut rect: Rect,
+        flags: u32,
+    ) -> Option<Rect> {
+        let locked = lock.window;
+        let lock_rect = lock.rect?;
+
+        if self.windows[locked].is_none()
+            || !self.user_shows(window, flags & DCX_WINDOW == 0)
+            || flags & DCX_LOCKWINDOWUPDATE != 0
+        {
+            return None;
+        }
+
+        let within = |r: Rect| {
+            let part = cut(r, lock_rect);
+
+            (!is_empty(part)).then_some(part)
+        };
+        let locked_parent = self.shown(locked).parent;
+
+        if locked_parent == window {
+            return within(rect);
+        }
+
+        // The window, or the one it is in, among the locked window's
+        // brothers.
+        let window = window?;
+        let mut at = Some(window);
+
+        while let Some(one) = at {
+            if self.shown(one).parent == locked_parent {
+                break;
+            }
+
+            at = self.shown(one).parent;
+        }
+
+        let at = at?;
+
+        // Taken out where a window between covers it one way across
+        // (`20b8`).
+        let between = |from: &[usize], stop: usize, rect: &mut Rect| {
+            for &other in from {
+                if other == stop {
+                    break;
+                }
+
+                if self.shown(other).visible {
+                    *rect = subtract_rect(*rect, self.window_rect(other));
+
+                    if is_empty(*rect) {
+                        return false;
+                    }
+                }
+            }
+
+            true
+        };
+
+        if at == locked {
+            if window == locked {
+                return within(rect);
+            }
+
+            let mut child = window;
+
+            while let Some(parent) = self.shown(child).parent {
+                if parent == locked {
+                    break;
+                }
+
+                child = parent;
+            }
+
+            return if between(&self.windows_in(Some(locked)), child, &mut rect) {
+                within(rect)
+            } else {
+                None
+            };
+        }
+
+        let brothers = self.windows_in(locked_parent);
+        let at_index = brothers.iter().position(|&one| one == at);
+        let locked_index = brothers.iter().position(|&one| one == locked);
+
+        // In front of the locked window, it does not count.
+        if locked_index > at_index {
+            return None;
+        }
+
+        let after = locked_index.map_or(0, |index| index + 1);
+
+        if between(&brothers[after..], at, &mut rect) {
+            within(rect)
+        } else {
+            None
+        }
+    }
+
+    /// Drawing in `window` (none, the desktop) over a rectangle of the
+    /// screen, told to the lock (seg1 `074e`, `079a`): what counts is no
+    /// longer as it was. `flags` are the context's, `DCX_WINDOW` and
+    /// `DCX_LOCKWINDOWUPDATE`.
+    pub(crate) fn lock_touched(&mut self, window: Option<usize>, rect: Rect, flags: u32) {
+        let Some(lock) = self.user_calls.locked.as_ref() else {
+            return;
+        };
+
+        if lock.gone {
+            return;
+        }
+
+        let Some(lock_rect) = lock.rect else {
+            return;
+        };
+        let Some(part) = self.lock_counts(lock, window, rect, flags) else {
+            return;
+        };
+        let lock = self.user_calls.locked.as_mut().expect("the lock");
+        let still = lock
+            .still
+            .take()
+            .unwrap_or_else(|| region_of(lock_rect))
+            .subtract(&region_of(part));
+
+        lock.gone = still.kind() == 1;
+        lock.still = Some(still);
+    }
+
+    /// What an entry is lent for: none for no window.
+    fn entry_window(&self, at: usize) -> Option<Lent> {
+        let hwnd = self.dc_entries.list[at].hwnd;
+
+        if hwnd == 0 {
+            return None;
+        }
+
+        match self.handles.resolve(hwnd) {
+            Some(Object::Desktop) => Some(Lent::Desktop),
+            _ => self.window_named(hwnd).map(Lent::Window),
+        }
+    }
+
+    /// Windows' bounds taken back from an entry's context, by its place in
+    /// the list, and emptied, and told to the lock cut to its window's
+    /// rectangle (seg1 `06ff`).
+    pub(crate) fn harvest(&mut self, at: usize) {
+        let dc = self.dc_entries.list[at].dc;
+        let bounds = &mut self.gdi.dcs[dc].bounds;
+
+        if bounds.flags & WINDOWS_SET == 0 {
+            return;
+        }
+
+        let drawn = bounds.windows;
+
+        bounds.windows = crate::gdi::bounds::EMPTY;
+        bounds.flags &= !WINDOWS_SET;
+
+        let window = match self.entry_window(at) {
+            Some(Lent::Window(index)) => Some(index),
+            Some(Lent::Desktop) => None,
+            None => return,
+        };
+        let within = match window {
+            Some(index) => self.window_rect(index),
+            None => [
+                0,
+                0,
+                i32::from(self.display.width),
+                i32::from(self.display.height),
+            ],
+        };
+        let part = cut(drawn, within);
+
+        if !is_empty(part) {
+            let flags = self.dc_entries.list[at].flags;
+
+            self.lock_touched(window, part, flags);
+        }
+    }
+
+    /// Every context's bounds taken back, where a window is locked (seg1
+    /// `06df`).
+    pub(crate) fn harvest_all(&mut self) {
+        if self.user_calls.locked.is_none() || self.dc_entries.list.is_empty() {
+            return;
+        }
+
+        for at in 0..self.dc_entries.list.len() {
+            if self.dc_entries.list[at].flags & DCX_EMPTY == 0 {
+                self.harvest(at);
+            }
+        }
+    }
+
+    /// What a window was due within the lock's rectangle no longer due, and
+    /// counted as drawn; then the windows in it, with `deep` (seg13 `206b`):
+    /// false where all of the rectangle was taken.
+    fn take_due(&mut self, lock_rect: Rect, index: usize, deep: bool) -> bool {
+        if self.shown(index).needs_paint {
+            let due = self.update_region(index);
+            let mut area = if self.shown(index).dirty.is_some() {
+                let bounds = due.bounds();
+
+                [bounds.left, bounds.top, bounds.right, bounds.bottom]
+            } else {
+                self.window_rect(index)
+            };
+
+            // Shown, and cut to the client areas it is in (seg1 `8bb3`).
+            let mut visible = self.shown(index).visible;
+            let mut up = self.shown(index).parent;
+
+            while visible && let Some(parent) = up {
+                let shown = self.shown(parent);
+
+                if !shown.visible || shown.placement == Placement::Minimized {
+                    visible = false;
+                } else {
+                    area = cut(area, self.client_rect(parent));
+                }
+
+                up = shown.parent;
+            }
+
+            if visible && !is_empty(area) {
+                // `RDW_VALIDATE | RDW_NOCHILDREN` of the lock's rectangle.
+                self.set_update_of(index, due.subtract(&region_of(lock_rect)), false);
+
+                if !self.shown(index).needs_paint {
+                    self.shown_mut(index).needs_erase = false;
+                }
+
+                self.lock_touched(Some(index), area, DCX_WINDOW);
+
+                if self
+                    .user_calls
+                    .locked
+                    .as_ref()
+                    .is_some_and(|lock| lock.gone)
+                {
+                    return false;
+                }
+            }
+        }
+
+        if deep {
+            for child in self.windows_in(Some(index)) {
+                if !self.take_due(lock_rect, child, true) {
+                    return false;
+                }
+            }
+        }
+
+        true
+    }
+
+    /// What a window is made due, its client area or a rectangle of it,
+    /// told to the lock (`USER.EXE` seg1 `3f41`-`3f7c`).
+    pub(crate) fn tell_lock(&mut self, index: usize, rect: Option<Rect>) {
+        if self.user_calls.locked.is_none() {
+            return;
+        }
+
+        let shown = self.shown(index);
+        let left = shown.left + shown.client.left;
+        let top = shown.top + shown.client.top;
+        let (width, height) = (shown.client_width(), shown.client_height());
+        let told = match rect {
+            Some(rect) => [
+                rect[0].max(0) + left,
+                rect[1].max(0) + top,
+                rect[2].min(width) + left,
+                rect[3].min(height) + top,
+            ],
+            None => [left, top, left + width, top + height],
+        };
+
+        if told[0] < told[2] && told[1] < told[3] {
+            self.lock_touched(Some(index), told, 0);
+        }
+    }
+}
+
 pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
 
     if hwnd != 0 {
-        if system.user_calls.locked.is_some() || system.window_named(hwnd).is_none() {
+        let Some(window) = system.window_named(hwnd) else {
+            return Ok(Answer::Word(0));
+        };
+
+        if system.user_calls.locked.is_some() {
             return Ok(Answer::Word(0));
         }
 
+        // Windows' bounds emptied in every context (`1eaa`-`1ec3`).
+        system.dc_entries_made();
+
+        for at in 0..system.dc_entries.list.len() {
+            let dc = system.dc_entries.list[at].dc;
+            let bounds = &mut system.gdi.dcs[dc].bounds;
+
+            bounds.windows = crate::gdi::bounds::EMPTY;
+            bounds.flags &= !WINDOWS_SET;
+        }
+
+        let screen = [
+            0,
+            0,
+            i32::from(system.display.width),
+            i32::from(system.display.height),
+        ];
+        let rect = cut(system.window_rect(window), screen);
+        let rect = (!is_empty(rect)).then_some(rect);
+
         system.user_calls.locked = Some(Lock {
             hwnd,
-            dcs: Vec::new(),
+            window,
+            rect,
+            still: None,
+            gone: false,
         });
-        // The window's contexts made stale, as shown or hidden: the locked
-        // window's and those within it have no region while it is locked
-        // (`USER.EXE` seg13 `22dd`, `2306`; `dc_entries`).
+
+        // What was due there, from the window back (`2028`-`2063`).
+        if let Some(rect) = rect {
+            let parent = system.shown(window).parent;
+
+            if let Some(parent) = parent {
+                system.take_due(rect, parent, false);
+            }
+
+            let brothers = system.windows_in(parent);
+            let from = brothers
+                .iter()
+                .position(|&one| one == window)
+                .unwrap_or(brothers.len());
+
+            for &brother in &brothers[from..] {
+                if !system.take_due(rect, brother, true) {
+                    break;
+                }
+            }
+        }
+
         system.make_stale(hwnd, 1);
         return Ok(Answer::Word(1));
     }
 
-    let Some(lock) = system.user_calls.locked.take() else {
+    if system.user_calls.locked.is_none() {
         return Ok(Answer::Word(0));
-    };
+    }
+
+    system.harvest_all();
+
+    let lock = system.user_calls.locked.take().expect("the lock");
 
     system.make_stale(lock.hwnd, 1);
 
-    let mut drawn: Option<[i32; 4]> = None;
+    let flags = RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN;
 
-    for dc in lock.dcs {
-        let Some(dirty) = system
-            .dc_bitmap(dc)
-            .and_then(|bitmap| bitmap.pixels.context.take_dirty())
-        else {
-            continue;
-        };
+    match (lock.rect, &lock.still) {
+        (None, _) => system.invalidate_through(None, None, flags),
+        _ if lock.gone => system.invalidate_through(None, None, flags),
+        (Some(rect), Some(still)) => {
+            let drawn = region_of(rect).subtract(still);
 
-        drawn = Some(match drawn {
-            Some([left, top, right, bottom]) => [
-                left.min(dirty.left),
-                top.min(dirty.top),
-                right.max(dirty.right),
-                bottom.max(dirty.bottom),
-            ],
-            None => [dirty.left, dirty.top, dirty.right, dirty.bottom],
-        });
-    }
-
-    if let Some(drawn) = drawn
-        && let Some(index) = system.window_named(lock.hwnd)
-    {
-        system.invalidate(index, Some(drawn), true);
+            if drawn.kind() > 1 {
+                system.invalidate_through(None, Some(&drawn), flags);
+            }
+        }
+        (Some(_), None) => {}
     }
 
     Ok(Answer::Word(1))
 }
 
-impl System {
-    /// For `GetDC` of the locked window: a device context of its own,
-    /// drawing on a bitmap the client area's size at the screen's depth and
-    /// in its palette, made anew each time; none for any other window. It
-    /// is not a memory device context: its driver is the display's.
-    pub(crate) fn locked_dc(&mut self, hwnd: u16) -> Option<usize> {
-        if self.user_calls.locked.as_ref()?.hwnd != hwnd {
-            return None;
-        }
-
-        let index = self.window_named(hwnd)?;
-        let (width, height) = self.windows[index]
-            .as_ref()
-            .map(|window| (window.client_width(), window.client_height()))?;
-        let screen = self.screen_bitmap();
-        let pixels = DeviceBitmap::new(
-            width.max(1),
-            height.max(1),
-            screen.depth,
-            None,
-            Some(std::rc::Rc::clone(&screen.device_palette)),
-        );
-
-        pixels.context.take_dirty();
-
-        let object = self.gdi_object(GdiObject::Bitmap(Box::new(Bitmap::new(pixels))));
-        let dc = self.new_dc(DcBitmap::Bitmap(object), false);
-
-        if let Some(lock) = self.user_calls.locked.as_mut() {
-            lock.dcs.push(dc);
-        }
-
-        Some(dc)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::handles::{Kind, Object};
-    use crate::windows::{Rect, Window};
+    use crate::handles::Kind;
+    use crate::windows::{Rect as Sides, Window};
 
-    /// A system on the VGA display with one window, its client area 40 by
-    /// 30 at (10, 20) on the screen: its handle.
+    /// A system on the VGA display with one window shown, its client area
+    /// 40 by 30 at (10, 20) on the screen: its handle.
     fn with_window(system: &mut System) -> u16 {
         system.display = crate::display::mode("vga").expect("the display");
         system.windows.push(Some(Window {
@@ -137,7 +519,9 @@ mod tests {
             top: 10,
             width: 50,
             height: 40,
-            client: Rect {
+            visible: true,
+            style: 0x0400_0000,
+            client: Sides {
                 left: 5,
                 top: 10,
                 right: 45,
@@ -145,6 +529,7 @@ mod tests {
             },
             ..Window::default()
         }));
+        system.z_order.push(0);
 
         let hwnd = system
             .handles
@@ -157,20 +542,6 @@ mod tests {
 
     fn lock(system: &mut System, hwnd: u16) -> Answer {
         lock_window_update(system, &mut Args::repeat(hwnd)).expect("an answer")
-    }
-
-    /// Marks a rectangle drawn on what a device context draws on.
-    fn mark(system: &System, hdc: u16, [left, top, right, bottom]: [i32; 4]) {
-        let Some(Object::Dc(dc)) = system.handles.resolve(hdc) else {
-            panic!("a device context");
-        };
-
-        system
-            .dc_bitmap(dc)
-            .expect("a bitmap")
-            .pixels
-            .context
-            .mark_rect(left, top, right, bottom);
     }
 
     #[test]
@@ -187,47 +558,22 @@ mod tests {
     }
 
     #[test]
-    fn the_locked_window_draws_on_a_bitmap_of_its_own() {
-        let mut system = System::new();
-        let hwnd = with_window(&mut system);
-
-        assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
-
-        let first = system.get_dc(hwnd);
-        let second = system.get_dc(hwnd);
-
-        assert_ne!(first, 0);
-        assert_ne!(first, second);
-
-        let Some(Object::Dc(dc)) = system.handles.resolve(first) else {
-            panic!("a device context");
-        };
-
-        assert_ne!(
-            Some(dc),
-            system.windows[0].as_ref().and_then(|window| window.dc)
+    fn subtract_rect_cuts_only_across() {
+        assert_eq!(subtract_rect([0, 0, 10, 10], [0, 0, 4, 10]), [4, 0, 10, 10]);
+        assert_eq!(
+            subtract_rect([0, 0, 10, 10], [6, -1, 12, 11]),
+            [0, 0, 6, 10]
         );
-        assert!(!system.gdi.dcs[dc].memory);
-
-        let bitmap = system.dc_bitmap(dc).expect("a bitmap of its own");
-
-        assert_eq!((bitmap.pixels.width(), bitmap.pixels.height()), (40, 30));
-        assert!(bitmap.pixels.context.take_dirty().is_none());
-        assert_eq!(system.release_dc(hwnd, first), Ok(true));
+        assert_eq!(subtract_rect([0, 0, 10, 10], [2, 2, 4, 4]), [0, 0, 10, 10]);
     }
 
     #[test]
-    fn unlocking_makes_invalid_what_was_drawn_and_no_more() {
+    fn unlocking_makes_due_what_was_drawn_over_and_no_more() {
         let mut system = System::new();
         let hwnd = with_window(&mut system);
 
         assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
-
-        let first = system.get_dc(hwnd);
-        let second = system.get_dc(hwnd);
-
-        mark(&system, first, [2, 3, 6, 8]);
-        mark(&system, second, [10, 1, 12, 4]);
+        system.tell_lock(0, Some([2, 3, 6, 8]));
         assert!(!system.windows[0].as_ref().expect("the window").needs_paint);
         assert_eq!(lock(&mut system, 0), Answer::Word(1));
 
@@ -237,17 +583,16 @@ mod tests {
         assert!(window.needs_erase);
         assert_eq!(
             window.dirty.map(|dirty| dirty.area),
-            Some([2 + 10, 1 + 20, 12 + 10, 8 + 20])
+            Some([2 + 10, 3 + 20, 6 + 10, 8 + 20])
         );
     }
 
     #[test]
-    fn nothing_drawn_makes_nothing_invalid() {
+    fn nothing_drawn_makes_nothing_due() {
         let mut system = System::new();
         let hwnd = with_window(&mut system);
 
         assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
-        system.get_dc(hwnd);
         assert_eq!(lock(&mut system, 0), Answer::Word(1));
         assert!(!system.windows[0].as_ref().expect("the window").needs_paint);
     }

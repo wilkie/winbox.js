@@ -398,10 +398,6 @@ pub struct System {
     pub lock_my_task: u16,
     /// What `LockInput` keeps while it has the input locked (`lock_input.rs`).
     pub locked_input: Option<crate::lock_input::Kept>,
-    /// The device contexts `GetDC` made for the window `LockWindowUpdate`
-    /// locked, by index, and the window each is over, for `ReleaseDC` to
-    /// take back.
-    pub window_dcs: HashMap<usize, u16>,
     /// Whether a dialog is active, as `DefDlgProc` keeps it for
     /// `GetSystemDebugState` (`dialogs.rs`).
     pub dialog_active: bool,
@@ -573,7 +569,6 @@ impl System {
             hardware_input: 1,
             lock_my_task: 0,
             locked_input: None,
-            window_dcs: HashMap::new(),
             dialog_active: false,
             wing_bitmaps: Vec::new(),
             gdi: crate::gdi::Gdi::default(),

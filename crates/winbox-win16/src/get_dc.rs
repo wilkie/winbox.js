@@ -6,7 +6,7 @@
 
 use crate::call::{Answer, Args, Stop};
 use crate::gdi::dc::DcBitmap;
-use crate::handles::{Kind, Object};
+use crate::handles::Object;
 use crate::system::System;
 
 /// What a window handle names a device context of: the desktop's, a
@@ -60,23 +60,12 @@ impl System {
     /// the window is nought: one of USER's entries, `GetDCEx` of the window
     /// with `DCX_USESTYLE` and the high word's 2, of the desktop with
     /// `DCX_WINDOW | DCX_CACHE` (`USER.EXE` seg1 `8406`-`8428`); nought for
-    /// a handle that is no window's. The window `LockWindowUpdate` locked
-    /// draws where it does not show: a context of its own each time
-    /// (`user_calls/lock_update.rs`), not one of USER's entries.
+    /// a handle that is no window's.
     pub fn get_dc(&mut self, hwnd: u16) -> u16 {
         let desktop = self.handles.lookup(Object::Desktop).unwrap_or(0);
 
         if hwnd != 0 && matches!(self.target_of(hwnd), Target::None) {
             return 0;
-        }
-
-        if let Some(dc) = self.locked_dc(hwnd) {
-            let font = self.system_font();
-
-            self.window_dcs.insert(dc, hwnd);
-            self.reset_visible(dc);
-            self.gdi.dcs[dc].state.font = font;
-            return self.handles.allocate(Kind::Dc, Object::Dc(dc)).unwrap_or(0);
         }
 
         let hdc = if hwnd == 0 {
@@ -106,25 +95,11 @@ impl System {
     }
 
     /// A device context given back (seg1 `a61f`, `8805`): the window's
-    /// handle checked, the entry found by its context alone; the locked
-    /// window's own context, no entry of USER's, let go. FALSE where it is
-    /// not lent (`dcentry`, `dcreuse`).
+    /// handle checked, the entry found by its context alone. FALSE where it
+    /// is not lent (`dcentry`, `dcreuse`).
     pub fn release_dc(&mut self, hwnd: u16, hdc: u16) -> Result<bool, Stop> {
         if hwnd != 0 && self.handles.resolve(hwnd).is_none() {
             return Ok(false);
-        }
-
-        if let Some(Object::Dc(dc)) = self.handles.resolve(hdc)
-            && self.entry_at(hdc).is_none()
-            && let Some(&over) = self.window_dcs.get(&dc)
-        {
-            if over != hwnd {
-                return Ok(false);
-            }
-
-            self.window_dcs.remove(&dc);
-            self.handles.free(hdc);
-            return Ok(true);
         }
 
         Ok(self.release_entry(hdc, false))

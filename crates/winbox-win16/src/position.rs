@@ -28,6 +28,8 @@ const SWP_NOCOPYBITS: u16 = 0x0100;
 const SWP_FRAMECHANGED: u16 = 0x0020;
 const SWP_NOCLIENTSIZE: u16 = 0x0800;
 const SWP_NOCLIENTMOVE: u16 = 0x1000;
+const SWP_NOREDRAW: u16 = 0x0008;
+const DCX_WINDOW: u32 = 0x0001;
 
 const WM_WINDOWPOSCHANGING: u16 = 0x0046;
 const WM_WINDOWPOSCHANGED: u16 = 0x0047;
@@ -795,12 +797,26 @@ impl Engine {
                     calc_kept(calc, system.class_style(change.index), origin, client_was)
                 });
 
+                // Where a window is locked, the place it leaves, the
+                // contexts' bounds and the place it goes are told to the
+                // lock (`USER.EXE` seg7 `09c2`-`09d5`, `057a`, `05f0`-`0606`).
+                if change.flags & SWP_NOREDRAW == 0 {
+                    let place = system.window_rect(change.index);
+
+                    system.lock_touched(Some(change.index), place, DCX_WINDOW);
+                }
+
+                system.harvest_all();
                 system.move_with_bits(
                     change.index,
                     change.place,
                     change.flags & SWP_NOCOPYBITS == 0,
                     kept,
                 )?;
+
+                let place = system.window_rect(change.index);
+
+                system.lock_touched(Some(change.index), place, DCX_WINDOW);
             } else if framed {
                 system.frame_changed(change.index)?;
             }

@@ -1,6 +1,6 @@
 'use strict';
 
-import { entryOf, releaseEntry } from './dc-entries.js';
+import { releaseEntry } from './dc-entries.js';
 import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
@@ -32,20 +32,6 @@ export function ReleaseDC(hwnd, hdc) {
    * window is not asked (`8805`). */
   if (hwnd != NULL && !this.handles.resolve(hwnd)) {
     return FALSE;
-  }
-
-  /* The locked window's own context (`GetDC`), no entry of USER's. */
-  const released = this.handles.resolve(hdc);
-
-  if (released && this._windowDCs?.get(released) !== undefined && !entryOf(this, hdc)) {
-    if (this._windowDCs.get(released) !== hwnd) {
-      return FALSE;
-    }
-
-    this._windowDCs.delete(released);
-    this.handles.free(hdc);
-
-    return TRUE;
   }
 
   /* Given back to USER's entries (`dc-entries.ts`): a common one's state

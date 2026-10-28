@@ -546,6 +546,9 @@ pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, S
         [0, 2, 4, 6].map(|at| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]])))
     });
 
+    // Where a window is locked, what is made due is told to it as drawn
+    // (`USER.EXE` seg1 `3f41`-`3f7c`).
+    system.tell_lock(index, rect);
     system.invalidate(index, rect, erase);
     Ok(Answer::Nothing)
 }

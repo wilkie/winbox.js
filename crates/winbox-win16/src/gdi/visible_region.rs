@@ -59,18 +59,6 @@ pub(crate) fn select_vis(system: &mut System, dc: usize, shape: ClipRegion) {
     set_vis(system, dc, shape);
 }
 
-impl System {
-    /// A window's context as USER hands it out: its visible region what the
-    /// window's view covers, and its origin the view's corner --
-    /// `SelectVisRgn` of the window's rectangle and `SetDCOrg` from the
-    /// window (`USER.EXE` seg1 `86b2`-`86c8`, `1540`). The copies
-    /// `SaveVisRgn` saved stay: neither call touches them.
-    pub(crate) fn reset_visible(&mut self, dc: usize) {
-        self.gdi.dcs[dc].vis = None;
-        self.gdi.dcs[dc].state.origin = None;
-    }
-}
-
 /// `SelectVisRgn`: a copy of the region made the visible region (seg1
 /// `1635`, `58b3`), the region given staying the program's (`visfam`). The
 /// kind drawing is kept to; nought for no context or no region.

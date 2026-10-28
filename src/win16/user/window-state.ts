@@ -8,6 +8,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
 import { askText } from './DefWindowProc.js';
 
+import { harvestAll, lockTouched } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 import { eraseDue } from './erase.js';
@@ -1790,6 +1791,21 @@ export async function positionChanged(
     }
 
     if (moved || sized) {
+      /* Where a window is locked, the place it leaves, the contexts' bounds
+       * and the place it goes are told to the lock (`USER.EXE` seg7
+       * `09c2`-`09d5`, `057a`, `05f0`-`0606`). */
+      const placeOf = (one: any): [number, number, number, number] => [
+        one.left,
+        one.top,
+        one.left + one.width,
+        one.top + one.height,
+      ];
+
+      if (!(flags & SWP_NOREDRAW)) {
+        lockTouched(system, shown, placeOf(shown), DCX_WINDOW);
+      }
+
+      harvestAll(system);
       window.desktop.moveWithBits(
         shown,
         left,
@@ -1800,6 +1816,8 @@ export async function positionChanged(
         windowClass?.style ?? 0,
         sized ? calcKept(move, windowClass?.style ?? 0, origin, clientWas) : null
       );
+
+      lockTouched(system, shown, placeOf(shown), DCX_WINDOW);
 
       /* An icon moved keeps that place, minimized again later (`iconclk`). */
       if (moved && shown.state === 'minimized') {
@@ -2057,6 +2075,7 @@ const SWP_HIDEWINDOW = 0x0080;
 const WA_ACTIVE = 1;
 const SWP_NOCOPYBITS = 0x0100;
 const SWP_NOREDRAW = 0x0008;
+const DCX_WINDOW = 0x0001;
 const SWP_NOCLIENTSIZE = 0x0800;
 const SWP_NOCLIENTMOVE = 0x1000;
 const WVR_ALIGNBOTTOM = 0x0040;

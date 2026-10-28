@@ -27,7 +27,7 @@ const DCB_ENABLE: u16 = 4;
 const DCB_DISABLE: u16 = 8;
 const WINDOWS: u16 = 0x8000;
 
-const EMPTY: [i32; 4] = [0x7fff, 0x7fff, -0x8000, -0x8000];
+pub(crate) const EMPTY: [i32; 4] = [0x7fff, 0x7fff, -0x8000, -0x8000];
 
 /// A device context's bounds.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
