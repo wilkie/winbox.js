@@ -5202,6 +5202,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `popmax`'s pop-up made `WS_CAPTION | WS_MINIMIZE`: `CreateWindow`
+   * minimizes it as it does an overlapped one (`USER.EXE` seg8 `0843`-`0861`
+   * asks nothing of the kind of window), and its first `WM_SIZE` is the whole
+   * window's, as an icon's client area is; winbox.js minimizes only an
+   * overlapped window as it is made. */
+  'popmax:minlog': 'a pop-up made WS_MINIMIZE is not minimized as it is made',
+  'popmax:minrects': 'a pop-up made WS_MINIMIZE is not minimized as it is made',
   /* `vislock` paints the locked window: `InvalidateRect` of a window
    * without `WS_CLIPCHILDREN` makes the windows in it due too (`USER.EXE`
    * seg1 `40e8`-`4176`), which winbox.js does not -- it makes a child due
@@ -5940,6 +5947,7 @@ const RUN_WHOLE = new Set<string>([
   'vislock',
   'vismove',
   'dchkdel',
+  'popmax',
 ]);
 
 /**
