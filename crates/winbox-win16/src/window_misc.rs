@@ -6,8 +6,6 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use winbox_raster::ClipRegion;
-
 use crate::call::{Answer, Args, Stop};
 use crate::handles::Object;
 use crate::system::System;
@@ -244,30 +242,17 @@ pub fn child_window_from_point(system: &mut System, args: &mut Args) -> Result<A
 }
 
 /// A part of a window's client area validated, or all of it for none: cut
-/// from what it is due to paint (`updrgn`).
+/// from what it is due to paint (`updrgn`), through the window and the
+/// windows in it (`System::validate`; `invchild`).
 pub fn validate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let far = args.dword(system);
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
+    let rect = system.rect_given(far);
 
-    if far == 0 {
-        system.set_update_of(index, ClipRegion::EMPTY, false);
-        return Ok(Answer::Nothing);
-    }
-
-    let bytes = system.read_far(far, 8);
-    let side = |at: usize| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]]));
-    let window = system.windows[index].as_ref().expect("a window");
-    let (x, y) = (
-        window.left + window.client.left,
-        window.top + window.client.top,
-    );
-    let part = ClipRegion::rect(side(0) + x, side(2) + y, side(4) + x, side(6) + y);
-    let left = system.update_region(index).subtract(&part);
-
-    system.set_update_of(index, left, false);
+    system.validate(index, rect);
     Ok(Answer::Nothing)
 }
 

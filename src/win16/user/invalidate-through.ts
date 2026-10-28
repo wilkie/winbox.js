@@ -6,9 +6,10 @@ import type { Desktop, DesktopWindow } from './desktop.js';
 
 /**
  * USER's own invalidation of a region of the screen through a window and
- * the windows in it, as `ScrollWindow`, `ScrollWindowEx` and the end of
- * `LockWindowUpdate` make it (`USER.EXE` seg1 `3ed7`, its walk `4034` and
- * what each window is given `4202`). Twin of
+ * the windows in it, as `InvalidateRect`, `InvalidateRgn`, `ValidateRect`,
+ * `ValidateRgn`, `ScrollWindow`, `ScrollWindowEx` and the end of
+ * `LockWindowUpdate` make it (`USER.EXE` seg1 `3e1e`, `3ed7`, its walk
+ * `4034` and what each window is given `4202`, or validated `4309`). Twin of
  * `crates/winbox-win16/src/invalidate_through.rs`. **Read out**:
  *
  * * A window is passed over where its rectangle, cut to the client areas
@@ -28,6 +29,9 @@ import type { Desktop, DesktopWindow } from './desktop.js';
  *   parent has `WS_CLIPCHILDREN` -- every window at the top, the desktop
  *   having it -- takes its rectangle out of the region for those behind it
  *   and for its parent; where nothing is left, the walk ends (`4190`-`41f5`).
+ *
+ * * Validating, a window's rectangle is neither cut nor asked against the
+ *   region (`4052`, `40aa`); the windows in it are walked the same way.
  *
  * The desktop's own part, what is left of the region where no window
  * shows, is its background, drawn at once.
@@ -114,29 +118,38 @@ function walk(
   flags: number
 ): boolean {
   const { desktop } = state;
-  const rect = cut(windowRect(window), within);
+  /* Validating, the window's rectangle is neither cut nor asked against the
+   * region (`4052`, `40aa`). */
+  const rect = flags & RDW_INVALIDATE ? cut(windowRect(window), within) : windowRect(window);
 
-  if (flags & RDW_INVALIDATE && isEmpty(rect) && !whole) {
-    return true;
-  }
-
-  if (!whole) {
-    const how = covers(state.region, rect);
-
-    if (how === 0) {
+  if (flags & RDW_INVALIDATE) {
+    if (isEmpty(rect) && !whole) {
       return true;
     }
 
-    whole = how === 2;
+    if (!whole) {
+      const how = covers(state.region, rect);
+
+      if (how === 0) {
+        return true;
+      }
+
+      whole = how === 2;
+    }
   }
 
-  const give = () =>
-    desktop.dueThrough(
-      window,
-      whole ? null : state.region,
-      (flags & RDW_ERASE) !== 0,
-      (flags & RDW_FRAME) !== 0
-    );
+  const give = () => {
+    if (flags & RDW_INVALIDATE) {
+      desktop.dueThrough(
+        window,
+        whole ? null : state.region,
+        (flags & RDW_ERASE) !== 0,
+        (flags & RDW_FRAME) !== 0
+      );
+    } else if (flags & RDW_VALIDATE) {
+      desktop.validThrough(window, whole ? null : state.region);
+    }
+  };
 
   if (!(window.style & WS_CLIPCHILDREN)) {
     give();
@@ -222,7 +235,81 @@ export function invalidateThrough(
   }
 
   const own = flags & RDW_FRAME ? windowRect(window) : clientRect(window);
+  const within = cutToParents(window, own);
+
+  /* Made due, nothing where the window or a window it is in is hidden, or
+   * one it is in minimized (seg1 `3f27`-`3f3e`, `8bb3`). */
+  if (!within && flags & RDW_INVALIDATE) {
+    return;
+  }
+
   const state: Walk = { desktop, region: region ?? regionOf(own) };
 
-  walk(state, window, !region, own, flags);
+  walk(state, window, !region, within ?? own, flags);
+}
+
+/**
+ * A rectangle of the screen cut to the client area of each window a window
+ * is in (seg1 `8bb3`): null where the window or one of them is hidden, or
+ * one of them minimized. An empty rectangle is not null.
+ */
+export function cutToParents(window: DesktopWindow, rect: Rect): Rect | null {
+  if (!window.visible) {
+    return null;
+  }
+
+  let out = rect;
+
+  for (let up = window.parent; up; up = up.parent) {
+    if (!up.visible || minimized(up)) {
+      return null;
+    }
+
+    out = cut(out, clientRect(up));
+  }
+
+  return out;
+}
+
+/**
+ * Whether a window shows for `RedrawWindow`'s body (seg1 `3e4a`, `1c5f`):
+ * it and every window it is in shown, none of those minimized. (A window
+ * itself minimized counts, where a bit of its own at 26h, not followed,
+ * does not ask its class's icon: `3e35`-`3e46`.)
+ */
+function showsFor(window: DesktopWindow) {
+  for (let up: DesktopWindow | null = window; up; up = up.parent) {
+    if (!up.visible || (up !== window && minimized(up))) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * `RedrawWindow`'s body for `InvalidateRect`, `InvalidateRgn`,
+ * `ValidateRect` and `ValidateRgn` (`USER.EXE` seg1 `3e1e`, their bodies at
+ * `011c`-`0176` passing `RDW_INVALIDATE`, with `RDW_ERASE` to erase, or
+ * `RDW_VALIDATE`): nothing for a window that does not show; else a region
+ * of the screen, or all of the window for null, made due or valid through
+ * it and the windows in it (`3ed7`). `told` is what is made due, in its
+ * client area's terms, for the lock (`3f41`-`3f7c`).
+ */
+export function redrawThrough(
+  desktop: Desktop,
+  window: DesktopWindow,
+  region: ClipRegion | null,
+  flags: number,
+  told: () => void
+) {
+  if (!showsFor(window)) {
+    return;
+  }
+
+  if (flags & RDW_INVALIDATE) {
+    told();
+  }
+
+  invalidateThrough(desktop, window, region, flags);
 }

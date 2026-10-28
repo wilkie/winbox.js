@@ -7,6 +7,13 @@ import { regionOf } from '../gdi/regions.js';
 import { type DesktopWindow } from './desktop.js';
 import { tellLock } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
+import {
+  cutToParents,
+  RDW_ERASE,
+  RDW_INVALIDATE,
+  RDW_VALIDATE,
+  redrawThrough,
+} from './invalidate-through.js';
 
 /**
  * What a window is due to paint, as a region: `InvalidateRgn`,
@@ -28,8 +35,6 @@ import { RasterWindow } from './raster-window.js';
  * only while `dirtyShapeFor` is that very box. Whatever sets `dirtyRect` its
  * own way leaves the box to count, as before.
  */
-
-const union = (a: ClipRegion, b: ClipRegion) => ClipRegion.combine(a, b, (x, y) => x || y);
 
 /** A window's client area on the screen. */
 function clientOf(window: DesktopWindow) {
@@ -70,6 +75,7 @@ export function setUpdate(window: DesktopWindow, shape: ClipRegion, erase: boole
     shown.dirtyRect = undefined;
     shown.dirtyShape = undefined;
     shown.dirtyShapeFor = undefined;
+    shown.walked = undefined;
     return;
   }
 
@@ -90,18 +96,20 @@ export function shapeOf(window: DesktopWindow, box: number[] | undefined) {
   return box && shown.dirtyShape && shown.dirtyShapeFor === box ? shown.dirtyShape : undefined;
 }
 
-/** A program's region, in a window's client area, on the screen and cut to it. */
-function onScreen(system: any, window: DesktopWindow, hrgn: number) {
+/** A program's region, in a window's client area, on the screen, not cut to it. */
+function screenOf(system: any, window: DesktopWindow, hrgn: number) {
   const region = regionOf(system, hrgn);
   const client = clientOf(window);
 
-  if (!region) {
-    return null;
-  }
-
-  return region.shape.offset(client.box.left, client.box.top).intersect(client);
+  return region ? region.shape.offset(client.box.left, client.box.top) : null;
 }
 
+/**
+ * `InvalidateRgn` and `ValidateRgn` through `RedrawWindow`'s body (`USER.EXE`
+ * seg1 `aa67`, `aa93`, `011c`, `012f`, `3e1e`): the region, or all of the
+ * window for none, made due or valid through the window and the windows in
+ * it (`invalidate-through.ts`; `invchild`).
+ */
 export function InvalidateRgn(this: any, hwnd: number, hrgn: number, fErase: number) {
   const owner = this.handles.resolve(hwnd);
 
@@ -112,21 +120,17 @@ export function InvalidateRgn(this: any, hwnd: number, hrgn: number, fErase: num
   const window: any = owner.window;
   const given = hrgn ? regionOf(this, hrgn) : null;
 
-  tellLock(this, window, given ? given.shape.box : null);
-
-  if (!hrgn) {
-    window.dirtyRect = undefined;
-    window.dirtyShape = undefined;
-    window.needsPaint = true;
-    window.needsErase ||= fErase !== 0;
+  if (hrgn && !given) {
     return;
   }
 
-  const part = onScreen(this, window, hrgn);
-
-  if (part) {
-    setUpdate(window, union(updateOf(window), part), fErase !== 0);
-  }
+  redrawThrough(
+    owner.desktop,
+    window,
+    hrgn ? screenOf(this, window, hrgn) : null,
+    RDW_INVALIDATE | (fErase !== 0 ? RDW_ERASE : 0),
+    () => tellLock(this, window, given ? given.shape.box : null)
+  );
 }
 
 export function ValidateRgn(this: any, hwnd: number, hrgn: number) {
@@ -136,10 +140,13 @@ export function ValidateRgn(this: any, hwnd: number, hrgn: number) {
     return;
   }
 
-  const window = owner.window;
-  const part = hrgn ? onScreen(this, window, hrgn) : null;
+  const region = hrgn ? screenOf(this, owner.window, hrgn) : null;
 
-  setUpdate(window, part ? updateOf(window).subtract(part) : ClipRegion.EMPTY, false);
+  if (hrgn && !region) {
+    return;
+  }
+
+  redrawThrough(owner.desktop, owner.window, region, RDW_VALIDATE, () => {});
 }
 
 /**
@@ -154,10 +161,15 @@ export function GetUpdateRgn(this: any, hwnd: number, hrgn: number, _fErase: num
     return 0;
   }
 
+  /* Within the client areas it is in too (`USER.EXE` seg1 `47c2`, `8bb3`;
+   * `invchild`). */
   const window = owner.window;
   const client = clientOf(window);
+  const { left, top, right, bottom } = client.box;
+  const seen = cutToParents(window, [left, top, right, bottom]);
+  const within = seen ? ClipRegion.rect(seen[0], seen[1], seen[2], seen[3]) : ClipRegion.EMPTY;
 
-  region.shape = updateOf(window).intersect(client).offset(-client.box.left, -client.box.top);
+  region.shape = updateOf(window).intersect(within).offset(-left, -top);
 
   return region.shape.kind;
 }

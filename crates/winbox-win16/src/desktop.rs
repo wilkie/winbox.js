@@ -1147,7 +1147,7 @@ impl System {
             self.paint_frame(index);
         }
 
-        let (dirty, quiet, shape, style) = {
+        let (mut dirty, quiet, mut shape, style, walked) = {
             let shown = self.shown(index);
             let dirty = shown.dirty;
             let quiet = dirty.is_some_and(|dirty| shown.quiet_dirty == Some(dirty.mark));
@@ -1156,8 +1156,15 @@ impl System {
                 _ => None,
             };
 
-            (dirty.map(|dirty| dirty.area), quiet, shape, shown.style)
+            (
+                dirty.map(|dirty| dirty.area),
+                quiet,
+                shape,
+                shown.style,
+                shown.walked.clone(),
+            )
         };
+        let due = walked.as_ref().map(|_| self.update_region(index));
 
         {
             let shown = self.shown_mut(index);
@@ -1167,9 +1174,24 @@ impl System {
             shown.dirty_shape = None;
             shown.quiet_dirty = None;
             shown.paint_clip = dirty;
+            shown.walked = None;
         }
 
-        if style & WS_CLIPCHILDREN != 0 || quiet {
+        // Nor where USER's invalidation walk made it due, which made them
+        // due as Windows makes them (`invalidate_through`): only where
+        // something else did.
+        if let (Some(walked), Some(due)) = (walked, due) {
+            let left = walked.map_or(ClipRegion::EMPTY, |walked| due.subtract(&walked));
+            let bounds = left.bounds();
+
+            dirty = Some([bounds.left, bounds.top, bounds.right, bounds.bottom]);
+            shape = Some(left);
+        }
+
+        if style & WS_CLIPCHILDREN != 0
+            || quiet
+            || shape.as_ref().is_some_and(|shape| shape.kind() <= 1)
+        {
             return;
         }
 
@@ -1495,16 +1517,32 @@ impl System {
         erase: bool,
         frame: bool,
     ) {
+        // A control of USER's draws its frame as it paints, as
+        // `about_to_paint` has it: it has no `WM_NCPAINT` of a program's to
+        // draw it.
         if !self.shown(index).paints_itself() {
             self.paint_frame(index);
+        } else if frame && self.shown(index).control.is_some() {
+            self.shown_mut(index).needs_frame = true;
         } else if frame {
             self.shown_mut(index).needs_nc_paint = true;
         }
 
         let shown = self.shown(index);
 
+        // What of it the walk made due, which has made the windows in it
+        // due itself: `about_to_paint` does not make them due there again.
+        let walked = match (shown.needs_paint.then_some(&shown.walked), region) {
+            (_, None) | (Some(Some(None)), _) => None,
+            (Some(Some(Some(was))), Some(region)) => Some(was.union(region)),
+            (_, Some(region)) => Some(region.clone()),
+        };
+
         if shown.needs_paint && shown.dirty.is_none() {
-            self.shown_mut(index).needs_erase |= erase;
+            let shown = self.shown_mut(index);
+
+            shown.needs_erase |= erase;
+            shown.walked = Some(walked);
             return;
         }
 
@@ -1515,6 +1553,7 @@ impl System {
             shown.dirty_shape = None;
             shown.needs_paint = true;
             shown.needs_erase |= erase;
+            shown.walked = Some(walked);
             return;
         };
 
@@ -1525,6 +1564,51 @@ impl System {
         };
 
         self.set_update_of(index, due, erase);
+        self.shown_mut(index).walked = Some(walked);
+    }
+
+    /// A window validated as USER's invalidation walk validates it
+    /// (`USER.EXE` seg1 `4309`-`43e6`): all of it for none, else what it is
+    /// due less the region. All of a window whose frame is still to be
+    /// drawn is its client area (`4353`-`4369`), and all it was due then
+    /// the whole window (`4371`-`43a6`): what it was due of its frame
+    /// stays, outside its client area. The TypeScript engine's
+    /// `Desktop.validThrough`.
+    pub(crate) fn valid_through(&mut self, index: usize, region: Option<&ClipRegion>) {
+        let shown = self.shown(index);
+
+        if !shown.needs_paint {
+            return;
+        }
+
+        let client = ClipRegion::rect(
+            shown.left + shown.client.left,
+            shown.top + shown.client.top,
+            shown.left + shown.client.right,
+            shown.top + shown.client.bottom,
+        );
+        let region = match region {
+            Some(region) => region.clone(),
+            None if shown.needs_nc_paint => client.clone(),
+            None => {
+                self.set_update_of(index, ClipRegion::EMPTY, false);
+                return;
+            }
+        };
+        let due = if shown.dirty.is_some() {
+            self.update_region(index)
+        } else if shown.needs_nc_paint {
+            ClipRegion::rect(
+                shown.left,
+                shown.top,
+                shown.left + shown.width,
+                shown.top + shown.height,
+            )
+        } else {
+            client
+        };
+
+        self.set_update_of(index, due.subtract(&region), false);
     }
 
     /// What a window gone from a place uncovered: every window shown that

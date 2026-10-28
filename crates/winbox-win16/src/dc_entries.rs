@@ -226,7 +226,7 @@ impl System {
     }
 
     /// The class a window was made of, by its handle.
-    fn class_of(&self, hwnd: u16) -> Option<usize> {
+    pub(crate) fn class_of(&self, hwnd: u16) -> Option<usize> {
         let index = self.window_named(hwnd)?;
 
         self.class_named(&self.windows[index].as_ref()?.class)

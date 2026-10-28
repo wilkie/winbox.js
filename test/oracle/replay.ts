@@ -5202,14 +5202,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* `vislock` paints the locked window: `InvalidateRect` of a window
-   * without `WS_CLIPCHILDREN` makes the windows in it due too (`USER.EXE`
-   * seg1 `40e8`-`4176`), which winbox.js does not -- it makes a child due
-   * where its parent paints over it, as it paints -- and `BeginPaint`'s
-   * rectangle is its context's clip box (seg1 `78cd`), empty for the locked
-   * window, where winbox.js gives what is due within the client area. */
-  'vislock:painting': "InvalidateRect does not make a parent's children due",
-  'vislock:paint': "BeginPaint's rectangle is not its context's clip box",
   /* `solodata` reads its module's flags from the header KERNEL keeps in
    * memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
    * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
@@ -5940,6 +5932,7 @@ const RUN_WHOLE = new Set<string>([
   'vislock',
   'vismove',
   'dchkdel',
+  'invchild',
 ]);
 
 /**

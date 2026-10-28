@@ -16,9 +16,12 @@ use crate::call::{Answer, Args, Later, Stop};
 use crate::engine::Engine;
 use crate::gdi::objects::{create_rect_rgn, delete_object};
 use crate::handles::Object;
+use crate::invalidate_through::{RDW_ERASE, RDW_INVALIDATE, RDW_VALIDATE};
 use crate::messages::Param;
 use crate::system::System;
 use crate::windows::Window;
+
+const CS_PARENTDC: u16 = 0x0080;
 
 pub const WM_PAINT: u16 = 0x000f;
 pub const WM_ERASEBKGND: u16 = 0x0014;
@@ -113,6 +116,7 @@ impl System {
             window.needs_erase = false;
             window.dirty = None;
             window.dirty_shape = None;
+            window.walked = None;
             return;
         }
 
@@ -425,11 +429,52 @@ impl Engine {
             self.send_nc_paint(hwnd, index, clip).await?;
         }
 
+        // `rcPaint` is the context's clip box, cut to the client area for
+        // a class with `CS_PARENTDC` (`USER.EXE` seg1 `7687`,
+        // `78be`-`790e`): what of the update shows. Where nothing does, the
+        // window is not sent its erase, and is not due it after (`762a`,
+        // `768c`).
+        let (shows, mut paint) = {
+            let mut system = self.system();
+            let dc = crate::gdi::dc::dc_of(&system, hdc);
+            // GDI calls the context's hook first, as for any `GetClipBox`
+            // (`dc_hook_calls`).
+            let (kind, mut paint) = dc.map_or((1, [0; 4]), |dc| {
+                system.user_hook_due(dc);
+                crate::gdi::regions::clip_box(&mut system, dc)
+            });
+            let mut shows = kind > 1;
+
+            let class = system.class_of(hwnd);
+            let class_style = class.map_or(0, |class| system.classes[class].style);
+
+            if shows && class_style & CS_PARENTDC != 0 {
+                let window = system.painted(index);
+
+                paint = [
+                    paint[0].max(0),
+                    paint[1].max(0),
+                    paint[2].min(window.client_width()),
+                    paint[3].min(window.client_height()),
+                ];
+                shows = paint[0] < paint[2] && paint[1] < paint[3];
+            }
+
+            (shows, paint)
+        };
+
         let erase = {
             let mut system = self.system();
             let window = system.painted_mut(index);
 
             window.needs_paint = false;
+            window.walked = None;
+
+            if window.needs_erase && !shows {
+                window.needs_erase = false;
+                window.unerased = false;
+            }
+
             window.needs_erase
         };
 
@@ -437,22 +482,33 @@ impl Engine {
             self.send_erase(hwnd, index, hdc).await?;
         }
 
+        // The windows in it whose frames are due and nothing else are sent
+        // `WM_NCPAINT` now (`76a7`, `7b30`-`7b4e`; `invchild`).
+        let children: Vec<usize> = self.system().windows_in(Some(index));
+
+        for child in children {
+            let target = {
+                let mut system = self.system();
+                let inner = system.painted_mut(child);
+
+                if inner.needs_paint || !inner.needs_nc_paint || inner.hwnd == 0 {
+                    None
+                } else {
+                    inner.needs_nc_paint = false;
+                    Some(inner.hwnd)
+                }
+            };
+
+            if let Some(child_hwnd) = target {
+                self.send_nc_paint(child_hwnd, child, None).await?;
+            }
+        }
+
         let system = self.system();
         let window = system.painted(index);
-        let (width, height) = (window.client_width(), window.client_height());
-        let mut paint = [0, 0, width, height];
 
-        // Only what was to be painted again, when that is known.
-        if let Some(clip) = window.paint_clip {
-            let x = window.left + window.client.left;
-            let y = window.top + window.client.top;
-
-            paint = [
-                (clip[0] - x).max(0),
-                (clip[1] - y).max(0),
-                (clip[2] - x).min(width),
-                (clip[3] - y).min(height),
-            ];
+        if !shows {
+            paint = [0; 4];
         }
 
         let mut bytes = Vec::with_capacity(32);
@@ -529,10 +585,14 @@ pub fn end_paint(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Nothing)
 }
 
-/// A window marked to be painted, where a rectangle of its client area
-/// says, or all of it: it is painted when its program next asks for a
-/// message and none is queued. What is due is kept as a region on the
-/// screen (`updrgn`).
+/// A rectangle of a window's client area made due to paint, or all of it
+/// for none: `RedrawWindow`'s body with `RDW_INVALIDATE`, and `RDW_ERASE`
+/// to erase (`USER.EXE` seg1 `aa27`, `014c`, `3e1e`). Nothing for a window
+/// that does not show; else through the window and, where it has no
+/// `WS_CLIPCHILDREN`, the windows in it, each made due where the rectangle
+/// meets it, erase and frame too (`invalidate_through`; `invchild`). It is
+/// painted when its program next asks for a message and none is queued.
+/// What is due is kept as a region on the screen (`updrgn`).
 pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let far = args.dword(system);
@@ -540,51 +600,58 @@ pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, S
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
-    let rect = (far != 0).then(|| {
-        let bytes = system.read_far(far, 8);
+    let rect = system.rect_given(far);
 
-        [0, 2, 4, 6].map(|at| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]])))
-    });
-
-    // Where a window is locked, what is made due is told to it as drawn
-    // (`USER.EXE` seg1 `3f41`-`3f7c`).
-    system.tell_lock(index, rect);
     system.invalidate(index, rect, erase);
     Ok(Answer::Nothing)
 }
 
 impl System {
-    /// A rectangle of a window's client area made due to paint, or all of
-    /// it for none, as `InvalidateRect` makes it.
-    pub(crate) fn invalidate(&mut self, index: usize, rect: Option<[i32; 4]>, erase: bool) {
-        let (needs_paint, dirty) = {
-            let window = self.painted(index);
+    /// A rectangle a program gave: none for a null pointer.
+    pub(crate) fn rect_given(&self, far: u32) -> Option<[i32; 4]> {
+        (far != 0).then(|| {
+            let bytes = self.read_far(far, 8);
 
-            (window.needs_paint, window.dirty)
-        };
+            [0, 2, 4, 6].map(|at| i32::from(i16::from_le_bytes([bytes[at], bytes[at + 1]])))
+        })
+    }
 
-        // Due all of it already, it stays so.
-        if let Some([left, top, right, bottom]) = rect
-            && !(needs_paint && dirty.is_none())
-        {
+    /// A rectangle of a window's client area on the screen.
+    fn client_part(&self, index: usize, rect: Option<[i32; 4]>) -> Option<ClipRegion> {
+        rect.map(|[left, top, right, bottom]| {
             let window = self.painted(index);
             let (x, y) = (
                 window.left + window.client.left,
                 window.top + window.client.top,
             );
-            let area = ClipRegion::rect(left + x, top + y, right + x, bottom + y);
-            let shape = self.update_region(index).union(&area);
 
-            self.set_update_of(index, shape, erase);
-            return;
-        }
+            ClipRegion::rect(left + x, top + y, right + x, bottom + y)
+        })
+    }
 
-        let window = self.painted_mut(index);
+    /// A rectangle of a window's client area made due to paint, or all of
+    /// it for none, as `InvalidateRect` makes it; where a window is locked,
+    /// what is made due is told to it as drawn (`USER.EXE` seg1
+    /// `3f41`-`3f7c`).
+    pub(crate) fn invalidate(&mut self, index: usize, rect: Option<[i32; 4]>, erase: bool) {
+        let region = self.client_part(index, rect);
 
-        window.dirty = None;
-        window.dirty_shape = None;
-        window.needs_paint = true;
-        window.needs_erase |= erase;
+        self.redraw_through(
+            index,
+            region.as_ref(),
+            RDW_INVALIDATE | if erase { RDW_ERASE } else { 0 },
+            rect,
+        );
+    }
+
+    /// A rectangle of a window's client area validated, or all of it for
+    /// none, as `ValidateRect` validates it (`USER.EXE` seg1 `aa47`, `0142`,
+    /// `3e1e`): through the window and, where it has no `WS_CLIPCHILDREN`,
+    /// the windows in it (`invchild`).
+    pub(crate) fn validate(&mut self, index: usize, rect: Option<[i32; 4]>) {
+        let region = self.client_part(index, rect);
+
+        self.redraw_through(index, region.as_ref(), RDW_VALIDATE, None);
     }
 }
 
@@ -598,33 +665,139 @@ pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
-impl Engine {
-    /// A window's `WM_PAINT` sent at once, if it is due one.
-    pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
-        let due = {
-            let mut system = self.system();
-            let index = system.window_named(hwnd);
+const WS_EX_TRANSPARENT: u32 = 0x0000_0020;
+const WS_CLIPCHILDREN: u32 = 0x0200_0000;
 
-            match index {
-                Some(index)
-                    if system.painted(index).needs_paint && system.painted(index).visible =>
-                {
-                    system.about_to_paint(index);
-                    true
-                }
-                _ => false,
+impl System {
+    /// Whether a window behind this one among its siblings is due a paint.
+    fn behind_due(&self, index: usize) -> bool {
+        let parent = self.painted(index).parent;
+        let siblings = self.windows_in(parent);
+        let at = siblings.iter().position(|&one| one == index);
+
+        at.is_some_and(|at| {
+            siblings[at + 1..]
+                .iter()
+                .any(|&other| self.painted(other).needs_paint)
+        })
+    }
+
+    /// Each window it is in that is due, up to one with `WS_CLIPCHILDREN`,
+    /// validated where it is (`USER.EXE` seg1 `4515`): its window rectangle
+    /// cut to the client areas it is in, through `RedrawWindow`'s walk with
+    /// `RDW_VALIDATE` and `RDW_NOCHILDREN`.
+    fn validate_under(&mut self, index: usize) {
+        let mut region: Option<ClipRegion> = None;
+        let mut up = self.painted(index).parent;
+
+        while let Some(parent) = up {
+            up = self.painted(parent).parent;
+
+            if self.painted(parent).style & WS_CLIPCHILDREN != 0 {
+                return;
             }
-        };
 
-        if due {
-            let (message, wparam) = {
-                let system = self.system();
+            if !self.painted(parent).needs_paint {
+                continue;
+            }
 
-                system.paint_message(system.window_named(hwnd).expect("a window"))
+            if region.is_none() {
+                let Some(rect) = self.cut_to_parents(index, self.window_rect(index)) else {
+                    return;
+                };
+
+                region = Some(crate::invalidate_through::region_of(rect));
+            }
+
+            if self
+                .cut_to_parents(parent, self.window_rect(parent))
+                .is_none()
+            {
+                return;
+            }
+
+            self.valid_through(parent, region.as_ref());
+        }
+    }
+}
+
+impl Engine {
+    /// `UpdateWindow` (`USER.EXE` seg1 `a95d`, `4404`, `441d`, `444c`;
+    /// `invchild`): the window's `WM_PAINT` sent at once if it is due one,
+    /// and then the windows in it the same way, each and the windows in it
+    /// in turn, front to back. A window with `WS_EX_TRANSPARENT` that is
+    /// due waits while a window behind it is due (`4424`-`443e`,
+    /// `44d8`-`4503`). Before a window with an update region is painted,
+    /// each window it is in that is due, up to one with `WS_CLIPCHILDREN`,
+    /// is validated where the window is (`4515`). The TypeScript engine's
+    /// `UpdateWindow`.
+    pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
+        let root = {
+            let system = self.system();
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(());
             };
 
-            self.send_message(hwnd, message, wparam, &mut Param::Value(0))
-                .await?;
+            if system.painted(index).ex_style & WS_EX_TRANSPARENT != 0 && system.behind_due(index) {
+                return Ok(());
+            }
+
+            index
+        };
+        // Each window to paint, as it was when it was put here: its index,
+        // handle and parent, and whether it is the first.
+        let mut work = vec![(root, hwnd, true)];
+
+        while let Some((index, handle, first)) = work.pop() {
+            let send = {
+                let mut system = self.system();
+                let alive = system.windows[index]
+                    .as_ref()
+                    .is_some_and(|window| window.hwnd == handle);
+
+                if !alive {
+                    continue;
+                }
+
+                if !first
+                    && system.painted(index).ex_style & WS_EX_TRANSPARENT != 0
+                    && system.painted(index).needs_paint
+                    && system.behind_due(index)
+                {
+                    continue;
+                }
+
+                let window = system.painted(index);
+                let send = window.paints_itself() && window.needs_paint && system.showing(index);
+
+                if send {
+                    system.validate_under(index);
+                    system.about_to_paint(index);
+                }
+
+                send.then(|| system.paint_message(index))
+            };
+
+            if let Some((message, wparam)) = send {
+                self.send_message(handle, message, wparam, &mut Param::Value(0))
+                    .await?;
+
+                // Destroyed in its paint, nothing more (`44ac`).
+                let system = self.system();
+
+                if system.windows[index]
+                    .as_ref()
+                    .is_none_or(|window| window.hwnd != handle)
+                {
+                    continue;
+                }
+            }
+
+            let system = self.system();
+
+            for child in system.windows_in(Some(index)).into_iter().rev() {
+                work.push((child, system.painted(child).hwnd, false));
+            }
         }
 
         Ok(())

@@ -58,10 +58,26 @@ impl System {
     /// to it.
     fn region_on_screen(&self, index: usize, hrgn: u16) -> Option<ClipRegion> {
         let (_, shape) = self.region_named(hrgn)?;
+        let corner = self.client_region(index).bounds();
+
+        Some(shape.offset(corner.left, corner.top))
+    }
+
+    /// What a window is due to paint, in its client area, cut to those of
+    /// the windows it is in (`USER.EXE` seg1 `47c2`, `8bb3`; `invchild`).
+    fn update_seen(&self, index: usize) -> ClipRegion {
         let client = self.client_region(index);
         let corner = client.bounds();
+        let seen = self
+            .cut_to_parents(
+                index,
+                [corner.left, corner.top, corner.right, corner.bottom],
+            )
+            .map_or(ClipRegion::EMPTY, crate::invalidate_through::region_of);
 
-        Some(shape.offset(corner.left, corner.top).intersect(&client))
+        self.update_region(index)
+            .intersect(&seen)
+            .offset(-corner.left, -corner.top)
     }
 
     /// What a window is due to paint, in its client area.
@@ -89,10 +105,18 @@ impl System {
         let y = window.top + window.client.top;
         let area = window.paint_clip.or(window.dirty.map(|dirty| dirty.area));
         let (width, height) = (window.client_width(), window.client_height());
-        let left = area.map_or(0, |area| area[0] - x).max(0);
-        let top = area.map_or(0, |area| area[1] - y).max(0);
-        let right = area.map_or(width, |area| area[2] - x).min(width);
-        let bottom = area.map_or(height, |area| area[3] - y).min(height);
+        // Cut to the client area, and to those of the windows it is in
+        // (`USER.EXE` seg1 `46d6`-`46f2`, `8bb3`; `invchild`).
+        let seen = self.cut_to_parents(
+            index,
+            [
+                area.map_or(x, |area| area[0]).max(x),
+                area.map_or(y, |area| area[1]).max(y),
+                area.map_or(x + width, |area| area[2]).min(x + width),
+                area.map_or(y + height, |area| area[3]).min(y + height),
+            ],
+        )?;
+        let [left, top, right, bottom] = [seen[0] - x, seen[1] - y, seen[2] - x, seen[3] - y];
 
         (right > left && bottom > top).then_some([left, top, right, bottom])
     }
@@ -118,7 +142,10 @@ pub(super) fn get_update_rect(system: &mut System, args: &mut Args) -> Result<An
 }
 
 /// A region of a window's client area made due to paint: with none, all of
-/// it.
+/// it. `InvalidateRgn` and `ValidateRgn` go through `RedrawWindow`'s body
+/// (`USER.EXE` seg1 `aa67`, `aa93`, `011c`, `012f`, `3e1e`): the region,
+/// not cut to the client area, made due or valid through the window and the
+/// windows in it (`invalidate_through`; `invchild`).
 pub(super) fn invalidate_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hwnd = args.word(system);
     let hrgn = args.word(system);
@@ -126,6 +153,12 @@ pub(super) fn invalidate_rgn(system: &mut System, args: &mut Args) -> Result<Ans
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
+    let region = (hrgn != 0).then(|| system.region_on_screen(index, hrgn));
+
+    if let Some(None) = region {
+        return Ok(Answer::Nothing);
+    }
+
     // Where a window is locked, what is made due is told to it as drawn,
     // the region's box (`USER.EXE` seg1 `3f41`-`3f7c`).
     let given = (hrgn != 0)
@@ -137,24 +170,12 @@ pub(super) fn invalidate_rgn(system: &mut System, args: &mut Args) -> Result<Ans
             [bounds.left, bounds.top, bounds.right, bounds.bottom]
         });
 
-    system.tell_lock(index, given);
-
-    if hrgn == 0 {
-        let window = system.windows[index].as_mut().expect("a window");
-
-        window.dirty = None;
-        window.dirty_shape = None;
-        window.needs_paint = true;
-        window.needs_erase |= erase;
-        return Ok(Answer::Nothing);
-    }
-
-    if let Some(part) = system.region_on_screen(index, hrgn) {
-        let shape = system.update_region(index).union(&part);
-
-        system.set_update_of(index, shape, erase);
-    }
-
+    system.redraw_through(
+        index,
+        region.flatten().as_ref(),
+        RDW_INVALIDATE | if erase { RDW_ERASE } else { 0 },
+        given,
+    );
     Ok(Answer::Nothing)
 }
 
@@ -166,17 +187,13 @@ pub(super) fn validate_rgn(system: &mut System, args: &mut Args) -> Result<Answe
     let Some(index) = system.window_named(hwnd) else {
         return Ok(Answer::Nothing);
     };
-    let part = if hrgn == 0 {
-        None
-    } else {
-        system.region_on_screen(index, hrgn)
-    };
-    let left = match part {
-        Some(part) => system.update_region(index).subtract(&part),
-        None => ClipRegion::EMPTY,
-    };
+    let region = (hrgn != 0).then(|| system.region_on_screen(index, hrgn));
 
-    system.set_update_of(index, left, false);
+    if let Some(None) = region {
+        return Ok(Answer::Nothing);
+    }
+
+    system.redraw_through(index, region.flatten().as_ref(), RDW_VALIDATE, None);
     Ok(Answer::Nothing)
 }
 
@@ -190,7 +207,7 @@ pub(super) fn get_update_rgn(system: &mut System, args: &mut Args) -> Result<Ans
     else {
         return Ok(Answer::Word(0));
     };
-    let update = system.update_in_client(index);
+    let update = system.update_seen(index);
     let kind = update.kind();
 
     system.gdi.objects[object] = GdiObject::Region(update);

@@ -805,6 +805,15 @@ fn get_clip_box(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         return Err(Stop::Unsupported("a null RECT"));
     }
 
+    let (kind, rect) = clip_box(system, dc);
+
+    write_rect(system, far, rect);
+    Ok(Answer::Word(kind))
+}
+
+/// A device context's clip box, in logical terms, in order, and the kind of
+/// its region, as `GetClipBox` answers them.
+pub(crate) fn clip_box(system: &mut System, dc: usize) -> (u16, [i32; 4]) {
     let region = clip_of(system, dc);
     let bounds = region.bounds();
     let m = mapping_of(system, dc);
@@ -813,12 +822,10 @@ fn get_clip_box(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let x1 = m.logical_x(i64::from(bounds.right)) as i32;
     let y1 = m.logical_y(i64::from(bounds.bottom)) as i32;
 
-    write_rect(
-        system,
-        far,
+    (
+        region.kind(),
         [x0.min(x1), y0.min(y1), x0.max(x1), y0.max(y1)],
-    );
-    Ok(kind_of(&region))
+    )
 }
 
 /// Whether any of a rectangle lies where the device context can draw:

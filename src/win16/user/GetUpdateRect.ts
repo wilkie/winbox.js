@@ -1,6 +1,7 @@
 'use strict';
 
 import { RasterWindow } from './raster-window.js';
+import { cutToParents } from './invalidate-through.js';
 
 /**
  * The smallest rectangle around what a window is due to paint, in its
@@ -28,10 +29,25 @@ export function GetUpdateRect(this: any, hwnd: number, lprc: any, _bErase: numbe
   const originX = window.left + window.client.left;
   const originY = window.top + window.client.top;
   const area = window.paintClip ?? window.dirtyRect;
-  const left = Math.max(0, area ? area[0] - originX : 0);
-  const top = Math.max(0, area ? area[1] - originY : 0);
-  const right = Math.min(window.clientWidth, area ? area[2] - originX : window.clientWidth);
-  const bottom = Math.min(window.clientHeight, area ? area[3] - originY : window.clientHeight);
+  /* Cut to the client area, and to those of the windows it is in
+   * (`USER.EXE` seg1 `46d6`-`46f2`, `8bb3`; `invchild`). */
+  const seen = cutToParents(window, [
+    Math.max(originX, area ? area[0] : originX),
+    Math.max(originY, area ? area[1] : originY),
+    Math.min(originX + window.clientWidth, area ? area[2] : originX + window.clientWidth),
+    Math.min(originY + window.clientHeight, area ? area[3] : originY + window.clientHeight),
+  ]);
+
+  if (!seen) {
+    return empty();
+  }
+
+  const [left, top, right, bottom] = [
+    seen[0] - originX,
+    seen[1] - originY,
+    seen[2] - originX,
+    seen[3] - originY,
+  ];
 
   if (right <= left || bottom <= top) {
     return empty();

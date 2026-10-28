@@ -110,6 +110,10 @@ pub struct Window {
     /// The mark of a box due only where its children were shown, which
     /// `about_to_paint` passes over.
     pub quiet_dirty: Option<u64>,
+    /// What of it USER's invalidation walk made due, which made the windows
+    /// in it due itself, so `about_to_paint` does not there again: `Some(None)`
+    /// for all of it (`invalidate_through`).
+    pub walked: Option<Option<winbox_raster::ClipRegion>>,
     /// A paint's clip on the screen, and its shape, while it paints.
     pub paint_clip: Option<[i32; 4]>,
     pub paint_shape: Option<winbox_raster::ClipRegion>,

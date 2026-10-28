@@ -133,30 +133,34 @@ impl System {
         within: Rect,
         flags: u16,
     ) -> bool {
-        let rect = cut(self.window_rect(index), within);
+        // Validating, the window's rectangle is neither cut nor asked
+        // against the region (`4052`, `40aa`).
+        let rect = if flags & RDW_INVALIDATE != 0 {
+            cut(self.window_rect(index), within)
+        } else {
+            self.window_rect(index)
+        };
 
-        if flags & RDW_INVALIDATE != 0 && is_empty(rect) && !whole {
-            return true;
-        }
-
-        if !whole {
-            let how = covers(region, rect);
-
-            if how == 0 {
+        if flags & RDW_INVALIDATE != 0 {
+            if is_empty(rect) && !whole {
                 return true;
             }
 
-            whole = how == 2;
+            if !whole {
+                let how = covers(region, rect);
+
+                if how == 0 {
+                    return true;
+                }
+
+                whole = how == 2;
+            }
         }
 
-        let erase = flags & RDW_ERASE != 0;
-        let frame = flags & RDW_FRAME != 0;
         let style = self.shown(index).style;
 
         if style & WS_CLIPCHILDREN == 0 {
-            let given = (!whole).then(|| region.clone());
-
-            self.due_through(index, given.as_ref(), erase, frame);
+            self.give_through(region, index, whole, flags);
         }
 
         let children: Vec<usize> = self
@@ -189,12 +193,22 @@ impl System {
         }
 
         if style & WS_CLIPCHILDREN != 0 {
-            let given = (!whole).then(|| region.clone());
-
-            self.due_through(index, given.as_ref(), erase, frame);
+            self.give_through(region, index, whole, flags);
         }
 
         self.taken_through(region, index, rect, flags)
+    }
+
+    /// One window given the region, all of itself where `whole`: made due
+    /// (seg1 `4202`, `due_through`) or valid (`4309`, `valid_through`).
+    fn give_through(&mut self, region: &ClipRegion, index: usize, whole: bool, flags: u16) {
+        let given = (!whole).then_some(region);
+
+        if flags & RDW_INVALIDATE != 0 {
+            self.due_through(index, given, flags & RDW_ERASE != 0, flags & RDW_FRAME != 0);
+        } else if flags & RDW_VALIDATE != 0 {
+            self.valid_through(index, given);
+        }
     }
 
     /// A window walked as one in another, with `WS_CLIPSIBLINGS`, whose
@@ -272,8 +286,90 @@ impl System {
         } else {
             self.client_rect(index)
         };
+        let within = self.cut_to_parents(index, own);
+
+        // Made due, nothing where the window or a window it is in is hidden,
+        // or one it is in minimized (seg1 `3f27`-`3f3e`, `8bb3`).
+        if within.is_none() && flags & RDW_INVALIDATE != 0 {
+            return;
+        }
+
         let mut left = region.cloned().unwrap_or_else(|| region_of(own));
 
-        self.walk_through(&mut left, index, region.is_none(), own, flags);
+        self.walk_through(
+            &mut left,
+            index,
+            region.is_none(),
+            within.unwrap_or(own),
+            flags,
+        );
+    }
+
+    /// A rectangle of the screen cut to the client area of each window a
+    /// window is in (seg1 `8bb3`): none where the window or one of them is
+    /// hidden, or one of them minimized. An empty rectangle is not none.
+    /// The TypeScript engine's `cutToParents`.
+    pub(crate) fn cut_to_parents(&self, index: usize, rect: Rect) -> Option<Rect> {
+        if !self.shown(index).visible {
+            return None;
+        }
+
+        let mut out = rect;
+        let mut up = self.shown(index).parent;
+
+        while let Some(parent) = up {
+            if !self.shown(parent).visible || self.minimized(parent) {
+                return None;
+            }
+
+            out = cut(out, self.client_rect(parent));
+            up = self.shown(parent).parent;
+        }
+
+        Some(out)
+    }
+
+    /// Whether a window shows for `RedrawWindow`'s body (seg1 `3e4a`,
+    /// `1c5f`): it and every window it is in shown, none of those
+    /// minimized. (A window itself minimized counts, where a bit of its own
+    /// at 26h, not followed, does not ask its class's icon: `3e35`-`3e46`.)
+    fn shows_for(&self, index: usize) -> bool {
+        let mut at = Some(index);
+
+        while let Some(one) = at {
+            if !self.shown(one).visible || (one != index && self.minimized(one)) {
+                return false;
+            }
+
+            at = self.shown(one).parent;
+        }
+
+        true
+    }
+
+    /// `RedrawWindow`'s body for `InvalidateRect`, `InvalidateRgn`,
+    /// `ValidateRect` and `ValidateRgn` (`USER.EXE` seg1 `3e1e`, their
+    /// bodies at `011c`-`0176` passing `RDW_INVALIDATE`, with `RDW_ERASE`
+    /// to erase, or `RDW_VALIDATE`): nothing for a window that does not
+    /// show; else a region of the screen, or all of the window for none,
+    /// made due or valid through it and the windows in it (`3ed7`). `told`
+    /// is what is made due, in its client area's terms, for the lock
+    /// (`3f41`-`3f7c`). The TypeScript engine's `redrawThrough`.
+    pub(crate) fn redraw_through(
+        &mut self,
+        index: usize,
+        region: Option<&ClipRegion>,
+        flags: u16,
+        told: Option<[i32; 4]>,
+    ) {
+        if !self.shows_for(index) {
+            return;
+        }
+
+        if flags & RDW_INVALIDATE != 0 {
+            self.tell_lock(index, told);
+        }
+
+        self.invalidate_through(Some(index), region, flags);
     }
 }

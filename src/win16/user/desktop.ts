@@ -2320,14 +2320,24 @@ export class Desktop {
   dueThrough(window: DesktopWindow, region: ClipRegion | null, erase: boolean, frame: boolean) {
     const shown: any = window;
 
+    /* A control of USER's draws its frame as it paints, as `aboutToPaint`
+     * has it: it has no `WM_NCPAINT` of a program's to draw it. */
     if (!paintsItself(window)) {
       this.paintFrame(window);
+    } else if (frame && window.control) {
+      shown.needsFrame = true;
     } else if (frame) {
       shown.needsNcPaint = true;
     }
 
+    /* What of it the walk made due, which has made the windows in it due
+     * itself: `aboutToPaint` does not make them due there again. */
+    const was = window.needsPaint ? shown.walked : undefined;
+    const walked = !region || was === 'all' ? 'all' : was ? unite(was, region) : region;
+
     if (window.needsPaint && !shown.dirtyRect) {
       window.needsErase ||= erase;
+      shown.walked = walked;
       return;
     }
 
@@ -2337,10 +2347,54 @@ export class Desktop {
       shown.dirtyShapeFor = undefined;
       window.needsPaint = true;
       window.needsErase ||= erase;
+      shown.walked = walked;
       return;
     }
 
     setUpdate(window, window.needsPaint ? unite(updateOf(window), region) : region, erase);
+    shown.walked = walked;
+  }
+
+  /**
+   * A window validated as USER's invalidation walk validates it (`USER.EXE`
+   * seg1 `4309`-`43e6`): all of it for null, else what it is due less the
+   * region. All of a window whose frame is still to be drawn is its client
+   * area (`4353`-`4369`), and all it was due then the whole window
+   * (`4371`-`43a6`): what it was due of its frame stays, outside its client
+   * area.
+   */
+  validThrough(window: DesktopWindow, region: ClipRegion | null) {
+    const shown: any = window;
+
+    if (!window.needsPaint) {
+      return;
+    }
+
+    const l = window.left + window.client.left;
+    const t = window.top + window.client.top;
+    const [r, b] = [l + window.clientWidth, t + window.clientHeight];
+
+    if (!region && shown.needsNcPaint) {
+      region = ClipRegion.rect(l, t, r, b);
+    }
+
+    if (!region) {
+      setUpdate(window, ClipRegion.EMPTY, false);
+      return;
+    }
+
+    const due = shown.dirtyRect
+      ? updateOf(window)
+      : shown.needsNcPaint
+        ? ClipRegion.rect(
+            window.left,
+            window.top,
+            window.left + window.width,
+            window.top + window.height
+          )
+        : ClipRegion.rect(l, t, r, b);
+
+    setUpdate(window, due.subtract(region), false);
   }
 
   /** Where the `slot`th icon of a parent's client area goes: its corner. See `minimize`. */
@@ -3075,16 +3129,30 @@ export class Desktop {
     const dirty = (window as any).dirtyRect;
     const quiet = !!dirty && (window as any).quietDirty === dirty;
 
+    const walked = (window as any).walked;
+    const due = walked ? updateOf(window) : null;
+
     (window as any).paintShape = shapeOf(window, dirty);
     (window as any).dirtyRect = undefined;
     (window as any).dirtyShape = undefined;
     (window as any).quietDirty = undefined;
     (window as any).paintClip = dirty;
+    (window as any).walked = undefined;
 
     /* Not when all it is due is where its children were shown: they were
-     * due themselves then (see `showRaster`). */
-    if (!(window.style & WS_CLIPCHILDREN) && !quiet) {
-      const shape: ClipRegion | undefined = (window as any).paintShape;
+     * due themselves then (see `showRaster`). Nor where USER's invalidation
+     * walk made it due, which made them due as Windows makes them
+     * (`invalidate-through.ts`): only where something else did. */
+    let shape: ClipRegion | undefined = (window as any).paintShape;
+    let part = dirty;
+
+    if (walked && due) {
+      shape = walked === 'all' ? ClipRegion.EMPTY : due.subtract(walked);
+      part = [shape.box.left, shape.box.top, shape.box.right, shape.box.bottom];
+    }
+
+    if (!(window.style & WS_CLIPCHILDREN) && !quiet && !(shape && shape.kind <= 1)) {
+      const dirty = part;
 
       for (const other of this.windows) {
         if (other === window || !this.#within(other, window) || !this.#showing(other)) {

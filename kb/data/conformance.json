@@ -11372,6 +11372,50 @@
   },
   "gaps": {}
  },
+ "invchild": {
+  "probe": "invchild",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 215,
+  "functions": {
+   "erase": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 26,
+    "agreed": 26,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rect": {
+    "total": 75,
+    "agreed": 75,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 75,
+    "agreed": 75,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "jrnlplay": {
   "probe": "jrnlplay",
   "display": "vga",
@@ -24907,15 +24951,15 @@
    },
    "paint": {
     "total": 1,
-    "agreed": 0,
-    "disagreed": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "painting": {
     "total": 12,
-    "agreed": 10,
-    "disagreed": 2,
+    "agreed": 12,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24934,10 +24978,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "painting": "InvalidateRect does not make a parent's children due",
-   "paint": "BeginPaint's rectangle is not its context's clip box"
-  }
+  "gaps": {}
  },
  "vismove": {
   "probe": "vismove",

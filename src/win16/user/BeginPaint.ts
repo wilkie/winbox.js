@@ -9,6 +9,10 @@ import { DCX_INTERSECTRGN } from './visible-region-rule.js';
 import { ClipRegion } from '../../raster/clip-region.js';
 import { hideCaretFor } from './caret.js';
 import { eraseNotDone, sendErase, sendNcPaint } from './erase.js';
+import { GetClipBox } from '../gdi/clipping.js';
+import { callHook } from '../gdi/dc-hook-calls.js';
+
+const CS_PARENTDC = 0x0080;
 
 /**
  * The **BeginPaint** function prepares the specified window for painting and
@@ -91,25 +95,71 @@ export async function BeginPaint(hwnd, lpps) {
    * painting does not leave it half drawn. */
   dialog.caretHidden = hideCaretFor(this, hwnd);
 
+  /* `rcPaint` is the context's clip box, cut to the client area for a
+   * class with `CS_PARENTDC` (`USER.EXE` seg1 `7687`, `78be`-`790e`):
+   * what of the update shows. Where nothing does, the window is not sent
+   * its erase, and is not due it after (`762a`, `768c`). */
+  const box = { left: 0, top: 0, right: 0, bottom: 0 };
+  /* GDI calls the context's hook first, as for any `GetClipBox` (`dc-hook-calls.ts`). */
+  await callHook(this, dc);
+
+  let shows = GetClipBox.call(this, dc, box) > 1;
+
+  if (shows && dialog instanceof RasterWindow) {
+    const style = this.handles.retrieve(dialog.options.windowClass)?.style ?? 0;
+
+    if (style & CS_PARENTDC) {
+      box.left = Math.max(box.left, 0);
+      box.top = Math.max(box.top, 0);
+      box.right = Math.min(box.right, dialog.innerWidth);
+      box.bottom = Math.min(box.bottom, dialog.innerHeight);
+      shows = box.left < box.right && box.top < box.bottom;
+    }
+  }
+
   /* On the raster desktop, the window is validated: it is being painted, and
    * its background is erased first if it is due to be, by whatever the window
    * procedure does with `WM_ERASEBKGND`. */
   let unerased = 0;
 
   if (dialog instanceof RasterWindow) {
+    const window: any = dialog.window;
+
     /* A frame that changed is painted first, by `WM_NCPAINT` to the window:
      * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
-    if ((dialog.window as any).needsNcPaint) {
-      (dialog.window as any).needsNcPaint = false;
-      await sendNcPaint(this, hwnd, dialog, (dialog.window as any).paintClip);
+    if (window.needsNcPaint) {
+      window.needsNcPaint = false;
+      await sendNcPaint(this, hwnd, dialog, window.paintClip);
     }
 
-    const erase = dialog.window.needsErase;
+    const erase = window.needsErase;
 
     dialog.window.needsPaint = false;
+    window.walked = undefined;
 
-    if (erase) {
+    if (erase && shows) {
       await sendErase(this, hwnd, dialog, dc);
+    } else if (erase) {
+      window.needsErase = false;
+      window.unerased = false;
+    }
+
+    /* The windows in it whose frames are due and nothing else are sent
+     * `WM_NCPAINT` now (`76a7`, `7b30`-`7b4e`; `invchild`). */
+    for (const child of dialog.desktop.windows.filter((other) => other.parent === window)) {
+      const shown: any = child;
+
+      if (child.needsPaint || !shown.needsNcPaint || !child.hwnd) {
+        continue;
+      }
+
+      const owner = this.handles.resolve(child.hwnd);
+
+      shown.needsNcPaint = false;
+
+      if (owner instanceof RasterWindow) {
+        await sendNcPaint(this, child.hwnd, owner, undefined);
+      }
     }
 
     unerased = eraseNotDone(dialog);
@@ -118,24 +168,10 @@ export async function BeginPaint(hwnd, lpps) {
   /* `fErase` is 4 while the window's last erase was not done. */
   lpps.hdc = dc;
   lpps.fErase = unerased;
-  lpps.rcPaint.left = 0;
-  lpps.rcPaint.right = dialog.innerWidth;
-  lpps.rcPaint.top = 0;
-  lpps.rcPaint.bottom = dialog.innerHeight;
-
-  /* Only what was to be painted again, when that is known. */
-  const clip = (dialog as any).window?.paintClip;
-
-  if (dialog instanceof RasterWindow && clip) {
-    const window: any = dialog.window;
-    const x = window.left + window.client.left;
-    const y = window.top + window.client.top;
-
-    lpps.rcPaint.left = Math.max(0, clip[0] - x);
-    lpps.rcPaint.top = Math.max(0, clip[1] - y);
-    lpps.rcPaint.right = Math.min(dialog.innerWidth, clip[2] - x);
-    lpps.rcPaint.bottom = Math.min(dialog.innerHeight, clip[3] - y);
-  }
+  lpps.rcPaint.left = shows ? box.left : 0;
+  lpps.rcPaint.top = shows ? box.top : 0;
+  lpps.rcPaint.right = shows ? box.right : 0;
+  lpps.rcPaint.bottom = shows ? box.bottom : 0;
 
   lpps.fRestore = 0;
   lpps.fIncUpdate = 0;
