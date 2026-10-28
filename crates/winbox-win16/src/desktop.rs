@@ -26,7 +26,6 @@ const SM_CYICONSPACING: i16 = 39;
 /// USER's own class for an icon's title, and the room either side of its
 /// text.
 pub(crate) const ICON_TITLE_CLASS: &str = "#32772";
-const ICON_TITLE_PAD: i32 = 2;
 const SM_CYBORDER: i16 = 6;
 const SM_CXFRAME: i16 = 32;
 const SM_CYFRAME: i16 = 33;
@@ -1839,8 +1838,15 @@ impl System {
         }
     }
 
-    /// An icon's title under it, as wide as its text in the icon title's
-    /// font and a little more, centred.
+    /// An icon's title under it, centred, as `USER.EXE` places it (seg1
+    /// `6c14`): its text measured (`6b43`) -- its trailing spaces dropped,
+    /// all but the first -- with `DrawText`'s `DT_CALCRECT`, broken into
+    /// lines no wider than `SM_CXICONSPACING` less two borders where
+    /// wrapping is on, a word wider than that on a line of its own; the
+    /// window as high as the lines and as wide as the widest and four
+    /// borders, half that less half the icon to the left of the icon's
+    /// middle. A title of nothing is measured as the whole width and one
+    /// line (`6be4`). **Recorded** by `ictwrap`.
     fn place_title(&mut self, index: usize) -> Result<(), crate::call::Stop> {
         let Some(title) = self.shown(index).icon_title else {
             return Ok(());
@@ -1866,10 +1872,34 @@ impl System {
                 "an icon's title before the raster desktop",
             ));
         };
-        let bytes: Vec<u8> = text.chars().map(|c| c as u8).collect();
-        let measured = font.measure(&bytes, winbox_raster::Measure::default()).0 as i32;
-        let across = measured + 2 * ICON_TITLE_PAD;
-        let down = crate::fonts::text_metrics(&font).height;
+        let letters = crate::frame::Lettering::of(font);
+        let border = self.metric(SM_CXBORDER);
+        let limit = self.metric(SM_CXICONSPACING) - 2 * border;
+        let mut bytes = crate::desktop_paint::icon_title_text(&text);
+        let (wide, down) = if bytes.is_empty() {
+            (limit, letters.height)
+        } else {
+            let mut at = bytes.len() - 1;
+
+            while at != 0 && bytes[at] == b' ' {
+                bytes.pop();
+                at -= 1;
+            }
+
+            let ops = crate::desktop_paint::TitleOps::measuring(&letters);
+            let format = self.icon_title_format();
+            let (wide, down) = crate::draw_text::calc_plain(
+                self,
+                &ops,
+                &bytes,
+                i64::from(limit),
+                format,
+                i64::from(letters.average),
+            )?;
+
+            (wide as i32, down as i32)
+        };
+        let across = wide + 4 * border;
 
         {
             let shown = self.shown_mut(title);
@@ -1880,7 +1910,7 @@ impl System {
 
         self.place_window(
             title,
-            left + (width >> 1) - (across >> 1),
+            left + (width >> 1) - (wide >> 1) - 2 * border,
             top + height,
             across,
             down,

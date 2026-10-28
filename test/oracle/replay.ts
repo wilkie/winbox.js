@@ -5948,6 +5948,7 @@ const RUN_WHOLE = new Set<string>([
   'vismove',
   'dchkdel',
   'popmax',
+  'ictwrap',
 ]);
 
 /**

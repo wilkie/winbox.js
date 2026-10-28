@@ -1,0 +1,1029 @@
+{
+  "probe": "ictwrap",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "wrap",
+      "args": "wrap",
+      "result": "wrap=1,cx=75,cy=72"
+    },
+    {
+      "function": "title",
+      "args": "progman",
+      "result": "found=1,title=16:444:62:470,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "progman",
+      "result": "15:443:63:471"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=0",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=1",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=2",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=3",
+      "result": "777000007777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=4",
+      "result": "777077770777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=5",
+      "result": "777077770777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=6",
+      "result": "777077770700770007770000700770007700070077777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=7",
+      "result": "777000007707707770707770707777770707707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=8",
+      "result": "777077777707707770707770707770000707707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=9",
+      "result": "777077777707707770707770707707770707707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=10",
+      "result": "777077777707707770707770707707770707707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=11",
+      "result": "777077777707770007770000707770000707707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=12",
+      "result": "777777777777777777777770777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=13",
+      "result": "777777777777777777700007777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=14",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=15",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=16",
+      "result": "777077777077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=17",
+      "result": "777077777077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=18",
+      "result": "777007770077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=19",
+      "result": "777007770077700077070077700077700007700077007777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=20",
+      "result": "777070707077777707007707777707077707077707077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=21",
+      "result": "777070707077700007077707700007077707000007077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=22",
+      "result": "777077077077077707077707077707077707077777077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=23",
+      "result": "777077077077077707077707077707077707077707077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=24",
+      "result": "777077777077700007077707700007700007700077077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=25",
+      "result": "777777777777777777777777777777777707777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=26",
+      "result": "777777777777777777777777777777000077777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman,y=27",
+      "result": "777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "title",
+      "args": "short",
+      "result": "found=1,title=23:444:55:457,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "short",
+      "result": "22:443:56:458"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=0",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=1",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=2",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=3",
+      "result": "7770000077777777777077777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=4",
+      "result": "7770777707777777777077777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=5",
+      "result": "7770777707777777777077777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=6",
+      "result": "7770777707007700077000077700077777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=7",
+      "result": "7770000077077077707077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=8",
+      "result": "7770777777077077707077707000007777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=9",
+      "result": "7770777777077077707077707077777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=10",
+      "result": "7770777777077077707077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=11",
+      "result": "7770777777077700077000077700077777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=12",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=13",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "short,y=14",
+      "result": "7777777777777777777777777777777777"
+    },
+    {
+      "function": "title",
+      "args": "three",
+      "result": "found=1,title=4:444:75:496,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "three",
+      "result": "3:443:76:497"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=0",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=1",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=2",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=3",
+      "result": "7777777777777777707777777770707777707777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=4",
+      "result": "7777777777777777707777777770777777707777777777777077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=5",
+      "result": "7777777777777777770777077707777777707777777777777077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=6",
+      "result": "7777777777777777770777077707707700007700007700077007777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=7",
+      "result": "7777777777777777770777077707707077707077707077707077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=8",
+      "result": "7777777777777777777070707077707077707077707000007077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=9",
+      "result": "7777777777777777777070707077707077707077707077777077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=10",
+      "result": "7777777777777777777707770777707077707077707077707077777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=11",
+      "result": "7777777777777777777707770777707700007700007700077707777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=12",
+      "result": "7777777777777777777777777777777777777777707777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=13",
+      "result": "7777777777777777777777777777777777777000077777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=14",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=15",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=16",
+      "result": "7707777777770777777777707777777777077777777777777777777707777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=17",
+      "result": "7707777777770777777777707777777777077777777777777777777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=18",
+      "result": "7770777077707777777777707777777777077777777777777777777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=19",
+      "result": "7770777077707770007700707707770077070077700077000077777007700077007777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=20",
+      "result": "7770777077707707770707707077707707007707077707077707777077077707077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=21",
+      "result": "7777070707077707770707700777770777077707077707077707777077077707077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=22",
+      "result": "7777070707077707770707707077777077077707077707077707777077077707077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=23",
+      "result": "7777707770777707770707707707707707077707077707077707777077077707077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=24",
+      "result": "7777707770777770007707707770770077077707700077000077777077700077077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=25",
+      "result": "7777777777777777777777777777777777777777777777077777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=26",
+      "result": "7777777777777777777777777777777777777777777777077777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=27",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=28",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=29",
+      "result": "7777777777770777777777070777777777770777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=30",
+      "result": "7777777777770777777777077777777777770777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=31",
+      "result": "7777777777777077707770777777777777770777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=32",
+      "result": "7777777777777077707770770707007770000770007707707707700777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=33",
+      "result": "7777777777777077707770770700770707770707770707707707077077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=34",
+      "result": "7777777777777707070707770707770707770707770707070707707777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=35",
+      "result": "7777777777777707070707770707770707770707770707070707770777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=36",
+      "result": "7777777777777770777077770707770707770707770770777077077077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=37",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=38",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=39",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=40",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=41",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=42",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=43",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=44",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=45",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=46",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=47",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=48",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=49",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=50",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=51",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=52",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "three,y=53",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "title",
+      "args": "long",
+      "result": "found=1,title=-38:444:116:457,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "long",
+      "result": "-39:443:117:458"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=0",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=1",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=2",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=3",
+      "result": "fffffffffffffffffffffffffffffffffffffff777707077077777777777777770707077777777707777777777777777777777770777777707077777077777777777770777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=4",
+      "result": "fffffffffffffffffffffffffffffffffffffff777707770777777777777777777707777777707777777777777777777777777777777777707777777077777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=5",
+      "result": "fffffffffffffffffffffffffffffffffffffff777707770777777777777777777707777777707777777777777777777777777777777777707777777077777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=6",
+      "result": "fffffffffffffffffffffffffffffffffffffff007707070070077000777000070707077007700707700077700077077070000770770007707077000077000777000770770007707770770077777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=7",
+      "result": "fffffffffffffffffffffffffffffffffffffff770707070770777777070777070707070770707707077707077707077070777070777770707070777070777070777070707770707770707707777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=8",
+      "result": "fffffffffffffffffffffffffffffffffffffff000707070770777000070777070707077077707707077777000007700770777070770000707070777070777070777770707770707770770777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=9",
+      "result": "fffffffffffffffffffffffffffffffffffffff770707070770770777070777070707077707707707077777077777700770777070707770707070777070777070777770707770707770777077777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=10",
+      "result": "fffffffffffffffffffffffffffffffffffffff770707070770770777070777070707070770707707077707077707077070777070707770707070777070777070777070707770707700707707777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=11",
+      "result": "fffffffffffffffffffffffffffffffffffffff000707070770777000077000070707077007770707700077700077077070000770770000707077000077000777000770770007770070770077777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=12",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777777777077777777777777777777777777777777770777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=13",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777770000777777777777777777777777777777777770777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "long,y=14",
+      "result": "fffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "title",
+      "args": "trail",
+      "result": "found=1,title=20:444:58:457,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "trail",
+      "result": "19:443:59:458"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=0",
+      "result": "7777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=1",
+      "result": "7777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=2",
+      "result": "7777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=3",
+      "result": "7770000077777777777070707777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=4",
+      "result": "7777707777777777777770777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=5",
+      "result": "7777707777777777777770777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=6",
+      "result": "7777707777007700077070707070077700007777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=7",
+      "result": "7777707777077777707070707007707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=8",
+      "result": "7777707777077700007070707077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=9",
+      "result": "7777707777077077707070707077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=10",
+      "result": "7777707777077077707070707077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=11",
+      "result": "7777707777077700007070707077707700007777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=12",
+      "result": "7777777777777777777777777777777777707777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=13",
+      "result": "7777777777777777777777777777777000077777"
+    },
+    {
+      "function": "screen",
+      "args": "trail,y=14",
+      "result": "7777777777777777777777777777777777777777"
+    },
+    {
+      "function": "title",
+      "args": "many",
+      "result": "found=1,title=2:444:76:470,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "many",
+      "result": "1:443:77:471"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=0",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=1",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=2",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=3",
+      "result": "7777707777077777777700007777770777700000777077777000077707777777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=4",
+      "result": "7777707777077777777077770777770777707777770777770777707707777777707777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=5",
+      "result": "7777070777077777777077777777770777707777770777770777777707777777707777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=6",
+      "result": "7777070777000077777077777770000777707777770077770777777707007777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=7",
+      "result": "7770777077077707777077777707770777700007770777770770007700770777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=8",
+      "result": "7770777077077707777077777707770777707777770777770777707707770777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=9",
+      "result": "7770000077077707777077777707770777707777770777770777707707770777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=10",
+      "result": "7707777707077707777077770707770777707777770777770777007707770777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=11",
+      "result": "7707777707000077777700007770000777700000770777777000707707770777707707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=12",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=13",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777707777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=14",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=15",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=16",
+      "result": "7777777777777777077707707777077777077777777777700007777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=17",
+      "result": "7777777777777777077077707777077777077777777777077770777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=18",
+      "result": "7777777777777777070777707777007770077777777777077770777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=19",
+      "result": "7777777777777777007777707777007770077070077777077770770000777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=20",
+      "result": "7777777777777777007777707777070707077007707777077770770777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=21",
+      "result": "7777777777777777070777707777070707077077707777077770770777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=22",
+      "result": "7777777777777777077077707777077077077077707777077770770777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=23",
+      "result": "7777777777777777077707707777077077077077707777077770770777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=24",
+      "result": "7777777777777777077770707777077777077077707777700007770000777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=25",
+      "result": "7777777777777777777777777777777777777777777777777777770777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=26",
+      "result": "7777777777777777777777777777777777777777777777777777770777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "many,y=27",
+      "result": "7777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "wrap",
+      "args": "wrap-off",
+      "result": "wrap=0,cx=75,cy=72"
+    },
+    {
+      "function": "title",
+      "args": "progman-off",
+      "result": "found=1,title=-5:444:83:457,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "progman-off",
+      "result": "-6:443:84:458"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=0",
+      "result": "ffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=1",
+      "result": "ffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=2",
+      "result": "ffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=3",
+      "result": "ffffff007777777777777777777777777777777777777077777077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=4",
+      "result": "ffffff770777777777777777777777777777777777777077777077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=5",
+      "result": "ffffff770777777777777777777777777777777777777007770077777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=6",
+      "result": "ffffff770700770007770000700770007700070077777007770077700077070077700077700007700077007777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=7",
+      "result": "ffffff007707707770707770707777770707707707777070707077777707007707777707077707077707077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=8",
+      "result": "ffffff777707707770707770707770000707707707777070707077700007077707700007077707000007077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=9",
+      "result": "ffffff777707707770707770707707770707707707777077077077077707077707077707077707077777077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=10",
+      "result": "ffffff777707707770707770707707770707707707777077077077077707077707077707077707077707077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=11",
+      "result": "ffffff777707770007770000707770000707707707777077777077700007077707700007700007700077077777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=12",
+      "result": "ffffff777777777777777770777777777777777777777777777777777777777777777777777707777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=13",
+      "result": "ffffff777777777777700007777777777777777777777777777777777777777777777777000077777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "progman-off,y=14",
+      "result": "ffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "title",
+      "args": "three-off",
+      "result": "found=1,title=-52:444:131:457,icon=21:408:57:444"
+    },
+    {
+      "function": "area",
+      "args": "three-off",
+      "result": "-53:443:132:458"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777707777777777077777777777777777777707777777777770777777777070777777777770777777777777777777777777000777777777777777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777707777777777077777777777777777777077777777777770777777777077777777777770777777777777777777777770777077777777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777707777777777077777777777777777777077777777777777077707770777777777777770777777777777777777777770777777777777077777777777777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=6",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff007700707707770077070077700077000077777007700077007777077707770770707007770000770007707707707700777770777777700077007077707000077777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=7",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff770707707077707707007707077707077707777077077707077777077707770770700770707770707770707707707077077777000777077707077077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff770707700777770777077707077707077707777077077707077777707070707770707770707770707770707070707707777777777077000007077077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=9",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff770707707077777077077707077707077707777077077707077777707070707770707770707770707770707070707770777777777077077777077077707077707777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=10",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff770707707707707707077707077707077707777077077707077777770777077770707770707770707770770777077077077770777077077707077077007077707777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=11",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff007707707770770077077707700077000077777077700077077777770777077770707770770000770007770777077700777777000777700077707700707000077777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=12",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777077777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=13",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777077777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777077777777"
+    },
+    {
+      "function": "screen",
+      "args": "three-off,y=14",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777"
+    }
+  ]
+}

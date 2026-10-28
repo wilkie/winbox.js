@@ -18,6 +18,7 @@ import { barBitmapWidth, barLayout } from './menu-bar.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 import { type MenuData } from './menu-data.js';
 import { type Desk } from './desk.js';
+import { layoutText, type TextOps } from './DrawText.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
 import { DCX_USESTYLE, DCX_WINDOW, regionFlags, windowRegion } from './visible-region-rule.js';
 import { windowDestroyed, windowsChanged } from './dc-entries.js';
@@ -121,12 +122,16 @@ const SM_CXICONSPACING = 38;
 const SM_CYICONSPACING = 39;
 
 /**
- * An icon's title's box is its text's width and two pixels either side; the
- * text starts one pixel in. Measured on the `sizing` probe's "Probe" on four
- * displays; a title that wraps is not measured.
+ * An icon's title, as USER lays it out and draws it (`USER.EXE` seg1 `6b43`,
+ * `6c14`, `6984`): as much of the window's text as `GetWindowText` gives in
+ * 80 bytes; measured with `DrawText`'s `DT_CALCRECT` and these flags --
+ * `DT_SINGLELINE` too where `IconTitleWrap` is off (`[1B2h]`) -- and drawn
+ * with them.
  */
-const ICON_TITLE_PAD = 2;
-const ICON_TITLE_TEXT = 1;
+const ICON_TITLE_LENGTH = 79;
+const ICON_TITLE_FORMAT = 0x0811; /* DT_NOPREFIX | DT_WORDBREAK | DT_CENTER */
+const DT_SINGLELINE = 0x0020;
+const DT_CALCRECT = 0x0400;
 
 const SM_CYMENU = 15;
 
@@ -163,7 +168,10 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
 
   /** The font icon titles are in, and its height and ascent. */
   titleFont?: any;
-  titleMetrics?: { height: number; ascent: number };
+  titleMetrics?: { height: number; ascent: number; overhang?: number; average?: number };
+
+  /** Whether icon titles are broken into lines: `IconTitleWrap`, `SPI_SETICONTITLEWRAP`. */
+  titleWrap?(): boolean;
 
   /** The desktop's pattern and wallpaper, once the settings are read (`desk.ts`). */
   desk?(): Desk | undefined;
@@ -3343,7 +3351,17 @@ export class Desktop {
     window.needsPaint = !window.icon;
   }
 
-  /** An icon's title under it, as wide as its text and a little more, centred. */
+  /**
+   * An icon's title under it, centred, as `USER.EXE` places it (seg1
+   * `6c14`): its text measured (`6b43`) -- its trailing spaces dropped, all
+   * but the first -- with `DrawText`'s `DT_CALCRECT`, broken into lines no
+   * wider than `SM_CXICONSPACING` less two borders where wrapping is on, a
+   * word wider than that on a line of its own; the window as high as the
+   * lines and as wide as the widest and four borders, half that less half
+   * the icon to the left of the icon's middle. A title of nothing is
+   * measured as the whole width and one line (`6be4`). **Recorded** by
+   * `ictwrap`.
+   */
   #placeTitle(window: DesktopWindow) {
     const title = window.iconTitle;
 
@@ -3351,19 +3369,69 @@ export class Desktop {
       return;
     }
 
-    const text = this.#titleText;
-    const width = text.measureText(window.title).width + 2 * ICON_TITLE_PAD;
-    const height = this.environment.titleMetrics?.height ?? this.environment.font.height;
+    const metric = this.environment.metric;
+    const border = metric(SM_CXBORDER);
+    const lineHeight = this.environment.titleMetrics?.height ?? this.environment.font.height;
+    const limit = metric(SM_CXICONSPACING) - 2 * border;
+    const text = window.title.slice(0, ICON_TITLE_LENGTH);
+    let length = text.length;
+    let width = limit;
+    let height = lineHeight;
+
+    if (length) {
+      for (let at = length - 1; at !== 0 && text[at] === ' '; at--) {
+        length--;
+      }
+
+      const rect = { left: 0, top: 0, right: limit, bottom: 2 };
+
+      layoutText(
+        this.#titleOps(() => {}),
+        text,
+        length,
+        rect,
+        this.#titleFormat() | DT_CALCRECT
+      );
+      width = rect.right - rect.left;
+      height = rect.bottom - rect.top;
+    }
 
     title.title = window.title;
     title.visible = window.visible;
     this.place(
       title,
-      window.left + (window.width >> 1) - (width >> 1),
+      window.left + (window.width >> 1) - (width >> 1) - 2 * border,
       window.top + window.height,
-      width,
+      width + 4 * border,
       height
     );
+  }
+
+  /** The flags an icon's title is measured and drawn with. */
+  #titleFormat() {
+    return ICON_TITLE_FORMAT | (this.environment.titleWrap?.() === false ? DT_SINGLELINE : 0);
+  }
+
+  /** Laying out text in the icon title's font, each piece drawn by `draw`. */
+  #titleOps(draw: (x: number, y: number, text: string) => void): TextOps {
+    const text = this.#titleText;
+    const metrics = this.environment.titleMetrics;
+
+    return {
+      extent: (piece) => text.measureText(piece).width,
+      metrics: {
+        height: metrics?.height ?? this.environment.font.height,
+        externalLeading: 0,
+        overhang: metrics?.overhang ?? 0,
+        ascent: metrics?.ascent ?? 0,
+        average: metrics?.average ?? 0,
+      },
+      isSystem: false,
+      textOut: draw,
+      underline: () => {},
+      withClip: (_rect, run) => run(),
+      widest: { value: 0 },
+    };
   }
 
   /** Takes a window's icon title away, as it stops being an icon. */
@@ -3498,11 +3566,29 @@ export class Desktop {
 
     const sum = (ground & 0xff) + ((ground >> 8) & 0xff) + ((ground >> 16) & 0xff);
 
-    text.bitmap = whole;
+    /* The text in the client area less a border on the left and two on the
+     * right, which it is clipped to (`6a76`-`6aaa`), as it was measured;
+     * its trailing spaces kept, so that a line of them falls below. */
+    const border = this.environment.metric(SM_CXBORDER);
+    const right = title.width - 2 * border;
+    const lines = clipped
+      ? this.#view(title, border, 0, right - border, title.height)
+      : this.#onScreen(title.left + border, title.top, right - border, title.height);
+
+    text.bitmap = lines;
     text.textColor = colourOf(
       active ? this.environment.sysColor(COLOR_CAPTIONTEXT) : sum > 0x17d ? 0 : 0xffffff
     );
-    text.fillText(ICON_TITLE_TEXT, 0, window.title);
+
+    const shown = window.title.slice(0, ICON_TITLE_LENGTH);
+
+    layoutText(
+      this.#titleOps((x, y, piece) => text.fillText(x - border, y, piece)),
+      shown,
+      shown.length,
+      { left: border, top: 0, right, bottom: title.height },
+      this.#titleFormat()
+    );
   }
 
   /** Draws and measures in the icon title's font. */

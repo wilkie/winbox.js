@@ -18,6 +18,7 @@ probes:
     titledis,
     cardview,
     notepos,
+    ictwrap,
   ]
 ---
 
@@ -37,6 +38,11 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[measured]] The first icon goes at `x = (SM_CXICONSPACING - SM_CXICON) / 2`, rounded down, which is 21, and `y = height - SM_CYICONSPACING`. That is 408 on the VGA, 284 on the EGA and 282 on the Hercules.
 - [[measured]] `SM_CXICONSPACING` is 75 on every display. `SM_CYICONSPACING` is 72 on the VGA and the Super VGA, and 66 on the EGA and the Hercules. [[fn:USER.SystemParametersInfo]] gives the same with `SPI_ICONHORIZONTALSPACING` and `SPI_ICONVERTICALSPACING`, and `SPI_GETICONTITLEWRAP` is 1.
 - [[measured]] The icon's **title** is a window of its own, directly below the icon and centred on it. It is as wide as its text plus two pixels each side, and as tall as the title font's cell. The text starts one pixel in. An active window's title is in `COLOR_CAPTIONTEXT` on `COLOR_ACTIVECAPTION`.
+- [[read out]] **A title too wide is broken into lines.** USER measures the title (`USER.EXE` seg1 `6b43`) with [[fn:USER.DrawText]]'s `DT_CALCRECT | DT_NOPREFIX | DT_WORDBREAK | DT_CENTER` in a rectangle `SM_CXICONSPACING` less two borders wide -- 73 pixels -- once it has dropped the text's trailing spaces, all but the first character; with `IconTitleWrap` off (`[1B2h]`, WIN.INI's `IconTitleWrap`, 1 when it is not there, seg3 `1e4e`-`1e5a`), `DT_SINGLELINE` as well. It places the window (seg1 `6c14`) half the icon less half the text less two borders across from the icon, under it, as wide as the widest line and four borders and as high as the lines. A title of no text is measured as the whole 73 and one line (`6be4`). It draws the text (`6984`) with the same flags in its client area less a border on the left and two on the right, clipped to that, the trailing spaces kept. Only the first 79 characters are read (`GetWindowText` with 80 bytes).
+- [[measured]] [[probe:ictwrap]] minimizes windows of six titles and reads back each title's window and every pixel of it, on the Super VGA. "Program Manager" is two lines, "Program" and "Manager", 46 by 26 at (16, 444) under an icon at (21, 408). "Widget Workshop for Windows Setup" is four lines, 71 wide, running past the bottom of the screen. A word wider than 73 -- "Supercalifragilisticexpialidocious" -- is a line of its own, 154 wide, from x = -38. "Trailing" and three spaces is as wide as "Trailing". With `SPI_SETICONTITLEWRAP` set off, "Program Manager" is one line, 88 wide, from x = -5. `SM_CYICONSPACING` stays 72 when wrapping is turned off: it is worked out once, as USER starts (seg3 `1e98`-`1eb1` adds the title font's height a second time for wrapping). winbox.js agrees with all 203 records.
+
+  Widget Workshop's install of the corpus ends with Program Manager minimized. Windows shows its title on two lines; winbox.js had drawn every title on one line however wide, "Program Manager" from x = -5.
+
 - [[measured]] The title font is what `SPI_GETICONTITLELOGFONT` returns: MS Sans Serif, weight 400, and a height of `-round(8 × LOGPIXELSY / 72)`, which is −11 on the VGA and −8 on the EGA and the Hercules.
 - [[read out]] **The title's own procedure** (`USER.EXE` seg1 `6ca0`, registered for class `#32772` at seg3 `19c7`). USER makes the title with `CreateWindow` as the window is minimized (seg1 `6ab8`). For a top-level window it is a pop-up that the icon owns; for a child's icon it is a child of the same parent. Its procedure does these things:
   - It answers `WM_NCHITTEST` with `HTCAPTION` (`6dbd`).
@@ -61,7 +67,7 @@ A window in Windows 3.1 is normal, maximized or minimized, and `DefWindowProc` m
 - [[measured]] **Restored**, whether by that, by [[fn:USER.ShowWindow]] with `SW_RESTORE`, or by `SC_RESTORE` sent: `WM_QUERYOPEN`, then `WM_MOVE`, then `WM_SIZE`, then `WM_ACTIVATE` with `WA_ACTIVE` for a window that was active as an icon, which had no focus then. `DefWindowProc` answers `WM_QUERYOPEN` TRUE. [[documented]] A window that answers FALSE stays an icon; winbox.js does that too, unrecorded.
 - [[measured]] **An icon moved keeps its place.** Minimized again, `P`'s icon goes back where it was dragged, not to the first free slot.
 - winbox.js agrees with all 17 of [[probe:iconclk]]'s records. It had no answer for a single click on an icon at all. Its move loop did nothing for a press let go where it was, told a window it moved of its size as well as its place, and put an icon back in the first slot.
-- Not yet measured: where a second icon goes, and a child's icon. Also not measured: titles too long to fit, which `SPI_GETICONTITLEWRAP` says are wrapped, and how an inactive icon's title looks.
+- Not yet measured: where a second icon goes, and a child's icon, and how an inactive icon's title looks. Nor what `SPI_SETICONTITLEWRAP` does to the titles already shown: [[probe:ictwrap]] sets it only with no icon on the screen.
 
 ## The standard icons
 
