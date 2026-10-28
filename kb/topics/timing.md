@@ -143,6 +143,15 @@ Before, a pixel was tested against the window's pixels and the region where the 
 
 Each the mean of three runs; the program's own instructions and the call's way in and out are in it. The whole corpus, after: the TypeScript survey 906 s (790 s before; 878 s and 1,053 s on other runs of the same day, the machine busier), SimTower's at the faithful clock 65 s (64 s), the Rust engine's corpus 107 s (104 s); SimTower's summary is the same to the byte. A benchmark not kept.
 
+[[measured]] Scrolling, moving and locking through the region ([[topic:visible-regions]], phase 5), on the same machine, through the whole engine: a pop-up 200 by 150 with another over its corner, scrolled by `ScrollWindow` 2,000 times a pixel down and back, then moved by `SetWindowPos` 1,000 times a pixel right and back, less the same program doing neither -- 3,000 calls. Before, a scroll copied the client area's pixels by hand and a move tested each window's own update region; after, a scroll takes a common context, works the update out by regions and blits through what moves, made due through USER's walk, and a move tests the window's and its parents' update regions:
+
+| 3,000 calls, run whole | Before | After  |
+| ---------------------- | ------ | ------ |
+| Rust                   | 0.63 s | 0.91 s |
+| TypeScript             | 35.6 s | 37.5 s |
+
+A call costs the Rust engine some 0.1 ms more, the TypeScript engine some 0.6 ms more, on some 12 ms. Each the mean of three runs, the load average 0.9 to 1.1 throughout. No program of the corpus scrolls, and its corpus and SimTower's summary are the same to the byte. A benchmark not kept.
+
 ## What winbox.js does
 
 winbox.js keeps two clocks. The survey's runs 3,000 instructions a millisecond and charges every call 15 instructions: it runs much faster than a faithful one, and the same every time. Most calls are charged less than they are -- a rectangle call about half, `PeekMessage` finding nothing a fourteenth -- and drawing far less: a twelve-hundredth of a WinG blit of the whole screen with its colours one for one, a ninety-thousandth of one without. Its `GetTickCount` steps by the tick, as Windows' does.

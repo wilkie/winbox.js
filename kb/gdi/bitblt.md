@@ -23,13 +23,14 @@ topics: [display-drivers, printer-drivers]
 
 - [[inferred]] So `SRCAND` of any two colours whose indices share only the top bit is light grey, not dark grey, as red and blue do. A program that masks a sprite in colour relies on this arithmetic, not on colour.
 - [[measured]] The operations without names follow their tables too, where they read only the brush and the destination: [[fn:GDI.PatBlt]]'s [[probe:patrops]] has all sixteen over every pair of colours, pattern and hatched brushes among them.
-- Not yet measured: colours outside the palette, 256-colour and monochrome displays, the unnamed operations that read a source, and a source that overlaps the destination. Stretching is [[fn:GDI.StretchBlt]], and pattern brushes [[fn:GDI.CreatePatternBrush]].
+- Not yet measured: colours outside the palette, 256-colour and monochrome displays, the unnamed operations that read a source, and a source that overlaps the destination in a memory bitmap.
+- [[measured]] On the screen, a context blitting within its own pixels copies the right way round however they overlap: [[probe:visscrl]]'s scrolls are `BitBlt`s of a window's context onto itself (`USER.EXE` seg13 `1bbc`, `1de2`), and move cleanly both ways. Stretching is [[fn:GDI.StretchBlt]], and pattern brushes [[fn:GDI.CreatePatternBrush]].
 
 ## Implementation
 
 A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`src/raster/raster-op.ts`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
 
-A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. Not yet handled: a source overlapping the destination, and the 256-colour index order, which is not recorded.
+A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. A source that is the destination's own pixels is read whole before anything is written, in both engines, as the driver's copy comes out. Not yet handled: the 256-colour index order, which is not recorded.
 
 ## On a printer's context
 
