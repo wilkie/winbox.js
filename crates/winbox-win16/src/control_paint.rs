@@ -1000,6 +1000,7 @@ fn static_control(env: &ControlEnv, control: &ControlState) -> Result<(), Stop> 
         format,
         average,
     )
+    .map(|_| ())
 }
 
 /// A focus rectangle drawn, or taken away again: each pixel of its edge

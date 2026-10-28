@@ -2,7 +2,7 @@
 kind: topic
 name: Creating and showing a window
 summary: Every message a Windows 3.1 window is sent as it is made, shown, hidden and destroyed, in order — WM_GETMINMAXINFO to WM_WINDOWPOSCHANGED — with the structures they carry, recorded and read out of USER.EXE.
-probes: [showseq, showsq2, showmin, tutor, minmax, nccalc, alttab, swpshow]
+probes: [showseq, showsq2, showmin, tutor, minmax, nccalc, alttab, swpshow, popmax]
 ---
 
 A program that does its work as its window is made, in `WM_CREATE`, `WM_SIZE`, `WM_SHOWWINDOW` or `WM_ACTIVATE`, depends on when each arrives and what it carries. [[measured]] [[probe:showseq]] logs every message a window of its own class is sent, in order, as it makes and shows windows of five kinds on the VGA:
@@ -48,6 +48,10 @@ Then it hides A, shows it again, and destroys the windows. Mouse messages are le
 5. `WM_WINDOWPOSCHANGED`, now with `SWP_NOZORDER` and `SWP_NOREDRAW` as well.
 
 [[fn:USER.DefWindowProc]] answers `WM_WINDOWPOSCHANGED` with `WM_MOVE`, then `WM_SIZE` with `SIZE_MAXIMIZED`. The window is then shown as any other. When it shows it is still owed its first `WM_SIZE` and `WM_MOVE`, and it is sent them again.
+
+[[read out]] **A pop-up too.** Once `WM_CREATE` is answered, [[fn:USER.CreateWindow]] tests the style's `WS_MINIMIZE` and `WS_MAXIMIZE` bits and nothing else: it clears the bit and calls the routine `ShowWindow` minimizes and maximizes with, `SW_SHOWMINNOACTIVE` or `SW_SHOWMAXIMIZED`, whatever kind of window it is (`USER.EXE` seg8 `0843`-`0861`). [[measured]] [[probe:popmax]] makes pop-ups with `WS_MAXIMIZE`, on the Super VGA: each is sent its `WM_SIZE` and `WM_MOVE` straight after `WM_CREATE`, as any pop-up is, then the five messages above, and is maximized where `WM_GETMINMAXINFO` offers -- one with no frame, or a border, or a caption, at (-1, -1), 644 by 484; one with a sizing frame at (-4, -4), 648 by 488. An owned pop-up is the same. `IsZoomed` answers TRUE. Shown, each is sent what any window shown is, where it already is.
+
+Widget Workshop's InstallShield Setup of the corpus makes its backdrop `WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_MAXIMIZE` at (0, 0), 640 by 480. Windows puts it at (-1, -1), 644 by 484, and the program fills that client area with its blue-to-black bands and centres its dialogs on that rectangle. winbox.js had maximized only an overlapped window made so, and left the pop-up at (0, 0): every band of the backdrop was a pixel lower and to the right of Windows', and every dialog a pixel up and to the left. Both engines now maximize a pop-up too, and agree with every record of `popmax` but the minimized one's (below).
 
 ## Shown
 
@@ -102,6 +106,10 @@ What [[probe:swpshow]] recorded that neither engine follows yet:
 - Minimized by `SC_MINIMIZE`, a window goes to the very bottom of the windows, and is sent `WM_WINDOWPOSCHANGING`, `WM_NCPAINT` and its icon's erase, `WM_WINDOWPOSCHANGED`, `WM_MOVE` and `WM_SIZE` before what its `WM_SIZE` does, and is placed after its title once activation has gone elsewhere. Both engines leave it where it lay and send `WM_MOVE` after `WM_SIZE`'s work ([[topic:activation-and-focus]] has the rest).
 - Restored from an icon by `SC_RESTORE`, the window is asked `WM_WINDOWPOSCHANGING` with 100h among its flags, then sent `WM_NCPAINT` and `WM_ERASEBKGND` before `WM_WINDOWPOSCHANGED`. Both engines send neither before it, nor 100h.
 - An icon's title, `#32772`, lies among the topmost windows, and an icon brought to the top goes after it. Both engines keep it just in front of its icon, so `HWND_TOP` is reported as the last topmost window, `#32771`; the check for a window already in place leaves titles out for that.
+
+What [[probe:popmax]] recorded that neither engine follows yet:
+
+- A pop-up made with `WS_MINIMIZE` is minimized as it is made, as an overlapped one is (seg8 `0843`-`0850`): its first `WM_SIZE` is the whole window, 100 by 50, as an icon's client area is; it goes to the first place among the icons with `SWP_NOZORDER` among the flags, 134h. Both engines minimize only an overlapped window as it is made, and a child neither; a child made with `WS_MAXIMIZE` or `WS_MINIMIZE` is not recorded.
 
 ## Not yet measured
 

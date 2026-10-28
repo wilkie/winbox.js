@@ -5202,6 +5202,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `popmax`'s pop-up made `WS_CAPTION | WS_MINIMIZE`: `CreateWindow`
+   * minimizes it as it does an overlapped one (`USER.EXE` seg8 `0843`-`0861`
+   * asks nothing of the kind of window), and its first `WM_SIZE` is the whole
+   * window's, as an icon's client area is; winbox.js minimizes only an
+   * overlapped window as it is made. */
+  'popmax:minlog': 'a pop-up made WS_MINIMIZE is not minimized as it is made',
+  'popmax:minrects': 'a pop-up made WS_MINIMIZE is not minimized as it is made',
   /* `solodata` reads its module's flags from the header KERNEL keeps in
    * memory, at the module handle's offset 0Ch: 243h, bit 1 set by KERNEL on
    * a program linked with one data segment (`KRNL386.EXE` seg2 `17ee`).
@@ -5933,6 +5940,8 @@ const RUN_WHOLE = new Set<string>([
   'vismove',
   'dchkdel',
   'invchild',
+  'popmax',
+  'ictwrap',
 ]);
 
 /**

@@ -910,10 +910,12 @@ impl Engine {
 
         let overlapped = made.style & (WS_CHILD | WS_POPUP) == 0;
 
-        // An overlapped window made maximized is maximized before it shows,
-        // as `SetWindowPos` would place it there, not drawn and not made
-        // active (`showseq`).
-        if made.style & WS_MAXIMIZE != 0 && overlapped {
+        // A window at the top made maximized -- overlapped or a pop-up --
+        // is maximized before it shows, as `SetWindowPos` would place it
+        // there, not drawn and not made active (`showseq`, `popmax`):
+        // `USER.EXE` seg8 `0843`-`0861` asks nothing of the kind of window
+        // once `WM_CREATE` is answered.
+        if made.style & WS_MAXIMIZE != 0 && made.style & WS_CHILD == 0 {
             self.maximize_made(hwnd, index).await?;
         }
 

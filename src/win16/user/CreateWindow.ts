@@ -528,12 +528,15 @@ export async function CreateWindow(
     );
   }
 
-  /* An overlapped window made maximized is maximized before it shows, as
-   * `SetWindowPos` would place it there, not drawn and not made active:
-   * asked `WM_GETMINMAXINFO`, told `WM_WINDOWPOSCHANGING`, asked again,
-   * `WM_NCCALCSIZE` with its new rectangle, then `WM_WINDOWPOSCHANGED`,
-   * from which `DefWindowProc` tells it its place and size (`showseq`). */
-  if (dwStyle & WS_MAXIMIZE && !(dwStyle & (User.WS_CHILD | WS_POPUP))) {
+  /* A window at the top made maximized -- overlapped or a pop-up -- is
+   * maximized before it shows, as `SetWindowPos` would place it there, not
+   * drawn and not made active: asked `WM_GETMINMAXINFO`, told
+   * `WM_WINDOWPOSCHANGING`, asked again, `WM_NCCALCSIZE` with its new
+   * rectangle, then `WM_WINDOWPOSCHANGED`, from which `DefWindowProc` tells
+   * it its place and size (`showseq`, `popmax`): `USER.EXE` seg8
+   * `0843`-`0861` asks nothing of the kind of window once `WM_CREATE` is
+   * answered. */
+  if (dwStyle & WS_MAXIMIZE && !(dwStyle & User.WS_CHILD)) {
     await maximizeMade(this, hWnd, dialog, send);
   }
 

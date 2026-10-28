@@ -567,9 +567,10 @@ fn layout_text(
 
 /// Text laid out in a rectangle as `DrawText` lays it out, on what `ops`
 /// draws on rather than a device context, and drawn where it falls: a
-/// static control's text (`USER.EXE` seg25 `1fe5`). Its tab stops are
-/// every eight of `average`; `DT_CALCRECT` is not asked for, nor clipping,
-/// and the widest line is its own.
+/// static control's text (`USER.EXE` seg25 `1fe5`), an icon's title (seg1
+/// `6984`). Its tab stops are every eight of `average`; clipping is what
+/// `ops` draws on, and the widest line is its own. Answers the widest line
+/// and where the last line starts; with `DT_CALCRECT` nothing is drawn.
 pub(crate) fn layout_plain<C: ?Sized>(
     system: &mut C,
     ops: &dyn TextOps<C>,
@@ -577,12 +578,12 @@ pub(crate) fn layout_plain<C: ?Sized>(
     rect: [i64; 4],
     format: u16,
     average: i64,
-) -> Result<(), Stop> {
+) -> Result<(i64, i64), Stop> {
     let [left, top, right, bottom] = rect;
     let width = right - left;
 
     if width == 0 {
-        return Ok(());
+        return Ok((0, top));
     }
 
     let (height, ascent, overhang) = ops.metrics();
@@ -608,8 +609,39 @@ pub(crate) fn layout_plain<C: ?Sized>(
         bottom,
     };
 
-    layout.run(system, &rect)?;
-    Ok(())
+    let y = layout.run(system, &rect)?;
+
+    Ok((layout.widest, y))
+}
+
+/// Text measured as `DrawText` measures it with `DT_CALCRECT`, on what
+/// `ops` measures with, from a rectangle at (0, 0) `width` wide: the
+/// widest line, and how far down the last line ends -- laid out again as
+/// wide as its widest line where that is wider (`USER.EXE` seg6 `0935`).
+/// An icon's title (seg1 `6b43`).
+pub(crate) fn calc_plain<C: ?Sized>(
+    system: &mut C,
+    ops: &dyn TextOps<C>,
+    text: &[u8],
+    width: i64,
+    format: u16,
+    average: i64,
+) -> Result<(i64, i64), Stop> {
+    let (height, _, _) = ops.metrics();
+    let (widest, y) = layout_plain(
+        system,
+        ops,
+        text,
+        [0, 0, width, 2],
+        format | DT_CALCRECT,
+        average,
+    )?;
+
+    if widest > width {
+        return calc_plain(system, ops, text, widest, format, average);
+    }
+
+    Ok((widest, y + height))
 }
 
 /// `DrawText`: nought for a handle that stands for nothing or a null

@@ -35,9 +35,78 @@ const IDI_APPLICATION: u16 = 32512;
 const SM_CXICON: i16 = 11;
 const SM_CYICON: i16 = 12;
 
-/// Where an icon's title's text starts in its box: a pixel in. Measured on
-/// the `sizing` probe's "Probe" on four displays.
-const ICON_TITLE_TEXT: i32 = 1;
+const SM_CXBORDER: i16 = 5;
+
+/// An icon's title, as USER lays it out and draws it (`USER.EXE` seg1
+/// `6b43`, `6c14`, `6984`): as much of the window's text as
+/// `GetWindowText` gives in 80 bytes; measured with `DrawText`'s
+/// `DT_CALCRECT` and these flags -- `DT_SINGLELINE` too where
+/// `IconTitleWrap` is off (`[1B2h]`) -- and drawn with them.
+const ICON_TITLE_LENGTH: usize = 79;
+const ICON_TITLE_FORMAT: u16 = 0x0811; // DT_NOPREFIX | DT_WORDBREAK | DT_CENTER
+const DT_SINGLELINE: u16 = 0x0020;
+
+/// The text of an icon's title: as much of its window's as USER reads.
+pub(crate) fn icon_title_text(title: &str) -> Vec<u8> {
+    let mut bytes = bytes_of(title);
+
+    bytes.truncate(ICON_TITLE_LENGTH);
+    bytes
+}
+
+/// Laying out text in the icon title's font, for `layout_plain`: each
+/// piece drawn on `view`, moved `shift` to the left, where there is one.
+pub(crate) struct TitleOps<'a> {
+    letters: &'a Lettering,
+    view: Option<DeviceBitmap>,
+    ink: u32,
+    shift: i32,
+}
+
+impl<'a> TitleOps<'a> {
+    /// Measuring only.
+    pub(crate) fn measuring(letters: &'a Lettering) -> Self {
+        Self {
+            letters,
+            view: None,
+            ink: 0,
+            shift: 0,
+        }
+    }
+}
+
+impl crate::draw_text::TextOps<System> for TitleOps<'_> {
+    fn extent(&self, _: &mut System, text: &[u8]) -> Result<i64, Stop> {
+        Ok(i64::from(self.letters.measure(text)))
+    }
+
+    fn text_out(&self, system: &mut System, x: i64, y: i64, text: &[u8]) -> Result<(), Stop> {
+        if let Some(view) = &self.view {
+            self.letters.text(
+                system,
+                view,
+                text,
+                self.ink,
+                x as i32 - self.shift,
+                y as i32,
+            );
+        }
+
+        Ok(())
+    }
+
+    fn underline(&self, _: &mut System, _: crate::gdi::text_out::Bounds) -> Result<(), Stop> {
+        Ok(())
+    }
+
+    fn metrics(&self) -> (i64, i64, i64) {
+        (
+            i64::from(self.letters.height),
+            i64::from(self.letters.ascent),
+            i64::from(self.letters.overhang),
+        )
+    }
+}
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
@@ -136,6 +205,16 @@ impl System {
 
     /// The font icon titles are in: MS Sans Serif, or the System font
     /// where there is none.
+    /// The flags an icon's title is measured and drawn with.
+    pub(crate) fn icon_title_format(&mut self) -> u16 {
+        ICON_TITLE_FORMAT
+            | if self.parameters().icon_title_wrap == 0 {
+                DT_SINGLELINE
+            } else {
+                0
+            }
+    }
+
     fn title_lettering(&self) -> Option<Lettering> {
         self.title_font
             .clone()
@@ -696,8 +775,38 @@ impl System {
             }
         };
 
-        if let Some(letters) = self.title_lettering() {
-            letters.text(self, &whole, &text, ink, ICON_TITLE_TEXT, 0);
+        // The text in the client area less a border on the left and two on
+        // the right, which it is clipped to (`6a76`-`6aaa`), as it was
+        // measured; its trailing spaces kept, so that a line of them falls
+        // below.
+        let border = self.metric(SM_CXBORDER);
+        let right = width - 2 * border;
+        let lines = if over {
+            Some(self.on_screen(left + border, top, right - border, height))
+        } else {
+            self.window_part(title, border, 0, right - border, height, true)
+        };
+
+        if let (Some(letters), Some(lines)) = (self.title_lettering(), lines) {
+            let mut text = text;
+
+            text.truncate(ICON_TITLE_LENGTH);
+            let ops = TitleOps {
+                letters: &letters,
+                view: Some(lines),
+                ink,
+                shift: border,
+            };
+            let format = self.icon_title_format();
+            let average = i64::from(letters.average);
+            let _ = crate::draw_text::layout_plain(
+                self,
+                &ops,
+                &text,
+                [i64::from(border), 0, i64::from(right), i64::from(height)],
+                format,
+                average,
+            );
         }
     }
 }

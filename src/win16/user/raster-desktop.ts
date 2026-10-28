@@ -43,6 +43,7 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     systemFont: system_.font,
     titleFont: title.font,
     titleMetrics: title.metrics,
+    titleWrap: () => (system._parameters?.iconTitleWrap ?? 1) !== 0,
     desk: () => system._parameters,
     bitmapOf: (handle: number) => {
       const bitmap = system.handles.resolve(handle);
