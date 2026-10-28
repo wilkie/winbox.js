@@ -1011,14 +1011,40 @@ fn create_ic_call(engine: &Engine, args: Args) -> Later<'_> {
     create_call(engine, args, true)
 }
 
+/// The code a hook is called with as its context is deleted.
+const DCHC_DELETEDC: u16 = 2;
+
 fn delete_dc_call(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (hdc, driver) = {
+        let (hdc, driver, hook) = {
             let system = engine.system();
             let hdc = args.word(&system);
+            let hook = match system.handles.resolve(hdc) {
+                Some(Object::Dc(dc)) => Some(system.gdi.dcs[dc].hook),
+                _ => None,
+            };
 
-            (hdc, driver_dc_of(&system, hdc))
+            (hdc, driver_dc_of(&system, hdc), hook)
         };
+
+        // A program's hook is asked first, with `DCHC_DELETEDC`, its flag
+        // set or not; answering nought keeps the context (`GDI.EXE` seg1
+        // `0844`-`0866`; `dchkdel`). USER's own answers 1 (`USER.EXE` seg1
+        // `8a0a`-`8a10`). A hook set to nought (`SetDCHook` of NULL, as
+        // `dchook` ends) is not called: `dchook` runs to its end on Windows.
+        if let Some(hook) = hook
+            && !hook.user
+            && let Some((proc, data)) = hook.set
+            && proc != 0
+        {
+            let answer =
+                super::dc_hook_calls::call_hook(engine, proc, hdc, DCHC_DELETEDC, data).await?;
+
+            if answer as u16 == 0 {
+                return Ok(Answer::Word(0));
+            }
+        }
+
         let compatible = {
             let system = engine.system();
 

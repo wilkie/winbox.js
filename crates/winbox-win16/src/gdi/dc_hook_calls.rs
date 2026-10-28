@@ -16,7 +16,7 @@ use crate::system::System;
 
 /// The calls that set one attribute and do no more, which do not call it
 /// (seg1 `1476`, `14dc`, `4e22`-`4ed8`), and the hook's own; `DeleteDC`
-/// calls it with `DCHC_DELETEDC`, which is not followed.
+/// calls it with `DCHC_DELETEDC` itself (`printer_driver::delete_dc_call`).
 const UNHOOKED: &[&str] = &[
     "SetBkColor",
     "SetTextColor",
@@ -156,32 +156,12 @@ pub(crate) fn pending(
 /// processor, then the call made (`System::hook_then`).
 pub(crate) fn hooked(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (due, implementation, stack) = {
-            let mut system = engine.system();
-            let (due, implementation) = system.hook_then.take().ok_or(Stop::Unsupported(
-                "a device context's hook called with no call after it",
-            ))?;
-
-            (due, implementation, system.cpu.segments[SS].selector)
-        };
+        let (due, implementation) = engine.system().hook_then.take().ok_or(Stop::Unsupported(
+            "a device context's hook called with no call after it",
+        ))?;
         let (proc, hdc, data) = due;
 
-        engine
-            .call_with(
-                proc,
-                &[
-                    GuestArg::Word(hdc),
-                    GuestArg::Word(1),
-                    GuestArg::Long(data),
-                    GuestArg::Long(0),
-                ],
-                &[
-                    Register::Word(AX, stack),
-                    Register::Segment(DS, stack),
-                    Register::Segment(ES, stack),
-                ],
-            )
-            .await?;
+        call_hook(engine, proc, hdc, 1, data).await?;
 
         match implementation {
             Implementation::Sync(answer) => {
@@ -192,4 +172,35 @@ pub(crate) fn hooked(engine: &Engine, mut args: Args) -> Later<'_> {
             Implementation::Async(answer) => answer(engine, args).await,
         }
     })
+}
+
+/// A program's hook called through the processor: the context, the code
+/// (`DCHC_INVALIDVISRGN` 1, `DCHC_DELETEDC` 2), the hook's data and nought,
+/// with the stack's segment in AX, DS and ES. Its answer.
+pub(crate) async fn call_hook(
+    engine: &Engine,
+    proc: u32,
+    hdc: u16,
+    code: u16,
+    data: u32,
+) -> Result<u32, Stop> {
+    let stack = engine.system().cpu.segments[SS].selector;
+    let (answer, _) = engine
+        .call_with(
+            proc,
+            &[
+                GuestArg::Word(hdc),
+                GuestArg::Word(code),
+                GuestArg::Long(data),
+                GuestArg::Long(0),
+            ],
+            &[
+                Register::Word(AX, stack),
+                Register::Segment(DS, stack),
+                Register::Segment(ES, stack),
+            ],
+        )
+        .await?;
+
+    Ok(answer)
 }
