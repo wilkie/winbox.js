@@ -1674,6 +1674,15 @@ for (const { engine, page: at } of ENGINES) {
       await page.keyboard.press('Enter');
       await expect(mapper).toHaveCount(0, { timeout: 20000 });
 
+      /* The FM chip's stream has run since Windows started: the driver's
+       * writes as it loads switched its channel on, and, as DOSBox's, it is
+       * switched off only after 30 seconds without a write
+       * (`SILENCE_OFF_MS`), which the mapper's reset as the probe opens it
+       * is well within. What it made before the probe runs -- Control
+       * Panel's time, as long as this page took over it -- is left out:
+       * the posts counted are those from the probe's Run button on. */
+      const from = await page.evaluate(() => (globalThis as any).heard.buffers.length);
+
       await page.getByRole('button', { name: 'Run C:\\PROBES\\ADLIBGM.EXE' }).click();
       await page.waitForFunction(
         () =>
@@ -1685,10 +1694,11 @@ for (const { engine, page: at } of ENGINES) {
       );
 
       const heard = await page.evaluate(() => (globalThis as any).heard);
-      const fm = heard.buffers.filter((buffer: any) => buffer.lane === 1);
+      const fm = heard.buffers.slice(from).filter((buffer: any) => buffer.lane === 1);
       const loud = fm.findIndex((buffer: any) => buffer.peak > 0.05);
-      /* The FM chip's stream is unbroken from the reset: its frames before
-       * the note, at 48,000, are the machine's time to it. */
+      /* The FM chip's stream is unbroken through the probe's reset: its
+       * frames from the probe's start to the note, at 48,000, are the
+       * machine's time to it. */
       const before =
         fm.slice(0, loud).reduce((sum: number, buffer: any) => sum + buffer.length, 0) / 48000;
 
