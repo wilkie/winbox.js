@@ -1,0 +1,1089 @@
+{
+  "probe": "invchild",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "update",
+      "args": "rect P",
+      "result": "2 0,0,130,60 0-60:0-130;"
+    },
+    {
+      "function": "rect",
+      "args": "rect P",
+      "result": "1 0,0,130,60"
+    },
+    {
+      "function": "update",
+      "args": "rect K",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "rect K",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "rect G",
+      "result": "2 0,0,20,15 0-15:0-20;"
+    },
+    {
+      "function": "rect",
+      "args": "rect G",
+      "result": "1 0,0,20,15"
+    },
+    {
+      "function": "update",
+      "args": "rect D",
+      "result": "2 0,0,30,40 0-40:0-30;"
+    },
+    {
+      "function": "rect",
+      "args": "rect D",
+      "result": "1 0,0,30,40"
+    },
+    {
+      "function": "update",
+      "args": "rect E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "paint",
+      "args": "rect P",
+      "result": "0,0,130,60 erase 0 clip 3 0,0,130,60"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rect K",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rect K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rect K",
+      "result": "0,0,60,40 erase 0 clip 3 0,0,60,40"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rect G",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rect G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rect G",
+      "result": "0,0,20,15 erase 0 clip 2 0,0,20,15"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rect D",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rect D",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rect D",
+      "result": "0,0,30,40 erase 0 clip 3 -100,-10,30,50"
+    },
+    {
+      "function": "update",
+      "args": "rect painted P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect painted P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rect painted K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect painted K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rect painted G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect painted G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rect painted D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect painted D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rect painted E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rect painted E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "null P",
+      "result": "2 0,0,200,120 0-120:0-200;"
+    },
+    {
+      "function": "rect",
+      "args": "null P",
+      "result": "1 0,0,200,120"
+    },
+    {
+      "function": "update",
+      "args": "null K",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "null K",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "null G",
+      "result": "2 0,0,20,15 0-15:0-20;"
+    },
+    {
+      "function": "rect",
+      "args": "null G",
+      "result": "1 0,0,20,15"
+    },
+    {
+      "function": "update",
+      "args": "null D",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "null D",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "null E",
+      "result": "2 0,0,30,30 0-30:0-30;"
+    },
+    {
+      "function": "rect",
+      "args": "null E",
+      "result": "1 0,0,30,30"
+    },
+    {
+      "function": "erase",
+      "args": "null P",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "null P",
+      "result": "0,0,200,120 erase 0 clip 3 0,0,200,120"
+    },
+    {
+      "function": "ncpaint",
+      "args": "null K",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "null K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "null K",
+      "result": "0,0,60,40 erase 0 clip 3 0,0,60,40"
+    },
+    {
+      "function": "ncpaint",
+      "args": "null G",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "null G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "null G",
+      "result": "0,0,20,15 erase 0 clip 2 0,0,20,15"
+    },
+    {
+      "function": "ncpaint",
+      "args": "null D",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "null D",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "null D",
+      "result": "0,0,60,40 erase 0 clip 3 -100,-10,100,110"
+    },
+    {
+      "function": "ncpaint",
+      "args": "null E",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "null E",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "null E",
+      "result": "0,0,30,30 erase 0 clip 2 0,0,30,30"
+    },
+    {
+      "function": "update",
+      "args": "null painted P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "null painted P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "null painted K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "null painted K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "null painted G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "null painted G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "null painted D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "null painted D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "null painted E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "null painted E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn P",
+      "result": "3 20,20,200,120 20-40:20-40;100-120:180-200;"
+    },
+    {
+      "function": "rect",
+      "args": "rgn P",
+      "result": "1 20,20,200,120"
+    },
+    {
+      "function": "update",
+      "args": "rgn K",
+      "result": "2 10,10,30,30 10-30:10-30;"
+    },
+    {
+      "function": "rect",
+      "args": "rgn K",
+      "result": "1 10,10,60,40"
+    },
+    {
+      "function": "update",
+      "args": "rgn G",
+      "result": "2 5,5,20,15 5-15:5-20;"
+    },
+    {
+      "function": "rect",
+      "args": "rgn G",
+      "result": "1 5,5,20,15"
+    },
+    {
+      "function": "update",
+      "args": "rgn D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn E",
+      "result": "2 10,10,30,30 10-30:10-30;"
+    },
+    {
+      "function": "rect",
+      "args": "rgn E",
+      "result": "1 0,0,30,30"
+    },
+    {
+      "function": "paint",
+      "args": "rgn P",
+      "result": "20,20,200,120 erase 0 clip 3 20,20,200,120"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rgn K",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rgn K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rgn K",
+      "result": "10,10,30,30 erase 0 clip 2 10,10,30,30"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rgn G",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rgn G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rgn G",
+      "result": "5,5,20,15 erase 0 clip 2 5,5,20,15"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rgn E",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "rgn E",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "rgn E",
+      "result": "10,10,30,30 erase 0 clip 2 10,10,30,30"
+    },
+    {
+      "function": "update",
+      "args": "rgn painted P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn painted P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn painted K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn painted K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn painted G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn painted G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn painted D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn painted D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "rgn painted E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "rgn painted E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "clip Q",
+      "result": "2 0,0,200,120 0-120:0-200;"
+    },
+    {
+      "function": "rect",
+      "args": "clip Q",
+      "result": "1 0,0,200,120"
+    },
+    {
+      "function": "update",
+      "args": "clip L",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "clip L",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "clip M",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "clip M",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "paint",
+      "args": "clip Q",
+      "result": "0,0,200,120 erase 0 clip 3 0,0,200,120"
+    },
+    {
+      "function": "update",
+      "args": "clip painted Q",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "clip painted Q",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "clip painted L",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "clip painted L",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "clip painted M",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "clip painted M",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated P",
+      "result": "2 0,0,200,120 0-120:0-200;"
+    },
+    {
+      "function": "rect",
+      "args": "validated P",
+      "result": "1 0,0,200,120"
+    },
+    {
+      "function": "update",
+      "args": "validated K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated D",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "validated D",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "validated E",
+      "result": "2 0,0,30,30 0-30:0-30;"
+    },
+    {
+      "function": "rect",
+      "args": "validated E",
+      "result": "1 0,0,30,30"
+    },
+    {
+      "function": "ncpaint",
+      "args": "validated K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "validated P",
+      "result": "0,0,200,120 erase 0 clip 3 0,0,200,120"
+    },
+    {
+      "function": "ncpaint",
+      "args": "validated D",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "validated D",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "validated D",
+      "result": "0,0,60,40 erase 0 clip 3 -100,-10,100,110"
+    },
+    {
+      "function": "ncpaint",
+      "args": "validated E",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "validated E",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "validated E",
+      "result": "0,0,30,30 erase 0 clip 2 0,0,30,30"
+    },
+    {
+      "function": "update",
+      "args": "validated painted P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated painted P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated painted K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated painted K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated painted G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated painted G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated painted D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated painted D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validated painted E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validated painted E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validate P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validate P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validate K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validate K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validate G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validate G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "validate D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validate D",
+      "result": "1 50,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "validate E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "validate E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "validate D",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "validate D",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "validate D",
+      "result": "50,0,60,40 erase 0 clip 3 50,-10,100,50"
+    },
+    {
+      "function": "update",
+      "args": "hidden H",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "hidden H",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "hidden HK",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "hidden HK",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "hidden H",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "hidden H",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "hidden H",
+      "result": "0,0,50,50 erase 0 clip 2 0,0,50,50"
+    },
+    {
+      "function": "ncpaint",
+      "args": "hidden HK",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "hidden HK",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "hidden HK",
+      "result": "0,0,20,20 erase 0 clip 2 0,0,20,20"
+    },
+    {
+      "function": "update",
+      "args": "hidden shown H",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "hidden shown H",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "hidden shown HK",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "hidden shown HK",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "covered P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "covered P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "covered K",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "covered K",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "covered G",
+      "result": "2 0,0,20,15 0-15:0-20;"
+    },
+    {
+      "function": "rect",
+      "args": "covered G",
+      "result": "1 0,0,20,15"
+    },
+    {
+      "function": "update",
+      "args": "covered D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "covered D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "covered E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "covered E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "erase",
+      "args": "covered K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "covered K",
+      "result": "0,0,60,40 erase 0 clip 3 0,0,60,40"
+    },
+    {
+      "function": "ncpaint",
+      "args": "covered G",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "covered G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "covered G",
+      "result": "0,0,20,15 erase 0 clip 2 0,0,20,15"
+    },
+    {
+      "function": "update",
+      "args": "under P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under K",
+      "result": "2 0,0,60,40 0-40:0-60;"
+    },
+    {
+      "function": "rect",
+      "args": "under K",
+      "result": "1 0,0,60,40"
+    },
+    {
+      "function": "update",
+      "args": "under G",
+      "result": "2 0,0,20,15 0-15:0-20;"
+    },
+    {
+      "function": "rect",
+      "args": "under G",
+      "result": "1 0,0,20,15"
+    },
+    {
+      "function": "update",
+      "args": "under D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "paint",
+      "args": "under K",
+      "result": "0,0,0,0 erase 0 clip 1 0,0,0,0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "under G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "under G",
+      "result": "0,0,0,0 erase 0 clip 1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under painted P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under painted P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under painted K",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under painted K",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under painted G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under painted G",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under painted D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under painted D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "under painted E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "under painted E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "child P",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "child P",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "child K",
+      "result": "2 0,0,10,10 0-10:0-10;"
+    },
+    {
+      "function": "rect",
+      "args": "child K",
+      "result": "1 0,0,10,10"
+    },
+    {
+      "function": "update",
+      "args": "child G",
+      "result": "2 0,0,5,5 0-5:0-5;"
+    },
+    {
+      "function": "rect",
+      "args": "child G",
+      "result": "1 0,0,5,5"
+    },
+    {
+      "function": "update",
+      "args": "child D",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "child D",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "child E",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "rect",
+      "args": "child E",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "erase",
+      "args": "child K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "child K",
+      "result": "0,0,10,10 erase 0 clip 2 0,0,10,10"
+    },
+    {
+      "function": "ncpaint",
+      "args": "child G",
+      "result": "sent"
+    },
+    {
+      "function": "erase",
+      "args": "child G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "child G",
+      "result": "0,0,5,5 erase 0 clip 2 0,0,5,5"
+    }
+  ]
+}
