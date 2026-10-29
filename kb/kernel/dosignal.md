@@ -1,0 +1,26 @@
+---
+kind: function
+module: KERNEL
+name: DOSignal
+ordinal: 139
+summary: Ctrl+Break, from the keyboard driver. It finds the task whose window has the focus and calls the signal handler that task set with SetSigHandler, if it asked for one.
+topics: [kernel-internals, keyboard-driver]
+---
+
+## Observed behaviour
+
+- [[read out]] `KRNL386.EXE` seg1 `612c`-`6173` (`KRNL286.EXE` seg1 `59c5`). No arguments; every register is kept.
+  1. Unless KERNEL found USER's procedures while it started, it does nothing. They are USER's `GetFocus`, `IsWindow` and `GetWindowTask`, ordinals 23, 47 and 224, which KERNEL looks up from its strings `#23`, `#47` and `#224` and keeps at 2ECh, 2F4h and 2F0h (seg1 `b81d`-`b84f`).
+  2. It asks `GetFocus`. With no focus, or a window `IsWindow` refuses, it does nothing (`6140`-`6151`).
+  3. It takes the window's task with `GetWindowTask`. If that task's database has 2 at 24h, the action [[fn:KERNEL.SetSigHandler]] set, it calls the handler at 26h of the database. It pushes nought, then 1, with DS the task's database (`6154`-`6168`).
+- Not yet measured.
+
+## Callers
+
+- [[read out]] `KEYBOARD.DRV` imports it by ordinal and calls it from its keyboard interrupt, through seg10 `03bc`, when scan code 46h comes with Ctrl down, the Break key (KEYBOARD seg10 `0273`-`0283`, `033e`-`034c`). No other file of the installations or the corpus imports it (`kb/data/kernel-callers.json`).
+
+## Implementation
+
+A stub in both engines. WinBox's keyboard driver is its own and does not call it on Ctrl+Break.
+
+**Recommendation: implement with [[fn:KERNEL.SetSigHandler]], or not at all.** Its effect shows only for a task that set a handler with action 2, and no program in the corpus or the installations calls `SetSigHandler`. If one does, Ctrl+Break in WinBox's keyboard input should run this: the focus window's task, and its handler called as above. That is about 30 lines in each engine, with a probe. See [[topic:kernel-internals]].
