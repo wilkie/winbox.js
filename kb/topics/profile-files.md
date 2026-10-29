@@ -50,6 +50,8 @@ Every rule here is from the eight snapshots of the file's bytes, and winbox.js r
 - [[measured]] This happens once, when the file is loaded, and not again while the buffer is held: a value written with its leading spaces stays in the file with them until the file is loaded again, when it too is normalised.
 - [[inferred]] A line feed on its own is not a line ending to this reading, so a file whose lines end in line feeds alone would be one line to it. Not yet measured.
 
+[[read out]] KERNEL writes a changed profile back lazily: at a task switch, before a program's DOS call, at the end of Windows, and when [[fn:KERNEL.WriteOutProfiles]] asks ([[topic:kernel-internals]]). WinBox writes at once, which a program cannot tell apart.
+
 ## What a write leaves in memory
 
 - [[measured]] Straight after a write, the value reads back as it was written, leading spaces and all: `"  both ends"`, though the file holds it unquoted and the reader trims those spaces from anything it parses.

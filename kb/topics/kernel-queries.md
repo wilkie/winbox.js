@@ -43,6 +43,8 @@ winbox.js keeps these beside its own tasks (`src/win16/kernel/task-order.ts`, `c
 
 ## Nothing, in the retail build
 
+The exports no SDK header declares, and who calls each, are mapped in [[topic:kernel-internals]].
+
 `EnableDos`, `DisableDos`, `EnableKernel`, `KbdRst`, `_DEBUGOUTPUT`, `K329` and `ValidateCodeSegments` are bare returns. `LogError` and `LogParamError` tell a debugger through `INT 41h` where one is there, and otherwise do nothing. `GetWinDebugInfo` and `SetWinDebugInfo` answer nought, `DiagQuery` answers nought, and `LimitEmsPages` and `GetCurPID` answer nought. `GetFreeMemInfo` answers FFFFFFFFh in standard mode. [[measured]] [[probe:ktask]] for those that answer anything. KERNEL's ordinals 77 to 80, `Reserved1` to `Reserved4`, hand on to USER's `AnsiNext`, `AnsiPrev`, `AnsiUpper` and `AnsiLower`. `Reserved5` compares two strings without regard to case.
 
 ## Events
@@ -73,7 +75,6 @@ Each type of a module's resources has a handler, which [[fn:KERNEL.LoadResource]
 
 - KERNEL's own prefix in [[fn:KERNEL.GetCurrentPDB]]'s DX.
 - A queue of nought before `InitApp`.
-- The internals only Windows' own parts call.
 - A discardable resource loaded with KERNEL's own handler: Windows leaves it discarded until it is locked; WinBox loads it at once. USER's own resource loads read the resource with no handler.
-- `GlobalMasterHandle`: [[read out]] seg1 `1190`-`119e`, the handle and selector of KERNEL's own block that heads its global heap (the words at 218h and 21Ah of its data), its arenas inside. Measured on Windows: AX the block's handle, its limit 257BFh, its words 0, 0, the count of arenas (one less than TOOLHELP's `wcItems`), the first and last arenas' offsets (80h, E0h), and 4000h. WinBox keeps its blocks itself and has no such block; TOOLHELP answers the walk from them.
+- `GlobalMasterHandle` and the other stubs among KERNEL's internals: their read-outs and what to do with each are in [[topic:kernel-internals]].
 - Windows' own blocks in the first megabyte, between those `GlobalDosAlloc` gives.
