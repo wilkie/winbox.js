@@ -281,6 +281,9 @@ pub const AGREEING: &[&str] = &[
     "ictwrap",
     "undefdl",
     "kintrnl",
+    "gdidm",
+    "gdispool",
+    "gdiint",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

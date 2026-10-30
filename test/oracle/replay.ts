@@ -5951,6 +5951,9 @@ const RUN_WHOLE = new Set<string>([
   'undefdl',
   'kintrnl',
   'emscopy',
+  'gdidm',
+  'gdispool',
+  'gdiint',
 ]);
 
 /**

@@ -18,6 +18,7 @@ pub mod dc_internals;
 pub mod ddb;
 pub mod dib;
 pub mod draw;
+pub mod driver_helpers;
 pub mod engine_font;
 pub mod environment;
 pub mod heap;
@@ -256,6 +257,7 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| engine_font::implementation(name))
                 .or_else(|| priority_queue::implementation(name))
                 .or_else(|| system_exports::implementation(name))
+                .or_else(|| driver_helpers::implementation(name))
                 .or_else(|| visible_region::implementation(name));
         }
     }))
