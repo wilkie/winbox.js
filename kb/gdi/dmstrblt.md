@@ -1,0 +1,33 @@
+---
+kind: function
+module: GDI
+name: DMStrBlt
+ordinal: 211
+summary: DMExtTextOut with no widths, no opaque rectangle and no options -- a printer's driver's plain text on a memory bitmap.
+versions:
+  '3.1': unrecorded
+source: src/win16/gdi/driver-helpers.ts
+topics: [gdi-internals, printer-drivers]
+---
+
+## Observed behaviour
+
+- [[read out]] `DMStrBlt(lpDestDev, DestX, DestY, lpClipRect, lpString, wCount, lpFontInfo, lpDrawMode, lpTextXForm)` takes 30 bytes and answers what [[fn:GDI.DMExtTextOut]] answers for the same arguments.
+
+## Inside Windows
+
+[[read out]] `GDI.EXE` seg13 `00df`: it pushes its own fifteen words again and then five words of nought -- the character widths, the opaque rectangle and the options -- and calls `DMExtTextOut` (seg13 `0000`), returning by `retf 1Eh`. The display drivers' own `StrBlt` is the same push in front of their `ExtTextOut` ([[topic:display-drivers]]).
+
+## Callers
+
+[[read out]] `PSCRIPT.DRV` imports it by ordinal. No program of the corpus does.
+
+## Implementation
+
+As `DMExtTextOut` in both engines: for a device that is not a memory bitmap, GDI's data segment and 34h; for a memory bitmap nought, nothing drawn.
+
+**Recommendation:** with `DMExtTextOut`.
+
+## Not yet done
+
+- The display driver's `ExtTextOut` on a memory bitmap ([[topic:gdi-internals]]).
