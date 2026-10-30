@@ -250,7 +250,12 @@ pub(crate) fn is_break(font: &LogicalFont, code: u8) -> bool {
 /// What justification adds to a string's extent, the term moved on as
 /// measuring moves it: not at all for a bitmap font, once over the string
 /// for a font GDI draws.
-fn justified_extent(system: &mut System, index: usize, font: &LogicalFont, text: &[u8]) -> i64 {
+pub(crate) fn justified_extent(
+    system: &mut System,
+    index: usize,
+    font: &LogicalFont,
+    text: &[u8],
+) -> i64 {
     let Some(state) = system.gdi.dcs[index].state.justification else {
         return 0;
     };

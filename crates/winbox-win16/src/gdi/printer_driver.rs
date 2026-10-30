@@ -141,6 +141,9 @@ pub struct Drivers {
     /// The context whose font the driver is realizing, for GDI's TrueType
     /// engine (`[064Eh]`, `engine_font.rs`).
     pub realizing: Option<usize>,
+    /// GDI's TrueType engine's context, as a driver last set it
+    /// (`engine_glyphs.rs`).
+    pub engine: Option<super::engine_glyphs::EngineContext>,
 }
 
 /// A name as GDI's atom keeps it: compared without case.
@@ -1176,6 +1179,38 @@ fn logfont_given(logfont: &LogFont) -> Vec<u8> {
     bytes
 }
 
+/// Where the logical font selected stands in GDI's table of realized
+/// fonts, by the device, the font object and the size (seg1 `3e86`): a
+/// device's contexts share what was realized for it. The key, the
+/// `LOGFONT` as the driver is given it, and the entry where the font has
+/// been realized for the device. As `keptDeviceFont`.
+pub fn kept_device_font(
+    system: &mut System,
+    dc: usize,
+) -> Option<(FontKey, LogFont, Option<DeviceFont>)> {
+    let object = system.gdi.dcs[dc].state.font?;
+    let mut logfont = logfont_of(system, object)?;
+
+    if matches!(
+        system.gdi.objects[object],
+        GdiObject::Font(Font::Made { .. })
+    ) {
+        (logfont.height, logfont.width) = mapped_size(system, dc, &logfont);
+    }
+
+    let &id = system.printing.drivers.contexts.get(&dc)?;
+    let key = (id, object, logfont.height, logfont.width);
+    let kept = system
+        .printing
+        .drivers
+        .fonts
+        .iter()
+        .find(|(held, _)| *held == key)
+        .map(|(_, kept)| kept.clone());
+
+    Some((key, logfont, kept))
+}
+
 /// The logical font selected, realized by the driver (`GDI.EXE` seg3
 /// `0a68`): its `LOGFONT` copied, `lfClipPrecision`'s high bits left off,
 /// the driver's `RealizeObject` asked the size of its `FONTINFO` with
@@ -1189,36 +1224,12 @@ fn logfont_given(logfont: &LogFont) -> Vec<u8> {
 pub async fn device_font(engine: &Engine, dc: usize) -> Result<Option<DeviceFont>, Stop> {
     let (realize, lp_pdevice, bytes, key) = {
         let mut system = engine.system();
-        let Some(object) = system.gdi.dcs[dc].state.font else {
-            return Ok(None);
-        };
-        let Some(mut logfont) = logfont_of(&mut system, object) else {
+        let Some((key, logfont, kept)) = kept_device_font(&mut system, dc) else {
             return Ok(None);
         };
 
-        if matches!(
-            system.gdi.objects[object],
-            GdiObject::Font(Font::Made { .. })
-        ) {
-            (logfont.height, logfont.width) = mapped_size(&system, dc, &logfont);
-        }
-
-        let Some(&id) = system.printing.drivers.contexts.get(&dc) else {
-            return Ok(None);
-        };
-        // GDI's table of realized fonts, by the device, the font and the
-        // size (seg1 `3e86`): a device's contexts share what was realized
-        // for it.
-        let key = (id, object, logfont.height, logfont.width);
-
-        if let Some((_, kept)) = system
-            .printing
-            .drivers
-            .fonts
-            .iter()
-            .find(|(held, _)| *held == key)
-        {
-            return Ok(Some(kept.clone()));
+        if let Some(kept) = kept {
+            return Ok(Some(kept));
         }
 
         let Some(pdevice) = device_of(&system, dc) else {

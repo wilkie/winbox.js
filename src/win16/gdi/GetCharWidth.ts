@@ -34,6 +34,13 @@ export function GetCharWidth(hdc, wFirstChar, wLastChar, lpBuffer) {
     return FALSE;
   }
 
+  /* A printer's context asks its driver (`GDI.EXE` seg3 `2116`). */
+  if (surface.driverDevice) {
+    return import('./printer-output.js').then(({ driverCharWidth }) =>
+      driverCharWidth(this, surface, wFirstChar, wLastChar, lpBuffer)
+    );
+  }
+
   const font = surface.font;
 
   if (!(font instanceof LogicalFont) && !(font instanceof BitmapFont)) {

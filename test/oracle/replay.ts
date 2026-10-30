@@ -5556,13 +5556,16 @@ export const KNOWN_GAPS: Record<string, string> = {
   'ttqmap:kern': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
-  'gdimisc:physfont':
-    'GetPhysicalFontHandle is a stub: WinBox keeps no realized font object for a context to name',
-  'prtt:extent':
-    "the PostScript driver's GetTextExtent of a TrueType face it downloads through GDI's engine answers no width",
-  'prtt:size': 'the document differs where the downloaded face does',
-  'prtt:line':
-    "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
+  /* The PostScript driver names a face it downloads by the global atom it
+   * adds for the face's key, which starts with a selector
+   * (`PSCRIPT.DRV` seg9 `0ba3`, `170a`): WinBox numbers global atoms from
+   * C000h and gives other selectors (`kb/topics/atoms.md`). Every glyph and
+   * the document's size agree. */
+  'prtt:line': "the downloaded face's name is a global atom, and its key a selector",
+  /* `kb/gdi/enginegetglyphbmp.md`: a turned glyph's advance and a slanted
+   * glyph's box, three of the 52. */
+  'prtteng:EngineGetGlyphBmp':
+    "the engine's advance of a glyph turned or slanted, and a slanted glyph's box, at one size each",
 };
 
 /**
@@ -5942,6 +5945,7 @@ const RUN_WHOLE = new Set<string>([
   'invchild',
   'popmax',
   'ictwrap',
+  'prtteng',
 ]);
 
 /**

@@ -279,6 +279,7 @@ pub const AGREEING: &[&str] = &[
     "vislock",
     "invchild",
     "ictwrap",
+    "gdimisc",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

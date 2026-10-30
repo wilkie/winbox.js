@@ -19,12 +19,14 @@ pub mod ddb;
 pub mod dib;
 pub mod draw;
 pub mod engine_font;
+pub mod engine_glyphs;
 pub mod environment;
 pub mod heap;
 pub mod mapping;
 pub mod metafile;
 pub mod objects;
 pub mod palettes;
+pub mod physical_font;
 pub mod printer_bands;
 pub mod printer_blits;
 pub mod printer_driver;
@@ -83,6 +85,10 @@ pub struct Gdi {
     /// The objects `MakeObjectPrivate` has marked private to the system:
     /// flag 2000h of each one's header in Windows (`system_exports.rs`).
     pub private: std::collections::HashSet<crate::handles::Object>,
+    /// The block kept for each font object a display's context has been
+    /// asked the physical font of, by the object's index
+    /// (`physical_font.rs`).
+    pub physical_fonts: Vec<(usize, u16)>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
@@ -254,6 +260,8 @@ pub(crate) fn base_implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| spooler::implementation(name))
                 .or_else(|| environment::implementation(name))
                 .or_else(|| engine_font::implementation(name))
+                .or_else(|| engine_glyphs::implementation(name))
+                .or_else(|| physical_font::implementation(name))
                 .or_else(|| priority_queue::implementation(name))
                 .or_else(|| system_exports::implementation(name))
                 .or_else(|| visible_region::implementation(name));

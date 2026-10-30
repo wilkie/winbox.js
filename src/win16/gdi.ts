@@ -224,6 +224,15 @@ import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
 import { MulDiv } from './gdi/MulDiv.js';
 import { EngineDeleteFont, EngineEnumerateFont, EngineRealizeFont } from './gdi/engine-font.js';
+import {
+  ConvertOutlineFontFile,
+  EngineExtTextOut,
+  EngineGetCharWidth,
+  EngineGetGlyphBmp,
+  EngineMakeFontDir,
+  EngineSetFontContext,
+} from './gdi/engine-glyphs.js';
+import { GetPhysicalFontHandle } from './gdi/physical-font.js';
 import { GetEnvironment, SetEnvironment } from './gdi/environment.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { GetTextColor, SetTextColor } from './gdi/SetTextColor.js';
@@ -680,10 +689,16 @@ export class Gdi extends Module {
       [EngineEnumerateFont, 'EngineEnumerateFont', 12, [LPCSTR, FARPTR, DWORD], INT],
       [EngineDeleteFont, 'EngineDeleteFont', 4, [FARPTR], INT],
       [EngineRealizeFont, 'EngineRealizeFont', 12, [FARPTR, FARPTR, FARPTR], DWORD],
-      [Gdi.stub, 'EngineGetCharWidth', 12],
-      [Gdi.stub, 'EngineSetFontContext', 6], // TODO: this errored by disassembler
-      [Gdi.stub, 'EngineGetGlyphBmp', 22],
-      [Gdi.stub, 'EngineMakeFontDir', 10],
+      [EngineGetCharWidth, 'EngineGetCharWidth', 12, [FARPTR, UINT, UINT, FARPTR], INT],
+      [EngineSetFontContext, 'EngineSetFontContext', 6, [FARPTR, UINT], DWORD],
+      [
+        EngineGetGlyphBmp,
+        'EngineGetGlyphBmp',
+        22,
+        [HDC, FARPTR, UINT, UINT, FARPTR, DWORD, FARPTR],
+        DWORD,
+      ],
+      [EngineMakeFontDir, 'EngineMakeFontDir', 10, [UINT, FARPTR, LPCSTR], DWORD],
       [GetCharABCWidths, 'GetCharAbcWidths', 10, [HDC, UINT, UINT, FARPTR], BOOL],
       [GetOutlineTextMetrics, 'GetOutlineTextMetrics', 8, [HDC, UINT, FARPTR], UINT],
       [
@@ -702,9 +717,15 @@ export class Gdi extends Module {
         BOOL,
       ],
       [GetFontData, 'GetFontData', 18, [HDC, DWORD, DWORD, FARPTR, DWORD], DWORD],
-      [Gdi.stub, 'ConvertOutlineFontFile', 12],
+      [ConvertOutlineFontFile, 'ConvertOutlineFontFile', 12, [FARPTR, FARPTR, FARPTR], UINT],
       [GetRasterizerCaps, 'GetRasterizerCaps', 6, [[RASTERIZER_STATUS], INT], BOOL],
-      [Gdi.stub, 'EngineExtTextOut', 42],
+      [
+        EngineExtTextOut,
+        'EngineExtTextOut',
+        42,
+        [HDC, FARPTR, INT, INT, FARPTR, FARPTR, INT, FARPTR, FARPTR, FARPTR, FARPTR, FARPTR, UINT],
+        DWORD,
+      ],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -746,7 +767,7 @@ export class Gdi extends Module {
       // 350 //
       [GetCharWidth, 'GetCharWidth', 10, [HDC, UINT, UINT, FARPTR], BOOL],
       [ExtTextOut, 'ExtTextOut', 22, [HDC, INT, INT, UINT, FARPTR, LPCSTR, UINT, FARPTR], BOOL],
-      [Gdi.stub, 'GetPhysicalFontHandle', 2],
+      [GetPhysicalFontHandle, 'GetPhysicalFontHandle', 2, [HDC], HANDLE],
       [GetAspectRatioFilter, 'GetAspectRatioFilter', 2, [HDC], DWORD],
       [Gdi.stub, 'ShrinkGDIHeap', 0],
       [Gdi.stub, 'FTrapping0'], // TODO: floating-point instructions

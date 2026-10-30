@@ -1002,8 +1002,18 @@ export class Surface {
    * a scratch surface, and read back.
    */
   glyphOutline(code) {
-    const font: any = this._font;
+    return Surface.glyphOf(this._font, code);
+  }
 
+  /**
+   * One character of an outline font as GDI's TrueType engine answers for
+   * it, upright or turned by `turn` tenths of a degree -- the angle a
+   * printer's driver sets the engine's context to (`EngineSetFontContext`).
+   * Turned, the box is the ink's, the corner is measured from the baseline's
+   * origin as the text would be drawn, and the advance is carried along the
+   * baseline, each part rounded away from nought.
+   */
+  static glyphOf(font: any, code: number, turn = 0) {
     if (!font?.outline) {
       return null;
     }
@@ -1012,12 +1022,17 @@ export class Surface {
     const synthesised = (style.weight ?? 0) > 550 && !style.faceBold;
     const upright = Object.create(font, {
       style: { value: { ...style, weight: synthesised ? 400 : style.weight } },
-      escapement: { value: 0 },
+      escapement: { value: turn },
     });
 
-    const size = Math.max(64, font.ppem * 4);
-    const pad = Math.floor(size / 4);
+    const size = Math.max(64, font.ppem * (turn ? 6 : 4));
+    const pad = Math.floor(size / (turn ? 2 : 4));
     const scratch: any = Surface.offscreen(size, size);
+    const radians = (turn * Math.PI) / 1800;
+    const fixed = (value) => Math.round(value * 65536) / 65536;
+    const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+    const pathSine = fixed(Math.sin(radians));
+    const pathCosine = turn ? fixed(Math.cos(radians)) : 1;
 
     scratch.font = upright;
     scratch.backMode = 1;
@@ -1045,17 +1060,22 @@ export class Surface {
     }
 
     const advance = font.outlineAdvance(code);
+    const base = turn
+      ? scratch.turnedBase(pad, pad, String.fromCharCode(code), undefined, pathSine, pathCosine)
+      : { x: pad, y: pad + style.ascent };
+    const advanceX = turn ? away(advance * pathCosine) : advance;
+    const advanceY = turn ? away(advance * pathSine) : 0;
 
     /* Across, the box is the scan converter's, which can carry a blank column
      * the ink does not reach -- Times New Roman's `A` at sixteen is ten wide
      * with nine columns inked. See FONTS.md section 9. */
-    if (right >= 0 && scratch._glyphBox) {
+    if (right >= 0 && scratch._glyphBox && !turn) {
       left = scratch._glyphBox.left;
       right = scratch._glyphBox.right - 1;
     }
 
     if (right < 0) {
-      return { width: 0, height: 0, originX: 0, originY: 0, advance, rows: [] };
+      return { width: 0, height: 0, originX: 0, originY: 0, advance, advanceX, advanceY, rows: [] };
     }
 
     const rows: number[][] = [];
@@ -1073,9 +1093,11 @@ export class Surface {
     return {
       width: right - left + 1,
       height: bottom - top + 1,
-      originX: left - pad,
-      originY: pad + style.ascent - top,
+      originX: left - base.x,
+      originY: base.y - top,
       advance,
+      advanceX,
+      advanceY,
       rows,
     };
   }

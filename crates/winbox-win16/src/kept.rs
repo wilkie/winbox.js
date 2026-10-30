@@ -4003,26 +4003,26 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EngineGetCharWidth",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "EngineSetFontContext",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "EngineGetGlyphBmp",
                 pops: 22,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "EngineMakeFontDir",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GetCharAbcWidths",
@@ -4057,8 +4057,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ConvertOutlineFontFile",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetRasterizerCaps",
@@ -4069,8 +4069,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "EngineExtTextOut",
                 pops: 42,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4297,8 +4297,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetPhysicalFontHandle",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetAspectRatioFilter",

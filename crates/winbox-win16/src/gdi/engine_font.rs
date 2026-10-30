@@ -189,14 +189,42 @@ fn realize_true_type(system: &mut System, logfont: u32, transform: u32, font_inf
     put8(system, 0x1f, stub.default_char);
     put8(system, 0x20, stub.break_char);
     put16(system, 0x27, 0x6e);
+
+    // The underline's and the strike-out's places and thicknesses, scaled
+    // from the face's `post` and `OS/2` (`2421`-`24a6`), each thickness 1
+    // where it comes to nought, and each place made a distance down from
+    // the top of the cell (`2522`-`2532`).
+    let scaled = |value: f64| mul_div(value as i32, ppem, em);
+    let outline = &found.font;
+    let or_one = |value: i32| if value == 0 { 1 } else { value };
+
+    put16(system, 0x34, ascent - scaled(outline.underline_position()));
+    put16(system, 0x36, or_one(scaled(outline.underline_thickness())));
+    put16(system, 0x38, ascent - scaled(outline.strikeout_position()));
+    put16(system, 0x3a, or_one(scaled(outline.strikeout_size())));
     put8(
         system,
         0x33,
         (if made { 4 } else { 0 }) | (if angle != 0 { 0x10 } else { 0 }) | 0x80,
     );
+    // What the engine keeps of the face beyond the header (`23f7`-`24d9`):
+    // its slot in GDI's TrueType table (3Ch), its em in font units (3Eh),
+    // the device's spot sizes from its `GDIINFO`, 60h to 66h (40h), and the
+    // offset its characters are found at (4Eh). The far pointer to the
+    // face's file at 50h is not kept.
+    let slot = system.fonts().true_type_slot(&stub).unwrap_or(0) as i32;
+
+    put16(system, 0x3c, slot);
+    put16(system, 0x3e, em);
+
+    for offset in (0..8).step_by(2) {
+        put16(system, 0x40 + offset, caps_word(0x60 + offset as usize));
+    }
+
     put16(system, 0x48, angle);
     put16(system, 0x4a, scale);
     put16(system, 0x4c, ppem);
+    put16(system, 0x4e, i32::from(stub.char_offset));
 
     // The face's name, the program's own spelling where it names the face
     // or its full name (seg3 `2c36`).
@@ -240,6 +268,22 @@ fn realize_true_type(system: &mut System, logfont: u32, transform: u32, font_inf
             0,
         ]);
         system.write_far(transform, &xform);
+    }
+
+    // The engine's context set to the font at its escapement, and what the
+    // rasterizer says of it kept: bit 1 of its answer as bit 5 of the flags,
+    // -1 failing the realization (`2549`-`256b`). Nought, for every font
+    // recorded.
+    let context = super::engine_glyphs::set_context(system, font_info, angle as u16);
+
+    if context == 0xffff_ffff {
+        return 0;
+    }
+
+    if context & 2 != 0 {
+        let flags = system.read_far(at(0x33), 1)[0];
+
+        put8(system, 0x33, flags | 0x20);
     }
 
     0x96

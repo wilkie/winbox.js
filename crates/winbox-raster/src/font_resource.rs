@@ -47,6 +47,11 @@ pub struct FontResource {
     pub last_char: u8,
     pub default_char: u8,
     pub break_char: u8,
+    /// `dfReserved`'s high word, which GDI's TrueType table keeps at 24h of
+    /// the face's entry (`GDI.EXE` seg2 `105a`) and its engine adds to each
+    /// character to find its glyph (seg7 `0a13`): F000h for a face whose
+    /// characters start at F020h, nought for the others.
+    pub char_offset: u16,
     /// The family, full and style names the stub carries past its entry.
     pub family: String,
     pub full_name: String,
@@ -209,6 +214,7 @@ pub fn read_font_resource(bytes: &[u8]) -> Option<FontResource> {
         last_char: view.byte(info + 96)?,
         default_char: view.byte(info + 97)?,
         break_char: view.byte(info + 98)?,
+        char_offset: view.word(info + 111)?,
         family: string(1),
         full_name: string(2),
         style: string(3),

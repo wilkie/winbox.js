@@ -228,6 +228,13 @@ export class FontManager {
     });
   }
 
+  /** Where a stub's face stands in GDI's TrueType table, -1 where it is not there. */
+  trueTypeSlot(resource: FontResource) {
+    const name = String(resource?.fullName ?? '').toLowerCase();
+
+    return (this._slots ?? []).findIndex((slot) => slot?.fullName?.toLowerCase() === name);
+  }
+
   /** A stub's slot: the first a font removed left empty, else a new one at the end (seg2 `0f2c`). */
   fillSlot(resource: FontResource) {
     const slots = (this._slots ??= []);
