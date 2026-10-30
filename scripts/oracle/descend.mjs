@@ -14,7 +14,7 @@ import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { readNE } from './ne.mjs';
 
-const IMAGE = 'oracle/build/drive-c/WINDOWS/SYSTEM/GDI.EXE';
+const IMAGE = process.env.IMAGE ?? 'oracle/build/drive-c/WINDOWS/SYSTEM/GDI.EXE';
 const SCRATCH = process.env.SCRATCH ?? '/tmp';
 
 /** Instructions that end a run: control does not fall through them. */
