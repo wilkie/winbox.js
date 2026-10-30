@@ -1,0 +1,479 @@
+{
+  "probe": "gdispool",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "broadcast",
+      "args": "2",
+      "result": "1"
+    },
+    {
+      "function": "query",
+      "args": "job 30",
+      "result": "1"
+    },
+    {
+      "function": "query",
+      "args": "job 0",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 29",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 31",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 4100",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -6 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -5 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -4 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -3 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -2 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given -1 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "given 0 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "small block 30",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "big block 30",
+      "result": "1"
+    },
+    {
+      "function": "spooljob",
+      "args": "disk space 1b",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 4100",
+      "result": "1"
+    },
+    {
+      "function": "query",
+      "args": "nought 4100",
+      "result": "1"
+    },
+    {
+      "function": "spooljob",
+      "args": "disk space 1b",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 4100",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "disk space 1b",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 4100",
+      "result": "1"
+    },
+    {
+      "function": "spooljob",
+      "args": "no window 15",
+      "result": "0"
+    },
+    {
+      "function": "query",
+      "args": "job 4100",
+      "result": "0"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 10",
+      "result": "10"
+    },
+    {
+      "function": "call",
+      "args": "EndSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 300",
+      "result": "300"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "deleted",
+      "result": "256 50713 70616765206f6e650d0a4142434445464748494a4b4c4d4e"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 5",
+      "result": "5"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage again",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 7",
+      "result": "7"
+    },
+    {
+      "function": "call",
+      "args": "EndSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "broadcast",
+      "args": "2",
+      "result": "2"
+    },
+    {
+      "function": "call",
+      "args": "CloseJob",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "closed",
+      "result": "256 50226 48494a4b4c4d4e650d0a4142434445464748494a4b4c4d4e"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage closed",
+      "result": "-3"
+    },
+    {
+      "function": "query",
+      "args": "closed 30",
+      "result": "0"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -6",
+      "result": "-3"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -5",
+      "result": "-5"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -4",
+      "result": "-4"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -3",
+      "result": "-3"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -2",
+      "result": "-2"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage -1",
+      "result": "-1"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage 0",
+      "result": "-3"
+    },
+    {
+      "function": "spooljob",
+      "args": "window 15",
+      "result": "0"
+    },
+    {
+      "function": "broadcast",
+      "args": "2",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 300",
+      "result": "300"
+    },
+    {
+      "function": "call",
+      "args": "EndSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "StartSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 10",
+      "result": "10"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 300",
+      "result": "300"
+    },
+    {
+      "function": "call",
+      "args": "DeleteSpoolPage",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "deleted",
+      "result": "512 3906 4142434445464748494a4b4c4d4e4f505152535455565758"
+    },
+    {
+      "function": "call",
+      "args": "WriteSpool 10",
+      "result": "10"
+    },
+    {
+      "function": "broadcast",
+      "args": "2",
+      "result": "2"
+    },
+    {
+      "function": "call",
+      "args": "CloseJob",
+      "result": "1"
+    },
+    {
+      "function": "file",
+      "args": "closed",
+      "result": "512 11537 4142434445464748494a4b4c4d4e4f505152535455565758"
+    },
+    {
+      "function": "spoolfile",
+      "args": "no queue",
+      "result": "-1"
+    },
+    {
+      "function": "spooljob",
+      "args": "readied 19",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "again 1f",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "readied 19",
+      "result": "1"
+    },
+    {
+      "function": "spooljob",
+      "args": "queues 1d",
+      "result": "1"
+    },
+    {
+      "function": "spooljob",
+      "args": "timeout 20",
+      "result": "45000"
+    },
+    {
+      "function": "spooljob",
+      "args": "timeout 21",
+      "result": "15000"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 7b 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "queue",
+      "result": "block 352 same 1 query 0,1"
+    },
+    {
+      "function": "freed",
+      "args": "queue",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 7b 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "queue no colon",
+      "result": "block 352 same 1 query 0,1"
+    },
+    {
+      "function": "freed",
+      "args": "queue no colon",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 7b 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "other printer",
+      "result": "block 352 same 1 query 0,1"
+    },
+    {
+      "function": "freed",
+      "args": "other printer",
+      "result": "0"
+    },
+    {
+      "function": "spoolfile",
+      "args": "other port",
+      "result": "-1"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 0 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "missing file",
+      "result": "block 352 same 1 query 0,1"
+    },
+    {
+      "function": "freed",
+      "args": "missing file",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 7b 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "refused",
+      "result": "-1"
+    },
+    {
+      "function": "freed",
+      "args": "refused",
+      "result": "0"
+    },
+    {
+      "function": "message",
+      "args": "1001",
+      "result": "block 352 long 0 words 1 1 7 0 0 0 7b 0 name Probe document page 224"
+    },
+    {
+      "function": "spoolfile",
+      "args": "refused low",
+      "result": "block 352 same 1 query 0,1"
+    },
+    {
+      "function": "freed",
+      "args": "refused low",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "no window 15",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "again 1f",
+      "result": "0"
+    },
+    {
+      "function": "spoolfile",
+      "args": "spooler off",
+      "result": "-1"
+    },
+    {
+      "function": "printman",
+      "args": "running",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "again 1f",
+      "result": "0"
+    },
+    {
+      "function": "spooljob",
+      "args": "readied 19",
+      "result": "0"
+    }
+  ]
+}

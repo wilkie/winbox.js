@@ -1,0 +1,5383 @@
+{
+ "generated": "scripts/kb/kernel-callers.mjs",
+ "module": "GDI",
+ "about": "For each GDI export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. `windowsByName` and `corpusByName` are hints only: files importing GetProcAddress that hold the export name as a string of their own.",
+ "installations": [
+  "drive-c",
+  "drive-c-8514",
+  "drive-c-8514s",
+  "drive-c-ega",
+  "drive-c-hercules",
+  "drive-c-svga",
+  "drive-c-vga256",
+  "drive-c-vgaprint",
+  "drive-c-vgasound",
+  "drive-c-xga256",
+  "drive-c-xga256s",
+  "drive-c-xga640"
+ ],
+ "surveyed": {
+  "windowsFiles": 129,
+  "corpusFiles": 62,
+  "corpusPrograms": 37
+ },
+ "variants": {},
+ "notNE": {
+  "LE": [
+   "windows:WINDOWS/EMM386.EXE",
+   "windows:WINDOWS/SMARTDRV.EXE",
+   "windows:WINDOWS/SYSTEM/DVA.386",
+   "windows:WINDOWS/SYSTEM/VADLIBD.386",
+   "windows:WINDOWS/SYSTEM/VDD8514.386",
+   "windows:WINDOWS/SYSTEM/VDDEGA.386",
+   "windows:WINDOWS/SYSTEM/VDDHERC.386",
+   "windows:WINDOWS/SYSTEM/VDDTLI4.386",
+   "windows:WINDOWS/SYSTEM/VDDXGA.386",
+   "windows:WINDOWS/SYSTEM/VSBD.386",
+   "windows:WINDOWS/SYSTEM/VTDAPI.386"
+  ],
+  "W3": [
+   "windows:WINDOWS/SYSTEM/WIN386.EXE"
+  ],
+  "PE": [
+   "windows:WINDOWS/SYSTEM/WING32.DLL"
+  ]
+ },
+ "unreadable": [],
+ "exports": [
+  {
+   "ordinal": 1,
+   "name": "SETBKCOLOR",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/WEPUTIL.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 2,
+   "name": "SETBKMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/WEPUTIL.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 3,
+   "name": "SETMAPMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "simtower/EREG.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 4,
+   "name": "SETROP2",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "brick/BRICK.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cubic/CUBIC.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "invaders/INVADERS.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "trekwar/TREKWAR.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 5,
+   "name": "SETRELABS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 6,
+   "name": "SETPOLYFILLMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "chess/CHESS.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 7,
+   "name": "SETSTRETCHBLTMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 8,
+   "name": "SETTEXTCHARACTEREXTRA",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 9,
+   "name": "SETTEXTCOLOR",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 10,
+   "name": "SETTEXTJUSTIFICATION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 11,
+   "name": "SETWINDOWORG",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 12,
+   "name": "SETWINDOWEXT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 13,
+   "name": "SETVIEWPORTORG",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "simtower/EREG.EXE",
+    "sptvlr/OWL31.DLL",
+    "starmerc/VBRUN300.DLL",
+    "trekwar/TREKWAR.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 14,
+   "name": "SETVIEWPORTEXT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 15,
+   "name": "OFFSETWINDOWORG",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 16,
+   "name": "SCALEWINDOWEXT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 17,
+   "name": "OFFSETVIEWPORTORG",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 18,
+   "name": "SCALEVIEWPORTEXT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 19,
+   "name": "LINETO",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/SETUP.EXE",
+    "starmerc/VBRUN300.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 20,
+   "name": "MOVETO",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/CELLWAR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/SETUP.EXE",
+    "starmerc/VBRUN300.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 21,
+   "name": "EXCLUDECLIPRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 22,
+   "name": "INTERSECTCLIPRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bg/CTL3D.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 23,
+   "name": "ARC",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "jwlthief/JWLTHIEF.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 24,
+   "name": "ELLIPSE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "invaders/INVADERS.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "reversi/REVERSI.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "trekwar/TREKWAR.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 25,
+   "name": "FLOODFILL",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 26,
+   "name": "PIE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 27,
+   "name": "RECTANGLE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "pipe/PIPE.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/TUTSTOMB.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 28,
+   "name": "ROUNDRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/TERMINAL.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "reversi/REVERSI.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 29,
+   "name": "PATBLT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bg/CTL3D.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "mynes/MYNESBB.DLL",
+    "reversi/REVERSI.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 30,
+   "name": "SAVEDC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 31,
+   "name": "SETPIXEL",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/THREED.VBX",
+    "hearts/HEARTS.EXE",
+    "island/ISLAND.EXE",
+    "leapfrog/BWCC.DLL",
+    "missile/MISSILE.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SPTVLR.EXE",
+    "towers/TOWERS.EXE",
+    "tutstomb/CARDS.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 32,
+   "name": "OFFSETCLIPRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "solwin/SOLWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 33,
+   "name": "TEXTOUT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "sptvlr/SETUP.EXE",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 34,
+   "name": "BITBLT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/EGA.DRV",
+    "WINDOWS/SYSTEM/HERCULES.DRV",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SUPERVGA.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/VGA.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 35,
+   "name": "STRETCHBLT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "leapfrog/LEAPFROG.EXE",
+    "pipe/PIPE.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/CARDS.DLL"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 36,
+   "name": "POLYGON",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bogout/BOGOUT.EXE",
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 37,
+   "name": "POLYLINE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "flak/FLAK.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 38,
+   "name": "ESCAPE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE",
+    "simtower/EREGLIB.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/MMSYSTEM.DLL"
+   ],
+   "corpusByName": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ]
+  },
+  {
+   "ordinal": 39,
+   "name": "RESTOREDC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 40,
+   "name": "FILLRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "cribbage/CRIBBAGE.EXE",
+    "fourseas/THREED.VBX",
+    "jwlthief/JWLTHIEF.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 41,
+   "name": "FRAMERGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 42,
+   "name": "INVERTRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "chess/CHESS.EXE",
+    "solwin/SOLWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 43,
+   "name": "PAINTRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 44,
+   "name": "SELECTCLIPRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fourseas/THREED.VBX",
+    "hearts/HEARTS.EXE",
+    "simtower/SIMTOWER.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 45,
+   "name": "SELECTOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/EREGLIB.DLL",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 46,
+   "name": "__GP",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 47,
+   "name": "COMBINERGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "cribbage/CRIBBAGE.EXE",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "roulette/ROULETTE.EXE",
+    "solwin/SOLWIN.EXE",
+    "starmerc/VBRUN300.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 48,
+   "name": "CREATEBITMAP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "simtower/EREG.EXE",
+    "skifree/SKI.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/EGA.DRV",
+    "WINDOWS/SYSTEM/HERCULES.DRV",
+    "WINDOWS/SYSTEM/SUPERVGA.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/VGA.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 49,
+   "name": "CREATEBITMAPINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 50,
+   "name": "CREATEBRUSHINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 51,
+   "name": "CREATECOMPATIBLEBITMAP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "brick/BRICK.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "leapfrog/LEAPFROG.EXE",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 52,
+   "name": "CREATECOMPATIBLEDC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 53,
+   "name": "CREATEDC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "simtower/EREGLIB.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 54,
+   "name": "CREATEELLIPTICRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "roulette/ROULETTE.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 55,
+   "name": "CREATEELLIPTICRGNINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 56,
+   "name": "CREATEFONT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "chess/CHESS.EXE",
+    "fibsw/FIBSW.EXE",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 57,
+   "name": "CREATEFONTINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bogout/BOGOUT.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "roulette/ROULETTE.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 58,
+   "name": "CREATEHATCHBRUSH",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "bubgirl/KNPG.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 59,
+   "name": "WEP",
+   "declaredIn": "_win386.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 60,
+   "name": "CREATEPATTERNBRUSH",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "cellwar/BWCC.DLL",
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "roulette/ROULETTE.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "towers/TOWERS.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 61,
+   "name": "CREATEPEN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "cellwar/CELLWAR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/SETUP.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 62,
+   "name": "CREATEPENINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 63,
+   "name": "CREATEPOLYGONRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "jwlthief/JWLTHIEF.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 64,
+   "name": "CREATERECTRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "cribbage/CRIBBAGE.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hearts/HEARTS.EXE",
+    "solwin/SOLWIN.EXE",
+    "starmerc/VBRUN300.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 65,
+   "name": "CREATERECTRGNINDIRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/TERMINAL.EXE"
+   ],
+   "corpus": [
+    "fourseas/THREED.VBX",
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 66,
+   "name": "CREATESOLIDBRUSH",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 67,
+   "name": "DPTOLP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "cubic/CUBIC.EXE",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL",
+    "tutstomb/TUTSTOMB.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 68,
+   "name": "DELETEDC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/EREGLIB.DLL",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 69,
+   "name": "DELETEOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "concentr/CONCENTR.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "missile/MISSILE.EXE",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 70,
+   "name": "ENUMFONTS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "simtower/SIMTOWER.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 71,
+   "name": "ENUMOBJECTS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 72,
+   "name": "EQUALRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 73,
+   "name": "EXCLUDEVISRECT",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 74,
+   "name": "GETBITMAPBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 75,
+   "name": "GETBKCOLOR",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 76,
+   "name": "GETBKMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 77,
+   "name": "GETCLIPBOX",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "simtower/EREG.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 78,
+   "name": "GETCURRENTPOSITION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 79,
+   "name": "GETDCORG",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "tutstomb/CARDS.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 80,
+   "name": "GETDEVICECAPS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINGDIB.DRV",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/CTL3D.DLL",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "concentr/CONCENTR.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "missile/MISSILE.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 81,
+   "name": "GETMAPMODE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 82,
+   "name": "GETOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "mynes/MYNESBB.DLL",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "skifree/SKI.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 83,
+   "name": "GETPIXEL",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "solwin/SOLWIN.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tutstomb/CARDS.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 84,
+   "name": "GETPOLYFILLMODE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 85,
+   "name": "GETROP2",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 86,
+   "name": "GETRELABS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 87,
+   "name": "GETSTOCKOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/DRWATSON.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINGPAL.WND",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bogout/BOGOUT.EXE",
+    "brick/BRICK.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "caribb/SETUP.EXE",
+    "cellwar/BWCC.DLL",
+    "cellwar/CELLWAR.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "cubic/CUBIC.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "invaders/INVADERS.EXE",
+    "island/ISLAND.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "leapfrog/BWCC.DLL",
+    "mynes/MYNES.EXE",
+    "mynes/MYNESBB.DLL",
+    "pipe/PIPE.EXE",
+    "reversi/REVERSI.EXE",
+    "roulette/ROULETTE.EXE",
+    "simtower/EREG.EXE",
+    "simtower/EREGLIB.DLL",
+    "simtower/SIMTOWER.EXE",
+    "simtower/WAVMIX16.DLL",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "sptvlr/OWL31.DLL",
+    "sptvlr/SETUP.EXE",
+    "sptvlr/SPTVLR.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "trekwar/TREKWAR.EXE",
+    "tutstomb/TUTSTOMB.EXE",
+    "tutstomb/WEPUTIL.DLL",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 88,
+   "name": "GETSTRETCHBLTMODE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 89,
+   "name": "GETTEXTCHARACTEREXTRA",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 90,
+   "name": "GETTEXTCOLOR",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "fourseas/THREED.VBX"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 91,
+   "name": "GETTEXTEXTENT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bg/BG.EXE",
+    "bg/CTL3D.DLL",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "leapfrog/BWCC.DLL",
+    "mynes/MYNES.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/EREG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "solwin/SOLWIN.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 92,
+   "name": "GETTEXTFACE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 93,
+   "name": "GETTEXTMETRICS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bogout/BOGOUT.EXE",
+    "bubgirl/KNPS.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "hearts/CARDS.AD",
+    "hearts/HEARTS.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/EREGLIB.DLL",
+    "simtower/SIMTOWER.EXE",
+    "skifree/SKI.EXE",
+    "starmerc/VBRUN300.DLL",
+    "tetwin/TETWIN.EXE",
+    "towers/TOWERS.EXE",
+    "tutstomb/TUTSTOMB.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 94,
+   "name": "GETVIEWPORTEXT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 95,
+   "name": "GETVIEWPORTORG",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 96,
+   "name": "GETWINDOWEXT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 97,
+   "name": "GETWINDOWORG",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 98,
+   "name": "INTERSECTVISRECT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 99,
+   "name": "LPTODP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "cubic/CUBIC.EXE",
+    "fourseas/THREED.VBX",
+    "fourseas/VBRUN100.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 100,
+   "name": "LINEDDA",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 101,
+   "name": "OFFSETRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "roulette/ROULETTE.EXE",
+    "solwin/SOLWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 102,
+   "name": "OFFSETVISRGN",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 103,
+   "name": "PTVISIBLE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 104,
+   "name": "RECTVISIBLE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 105,
+   "name": "SELECTVISRGN",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 106,
+   "name": "SETBITMAPBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.DLL",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 117,
+   "name": "SETDCORG",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 119,
+   "name": "ADDFONTRESOURCE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 121,
+   "name": "DEATH",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 122,
+   "name": "RESURRECTION",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 123,
+   "name": "PLAYMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 124,
+   "name": "GETMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 125,
+   "name": "CREATEMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 126,
+   "name": "CLOSEMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 127,
+   "name": "DELETEMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 128,
+   "name": "MULDIV",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "wordsrch/WORDSRCH.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 129,
+   "name": "SAVEVISRGN",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 130,
+   "name": "RESTOREVISRGN",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 131,
+   "name": "INQUIREVISRGN",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 132,
+   "name": "SETENVIRONMENT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 133,
+   "name": "GETENVIRONMENT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 134,
+   "name": "GETRGNBOX",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 135,
+   "name": "SCANLR",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/EGA.DRV",
+    "WINDOWS/SYSTEM/HERCULES.DRV",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SUPERVGA.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/VGA.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 136,
+   "name": "REMOVEFONTRESOURCE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 148,
+   "name": "SETBRUSHORG",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "chess/CHESS.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL",
+    "towers/TOWERS.EXE",
+    "tutstomb/CARDS.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 149,
+   "name": "GETBRUSHORG",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 150,
+   "name": "UNREALIZEOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "chess/CHESS.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "leapfrog/BWCC.DLL",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL",
+    "towers/TOWERS.EXE",
+    "tutstomb/CARDS.DLL",
+    "tutstomb/TUTSTOMB.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 151,
+   "name": "COPYMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/SYSTEM/DDEML.DLL",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 153,
+   "name": "CREATEIC",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 154,
+   "name": "GETNEARESTCOLOR",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/SYSTEM/WINOLDAP.MOD",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "jwlthief/JWLTHIEF.EXE",
+    "reversi/REVERSI.EXE",
+    "simtower/SIMTOWER.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 155,
+   "name": "QUERYABORT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 156,
+   "name": "CREATEDISCARDABLEBITMAP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 159,
+   "name": "GETMETAFILEBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 160,
+   "name": "SETMETAFILEBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 161,
+   "name": "PTINREGION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL"
+   ],
+   "corpus": [
+    "chess/CHESS.EXE",
+    "cubic/CUBIC.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 162,
+   "name": "GETBITMAPDIMENSION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 163,
+   "name": "SETBITMAPDIMENSION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 169,
+   "name": "ISDCDIRTY",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 170,
+   "name": "SETDCSTATUS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 172,
+   "name": "SETRECTRGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "solwin/SOLWIN.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 173,
+   "name": "GETCLIPRGN",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 175,
+   "name": "ENUMMETAFILE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/OLECLI.DLL"
+   ],
+   "corpus": [
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 176,
+   "name": "PLAYMETAFILERECORD",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/OLECLI.DLL"
+   ],
+   "corpus": [
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 179,
+   "name": "GETDCSTATE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 180,
+   "name": "SETDCSTATE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 181,
+   "name": "RECTINREGION",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [
+    "roulette/ROULETTE.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 190,
+   "name": "SETDCHOOK",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 191,
+   "name": "GETDCHOOK",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 192,
+   "name": "SETHOOKFLAGS",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 193,
+   "name": "SETBOUNDSRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 194,
+   "name": "GETBOUNDSRECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 195,
+   "name": "SELECTBITMAP",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 196,
+   "name": "SETMETAFILEBITSBETTER",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 201,
+   "name": "DMBITBLT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 202,
+   "name": "DMCOLORINFO",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 206,
+   "name": "DMENUMDFONTS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 207,
+   "name": "DMENUMOBJ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 208,
+   "name": "DMOUTPUT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 209,
+   "name": "DMPIXEL",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 210,
+   "name": "DMREALIZEOBJECT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 211,
+   "name": "DMSTRBLT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 212,
+   "name": "DMSCANLR",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 213,
+   "name": "BRUTE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 214,
+   "name": "DMEXTTEXTOUT",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 215,
+   "name": "DMGETCHARWIDTH",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 216,
+   "name": "DMSTRETCHBLT",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 217,
+   "name": "DMDIBBITS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 218,
+   "name": "DMSTRETCHDIBITS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 219,
+   "name": "DMSETDIBTODEV",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 220,
+   "name": "DMTRANSPOSE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 230,
+   "name": "CREATEPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 231,
+   "name": "MINPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 232,
+   "name": "EXTRACTPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 233,
+   "name": "INSERTPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 234,
+   "name": "SIZEPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 235,
+   "name": "DELETEPQ",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 240,
+   "name": "OPENJOB",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 241,
+   "name": "WRITESPOOL",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 242,
+   "name": "WRITEDIALOG",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 243,
+   "name": "CLOSEJOB",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 244,
+   "name": "DELETEJOB",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 245,
+   "name": "GETSPOOLJOB",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 246,
+   "name": "STARTSPOOLPAGE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 247,
+   "name": "ENDSPOOLPAGE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 248,
+   "name": "QUERYJOB",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 250,
+   "name": "COPY",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 253,
+   "name": "DELETESPOOLPAGE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 254,
+   "name": "SPOOLFILE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 300,
+   "name": "ENGINEENUMERATEFONT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 301,
+   "name": "ENGINEDELETEFONT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 302,
+   "name": "ENGINEREALIZEFONT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 303,
+   "name": "ENGINEGETCHARWIDTH",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 304,
+   "name": "ENGINESETFONTCONTEXT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 305,
+   "name": "ENGINEGETGLYPHBMP",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 306,
+   "name": "ENGINEMAKEFONTDIR",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 307,
+   "name": "GETCHARABCWIDTHS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 308,
+   "name": "GETOUTLINETEXTMETRICS",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 309,
+   "name": "GETGLYPHOUTLINE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 310,
+   "name": "CREATESCALABLEFONTRESOURCE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 311,
+   "name": "GETFONTDATA",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/PSCRIPT.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 312,
+   "name": "CONVERTOUTLINEFONTFILE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 313,
+   "name": "GETRASTERIZERCAPS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 314,
+   "name": "ENGINEEXTTEXTOUT",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 330,
+   "name": "ENUMFONTFAMILIES",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 332,
+   "name": "GETKERNINGPAIRS",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 345,
+   "name": "GETTEXTALIGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 346,
+   "name": "SETTEXTALIGN",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bago/BAGO.EXE",
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "hearts/HEARTS.EXE",
+    "simtower/SIMTOWER.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 348,
+   "name": "CHORD",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "tetwin/TETWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 349,
+   "name": "SETMAPPERFLAGS",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 350,
+   "name": "GETCHARWIDTH",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/EGA.DRV",
+    "WINDOWS/SYSTEM/HERCULES.DRV",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SUPERVGA.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/VGA.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 351,
+   "name": "EXTTEXTOUT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/SYSTEM/SHELL.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "bg/CTL3D.DLL",
+    "bubgirl/KNPS.DLL",
+    "cribbage/CRIBBAGE.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/EGA.DRV",
+    "WINDOWS/SYSTEM/HERCULES.DRV",
+    "WINDOWS/SYSTEM/PSCRIPT.DRV",
+    "WINDOWS/SYSTEM/SUPERVGA.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/VGA.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 352,
+   "name": "GETPHYSICALFONTHANDLE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 353,
+   "name": "GETASPECTRATIOFILTER",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 354,
+   "name": "SHRINKGDIHEAP",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 355,
+   "name": "FTRAPPING0",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 360,
+   "name": "CREATEPALETTE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SETUP.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "simtower/SIMTOWER.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 361,
+   "name": "GDISELECTPALETTE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 362,
+   "name": "GDIREALIZEPALETTE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 363,
+   "name": "GETPALETTEENTRIES",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/PICCLIP.VBX",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "simtower/SIMTOWER.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 364,
+   "name": "SETPALETTEENTRIES",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 365,
+   "name": "REALIZEDEFAULTPALETTE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 366,
+   "name": "UPDATECOLORS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/8514.DRV",
+    "WINDOWS/SYSTEM/SVGA256.DRV",
+    "WINDOWS/SYSTEM/XGA.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 367,
+   "name": "ANIMATEPALETTE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 368,
+   "name": "RESIZEPALETTE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 370,
+   "name": "GETNEARESTPALETTEINDEX",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 372,
+   "name": "EXTFLOODFILL",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 373,
+   "name": "SETSYSTEMPALETTEUSE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 374,
+   "name": "GETSYSTEMPALETTEUSE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 375,
+   "name": "GETSYSTEMPALETTEENTRIES",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpus": [
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 376,
+   "name": "RESETDC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 377,
+   "name": "STARTDOC",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 378,
+   "name": "ENDDOC",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 379,
+   "name": "STARTPAGE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 380,
+   "name": "ENDPAGE",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 381,
+   "name": "SETABORTPROC",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 382,
+   "name": "ABORTDOC",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 400,
+   "name": "FASTWINDOWFRAME",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 401,
+   "name": "GDIMOVEBITMAP",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 403,
+   "name": "GDIINIT2",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 405,
+   "name": "FINALGDIINIT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 407,
+   "name": "CREATEUSERBITMAP",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 409,
+   "name": "CREATEUSERDISCARDABLEBITMAP",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 410,
+   "name": "ISVALIDMETAFILE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 411,
+   "name": "GETCURLOGFONT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 412,
+   "name": "ISDCCURRENTPALETTE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 439,
+   "name": "STRETCHDIBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL",
+    "bubgirl/KNPS.DLL",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/SVGA256.DRV"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 440,
+   "name": "SETDIBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/EGA.3GR",
+    "WINDOWS/SYSTEM/HERC.3GR",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR",
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 441,
+   "name": "GETDIBITS",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/USER.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 442,
+   "name": "CREATEDIBITMAP",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CHARMAP.EXE",
+    "WINDOWS/SYSTEM/COMMDLG.DLL",
+    "WINDOWS/SYSTEM/CPWIN386.CPL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WINHELP.EXE",
+    "WINDOWS/WINTUTOR.EXE"
+   ],
+   "corpus": [
+    "bg/CTL3D.DLL",
+    "cellwar/BWCC.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "fibsw/FIBSW.EXE",
+    "fourseas/VBRUN100.DLL",
+    "fourseas/VBRUN200.DLL",
+    "fourseas/VBRUN300.DLL",
+    "hanoi/HANOI.EXE",
+    "leapfrog/BWCC.DLL",
+    "leapfrog/LEAPFROG.EXE",
+    "sptvlr/BWCC.DLL",
+    "starmerc/VBRUN300.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 443,
+   "name": "SETDIBITSTODEVICE",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/SYSTEM/SVGA256.3GR",
+    "WINDOWS/SYSTEM/V7VGA.3GR",
+    "WINDOWS/SYSTEM/VGADIB.3GR"
+   ],
+   "corpus": [
+    "brick/BRICK.EXE",
+    "jwlthief/JWLTHIEF.EXE",
+    "simtower/SIMTOWER.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 444,
+   "name": "CREATEROUNDRECTRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "cribbage/CRIBBAGE.EXE",
+    "solwin/SOLWIN.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 445,
+   "name": "CREATEDIBPATTERNBRUSH",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 449,
+   "name": "DEVICECOLORMATCH",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 450,
+   "name": "POLYPOLYGON",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 451,
+   "name": "CREATEPOLYPOLYGONRGN",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 452,
+   "name": "GDISEEGDIDO",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 460,
+   "name": "GDITASKTERMINATION",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 461,
+   "name": "SETOBJECTOWNER",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/WING.DLL",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 462,
+   "name": "ISGDIOBJECT",
+   "declaredIn": "win16.h",
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 463,
+   "name": "MAKEOBJECTPRIVATE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 464,
+   "name": "FIXUPBOGUSPUBLISHERMETAFILE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 465,
+   "name": "RECTVISIBLE_EHH",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 466,
+   "name": "RECTINREGION_EHH",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 467,
+   "name": "UNICODETOANSI",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MAIN.CPL"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 468,
+   "name": "GETBITMAPDIMENSIONEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 469,
+   "name": "GETBRUSHORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 470,
+   "name": "GETCURRENTPOSITIONEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 471,
+   "name": "GETTEXTEXTENTPOINT",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE",
+    "wordsrch/WORDSRCH.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 472,
+   "name": "GETVIEWPORTEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 473,
+   "name": "GETVIEWPORTORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 474,
+   "name": "GETWINDOWEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 475,
+   "name": "GETWINDOWORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 476,
+   "name": "OFFSETVIEWPORTORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 477,
+   "name": "OFFSETWINDOWORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 478,
+   "name": "SETBITMAPDIMENSIONEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 479,
+   "name": "SETVIEWPORTEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 480,
+   "name": "SETVIEWPORTORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 481,
+   "name": "SETWINDOWEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 482,
+   "name": "SETWINDOWORGEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 483,
+   "name": "MOVETOEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "champ/INSTALL.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 484,
+   "name": "SCALEVIEWPORTEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 485,
+   "name": "SCALEWINDOWEXTEX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 486,
+   "name": "GETASPECTRATIOFILTEREX",
+   "declaredIn": "win16.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  }
+ ]
+}

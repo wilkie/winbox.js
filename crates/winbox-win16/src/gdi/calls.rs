@@ -8,7 +8,7 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-mod enum_objects;
+pub(crate) mod enum_objects;
 mod escape;
 
 use crate::call::{Answer, Args, Implementation, Stop};

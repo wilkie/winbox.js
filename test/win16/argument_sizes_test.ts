@@ -77,11 +77,29 @@ const MODULES: [any, string][] = [
  * * `DirectedYield` moves its return address over its argument and drops the
  *   word with `ADD SP,2` before it goes on as `Yield`, whose `RETF` takes
  *   nothing (`KRNL386.EXE` seg1 `7cff`): its task handle is two bytes.
+ * * GDI's driver helpers 201 to 219 but `DMEnumDFonts`, `DMStrBlt` and
+ *   `DMExtTextOut` are `mov cx,nnnn` and a jump to `Brute` (seg13
+ *   `0171`), whose plain `RETF` comes after it has moved its caller's
+ *   frame down by 20h bytes and let the display driver's routine take the
+ *   arguments: CL less the four words of the frame is what each takes,
+ *   as the display driver's own routine of that offset does.
  */
 const EXCEPTIONS: Record<string, number> = {
   'KERNEL:56': 6,
   'GDI:310': 14,
   'KERNEL:150': 2,
+  'GDI:201': 32,
+  'GDI:202': 12,
+  'GDI:207': 14,
+  'GDI:208': 28,
+  'GDI:209': 16,
+  'GDI:210': 18,
+  'GDI:212': 14,
+  'GDI:215': 24,
+  'GDI:216': 40,
+  'GDI:217': 26,
+  'GDI:218': 50,
+  'GDI:219': 32,
 };
 
 (existsSync(SYSTEM) ? describe : describe.skip)('argument sizes', () => {

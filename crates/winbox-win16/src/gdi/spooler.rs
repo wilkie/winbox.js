@@ -67,11 +67,39 @@ const IDRETRY: u32 = 4;
 const WN_SUCCESS: u16 = 0;
 const WN_NOT_SUPPORTED: u16 = 1;
 
-/// A port of `[PrinterPorts]`, as GDI keeps it (seg29 `0000`).
+/// A port of `[PrinterPorts]`, as GDI keeps it, 0Ch bytes from `[0934h]`
+/// (seg29 `0000`): the port's and the device's atoms, then the two numbers
+/// after the port, each made milliseconds with a signed multiply -- the
+/// second at +4, the first at +8. A number not there leaves `2AEA540h` at
+/// +4 and `E4E1C0h` at +8, 45 and 15 seconds made milliseconds twice.
 #[derive(Debug, Clone)]
 pub struct Queue {
     pub port: Vec<u8>,
     pub device: Vec<u8>,
+    /// +4, `GetSpoolJob`'s 20h: the second number.
+    pub retry: i32,
+    /// +8, `GetSpoolJob`'s 21h: the first.
+    pub select: i32,
+}
+
+/// What a queue's timeouts are where its value gives no number (seg29
+/// `0051`-`0060`).
+const NO_RETRY: i32 = 45_000_000;
+const NO_SELECT: i32 = 15_000_000;
+
+/// A queue's number of seconds as GDI reads it (seg30 `0310`): the digits
+/// from the field's first character, in a word, stopping at anything else
+/// -- a space before them leaves nought -- then made milliseconds by a
+/// signed multiply (seg29 `0087`).
+fn milliseconds(text: &[u8]) -> i32 {
+    let value = text
+        .iter()
+        .take_while(|byte| byte.is_ascii_digit())
+        .fold(0u16, |value, &byte| {
+            value.wrapping_mul(10).wrapping_add(u16::from(byte - b'0'))
+        });
+
+    i32::from(value as i16) * 1000
 }
 
 /// What GDI reads of WIN.INI as the first job opens (seg29 `00d7`).
@@ -118,11 +146,25 @@ pub fn port_name(text: &[u8]) -> Vec<u8> {
 /// switches, the two timeouts (`0393`), and every port of every printer of
 /// `[PrinterPorts]`, each value a driver and then, after each comma, a port
 /// and its two timeouts (`0000`).
-fn readied(system: &mut System) -> Spooling {
-    if let Some(kept) = &system.printing.spooling {
+pub(crate) fn readied(system: &mut System) -> Spooling {
+    if let Some(kept) = &system.printing.spooling
+        && system.printing.spooler.started
+    {
         return kept.clone();
     }
 
+    read_queues(system)
+}
+
+/// The queues read again from WIN.INI (seg29 `00d7` with 1): what
+/// `GetSpoolJob`'s 1Ch does whether or not they were readied, and the
+/// first job or option 19h once they are not. Their count is kept.
+pub(crate) fn read_queues(system: &mut System) -> Spooling {
+    let comm_error = system
+        .printing
+        .spooling
+        .as_ref()
+        .map_or(0, |kept| kept.comm_error);
     let profile = system.read_profile(b"WIN.INI");
     let value = |section: &[u8], key: &[u8]| profile.get(section, key, true).unwrap_or_default();
     let mut queues = Vec::new();
@@ -140,11 +182,19 @@ fn readied(system: &mut System) -> Spooling {
 
         // After the driver: a port, then its two timeouts, then perhaps
         // another port and its timeouts.
-        for field in rest.split(|&byte| byte == b',').step_by(3) {
+        let fields: Vec<&[u8]> = rest.split(|&byte| byte == b',').collect();
+
+        for at in (0..fields.len()).step_by(3) {
             if queues.len() < 20 {
                 queues.push(Queue {
-                    port: port_name(field),
+                    port: port_name(fields[at]),
                     device: device.clone(),
+                    retry: fields
+                        .get(at + 2)
+                        .map_or(NO_RETRY, |text| milliseconds(text)),
+                    select: fields
+                        .get(at + 1)
+                        .map_or(NO_SELECT, |text| milliseconds(text)),
                 });
             }
         }
@@ -168,9 +218,11 @@ fn readied(system: &mut System) -> Spooling {
         queues,
         select_timeout: seconds(b"DeviceNotSelectedTimeout", 15),
         retry_timeout: seconds(b"TransmissionRetryTimeout", 45),
-        comm_error: 0,
+        comm_error,
     };
 
+    system.printing.spooler.started = true;
+    system.printing.spooler.queues = spooling.queues.len() as u32;
     system.printing.spooling = Some(spooling.clone());
     spooling
 }
@@ -1535,6 +1587,307 @@ fn query_abort_call(engine: &Engine, mut args: Args) -> Later<'_> {
     })
 }
 
+const SP_QUERYVALIDJOB: u16 = 30;
+const SP_QUERYDISKAVAIL: u16 = 0x1004;
+/// What `SpoolFile` sends Print Manager with the job (seg28 `16e0`).
+const SPOOL_FILE_MESSAGE: u16 = 0x1001;
+
+/// `QueryJob` (seg28 `18e4`): for `SP_QUERYVALIDJOB`, 1 where the handle,
+/// shifted back left, names a block of at least 148h bytes, nought for one
+/// from -5 to -1; for `SP_QUERYDISKAVAIL`, 1 while Print Manager's last
+/// word on its disk space is not nought (`[058Ah]`), whatever the job.
+/// Any other code answers nought.
+pub async fn query_job(engine: &Engine, job: u16, code: u16) -> Result<i16, Stop> {
+    Ok(match code {
+        SP_QUERYVALIDJOB => {
+            if (-5..=-1).contains(&(job as i16)) {
+                0
+            } else {
+                i16::from(global_size(engine, job << 1).await? >= JOB_SIZE)
+            }
+        }
+        SP_QUERYDISKAVAIL => i16::from(engine.system().printing.spooler.disk_space != 0),
+        _ => 0,
+    })
+}
+
+/// `DeleteSpoolPage` (seg28 `0ff3`): the page being written let go;
+/// nought for a job through the communications driver or the network, -1
+/// with no block for the page. A job straight to its port goes back to
+/// where the page began (114h), its file sought there, nothing cut off;
+/// Print Manager's page has its file closed, deleted and its block freed.
+/// Then 1.
+pub async fn delete_spool_page(engine: &Engine, job: u16) -> Result<i16, Stop> {
+    let handle = match job_of(engine, job).await? {
+        Ok(handle) => handle,
+        Err(answer) => return Ok(answer),
+    };
+    let far = global_lock(engine, handle).await?;
+    let flags = read8(&engine.system(), far, 1);
+    let answer = if flags & (COMM | NETWORK) != 0 {
+        0
+    } else {
+        let (slot, block) = {
+            let mut system = engine.system();
+            let slot = 0x13a + 2 * u32::from(read16(&system, far, 2));
+
+            write16(&mut system, far, 0x0a, 0);
+            (slot, read16(&system, far, slot))
+        };
+
+        if block == 0 {
+            SP_ERROR
+        } else {
+            let port = global_lock(engine, block).await?;
+
+            if flags & DIRECT != 0 {
+                let (file, at) = {
+                    let mut system = engine.system();
+                    let (low, high) = (read16(&system, far, 0x114), read16(&system, far, 0x116));
+
+                    write16(&mut system, port, 6, low);
+                    write16(&mut system, port, 8, high);
+                    (
+                        read16(&system, port, 0),
+                        u32::from(low) | u32::from(high) << 16,
+                    )
+                };
+
+                call(
+                    engine,
+                    "KERNEL",
+                    "_llseek",
+                    &[GuestArg::Word(file), GuestArg::Long(at), GuestArg::Word(0)],
+                )
+                .await?;
+                global_unlock(engine, block).await?;
+            } else {
+                let (file, open) = {
+                    let system = engine.system();
+
+                    (read16(&system, port, 0), read8(&system, port, 0x0b))
+                };
+
+                if open != 0 {
+                    lclose(engine, file).await?;
+                }
+
+                // `DeletePathname` of the structure's path, as `DeleteJob`.
+                let path = string_at(&engine.system(), port, 0x12);
+
+                if !path.is_empty() {
+                    let text: String = path.iter().map(|&byte| char::from(byte)).collect();
+                    let deleted = {
+                        let mut system = engine.system();
+                        let deleted = system.delete_path(&text).is_ok();
+
+                        if deleted {
+                            system.note_file_change(0x4100, &path, None);
+                        }
+
+                        deleted
+                    };
+
+                    if deleted {
+                        engine.tell_file_changes().await?;
+                    }
+                }
+
+                global_unlock(engine, block).await?;
+                global_free(engine, block).await?;
+                write16(&mut engine.system(), far, slot, 0);
+            }
+
+            1
+        }
+    };
+
+    global_unlock(engine, handle).await?;
+    Ok(answer)
+}
+
+/// The size of a file for `SpoolFile` (seg28 `1529`): `OpenFile` of it
+/// into the structure given, read, then `_llseek` to its end and closed;
+/// nought where it cannot be opened.
+async fn size_of(engine: &Engine, path: &[u8], structure: u32) -> Result<u32, Stop> {
+    let file = call(
+        engine,
+        "KERNEL",
+        "OpenFile",
+        &[
+            GuestArg::Struct(with_nought(path)),
+            GuestArg::Long(structure),
+            GuestArg::Word(0),
+        ],
+    )
+    .await? as u16;
+
+    if (file as i16) < 0 {
+        return Ok(0);
+    }
+
+    let size = call(
+        engine,
+        "KERNEL",
+        "_llseek",
+        &[GuestArg::Word(file), GuestArg::Long(0), GuestArg::Word(2)],
+    )
+    .await?;
+
+    lclose(engine, file).await?;
+    Ok(size)
+}
+
+/// `SpoolFile` (seg28 `156f`): a file handed to Print Manager to print, as
+/// a job of a queue, by the printer's name and its port; told in
+/// `spooler.ts`. The job's handle, unshifted, or -1, or -5.
+pub async fn spool_file(
+    engine: &Engine,
+    printer: u32,
+    port_name_far: u32,
+    title: u32,
+    path: u32,
+) -> Result<u16, Stop> {
+    let spooling = readied(&mut engine.system());
+    let window = engine.system().printing.spooler.window;
+
+    if window == 0 && print_manager(engine, &spooling).await? == 0 {
+        return Ok(SP_ERROR as u16);
+    }
+
+    let (queue, name, file) = {
+        let system = engine.system();
+        let port = port_name(&string_at(&system, port_name_far, 0));
+        let device = string_at(&system, printer, 0);
+
+        (
+            queue_of(&spooling, &port, &device),
+            string_at(&system, title, 0),
+            string_at(&system, path, 0),
+        )
+    };
+
+    if queue == -1 {
+        return Ok(SP_ERROR as u16);
+    }
+
+    let job = global_alloc(engine, 0x3042, JOB_SIZE).await?;
+
+    if job == 0 {
+        return Ok(SP_OUTOFMEMORY as u16);
+    }
+
+    let block = global_alloc(engine, 0x42, PORT_SIZE).await?;
+
+    if block == 0 {
+        global_unlock(engine, job).await?;
+        global_free(engine, job).await?;
+        return Ok(SP_OUTOFMEMORY as u16);
+    }
+
+    let port = global_lock(engine, block).await?;
+    let far = global_lock(engine, job).await?;
+
+    {
+        let mut system = engine.system();
+
+        for (at, value) in [
+            (0x118, 0),
+            (8, 0),
+            (2, 1),
+            (0x0a, 0),
+            (0x13e, 0),
+            (0x13c, 0),
+            (4, 7),
+            (6, queue as u16),
+        ] {
+            write16(&mut system, far, at, value);
+        }
+
+        copy_name(&mut system, far, 0x11a, &name);
+
+        for (at, value) in [(4, 1), (2, 8), (0x96, 0), (0, 0xffff)] {
+            write16(&mut system, port, at, value);
+        }
+    }
+
+    let size = size_of(engine, &file, offset_by(port, 0x0a)).await?;
+
+    {
+        let mut system = engine.system();
+
+        write16(&mut system, port, 6, size as u16);
+        write16(&mut system, port, 8, (size >> 16) as u16);
+        write16(&mut system, far, 0x110, size as u16);
+        write16(&mut system, far, 0x112, (size >> 16) as u16);
+        write16(&mut system, far, 0x13a, block);
+        write16(&mut system, far, 0, 1);
+    }
+
+    global_unlock(engine, job).await?;
+    global_unlock(engine, block).await?;
+
+    let window = engine.system().printing.spooler.window;
+    let answer = call(
+        engine,
+        "USER",
+        "SendMessage",
+        &[
+            GuestArg::Word(window),
+            GuestArg::Word(SPOOL_FILE_MESSAGE),
+            GuestArg::Word(job),
+            GuestArg::Long(i32::from(queue) as u32),
+        ],
+    )
+    .await?;
+
+    if answer == 0xffff_ffff {
+        global_free(engine, job).await?;
+        return Ok(SP_ERROR as u16);
+    }
+
+    Ok(job)
+}
+
+fn query_job_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (job, code) = {
+            let system = engine.system();
+
+            (args.word(&system), args.word(&system))
+        };
+
+        Ok(Answer::Word(query_job(engine, job, code).await? as u16))
+    })
+}
+
+fn delete_spool_page_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let job = args.word(&engine.system());
+
+        Ok(Answer::Word(delete_spool_page(engine, job).await? as u16))
+    })
+}
+
+fn spool_file_call(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (printer, port, title, path) = {
+            let system = engine.system();
+
+            (
+                args.dword(&system),
+                args.dword(&system),
+                args.dword(&system),
+                args.dword(&system),
+            )
+        };
+
+        Ok(Answer::Word(
+            spool_file(engine, printer, port, title, path).await?,
+        ))
+    })
+}
+
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(Implementation::Async(match name {
         "OpenJob" => open_job_call,
@@ -1545,6 +1898,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "CloseJob" => close_job_call,
         "DeleteJob" => delete_job_call,
         "QueryAbort" => query_abort_call,
+        "QueryJob" => query_job_call,
+        "DeleteSpoolPage" => delete_spool_page_call,
+        "SpoolFile" => spool_file_call,
         _ => return None,
     }))
 }

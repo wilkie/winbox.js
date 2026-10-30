@@ -5953,6 +5953,9 @@ const RUN_WHOLE = new Set<string>([
   'emscopy',
   'olestat',
   'olemem',
+  'gdidm',
+  'gdispool',
+  'gdiint',
 ]);
 
 /**

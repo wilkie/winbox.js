@@ -81,11 +81,25 @@ const IDRETRY = 4;
 const WN_SUCCESS = 0;
 const WN_NOT_SUPPORTED = 1;
 
-/** A port of `[PrinterPorts]`, as GDI keeps it (seg29 `0000`). */
+/**
+ * A port of `[PrinterPorts]`, as GDI keeps it, 0Ch bytes from `[0934h]`
+ * (seg29 `0000`): the port's and the device's atoms, then the two numbers
+ * after the port, each made milliseconds with a signed multiply -- the
+ * second at +4, the first at +8. A number not there leaves 2AEA540h at +4
+ * and E4E1C0h at +8, 45 and 15 seconds made milliseconds twice.
+ */
 interface Queue {
   port: string;
   device: string;
+  /** +4, `GetSpoolJob`'s 20h: the second number. */
+  retry: number;
+  /** +8, `GetSpoolJob`'s 21h: the first. */
+  select: number;
 }
+
+/** What a queue's timeouts are where its value gives no number (seg29 `0051`-`0060`). */
+const NO_RETRY = 45_000_000;
+const NO_SELECT = 15_000_000;
 
 /** What GDI reads of WIN.INI as the first job opens (seg29 `00d7`). */
 interface Spooling {
@@ -105,6 +119,53 @@ interface Spooling {
 
 function spoolingOf(system: any): Spooling | null {
   return system._spooling ?? null;
+}
+
+/**
+ * The spooler's state as Print Manager and the spooler's own calls leave
+ * it in GDI's data: whether the queues are readied (`[0590h]`), how many
+ * there are (`[0A28h]`), Print Manager's window (`[058Eh]`), the disk
+ * space it last gave (`[058Ah]`), its count of jobs (`[0592h]`), and the
+ * flag `GetSpoolJob`'s 23h sets (`[064Ah]` bit 3).
+ */
+export interface Spooler {
+  started: boolean;
+  queues: number;
+  window: number;
+  diskSpace: number;
+  jobs: number;
+  flagged: boolean;
+}
+
+export function spoolerOf(system: any): Spooler {
+  return (system._spooler ??= {
+    started: false,
+    queues: 0,
+    window: 0,
+    diskSpace: 0,
+    jobs: 0,
+    flagged: false,
+  });
+}
+
+/**
+ * A queue's number of seconds as GDI reads it (seg30 `0310`): the digits
+ * from the field's first character, in a word, stopping at anything else
+ * -- a space before them leaves nought -- then made milliseconds by a
+ * signed multiply (seg29 `0087`).
+ */
+function milliseconds(text: string) {
+  let value = 0;
+
+  for (const char of text) {
+    if (char < '0' || char > '9') {
+      break;
+    }
+
+    value = (value * 10 + char.charCodeAt(0) - 0x30) & 0xffff;
+  }
+
+  return ((value << 16) >> 16) * 1000;
 }
 
 /** The answer of `lstrcmpi` (`KERNEL.87`): nought for the same, by capitals. */
@@ -140,12 +201,23 @@ export function portName(text: string) {
  * every printer of `[PrinterPorts]`, each value a driver and then, after
  * each comma, a port and its two timeouts (`0000`).
  */
-async function readied(system: any): Promise<Spooling> {
+export async function readied(system: any): Promise<Spooling> {
   const kept = spoolingOf(system);
 
-  if (kept) {
+  if (kept && spoolerOf(system).started) {
     return kept;
   }
+
+  return readQueues(system);
+}
+
+/**
+ * The queues read again from WIN.INI (seg29 `00d7` with 1): what
+ * `GetSpoolJob`'s 1Ch does whether or not they were readied, and the
+ * first job or option 19h once they are not. Their count is kept.
+ */
+export async function readQueues(system: any): Promise<Spooling> {
+  const kept = spoolingOf(system);
 
   const profile = await readProfile(system, 'WIN.INI');
   const value = (section: string, key: string) => String(profile.get(section, key) ?? '');
@@ -164,7 +236,12 @@ async function readied(system: any): Promise<Spooling> {
     const fields = text.slice(comma + 1).split(',');
 
     for (let at = 0; at < fields.length && queues.length < 20; at += 3) {
-      queues.push({ port: portName(fields[at]), device });
+      queues.push({
+        port: portName(fields[at]),
+        device,
+        retry: at + 2 < fields.length ? milliseconds(fields[at + 2]) : NO_RETRY,
+        select: at + 1 < fields.length ? milliseconds(fields[at + 1]) : NO_SELECT,
+      });
     }
   }
 
@@ -178,10 +255,13 @@ async function readied(system: any): Promise<Spooling> {
     queues,
     selectTimeout: seconds('DeviceNotSelectedTimeout', 15),
     retryTimeout: seconds('TransmissionRetryTimeout', 45),
-    commError: 0,
+    commError: kept?.commError ?? 0,
   };
+  const spooler = spoolerOf(system);
 
   system._spooling = spooling;
+  spooler.started = true;
+  spooler.queues = queues.length;
   return spooling;
 }
 
@@ -316,7 +396,7 @@ async function printManager(system: any, spooling: Spooling) {
     }
   }
 
-  return system._spooler?.window ?? 0;
+  return spoolerOf(system).window;
 }
 
 /** USER's communications calls, loaded when first wanted (`user/comm.ts`). */
@@ -710,7 +790,7 @@ export function StartSpoolPage(this: any, hJob: number) {
     return job.answer;
   }
 
-  if (!this._spooler?.window) {
+  if (!spoolerOf(this).window) {
     return 1;
   }
 
@@ -1148,4 +1228,229 @@ export async function QueryAbort(this: any, hdc: number, nCode: number) {
   );
 
   return Number(answer ?? 0) & 0xffff;
+}
+
+const SP_QUERYVALIDJOB = 30;
+const SP_QUERYDISKAVAIL = 0x1004;
+/* What `SpoolFile` sends Print Manager with the job (seg28 `16e0`). */
+const SPOOL_FILE_MESSAGE = 0x1001;
+
+/**
+ * `QueryJob` (seg28 `18e4`), what a printer's driver asks of a job: for
+ * `SP_QUERYVALIDJOB`, 30, 1 where the handle, shifted back left, names a
+ * block of at least 148h bytes, and nought for a handle from -5 to -1;
+ * for `SP_QUERYDISKAVAIL`, 1004h, 1 while Print Manager's last word on its
+ * disk space is not nought (`[058Ah]`, from `GetSpoolJob`'s 1Bh), whatever
+ * the job. Any other code answers nought.
+ */
+export function QueryJob(this: any, hJob: number, wCode: number) {
+  switch (wCode & 0xffff) {
+    case SP_QUERYVALIDJOB: {
+      const given = (hJob << 16) >> 16;
+
+      if (given >= -5 && given <= -1) {
+        return 0;
+      }
+
+      return GlobalSize.call(this, (hJob << 1) & 0xffff) >= JOB_SIZE ? 1 : 0;
+    }
+
+    case SP_QUERYDISKAVAIL:
+      return spoolerOf(this).diskSpace ? 1 : 0;
+
+    default:
+      return 0;
+  }
+}
+
+/**
+ * `DeleteSpoolPage` (seg28 `0ff3`): the page being written let go. A job
+ * through the communications driver or the network answers nought.
+ * Otherwise what the job's buffer holds is let go, and with no block for
+ * the page the answer is -1. A job straight to its port goes back to where
+ * the page began: its file's written count set to the job's at 114h,
+ * which `StartSpoolPage` notes only while Print Manager has given its
+ * window, and the file sought there; nothing after is cut off. Print
+ * Manager's page has its file closed where it was kept open, deleted, and
+ * its block freed. Then 1.
+ */
+export async function DeleteSpoolPage(this: any, hJob: number) {
+  const job = jobOf(this, hJob);
+
+  if ('answer' in job) {
+    return job.answer;
+  }
+
+  const far = GlobalLock.call(this, job.handle) >>> 0;
+  let answer: number;
+
+  if (read8(this, far, 1) & (COMM | NETWORK)) {
+    answer = 0;
+  } else {
+    write16(this, far, 0x0a, 0);
+
+    const slot = 0x13a + 2 * read16(this, far, 2);
+    const block = read16(this, far, slot);
+
+    if (!block) {
+      answer = SP_ERROR;
+    } else {
+      const port = GlobalLock.call(this, block) >>> 0;
+
+      if (read8(this, far, 1) & DIRECT) {
+        const low = read16(this, far, 0x114);
+        const high = read16(this, far, 0x116);
+
+        write16(this, port, 6, low);
+        write16(this, port, 8, high);
+        _llseek.call(this, read16(this, port, 0), (low | (high << 16)) >>> 0, 0);
+        GlobalUnlock.call(this, block);
+      } else {
+        if (read8(this, port, 0x0b)) {
+          _lclose.call(this, read16(this, port, 0));
+        }
+
+        /* `DeletePathname` of the structure's path, as `DeleteJob`. */
+        const path = stringAt(this, port, 0x12);
+
+        if (path) {
+          try {
+            await deleteFile.call(this.dos, path);
+            await tellFileChange(this, 0x4100, path);
+          } catch {
+            /* Not there: nothing to delete. */
+          }
+        }
+
+        GlobalUnlock.call(this, block);
+        GlobalFree.call(this, block);
+        write16(this, far, slot, 0);
+      }
+
+      answer = 1;
+    }
+  }
+
+  GlobalUnlock.call(this, job.handle);
+  return answer;
+}
+
+/**
+ * The size of a file for `SpoolFile` (seg28 `1529`): `OpenFile` of it into
+ * the structure given, read, then `_llseek` to its end and closed; nought
+ * where it cannot be opened.
+ */
+async function sizeOf(system: any, path: string, structure: any) {
+  const file = await OpenFile.call(system, path, structure, 0);
+
+  if (((file << 16) >> 16) < 0) {
+    return 0;
+  }
+
+  const size = _llseek.call(system, file, 0, 2) >>> 0;
+
+  _lclose.call(system, file);
+  return size;
+}
+
+/**
+ * `SpoolFile` (seg28 `156f`): a file handed to Print Manager to print, as a
+ * job of a queue, by the printer's name and its port. The queues readied
+ * first; then with no window from Print Manager, it is started as
+ * `OpenJob` starts it, and -1 is answered while it has given none (none
+ * with the spooler off). The port and printer are found as `OpenJob` finds
+ * a queue, -1 where none has the port. A job's block, 148h bytes
+ * (`GlobalAlloc(3042h)`), and a page's, C2h (`GlobalAlloc(42h)`), -5
+ * where either fails. The job: state 1 (closed), page 1, room for 7, the
+ * queue, no device context, the job's name at 11Ah, and the file's size
+ * at 110h; the page's block at 13Ah, its file's structure at 0Ah from
+ * opening it, its size at 6, its handle -1. Then Print Manager's window is
+ * sent 1001h with the job's handle and the queue: an answer of -1 in both
+ * words frees the job and answers -1; any other, the job's handle,
+ * unshifted.
+ */
+export async function SpoolFile(
+  this: any,
+  lpPrinter: number,
+  lpPort: number,
+  lpJob: number,
+  lpFile: number
+) {
+  const system = this;
+  const spooling = await readied(system);
+
+  if (!spoolerOf(system).window && !(await printManager(system, spooling))) {
+    return SP_ERROR;
+  }
+
+  const queue = queueOf(
+    spooling,
+    portName(stringAt(system, lpPort >>> 0)),
+    stringAt(system, lpPrinter >>> 0)
+  );
+
+  if (queue === -1) {
+    return SP_ERROR;
+  }
+
+  const job = GlobalAlloc.call(system, 0x3042, JOB_SIZE);
+
+  if (!job) {
+    return SP_OUTOFMEMORY;
+  }
+
+  const block = GlobalAlloc.call(system, 0x42, PORT_SIZE);
+
+  if (!block) {
+    GlobalUnlock.call(system, job);
+    GlobalFree.call(system, job);
+    return SP_OUTOFMEMORY;
+  }
+
+  const port = GlobalLock.call(system, block) >>> 0;
+  const far = GlobalLock.call(system, job) >>> 0;
+
+  write16(system, far, 0x118, 0);
+  write16(system, far, 8, 0);
+  write16(system, far, 2, 1);
+  write16(system, far, 0x0a, 0);
+  write16(system, far, 0x13e, 0);
+  write16(system, far, 0x13c, 0);
+  write16(system, far, 4, 7);
+  write16(system, far, 6, queue);
+  copyName(system, far, 0x11a, stringAt(system, lpJob >>> 0));
+
+  write16(system, port, 4, 1);
+  write16(system, port, 2, 8);
+  write16(system, port, 0x96, 0);
+  write16(system, port, 0, 0xffff);
+
+  const structure = portStructure(system, port);
+  const size = await sizeOf(system, stringAt(system, lpFile >>> 0), structure);
+
+  write16(system, port, 6, size & 0xffff);
+  write16(system, port, 8, size >>> 16);
+  write16(system, far, 0x110, size & 0xffff);
+  write16(system, far, 0x112, size >>> 16);
+  write16(system, far, 0x13a, block);
+  write16(system, far, 0, 1);
+  GlobalUnlock.call(system, job);
+  GlobalUnlock.call(system, block);
+
+  const { SendMessage } = await import('../user/SendMessage.js');
+  const answer =
+    (await SendMessage.call(
+      system,
+      spoolerOf(system).window,
+      SPOOL_FILE_MESSAGE,
+      job,
+      ((queue << 16) >> 16) >>> 0
+    )) >>> 0;
+
+  if (answer === 0xffffffff) {
+    GlobalFree.call(system, job);
+    return SP_ERROR;
+  }
+
+  return job;
 }
