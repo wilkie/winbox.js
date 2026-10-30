@@ -1,0 +1,12 @@
+#include <windows.h>
+
+10 ICON ihc32.ico
+11 ICON ihc16.ico
+12 ICON ihc48.ico
+13 ICON ihc64.ico
+14 ICON ihm32.ico
+20 CURSOR ihm32.cur
+21 CURSOR ihc32.cur
+22 CURSOR ihm16.cur
+15 ICON ihc32.ico
+16 ICON ihc16.ico
