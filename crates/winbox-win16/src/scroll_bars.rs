@@ -860,15 +860,7 @@ impl Engine {
     fn arm_repeat(&self, hwnd: u16, delay: u16) {
         let mut system = self.system();
 
-        system.set_timer(hwnd, REPEAT_TIMER, delay, 0);
-
-        if let Some(timer) = system
-            .timers
-            .iter_mut()
-            .find(|timer| timer.hwnd == hwnd && timer.id == REPEAT_TIMER)
-        {
-            timer.message = WM_SYSTIMER;
-        }
+        system.set_timer_as(hwnd, REPEAT_TIMER, delay, 0, WM_SYSTIMER);
     }
 
     /// Anything else that comes while a press is followed, handed on as a
@@ -1096,7 +1088,7 @@ impl Engine {
                     && message.hwnd == hwnd
                     && message.wparam == REPEAT_TIMER
                 {
-                    self.system().kill_timer(hwnd, REPEAT_TIMER);
+                    self.system().kill_timer_as(hwnd, REPEAT_TIMER, WM_SYSTIMER);
                     delay = REPEAT_DELAY;
 
                     let now = inside(&track, px, py);
@@ -1137,7 +1129,7 @@ impl Engine {
                 self.dispatch_during(&message).await?;
             }
 
-            self.system().kill_timer(hwnd, REPEAT_TIMER);
+            self.system().kill_timer_as(hwnd, REPEAT_TIMER, WM_SYSTIMER);
             self.show_track(&press, &mut track, false);
         } else {
             // The thumb dragged: its outline follows the pointer along the

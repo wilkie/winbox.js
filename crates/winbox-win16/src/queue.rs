@@ -445,6 +445,25 @@ impl System {
     /// identifier, or 1 for a procedure's of nought. Windows' own clock
     /// ticks about every 55 milliseconds; no timer is quicker.
     pub fn set_timer(&mut self, hwnd: u16, id: u16, interval: u16, proc: u32) -> u16 {
+        self.set_timer_as(hwnd, id, interval, proc, WM_TIMER)
+    }
+
+    /// Sets a timer that comes as `message`: `WM_TIMER`, or `WM_SYSTIMER`
+    /// for a system timer, USER's own or ordinal 11's. USER finds a timer
+    /// by its window, identifier and whether it is the system's (`USER.EXE`
+    /// seg1 `759c`-`75c3`), so a window's timer and system timer of one
+    /// identifier are two.
+    pub fn set_timer_as(
+        &mut self,
+        hwnd: u16,
+        id: u16,
+        interval: u16,
+        proc: u32,
+        message: u16,
+    ) -> u16 {
+        // A timer of no window's is known by the identifier answered,
+        // which `KillTimer` is given back (`systimer`).
+        let id = if hwnd == 0 && id == 0 { 1 } else { id };
         let every = f64::from(interval.max(55));
         let timer = Timer {
             hwnd,
@@ -453,14 +472,14 @@ impl System {
             due: self.clock_now() + every,
             proc,
             task: self.task_handle,
-            message: WM_TIMER,
+            message,
         };
 
         // Set again, a timer keeps its place among the others.
         match self
             .timers
             .iter_mut()
-            .find(|each| each.hwnd == hwnd && each.id == id)
+            .find(|each| each.hwnd == hwnd && each.id == id && each.message == message)
         {
             Some(each) => *each = timer,
             None => self.timers.push(timer),
@@ -471,10 +490,15 @@ impl System {
 
     /// Stops a timer; whether there was one.
     pub fn kill_timer(&mut self, hwnd: u16, id: u16) -> bool {
+        self.kill_timer_as(hwnd, id, WM_TIMER)
+    }
+
+    /// Stops a timer that comes as `message`; whether there was one.
+    pub fn kill_timer_as(&mut self, hwnd: u16, id: u16, message: u16) -> bool {
         let before = self.timers.len();
 
         self.timers
-            .retain(|each| !(each.hwnd == hwnd && each.id == id));
+            .retain(|each| !(each.hwnd == hwnd && each.id == id && each.message == message));
         self.timers.len() != before
     }
 
@@ -941,10 +965,11 @@ impl Engine {
     async fn call_timer_proc(&self, message: &Message) -> Result<u32, Stop> {
         let (proc, stack) = {
             let system = self.system();
-            let timer = system
-                .timers
-                .iter()
-                .find(|each| each.hwnd == message.hwnd && each.id == message.wparam);
+            let timer = system.timers.iter().find(|each| {
+                each.hwnd == message.hwnd
+                    && each.id == message.wparam
+                    && each.message == message.message
+            });
 
             (
                 timer.map_or(message.lparam, |timer| timer.proc),
@@ -956,9 +981,11 @@ impl Engine {
             return Ok(0);
         }
 
+        // Called with its message, `WM_TIMER` or `WM_SYSTIMER` (`USER.EXE`
+        // seg1 `274e`-`2769`; `systimer`).
         let args = [
             GuestArg::Word(message.hwnd),
-            GuestArg::Word(WM_TIMER),
+            GuestArg::Word(message.message),
             GuestArg::Word(message.wparam),
             GuestArg::Long(message.time),
         ];
@@ -1214,7 +1241,11 @@ impl Engine {
                 return Ok(0);
             }
 
-            return self.call_timer_proc(message).await;
+            // A system timer set with a procedure calls it; one with none
+            // goes to the window (`USER.EXE` seg1 `274e`-`2760`).
+            if message.lparam != 0 {
+                return self.call_timer_proc(message).await;
+            }
         }
 
         // The desktop, which has no class of a program's, does nothing
@@ -1270,6 +1301,37 @@ pub fn kill_timer(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
     let id = args.word(system);
 
     Ok(Answer::Word(u16::from(system.kill_timer(hwnd, id))))
+}
+
+/// Ordinal 11, `Bear11`: `SetTimer` for a system timer, which comes as
+/// `WM_SYSTIMER` (`USER.EXE` seg1 `744c`, entering the body with CX 1).
+/// **Recorded** by `systimer`. As `SetTimer.ts`.
+pub fn bear11(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let id = args.word(system);
+    let interval = args.word(system);
+    let proc = args.dword(system);
+
+    Ok(Answer::Word(system.set_timer_as(
+        hwnd,
+        id,
+        interval,
+        proc,
+        WM_SYSTIMER,
+    )))
+}
+
+/// Ordinal 182, `Bear182`: `KillTimer` for a system timer (`USER.EXE`
+/// seg1 `74f4`). **Recorded** by `systimer`.
+pub fn bear182(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hwnd = args.word(system);
+    let id = args.word(system);
+
+    Ok(Answer::Word(u16::from(system.kill_timer_as(
+        hwnd,
+        id,
+        WM_SYSTIMER,
+    ))))
 }
 
 /// The time of the message last taken.

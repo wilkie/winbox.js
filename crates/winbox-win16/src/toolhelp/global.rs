@@ -20,12 +20,12 @@ const GLOBALENTRY: u16 = 0x24;
 const GT_UNKNOWN: u16 = 0;
 pub(crate) const GT_DGROUP: u16 = 1;
 pub(crate) const GT_CODE: u16 = 3;
-const GT_TASK: u16 = 4;
+pub(crate) const GT_TASK: u16 = 4;
 pub(crate) const GT_MODULE: u16 = 6;
 const GT_SENTINEL: u16 = 9;
 
 /// The block is a task's, its owner given as the task.
-const GF_PDB_OWNER: u16 = 0x0100;
+pub(crate) const GF_PDB_OWNER: u16 = 0x0100;
 
 /// A data segment's flag in its arena.
 const DGROUP: u16 = 0x0004;

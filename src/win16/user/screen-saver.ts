@@ -64,12 +64,17 @@ export function noteActivation(system: any) {
 
 /** The system timer of ten seconds, given USER's task list's window. */
 export function startScreenSaveTimer(system: any, hwnd: number) {
-  setTimer(system, hwnd, SCREEN_SAVE_TIMER, EVERY, () => {
-    screenSaveLook(system);
-    return 0;
-  });
-
-  system._timers.get(`${hwnd}:${SCREEN_SAVE_TIMER}`).message = WM_SYSTIMER;
+  setTimer(
+    system,
+    hwnd,
+    SCREEN_SAVE_TIMER,
+    EVERY,
+    () => {
+      screenSaveLook(system);
+      return 0;
+    },
+    WM_SYSTIMER
+  );
 }
 
 /** The timer's look: `SC_SCREENSAVE` posted where it is due. */

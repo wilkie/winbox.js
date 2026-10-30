@@ -359,7 +359,17 @@ import { PostQuitMessage } from './user/PostQuitMessage.js';
 import { GetClipboardFormatName, RegisterWindowMessage } from './user/RegisterWindowMessage.js';
 import { GlobalAddAtom, GlobalDeleteAtom, GlobalFindAtom, GlobalGetAtomName } from './atoms.js';
 import { ValidateRect } from './user/ValidateRect.js';
-import { KillTimer, SetTimer } from './user/SetTimer.js';
+import { Bear11, Bear182, KillTimer, SetTimer } from './user/SetTimer.js';
+import { StringFunc } from './user/string-func.js';
+import { GetFilePortName } from './user/print-to-file.js';
+import { DragObject } from './user/drag-object.js';
+import {
+  DisableOEMLayer,
+  EnableOEMLayer,
+  FinalUserInit,
+  Hardware_Event,
+  UserSeeUserDo,
+} from './user/internals.js';
 import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
 import { SetWindowText } from './user/SetWindowText.js';
@@ -776,8 +786,8 @@ export class User extends Module {
       null,
       [MessageBox, 'MessageBox', 12, [HWND, LPCSTR, LPCSTR, UINT], INT],
       [OldExitWindows, 'OldExitWindows', 0],
-      [User.stub, 'EnableOEMLayer', 0],
-      [User.stub, 'DisableOEMLayer', 0],
+      [EnableOEMLayer, 'EnableOEMLayer', 0, []],
+      [DisableOEMLayer, 'DisableOEMLayer', 0, []],
       [InitApp, 'InitApp', 2, [HANDLE], BOOL],
       [PostQuitMessage, 'PostQuitMessage', 2, [INT]],
       [ExitWindows, 'ExitWindows', 6, [DWORD, UINT], BOOL],
@@ -786,7 +796,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 10 //
       [SetTimer, 'SetTimer', 10, [HWND, UINT, UINT, FARPTR], UINT],
-      [User.stub, 'Bear11', 10],
+      [Bear11, 'Bear11', 10, [HWND, UINT, UINT, FARPTR], UINT],
       [KillTimer, 'KillTimer', 4, [HWND, UINT], BOOL],
       [GetTickCount, 'GetTickCount', 0, [], DWORD],
       [GetTimerResolution, 'GetTimerResolution', 0, [], DWORD],
@@ -980,7 +990,7 @@ export class User extends Module {
       // 180 //
       [GetSysColor, 'GetSysColor', 2, [INT], COLORREF],
       [SetSysColors, 'SetSysColors', 10, [INT, FARPTR, FARPTR]],
-      [User.stub, 'Bear182', 4],
+      [Bear182, 'Bear182', 4, [HWND, UINT], BOOL],
       [GetCaretPos, 'GetCaretPos', 4, [[POINT]]],
       [QuerySendMessage, 'QuerySendMessage', 10, [HANDLE, HANDLE, HANDLE, [MSG]], BOOL],
       [GrayString, 'GrayString', 22, [HDC, HBRUSH, FARPTR, LPARAM, INT, INT, INT, INT, INT], BOOL],
@@ -1017,7 +1027,7 @@ export class User extends Module {
       [BuildCommDCB, 'BuildCommDCB', 8, [LPCSTR, FARPTR], INT],
       [EscapeCommFunction, 'EscapeCommFunction', 4, [INT, INT], DWORD],
       [FlushComm, 'FlushComm', 4, [INT, INT], INT],
-      [User.stub, 'UserSeeUserDo', 8],
+      [UserSeeUserDo, 'UserSeeUserDo', 8, [UINT, UINT, DWORD], DWORD],
       [LookupMenuHandle, 'LookupMenuHandle', 4, [HMENU, UINT], HMENU],
       [DialogBoxIndirect, 'DialogBoxIndirect', 10, [HINSTANCE, HGLOBAL, HWND, FARPTR], INT],
       [CreateDialogIndirect, 'CreateDialogIndirect', 12, [HINSTANCE, FARPTR, HWND, FARPTR], HWND],
@@ -1134,7 +1144,10 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      [User.stub, 'Bear306', 10],
+      /* The procedure of USER's class `#32768`, the menus' windows: **recorded**
+       * by `userproc` as what `GetClassInfo` gives (`USER.EXE` seg10 `1587`).
+       * WinBox's windows of that class have `DefWindowProc` for theirs. */
+      [DefWindowProc, 'Bear306', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
       [User.stub, 'Unknown'],
       [DefDlgProc, 'DefDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [GetClipCursor, 'GetClipCursor', 4, [[RECT]]],
@@ -1181,7 +1194,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, '_FFFE_FARFRAME', 2],
       [User.stub, 'Unknown'],
-      [User.stub, 'GetFilePortName', 4],
+      [GetFilePortName, 'GetFilePortName', 4, [FARPTR], INT],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
@@ -1244,7 +1257,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       // 400 //
-      [User.stub, 'FinalUserInit', 0],
+      [FinalUserInit, 'FinalUserInit', 0, []],
       [User.stub, 'Unknown'],
       [GetPriorityClipboardFormat, 'GetPriorityClipboardFormat', 6, [FARPTR, INT], INT],
       [UnregisterClass, 'UnregisterClass', 6, [LPCSTR, HINSTANCE], BOOL],
@@ -1326,14 +1339,14 @@ export class User extends Module {
       [SetInternalWindowPos, 'SetInternalWindowPos', 12, [HWND, UINT, FARPTR, FARPTR], BOOL],
       [CalcChildScroll, 'CalcChildScroll', 4, [HWND, INT]],
       [ScrollChildren, 'ScrollChildren', 10, [HWND, UINT, WPARAM, LPARAM]],
-      [User.stub, 'DragObject', 12],
+      [DragObject, 'DragObject', 12, [HWND, HWND, UINT, DWORD, HCURSOR], DWORD],
       [DragDetect, 'DragDetect', 6, [HWND, DWORD], BOOL],
       [DrawFocusRect, 'DrawFocusRect', 6, [HDC, [RECT]]],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       // 470 //
-      [User.stub, 'StringFunc', 8],
+      [StringFunc, 'StringFunc', 0],
       [lstrcmpiDriven, 'lstrcmpi', 8, [LPCSTR, LPCSTR], INT],
       [AnsiNext, 'AnsiNext', 4, [FARPTR], FARPTR],
       [AnsiPrev, 'AnsiPrev', 8, [FARPTR, FARPTR], FARPTR],
@@ -1345,10 +1358,13 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 480 //
       [GetUserLocalObjType, 'GetUserLocalObjType', 2, [UINT], UINT],
-      [User.stub, 'Hardware_Event', 0],
+      [Hardware_Event, 'Hardware_Event', 0, [], UINT],
       [EnableScrollBar, 'EnableScrollBar', 6, [HWND, UINT, UINT], BOOL],
       [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
-      [User.stub, 'Unknown', 0],
+      /* USER's table of its own fault handlers (seg1 `b664`), data KERNEL's
+       * `HasGPHandler` reads, not a function: WinBox's USER has no code of
+       * Windows' to fault in. See `kb/topics/user-internals.md`. */
+      [User.stub, '__GP', 0],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

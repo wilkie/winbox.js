@@ -9,6 +9,7 @@ mod catch_throw;
 mod code;
 pub mod file_cdr;
 pub(crate) mod more;
+mod owners;
 mod retail;
 pub(crate) mod tasks;
 mod temp_files;
@@ -65,6 +66,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetExeVersion" => Implementation::Sync(tasks::get_exe_version),
         "GetAppCompatFlags" => Implementation::Sync(tasks::get_app_compat_flags),
         "GetExePtr" => Implementation::Sync(tasks::get_exe_ptr),
+        "K403" => Implementation::Sync(owners::k403),
+        "K404" => Implementation::Sync(owners::k404),
         "IsSharedSelector" => Implementation::Sync(tasks::is_shared_selector),
         "GetLPErrMode" => Implementation::Sync(more::get_lp_err_mode),
         "LONGPTRADD" => Implementation::Sync(more::long_ptr_add),

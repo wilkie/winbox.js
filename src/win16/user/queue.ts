@@ -77,10 +77,38 @@ function now(system: any) {
   return system.virtualClock ? Infinity : clockOf(system).now();
 }
 
-/** Sets a timer, or resets one, for a window or for a procedure. */
-export function setTimer(system: any, hwnd: number, id: number, interval: number, proc: any) {
+/**
+ * A timer's key: its window and identifier, and for a system timer its
+ * message. USER finds a timer by all three (`USER.EXE` seg1 `759c`-`75c3`,
+ * the system flag at 0Ah of its entry), so a window's system timer and its
+ * timer of the same identifier are two.
+ */
+function timerKey(hwnd: number, id: number, message: number) {
+  return message === User.WM_TIMER ? `${hwnd}:${id}` : `${hwnd}:${id}:${message}`;
+}
+
+/**
+ * Sets a timer, or resets one, for a window or for a procedure; a system
+ * timer, USER's own or ordinal 11's, comes as `WM_SYSTIMER`.
+ */
+export function setTimer(
+  system: any,
+  hwnd: number,
+  id: number,
+  interval: number,
+  proc: any,
+  message: number = User.WM_TIMER
+) {
   const timers = timersOf(system);
-  const key = `${hwnd}:${id}`;
+
+  /* A timer of no window's is known by the identifier answered, which
+   * `KillTimer` is given back (`systimer`: ordinal 182 of ordinal 11's
+   * answer kills it). */
+  if (!hwnd && !id) {
+    id = 1;
+  }
+
+  const key = timerKey(hwnd, id, message);
 
   /* Windows' own clock ticks about every 55 milliseconds; no timer is quicker. */
   const every = Math.max(interval, 55);
@@ -92,6 +120,7 @@ export function setTimer(system: any, hwnd: number, id: number, interval: number
     due: clockOf(system).now() + every,
     proc,
     task: system.scheduler?.active ?? 0,
+    ...(message === User.WM_TIMER ? {} : { message }),
   });
 
   return id || 1;
@@ -106,9 +135,9 @@ export function killTimersOf(system: any, hwnd: number) {
   }
 }
 
-/** Stops a timer; whether there was one. */
-export function killTimer(system: any, hwnd: number, id: number) {
-  return timersOf(system).delete(`${hwnd}:${id}`);
+/** Stops a timer, or a system timer; whether there was one. */
+export function killTimer(system: any, hwnd: number, id: number, message: number = User.WM_TIMER) {
+  return timersOf(system).delete(timerKey(hwnd, id, message));
 }
 
 /** Posts a message to the queue of the program that made a window, or of the running one. */
@@ -197,7 +226,13 @@ export function queueOf(system: any, hwnd: number) {
   return (owner && !owner.ended ? owner : null) || system.scheduler.task;
 }
 
-export function message_(system: any, hwnd: number, message: number, wParam: number, lParam: number) {
+export function message_(
+  system: any,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: number
+) {
   const msg: any = new MSG();
 
   msg.hwnd = hwnd;
@@ -1061,18 +1096,22 @@ export async function nextMessage(
  * rather than for a window: `DispatchMessage`'s part in it.
  */
 /** The procedure a timer was set with, if any. */
-export function timerProcOf(system: any, hwnd: number, id: number) {
-  return [...timersOf(system).values()].find((each) => each.hwnd === hwnd && each.id === id)?.proc;
+export function timerProcOf(system: any, hwnd: number, id: number, message: number) {
+  return timersOf(system).get(timerKey(hwnd, id, message))?.proc;
 }
 
+/**
+ * A timer's procedure called with its message, `WM_TIMER` or
+ * `WM_SYSTIMER`, as `DispatchMessage` calls the one in `lParam` (`USER.EXE`
+ * seg1 `274e`-`2769`). **Recorded** by `systimer`: a system timer's is
+ * called with 118h.
+ */
 export async function callTimerProc(system: any, msg: any) {
-  const timer = [...timersOf(system).values()].find(
-    (each) => each.hwnd === msg.hwnd && each.id === msg.wParam
-  );
+  const timer = timersOf(system).get(timerKey(msg.hwnd, msg.wParam, msg.message));
   const proc = timer?.proc ?? msg.lParam;
 
   if (typeof proc === 'function') {
-    return proc(msg.hwnd, User.WM_TIMER, msg.wParam, msg.time);
+    return proc(msg.hwnd, msg.message, msg.wParam, msg.time);
   }
 
   /* As `DispatchMessage` calls one (seg1 `277c`): see `stackRegisters`. */
@@ -1080,7 +1119,7 @@ export async function callTimerProc(system: any, msg: any) {
     proc,
     [
       [msg.hwnd, HWND],
-      [User.WM_TIMER, UINT],
+      [msg.message, UINT],
       [msg.wParam, UINT],
       [msg.time >>> 0, DWORD],
     ],

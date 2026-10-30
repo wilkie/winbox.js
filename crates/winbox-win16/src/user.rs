@@ -101,6 +101,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "TranslateMessage" => Implementation::Sync(queue::translate_message),
         "SetTimer" => Implementation::Sync(queue::set_timer),
         "KillTimer" => Implementation::Sync(queue::kill_timer),
+        "Bear11" => Implementation::Sync(queue::bear11),
+        "Bear182" => Implementation::Sync(queue::bear182),
         "GetMessageTime" => Implementation::Sync(queue::get_message_time),
         "GetMessagePos" => Implementation::Sync(queue::get_message_pos),
         "SetCursorPos" => Implementation::Sync(cursor_pos::set_cursor_pos),
@@ -194,7 +196,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
                 .or_else(|| crate::menu_loop::implementation(name))
                 .or_else(|| crate::mdi::implementation(name))
                 .or_else(|| crate::dlgdir::implementation(name))
-                .or_else(|| crate::sys_error_box::implementation(name));
+                .or_else(|| crate::sys_error_box::implementation(name))
+                .or_else(|| crate::user_internals::implementation(name));
         }
     })
 }

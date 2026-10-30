@@ -30,6 +30,10 @@ use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, GuestArg};
 use crate::modules_kernel::{free_library_handle, load_library_named, proc_numbered};
 use crate::system::System;
+use crate::user_misc::{
+    ansi_convert, ansi_lower_byte, ansi_upper_byte, next_character, previous_character,
+};
+use winbox_cpu::{AX, CX, DX, SP, SS};
 
 /// The driver loaded: its module and its ordinal 1.
 #[derive(Debug, Clone, Copy)]
@@ -51,6 +55,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "IsCharAlphanumeric" => is_char_alphanumeric,
         "IsCharUpper" => is_char_upper,
         "IsCharLower" => is_char_lower,
+        "StringFunc" => string_func,
         _ => return None,
     }))
 }
@@ -270,4 +275,86 @@ impl System {
             winbox_machine::segment_selector(self.kept[kept].data)
         })
     }
+}
+
+/// USER's ordinal 470, `StringFunc` (`USER.EXE` seg11 `02e7`): four string
+/// routines behind one entry, chosen by CX through the table at `02df` --
+/// 1 `AnsiNext`'s body, 2 `AnsiPrev`'s, 3 `AnsiUpper` and 4 `AnsiLower`
+/// through their entries' tails, the last two by the language driver where
+/// one is loaded. Each pops its own arguments, 4 bytes or `AnsiPrev`'s 8.
+/// **Recorded** by `strfunc`. Another CX is not followed: nothing popped,
+/// the registers left. As `src/win16/user/string-func.ts`.
+fn string_func(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (routine, ss, sp) = {
+            let system = engine.system();
+
+            (
+                system.cpu.regs[CX],
+                system.cpu.segments[SS].selector,
+                system.cpu.regs[SP],
+            )
+        };
+
+        if !(1..=4).contains(&routine) {
+            return Ok(Answer::Nothing);
+        }
+
+        let word = |system: &System, at: u16| {
+            let bytes = system.read_far(u32::from(ss) << 16 | u32::from(sp.wrapping_add(at)), 2);
+
+            u16::from_le_bytes([bytes[0], bytes[1]])
+        };
+        let dword = |system: &System, at: u16| {
+            u32::from(word(system, at.wrapping_add(2))) << 16 | u32::from(word(system, at))
+        };
+        let (first, second) = {
+            let system = engine.system();
+
+            (dword(&system, 4), dword(&system, 8))
+        };
+
+        // The far return at SP, the arguments above it, the last pushed
+        // first.
+        let answer = match routine {
+            1 => next_character(&engine.system(), first),
+            2 => previous_character(second, first),
+            number => match driver(engine) {
+                Some(proc) => {
+                    engine
+                        .call_language_driver(proc, number - 1, 0, first)
+                        .await?
+                }
+                None => ansi_convert(
+                    &mut engine.system(),
+                    first,
+                    if number == 3 {
+                        ansi_upper_byte
+                    } else {
+                        ansi_lower_byte
+                    },
+                ),
+            },
+        };
+
+        // The arguments popped: the far return moved up over them.
+        let pops: u16 = if routine == 2 { 8 } else { 4 };
+        let mut system = engine.system();
+        let ip = word(&system, 0);
+        let cs = word(&system, 2);
+
+        system.write_far(
+            u32::from(ss) << 16 | u32::from(sp.wrapping_add(pops)),
+            &ip.to_le_bytes(),
+        );
+        system.write_far(
+            u32::from(ss) << 16 | u32::from(sp.wrapping_add(pops + 2)),
+            &cs.to_le_bytes(),
+        );
+        system.cpu.regs[SP] = sp.wrapping_add(pops);
+        system.cpu.regs[AX] = answer as u16;
+        system.cpu.regs[DX] = (answer >> 16) as u16;
+
+        Ok(Answer::Nothing)
+    })
 }

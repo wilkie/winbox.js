@@ -98,17 +98,22 @@ function startBlink(system: any, caret: Caret) {
     return;
   }
 
-  setTimer(system, caret.hwnd, BLINK_TIMER, blinkTime(system), () => {
-    const current = caretOf(system);
+  setTimer(
+    system,
+    caret.hwnd,
+    BLINK_TIMER,
+    blinkTime(system),
+    () => {
+      const current = caretOf(system);
 
-    if (current && current.hidden === 0) {
-      draw(system, current, !current.on);
-    }
+      if (current && current.hidden === 0) {
+        draw(system, current, !current.on);
+      }
 
-    return 0;
-  });
-
-  system._timers.get(`${caret.hwnd}:${BLINK_TIMER}`).message = WM_SYSTIMER;
+      return 0;
+    },
+    WM_SYSTIMER
+  );
 }
 
 /**
@@ -143,7 +148,7 @@ export function DestroyCaret() {
   }
 
   draw(this, caret, false);
-  killTimer(this, caret.hwnd, BLINK_TIMER);
+  killTimer(this, caret.hwnd, BLINK_TIMER, WM_SYSTIMER);
   this._caret = null;
 
   return 1;

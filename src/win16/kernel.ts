@@ -2,6 +2,7 @@
 
 /** @namespace Kernel */
 
+import { K403, K404 } from './kernel/block-owner.js';
 import { _hread, _hwrite, hmemcpy } from './kernel/huge-files.js';
 import {
   FreeProcInstance,
@@ -740,11 +741,8 @@ export class Kernel extends Module {
       null,
       null,
       null,
-      [Kernel.stub, 'K403', 4],
-      [Kernel.stub, 'K404', 2],
-      // .. //
-      //Kernel.stub, // K403,
-      //Kernel.stub, // K404,
+      [K403, 'K403', 4, [UINT, UINT]],
+      [K404, 'K404', 2, [UINT], UINT],
     ];
   }
 

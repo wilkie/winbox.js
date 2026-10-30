@@ -132,6 +132,8 @@ pub enum DialogProc {
     About(crate::shell::about::AboutProc),
     /// The MIDI sequencer's warning's (`mmsystem/seq_box.rs`).
     SeqWarning(crate::mmsystem::seq_box::WarningProc),
+    /// USER's "Print To File" box's (`print_to_file.rs`).
+    PrintToFile,
 }
 
 impl Default for DialogProc {
@@ -1302,6 +1304,17 @@ impl Engine {
                 DialogProc::About(about) => Box::pin(about.answer(self, hwnd, message)).await?,
                 DialogProc::SeqWarning(warning) => {
                     Box::pin(warning.answer(self, hwnd, message, wparam)).await?
+                }
+                DialogProc::PrintToFile => {
+                    let value = match lparam {
+                        Param::Value(value) => *value,
+                        Param::Struct(_) => 0,
+                    };
+
+                    Box::pin(crate::print_to_file::answer(
+                        self, hwnd, message, wparam, value,
+                    ))
+                    .await?
                 }
             };
 

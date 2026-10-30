@@ -148,15 +148,7 @@ impl System {
         };
         let every = self.blink_time();
 
-        self.set_timer(caret.hwnd, BLINK_TIMER, every, 0);
-
-        if let Some(timer) = self
-            .timers
-            .iter_mut()
-            .find(|timer| timer.hwnd == caret.hwnd && timer.id == BLINK_TIMER)
-        {
-            timer.message = WM_SYSTIMER;
-        }
+        self.set_timer_as(caret.hwnd, BLINK_TIMER, every, 0, WM_SYSTIMER);
     }
 
     /// Whether a window's system timer is the caret's blink: the timer the
@@ -185,7 +177,7 @@ impl System {
         };
 
         self.draw_caret(false);
-        self.kill_timer(caret.hwnd, BLINK_TIMER);
+        self.kill_timer_as(caret.hwnd, BLINK_TIMER, WM_SYSTIMER);
         self.caret.caret = None;
         true
     }

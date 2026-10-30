@@ -208,8 +208,7 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
     /* Pressed, sent, and repeated while held. */
     let delay = FIRST_DELAY;
     const arm = () => {
-      setTimer(system, hwnd, REPEAT_TIMER, delay, 0);
-      system._timers.get(`${hwnd}:${REPEAT_TIMER}`).message = WM_SYSTIMER;
+      setTimer(system, hwnd, REPEAT_TIMER, delay, 0, WM_SYSTIMER);
     };
 
     show(true);
@@ -228,7 +227,7 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
       }
 
       if (msg.message === WM_SYSTIMER && msg.hwnd === hwnd && msg.wParam === REPEAT_TIMER) {
-        killTimer(system, hwnd, REPEAT_TIMER);
+        killTimer(system, hwnd, REPEAT_TIMER, WM_SYSTIMER);
         delay = REPEAT_DELAY;
 
         const now = inside(msg.pt.x, msg.pt.y);
@@ -269,7 +268,7 @@ export async function trackScrollBar(system: any, hwnd: number, hit: number, x: 
       await dispatch(system, msg);
     }
 
-    killTimer(system, hwnd, REPEAT_TIMER);
+    killTimer(system, hwnd, REPEAT_TIMER, WM_SYSTIMER);
     show(false);
   } else {
     /* The thumb dragged: its outline follows the pointer along the track. */

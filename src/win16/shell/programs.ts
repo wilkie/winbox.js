@@ -1,5 +1,7 @@
 'use strict';
 
+import { locateProgram } from './find-program.js';
+
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 
 import { decodeIcon, iconEntries, pickIcon } from '../../raster/icon.js';
@@ -252,7 +254,7 @@ async function commandFor(
   directory: string,
   verb = 'open',
   parameters = ''
-): Promise<{ command: string } | { error: number }> {
+): Promise<{ command: string; registry?: string } | { error: number }> {
   const isOpen = verb.toUpperCase() === 'OPEN';
   const name = file.toUpperCase();
   const part = name.slice(Math.max(name.lastIndexOf('\\'), name.lastIndexOf(':')) + 1);
@@ -322,6 +324,7 @@ async function commandFor(
         command: command.value.replace(/%([0-9])/g, (_, digit) =>
           digit === '0' || digit === '1' ? path : (words[Number(digit) - 2] ?? '')
         ),
+        registry: extension,
       };
     }
   }
@@ -512,7 +515,19 @@ export async function ShellExecute(
       return found.error;
     }
 
-    return await WinExec.call(this, found.command, fsShowCmd);
+    const answer = await WinExec.call(this, found.command, fsShowCmd);
+
+    /* A registry association's program not found: SHELL's box for finding
+     * it, once (`SHELL.DLL` seg4 `0fee`-`1020`; `find-program.ts`). */
+    if ((answer & 0xffff) === 2 && found.registry !== undefined) {
+      const located = await locateProgram(this, _hwnd & 0xffff, found.command, found.registry);
+
+      return 'error' in located
+        ? located.error
+        : await WinExec.call(this, located.command, fsShowCmd);
+    }
+
+    return answer;
   } finally {
     if (saved) {
       this.dos.files.drive = saved.drive;

@@ -15,12 +15,12 @@ const GLOBALENTRY = 0x24;
 const GT_UNKNOWN = 0;
 const GT_DGROUP = 1;
 const GT_CODE = 3;
-const GT_TASK = 4;
+export const GT_TASK = 4;
 export const GT_MODULE = 6;
 const GT_SENTINEL = 9;
 
 /** `GLOBALENTRY.wFlags`: the block is a task's, its owner given as the task. */
-const GF_PDB_OWNER = 0x0100;
+export const GF_PDB_OWNER = 0x0100;
 
 /** A data segment's flag in its arena, which TOOLHELP hands on (`thheap`). */
 const DGROUP = 0x0004;

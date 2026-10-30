@@ -14,6 +14,7 @@ import {
   ShellExecute,
 } from './shell/programs.js';
 import { RegisterShellHook, ShellHookProc } from './shell/shell-hook.js';
+import { FindExeDlgProc } from './shell/find-program.js';
 import { Module } from './module.js';
 
 import {
@@ -101,8 +102,14 @@ export class Shell extends Module {
     ];
     exports[37] = [DoEnvironmentSubst, 'DoEnvironmentSubst', 6, [FARPTR, UINT], DWORD];
     exports[38] = [FindEnvironmentString, 'FindEnvironmentString', 4, [FARPTR], FARPTR];
-    exports[39] = [InternalExtractIcon, 'InternalExtractIcon', 10, [UINT, LPCSTR, UINT, UINT], HGLOBAL];
-    exports[101] = [Shell.stub, 'FindExeDlgProc', 10];
+    exports[39] = [
+      InternalExtractIcon,
+      'InternalExtractIcon',
+      10,
+      [UINT, LPCSTR, UINT, UINT],
+      HGLOBAL,
+    ];
+    exports[101] = [FindExeDlgProc, 'FindExeDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], BOOL];
     exports[102] = [RegisterShellHook, 'RegisterShellHook', 4, [HWND, UINT], BOOL];
     exports[103] = [ShellHookProc, 'ShellHookProc', 8, [INT, WPARAM, LPARAM], LRESULT];
 

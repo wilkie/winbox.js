@@ -286,6 +286,8 @@ fn command_for(
     verb: &str,
     parameters: &str,
 ) -> Result<String, u16> {
+    system.shell.registry_extension = None;
+
     let is_open = verb.to_uppercase() == "OPEN";
     let name = file.to_uppercase();
     let part = name
@@ -345,6 +347,7 @@ fn command_for(
                 Err(ERROR_BADKEY) => {}
                 Err(_) => return Err(8),
                 Ok(command) if !command.is_empty() => {
+                    system.shell.registry_extension = Some(extension.clone());
                     return Ok(substitute(&text(&command), &path, parameters));
                 }
                 Ok(_) => {}
@@ -600,10 +603,9 @@ pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<A
 /// Not followed: an association that asks for DDE.
 pub fn shell_execute(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (found, show, saved) = {
+        let (found, show, saved, owner) = {
             let mut system = engine.system();
-
-            args.word(&system);
+            let owner = args.word(&system);
 
             let far = [(); 4].map(|()| args.dword(&system));
             let show = args.word(&system);
@@ -613,10 +615,29 @@ pub fn shell_execute(engine: &Engine, mut args: Args) -> Later<'_> {
                 _ => None,
             };
 
-            (execute(&mut system, texts), show, saved)
+            (execute(&mut system, texts), show, saved, owner)
         };
         let answer = match found {
-            Ok(command) => engine.win_exec_line(&command, show).await,
+            Ok(command) => {
+                let answer = engine.win_exec_line(&command, show).await?;
+                let registry = engine.system().shell.registry_extension.take();
+
+                // A registry association's program not found: SHELL's box
+                // for finding it, once (`SHELL.DLL` seg4 `0fee`-`1020`).
+                match registry {
+                    Some(extension) if answer == 2 => {
+                        match super::find_program::locate_program(
+                            engine, owner, &command, &extension,
+                        )
+                        .await?
+                        {
+                            Ok(command) => engine.win_exec_line(&command, show).await,
+                            Err(error) => Ok(error),
+                        }
+                    }
+                    _ => Ok(answer),
+                }
+            }
             Err(error) => Ok(error),
         };
 

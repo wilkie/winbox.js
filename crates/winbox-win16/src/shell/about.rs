@@ -72,7 +72,7 @@ const SW_HIDE: u16 = 0;
 /// winbox.js keeps them itself, as it keeps SHELL: no Windows file is
 /// shipped. Made to match the Windows 3.1 the recordings are made on by
 /// `scripts/oracle/strings-table.mjs`.
-const STRINGS: &[(u16, &str)] = &[
+pub(crate) const STRINGS: &[(u16, &str)] = &[
     (0x0d0, "REG.DAT"),
     (0x0d1, "Real Mode"),
     (0x0d2, "Real Mode (Large Frame EMS)"),

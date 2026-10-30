@@ -2172,13 +2172,13 @@ pub static KEPT: &[Kept] = &[
                 name: "K403",
                 pops: 4,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "K404",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
         ],
     },
@@ -5128,13 +5128,13 @@ pub static KEPT: &[Kept] = &[
                 name: "EnableOEMLayer",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "DisableOEMLayer",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "InitApp",
@@ -5175,8 +5175,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Bear11",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "KillTimer",
@@ -6201,8 +6201,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Bear182",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetCaretPos",
@@ -6405,8 +6405,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "UserSeeUserDo",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "LookupMenuHandle",
@@ -6945,8 +6945,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Bear306",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",
@@ -7167,8 +7167,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetFilePortName",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",
@@ -7510,7 +7510,7 @@ pub static KEPT: &[Kept] = &[
                 name: "FinalUserInit",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "Unknown",
@@ -7893,8 +7893,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "DragObject",
                 pops: 12,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "DragDetect",
@@ -7928,9 +7928,9 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "StringFunc",
-                pops: 8,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "lstrcmpi",
@@ -7995,8 +7995,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Hardware_Event",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "EnableScrollBar",
@@ -8011,7 +8011,7 @@ pub static KEPT: &[Kept] = &[
                 stub: false,
             }),
             Some(Export {
-                name: "Unknown",
+                name: "__GP",
                 pops: 0,
                 returns: 0,
                 stub: true,
@@ -15027,8 +15027,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FindExeDlgProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "RegisterShellHook",

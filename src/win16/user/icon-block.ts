@@ -62,23 +62,26 @@ export function iconBlock(system: any, icon: IconData) {
   return writeBlock(system, icon, planes, bits);
 }
 
-function writeBlock(system: any, icon: IconData, planes: number, bits: number) {
+/**
+ * An icon's or a cursor's block as bytes: the hotspot -- the middle, for an
+ * icon -- its size, the mask's row, its format, the mask, then the picture
+ * in that format.
+ */
+export function blockBytes(
+  icon: IconData,
+  planes: number,
+  bits: number,
+  hotspot = { x: icon.width >> 1, y: icon.height >> 1 }
+) {
   const { width, height } = icon;
   const size = blockSize(width, height, planes, bits);
-  const handle = GlobalAlloc.call(system, 0x0042, size);
-  const far = globalPointer.call(system, handle);
-
-  if (!handle || !far) {
-    return 0;
-  }
-
   const bytes = new Uint8Array(size);
   const view = new DataView(bytes.buffer);
   const maskRow = wordRow(width);
   const pictureRow = wordRow(width * bits);
 
-  view.setUint16(0, width >> 1, true);
-  view.setUint16(2, height >> 1, true);
+  view.setUint16(0, hotspot.x, true);
+  view.setUint16(2, hotspot.y, true);
   view.setUint16(4, width, true);
   view.setUint16(6, height, true);
   view.setUint16(8, maskRow, true);
@@ -107,9 +110,23 @@ function writeBlock(system: any, icon: IconData, planes: number, bits: number) {
     }
   }
 
+  return bytes;
+}
+
+function writeBlock(system: any, icon: IconData, planes: number, bits: number) {
+  const bytes = blockBytes(icon, planes, bits);
+  const handle = GlobalAlloc.call(system, 0x0042, bytes.length);
+  const far = globalPointer.call(system, handle);
+
+  if (!handle || !far) {
+    return 0;
+  }
+
   const core = system.machine.cpu.core;
 
-  bytes.forEach((value, i) => core.write8((far >>> 16) & 0xffff, ((far & 0xffff) + i) & 0xffff, value));
+  bytes.forEach((value, i) =>
+    core.write8((far >>> 16) & 0xffff, ((far & 0xffff) + i) & 0xffff, value)
+  );
 
   (system._iconBlocks ??= new Set<number>()).add(handle);
 
@@ -205,7 +222,8 @@ export function iconOf(system: any, hicon: number): IconData | null {
 
   for (let row = 0; row < height; row++) {
     for (let column = 0; column < width; column++) {
-      and[row * width + column] = (byte(12 + row * maskRow + (column >> 3)) >> (7 - (column & 7))) & 1;
+      and[row * width + column] =
+        (byte(12 + row * maskRow + (column >> 3)) >> (7 - (column & 7))) & 1;
 
       const planeBits: number[] = [];
 
@@ -216,7 +234,8 @@ export function iconOf(system: any, hicon: number): IconData | null {
         planeBits.push((value >> (8 - bits - (bit & 7))) & ((1 << bits) - 1));
       }
 
-      xor[row * width + column] = bits === 1 ? indexOf(planeBits) : planeBits.reduce((i, v, p) => i | (v << (p * bits)), 0);
+      xor[row * width + column] =
+        bits === 1 ? indexOf(planeBits) : planeBits.reduce((i, v, p) => i | (v << (p * bits)), 0);
     }
   }
 

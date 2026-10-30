@@ -5548,6 +5548,14 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* USER's and GDI's local heaps, which TOOLHELP walks: WinBox keeps their
    * objects in itself, and their data segments hold no heap (2 records). */
   'thheap:lsystem': "USER's and GDI's data segments hold no local heap in WinBox",
+  'strfunc:seeuser':
+    "UserSeeUserDo works on USER's own data segment, which in WinBox holds no local heap and none of USER's words (as thheap:lsystem)",
+  'userproc:classproc':
+    "WinBox registers USER's own classes #32768 to #32772 only on the raster desktop, with procedures of its own that no address of USER's names, and gives the desktop's none",
+  'userproc:handler':
+    "USER's resource handlers for icons and cursors are not yet done: WinBox's LoadResource of an icon calls KERNEL's own handler",
+  'userproc:iconres':
+    "USER's resource handlers for icons and cursors are not yet done: LoadResource of an icon gives the file's DIB, not USER's block",
   /* `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
    * font's height in the device context's units; both engines take it as
    * pixels, so the widths, the pairs' amounts and the outline metrics are
@@ -5942,6 +5950,8 @@ const RUN_WHOLE = new Set<string>([
   'invchild',
   'popmax',
   'ictwrap',
+  ...['kowner', 'systimer', 'strfunc', 'hwevent', 'userproc'],
+  ...['filport', 'dragobj', 'findexe', 'oemlayer'],
 ]);
 
 /**
@@ -6055,6 +6065,7 @@ const VIRTUAL_CLOCK = new Set([
   'dirorder',
   'instlay',
   ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
+  ...['systimer', 'filport', 'findexe'],
 ]);
 
 /**

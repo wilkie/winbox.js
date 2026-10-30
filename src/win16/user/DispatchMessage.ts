@@ -48,13 +48,14 @@ export async function DispatchMessage(lpmsg) {
 
 /** A message taken handed to its window's procedure, as USER's own loops dispatch one. */
 export async function dispatchMessage(this: any, lpmsg) {
-  /* A timer set with a procedure calls it, not the window's procedure. */
-  if (lpmsg.message === User.WM_TIMER && (lpmsg.lParam || hasFunctionProc(this, lpmsg))) {
-    return await callTimerProc(this, lpmsg);
-  }
-
-  /* A system timer, such as the caret's blink, always has one. */
-  if (lpmsg.message === WM_SYSTIMER) {
+  /* A timer set with a procedure, `WM_TIMER` or `WM_SYSTIMER`, calls it,
+   * not the window's procedure (`USER.EXE` seg1 `274e`-`2769`); USER's own
+   * system timers, the caret's blink among them, have procedures of
+   * WinBox's. A system timer with none goes to the window. */
+  if (
+    (lpmsg.message === User.WM_TIMER || lpmsg.message === WM_SYSTIMER) &&
+    (lpmsg.lParam || hasFunctionProc(this, lpmsg))
+  ) {
     return await callTimerProc(this, lpmsg);
   }
 
@@ -86,5 +87,5 @@ export async function dispatchMessage(this: any, lpmsg) {
 
 /** A timer whose procedure is one of winbox.js's own functions, which a message's `lParam` cannot carry. */
 function hasFunctionProc(system: any, lpmsg: any) {
-  return typeof timerProcOf(system, lpmsg.hwnd, lpmsg.wParam) === 'function';
+  return typeof timerProcOf(system, lpmsg.hwnd, lpmsg.wParam, lpmsg.message) === 'function';
 }

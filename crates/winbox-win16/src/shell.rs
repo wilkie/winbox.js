@@ -12,6 +12,7 @@
 
 pub mod about;
 pub mod drag;
+pub mod find_program;
 pub mod programs;
 pub mod reg_api;
 pub mod registry;
@@ -30,6 +31,13 @@ pub struct Shell {
     /// The windows marked as taking files dropped on them. The TypeScript
     /// engine marks the window itself; nothing reads the mark there either.
     pub accepts_files: HashSet<u16>,
+    /// The extension whose registry association gave the command
+    /// `command_for` answered last, none for a program or `WIN.INI`'s: the
+    /// associations `ShellExecute` shows its box for finding a program for
+    /// (`find_program.rs`).
+    pub registry_extension: Option<String>,
+    /// The message `commdlg_help` as `FindExeDlgProc` registered it.
+    pub help_message: u16,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -55,6 +63,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ShellExecute" => Implementation::Async(programs::shell_execute),
         "FindExecutable" => Implementation::Sync(programs::find_executable),
         "ShellAbout" => Implementation::Async(about::shell_about),
+        "FindExeDlgProc" => Implementation::Async(find_program::find_exe_dlg_proc),
         "ExtractIcon" => Implementation::Sync(programs::extract_icon),
         "InternalExtractIcon" => Implementation::Sync(programs::internal_extract_icon),
         "AboutDlgProc" => Implementation::Async(about::about_dlg_proc),

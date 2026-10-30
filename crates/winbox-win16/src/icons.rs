@@ -500,6 +500,18 @@ impl System {
         handle
     }
 
+    /// A handle of WinBox's own standing for USER's cursor 100, the one
+    /// `DragObject` shows where nothing takes the object: drawn as the
+    /// standard arrow, as WinBox keeps no picture of USER's own cursors
+    /// (`drag_object.rs`).
+    pub(crate) fn no_drop_cursor(&mut self) -> u16 {
+        self.new_cursor(CursorData {
+            id: IDC_ARROW,
+            hotspot: (0, 0),
+            image: None,
+        })
+    }
+
     fn new_cursor(&mut self, cursor: CursorData) -> u16 {
         let index = self.cursors.len();
 

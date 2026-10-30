@@ -69,15 +69,7 @@ impl System {
 
     /// The system timer of ten seconds, given USER's task list's window.
     pub(crate) fn start_screen_save_timer(&mut self, hwnd: u16) {
-        self.set_timer(hwnd, SCREEN_SAVE_TIMER, EVERY, 0);
-
-        if let Some(timer) = self
-            .timers
-            .iter_mut()
-            .find(|timer| timer.hwnd == hwnd && timer.id == SCREEN_SAVE_TIMER)
-        {
-            timer.message = WM_SYSTIMER;
-        }
+        self.set_timer_as(hwnd, SCREEN_SAVE_TIMER, EVERY, 0, WM_SYSTIMER);
     }
 
     /// The timer's look: `SC_SCREENSAVE` posted where it is due.

@@ -249,6 +249,11 @@ pub struct System {
     /// The task each block of `GlobalAlloc`'s was allocated by, by its
     /// first descriptor index: TOOLHELP's owner (`toolhelp/global.rs`).
     pub block_owners: HashMap<usize, u16>,
+    /// The owners KERNEL's ordinal 403 set, by the block's first
+    /// descriptor index (`kernel_calls/owners.rs`).
+    pub set_owners: HashMap<usize, u16>,
+    /// USER's "Print To File" box, while one is up (`print_to_file.rs`).
+    pub print_to_file: Option<crate::print_to_file::PrintBox>,
     /// The procedure `FatalExitHook` set.
     pub fatal_exit_hook: u32,
     /// The count `TimerCount` answered last.
@@ -603,6 +608,8 @@ impl System {
             notifications: Vec::new(),
             task_order: crate::task_order::TaskOrder::default(),
             block_owners: HashMap::new(),
+            set_owners: HashMap::new(),
+            print_to_file: None,
             fatal_exit_hook: 0,
             timer_count: 0,
             swap_area: 0,
