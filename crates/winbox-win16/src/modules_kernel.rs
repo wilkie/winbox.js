@@ -22,7 +22,7 @@ pub const THUNKS: usize = 512;
 
 /// Modules winbox.js keeps whose file is loaded beside them when there is
 /// one (`own_modules.rs`).
-const STUBS_ONLY: [&str; 4] = crate::own_modules::OWN_WITH_FILE;
+const STUBS_ONLY: [&str; 5] = crate::own_modules::OWN_WITH_FILE;
 
 /// A string argument as the TypeScript engine reads one: nought for a null
 /// pointer, a number where its segment is nought, else the string.
@@ -557,6 +557,9 @@ pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u1
     let found: (Result<usize, u16>, Vec<usize>) = 'found: {
         let mut system = engine.system();
         let file_of = |path: &str| path.rsplit('\\').next().unwrap_or("").to_ascii_uppercase();
+
+        // One of WinBox's own kept only once loaded, kept now.
+        crate::own_modules::keep_on_load(&mut system, name.split('.').next().unwrap_or(""));
 
         // One winbox.js keeps, found by its file's name.
         if let Some(kept) = system.kept.iter().find(|kept| {

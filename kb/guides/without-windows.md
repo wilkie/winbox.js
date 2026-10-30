@@ -19,7 +19,7 @@ These are Microsoft's own code, loaded from the installation when a program impo
 | **COMMDLG**            | 16 of the accessories, WinHelp, Program Manager's Browse, SETUP; in the corpus fibsw, hanoi, champ, wslam, wordsrch, SimTower and its EREG, and bg (through CTL3D). The file dialogs, Find, Replace, Color, Font and Print are WinBox's own, with or without the file ([[topic:common-dialogs]]). |
 | **DDEML**              | SETUP programs (caribb's), champ. WinBox's own, every export, with or without the file ([[topic:dynamic-data-exchange]], [[topic:ddeml-transactions]]).                                                                                                                                           |
 | **VER**, **LZEXPAND**  | SETUP programs, Control Panel's MAIN.CPL and DRIVERS.CPL. WinBox's own, with or without the files ([[topic:version-information]], [[topic:compressed-files]]).                                                                                                                                    |
-| **OLECLI**, **OLESVR** | Cardfile and Write (objects in a document); Packager, Paintbrush and Sound Recorder (as servers)                                                                                                                                                                                                  |
+| **OLECLI**, **OLESVR** | Cardfile and Write (objects in a document); Packager, Paintbrush and Sound Recorder (as servers). OLECLI is WinBox's own for documents and static objects, with or without the file; embedding and linking are not yet ([[topic:ole]])                                                            |
 
 Programs that winbox.js starts are run from disk as well, as Windows would run them: TASKMAN, a screen saver, the accessories themselves, `.CPL` applets. Those are the user's programs, not part of the system.
 
@@ -115,7 +115,7 @@ COMMDLG is the largest piece of Microsoft's code that still runs. It is done as 
 
 - **DDEML**: needed by installers and by WinBox's own Program Manager. WinBox's own, every export, read out of `DDEML.DLL` and recorded by [[probe:ddemgmt]], [[probe:ddexact]], [[probe:pmatom]], [[probe:progdde]], [[probe:ddefail]], [[probe:ddemon]], [[probe:ddeterm]], [[probe:ddelist]], [[probe:ddenest]], [[probe:ddeheap]], [[probe:ddehsz]], [[probe:ddewep]] and [[probe:ddeinst]] ([[topic:dynamic-data-exchange]], [[topic:ddeml-transactions]]). It is kept as COMMDLG is, and the probes write what Windows wrote with the file and without it. With no file it is counted as the file would be, loaded with a program that imports it and let go, its data with it, as that program ends ([[topic:dynamic-link-libraries]]); Program Manager takes an installer's `CreateGroup`, `AddItem` and `ShowGroup` through it with no `DDEML.DLL` on the drive.
 - **VER** and **LZEXPAND**: needed by installers, to compare file versions and to expand compressed files. Both are WinBox's own, every export, read out of `VER.DLL` and `LZEXPAND.DLL` and recorded by [[probe:verinfo]], [[probe:verinst]] and [[probe:lzfiles]] ([[topic:version-information]], [[topic:compressed-files]]). They are kept as COMMDLG is: with the files on the drive, each import of an export is linked to WinBox's stub; with none, `LoadLibrary` finds WinBox's, and the probes write what Windows wrote either way. VER reads files through WinBox's LZEXPAND, so a compressed file's version is read as Windows reads it.
-- **OLECLI** and **OLESVR**: needed for objects in documents (Write, Cardfile) and by the servers (Paintbrush, Sound Recorder, Packager). They are large, and only those programs need them, so they come last.
+- **OLECLI** and **OLESVR**: needed for objects in documents (Write, Cardfile) and by the servers (Paintbrush, Sound Recorder, Packager). `OLECLI` is WinBox's own for client documents and static objects -- pictures, bitmaps, DIBs, another class's data from a stream -- written from OLE 1.0's documented interface and recorded by [[probe:olestat]] and [[probe:olemem]]; it is kept as DDEML is, with or without the file, and kept only once a program loads it ([[topic:ole]]). Embedded and linked objects, and `OLESVR`, are not yet.
 
 Until each is WinBox's own, a run with an installation keeps loading Microsoft's, as now.
 
@@ -125,7 +125,7 @@ Until each is WinBox's own, a run with an installation keeps loading Microsoft's
 2. **The asset bundle**: made from the user's media, with the profiles written by WinBox, and the engines able to start from it alone.
 3. **Layered drives**: the stack of layers with content-addressed sharing, and a program's installer run into a layer of its own.
 4. **VER**, **LZEXPAND** and **DDEML** (done), which installers need; then WinBox's own Program Manager that collects groups and items (done: [[topic:program-manager-dde]]).
-5. **OLECLI** and **OLESVR**.
+5. **OLECLI** and **OLESVR**: OLECLI's documents and static objects (done: [[topic:ole]]); embedding and linking, and OLESVR, next.
 
 A launcher, native and on the page, sits on top of steps 3 and 4 (not started; the groups it would show are listed already). It shows the groups and items installers made, runs each program on its layers, and uses seamless mode in the native build ([[guide:seamless-windows]]).
 

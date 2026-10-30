@@ -90,6 +90,7 @@ pub mod modules;
 mod modules_kernel;
 pub mod mouse_scan;
 mod moved;
+pub mod olecli;
 mod own_modules;
 pub mod paint;
 pub mod painter;

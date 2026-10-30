@@ -1,7 +1,7 @@
 'use strict';
 
 import { readArguments } from '../read-arguments.js';
-import { Types } from '../types.js';
+import { HDC, Types } from '../types.js';
 
 /**
  * `COMMDLG`'s calls into KERNEL, USER and GDI, made as `COMMDLG.DLL` makes
@@ -109,8 +109,34 @@ export async function api(system: any, module: string, name: string, args: Arg[]
 
   try {
     const { args: read, rejected } = readArguments(system, definition, ss, sp);
+    /* A GDI call into a metafile's device context kept as a record, as a
+     * program's is (`win16.ts`): `OLECLI` draws an object into one. */
+    /* Imported as it is first wanted: `gdi/metafile.ts` reaches the modules
+     * that import this one. */
+    const metafile =
+      module === 'GDI' && !rejected && definition[3]?.[0] === HDC
+        ? await import('../gdi/metafile.js')
+        : null;
+    const meta =
+      metafile && !metafile.MADE_ON_METAFILES.has(name) ? system.handles.resolve(read[0]) : null;
 
-    result = rejected ? 0 : await definition[0].apply(system, read);
+    if (metafile && meta instanceof metafile.MetafileDC) {
+      const kept = system._modules._loaded?.[module]?.instance ?? system._modules.fromName(module);
+      const stack = Array.from({ length: Math.max((definition[2] || 0) - 2, 0) }, (_, i) =>
+        core.read8(ss, (sp + 4 + i) & 0xffff)
+      );
+
+      result = metafile.recordCall(
+        system,
+        meta,
+        (kept.exports as any[]).findIndex((entry) => entry?.[1] === name),
+        name,
+        read,
+        stack
+      );
+    } else {
+      result = rejected ? 0 : await definition[0].apply(system, read);
+    }
   } finally {
     core.sp = saved;
   }

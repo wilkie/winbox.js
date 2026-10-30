@@ -1,8 +1,8 @@
 //! The libraries WinBox keeps whose file is loaded beside them when there
 //! is one, each import of an export WinBox answers linked to WinBox's stub
 //! (`linker.rs`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
-//! `LZEXPAND` (`lzexpand/`) and `DDEML` (`ddeml/`). As
-//! `src/win16/own-modules.ts`.
+//! `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`) and `OLECLI` (`olecli/`).
+//! As `src/win16/own-modules.ts`.
 
 use crate::call::Implementation;
 use crate::loader::Held;
@@ -10,12 +10,33 @@ use crate::modules::Kept;
 use crate::system::{STEP, System};
 
 /// The names of those libraries.
-pub const OWN_WITH_FILE: [&str; 4] = [
+pub const OWN_WITH_FILE: [&str; 5] = [
     crate::commdlg::NAME,
     crate::ver::NAME,
     crate::lzexpand::NAME,
     crate::ddeml::NAME,
+    crate::olecli::NAME,
 ];
+
+/// One of those kept only once a program loads one, not as Windows starts
+/// (`crate::kept::ON_LOAD`): `OLECLI`. A kept module takes two
+/// descriptors, so one kept as Windows starts moves every selector a
+/// program is given after; kept as it is first loaded, a session that
+/// never loads it is as before. By its module's name or its file's
+/// (`OLECLI.DLL`), kept now if it is not yet, before its file is looked
+/// for or loaded -- so the file's library, if there is one, is registered
+/// after it under the same name. As `own-modules.ts`'s `keepOnLoad`.
+pub(crate) fn keep_on_load(system: &mut System, name: &str) {
+    let upper = name.to_ascii_uppercase();
+    let own = upper.strip_suffix(".DLL").unwrap_or(&upper);
+
+    if let Some(module) = crate::kept::ON_LOAD
+        .iter()
+        .find(|module| module.name == own)
+    {
+        system.keep_on_load(module);
+    }
+}
 
 /// Whether a module is one of those.
 pub(crate) fn own_with_file(name: &str) -> bool {
@@ -132,6 +153,8 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         crate::lzexpand::implementation(name)
     } else if module.eq_ignore_ascii_case(crate::ddeml::NAME) {
         crate::ddeml::implementation(name)
+    } else if module.eq_ignore_ascii_case(crate::olecli::NAME) {
+        crate::olecli::implementation(name)
     } else {
         None
     }
@@ -148,10 +171,18 @@ pub(crate) fn redirect(system: &mut System, module: usize, ordinal: u16) -> Opti
         return crate::commdlg::redirect(system, module, ordinal);
     }
 
-    let own = [crate::ver::NAME, crate::lzexpand::NAME, crate::ddeml::NAME]
-        .into_iter()
-        .find(|own| own.eq_ignore_ascii_case(&name))?;
-    let export = Kept::named(own)?.export(ordinal)?;
+    let own = [
+        crate::ver::NAME,
+        crate::lzexpand::NAME,
+        crate::ddeml::NAME,
+        crate::olecli::NAME,
+    ]
+    .into_iter()
+    .find(|own| own.eq_ignore_ascii_case(&name))?;
+
+    keep_on_load(system, own);
+
+    let export = Kept::any_named(own)?.export(ordinal)?;
 
     implementation(own, export.name)?;
 
@@ -173,5 +204,11 @@ pub(crate) fn freed(system: &mut System, library: usize) {
 fn freed_named(system: &mut System, name: &str) {
     if name.eq_ignore_ascii_case(crate::ddeml::NAME) {
         crate::ddeml::freed(system);
+    }
+
+    // `OLECLI`'s data goes with it: its documents' list and what it did as
+    // it started, done again as it is next loaded and called.
+    if name.eq_ignore_ascii_case(crate::olecli::NAME) {
+        system.olecli = crate::olecli::State::default();
     }
 }

@@ -1,0 +1,1104 @@
+{
+  "probe": "olemem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0 doc"
+    },
+    {
+      "function": "place",
+      "args": "doc",
+      "result": "0 32"
+    },
+    {
+      "function": "doc",
+      "args": "registered",
+      "result": "4443 0 0 0 0 class docname dochandle 0 0 0 0 "
+    },
+    {
+      "function": "doc",
+      "args": "second",
+      "result": "4443 0 0 0 0 class docname secondhandle 0 doc 0 0 "
+    },
+    {
+      "function": "doc",
+      "args": "first after second",
+      "result": "4443 0 0 0 0 class docname dochandle 0 0 0 second "
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "mf",
+      "result": "0 object"
+    },
+    {
+      "function": "place",
+      "args": "mf",
+      "result": "0 96"
+    },
+    {
+      "function": "vtbl",
+      "args": "mf",
+      "result": "712,300,701,1029,301,702,704,705,309,1028,300,703,302,303,706,304,305,308,708,717,709,710,711,714,715,716,911,910,912,307,913,707,713,1027,1027,1027,1026,718,310,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "mf",
+      "result": "other"
+    },
+    {
+      "function": "other",
+      "args": "mf,Draw",
+      "result": "0"
+    },
+    {
+      "function": "other",
+      "args": "mf,CopyToClipboard",
+      "result": "0"
+    },
+    {
+      "function": "formats",
+      "args": "mf,CopyToClipboard",
+      "result": "3,"
+    },
+    {
+      "function": "other",
+      "args": "mf,Clone",
+      "result": "0 object"
+    },
+    {
+      "function": "other",
+      "args": "mf,Equal",
+      "result": "0 0 1"
+    },
+    {
+      "function": "other",
+      "args": "mf,SaveToStream",
+      "result": "0 109 109"
+    },
+    {
+      "function": "other",
+      "args": "mf,ChangeData",
+      "result": "4"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Show",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "mf,DoVerb",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetData",
+      "result": "4 4"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetTargetDevice",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetBounds",
+      "result": "4 4"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetBoundsNull",
+      "result": "4 16"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetColorScheme",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetHostNames",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,CopyFromLink",
+      "result": "6 18"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Activate",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Execute",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Close",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Update",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,Reconnect",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,ObjectConvert",
+      "result": "6 18"
+    },
+    {
+      "function": "direct",
+      "args": "mf,GetLinkUpdateOptions",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,SetLinkUpdateOptions",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryOpen",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryOutOfDate",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryReleaseStatus",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryReleaseError",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryReleaseMethod",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,RequestData",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "mf,RequestData0",
+      "result": "6 12"
+    },
+    {
+      "function": "direct",
+      "args": "mf,ObjectLong",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryProtocol",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "mf,QueryProtocolStatic",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "update after",
+      "result": "7"
+    },
+    {
+      "function": "drawn",
+      "args": "mf",
+      "result": "0"
+    },
+    {
+      "function": "record",
+      "args": "mf#0",
+      "result": "1e:"
+    },
+    {
+      "function": "record",
+      "args": "mf#1",
+      "result": "416: 70 110 20 10"
+    },
+    {
+      "function": "record",
+      "args": "mf#2",
+      "result": "41b: 50 100 0 0"
+    },
+    {
+      "function": "record",
+      "args": "mf#3",
+      "result": "127: -1"
+    },
+    {
+      "function": "drawn",
+      "args": "mf alone",
+      "result": "8"
+    },
+    {
+      "function": "record",
+      "args": "mf alone#0",
+      "result": "1e:"
+    },
+    {
+      "function": "record",
+      "args": "mf alone#1",
+      "result": "416: 70 110 20 10"
+    },
+    {
+      "function": "drawn",
+      "args": "windowed",
+      "result": "0"
+    },
+    {
+      "function": "record",
+      "args": "windowed#0",
+      "result": "1e:"
+    },
+    {
+      "function": "record",
+      "args": "windowed#1",
+      "result": "416: 70 110 20 10"
+    },
+    {
+      "function": "record",
+      "args": "windowed#2",
+      "result": "20c: 307 405"
+    },
+    {
+      "function": "record",
+      "args": "windowed#3",
+      "result": "20b: -9 -2"
+    },
+    {
+      "function": "record",
+      "args": "windowed#4",
+      "result": "41b: 50 100 0 0"
+    },
+    {
+      "function": "record",
+      "args": "windowed#5",
+      "result": "127: -1"
+    },
+    {
+      "function": "drawn",
+      "args": "windowed alone",
+      "result": "8"
+    },
+    {
+      "function": "record",
+      "args": "windowed alone#0",
+      "result": "1e:"
+    },
+    {
+      "function": "record",
+      "args": "windowed alone#1",
+      "result": "416: 70 110 20 10"
+    },
+    {
+      "function": "doc",
+      "args": "mf",
+      "result": "4443 0 mf 0 mf class docname dochandle 0 0 0 second "
+    },
+    {
+      "function": "obj",
+      "args": "mf",
+      "result": "mfvtbl vtblsel 454c mfhandle client probeds 3 0 7d0 0 fc18 ffff 8 0 ffff mfname 0 doc 0 0 0 0 0 0 48 0 8 7d0 3e8 mfhmf mfdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "mf",
+      "result": "1 0 10 0 0 "
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "bm",
+      "result": "0 object"
+    },
+    {
+      "function": "place",
+      "args": "bm",
+      "result": "0 64"
+    },
+    {
+      "function": "vtbl",
+      "args": "bm",
+      "result": "712,400,701,1029,401,702,704,705,409,1028,400,703,402,403,706,404,405,408,708,717,709,710,711,714,715,716,911,910,912,407,913,707,713,1027,1027,1027,1026,718,410,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "bm",
+      "result": "other"
+    },
+    {
+      "function": "doc",
+      "args": "bm",
+      "result": "4443 0 mf 0 bm class docname dochandle 0 0 0 second "
+    },
+    {
+      "function": "obj",
+      "args": "bm",
+      "result": "bmvtbl vtblsel 454c bmhandle client probeds 3 0 1a7 0 ff2c ffff 1 0 ffff bmname 0 doc 0 mf 0 0 0 0 4e 0 10 8 bmdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "bm",
+      "result": "0 0 0 "
+    },
+    {
+      "function": "drawn",
+      "args": "bm",
+      "result": "4"
+    },
+    {
+      "function": "obj",
+      "args": "mf after bm",
+      "result": "mfvtbl vtblsel 454c mfhandle client probeds 3 0 7d0 0 fc18 ffff 8 0 ffff mfname 0 doc 0 0 0 bm 0 0 48 0 8 7d0 3e8 mfhmf mfdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "mf after bm",
+      "result": "1 0 10 0 0 "
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "iso",
+      "result": "4 0"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "nox",
+      "result": "0 object"
+    },
+    {
+      "function": "place",
+      "args": "nox",
+      "result": "0 96"
+    },
+    {
+      "function": "vtbl",
+      "args": "nox",
+      "result": "712,300,701,1029,301,702,704,705,309,1028,300,703,302,303,706,304,305,308,708,717,709,710,711,714,715,716,911,910,912,307,913,707,713,1027,1027,1027,1026,718,310,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "nox",
+      "result": "other"
+    },
+    {
+      "function": "obj",
+      "args": "nox",
+      "result": "noxvtbl vtblsel 454c noxhandle client probeds 3 0 0 0 0 0 8 0 ffff noxname 0 doc 0 bm 0 0 0 0 48 0 8 0 0 noxhmf noxdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "nox",
+      "result": "0 0 0 0 0 "
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "text",
+      "result": "4 0"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "dib",
+      "result": "0 object"
+    },
+    {
+      "function": "place",
+      "args": "dib",
+      "result": "0 64"
+    },
+    {
+      "function": "vtbl",
+      "args": "dib",
+      "result": "712,500,701,1029,501,702,704,705,509,1028,500,703,502,503,706,504,505,508,708,717,709,710,711,714,715,716,911,910,912,507,913,707,713,1027,1027,1027,1026,718,510,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "dib",
+      "result": "other"
+    },
+    {
+      "function": "obj",
+      "args": "dib",
+      "result": "dibvtbl vtblsel 454c dibhandle client probeds 3 0 1a7 0 ff2d ffff 1 0 ffff dibname 0 doc 0 bm 0 0 0 0 60 0 0 0 dibdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "dib",
+      "result": "0 0 0 "
+    },
+    {
+      "function": "drawn",
+      "args": "dib",
+      "result": "0"
+    },
+    {
+      "function": "record",
+      "args": "dib#0",
+      "result": "f7: 768 2 0 0 0 0"
+    },
+    {
+      "function": "record",
+      "args": "dib#1",
+      "result": "234: 0"
+    },
+    {
+      "function": "record",
+      "args": "dib#2",
+      "result": "35:"
+    },
+    {
+      "function": "record",
+      "args": "dib#3",
+      "result": "f43: 32 204 0 8 16 0 0 50 100 20 10 40"
+    },
+    {
+      "function": "record",
+      "args": "dib#4",
+      "result": "f7: 768 20 0 0 128 0 -32768 0 -32640 0 0 128"
+    },
+    {
+      "function": "record",
+      "args": "dib#5",
+      "result": "234: 1"
+    },
+    {
+      "function": "record",
+      "args": "dib#6",
+      "result": "35:"
+    },
+    {
+      "function": "record",
+      "args": "dib#7",
+      "result": "1f0: 0"
+    },
+    {
+      "function": "drawn",
+      "args": "dib alone",
+      "result": "0"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#0",
+      "result": "f7: 768 2 0 0 0 0"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#1",
+      "result": "234: 0"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#2",
+      "result": "35:"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#3",
+      "result": "f43: 32 204 0 8 16 0 0 50 100 20 10 40"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#4",
+      "result": "f7: 768 20 0 0 128 0 -32768 0 -32640 0 0 128"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#5",
+      "result": "234: 1"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#6",
+      "result": "35:"
+    },
+    {
+      "function": "record",
+      "args": "dib alone#7",
+      "result": "1f0: 0"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bogus",
+      "result": "5 0 30"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "generic",
+      "result": "0 object 40"
+    },
+    {
+      "function": "vtbl",
+      "args": "generic",
+      "result": "712,600,701,1029,601,602,704,705,610,1028,600,703,603,604,706,605,606,609,708,717,709,710,711,714,715,716,911,910,1030,608,913,707,713,1027,1027,1027,1026,718,611,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "generic",
+      "result": "other"
+    },
+    {
+      "function": "obj",
+      "args": "generic",
+      "result": "madevtbl vtblsel 454c madehandle client probeds 3 0 0 0 0 0 1 0 ffff madename 0 doc 0 dib 0 0 0 0 madeformat GENERI 3 0 madedata "
+    },
+    {
+      "function": "drawstate",
+      "args": "generic",
+      "result": "0 0 0 "
+    },
+    {
+      "function": "other",
+      "args": "generic,Draw",
+      "result": "19"
+    },
+    {
+      "function": "other",
+      "args": "generic,CopyToClipboard",
+      "result": "0"
+    },
+    {
+      "function": "formats",
+      "args": "generic,CopyToClipboard",
+      "result": "Probe,"
+    },
+    {
+      "function": "other",
+      "args": "generic,Clone",
+      "result": "0 object"
+    },
+    {
+      "function": "other",
+      "args": "generic,Equal",
+      "result": "0 0 1"
+    },
+    {
+      "function": "other",
+      "args": "generic,SaveToStream",
+      "result": "0 40 40"
+    },
+    {
+      "function": "other",
+      "args": "generic,ChangeData",
+      "result": "4"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Show",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "generic,DoVerb",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetData",
+      "result": "12 12"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetTargetDevice",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetBounds",
+      "result": "4 4"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetBoundsNull",
+      "result": "4 16"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetColorScheme",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetHostNames",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,CopyFromLink",
+      "result": "6 18"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Activate",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Execute",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Close",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Update",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,Reconnect",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,ObjectConvert",
+      "result": "6 18"
+    },
+    {
+      "function": "direct",
+      "args": "generic,GetLinkUpdateOptions",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,SetLinkUpdateOptions",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryOpen",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryOutOfDate",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryReleaseStatus",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryReleaseError",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryReleaseMethod",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,RequestData",
+      "result": "6 6"
+    },
+    {
+      "function": "direct",
+      "args": "generic,RequestData0",
+      "result": "6 12"
+    },
+    {
+      "function": "direct",
+      "args": "generic,ObjectLong",
+      "result": "6 0"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryProtocol",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "generic,QueryProtocolStatic",
+      "result": "0 0"
+    },
+    {
+      "function": "direct",
+      "args": "update after",
+      "result": "7"
+    },
+    {
+      "function": "obj",
+      "args": "generic again",
+      "result": "madevtbl vtblsel 454c madehandle client probeds 3 0 0 0 0 0 1 0 ffff madename 0 doc 0 dib 0 0 0 0 madeformat GENERI 3 0 madedata "
+    },
+    {
+      "function": "drawstate",
+      "args": "generic again",
+      "result": "0 0 0 "
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "noname",
+      "result": "0 object 37"
+    },
+    {
+      "function": "vtbl",
+      "args": "noname",
+      "result": "712,600,701,1029,601,602,704,705,610,1028,600,703,603,604,706,605,606,609,708,717,709,710,711,714,715,716,911,910,1030,608,913,707,713,1027,1027,1027,1026,718,611,?,?,"
+    },
+    {
+      "function": "vtbl place",
+      "args": "noname",
+      "result": "other"
+    },
+    {
+      "function": "obj",
+      "args": "noname",
+      "result": "madevtbl vtblsel 454c madehandle client probeds 3 0 0 0 0 0 1 0 ffff madename 0 doc 0 dib 0 0 0 0 madeformat GENERI 6 0 madedata "
+    },
+    {
+      "function": "drawstate",
+      "args": "noname",
+      "result": "0 0 0 "
+    },
+    {
+      "function": "format name",
+      "args": "noname",
+      "result": "5: 50 72 6f 62 65"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "noname",
+      "result": "43"
+    },
+    {
+      "function": "bounds",
+      "args": "bitmap 100,50",
+      "result": "0 0,0,1000,-500"
+    },
+    {
+      "function": "bounds",
+      "args": "dib 2000",
+      "result": "0 0,0,800,-200 2000"
+    },
+    {
+      "function": "bounds",
+      "args": "dib 0",
+      "result": "0 0,0,423,-211 3780"
+    },
+    {
+      "function": "bounds",
+      "args": "dib -5",
+      "result": "0 0,0,7680,14464 -5"
+    },
+    {
+      "function": "equal",
+      "args": "bitmaps differing",
+      "result": "0 0 17"
+    },
+    {
+      "function": "equal",
+      "args": "pictures differing",
+      "result": "17 17 0"
+    },
+    {
+      "function": "CallBack",
+      "args": "4,object",
+      "result": "1"
+    },
+    {
+      "function": "CallBack",
+      "args": "4,object",
+      "result": "1"
+    },
+    {
+      "function": "long draw",
+      "args": "go on",
+      "result": "0 2"
+    },
+    {
+      "function": "drawstate",
+      "args": "after go on",
+      "result": "0 0 7 0 0 "
+    },
+    {
+      "function": "CallBack",
+      "args": "4,object",
+      "result": "0"
+    },
+    {
+      "function": "long draw",
+      "args": "stop",
+      "result": "10 1"
+    },
+    {
+      "function": "drawstate",
+      "args": "after stop",
+      "result": "0 a 10 0 0 "
+    },
+    {
+      "function": "doc",
+      "args": "objects",
+      "result": "4443 0 mf 0 dib class docname dochandle 0 0 0 second "
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "each",
+      "result": "mf"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "each",
+      "result": "bm"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "each",
+      "result": "dib"
+    },
+    {
+      "function": "obj",
+      "args": "mf renamed",
+      "result": "noxvtbl vtblsel 454c mfhandle client probeds 3 0 7d0 0 fc18 ffff 8 0 ffff renamed 0 doc 0 0 0 bm 0 0 48 0 8 7d0 3e8 mfhmf mfdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "mf renamed",
+      "result": "1 0 10 0 0 "
+    },
+    {
+      "function": "doc",
+      "args": "renamed",
+      "result": "4443 0 mf 0 dib class docname2 dochandle 0 0 0 second "
+    },
+    {
+      "function": "doc",
+      "args": "bm released",
+      "result": "4443 0 mf 0 dib class docname2 dochandle 0 0 0 second "
+    },
+    {
+      "function": "obj",
+      "args": "mf after bm released",
+      "result": "noxvtbl vtblsel 454c mfhandle client probeds 3 0 7d0 0 fc18 ffff 8 0 ffff renamed 0 doc 0 0 0 dib 0 0 48 0 8 7d0 3e8 mfhmf mfdata "
+    },
+    {
+      "function": "drawstate",
+      "args": "mf after bm released",
+      "result": "1 0 10 0 0 "
+    },
+    {
+      "function": "doc",
+      "args": "empty",
+      "result": "4443 0 0 0 0 class docname2 dochandle 0 0 0 second "
+    },
+    {
+      "function": "mode",
+      "args": "1,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "1,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "1,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "1,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "2,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "2,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "2,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "2,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "3,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "3,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "3,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "3,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "4,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "4,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "4,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "4,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "5,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "5,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "5,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "5,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "6,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "6,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "6,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "6,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "7,300,200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "7,0,0",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "7,-300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "7,300,-200",
+      "result": "4"
+    },
+    {
+      "function": "mode",
+      "args": "8,300,200",
+      "result": "0 0 0,0,300,-200 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,0,0",
+      "result": "0 0 0,0,0,0 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,-300,-200",
+      "result": "0 0 0,0,0,0 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,300,-200",
+      "result": "0 0 0,0,300,200 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,-300,200",
+      "result": "0 0 0,0,0,0 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,300,0",
+      "result": "0 0 0,0,300,0 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,0,200",
+      "result": "0 0 0,0,0,0 8"
+    },
+    {
+      "function": "mode",
+      "args": "8,-1,-1",
+      "result": "0 0 0,0,0,0 8"
+    },
+    {
+      "function": "doc",
+      "args": "saved",
+      "result": "4443 0 0 0 0 class docname2 dochandle 0 0 0 second "
+    }
+  ]
+}

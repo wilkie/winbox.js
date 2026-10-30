@@ -1,0 +1,3547 @@
+{
+  "probe": "olestat",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "OleQueryClientVersion",
+      "args": "",
+      "result": "00001001"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc1",
+      "result": "0 doc",
+      "section": "doc"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc1 again",
+      "result": "0 doc other",
+      "section": "doc"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "empty",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "empty out",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleRenameClientDoc",
+      "args": "doc1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleRenameClientDoc",
+      "args": "same",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleSavedClientDoc",
+      "args": "doc1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleRevertClientDoc",
+      "args": "doc1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,draw",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,none",
+      "result": "12",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,format",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Bogus,draw",
+      "result": "15",
+      "section": "mf"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "mf",
+      "result": "0 object",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "mf",
+      "result": "0 3",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "mf",
+      "result": "0 0,0,2000,-1000",
+      "section": "mf"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "mf",
+      "result": "3,0,",
+      "section": "mf"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "mf",
+      "result": "0 173",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "mf",
+      "result": "0 3 One",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 On",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,1",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,2",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,3",
+      "result": "0 handle 8 2000 1000 hmf",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,4",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,5",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,6",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,7",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "mf,8",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "mf",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleRename",
+      "args": "Renamed",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleRename",
+      "args": "empty",
+      "result": "29",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "renamed",
+      "result": "0 3",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "renamed",
+      "result": "0 0,0,2000,-1000",
+      "section": "mf"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "renamed",
+      "result": "3,0,",
+      "section": "mf"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "renamed",
+      "result": "0 173",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "renamed",
+      "result": "0 7 Renamed",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Re",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,1",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,2",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,3",
+      "result": "0 handle 8 2000 1000 hmf",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,4",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,5",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,6",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,7",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,8",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "renamed",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "renamed",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "renamed",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "renamed",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "renamed",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "13",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "8",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "Put",
+      "args": "128",
+      "result": "",
+      "section": "mf"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "mf",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "length",
+      "args": "mf",
+      "result": "173",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@0",
+      "result": "01050000030000000d0000004d45544146494c455049435400d007000018fcff",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@20",
+      "result": "ff880000000800d007e803xxxx0100090000032e000000000007000000000005",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@40",
+      "result": "0000000b0200000000050000000c0232006400070000001b0432006400000000",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@60",
+      "result": "00050000001402000000000500000013023200640007000000180428003c000a",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@80",
+      "result": "000a00030000000000xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "section": "mf"
+    },
+    {
+      "function": "bytes",
+      "args": "mf@a0",
+      "result": "xxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "section": "mf"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "mf",
+      "result": "0 object 173",
+      "section": "mf"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "as StdFileEditing",
+      "result": "15 0 8",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "loaded",
+      "result": "0 3",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "loaded",
+      "result": "0 0,0,2000,-1000",
+      "section": "mf"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "loaded",
+      "result": "3,0,",
+      "section": "mf"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "loaded",
+      "result": "0 173",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "loaded",
+      "result": "0 3 Two",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Tw",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,1",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,2",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,3",
+      "result": "0 handle 8 2000 1000 hmf",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,4",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,5",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,6",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,7",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,8",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "loaded",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "loaded",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "loaded",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "loaded",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "loaded",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleEqual",
+      "args": "loaded",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleClone",
+      "args": "mf",
+      "result": "0 object",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "cloned",
+      "result": "0 3",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "cloned",
+      "result": "0 0,0,2000,-1000",
+      "section": "mf"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "cloned",
+      "result": "3,0,",
+      "section": "mf"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "cloned",
+      "result": "0 173",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "cloned",
+      "result": "0 5 Clone",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Cl",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,1",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,2",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,3",
+      "result": "0 handle 8 2000 1000 hmf",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,4",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,5",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,6",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,7",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,8",
+      "result": "12 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "cloned",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "cloned",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "cloned",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "cloned",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "cloned",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleEqual",
+      "args": "cloned",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleEqual",
+      "args": "self",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "metafile",
+      "result": "1",
+      "section": "mf"
+    },
+    {
+      "function": "OleDraw",
+      "args": "mf",
+      "result": "0 160",
+      "section": "mf"
+    },
+    {
+      "function": "OleDraw",
+      "args": "mf",
+      "result": "0 c86e0081",
+      "section": "mf"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "screen",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "mf",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "formats",
+      "args": "mf",
+      "result": "3,",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetBounds",
+      "args": "mf",
+      "result": "4",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetTargetDevice",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetColorScheme",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleActivate",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleReconnect",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleClose",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "mf",
+      "result": "6 7",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleSetData",
+      "args": "mf",
+      "result": "4",
+      "section": "mf"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "nought",
+      "result": "12",
+      "section": "mf"
+    },
+    {
+      "function": "OleExecute",
+      "args": "mf",
+      "result": "6",
+      "section": "mf"
+    },
+    {
+      "function": "OleCopyFromLink",
+      "args": "mf",
+      "result": "18 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleObjectConvert",
+      "args": "mf",
+      "result": "18 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleLockServer",
+      "args": "mf",
+      "result": "6 0",
+      "section": "mf"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "mf",
+      "result": "3",
+      "section": "mf"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "with objects",
+      "result": "25",
+      "section": "mf"
+    },
+    {
+      "function": "OleDelete",
+      "args": "cloned",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleRelease",
+      "args": "loaded",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleRelease",
+      "args": "mf",
+      "result": "0",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "mf released",
+      "result": "13",
+      "section": "mf"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,draw",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,none",
+      "result": "12",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,format",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Bogus,draw",
+      "result": "15",
+      "section": "bm"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "bm",
+      "result": "0 object",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "bm",
+      "result": "0 3",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "bm",
+      "result": "0 0,0,1270,-635",
+      "section": "bm"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "bm",
+      "result": "2,0,",
+      "section": "bm"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "bm",
+      "result": "0 621",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "bm",
+      "result": "0 3 One",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 On",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,1",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,2",
+      "result": "0 handle 48 24 4 1",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,3",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,4",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,5",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,6",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,7",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bm,8",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "bm",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleRename",
+      "args": "Renamed",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleRename",
+      "args": "empty",
+      "result": "29",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "renamed",
+      "result": "0 3",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "renamed",
+      "result": "0 0,0,1270,-635",
+      "section": "bm"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "renamed",
+      "result": "2,0,",
+      "section": "bm"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "renamed",
+      "result": "0 621",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "renamed",
+      "result": "0 7 Renamed",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Re",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,1",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,2",
+      "result": "0 handle 48 24 4 1",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,3",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,4",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,5",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,6",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,7",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,8",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "renamed",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "renamed",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "renamed",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "renamed",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "renamed",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "7",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "14",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "Put",
+      "args": "576",
+      "result": "",
+      "section": "bm"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "bm",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "length",
+      "args": "bm",
+      "result": "621",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@0",
+      "result": "0105000003000000070000004249544d415000f604000085fdffff4e02000000",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@20",
+      "result": "003000180006000401000000003fffffffffff3fffffffffff3fffffffffff3f",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@40",
+      "result": "ffffffffffcfffffffffffcfffffffffffcfffffffffffcfffffffffffc00000",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@60",
+      "result": "03ffffc0000003ffffc0000003ffffc0000003ffffdcfffffbffffdcfffffbff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@80",
+      "result": "ffdcfffffbffffdcfffffbffffdf3ffffbffffdf3ffffbffffdf3ffffbffffdf",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@a0",
+      "result": "3ffffbffffdfcffffbffffdfcffffbffffdfcffffbffffdfcffffbffffdff3ff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@c0",
+      "result": "fbffffdff3fffbffffdff3fffbffffdff3fffbffffdffcfffbffffdffcfffbff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@e0",
+      "result": "ffdffcfffbffffdffcfffbffffdfff3ffbffffdfff3ffbffffdfff3ffbffffdf",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@100",
+      "result": "ff3ffbffffdfffcffbffffdfffcffbffffdfffcffbffffdfffcffbffffdffff3",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@120",
+      "result": "fbffffdffff3fbffffdffff3fbffffdffff3fbffffdffffcfbffffdffffcfbff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@140",
+      "result": "ffdffffcfbffffdffffcfbffffdfffff3bffffdfffff3bffffdfffff3bffffdf",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@160",
+      "result": "ffff3bffffdfffffcbffffdfffffcbffffdfffffcbffffdfffffcbffffdfffff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@180",
+      "result": "f3ffffdffffff3ffffdffffff3ffffdffffff3ffffdffffff8ffffdffffff8ff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@1a0",
+      "result": "ffdffffff8ffffdffffff8ffffdffffffb3fffdffffffb3fffdffffffb3fffdf",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@1c0",
+      "result": "fffffb3fffdffffffbcfffdffffffbcfffdffffffbcfffdffffffbcfffdfffff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@1e0",
+      "result": "fbf3ffdffffffbf3ffdffffffbf3ffdffffffbf3ffc0000003fcffc0000003fc",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@200",
+      "result": "ffc0000003fcffc0000003fcffffffffffff3fffffffffff3fffffffffff3fff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@220",
+      "result": "ffffffff3fffffffffffcfffffffffffcfffffffffffcfffffffffffcfffffff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@240",
+      "result": "fffff3fffffffffff3fffffffffff3fffffffffff3fffffffffffdffffffffff",
+      "section": "bm"
+    },
+    {
+      "function": "bytes",
+      "args": "bm@260",
+      "result": "fdfffffffffffdfffffffffffd",
+      "section": "bm"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bm",
+      "result": "0 object 621",
+      "section": "bm"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "as StdFileEditing",
+      "result": "15 0 8",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "loaded",
+      "result": "0 3",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "loaded",
+      "result": "0 0,0,1270,-635",
+      "section": "bm"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "loaded",
+      "result": "2,0,",
+      "section": "bm"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "loaded",
+      "result": "0 621",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "loaded",
+      "result": "0 3 Two",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Tw",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,1",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,2",
+      "result": "0 handle 48 24 4 1",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,3",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,4",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,5",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,6",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,7",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,8",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "loaded",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "loaded",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "loaded",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "loaded",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "loaded",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleEqual",
+      "args": "loaded",
+      "result": "17",
+      "section": "bm"
+    },
+    {
+      "function": "OleClone",
+      "args": "bm",
+      "result": "0 object",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "cloned",
+      "result": "0 3",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "cloned",
+      "result": "0 0,0,1270,-635",
+      "section": "bm"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "cloned",
+      "result": "2,0,",
+      "section": "bm"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "cloned",
+      "result": "0 621",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "cloned",
+      "result": "0 5 Clone",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Cl",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,1",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,2",
+      "result": "0 handle 48 24 4 1",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,3",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,4",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,5",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,6",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,7",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,8",
+      "result": "12 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "cloned",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "cloned",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "cloned",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "cloned",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "cloned",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleEqual",
+      "args": "cloned",
+      "result": "17",
+      "section": "bm"
+    },
+    {
+      "function": "OleEqual",
+      "args": "self",
+      "result": "17",
+      "section": "bm"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "metafile",
+      "result": "1",
+      "section": "bm"
+    },
+    {
+      "function": "OleDraw",
+      "args": "bm",
+      "result": "4 64",
+      "section": "bm"
+    },
+    {
+      "function": "OleDraw",
+      "args": "bm",
+      "result": "0 5ad59c6b",
+      "section": "bm"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "screen",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "bm",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "formats",
+      "args": "bm",
+      "result": "2,",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetBounds",
+      "args": "bm",
+      "result": "4",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetTargetDevice",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetColorScheme",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleActivate",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleReconnect",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleClose",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "bm",
+      "result": "6 7",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleSetData",
+      "args": "bm",
+      "result": "4",
+      "section": "bm"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "nought",
+      "result": "12",
+      "section": "bm"
+    },
+    {
+      "function": "OleExecute",
+      "args": "bm",
+      "result": "6",
+      "section": "bm"
+    },
+    {
+      "function": "OleCopyFromLink",
+      "args": "bm",
+      "result": "18 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleObjectConvert",
+      "args": "bm",
+      "result": "18 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleLockServer",
+      "args": "bm",
+      "result": "6 0",
+      "section": "bm"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "bm",
+      "result": "3",
+      "section": "bm"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "with objects",
+      "result": "25",
+      "section": "bm"
+    },
+    {
+      "function": "OleDelete",
+      "args": "cloned",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleRelease",
+      "args": "loaded",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleRelease",
+      "args": "bm",
+      "result": "0",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "bm released",
+      "result": "13",
+      "section": "bm"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,draw",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,none",
+      "result": "12",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Static,format",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "StdFileEditing,draw",
+      "result": "12",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "Bogus,draw",
+      "result": "15",
+      "section": "dib"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "dib",
+      "result": "0 object",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "dib",
+      "result": "0 3",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "dib",
+      "result": "0 0,0,1269,-634",
+      "section": "dib"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "dib",
+      "result": "8,0,",
+      "section": "dib"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "dib",
+      "result": "0 732",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "dib",
+      "result": "0 3 One",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 On",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,1",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,2",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,3",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,4",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,5",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,6",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,7",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "dib,8",
+      "result": "0 handle 704",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "dib",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleRename",
+      "args": "Renamed",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleRename",
+      "args": "empty",
+      "result": "29",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "renamed",
+      "result": "0 3",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "renamed",
+      "result": "0 0,0,1269,-634",
+      "section": "dib"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "renamed",
+      "result": "8,0,",
+      "section": "dib"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "renamed",
+      "result": "0 732",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "renamed",
+      "result": "0 7 Renamed",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Re",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,1",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,2",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,3",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,4",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,5",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,6",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,7",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "renamed,8",
+      "result": "0 handle 704",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "renamed",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "renamed",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "renamed",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "renamed",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "renamed",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "Put",
+      "args": "704",
+      "result": "",
+      "section": "dib"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "dib",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "length",
+      "args": "dib",
+      "result": "732",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@0",
+      "result": "01050000030000000400000044494200f504000086fdffffc002000028000000",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@20",
+      "result": "3000000018000000010004000000000040020000c40e0000c40e000000000000",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@40",
+      "result": "0000000000000000000080000080000000808000800000008000800080800000",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@60",
+      "result": "80808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@80",
+      "result": "ffffff00ffffffffffffffffffffffffffffffffffffffffffffff0fffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@a0",
+      "result": "ffffffffffffffffffffffffffffffffffff00ffffffffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@c0",
+      "result": "ffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@e0",
+      "result": "00ffffffff0000000000000000000000000000ffffffff00ffffffffff0fffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@100",
+      "result": "fffffffffffffffffffff0ffffff00ffffffffffff0fffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@120",
+      "result": "fffff0ffff00ffffffffffffff0ffffffffffffffffffffffffff0ff00ffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@140",
+      "result": "ffffffffff0ffffffffffffffffffffffffff000ffffffffffffffffff0fffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@160",
+      "result": "ffffffffffffffffffff00ffffffffffffffffffff0fffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@180",
+      "result": "ff00f0ffffffffffffffffffff0fffffffffffffffffffff00fff0ffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@1a0",
+      "result": "ffffffffff0fffffffffffffffffff00fffff0ffffffffffffffffffff0fffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@1c0",
+      "result": "ffffffffffff00fffffff0ffffffffffffffffffff0fffffffffffffff00ffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@1e0",
+      "result": "fffff0ffffffffffffffffffff0fffffffffffff00fffffffffff0ffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@200",
+      "result": "ffffffffff0fffffffffff00fffffffffffff0ffffffffffffffffffff0fffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@220",
+      "result": "ffff00fffffffffffffff0ffffffffffffffffffff0fffffff00ffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@240",
+      "result": "fffff0ffffffffffffffffffff0fffff00fffffffffffffffffff0ffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@260",
+      "result": "ffffffffff0fff00fffffffffffffffffffff0ffffffffffffffffffff000000",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@280",
+      "result": "0000000000000000000000ffffffffffffffffffff00ffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@2a0",
+      "result": "ffffffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffff",
+      "section": "dib"
+    },
+    {
+      "function": "bytes",
+      "args": "dib@2c0",
+      "result": "ffffffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "section": "dib"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "dib",
+      "result": "0 object 732",
+      "section": "dib"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "as StdFileEditing",
+      "result": "15 0 8",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "loaded",
+      "result": "0 3",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "loaded",
+      "result": "0 0,0,1269,-634",
+      "section": "dib"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "loaded",
+      "result": "8,0,",
+      "section": "dib"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "loaded",
+      "result": "0 732",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "loaded",
+      "result": "0 3 Two",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Tw",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,1",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,2",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,3",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,4",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,5",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,6",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,7",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "loaded,8",
+      "result": "0 handle 704",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "loaded",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "loaded",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "loaded",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "loaded",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "loaded",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleEqual",
+      "args": "loaded",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleClone",
+      "args": "dib",
+      "result": "0 object",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "cloned",
+      "result": "0 3",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "cloned",
+      "result": "0 0,0,1269,-634",
+      "section": "dib"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "cloned",
+      "result": "8,0,",
+      "section": "dib"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "cloned",
+      "result": "0 732",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "cloned",
+      "result": "0 5 Clone",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Cl",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,1",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,2",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,3",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,4",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,5",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,6",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,7",
+      "result": "12 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetData",
+      "args": "cloned,8",
+      "result": "0 handle 704",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "cloned",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "cloned",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "cloned",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "cloned",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "cloned",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleEqual",
+      "args": "cloned",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleEqual",
+      "args": "self",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "metafile",
+      "result": "1",
+      "section": "dib"
+    },
+    {
+      "function": "OleDraw",
+      "args": "dib",
+      "result": "0 960",
+      "section": "dib"
+    },
+    {
+      "function": "OleDraw",
+      "args": "dib",
+      "result": "0 5ad59c6b",
+      "section": "dib"
+    },
+    {
+      "function": "OleIsDcMeta",
+      "args": "screen",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "dib",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "formats",
+      "args": "dib",
+      "result": "8,",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetBounds",
+      "args": "dib",
+      "result": "4",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetTargetDevice",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetColorScheme",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleActivate",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleReconnect",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleClose",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "dib",
+      "result": "6 7",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleSetData",
+      "args": "dib",
+      "result": "4",
+      "section": "dib"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "nought",
+      "result": "12",
+      "section": "dib"
+    },
+    {
+      "function": "OleExecute",
+      "args": "dib",
+      "result": "6",
+      "section": "dib"
+    },
+    {
+      "function": "OleCopyFromLink",
+      "args": "dib",
+      "result": "18 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleObjectConvert",
+      "args": "dib",
+      "result": "18 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleLockServer",
+      "args": "dib",
+      "result": "6 0",
+      "section": "dib"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "dib",
+      "result": "3",
+      "section": "dib"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "with objects",
+      "result": "25",
+      "section": "dib"
+    },
+    {
+      "function": "OleDelete",
+      "args": "cloned",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleRelease",
+      "args": "loaded",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleRelease",
+      "args": "dib",
+      "result": "0",
+      "section": "dib"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "dib released",
+      "result": "13",
+      "section": "dib"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "other os",
+      "result": "55 0 8",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "type 0",
+      "result": "0 0 8",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "type link as static",
+      "result": "15 0 8",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "type 6",
+      "result": "15 0 8",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bogus class",
+      "result": "0 object 34",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "bogus class",
+      "result": "19 -1",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "bogus class",
+      "result": "19 0,0,0,0",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "bogus class",
+      "result": "16,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "bogus class",
+      "result": "0 34",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "bogus class",
+      "result": "0 4 Made",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Ma",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,1",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,2",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,3",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,4",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,5",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,6",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,7",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bogus class,8",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "bogus class",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "bogus class",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "bogus class",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "bogus class",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "bogus class",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "no class",
+      "result": "5 0 12",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "generic text",
+      "result": "5 0 32",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "generic named",
+      "result": "0 object 37",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "generic named",
+      "result": "19 -1",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "generic named",
+      "result": "19 0,0,0,0",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "generic named",
+      "result": "registered:05,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "generic named",
+      "result": "0 39",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "generic named",
+      "result": "0 4 Made",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "short",
+      "result": "0 2 Ma",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "none",
+      "result": "26 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,1",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,2",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,3",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,4",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,5",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,6",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,7",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "generic named,8",
+      "result": "12 0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "generic named",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "generic named",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "generic named",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "generic named",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "generic named",
+      "result": "6",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "Static",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 0",
+      "result": "5 0 0",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 6",
+      "result": "5 0 6",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 14",
+      "result": "5 0 14",
+      "section": "load"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 30",
+      "result": "5 0 30",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleDelete",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleRelease",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleDraw",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleEqual",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "NULL",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "text",
+      "result": "13",
+      "section": "bad"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "NULL",
+      "result": "0",
+      "section": "bad"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "empty",
+      "result": "29",
+      "section": "bad"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "NULL name",
+      "result": "16",
+      "section": "bad"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "NULL class",
+      "result": "16",
+      "section": "bad"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "NULL out",
+      "result": "16",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "0",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "text",
+      "result": "25",
+      "section": "bad"
+    },
+    {
+      "function": "OleRenameClientDoc",
+      "args": "0",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleSavedClientDoc",
+      "args": "0",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevertClientDoc",
+      "args": "0",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleEnumObjects",
+      "args": "0",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "bad doc",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "empty name",
+      "result": "29",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "NULL out",
+      "result": "16",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "bogus protocol",
+      "result": "15",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreate",
+      "args": "bogus class",
+      "result": "20",
+      "section": "bad"
+    },
+    {
+      "function": "OleCreate",
+      "args": "Static",
+      "result": "15",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bad doc",
+      "result": "18",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bad protocol",
+      "result": "15",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "second",
+      "result": "0",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "doc1",
+      "result": "0",
+      "section": "bad"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "again",
+      "result": "18",
+      "section": "bad"
+    }
+  ]
+}
