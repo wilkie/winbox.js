@@ -5563,6 +5563,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prtt:size': 'the document differs where the downloaded face does',
   'prtt:line':
     "EngineGetGlyphBmp and EngineSetFontContext are stubs: no glyph is sent, and the font's name and header differ",
+  /* EMSCopy's entry, seg1 `a940`, is past the limit KERNEL leaves its first
+   * code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`): the far
+   * call faults, and Windows carries on with AX 81h and six bytes taken. */
+  'emscopy:entry': "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+  'emscopy:call':
+    "EMSCopy's entry is past the end of KERNEL's code once it has started; what Windows does after the fault is not read out",
 };
 
 /**
@@ -5942,6 +5948,9 @@ const RUN_WHOLE = new Set<string>([
   'invchild',
   'popmax',
   'ictwrap',
+  'undefdl',
+  'kintrnl',
+  'emscopy',
 ]);
 
 /**
@@ -5961,6 +5970,7 @@ export const BOX_KEYS: Record<string, string[][]> = {
   nullds: [['Enter'], ['Enter']],
   openfile: [['Enter'], ['Enter']],
   sebhook: [['Enter']],
+  undefdl: [['Enter']],
 };
 
 /**

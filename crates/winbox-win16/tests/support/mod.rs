@@ -279,6 +279,8 @@ pub const AGREEING: &[&str] = &[
     "vislock",
     "invchild",
     "ictwrap",
+    "undefdl",
+    "kintrnl",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -555,6 +557,7 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
         &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
     ),
     ("sebhook", &[&[Step::Key(VK_RETURN)]]),
+    ("undefdl", &[&[Step::Key(VK_RETURN)]]),
 ];
 
 pub const VK_TAB: u16 = 0x09;

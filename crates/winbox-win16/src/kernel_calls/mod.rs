@@ -8,6 +8,7 @@
 mod catch_throw;
 mod code;
 pub mod file_cdr;
+mod internals;
 pub(crate) mod more;
 mod retail;
 pub(crate) mod tasks;
@@ -88,7 +89,19 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         | "ValidateCodeSegments"
         | "LogError"
         | "LogParamError"
-        | "DebugBreak" => Implementation::Sync(retail::nothing),
+        | "DebugBreak"
+        | "FlushCachedFileHandle"
+        | "DiagOutput"
+        | "BUNNY_351"
+        | "ValidateFreeSpaces"
+        | "ReplaceInst"
+        | "A20Proc" => Implementation::Sync(retail::nothing),
+        "WriteOutProfiles" => Implementation::Sync(internals::write_out_profiles),
+        "InitTask1" | "RegisterPtrace" => Implementation::Sync(internals::pointer_selector),
+        "SwapRecording" => Implementation::Sync(internals::swap_recording),
+        "HasGPHandler" => Implementation::Sync(internals::has_gp_handler),
+        "RegisterWinOldApHook" => Implementation::Sync(internals::register_win_old_ap_hook),
+        "GetWinOldApHooks" => Implementation::Sync(internals::get_win_old_ap_hooks),
         "LimitEmsPages" | "GetCurPID" => Implementation::Sync(retail::nought),
         "GetWinDebugInfo" | "SetWinDebugInfo" | "DiagQuery" => {
             Implementation::Sync(retail::nought_word)
