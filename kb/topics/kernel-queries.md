@@ -69,12 +69,12 @@ A task's database counts its events at 6. [[fn:KERNEL.PostEvent]] counts one up;
 
 ## Resource handlers
 
-Each type of a module's resources has a handler, which [[fn:KERNEL.LoadResource]] and [[fn:KERNEL.LockResource]] call to load one: KERNEL's own (seg1 `88c8`) until [[fn:KERNEL.SetResourceHandler]] sets another. A handler makes the resource's block with [[fn:KERNEL.AllocResource]] or [[fn:KERNEL.DirectResAlloc]]. A discardable resource is loaded only as it is locked. [[measured]] [[probe:reshand]]. WinBox calls a program's handler, and loads at once with its own.
+Each type of a module's resources has a handler, which [[fn:KERNEL.LoadResource]] and [[fn:KERNEL.LockResource]] call to load one: KERNEL's own (seg1 `88c8`) until [[fn:KERNEL.SetResourceHandler]] sets another. A handler makes the resource's block with [[fn:KERNEL.AllocResource]] or [[fn:KERNEL.DirectResAlloc]]. A discardable resource is loaded only as it is locked. [[measured]] [[probe:reshand]]. A module's icons and cursors have USER's handlers, which [[fn:USER.SignalProc]] sets as the module is loaded and which make the resource USER's own block ([[probe:iconhand]]). WinBox calls a program's handler, and loads at once with its own.
 
 ## Not yet done
 
 - KERNEL's own prefix in [[fn:KERNEL.GetCurrentPDB]]'s DX.
 - A queue of nought before `InitApp`.
-- A discardable resource loaded with KERNEL's own handler: Windows leaves it discarded until it is locked; WinBox loads it at once. USER's own resource loads read the resource with no handler.
+- A discardable resource loaded with KERNEL's own handler: Windows leaves it discarded until it is locked; WinBox loads it at once. USER's own loads of menus and dialogs read the resource with no handler.
 - `GlobalMasterHandle` and the other stubs among KERNEL's internals: their read-outs and what to do with each are in [[topic:kernel-internals]].
 - Windows' own blocks in the first megabyte, between those `GlobalDosAlloc` gives.

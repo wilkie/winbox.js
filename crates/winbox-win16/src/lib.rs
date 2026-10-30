@@ -58,6 +58,8 @@ pub mod groups;
 pub mod handles;
 pub mod hooks;
 pub mod host;
+pub mod icon_convert;
+pub mod icon_handlers;
 pub mod icons;
 mod instruction_length;
 pub mod interrupts;

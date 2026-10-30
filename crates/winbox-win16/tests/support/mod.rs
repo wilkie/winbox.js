@@ -294,6 +294,8 @@ pub const AGREEING: &[&str] = &[
     "gdidm",
     "gdispool",
     "gdiint",
+    "iconhand-vga",
+    "iconhand-vga256",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

@@ -158,6 +158,19 @@ impl System {
             })
     }
 
+    /// A resource's size in bytes, as its table gives it.
+    pub(crate) fn resource_size(&mut self, handle: u16) -> u32 {
+        self.resource(handle)
+            .map_or(0, |(_, _, resource)| resource.length)
+    }
+
+    /// The Windows version of the file an instance's resources are in.
+    pub(crate) fn resource_version(&mut self, instance: u16) -> Option<u16> {
+        let owner = self.resources_of(instance)?;
+
+        Some(self.resource_file(owner)?.header.expected_windows_version)
+    }
+
     /// The resource a handle names: its owner, its file, and it.
     fn resource(&mut self, handle: u16) -> Option<(Owner, Rc<Executable>, Resource)> {
         let Object::Resource(owner, kind, entry) = self.handles.resolve(handle)? else {
@@ -176,28 +189,55 @@ pub fn find_resource(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let instance = args.word(system);
     let name = wanted(system, args.dword(system));
     let kind = wanted(system, args.dword(system));
-    let (Some(owner), Some(name), Some(kind)) = (system.resources_of(instance), name, kind) else {
+    let (Some(name), Some(kind)) = (name, kind) else {
         return Ok(Answer::Word(0));
     };
+
+    Ok(Answer::Word(find_in(system, instance, &name, &kind)))
+}
+
+/// A resource of an instance's module by a name and a type: its handle,
+/// nought for none, as `FindResource` answers it.
+fn find_in(system: &mut System, instance: u16, name: &Wanted, kind: &Wanted) -> u16 {
+    let Some(owner) = system.resources_of(instance) else {
+        return 0;
+    };
     let Some(executable) = system.resource_file(owner) else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
     let found = executable
         .resources
         .iter()
         .enumerate()
-        .filter(|(_, resource_type)| matches(&resource_type.id, resource_type.name.as_ref(), &kind))
+        .filter(|(_, resource_type)| matches(&resource_type.id, resource_type.name.as_ref(), kind))
         .find_map(|(type_index, resource_type)| {
             resource_type
                 .entries
                 .iter()
-                .position(|entry| matches(&entry.id, entry.name.as_ref(), &name))
+                .position(|entry| matches(&entry.id, entry.name.as_ref(), name))
                 .map(|entry_index| (type_index, entry_index))
         });
 
-    Ok(Answer::Word(found.map_or(0, |(kind, entry)| {
+    found.map_or(0, |(kind, entry)| {
         system.resource_handle(owner, kind, entry)
-    })))
+    })
+}
+
+/// A resource of an instance's module by its number or its name, of a
+/// numbered type: its handle, as `FindResource` answers it (`USER.EXE`'s
+/// `LoadIcon` and `LoadCursor`; `icon_handlers.rs`).
+pub(crate) fn find_typed(
+    system: &mut System,
+    instance: u16,
+    name: &Result<u16, String>,
+    kind: u16,
+) -> u16 {
+    let name = match name {
+        Ok(number) => Wanted::Number(*number),
+        Err(text) => Wanted::Name(text.clone()),
+    };
+
+    find_in(system, instance, &name, &Wanted::Number(kind))
 }
 
 /// A resource loaded into a block of its own: its block's handle. Loaded
@@ -211,12 +251,20 @@ pub fn load_resource(engine: &Engine, mut args: Args) -> Later<'_> {
             (args.word(&system), args.word(&system))
         };
 
-        if let Some(answer) = load_through_handler(engine, instance, handle).await? {
-            return Ok(Answer::Word(answer));
-        }
-
-        load_resource_here(&mut engine.system(), handle)
+        Ok(Answer::Word(load(engine, instance, handle).await?))
     })
+}
+
+/// `LoadResource`'s work: the resource's block, or nought.
+pub(crate) async fn load(engine: &Engine, instance: u16, handle: u16) -> Result<u16, Stop> {
+    if let Some(answer) = load_through_handler(engine, instance, handle).await? {
+        return Ok(answer);
+    }
+
+    match load_resource_here(&mut engine.system(), handle)? {
+        Answer::Word(block) => Ok(block),
+        _ => Ok(0),
+    }
 }
 
 fn load_resource_here(system: &mut System, handle: u16) -> Result<Answer, Stop> {
@@ -278,40 +326,47 @@ fn load_resource_here(system: &mut System, handle: u16) -> Result<Answer, Stop> 
 pub fn lock_resource(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let block = args.word(&engine.system());
-        let far = lock(&mut engine.system(), block);
 
-        if far != 0 {
-            return Ok(Answer::Dword(far));
-        }
-
-        let (handler, loaded, resource) = {
-            let system = engine.system();
-            let Some(&resource) = system.resource_blocks.get(&block) else {
-                return Ok(Answer::Dword(0));
-            };
-            let Some(handler) = system.program_handler(resource) else {
-                return Ok(Answer::Dword(0));
-            };
-            let Some(&loaded) = system.loaded_resources.get(&resource) else {
-                return Ok(Answer::Dword(0));
-            };
-
-            (handler, loaded, resource)
-        };
-        let answer = call_handler(engine, handler, block, loaded.module, resource).await?;
-
-        if answer == 0 {
-            return Ok(Answer::Dword(0));
-        }
-
-        let mut system = engine.system();
-
-        if let Some(loaded) = system.loaded_resources.get_mut(&resource) {
-            loaded.called = true;
-        }
-
-        Ok(Answer::Dword(lock(&mut system, answer)))
+        Ok(Answer::Dword(lock_block(engine, block).await?))
     })
+}
+
+/// `LockResource`'s work: the block's address, its handler called for a
+/// discarded resource's; nought for none.
+pub(crate) async fn lock_block(engine: &Engine, block: u16) -> Result<u32, Stop> {
+    let far = lock(&mut engine.system(), block);
+
+    if far != 0 {
+        return Ok(far);
+    }
+
+    let (handler, loaded, resource) = {
+        let mut system = engine.system();
+        let Some(&resource) = system.resource_blocks.get(&block) else {
+            return Ok(0);
+        };
+        let Some(handler) = system.program_handler(resource) else {
+            return Ok(0);
+        };
+        let Some(&loaded) = system.loaded_resources.get(&resource) else {
+            return Ok(0);
+        };
+
+        (handler, loaded, resource)
+    };
+    let answer = call_handler(engine, handler, block, loaded.module, resource).await?;
+
+    if answer == 0 {
+        return Ok(0);
+    }
+
+    let mut system = engine.system();
+
+    if let Some(loaded) = system.loaded_resources.get_mut(&resource) {
+        loaded.called = true;
+    }
+
+    Ok(lock(&mut system, answer))
 }
 
 /// `GlobalLock`'s answer for a block.
@@ -437,18 +492,59 @@ impl System {
             | u32::from(crate::system::STEP * (DEFAULT_ORDINAL + 1))
     }
 
-    /// The handler a program set for a resource's type, or `None` for
-    /// KERNEL's own.
-    fn program_handler(&self, resource: u16) -> Option<u32> {
+    /// The handler a program -- or USER -- set for a resource's type, or
+    /// `None` for KERNEL's own.
+    fn program_handler(&mut self, resource: u16) -> Option<u32> {
         let Some(Object::Resource(owner, kind, _)) = self.handles.resolve(resource) else {
             return None;
         };
 
+        self.seed_user_handlers(owner);
         self.kernel_calls
             .resource_handlers
             .get(&(owner, kind))
             .copied()
             .filter(|&handler| handler != self.kernel_calls.default_resource_handler)
+    }
+
+    /// A module's handlers for its icons and cursors: USER's from the
+    /// first, as `SignalProc` sets them as KERNEL loads the module
+    /// (`USER.EXE` seg1 `0a00`; `icon_handlers.rs`), by the version its
+    /// header gives, set the first time its handlers are asked for.
+    /// **Recorded** by `userproc` and `iconhand`.
+    fn seed_user_handlers(&mut self, owner: Owner) {
+        if !self.kernel_calls.user_handlers_set.insert(owner) {
+            return;
+        }
+
+        let Some(executable) = self.resource_file(owner) else {
+            return;
+        };
+        let version = executable.header.expected_windows_version;
+
+        for (id, address) in crate::icon_handlers::user_handlers(self, version) {
+            let index = executable
+                .resources
+                .iter()
+                .position(|resource_type| resource_type.id == ResourceId::Number(id));
+
+            if let Some(index) = index
+                && address != 0
+            {
+                self.kernel_calls
+                    .resource_handlers
+                    .insert((owner, index), address);
+            }
+        }
+    }
+
+    /// The handler a type of a resource's module has: USER's, a
+    /// program's, or KERNEL's own.
+    pub(crate) fn type_handler(&mut self, resource: u16) -> u32 {
+        match self.program_handler(resource) {
+            Some(handler) => handler,
+            None => self.default_handler(),
+        }
     }
 
     /// The resource table's alignment shift: its first word.
@@ -505,6 +601,17 @@ async fn call_handler(
     module: u16,
     resource: u16,
 ) -> Result<u16, Stop> {
+    // USER's own are WinBox's code, called directly (`icon_handlers.rs`).
+    if let Some(answer) = crate::icon_handlers::call_user_handler(
+        &mut engine.system(),
+        handler,
+        block,
+        module,
+        resource,
+    ) {
+        return Ok(answer);
+    }
+
     let ss = engine.system().cpu.segments[winbox_cpu::SS].selector;
     let (answer, _) = engine
         .call_with(
@@ -617,30 +724,48 @@ pub fn set_resource_handler(system: &mut System, args: &mut Args) -> Result<Answ
     let instance = args.word(system);
     let kind = wanted(system, args.dword(system));
     let handler = args.dword(system);
-    let (Some(owner), Some(kind)) = (system.resources_of(instance), kind) else {
+    let Some(kind) = kind else {
         return Ok(Answer::Dword(0));
     };
+
+    Ok(Answer::Dword(set_handler(system, instance, &kind, handler)))
+}
+
+/// A numbered type's handler changed, as `SetResourceHandler` changes it:
+/// USER's `SignalProc` sets its own so (`icon_handlers.rs`).
+pub(crate) fn set_typed_handler(
+    system: &mut System,
+    instance: u16,
+    kind: u16,
+    handler: u32,
+) -> u32 {
+    set_handler(system, instance, &Wanted::Number(kind), handler)
+}
+
+fn set_handler(system: &mut System, instance: u16, kind: &Wanted, handler: u32) -> u32 {
+    let Some(owner) = system.resources_of(instance) else {
+        return 0;
+    };
     let Some(executable) = system.resource_file(owner) else {
-        return Ok(Answer::Dword(0));
+        return 0;
     };
     let Some(index) = executable
         .resources
         .iter()
-        .position(|resource_type| matches(&resource_type.id, resource_type.name.as_ref(), &kind))
+        .position(|resource_type| matches(&resource_type.id, resource_type.name.as_ref(), kind))
     else {
-        return Ok(Answer::Dword(0));
+        return 0;
     };
     let default = system.default_handler();
 
+    system.seed_user_handlers(owner);
     system.kernel_calls.default_resource_handler = default;
 
-    let before = system
+    system
         .kernel_calls
         .resource_handlers
         .insert((owner, index), handler)
-        .unwrap_or(default);
-
-    Ok(Answer::Dword(before))
+        .unwrap_or(default)
 }
 
 /// KERNEL's own handler (seg1 `88c8`-`8921`): a block given that is there
@@ -650,13 +775,20 @@ pub fn resource_handler(system: &mut System, args: &mut Args) -> Result<Answer, 
     let block = args.word(system);
     let _module = args.word(system);
     let resource = args.word(system);
+
+    Ok(Answer::Word(kernel_handler(system, block, resource)))
+}
+
+/// KERNEL's own handler's work, as USER's handlers call it through
+/// `[7A2h]`: the block, or nought.
+pub(crate) fn kernel_handler(system: &mut System, block: u16, resource: u16) -> u16 {
     let Some((_, executable, entry)) = system.resource(resource) else {
-        return Ok(Answer::Word(0));
+        return 0;
     };
     let index = index_for(block);
 
     if block != 0 && system.global.size_of(index) != 0 && !system.global.is_discarded(index) {
-        return Ok(Answer::Word(block));
+        return block;
     }
 
     let bytes = executable.resource_bytes(&entry).to_vec();
@@ -673,14 +805,14 @@ pub fn resource_handler(system: &mut System, args: &mut Args) -> Result<Answer, 
     };
 
     if handle == 0 {
-        return Ok(Answer::Word(0));
+        return 0;
     }
 
     system
         .cpu
         .bus
         .write((index_for(handle) as u32) << 16, &bytes);
-    Ok(Answer::Word(handle))
+    handle
 }
 
 /// A block for a resource (`KRNL386.EXE` seg1 `851e`-`85c3`). **Recorded**

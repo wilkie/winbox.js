@@ -110,7 +110,7 @@ impl crate::draw_text::TextOps<System> for TitleOps<'_> {
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
-        "DrawIcon" => Implementation::Sync(draw_icon_call),
+        "DrawIcon" => Implementation::Async(draw_icon_locked),
         _ => return None,
     })
 }
@@ -817,6 +817,32 @@ impl System {
 /// may have written into it, and drawn at the display's icon size
 /// (`USER.EXE` seg13 `0199`). FALSE for a handle that is no icon, or no
 /// device context's.
+/// `DrawIcon`: the icon locked as a resource is (`USER.EXE` seg13 `01a7`),
+/// a discarded one made again by its handler, then drawn.
+fn draw_icon_locked(engine: &crate::engine::Engine, args: Args) -> crate::call::Later<'_> {
+    Box::pin(async move {
+        let hicon = {
+            let system = engine.system();
+            let mut ahead = args;
+
+            ahead.word(&system);
+            ahead.word(&system);
+            ahead.word(&system);
+            ahead.word(&system)
+        };
+
+        if engine.system().resource_blocks.contains_key(&hicon)
+            && crate::resources::lock_block(engine, hicon).await? != 0
+        {
+            crate::memory::global_unlock(&mut engine.system(), &mut Args::repeat(hicon))?;
+        }
+
+        let mut args = args;
+
+        draw_icon_call(&mut engine.system(), &mut args)
+    })
+}
+
 fn draw_icon_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let x = i32::from(args.signed(system));

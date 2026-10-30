@@ -16,8 +16,10 @@ use winbox_raster::{
     decode_icon, dib_to_device, icon_entries, palette_for_display, pick_icon, scale_icon,
 };
 
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
 use crate::handles::{Kind, Object};
+use crate::icon_handlers::{WINDOWS_3, load_from_module};
 use crate::system::System;
 
 const RT_CURSOR: u16 = 1;
@@ -348,7 +350,7 @@ impl System {
 
     /// The format of an icon block: its planes and bits a pixel, as the
     /// display's bitmaps are.
-    fn icon_format(&self) -> (u8, u8) {
+    pub(crate) fn icon_format(&self) -> (u8, u8) {
         if self.display.bits_per_pixel == 8 {
             (1, 8)
         } else if self.display.colors <= 2 {
@@ -476,6 +478,23 @@ impl System {
             }
         }
 
+        // A picture of one plane of a bit on a display of colours is drawn
+        // as a monochrome bitmap is, a set bit white (`iconhand`), as
+        // `icon-block.ts`'s `iconOf`.
+        let (shown_planes, shown_bits) = self.icon_format();
+
+        if planes == 1 && bits == 1 && shown_planes * shown_bits > 1 {
+            let all = if shown_bits == 8 {
+                0xff
+            } else {
+                (self.display.colors.saturating_sub(1) & 0xff) as u8
+            };
+
+            for value in &mut xor {
+                *value = if *value != 0 { all } else { 0 };
+            }
+        }
+
         Some(IconData {
             width,
             height,
@@ -567,94 +586,90 @@ fn wanted(system: &System, far: u32) -> Result<u16, String> {
     }
 }
 
-/// The module whose resources an instance names.
-fn module_of(system: &System, instance: u16) -> Option<usize> {
-    match system.handles.resolve(instance)? {
-        Object::Task(program) => Some(program),
-        Object::Library(module) => Some(module),
-        _ => None,
-    }
-}
-
 /// An icon: a standard one, by number, made a block the first time; a
-/// module's, each time a block of its own. Nought for none.
-pub fn load_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let instance = args.word(system);
-    let name = args.dword(system);
-    let wanted = wanted(system, name);
+/// module's, its resource's block as USER's handler makes it
+/// (`icon_handlers.rs`), the same each time. Nought for none.
+pub fn load_icon(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (instance, wanted) = {
+            let system = engine.system();
+            let instance = args.word(&system);
+            let name = args.dword(&system);
 
-    Ok(Answer::Word(load_icon_named(system, instance, wanted)))
+            (instance, wanted(&system, name))
+        };
+
+        Ok(Answer::Word(
+            load_icon_named(engine, instance, wanted).await?,
+        ))
+    })
 }
 
-/// An icon by its number or its name, as `LoadIcon` loads it.
-pub fn load_icon_named(system: &mut System, instance: u16, wanted: Result<u16, String>) -> u16 {
-    if instance == 0 {
-        system.raster();
+/// A standard icon by its number or its name: its block, made the first
+/// time; nought for none.
+pub fn standard_icon(system: &mut System, wanted: Result<u16, String>) -> u16 {
+    system.raster();
 
-        let id = match wanted {
-            Ok(id) => id,
-            Err(text) => text.parse().unwrap_or(0),
-        };
-        let Some(icon) = system
-            .driver
-            .as_ref()
-            .and_then(|driver| driver.icons.get(&id))
-            .cloned()
-        else {
-            return 0;
-        };
+    let id = match wanted {
+        Ok(id) => id,
+        Err(text) => text.parse().unwrap_or(0),
+    };
+    let Some(icon) = system
+        .driver
+        .as_ref()
+        .and_then(|driver| driver.icons.get(&id))
+        .cloned()
+    else {
+        return 0;
+    };
 
-        if let Some(&handle) = system.standard_icons.get(&id) {
-            return handle;
-        }
-
-        let handle = system.icon_block(&icon);
-
-        system.standard_icons.insert(id, handle);
+    if let Some(&handle) = system.standard_icons.get(&id) {
         return handle;
     }
 
-    let Some(module) = module_of(system, instance) else {
-        return 0;
-    };
-    // WinBox's Program Manager's are `PROGMAN.EXE`'s, from the store
-    // (`System::progman_kept`).
-    let executable = match system.progman_kept(module) {
-        Some(kept) => match system.kept_file(kept) {
-            Some(file) => file,
-            None => return 0,
-        },
-        None => system.modules[module].executable.clone(),
-    };
-    let group =
-        typed(&executable, RT_GROUP_ICON)
-            .into_iter()
-            .find(|(id, given, _)| match &wanted {
-                Ok(number) => *id == Some(*number),
-                Err(text) => {
-                    let upper = text.to_ascii_uppercase();
+    let handle = system.icon_block(&icon);
 
-                    given.as_deref() == Some(upper.as_str())
-                        || id.is_some_and(|id| id.to_string() == upper)
-                }
-            });
-    let Some((_, _, group)) = group else {
-        return 0;
-    };
-    let mut palette = system.palette();
-    let colours = system.display.colors;
-    let Some(icon) = icon_of(&executable, &group, colours, &mut palette) else {
-        return 0;
-    };
-
-    system.icon_block(&icon)
+    system.standard_icons.insert(id, handle);
+    handle
 }
 
-/// An icon done with: its block freed (seg12 `0170`). Whether it was one
-/// of the icons made: nought for any other handle, and for a block that
-/// would not be freed.
+/// An icon by its number or its name, as `LoadIcon` loads it.
+pub async fn load_icon_named(
+    engine: &Engine,
+    instance: u16,
+    wanted: Result<u16, String>,
+) -> Result<u16, Stop> {
+    if instance == 0 {
+        return Ok(standard_icon(&mut engine.system(), wanted));
+    }
+
+    let handle = load_from_module(engine, instance, wanted.clone(), RT_ICON).await?;
+    let version = engine
+        .system()
+        .resource_version(instance)
+        .unwrap_or(WINDOWS_3);
+
+    // A Windows 2 program's icon not its own is the display's (`USER.EXE`
+    // seg12 `080f`-`0839`).
+    if handle == 0 && version < WINDOWS_3 {
+        return Ok(standard_icon(&mut engine.system(), wanted));
+    }
+
+    Ok(handle)
+}
+
+/// An icon done with: `FreeResource`, and whether it answered nought
+/// (seg12 `0170`-`018a`) -- an icon `LoadIcon` loaded is its resource, its
+/// uses counted down; one made, its block freed. Nought for any other
+/// handle, and for a block that would not be freed.
 pub fn destroy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hicon = args.word(system);
+
+    if system.resource_blocks.contains_key(&hicon) {
+        let kept = crate::resources::free_resource(system, &mut Args::repeat(hicon))?;
+
+        return Ok(Answer::Word(u16::from(kept == Answer::Word(0))));
+    }
 
     if !system.icon_blocks.remove(&hicon) {
         return Ok(Answer::Word(0));
@@ -667,60 +682,43 @@ pub fn destroy_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop
 
 /// A cursor: a standard one, by number, where the driver or USER has it --
 /// every one from 32512 to 32650 without the installation to ask -- or a
-/// module's group's first cursor. Nought for none.
-pub fn load_cursor(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let instance = args.word(system);
-    let name = args.dword(system);
+/// module's, its resource's block as USER's handler makes it
+/// (`icon_handlers.rs`). Nought for none.
+pub fn load_cursor(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (instance, name) = {
+            let system = engine.system();
 
-    if instance == 0 {
-        system.raster();
-
-        let id = match wanted(system, name) {
-            Ok(id) => id,
-            Err(text) => text.parse().unwrap_or(0),
-        };
-        let known = match &system.driver {
-            Some(driver) => driver.cursors.contains(&id),
-            None => (32512..=32650).contains(&id),
+            (args.word(&system), args.dword(&system))
         };
 
-        return Ok(Answer::Word(if known {
-            system.standard_cursor(id)
-        } else {
-            0
-        }));
-    }
+        if instance == 0 {
+            let mut system = engine.system();
 
-    let Some(module) = module_of(system, instance) else {
-        return Ok(Answer::Word(0));
-    };
-    let wanted = wanted(system, name);
-    let executable = &system.modules[module].executable;
-    let group =
-        typed(executable, RT_GROUP_CURSOR)
-            .into_iter()
-            .find(|(id, given, _)| match &wanted {
-                Ok(number) => *id == Some(*number),
-                Err(text) => given
-                    .as_deref()
-                    .is_some_and(|given| given.eq_ignore_ascii_case(text)),
-            });
-    let Some((_, _, group)) = group.filter(|(_, _, group)| group.len() >= 6 + 14) else {
-        return Ok(Answer::Word(0));
-    };
-    let id = u16::from_le_bytes([group[6 + 12], group[6 + 13]]);
-    let cursors = typed(executable, RT_CURSOR);
-    let mut palette = system.palette();
-    let Some(image) = cursor_from_group(&cursors, &group, &mut palette) else {
-        return Ok(Answer::Word(0));
-    };
-    let hotspot = image.hotspot;
+            system.raster();
 
-    Ok(Answer::Word(system.new_cursor(CursorData {
-        id,
-        hotspot,
-        image: Some(image),
-    })))
+            let id = match wanted(&system, name) {
+                Ok(id) => id,
+                Err(text) => text.parse().unwrap_or(0),
+            };
+            let known = match &system.driver {
+                Some(driver) => driver.cursors.contains(&id),
+                None => (32512..=32650).contains(&id),
+            };
+
+            return Ok(Answer::Word(if known {
+                system.standard_cursor(id)
+            } else {
+                0
+            }));
+        }
+
+        let wanted = wanted(&engine.system(), name);
+
+        Ok(Answer::Word(
+            load_from_module(engine, instance, wanted, RT_CURSOR).await?,
+        ))
+    })
 }
 
 /// The cursor set: the one before answered.

@@ -597,7 +597,10 @@ fn paintbrush_dialogs_and_tools() {
 
     assert!(red * 2 > zoomed.len(), "not zoomed into the box");
     menu(&mut session, 'v', 'o');
-    assert_eq!(colour_at(&session, 175, 180), RED);
+    // Beside the cursor: Paintbrush's own is now the block `LoadCursor`
+    // gives, as in Windows, and as the run leaves it -- its hotspot 0, 0,
+    // not its resource's -- it shows a dot two by two at the point clicked.
+    assert_eq!(colour_at(&session, 170, 180), RED);
     assert_eq!(colour_at(&session, 300, 220), BLUE);
 
     // Save As's Info.

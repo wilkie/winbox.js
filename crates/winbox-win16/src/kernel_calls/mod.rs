@@ -37,6 +37,9 @@ pub struct KernelCalls {
     pub resource_handlers: std::collections::HashMap<(crate::handles::Owner, usize), u32>,
     /// KERNEL's own handler's address, as `SetResourceHandler` last made it.
     pub default_resource_handler: u32,
+    /// The owners whose icons and cursors have USER's handlers set
+    /// (`resources.rs`'s `seed_user_handlers`).
+    pub user_handlers_set: std::collections::HashSet<crate::handles::Owner>,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {

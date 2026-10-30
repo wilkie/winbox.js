@@ -239,5 +239,19 @@ export function iconOf(system: any, hicon: number): IconData | null {
     }
   }
 
+  /* A picture of one plane of a bit on a display of colours is drawn as a
+   * monochrome bitmap is, a set bit white: every bit of the pixel beneath
+   * flipped where the mask lets it show (`iconhand`'s black and white icon
+   * on grey). */
+  const shown = displayFormat(system);
+
+  if (planes === 1 && bits === 1 && shown.planes * shown.bits > 1) {
+    const all = shown.bits === 8 ? 0xff : (system.display?.colors ?? 16) - 1;
+
+    xor.forEach((bit, at) => {
+      xor[at] = bit ? all : 0;
+    });
+  }
+
   return { width, height, xor, and };
 }

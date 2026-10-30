@@ -112,14 +112,19 @@ export function FindResource(hinst, lpszName, lpszType) {
     return NULL;
   }
 
-  for (const type of task.executable.resources ?? []) {
+  return findResourceIn(this, task.executable, lpszName, lpszType);
+}
+
+/** A resource of an executable by its name and its type's: its handle, nought for none. */
+export function findResourceIn(system: any, executable: any, lpszName: any, lpszType: any) {
+  for (const type of executable.resources ?? []) {
     if (!matches(type, lpszType)) {
       continue;
     }
 
     for (const entry of type.entries ?? []) {
       if (matches(entry, lpszName)) {
-        return resourceHandle(this.handles, task.executable, entry);
+        return resourceHandle(system.handles, executable, entry);
       }
     }
   }

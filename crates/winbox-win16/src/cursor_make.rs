@@ -251,13 +251,20 @@ const SM_CYCURSOR: i16 = 14;
 fn get_icon_id(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let handle = args.word(system);
     let type_name = args.dword(system);
+
+    icon_id(system, handle, type_name).map(Answer::Word)
+}
+
+/// `GetIconID`'s work, as `LoadIcon` and `LoadCursor` do it
+/// (`icon_handlers.rs`): the member's identifier, nought for none.
+pub(crate) fn icon_id(system: &mut System, handle: u16, type_name: u32) -> Result<u16, Stop> {
     let far = match crate::memory::global_lock(system, &mut Args::repeat(handle))? {
         Answer::Dword(far) => far,
         _ => 0,
     };
 
     if far == 0 {
-        return Ok(Answer::Word(0));
+        return Ok(0);
     }
 
     let read = |system: &System, at: u16| {
@@ -267,7 +274,7 @@ fn get_icon_id(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     };
 
     if read(system, 0) != 0 || !matches!(read(system, 2), 1 | 2) {
-        return Ok(Answer::Word(0));
+        return Ok(0);
     }
 
     let count = read(system, 4);
@@ -284,10 +291,10 @@ fn get_icon_id(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     }
 
     crate::memory::global_unlock(system, &mut Args::repeat(handle))?;
-    Ok(Answer::Word(read(
+    Ok(read(
         system,
         6u16.wrapping_add(index.wrapping_mul(14)).wrapping_add(12),
-    )))
+    ))
 }
 
 /// The icon of a directory's `count` for the display (seg12 `040c`).

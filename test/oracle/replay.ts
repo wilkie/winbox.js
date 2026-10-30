@@ -5552,10 +5552,6 @@ export const KNOWN_GAPS: Record<string, string> = {
     "UserSeeUserDo works on USER's own data segment, which in WinBox holds no local heap and none of USER's words (as thheap:lsystem)",
   'userproc:classproc':
     "WinBox registers USER's own classes #32768 to #32772 only on the raster desktop, with procedures of its own that no address of USER's names, and gives the desktop's none",
-  'userproc:handler':
-    "USER's resource handlers for icons and cursors are not yet done: WinBox's LoadResource of an icon calls KERNEL's own handler",
-  'userproc:iconres':
-    "USER's resource handlers for icons and cursors are not yet done: LoadResource of an icon gives the file's DIB, not USER's block",
   /* `ttqmap`'s fonts asked for under `MM_LOMETRIC`: Windows realises a
    * font's height in the device context's units; both engines take it as
    * pixels, so the widths, the pairs' amounts and the outline metrics are
@@ -5970,6 +5966,7 @@ const RUN_WHOLE = new Set<string>([
   'gdidm',
   'gdispool',
   'gdiint',
+  'iconhand',
 ]);
 
 /**

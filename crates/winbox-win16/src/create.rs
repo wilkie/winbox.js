@@ -326,7 +326,9 @@ fn window(system: &System, index: usize) -> &Window {
 impl Engine {
     /// A window made, as `CreateWindow` makes one: its handle, nought for
     /// none.
-    #[allow(clippy::too_many_lines)]
+    // A static's icon is loaded with the system let go (`drop`) and taken
+    // again after, which the lint does not follow.
+    #[allow(clippy::too_many_lines, clippy::await_holding_refcell_ref)]
     pub async fn create_window(&self, mut made: Creation) -> Result<u16, Stop> {
         let (index, hwnd, child, mut create_struct, raw) = {
             let mut system = self.system();
@@ -556,15 +558,21 @@ impl Engine {
                         }
                         _ => Err(name),
                     };
+                    // Loaded as `LoadIcon` loads it, through its handlers
+                    // (`icon_handlers.rs`), with the system let go meanwhile.
+                    drop(system);
+
                     let mut block = if made.instance == 0 {
                         0
                     } else {
-                        crate::icons::load_icon_named(&mut system, made.instance, id.clone())
+                        crate::icons::load_icon_named(self, made.instance, id.clone()).await?
                     };
 
                     if block == 0 {
-                        block = crate::icons::load_icon_named(&mut system, 0, id);
+                        block = crate::icons::load_icon_named(self, 0, id).await?;
                     }
+
+                    system = self.system();
 
                     state.icon = if block == 0 {
                         None
