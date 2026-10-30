@@ -1,0 +1,1441 @@
+{
+  "probe": "oleemb",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0"
+    },
+    {
+      "function": "length",
+      "args": "embedded",
+      "result": "166",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@0",
+      "result": "0105000002000000070000005042727573680001000000000100000000100000",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@20",
+      "result": "00404142434445464748494a4b4c4d4e4f01050000050000000d0000004d4554",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@40",
+      "result": "4146494c455049435400d007000018fcffff500000000800d007e80300000100",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@60",
+      "result": "09000003240000000000070000000000050000000b0200000000050000000c02",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@80",
+      "result": "32006400070000001b04320064000000000007000000180428003c000a000a00",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded@a0",
+      "result": "030000000000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "embedded",
+      "result": "0 object 166",
+      "section": "embedded"
+    },
+    {
+      "function": "vtbl",
+      "args": "embedded",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "embedded"
+    },
+    {
+      "function": "block",
+      "args": "embedded",
+      "result": "160",
+      "section": "embedded"
+    },
+    {
+      "function": "obj",
+      "args": "embedded",
+      "result": "* * 454c * * * 2 0 * 0 * * 0 0 0 * 0 * 0 0 0 0 0 0 * * 0 * 0 1 0 0 3 0 0 0 0 0 0 0 * c 0 0 0 * c 0 ",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "embedded",
+      "result": "0 2",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "embedded",
+      "result": "0 0,0,2000,-1000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "embedded",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "embedded",
+      "result": "0 180",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "embedded",
+      "result": "0 3 Obj",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "embedded,Native",
+      "result": "0 handle 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 08 00 09 00 0a 00 0b 00 0c 00 0d 00 0e 00 0f 00",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "embedded,OwnerLink",
+      "result": "0 handle 50 42 72 75 73 68 00 4f 4c 45 45 4d 42 25 45 4d 42 2e 44 4f 43 25 4f 62 6a 23 30 30 31 00 00 00",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "embedded,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "embedded",
+      "result": "34",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "embedded",
+      "result": "13 7",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleDraw",
+      "args": "embedded",
+      "result": "0 01daf5c0",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "7",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "32",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "13",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "8",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "Put",
+      "args": "72",
+      "result": "",
+      "section": "embedded"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "length",
+      "args": "embedded saved",
+      "result": "180",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@0",
+      "result": "0105000002000000070000005042727573680000000000000000002000000040",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@20",
+      "result": "4142434445464748494a4b4c4d4e4f080009000a000b000c000d000e000f0001",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@40",
+      "result": "050000050000000d0000004d45544146494c455049435400d007000018fcffff",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@60",
+      "result": "500000000800d007e803960c0100090000032400000000000700000000000500",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@80",
+      "result": "00000b0200000000050000000c0232006400070000001b043200640000000000",
+      "section": "embedded"
+    },
+    {
+      "function": "bytes",
+      "args": "embedded saved@a0",
+      "result": "07000000180428003c000a000a00030000000000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleClone",
+      "args": "embedded",
+      "result": "0 object",
+      "section": "embedded"
+    },
+    {
+      "function": "OleEqual",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "copy",
+      "result": "0 2",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "copy",
+      "result": "0 0,0,2000,-1000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "copy",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "copy",
+      "result": "0 180",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "copy",
+      "result": "0 4 Copy",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,Native",
+      "result": "0 handle 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 08 00 09 00 0a 00 0b 00 0c 00 0d 00 0e 00 0f 00",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,OwnerLink",
+      "result": "0 handle 50 42 72 75 73 68 00 4f 4c 45 45 4d 42 25 45 4d 42 2e 44 4f 43 25 43 6f 70 79 23 30 30 32 00 00 00 74 68 65 6e 20 72 65",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "copy",
+      "result": "34",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "copy",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "copy",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "copy",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "copy",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "copy",
+      "result": "13 7",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleRelease",
+      "args": "copy",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "formats",
+      "args": "embedded",
+      "result": "Native,OwnerLink,3,",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "embedded",
+      "result": "12",
+      "section": "embedded"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "static",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleRename",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "embedded",
+      "result": "13",
+      "section": "embedded"
+    },
+    {
+      "function": "OleClose",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "OleRelease",
+      "args": "embedded",
+      "result": "0",
+      "section": "embedded"
+    },
+    {
+      "function": "length",
+      "args": "bare",
+      "result": "57",
+      "section": "bare"
+    },
+    {
+      "function": "bytes",
+      "args": "bare@0",
+      "result": "0105000002000000070000005042727573680001000000000100000000100000",
+      "section": "bare"
+    },
+    {
+      "function": "bytes",
+      "args": "bare@20",
+      "result": "00404142434445464748494a4b4c4d4e4f0105000000000000",
+      "section": "bare"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bare",
+      "result": "0 object 57",
+      "section": "bare"
+    },
+    {
+      "function": "vtbl",
+      "args": "bare",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "bare"
+    },
+    {
+      "function": "block",
+      "args": "bare",
+      "result": "160",
+      "section": "bare"
+    },
+    {
+      "function": "obj",
+      "args": "bare",
+      "result": "* * 454c * * * 2 0 0 0 0 0 0 0 0 * 0 * 0 0 0 0 0 0 * * 0 * 0 1 0 0 3 0 0 0 0 0 0 0 0 0 0 0 0 * c 0 ",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "bare",
+      "result": "0 2",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "bare",
+      "result": "0 0,0,2,-4057",
+      "section": "bare"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "bare",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "bare"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "bare",
+      "result": "0 71",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "bare",
+      "result": "0 3 Obj",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,Native",
+      "result": "0 handle 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f 08 00 09 00 0a 00 0b 00 0c 00 0d 00 0e 00 0f 00",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,OwnerLink",
+      "result": "0 handle 50 42 72 75 73 68 00 4f 4c 45 45 4d 42 25 45 4d 42 2e 44 4f 43 25 4f 62 6a 23 30 30 33 00 00 00",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,3",
+      "result": "4 0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "bare",
+      "result": "34",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "bare",
+      "result": "13 7",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleDraw",
+      "args": "bare",
+      "result": "8 68ef8000",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "7",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "bare",
+      "result": "4",
+      "section": "bare"
+    },
+    {
+      "function": "length",
+      "args": "bare saved",
+      "result": "31",
+      "section": "bare"
+    },
+    {
+      "function": "bytes",
+      "args": "bare saved@0",
+      "result": "01050000020000000700000050427275736800000000000000000000000000",
+      "section": "bare"
+    },
+    {
+      "function": "OleClone",
+      "args": "bare",
+      "result": "0 object",
+      "section": "bare"
+    },
+    {
+      "function": "OleEqual",
+      "args": "bare",
+      "result": "17",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "copy",
+      "result": "0 2",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "copy",
+      "result": "0 0,0,0,0",
+      "section": "bare"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "copy",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "bare"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "copy",
+      "result": "0 199",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "copy",
+      "result": "0 4 Copy",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,Native",
+      "result": "0 handle d4 08 4f 0b 4c 45 d6 0c ec 1f 0f 05 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 92 c0 00 00 77 0c 00 00 c4 0e",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,OwnerLink",
+      "result": "0 handle 50 42 72 75 73 68 00 4f 4c 45 45 4d 42 25 45 4d 42 2e 44 4f 43 25 43 6f 70 79 23 30 30 34 00 00 00 00 d0 07 e8 03 96 0c",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,3",
+      "result": "4 0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "copy",
+      "result": "34",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "copy",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "copy",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "copy",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "copy",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "copy",
+      "result": "13 7",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleRelease",
+      "args": "copy",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "bare",
+      "result": "4",
+      "section": "bare"
+    },
+    {
+      "function": "formats",
+      "args": "bare",
+      "result": "",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "bare",
+      "result": "12",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "bare",
+      "result": "12",
+      "section": "bare"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "static",
+      "result": "12",
+      "section": "bare"
+    },
+    {
+      "function": "OleRename",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "bare",
+      "result": "13",
+      "section": "bare"
+    },
+    {
+      "function": "OleClose",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "OleRelease",
+      "args": "bare",
+      "result": "0",
+      "section": "bare"
+    },
+    {
+      "function": "length",
+      "args": "linked",
+      "result": "188",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@0",
+      "result": "0105000001000000070000005042727573680015000000433a5c4f5241434c45",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@20",
+      "result": "5c4c494e4b45442e424d50000a00000031203120313020313000010000000000",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@40",
+      "result": "0000000000000001050000050000000d0000004d45544146494c455049435400",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@60",
+      "result": "d007000018fcffff500000000800d007e8030000010009000003240000000000",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@80",
+      "result": "070000000000050000000b0200000000050000000c0232006400070000001b04",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked@a0",
+      "result": "320064000000000007000000180428003c000a000a00030000000000",
+      "section": "linked"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "linked",
+      "result": "0 object 188",
+      "section": "linked"
+    },
+    {
+      "function": "vtbl",
+      "args": "linked",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "linked"
+    },
+    {
+      "function": "block",
+      "args": "linked",
+      "result": "160",
+      "section": "linked"
+    },
+    {
+      "function": "obj",
+      "args": "linked",
+      "result": "* * 454c * * * 1 0 * 0 * * 0 0 0 * 0 * 0 0 0 0 0 0 * * * * 0 1 0 0 0 0 0 0 0 0 0 0 * c 0 0 0 0 0 0 ",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "linked",
+      "result": "0 1",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "linked",
+      "result": "0 0,0,2000,-1000",
+      "section": "linked"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "linked",
+      "result": "ObjectLink,3,0,",
+      "section": "linked"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "linked",
+      "result": "0 187",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "linked",
+      "result": "0 3 Obj",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetData",
+      "args": "linked,ObjectLink",
+      "result": "0 handle 50 42 72 75 73 68 00 43 3a 5c 4f 52 41 43 4c 45 5c 4c 49 4e 4b 45 44 2e 42 4d 50 00 31 20 31 20 31 30 20 31 30 00 00 02",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetData",
+      "args": "linked,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "linked",
+      "result": "34",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "linked",
+      "result": "0 0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleDraw",
+      "args": "linked",
+      "result": "0 01daf5c0",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "7",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "21",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "10",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "13",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "4",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "8",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "Put",
+      "args": "72",
+      "result": "",
+      "section": "linked"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "length",
+      "args": "linked saved",
+      "result": "187",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@0",
+      "result": "0105000001000000070000005042727573680015000000433a5c4f5241434c45",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@20",
+      "result": "5c4c494e4b45442e424d50000a00000031203120313020313000000000000000",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@40",
+      "result": "00000000000001050000050000000d0000004d45544146494c455049435400d0",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@60",
+      "result": "07000018fcffff500000000800d007e8039e0c01000900000324000000000007",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@80",
+      "result": "0000000000050000000b0200000000050000000c0232006400070000001b0432",
+      "section": "linked"
+    },
+    {
+      "function": "bytes",
+      "args": "linked saved@a0",
+      "result": "0064000000000007000000180428003c000a000a00030000000000",
+      "section": "linked"
+    },
+    {
+      "function": "OleClone",
+      "args": "linked",
+      "result": "0 object",
+      "section": "linked"
+    },
+    {
+      "function": "OleEqual",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "copy",
+      "result": "0 1",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "copy",
+      "result": "0 0,0,2000,-1000",
+      "section": "linked"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "copy",
+      "result": "ObjectLink,3,0,",
+      "section": "linked"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "copy",
+      "result": "0 187",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "copy",
+      "result": "0 4 Copy",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,ObjectLink",
+      "result": "0 handle 50 42 72 75 73 68 00 43 3a 5c 4f 52 41 43 4c 45 5c 4c 49 4e 4b 45 44 2e 42 4d 50 00 31 20 31 20 31 30 20 31 30 00 00 00",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetData",
+      "args": "copy,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "copy",
+      "result": "34",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "copy",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "copy",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "copy",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryReleaseMethod",
+      "args": "copy",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "copy",
+      "result": "0 0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdFileEditing",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryProtocol",
+      "args": "StdExecute",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleRelease",
+      "args": "copy",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "formats",
+      "args": "linked",
+      "result": "OwnerLink,3,",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "linked",
+      "result": "12",
+      "section": "linked"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "static",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleRename",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "linked",
+      "result": "13",
+      "section": "linked"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleClose",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleRelease",
+      "args": "linked",
+      "result": "0",
+      "section": "linked"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "as static",
+      "result": "15 0 8",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 8",
+      "result": "5 0 8",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 20",
+      "result": "5 0 20",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 30",
+      "result": "5 0 30",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 34",
+      "result": "5 0 34",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 40",
+      "result": "5 0 40",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 60",
+      "result": "5 0 60",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "cut 70",
+      "result": "5 0 70",
+      "section": "bad"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "other os",
+      "result": "0 object 166",
+      "section": "bad"
+    }
+  ]
+}
