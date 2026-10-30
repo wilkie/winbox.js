@@ -1,0 +1,607 @@
+{
+  "probe": "olepbr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0"
+    },
+    {
+      "function": "OleCreate",
+      "args": "0",
+      "result": "1 object",
+      "section": "create"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 16",
+      "section": "create"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "7 0,0,0,0",
+      "section": "create"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "7 0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Pic1",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "create"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "12 0",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OlePbrClient%OLEPBR.DOC%Pic1#001|",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "4 0",
+      "section": "create"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "0",
+      "result": "1",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "update"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "update"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "0",
+      "result": "1",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,0",
+      "result": "",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 7",
+      "section": "update"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,16931,-11693",
+      "section": "update"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 141639",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Pic1",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "update"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d f6 28 02 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OlePbrClient%OLEPBR.DOC%Pic1#001|",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "update"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "0 68ef8000",
+      "section": "update"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "0",
+      "result": "0",
+      "section": "stream"
+    },
+    {
+      "function": "length",
+      "args": "embedded",
+      "result": "141639",
+      "section": "stream"
+    },
+    {
+      "function": "stream",
+      "args": "embedded",
+      "result": "501 2 PBrush",
+      "section": "stream"
+    },
+    {
+      "function": "stream topic",
+      "args": "embedded",
+      "result": "|",
+      "section": "stream"
+    },
+    {
+      "function": "stream native",
+      "args": "embedded",
+      "result": "141600 42 4d f6 28 02 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "stream"
+    },
+    {
+      "function": "stream picture",
+      "args": "embedded",
+      "result": "501 0 ",
+      "section": "stream"
+    },
+    {
+      "function": "stream end",
+      "args": "embedded",
+      "result": "141639",
+      "section": "stream"
+    },
+    {
+      "function": "OleClose",
+      "args": "0",
+      "result": "1",
+      "section": "close"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 8",
+      "section": "close"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "close"
+    },
+    {
+      "function": "server",
+      "args": "0",
+      "result": "gone",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "34",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,16931,-11693",
+      "section": "close"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 141639",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Pic1",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "close"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d f6 28 02 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OlePbrClient%OLEPBR.DOC%Pic1#001|",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "close"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "0 68ef8000",
+      "section": "close"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "1",
+      "result": "0 object",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "1",
+      "result": "34",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "1",
+      "result": "0 2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "1",
+      "result": "0 0,0,16931,-11693",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "1",
+      "result": "0 141639",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "1",
+      "result": "0 Pic2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "1",
+      "result": "13 7",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "1",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,Native",
+      "result": "0 handle 42 4d f6 28 02 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,OwnerLink",
+      "result": "0 handle PBrush|OlePbrClient%OLEPBR.DOC%Pic2#002|",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,3",
+      "result": "1000 handle",
+      "section": "load"
+    },
+    {
+      "function": "OleActivate",
+      "args": "1",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,1",
+      "result": "0 6",
+      "section": "load"
+    },
+    {
+      "function": "wait",
+      "args": "1",
+      "result": "released 0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "1",
+      "result": "0 2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "1",
+      "result": "0 0,0,16931,-11693",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "1",
+      "result": "0 141639",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "1",
+      "result": "0 Pic2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "1",
+      "result": "13 7",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "1",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,Native",
+      "result": "0 handle 42 4d f6 28 02 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,OwnerLink",
+      "result": "0 handle PBrush|OlePbrClient%OLEPBR.DOC%Pic2#002|",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,3",
+      "result": "1000 handle",
+      "section": "load"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "1",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,1",
+      "result": "",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,1",
+      "result": "0 7",
+      "section": "load"
+    },
+    {
+      "function": "wait",
+      "args": "1",
+      "result": "released 0",
+      "section": "load"
+    },
+    {
+      "function": "OleClose",
+      "args": "1",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,1",
+      "result": "0 8",
+      "section": "load"
+    },
+    {
+      "function": "wait",
+      "args": "1",
+      "result": "released 0",
+      "section": "load"
+    },
+    {
+      "function": "server",
+      "args": "1",
+      "result": "gone",
+      "section": "load"
+    },
+    {
+      "function": "OleRelease",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleDelete",
+      "args": "0",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "doc",
+      "result": "0",
+      "section": "revoke"
+    }
+  ]
+}
