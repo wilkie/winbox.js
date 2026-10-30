@@ -1144,9 +1144,8 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
-      /* The procedure of USER's class `#32768`, the menus' windows: **recorded**
-       * by `userproc` as what `GetClassInfo` gives (`USER.EXE` seg10 `1587`).
-       * WinBox's windows of that class have `DefWindowProc` for theirs. */
+      // The procedure of the class `#32768`, the menus (seg10 `1587`; `userproc`):
+      // the windows WinBox makes of that class have `DefWindowProc`.
       [DefWindowProc, 'Bear306', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
       [User.stub, 'Unknown'],
       [DefDlgProc, 'DefDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
@@ -1361,9 +1360,8 @@ export class User extends Module {
       [Hardware_Event, 'Hardware_Event', 0, [], UINT],
       [EnableScrollBar, 'EnableScrollBar', 6, [HWND, UINT, UINT], BOOL],
       [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
-      /* USER's table of its own fault handlers (seg1 `b664`), data KERNEL's
-       * `HasGPHandler` reads, not a function: WinBox's USER has no code of
-       * Windows' to fault in. See `kb/topics/user-internals.md`. */
+      // The table of the fault handlers of USER (seg1 `b664`), data for
+      // `HasGPHandler`, not a function. See `kb/topics/user-internals.md`.
       [User.stub, '__GP', 0],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

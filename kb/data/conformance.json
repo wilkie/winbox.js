@@ -25181,8 +25181,8 @@
   "functions": {
    "origin": {
     "total": 6,
-    "agreed": 4,
-    "disagreed": 2,
+    "agreed": 6,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
