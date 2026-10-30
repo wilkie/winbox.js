@@ -310,6 +310,94 @@ pub struct State {
     /// The pictures being drawn: the object, whether into a metafile, its
     /// bounds, the window's bounds and the picture's window origin.
     pub playing: Vec<Playing>,
+    /// The library's instance: its windows' (`start.rs`).
+    pub instance: u16,
+    /// Embedded and linked objects, by their far pointers (`linked.rs`).
+    pub le: std::collections::HashMap<u32, Le>,
+    /// Each presentation's object, by the presentation's far pointer.
+    pub owners: std::collections::HashMap<u32, u32>,
+    /// The number the last embedded object was given.
+    pub serial: u32,
+    /// The window a `WM_DDE_INITIATE` is sent from while it is, and the
+    /// first server that answered.
+    pub initiating: Option<(u16, u16)>,
+    /// Servers locked, by the window of the conversation that holds each:
+    /// the server's window.
+    pub locks: std::collections::HashMap<u16, u16>,
+}
+
+/// A conversation an object holds: the system topic's or its document's.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Conv {
+    System,
+    Doc,
+}
+
+/// A step of an object's conversation (`linked.rs`).
+#[derive(Debug, Clone)]
+pub enum Step {
+    Execute {
+        conv: Conv,
+        text: Vec<u8>,
+        error: u16,
+        handle: u16,
+    },
+    Initiate,
+    Poke {
+        item: Vec<u8>,
+        format: u16,
+        data: Vec<u8>,
+        error: u16,
+        handle: u16,
+    },
+    Advise {
+        item: Vec<u8>,
+        format: u16,
+        error: u16,
+        handle: u16,
+    },
+    Request {
+        item: Vec<u8>,
+        format: u16,
+        error: u16,
+    },
+    Terminate(Conv),
+    Reply(Conv),
+    Notify(u16),
+    Release {
+        method: u16,
+        free: bool,
+        silent: bool,
+    },
+}
+
+/// What WinBox keeps of an embedded or linked object beside its block
+/// (`linked.rs`).
+#[derive(Debug, Clone, Default)]
+pub struct Le {
+    pub kind: u32,
+    pub class: Vec<u8>,
+    pub topic: Vec<u8>,
+    pub item: Vec<u8>,
+    pub native: u16,
+    pub picture: u32,
+    pub view: u32,
+    pub host_names: Option<Vec<u8>>,
+    pub dims: Option<Vec<u8>>,
+    pub scheme: Option<Vec<u8>>,
+    pub target: Option<Vec<u8>>,
+    pub update: u16,
+    pub system: u16,
+    pub system_server: u16,
+    pub doc: u16,
+    pub doc_server: u16,
+    pub busy: bool,
+    pub error: u16,
+    pub method: u16,
+    pub queue: std::collections::VecDeque<Step>,
+    pub waiting: Option<Step>,
+    pub link: u16,
+    pub blank: u16,
 }
 
 /// A picture being drawn, as `MFCALLBACKFUNC` plays its records.

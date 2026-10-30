@@ -1,0 +1,2990 @@
+{
+  "probe": "olepbd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "RegSetValue",
+      "args": "PBrush",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "PBrush\\protocol\\StdFileEditing\\server",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "PBrush\\protocol\\StdFileEditing\\verb\\0",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "PBrush\\protocol\\StdFileEditing\\verb\\1",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "PBrush\\protocol\\StdExecute\\server",
+      "result": "0"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding ",
+      "result": "1",
+      "section": "create"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OLEsystem",
+      "result": "not",
+      "section": "create"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,System",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "OleCreate",
+      "args": "0",
+      "result": "1 object",
+      "section": "create"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "System,[StdNewDocument(\"PBrush\",\"OleDdeClient%OLEDDE.DOC%Obj1#001\")]",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OleDdeClient%OLEDDE.DOC%Obj1#001",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Save,Native,8000",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Close,Native,8000",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdShowItem(\"\")]",
+      "result": "ack",
+      "section": "create"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 16",
+      "section": "create"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "7 0,0,0,0",
+      "section": "create"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "7 0",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "create"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "create"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "create"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "12 0",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "create"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "4 0",
+      "section": "create"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "7 68ef8000",
+      "section": "create"
+    },
+    {
+      "function": "ask",
+      "args": "save",
+      "result": "server",
+      "section": "save"
+    },
+    {
+      "function": "srv.save",
+      "args": "",
+      "result": "",
+      "section": "save"
+    },
+    {
+      "function": "srv.send DATA",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Save,Native,a000,data",
+      "result": "",
+      "section": "save"
+    },
+    {
+      "function": "CallBack",
+      "args": "1,0",
+      "result": "",
+      "section": "save"
+    },
+    {
+      "function": "asked",
+      "args": "save",
+      "result": "told",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "save"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "save"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "save"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "save"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "save"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "save"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "save"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "save"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "0 9096ee40",
+      "section": "save"
+    },
+    {
+      "function": "OleSetHostNames",
+      "args": "0",
+      "result": "1",
+      "section": "set"
+    },
+    {
+      "function": "srv.ACK",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Save",
+      "result": "8000",
+      "section": "set"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdHostNames,Binary,0",
+      "result": "0,13 Probe Client|Probe Object",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "set"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "set"
+    },
+    {
+      "function": "OleSetBounds",
+      "args": "0",
+      "result": "1",
+      "section": "set"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdDocDimensions,Binary,0",
+      "result": "dc05ee02dc05ee02",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "set"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "set"
+    },
+    {
+      "function": "OleSetColorScheme",
+      "args": "0",
+      "result": "1",
+      "section": "set"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdColorScheme,Binary,0",
+      "result": "300 4 0010ff004011fe008012fd00c013fc00",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "set"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "set"
+    },
+    {
+      "function": "OleSetTargetDevice",
+      "args": "0",
+      "result": "1",
+      "section": "set"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdTargetDevice,Binary,0",
+      "result": "0,14,22,28,0,28,0 Probe Printer|PSCRIPT|LPT1:",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "set"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,0",
+      "result": "",
+      "section": "set"
+    },
+    {
+      "function": "OleSetData",
+      "args": "0",
+      "result": "1",
+      "section": "set"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,,Native,0",
+      "result": "424d8600000000000000760000002800",
+      "section": "set"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 13",
+      "section": "set"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "set"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "set"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "set"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "set"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "set"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "set"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "set"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "set"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "0",
+      "result": "1",
+      "section": "update"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,,Native",
+      "result": "data",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,0",
+      "result": "",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 7",
+      "section": "update"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "update"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "update"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "update"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "update"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "0",
+      "result": "1",
+      "section": "update"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,,Native",
+      "result": "data",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,0",
+      "result": "",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 14",
+      "section": "update"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "update"
+    },
+    {
+      "function": "OleRequestData",
+      "args": "0",
+      "result": "1",
+      "section": "update"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,,1",
+      "result": "nack",
+      "section": "update"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "46 14",
+      "section": "update"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "update"
+    },
+    {
+      "function": "OleQueryReleaseError",
+      "args": "0",
+      "result": "0",
+      "section": "update"
+    },
+    {
+      "function": "OleExecute",
+      "args": "0",
+      "result": "1",
+      "section": "execute"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[ProbeCommand(1)]",
+      "result": "ack",
+      "section": "execute"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 15",
+      "section": "execute"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "execute"
+    },
+    {
+      "function": "OleActivate",
+      "args": "0",
+      "result": "1",
+      "section": "activate"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdDoVerbItem(\"\",0,TRUE,FALSE)]",
+      "result": "ack",
+      "section": "activate"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 5",
+      "section": "activate"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "activate"
+    },
+    {
+      "function": "OleActivate",
+      "args": "0",
+      "result": "1",
+      "section": "activate"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdDoVerbItem(\"\",1,FALSE,TRUE)]",
+      "result": "ack",
+      "section": "activate"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 5",
+      "section": "activate"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "activate"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "0",
+      "result": "0",
+      "section": "stream"
+    },
+    {
+      "function": "length",
+      "args": "embedded",
+      "result": "199",
+      "section": "stream"
+    },
+    {
+      "function": "stream",
+      "args": "embedded",
+      "result": "501 2 PBrush",
+      "section": "stream"
+    },
+    {
+      "function": "stream topic",
+      "args": "embedded",
+      "result": "|",
+      "section": "stream"
+    },
+    {
+      "function": "stream native",
+      "args": "embedded",
+      "result": "160 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "stream"
+    },
+    {
+      "function": "stream picture",
+      "args": "embedded",
+      "result": "501 0 ",
+      "section": "stream"
+    },
+    {
+      "function": "stream end",
+      "args": "embedded",
+      "result": "199",
+      "section": "stream"
+    },
+    {
+      "function": "OleClose",
+      "args": "0",
+      "result": "1",
+      "section": "close"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdCloseDocument]",
+      "result": "ack",
+      "section": "close"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "System",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 8",
+      "section": "close"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "34",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "close"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "close"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "close"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "close"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "0 9096ee40",
+      "section": "close"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding ",
+      "result": "1",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OLEsystem",
+      "result": "not",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,System",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "OleActivate",
+      "args": "0",
+      "result": "1",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "System,[StdEditDocument(\"OleDdeClient%OLEDDE.DOC%Obj1#001\")]",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OleDdeClient%OLEDDE.DOC%Obj1#001",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,,Native,0",
+      "result": "424d8600000000000000760000002800",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdHostNames,Binary,0",
+      "result": "0,13 Probe Client|Probe Object",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdTargetDevice,Binary,0",
+      "result": "0,14,22,28,0,28,0 Probe Printer|PSCRIPT|LPT1:",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdDocDimensions,Binary,0",
+      "result": "dc05ee02dc05ee02",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,StdColorScheme,Binary,0",
+      "result": "300 4 0010ff004011fe008012fd00c013fc00",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Save,Native,8000",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Close,Native,8000",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdDoVerbItem(\"\",0,TRUE,TRUE)]",
+      "result": "ack",
+      "section": "reopen"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,0",
+      "result": "0 6",
+      "section": "reopen"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released 0",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "0",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "reopen"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "reopen"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "reopen"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "reopen"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "reopen"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "reopen"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "reopen"
+    },
+    {
+      "function": "ask",
+      "args": "close",
+      "result": "server",
+      "section": "server close"
+    },
+    {
+      "function": "srv.close",
+      "args": "",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "srv.send DATA",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,/Close,Native,a000,data",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "srv.send TERMINATE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,0",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "CallBack",
+      "args": "2,0",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "asked",
+      "args": "close",
+      "result": "told",
+      "section": "server close"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001,[StdCloseDocument]",
+      "result": "ack",
+      "section": "server close"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj1#001",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "System",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "server close"
+    },
+    {
+      "function": "wait",
+      "args": "0",
+      "result": "released",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "0",
+      "result": "34",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "0",
+      "result": "0",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "0",
+      "result": "0 2",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "0",
+      "result": "0 0,0,211,-105",
+      "section": "server close"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "0",
+      "result": "0 199",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "0",
+      "result": "0 Obj1",
+      "section": "server close"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "0",
+      "result": "0",
+      "section": "server close"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "0",
+      "result": "13 7",
+      "section": "server close"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "0",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "server close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "server close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj1#001|",
+      "section": "server close"
+    },
+    {
+      "function": "OleGetData",
+      "args": "0,3",
+      "result": "1000 handle",
+      "section": "server close"
+    },
+    {
+      "function": "OleDraw",
+      "args": "0",
+      "result": "0 9096ee40",
+      "section": "server close"
+    },
+    {
+      "function": "OleDelete",
+      "args": "0",
+      "result": "0",
+      "section": "delete"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "1",
+      "result": "0 object",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "1",
+      "result": "34",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "1",
+      "result": "0 2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "1",
+      "result": "0 0,0,211,-105",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "1",
+      "result": "0 199",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "1",
+      "result": "0 Obj2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "1",
+      "result": "13 7",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "1",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj2#002|",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,3",
+      "result": "1000 handle",
+      "section": "load"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding ",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OLEsystem",
+      "result": "not",
+      "section": "load"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,System",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "OleActivate",
+      "args": "1",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "System,[StdEditDocument(\"OleDdeClient%OLEDDE.DOC%Obj2#002\")]",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OleDdeClient%OLEDDE.DOC%Obj2#002",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "srv.POKE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002,,Native,0",
+      "result": "424d8600000000000000760000002800",
+      "section": "load"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002,/Save,Native,8000",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002,/Close,Native,8000",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002,[StdDoVerbItem(\"\",0,FALSE,TRUE)]",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,1",
+      "result": "0 6",
+      "section": "load"
+    },
+    {
+      "function": "wait",
+      "args": "1",
+      "result": "released 0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "1",
+      "result": "0 2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "1",
+      "result": "0 0,0,211,-105",
+      "section": "load"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "1",
+      "result": "0 199",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "1",
+      "result": "0 Obj2",
+      "section": "load"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "1",
+      "result": "0",
+      "section": "load"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "1",
+      "result": "13 7",
+      "section": "load"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "1",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj2#002|",
+      "section": "load"
+    },
+    {
+      "function": "OleGetData",
+      "args": "1,3",
+      "result": "1000 handle",
+      "section": "load"
+    },
+    {
+      "function": "OleRelease",
+      "args": "1",
+      "result": "1",
+      "section": "load"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002,[StdCloseDocument]",
+      "result": "ack",
+      "section": "load"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "OleDdeClient%OLEDDE.DOC%Obj2#002",
+      "result": "",
+      "section": "load"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "System",
+      "result": "",
+      "section": "load"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "load"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "load"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,1",
+      "result": "0 1",
+      "section": "load"
+    },
+    {
+      "function": "wait",
+      "args": "1",
+      "result": "told",
+      "section": "load"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding C:\\ORACLE\\OLEDDE.LNK",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,C:\\ORACLE\\OLEDDE.LNK",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "OleCreateLinkFromFile",
+      "args": "2",
+      "result": "1 object",
+      "section": "link"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native,8000",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,StdDocumentName,Binary,8000",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native",
+      "result": "data",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,2",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,2",
+      "result": "0 18",
+      "section": "link"
+    },
+    {
+      "function": "wait",
+      "args": "2",
+      "result": "released 0",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "2",
+      "result": "34",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "2",
+      "result": "0 1",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "2",
+      "result": "0 0,0,211,-105",
+      "section": "link"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "2",
+      "result": "0 264",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "2",
+      "result": "0 Link1",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "2",
+      "result": "0 0",
+      "section": "link"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "2",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item1",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,3",
+      "result": "1000 handle",
+      "section": "link"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding C:\\ORACLE\\OLEDDE.LNK",
+      "result": "1",
+      "section": "link"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,C:\\ORACLE\\OLEDDE.LNK",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "OleActivate",
+      "args": "2",
+      "result": "1",
+      "section": "link"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native,8000",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,StdDocumentName,Binary,8000",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native",
+      "result": "data",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,2",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.EXECUTE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,[StdDoVerbItem(\"Item1\",0,TRUE,TRUE)]",
+      "result": "ack",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,2",
+      "result": "0 6",
+      "section": "link"
+    },
+    {
+      "function": "wait",
+      "args": "2",
+      "result": "released 0",
+      "section": "link"
+    },
+    {
+      "function": "ask",
+      "args": "change",
+      "result": "server",
+      "section": "link"
+    },
+    {
+      "function": "srv.change",
+      "args": "",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.send DATA",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native,a000,data",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.send DATA",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,StdDocumentName,Binary,a000,none",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,2",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "asked",
+      "args": "change",
+      "result": "told",
+      "section": "link"
+    },
+    {
+      "function": "wait",
+      "args": "2",
+      "result": "released",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "2",
+      "result": "0 1",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "2",
+      "result": "0 0,0,211,-105",
+      "section": "link"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "2",
+      "result": "0 264",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "2",
+      "result": "0 Link1",
+      "section": "link"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "2",
+      "result": "0 0",
+      "section": "link"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "2",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item1",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "link"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,3",
+      "result": "1000 handle",
+      "section": "link"
+    },
+    {
+      "function": "OleUpdate",
+      "args": "2",
+      "result": "1",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,2",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "srv.ACK",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1",
+      "result": "8000",
+      "section": "link"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item1,Native",
+      "result": "data",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,2",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,2",
+      "result": "0 7",
+      "section": "link"
+    },
+    {
+      "function": "wait",
+      "args": "2",
+      "result": "released 0",
+      "section": "link"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,C:\\ORACLE\\OLEDDE.LNK",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleCreateLinkFromFile",
+      "args": "5",
+      "result": "1 object",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item2,Native,8000",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,StdDocumentName,Binary,8000",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item2,Native",
+      "result": "data",
+      "section": "reconnect"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,5",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,5",
+      "result": "0 18",
+      "section": "reconnect"
+    },
+    {
+      "function": "wait",
+      "args": "5",
+      "result": "released 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "5",
+      "result": "34",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "5",
+      "result": "0 1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "5",
+      "result": "0 0,0,211,-105",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "5",
+      "result": "0 264",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "5",
+      "result": "0 Link2",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "5",
+      "result": "0 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "5",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item2",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,3",
+      "result": "1000 handle",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleClose",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,C:\\ORACLE\\OLEDDE.LNK",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleReconnect",
+      "args": "5",
+      "result": "1",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item2,Native,8000",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.ADVISE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,StdDocumentName,Binary,8000",
+      "result": "ack",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,Item2,Native",
+      "result": "data",
+      "section": "reconnect"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,5",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,5",
+      "result": "0 9",
+      "section": "reconnect"
+    },
+    {
+      "function": "wait",
+      "args": "5",
+      "result": "released 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "5",
+      "result": "0 1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "5",
+      "result": "0 0,0,211,-105",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "5",
+      "result": "0 264",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "5",
+      "result": "0 Link2",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "5",
+      "result": "0 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "5",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item2",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "5,3",
+      "result": "1000 handle",
+      "section": "reconnect"
+    },
+    {
+      "function": "ask",
+      "args": "close",
+      "result": "server",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.close",
+      "args": "",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.send TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.send TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "reconnect"
+    },
+    {
+      "function": "asked",
+      "args": "close",
+      "result": "timeout",
+      "section": "reconnect"
+    },
+    {
+      "function": "wait",
+      "args": "2",
+      "result": "released",
+      "section": "reconnect"
+    },
+    {
+      "function": "server",
+      "args": "2",
+      "result": "gone",
+      "section": "reconnect"
+    },
+    {
+      "function": "closed",
+      "args": "",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "2",
+      "result": "34",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "2",
+      "result": "0 1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "2",
+      "result": "0 0,0,211,-105",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "2",
+      "result": "0 264",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "2",
+      "result": "0 Link1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "2",
+      "result": "0 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "2",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,3",
+      "result": "1000 handle",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleRelease",
+      "args": "5",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleReconnect",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleSetLinkUpdateOptions",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "2",
+      "result": "34",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "2",
+      "result": "0 1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "2",
+      "result": "0 0,0,211,-105",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "2",
+      "result": "0 264",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "2",
+      "result": "0 Link1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "2",
+      "result": "0 2",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "2",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,ObjectLink",
+      "result": "0 handle PBrush|C:\\ORACLE\\OLEDDE.LNK|Item1",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleGetData",
+      "args": "2,3",
+      "result": "1000 handle",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleSaveToStream",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "length",
+      "args": "linked",
+      "result": "264",
+      "section": "reconnect"
+    },
+    {
+      "function": "stream",
+      "args": "linked",
+      "result": "501 1 PBrush",
+      "section": "reconnect"
+    },
+    {
+      "function": "stream topic",
+      "args": "linked",
+      "result": "C:\\ORACLE\\OLEDDE.LNK|Item1",
+      "section": "reconnect"
+    },
+    {
+      "function": "stream link",
+      "args": "linked",
+      "result": "|0 2",
+      "section": "reconnect"
+    },
+    {
+      "function": "stream picture",
+      "args": "linked",
+      "result": "501 5 PBrush 0 7 1769234766 25974 -24576 0",
+      "section": "reconnect"
+    },
+    {
+      "function": "stream end",
+      "args": "linked",
+      "result": "25007",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleRelease",
+      "args": "2",
+      "result": "0",
+      "section": "reconnect"
+    },
+    {
+      "function": "OleCreateInvisible",
+      "args": "3",
+      "result": "0 object",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "3",
+      "result": "34",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "3",
+      "result": "0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "3",
+      "result": "0 2",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "3",
+      "result": "7 0,0,0,0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "3",
+      "result": "7 0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "3",
+      "result": "0 Obj3",
+      "section": "invisible"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "3",
+      "result": "0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "3",
+      "result": "13 7",
+      "section": "invisible"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "3",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "invisible"
+    },
+    {
+      "function": "OleGetData",
+      "args": "3,Native",
+      "result": "12 0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleGetData",
+      "args": "3,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj3#003|",
+      "section": "invisible"
+    },
+    {
+      "function": "OleGetData",
+      "args": "3,3",
+      "result": "4 0",
+      "section": "invisible"
+    },
+    {
+      "function": "OleRelease",
+      "args": "3",
+      "result": "0",
+      "section": "invisible"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding C:\\ORACLE\\OLEDDE.LNK",
+      "result": "0",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,C:\\ORACLE\\OLEDDE.LNK",
+      "result": "ack",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleCreateFromFile",
+      "args": "4",
+      "result": "1 object",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.REQUEST",
+      "args": "C:\\ORACLE\\OLEDDE.LNK,,Native",
+      "result": "data",
+      "section": "fromfile"
+    },
+    {
+      "function": "CallBack",
+      "args": "0,4",
+      "result": "",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "C:\\ORACLE\\OLEDDE.LNK",
+      "result": "",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "fromfile"
+    },
+    {
+      "function": "CallBack",
+      "args": "5,4",
+      "result": "0 20",
+      "section": "fromfile"
+    },
+    {
+      "function": "wait",
+      "args": "4",
+      "result": "released 0",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "4",
+      "result": "34",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "4",
+      "result": "0",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "4",
+      "result": "0 2",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "4",
+      "result": "0 0,0,211,-105",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "4",
+      "result": "0 199",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "4",
+      "result": "0 Obj4",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "4",
+      "result": "0",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "4",
+      "result": "13 7",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "4",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleGetData",
+      "args": "4,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleGetData",
+      "args": "4,OwnerLink",
+      "result": "0 handle PBrush|OleDdeClient%OLEDDE.DOC%Obj4#004|",
+      "section": "fromfile"
+    },
+    {
+      "function": "OleGetData",
+      "args": "4,3",
+      "result": "1000 handle",
+      "section": "fromfile"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding ",
+      "result": "0",
+      "section": "lock"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,OLEsystem",
+      "result": "not",
+      "section": "lock"
+    },
+    {
+      "function": "srv.INITIATE",
+      "args": "PBrush,System",
+      "result": "ack",
+      "section": "lock"
+    },
+    {
+      "function": "OleLockServer",
+      "args": "4",
+      "result": "0 server",
+      "section": "lock"
+    },
+    {
+      "function": "OleRelease",
+      "args": "4",
+      "result": "0",
+      "section": "lock"
+    },
+    {
+      "function": "OleUnlockServer",
+      "args": "4",
+      "result": "1",
+      "section": "lock"
+    },
+    {
+      "function": "srv.TERMINATE",
+      "args": "System",
+      "result": "",
+      "section": "lock"
+    },
+    {
+      "function": "srv.exit",
+      "args": "",
+      "result": "",
+      "section": "lock"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "lock"
+    },
+    {
+      "function": "server",
+      "args": "4",
+      "result": "gone",
+      "section": "lock"
+    },
+    {
+      "function": "formats",
+      "args": "put",
+      "result": "Native,OwnerLink,3,ObjectLink,",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryCreateFromClip",
+      "args": "std",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryLinkFromClip",
+      "args": "std",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "6",
+      "result": "0 object",
+      "section": "clip"
+    },
+    {
+      "function": "OleCreateLinkFromClip",
+      "args": "7",
+      "result": "0 object",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "6",
+      "result": "34",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "6",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "6",
+      "result": "0 2",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "6",
+      "result": "0 0,0,2000,-1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "6",
+      "result": "0 343",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "6",
+      "result": "0 Clip1",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "6",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "6",
+      "result": "13 7",
+      "section": "clip"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "6",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "6,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "6,OwnerLink",
+      "result": "0 handle OleDdeProbe|OleDdeClient%OLEDDE.DOC%Clip1#005|Item3",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "6,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleDraw",
+      "args": "6",
+      "result": "0 76e2d540",
+      "section": "clip"
+    },
+    {
+      "function": "OleClone",
+      "args": "8",
+      "result": "0 object",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "8",
+      "result": "34",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "8",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "8",
+      "result": "0 2",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "8",
+      "result": "0 0,0,2000,-1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "8",
+      "result": "0 343",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "8",
+      "result": "0 Clip3",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "8",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "8",
+      "result": "13 7",
+      "section": "clip"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "8",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "8,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "8,OwnerLink",
+      "result": "0 handle OleDdeProbe|OleDdeClient%OLEDDE.DOC%Clip3#006|Item3",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "8,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleEqual",
+      "args": "6,8",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleRelease",
+      "args": "8",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOpen",
+      "args": "7",
+      "result": "34",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryReleaseStatus",
+      "args": "7",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "7",
+      "result": "0 1",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "7",
+      "result": "0 0,0,2000,-1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "7",
+      "result": "0 212",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "7",
+      "result": "0 Clip2",
+      "section": "clip"
+    },
+    {
+      "function": "OleQueryOutOfDate",
+      "args": "7",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetLinkUpdateOptions",
+      "args": "7",
+      "result": "0 0",
+      "section": "clip"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "7",
+      "result": "ObjectLink,3,0,",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "7,ObjectLink",
+      "result": "0 handle OleDdeProbe|C:\\ORACLE\\OLEDDE.LNK|Item3",
+      "section": "clip"
+    },
+    {
+      "function": "OleGetData",
+      "args": "7,3",
+      "result": "0 handle 8 2000 1000",
+      "section": "clip"
+    },
+    {
+      "function": "OleDraw",
+      "args": "7",
+      "result": "0 76e2d540",
+      "section": "clip"
+    },
+    {
+      "function": "OleEqual",
+      "args": "6,7",
+      "result": "17",
+      "section": "clip"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "6",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "formats",
+      "args": "copied",
+      "result": "Native,OwnerLink,3,",
+      "section": "clip"
+    },
+    {
+      "function": "OleRelease",
+      "args": "6",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "7",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "formats",
+      "args": "copied link",
+      "result": "OwnerLink,3,",
+      "section": "clip"
+    },
+    {
+      "function": "OleRelease",
+      "args": "7",
+      "result": "0",
+      "section": "clip"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "doc",
+      "result": "0",
+      "section": "revoke"
+    }
+  ]
+}

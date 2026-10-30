@@ -11,4 +11,4 @@ topics: [ole]
 
 ## Implementation
 
-Not WinBox's own: a stub. Embedded and linked objects -- `StdFileEditing`, a server talked to by DDE -- are not yet WinBox's: with `OLECLI.DLL` on the drive the file's code makes them and answers for them, as before; with none they are refused ([[topic:ole]], "Not yet done").
+Not WinBox's own: a stub. A Paintbrush object's picture, bounds, data and formats are WinBox's `LE` methods' own, from its bitmap ([[topic:ole]], "Embedded and linked objects"): WinBox's tables hold no `PB` entry.

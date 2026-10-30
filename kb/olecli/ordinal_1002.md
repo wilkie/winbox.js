@@ -1,18 +1,20 @@
 ---
 kind: function
 module: OLECLI
-name: Ordinal 1002
+name: Ordinal1002
 ordinal: 1002
-summary: "An entry of `OLECLI.DLL`'s with no name: one of its own far calls, not a function it offers programs."
+summary: "An embedded or linked object's `QueryReleaseError` method, which its table holds."
 versions:
-  '3.1': stub
+  '3.1': partial
+probes: [oledde, olepbd]
+source: src/win16/olecli/linked.ts
 topics: [ole]
 ---
 
-## Nuances
+## Observed behaviour
 
-- [[documented]] OLE 1.0's headers and reference name no function at this ordinal.
+- [[measured]] [[probe:oledde]], [[probe:olepbd]]: The error that stopped its conversation, answered while its client is told `OLE_RELEASE`; nought after.
 
 ## Implementation
 
-Not WinBox's own: a stub in WinBox's table (`src/win16/olecli/index.ts`, named `Unknown`), with no arm in `crates/winbox-win16/src/olecli/mod.rs`.
+WinBox's own: `linked.ts`'s `LE_METHODS` and `crates/winbox-win16/src/olecli/linked.rs`'s `method`, written from OLE 1.0's documented protocol and the probes, not from the code of `OLECLI.DLL` ([[topic:ole]], "Embedded and linked objects").

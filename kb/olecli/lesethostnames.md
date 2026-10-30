@@ -3,12 +3,18 @@ kind: function
 module: OLECLI
 name: LESETHOSTNAMES
 ordinal: 204
-summary: 'A method of an embedded or linked object, which its table holds (the 200s).'
+summary: "An embedded or linked object's `SetHostNames` method, which its table holds."
 versions:
-  '3.1': stub
+  '3.1': partial
+probes: [oledde, olepbd]
+source: src/win16/olecli/linked.ts
 topics: [ole]
 ---
 
+## Observed behaviour
+
+- [[measured]] [[probe:oledde]], [[probe:olepbd]]: The names kept, after two word offsets to them; open, poked as `StdHostNames` in `Binary`, released `OLE_OTHER`; else poked as the object is next opened.
+
 ## Implementation
 
-Not WinBox's own: a stub. Embedded and linked objects -- `StdFileEditing`, a server talked to by DDE -- are not yet WinBox's: with `OLECLI.DLL` on the drive the file's code makes them and answers for them, as before; with none they are refused ([[topic:ole]], "Not yet done").
+WinBox's own: `linked.ts`'s `LE_METHODS` and `crates/winbox-win16/src/olecli/linked.rs`'s `method`, written from OLE 1.0's documented protocol and the probes, not from the code of `OLECLI.DLL` ([[topic:ole]], "Embedded and linked objects").

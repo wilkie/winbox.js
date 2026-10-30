@@ -95,6 +95,11 @@ pub(crate) async fn new_object(
 
 /// An object put last in its document's list.
 fn link(ole: &Ole<'_>, object: u32, doc: u32) {
+    // A presentation an embedded or linked object holds is in no document.
+    if doc == 0 {
+        return;
+    }
+
     let last = ole.r32(plus(doc, DOC_LAST));
 
     if last == 0 {

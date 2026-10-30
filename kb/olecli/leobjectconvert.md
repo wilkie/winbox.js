@@ -3,12 +3,17 @@ kind: function
 module: OLECLI
 name: LEOBJECTCONVERT
 ordinal: 223
-summary: 'A method of an embedded or linked object, which its table holds (the 200s).'
+summary: "An embedded or linked object's `ObjectConvert` method, which its table holds."
 versions:
-  '3.1': stub
+  '3.1': unrecorded
+source: src/win16/olecli/linked.ts
 topics: [ole]
 ---
 
+## Observed behaviour
+
+- [[inferred]] Not measured: `OLE_ERROR_GENERIC` ([[topic:ole]], "Not yet done").
+
 ## Implementation
 
-Not WinBox's own: a stub. Embedded and linked objects -- `StdFileEditing`, a server talked to by DDE -- are not yet WinBox's: with `OLECLI.DLL` on the drive the file's code makes them and answers for them, as before; with none they are refused ([[topic:ole]], "Not yet done").
+WinBox's own: `linked.ts`'s `LE_METHODS` and `crates/winbox-win16/src/olecli/linked.rs`'s `method`, written from OLE 1.0's documented protocol and the probes, not from the code of `OLECLI.DLL` ([[topic:ole]], "Embedded and linked objects").

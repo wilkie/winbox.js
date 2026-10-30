@@ -5,7 +5,8 @@ name: DOCWNDPROC
 ordinal: 100
 summary: 'The window procedure of `OleDocWndClass`, the class of the windows a document talks DDE through.'
 versions:
-  '3.1': stub
+  '3.1': partial
+probes: [oledde]
 topics: [ole]
 ---
 
@@ -13,6 +14,10 @@ topics: [ole]
 
 - [[measured]] As WinBox ran `OLECLI.DLL` from the drive, its entry registered `OleDocWndClass` with this procedure, no style and four bytes of window words.
 
+## Observed behaviour
+
+- [[measured]] [[probe:oledde]]: an object's conversation is held through a window of `OleDocWndClass`, made hidden as the conversation begins with the object's far pointer in its window words: `WM_DDE_ACK`, `WM_DDE_DATA` and `WM_DDE_TERMINATE` from its server answer the step its object waits for, or tell it its object changed, was saved or closed. Other messages go to `DefWindowProc`.
+
 ## Implementation
 
-Not yet WinBox's own: a stub. WinBox's `OLECLI` registers `OleDocWndClass` with this export's address as it starts (`start.ts`, `start.rs`), and makes no window of it yet: Embedded and linked objects -- `StdFileEditing`, a server talked to by DDE -- are not yet WinBox's: with `OLECLI.DLL` on the drive the file's code makes them and answers for them, as before; with none they are refused ([[topic:ole]], "Not yet done").
+WinBox's own: `convProc` in `src/win16/olecli/linked.ts` and `conv_proc` in `crates/winbox-win16/src/olecli/linked.rs` ([[topic:ole]], "Embedded and linked objects").

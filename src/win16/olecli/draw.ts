@@ -186,7 +186,8 @@ export async function mfCallback(
     const answer = await ole.callFarTyped(callback, [
       [client, 7],
       [OLE_QUERY_PAINT, 3],
-      [object, 7],
+      /* A presentation's own object is the one its client is asked about. */
+      [ole.state().owners.get(object >>> 0) ?? object, 7],
     ]);
 
     if (!(answer & 0xffff)) {

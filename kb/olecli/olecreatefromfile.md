@@ -7,14 +7,18 @@ summary: "An embedded object made from a file by its class's server."
 versions:
   '3.1': unrecorded
 source: src/win16/olecli/api.ts
+probes: [oledde, olepbd, olepbr]
 topics: [ole]
 ---
 
+## Observed behaviour
+
+- [[measured]] [[probe:oledde]]: the file's document reached, or its server launched hidden with the file; `Native` and a picture asked for, the conversation ended; released `OLE_CREATEFROMFILE`.
+
 ## Nuances
 
-- [[inferred]] Embedded and linked objects -- `StdFileEditing`, a server talked to by DDE -- are not yet WinBox's: with `OLECLI.DLL` on the drive the file's code makes them and answers for them, as before; with none they are refused ([[topic:ole]], "Not yet done").
-- [[documented]] The OLE 1.0 reference: the class's server is found in the registration database and launched, and the object made by it through DDE. With `OLECLI.DLL` on the drive, `StdFileEditing` is the file's code's, as before; with none, WinBox's checks the protocol and the class, and answers `OLE_ERROR_LAUNCH` (35) for a class it finds: no server is launched yet.
+- [[measured]] [[probe:oledde]], [[probe:olepbd]], [[probe:olepbr]]: an embedded or linked object -- `StdFileEditing`, a server talked to by DDE -- is WinBox's own, with `OLECLI.DLL` on the drive and without it: its `LE` method answers ([[topic:ole]], "Embedded and linked objects").
 
 ## Implementation
 
-WinBox's own: `OleCreateFromFile` in `src/win16/olecli/api.ts` and its twin in `crates/winbox-win16/src/olecli/api.rs`, written from the interface and the probes, not from the code of `OLECLI.DLL` ([[topic:ole]]). Both engines agree with [[probe:olestat]] and [[probe:olemem]], with `OLECLI.DLL` on the drive and without it (`test/win16/olecli_test.ts`, `crates/winbox-win16/tests/olecli.rs`).
+WinBox's own: `OleCreateFromFile` in `src/win16/olecli/api.ts` and its twin in `crates/winbox-win16/src/olecli/api.rs`, written from the interface and the probes, not from the code of `OLECLI.DLL` ([[topic:ole]]). Both engines agree with [[probe:olestat]], [[probe:olemem]], [[probe:oledde]], [[probe:olepbd]] and [[probe:olepbr]], with `OLECLI.DLL` on the drive and without it (`test/win16/olecli_test.ts`, `crates/winbox-win16/tests/olecli.rs`).

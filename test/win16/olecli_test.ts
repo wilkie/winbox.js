@@ -14,7 +14,7 @@ import { Loader } from '../../src/win16/loader.js';
  */
 
 const FIXTURES = join(__dirname, '..', '..', 'oracle', 'fixtures');
-const PROBE_NAMES = ['olestat', 'olemem'];
+const PROBE_NAMES = ['olestat', 'olemem', 'oledde', 'olepbd', 'olepbr'];
 const FILES = [['WINDOWS', 'SYSTEM', 'OLECLI.DLL']];
 
 /** What the oracle recorded, as `function(args) = result` lines. */

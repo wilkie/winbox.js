@@ -5967,6 +5967,9 @@ const RUN_WHOLE = new Set<string>([
   'gdispool',
   'gdiint',
   'iconhand',
+  'oledde',
+  'olepbd',
+  'olepbr',
 ]);
 
 /**

@@ -276,7 +276,14 @@ function emit(meta: MetafileDC, fn: number, params: number[]) {
   const padded = params.length & 1 ? [...params, 0] : params;
   const size = 3 + padded.length / 2;
 
-  meta.bytes.push(...wordsOf(size & 0xffff, size >>> 16, fn), ...padded);
+  meta.bytes.push(...wordsOf(size & 0xffff, size >>> 16, fn));
+
+  /* A record of a bitmap's bits may be larger than a call's arguments can
+   * be spread: its bytes added one by one. */
+  for (const byte of padded) {
+    meta.bytes.push(byte);
+  }
+
   meta.largest = Math.max(meta.largest, size);
 }
 
@@ -393,8 +400,11 @@ function programDib(
     }
   }
 
-  /* The bits are copied a word at a time. */
-  bytes.push(...hugeBytesAt(system, lpBits, bitsSize & ~1));
+  /* The bits are copied a word at a time; added one by one, as a large
+   * DIB's are more than a call's arguments can be spread. */
+  for (const byte of hugeBytesAt(system, lpBits, bitsSize & ~1)) {
+    bytes.push(byte);
+  }
 
   return bytes;
 }
