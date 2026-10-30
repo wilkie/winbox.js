@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Who calls each of KERNEL's exports: a census of the modules that import them.
+ * Who calls each of KERNEL's exports -- or another module's, `--module GDI`
+ * -- a census of the modules that import them.
  *
  * Many of KERNEL's exports are there only for Windows' own parts -- USER,
  * GDI, the drivers, WINOLDAP, TOOLHELP -- and the SDK says nothing of them.
@@ -43,7 +44,14 @@ import { basename, join, relative } from 'node:path';
 
 /** The arguments: each option once, `--windows` as often as there are installations. */
 function options(argv) {
-  const out = { windows: [], corpus: null, exports: null, out: null, headers: null };
+  const out = {
+    windows: [],
+    corpus: null,
+    exports: null,
+    out: null,
+    headers: null,
+    module: 'KERNEL',
+  };
 
   for (let i = 0; i < argv.length; i += 2) {
     const [flag, value] = [argv[i], argv[i + 1]];
@@ -62,6 +70,8 @@ function options(argv) {
       out.headers = value;
     } else if (flag === '--out') {
       out.out = value;
+    } else if (flag === '--module') {
+      out.module = value.toUpperCase();
     } else {
       throw new Error(`unknown option ${flag}`);
     }
@@ -221,12 +231,15 @@ function main() {
   const args = options(process.argv.slice(2));
   const surveyed = JSON.parse(readFileSync(args.exports, 'utf8'));
   const kernel = surveyed.modules.find((m) => m.name === 'KERNEL');
-  const ordinalOf = new Map(kernel.exports.map((e) => [e.name.toUpperCase(), e.ordinal]));
-  const getProcAddress = ordinalOf.get('GETPROCADDRESS');
+  const target = surveyed.modules.find((m) => m.name === args.module);
+  const ordinalOf = new Map(target.exports.map((e) => [e.name.toUpperCase(), e.ordinal]));
+  const getProcAddress = kernel.exports.find(
+    (e) => e.name.toUpperCase() === 'GETPROCADDRESS'
+  ).ordinal;
 
   /** For each ordinal: the callers that import it, and those holding its name. */
   const census = new Map(
-    kernel.exports.map((e) => [
+    target.exports.map((e) => [
       e.ordinal,
       { windows: new Set(), corpus: new Set(), windowsHint: new Set(), corpusHint: new Set() },
     ])
@@ -254,22 +267,27 @@ function main() {
       return false;
     }
 
-    if (imports.name === 'KERNEL') {
-      // KERNEL's own builds call themselves directly.
+    if (imports.name === args.module) {
+      // The module's own builds call themselves directly.
       return false;
     }
 
-    const ordinals = new Set(imports.byOrdinal.get('KERNEL') ?? []);
+    const ordinals = new Set(imports.byOrdinal.get(args.module) ?? []);
 
-    for (const name of imports.byName.get('KERNEL') ?? []) {
+    for (const name of imports.byName.get(args.module) ?? []) {
       if (ordinalOf.has(name)) ordinals.add(ordinalOf.get(name));
     }
+
+    const kernelImports = new Set(imports.byOrdinal.get('KERNEL') ?? []);
 
     for (const ordinal of ordinals) {
       if (census.has(ordinal)) census.get(ordinal)[where].add(caller);
     }
 
-    if (ordinals.has(getProcAddress)) {
+    if (
+      kernelImports.has(getProcAddress) ||
+      (imports.byName.get('KERNEL') ?? new Set()).has('GETPROCADDRESS')
+    ) {
       for (const name of namedStrings(bytes, ordinalOf)) {
         const ordinal = ordinalOf.get(name);
 
@@ -320,7 +338,7 @@ function main() {
 
   const sorted = (set) => [...set].sort();
   const declared = args.headers ? declarations(args.headers) : new Map();
-  const exports = kernel.exports.map((e) => {
+  const exports = target.exports.map((e) => {
     const c = census.get(e.ordinal);
 
     return {
@@ -336,8 +354,9 @@ function main() {
 
   const out = {
     generated: 'scripts/kb/kernel-callers.mjs',
+    module: args.module,
     about:
-      'For each KERNEL export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. ' +
+      `For each ${args.module} export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. ` +
       '`windowsByName` and `corpusByName` are hints only: files importing GetProcAddress that hold the export name as a string of their own.',
     installations: args.windows.map((w) => basename(w)),
     surveyed: counts,

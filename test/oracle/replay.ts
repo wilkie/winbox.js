@@ -5955,6 +5955,11 @@ const RUN_WHOLE = new Set<string>([
   'kintrnl',
   'emscopy',
   'prtteng',
+  'olestat',
+  'olemem',
+  'gdidm',
+  'gdispool',
+  'gdiint',
 ]);
 
 /**

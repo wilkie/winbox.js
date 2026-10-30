@@ -16,6 +16,7 @@ import { Kernel } from '../../src/win16/kernel.js';
 import { Keyboard } from '../../src/win16/keyboard.js';
 import { LzExpand } from '../../src/win16/lzexpand/index.js';
 import { Ddeml } from '../../src/win16/ddeml/index.js';
+import { OleCli } from '../../src/win16/olecli/index.js';
 import { Shell } from '../../src/win16/shell.js';
 import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { MMSystem } from '../../src/win16/mmsystem.js';
@@ -83,6 +84,7 @@ const MODULES: [any, boolean][] = [
   [Ver, false],
   [LzExpand, false],
   [Ddeml, false],
+  [OleCli, false],
   [Win87EM, false],
   [WinG, true],
 ];

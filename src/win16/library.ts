@@ -2,7 +2,7 @@
 
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
-import { OWN_WITH_FILE, ownByFile, ownFreed, ownPath } from './own-modules.js';
+import { OWN_WITH_FILE, keepOnLoad, ownByFile, ownFreed, ownPath } from './own-modules.js';
 import { start as startCommDlg } from './commdlg/state.js';
 import { loaded as printLoaded } from './commdlg/print-dlg.js';
 import { searchPlaces } from './kernel/search.js';
@@ -263,6 +263,9 @@ async function importOne(
   order: Library[],
   brought: Held[]
 ) {
+  /* One of WinBox's own kept only once loaded, kept now (`keepOnLoad`). */
+  keepOnLoad(system, name);
+
   /* A library already loaded from its file is counted once more. */
   const already = libraryNamed(system, name);
 
@@ -400,6 +403,9 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
    * `C:\WINDOWS\SYSTEM\GDI.EXE` are all GDI (`loadname`). The Visual
    * Basic runtime asks for `GDI.`. */
   const moduleName = name.split('.')[0];
+
+  keepOnLoad(system, moduleName);
+
   const named = moduleName ? system._modules.fromName(moduleName) : null;
 
   if (named && !wantsFile(system, moduleName.toUpperCase())) {

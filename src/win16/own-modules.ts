@@ -4,19 +4,47 @@ import { redirect as commdlgRedirect } from './commdlg/index.js';
 import { Ddeml } from './ddeml/index.js';
 import { freed as ddemlFreed } from './ddeml/exports.js';
 import { LzExpand } from './lzexpand/index.js';
+import { OleCli } from './olecli/index.js';
 import { Ver } from './ver/index.js';
 
 /**
  * The libraries WinBox keeps whose file is loaded beside them when there is
  * one, each import of an export WinBox answers linked to WinBox's stub
  * (`linker.ts`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
- * `LZEXPAND` (`lzexpand/`) and `DDEML` (`ddeml/`). As
+ * `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`) and `OLECLI` (`olecli/`). As
  * `crates/winbox-win16/src/own_modules.rs`.
  */
-const OTHERS: Record<string, any> = { VER: Ver, LZEXPAND: LzExpand, DDEML: Ddeml };
+const OTHERS: Record<string, any> = { VER: Ver, LZEXPAND: LzExpand, DDEML: Ddeml, OLECLI: OleCli };
 
 /** The names of those libraries. */
-export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND', 'DDEML'];
+export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND', 'DDEML', 'OLECLI'];
+
+/**
+ * Those of them kept only once a program loads one, not as Windows starts:
+ * `OLECLI` (`olecli/`). A kept module takes two descriptors, so one kept
+ * as Windows starts moves every selector a program is given after; kept
+ * as it is first loaded, a session that never loads it is as before.
+ */
+const ON_LOAD: Record<string, any> = { OLECLI: OleCli };
+
+/**
+ * One of `ON_LOAD` by its module's name or its file's (`OLECLI.DLL`), kept
+ * now if it is not yet, before its file is looked for or loaded -- so the
+ * file's library, if there is one, is registered after it under the same
+ * name, as `DDEML.DLL`'s is after WinBox's `DDEML`. What its file does as
+ * it starts is done as a program first calls it (`olecli/start.ts`). As
+ * `own_modules::keep_on_load`.
+ */
+export function keepOnLoad(system: any, name: string) {
+  const own = String(name ?? '')
+    .toUpperCase()
+    .replace(/\.DLL$/, '');
+  const module = ON_LOAD[own];
+
+  if (module && !system._moduleData?.[own]) {
+    system.keep(module, 'moveable');
+  }
+}
 
 /** Whether WinBox answers an ordinal of one of `OTHERS`. */
 function answered(module: any, ordinal: number) {
@@ -65,5 +93,11 @@ export function ownByFile(file: string) {
 export function ownFreed(system: any, name: string) {
   if (String(name ?? '').toUpperCase() === 'DDEML') {
     ddemlFreed(system);
+  }
+
+  /* `OLECLI`'s data goes with it: its documents' list and what it did as
+   * it started, done again as it is next loaded and called. */
+  if (String(name ?? '').toUpperCase() === 'OLECLI') {
+    delete system._olecli;
   }
 }

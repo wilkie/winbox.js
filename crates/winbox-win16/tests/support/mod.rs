@@ -282,6 +282,11 @@ pub const AGREEING: &[&str] = &[
     "undefdl",
     "kintrnl",
     "gdimisc",
+    "olestat",
+    "olemem",
+    "gdidm",
+    "gdispool",
+    "gdiint",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
