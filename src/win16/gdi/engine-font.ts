@@ -6,6 +6,7 @@ import { GetDeviceCaps } from './GetDeviceCaps.js';
 import { MulDiv } from './MulDiv.js';
 import { FontManager } from '../font-manager.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
+import { setContext } from './engine-glyphs.js';
 
 /**
  * GDI's TrueType engine as a printer driver asks it: `EngineRealizeFont`.
@@ -130,6 +131,7 @@ function realizeTrueType(system: any, lpLogFont: number, lpTextXform: number, lp
     escapement,
     italic,
     weight,
+    logPixelsX: logX,
     logPixelsY: logY,
     aspectX: capsWord(0x28),
     aspectY: capsWord(0x2a),
@@ -179,10 +181,35 @@ function realizeTrueType(system: any, lpLogFont: number, lpTextXform: number, lp
   put8(fi, 0x1f, stub.defaultChar);
   put8(fi, 0x20, stub.breakChar);
   put16(fi, 0x27, 0x6e);
+
+  /* The underline's and the strike-out's places and thicknesses, scaled
+   * from the face's `post` and `OS/2` (`2421`-`24a6`), each thickness 1
+   * where it comes to nought, and each place made a distance down from the
+   * top of the cell (`2522`-`2532`). */
+  const scaled = (value: number) => MulDiv(value, ppem, stub.sizeEM);
+  const outline = found.font;
+
+  put16(fi, 0x34, ascent - scaled(outline.underlinePosition));
+  put16(fi, 0x36, scaled(outline.underlineThickness) || 1);
+  put16(fi, 0x38, ascent - scaled(outline.strikeoutPosition));
+  put16(fi, 0x3a, scaled(outline.strikeoutSize) || 1);
   put8(fi, 0x33, (made ? 4 : 0) | (angle ? 0x10 : 0) | 0x80);
+  /* What the engine keeps of the face beyond the header (`23f7`-`24d9`):
+   * its slot in GDI's TrueType table (3Ch), its em in font units (3Eh), the
+   * device's spot sizes from its `GDIINFO`, 60h to 66h (40h), and the
+   * offset its characters are found at (4Eh). The far pointer to the
+   * face's file at 50h is not kept. */
+  put16(fi, 0x3c, Math.max(0, system.fonts.trueTypeSlot?.(stub) ?? 0));
+  put16(fi, 0x3e, stub.sizeEM);
+
+  for (let at = 0; at < 8; at += 2) {
+    put16(fi, 0x40 + at, capsWord(0x60 + at));
+  }
+
   put16(fi, 0x48, angle);
   put16(fi, 0x4a, scale);
   put16(fi, 0x4c, ppem);
+  put16(fi, 0x4e, stub.charOffset ?? 0);
 
   /* The face's name, the program's own spelling where it names the face or
    * its full name (seg3 `2c36`). */
@@ -210,6 +237,20 @@ function realizeTrueType(system: any, lpLogFont: number, lpTextXform: number, lp
     put8(xf, 0x0e, 0);
     put16(xf, 0x0f, 0);
     put16(xf, 0x11, 0);
+  }
+
+  /* The engine's context set to the font at its escapement, and what the
+   * rasterizer says of it kept: bit 1 of its answer as bit 5 of the flags,
+   * -1 failing the realization (`2549`-`256b`). Nought, for every font
+   * recorded. */
+  const context = setContext(system, fi, angle) >>> 0;
+
+  if (context === 0xffffffff) {
+    return 0;
+  }
+
+  if (context & 2) {
+    put8(fi, 0x33, byte(fi, 0x33) | 0x20);
   }
 
   return 0x96;

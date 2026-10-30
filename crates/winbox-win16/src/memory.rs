@@ -113,6 +113,12 @@ pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop
     let flags = args.word(system);
     let size = args.dword(system);
 
+    Ok(Answer::Word(global_alloc_handle(system, flags, size)))
+}
+
+/// `GlobalAlloc`'s handle for a block of `size` bytes, nought where there
+/// is none, as a module of WinBox's asks for one.
+pub(crate) fn global_alloc_handle(system: &mut System, flags: u16, size: u32) -> u16 {
     system.global.settle();
 
     let index = allocate(system, size, flags);
@@ -125,7 +131,7 @@ pub fn global_alloc(system: &mut System, args: &mut Args) -> Result<Answer, Stop
         system.block_owners.insert(index, task);
     }
 
-    Ok(Answer::Word(index.map_or(0, handle_for)))
+    index.map_or(0, handle_for)
 }
 
 /// `GlobalAlloc`'s work: more than `FF0000h` is refused at once, and a block

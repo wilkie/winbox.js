@@ -42,8 +42,29 @@ impl Big<'_> {
 }
 
 /// The stub's bytes for a TrueType file, named by the path it is given.
-#[allow(clippy::too_many_lines)]
-pub fn scalable_font_resource(ttf: &[u8], font_path: &str) -> Vec<u8> {
+/// What the font directory's entry is made of, read out of a `.TTF`.
+#[derive(Debug, Clone)]
+pub struct Facts {
+    pub units_per_em: u16,
+    pub x_min: i16,
+    pub x_max: i16,
+    pub lowest_rec_ppem: u16,
+    pub ascender: i16,
+    pub descender: i16,
+    pub line_gap: i16,
+    pub average_width: i16,
+    pub weight: u16,
+    pub panose: Vec<u8>,
+    pub first_char: u16,
+    pub last_char: u16,
+    pub selection: u16,
+    pub face: Vec<u16>,
+    pub family: Vec<u16>,
+    pub style: Vec<u16>,
+}
+
+/// The facts of a `.TTF` its font directory's entry is made of.
+pub fn true_type_facts(ttf: &[u8]) -> Facts {
     let view = Big(ttf);
     let mut tables = std::collections::HashMap::new();
 
@@ -99,9 +120,45 @@ pub fn scalable_font_resource(ttf: &[u8], font_path: &str) -> Vec<u8> {
         Vec::new()
     };
 
-    let face = name_of(4);
-    let family = name_of(1);
-    let style = name_of(2);
+    Facts {
+        units_per_em,
+        x_min,
+        x_max,
+        lowest_rec_ppem,
+        ascender,
+        descender,
+        line_gap,
+        average_width,
+        weight,
+        panose,
+        first_char,
+        last_char: view.u16(os2 + 66),
+        selection: view.u16(os2 + 62),
+        face: name_of(4),
+        family: name_of(1),
+        style: name_of(2),
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+pub fn scalable_font_resource(ttf: &[u8], font_path: &str) -> Vec<u8> {
+    let Facts {
+        units_per_em,
+        x_min,
+        x_max,
+        lowest_rec_ppem,
+        ascender,
+        descender,
+        line_gap,
+        average_width,
+        weight,
+        panose,
+        first_char,
+        face,
+        family,
+        style,
+        ..
+    } = true_type_facts(ttf);
 
     // The family from PANOSE, in the order the cases take precedence; see
     // `FONTS.md` 8c.

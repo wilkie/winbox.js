@@ -190,6 +190,15 @@ impl FontManager {
         });
     }
 
+    /// Where a stub's face stands in GDI's TrueType table, by its full
+    /// name: as `trueTypeSlot`.
+    pub fn true_type_slot(&self, resource: &FontResource) -> Option<usize> {
+        self.slots.iter().position(|slot| {
+            slot.as_ref()
+                .is_some_and(|held| held.full_name.eq_ignore_ascii_case(&resource.full_name))
+        })
+    }
+
     /// A stub's slot in the TrueType table: the first a font removed left
     /// empty, else a new one at its end (seg2 `0f2c`).
     pub(super) fn fill_slot(&mut self, resource: FontResource) {

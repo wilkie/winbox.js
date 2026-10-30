@@ -22,7 +22,8 @@ import { TRUE, FALSE } from '../consts.js';
  * full name, which for those is the family's; a bold or italic file may
  * answer differently and has not been asked.
  */
-export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
+/** What the font directory's entry is made of, read out of a `.TTF`. */
+export function trueTypeFacts(ttf: Uint8Array) {
   const view = new DataView(ttf.buffer, ttf.byteOffset, ttf.byteLength);
   const tables: Record<string, number> = {};
 
@@ -80,16 +81,60 @@ export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
     return found;
   };
 
-  const face = nameOf(4);
-  const family = nameOf(1);
-  const style = nameOf(2);
+  return {
+    unitsPerEm,
+    xMin,
+    xMax,
+    lowestRecPPEM,
+    ascender,
+    descender,
+    lineGap,
+    averageWidth,
+    weight,
+    panose,
+    firstChar,
+    lastChar: view.getUint16(os2 + 66),
+    selection: view.getUint16(os2 + 62),
+    face: nameOf(4),
+    family: nameOf(1),
+    style: nameOf(2),
+  };
+}
+
+export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
+  const {
+    unitsPerEm,
+    xMin,
+    xMax,
+    lowestRecPPEM,
+    ascender,
+    descender,
+    lineGap,
+    averageWidth,
+    weight,
+    panose,
+    firstChar,
+    face,
+    family,
+    style,
+  } = trueTypeFacts(ttf);
 
   /* The family from PANOSE, in the order the cases take precedence; see
    * FONTS.md 8c. A serif style of one ("no fit") was not recorded and is
    * taken as nothing said. */
   const monospaced = panose[3] === 9;
   const familyBits =
-    panose[0] === 3 ? 0x40 : panose[0] === 4 ? 0x50 : monospaced ? 0x30 : panose[1] >= 11 ? 0x20 : panose[1] >= 2 ? 0x10 : 0x00;
+    panose[0] === 3
+      ? 0x40
+      : panose[0] === 4
+        ? 0x50
+        : monospaced
+          ? 0x30
+          : panose[1] >= 11
+            ? 0x20
+            : panose[1] >= 2
+              ? 0x10
+              : 0x00;
   const pitchAndFamily = familyBits | (monospaced ? 0x06 : 0x07);
   const charSet = panose[0] === 5 ? 2 : 0;
 
@@ -98,7 +143,9 @@ export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
   const fileName = file.toUpperCase();
   const nonResident = `FONTRES:${face}`;
 
-  const bytes = new Uint8Array(0x480 + 4 + 113 + 1 + face.length + family.length + style.length + 3 + 16);
+  const bytes = new Uint8Array(
+    0x480 + 4 + 113 + 1 + face.length + family.length + style.length + 3 + 16
+  );
   const out = new DataView(bytes.buffer);
   const put = (at: number, text: string) => {
     for (let index = 0; index < text.length; index++) {
@@ -108,7 +155,11 @@ export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
 
   /* The DOS stub, as recorded, message and signature included. */
   const stub =
-    '4d5a0100020000000400' + '0f00ffff0000b8000000' + '00000000400000000000' + '0000'.repeat(15) + '800000000e1fba0e00b409cd21b8014ccd21';
+    '4d5a0100020000000400' +
+    '0f00ffff0000b8000000' +
+    '00000000400000000000' +
+    '0000'.repeat(15) +
+    '800000000e1fba0e00b409cd21b8014ccd21';
   bytes.set(Uint8Array.from(stub.match(/../g)!.map((pair) => parseInt(pair, 16))), 0);
   put(0x4e, 'This is a TrueType font, not a program.\r\r\n$');
   put(0x7a, 'Kiesa');
@@ -144,8 +195,26 @@ export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
   const fontDirectoryLength = 4 + 113 + 1 + face.length + family.length + style.length + 3;
   const resources = [
     0x0004,
-    0x8007, 1, 0, 0, 0x48, (fontDirectoryLength + 15) >> 4, 0x0c50, 0x002c, 0, 0,
-    0x80cc, 1, 0, 0, 0x40, 0x08, 0x0c50, 0x8001, 0, 0,
+    0x8007,
+    1,
+    0,
+    0,
+    0x48,
+    (fontDirectoryLength + 15) >> 4,
+    0x0c50,
+    0x002c,
+    0,
+    0,
+    0x80cc,
+    1,
+    0,
+    0,
+    0x40,
+    0x08,
+    0x0c50,
+    0x8001,
+    0,
+    0,
     0,
   ];
   resources.forEach((word, index) => out.setUint16(ne + 0x40 + 2 * index, word, true));
@@ -219,7 +288,12 @@ export function scalableFontResource(ttf: Uint8Array, fontPath: string) {
  *
  * @return {Types.BOOL} Nonzero if the file was written.
  */
-export async function CreateScalableFontResource(fHidden, lpszResourceFile, lpszFontFile, lpszCurrentPath) {
+export async function CreateScalableFontResource(
+  fHidden,
+  lpszResourceFile,
+  lpszFontFile,
+  lpszCurrentPath
+) {
   if (!lpszResourceFile || !lpszFontFile) {
     return FALSE;
   }

@@ -288,6 +288,12 @@ pub const AGREEING: &[&str] = &[
     "oemlayer",
     "filport",
     "findexe",
+    "gdimisc",
+    "olestat",
+    "olemem",
+    "gdidm",
+    "gdispool",
+    "gdiint",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

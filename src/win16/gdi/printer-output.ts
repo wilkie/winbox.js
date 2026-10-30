@@ -28,6 +28,7 @@ const COLOR_INFO = 2;
 const OUTPUT = 8;
 const REALIZE_OBJECT = 10;
 const EXT_TEXT_OUT = 14;
+const GET_CHAR_WIDTH = 15;
 const STRETCH_DIBITS = 28;
 
 const OBJ_PEN = 1;
@@ -1230,6 +1231,74 @@ export async function driverTextExtent(system: any, surface: any, lpString: numb
   }
 
   return (width | (height << 16)) >>> 0;
+}
+
+/**
+ * `GetCharWidth` on a printer's context (`GDI.EXE` seg3 `15cb`, into
+ * `2098`): the driver's `GetCharWidth` asked with its device, the buffer,
+ * the characters, its `FONTINFO`, GDI's `DRAWMODE` and the `TEXTXFORM`
+ * (`2116`-`2145`); then each width two more where the `TEXTXFORM` asks for
+ * a bold the device cannot make, and half the height less one more for a
+ * slant (`2148`-`218e`), and carried into the context's units where its
+ * mapping is not `MM_TEXT` (`2191`). 1 answered; nought where the driver
+ * realizes no font.
+ *
+ * Not followed: a context whose font GDI draws itself (`0Bh` bit 4), whose
+ * widths are GDI's own (`2662`).
+ */
+export async function driverCharWidth(
+  system: any,
+  surface: any,
+  first: number,
+  last: number,
+  lpBuffer: number
+) {
+  const pdevice: PDevice = surface.driverDevice;
+  const procedure = proc(pdevice, GET_CHAR_WIDTH);
+  const realized = await deviceFont(system, surface);
+
+  if (!procedure || !realized) {
+    return 0;
+  }
+
+  const xformBytes = realized.xform;
+  const xformWord = (at: number) => xformBytes[at] | (xformBytes[at + 1] << 8);
+  const drawing = drawingOf(surface);
+  const xform = offsetBy(drawing.far, TEXTXFORM);
+
+  xformBytes.forEach((byte, at) =>
+    core(system).write8(xform >>> 16, ((xform & 0xffff) + at) & 0xffff, byte)
+  );
+
+  await callDriver(system, procedure, [
+    [pdevice.lpPDevice, DWORD],
+    [lpBuffer >>> 0, DWORD],
+    [first, UINT],
+    [last, UINT],
+    [realized.far, DWORD],
+    [drawMode(system, surface), DWORD],
+    [xform, DWORD],
+  ]);
+
+  const simulated = ~caps(pdevice, DP_TEXT) & xformWord(FT_ACCELERATOR);
+  const extra =
+    (simulated & TC_EA_DOUBLE ? 2 : 0) +
+    (simulated & TC_IA_ABLE ? ((xformWord(0) - 1) & 0xffff) >>> 1 : 0);
+  const m = mapped(surface);
+  const segment = lpBuffer >>> 16;
+
+  for (let index = 0; index <= last - first; index++) {
+    const at = ((lpBuffer & 0xffff) + index * 2) & 0xffff;
+    let width = signed(core(system).read16(segment, at)) + (extra > 0 ? extra : 0);
+
+    if (m) {
+      width = Math.abs(scale(width, Math.abs(m.wex), Math.abs(m.vex)));
+    }
+
+    core(system).write16(segment, at, width & 0xffff);
+  }
+
+  return 1;
 }
 
 function signed(value: number) {

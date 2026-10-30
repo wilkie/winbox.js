@@ -30,6 +30,6 @@ A Windows printer driver on the drive, such as the PostScript driver, is loaded 
 ## Not yet done
 
 - Print Manager, and the spooler's jobs through it.
-- The spooler's exports Print Manager uses: `QueryJob` (seg28 `18e4`), `DeleteSpoolPage` (`0ff3`) and `SpoolFile` (`156f`) are stubs; [[fn:GDI.Copy]] and GDI's priority queue ([[topic:gdi-priority-queue]]) are done.
+- Print Manager's side of [[fn:GDI.SpoolFile]] and of a job's pages. [[fn:GDI.QueryJob]], [[fn:GDI.DeleteSpoolPage]], `SpoolFile`, [[fn:GDI.Copy]] and GDI's priority queue ([[topic:gdi-priority-queue]]) are done; the map of GDI's internal exports is [[topic:gdi-internals]].
 - What a Windows driver's DC leaves to GDI's own drawing; see [[topic:printer-drivers]].
 - WinBox's own printer's dialogs (`ExtDeviceMode`), fonts of the printer's own, and bands (`NEXTBAND`); a driver from the drive that bands is [[topic:printer-drivers]]'s.

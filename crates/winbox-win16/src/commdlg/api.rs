@@ -7,9 +7,9 @@
 //! Not logged, and not charged to the clock, as a call of the program's
 //! is: they are `COMMDLG`'s own.
 
-use winbox_cpu::{SP, SS};
+use winbox_cpu::{AX, DX, SP, SS};
 
-use crate::call::{Args, Implementation, Stop};
+use crate::call::{Answer, Args, Implementation, Stop};
 use crate::engine::Engine;
 
 /// An argument as `COMMDLG` pushes it.
@@ -69,7 +69,7 @@ pub(crate) async fn api(
 ) -> Result<Called, Stop> {
     let implementation =
         crate::call::implementation(module, name).ok_or(Stop::Unsupported("COMMDLG's call"))?;
-    let (arguments, saved, places) = {
+    let (arguments, saved, places, recorded) = {
         let mut system = engine.system();
         let saved = system.cpu.regs[SP];
         let base = system.cpu.segments[SS].base;
@@ -105,15 +105,21 @@ pub(crate) async fn api(
         // Below them, a return address.
         system.cpu.regs[SP] = at.wrapping_sub(4);
 
+        // A GDI call into a metafile's device context kept as a record, as
+        // a program's is (`call.rs`): `OLECLI` draws an object into one.
+        let recorded = metafile_record(&mut system, module, name, base, at.wrapping_sub(4));
+
         (
             Args::after_first(words.first().copied().unwrap_or(0), base, u32::from(first)),
             saved,
             places,
+            recorded,
         )
     };
-    let answer = match implementation {
-        Implementation::Sync(answer) => answer(&mut engine.system(), &mut { arguments }),
-        Implementation::Async(answer) => answer(engine, arguments).await,
+    let answer = match (recorded, implementation) {
+        (Some(answer), _) => Ok(answer),
+        (None, Implementation::Sync(answer)) => answer(&mut engine.system(), &mut { arguments }),
+        (None, Implementation::Async(answer)) => answer(engine, arguments).await,
     };
     let mut system = engine.system();
     let selector = system.cpu.segments[SS].selector;
@@ -127,6 +133,37 @@ pub(crate) async fn api(
     Ok(Called {
         value: answer?.value().unwrap_or(0),
         buffers,
+    })
+}
+
+/// A GDI call into a metafile's device context, kept as a record as a
+/// program's is (`gdi::metafile::recording`): its answer; none for any
+/// other call.
+fn metafile_record(
+    system: &mut crate::system::System,
+    module: &str,
+    name: &str,
+    stack: u32,
+    sp: u16,
+) -> Option<Answer> {
+    if module != "GDI" {
+        return None;
+    }
+
+    let gdi = crate::modules::Kept::named("GDI")?;
+    let ordinal = gdi
+        .exports
+        .iter()
+        .position(|export| export.is_some_and(|export| export.name == name))?;
+    let export = gdi.export(ordinal as u16)?;
+    let index = crate::gdi::metafile::recording(system, module, export, stack, u32::from(sp))?;
+
+    crate::gdi::metafile::record_call(system, index, ordinal as u16, export, stack, u32::from(sp));
+
+    Some(match export.returns {
+        0 => Answer::Nothing,
+        1 | 2 => Answer::Word(system.cpu.regs[AX]),
+        _ => Answer::Dword(u32::from(system.cpu.regs[DX]) << 16 | u32::from(system.cpu.regs[AX])),
     })
 }
 

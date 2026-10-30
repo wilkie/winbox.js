@@ -1,0 +1,414 @@
+{
+  "probe": "gdiint",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "fixup",
+      "args": "size",
+      "result": "38"
+    },
+    {
+      "function": "fixup",
+      "args": "right fix 0",
+      "result": "1 size 38"
+    },
+    {
+      "function": "fixup",
+      "args": "right fix 1",
+      "result": "1 size 38"
+    },
+    {
+      "function": "fixup",
+      "args": "short fix 0",
+      "result": "0 size 5"
+    },
+    {
+      "function": "fixup",
+      "args": "short fix 1",
+      "result": "0 size 38"
+    },
+    {
+      "function": "fixup",
+      "args": "long fix 1",
+      "result": "0 size 38"
+    },
+    {
+      "function": "fixup",
+      "args": "type 2 fix 1",
+      "result": "-2 size 5"
+    },
+    {
+      "function": "fixup",
+      "args": "type 0 fix 1",
+      "result": "-2 size 5"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00000000",
+      "result": "256"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 000000ff",
+      "result": "257"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00ff4040",
+      "result": "259"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00007000",
+      "result": "258"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00c0c0c0",
+      "result": "260"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 02ffffff",
+      "result": "260"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00202020",
+      "result": "256"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 0 00a04020",
+      "result": "259"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00000000",
+      "result": "512"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 000000ff",
+      "result": "515"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00ff4040",
+      "result": "521"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00007000",
+      "result": "518"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00c0c0c0",
+      "result": "524"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 02ffffff",
+      "result": "524"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00202020",
+      "result": "512"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 2 00a04020",
+      "result": "521"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00000000",
+      "result": "768"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 000000ff",
+      "result": "773"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00ff4040",
+      "result": "783"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00007000",
+      "result": "778"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00c0c0c0",
+      "result": "788"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 02ffffff",
+      "result": "788"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00202020",
+      "result": "768"
+    },
+    {
+      "function": "colormatch",
+      "args": "field 4 00a04020",
+      "result": "783"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 000000ff style 0",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,3 000000ff style 0",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,3 00000afa style 0",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,3 00ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 00ff0000 style 0",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,5 00ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 000000ff style 1",
+      "result": "5"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,3 000000ff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,3 00000afa style 1",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,3 00ffffff style 1",
+      "result": "31"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 00ff0000 style 1",
+      "result": "20"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,5 00ffffff style 1",
+      "result": "31"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 000000ff style 2",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,3 000000ff style 2",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,3 00000afa style 2",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,3 00ffffff style 2",
+      "result": "20"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 00ff0000 style 2",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,5 00ffffff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 000000ff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,3 000000ff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,3 00000afa style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,3 00ffffff style 3",
+      "result": "31"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,3 00ff0000 style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 31,5 00ffffff style 3",
+      "result": "31"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 32,3 000000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,8 000000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,3 000000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "moved 3,2 000000ff style 0",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "moved 3,2 000000ff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "none 0,3 000000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,1 00ffffff style 0",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 11,1 0000ffff style 0",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,1 00000080 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,2 00000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,1 00ffffff style 1",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 11,1 0000ffff style 1",
+      "result": "11"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,1 00000080 style 1",
+      "result": "23"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,2 00000000 style 1",
+      "result": "23"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,1 00ffffff style 2",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 11,1 0000ffff style 2",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,1 00000080 style 2",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,2 00000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,1 00ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 11,1 0000ffff style 3",
+      "result": "11"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,1 00000080 style 3",
+      "result": "23"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 23,2 00000000 style 3",
+      "result": "23"
+    },
+    {
+      "function": "call",
+      "args": "ShrinkGDIHeap",
+      "result": "back"
+    },
+    {
+      "function": "call",
+      "args": "GDITaskTermination",
+      "result": "back"
+    }
+  ]
+}

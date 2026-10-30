@@ -46,6 +46,13 @@ export interface FontResource {
   lastChar: number;
   defaultChar: number;
   breakChar: number;
+  /**
+   * `dfReserved`'s high word, which GDI's TrueType table keeps at 24h of
+   * the face's entry (`GDI.EXE` seg2 `105a`) and its engine adds to each
+   * character to find its glyph (seg7 `0a13`): F000h for a face whose
+   * characters start at F020h, nought for the others.
+   */
+  charOffset: number;
   /** The family, full and style names the stub carries past its entry. */
   family: string;
   fullName: string;
@@ -157,6 +164,7 @@ export function readFontResource(bytes: Uint8Array): FontResource | null {
     lastChar: bytes[info + 96],
     defaultChar: bytes[info + 97],
     breakChar: bytes[info + 98],
+    charOffset: view.getUint16(info + 111, true),
     family: strings[1] ?? '',
     fullName: strings[2] ?? '',
     style: strings[3] ?? '',

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Who calls each of KERNEL's exports: a census of the modules that import them.
+ * Who calls each of KERNEL's exports -- or another module's, `--module GDI`
+ * -- a census of the modules that import them.
  *
  * Many of KERNEL's exports are there only for Windows' own parts -- USER,
  * GDI, the drivers, WINOLDAP, TOOLHELP -- and the SDK says nothing of them.

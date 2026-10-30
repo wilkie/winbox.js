@@ -20,6 +20,7 @@ import Types from '../../src/win16/types.js';
 import { CommDlg } from '../../src/win16/commdlg/index.js';
 import { LzExpand } from '../../src/win16/lzexpand/index.js';
 import { Ddeml } from '../../src/win16/ddeml/index.js';
+import { OleCli } from '../../src/win16/olecli/index.js';
 import { Ver } from '../../src/win16/ver/index.js';
 import { DEFAULT_DISPLAY_MODE, DISPLAY_MODES, displayMode } from '../../src/win16/display-modes.js';
 import { displayDriverFor } from '../../src/win16/display-driver.js';
@@ -87,6 +88,9 @@ const kept = ([module, data]: [any, 'fixed' | 'moveable']) => {
 
 const modules = KEPT.map(kept);
 
+/** The modules kept only once loaded (\`own-modules.ts\`'s \`ON_LOAD\`). */
+const ON_LOAD: [any, 'fixed' | 'moveable'][] = [[OleCli, 'moveable']];
+
 /* The display driver's module for each driver a display mode names, its
  * own export table: \`KEPT\`'s is the default display's. */
 const drivers = [
@@ -109,6 +113,12 @@ ${modules.join(',\n')},
 /// export table.
 pub static DISPLAY_DRIVERS: &[Kept] = &[
 ${drivers.join(',\n')},
+];
+
+/// The modules kept only once a program loads one, not as Windows starts
+/// (\`own_modules::keep_on_load\`): \`OLECLI\`.
+pub static ON_LOAD: &[Kept] = &[
+${ON_LOAD.map(kept).join(',\n')},
 ];
 `;
 

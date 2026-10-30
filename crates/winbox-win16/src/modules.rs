@@ -35,6 +35,16 @@ impl Kept {
             .find(|kept| kept.name.eq_ignore_ascii_case(name))
     }
 
+    /// The kept module of a name, kept as Windows starts or only once it is
+    /// loaded (`crate::kept::ON_LOAD`).
+    pub fn any_named(name: &str) -> Option<&'static Kept> {
+        Self::named(name).or_else(|| {
+            crate::kept::ON_LOAD
+                .iter()
+                .find(|kept| kept.name.eq_ignore_ascii_case(name))
+        })
+    }
+
     /// `DISPLAY` as the display driver of a file is, with that driver's own
     /// export table (`display-driver.ts`); the default display's for a
     /// file of none of them.

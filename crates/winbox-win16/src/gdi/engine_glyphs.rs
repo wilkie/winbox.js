@@ -1,0 +1,565 @@
+//! GDI's TrueType engine as a printer's driver puts a font it realized to
+//! work: `EngineSetFontContext`, `EngineGetGlyphBmp`, `EngineGetCharWidth`
+//! and `EngineExtTextOut`, and the two the engine keeps beside them,
+//! `EngineMakeFontDir` and `ConvertOutlineFontFile`. The twin of
+//! `src/win16/gdi/engine-glyphs.ts`; the reading out of each is there.
+
+use winbox_raster::logical_font::Outline;
+use winbox_raster::{LogicalFont, Style};
+
+use crate::call::{Answer, Args, Implementation, Stop};
+use crate::fonts::{FontManager, Request};
+use crate::system::System;
+
+use super::text::scalable::true_type_facts;
+use super::text_out::outline::glyph_of;
+
+/// The engine's context: the face and the transformation its glyphs are
+/// made with, by what it was set for, and what setting it answered.
+#[derive(Debug, Clone)]
+pub struct EngineContext {
+    key: String,
+    answer: u32,
+    font: Option<LogicalFont>,
+    turn: f64,
+}
+
+/// What the engine reads of a `FONTINFO` it realized (`GDI.EXE` seg3
+/// `22b3`).
+struct FontInfo {
+    res_y: u16,
+    res_x: u16,
+    italic: u8,
+    weight: u16,
+    pix_width: u16,
+    cell: u16,
+    average: u16,
+    first: u8,
+    last: u8,
+    default_char: u8,
+    flags: u8,
+    spot: [u16; 4],
+    stretch: u16,
+    em: u16,
+    name: String,
+}
+
+const FAILED: u32 = 0xffff_ffff;
+
+/// A far pointer `offset` bytes on, within its segment.
+fn at(far: u32, offset: u16) -> u32 {
+    (far & 0xffff_0000) | u32::from((far as u16).wrapping_add(offset))
+}
+
+fn font_info_of(system: &System, far: u32) -> FontInfo {
+    let bytes = system.read_far(far, 0x8e);
+    let word = |offset: usize| u16::from_le_bytes([bytes[offset], bytes[offset + 1]]);
+    let name = bytes[0x6e..0x8e]
+        .iter()
+        .take_while(|&&byte| byte != 0)
+        .map(|&byte| char::from(byte))
+        .collect();
+
+    FontInfo {
+        res_y: word(4),
+        res_x: word(6),
+        italic: bytes[0x0e],
+        weight: word(0x11),
+        pix_width: word(0x14),
+        cell: word(0x16),
+        average: word(0x19),
+        first: bytes[0x1d],
+        last: bytes[0x1e],
+        default_char: bytes[0x1f],
+        flags: bytes[0x33],
+        spot: [word(0x40), word(0x42), word(0x44), word(0x46)],
+        stretch: word(0x4a),
+        em: word(0x4c),
+        name,
+    }
+}
+
+/// The face a `FONTINFO` stands for, at its em and resolutions, slanted
+/// where GDI slants it and turned by the engine's angle (seg1
+/// `6df7`-`6ff9`); found by its name at 6Eh, in the header's weight and
+/// slant, where Windows finds it by its slot (3Ch). As `engineFont`.
+fn engine_font(system: &mut System, info: &FontInfo, turn: u16) -> Option<LogicalFont> {
+    let found = system
+        .fonts()
+        .outline(&info.name, info.weight > 550, info.italic != 0)?;
+    let request = Request {
+        face: info.name.clone(),
+        height: -i32::from(info.em),
+        width: if info.stretch == 0x100 {
+            0
+        } else {
+            i32::from(info.average)
+        },
+        weight: i32::from(info.weight),
+        italic: info.italic != 0,
+        escapement: 0,
+        log_pixels_x: i32::from(info.res_x),
+        log_pixels_y: i32::from(info.res_y),
+        ..Request::default()
+    };
+    let sized = FontManager::realise_outline(&found.font, &request)?;
+    let or_96 = |value: u16| if value == 0 { 96.0 } else { f64::from(value) };
+
+    Some(LogicalFont::of_outline(
+        found.name,
+        Style {
+            weight: Some(i32::from(info.weight)),
+            italic: Some(info.italic != 0),
+            underline: Some(false),
+            strikeout: Some(false),
+            scale: None,
+            horizontal: None,
+            outline_family: true,
+        },
+        Outline {
+            font: found.font,
+            ppem: sized.ppem,
+            x_ppem: sized.x_ppem,
+            x_whole: sized.x_whole,
+            x_base: sized.x_base,
+            ascent: sized.ascent,
+            descent: sized.descent,
+            exact_style: found.exact,
+            face_bold: found.face_bold,
+            escapement: f64::from(turn),
+            horizontal_res: or_96(info.res_x),
+            vertical_res: or_96(info.res_y),
+            bold_always: false,
+        },
+    ))
+}
+
+/// The engine's context set for a `FONTINFO` at an angle (`GDI.EXE` seg1
+/// `6df7`), as `setContext`: nought with TrueType off; the last answer for
+/// what the context last had; -1 where the face cannot be opened; nought.
+pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
+    if system.fonts().true_type_off {
+        return 0;
+    }
+
+    let info = font_info_of(system, far);
+    let key = [
+        info.name.clone(),
+        info.weight.to_string(),
+        info.italic.to_string(),
+        angle.to_string(),
+        info.em.to_string(),
+        info.res_y.to_string(),
+        info.res_x.to_string(),
+        (info.flags & 4).to_string(),
+        info.stretch.to_string(),
+        info.spot.map(|spot| spot.to_string()).join(","),
+    ]
+    .join(",");
+
+    if let Some(kept) = &system.printing.drivers.engine
+        && kept.key == key
+    {
+        return kept.answer;
+    }
+
+    let font = engine_font(system, &info, angle);
+    let (key, answer) = if font.is_some() {
+        (key, 0)
+    } else {
+        (String::new(), FAILED)
+    };
+
+    system.printing.drivers.engine = Some(EngineContext {
+        key,
+        answer,
+        font,
+        turn: f64::from(angle),
+    });
+    answer
+}
+
+fn engine_set_font_context_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+    let angle = args.word(system);
+
+    Ok(Answer::Dword(set_context(system, far, angle)))
+}
+
+/// `EngineGetGlyphBmp` (`GDI.EXE` seg7 `09e9`), as in `engine-glyphs.ts`.
+fn engine_get_glyph_bmp_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    args.word(system);
+
+    let font_info = args.dword(system);
+    let character = args.word(system);
+    let format = args.word(system);
+    let buffer = args.dword(system);
+    let size_given = args.dword(system);
+    let metrics = args.dword(system);
+    let put_metrics = |system: &mut System, values: [u32; 6]| {
+        let bytes: Vec<u8> = values
+            .iter()
+            .flat_map(|value| value.to_le_bytes())
+            .collect();
+
+        system.write_far(metrics, &bytes);
+    };
+    let failed = |system: &mut System| {
+        if metrics >> 16 != 0 {
+            put_metrics(system, [0; 6]);
+        }
+
+        Ok(Answer::Dword(FAILED))
+    };
+    let context = system.printing.drivers.engine.clone();
+    let font = context.as_ref().and_then(|context| context.font.as_ref());
+
+    if system.fonts().true_type_off || format > 1 || font_info == 0 {
+        return failed(system);
+    }
+
+    let (Some(font), Some(context)) = (font, context.as_ref()) else {
+        return failed(system);
+    };
+    let Some(glyph) = glyph_of(font, character as u8, context.turn)? else {
+        return failed(system);
+    };
+
+    if metrics >> 16 != 0 {
+        let fixed = |value: i64| (value as i32 as u32) << 16;
+
+        put_metrics(
+            system,
+            [
+                glyph.width as u32,
+                glyph.height as u32,
+                fixed(glyph.origin_x),
+                fixed(glyph.origin_y),
+                fixed(glyph.advance_x),
+                fixed(glyph.advance_y),
+            ],
+        );
+    }
+
+    if format == 0 {
+        return Ok(Answer::Dword(0));
+    }
+
+    let stride = ((glyph.width + 31) >> 5) * 4;
+    let size = (stride * glyph.height) as u32;
+
+    if buffer >> 16 == 0 || size_given == 0 {
+        return Ok(Answer::Dword(size));
+    }
+
+    let bytes: Vec<u8> = (0..size.min(size_given))
+        .map(|offset| {
+            let offset = i64::from(offset);
+            let row = &glyph.rows[(offset / stride) as usize];
+            let first = ((offset % stride) * 8) as usize;
+
+            (0..8).fold(0u8, |value, bit| {
+                (value << 1) | row.get(first + bit).copied().unwrap_or(0)
+            })
+        })
+        .collect();
+
+    for (offset, byte) in bytes.iter().enumerate() {
+        system.write_far(at(buffer, offset as u16), &[*byte]);
+    }
+
+    Ok(Answer::Dword(size))
+}
+
+/// A `FONTINFO`'s widths, filled as GDI fills them the first time they are
+/// asked for (`GDI.EXE` seg1 `6d04`-`6ddf`), as `widthsOf`: the font they
+/// are the engine's of, or `None`.
+fn widths_of(system: &mut System, far: u32) -> Option<(LogicalFont, FontInfo)> {
+    let flags_at = at(far, 0x33);
+    let mut flags = system.read_far(flags_at, 1)[0];
+
+    if flags & 1 == 0 {
+        flags = (flags & !3) | 1;
+
+        if set_context(system, far, 0) == FAILED {
+            flags |= 0x40;
+        }
+
+        system.write_far(flags_at, &[flags]);
+    }
+
+    if flags & 0x40 != 0 {
+        return None;
+    }
+
+    let info = font_info_of(system, far);
+
+    engine_font(system, &info, 0).map(|font| (font, info))
+}
+
+/// A character's width as `widths_of` fills them: the first character's
+/// 8, one outside the font its default character's, a font of fixed pitch
+/// all its width.
+fn width_of(font: &LogicalFont, info: &FontInfo, code: u16) -> Result<u16, Stop> {
+    if info.pix_width != 0 {
+        return Ok(info.pix_width);
+    }
+
+    let code = if code < u16::from(info.first) || code > u16::from(info.last) {
+        u16::from(info.first) + u16::from(info.default_char)
+    } else {
+        code
+    };
+
+    if code == u16::from(info.first) {
+        return Ok(8);
+    }
+
+    font.outline_advance(u32::from(code))
+        .map(|advance| advance as i64 as u16)
+        .map_err(super::text::unreadable)
+}
+
+/// `EngineGetCharWidth` (`GDI.EXE` seg3 `2c8a`, into `2662`), as in
+/// `engine-glyphs.ts`.
+fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let far = args.dword(system);
+    let first = args.word(system);
+    let last = args.word(system);
+    let out = args.dword(system);
+
+    if far >> 16 == 0 || last < first {
+        return Ok(Answer::Word(0));
+    }
+
+    let Some((font, info)) = widths_of(system, far) else {
+        return Ok(Answer::Word(0));
+    };
+
+    for code in first..=last {
+        let width = width_of(&font, &info, code)?;
+
+        system.write_far(
+            at(out, (code - first).wrapping_mul(2)),
+            &width.to_le_bytes(),
+        );
+    }
+
+    Ok(Answer::Word(1))
+}
+
+/// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`), as in `engine-glyphs.ts`:
+/// a negative count's extent; nought for the rest.
+fn engine_ext_text_out_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hdc = args.word(system);
+
+    args.dword(system);
+    args.word(system);
+    args.word(system);
+    args.dword(system);
+
+    let string = args.dword(system);
+    let count = args.word(system) as i16;
+    let far = args.dword(system);
+
+    if count >= 0 || far >> 16 == 0 {
+        return Ok(Answer::Dword(0));
+    }
+
+    let Some((font, info)) = widths_of(system, far) else {
+        return Ok(Answer::Dword(0x8000_0000));
+    };
+    let index = super::dc::dc_of(system, hdc);
+    let extra = index.map_or(0, |index| {
+        i64::from(system.gdi.dcs[index].state.char_extra as i16)
+    });
+    let text: Vec<u8> = (0..count.unsigned_abs())
+        .map(|offset| system.read_far(at(string, offset), 1)[0])
+        .collect();
+    let mut across: i64 = 0;
+
+    for &code in &text {
+        across += i64::from(width_of(&font, &info, u16::from(code))?) + extra;
+    }
+
+    if let Some(index) = index
+        && let Some(selected) = super::text::font_of(system, index)?
+    {
+        across += super::text::justified_extent(system, index, &selected, &text);
+    }
+
+    let down = u32::from(info.cell);
+
+    Ok(Answer::Dword(
+        (across.min(0x7fff) as u32 & 0xffff) | (down << 16),
+    ))
+}
+
+/// The copyright GDI writes in every entry, and the four bytes it keeps
+/// after its nought (seg7 `1151`, `116c`).
+const COPYRIGHT: &[u8] = b"Windows! Windows! Windows!";
+const AFTER_COPYRIGHT: [u8; 4] = [0x10, 0x03, 0x01, 0x01];
+
+/// Where the names start in an entry (seg7 `13a6`).
+const NAMES: u16 = 0x76;
+
+const PANOSE_SCRIPT: u8 = 3;
+const PANOSE_DECORATIVE: u8 = 4;
+const PANOSE_PICTORIAL: u8 = 5;
+const PANOSE_MONOSPACED: u8 = 9;
+const FF_DONTCARE: u8 = 0x00;
+const FF_ROMAN: u8 = 0x10;
+const FF_SWISS: u8 = 0x20;
+const FF_MODERN: u8 = 0x30;
+const FF_SCRIPT: u8 = 0x40;
+const FF_DECORATIVE: u8 = 0x50;
+const ANSI_CHARSET: u8 = 0;
+const SYMBOL_CHARSET: u8 = 2;
+
+/// `EngineMakeFontDir` (`GDI.EXE` seg7 `1184`), as in `engine-glyphs.ts`.
+// Each piece of the entry in turn, as GDI writes them.
+#[allow(clippy::too_many_lines)]
+fn engine_make_font_dir_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let hidden = args.word(system);
+    let out = args.dword(system);
+    let path_far = args.dword(system);
+
+    if system.fonts().true_type_off || path_far == 0 {
+        return Ok(Answer::Dword(FAILED));
+    }
+
+    let path: String = system
+        .read_string(path_far)
+        .iter()
+        .map(|&byte| char::from(byte))
+        .collect();
+    let Some(source) = system.files.open(&path) else {
+        return Ok(Answer::Dword(FAILED));
+    };
+    let ttf = match system.files.resolve(source) {
+        Some(file) => {
+            let size = file.size() as usize;
+
+            file.read(size)
+        }
+        None => return Ok(Answer::Dword(FAILED)),
+    };
+
+    system.files.close(source);
+
+    let facts = true_type_facts(&ttf);
+    let put = |system: &mut System, offset: u16, bytes: &[u8]| {
+        for (index, byte) in bytes.iter().enumerate() {
+            system.write_far(at(out, offset.wrapping_add(index as u16)), &[*byte]);
+        }
+    };
+    let put16 = |system: &mut System, offset: u16, value: u16| {
+        put(system, offset, &value.to_le_bytes());
+    };
+    let put_text = |system: &mut System, offset: u16, text: &[u8]| {
+        put(system, offset, text);
+        put(system, offset + text.len() as u16, &[0]);
+        offset + text.len() as u16 + 1
+    };
+    let units = |text: &[u16]| -> Vec<u8> { text.iter().map(|&unit| unit as u8).collect() };
+
+    // The entry's head as GDI keeps it (seg7 `1147`).
+    put16(system, 0, 1);
+    put16(system, 2, 0);
+    put16(system, 4, 0x200);
+    put16(system, 6, 0x95);
+    put16(system, 8, 0);
+    put_text(system, 0x0a, COPYRIGHT);
+    put(system, 0x25, &AFTER_COPYRIGHT);
+
+    let panose = &facts.panose;
+    let selection = facts.selection;
+    let monospaced = panose[3] == PANOSE_MONOSPACED;
+    let family_bits = if panose[0] == PANOSE_SCRIPT {
+        FF_SCRIPT
+    } else if panose[0] == PANOSE_DECORATIVE {
+        FF_DECORATIVE
+    } else if monospaced {
+        FF_MODERN
+    } else if panose[1] >= 11 {
+        FF_SWISS
+    } else if panose[1] >= 2 {
+        FF_ROMAN
+    } else {
+        FF_DONTCARE
+    };
+    let cell = facts.ascender.wrapping_sub(facts.descender) as u16;
+    let (mut first, mut last, mut offset) = (facts.first_char, facts.last_char, 0u16);
+    let mut char_set = if panose[0] == PANOSE_PICTORIAL {
+        SYMBOL_CHARSET
+    } else {
+        ANSI_CHARSET
+    };
+
+    if last > 0xff && first > 0xff {
+        char_set = SYMBOL_CHARSET;
+        last = (last - first).min(0xdf) + 0x20;
+        offset = first - 0x20;
+        first = 0x20;
+    } else {
+        last = last.min(0xff);
+        first = first.max(0x20);
+    }
+
+    let flag = |bit: u16| if selection & bit != 0 { 0xff } else { 0 };
+    let weight = if facts.weight <= 9 {
+        facts.weight * 100
+    } else {
+        facts.weight
+    };
+
+    put(
+        system,
+        0x46,
+        &[3 | if hidden != 0 { 0x80 } else { 0 }, selection as u8],
+    );
+    put16(system, 0x48, facts.units_per_em);
+    put16(system, 0x4a, 72);
+    put16(system, 0x4c, 72);
+    put16(system, 0x4e, facts.ascender as u16);
+    put16(system, 0x50, cell.wrapping_sub(facts.units_per_em));
+    put16(system, 0x52, facts.line_gap.max(0) as u16);
+    put(system, 0x54, &[flag(1), flag(2), flag(0x10)]);
+    put16(system, 0x57, weight);
+    put(system, 0x59, &[char_set]);
+    put16(system, 0x5a, 0);
+    put16(system, 0x5c, cell);
+    put(system, 0x5e, &[(family_bits + u8::from(!monospaced)) | 6]);
+    put16(system, 0x5f, facts.average_width as u16);
+    put16(system, 0x61, facts.x_max.wrapping_sub(facts.x_min) as u16);
+    put(system, 0x63, &[(first - 2) as u8, last as u8, 1, 2]);
+    put16(system, 0x6d, (out as u16).wrapping_add(NAMES));
+    put16(system, 0x71, facts.lowest_rec_ppem);
+    put16(system, 0x73, offset);
+
+    let end = put_text(system, NAMES, &units(&facts.face));
+    let end = put_text(system, end, &units(&facts.family));
+    let end = put_text(system, end, &units(&facts.style));
+
+    Ok(Answer::Dword(u32::from(end)))
+}
+
+/// `ConvertOutlineFontFile` (`GDI.EXE` seg7 `0d8a`): nothing done, and GDI's
+/// own data segment answered.
+fn convert_outline_font_file_call(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
+    Ok(Answer::Word(super::text::enumerate::gdi_data_selector(
+        system,
+    )))
+}
+
+pub fn implementation(name: &str) -> Option<Implementation> {
+    Some(match name {
+        "EngineSetFontContext" => Implementation::Sync(engine_set_font_context_call),
+        "EngineGetGlyphBmp" => Implementation::Sync(engine_get_glyph_bmp_call),
+        "EngineGetCharWidth" => Implementation::Sync(engine_get_char_width_call),
+        "EngineExtTextOut" => Implementation::Sync(engine_ext_text_out_call),
+        "EngineMakeFontDir" => Implementation::Sync(engine_make_font_dir_call),
+        "ConvertOutlineFontFile" => Implementation::Sync(convert_outline_font_file_call),
+        _ => return None,
+    })
+}

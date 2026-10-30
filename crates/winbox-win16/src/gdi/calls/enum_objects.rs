@@ -51,7 +51,7 @@ pub struct LogBrushRecord {
 }
 
 impl LogPenRecord {
-    fn bytes(self) -> Vec<u8> {
+    pub(crate) fn bytes(self) -> Vec<u8> {
         let mut bytes = Vec::with_capacity(10);
 
         bytes.extend_from_slice(&self.style.to_le_bytes());
@@ -62,7 +62,7 @@ impl LogPenRecord {
 }
 
 impl LogBrushRecord {
-    fn bytes(self) -> Vec<u8> {
+    pub(crate) fn bytes(self) -> Vec<u8> {
         let mut bytes = Vec::with_capacity(8);
 
         bytes.extend_from_slice(&self.style.to_le_bytes());

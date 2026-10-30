@@ -805,19 +805,14 @@ function logfontOf(system: any, font: any) {
 }
 
 /**
- * The logical font selected, realized by the driver (`GDI.EXE` seg3
- * `0a68`): its `LOGFONT` copied, `lfClipPrecision`'s high bits left off,
- * the driver's `RealizeObject` asked the size of its `FONTINFO` with
- * nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made, and
- * the font realized into it with a `TEXTXFORM` of GDI's (`0c08`-`0c66`);
- * the `TEXTXFORM`'s italic, underline and strike-out made nought or FFh.
- * A made font's height and width are first taken to the device's units
- * (`mappedSize`), so it is realized again for each size they come to. Null
- * where the driver realizes none, which GDI maps itself: not followed.
+ * Where the logical font selected stands in GDI's table of realized fonts,
+ * by the device, the font and the size (seg1 `3e86`): a device's contexts
+ * share what was realized for it. `kept` is the entry, where the font has
+ * been realized for the device.
  */
-export async function deviceFont(system: any, surface: any): Promise<DeviceFont | null> {
-  const pdevice: PDevice | null = surface.driverDevice;
-  const font = surface.font;
+export function keptDeviceFont(system: any, surface: any) {
+  const pdevice: PDevice | null = surface?.driverDevice;
+  const font = surface?.font;
 
   if (!pdevice || !font) {
     return null;
@@ -831,12 +826,32 @@ export async function deviceFont(system: any, surface: any): Promise<DeviceFont 
 
   const logfont = font.logfont ? { ...given, ...mappedSize(surface, given) } : given;
   const key = `${logfont.height},${logfont.width}`;
-
-  /* GDI's table of realized fonts, by the device, the font and the size
-   * (seg1 `3e86`): a device's contexts share what was realized for it. */
   const kept = stateOf(system).fonts.find(
     (entry) => entry.device === pdevice && entry.font === font && entry.key === key
   );
+
+  return { pdevice, font, logfont, key, kept };
+}
+
+/**
+ * The logical font selected, realized by the driver (`GDI.EXE` seg3
+ * `0a68`): its `LOGFONT` copied, `lfClipPrecision`'s high bits left off,
+ * the driver's `RealizeObject` asked the size of its `FONTINFO` with
+ * nought for it, a block of `GlobalAlloc(2042h)` 42h bytes larger made, and
+ * the font realized into it with a `TEXTXFORM` of GDI's (`0c08`-`0c66`);
+ * the `TEXTXFORM`'s italic, underline and strike-out made nought or FFh.
+ * A made font's height and width are first taken to the device's units
+ * (`mappedSize`), so it is realized again for each size they come to. Null
+ * where the driver realizes none, which GDI maps itself: not followed.
+ */
+export async function deviceFont(system: any, surface: any): Promise<DeviceFont | null> {
+  const found = keptDeviceFont(system, surface);
+
+  if (!found) {
+    return null;
+  }
+
+  const { pdevice, font, logfont, key, kept } = found;
 
   if (kept) {
     return kept.realized;

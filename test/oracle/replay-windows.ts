@@ -6778,19 +6778,20 @@ async function captureSpooljob(system: any) {
   const core = system.machine.cpu.core;
   const buffer = GlobalLock.call(system, GlobalAlloc.call(system, 0x42, 256)) >>> 0;
   const hex8 = (value: number) => (value >>> 0).toString(16).padStart(8, '0');
-  const ask = (what: string, option: number, parameter: number) =>
-    records.set(`answer:${what}`, hex8(GetSpoolJob.call(system, option, parameter)));
+  /* `GetSpoolJob` reads WIN.INI as it readies the queues: awaited. */
+  const ask = async (what: string, option: number, parameter: number) =>
+    records.set(`answer:${what}`, hex8(await GetSpoolJob.call(system, option, parameter)));
 
-  ask('1d-first', 0x1d, 0);
-  ask('19', 0x19, 0);
-  ask('19-again', 0x19, 0);
-  ask('1d', 0x1d, 0);
+  await ask('1d-first', 0x1d, 0);
+  await ask('19', 0x19, 0);
+  await ask('19-again', 0x19, 0);
+  await ask('1d', 0x1d, 0);
 
   for (let i = 0; i < 256; i++) {
     core.write8(buffer >>> 16, (buffer & 0xffff) + i, 0xaa);
   }
 
-  ask('14', 0x14, buffer);
+  await ask('14', 0x14, buffer);
   records.set(
     'buffer:14',
     Array.from({ length: 256 }, (_, i) =>
@@ -6801,18 +6802,21 @@ async function captureSpooljob(system: any) {
     ).join('')
   );
 
-  ask('22-before', 0x22, 0);
-  records.set('answer:15', GetSpoolJob.call(system, 0x15, 0x2008) === 0 ? '00000000' : 'other');
-  ask('22', 0x22, 0);
-  ask('20-0', 0x20, 0);
-  ask('21-0', 0x21, 0);
-  ask('16', 0x16, 0);
-  ask('13', 0x13, 0);
-  ask('24', 0x24, 0);
-  ask('15-clear', 0x15, 0);
-  ask('22-after', 0x22, 0);
-  ask('1f', 0x1f, 0);
-  ask('1d-after', 0x1d, 0);
+  await ask('22-before', 0x22, 0);
+  records.set(
+    'answer:15',
+    (await GetSpoolJob.call(system, 0x15, 0x2008)) === 0 ? '00000000' : 'other'
+  );
+  await ask('22', 0x22, 0);
+  await ask('20-0', 0x20, 0);
+  await ask('21-0', 0x21, 0);
+  await ask('16', 0x16, 0);
+  await ask('13', 0x13, 0);
+  await ask('24', 0x24, 0);
+  await ask('15-clear', 0x15, 0);
+  await ask('22-after', 0x22, 0);
+  await ask('1f', 0x1f, 0);
+  await ask('1d-after', 0x1d, 0);
 
   return records;
 }

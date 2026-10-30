@@ -23,6 +23,7 @@ const COLOR_INFO: u16 = 2;
 const OUTPUT: u16 = 8;
 const REALIZE_OBJECT: u16 = 10;
 const EXT_TEXT_OUT: u16 = 14;
+const GET_CHAR_WIDTH: u16 = 15;
 const STRETCH_DIBITS: u16 = 28;
 
 const OBJ_PEN: u16 = 1;
@@ -1546,6 +1547,110 @@ pub async fn driver_text_extent(
     Ok(u32::from(width) | u32::from(height) << 16)
 }
 
+/// `GetCharWidth` on a driver's context (`GDI.EXE` seg3 `15cb`, into
+/// `2098`): the driver's `GetCharWidth` asked, and each width two more for
+/// a bold the device cannot make and half the height less one more for a
+/// slant, carried into the context's units under a mapping mode. As
+/// `driverCharWidth` in `printer-output.ts`.
+///
+/// # Errors
+///
+/// What the driver's code stops with.
+pub async fn driver_char_width(
+    engine: &Engine,
+    dc: usize,
+    first: u16,
+    last: u16,
+    buffer: u32,
+) -> Result<u16, Stop> {
+    let (procedure, lp_pdevice) = proc(&engine.system(), dc, GET_CHAR_WIDTH);
+    let Some(realized) = super::printer_driver::device_font(engine, dc).await? else {
+        return Ok(0);
+    };
+
+    if procedure == 0 {
+        return Ok(0);
+    }
+
+    let xform_word = |at: usize| u16::from_le_bytes([realized.xform[at], realized.xform[at + 1]]);
+    let (xform, mode) = {
+        let mut system = engine.system();
+        let block = system
+            .printing
+            .drivers
+            .drawing
+            .get(&dc)
+            .map_or(0, |drawing| drawing.far);
+        let xform = offset_by(block, TEXTXFORM);
+
+        system.write_far(xform, &realized.xform);
+        (xform, draw_mode(&mut system, dc))
+    };
+
+    call_driver(
+        engine,
+        procedure,
+        &[
+            GuestArg::Long(lp_pdevice),
+            GuestArg::Long(buffer),
+            GuestArg::Word(first),
+            GuestArg::Word(last),
+            GuestArg::Long(realized.far),
+            GuestArg::Long(mode),
+            GuestArg::Long(xform),
+        ],
+    )
+    .await?;
+
+    let mut system = engine.system();
+    let simulated = !caps(&system, dc, DP_TEXT) & xform_word(FT_ACCELERATOR);
+    let extra = (if simulated & TC_EA_DOUBLE != 0 { 2 } else { 0 })
+        + if simulated & TC_IA_ABLE != 0 {
+            i64::from(xform_word(0).wrapping_sub(1) >> 1)
+        } else {
+            0
+        };
+    let mapping = super::mapping::mapping_of(&system, dc);
+
+    for index in 0..=last.wrapping_sub(first) {
+        let at = (buffer & 0xffff_0000) | u32::from((buffer as u16).wrapping_add(index * 2));
+        let bytes = system.read_far(at, 2);
+        let mut width = i64::from(i16::from_le_bytes([bytes[0], bytes[1]])) + extra.max(0);
+
+        if !mapping.is_identity() {
+            width = super::mapping::scale(width, mapping.wex.abs(), mapping.vex.abs()).abs();
+        }
+
+        system.write_far(at, &(width as u16).to_le_bytes());
+    }
+
+    Ok(1)
+}
+
+/// `GetCharWidth` on a driver's context, asked of the driver.
+fn get_char_width_call(engine: &Engine, args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let Some(dc) = first(engine, &args).1 else {
+            return otherwise(engine, "GetCharWidth", args).await;
+        };
+        let (first_char, last_char, buffer) = {
+            let mut args = args;
+            let system = engine.system();
+
+            args.word(&system);
+            (args.word(&system), args.word(&system), args.dword(&system))
+        };
+
+        if last_char < first_char {
+            return Ok(Answer::Word(0));
+        }
+
+        Ok(Answer::Word(
+            driver_char_width(engine, dc, first_char, last_char, buffer).await?,
+        ))
+    })
+}
+
 /// `GetTextExtent` on a driver's context, measured by the driver.
 fn get_text_extent_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
@@ -2181,6 +2286,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "TextOut" => text_out_call,
         "ExtTextOut" => ext_text_out_call,
         "GetTextExtent" => get_text_extent_call,
+        "GetCharWidth" => get_char_width_call,
         "StretchDIBits" => stretch_dibits_call,
         "DeleteObject" => delete_object_call,
         _ => return None,

@@ -1152,7 +1152,8 @@ impl Writer {
 }
 
 /// A character as `GetGlyphOutline` answers for it: its box, the box's
-/// corner from the character's origin, its advance, and its rows.
+/// corner from the character's origin, its advance, its advance carried
+/// along a turned baseline, and its rows.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GlyphOutline {
     pub width: i64,
@@ -1160,6 +1161,8 @@ pub struct GlyphOutline {
     pub origin_x: i64,
     pub origin_y: i64,
     pub advance: i64,
+    pub advance_x: i64,
+    pub advance_y: i64,
     pub rows: Vec<Vec<u8>>,
 }
 
@@ -1172,6 +1175,23 @@ pub struct GlyphOutline {
 /// read back; across, the box is the scan converter's, which can carry a
 /// blank column the ink does not reach.
 pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<GlyphOutline>, Stop> {
+    glyph_of(font, code, 0.0)
+}
+
+/// One character of an outline font as GDI's TrueType engine answers for
+/// it, upright or turned by `turn` tenths of a degree -- the angle a
+/// printer's driver sets the engine's context to (`EngineSetFontContext`).
+/// Turned, the box is the ink's, the corner is measured from the
+/// baseline's origin as the text would be drawn, and the advance is
+/// carried along the baseline, each part rounded away from nought. As
+/// `Surface.glyphOf`.
+// One glyph drawn and read back, in the order the TypeScript engine does.
+#[allow(clippy::too_many_lines)]
+pub(crate) fn glyph_of(
+    font: &LogicalFont,
+    code: u8,
+    turn: f64,
+) -> Result<Option<GlyphOutline>, Stop> {
     let Some(outline) = &font.outline else {
         return Ok(None);
     };
@@ -1183,14 +1203,18 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
     upright.style.weight = if synthesised { Some(400) } else { weight };
 
     if let Some(turned) = upright.outline.as_mut() {
-        turned.escapement = 0.0;
+        turned.escapement = turn;
     }
 
     let Some(upright_outline) = &upright.outline else {
         return Ok(None);
     };
-    let size = 64.0_f64.max(outline.ppem * 4.0) as i64;
-    let pad = size / 4;
+    let turning = turn != 0.0;
+    let size = 64.0_f64.max(outline.ppem * if turning { 6.0 } else { 4.0 }) as i64;
+    let pad = size / if turning { 2 } else { 4 };
+    let angle = turn * std::f64::consts::PI / 1800.0;
+    let path_sine = fixed(angle.sin());
+    let path_cosine = if turning { fixed(angle.cos()) } else { 1.0 };
     let pen = Pen {
         font: &upright,
         outline: upright_outline,
@@ -1229,8 +1253,31 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
     }
 
     let advance = font.outline_advance(u32::from(code)).map_err(unreadable)? as i64;
+    let (base_x, base_y) = if turning {
+        let (x, y, _, _) = pen.turned_base(
+            pad as f64,
+            pad as f64,
+            &[code],
+            None,
+            path_sine,
+            path_cosine,
+        )?;
+
+        (x as i64, y as i64)
+    } else {
+        (pad, pad + outline.ascent as i64)
+    };
+    let (advance_x, advance_y) = if turning {
+        (
+            away(advance as f64 * path_cosine) as i64,
+            away(advance as f64 * path_sine) as i64,
+        )
+    } else {
+        (advance, 0)
+    };
 
     if right >= 0
+        && !turning
         && let Some((box_left, box_right)) = glyph_box
     {
         left = box_left as i64;
@@ -1244,6 +1291,8 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
             origin_x: 0,
             origin_y: 0,
             advance,
+            advance_x,
+            advance_y,
             rows: Vec::new(),
         }));
     }
@@ -1261,9 +1310,11 @@ pub(crate) fn glyph_outline(font: &LogicalFont, code: u8) -> Result<Option<Glyph
     Ok(Some(GlyphOutline {
         width: right - left + 1,
         height: bottom - top + 1,
-        origin_x: left - pad,
-        origin_y: pad + outline.ascent as i64 - top,
+        origin_x: left - base_x,
+        origin_y: base_y - top,
         advance,
+        advance_x,
+        advance_y,
         rows,
     }))
 }
