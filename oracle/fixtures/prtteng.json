@@ -1,0 +1,966 @@
+{
+  "probe": "prtteng",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1"
+    },
+    {
+      "function": "realize",
+      "args": "0 0  size",
+      "result": "0"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial",
+      "result": "45 36 18",
+      "section": "Arial"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Arial size",
+      "result": "150",
+      "section": "Arial"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Arial",
+      "result": "150",
+      "section": "Arial"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Arial",
+      "result": "type=3 flags=80 3c=0 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=0000",
+      "section": "Arial"
+    },
+    {
+      "function": "widths",
+      "args": "Arial",
+      "result": "1 22 22 20 22 22 12 22 21",
+      "section": "Arial"
+    },
+    {
+      "function": "charwidth",
+      "args": "97-104",
+      "result": "1 22",
+      "section": "Arial"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial",
+      "result": "163,45",
+      "section": "Arial"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "163,45",
+      "section": "Arial"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial low",
+      "result": "84,45",
+      "section": "Arial"
+    },
+    {
+      "function": "extent",
+      "args": "-3",
+      "result": "84,45",
+      "section": "Arial"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial extra",
+      "result": "187,45",
+      "section": "Arial"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "187,45",
+      "section": "Arial"
+    },
+    {
+      "function": "fields",
+      "args": "Arial",
+      "result": "type=3 flags=81 3c=0 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=0000",
+      "section": "Arial"
+    },
+    {
+      "function": "GetPhysicalFontHandle",
+      "args": "Arial",
+      "result": "the font's block",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial 97-104",
+      "result": "1 22 22 20 22 22 12 22 21 flags=81",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial 24-34",
+      "result": "1 30 30 30 30 30 30 8 30 11 14 14 flags=81",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial 253-258",
+      "result": "1 20 22 20 30 30 30 flags=81",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial 98-97",
+      "result": "0 flags=81",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 97 1 4096",
+      "result": "84 box=18,21 origin=20000,150000 inc=160000,0 after=55555555 sum=E36A first=07",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 32 1 4096",
+      "result": "0 box=0,0 origin=0,0 inc=B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 31 1 4096",
+      "result": "100 box=20,25 origin=50000,190000 inc=1E0000,0 after=55555555 sum=5AF0 first=FF",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 30 1 4096",
+      "result": "100 box=20,25 origin=50000,190000 inc=1E0000,0 after=55555555 sum=5AF0 first=FF",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 233 1 4096",
+      "result": "112 box=18,28 origin=20000,1C0000 inc=160000,0 after=55555555 sum=0240 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 0 0",
+      "result": "0 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 0",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 0 4096",
+      "result": "0 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 8",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=817E first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 900",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "108 box=29,27 origin=FFE30000,1B0000 inc=0,1B0000 after=55555555 sum=2009 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial 65-66",
+      "result": "1 27 27 flags=81",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 450",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "124 box=31,31 origin=FFF40000,1F0000 inc=130000,130000 after=55555555 sum=96B3 first=20",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2",
+      "result": "",
+      "section": "Arial"
+    },
+    {
+      "function": "metrics",
+      "args": "Wingdings",
+      "result": "44 36 36",
+      "section": "Wingdings"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings size",
+      "result": "150",
+      "section": "Wingdings"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings",
+      "result": "150",
+      "section": "Wingdings"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Wingdings",
+      "result": "type=3 flags=80 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "widths",
+      "args": "Wingdings",
+      "result": "1 44 38 37 38 41 37 44 43",
+      "section": "Wingdings"
+    },
+    {
+      "function": "charwidth",
+      "args": "97-104",
+      "result": "1 44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings",
+      "result": "322,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "322,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings low",
+      "result": "75,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "extent",
+      "args": "-3",
+      "result": "75,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings extra",
+      "result": "346,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "346,44",
+      "section": "Wingdings"
+    },
+    {
+      "function": "fields",
+      "args": "Wingdings",
+      "result": "type=3 flags=81 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "GetPhysicalFontHandle",
+      "args": "Wingdings",
+      "result": "the font's block",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings 97-104",
+      "result": "1 44 38 37 38 41 37 44 43 flags=81",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings 24-34",
+      "result": "1 20 20 20 20 20 20 8 20 40 41 46 flags=81",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings 253-258",
+      "result": "1 36 36 41 20 20 20 flags=81",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings 98-97",
+      "result": "0 flags=81",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=FA47 first=0C",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 97 1 4096",
+      "result": "232 box=37,29 origin=30000,1D0000 inc=2C0000,0 after=55555555 sum=84E9 first=00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 32 1 4096",
+      "result": "0 box=0,0 origin=0,0 inc=280000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 31 1 4096",
+      "result": "116 box=15,29 origin=30000,1D0000 inc=140000,0 after=55555555 sum=855C first=FF",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 30 1 4096",
+      "result": "116 box=15,29 origin=30000,1D0000 inc=140000,0 after=55555555 sum=855C first=FF",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 233 1 4096",
+      "result": "144 box=30,36 origin=30000,1D0000 inc=240000,0 after=55555555 sum=A822 first=00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 0 0",
+      "result": "0 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 0",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 0 4096",
+      "result": "0 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 8",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=4922 first=0C",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 900",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "68 box=32,17 origin=FFE00000,140000 inc=0,180000 after=55555555 sum=E330 first=1E",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings 65-66",
+      "result": "1 23 32 flags=81",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 450",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "116 box=27,29 origin=FFEF0000,220000 inc=100000,100000 after=55555555 sum=FA5D first=00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=FA47 first=0C",
+      "section": "Wingdings"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2",
+      "result": "",
+      "section": "Wingdings"
+    },
+    {
+      "function": "metrics",
+      "args": "Wingdings slanted",
+      "result": "44 36 36",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings size",
+      "result": "150",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings",
+      "result": "150",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Wingdings",
+      "result": "type=3 flags=84 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "widths",
+      "args": "Wingdings slanted",
+      "result": "1 44 38 37 38 41 37 44 43",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "charwidth",
+      "args": "97-104",
+      "result": "1 44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings slanted",
+      "result": "322,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "322,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings slanted low",
+      "result": "76,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "extent",
+      "args": "-3",
+      "result": "76,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "textextent",
+      "args": "Wingdings slanted extra",
+      "result": "346,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "346,44",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "fields",
+      "args": "Wingdings slanted",
+      "result": "type=3 flags=85 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "GetPhysicalFontHandle",
+      "args": "Wingdings slanted",
+      "result": "the font's block",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings slanted 97-104",
+      "result": "1 44 38 37 38 41 37 44 43 flags=85",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings slanted 24-34",
+      "result": "1 20 20 20 20 20 20 8 20 40 41 46 flags=85",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings slanted 253-258",
+      "result": "1 36 36 41 20 20 20 flags=85",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings slanted 98-97",
+      "result": "0 flags=85",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=4D6B first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 97 1 4096",
+      "result": "232 box=43,29 origin=50000,1D0000 inc=2C0000,0 after=55555555 sum=F1E9 first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 32 1 4096",
+      "result": "0 box=0,0 origin=0,0 inc=280000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 31 1 4096",
+      "result": "116 box=25,29 origin=20000,1D0000 inc=140000,0 after=55555555 sum=6036 first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 30 1 4096",
+      "result": "116 box=25,29 origin=20000,1D0000 inc=140000,0 after=55555555 sum=6036 first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 233 1 4096",
+      "result": "288 box=33,36 origin=40000,1D0000 inc=240000,0 after=55555555 sum=1FFC first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 0 0",
+      "result": "0 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 0",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 0 4096",
+      "result": "0 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=0000 first=55",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 8",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=02FA first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 900",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "92 box=31,23 origin=FFE10000,1D0000 inc=0,180000 after=55555555 sum=7F1D first=78",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Wingdings slanted 65-66",
+      "result": "1 24 32 flags=85",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 450",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "144 box=21,36 origin=FFF60000,290000 inc=100000,100000 after=55555555 sum=79F8 first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=4D6B first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2",
+      "result": "",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial turned",
+      "result": "44 36 18",
+      "section": "Arial turned"
+    },
+    {
+      "function": "realize",
+      "args": "-40 900 Arial size",
+      "result": "150",
+      "section": "Arial turned"
+    },
+    {
+      "function": "realize",
+      "args": "-40 900 Arial",
+      "result": "150",
+      "section": "Arial turned"
+    },
+    {
+      "function": "fields",
+      "args": "-40 900 Arial",
+      "result": "type=3 flags=90 3c=0 3e=2048 40=-19195,0,-19195,0 esc=900 stretch=256 em=40 4e=0000",
+      "section": "Arial turned"
+    },
+    {
+      "function": "widths",
+      "args": "Arial turned",
+      "result": "1 22 22 20 22 22 12 22 21",
+      "section": "Arial turned"
+    },
+    {
+      "function": "charwidth",
+      "args": "97-104",
+      "result": "1 22",
+      "section": "Arial turned"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial turned",
+      "result": "163,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "163,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial turned low",
+      "result": "84,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "extent",
+      "args": "-3",
+      "result": "84,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "textextent",
+      "args": "Arial turned extra",
+      "result": "187,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "extent",
+      "args": "-8",
+      "result": "187,44",
+      "section": "Arial turned"
+    },
+    {
+      "function": "fields",
+      "args": "Arial turned",
+      "result": "type=3 flags=91 3c=0 3e=2048 40=-19195,0,-19195,0 esc=900 stretch=256 em=40 4e=0000",
+      "section": "Arial turned"
+    },
+    {
+      "function": "GetPhysicalFontHandle",
+      "args": "Arial turned",
+      "result": "the font's block",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial turned 97-104",
+      "result": "1 22 22 20 22 22 12 22 21 flags=91",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial turned 24-34",
+      "result": "1 30 30 30 30 30 30 8 30 11 14 14 flags=91",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial turned 253-258",
+      "result": "1 20 22 20 30 30 30 flags=91",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial turned 98-97",
+      "result": "0 flags=91",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial turned 0",
+      "result": "0",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial turned 0",
+      "result": "0",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 97 1 4096",
+      "result": "84 box=18,21 origin=20000,150000 inc=160000,0 after=55555555 sum=E36A first=07",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 32 1 4096",
+      "result": "0 box=0,0 origin=0,0 inc=B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 31 1 4096",
+      "result": "100 box=20,25 origin=50000,190000 inc=1E0000,0 after=55555555 sum=5AF0 first=FF",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 30 1 4096",
+      "result": "100 box=20,25 origin=50000,190000 inc=1E0000,0 after=55555555 sum=5AF0 first=FF",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 233 1 4096",
+      "result": "112 box=18,28 origin=20000,1C0000 inc=160000,0 after=55555555 sum=0240 first=00",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 0 0",
+      "result": "0 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 0",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 0 4096",
+      "result": "0 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=0000 first=55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 8",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=817E first=00",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial turned 900",
+      "result": "0",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 4096",
+      "result": "108 box=29,27 origin=FFE30000,1B0000 inc=0,1B0000 after=55555555 sum=2009 first=00",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetCharWidth",
+      "args": "Arial turned 65-66",
+      "result": "1 27 27 flags=91",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial turned 450",
+      "result": "0",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 4096",
+      "result": "124 box=31,31 origin=FFF40000,1F0000 inc=130000,130000 after=55555555 sum=96B3 first=20",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial turned 0",
+      "result": "0",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial turned 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial turned"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineMakeFontDir",
+      "args": "C:\\WINDOWS\\SYSTEM\\ARIAL.TTF 1",
+      "result": "138 0100000000029500000057696E646F7773212057696E646F7773212057696E646F7773210010030101555555555555555555555555555555555555555555555555555555555583400008480048003E07F00043000000009001000000F0082788035E081EFF01025555555555555C0355550B00000055417269616C00417269616C00526567756C617200 then 55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineMakeFontDir",
+      "args": "C:\\WINDOWS\\SYSTEM\\ARIAL.TTF 0",
+      "result": "138 0100000000029500000057696E646F7773212057696E646F7773212057696E646F7773210010030101555555555555555555555555555555555555555555555555555555555503400008480048003E07F00043000000009001000000F0082788035E081EFF01025555555555555C0355550B00000055417269616C00417269616C00526567756C617200 then 55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineMakeFontDir",
+      "args": "C:\\WINDOWS\\SYSTEM\\WINGDING.TTF 1",
+      "result": "146 0100000000029500000057696E646F7773212057696E646F7773212057696E646F7773210010030101555555555555555555555555555555555555555555555555555555555583400008480048003107E10000000000009001020000E108071E07DF0A1EFF01025555555555555C0355550C0000F05557696E6764696E67730057696E6764696E677300526567756C617200 then 55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "EngineMakeFontDir",
+      "args": "C:\\WINDOWS\\SYSTEM\\NOSUCH.TTF 1",
+      "result": "-1 then 55",
+      "section": "Arial turned"
+    },
+    {
+      "function": "ConvertOutlineFontFile",
+      "args": "twice",
+      "result": "some same",
+      "section": "Arial turned"
+    }
+  ]
+}
