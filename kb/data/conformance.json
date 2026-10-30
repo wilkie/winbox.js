@@ -5849,6 +5849,29 @@
   },
   "gaps": {}
  },
+ "dragobj": {
+  "probe": "dragobj",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 26,
+  "functions": {
+   "answer": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "msg": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "dragq": {
   "probe": "dragq",
   "display": "vga",
@@ -7552,6 +7575,87 @@
    "mode": {
     "total": 5,
     "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "filport": {
+  "probe": "filport",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 42,
+  "functions": {
+   "again": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "answer": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "asked": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "typed": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "findexe": {
+  "probe": "findexe",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 23,
+  "functions": {
+   "answer": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "asked": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "child": {
+    "total": 2,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -9817,6 +9921,29 @@
   },
   "gaps": {}
  },
+ "hwevent": {
+  "probe": "hwevent",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 6,
+  "functions": {
+   "put": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "taken": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "hwhook": {
   "probe": "hwhook",
   "display": "vga",
@@ -11809,6 +11936,29 @@
    "stack": {
     "total": 4,
     "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "kowner": {
+  "probe": "kowner",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "get": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -17029,6 +17179,43 @@
    "instance": {
     "total": 2,
     "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "oemlayer": {
+  "probe": "oemlayer",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "cursor": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "keystate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "queue": {
+    "total": 1,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -22758,6 +22945,31 @@
   },
   "gaps": {}
  },
+ "strfunc": {
+  "probe": "strfunc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 16,
+  "functions": {
+   "seeuser": {
+    "total": 7,
+    "agreed": 3,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stringfunc": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "seeuser": "UserSeeUserDo works on USER's own data segment, which in WinBox holds no local heap and none of USER's words (as thheap:lsystem)"
+  }
+ },
  "strikbig-ega": {
   "probe": "strikbig",
   "display": "ega",
@@ -23536,6 +23748,50 @@
    "input": {
     "total": 6,
     "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "systimer": {
+  "probe": "systimer",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 17,
+  "functions": {
+   "kill": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "message": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nowindow": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "proc": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 3,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -24674,6 +24930,40 @@
   },
   "gaps": {}
  },
+ "userproc": {
+  "probe": "userproc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "classproc": {
+    "total": 14,
+    "agreed": 7,
+    "disagreed": 7,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handler": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "iconres": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "classproc": "WinBox registers USER's own classes #32768 to #32772 only on the raster desktop, with procedures of its own that no address of USER's names, and gives the desktop's none",
+   "handler": "USER's resource handlers for icons and cursors are not yet done: WinBox's LoadResource of an icon calls KERNEL's own handler",
+   "iconres": "USER's resource handlers for icons and cursors are not yet done: LoadResource of an icon gives the file's DIB, not USER's block"
+  }
+ },
  "userwin": {
   "probe": "userwin",
   "display": "vga",
@@ -24891,8 +25181,8 @@
   "functions": {
    "origin": {
     "total": 6,
-    "agreed": 6,
-    "disagreed": 0,
+    "agreed": 4,
+    "disagreed": 2,
     "unimplemented": 0,
     "unsupported": 0
    },
