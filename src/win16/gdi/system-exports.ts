@@ -1,5 +1,6 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
 import { SelectObject } from './SelectObject.js';
 
 /**
@@ -217,4 +218,105 @@ export function FixUpBogusPublisherMetafile(this: any, lpMetaHeader: number, fFi
   }
 
   return 0;
+}
+
+/** What `GDISeeGDIDo` is asked (`GDI.EXE` seg21 `19a9`-`19b8`). */
+const SEE_ALLOC = 1;
+const SEE_FREE = 2;
+const SEE_COMPACT = 3;
+const SEE_DATA = 0x103;
+
+/**
+ * GDI's heap at a debugger's request (`GDI.EXE` seg21 `19a0`-`19e7`), DS
+ * GDI's data segment: 1, `LocalAlloc(wParam1, wParam3)`; 2,
+ * `LocalFree(wParam1)`; 3, `LocalCompact(wParam3)` -- each answered with
+ * nought in DX; 103h, GDI's data segment, DX its sign; anything else
+ * FFFFFFFFh. **Recorded** by `ugaps`. WinBox's GDI keeps no local heap in
+ * its segment (`ShrinkGDIHeap`): the heap's requests answer what WinBox's
+ * KERNEL answers for a segment with none, as USER's `UserSeeUserDo` does
+ * (`ugaps:seegdiheap`, a known gap).
+ */
+export function GDISeeGDIDo(
+  this: any,
+  wRequest: number,
+  wParam1: number,
+  _wParam2: number,
+  wParam3: number
+) {
+  const data = this._moduleData?.GDI ?? 0;
+  const request = wRequest & 0xffff;
+
+  if (request === SEE_DATA) {
+    return ((data & 0x8000 ? 0xffff0000 : 0) | data) >>> 0;
+  }
+
+  if (request < SEE_ALLOC || request > SEE_COMPACT) {
+    return 0xffffffff;
+  }
+
+  const heap = data ? this.allocator.heapOf(indexFor(data)) : null;
+
+  switch (request) {
+    case SEE_ALLOC:
+      return heap ? heap.localAlloc(wParam1 & 0xffff, wParam3 & 0xffff) & 0xffff : 0;
+    case SEE_FREE:
+      return heap ? heap.localFree(wParam1 & 0xffff) & 0xffff : wParam1 & 0xffff;
+    default:
+      return heap ? heap.localCompact(wParam3 & 0xffff) & 0xffff : 0;
+  }
+}
+
+/** The word of a GDI object `GDIInit2` reads and sets: a bitmap's driver block (seg2 `0437`-`0456`). */
+const OBJECT_WORD = 0x0a;
+
+/** `GDIInit2`'s value that clears the word, answering GDI's data segment (seg2 `043f`-`0445`). */
+const CLEAR = 0xffff;
+
+/**
+ * A word of a GDI object, read or set (`GDI.EXE` seg2 `042a`-`045c`): the
+ * handle a local one of GDI's heap, the word at 0Ah of the object it
+ * names. A value of nought answers the word; FFFFh makes it nought and
+ * answers GDI's data segment (the prologue's AX); any other sets it and
+ * answers it. DX is kept. WING.DLL calls it. **Recorded** by `ugaps` on a
+ * bitmap of the display's: read, set, read, cleared, read, put back.
+ */
+export function GDIInit2(this: any, hObject: number, wValue: number) {
+  const heap = this._gdiHeap;
+  const handle = hObject & 0xffff;
+  const value = wValue & 0xffff;
+  const address = heap ? (heap.read8(handle) | (heap.read8(handle + 1) << 8)) & 0xffff : 0;
+  const at = (address + OBJECT_WORD) & 0xffff;
+
+  if (!heap) {
+    return 0;
+  }
+
+  if (value === 0) {
+    return (heap.read8(at) | (heap.read8(at + 1) << 8)) & 0xffff;
+  }
+
+  heap.setWord(at, value === CLEAR ? 0 : value);
+
+  return value === CLEAR ? (this._moduleData?.GDI ?? 0) : value;
+}
+
+/**
+ * GDI's string 106 (`GDI.EXE`'s string table), which `FinalGDIInit` loads
+ * last into its data, with TrueType enabled.
+ */
+const TRUETYPE_ERROR =
+  'An application used a Truetype font that caused an error in Windows.\n\n' +
+  'Quit all applications, and then restart Windows.';
+
+/**
+ * The end of GDI's start-up, which USER calls as it starts (`GDI.EXE` seg2
+ * `012e`-`023d`): GDI marked started, the procedures it uses looked up,
+ * its resource 1000 copied into its data and, with TrueType enabled (bit 0
+ * of 64Ah, `[TrueType] TTEnable`), its strings 105 and 106 loaded with
+ * USER's `LoadString` (`0202`-`022b`). Called again it does it all again,
+ * and answers the length of the last string. WinBox's GDI and USER start
+ * together, so nothing is left to do. **Recorded** by `ugaps`: 76h.
+ */
+export function FinalGDIInit(this: any, _hObject: number) {
+  return TRUETYPE_ERROR.length;
 }

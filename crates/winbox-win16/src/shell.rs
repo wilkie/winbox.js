@@ -13,6 +13,7 @@
 pub mod about;
 pub mod drag;
 pub mod find_program;
+pub mod internal_procs;
 pub mod programs;
 pub mod reg_api;
 pub mod registry;
@@ -42,6 +43,8 @@ pub struct Shell {
 
 pub fn implementation(name: &str) -> Option<Implementation> {
     Some(match name {
+        "HERETHARBETYGARS" => Implementation::Async(internal_procs::heretharbetygars),
+        "WCI" => Implementation::Async(internal_procs::wci),
         "RegOpenKey" => Implementation::Sync(reg_api::reg_open_key),
         "RegCreateKey" => Implementation::Sync(reg_api::reg_create_key),
         "RegCloseKey" => Implementation::Sync(reg_api::reg_close_key),

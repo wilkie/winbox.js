@@ -1053,6 +1053,15 @@ impl System {
             let [low, high] = pops.to_le_bytes();
             let at = step * (ordinal + 1);
 
+            // Data where the stub would be: a table in code
+            // (`exported_data.rs`).
+            if let Some(crate::exported_data::ExportedData::Stub(bytes)) =
+                crate::exported_data::exported_data(module.name, ordinal as u16)
+            {
+                code[at..at + bytes.len()].copy_from_slice(bytes);
+                continue;
+            }
+
             code[at..at + 5].copy_from_slice(&[0xcd, 0x80, 0xca, low, high]);
         }
 

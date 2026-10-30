@@ -1073,3 +1073,18 @@ export function mciDriverNotify(
 }
 
 const MM_MCINOTIFY = 0x3b9;
+
+/**
+ * Ordinal 704, `mciParseCommand` (`MMSYSTEM.DLL` seg5 `3994`-`39dd`): the
+ * front of MMSYSTEM's own command parser, a near procedure behind a far
+ * export -- `ENTER`, its nine words read from BP+4 up, `RET 12h` -- which
+ * only the parser calls, near (seg5 `0e01`). Called far it takes the
+ * caller's return for its first arguments and returns into MMSYSTEM's own
+ * segment, which is no answer to follow. WinBox answers what the parser
+ * answers for a command it does not parse, nought (`39bf`-`39c1`), and
+ * takes off the eighteen bytes its return takes. Not measured: a far call
+ * of it would run on into MMSYSTEM's code.
+ */
+export function mciParseCommand(this: any) {
+  return 0;
+}

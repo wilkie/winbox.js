@@ -9,7 +9,11 @@
 
 use winbox_machine::index_for;
 
-use crate::call::{Answer, Args, Implementation, Stop};
+use winbox_cpu::{AX, DS, DX};
+
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::engine::{Engine, Register};
+use crate::messages::Param;
 use crate::system::System;
 
 /// `UserSeeUserDo`'s requests (seg41 `1827`-`1837`).
@@ -35,6 +39,8 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "Bear306" => Implementation::Async(crate::window_queries::def_window_proc),
         "DisableOEMLayer" => Implementation::Sync(disable_oem_layer),
         "EnableOEMLayer" => Implementation::Sync(enable_oem_layer),
+        "_FFFE_FARFRAME" => Implementation::Async(fffe_farframe),
+        "BozosLiveHere" => Implementation::Async(bozos_live_here),
         _ => return None,
     })
 }
@@ -99,4 +105,70 @@ fn enable_oem_layer(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
     system.repaint_all_frames(true);
     system.cursor_count += 1;
     Ok(Answer::Nothing)
+}
+
+/// Where `_FFFE_FARFRAME` finds the procedure it calls: 18Ch of DS
+/// (`USER.EXE` seg1 `17a2`).
+const FARFRAME_PROCEDURE: u32 = 0x18c;
+
+/// What `_FFFE_FARFRAME` puts in DX for the procedure (seg1 `179f`).
+const FARFRAME_DX: u16 = 0x14;
+
+/// Ordinal 341 (seg1 `1798`-`17a7`): an `INT 3`, which goes on past with
+/// no debugger, then the far procedure at 18Ch of DS -- the caller's own
+/// data -- called with AX its word and DX 14h; its DX:AX the answer.
+/// **Recorded** by `ugaps`.
+fn fffe_farframe(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (procedure, value) = {
+            let system = engine.system();
+            let value = args.word(&system);
+            let ds = u32::from(system.cpu.segments[DS].selector) << 16;
+            let bytes = system.read_far(ds | FARFRAME_PROCEDURE, 4);
+
+            (
+                u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]),
+                value,
+            )
+        };
+        let (answer, _) = engine
+            .call_with(
+                procedure,
+                &[],
+                &[Register::Word(AX, value), Register::Word(DX, FARFRAME_DX)],
+            )
+            .await?;
+
+        Ok(Answer::Dword(answer))
+    })
+}
+
+/// Ordinal 301 (seg26 `0000`): two bytes before the edit control's window
+/// procedure, which USER's `EDIT` class names at seg26 `0002` (seg3
+/// `16d2`-`16e1`) -- so the procedure itself, DS from AX. WinBox's edit
+/// control is its own: the class's procedure. **Recorded** by `ugaps`.
+fn bozos_live_here(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, message, wparam, lparam, ax, proc) = {
+            let mut system = engine.system();
+            let hwnd = args.word(&system);
+            let message = args.word(&system);
+            let wparam = args.word(&system);
+            let lparam = args.dword(&system);
+            let ax = system.cpu.regs[AX];
+            let proc = system
+                .system_class("EDIT")
+                .map(|class| system.classes[class].proc.clone());
+
+            (hwnd, message, wparam, lparam, ax, proc)
+        };
+        let Some(proc) = proc else {
+            return Ok(Answer::Dword(0));
+        };
+        let answer = engine
+            .call_proc_as(&proc, ax, hwnd, message, wparam, &mut Param::Value(lparam))
+            .await?;
+
+        Ok(Answer::Dword(answer))
+    })
 }

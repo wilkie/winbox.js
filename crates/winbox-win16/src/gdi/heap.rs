@@ -80,6 +80,9 @@ pub struct Heap {
     next: u32,
     /// The bitmaps whose blocks were made, by object, in the order made.
     blocks: Vec<(usize, Blocks)>,
+    /// Words set in the heap by GDI's own code for a program (`GDIInit2`),
+    /// by offset: read back as set.
+    words: HashMap<u32, u16>,
 }
 
 impl Heap {
@@ -153,8 +156,31 @@ impl System {
         address
     }
 
+    /// A word of GDI's segment set, as `GDIInit2` sets an object's.
+    pub fn gdi_heap_set_word(&mut self, offset: u32, value: u16) {
+        self.gdi_heap.words.insert(offset & 0xfffe, value);
+        self.cpu.bus.forget_answers();
+    }
+
+    /// An object let go: the words set in it with it.
+    pub fn gdi_heap_forget_words(&mut self, handle: u16) {
+        if let Some(&address) = self.gdi_heap.addresses.get(&handle) {
+            for at in (0..OBJECT).step_by(2) {
+                self.gdi_heap.words.remove(&(address + at));
+            }
+        }
+    }
+
     /// A byte of GDI's segment, as a program reads it.
     pub fn gdi_heap_read(&mut self, offset: u32) -> u8 {
+        if let Some(&word) = self.gdi_heap.words.get(&(offset & !1)) {
+            return if offset & 1 != 0 {
+                (word >> 8) as u8
+            } else {
+                word as u8
+            };
+        }
+
         // A handle's entry: the object's address, then two noughts.
         if offset < FIRST_OBJECT {
             let handle = ((offset as i32 - 2) & !3) + 2;

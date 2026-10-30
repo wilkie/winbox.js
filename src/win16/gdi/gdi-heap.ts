@@ -95,7 +95,30 @@ export class GdiHeap implements SegmentHandler {
     return address ?? 0;
   }
 
+  /** Words set in the heap by GDI's own code for a program (`GDIInit2`), by offset. */
+  readonly words = new Map<number, number>();
+
+  /** A word of the heap set, as `GDIInit2` sets an object's: read back as set. */
+  setWord(offset: number, value: number) {
+    this.words.set(offset & 0xffff, value & 0xffff);
+  }
+
+  /** An object let go: the words set in it with it. */
+  forgetWords(handle: number) {
+    const address = this.addresses.get(handle);
+
+    for (let at = 0; address !== undefined && at < OBJECT; at += 2) {
+      this.words.delete(address + at);
+    }
+  }
+
   read8(offset: number) {
+    const set = this.words.get(offset & ~1);
+
+    if (set !== undefined) {
+      return (offset & 1 ? set >> 8 : set) & 0xff;
+    }
+
     /* A handle's entry: the object's address, then two noughts. */
     if (offset < FIRST_OBJECT) {
       const handle = ((offset - 2) & ~3) + 2;

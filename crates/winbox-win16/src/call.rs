@@ -86,6 +86,19 @@ impl Args {
         }
     }
 
+    /// Arguments of `bytes` bytes on the stack above the return address at
+    /// `top`, read as a function declares them: as `Brute` takes a
+    /// helper's, the count in its register (`gdi/driver_helpers.rs`).
+    pub(crate) fn on_stack(stack: u32, top: u32, bytes: u32) -> Self {
+        Self {
+            stack,
+            at: top + bytes,
+            top,
+            given: None,
+            first: None,
+        }
+    }
+
     /// Arguments whose first word is given and the rest read down from
     /// `at` in a segment whose base is `base`, as a function reads them from
     /// the stack: a call made again from a metafile's record.
@@ -413,6 +426,12 @@ impl System {
         self.gdi_heap_after_call();
         self.wing_after_call();
 
+        // KERNEL's variables as they stand, once a program has been given
+        // their address (`kernel_calls/thhook.rs`).
+        if self.kernel_calls.thhook_out {
+            self.refresh_thhook();
+        }
+
         if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
             log[at].answered = true;
 
@@ -601,6 +620,9 @@ mod tests {
                 .filter(|(ordinal, export)| {
                     !export.stub
                         && implementation(kept.name, export.name).is_none()
+                        && u16::try_from(*ordinal).map_or(true, |ordinal| {
+                            crate::exported_data::exported_data(kept.name, ordinal).is_none()
+                        })
                         && !(kept.name == "KERNEL"
                             && u16::try_from(*ordinal).is_ok_and(|ordinal| {
                                 crate::linker::kernel_constant(ordinal, true).is_some()

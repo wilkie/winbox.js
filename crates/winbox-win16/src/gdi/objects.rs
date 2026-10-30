@@ -605,8 +605,10 @@ pub fn delete_object(system: &mut System, handle: u16) -> bool {
         fonts.release(object);
     }
 
-    // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`).
+    // The blocks a program was shown its bits in, if it asked (`gdi/heap.rs`),
+    // and any word of the object `GDIInit2` set.
     system.forget_bitmap(object);
+    system.gdi_heap_forget_words(handle);
     super::metafile::forget_in_metafiles(system, handle);
 
     system.handles.free(handle);

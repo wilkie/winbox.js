@@ -4,6 +4,8 @@
 //!
 //! **Recorded** by `gdimisc`.
 
+use winbox_machine::{index_for, segment_selector};
+
 use crate::call::{Answer, Args, Implementation, Stop};
 use crate::system::System;
 
@@ -19,6 +21,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GDITaskTermination" => gdi_task_termination,
         "DeviceColorMatch" => device_color_match,
         "FixUpBogusPublisherMetafile" => fix_up_bogus_publisher_metafile,
+        "GDISeeGDIDo" => gdi_see_gdi_do,
+        "GDIInit2" => gdi_init2,
+        "FinalGDIInit" => final_gdi_init,
         _ => return None,
     }))
 }
@@ -238,4 +243,100 @@ fn fix_up_bogus_publisher_metafile(system: &mut System, args: &mut Args) -> Resu
     }
 
     Ok(Answer::Word(0))
+}
+
+/// What `GDISeeGDIDo` is asked (`GDI.EXE` seg21 `19a9`-`19b8`).
+const SEE_ALLOC: u16 = 1;
+const SEE_FREE: u16 = 2;
+const SEE_COMPACT: u16 = 3;
+const SEE_DATA: u16 = 0x103;
+
+/// GDI's data segment's selector.
+fn gdi_data(system: &System) -> u16 {
+    system
+        .kept_named("GDI")
+        .map_or(0, |kept| segment_selector(system.kept[kept].data))
+}
+
+/// `GDISeeGDIDo` (seg21 `19a0`-`19e7`): 1, 2 and 3 `LocalAlloc`,
+/// `LocalFree` and `LocalCompact` on GDI's data segment, DX nought --
+/// WinBox's holds no local heap, so they answer as for a segment with none,
+/// as `UserSeeUserDo` does (`ugaps:seegdiheap`); 103h GDI's data segment,
+/// DX its sign; any other `FFFFFFFFh`.
+fn gdi_see_gdi_do(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let request = args.word(system);
+    let first = args.word(system);
+    let _second = args.word(system);
+    let third = args.word(system);
+    let data = gdi_data(system);
+
+    if request == SEE_DATA {
+        let sign = if data & 0x8000 != 0 { 0xffff_0000 } else { 0 };
+
+        return Ok(Answer::Dword(sign | u32::from(data)));
+    }
+
+    let index = index_for(data);
+    let answer = match request {
+        SEE_ALLOC => match system.heaps.get_mut(&index) {
+            Some(heap) if data != 0 => heap.local_alloc(&mut system.cpu.bus, first, third),
+            _ => 0,
+        },
+        SEE_FREE => match system.heaps.get_mut(&index) {
+            Some(heap) if data != 0 => heap.local_free(&mut system.cpu.bus, first),
+            _ => first,
+        },
+        SEE_COMPACT => match system.heaps.get(&index) {
+            Some(heap) if data != 0 => heap.local_compact(&mut system.cpu.bus, third),
+            _ => 0,
+        },
+        _ => return Ok(Answer::Dword(0xffff_ffff)),
+    };
+
+    Ok(Answer::Dword(u32::from(answer)))
+}
+
+/// The word of a GDI object `GDIInit2` reads and sets (seg2 `0437`-`0456`).
+const OBJECT_WORD: u32 = 0x0a;
+
+/// `GDIInit2`'s value that clears the word, answering GDI's data segment.
+const CLEAR: u16 = 0xffff;
+
+/// `GDIInit2` (seg2 `042a`-`045c`): the word at 0Ah of the object a local
+/// handle of GDI's heap names, read for nought, cleared for `FFFFh` --
+/// answering GDI's data segment -- or set and answered; DX kept.
+fn gdi_init2(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let handle = u32::from(args.word(system));
+    let value = args.word(system);
+    let word = |system: &mut System, at: u32| {
+        u16::from(system.gdi_heap_read(at & 0xffff))
+            | u16::from(system.gdi_heap_read((at + 1) & 0xffff)) << 8
+    };
+    let address = u32::from(word(system, handle));
+    let at = (address + OBJECT_WORD) & 0xffff;
+
+    if value == 0 {
+        return Ok(Answer::Word(word(system, at)));
+    }
+
+    system.gdi_heap_set_word(at, if value == CLEAR { 0 } else { value });
+
+    Ok(Answer::Word(if value == CLEAR {
+        gdi_data(system)
+    } else {
+        value
+    }))
+}
+
+/// GDI's string 106, which `FinalGDIInit` loads last into its data with
+/// TrueType enabled.
+const TRUETYPE_ERROR: &str = "An application used a Truetype font that caused an error in Windows.\n\n\
+                              Quit all applications, and then restart Windows.";
+
+/// `FinalGDIInit` (seg2 `012e`-`023d`): the end of GDI's start-up done
+/// again, answering the length of the last string it loads.
+fn final_gdi_init(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    let _object = args.word(system);
+
+    Ok(Answer::Word(TRUETYPE_ERROR.len() as u16))
 }

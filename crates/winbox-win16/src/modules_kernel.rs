@@ -459,6 +459,11 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
         return u32::from(crate::linker::CONSTANT_SEGMENT) << 16 | u32::from(constant);
     }
 
+    // A place in the module's data, not a function (`exported_data.rs`).
+    if let Some((segment, offset)) = system.exported_data_place(kept, ordinal) {
+        return u32::from(segment_selector(segment)) << 16 | u32::from(offset);
+    }
+
     let stubs = system.stubs(kept);
 
     u32::from(segment_selector(stubs)) << 16 | u32::from(STEP * (ordinal + 1))

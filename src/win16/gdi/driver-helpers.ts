@@ -5,7 +5,6 @@ import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DWORD, FARPTR, Struct } from '../types.js';
 import { LOGPEN, enumeratedObjects } from './EnumObjects.js';
-import { gdiDataSelector } from './gdi-data.js';
 import { devicePoint } from './mapping.js';
 
 /**
@@ -34,8 +33,8 @@ import { devicePoint } from './mapping.js';
  *   (`01d3`-`01fe`).
  * * **A device marked `DI`** (4944h): the table at `[0159h]` -- nought in
  *   Windows 3.1 as it runs, so it goes on as the next.
- * * **Any other device** (`0224`): nothing is called; AX holds GDI's data
- *   segment and DX the routine's offset, which is the answer.
+ * * **Any other device** (`0224`): nothing is called; AX is nought and DX
+ *   the routine's offset, which is the answer.
  *
  * **Recorded** by `gdidm` on the VGA, each helper called on a `BITMAP` of
  * the probe's of four planes or of one: what the VGA's driver does there
@@ -225,7 +224,13 @@ function colorInfo(system: any, device: number, colour: number, lpPhysical: numb
     const palette = DevicePalette.forDisplay(system.display, 4);
 
     physical = physicalOf(
-      matchedIndex(system.display, palette, colour & 0xff, (colour >>> 8) & 0xff, (colour >>> 16) & 0xff)
+      matchedIndex(
+        system.display,
+        palette,
+        colour & 0xff,
+        (colour >>> 8) & 0xff,
+        (colour >>> 16) & 0xff
+      )
     );
     write32(system, lpPhysical, physical);
   }
@@ -246,7 +251,14 @@ function colorInfo(system: any, device: number, colour: number, lpPhysical: numb
  * -- the colour's index bit, or its white flag -- and the bit there, and
  * nought is answered.
  */
-function pixel(system: any, device: number, x: number, y: number, physical: number, lpDrawMode: number) {
+function pixel(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  physical: number,
+  lpDrawMode: number
+) {
   const bitmap = readBitmap(system, device);
 
   if ((x & 0xffff) >= bitmap.width || (y & 0xffff) >= bitmap.height) {
@@ -374,10 +386,11 @@ const STRETCH_DIBITS = 0x6c;
 
 /**
  * What `Brute` answers for a device that is not a memory bitmap (seg13
- * `0224`): GDI's data segment in AX and the routine's offset in DX.
+ * `0218`-`0224`): AX nought, as the device's check left it, and the
+ * routine's offset in DX. **Recorded** by `gdidm` (DX) and `ugaps` (AX).
  */
-function notBitmap(system: any, offset: number) {
-  return ((offset << 16) | gdiDataSelector(system)) >>> 0;
+function notBitmap(_system: any, offset: number) {
+  return (offset << 16) >>> 0;
 }
 
 /**
@@ -429,9 +442,7 @@ export function DMPixel(
   dwPhysColor: number,
   lpDrawMode: number
 ) {
-  return brute(this, lpDestDev, PIXEL, () =>
-    pixel(this, lpDestDev, x, y, dwPhysColor, lpDrawMode)
-  );
+  return brute(this, lpDestDev, PIXEL, () => pixel(this, lpDestDev, x, y, dwPhysColor, lpDrawMode));
 }
 
 export function DMRealizeObject(this: any, lpDestDev: number) {
@@ -590,3 +601,69 @@ export function ScanLR(
   return 0xffff;
 }
 
+/**
+ * The routines `Brute` reaches that WinBox has a helper for, by their
+ * offset in the display driver's table: the helper, and the bytes of each
+ * of its arguments in the order they are declared, a word marked signed.
+ */
+const BRUTE_HELPERS: Record<number, { helper: (...args: any[]) => any; sizes: number[] }> = {
+  [COLOR_INFO]: { helper: DMColorInfo, sizes: [4, 4, 4] },
+  [ENUM_OBJ]: { helper: DMEnumObj, sizes: [4, 2, 4, 4] },
+  [PIXEL]: { helper: DMPixel, sizes: [4, -2, -2, 4, 4] },
+  [SCAN_LR]: { helper: DMScanLR, sizes: [4, -2, -2, 4, 2] },
+};
+
+/** The words `Brute` moves that are not the arguments: the return address and its own two (seg13 `0174`-`0187`). */
+const BRUTE_OWN_WORDS = 4;
+
+/**
+ * `Brute` called as a helper jumps to it (`GDI.EXE` seg13 `0171`): CH the
+ * routine's offset in the display driver's table, CL the words it moves,
+ * the arguments among them. The routine chosen as each helper chooses it
+ * -- the device the first argument -- and the arguments taken off the
+ * stack, as the routine's own return takes them. **Recorded** by `ugaps`:
+ * with CX as `DMColorInfo`'s, its answer and its colour.
+ */
+export async function Brute(this: any) {
+  const cpu = core(this);
+  const cx = cpu.cx & 0xffff;
+  const offset = cx >> 8;
+  const bytes = Math.max((cx & 0xff) - BRUTE_OWN_WORDS, 0) * 2;
+  const ss = cpu.ss & 0xffff;
+  const sp = cpu.sp & 0xffff;
+  const word = (at: number) => cpu.read16(ss, (sp + 4 + at) & 0xffff) & 0xffff;
+  const known = BRUTE_HELPERS[offset];
+  let answer: number;
+
+  if (known) {
+    const args: number[] = [];
+    let at = bytes;
+
+    for (const size of known.sizes) {
+      at -= Math.abs(size);
+
+      if (Math.abs(size) === 4) {
+        args.push(((word(at + 2) << 16) | word(at)) >>> 0);
+      } else {
+        args.push(size < 0 ? (word(at) << 16) >> 16 : word(at));
+      }
+    }
+
+    answer = await known.helper.apply(this, args);
+  } else {
+    const device = bytes >= 4 ? ((word(bytes - 2) << 16) | word(bytes - 4)) >>> 0 : 0;
+
+    answer = await brute(this, device, offset, null);
+  }
+
+  /* The arguments taken off, the return address moved above them. */
+  const ip = cpu.read16(ss, sp);
+  const cs = cpu.read16(ss, (sp + 2) & 0xffff);
+  const top = (sp + bytes) & 0xffff;
+
+  cpu.write16(ss, top, ip);
+  cpu.write16(ss, (top + 2) & 0xffff, cs);
+  cpu.sp = top;
+
+  return answer >>> 0;
+}
