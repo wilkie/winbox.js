@@ -6308,8 +6308,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "SignalProc",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             None,
             None,
@@ -6400,8 +6400,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LoadCursorIconHandler",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "GetMouseEventProc",
@@ -6440,14 +6440,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LoadDibCursorHandler",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LoadDibIconHandler",
                 pops: 6,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "IsMenu",
@@ -6770,8 +6770,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "LoadIconHandler",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "DestroyIcon",

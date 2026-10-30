@@ -20,6 +20,7 @@ probes:
     dragobj,
     findexe,
     oemlayer,
+    iconhand,
   ]
 ---
 
@@ -36,7 +37,7 @@ USER exports some sixty functions no program is meant to call: KERNEL calls them
 
 ## How the pieces fit together
 
-**Tasks, modules and their resources.** KERNEL tells USER of a task's end and of a module loaded or freed through [[fn:USER.SignalProc]]. A module loaded has its icon and cursor resource types given USER's handlers -- [[fn:USER.LoadDibIconHandler]] and [[fn:USER.LoadDibCursorHandler]] for a Windows 3 module, [[fn:USER.LoadCursorIconHandler]] for a Windows 2 one -- so that `LoadResource` of an icon or a cursor gives USER's own block, not the file's DIB ([[probe:userproc]]). [[fn:USER.LoadIconHandler]] makes the same of a block SHELL's `ExtractIcon` or WinHelp read themselves. As Windows starts, KERNEL calls [[fn:USER.FinalUserInit]] last.
+**Tasks, modules and their resources.** KERNEL tells USER of a task's end and of a module loaded or freed through [[fn:USER.SignalProc]]. A module loaded has its icon and cursor resource types given USER's handlers -- [[fn:USER.LoadDibIconHandler]] and [[fn:USER.LoadDibCursorHandler]] for a Windows 3 module, [[fn:USER.LoadCursorIconHandler]] for a Windows 2 one -- so that `LoadResource` of an icon or a cursor gives USER's own block, not the file's DIB ([[probe:userproc]], [[probe:iconhand]]). `LoadIcon` and `LoadCursor` load a module's icon so: the group, its member that fits the display ([[fn:USER.GetIconID]]), and that resource's block, which is the icon -- the same handle each time, `DestroyIcon` its `FreeResource`. A discardable icon's block is made only as it is first locked, as `DrawIcon` locks it. [[fn:USER.LoadIconHandler]] makes the same of a block SHELL's `ExtractIcon` or WinHelp read themselves. As Windows starts, KERNEL calls [[fn:USER.FinalUserInit]] last.
 
 **A DOS program full screen.** Standard mode's WINOLDAP gives the screen and the input to a DOS program with [[fn:USER.DisableOEMLayer]] -- the cursor hidden, every driver disabled, the system queue emptied, GDI's [[fn:GDI.Death]] -- and takes them back with [[fn:USER.EnableOEMLayer]] -- GDI's [[fn:GDI.Resurrection]], the drivers enabled, the key states cleared and the whole screen repainted ([[probe:oemlayer]]).
 
@@ -59,11 +60,12 @@ USER exports some sixty functions no program is meant to call: KERNEL calls them
 - [[fn:USER.GetMessage2]], the body of `GetMessage` and `PeekMessage`, and [[fn:USER.ControlPanelInfo]], Windows 3.0's `SystemParametersInfo`.
 - [[fn:USER.OldSetDeskPattern]] and [[fn:USER.OldExitWindows]], [[read out]]: the desktop's pattern made again from `WIN.INI`, and Windows left as DOS ends a program.
 - [[fn:USER.WEP]], [[fn:SHELL.WEP]], [[fn:COMMDLG.WEP]], [[fn:KEYBOARD.WEP]], [[fn:SOUND.WEP]] and [[fn:SYSTEM.WEP]].
+- [[fn:USER.SignalProc]]'s module loaded, [[fn:USER.LoadCursorIconHandler]], [[fn:USER.LoadDibCursorHandler]], [[fn:USER.LoadDibIconHandler]] and [[fn:USER.LoadIconHandler]], [[measured]] by [[probe:iconhand]] on the VGA and the 256-colour display -- each icon and cursor USER makes, byte for byte, from 16, 32, 48 and 64 square, of 16 colours and black and white -- and by [[probe:userproc]]. `LoadIcon` and `LoadCursor` go through them, and a program's own handler set for its icons is called where Windows calls it.
 - This wave: [[fn:USER.EnableOEMLayer]] and [[fn:USER.DisableOEMLayer]] ([[probe:oemlayer]]); [[fn:USER.Bear11]] and [[fn:USER.Bear182]] ([[probe:systimer]]); [[fn:USER.StringFunc]] and [[fn:USER.UserSeeUserDo]] ([[probe:strfunc]]; the second as a program finds it on WinBox's USER, whose data segment holds no heap); [[fn:USER.Hardware_Event]] ([[probe:hwevent]]); [[fn:USER.GetFilePortName]] ([[probe:filport]]); [[fn:USER.DragObject]] ([[probe:dragobj]]); [[fn:SHELL.FindExeDlgProc]] and `ShellExecute`'s box ([[probe:findexe]]); [[fn:USER.Bear306]], the procedure WinBox's own `#32768` windows have; [[fn:USER.FinalUserInit]], an exact no-op. KERNEL's [[fn:KERNEL.K403]] and [[fn:KERNEL.K404]] beside them ([[probe:kowner]]).
 
 ## Left, and why
 
-- [[fn:USER.SignalProc]], [[fn:USER.LoadCursorIconHandler]], [[fn:USER.LoadDibCursorHandler]], [[fn:USER.LoadDibIconHandler]] and [[fn:USER.LoadIconHandler]]: **not yet done**. Measured by [[probe:userproc]] -- the handlers set and the converted block a program reads -- and read out; WinBox's `LoadResource` of an icon still calls KERNEL's own handler.
+- [[fn:USER.SignalProc]]'s task end (20h, 666h) and module freed (80h): **not yet done**. WinBox's KERNEL and USER are one program and do a task's end and a module's freeing themselves; a program that sends them for a task still running is answered nought, nothing done.
 - [[fn:USER.BozosLiveHere]]: **not applicable**. Entered from a program, DS is whatever AX holds.
 - [[fn:USER._FFFE_FARFRAME]]: **not applicable**. Its first instruction is `INT 3`.
 - [[fn:USER.__GP]]: **not applicable**. A table of data for KERNEL's fault handling; WinBox's USER has no code of Windows' to fault in.
@@ -109,7 +111,7 @@ Every named USER and SHELL export no header declares, with the files that import
 | 299 | [[fn:USER.Mouse_Event]]              | none                                                                 | implemented | done                             |
 | 301 | [[fn:USER.BozosLiveHere]]            | none                                                                 | stub        | not applicable                   |
 | 306 | [[fn:USER.Bear306]]                  | none                                                                 | implemented | done this wave                   |
-| 314 | [[fn:USER.SignalProc]]               | none                                                                 | stub        | not yet done                     |
+| 314 | [[fn:USER.SignalProc]]               | none                                                                 | implemented | done this wave, but a task's end |
 | 320 | [[fn:USER.SysErrorBox]]              | DRWATSON.EXE                                                         | implemented | done                             |
 | 321 | [[fn:USER.SetEventHook]]             | none                                                                 | implemented | done                             |
 | 322 | [[fn:USER.WinOldAppHackomatic]]      | WINOA386.MOD                                                         | implemented | done                             |
@@ -119,19 +121,19 @@ Every named USER and SHELL export no header declares, with the files that import
 | 326 | [[fn:USER.GetControlBrush]]          | none                                                                 | implemented | done                             |
 | 332 | [[fn:USER.UserYield]]                | none                                                                 | implemented | done                             |
 | 333 | [[fn:USER.IsUserIdle]]               | none                                                                 | implemented | done                             |
-| 336 | [[fn:USER.LoadCursorIconHandler]]    | none                                                                 | stub        | not yet done                     |
+| 336 | [[fn:USER.LoadCursorIconHandler]]    | none                                                                 | implemented | done this wave                   |
 | 337 | [[fn:USER.GetMouseEventProc]]        | none                                                                 | implemented | done                             |
 | 341 | [[fn:USER._FFFE_FARFRAME]]           | none                                                                 | stub        | not applicable                   |
 | 343 | [[fn:USER.GetFilePortName]]          | none                                                                 | implemented | done this wave                   |
-| 356 | [[fn:USER.LoadDibCursorHandler]]     | none                                                                 | stub        | not yet done                     |
-| 357 | [[fn:USER.LoadDibIconHandler]]       | none                                                                 | stub        | not yet done                     |
+| 356 | [[fn:USER.LoadDibCursorHandler]]     | none                                                                 | implemented | done this wave                   |
+| 357 | [[fn:USER.LoadDibIconHandler]]       | none                                                                 | implemented | done this wave                   |
 | 362 | [[fn:USER.DCHook]]                   | none                                                                 | implemented | done                             |
 | 372 | [[fn:USER.GetInternalIconHeader]]    | PROGMAN.EXE                                                          | implemented | done                             |
 | 400 | [[fn:USER.FinalUserInit]]            | none                                                                 | implemented | done this wave                   |
 | 408 | [[fn:USER.CreateCursorIconIndirect]] | none                                                                 | implemented | done                             |
 | 420 | [[fn:USER._WSPRINTF]]                | CARDFILE.EXE, CHARMAP.EXE, CLOCK.EXE and 33 more; 27 corpus programs | implemented | done                             |
 | 455 | [[fn:USER.GetIconID]]                | SHELL.DLL                                                            | implemented | done                             |
-| 456 | [[fn:USER.LoadIconHandler]]          | SHELL.DLL, WINHELP.EXE                                               | stub        | not yet done                     |
+| 456 | [[fn:USER.LoadIconHandler]]          | SHELL.DLL, WINHELP.EXE                                               | implemented | done this wave                   |
 | 459 | [[fn:USER.DumpIcon]]                 | PROGMAN.EXE                                                          | implemented | done                             |
 | 460 | [[fn:USER.GetInternalWindowPos]]     | none                                                                 | implemented | done                             |
 | 461 | [[fn:USER.SetInternalWindowPos]]     | none                                                                 | implemented | done                             |
@@ -192,7 +194,9 @@ Every named USER and SHELL export no header declares, with the files that import
 
 ## Not yet done
 
-- USER's resource handlers for icons and cursors -- [[fn:USER.SignalProc]]'s module notice, [[fn:USER.LoadDibIconHandler]], [[fn:USER.LoadDibCursorHandler]], [[fn:USER.LoadCursorIconHandler]] and [[fn:USER.LoadIconHandler]] -- so that `SetResourceHandler` answers USER's handler for a module's icons and `LoadResource` gives USER's block ([[probe:userproc]]).
+- A discardable icon or cursor `LoadIcon` and `LoadCursor` load with USER's own handler is made at once in WinBox, where Windows leaves its block discarded until it is first locked ([[probe:iconhand]]): WinBox's own drawing reads the block as it is. Where a program set its own handler, the block is left as Windows leaves it, and WinBox's own drawing of it before `DrawIcon` locks it shows nothing.
+- A colour cursor's picture, which USER writes past its block's end ([[probe:iconhand]]'s cursor 7, 12 bytes on), is cut at the block's end; a resource of more than a bit a pixel whose table is two colours, black and white, which USER makes one plane of a bit with `SetDIBits`, is read a bit a pixel: GDI's conversion of it is not read out.
+- [[fn:USER.LoadCursorIconHandler]]'s conversion of a Windows 2 module's icon is read out only: no probe of a Windows 2 module.
 - [[fn:USER.SignalProc]]'s task end and module freed, called by a program for a task that is still running.
 - [[fn:SHELL.FindExeDlgProc]]'s Locate button, which asks COMMDLG's `GetOpenFileName` for the program.
 - SHELL's About box's credits ([[fn:SHELL.WCI]]).

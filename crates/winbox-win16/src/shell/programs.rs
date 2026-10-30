@@ -537,8 +537,30 @@ fn extension_of(name: &[u8]) -> Option<usize> {
 /// `LoadIcon` from the instance passed; its module's path is written over
 /// the path (`GetModuleFileName`, 128 bytes) and the index set to 6 for
 /// icon 2, 1 for icon 6 (`090d`-`0924`, `09af`-`09cf`).
-pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let instance = args.word(system);
+pub fn extract_associated_icon(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (instance, found) = {
+            let mut system = engine.system();
+            let instance = args.word(&system);
+
+            (instance, associated_icon(&mut system, instance, &mut args)?)
+        };
+
+        Ok(match found {
+            Ok(answer) => answer,
+            // The caller's own icon, by number, as `LoadIcon` loads it.
+            Err(id) => Answer::Word(crate::icons::load_icon_named(engine, instance, Ok(id)).await?),
+        })
+    })
+}
+
+/// `ExtractAssociatedIcon`'s work: its answer, or the number of the
+/// caller's icon to load, its path and index written.
+fn associated_icon(
+    system: &mut System,
+    instance: u16,
+    args: &mut Args,
+) -> Result<Result<Answer, u16>, Stop> {
     let path = args.dword(system);
     let index_at = args.dword(system);
     let index = {
@@ -552,7 +574,7 @@ pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<A
         name.truncate(0x7f);
         write_string(system, path, &name);
         system.write_far(index_at, &written.to_le_bytes());
-        Answer::Word(crate::icons::load_icon_named(system, instance, Ok(id)))
+        Err(id)
     };
     let read = |system: &System| text(&system.read_string(path));
 
@@ -585,7 +607,7 @@ pub fn extract_associated_icon(system: &mut System, args: &mut Args) -> Result<A
     Ok(if icon == 0 {
         caller(system, 6, 2)
     } else {
-        Answer::Word(icon)
+        Ok(Answer::Word(icon))
     })
 }
 

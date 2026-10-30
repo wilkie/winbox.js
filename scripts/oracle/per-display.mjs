@@ -105,6 +105,9 @@ export const PER_DISPLAY = new Set([
   /* The palette internals are a palette device's on the 256-colour
    * display and next to nothing on the VGA. */
   'dcinner',
+  /* USER makes an icon resource's picture in the display's format: four
+   * planes of a bit on the VGA, a plane of eight on the 256-colour one. */
+  'iconhand',
 ]);
 
 /**

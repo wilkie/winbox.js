@@ -5,10 +5,12 @@ import { CopyCursor } from './cursor-make.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { FALSE, NULL, TRUE } from '../consts.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
-import { DevicePalette } from '../../raster/device-palette.js';
-import { decodeIcon, iconEntries, pickIcon, type IconData } from '../../raster/icon.js';
-import { Executable } from '../../executable.js';
+import { type IconData } from '../../raster/icon.js';
 import { isProgman, progmanExecutable } from '../progman/stored.js';
+import { FreeResource } from '../kernel/FreeResource.js';
+import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
+import { LockResource } from '../kernel/LockResource.js';
+import { loadFromModule, RT_ICON, WINDOWS_3 } from './icon-handlers.js';
 
 import { scaleIcon } from './driver-resources.js';
 import { RasterWindow } from './raster-window.js';
@@ -18,9 +20,11 @@ import { RasterWindow } from './raster-window.js';
  *
  * `LoadIcon` with no instance gives the display driver's standard icons, a
  * handle each, the same handle every time; with a program's instance, the
- * program's own icon resource, the member of its group that fits the display,
- * drawn `SM_CXICON` square. `DrawIcon` draws through the icon's mask, as a
- * minimized window's icon is drawn. Recorded by the `icons` probe.
+ * block of the program's own icon resource, the member of its group that
+ * fits the display, as USER's handler makes it (`icon-handlers.ts`), the
+ * same handle every time. `DrawIcon` locks it and draws through the icon's
+ * mask, as a minimized window's icon is drawn. Recorded by the `icons` and
+ * `iconhand` probes.
  */
 
 /** The handle each standard icon was given, so asking again gives the same. */
@@ -52,39 +56,15 @@ export async function LoadIcon(hinst, lpszIcon) {
   /* WinBox's Program Manager's are `PROGMAN.EXE`'s, from the store
    * (`progman/stored.ts`). */
   const executable = isProgman(this, module) ? await progmanExecutable(this) : module?.executable;
-  const icon = executable ? await moduleIcon(this, executable, lpszIcon) : null;
+  const handle = await loadFromModule(this, hinst, executable, lpszIcon, RT_ICON);
 
-  /* A block of memory in the display's format, which a program may write
-   * into; see `icon-block.ts`. */
-  return icon ? iconBlock(this, icon) : NULL;
-}
-
-/** A program's icon resource, by number or name, as a display draws it. */
-async function moduleIcon(system: any, executable: any, name: any): Promise<IconData | null> {
-  const typed = (type: number) =>
-    executable.resources.find((resourceType: any) => resourceType.id == type)?.entries ?? [];
-  const wanted = typeof name === 'number' ? name : String(name).toUpperCase();
-  const group = typed(Executable.RESOURCES.GroupIcon ?? 14).find(
-    (entry: any) =>
-      entry.id == wanted || entry.name === wanted || String(entry.id).toUpperCase() === wanted
-  );
-
-  if (!group) {
-    return null;
+  /* A Windows 2 program's icon not its own is the display's (`USER.EXE`
+   * seg12 `080f`-`0839`). */
+  if (!handle && (executable?.neHeader?.expectedWindowsVersion ?? WINDOWS_3) < WINDOWS_3) {
+    return LoadIcon.call(this, 0, lpszIcon);
   }
 
-  const display = system.display;
-  const entries = iconEntries(new Uint8Array(await executable.readResource(group)));
-  const entry = pickIcon(entries, 32, display?.colors ?? 16);
-  const resource = typed(Executable.RESOURCES.Icon ?? 3).find((each: any) => each.id == entry?.id);
-
-  if (!resource) {
-    return null;
-  }
-
-  const data = new Uint8Array(await executable.readResource(resource));
-
-  return scaleIcon(decodeIcon(data, DevicePalette.forDisplay(display)), 32);
+  return handle;
 }
 
 /**
@@ -92,7 +72,15 @@ async function moduleIcon(system: any, executable: any, name: any): Promise<Icon
  * device context: what is there ANDed with its mask and XORed with its
  * picture.
  */
-export function DrawIcon(hdc, x, y, hicon) {
+export async function DrawIcon(hdc, x, y, hicon) {
+  /* Locked as a resource is (seg13 `01a7`): a discarded icon made again by
+   * its handler. */
+  const resource = this._loadedResources?.has(hicon & 0xffff);
+
+  if (resource && (await LockResource.call(this, hicon))) {
+    GlobalUnlock.call(this, hicon);
+  }
+
   const surface = this.handles.resolve(hdc);
   const read = iconOf(this, hicon);
   const bitmap = surface?.bitmap;
@@ -203,6 +191,12 @@ export function CopyIcon(this: any, hinst: number, hicon: number) {
 
 /** An icon done with: its block freed (seg12 `0170`). */
 export function DestroyIcon(this: any, hicon: number) {
+  /* `FreeResource`, and whether it answered nought (seg12 `0170`-`018a`):
+   * an icon `LoadIcon` loaded is its resource, its uses counted down. */
+  if (this._loadedResources?.has(hicon & 0xffff)) {
+    return FreeResource.call(this, hicon) ? 0 : 1;
+  }
+
   if (!this._iconBlocks?.has(hicon)) {
     return 0;
   }

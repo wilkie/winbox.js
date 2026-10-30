@@ -2,10 +2,10 @@
 
 import { NULL } from '../consts.js';
 
-import { resourceBytes } from './resources.js';
+import { isProgman, progmanExecutable } from '../progman/stored.js';
+import { loadFromModule } from './icon-handlers.js';
 import { cursorOf } from './cursor-pos.js';
-import { DevicePalette } from '../../raster/device-palette.js';
-import { decodeCursor, type CursorImage } from '../../raster/icon.js';
+import { type CursorImage } from '../../raster/icon.js';
 import { blockCursorImage } from './cursor-make.js';
 
 /**
@@ -18,7 +18,6 @@ import { blockCursorImage } from './cursor-make.js';
  */
 
 const RT_CURSOR = 1;
-const RT_GROUP_CURSOR = 12;
 const IDC_ARROW = 32512;
 
 export class CursorData {
@@ -79,25 +78,14 @@ export async function LoadCursor(this: any, hinst: number, lpszCursor: any) {
     return standardHandle(this, id);
   }
 
+  /* A module's own, its resource's block made USER's by its handler
+   * (`icon-handlers.ts`): drawn from the block as the display shows it
+   * (`blockCursorImage`). WinBox's Program Manager's are `PROGMAN.EXE`'s,
+   * as its icons are. */
   const module = this.handles.resolve(hinst);
-  const executable = module?.executable;
-  const group = await resourceBytes(executable, RT_GROUP_CURSOR, lpszCursor);
+  const executable = isProgman(this, module) ? await progmanExecutable(this) : module?.executable;
 
-  if (!group || group.length < 6 + 14) {
-    return NULL;
-  }
-
-  /* The group's first cursor: a directory entry's last word is its id. */
-  const id = group[6 + 12] | (group[6 + 13] << 8);
-  const cursor = await resourceBytes(executable, RT_CURSOR, id);
-
-  if (!cursor || cursor.length < 4) {
-    return NULL;
-  }
-
-  const image = decodeCursor(cursor, DevicePalette.forDisplay(this.display));
-
-  return this.handles.allocate(new CursorData(id, image.hotspot, image));
+  return loadFromModule(this, hinst, executable, lpszCursor, RT_CURSOR);
 }
 
 /** Makes a cursor the current one; the one it replaces is the answer. */

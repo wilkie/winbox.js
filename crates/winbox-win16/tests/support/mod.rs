@@ -294,6 +294,8 @@ pub const AGREEING: &[&str] = &[
     "gdidm",
     "gdispool",
     "gdiint",
+    "iconhand-vga",
+    "iconhand-vga256",
     "oledde",
     "olepbd",
     "olepbr",

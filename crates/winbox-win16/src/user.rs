@@ -38,7 +38,16 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         }
         "GetClipboardFormatName" => Implementation::Sync(get_clipboard_format_name),
         "SetMessageQueue" => Implementation::Sync(set_message_queue),
-        "LoadIcon" => Implementation::Sync(icons::load_icon),
+        "LoadIcon" => Implementation::Async(icons::load_icon),
+        "SignalProc" => Implementation::Sync(crate::icon_handlers::signal_proc),
+        "LoadCursorIconHandler" => {
+            Implementation::Sync(crate::icon_handlers::load_cursor_icon_handler)
+        }
+        "LoadDibCursorHandler" => {
+            Implementation::Sync(crate::icon_handlers::load_dib_cursor_handler)
+        }
+        "LoadDibIconHandler" => Implementation::Sync(crate::icon_handlers::load_dib_icon_handler),
+        "LoadIconHandler" => Implementation::Sync(crate::icon_handlers::load_icon_handler),
         "DumpIcon" => Implementation::Sync(icons::dump_icon),
         "DestroyIcon" => Implementation::Sync(icons::destroy_icon),
         "CreateIcon" => Implementation::Sync(icons::create_icon),
@@ -88,7 +97,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "UnregisterClass" => Implementation::Sync(classes::unregister_class),
         "GetClassInfo" => Implementation::Sync(classes::get_class_info),
         "LoadMenu" => Implementation::Sync(menus::load_menu),
-        "LoadCursor" => Implementation::Sync(icons::load_cursor),
+        "LoadCursor" => Implementation::Async(icons::load_cursor),
         "SetCursor" => Implementation::Sync(icons::set_cursor),
         "GetCursor" => Implementation::Sync(icons::get_cursor),
         "ShowCursor" => Implementation::Sync(icons::show_cursor),
@@ -239,7 +248,7 @@ pub(crate) fn system_metric(system: &mut System, index: i16) -> u16 {
     }
 }
 
-fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+pub(crate) fn get_system_metrics(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let index = args.signed(system);
     let display = &system.display;
     let metrics = &display.metrics;

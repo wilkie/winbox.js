@@ -67,7 +67,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ExtractIcon" => Implementation::Sync(programs::extract_icon),
         "InternalExtractIcon" => Implementation::Sync(programs::internal_extract_icon),
         "AboutDlgProc" => Implementation::Async(about::about_dlg_proc),
-        "ExtractAssociatedIcon" => Implementation::Sync(programs::extract_associated_icon),
+        "ExtractAssociatedIcon" => Implementation::Async(programs::extract_associated_icon),
         "DoEnvironmentSubst" => Implementation::Sync(programs::do_environment_subst),
         "FindEnvironmentString" => Implementation::Sync(programs::find_environment_string),
         "RegisterShellHook" => Implementation::Sync(shell_hook::register_shell_hook),

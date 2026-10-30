@@ -5,6 +5,7 @@ import { HANDLE } from '../types.js';
 import { GetExePtr } from './module-calls.js';
 import { GlobalLock } from './GlobalLock.js';
 import { matches } from './FindResource.js';
+import { callUserHandler, userHandlers } from '../user/icon-handlers.js';
 
 /**
  * KERNEL's resource handlers: the procedure `LoadResource` and
@@ -19,7 +20,9 @@ import { matches } from './FindResource.js';
  * seg1 `88c8`, as it reads the module (seg2 `27de`-`27e4`). WinBox keeps
  * the handlers a program sets beside the module, and its own default at
  * KERNEL's stub `DEFAULT_ORDINAL`, whose address is `88c8` in KERNEL's code:
- * `SetResourceHandler` answers it so.
+ * `SetResourceHandler` answers it so. A module's icons and cursors have
+ * USER's handlers from the first (`handlersOf`), which WinBox calls
+ * directly (`icon-handlers.ts`).
  */
 
 /** KERNEL's own handler's ordinal: its stub is at 8 times one more, 88C8h. */
@@ -37,11 +40,44 @@ function handlers(system: any): Map<object, Map<object, number>> {
   return (system._resourceHandlers ??= new Map());
 }
 
+/**
+ * A module's handlers: USER's for its icons and cursors from the first, as
+ * `SignalProc` sets them as KERNEL loads the module (`USER.EXE` seg1
+ * `0a00`; `icon-handlers.ts`), by the version its header gives; KERNEL's
+ * own for every other type. **Recorded** by `userproc` and `iconhand`.
+ */
+function handlersOf(system: any, executable: any): Map<object, number> {
+  let set = handlers(system).get(executable);
+
+  if (!set) {
+    set = new Map();
+
+    const version = executable?.neHeader?.expectedWindowsVersion ?? 0;
+
+    for (const [id, address] of userHandlers(system, version)) {
+      const type = (executable?.resources ?? []).find((each: any) => each.id === id);
+
+      if (type && address) {
+        set.set(type, address);
+      }
+    }
+
+    handlers(system).set(executable, set);
+  }
+
+  return set;
+}
+
 /** KERNEL's own handler's far address: its stub. */
 function defaultHandler(system: any) {
   const info = system.modules.load(system.modules.fromName('KERNEL')).lookup(DEFAULT_ORDINAL);
 
   return ((segmentSelector(info.segment) << 16) | info.offset) >>> 0;
+}
+
+/** The handler a type of a module's has: USER's, a program's, or KERNEL's own. */
+export function typeHandler(system: any, executable: any, type: object): number {
+  return handlersOf(system, executable).get(type) ?? defaultHandler(system);
 }
 
 /** The type a resource's entry is of, in its executable. */
@@ -54,7 +90,7 @@ function typeOf(found: any) {
 /** The handler a program set for a resource's type, or null for KERNEL's own. */
 function programHandler(system: any, found: any): number | null {
   const type = typeOf(found);
-  const set = type ? handlers(system).get(found.executable)?.get(type) : undefined;
+  const set = type ? handlersOf(system, found.executable).get(type) : undefined;
 
   return set !== undefined && set !== defaultHandler(system) ? set : null;
 }
@@ -78,6 +114,13 @@ export async function callHandler(
   module: number,
   resource: number
 ) {
+  /* USER's own are WinBox's code, called directly (`icon-handlers.ts`). */
+  const user = callUserHandler(system, handler, block & 0xffff, module & 0xffff, resource & 0xffff);
+
+  if (user) {
+    return (await user) & 0xffff;
+  }
+
   const answer = await system.scheduler.callProc(
     handler,
     [
@@ -107,11 +150,10 @@ export function SetResourceHandler(this: any, hInstance: number, lpszType: any, 
     return 0;
   }
 
-  const set = handlers(this).get(executable) ?? new Map();
+  const set = handlersOf(this, executable);
   const before = set.get(type) ?? defaultHandler(this);
 
   set.set(type, lpfn >>> 0);
-  handlers(this).set(executable, set);
 
   return before >>> 0;
 }
@@ -130,7 +172,11 @@ export async function ResourceHandler(this: any, hMem: number, hModule: number, 
 
   const block = hMem & 0xffff;
 
-  if (block && this.allocator.sizeOf(indexFor(block)) && !this.allocator.isDiscarded(indexFor(block))) {
+  if (
+    block &&
+    this.allocator.sizeOf(indexFor(block)) &&
+    !this.allocator.isDiscarded(indexFor(block))
+  ) {
     return block;
   }
 
@@ -160,7 +206,8 @@ function allocFor(system: any, found: any, size: number) {
   const shift = shiftOf(found.executable);
   const unit = 1 << shift;
   const units = size ? Math.ceil(size / unit) : Math.ceil(found.entry.length / unit);
-  const flags = GMEM_MOVEABLE | GMEM_SHARE | (found.entry.flags & DISCARDABLE ? GMEM_DISCARDABLE : 0);
+  const flags =
+    GMEM_MOVEABLE | GMEM_SHARE | (found.entry.flags & DISCARDABLE ? GMEM_DISCARDABLE : 0);
   const index = system.allocator.allocate(units * unit, { flags });
 
   if (index === null || index < 0) {
@@ -192,7 +239,8 @@ export function AllocResource(this: any, hInstance: number, hResInfo: number, dw
   if (held && this.allocator._objects[indexFor(held)]) {
     const shift = shiftOf(found.executable);
     const unit = 1 << shift;
-    const units = dwSize >>> 0 ? Math.ceil((dwSize >>> 0) / unit) : Math.ceil(found.entry.length / unit);
+    const units =
+      dwSize >>> 0 ? Math.ceil((dwSize >>> 0) / unit) : Math.ceil(found.entry.length / unit);
 
     this.allocator.resize(indexFor(held), units * unit);
     return held;

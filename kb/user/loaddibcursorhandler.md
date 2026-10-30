@@ -4,22 +4,31 @@ module: USER
 name: LoadDibCursorHandler
 ordinal: 356
 summary: The resource handler KERNEL's LoadResource calls for a Windows 3 module's cursors: the resource read and made USER's own block.
-probes: [userproc]
+versions:
+  '3.1': exact
+probes: [iconhand]
+records: [handler, load, lock, bytes, loadcursor]
+source: src/win16/user/icon-handlers.ts
 topics: [user-internals]
 ---
 
 ## Observed behaviour
 
-- [[measured]] [[probe:userproc]]: for a Windows 3.1 program, `SetResourceHandler` answers ordinal 357's address for `RT_ICON`; and the probe's icon, `LoadResource` and `LockResource`, is USER's block: hotspot 16, 16, size 32 by 32, 4 bytes a mask row, 4 planes of 1 bit, `GlobalSize` 672 -- not the DIB the file holds.
+- [[measured]] [[probe:iconhand]]: for a Windows 3.1 program with cursors, `SetResourceHandler` answers this export's address for `RT_CURSOR`; for one with none, nought ([[probe:userproc]]).
+- [[measured]] [[probe:iconhand]]: `LoadResource` of a cursor answers a block discarded, and `LockResource` has it made USER's block:
+  - Black and white, 32 square, hotspot 5, 9: hotspot 5, 9; one plane of a bit; the mask then the picture; `GlobalSize` 288.
+  - Black and white, 16 square, hotspot 7, 7: made 32 square, hotspot 14, 14.
+  - Of 16 colours, hotspot 20, 3: the mask; 128 bytes of the resource as they were; then the picture in the display's format, 4 planes of a bit on the VGA, 8 bits on the 256-colour display; `GlobalSize` 768 and 1184.
+- [[measured]] [[probe:iconhand]]: `LoadCursor` of a group answers the block `LoadResource` gives for its member, the same again each time; `DestroyCursor` answers nought while it is still used.
+
+## Nuances
+
+- A cursor of colours is laid out as a black and white one before its picture is added: its picture follows room for a monochrome picture, which holds what the resource held there, and runs past the block's end in Windows -- 12 bytes, on the VGA, past the 768 the block was given. WinBox cuts it at the block's end.
 
 ## Inside Windows
 
-- [[read out]] `USER.EXE` seg12 `0ff1`: the block, the module and the resource (6 bytes); the resource's size (`SizeofResource`); KERNEL's own handler called through `[7A2h]` to read the resource; then a cursor resource, a DIB, made USER's monochrome cursor block (`10ce` with 0, `1138`); the block made the size of what it now holds (`GlobalReAlloc`); on failure the block discarded and nought answered. [[fn:USER.SignalProc]] sets these handlers as a module is loaded.
-
-## Callers
-
-- No file of the installations or the corpus imports it (`kb/data/user-callers.json`).
+- [[read out]] `USER.EXE` seg12 `0ff1`: as [[fn:USER.LoadDibIconHandler]], `10ce` with nought: the bitmap after the hotspot's two words. In `0bd1` a cursor's rows are always the mask's and a monochrome picture's (`0c3a`); its hotspot is kept, and moved with its picture where it is stretched (`0c7c`). Its colour picture is made the icon size, `SM_CXICON` by `SM_CYICON` (`1029`).
 
 ## Implementation
 
-A stub in both engines. **Not yet done**: WinBox's `LoadResource` of an icon or a cursor calls KERNEL's own handler, so a program reading its own icon resource gets the file's DIB, where Windows gives USER's block -- a known gap of [[probe:userproc]]. WinBox's own `LoadIcon` reads the resource itself and makes the same block (`icon-block.ts`), which these handlers would reuse.
+`src/win16/user/icon-handlers.ts` and `icon-convert.ts`; the Rust engine's `icon_handlers.rs` and `icon_convert.rs`. A cursor `LoadCursor` loads is its block, which `SetCursor` shows as the display would (`blockCursorImage`).

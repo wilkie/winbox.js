@@ -214,6 +214,13 @@ import { FindWindow } from './user/FindWindow.js';
 import { FrameRect } from './user/FrameRect.js';
 import { GetCursor, LoadCursor, SetCursor, ShowCursor } from './user/cursor-api.js';
 import {
+  LoadCursorIconHandler,
+  LoadDibCursorHandler,
+  LoadDibIconHandler,
+  LoadIconHandler,
+  SignalProc,
+} from './user/icon-handlers.js';
+import {
   CreateDialog,
   CreateDialogIndirect,
   CreateDialogIndirectParam,
@@ -1155,7 +1162,7 @@ export class User extends Module {
       undefined,
       undefined,
       undefined,
-      [User.stub, 'SignalProc', 10],
+      [SignalProc, 'SignalProc', 10, [HANDLE, UINT, UINT, DWORD], UINT],
       undefined,
       undefined,
       undefined,
@@ -1185,7 +1192,7 @@ export class User extends Module {
       [IsUserIdle, 'IsUserIdle', 0, [], BOOL],
       [GetQueueStatus, 'GetQueueStatus', 2, [UINT], DWORD],
       [GetInputState, 'GetInputState', 0, [], BOOL],
-      [User.stub, 'LoadCursorIconHandler', 6],
+      [LoadCursorIconHandler, 'LoadCursorIconHandler', 6, [HANDLE, HANDLE, HANDLE], HANDLE],
       [GetMouseEventProc, 'GetMouseEventProc', 0, [], DWORD],
       undefined,
       undefined,
@@ -1207,8 +1214,8 @@ export class User extends Module {
       undefined,
       undefined,
       undefined,
-      [User.stub, 'LoadDibCursorHandler', 6],
-      [User.stub, 'LoadDibIconHandler', 6],
+      [LoadDibCursorHandler, 'LoadDibCursorHandler', 6, [HANDLE, HANDLE, HANDLE], HANDLE],
+      [LoadDibIconHandler, 'LoadDibIconHandler', 6, [HANDLE, HANDLE, HANDLE], HANDLE],
       [IsMenu, 'IsMenu', 2, [HMENU], BOOL],
       [GetDCEx, 'GetDCEx', 8, [HWND, HRGN, DWORD], HDC],
       // 360 //
@@ -1329,7 +1336,7 @@ export class User extends Module {
       undefined,
       [AdjustWindowRectEx, 'AdjustWindowRectEx', 14, [[RECT], DWORD, BOOL, DWORD]],
       [GetIconID, 'GetIconID', 6, [HANDLE, DWORD], UINT],
-      [User.stub, 'LoadIconHandler', 4],
+      [LoadIconHandler, 'LoadIconHandler', 4, [HANDLE, BOOL], HANDLE],
       [DestroyIcon, 'DestroyIcon', 2, [HICON], BOOL],
       [DestroyCursor, 'DestroyCursor', 2, [HANDLE], BOOL],
       [DumpIcon, 'DumpIcon', 16, [FARPTR, FARPTR, FARPTR, FARPTR], DWORD],
