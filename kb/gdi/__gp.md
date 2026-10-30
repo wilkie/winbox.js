@@ -3,12 +3,18 @@ kind: function
 module: GDI
 name: __GP
 ordinal: 46
-summary: GDI's table of fault handlers for its parameter checks, read by KERNEL when a fault in GDI is caught -- data, not a function.
+summary: GDI's table of fault handlers for its parameter checks, read by KERNEL when a fault in GDI is caught -- data, not a function; WinBox's is its end alone.
 versions:
-  '3.1': stub
-source: src/win16/gdi.ts
+  '3.1': exact
+probes: [ugaps]
+records: [gp]
+source: src/win16/exported-data.ts
 topics: [gdi-internals, kernel-internals]
 ---
+
+## Observed behaviour
+
+- [[measured]] [[probe:ugaps]]: `GetProcAddress` gives an address for it.
 
 ## Inside Windows
 
@@ -20,6 +26,4 @@ topics: [gdi-internals, kernel-internals]
 
 ## Implementation
 
-A stub in both engines.
-
-**Recommendation: not applicable,** as KERNEL's own [[fn:KERNEL.__GP]]: WinBox's GDI checks the pointers it is given in its own code.
+**Implemented (b), data,** as KERNEL's [[fn:KERNEL.__GP]]: a table of its end alone, a selector of nought, laid where its stub would be (`exported-data.ts`, `exported_data.rs`). WinBox's GDI checks the pointers it is given in its own code. See [[topic:gdi-internals]].

@@ -5,10 +5,16 @@ name: GDISeeGDIDo
 ordinal: 452
 summary: A debugging door into GDI's heap -- allocate, free or compact in it, or ask its segment -- that nothing in Windows 3.1 uses.
 versions:
-  '3.1': stub
-source: src/win16/gdi.ts
+  '3.1': partial
+probes: [ugaps]
+records: [seegdi, seegdiheap]
+source: src/win16/gdi/system-exports.ts
 topics: [gdi-internals]
 ---
+
+## Observed behaviour
+
+- [[measured]] [[probe:ugaps]]: 103h answers GDI's data segment, DX nought; 7, nought and 102h answer FFFFFFFFh; 1 of a fixed block of 10h bytes answers a block, 2 of it nought, 3 a size, DX nought each.
 
 ## Inside Windows
 
@@ -20,6 +26,8 @@ topics: [gdi-internals]
 
 ## Implementation
 
-A stub in both engines.
+**Implemented (a).** Both engines answer the requests as GDI does (`GDISeeGDIDo` in `src/win16/gdi/system-exports.ts`), the heap's requests on GDI's data segment as USER's [[fn:USER.UserSeeUserDo]] answers its own.
 
-**Recommendation: not needed.** WinBox's GDI has no local heap of its own ([[fn:GDI.ShrinkGDIHeap]]).
+## Not yet done
+
+- 1, 2 and 3 (`ugaps:seegdiheap`, a known gap): WinBox's GDI segment holds no local heap ([[fn:GDI.ShrinkGDIHeap]]), so they answer as for a segment with none: nought, the handle, nought.

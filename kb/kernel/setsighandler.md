@@ -4,6 +4,11 @@ module: KERNEL
 name: SetSigHandler
 ordinal: 140
 summary: Sets the running task's action and handler for Ctrl+Break, the one signal (1) it takes, answering the old ones through two far pointers.
+versions:
+  '3.1': exact
+probes: [kgaps]
+records: [sig]
+source: src/win16/kernel/signals.ts
 topics: [kernel-internals, keyboard-driver]
 ---
 
@@ -16,7 +21,7 @@ topics: [kernel-internals, keyboard-driver]
 - [[read out]] With action 4 the task's database is never loaded into DS (`069b`-`069f` jumps past it), so the exchange of step 3 is made with the words at 26h and 28h of KERNEL's own data instead.
 - [[read out]] With an action other than 4 and a null pointer for the old handler, the routine leaves through a path that skips its `pop ds` (`06e0`-`06ea`). The selector of KERNEL's data, pushed before DS was made the task's database, is then popped into DI, the caller's DI into SI and the caller's SI into DS. So the caller gets back DS, SI and DI not as it left them.
 - [[read out]] [[fn:KERNEL.DOSignal]] calls the handler only when the action is 2.
-- Not yet measured.
+- [[measured]] [[probe:kgaps]]: signal 2 changes nothing, AX nought and DX kept. For signal 1 a task starts with action nought and KERNEL's own handler; each call answers the old ones through the pointers and DX the old handler's selector; action nought sets KERNEL's handler; action 4 writes neither old one, DX the old of KERNEL's own words, nought at first. With no pointer for the old handler, DS comes back the caller's SI, SI its DI and DI KERNEL's data.
 
 ## Callers
 
@@ -24,6 +29,4 @@ topics: [kernel-internals, keyboard-driver]
 
 ## Implementation
 
-A stub in both engines, which pops sixteen bytes and leaves AX as it was.
-
-**Recommendation: implement as Windows does, if a program is found that uses it.** It keeps two words and a far pointer in WinBox's record of the task, writes the old ones back and answers nought. That is about 25 lines in each engine. With [[fn:KERNEL.DOSignal]] it gives a program its Ctrl+Break. The stray DS of a null old-handler pointer would want a probe before it is copied. See [[topic:kernel-internals]].
+**Implemented (a).** Both engines keep a task's action and handler in their record of it (TDB 24h, 26h), and KERNEL's own pair for action 4, and answer as above, the stray registers too (`SetSigHandler` in `src/win16/kernel/signals.ts`, `kernel_calls/signals.rs`). KERNEL's own handler, a bare `RETF` at seg1 `6125`, is WinBox's `ValidateFreeSpaces` stub, a bare return in Windows as here ([[probe:kintrnl]]). See [[topic:kernel-internals]].

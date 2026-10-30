@@ -4,6 +4,11 @@ module: KERNEL
 name: PatchCodeHandle
 ordinal: 110
 summary: Fixes up the prologues of a loaded code segment's exported functions so that each loads its data segment; the segment loader calls it, and nothing else does.
+versions:
+  '3.1': exact
+probes: [kgaps]
+records: [patch]
+source: src/win16/kernel/internals.ts
 topics: [kernel-internals, dynamic-link-libraries]
 ---
 
@@ -19,7 +24,8 @@ topics: [kernel-internals, dynamic-link-libraries]
      - Otherwise it writes `mov ax,ds`, which loads AX from DS.
   5. It marks the segment entry patched (flag 04h) and answers the handle in AX and the module's data handle in DX (`7c96`-`7ca5`).
 - [[inferred]] This is the fix-up that lets a function exported by a program or a library reach its own data: a far function's prologue loads DS from AX, and the patched instruction decides where AX comes from.
-- Not yet measured.
+- [[read out]] Correcting the steps above: the segment entry passed over is a data one, its flag 01h (`7c02`); no flag says it was patched before. A prologue already patched is not one of the two the routine looks for, so a second call changes nothing. DX is the selector seg1 `0ede` makes of the handle -- the arena's handle with its low bit set -- or nought where the handle names no block.
+- [[measured]] [[probe:kgaps]]: the probe's code segment, its data segment and a block of its own each answer AX the handle and DX the selector; nought answers nought in both. The probe's exported prologue is three `nop`s before and after.
 
 ## Callers
 
@@ -27,6 +33,4 @@ topics: [kernel-internals, dynamic-link-libraries]
 
 ## Implementation
 
-A stub in both engines. WinBox loads a program's segments itself. How it gives an exported function its data segment is the loader's own concern (`src/win16/loader.ts`).
-
-**Recommendation: not needed as an export.** No program calls it. If WinBox's loader does not patch prologues as described, that is a loader question to settle with a probe of a program's exported callback, not a reason to export this. See [[topic:kernel-internals]].
+**Implemented (a).** Both engines answer the handle in AX and its block's selector in DX, or nought (`PatchCodeHandle` in `src/win16/kernel/internals.ts`). WinBox's loader patches each code segment's prologues as it loads the module, as KERNEL's loader calls this for each segment it loads (`patchPrologues`, `patch_prologues`), so a call finds nothing left to patch. See [[topic:kernel-internals]].

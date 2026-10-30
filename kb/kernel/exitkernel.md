@@ -4,6 +4,9 @@ module: KERNEL
 name: ExitKernel
 ordinal: 2
 summary: The end of a Windows session, which USER's ExitWindows calls last — the drivers turned off, the profiles written, DOS given back, and either a return to DOS or a restart.
+versions:
+  '3.1': unrecorded
+source: src/win16/kernel/internals.ts
 topics: [kernel-internals]
 ---
 
@@ -18,7 +21,7 @@ topics: [kernel-internals]
   6. If the code is 43h, the one `ExitWindows` passes to restart the computer, it asks `INT 2Fh` 1600h whether the enhanced mode's WIN386 is there. If it is, it calls the entry point of the virtual device 9 that `INT 2Fh` 1684h gives, with AX 100h (`9dd5`-`9def`). Otherwise it resets the disks (`INT 21h` 0Dh), makes an `INT 2Fh` FE03h call with SI 4346h and DI 4E55h and the carry set, and starts the machine again with `INT 19h` (`9df3`-`9e03`).
   7. Any other code, or a restart that did not happen, ends with `INT 21h` 4Ch and that code (`9e05`-`9e09`).
 - [[inferred]] The FE03h call before `INT 19h` asks a disk cache to write what it holds, so that nothing is lost when the machine restarts. Nothing in KERNEL says which cache answers to it.
-- Not yet measured. Measuring it would end the DOSBox session.
+- Not measured: under DOSBox it would end the recording.
 
 ## Callers
 
@@ -27,6 +30,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A stub in both engines. WinBox ends a session through its own `ExitWindows`, and nothing reaches this.
-
-**Recommendation: not needed.** A program never calls it; WinBox's USER is its own and ends the session itself. If a program ever does call it, the faithful answer is WinBox's end of session with the code, a few lines tied to what `ExitWindows` already does. See [[topic:kernel-internals]].
+**Not applicable (c): only Windows' own end reaches it.** Both engines answer a call as WinBox's own end of the session, as its `ExitWindows` ends it: the calling task ended (`ExitKernel` in `src/win16/kernel/internals.ts`, `exit_kernel` in `kernel_calls/internals.rs`). The code to leave DOS with, and the restart for 43h, have no DOS or machine beneath WinBox to go to. See [[topic:kernel-internals]].

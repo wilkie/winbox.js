@@ -4,6 +4,11 @@ module: KERNEL
 name: ToolHelpHook
 ordinal: 341
 summary: Exchanges the procedure KERNEL tells of its events — a task started or ended, a module loaded, a fault, a debugger break — and answers the one there before; TOOLHELP's notifications are built on it.
+versions:
+  '3.1': exact
+probes: [kgaps]
+records: [tlhook]
+source: src/win16/kernel/internals.ts
 topics: [kernel-internals, tool-helper]
 ---
 
@@ -18,7 +23,7 @@ topics: [kernel-internals, tool-helper]
   2. If bit 7 is set, it calls the procedure at 310h with the running task's prefix made current (`9a70`-`9a92`). A procedure that answers anything but nought ends the telling there.
   3. Otherwise, for codes up to 65h, the procedure [[fn:KERNEL.RegisterPtrace]] set is called (`9aa4`-`9ad8`).
 - [[read out]] The [[fn:KERNEL.ToolHelpHook]] procedure is also called, with code 59h and the far pointer at 30Ch in BX and CX, from a routine at seg1 `7e77`-`7eaf`, and from [[fn:KERNEL.CVWBreak]].
-- Not yet measured.
+- [[measured]] [[probe:kgaps]]: nought at first; BX the procedure's offset or'd with its selector, CX kept; given back, the procedure set is answered.
 
 ## Callers
 
@@ -27,6 +32,4 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-A stub in both engines, which pops the four bytes and leaves DX:AX as they were. WinBox's TOOLHELP is its own and raises its notifications from WinBox's own events ([[topic:tool-helper]]).
-
-**Recommendation: not needed.** A program would only call it to stand where TOOLHELP stands, and a program written for Windows 3.1 uses TOOLHELP for that. If one turns up, the call is a hook to keep and call with each event's code. WinBox's TOOLHELP already knows those events, so it would mean calling the program's procedure beside its own: medium work, with the codes still to be recorded. See [[topic:kernel-internals]].
+**Implemented (a), the exchange.** Both engines keep the procedure and answer the old one, BX as above (`ToolHelpHook` in `src/win16/kernel/internals.ts`). WinBox tells no debugger of KERNEL's events, so the procedure is never called, as a `RegisterPtrace` one is not ([[topic:kernel-internals]]'s Not yet done).

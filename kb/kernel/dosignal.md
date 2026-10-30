@@ -4,6 +4,11 @@ module: KERNEL
 name: DOSignal
 ordinal: 139
 summary: Ctrl+Break, from the keyboard driver. It finds the task whose window has the focus and calls the signal handler that task set with SetSigHandler, if it asked for one.
+versions:
+  '3.1': partial
+probes: [kgaps]
+records: [dosignal, dosignalds]
+source: src/win16/kernel/signals.ts
 topics: [kernel-internals, keyboard-driver]
 ---
 
@@ -13,7 +18,7 @@ topics: [kernel-internals, keyboard-driver]
   1. Unless KERNEL found USER's procedures while it started, it does nothing. They are USER's `GetFocus`, `IsWindow` and `GetWindowTask`, ordinals 23, 47 and 224, which KERNEL looks up from its strings `#23`, `#47` and `#224` and keeps at 2ECh, 2F4h and 2F0h (seg1 `b81d`-`b84f`).
   2. It asks `GetFocus`. With no focus, or a window `IsWindow` refuses, it does nothing (`6140`-`6151`).
   3. It takes the window's task with `GetWindowTask`. If that task's database has 2 at 24h, the action [[fn:KERNEL.SetSigHandler]] set, it calls the handler at 26h of the database. It pushes nought, then 1, with DS the task's database (`6154`-`6168`).
-- Not yet measured.
+- [[measured]] [[probe:kgaps]]: with the probe's window focused and action 2 set, its handler is called once, nought pushed first and 1 after, AX 1, BX nought, DS the task; with no focus, or action 0 or 1, it is not called. Every register is kept, nothing popped.
 
 ## Callers
 
@@ -21,6 +26,9 @@ topics: [kernel-internals, keyboard-driver]
 
 ## Implementation
 
-A stub in both engines. WinBox's keyboard driver is its own and does not call it on Ctrl+Break.
+**Implemented (a).** Both engines take the focus window's task and, where its action is 2, call its handler with the two words, AX 1 and BX nought, every register kept (`DoSignal` in `src/win16/kernel/signals.ts`, `kernel_calls/signals.rs`). WinBox's keyboard driver is its own and does not call it on Ctrl+Break.
 
-**Recommendation: implement with [[fn:KERNEL.SetSigHandler]], or not at all.** Its effect shows only for a task that set a handler with action 2, and no program in the corpus or the installations calls `SetSigHandler`. If one does, Ctrl+Break in WinBox's keyboard input should run this: the focus window's task, and its handler called as above. That is about 30 lines in each engine, with a probe. See [[topic:kernel-internals]].
+## Not yet done
+
+- DS the task's database for the handler (`kgaps:dosignalds`, a known gap): WinBox's task handles are not selectors of a database, and the handler finds DS as its caller left it.
+- Ctrl+Break from WinBox's keyboard calling it, as `KEYBOARD.DRV` does.

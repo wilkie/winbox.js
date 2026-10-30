@@ -3,12 +3,19 @@ kind: function
 module: GDI
 name: FinalGDIInit
 ordinal: 405
-summary: The end of GDI's start-up, called once by USER -- GDI binds USER's and KERNEL's entry points and loads its own tables. Not applicable to WinBox.
+summary: The end of GDI's start-up, called once by USER -- GDI binds USER's and KERNEL's entry points and loads its own tables and strings; called again, the length of its last string.
 versions:
-  '3.1': stub
-source: src/win16/gdi.ts
+  '3.1': exact
+probes: [ugaps]
+records: [finalgdi]
+source: src/win16/gdi/system-exports.ts
 topics: [gdi-internals]
 ---
+
+## Observed behaviour
+
+- [[read out]] Bit 0 of 64Ah is `[TrueType] TTEnable` (seg2 `110e`-`1126`), and with it the last call is USER's `LoadString` of GDI's string 106, F0h bytes at most, whose length AX is left: "An application used a Truetype font that caused an error in Windows." and its advice, 118 characters.
+- [[measured]] [[probe:ugaps]]: called again with nought, AX 76h, two bytes popped.
 
 ## Inside Windows
 
@@ -20,6 +27,4 @@ topics: [gdi-internals]
 
 ## Implementation
 
-A stub in both engines, popping its word.
-
-**Recommendation: not applicable.** WinBox's GDI and USER are its own and start together; no program calls it.
+**Not applicable (c), with the answer of a call.** Only USER's start-up calls it. Both engines answer a later call with the length of that string, kept as a named constant, with TrueType enabled (`FinalGDIInit` in `src/win16/gdi/system-exports.ts`): WinBox's GDI and USER start together, and nothing is left to do. See [[topic:gdi-internals]].

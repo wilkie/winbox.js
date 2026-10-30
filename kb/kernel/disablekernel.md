@@ -4,6 +4,9 @@ module: KERNEL
 name: DisableKernel
 ordinal: 125
 summary: KERNEL's hold on DOS let go as Windows ends — its DOS vectors and the processor's fault handlers put back, every program's prefix closed, DOS's current prefix KERNEL's own again.
+versions:
+  '3.1': unrecorded
+source: src/win16/kernel/retail.ts
 topics: [kernel-internals]
 ---
 
@@ -17,7 +20,7 @@ topics: [kernel-internals]
   5. DOS's current prefix is made KERNEL's own (`INT 21h` 50h), and bit 2 of 328h is cleared (`9d24`-`9d2d`).
   6. It closes every handle of KERNEL's own prefix from 5 up, so the five DOS opened for it stay (`9d33`-`9d48`).
   7. Where 265h of its data holds an address, it keeps the far pointer found there at 269h and writes 0000h:FFFFh in its place (`9d4a`-`9d66`). The routine after [[fn:KERNEL.ReplaceInst]] (seg1 `9af2`-`9b0b`) puts it back.
-- Not yet measured.
+- Not measured: it ends every program's DOS process, the probe's among them, and Windows with them.
 
 ## Callers
 
@@ -25,6 +28,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A stub in both engines.
-
-**Recommendation: not applicable.** It undoes what KERNEL did to a real DOS beneath it. WinBox has no DOS beneath its KERNEL and nothing to give back. A bare return is all a caller could see, and no program calls it. See [[topic:kernel-internals]].
+**Not applicable (c): only `ExitKernel` reaches it.** It undoes what KERNEL did to a real DOS beneath it; WinBox has none, and nothing to give back. Both engines answer a call as a bare return, AX and DX as they were (`nothing` in `src/win16/kernel/retail.ts`, `retail::nothing`). See [[topic:kernel-internals]].
