@@ -11,7 +11,7 @@ topics: [kernel-internals]
 
 - [[read out]] `KRNL386.EXE` seg1 `9e0c`-`9e16`, `KRNL286.EXE` seg1 `9588`. It saves and restores BP, DS, SI and DI and returns with `RETF 2`. AX and DX are left as they were.
 - [[inferred]] Switching the A20 line, the twenty-first address line that lets real mode reach the 64K above a megabyte, belongs to the DOS extender, to HIMEM.SYS and to WIN386 under Windows 3.1. KERNEL keeps the entry and does nothing in it.
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]]: AX and DX kept, two bytes popped.
 
 ## Callers
 
@@ -19,6 +19,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-A stub in both engines, which pops the same two bytes.
-
-**Recommendation: not applicable, kept as a no-op.** WinBox's machine has no A20 line to switch. A retail no-op popping two bytes is exact: one line in each engine. See [[topic:kernel-internals]].
+A retail no-op in both engines, popping two bytes (`nothing`). WinBox's machine has no A20 line to switch. See [[topic:kernel-internals]].

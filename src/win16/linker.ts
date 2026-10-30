@@ -4,6 +4,7 @@ import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
 import { CONSTANT_SEGMENT, ExportedConstant, KERNEL_CONSTANTS } from './kernel/constants.js';
 import { redirect } from './own-modules.js';
+import { UNDEF_DYNLINK_ORDINAL } from './kernel/internals.js';
 
 /**
  * The modules' exports that are numbers rather than functions, by ordinal:
@@ -79,6 +80,7 @@ export function ordinalFor(module: any, name: string | undefined) {
 export class Linker {
   declare _memory: any;
   declare _modules: any;
+  declare _exports: Map<string, any[]>;
   /** Whether the machine has a coprocessor: what `__WINFLAGS` says, and which OS fixups apply. */
   declare coprocessor: boolean;
 
@@ -146,7 +148,7 @@ export class Linker {
             this._memory.write16(at + 1, (this._memory.read16(at + 1) + high) & 0xffff);
           }
         } else if (relocation.type == Loader.RELOCATION_IMPORT) {
-          let module = this.modules.fromName(relocation.from);
+          const module = this.modules.fromName(relocation.from);
 
           const constant = CONSTANTS[String(relocation.from).toUpperCase()]?.[relocation.ordinal];
 
@@ -169,31 +171,23 @@ export class Linker {
 
               this._memory.write8(at, (this._memory.read8(at) + value) & 0xff);
             }
-          } else if (module) {
-            module = this.modules.load(module);
-
-            /* Imported by name: the ordinal the module exports it as. */
-            const ordinal = relocation.ordinal || ordinalFor(module, relocation.procedure);
-
-            if (ordinal) {
-              /* An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox
-               * answers: its stub, not the file's entry (`own-modules.ts`). */
-              const info = redirect(this.modules, module, ordinal) ?? module.lookup(ordinal);
-              const segment = info.segment;
-              const offset = info.offset;
-
-              if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
-                this.writeRelocation16(relocation, segmentIndex, segmentSelector(segment));
-              } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
-                this.writeRelocation32(relocation, segmentIndex, segmentSelector(segment), offset);
-              } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
-                this.writeRelocation16(relocation, segmentIndex, offset);
-              }
-            } else {
-              console.log('HMM');
-            }
           } else {
-            console.log('WE NEED', relocation.from + '.DLL', '@', relocation.ordinal);
+            /* Bound where its module exports it; else to KERNEL's
+             * `UndefDynlink`, as KERNEL's loader binds an import whose module,
+             * name or ordinal it cannot find (`KRNL386.EXE` seg1 `73b9`-`73f8`):
+             * the program runs, and is ended only if it makes the call
+             * (**recorded** by `undefdl`). */
+            const info = (module && this.bound(module, relocation)) ?? this.undefDynlink();
+            const segment = info.segment;
+            const offset = info.offset;
+
+            if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
+              this.writeRelocation16(relocation, segmentIndex, segmentSelector(segment));
+            } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
+              this.writeRelocation32(relocation, segmentIndex, segmentSelector(segment), offset);
+            } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
+              this.writeRelocation16(relocation, segmentIndex, offset);
+            }
           }
         } else {
           // Internal relocation
@@ -224,6 +218,47 @@ export class Linker {
         }
       });
     });
+  }
+
+  /**
+   * Where a module exports an import, by its ordinal or its name: a module
+   * loaded from its file by its entry table, one of WinBox's own by its
+   * table of exports (an ordinal it has no entry for is not exported, as
+   * `GetProcAddress` finds). Null where it does not export it.
+   */
+  bound(found: any, relocation: any): { segment: number; offset: number } | null {
+    const module = this.modules.load(found);
+    const ordinal = relocation.ordinal || ordinalFor(module, relocation.procedure);
+
+    if (!ordinal) {
+      return null;
+    }
+
+    if (!(module instanceof Loader) && !this.exportsOf(module)[ordinal]) {
+      return null;
+    }
+
+    /* An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox answers: its
+     * stub, not the file's entry (`own-modules.ts`). */
+    const info = redirect(this.modules, module, ordinal) ?? module.lookup(ordinal);
+
+    return info && info.segment !== undefined ? info : null;
+  }
+
+  /** One of WinBox's own modules' table of exports, read once. */
+  exportsOf(module: any): any[] {
+    this._exports ??= new Map();
+
+    if (!this._exports.has(module.name)) {
+      this._exports.set(module.name, module.instance?.exports ?? []);
+    }
+
+    return this._exports.get(module.name);
+  }
+
+  /** KERNEL's `UndefDynlink`, where an import nothing exports is bound. */
+  undefDynlink(): { segment: number; offset: number } {
+    return this.modules.load(this.modules.fromName('KERNEL')).lookup(UNDEF_DYNLINK_ORDINAL);
   }
 
   /**

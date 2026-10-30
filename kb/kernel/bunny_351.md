@@ -14,7 +14,7 @@ topics: [kernel-internals, application-errors]
 - [[read out]] 5E87h, the routine `BUNNY_351` puts there, first tests bit 3 of the byte at 328h, a system debugger present. If it is set, the fault is passed to that debugger with `INT 41h` AX=40h, CS:IP in CX:BX, and nothing more is done. Otherwise it goes on to 5EACh as before (seg1 `5e7b`-`5e90`).
 - [[read out]] While the fault handler runs, it puts 5EA1h there, the same test, so that a fault inside the handler reaches a debugger too. On its way out it puts back what was there before (seg1 `5e31`, `5e76`).
 - [[inferred]] Once Windows is ending, a fault no program handles should go straight to a system debugger rather than to USER's box, which can no longer be shown. Without a debugger the change makes no difference.
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]]: AX and DX kept, nothing popped.
 
 ## Callers
 
@@ -23,6 +23,4 @@ topics: [kernel-internals, application-errors]
 
 ## Implementation
 
-A stub in both engines, which pops nothing.
-
-**Recommendation: implement as a no-op.** WinBox has no system debugger to tell, so the change it makes never shows. A retail no-op is exact: one line in each engine. See [[topic:kernel-internals]].
+A retail no-op in both engines (`nothing`). WinBox has no system debugger to tell, so the change Windows makes never shows. See [[topic:kernel-internals]].

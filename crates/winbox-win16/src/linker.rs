@@ -75,6 +75,10 @@ pub(crate) fn kernel_constant(ordinal: u16, coprocessor: bool) -> Option<u16> {
 /// `GetProcAddress` answers and the loader writes (`kconst`).
 pub(crate) const CONSTANT_SEGMENT: u16 = 0xffff;
 
+/// KERNEL's ordinal for `UndefDynlink`, where an import nothing exports
+/// is bound.
+const UNDEF_DYNLINK: u16 = 120;
+
 /// What a relocation writes: a selector and an offset, or a number.
 enum Value {
     Place(usize, u16),
@@ -115,11 +119,7 @@ impl System {
             }
             Target::ImportOrdinal { module: from, .. }
             | Target::ImportName { module: from, .. } => {
-                let Some(value) = self.imported(&from.clone(), &relocation.target) else {
-                    return;
-                };
-
-                value
+                self.imported(&from.clone(), &relocation.target)
             }
             Target::Internal { segment, offset } => {
                 // The executable numbers its segments from one; where each
@@ -167,8 +167,21 @@ impl System {
     }
 
     /// What an import links to: a library's entry point, a kept module's
-    /// stub, or KERNEL's number. `None` for a module not there.
-    fn imported(&mut self, from: &str, target: &Target) -> Option<Value> {
+    /// stub, or KERNEL's number; else KERNEL's `UndefDynlink`, as KERNEL's
+    /// loader binds an import whose module, name or ordinal it cannot find
+    /// (`KRNL386.EXE` seg1 `73b9`-`73f8`): the program runs, and is ended
+    /// only if it makes the call (`undefdl`). As `linker.ts`.
+    fn imported(&mut self, from: &str, target: &Target) -> Value {
+        match self.bound(from, target) {
+            Some(value) => value,
+            None => self.undef_dynlink(),
+        }
+    }
+
+    /// Where a module exports an import: `None` for a module not there,
+    /// or a name or ordinal it does not export (a kept module's ordinal
+    /// with no entry in its table, as `GetProcAddress` finds).
+    fn bound(&mut self, from: &str, target: &Target) -> Option<Value> {
         if let Some(index) = self.module_named(from) {
             let library = &self.modules[index];
             let ordinal = match target {
@@ -176,6 +189,10 @@ impl System {
                 Target::ImportName { procedure, .. } => library.executable.ordinal_of(procedure),
                 _ => 0,
             };
+
+            if ordinal == 0 {
+                return None;
+            }
 
             // An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox
             // answers: its stub, not the file's entry (`own_modules.rs`).
@@ -202,9 +219,21 @@ impl System {
             return Some(Value::Number(number));
         }
 
+        if ordinal == 0 || module.export(ordinal).is_none() {
+            return None;
+        }
+
         let stubs = self.stubs(kept);
 
-        (ordinal != 0).then(|| Value::Place(stubs, STEP * (ordinal + 1)))
+        Some(Value::Place(stubs, STEP * (ordinal + 1)))
+    }
+
+    /// KERNEL's `UndefDynlink`, its ordinal 120, among its stubs.
+    fn undef_dynlink(&mut self) -> Value {
+        let kernel = self.kept_named("KERNEL").expect("KERNEL is kept");
+        let stubs = self.stubs(kernel);
+
+        Value::Place(stubs, STEP * (UNDEF_DYNLINK + 1))
     }
 
     /// A word written down a relocation's chain, or added where it is.

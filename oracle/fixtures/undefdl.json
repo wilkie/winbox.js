@@ -1,0 +1,89 @@
+{
+  "probe": "undefdl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "undefdynlink",
+      "args": "getprocaddress 120",
+      "result": "nonzero"
+    },
+    {
+      "function": "present",
+      "args": "UNDEFDLD.PRESENT",
+      "result": "7"
+    },
+    {
+      "function": "bound",
+      "args": "KERNEL.142",
+      "result": "undefdynlink"
+    },
+    {
+      "function": "bound",
+      "args": "KERNEL.NOSUCHPROC",
+      "result": "undefdynlink"
+    },
+    {
+      "function": "bound",
+      "args": "UNDEFDLD.99",
+      "result": "undefdynlink"
+    },
+    {
+      "function": "bound",
+      "args": "UNDEFDLD.ABSENT",
+      "result": "undefdynlink"
+    },
+    {
+      "function": "bound",
+      "args": "UNDEFDLD.PRESENT",
+      "result": "other"
+    },
+    {
+      "function": "getprocaddress",
+      "args": "KERNEL.142",
+      "result": "0"
+    },
+    {
+      "function": "getprocaddress",
+      "args": "KERNEL.NOSUCHPROC",
+      "result": "0"
+    },
+    {
+      "function": "getprocaddress",
+      "args": "UNDEFDLD.99",
+      "result": "0"
+    },
+    {
+      "function": "getprocaddress",
+      "args": "UNDEFDLD.ABSENT",
+      "result": "0"
+    },
+    {
+      "function": "getprocaddress",
+      "args": "UNDEFDLD.PRESENT",
+      "result": "nonzero"
+    },
+    {
+      "function": "call",
+      "args": "KERNEL.142",
+      "result": "now"
+    },
+    {
+      "function": "exec",
+      "args": "UNDEFDLC.EXE",
+      "result": "inst"
+    },
+    {
+      "function": "after",
+      "args": "usage",
+      "result": "ended"
+    }
+  ]
+}

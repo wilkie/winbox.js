@@ -14,7 +14,7 @@ topics: [kernel-internals, task-list]
   2. Flag not nought: the record is put at the head of the chain whose head is the far pointer at 336h. Its first four bytes are given the old head, and it answers 1 (`06a1`-`06c4`).
   3. Flag nought: it walks the chain for the record, unlinks it, and answers 1 (`06c6`-`06e0`). It answers nought if the record is not in the chain.
 - [[read out]] A record is a far pointer to the next record, then a far procedure, at 4. [[fn:KERNEL.GetWinOldApHooks]] answers the head, and `WINOLDAP.MOD` calls each procedure in turn with one word ([[fn:KERNEL.GetWinOldApHooks]]).
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]] adds two records and takes them out again. The chain is empty to begin with. A record added answers 1, and its link is the old head. Taking out the second of two answers 1 and puts its link in the first. Taking out a record that is not there answers nought, and so does taking out the last one twice. A flag of 100h, whose low byte is nought, takes the record out. DX is kept throughout.
 
 ## Callers
 
@@ -22,6 +22,4 @@ topics: [kernel-internals, task-list]
 
 ## Implementation
 
-A stub in both engines, which pops six bytes and leaves AX as it was.
-
-**Recommendation: implement as Windows does, the chain without the calls.** WinBox reports standard mode, 419h ([[fn:KERNEL.GetWinFlags]], as the oracle's `win /s` does). So Windows would take the record and answer 1, and [[fn:KERNEL.GetWinOldApHooks]] would then answer it. Keeping the chain in the caller's own records, linked through their first four bytes, makes both calls exact. No procedure is ever called, since WinBox runs no DOS session. That is about 25 lines in each engine, with a probe to record the 1, the link written into the record, and the head. See [[topic:kernel-internals]].
+Both engines keep the chain as Windows does, in the caller's own records, linked through their first four bytes: `src/win16/kernel/internals.ts` and `crates/winbox-win16/src/kernel_calls/internals.rs`. WinBox reports standard mode, so the record is always taken. No procedure in the chain is ever called, since WinBox runs no DOS session. See [[topic:kernel-internals]].

@@ -251,6 +251,9 @@ pub struct System {
     pub block_owners: HashMap<usize, u16>,
     /// The procedure `FatalExitHook` set.
     pub fatal_exit_hook: u32,
+    /// The head of the chain of WINOLDAP's hooks `RegisterWinOldApHook`
+    /// keeps, the far pointer at 336h of KERNEL's data.
+    pub win_old_ap_hooks: u32,
     /// The count `TimerCount` answered last.
     pub timer_count: u32,
     /// The room given for code to be swapped through, in paragraphs
@@ -604,6 +607,7 @@ impl System {
             task_order: crate::task_order::TaskOrder::default(),
             block_owners: HashMap::new(),
             fatal_exit_hook: 0,
+            win_old_ap_hooks: 0,
             timer_count: 0,
             swap_area: 0,
             interrupt_handlers: Vec::new(),

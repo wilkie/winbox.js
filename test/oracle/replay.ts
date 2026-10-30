@@ -5556,6 +5556,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'ttqmap:kern': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
+  /* EMSCopy's entry, seg1 `a940`, is past the limit KERNEL leaves its first
+   * code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`): the far
+   * call faults, and Windows carries on with AX 81h and six bytes taken. */
+  'emscopy:entry': "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+  'emscopy:call':
+    "EMSCopy's entry is past the end of KERNEL's code once it has started; what Windows does after the fault is not read out",
   /* The PostScript driver names a face it downloads by the global atom it
    * adds for the face's key, which starts with a selector
    * (`PSCRIPT.DRV` seg9 `0ba3`, `170a`): WinBox numbers global atoms from
@@ -5945,6 +5951,9 @@ const RUN_WHOLE = new Set<string>([
   'invchild',
   'popmax',
   'ictwrap',
+  'undefdl',
+  'kintrnl',
+  'emscopy',
   'prtteng',
 ]);
 
@@ -5965,6 +5974,7 @@ export const BOX_KEYS: Record<string, string[][]> = {
   nullds: [['Enter'], ['Enter']],
   openfile: [['Enter'], ['Enter']],
   sebhook: [['Enter']],
+  undefdl: [['Enter']],
 };
 
 /**

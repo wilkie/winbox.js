@@ -16,6 +16,8 @@ topics: [kernel-internals, profile-files]
   4. Last, it clears the byte at 331h, KERNEL's mark that a profile waits to be written (`7142`).
 - [[read out]] KERNEL calls it itself in three places: from the scheduler when 331h is set (seg1 `803a`, `8253`-`8263`); from its `INT 21h` routine, before a program's DOS call, when either profile is marked and KERNEL is not inside the profile code itself (seg1 `1b6d`-`1b8c`); and from [[fn:KERNEL.ExitKernel]]. So a program that reads `WIN.INI` with DOS after writing it with [[fn:KERNEL.WriteProfileString]] finds the change there.
 - [[measured]] What the bytes written are is [[topic:profile-files]]'s subject ([[probe:profile]]). This page only adds when they are written.
+- [[read out]] With nothing to write, the routine only loads its data segment through AX (`7092`, `mov ax` with KERNEL's data selector), so AX is left KERNEL's data selector and DX as it was.
+- [[measured]] [[probe:kintrnl]]: AX the selector of [[fn:KERNEL.GetLPErrMode]]'s pointer, which is KERNEL's data; DX kept; nothing left on the stack.
 
 ## Callers
 
@@ -23,6 +25,4 @@ topics: [kernel-internals, profile-files]
 
 ## Implementation
 
-A stub in both engines. WinBox writes a profile to its file on each write ([[topic:profile-files]]), so there is never anything waiting.
-
-**Recommendation: implement as a no-op.** Since WinBox's file is always current, the call has nothing to do, and a program sees the same files as on Windows. A no-op is one line in each engine. If WinBox ever defers its writes, this is where they must be done. See [[topic:kernel-internals]].
+Both engines answer KERNEL's data selector in AX and keep DX (`src/win16/kernel/internals.ts`, `crates/winbox-win16/src/kernel_calls/internals.rs`). WinBox writes a profile to its file on each write ([[topic:profile-files]]), so nothing ever waits, and that path is the one Windows takes too. If WinBox ever defers its writes, this is where they must be done. See [[topic:kernel-internals]].
