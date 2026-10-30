@@ -1,0 +1,170 @@
+{
+  "probe": "dragobj",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "msg",
+      "args": "accept query",
+      "result": "w=0 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=1 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "accept select",
+      "result": "w=1 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "accept query",
+      "result": "w=0 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=1 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "accept move",
+      "result": "w=0 src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "accept drop",
+      "result": "w=main src=main scope=accept fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over accept"
+    },
+    {
+      "function": "answer",
+      "args": "over accept",
+      "result": "00005678",
+      "section": "over accept"
+    },
+    {
+      "function": "answer",
+      "args": "capture after",
+      "result": "none",
+      "section": "over accept"
+    },
+    {
+      "function": "msg",
+      "args": "refuse query",
+      "result": "w=0 src=main scope=refuse fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main query",
+      "result": "w=0 src=main scope=main fmt=1234 data=abcd5678 pt=150,40 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=0 src=main scope=none fmt=1234 data=abcd5678 pt=174,83 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "refuse query",
+      "result": "w=0 src=main scope=refuse fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main query",
+      "result": "w=0 src=main scope=main fmt=1234 data=abcd5678 pt=150,40 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=0 src=main scope=none fmt=1234 data=abcd5678 pt=174,83 at=+0",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "answer",
+      "args": "over refuse, no cursor",
+      "result": "00000000",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "answer",
+      "args": "capture after",
+      "result": "none",
+      "section": "over refuse, no cursor"
+    },
+    {
+      "function": "msg",
+      "args": "cursor query",
+      "result": "w=0 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=1 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "cursor select",
+      "result": "w=1 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "cursor query",
+      "result": "w=0 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "main loop",
+      "result": "w=1 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "cursor move",
+      "result": "w=0 src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "msg",
+      "args": "cursor drop",
+      "result": "w=main src=main scope=cursor fmt=1234 data=abcd5678 pt=39,29 at=+0",
+      "section": "over cursor"
+    },
+    {
+      "function": "answer",
+      "args": "over cursor",
+      "result": "00005678",
+      "section": "over cursor"
+    },
+    {
+      "function": "answer",
+      "args": "capture after",
+      "result": "none",
+      "section": "over cursor"
+    }
+  ]
+}

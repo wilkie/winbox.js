@@ -1,0 +1,266 @@
+{
+  "probe": "filport",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "box",
+      "args": "caption",
+      "result": "Print To File",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "owner",
+      "result": "main",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "101 Static &Output File Name:",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "10 Edit ",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "1 Button OK (disabled)",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "2 Button Cancel",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "focus",
+      "result": "10",
+      "section": "start"
+    },
+    {
+      "function": "box",
+      "args": "rect",
+      "result": "176 107 536 221",
+      "section": "start"
+    },
+    {
+      "function": "again",
+      "args": "while up",
+      "result": "-1",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "cancel",
+      "result": "-3  not there",
+      "section": "start"
+    },
+    {
+      "function": "typed",
+      "args": "ok enabled",
+      "result": "1",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "new file",
+      "result": "1 C:\\ORACLE\\FILPORT.TXT there",
+      "section": "start"
+    },
+    {
+      "function": "typed",
+      "args": "ok enabled",
+      "result": "1",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "caption",
+      "result": "FILE:",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "owner",
+      "result": "other",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "6 Button &Yes",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "7 Button &No",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static ",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static Overwrite existing output file?",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "focus",
+      "result": "6",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "press",
+      "result": "7",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "there, no",
+      "result": "-3 C:\\ORACLE\\FILPORT.TXT there",
+      "section": "start"
+    },
+    {
+      "function": "typed",
+      "args": "ok enabled",
+      "result": "1",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "caption",
+      "result": "FILE:",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "owner",
+      "result": "other",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "6 Button &Yes",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "7 Button &No",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static ",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static Overwrite existing output file?",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "focus",
+      "result": "6",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "press",
+      "result": "6",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "there, yes",
+      "result": "1 C:\\ORACLE\\FILPORT.TXT there",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "size after",
+      "result": "0",
+      "section": "start"
+    },
+    {
+      "function": "typed",
+      "args": "ok enabled",
+      "result": "1",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "caption",
+      "result": "FILE:",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "owner",
+      "result": "other",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "2 Button OK",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static ",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static Cannot open output file for writing.  Check to ensure path and filename are correct.",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "focus",
+      "result": "2",
+      "section": "start"
+    },
+    {
+      "function": "asked",
+      "args": "press",
+      "result": "2",
+      "section": "start"
+    },
+    {
+      "function": "answer",
+      "args": "no drive",
+      "result": "-3 Q:\\NOPE\\FILPORT.TXT there",
+      "section": "start"
+    }
+  ]
+}

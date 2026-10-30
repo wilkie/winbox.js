@@ -1,0 +1,49 @@
+{
+  "probe": "oemlayer",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cursor",
+      "args": "before",
+      "result": "0"
+    },
+    {
+      "function": "cursor",
+      "args": "after disable",
+      "result": "-1"
+    },
+    {
+      "function": "cursor",
+      "args": "after enable",
+      "result": "0"
+    },
+    {
+      "function": "queue",
+      "args": "posted before",
+      "result": "there"
+    },
+    {
+      "function": "paint",
+      "args": "main",
+      "result": "nc=1 erase=1 paint=1"
+    },
+    {
+      "function": "paint",
+      "args": "child",
+      "result": "nc=1 erase=1 paint=1"
+    },
+    {
+      "function": "keystate",
+      "args": "shift",
+      "result": "0000"
+    }
+  ]
+}

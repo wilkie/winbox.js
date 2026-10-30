@@ -1,5 +1,6 @@
 {
  "generated": "scripts/kb/kernel-callers.mjs",
+ "module": "KERNEL",
  "about": "For each KERNEL export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. `windowsByName` and `corpusByName` are hints only: files importing GetProcAddress that hold the export name as a string of their own.",
  "installations": [
   "drive-c",

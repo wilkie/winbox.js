@@ -1,0 +1,94 @@
+{
+  "probe": "kowner",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "get",
+      "args": "data segment",
+      "result": "module"
+    },
+    {
+      "function": "get",
+      "args": "code segment",
+      "result": "module"
+    },
+    {
+      "function": "get",
+      "args": "moveable block",
+      "result": "pdb"
+    },
+    {
+      "function": "get",
+      "args": "moveable selector",
+      "result": "pdb"
+    },
+    {
+      "function": "get",
+      "args": "shared block",
+      "result": "module"
+    },
+    {
+      "function": "get",
+      "args": "task database",
+      "result": "task"
+    },
+    {
+      "function": "get",
+      "args": "prefix",
+      "result": "zero"
+    },
+    {
+      "function": "get",
+      "args": "module database",
+      "result": "module"
+    },
+    {
+      "function": "get",
+      "args": "user data",
+      "result": "user"
+    },
+    {
+      "function": "get",
+      "args": "nought",
+      "result": "zero"
+    },
+    {
+      "function": "get",
+      "args": "no block",
+      "result": "zero"
+    },
+    {
+      "function": "set",
+      "args": "moveable to user, ax",
+      "result": "other"
+    },
+    {
+      "function": "get",
+      "args": "moveable after set",
+      "result": "user"
+    },
+    {
+      "function": "get",
+      "args": "moveable set back",
+      "result": "pdb"
+    },
+    {
+      "function": "set",
+      "args": "GlobalFree after",
+      "result": "0"
+    },
+    {
+      "function": "set",
+      "args": "GlobalFree shared",
+      "result": "0"
+    }
+  ]
+}

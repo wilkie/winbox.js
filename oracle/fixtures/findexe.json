@@ -1,0 +1,129 @@
+{
+  "probe": "findexe",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "ini only",
+      "result": "2 programs=(none)"
+    },
+    {
+      "function": "box",
+      "args": "caption",
+      "result": "Program Not Found"
+    },
+    {
+      "function": "box",
+      "args": "owner",
+      "result": "main"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "205 Static Cannot find FINDEXEX.EXE.\n\nThis program is needed to run files with extension 'ZZQ'."
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "206 Static Location of FINDEXEX.EXE:"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "203 Edit C:\\"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "1 Button OK"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "2 Button Cancel"
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "201 Button &Locate..."
+    },
+    {
+      "function": "box",
+      "args": "control",
+      "result": "204 Button &Help"
+    },
+    {
+      "function": "box",
+      "args": "focus",
+      "result": "203"
+    },
+    {
+      "function": "answer",
+      "args": "cancel",
+      "result": "15 programs=(none)"
+    },
+    {
+      "function": "asked",
+      "args": "caption",
+      "result": "Program Not Found"
+    },
+    {
+      "function": "asked",
+      "args": "owner",
+      "result": "other"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "2 Button OK"
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static "
+    },
+    {
+      "function": "asked",
+      "args": "control",
+      "result": "-1 Static Cannot find file 'C:\\WINDOWS\\FINDEXEX.EXE'."
+    },
+    {
+      "function": "asked",
+      "args": "focus",
+      "result": "2"
+    },
+    {
+      "function": "answer",
+      "args": "folder without it",
+      "result": "15 programs=(none)"
+    },
+    {
+      "function": "answer",
+      "args": "folder with it",
+      "result": "instance programs=C:\\ORACLE\\HIDE\\FINDEXEX.EXE"
+    },
+    {
+      "function": "answer",
+      "args": "again",
+      "result": "instance programs=C:\\ORACLE\\HIDE\\FINDEXEX.EXE"
+    },
+    {
+      "function": "child",
+      "args": "line",
+      "result": "args=C:\\ORACLE\\FINDEXE.ZZQ"
+    },
+    {
+      "function": "child",
+      "args": "line",
+      "result": "args=C:\\ORACLE\\FINDEXE.ZZQ"
+    }
+  ]
+}

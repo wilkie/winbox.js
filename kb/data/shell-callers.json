@@ -1,0 +1,657 @@
+{
+ "generated": "scripts/kb/kernel-callers.mjs",
+ "module": "SHELL",
+ "about": "For each SHELL export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. `windowsByName` and `corpusByName` are hints only: files importing GetProcAddress that hold the export name as a string of their own.",
+ "installations": [
+  "drive-c",
+  "drive-c-8514",
+  "drive-c-8514s",
+  "drive-c-ega",
+  "drive-c-hercules",
+  "drive-c-svga",
+  "drive-c-vga256",
+  "drive-c-vgaprint",
+  "drive-c-vgasound",
+  "drive-c-xga256",
+  "drive-c-xga256s",
+  "drive-c-xga640"
+ ],
+ "surveyed": {
+  "windowsFiles": 129,
+  "corpusFiles": 62,
+  "corpusPrograms": 37
+ },
+ "variants": {},
+ "notNE": {
+  "LE": [
+   "windows:WINDOWS/EMM386.EXE",
+   "windows:WINDOWS/SMARTDRV.EXE",
+   "windows:WINDOWS/SYSTEM/DVA.386",
+   "windows:WINDOWS/SYSTEM/VADLIBD.386",
+   "windows:WINDOWS/SYSTEM/VDD8514.386",
+   "windows:WINDOWS/SYSTEM/VDDEGA.386",
+   "windows:WINDOWS/SYSTEM/VDDHERC.386",
+   "windows:WINDOWS/SYSTEM/VDDTLI4.386",
+   "windows:WINDOWS/SYSTEM/VDDXGA.386",
+   "windows:WINDOWS/SYSTEM/VSBD.386",
+   "windows:WINDOWS/SYSTEM/VTDAPI.386"
+  ],
+  "W3": [
+   "windows:WINDOWS/SYSTEM/WIN386.EXE"
+  ],
+  "PE": [
+   "windows:WINDOWS/SYSTEM/WING32.DLL"
+  ]
+ },
+ "unreadable": [],
+ "exports": [
+  {
+   "ordinal": 1,
+   "name": "REGOPENKEY",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 2,
+   "name": "REGCREATEKEY",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/REGEDIT.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 3,
+   "name": "REGCLOSEKEY",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 4,
+   "name": "REGDELETEKEY",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/WINFILE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 5,
+   "name": "REGSETVALUE",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/WINFILE.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 6,
+   "name": "REGQUERYVALUE",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/OLECLI.DLL",
+    "WINDOWS/SYSTEM/OLESVR.DLL",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 7,
+   "name": "REGENUMKEY",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 8,
+   "name": "WEP",
+   "declaredIn": "_win386.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 9,
+   "name": "DRAGACCEPTFILES",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 11,
+   "name": "DRAGQUERYFILE",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 12,
+   "name": "DRAGFINISH",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MAIN.CPL",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "hanoi/HANOI.EXE",
+    "simtower/EREG.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 13,
+   "name": "DRAGQUERYPOINT",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/PROGMAN.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 20,
+   "name": "SHELLEXECUTE",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/WINFILE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 21,
+   "name": "FINDEXECUTABLE",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/PROGMAN.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 22,
+   "name": "SHELLABOUT",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/CALC.EXE",
+    "WINDOWS/CALENDAR.EXE",
+    "WINDOWS/CARDFILE.EXE",
+    "WINDOWS/CLIPBRD.EXE",
+    "WINDOWS/CLOCK.EXE",
+    "WINDOWS/CONTROL.EXE",
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/NOTEPAD.EXE",
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PBRUSH.EXE",
+    "WINDOWS/PIFEDIT.EXE",
+    "WINDOWS/PRINTMAN.EXE",
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/RECORDER.EXE",
+    "WINDOWS/REGEDIT.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/SYSEDIT.EXE",
+    "WINDOWS/TERMINAL.EXE",
+    "WINDOWS/WINFILE.EXE",
+    "WINDOWS/WRITE.EXE"
+   ],
+   "corpus": [
+    "reversi/REVERSI.EXE"
+   ],
+   "windowsByName": [
+    "WINDOWS/WINHELP.EXE"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 32,
+   "name": "WCI",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 33,
+   "name": "ABOUTDLGPROC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [
+    "WINDOWS/NOTEPAD.EXE"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 34,
+   "name": "EXTRACTICON",
+   "declaredIn": "shellapi.h",
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PROGMAN.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 36,
+   "name": "EXTRACTASSOCIATEDICON",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/PACKAGER.EXE",
+    "WINDOWS/PROGMAN.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 37,
+   "name": "DOENVIRONMENTSUBST",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 38,
+   "name": "FINDENVIRONMENTSTRING",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/WINFILE.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 39,
+   "name": "INTERNALEXTRACTICON",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/PROGMAN.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 100,
+   "name": "HERETHARBETYGARS",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 101,
+   "name": "FINDEXEDLGPROC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 102,
+   "name": "REGISTERSHELLHOOK",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/PROGMAN.EXE",
+    "WINDOWS/SYSTEM/WINOA386.MOD"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 103,
+   "name": "SHELLHOOKPROC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 104,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 105,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 106,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 107,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 108,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 109,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 110,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 111,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 112,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 113,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 114,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 115,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 116,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 117,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 118,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 119,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 120,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 121,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 122,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 123,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 124,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 125,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 126,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 127,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 128,
+   "name": null,
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  }
+ ]
+}

@@ -1,0 +1,1552 @@
+{
+ "generated": "scripts/kb/kernel-callers.mjs",
+ "module": "MMSYSTEM",
+ "about": "For each MMSYSTEM export, the NE files that import it (by ordinal or by name) in the Windows installations and in the corpus programs. `windowsByName` and `corpusByName` are hints only: files importing GetProcAddress that hold the export name as a string of their own.",
+ "installations": [
+  "drive-c",
+  "drive-c-8514",
+  "drive-c-8514s",
+  "drive-c-ega",
+  "drive-c-hercules",
+  "drive-c-svga",
+  "drive-c-vga256",
+  "drive-c-vgaprint",
+  "drive-c-vgasound",
+  "drive-c-xga256",
+  "drive-c-xga256s",
+  "drive-c-xga640"
+ ],
+ "surveyed": {
+  "windowsFiles": 129,
+  "corpusFiles": 62,
+  "corpusPrograms": 37
+ },
+ "variants": {},
+ "notNE": {
+  "LE": [
+   "windows:WINDOWS/EMM386.EXE",
+   "windows:WINDOWS/SMARTDRV.EXE",
+   "windows:WINDOWS/SYSTEM/DVA.386",
+   "windows:WINDOWS/SYSTEM/VADLIBD.386",
+   "windows:WINDOWS/SYSTEM/VDD8514.386",
+   "windows:WINDOWS/SYSTEM/VDDEGA.386",
+   "windows:WINDOWS/SYSTEM/VDDHERC.386",
+   "windows:WINDOWS/SYSTEM/VDDTLI4.386",
+   "windows:WINDOWS/SYSTEM/VDDXGA.386",
+   "windows:WINDOWS/SYSTEM/VSBD.386",
+   "windows:WINDOWS/SYSTEM/VTDAPI.386"
+  ],
+  "W3": [
+   "windows:WINDOWS/SYSTEM/WIN386.EXE"
+  ],
+  "PE": [
+   "windows:WINDOWS/SYSTEM/WING32.DLL"
+  ]
+ },
+ "unreadable": [],
+ "exports": [
+  {
+   "ordinal": 1,
+   "name": "WEP",
+   "declaredIn": "_win386.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 2,
+   "name": "SNDPLAYSOUND",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/SND.CPL"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE",
+    "fibsw/FIBSW.EXE",
+    "flak/FLAK.EXE",
+    "invaders/INVADERS.EXE",
+    "missile/MISSILE.EXE",
+    "simtower/WAVMIX16.DLL",
+    "towers/TOWERS.EXE",
+    "trekwar/TREKWAR.EXE",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 5,
+   "name": "MMSYSTEMGETVERSION",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 6,
+   "name": "DRIVERPROC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [
+    "WINDOWS/SYSTEM/USER.EXE"
+   ],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 30,
+   "name": "OUTPUTDEBUGSTR",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 31,
+   "name": "DRIVERCALLBACK",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MIDIMAP.DRV",
+    "WINDOWS/SYSTEM/MSADLIB.DRV",
+    "WINDOWS/SYSTEM/SNDBLST2.DRV",
+    "WINDOWS/SYSTEM/TIMER.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 32,
+   "name": "STACKENTER",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/SNDBLST2.DRV",
+    "WINDOWS/SYSTEM/TIMER.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 33,
+   "name": "STACKLEAVE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/SNDBLST2.DRV",
+    "WINDOWS/SYSTEM/TIMER.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 34,
+   "name": "MMDRVINSTALL",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 101,
+   "name": "JOYGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 102,
+   "name": "JOYGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 103,
+   "name": "JOYGETPOS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [
+    "bubgirl/BUBGIRL.EXE",
+    "bubgirl/KNPG.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 104,
+   "name": "JOYGETTHRESHOLD",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 105,
+   "name": "JOYRELEASECAPTURE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 106,
+   "name": "JOYSETCAPTURE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 107,
+   "name": "JOYSETTHRESHOLD",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 109,
+   "name": "JOYSETCALIBRATION",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 201,
+   "name": "MIDIOUTGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 202,
+   "name": "MIDIOUTGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 203,
+   "name": "MIDIOUTGETERRORTEXT",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 204,
+   "name": "MIDIOUTOPEN",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 205,
+   "name": "MIDIOUTCLOSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 206,
+   "name": "MIDIOUTPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 207,
+   "name": "MIDIOUTUNPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 208,
+   "name": "MIDIOUTSHORTMSG",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 209,
+   "name": "MIDIOUTLONGMSG",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 210,
+   "name": "MIDIOUTRESET",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 211,
+   "name": "MIDIOUTGETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 212,
+   "name": "MIDIOUTSETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 213,
+   "name": "MIDIOUTCACHEPATCHES",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 214,
+   "name": "MIDIOUTCACHEDRUMPATCHES",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 215,
+   "name": "MIDIOUTGETID",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 216,
+   "name": "MIDIOUTMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MIDIMAP.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 301,
+   "name": "MIDIINGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 302,
+   "name": "MIDIINGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 303,
+   "name": "MIDIINGETERRORTEXT",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 304,
+   "name": "MIDIINOPEN",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 305,
+   "name": "MIDIINCLOSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 306,
+   "name": "MIDIINPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 307,
+   "name": "MIDIINUNPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 308,
+   "name": "MIDIINADDBUFFER",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 309,
+   "name": "MIDIINSTART",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 310,
+   "name": "MIDIINSTOP",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 311,
+   "name": "MIDIINRESET",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 312,
+   "name": "MIDIINGETID",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 313,
+   "name": "MIDIINMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 350,
+   "name": "AUXGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 351,
+   "name": "AUXGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 352,
+   "name": "AUXGETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 353,
+   "name": "AUXSETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 354,
+   "name": "AUXOUTMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 401,
+   "name": "WAVEOUTGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV",
+    "WINDOWS/SYSTEM/SND.CPL"
+   ],
+   "corpus": [
+    "fibsw/FIBSW.EXE",
+    "simtower/WAVMIX16.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 402,
+   "name": "WAVEOUTGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/SIMTOWER.EXE",
+    "simtower/WAVMIX16.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 403,
+   "name": "WAVEOUTGETERRORTEXT",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 404,
+   "name": "WAVEOUTOPEN",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "fibsw/FIBSW.EXE",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 405,
+   "name": "WAVEOUTCLOSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 406,
+   "name": "WAVEOUTPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 407,
+   "name": "WAVEOUTUNPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 408,
+   "name": "WAVEOUTWRITE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 409,
+   "name": "WAVEOUTPAUSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 410,
+   "name": "WAVEOUTRESTART",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 411,
+   "name": "WAVEOUTRESET",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 412,
+   "name": "WAVEOUTGETPOSITION",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 413,
+   "name": "WAVEOUTGETPITCH",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 414,
+   "name": "WAVEOUTSETPITCH",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 415,
+   "name": "WAVEOUTGETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 416,
+   "name": "WAVEOUTSETVOLUME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 417,
+   "name": "WAVEOUTGETPLAYBACKRATE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 418,
+   "name": "WAVEOUTSETPLAYBACKRATE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 419,
+   "name": "WAVEOUTBREAKLOOP",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 420,
+   "name": "WAVEOUTGETID",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 421,
+   "name": "WAVEOUTMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 501,
+   "name": "WAVEINGETNUMDEVS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE",
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 502,
+   "name": "WAVEINGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 503,
+   "name": "WAVEINGETERRORTEXT",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 504,
+   "name": "WAVEINOPEN",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 505,
+   "name": "WAVEINCLOSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 506,
+   "name": "WAVEINPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 507,
+   "name": "WAVEINUNPREPAREHEADER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 508,
+   "name": "WAVEINADDBUFFER",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 509,
+   "name": "WAVEINSTART",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 510,
+   "name": "WAVEINSTOP",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 511,
+   "name": "WAVEINRESET",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 512,
+   "name": "WAVEINGETPOSITION",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 513,
+   "name": "WAVEINGETID",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 514,
+   "name": "WAVEINMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 601,
+   "name": "TIMEGETSYSTEMTIME",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 602,
+   "name": "TIMESETEVENT",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "flak/FLAK.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 603,
+   "name": "TIMEKILLEVENT",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "flak/FLAK.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 604,
+   "name": "TIMEGETDEVCAPS",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [
+    "bubgirl/KNPS.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 605,
+   "name": "TIMEBEGINPERIOD",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV"
+   ],
+   "corpus": [
+    "flak/FLAK.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 606,
+   "name": "TIMEENDPERIOD",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 607,
+   "name": "TIMEGETTIME",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/SNDBLST2.DRV",
+    "WINDOWS/SYSTEM/WING.DLL"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL",
+    "wslam/WSLAM.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 701,
+   "name": "MCISENDCOMMAND",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE"
+   ],
+   "corpus": [
+    "bubgirl/KNPS.DLL",
+    "champ/CHAMP.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 702,
+   "name": "MCISENDSTRING",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE"
+   ],
+   "corpus": [
+    "flak/FLAK.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 703,
+   "name": "MCIGETDEVICEID",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 704,
+   "name": "MCIPARSECOMMAND",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 705,
+   "name": "MCILOADCOMMANDRESOURCE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 706,
+   "name": "MCIGETERRORSTRING",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/MPLAYER.EXE"
+   ],
+   "corpus": [
+    "champ/CHAMP.EXE"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 707,
+   "name": "MCISETDRIVERDATA",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 708,
+   "name": "MCIGETDRIVERDATA",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 710,
+   "name": "MCIDRIVERYIELD",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 711,
+   "name": "MCIDRIVERNOTIFY",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 712,
+   "name": "MCIEXECUTE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 713,
+   "name": "MCIFREECOMMANDRESOURCE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 714,
+   "name": "MCISETYIELDPROC",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 715,
+   "name": "MCIGETDEVICEIDFROMELEMENTID",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 716,
+   "name": "MCIGETYIELDPROC",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 717,
+   "name": "MCIGETCREATORTASK",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 900,
+   "name": "MMTASKCREATE",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 902,
+   "name": "MMTASKBLOCK",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 903,
+   "name": "MMTASKSIGNAL",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 904,
+   "name": "MMGETCURRENTTASK",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 905,
+   "name": "MMTASKYIELD",
+   "declaredIn": null,
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1100,
+   "name": "DRVOPEN",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1101,
+   "name": "DRVCLOSE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1102,
+   "name": "DRVSENDMESSAGE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1103,
+   "name": "DRVGETMODULEHANDLE",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1104,
+   "name": "DRVDEFDRIVERPROC",
+   "declaredIn": null,
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1210,
+   "name": "MMIOOPEN",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1211,
+   "name": "MMIOCLOSE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1212,
+   "name": "MMIOREAD",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1213,
+   "name": "MMIOWRITE",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1214,
+   "name": "MMIOSEEK",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1215,
+   "name": "MMIOGETINFO",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1216,
+   "name": "MMIOSETINFO",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1217,
+   "name": "MMIOSETBUFFER",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1218,
+   "name": "MMIOFLUSH",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1219,
+   "name": "MMIOADVANCE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1220,
+   "name": "MMIOSTRINGTOFOURCC",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1221,
+   "name": "MMIOINSTALLIOPROC",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1222,
+   "name": "MMIOSENDMESSAGE",
+   "declaredIn": "mmsystem.h",
+   "windows": [],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1223,
+   "name": "MMIODESCEND",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1224,
+   "name": "MMIOASCEND",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCISEQ.DRV",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [
+    "simtower/WAVMIX16.DLL"
+   ],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1225,
+   "name": "MMIOCREATECHUNK",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SOUNDREC.EXE",
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  },
+  {
+   "ordinal": 1226,
+   "name": "MMIORENAME",
+   "declaredIn": "mmsystem.h",
+   "windows": [
+    "WINDOWS/SYSTEM/MCIWAVE.DRV"
+   ],
+   "corpus": [],
+   "windowsByName": [],
+   "corpusByName": []
+  }
+ ]
+}
