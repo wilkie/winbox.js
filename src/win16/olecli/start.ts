@@ -79,6 +79,7 @@ export async function start(ole: Ole, address: (ordinal: number) => number, inst
   }
 
   state.started = true;
+  state.instance = instance;
 
   for (const name of FORMATS) {
     state.formats[name] =

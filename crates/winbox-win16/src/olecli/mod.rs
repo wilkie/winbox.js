@@ -16,6 +16,7 @@ pub(crate) mod core;
 pub(crate) mod docs;
 pub(crate) mod draw;
 pub(crate) mod kinds;
+pub(crate) mod linked;
 pub(crate) mod methods;
 pub(crate) mod objects;
 pub(crate) mod start;
@@ -168,15 +169,7 @@ export!(ole_save_to_stream, b"dd", |o, a| word(
     api::save_to_stream(&o, a[0], a[1]).await
 ));
 export!(ole_load_from_stream, b"dddddd", |o, a| word(
-    or_file(
-        &o,
-        4,
-        b"dddddd",
-        &a,
-        std(&o, a[1]),
-        api::load_from_stream(&o, a[0], a[1], a[2], a[3], a[4], a[5])
-    )
-    .await
+    api::load_from_stream(&o, a[0], a[1], a[2], a[3], a[4], a[5]).await
 ));
 export!(ole_clone, b"ddddd", |o, a| word(
     api::clone(&o, a[0], a[1], a[2], a[3], a[4]).await
@@ -188,43 +181,16 @@ export!(ole_equal, b"dd", |o, a| word(
     api::equal(&o, a[0], a[1]).await
 ));
 export!(ole_query_link_from_clip, b"dww", |o, a| word(
-    or_file(
-        &o,
-        9,
-        b"dww",
-        &a,
-        std(&o, a[0]),
-        api::query_from_clip(&o, a[0], a[1] as u16, a[2] as u16, true)
-    )
-    .await
+    api::query_from_clip(&o, a[0], a[1] as u16, a[2] as u16, true).await
 ));
 export!(ole_query_create_from_clip, b"dww", |o, a| word(
-    or_file(
-        &o,
-        10,
-        b"dww",
-        &a,
-        std(&o, a[0]),
-        api::query_from_clip(&o, a[0], a[1] as u16, a[2] as u16, false)
-    )
-    .await
+    api::query_from_clip(&o, a[0], a[1] as u16, a[2] as u16, false).await
 ));
 export!(ole_create_link_from_clip, b"dddddww", |o, a| word(
-    or_file(&o, 11, b"dddddww", &a, std(&o, a[0]), async {
-        Ok(api::create_link_from_clip(&o, a[0], a[2], a[3], a[4]))
-    })
-    .await
+    api::create_link_from_clip(&o, a[0], a[1], a[2], a[3], a[4]).await
 ));
 export!(ole_create_from_clip, b"dddddww", |o, a| word(
-    or_file(
-        &o,
-        12,
-        b"dddddww",
-        &a,
-        std(&o, a[0]),
-        api::create_from_clip(&o, a[0], a[1], a[2], a[3], a[4], a[5] as u16, a[6] as u16)
-    )
-    .await
+    api::create_from_clip(&o, a[0], a[1], a[2], a[3], a[4], a[5] as u16, a[6] as u16).await
 ));
 export!(ole_copy_to_clipboard, b"d", |o, a| word(
     call(&o, a[0], Method::CopyToClipboard, &[]).await
@@ -326,15 +292,7 @@ export!(ole_create_from_template, b"ddddddww", |o, a| word(
     .await
 ));
 export!(ole_create, b"ddddddww", |o, a| word(
-    or_file(
-        &o,
-        34,
-        b"ddddddww",
-        &a,
-        std(&o, a[0]),
-        api::create_by_class(&o, a[0], a[2], a[3], a[4], a[5])
-    )
-    .await
+    api::create(&o, a[0], a[1], a[2], a[3], a[4], a[5], true).await
 ));
 export!(ole_query_release_status, b"d", |o, a| word(
     call(&o, a[0], Method::QueryReleaseStatus, &[]).await
@@ -346,26 +304,10 @@ export!(ole_query_release_method, b"d", |o, a| word(
     call(&o, a[0], Method::QueryReleaseMethod, &[]).await
 ));
 export!(ole_create_from_file, b"dddddddww", |o, a| word(
-    or_file(
-        &o,
-        38,
-        b"dddddddww",
-        &a,
-        std(&o, a[0]),
-        api::create_by_class(&o, a[0], a[2], a[4], a[5], a[6])
-    )
-    .await
+    api::create_from_file(&o, a[0], a[1], a[2], a[3], 0, a[4], a[5], a[6], false).await
 ));
 export!(ole_create_link_from_file, b"ddddddddww", |o, a| word(
-    or_file(
-        &o,
-        39,
-        b"ddddddddww",
-        &a,
-        std(&o, a[0]),
-        api::create_by_class(&o, a[0], a[2], a[5], a[6], a[7])
-    )
-    .await
+    api::create_from_file(&o, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], true).await
 ));
 export!(ole_register_client_doc, b"dddd", |o, a| word(
     docs::register_client_doc(&o, a[0], a[1], a[3]).await
@@ -409,13 +351,18 @@ export!(ole_lock_server, b"dd", |o, a| word(
         54,
         b"dd",
         &a,
-        objects::is_object(&o, a[0]) && objects::kind_of(&o, a[0]).is_none(),
-        async { Ok(api::lock_server(&o, a[0])) }
+        objects::is_object(&o, a[0])
+            && objects::kind_of(&o, a[0]).is_none()
+            && !linked::is_le(&o, a[0]),
+        api::lock_server(&o, a[0], a[1])
     )
     .await
 ));
 export!(ole_unlock_server, b"d", |o, a| word(
-    or_file(&o, 55, b"d", &a, true, async { Ok(OLE_ERROR_HANDLE) }).await
+    match linked::unlock_server(&o, a[0]).await? {
+        Some(answer) => Ok(answer),
+        None => or_file(&o, 55, b"d", &a, true, async { Ok(OLE_ERROR_HANDLE) }).await,
+    }
 ));
 export!(ole_query_size, b"dd", |o, a| word(
     api::method_with_out(&o, a[0], Method::QuerySize, a[1], 4, &[D(a[1])]).await
@@ -424,15 +371,10 @@ export!(ole_execute, b"dww", |o, a| word(
     call(&o, a[0], Method::Execute, &[W(a[1] as u16), W(a[2] as u16)]).await
 ));
 export!(ole_create_invisible, b"ddddddwww", |o, a| word(
-    or_file(
-        &o,
-        58,
-        b"ddddddwww",
-        &a,
-        std(&o, a[0]),
-        api::create_by_class(&o, a[0], a[2], a[3], a[4], a[5])
-    )
-    .await
+    api::create(&o, a[0], a[1], a[2], a[3], a[4], a[5], a[8] as u16 != 0).await
+));
+export!(doc_wnd_proc, b"wwwd", |o, a| dword(
+    linked::conv_proc(&o, a[0] as u16, a[1] as u16, a[2] as u16, a[3]).await
 ));
 export!(ole_query_client_version, b"", |_o, _a| dword(Ok(
     CLIENT_VERSION
@@ -463,7 +405,7 @@ fn method_export(engine: &Engine, mut args: Args, ordinal: u16) -> Later<'_> {
 
         let answer = methods::call_own_method(&ole, ordinal, &values).await?;
 
-        if ordinal == 712 {
+        if ordinal == 712 || ordinal == 221 {
             Ok(Answer::Dword(answer))
         } else {
             Ok(Answer::Word(answer as u16))
@@ -473,14 +415,34 @@ fn method_export(engine: &Engine, mut args: Args, ordinal: u16) -> Later<'_> {
 
 /// A method export's arguments, the object first.
 const fn method_shape(ordinal: u16) -> &'static [u8] {
+    // The 200s and 1000-1005 an embedded or linked object's (`linked.rs`).
     match ordinal {
         // Release, Delete, CopyToClipboard, Close, Update, Reconnect,
         // QueryOpen, QueryOutOfDate, QueryRelease*.
-        300 | 305 | 400 | 405 | 500 | 505 | 600 | 606 | 707 | 709..=711 | 713 | 1027 => b"d",
+        300
+        | 305
+        | 400
+        | 405
+        | 500
+        | 505
+        | 600
+        | 606
+        | 707
+        | 709..=711
+        | 713
+        | 1027
+        | 200
+        | 211
+        | 215
+        | 218
+        | 219
+        | 222
+        | 225
+        | 1001..=1003 => b"d",
         // GetData; ObjectLong.
-        301 | 401 | 501 | 601 | 718 => b"dwd",
+        301 | 401 | 501 | 601 | 718 | 202 | 229 => b"dwd",
         // SetData; Execute.
-        602 | 702 | 717 => b"dww",
+        602 | 702 | 717 | 203 | 228 => b"dww",
         // SaveToStream, Equal, QueryBounds, QueryType, QuerySize, Rename,
         // SetBounds, GetLinkUpdateOptions, SetColorScheme, QueryProtocol.
         302
@@ -500,24 +462,32 @@ const fn method_shape(ordinal: u16) -> &'static [u8] {
         | 715
         | 911..=913
         | 1028
-        | 1030 => b"dd",
+        | 1030
+        | 206
+        | 207
+        | 210
+        | 212
+        | 213
+        | 221
+        | 226
+        | 1004 => b"dd",
         // Clone; CopyFromLink.
-        303 | 403 | 503 | 604 | 706 => b"ddddd",
+        303 | 403 | 503 | 604 | 706 | 208 | 209 => b"ddddd",
         // Draw.
-        308 | 408 | 508 | 609 => b"dwddw",
+        308 | 408 | 508 | 609 | 214 => b"dwddw",
         // EnumFormats; Show; SetTargetDevice; SetLinkUpdateOptions;
         // RequestData.
-        309 | 409 | 509 | 610 | 701 | 704 | 716 | 1026 => b"dw",
+        309 | 409 | 509 | 610 | 701 | 704 | 716 | 1026 | 201 | 205 | 220 | 227 | 1000 => b"dw",
         // ChangeData.
-        310 | 410 | 510 | 611 => b"dwdw",
+        310 | 410 | 510 | 611 | 224 => b"dwdw",
         // SetHostNames; QueryName.
-        703 | 910 => b"ddd",
+        703 | 910 | 204 => b"ddd",
         // Activate.
-        708 => b"dwwwwd",
+        708 | 216 => b"dwwwwd",
         // ObjectConvert.
-        714 => b"dddddd",
+        714 | 223 => b"dddddd",
         // DoVerb.
-        1029 => b"dwww",
+        1029 | 1005 => b"dwww",
         _ => b"",
     }
 }
@@ -567,6 +537,17 @@ mod method_names {
         910 => OBJQUERYNAME, 911 => OBJRENAME, 912 => OBJQUERYTYPE, 913 => OBJQUERYSIZE,
         1026 => Ordinal1026, 1027 => Ordinal1027, 1028 => Ordinal1028, 1029 => Ordinal1029,
         1030 => Ordinal1030,
+        200 => LERELEASE, 201 => LESHOW, 202 => LEGETDATA, 203 => LESETDATA,
+        204 => LESETHOSTNAMES, 205 => LESETTARGETDEVICE, 206 => LESETBOUNDS,
+        207 => LESAVETOSTREAM, 208 => LECLONE, 209 => LECOPYFROMLINK, 210 => LEEQUAL,
+        211 => LECOPY, 212 => LEQUERYTYPE, 213 => LEQUERYBOUNDS, 214 => LEDRAW,
+        215 => LEQUERYOPEN, 216 => LEACTIVATE, 218 => LEUPDATE, 219 => LERECONNECT,
+        220 => LEENUMFORMAT, 221 => LEQUERYPROTOCOL, 222 => LEQUERYOUTOFDATE,
+        223 => LEOBJECTCONVERT, 224 => LECHANGEDATA, 225 => LECLOSE,
+        226 => LEGETUPDATEOPTIONS, 227 => LESETUPDATEOPTIONS, 228 => LEEXECUTE,
+        229 => LEOBJECTLONG,
+        1000 => Ordinal1000, 1001 => Ordinal1001, 1002 => Ordinal1002, 1003 => Ordinal1003,
+        1004 => Ordinal1004, 1005 => Ordinal1005,
     }
 
     pub(super) fn named(name: &str) -> Option<Implementation> {
@@ -634,6 +615,7 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "OleQueryClientVersion" => Implementation::Async(ole_query_client_version),
         "OleIsDcMeta" => Implementation::Async(ole_is_dc_meta),
         "MFCALLBACKFUNC" => Implementation::Async(mf_callback_func),
+        "DOCWNDPROC" | "SRVRWNDPROC" => Implementation::Async(doc_wnd_proc),
         _ => return method_names::named(name),
     })
 }

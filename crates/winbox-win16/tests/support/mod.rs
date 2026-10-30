@@ -294,6 +294,9 @@ pub const AGREEING: &[&str] = &[
     "gdidm",
     "gdispool",
     "gdiint",
+    "oledde",
+    "olepbd",
+    "olepbr",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

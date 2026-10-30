@@ -11,6 +11,7 @@ import { callOwnMethod, mfCallback } from './methods.js';
 import { Loader } from '../loader.js';
 import { protocolOf } from './api.js';
 import { exportAddress, isObject, kindOf, registerAddress, registerMethods } from './objects.js';
+import { convProc } from './linked.js';
 import { start } from './start.js';
 
 /**
@@ -509,6 +510,45 @@ const METHOD_OF: Record<number, string> = {
   611: 'ChangeData',
 };
 
+/** An embedded or linked object's methods: the `LE` exports and entries 1000-1005 (**measured** by `oleemb`). */
+Object.assign(METHOD_OF, {
+  200: 'Release',
+  201: 'Show',
+  202: 'GetData',
+  203: 'SetData',
+  204: 'SetHostNames',
+  205: 'SetTargetDevice',
+  206: 'SetBounds',
+  207: 'SaveToStream',
+  208: 'Clone',
+  209: 'CopyFromLink',
+  210: 'Equal',
+  211: 'CopyToClipboard',
+  212: 'QueryType',
+  213: 'QueryBounds',
+  214: 'Draw',
+  215: 'QueryOpen',
+  216: 'Activate',
+  218: 'Update',
+  219: 'Reconnect',
+  220: 'EnumFormats',
+  221: 'QueryProtocol',
+  222: 'QueryOutOfDate',
+  223: 'ObjectConvert',
+  224: 'ChangeData',
+  225: 'Close',
+  226: 'GetLinkUpdateOptions',
+  227: 'SetLinkUpdateOptions',
+  228: 'Execute',
+  229: 'ObjectLong',
+  1000: 'RequestData',
+  1001: 'QueryReleaseMethod',
+  1002: 'QueryReleaseError',
+  1003: 'QueryReleaseStatus',
+  1004: 'SetColorScheme',
+  1005: 'DoVerb',
+});
+
 for (const base of [300, 400, 500]) {
   Object.assign(METHOD_OF, {
     [base]: 'Release',
@@ -549,6 +589,15 @@ function MFCALLBACKFUNC(
   return mfCallback(new Ole(this), dc, table, record, objects, key);
 }
 
+/** `DOCWNDPROC` (100) and `SRVRWNDPROC` (101): its conversations' windows (`linked.ts`). */
+function DOCWNDPROC(this: any, hwnd: number, message: number, wParam: number, lParam: number) {
+  return convProc(new Ole(this), hwnd, message, wParam, lParam);
+}
+
+function SRVRWNDPROC(this: any, hwnd: number, message: number, wParam: number, lParam: number) {
+  return convProc(new Ole(this), hwnd, message, wParam, lParam);
+}
+
 /** `WEP`: 1, as a library's is. */
 function WEP() {
   return 1;
@@ -574,27 +623,17 @@ function ready(implementation: any, name: string) {
 }
 
 /**
- * What WinBox's `OLECLI` does not do yet -- embedded and linked objects,
- * which need a server -- left to the file's code where the file is on the
- * drive, as it was before WinBox's own: the calls that make such an object
- * or talk to its server, by the argument that says so. The object the
- * file makes is used through its own table thereafter, as any object is
- * (`objects.ts`'s `callMethod`), in a document of WinBox's, whose block the
- * file lays out as WinBox does (`olemem`). As `mod.rs`'s `delegated`.
+ * What WinBox's `OLECLI` does not do yet, left to the file's code where the
+ * file is on the drive, as it was before WinBox's own: an object made from
+ * a template, and a server locked for an object not WinBox's. The object
+ * the file makes is used through its own table thereafter, as any object
+ * is (`objects.ts`'s `callMethod`), in a document of WinBox's, whose block
+ * the file lays out as WinBox does (`olemem`). As `mod.rs`'s `delegated`.
  */
 const FILE_FIRST: Record<string, (ole: Ole, args: number[]) => boolean> = {
-  OLELOADFROMSTREAM: (ole, args) => protocolOf(ole, args[1]) === 'std',
-  OLEQUERYCREATEFROMCLIP: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLEQUERYLINKFROMCLIP: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATEFROMCLIP: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATELINKFROMCLIP: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATE: (ole, args) => protocolOf(ole, args[0]) === 'std',
   OLECREATEFROMTEMPLATE: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATEFROMFILE: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATELINKFROMFILE: (ole, args) => protocolOf(ole, args[0]) === 'std',
-  OLECREATEINVISIBLE: (ole, args) => protocolOf(ole, args[0]) === 'std',
   OLELOCKSERVER: (ole, args) => isObject(ole, args[0]) && !kindOf(ole, args[0]),
-  OLEUNLOCKSERVER: () => true,
+  OLEUNLOCKSERVER: (ole, args) => !ole.state().locks.has(args[0] & 0xffff),
 };
 
 /** An export left to the file where it is loaded and its arguments say so (`FILE_FIRST`). */
@@ -673,6 +712,16 @@ export class OleCli extends Module {
         ];
       } else if (ordinal === 1) {
         made[ordinal] = [WEP, 'WEP', pops, [INT], INT];
+      } else if (ordinal === 100 || ordinal === 101) {
+        const name = ordinal === 100 ? 'DOCWNDPROC' : 'SRVRWNDPROC';
+
+        made[ordinal] = [
+          ready(ordinal === 100 ? DOCWNDPROC : SRVRWNDPROC, name),
+          name,
+          pops,
+          [UINT, UINT, UINT, DWORD],
+          DWORD,
+        ];
       } else if (ordinal === 102) {
         made[ordinal] = [
           ready(MFCALLBACKFUNC, 'MFCALLBACKFUNC'),

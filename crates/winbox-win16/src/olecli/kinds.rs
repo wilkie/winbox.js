@@ -221,7 +221,7 @@ async fn bitmap_from(ole: &Ole<'_>, object: u32, bitmap: u16) -> R<u16> {
 // A DIB.
 
 /// A global block copied: a block `GMEM_MOVEABLE` its size, the bytes.
-async fn copy_block(ole: &Ole<'_>, handle: u16) -> R<u16> {
+pub(crate) async fn copy_block(ole: &Ole<'_>, handle: u16) -> R<u16> {
     let from = ole.global_lock(handle).await?;
     let size = ole.global_size(handle).await?;
     let copy = ole.global_alloc(GMEM_MOVEABLE, size).await?;
@@ -669,10 +669,22 @@ pub(crate) async fn query_size(ole: &Ole<'_>, kind: Kind, object: u32, out: u32)
 /// its format, the format's name where it is registered, its data's size
 /// and its data. Each field a `Put` of its own (**recorded** by `olestat`).
 pub(crate) async fn save_to_stream(ole: &Ole<'_>, kind: Kind, object: u32, stream: u32) -> R<u16> {
+    save_typed(ole, kind, object, stream, OT_STATIC).await
+}
+
+/// The same with another type: 5, an embedded or linked object's
+/// presentation (`linked.rs`).
+pub(crate) async fn save_typed(
+    ole: &Ole<'_>,
+    kind: Kind,
+    object: u32,
+    stream: u32,
+    type_: u32,
+) -> R<u16> {
     let class = class_name(ole, kind, object).await?;
 
     if !(put_long(ole, stream, STREAM_VERSION).await?
-        && put_long(ole, stream, OT_STATIC).await?
+        && put_long(ole, stream, type_).await?
         && put_name(ole, stream, &class).await?)
     {
         return Ok(OLE_ERROR_STREAM);
@@ -823,7 +835,7 @@ pub(crate) async fn load_static(
 }
 
 /// A block of `size` bytes read from the stream: its handle, or nought.
-async fn read_block(ole: &Ole<'_>, stream: u32, size: u32) -> R<u16> {
+pub(crate) async fn read_block(ole: &Ole<'_>, stream: u32, size: u32) -> R<u16> {
     let block = ole.global_alloc(GMEM_MOVEABLE, size).await?;
 
     if block == 0 {
@@ -843,7 +855,7 @@ async fn read_block(ole: &Ole<'_>, stream: u32, size: u32) -> R<u16> {
     Ok(block)
 }
 
-async fn read_static(ole: &Ole<'_>, kind: Kind, object: u32, stream: u32) -> R<u16> {
+pub(crate) async fn read_static(ole: &Ole<'_>, kind: Kind, object: u32, stream: u32) -> R<u16> {
     let Some(width) = get_long(ole, stream).await? else {
         return Ok(OLE_ERROR_STREAM);
     };
@@ -940,7 +952,7 @@ async fn read_static(ole: &Ole<'_>, kind: Kind, object: u32, stream: u32) -> R<u
 /// (**measured** by `olemem`'s `noname`, whose stream gives a length of
 /// nought and whose format is named as the stream before it named one);
 /// then its data's size and data.
-async fn read_other(ole: &Ole<'_>, object: u32, stream: u32, class_atom: u16) -> R<u16> {
+pub(crate) async fn read_other(ole: &Ole<'_>, object: u32, stream: u32, class_atom: u16) -> R<u16> {
     ole.w16(plus(object, GEN_CLASS), class_atom);
 
     let Some(mut format) = get_long(ole, stream).await? else {
@@ -1182,7 +1194,7 @@ async fn bitmaps_equal(ole: &Ole<'_>, a: u32, b: u32) -> R<u16> {
 }
 
 /// Two global blocks: equal where their sizes and bytes are.
-async fn same_blocks(ole: &Ole<'_>, first: u16, second: u16) -> R<u16> {
+pub(crate) async fn same_blocks(ole: &Ole<'_>, first: u16, second: u16) -> R<u16> {
     let size = ole.global_size(first).await?;
 
     if size != ole.global_size(second).await? {

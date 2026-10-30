@@ -134,6 +134,11 @@ export async function newObject(
 
 /** An object put last in its document's list. */
 function link(ole: Ole, object: number, doc: number) {
+  /* A presentation an embedded or linked object holds is in no document. */
+  if (!doc) {
+    return;
+  }
+
   const last = ole.r32(plus(doc, DOC_LAST));
 
   if (last) {

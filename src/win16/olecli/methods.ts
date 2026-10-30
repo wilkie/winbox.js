@@ -23,6 +23,7 @@ import {
   release,
   saveToStream,
 } from './kinds.js';
+import { LE_METHODS, querySize as leQuerySize } from './linked.js';
 import { kindOf, queryName, queryType, rename } from './objects.js';
 
 /**
@@ -113,7 +114,11 @@ export const METHOD_IMPLEMENTATIONS: Record<number, Implementation> = {
   910: (ole, [object, buffer, count]) => queryName(ole, object, buffer, count),
   911: (ole, [object, name]) => rename(ole, object, name),
   912: (ole, [object, out]) => queryType(ole, object, out),
-  913: (ole, [object, out]) => querySize(ole, kindOf(ole, object) ?? 'gen', object, out),
+  913: (ole, [object, out]) =>
+    kindOf(ole, object) === 'le'
+      ? leQuerySize(ole, object, out)
+      : querySize(ole, kindOf(ole, object) ?? 'gen', object, out),
+  ...LE_METHODS,
 };
 
 /** A method of WinBox's by its ordinal, called with its arguments. */

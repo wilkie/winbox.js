@@ -135,6 +135,10 @@ pub(crate) async fn load_from_stream(
         return Ok(OLE_OK);
     }
 
+    if kind == Some(Protocol::Std) && (kind_of_object == 1 || kind_of_object == 2) {
+        return super::linked::load(ole, stream, kind_of_object, client, doc, name, out).await;
+    }
+
     if kind != Some(Protocol::Static) || kind_of_object != OT_STATIC {
         return Ok(OLE_ERROR_PROTOCOL);
     }
@@ -366,6 +370,11 @@ pub(crate) async fn create_from_clip(
 
     let kind = protocol_of(ole, protocol);
 
+    if kind == Some(Protocol::Std) {
+        ole.w32(out, 0);
+        return super::linked::from_clip(ole, client, doc, name, out, false).await;
+    }
+
     if kind != Some(Protocol::Static) {
         return Ok(if kind.is_some() {
             OLE_ERROR_FORMAT
@@ -406,13 +415,14 @@ pub(crate) async fn create_from_clip(
 
 /// `OleCreateLinkFromClip`: a link of a static picture is not made:
 /// `OLE_ERROR_FORMAT` for `Static`; not yet `StdFileEditing`'s.
-pub(crate) fn create_link_from_clip(
+pub(crate) async fn create_link_from_clip(
     ole: &Ole<'_>,
     protocol: u32,
+    client: u32,
     doc: u32,
     name: u32,
     out: u32,
-) -> u16 {
+) -> R<u16> {
     let checked = first(&[
         doc_error(ole, doc),
         name_error(ole, name),
@@ -424,14 +434,19 @@ pub(crate) fn create_link_from_clip(
     ]);
 
     if checked != 0 {
-        return checked;
+        return Ok(checked);
     }
 
-    if protocol_of(ole, protocol).is_some() {
+    if protocol_of(ole, protocol) == Some(Protocol::Std) {
+        ole.w32(out, 0);
+        return super::linked::from_clip(ole, client, doc, name, out, true).await;
+    }
+
+    Ok(if protocol_of(ole, protocol).is_some() {
         OLE_ERROR_FORMAT
     } else {
         OLE_ERROR_PROTOCOL
-    }
+    })
 }
 
 /// A call checking a pointer argument's room before the method:
@@ -546,10 +561,106 @@ pub(crate) async fn request_data(ole: &Ole<'_>, object: u32, format: u16) -> R<u
 
 /// `OleLockServer`: a static object has no server, `OLE_ERROR_STATIC`,
 /// nothing written (**recorded** by `olestat`).
-pub(crate) fn lock_server(ole: &Ole<'_>, object: u32) -> u16 {
-    if is_object(ole, object) {
-        OLE_ERROR_STATIC
-    } else {
-        OLE_ERROR_OBJECT
+pub(crate) async fn lock_server(ole: &Ole<'_>, object: u32, out: u32) -> R<u16> {
+    if !is_object(ole, object) {
+        return Ok(OLE_ERROR_OBJECT);
     }
+
+    if super::linked::is_le(ole, object) {
+        return if writable(ole, out, 4) {
+            super::linked::lock_server(ole, object, out).await
+        } else {
+            Ok(OLE_ERROR_ADDRESS)
+        };
+    }
+
+    Ok(OLE_ERROR_STATIC)
+}
+
+/// The checks of a call that makes an embedded or linked object of a
+/// class: the document, the name, the out pointer, the protocol
+/// (`StdFileEditing`), then the class in the registration database
+/// (`OLE_ERROR_CLASS` where it is not, **recorded** by `olestat`). As
+/// `api.ts`'s `checkClass`.
+async fn check_class(
+    ole: &Ole<'_>,
+    protocol: u32,
+    class: u32,
+    doc: u32,
+    name: u32,
+    out: u32,
+) -> R<u16> {
+    let checked = first(&[
+        doc_error(ole, doc),
+        name_error(ole, name),
+        if writable(ole, out, 4) {
+            0
+        } else {
+            OLE_ERROR_ADDRESS
+        },
+    ]);
+
+    if checked != 0 {
+        return Ok(checked);
+    }
+
+    if protocol_of(ole, protocol) != Some(Protocol::Std) {
+        return Ok(OLE_ERROR_PROTOCOL);
+    }
+
+    if class == 0 || !ole.readable(class, 1) {
+        return Ok(OLE_ERROR_CLASS);
+    }
+
+    Ok(if super::linked::class_known(ole, class).await? {
+        OLE_OK
+    } else {
+        OLE_ERROR_CLASS
+    })
+}
+
+/// `OleCreate` and `OleCreateInvisible`: the checks, then the object made
+/// and, to be activated, its server reached or launched (`linked.rs`).
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn create(
+    ole: &Ole<'_>,
+    protocol: u32,
+    client: u32,
+    class: u32,
+    doc: u32,
+    name: u32,
+    out: u32,
+    activate: bool,
+) -> R<u16> {
+    let checked = check_class(ole, protocol, class, doc, name, out).await?;
+
+    if checked != 0 {
+        return Ok(checked);
+    }
+
+    super::linked::create(ole, client, class, doc, name, out, activate).await
+}
+
+/// `OleCreateFromFile` and `OleCreateLinkFromFile`: the checks, then the
+/// file's document reached (`linked.rs`).
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn create_from_file(
+    ole: &Ole<'_>,
+    protocol: u32,
+    client: u32,
+    class: u32,
+    file: u32,
+    item: u32,
+    doc: u32,
+    name: u32,
+    out: u32,
+    linked: bool,
+) -> R<u16> {
+    let checked = check_class(ole, protocol, class, doc, name, out).await?;
+
+    if checked != 0 {
+        return Ok(checked);
+    }
+
+    super::linked::create_from_file(ole, client, class, file, item, doc, name, out, linked).await
 }

@@ -17,8 +17,15 @@
 #include "probe.h"
 #include <dde.h>
 
+/* `olepbd` builds this program as the class `PBrush`, its `Native` a bitmap file. */
+#ifndef OUTPUT
 #define OUTPUT "C:\\ORACLE\\OLEDDE.OUT"
 #define CLASS "OleDdeProbe"
+#endif
+
+#ifdef NATIVE_BMP
+#include "olebmp.h"
+#endif
 
 #define MAXCONV 8
 #define MAXADVISE 16
@@ -207,6 +214,14 @@ static HGLOBAL dataFor(LPCSTR topic, LPCSTR item, UINT format, WORD flags)
     int i;
 
     if (format == cfNative) {
+#ifdef NATIVE_BMP
+        block = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, 4 + OLEBMP_SIZE);
+        bytes = (LPBYTE)GlobalLock(block);
+        *(WORD far *)bytes = flags;
+        *(WORD far *)(bytes + 2) = format;
+        oleBmp(bytes + 4, generation);
+        (void)i;
+#else
         block = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, 4 + 16);
         bytes = (LPBYTE)GlobalLock(block);
         *(WORD far *)bytes = flags;
@@ -217,6 +232,7 @@ static HGLOBAL dataFor(LPCSTR topic, LPCSTR item, UINT format, WORD flags)
         }
 
         bytes[4] = (BYTE)generation;
+#endif
         GlobalUnlock(block);
         return block;
     }

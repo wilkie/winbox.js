@@ -176,13 +176,16 @@ pub(crate) async fn mf_callback(
 
         let client = ole.r32(plus(object, OBJ_CLIENT));
         let callback = ole.r32(ole.r32(client));
+        let owner = ole.state().owners.get(&object).copied().unwrap_or(object);
         let answer = ole
             .call_far(
                 callback,
                 &[
                     GuestArg::Long(client),
                     GuestArg::Word(OLE_QUERY_PAINT),
-                    GuestArg::Long(object),
+                    // A presentation's own object is the one its client is
+                    // asked about.
+                    GuestArg::Long(owner),
                 ],
             )
             .await?;

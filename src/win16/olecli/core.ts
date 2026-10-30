@@ -145,6 +145,8 @@ export const GEN_CLASS = 0x32;
 export const GEN_SIZE = 0x34;
 export const GEN_DATA = 0x38;
 export const SMALL_BLOCK = 0x3a;
+/** An embedded or linked object's block: A0h bytes (**measured** by `oleemb`'s `block` records); WinBox keeps the rest of what it holds beside it (`linked.ts`). */
+export const LE_BLOCK = 0xa0;
 
 /**
  * The 39 methods of `OLEOBJECTVTBL`, in ole.h's order: an object's table
@@ -248,7 +250,54 @@ const ownMethods = (base: number) => ({
   SetData: 702,
 });
 
+/**
+ * An embedded or linked object's table: the `LE` exports, 200 on, and the
+ * unnamed entries 1000-1005 (**measured** by `oleemb`'s `vtbl` records).
+ */
+const LE_TABLE = {
+  QueryProtocol: 221,
+  Release: 200,
+  Show: 201,
+  DoVerb: 1005,
+  GetData: 202,
+  SetData: 203,
+  SetTargetDevice: 205,
+  SetBounds: 206,
+  EnumFormats: 220,
+  SetColorScheme: 1004,
+  Delete: 200,
+  SetHostNames: 204,
+  SaveToStream: 207,
+  Clone: 208,
+  CopyFromLink: 209,
+  Equal: 210,
+  CopyToClipboard: 211,
+  Draw: 214,
+  Activate: 216,
+  Execute: 228,
+  Close: 225,
+  Update: 218,
+  Reconnect: 219,
+  ObjectConvert: 223,
+  GetLinkUpdateOptions: 226,
+  SetLinkUpdateOptions: 227,
+  Rename: 911,
+  QueryName: 910,
+  QueryType: 212,
+  QueryBounds: 213,
+  QuerySize: 913,
+  QueryOpen: 215,
+  QueryOutOfDate: 222,
+  QueryReleaseStatus: 1003,
+  QueryReleaseError: 1002,
+  QueryReleaseMethod: 1001,
+  RequestData: 1000,
+  ObjectLong: 229,
+  ChangeData: 224,
+};
+
 export const KINDS = {
+  le: LE_TABLE,
   mf: { ...COMMON, ...ownMethods(300) },
   bm: { ...COMMON, ...ownMethods(400) },
   dib: { ...COMMON, ...ownMethods(500) },
@@ -277,7 +326,13 @@ export type Kind = keyof typeof KINDS;
  * method tables, a scratch area for what it hands a stream, and the name a
  * stream last gave a format.
  */
-export const VTBL_AT: Record<Kind, number> = { mf: 0x100, bm: 0x200, dib: 0x300, gen: 0x400 };
+export const VTBL_AT: Record<Kind, number> = {
+  mf: 0x100,
+  bm: 0x200,
+  dib: 0x300,
+  gen: 0x400,
+  le: 0x500,
+};
 export const SCRATCH = 0x800;
 export const FORMAT_NAME = 0x900;
 /** How much of a format's name a stream may give: as much as `GetClipboardFormatName` is asked for, 100h. */
@@ -488,10 +543,34 @@ export interface OleState {
   started: boolean;
   /** `GetStockObject(DEFAULT_PALETTE)`, once asked for. */
   defaultPalette: number;
+  /** The library's instance: its windows' (`start.ts`). */
+  instance: number;
+  /** Embedded and linked objects, by their far pointers (`linked.ts`). */
+  le: Map<number, any>;
+  /** Each presentation's object, by the presentation's far pointer. */
+  owners: Map<number, number>;
+  /** The number the last embedded object was given. */
+  serial: number;
+  /** The window a `WM_DDE_INITIATE` is sent from while it is, and the first server that answered. */
+  initiating: { hwnd: number; server: number } | null;
+  /** Servers locked, by the window of the conversation that holds each. */
+  locks: Map<number, { server: number }>;
 }
 
 function newState(): OleState {
-  return { firstDoc: 0, formats: {}, atoms: {}, started: false, defaultPalette: 0 };
+  return {
+    firstDoc: 0,
+    formats: {},
+    atoms: {},
+    started: false,
+    defaultPalette: 0,
+    instance: 0,
+    le: new Map(),
+    owners: new Map(),
+    serial: 0,
+    initiating: null,
+    locks: new Map(),
+  };
 }
 
 /** A string's bytes. */

@@ -106,10 +106,17 @@ pub(crate) async fn call_own_method(ole: &Ole<'_>, ordinal: u16, args: &[u32]) -
         return Ok(u32::from(answer));
     }
 
+    if let Some(answer) = super::linked::method(ole, ordinal, args).await? {
+        return Ok(answer);
+    }
+
     let answer = match ordinal {
         910 => query_name(ole, object, arg(1), arg(2)).await?,
         911 => rename(ole, object, arg(1)).await?,
         912 => query_type(ole, object, arg(1)),
+        913 if super::linked::is_le(ole, object) => {
+            super::linked::query_size(ole, object, arg(1)).await?
+        }
         913 => {
             let kind = kind_of(ole, object).unwrap_or(Kind::Gen);
 

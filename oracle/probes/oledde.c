@@ -29,8 +29,16 @@
 #pragma library("olecli")
 #pragma library("shell")
 
+/* `olepbd` builds this probe as the class `PBrush`, its server `OLEPBDC.EXE`. */
+#ifndef OUTPUT
 #define OUTPUT "C:\\ORACLE\\OLEDDE.OUT"
 #define CLASS "OleDdeProbe"
+#define SERVER "OLEDDEC.EXE"
+#endif
+
+#ifdef NATIVE_BMP
+#include "olebmp.h"
+#endif
 
 static HWND window;
 static HINSTANCE self;
@@ -590,12 +598,18 @@ static void setters(int i)
     answered("OleSetTargetDevice", i, OleSetTargetDevice(objects[i], device));
     GlobalFree(device);
 
+#ifdef NATIVE_BMP
+    native = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, OLEBMP_SIZE);
+    n = (LPBYTE)GlobalLock(native);
+    oleBmp(n, 7);
+#else
     native = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, 16);
     n = (LPBYTE)GlobalLock(native);
 
     for (k = 0; k < 16; k++) {
         n[k] = (BYTE)(0x70 + k);
     }
+#endif
 
     GlobalUnlock(native);
     answered("OleSetData", i, OleSetData(objects[i], cfNative, native));
@@ -689,9 +703,20 @@ static void clip(LHCLIENTDOC doc)
         native[k] = (char)(0x60 + k);
     }
 
+#ifdef NATIVE_BMP
+    {
+        static char bmp[OLEBMP_SIZE];
+
+        oleBmp((BYTE far *)bmp, 3);
+        OpenClipboard(window);
+        EmptyClipboard();
+        SetClipboardData(cfNative, shared(bmp, OLEBMP_SIZE));
+    }
+#else
     OpenClipboard(window);
     EmptyClipboard();
     SetClipboardData(cfNative, shared(native, 16));
+#endif
     SetClipboardData(RegisterClipboardFormat("OwnerLink"), shared(owner, sizeof owner));
     SetClipboardData(CF_METAFILEPICT, picture());
     SetClipboardData(RegisterClipboardFormat("ObjectLink"), shared(owner, sizeof owner));
@@ -764,10 +789,10 @@ static void run(void)
     char result[40];
 
     reg(CLASS, "OLE DDE Probe");
-    reg(CLASS "\\protocol\\StdFileEditing\\server", "C:\\ORACLE\\OLEDDEC.EXE");
+    reg(CLASS "\\protocol\\StdFileEditing\\server", SERVER);
     reg(CLASS "\\protocol\\StdFileEditing\\verb\\0", "Edit");
     reg(CLASS "\\protocol\\StdFileEditing\\verb\\1", "Play");
-    reg(CLASS "\\protocol\\StdExecute\\server", "C:\\ORACLE\\OLEDDEC.EXE");
+    reg(CLASS "\\protocol\\StdExecute\\server", SERVER);
     linkFile();
 
     answer = OleRegisterClientDoc("OleDdeClient", "C:\\ORACLE\\OLEDDE.DOC", 0L, &doc);

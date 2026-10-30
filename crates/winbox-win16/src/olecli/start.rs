@@ -73,6 +73,7 @@ pub(crate) async fn start(ole: &Ole<'_>, instance: u16) -> R<()> {
     }
 
     ole.state().started = true;
+    ole.state().instance = instance;
 
     let mut formats = Vec::new();
 

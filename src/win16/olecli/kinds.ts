@@ -21,6 +21,7 @@ import {
   type Kind,
   LOGPIXELSX,
   LOGPIXELSY,
+  LE_BLOCK,
   MF_BLOCK,
   MF_METAFILE,
   MF_MM,
@@ -62,12 +63,12 @@ import { get, getLong, put, putBytes, putLong, putName } from './streams.js';
  */
 
 /** Each kind's class, as a stream names it, and its clipboard format. */
-export const CLASS_OF: Record<Exclude<Kind, 'gen'>, string> = {
+export const CLASS_OF: Record<Exclude<Kind, 'gen' | 'le'>, string> = {
   mf: 'METAFILEPICT',
   bm: 'BITMAP',
   dib: 'DIB',
 };
-export const FORMAT_OF: Record<Exclude<Kind, 'gen'>, number> = {
+export const FORMAT_OF: Record<Exclude<Kind, 'gen' | 'le'>, number> = {
   mf: CF_METAFILEPICT,
   bm: CF_BITMAP,
   dib: CF_DIB,
@@ -211,7 +212,7 @@ async function bitmapFrom(ole: Ole, object: number, bitmap: number) {
 // A DIB.
 
 /** A global block copied: a block `GMEM_MOVEABLE` its size, the bytes. */
-async function copyBlock(ole: Ole, handle: number): Promise<number> {
+export async function copyBlock(ole: Ole, handle: number): Promise<number> {
   const from = await ole.globalLock(handle);
   const size = await ole.globalSize(handle);
   const copy = await ole.globalAlloc(GMEM_MOVEABLE, size);
@@ -279,6 +280,7 @@ async function dibFrom(ole: Ole, object: number, handle: number) {
 
 /** Each kind's block's size. */
 export const BLOCK_OF: Record<Kind, number> = {
+  le: LE_BLOCK,
   mf: MF_BLOCK,
   bm: SMALL_BLOCK,
   dib: SMALL_BLOCK,
@@ -291,7 +293,7 @@ export const BLOCK_OF: Record<Kind, number> = {
  */
 export async function staticFromClipboard(
   ole: Ole,
-  kind: Exclude<Kind, 'gen'>,
+  kind: Exclude<Kind, 'gen' | 'le'>,
   handle: number,
   client: number,
   doc: number,
@@ -585,10 +587,16 @@ export async function querySize(ole: Ole, kind: Kind, object: number, out: numbe
  * its format, the format's name where it is registered, its data's size
  * and its data. Each field a `Put` of its own (**recorded** by `olestat`).
  */
-export async function saveToStream(ole: Ole, kind: Kind, object: number, stream: number) {
+export async function saveToStream(
+  ole: Ole,
+  kind: Kind,
+  object: number,
+  stream: number,
+  type = OT_STATIC
+) {
   const ok =
     (await putLong(ole, stream, STREAM_VERSION)) &&
-    (await putLong(ole, stream, OT_STATIC)) &&
+    (await putLong(ole, stream, type)) &&
     (await putName(ole, stream, await className(ole, kind, object)));
 
   if (!ok) {
@@ -683,7 +691,7 @@ export async function loadStatic(
   out: number
 ): Promise<number> {
   const text = String.fromCharCode(...klass);
-  const kind = (Object.keys(CLASS_OF) as Exclude<Kind, 'gen'>[]).find(
+  const kind = (Object.keys(CLASS_OF) as Exclude<Kind, 'gen' | 'le'>[]).find(
     (each) => CLASS_OF[each] === text
   );
   const classAtom = await ole.addAtomText(klass);
@@ -716,7 +724,7 @@ export async function loadStatic(
 }
 
 /** A block of `size` bytes read from the stream: its handle, or nought. */
-async function readBlock(ole: Ole, stream: number, size: number): Promise<number> {
+export async function readBlock(ole: Ole, stream: number, size: number): Promise<number> {
   const block = await ole.globalAlloc(GMEM_MOVEABLE, size);
 
   if (!block) {
@@ -736,7 +744,12 @@ async function readBlock(ole: Ole, stream: number, size: number): Promise<number
   return block;
 }
 
-async function readStatic(ole: Ole, kind: Exclude<Kind, 'gen'>, object: number, stream: number) {
+export async function readStatic(
+  ole: Ole,
+  kind: Exclude<Kind, 'gen' | 'le'>,
+  object: number,
+  stream: number
+) {
   const width = await getLong(ole, stream);
   const height = width === null ? null : await getLong(ole, stream);
   const size = height === null ? null : await getLong(ole, stream);
@@ -827,7 +840,7 @@ async function readStatic(ole: Ole, kind: Exclude<Kind, 'gen'>, object: number, 
  * nought and whose format is named as the stream before it named one);
  * then its data's size and data.
  */
-async function readOther(ole: Ole, object: number, stream: number, classAtom: number) {
+export async function readOther(ole: Ole, object: number, stream: number, classAtom: number) {
   ole.w16(plus(object, GEN_CLASS), classAtom);
 
   let format = await getLong(ole, stream);
@@ -1018,7 +1031,7 @@ export async function equal(ole: Ole, kind: Kind, a: number, b: number) {
 }
 
 /** Two global blocks: equal where their sizes and bytes are. */
-async function sameBlocks(ole: Ole, first: number, second: number) {
+export async function sameBlocks(ole: Ole, first: number, second: number) {
   const size = await ole.globalSize(first);
 
   if (size !== (await ole.globalSize(second))) {

@@ -5970,6 +5970,9 @@ const RUN_WHOLE = new Set<string>([
   'gdidm',
   'gdispool',
   'gdiint',
+  'oledde',
+  'olepbd',
+  'olepbr',
 ]);
 
 /**
