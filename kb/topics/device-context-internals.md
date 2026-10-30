@@ -34,7 +34,7 @@ GDI calls the hook so in both engines: a program's through the processor, USER's
 
 - **`ResetDC` on a Windows printer driver's context**, which makes a new context with the `DEVMODE` and exchanges the two; it answers nought.
 - **`GetClipRgn`'s region** is the clip region as it is when asked: a program that changes the region it was given does not change the clip region, as it would in Windows.
-- **`GetPhysicalFontHandle`** (seg1 `0a2e`, the word at 28h): WinBox keeps no realized font object.
+- **`GetPhysicalFontHandle`** (seg1 `0a2e`, the word at 28h): a display's context answers a block WinBox keeps for its font, with no `FONTINFO` laid out in it ([[fn:GDI.GetPhysicalFontHandle]]).
 
 ## In winbox.js
 

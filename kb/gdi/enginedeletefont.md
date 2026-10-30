@@ -23,7 +23,3 @@ topics: [printer-drivers]
 ## Implementation
 
 In both engines as read out; a null pointer answers 1. WinBox's engine keeps no block at 54h of its own (see [[fn:GDI.EngineRealizeFont]]), so only one a driver left there is freed.
-
-## Not yet done
-
-- The rest of the engine a printer's driver downloads a face with: `EngineGetGlyphBmp` (seg7 `09e9`, the rasterizer's bitmap and a 24-byte metrics record) and `EngineSetFontContext` (seg5 `0993`, into seg1 `6de2`). [[probe:prtt]] records what the PostScript driver sends for Wingdings; WinBox's document differs from where the face is defined.

@@ -18,6 +18,8 @@ probes:
     prband,
     prblt,
     prblt2,
+    prtt,
+    prtteng,
   ]
 ---
 
@@ -66,6 +68,10 @@ Every address on this page is in `GDI.EXE` unless it says otherwise.
 ## The TrueType engine
 
 [[read out]] [[fn:GDI.EngineRealizeFont]] (seg3 `2b2d`): nought with TrueType off, and for a `LOGFONT` with no face and a height of nought; any other, with no `FONTINFO` to fill, answers 96h, the size of one. The PostScript driver asks so as it enables a device, and fails the device on nought (`PSCRIPT.DRV` seg5 `009e`).
+
+[[read out]] A driver that prints a TrueType face realizes it into a `FONTINFO` of type 3 and puts it to GDI's engine. [[fn:GDI.EngineGetCharWidth]] (seg3 `2c8a`) answers its widths, the path [[fn:GDI.GetCharWidth]] takes for a TrueType font. [[fn:GDI.EngineSetFontContext]] (seg5 `0993`) sets the engine to the font at an angle. [[fn:GDI.EngineGetGlyphBmp]] (seg7 `09e9`) makes a character's glyph with that context, a 24-byte record and a bitmap, as [[fn:GDI.GetGlyphOutline]] does. [[fn:GDI.EngineExtTextOut]] (seg1 `669a`) measures a string, or draws it onto the driver's device. [[fn:GDI.EngineDeleteFont]] (seg6 `0560`) lets the font go. Beside them, [[fn:GDI.EngineMakeFontDir]] (seg7 `1184`) writes a `.TTF`'s font directory entry and [[fn:GDI.ConvertOutlineFontFile]] (seg7 `0d8a`) does nothing. GDI's own `GetCharWidth` on a printer's context asks the driver's (seg3 `2116`), and [[fn:GDI.GetPhysicalFontHandle]] answers the block of the driver's `FONTINFO`.
+
+[[measured]] [[probe:prtteng]] brings a driver of its own, `prtteng.dll.c`, whose fonts are all GDI's TrueType ones: it realizes each through the engine, answers widths and extents with it, and puts the rest of the engine's exports to the font it realized last. 156 of its 159 records agree in both engines; the three that do not are a turned glyph's advance and a slanted glyph's box. [[probe:prtt]] has the PostScript driver print Wingdings, which it downloads glyph by glyph from the engine: every line of the document agrees but those that name the face. The driver names it by the global atom it adds for it, and its key starts with a selector; WinBox numbers global atoms from C000h ([[topic:atoms]]).
 
 ## Deleting
 
@@ -205,10 +211,10 @@ Both engines agree with all 174 records.
 - Text: alignments other than the top left, the current position, `lpDx`, justification's second call, rotation, a complex region, and the driver's `StrBlt`.
 - GDI's own stretching from a printer's context itself, or for a printer of colours; a DIB of `DIB_PAL_COLORS`, a driver with `RC_DI_BITMAP` (`DeviceBitmapBits`), `GetDIBits` with no bits or compressed, and the skipped pixels of a compressed DIB, which keep what GDI's monochrome bitmap held. GDI's halving of its bitmaps where memory runs short; winbox.js halves them only where they pass a segment. The bounds GDI keeps of what a stretch drew (seg1 `42be`), the palette `StretchDIBits` selects into its memory context (seg22 `0271`), and the source's `DRAWMODE` `BitBlt` takes where a monochrome destination's source is of colours (seg1 `2ded`).
 - A memory context's own drawing through its printer's driver, and the count a memory context keeps on its device.
-- A TrueType face the driver downloads through GDI's engine: [[fn:GDI.EngineDeleteFont]] is done, `EngineGetGlyphBmp` (seg7 `09e9`) and `EngineSetFontContext` (seg5 `0993`) are stubs. [[probe:prtt]] records the PostScript driver printing Wingdings, which it has no printer font for: its widths agree, but its extent, its glyphs and the font's name and header in the document are known gaps.
+- A TrueType face the driver downloads through GDI's engine: the face's name in [[probe:prtt]]'s document, a global atom, and the selector in its key. [[fn:GDI.EngineExtTextOut]] drawing a string onto the driver's device; a turned glyph's advance and a slanted glyph's box at one size each ([[fn:GDI.EngineGetGlyphBmp]]).
 - GDI's escapes 100h to BFFh on a printer, and the escapes GDI keeps in a banding driver's metafile (25, 200h on, seg7 `0172`, `0469`). `RC_SCALING`'s shifts of a band (`0211`). The temporary file GDI keeps a banding driver's page in; winbox.js keeps it in memory.
 - The `Ex` calls (`MoveToEx`, `SetWindowOrgEx` and the rest) on a banding driver's context while its page is kept, and drawing USER does on one, which winbox.js makes without the dispatcher.
 - Print Manager's side of the spooler, the network's jobs, `FILE`'s "Print To File" box, and DOS's devices.
 - `GetTabbedTextExtent`, `DrawText` and `GrayString` on a driver's DC.
 - A Write session: `write /p` of a text file asks first whether to convert it.
-- The rest of the TrueType engine's exports, and its penalties among faces not named.
+- The TrueType engine's penalties among faces not named.

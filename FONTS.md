@@ -350,44 +350,44 @@ up and once across. Everything with a vertical multiple of three or less agrees.
 The whole of it, measured. Each row is one strike and the horizontal multiple it
 is given at each vertical one, on an EGA and on a Hercules:
 
-| cell | ave | max | V   | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
-| ---- | --- | --- | --- | - | - | - | - | - | - | - |
-| 5    | 3   | 5   | EGA | 2 |   |   |   |   |   |   |
-| 5    | 3   | 5   | Her | 2 |   |   |   |   |   |   |
-| 6    | 4   | 6   | EGA | 2 |   |   |   |   |   |   |
-| 6    | 4   | 6   | Her | 2 |   |   |   |   |   |   |
-| 8    | 4   | 8   | EGA | 2 | 3 | 4 | 5 |   |   |   |
-| 8    | 4   | 8   | Her | 2 | 3 | 4 | 5 |   |   |   |
-| 9    | 5   | 9   | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
-| 9    | 5   | 9   | Her | 2 | 3 | 4 | 5 | 5 |   |   |
-| 10   | 5   | 11  | EGA | 2 |   | 4 | 5 |   |   |   |
-| 10   | 5   | 11  | Her | 2 |   | 4 | 5 |   |   |   |
-| 10   | 8   | 8   | EGA | 2 | 3 | 4 | 5 | 5 | 5 |   |
-| 10   | 8   | 8   | Her | 2 | 3 | 4 | 5 | 4 | 4 |   |
-| 12   | 6   | 14  | EGA | 2 | 3 |   |   | 5 |   |   |
-| 12   | 6   | 14  | Her | 2 | 3 |   |   |   |   |   |
-| 12   | 7   | 14  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
-| 12   | 7   | 14  | Her | 2 | 3 | 4 | 3 | 3 | 2 | 2 |
-| 12   | 9   | 9   | EGA | 2 | 3 | 4 |   | 5 | 5 |   |
-| 12   | 9   | 9   | Her | 2 | 3 | 2 |   |   | 1 |   |
-| 15   | 8   | 18  | EGA | 2 | 3 |   | 5 | 5 |   |   |
-| 15   | 8   | 18  | Her | 2 | 3 |   | 2 | 2 |   |   |
-| 15   | 8   | 16  | EGA | 2 | 3 | 4 | 5 |   | 5 |   |
-| 15   | 8   | 16  | Her | 2 | 3 | 3 | 2 |   |   |   |
-| 15   | 12  | 12  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
-| 15   | 12  | 12  | Her | 2 | 3 | 2 | 1 | 1 | 1 | 1 |
-| 16   | 9   | 20  | EGA | 2 | 3 | 4 |   | 5 |   |   |
-| 16   | 9   | 20  | Her | 2 | 3 | 2 |   | 1 |   |   |
-| 18   | 9   | 19  | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
-| 18   | 9   | 19  | Her | 2 | 3 | 2 | 1 |   |   |   |
-| 20   | 12  | 25  | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
-| 20   | 12  | 25  | Her | 2 | 2 | 1 | 1 | 1 |   |   |
-| 22   | 12  | 24  | EGA | 2 | 3 | 4 | 5 |   |   |   |
-| 22   | 12  | 24  | Her | 2 | 2 | 1 | 1 |   |   |   |
-| 26   | 16  | 33  | EGA | 2 | 3 | 4 |   |   |   |   |
-| 26   | 16  | 33  | Her | 2 | 1 | 1 |   |   |   |   |
-| 28   | 16  | 32  | EGA | 2 | 3 | 4 |   |   |   |   |
-| 28   | 16  | 32  | Her | 1 | 1 |   |   |   |   |   |
+| cell | ave | max | V   | 2   | 3   | 4   | 5   | 6   | 7   | 8   |
+| ---- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 5    | 3   | 5   | EGA | 2   |     |     |     |     |     |     |
+| 5    | 3   | 5   | Her | 2   |     |     |     |     |     |     |
+| 6    | 4   | 6   | EGA | 2   |     |     |     |     |     |     |
+| 6    | 4   | 6   | Her | 2   |     |     |     |     |     |     |
+| 8    | 4   | 8   | EGA | 2   | 3   | 4   | 5   |     |     |     |
+| 8    | 4   | 8   | Her | 2   | 3   | 4   | 5   |     |     |     |
+| 9    | 5   | 9   | EGA | 2   | 3   | 4   | 5   | 5   |     |     |
+| 9    | 5   | 9   | Her | 2   | 3   | 4   | 5   | 5   |     |     |
+| 10   | 5   | 11  | EGA | 2   |     | 4   | 5   |     |     |     |
+| 10   | 5   | 11  | Her | 2   |     | 4   | 5   |     |     |     |
+| 10   | 8   | 8   | EGA | 2   | 3   | 4   | 5   | 5   | 5   |     |
+| 10   | 8   | 8   | Her | 2   | 3   | 4   | 5   | 4   | 4   |     |
+| 12   | 6   | 14  | EGA | 2   | 3   |     |     | 5   |     |     |
+| 12   | 6   | 14  | Her | 2   | 3   |     |     |     |     |     |
+| 12   | 7   | 14  | EGA | 2   | 3   | 4   | 5   | 5   | 5   | 5   |
+| 12   | 7   | 14  | Her | 2   | 3   | 4   | 3   | 3   | 2   | 2   |
+| 12   | 9   | 9   | EGA | 2   | 3   | 4   |     | 5   | 5   |     |
+| 12   | 9   | 9   | Her | 2   | 3   | 2   |     |     | 1   |     |
+| 15   | 8   | 18  | EGA | 2   | 3   |     | 5   | 5   |     |     |
+| 15   | 8   | 18  | Her | 2   | 3   |     | 2   | 2   |     |     |
+| 15   | 8   | 16  | EGA | 2   | 3   | 4   | 5   |     | 5   |     |
+| 15   | 8   | 16  | Her | 2   | 3   | 3   | 2   |     |     |     |
+| 15   | 12  | 12  | EGA | 2   | 3   | 4   | 5   | 5   | 5   | 5   |
+| 15   | 12  | 12  | Her | 2   | 3   | 2   | 1   | 1   | 1   | 1   |
+| 16   | 9   | 20  | EGA | 2   | 3   | 4   |     | 5   |     |     |
+| 16   | 9   | 20  | Her | 2   | 3   | 2   |     | 1   |     |     |
+| 18   | 9   | 19  | EGA | 2   | 3   | 4   | 5   | 5   |     |     |
+| 18   | 9   | 19  | Her | 2   | 3   | 2   | 1   |     |     |     |
+| 20   | 12  | 25  | EGA | 2   | 3   | 4   | 5   | 5   |     |     |
+| 20   | 12  | 25  | Her | 2   | 2   | 1   | 1   | 1   |     |     |
+| 22   | 12  | 24  | EGA | 2   | 3   | 4   | 5   |     |     |     |
+| 22   | 12  | 24  | Her | 2   | 2   | 1   | 1   |     |     |     |
+| 26   | 16  | 33  | EGA | 2   | 3   | 4   |     |     |     |     |
+| 26   | 16  | 33  | Her | 2   | 1   | 1   |     |     |     |     |
+| 28   | 16  | 32  | EGA | 2   | 3   | 4   |     |     |     |     |
+| 28   | 16  | 32  | Her | 1   | 1   |     |     |     |     |     |
 
 Two things are plain from it. Up to three times over the two displays agree and
 the multiple is the vertical one; from four times over the Hercules falls away,
@@ -405,7 +405,7 @@ A bitmap that must fit in a segment, the realised font being the sum of its
 character widths times the multiple over the stretched cell. Counted properly --
 a Windows raster font pads each glyph to a byte, so the row is the sum of
 `ceil(width * H / 8)` and not `ceil(sum * H / 8)`; `dfWidthBytes` says so, 231
-where the unpadded sum is 151 -- it still fails, and fails *within one face*:
+where the unpadded sum is 151 -- it still fails, and fails _within one face_:
 Courier's fifteen row strike is refused two across at five up, which would be
 50,400 bytes, and given one across at eight up, which is 53,760.
 
@@ -425,7 +425,7 @@ surface, and "about fifty" does not survive it.
 The last multiple each strike keeps whole, as a stretched cell height: 40, 54,
 50, 50, 48, 36, 45, 45, 45, 48, 54, 40, 44, 52, 28. From twenty-eight to
 fifty-four. It is not a constant height, and the two extremes are the two
-sixteen-wide strikes -- the twenty-eight row one falls at its *second* multiple.
+sixteen-wide strikes -- the twenty-eight row one falls at its _second_ multiple.
 
 What the EGA does is now beyond doubt, though, which the old sweep could not
 show: across every strike and every multiple it is `min(V, 5)` with no exception
@@ -505,8 +505,8 @@ the whole time.
 
 #### `RC_BIGFONT`, and a reading refused twice on its arithmetic
 
-`RASTERCAPS` bit ten is `RC_BIGFONT`, and what it means is *capable of
-supporting fonts larger than 64K*. Recorded, it is set on the VGA, the Super VGA
+`RASTERCAPS` bit ten is `RC_BIGFONT`, and what it means is _capable of
+supporting fonts larger than 64K_. Recorded, it is set on the VGA, the Super VGA
 and the EGA -- 18,137 has it -- and **clear on the Hercules**, whose 665 does
 not. A display without it is held to a segment, and the sideways multiple comes
 down until the realised font fits.
@@ -551,7 +551,7 @@ not fit; so the sideways multiple, having reached one, stops being the thing tha
 can give, and the multiple upward comes down instead. Windows answers 84 -- three
 times over, 50,050 bytes -- and so does this now.
 
-That reduction has to happen *after* the candidates are scored and not while.
+That reduction has to happen _after_ the candidates are scored and not while.
 Doing it during the scoring changes what a candidate costs and settles twelve
 other records on the wrong strike; the chosen one is what gets held down.
 
@@ -568,12 +568,12 @@ resolution none of them was measured at, and it answers **5,057 of 5,057** --
 every field of every request, the sideways stretch among them. So the count now
 reads:
 
-| display   | pixel     | planes | sideways stretch |
-| --------- | --------- | ------ | ---------------- |
-| VGA       | square    | 4      | `H = min(V, 5)`  |
-| Super VGA | square    | 4      | `H = min(V, 5)`  |
-| EGA       | 38 by 48  | 4      | `H = min(V, 5)`  |
-| Hercules  | 11 by 16  | 1      | collapses        |
+| display   | pixel    | planes | sideways stretch |
+| --------- | -------- | ------ | ---------------- |
+| VGA       | square   | 4      | `H = min(V, 5)`  |
+| Super VGA | square   | 4      | `H = min(V, 5)`  |
+| EGA       | 38 by 48 | 4      | `H = min(V, 5)`  |
+| Hercules  | 11 by 16 | 1      | collapses        |
 
 It is not the pixel being square, because an EGA's is not and it does not
 collapse. It is not the resolution, because a Super VGA differs from a VGA in
@@ -740,35 +740,35 @@ byte for byte -- segment 48 at `0x39c` holds exactly the twenty-eight words
 `FONTS.md` transcribed, followed by the two unscaled ones, 1 and 10 -- and each
 term names its own offset into the table `0x511` builds from them:
 
-| at     | offset | weight | what it charges                                      |
-| ------ | ------ | ------ | ---------------------------------------------------- |
-| `18d2` | `0x00` | 65,000 | `dfCharSet != lfCharSet`                              |
-| `1a9c` | `0x04` | 19,000 | a vector face under `OUT_STROKE_PRECIS` and its kin   |
-| `19b1` | `0x08` | 15,000 | fixed pitch asked for, variable got                   |
-| `1952` | `0x0c` | 10,000 | the name matched neither atom                         |
-| `1972` | `0x10` | 500    | the name matched the substitute atom                  |
-| `1a37` | `0x14` | 9,000  | a family mismatch                                     |
-| `1a44` | `0x18` | 8,000  | a family mismatch where the candidate has no family   |
-| `1a26` | `0x1c` | 50     | a family mismatch across `FF_MODERN`                  |
-| `1c78` | `0x20` | 600    | flat, for erring on the tall side                     |
-| `19c8` | `0x24` | 350    | variable pitch asked for, fixed got                   |
-| `1c88` | `0x28` | 150    | a pixel of height, too short                          |
-| `1c68` | `0x2c` | 150    | a pixel of height, too tall                           |
-| `1d28` | `0x30` | 50     | a pixel of width, where a width was asked for         |
-| `1e49` | `0x34` | 50     | flat, for being drawn more than once either way       |
-| `1e89` | `0x38` | 4      | a hundredth between the two multiples                 |
-| `1c20` | `0x3c` | 20     | a multiple of the stretch                             |
-| `1de7` | `0x40` | 30     | a hundredth off square                                |
-| `1fa4` | `0x44` | 4      | an italic mismatch                                    |
-| `1f86` | `0x48` | 1      | a slant that had to be synthesised                    |
-| `1f35` | `0x4c` | 3      | ten of weight                                         |
-| `1fe0` | `0x50` | 3      | an underline mismatch                                 |
-| `201c` | `0x54` | 3      | a strikeout mismatch                                  |
-| `19e0` | `0x58` | 1      | no pitch asked for and a fixed one got                |
-| `2052` | `0x5c` | 1      | a synthesised style under an escapement               |
-| `1afb` | `0x60` | 2      | a pixel a vector face is drawn short of its design    |
-| `1b0f` | `0x64` | 1      | a pixel it is drawn over                              |
-| `06fd` | `0x68` | 2      | flat, for any font that is not the device's own       |
+| at     | offset | weight | what it charges                                     |
+| ------ | ------ | ------ | --------------------------------------------------- |
+| `18d2` | `0x00` | 65,000 | `dfCharSet != lfCharSet`                            |
+| `1a9c` | `0x04` | 19,000 | a vector face under `OUT_STROKE_PRECIS` and its kin |
+| `19b1` | `0x08` | 15,000 | fixed pitch asked for, variable got                 |
+| `1952` | `0x0c` | 10,000 | the name matched neither atom                       |
+| `1972` | `0x10` | 500    | the name matched the substitute atom                |
+| `1a37` | `0x14` | 9,000  | a family mismatch                                   |
+| `1a44` | `0x18` | 8,000  | a family mismatch where the candidate has no family |
+| `1a26` | `0x1c` | 50     | a family mismatch across `FF_MODERN`                |
+| `1c78` | `0x20` | 600    | flat, for erring on the tall side                   |
+| `19c8` | `0x24` | 350    | variable pitch asked for, fixed got                 |
+| `1c88` | `0x28` | 150    | a pixel of height, too short                        |
+| `1c68` | `0x2c` | 150    | a pixel of height, too tall                         |
+| `1d28` | `0x30` | 50     | a pixel of width, where a width was asked for       |
+| `1e49` | `0x34` | 50     | flat, for being drawn more than once either way     |
+| `1e89` | `0x38` | 4      | a hundredth between the two multiples               |
+| `1c20` | `0x3c` | 20     | a multiple of the stretch                           |
+| `1de7` | `0x40` | 30     | a hundredth off square                              |
+| `1fa4` | `0x44` | 4      | an italic mismatch                                  |
+| `1f86` | `0x48` | 1      | a slant that had to be synthesised                  |
+| `1f35` | `0x4c` | 3      | ten of weight                                       |
+| `1fe0` | `0x50` | 3      | an underline mismatch                               |
+| `201c` | `0x54` | 3      | a strikeout mismatch                                |
+| `19e0` | `0x58` | 1      | no pitch asked for and a fixed one got              |
+| `2052` | `0x5c` | 1      | a synthesised style under an escapement             |
+| `1afb` | `0x60` | 2      | a pixel a vector face is drawn short of its design  |
+| `1b0f` | `0x64` | 1      | a pixel it is drawn over                            |
+| `06fd` | `0x68` | 2      | flat, for any font that is not the device's own     |
 
 Two of those are worth naming on their own. **The weight term is
 `3 * MulDiv(1, |lfWeight - dfWeight|, 10)`**, and before it is taken the
@@ -898,7 +898,7 @@ the same design points, the same rows, the last of them ending on row thirty-one
 -- and the EGA agreed with Windows where the Hercules did not. The whole of the
 difference was those endpoints: Windows drew them there and not on an EGA, and
 the exclusion measured the same on both. The answer is that the `W` at forty is
-wider than the cell, so its strokes *begin off the right-hand edge*, and a line
+wider than the cell, so its strokes _begin off the right-hand edge_, and a line
 that leaves the cell is GDI's to draw and not the driver's. See below.
 
 The first thing the sweep says is the strong one. Every pixel of every line that
@@ -932,7 +932,7 @@ Two readings were refused on the way, and both are worth keeping.
 The first was clipping. `CLIPCAPS` is nought on the Hercules and one on the other
 three, and on the old sweep every failure sat at the longest offset it asked for,
 which looked exactly like a driver that cannot clip for itself meeting one that
-can. It was not, *for those records*: the cell is thirty-two square and the line
+can. It was not, _for those records_: the cell is thirty-two square and the line
 started in the middle, so an offset of eight reached twenty-four and nothing the
 probe drew came near an edge. The correlation was with the end of the sweep, not
 with the edge of the cell -- which is its own lesson about a sweep that stops too
@@ -999,7 +999,7 @@ exactly the visible part of the whole line -- 858 of 858 on each, nothing added,
 nothing moved. On the Hercules GDI has to clip, and **187 of the 858 differ**.
 Two things change.
 
-**The tie turns over.** GDI's own walk takes a tie to the *larger* y, which is
+**The tie turns over.** GDI's own walk takes a tie to the _larger_ y, which is
 the colour drivers' sentence with the sign reversed, and on a steep line it is
 seen through the other axis exactly as theirs is. It is not the slope rule the
 driver uses when it draws for itself. 307 ties arise among the clipped lines; 98
@@ -1012,7 +1012,7 @@ it is part of what has to be clipped: the polyline crosses the edge at this
 segment's far end rather than inside it. On the Hercules the condition reaches
 55 segments of the two glyph sweeps, 37 of them distinct; two were drawn wrongly
 before and the other fifty-three were already right and stay right. Requiring
-the segment to run *down* the page as well changes nothing -- every one of the
+the segment to run _down_ the page as well changes nothing -- every one of the
 55 does -- and requiring it to run up turns the rule off. Those two are
 `Script`'s `g` and `y` at thirty-four, whose descenders end on the last row of
 the cell and carry on below it.
@@ -1026,14 +1026,14 @@ thirty-one. Of 522 clipped lines where drawing the stop and not drawing it give
 different answers, **518 follow it**.
 
 **And the step the line enters on takes its tie away from the start.** Where the
-*major* coordinate begins outside, GDI has to work out the minor coordinate at
+_major_ coordinate begins outside, GDI has to work out the minor coordinate at
 the row or column the line comes in on, and at a half it rounds away from where
 the line began rather than by the walk's own rule -- that one step only, and the
 walk again after it. It can bite only where the entry lands exactly on a half,
 which is why it decides eleven records and no others: eight are four pixels or
 fewer from a point one row or column outside an edge, every one of them a slope
 of a half, and the other three are steep lines climbing out of the bottom of the
-cell. Rounding away at *every* entry rather than only where the major brought
+cell. Rounding away at _every_ entry rather than only where the major brought
 the line in is worse -- 843 of the 858 clipped lines against 856.
 
 The two vertical lines `(16,-6)->(16,31)` and `(16,37)->(16,0)` stop on the edge
@@ -1053,7 +1053,7 @@ net is seven records and fifteen pixels, down from 812 and 17,605.
 
 **`lines` is exact on all four displays**, 2,478 records each. The last two were
 `(16,37)->(0,5)` and `(16,37)->(31,5)`, steep lines from below the cell stopping
-on a *column* edge rather than a row edge, and they are the minor-axis clause
+on a _column_ edge rather than a row edge, and they are the minor-axis clause
 above: the same shape running the other way down the page --
 `(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw the stop, and neither
 do the seventy-nine downward lines in that position.
@@ -1070,13 +1070,13 @@ one plotter cell left on any display.
 A reading was refused here too, and it is the interesting one, because it
 explains nine records that were wrong at the time exactly. **Re-seeding**: that
 GDI clips the segment to the edge, starts its walk at the crossing point with
-the minor coordinate rounded away from the start, and then *truncates* rather
+the minor coordinate rounded away from the start, and then _truncates_ rather
 than rounds. Worked out by hand it gets `(32,16)->(28,14)`, `(-1,17)->(3,15)`,
 `(16,32)->(14,28)` and `(16,32)->(15,30)` right, pixel for pixel, which is four
 of the nine and very persuasive at that size. Scored against all 858 clipped
 lines it gets **288**, where the rule above gets **856**.
 
-Half of it was right, and that is the useful part of the story. The entry *is*
+Half of it was right, and that is the useful part of the story. The entry _is_
 rounded away from the start -- but only the entry, and only where the major axis
 brought the line in; the walk after it is not re-seeded and does not truncate.
 Keeping the half that scored and dropping the half that did not took those nine
@@ -1101,7 +1101,7 @@ one before it was not enough.
   the tie toward the start. Ten more origins for the same slope say the same:
   `(4,7)`, `(3,8)`, `(4,8)`, `(16,7)`, `(17,7)`, `(16,8)`, `(17,8)`, `(3,16)`,
   `(16,16)`, odd and even, and not one turns on where the line begins.
-- **`chain(2,9,3,7,0,15)`** -- the stem as the *second* of two, since inside the
+- **`chain(2,9,3,7,0,15)`** -- the stem as the _second_ of two, since inside the
   letter it is. Same answer.
 - **`poly`** -- the whole thirteen point run in device pixels, and the same run
   cut back to three, four, five, six, eight and nine points, and with its
@@ -1111,16 +1111,16 @@ So the letter is not drawing the run. The run drawn as lines and the run drawn
 as a letter are different ink, with the same points, on the same display.
 
 What the letter does instead was found by scoping the question. GDI has to take
-a path from a driver that cannot clip; the question is *how much* of it.
+a path from a driver that cannot clip; the question is _how much_ of it.
 **Measured**, against the two glyph sweeps on a Hercules -- the 6,046 cell sweep
 at seven sizes and the 1,584 cell one at every size from eight to forty:
 
-| what GDI takes | `glyphs` | `plotter` |
-| --- | --- | --- |
-| only the segments that leave the cell | 6042 | 1580 |
-| the whole run, if any point leaves the cell | 6039 | 1569 |
-| the whole run, if any point is past the right or bottom | 6038 | 1567 |
-| **the whole run, if any point is negative; else only the segments** | **6043** | **1582** |
+| what GDI takes                                                      | `glyphs` | `plotter` |
+| ------------------------------------------------------------------- | -------- | --------- |
+| only the segments that leave the cell                               | 6042     | 1580      |
+| the whole run, if any point leaves the cell                         | 6039     | 1569      |
+| the whole run, if any point is past the right or bottom             | 6038     | 1567      |
+| **the whole run, if any point is negative; else only the segments** | **6043** | **1582**  |
 
 A coordinate past the right-hand edge or below the bottom is one a driver can be
 handed and told to stop at. A negative one is not. The two behave differently in
@@ -1131,18 +1131,18 @@ at all is **not read**.
 Four narrowings were tried on top of it and all four are worse, which is what
 says the test is the point being negative rather than the run being clipped:
 
-| also take the run when | `glyphs` | `plotter` |
-| --- | --- | --- |
-| *(nothing else -- what is implemented)* | 6043 | 1582 |
-| a point is below the bottom | 6043 | 1578 |
-| the next point of the run is outside | 6043 | 1578 |
-| the point before this segment is outside | 6042 | 1581 |
+| also take the run when                   | `glyphs` | `plotter` |
+| ---------------------------------------- | -------- | --------- |
+| _(nothing else -- what is implemented)_  | 6043     | 1582      |
+| a point is below the bottom              | 6043     | 1578      |
+| the next point of the run is outside     | 6043     | 1578      |
+| the point before this segment is outside | 6042     | 1581      |
 
 No run in the corpus has a negative `y` without a negative `x`, so testing `x`
 alone and testing both cannot be told apart here.
 
-`Script`'s `j` is the case because its hook reaches a column off the *left* of
-the cell while `Roman`'s `m` at forty runs off the *right*: the first is GDI's
+`Script`'s `j` is the case because its hook reaches a column off the _left_ of
+the cell while `Roman`'s `m` at forty runs off the _right_: the first is GDI's
 whole and the second is not, and scoping it either way loses one of them.
 
 #### What that closes
@@ -1333,7 +1333,7 @@ private flags rather than clipping, and `0d21`, `0edb` and `1173` all test them.
 
 That last arm is the one that settles what is left. It cannot be what answers a
 request naming no face on either display, because `FF_DONTCARE` and `FF_ROMAN`
-take the *same* atom and the two answer differently -- Arial and Times New Roman
+take the _same_ atom and the two answer differently -- Arial and Times New Roman
 on an EGA, MS Sans Serif and MS Serif on a VGA. So the lookup fails, `12fc` falls
 to `1301`, `0e95` returns nought, and **the scored competition at `0550` is what
 answers every one of them**.
@@ -1377,7 +1377,7 @@ request by the time anything looks at it -- `lfCharSet` is two, every Symbol
 candidate pays nothing for its character set, and everything else pays 65,000.
 The mapper needs no exception for Symbol because the request no longer contains
 one. That is why Terminal and Wingdings, which are named the same way and are
-not on the list, are *not* excused.
+not on the list, are _not_ excused.
 
 With that in, the last class comes apart the way the reading said it would.
 Every path that answers by name wants the weight and the slant equal to the
@@ -1390,7 +1390,7 @@ the strike pays 210 for being off square and the outline takes it. Both
 recordings say exactly that.
 
 Three pieces of plumbing went with it. A face's own strike now answers only in
-the weight class *and* the slant asked for, with no relaxation where the family
+the weight class _and_ the slant asked for, with no relaxation where the family
 has neither -- that relaxation was standing in for the competition. The
 competition reports whether the file it settled on is really the style asked for,
 so a slant it could not find a file for is still synthesised and still overhangs.
@@ -6871,6 +6871,43 @@ the device context's units and both engines take as pixels; `ttqmap` records
 the four calls under `MM_LOMETRIC`, and its widths, pairs and metrics are a
 larger font's.
 
+## 5b. The engine a printer's driver puts to work
+
+A driver that prints TrueType realizes a face into a `FONTINFO` with
+`EngineRealizeFont` and puts it to the rest of GDI's engine. **Read out** of
+`GDI.EXE` and **recorded** by `prtteng`, a driver of the probe's own, and
+`prtt`, the PostScript driver downloading Wingdings. The knowledge base's
+`printer-drivers` topic and the engine's function pages have the whole of it.
+
+- **The `FONTINFO` beyond its header** (seg3 `23f7`-`24d9`): the underline's
+  and strike-out's places and thicknesses at 34h-3Ah, from `post` and `OS/2`,
+  each place a distance down from the cell's top; the face's slot in GDI's
+  TrueType table, `WIN.INI`'s order (3Ch); the em in units (3Eh); the device's
+  spot sizes, B505h each way where the driver gave none (40h-46h, seg1
+  `0592`); and the characters' offset, F000h for Wingdings (4Eh), the stub's
+  `dfReserved` high word.
+- **The engine's context** (`EngineSetFontContext`, seg1 `6df7`) is the em
+  turned by an angle, GDI's slant sheared in by 57h/100h, the stretch and
+  the resolutions' ratio. Realizing a font sets it at the font's escapement;
+  filling its widths sets it upright.
+- **A glyph** (`EngineGetGlyphBmp`, seg7 `09e9`) is what `GetGlyphOutline`
+  answers -- it is `GetGlyphOutline`'s own core (seg7 `1059`) -- made with
+  the context: a box, a 16.16 corner and advance, and a bitmap a doubleword
+  a row. Turned by the context's angle, the advance is carried along the
+  baseline. **Recorded** to the bit for Arial and Wingdings upright, slanted
+  and turned, but three: Windows' advance of Wingdings' `A` turned 90 degrees
+  is 24, one more than upright; slanted Wingdings' E9h is a pixel wider; and
+  slanted Wingdings' `A` at 45 degrees carries the upright advance.
+- **Widths** (`EngineGetCharWidth`, seg3 `2662`): the advances at the
+  context upright, the first character 8, a character outside the font its
+  default character's -- kept, as in a font file, from the first, so the
+  missing glyph's. GDI's slant moves some: Wingdings' `A` is 23 upright and
+  24 slanted.
+- **The realization had failed for Wingdings** in the TypeScript engine,
+  which realized the face without the device's horizontal resolution: at
+  96 by 300 Wingdings' `VDMX` has no group, and no size was found. The
+  PostScript driver then printed Symbol in its place.
+
 ## 6. Rasterisation
 
 **Non-zero winding, sampled at the exact centre of each pixel.** Established by
@@ -10437,7 +10474,7 @@ read out of GDI rather than measured into place.
   _larger_ of the two is read off Arial asked for less than its average (section
   8a), not out of any code. The horizontal size is settled since: it is not a
   size at all but a denominator, `MulDiv(dfPoints, logPixelsY, (logPixelsX *
-  ratio) >> 8)`, with the ratio in 8.8 -- read out of the realiser and the
+ratio) >> 8)`, with the ratio in 8.8 -- read out of the realiser and the
   mapper in section 8b, and the 16.16 that was assumed here is gone. `FixMul` takes a half toward positive infinity, which is what
   an arithmetic shift does and is measured on three descenders. And the
   stretched design coordinates `IP` and `MDRP` measure from keep a fraction of
@@ -14535,16 +14572,16 @@ condition on the same charge, measured later and on three corpora at once. The
 quadrant the outgoing direction lies in offers four one-bit gates and only one
 of them is clean:
 
-| charge when the vertex heads | square | not square | EGA and Hercules |
-| --- | --- | --- | --- |
-| **up**, `quadrant & 0x3` | **32,394** | **2,668** | **6,044** |
-| down, `quadrant & 0xc` | 32,386 | 2,666 | 6,043 |
-| left, `quadrant & 0x6` | 32,386 | 2,668 | 6,044 |
-| right, `quadrant & 0x9` | 32,394 | 2,666 | 6,043 |
+| charge when the vertex heads | square     | not square | EGA and Hercules |
+| ---------------------------- | ---------- | ---------- | ---------------- |
+| **up**, `quadrant & 0x3`     | **32,394** | **2,668**  | **6,044**        |
+| down, `quadrant & 0xc`       | 32,386     | 2,666      | 6,043            |
+| left, `quadrant & 0x6`       | 32,386     | 2,668      | 6,044            |
+| right, `quadrant & 0x9`      | 32,394     | 2,666      | 6,043            |
 
 Each of the other three loses one corpus to win another; `up` wins all three
 and loses nothing, which is why it is adopted. It is also the half of the
-quadrant that makes a vertex an `on` crossing in the *horizontal* topology --
+quadrant that makes a vertex an `on` crossing in the _horizontal_ topology --
 suggestive, and not a reading, because the block being charged is the column's
 and the vertical topology turns on left and right rather than on up and down.
 
@@ -15469,7 +15506,7 @@ The two width fields are, at `0x02e4` and again in the other branch at `0x0327`:
 with `MulDiv` the exported one at `seg1:0x41b0`. So the maximum is not measured
 at metrics time at all: it is the physical font's own stored maximum, carried
 across by the ratio of the realised average to the physical average. Where the
-realised average *is* the physical average -- which is every request that asks
+realised average _is_ the physical average -- which is every request that asks
 for no width -- the `MulDiv` is the identity and **`tmMaxCharWidth` is the
 physical font's `dfMaxWidth`, unaltered**.
 
@@ -15542,13 +15579,12 @@ below about half a pixel however small a width is asked for.
 What that division is remains open, and `ENGINEREALIZEFONT` -- ordinal 300, at
 `seg5:0x093c` by way of `0x0697`, `0x070f` and `0x07f5` -- is where it is.
 
-
 #### The ruler on an EGA: the horizontal size is an exact rational
 
 The same ruler recorded on an EGA settles what the aspect does. There the two
 logical resolutions differ -- ninety-six dots to the inch across, seventy-two
 down -- and the horizontal size at a square request comes out as the vertical
-one times four thirds, *unrounded*. At the nine heights, Courier New is realised
+one times four thirds, _unrounded_. At the nine heights, Courier New is realised
 vertically at 8, 8, 8, 11, 13, 16, 17, 22 and 29 pixels, and the sixteen-em
 ruler reads
 
@@ -15660,10 +15696,10 @@ Sweeping the whole horizontal size says the size itself is not the error. For
 each of the 558 stretched rows the advances were recomputed at every whole
 horizontal size within three pixels of the one this implementation uses, and
 
-  * **55 rows** are reproduced exactly by some whole size, and in **all 55** the
-    size that works is the one already used -- `floor` of the sixteen-sixteen
-    stretched size;
-  * **503 rows** are reproduced by *no* whole size in that range.
+- **55 rows** are reproduced exactly by some whole size, and in **all 55** the
+  size that works is the one already used -- `floor` of the sixteen-sixteen
+  stretched size;
+- **503 rows** are reproduced by _no_ whole size in that range.
 
 So the fourteen advances a row that move are not a size a pixel out. And the
 size is not fractional either: running the hint program at the unrounded
@@ -15671,7 +15707,6 @@ horizontal size instead takes `charscal` from 91 rows to 47, the `widths` sweep
 from 2,478 records to 1,771, and `hinting` from 8,470 to 8,465 -- worse
 everywhere. The whole size is right; what the program does at it, for a seventh
 of the characters, is not yet.
-
 
 #### `LTSH` is asked at the horizontal size, and that is most of it
 
@@ -15694,7 +15729,7 @@ anisotropic run:
     the scaler's unhinted advance at X   110,756              88.6%
 
 with `X` the whole horizontal size and `P` the vertical one. `hdmx` is the one
-that must *not* be asked: its rows are keyed by a square size and a stretched
+that must _not_ be asked: its rows are keyed by a square size and a stretched
 request is not one, which is why putting it first loses ground the run alone
 holds. The `charscal` fixture goes from 91 rows to 445 of 594 and nothing else
 in the corpus moves.
@@ -15702,7 +15737,7 @@ in the corpus moves.
 **What is left is 459 advances of 33,376, and it is four things rather than
 one.** 197 are glyphs `LTSH` calls linear where Windows agrees with neither the
 scaled advance nor the same scaled in sixty-fourths. 101 are glyphs where the
-sixty-fourths form *is* Windows's answer -- Arial's `C` at sixty-three pixels
+sixty-fourths form _is_ Windows's answer -- Arial's `C` at sixty-three pixels
 across is 45.497 pixels, which rounds to 45 as a number and to 2912
 sixty-fourths and so to 46, and Windows says 46 -- but taking sixty-fourths
 everywhere scores 124,135, four hundred worse than plain rounding, so the two
@@ -15715,7 +15750,6 @@ plain rounding by the same four hundred: taking the scaler's unhinted advance
 for the linear branch, and forming that branch in sixty-fourths. Both land on
 124,135, which is the same set -- the unhinted advance and the sixty-fourths
 form agree wherever they differ from the plain one.
-
 
 ### 8b. The horizontal size is a denominator
 
@@ -15756,7 +15790,6 @@ average divides -- where the ratio is a whole multiple of 256 and nothing is
 thrown away -- and low everywhere else, by up to half a pixel, which is what
 sections 8a's rulers measured and could not name.
 
-
 #### And the gate is on the other axis
 
 Asking `LTSH` at the horizontal size took the advances from 91 rows to 445 of
@@ -15793,21 +15826,21 @@ run, 93 neither -- were all the same mistake seen from four sides.
 denominator past its range. Three fabrications say what happens then, and they
 agree:
 
-  * Courier New at thirty-two pixels asked for one on a VGA has an average of
-    17 and a ratio of 15, so `(96 * 15) >> 8` is 5 and the denominator would be
-    39,322. The ruler stub reads the maximum as 18, which is the denominator
-    32,768, not the 15 that 39,322 gives.
-  * A stub with `dfAvgWidth` at four ems -- `cour-stub-coarse` -- puts Courier
-    New's average at 32 pixels, so a width of one is a ratio of 8, `(96*8)>>8`
-    is 3 and the denominator would be 65,536. Windows answers 5, which is again
-    32,768; 65,536 gives 3. It answers the same 5 for a width of two, where the
-    denominator is exactly 32,768 and nothing is clamped.
-  * The sixteen-em stub -- `cour-stub-both`, `dfAvgWidth` 32767 and `dfMaxWidth`
-    30011 -- gives an average of 128 and ratios of 2, 4, 6 … for widths one, two,
-    three. Windows answers a flat 7 for widths one through nine and then climbs,
-    which is 32,768 for every one of them and the ladder taking over at ten.
+- Courier New at thirty-two pixels asked for one on a VGA has an average of
+  17 and a ratio of 15, so `(96 * 15) >> 8` is 5 and the denominator would be
+  39,322. The ruler stub reads the maximum as 18, which is the denominator
+  32,768, not the 15 that 39,322 gives.
+- A stub with `dfAvgWidth` at four ems -- `cour-stub-coarse` -- puts Courier
+  New's average at 32 pixels, so a width of one is a ratio of 8, `(96*8)>>8`
+  is 3 and the denominator would be 65,536. Windows answers 5, which is again
+  32,768; 65,536 gives 3. It answers the same 5 for a width of two, where the
+  denominator is exactly 32,768 and nothing is clamped.
+- The sixteen-em stub -- `cour-stub-both`, `dfAvgWidth` 32767 and `dfMaxWidth`
+  30011 -- gives an average of 128 and ratios of 2, 4, 6 … for widths one, two,
+  three. Windows answers a flat 7 for widths one through nine and then climbs,
+  which is 32,768 for every one of them and the ladder taking over at ten.
 
-Flooring the *ratio* at 16 fits the VGA rows just as well and gets the EGA
+Flooring the _ratio_ at 16 fits the VGA rows just as well and gets the EGA
 wrong: Courier New at thirty-two asked for one there has an average of 23 and a
 ratio of 11, a denominator of 36,864, and Windows's answer is the one 32,768
 gives. **Scored over thirteen recordings of the `maxwidth` sweep, 3,861 records:
@@ -15847,7 +15880,6 @@ twelve, which has no cell between eight and fourteen there and comes back eight
 in Windows; the last two are Times New Roman at fourteen on an EGA, whose
 average and maximum want horizontal sizes that do not overlap.
 
-
 #### And the cell height: `VDMX` is read by the same ratio
 
 One row of the VGA sweep stayed short after the denominator went in, and it was
@@ -15856,7 +15888,7 @@ tall at every width but ten, and at ten Windows says **thirteen** -- the same
 face, the same size, the same maximum, a different cell.
 
 `VDMX` explains it. The table holds the grid-fitted extent of a face at each
-pixel size, and it holds one set of them *per aspect ratio*: Courier New, Arial
+pixel size, and it holds one set of them _per aspect ratio_: Courier New, Arial
 and Times New Roman each carry four ratio records -- 4:3, 5:3, 2:1, and a
 catch-all with `xRatio` zero. Three of the four faces' groups are identical
 across all four ratios. Courier New's are not:
@@ -15885,7 +15917,7 @@ ten, eleven or twelve pixels cannot be met and the mapper settles on eight --
 which is exactly what Windows answers for eight, ten and twelve there, and what
 this answered only for eight and ten.
 
-The size is searched for at the *unstretched* ratio -- the mapper settles the
+The size is searched for at the _unstretched_ ratio -- the mapper settles the
 height first, at `seg3:0x29e5`, and only then works out the stretch -- and the
 extent is read again at the ratio the realisation ends up with. That is how a
 width moves the cell height without moving the size.
@@ -15898,7 +15930,6 @@ pixels on an EGA, and they contradict themselves rather than this: an average of
 7 wants a horizontal size between 16.21 and 18.71 pixels and a maximum of 13
 wants one between 11.52 and 12.44, where the rows on either side are consistent
 to a tenth of a pixel. No single scale produces both from 821 and 2223.
-
 
 #### The last two rows were a strike, not a contradiction
 
@@ -15917,25 +15948,25 @@ family is reported under the family's name, which this already did for Symbol.
 
 Three rules had to be separated to let it through, and each is measured:
 
-  * **A face's own strike is not a fallback.** It was being kept for symbol
-    faces only, on the evidence that Arial at twelve and fourteen pixels comes
-    back as the outline -- but Arial's own EGA strikes are eleven and thirteen
-    rows, so it never had one at those heights to pass over. Times New Roman
-    does, and takes it.
-  * **The own strike is tried first, and the ordinary search still runs behind
-    it.** Restricting the search to the face's own name instead is what made
-    Arial at eight pixels stop being `MS Serif`.
-  * **A strike heavier than the request is no answer.** `ARIALB.FON` and
-    `TIMESB.FON` each carry their ten point size in four hundred *and* seven
-    hundred, and without this a plain request takes whichever the file lists
-    first -- which is how Arial at twelve pixels became a bold twelve row strike
-    where Windows gives the outline. Zero is `lfWeight`'s "no preference" and
-    has to be read as four hundred rather than as a weight of nothing; reading
-    it literally costs 372 records of the `hinting` sweep, all of them Symbol.
+- **A face's own strike is not a fallback.** It was being kept for symbol
+  faces only, on the evidence that Arial at twelve and fourteen pixels comes
+  back as the outline -- but Arial's own EGA strikes are eleven and thirteen
+  rows, so it never had one at those heights to pass over. Times New Roman
+  does, and takes it.
+- **The own strike is tried first, and the ordinary search still runs behind
+  it.** Restricting the search to the face's own name instead is what made
+  Arial at eight pixels stop being `MS Serif`.
+- **A strike heavier than the request is no answer.** `ARIALB.FON` and
+  `TIMESB.FON` each carry their ten point size in four hundred _and_ seven
+  hundred, and without this a plain request takes whichever the file lists
+  first -- which is how Arial at twelve pixels became a bold twelve row strike
+  where Windows gives the outline. Zero is `lfWeight`'s "no preference" and
+  has to be read as four hundred rather than as a weight of nothing; reading
+  it literally costs 372 records of the `hinting` sweep, all of them Symbol.
 
 And one more, which turns on a single record: **a width asked for is answered
 exactly or not at all.** A strike is never stretched sideways to meet a width,
-so Times New Roman at fourteen pixels asked for *seven* -- the strike's own
+so Times New Roman at fourteen pixels asked for _seven_ -- the strike's own
 average -- is the strike, and at every other width it is the outline. The same
 request at ten pixels asked for five is the outline even though `MS Serif`'s ten
 row strike averages five, because that one is not the face's own.
@@ -15959,9 +15990,8 @@ base** rather than to the vertical size carries 569 of the 891 rows, from 63 to
 still, taking the VGA's own advances from 594 rows to 374.
 
 What is left is 259 rows, and about half of them agree on the widest width and
-differ only on *which* character carries it. That is recorded as a gap with its
+differ only on _which_ character carries it. That is recorded as a gap with its
 count.
-
 
 #### Recording the dense sweep on an EGA, and the two sizes it separates
 
@@ -16000,14 +16030,13 @@ of the EGA sweep. The probe prints an `int`; the harness now reads one.
 
 **Both `charscal` fixtures are 594 of 594 and both `charwidths` 891 of 891.**
 
-
 ### 8c. What the installer reads, asked by making one
 
 Two things the `.FOT` stub carries had been read out of it and never traced back:
 the two design widths GDI scales, and the pitch and family it reports. Nine
 fabrications of a `.TTF` moved neither, because by then the stub already
-existed. The question is what `CreateScalableFontResource` reads *while it is
-making one*, and it can simply be asked: the call takes a `.TTF` and writes the
+existed. The question is what `CreateScalableFontResource` reads _while it is
+making one_, and it can simply be asked: the call takes a `.TTF` and writes the
 stub, and the stub is a small NE file a probe can read straight back.
 
 `oracle/probes/fotmake.c` does that, and the stubs it makes are the stubs on the
@@ -16035,16 +16064,16 @@ through the installer, ten recordings of one face:
 
 Which reads, in the order the cases take precedence:
 
-  * **Family kind** -- PANOSE's first byte -- decides first: 3 (Latin
-    Handwritten) is `FF_SCRIPT` and 4 (Latin Decorative) is `FF_DECORATIVE`,
-    whatever else is said.
-  * **Proportion**, the fourth byte, decides next: 9 (monospaced) is
-    `FF_MODERN`, **and it is what clears the variable-pitch bit**. Courier New's
-    own stub is `0x36`, which is exactly what this fabrication produces -- so
-    the one fixed-pitch face among the five is fixed because its PANOSE says
-    monospaced, not because of any pitch flag in the font.
-  * **Serif style**, the second byte, decides the rest: 0 is `FF_DONTCARE`,
-    2 through 10 are `FF_ROMAN`, and 11 and above are `FF_SWISS`.
+- **Family kind** -- PANOSE's first byte -- decides first: 3 (Latin
+  Handwritten) is `FF_SCRIPT` and 4 (Latin Decorative) is `FF_DECORATIVE`,
+  whatever else is said.
+- **Proportion**, the fourth byte, decides next: 9 (monospaced) is
+  `FF_MODERN`, **and it is what clears the variable-pitch bit**. Courier New's
+  own stub is `0x36`, which is exactly what this fabrication produces -- so
+  the one fixed-pitch face among the five is fixed because its PANOSE says
+  monospaced, not because of any pitch flag in the font.
+- **Serif style**, the second byte, decides the rest: 0 is `FF_DONTCARE`,
+  2 through 10 are `FF_ROMAN`, and 11 and above are `FF_SWISS`.
 
 `OS/2`'s `sFamilyClass` is not it. Symbol and Wingdings are class `0x0C03` and
 `0x0C00`, both "Symbolic", and neither maps to any of these; the PANOSE byte
@@ -16063,21 +16092,21 @@ files they were made from.
 **The file.** A stub NE library of about 1,310 bytes, and the whole of it is
 header and resources: no segments, no imports, no code.
 
-| | |
-| --- | --- |
-| DOS header | 128 bytes, `e_lfanew` = `0x80` |
+|                        |                                                                        |
+| ---------------------- | ---------------------------------------------------------------------- |
+| DOS header             | 128 bytes, `e_lfanew` = `0x80`                                         |
 | NE signature at `0x80` | linker 5.16, flags `0x8000` (library), 0 segments, 0 module references |
-| target | OS 2 (Windows), expected version `0x0300` |
-| resident name | the `.TTF`'s base name, upper case -- `SYMBOL`, `WINGDING`, `COUR` |
-| non-resident name | `FONTRES:` followed by the face name |
-| resource alignment | shift 4, so offsets and lengths are in sixteens |
+| target                 | OS 2 (Windows), expected version `0x0300`                              |
+| resident name          | the `.TTF`'s base name, upper case -- `SYMBOL`, `WINGDING`, `COUR`     |
+| non-resident name      | `FONTRES:` followed by the face name                                   |
+| resource alignment     | shift 4, so offsets and lengths are in sixteens                        |
 
 **Two resources, and no others.**
 
-| type | id | length | contents |
-| --- | --- | --- | --- |
-| 204 (`0xCC`) | 1 | 128 | the full path of the `.TTF`, NUL-padded -- `C:\WINDOWS\SYSTEM\SYMBOL.TTF` |
-| 7 (`RT_FONTDIR`) | the string `"FONTDIR"` | 144 or 160 | a count, an ordinal and one `FONTDIRENTRY` |
+| type             | id                     | length     | contents                                                                  |
+| ---------------- | ---------------------- | ---------- | ------------------------------------------------------------------------- |
+| 204 (`0xCC`)     | 1                      | 128        | the full path of the `.TTF`, NUL-padded -- `C:\WINDOWS\SYSTEM\SYMBOL.TTF` |
+| 7 (`RT_FONTDIR`) | the string `"FONTDIR"` | 144 or 160 | a count, an ordinal and one `FONTDIRENTRY`                                |
 
 The `FONTDIR` resource is a `WORD` count of fonts -- always 1 -- then a `WORD`
 font ordinal, which is **nought** rather than one, and then the entry. Its
@@ -16089,31 +16118,31 @@ pixels: `dfPoints` carries `unitsPerEm` and the rest are at that scale. The
 column on the right is where the value comes from, verified against all five
 files.
 
-| field | Symbol | Wingdings | Arial | Courier New | Times | source |
-| --- | --- | --- | --- | --- | --- | --- |
-| `dfVersion` | `0x0200` | same | same | same | same | constant |
-| `dfSize` | 149 | same | same | same | same | constant |
-| `dfCopyright` | `Windows! Windows! Windows!` | same | same | same | same | constant |
-| `dfType` | `0x4083` | same | same | same | same | constant |
-| `dfPoints` | 2048 | 2048 | 2048 | 2048 | 2048 | `head.unitsPerEm` |
-| `dfVertRes`, `dfHorizRes` | 72, 72 | same | same | same | same | constant |
-| `dfAscent` | 2059 | 1841 | 1854 | 1705 | 1825 | `hhea.ascender` |
-| `dfInternalLeading` | 461 | 225 | 240 | 272 | 220 | `dfPixHeight - unitsPerEm` |
-| `dfExternalLeading` | 0 | 0 | 67 | 0 | 87 | `hhea.lineGap` |
-| `dfItalic`, `dfUnderline`, `dfStrikeOut` | 0 | 0 | 0 | 0 | 0 | the style has its own `.FOT` |
-| `dfWeight` | 400 | 400 | 400 | 400 | 400 | `OS/2.usWeightClass` |
-| `dfCharSet` | 2 | 2 | 0 | 0 | 0 | 2 where PANOSE's family kind is 5 |
-| `dfPixWidth` | 0 | 0 | 0 | 0 | 0 | nought, meaning proportional |
-| `dfPixHeight` | 2509 | 2273 | 2288 | 2320 | 2268 | `hhea.ascender - hhea.descender` |
-| `dfPitchAndFamily` | `0x17` | `0x07` | `0x27` | `0x36` | `0x17` | PANOSE, by the rule above |
-| `dfAvgWidth` | 1191 | 1822 | 904 | 1229 | 821 | `OS/2.xAvgCharWidth` |
-| `dfMaxWidth` | 2280 | 2783 | 2142 | 1345 | 2223 | `head.xMax - head.xMin` |
-| `dfFirstChar` | 30 | 30 | 30 | 30 | 30 | constant |
-| `dfLastChar` | 255 | 255 | 255 | 255 | 255 | constant |
-| `dfDefaultChar`, `dfBreakChar` | 1, 2 | same | same | same | same | constant |
-| `dfWidthBytes`, `dfDevice` | 0, 0 | same | same | same | same | constant |
-| `dfFace` | 118 | 118 | 118 | 118 | 118 | offset from the resource to the face name |
-| `dfReserved` | `0xf000000b` | `0xf000000c` | `0x0b` | `0x0b` | `0x0b` | **not explained** |
+| field                                    | Symbol                       | Wingdings    | Arial  | Courier New | Times  | source                                    |
+| ---------------------------------------- | ---------------------------- | ------------ | ------ | ----------- | ------ | ----------------------------------------- |
+| `dfVersion`                              | `0x0200`                     | same         | same   | same        | same   | constant                                  |
+| `dfSize`                                 | 149                          | same         | same   | same        | same   | constant                                  |
+| `dfCopyright`                            | `Windows! Windows! Windows!` | same         | same   | same        | same   | constant                                  |
+| `dfType`                                 | `0x4083`                     | same         | same   | same        | same   | constant                                  |
+| `dfPoints`                               | 2048                         | 2048         | 2048   | 2048        | 2048   | `head.unitsPerEm`                         |
+| `dfVertRes`, `dfHorizRes`                | 72, 72                       | same         | same   | same        | same   | constant                                  |
+| `dfAscent`                               | 2059                         | 1841         | 1854   | 1705        | 1825   | `hhea.ascender`                           |
+| `dfInternalLeading`                      | 461                          | 225          | 240    | 272         | 220    | `dfPixHeight - unitsPerEm`                |
+| `dfExternalLeading`                      | 0                            | 0            | 67     | 0           | 87     | `hhea.lineGap`                            |
+| `dfItalic`, `dfUnderline`, `dfStrikeOut` | 0                            | 0            | 0      | 0           | 0      | the style has its own `.FOT`              |
+| `dfWeight`                               | 400                          | 400          | 400    | 400         | 400    | `OS/2.usWeightClass`                      |
+| `dfCharSet`                              | 2                            | 2            | 0      | 0           | 0      | 2 where PANOSE's family kind is 5         |
+| `dfPixWidth`                             | 0                            | 0            | 0      | 0           | 0      | nought, meaning proportional              |
+| `dfPixHeight`                            | 2509                         | 2273         | 2288   | 2320        | 2268   | `hhea.ascender - hhea.descender`          |
+| `dfPitchAndFamily`                       | `0x17`                       | `0x07`       | `0x27` | `0x36`      | `0x17` | PANOSE, by the rule above                 |
+| `dfAvgWidth`                             | 1191                         | 1822         | 904    | 1229        | 821    | `OS/2.xAvgCharWidth`                      |
+| `dfMaxWidth`                             | 2280                         | 2783         | 2142   | 1345        | 2223   | `head.xMax - head.xMin`                   |
+| `dfFirstChar`                            | 30                           | 30           | 30     | 30          | 30     | constant                                  |
+| `dfLastChar`                             | 255                          | 255          | 255    | 255         | 255    | constant                                  |
+| `dfDefaultChar`, `dfBreakChar`           | 1, 2                         | same         | same   | same        | same   | constant                                  |
+| `dfWidthBytes`, `dfDevice`               | 0, 0                         | same         | same   | same        | same   | constant                                  |
+| `dfFace`                                 | 118                          | 118          | 118    | 118         | 118    | offset from the resource to the face name |
+| `dfReserved`                             | `0xf000000b`                 | `0xf000000c` | `0x0b` | `0x0b`      | `0x0b` | **not explained**                         |
 
 Then the strings, in order: an empty device name, the face name, the family
 name, and the style name -- `Symbol`, `Symbol`, `Regular`.
@@ -16131,15 +16160,15 @@ and its `hhea.ascender` is 1854, and the stub carries 1854.
 -- 12 for Wingdings and 11 for the other four, the one field of the five files
 that splits them that way -- and its high word is **`OS/2.usFirstCharIndex`'s
 high byte**, `0xf0` for the two faces whose characters start at `0xf020`. Four
-things are observed and not explained, and an implementation copies them: 
+things are observed and not explained, and an implementation copies them:
 `dfType`'s `0x4083`, the font ordinal of nought, a `0xc3` byte at `0x200` in
 what is otherwise padding, and four bytes, `10 03 01 01`, after the copyright
 string's terminator -- the same in every recording, and so most likely left
 over in the buffer it was built in. Only `fHidden = 1` was recorded, so
 `dfType`'s `0x4000` may be that flag.
 
-The DOS stub is Microsoft's own, message and all -- *This is a TrueType
-font, not a program.* -- followed by the signature `Kiesa`. The NE header's
+The DOS stub is Microsoft's own, message and all -- _This is a TrueType
+font, not a program._ -- followed by the signature `Kiesa`. The NE header's
 offsets all chain from three strings: the resident name (the `.TTF`'s base
 name) takes its length plus six bytes, the imported name (the file name) its
 length plus one with a length byte of the same, the entry table two bytes,
@@ -16163,11 +16192,10 @@ writes its arguments with `wsprintf`, which never writes an exponent, so the
 argument splitter now leaves anything that only reads as a number with one as
 text.
 
-
 ### 8e. Replaying the band recordings, which was supposed to be vacuous
 
 The banding question itself was settled earlier and is written up above, under
-*A band boundary does not break a rescued stroke*: the `bands` probe draws the
+_A band boundary does not break a rescued stroke_: the `bands` probe draws the
 fabricated hairlines two hundred rows tall, thirty-eight strokes exist only
 because dropout control rescued them, the tallest runs a hundred and fourteen
 scanlines, and not one of them has a hole. Nothing here changes that.
@@ -16206,16 +16234,16 @@ Courier at a hundred and eighty, and all four are the same shape: Windows draws
 the letter -- 82 to 96 rows of ink -- and this draws **nothing at all**, no ink
 in any of the sixty-four columns on any of the two hundred rows. They are the
 widest letters at the largest size each face is asked for, which is a lead and
-not a reason. It turned out to be one; see *a buffer, not a shape* below.
+not a reason. It turned out to be one; see _a buffer, not a shape_ below.
 
 **The hairlines are the rest**, and they are not the band boundary either. At
 these sizes a sub-pixel stroke is entirely dropout control's to place, and the
 two sides disagree about which ones exist at all:
 
-| | Windows blanks, this draws | Windows draws, this blanks | otherwise |
-| --- | --- | --- | --- |
-| `cour-hairs` | 18 | 38 | 27 |
-| `times-hairs` | **74** | 0 | 0 |
+|               | Windows blanks, this draws | Windows draws, this blanks | otherwise |
+| ------------- | -------------------------- | -------------------------- | --------- |
+| `cour-hairs`  | 18                         | 38                         | 27        |
+| `times-hairs` | **74**                     | 0                          | 0         |
 
 #### What Windows is refusing, cornered
 
@@ -16223,8 +16251,8 @@ two sides disagree about which ones exist at all:
 fabrication sweeps six bar widths against six sub-pixel phases, and Windows'
 answer is **all-or-nothing and monotone in the width** at every size: for a
 given phase, the narrow bars are blank and the wide ones are whole, and the
-crossover moves with the phase. That is exactly the shape of *does the bar cover
-a sample column*. Windows draws the bar when it covers one and **rescues it
+crossover moves with the phase. That is exactly the shape of _does the bar cover
+a sample column_. Windows draws the bar when it covers one and **rescues it
 never**:
 
     h=60    ..##.. ..##.. .###.. .###.. ####.. ####..     w = 4, 6, 8, 10, 12, 14
@@ -16235,7 +16263,7 @@ never**:
 It is **not** the `SCANCTRL` threshold: traced, Times New Roman reports `0x17c`
 at both ends of the sweep, so dropout control is measured on at fifty-two pixels
 per em and at a hundred and twenty-three, and Courier New -- whose threshold is
-forty-four, so control is measured *off* over the whole sweep -- gives the same
+forty-four, so control is measured _off_ over the whole sweep -- gives the same
 shape. It is not banding, which is what the recording was made to ask. And it is
 not the reference: `DoHorizDropout` would draw every one of them. The stub check
 passes, both terms two -- the row above and the row below each hold a
@@ -16246,14 +16274,14 @@ writes.
 **Five fabrications corner it**, all the same bars with a different companion,
 one variable at a time.
 
-| recording | what else is in the glyph | box | Windows draws |
-| --- | --- | --- | --- |
-| `times-bare-hairs` | nothing | one column | **144 of 144** |
-| `times-stacked` | a second contour above it, same columns | one column | **144 of 144** |
-| `times-near-hairs` | a block a hundred units across, below | wide | 70 of 144 |
-| `times-hairs` | a block eleven hundred units across, below | wide | 70 of 144 |
-| `times-thin-pair` | a second sub-pixel bar, which never draws | wide | 70 of 144 |
-| `times-beside` | a block on the bar's own rows | wide | 70 of 144 |
+| recording          | what else is in the glyph                  | box        | Windows draws  |
+| ------------------ | ------------------------------------------ | ---------- | -------------- |
+| `times-bare-hairs` | nothing                                    | one column | **144 of 144** |
+| `times-stacked`    | a second contour above it, same columns    | one column | **144 of 144** |
+| `times-near-hairs` | a block a hundred units across, below      | wide       | 70 of 144      |
+| `times-hairs`      | a block eleven hundred units across, below | wide       | 70 of 144      |
+| `times-thin-pair`  | a second sub-pixel bar, which never draws  | wide       | 70 of 144      |
+| `times-beside`     | a block on the bar's own rows              | wide       | 70 of 144      |
 
 The four wide ones are **the same pattern cell for cell** -- not merely the same
 count but the same sixty of the same hundred and forty-four -- so:
@@ -16280,7 +16308,7 @@ collapsed-box recordings, 144 of 144 each.
 
 #### And the other half: the bar itself, swept
 
-When the box does not collapse, this side's stub check runs and *passes*, so it
+When the box does not collapse, this side's stub check runs and _passes_, so it
 made 74 rescues in each of the four wide recordings that Windows does not. The
 reference's check passes too, so whatever refuses them is not the check as
 written.
@@ -16339,7 +16367,7 @@ bytes a row rather than four -- is refused at exactly half as many rows. Both
 say 128 bytes, and it was written down as **eight bytes per row of the cell**.
 
 That is true and it is a coincidence of the instrument. At that cell the face is
-fifteen pixels across, so its row pads to four bytes, and *three* different
+fifteen pixels across, so its row pads to four bytes, and _three_ different
 rules give the same 128: twice the character's own cell, twice the face's cell,
 and the face's cell with one more long on each row. Nothing in `times-reach`
 separates them.
@@ -16348,9 +16376,9 @@ separates them.
 is not four bytes across -- twelve at a hundred and forty pixels, sixteen at a
 hundred and eighty -- and the flat eight refuses glyphs Windows draws:
 
-| | rows x bytes | flat 8 x cell | Windows |
-| --- | --- | --- | --- |
-| Courier `E`, h=140 | 95 x 12 = 1,140 | 1,120 -- refused | draws it |
+|                    | rows x bytes     | flat 8 x cell    | Windows  |
+| ------------------ | ---------------- | ---------------- | -------- |
+| Courier `E`, h=140 | 95 x 12 = 1,140  | 1,120 -- refused | draws it |
 | Courier `E`, h=180 | 123 x 16 = 1,968 | 1,440 -- refused | draws it |
 
 That is all four stock records and 38 of the 144 `cour-hairs` hairlines, which
@@ -16372,11 +16400,11 @@ characters run from `W`, which advances 1933 units, to the apostrophe at 369.
 Three recordings, 410 records each, at every cell from thirty to a hundred and
 ninety:
 
-| recording | what the ten glyphs carry |
-| --- | --- |
-| `times-buffer-bare` | the marker alone -- the control, drawn at every size |
-| `times-buffer` | one block for all ten, so only the cell differs |
-| `times-buffer-sweep` | ten blocks of ten heights, to find the ceiling |
+| recording            | what the ten glyphs carry                            |
+| -------------------- | ---------------------------------------------------- |
+| `times-buffer-bare`  | the marker alone -- the control, drawn at every size |
+| `times-buffer`       | one block for all ten, so only the cell differs      |
+| `times-buffer-sweep` | ten blocks of ten heights, to find the ceiling       |
 
 **The character's own cell is refuted outright.** In `times-buffer` the ten
 carry an identical shape, and their cells differ by four to one; Windows draws
@@ -16394,10 +16422,10 @@ half what twice the face's cell predicts.
 
 **The ceiling, read off the sweep.** In bytes per row of the cell:
 
-| cell | 30 | 34 to 66 | 70 to 98 | 102 to 134 | 138 |
-| --- | --- | --- | --- | --- | --- |
-| threshold | 8 | 12 | 16 | 20 | 24 |
-| `tmMaxCharWidth` pads to | 4 | 8 | 12 | 16 | 20 |
+| cell                     | 30  | 34 to 66 | 70 to 98 | 102 to 134 | 138 |
+| ------------------------ | --- | -------- | -------- | ---------- | --- |
+| threshold                | 8   | 12       | 16       | 20         | 24  |
+| `tmMaxCharWidth` pads to | 4   | 8        | 12       | 16         | 20  |
 
 A long more, in every band. So:
 
@@ -16440,7 +16468,7 @@ The apostrophe came back blank on this side at every size of every one of the
 three recordings, including the control that is a marker and nothing else, which
 reads exactly like a rasteriser refusing a glyph. It was the replay adapter. The
 probe writes the character it drew in quotes, so the apostrophe arrives as three
-quotes in a row, and the adapter stripped *every* quote rather than the outer
+quotes in a row, and the adapter stripped _every_ quote rather than the outer
 pair -- leaving no character to draw. Two other adapters had the same line. A
 recording is only as good as the thing that reads it back.
 
@@ -16453,7 +16481,7 @@ All seven, all 288 records each, stock and hairline: **exact**.
 
 A recording that is only read is worth less than a recording that is replayed,
 even when replaying it looks certain to agree. The reasoning that it would agree
-by construction was sound about the *band* question and silent about everything
+by construction was sound about the _band_ question and silent about everything
 else the same records happen to answer, and the records answered two more
 questions the moment anything was made to reproduce them -- a size at which
 dropout control stops, and the shape of the buffer that decides whether a glyph
@@ -16488,10 +16516,10 @@ is.
 
 The three readings, counted on the two EGA recordings, 840 records:
 
-| the cap is on | agreed |
-| --- | --- |
-| the vertical size, whatever the pixel | 325 and 330 |
-| the horizontal size | 244 and 249 |
+| the cap is on                                     | agreed          |
+| ------------------------------------------------- | --------------- |
+| the vertical size, whatever the pixel             | 325 and 330     |
+| the horizontal size                               | 244 and 249     |
 | **the vertical size, and only on a square pixel** | **420 and 415** |
 
 So the cap applies where the pixel is square and not otherwise. What a stretch
@@ -16575,9 +16603,9 @@ It had never shown, because on a square pixel the forty-eight pixel cap of 8e
 refuses the same rescues for a different reason. 8g takes that cap off on a
 stretched pixel, and the fallback was left holding the question on its own.
 
-| recording | before | after |
-| --- | --- | --- |
-| `bands-cour-hairs-ega` | 252 of 288 | **288 of 288** |
+| recording               | before     | after                             |
+| ----------------------- | ---------- | --------------------------------- |
+| `bands-cour-hairs-ega`  | 252 of 288 | **288 of 288**                    |
 | `bands-times-hairs-ega` | 255 of 288 | 259 of 288, and 262 once 8i lands |
 
 The Courier recording closes completely, at every one of its four sizes. What
@@ -16587,12 +16615,12 @@ the thirty-six bars sit at four sub-pixel phases, and **Windows' answer is
 exactly what this side's own coordinates predict** -- a bar is drawn when its
 span covers a sample column and blank when it does not, to the sixty-fourth:
 
-| phase | bar spans | centre | drawn |
-| --- | --- | --- | --- |
-| 42 | 40.875 to 41.109 .. 41.719 | 41.5 | the two widest only |
-| 128 | 46.078 to 46.328 .. 46.922 | 46.5 | all but the two narrowest |
-| 170 | 48.625 to 48.859 .. 49.469 | none | **none of the six** |
-| 213 | 51.219 to 51.469 .. 52.078 | 51.5 | all but the narrowest |
+| phase | bar spans                  | centre | drawn                     |
+| ----- | -------------------------- | ------ | ------------------------- |
+| 42    | 40.875 to 41.109 .. 41.719 | 41.5   | the two widest only       |
+| 128   | 46.078 to 46.328 .. 46.922 | 46.5   | all but the two narrowest |
+| 170   | 48.625 to 48.859 .. 49.469 | none   | **none of the six**       |
+| 213   | 51.219 to 51.469 .. 52.078 | 51.5   | all but the narrowest     |
 
 Thirteen of those are blank in Windows and were drawn here, and all thirteen are
 the ones whose span stops just short of a centre. So the coordinates were never
@@ -16646,10 +16674,10 @@ sets its own cut-in, with `SCVTCI`, to 85 sixty-fourths.
 
 The gap between the two grows with the size, and crosses:
 
-| pixels per em | gap | cut-in | this side |
-| --- | --- | --- | --- |
-| 179 | 84 | 85 | takes the control value |
-| 184 | 86 | 85 | **falls back to the outline** |
+| pixels per em | gap | cut-in | this side                     |
+| ------------- | --- | ------ | ----------------------------- |
+| 179           | 84  | 85     | takes the control value       |
+| 184           | 86  | 85     | **falls back to the outline** |
 
 Falling back moves the serif by 15 design units -- a pixel and a third at that
 size -- and Windows does not move it. Read off the recording, Windows' serif
@@ -16672,12 +16700,12 @@ two hundred and forty-four on both displays, `E` at a hundred and twenty and
 
 Both halves are load-bearing, counted on 238 records on each of two displays:
 
-| | VGA | EGA |
-| --- | --- | --- |
-| neither | 223 | 208 |
-| strict comparison alone | 223 | 211 |
-| the rounding gate alone | 237 | 234 |
-| **both** | **238** | **238** |
+|                         | VGA     | EGA     |
+| ----------------------- | ------- | ------- |
+| neither                 | 223     | 208     |
+| strict comparison alone | 223     | 211     |
+| the rounding gate alone | 237     | 234     |
+| **both**                | **238** | **238** |
 
 Nothing else in the corpus moves.
 
@@ -16717,10 +16745,10 @@ which is exact at every size the sweep asks. 681 of 780.
 `oracle/probes/stemedge.c` walks the crossing by twos and puts it between those
 two cells exactly:
 
-| cell | 202 to 212 | 214 to 222 |
-| --- | --- | --- |
-| Arial | 10 of 10, every size | 0 of 10, every size but two |
-| Times New Roman | 10 of 10, every size | 0 of 10, every size |
+| cell            | 202 to 212           | 214 to 222                  |
+| --------------- | -------------------- | --------------------------- |
+| Arial           | 10 of 10, every size | 0 of 10, every size but two |
+| Times New Roman | 10 of 10, every size | 0 of 10, every size         |
 
 #### What crosses there, and what does not explain it
 
@@ -16738,17 +16766,17 @@ fourteen, where Courier New at the same cell is at two hundred and two.
 Two readings of the size a program reads, refused by count on the 780 EGA
 records:
 
-| the size `MPPEM` answers with | agreed |
-| --- | --- |
-| **the horizontal one** (what this does) | **681** |
-| the vertical one | 429 |
-| the horizontal one clamped to 255 | 681 -- no change at all |
+| the size `MPPEM` answers with           | agreed                  |
+| --------------------------------------- | ----------------------- |
+| **the horizontal one** (what this does) | **681**                 |
+| the vertical one                        | 429                     |
+| the horizontal one clamped to 255       | 681 -- no change at all |
 
 A single wrong horizontal size does not explain it either. Swept whole by whole
 at the first broken cell, the best of them agrees on 10 of 30 where the right
 answer would agree on 30, so no one number reproduces what Windows draws.
 
-**What Windows does there** is draw a glyph *smaller* than the size asks for:
+**What Windows does there** is draw a glyph _smaller_ than the size asks for:
 Arial's `A` spans 124 rows at a cell of two hundred and twelve and 121 at two
 hundred and fourteen, and starts five rows lower, while this side's grows with
 the cell as it should. Whatever the two faces ask for at that size, Windows
@@ -16789,14 +16817,14 @@ further right.
 
 On `stemwide`'s 780 EGA records and `stemedge`'s 220:
 
-| reading | `stemwide` | `stemedge` |
-| --- | --- | --- |
-| **what this does** | **681** | **122** |
-| the size a program reads is the vertical one | 429 | -- |
-| that size clamped to 255 | 681 -- no change | 122 -- no change |
-| control values scaled at a size capped at 255 | 662 | 122 |
-| the same capped at 256 | 665 | 122 |
-| control values scaled at the vertical size | 476 | 91 |
+| reading                                       | `stemwide`       | `stemedge`       |
+| --------------------------------------------- | ---------------- | ---------------- |
+| **what this does**                            | **681**          | **122**          |
+| the size a program reads is the vertical one  | 429              | --               |
+| that size clamped to 255                      | 681 -- no change | 122 -- no change |
+| control values scaled at a size capped at 255 | 662              | 122              |
+| the same capped at 256                        | 665              | 122              |
+| control values scaled at the vertical size    | 476              | 91               |
 
 A single wrong horizontal size is refused too: swept whole by whole at the first
 broken cell, the best of them agrees on 10 of 30 where the right answer would
@@ -16849,11 +16877,11 @@ the gap, which the ruler had already said from outside.
 `+0x1600` goes from 4 to 6 and `+0x1606` from 0 to 1, at the same cell the
 drawing goes wrong. Three words just above change with them:
 
-| | cell 210 | 212 | **214** | 216 |
-| --- | --- | --- | --- | --- |
-| `+0x15e0` | 1152 | 1216 | **640** | 640 |
-| `+0x15e4` | 9856 | 9984 | **5120** | 5184 |
-| `+0x15e6` | 8640 | 8768 | **4480** | 4480 |
+|           | cell 210 | 212  | **214**  | 216  |
+| --------- | -------- | ---- | -------- | ---- |
+| `+0x15e0` | 1152     | 1216 | **640**  | 640  |
+| `+0x15e4` | 9856     | 9984 | **5120** | 5184 |
+| `+0x15e6` | 8640     | 8768 | **4480** | 4480 |
 
 They halve, and what they are is below. `+0x15e6` divided by sixty-four is 135,
 137 at the first two cells, which is the height Windows draws Arial's `B` at
@@ -16864,10 +16892,10 @@ those cells; at the third it reads 70 where the glyph is drawn 140 rows tall.
 The EGA reaches the mode at a cell of two hundred and fourteen. A VGA has to be
 asked for a much taller cell, and when it is, **the same thing happens**:
 
-| VGA cell | 280 | 284 | **288** | 292 |
-| --- | --- | --- | --- | --- |
-| size | 252 | 254 | **257** | 261 |
-| `+0x1606` | 0 | 0 | **1** | 1 |
+| VGA cell  | 280    | 284    | **288**   | 292   |
+| --------- | ------ | ------ | --------- | ----- |
+| size      | 252    | 254    | **257**   | 261   |
+| `+0x1606` | 0      | 0      | **1**     | 1     |
 | `+0x15e6` | 11,584 | 11,648 | **5,952** | 6,016 |
 
 So it is not the shape of the pixel. Two hundred and fifty-six across looked
@@ -16880,25 +16908,25 @@ nothing there gets near whatever the condition is.
 They are the glyph's **bitmap metrics**, and the whole-pixel copies of them sit
 a few bytes above:
 
-| | in sixty-fourths | in whole pixels | what it is |
-| --- | --- | --- | --- |
-| | `+0x15e0` | `+0x15d8` | the left side bearing |
-| | `+0x15e4` | `+0x15dc` | the width |
-| | `+0x15e6` | `+0x15de` | the height |
+|     | in sixty-fourths | in whole pixels | what it is            |
+| --- | ---------------- | --------------- | --------------------- |
+|     | `+0x15e0`        | `+0x15d8`       | the left side bearing |
+|     | `+0x15e4`        | `+0x15dc`       | the width             |
+|     | `+0x15e6`        | `+0x15de`       | the height            |
 
 Below the flag they hold the glyph as drawn: at a cell of two hundred and twelve
 Arial's `B` reads 19, 156, 137, and Windows draws it 137 rows tall with its stem
 at column 21, which is the pen at 2 plus 19. Above the flag they hold **half of
 each**, and doubling them predicts what Windows draws, exactly, at every cell:
 
-| cell | 210 | 212 | 214 | 216 | 218 | 220 | 222 |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| bearing held | 18 | 19 | **10** | **10** | **11** | **11** | **11** |
-| doubled, plus the pen | 20 | 21 | **22** | **22** | **24** | **24** | **24** |
-| Windows' stem column | 20 | 21 | 22 | 22 | 24 | 24 | 24 |
-| height held | 135 | 137 | **70** | **70** | **70** | **71** | **72** |
-| doubled | 135 | 137 | **140** | **140** | **140** | **142** | **144** |
-| Windows' height | 135 | 137 | 140 | 140 | 140 | 142 | 144 |
+| cell                  | 210 | 212 | 214     | 216     | 218     | 220     | 222     |
+| --------------------- | --- | --- | ------- | ------- | ------- | ------- | ------- |
+| bearing held          | 18  | 19  | **10**  | **10**  | **11**  | **11**  | **11**  |
+| doubled, plus the pen | 20  | 21  | **22**  | **22**  | **24**  | **24**  | **24**  |
+| Windows' stem column  | 20  | 21  | 22      | 22      | 24      | 24      | 24      |
+| height held           | 135 | 137 | **70**  | **70**  | **70**  | **71**  | **72**  |
+| doubled               | 135 | 137 | **140** | **140** | **140** | **142** | **144** |
+| Windows' height       | 135 | 137 | 140     | 140     | 140     | 142     | 144     |
 
 So the mode is not a unit that lost a bit; it is the glyph being **fitted at
 half the size and doubled**. At half the size the cap height of 138.2 pixels is
@@ -16911,21 +16939,21 @@ The flag is a property of the face, so ask the face. Four fabrications of Times
 New Roman move **only the four numbers `head` declares** and leave every glyph
 exactly where it was:
 
-| the box declared | when the flag comes on |
-| --- | --- |
-| stock | from a cell of 214 |
-| half as wide | **never**, at any size asked |
-| half again as wide | **at every size**, from 204 |
-| half as tall, or half again as tall | from 214, exactly as stock |
+| the box declared                    | when the flag comes on       |
+| ----------------------------------- | ---------------------------- |
+| stock                               | from a cell of 214           |
+| half as wide                        | **never**, at any size asked |
+| half again as wide                  | **at every size**, from 204  |
+| half as tall, or half again as tall | from 214, exactly as stock   |
 
 So it is the width of the box and nothing about its height -- and it is `xMax`
 rather than the width, which the three shipped faces settle between them:
 
-| face | `head.xMax` | flag off at | on at |
-| --- | --- | --- | --- |
-| Arial | 2048, exactly one em | 255 across | 257 |
-| Times New Roman | 2066 | 252 | 255 |
-| Courier New | 1280 | 279, and every size asked | never |
+| face            | `head.xMax`          | flag off at               | on at |
+| --------------- | -------------------- | ------------------------- | ----- |
+| Arial           | 2048, exactly one em | 255 across                | 257   |
+| Times New Roman | 2066                 | 252                       | 255   |
+| Courier New     | 1280                 | 279, and every size asked | never |
 
 Scale `xMax` by the horizontal size and all three agree: Arial crosses at 255
 and 257, Times New Roman at 254.2 and 257.2, Courier New reaches 174 and stops.
@@ -16944,13 +16972,13 @@ size itself, the flag reads 0, 0, 0, **0**, **1**, 1, 1, 1 across sizes of 254,
 
 **Measured**, on the two sweeps that cross it:
 
-| | `stemedge-ega` | `stemwide-ega` |
-| --- | --- | --- |
-| before | 122 of 220 | 681 of 780 |
-| the vertical size halved, the stretch carrying the horizontal | 193 | 752 |
-| **both halved separately, each rounded to nearest** | **220** | **779** |
-| both halved, rounded down | 155 | 714 |
-| both halved, not rounded at all | 180 | 737 |
+|                                                               | `stemedge-ega` | `stemwide-ega` |
+| ------------------------------------------------------------- | -------------- | -------------- |
+| before                                                        | 122 of 220     | 681 of 780     |
+| the vertical size halved, the stretch carrying the horizontal | 193            | 752            |
+| **both halved separately, each rounded to nearest**           | **220**        | **779**        |
+| both halved, rounded down                                     | 155            | 714            |
+| both halved, not rounded at all                               | 180            | 737            |
 
 `stemedge` is exact. `stemwide` has one record left and it is not this rule:
 Arial's `w` at a cell of eighty-eight, where the flag is off. Nothing else in
@@ -17007,14 +17035,12 @@ What does work, and is the one thing this adds to the toolkit, is
 `GlobalHandleToSel` on the handle `GlobalFirst` reports for **any** block and
 not only an owned one.
 
-So catching the points wants a read *during* the call -- a hook or a breakpoint
+So catching the points wants a read _during_ the call -- a hook or a breakpoint
 rather than a census -- which is a different order of instrument from anything
 section 8 has built. One record of forty thousand is not the occasion to build
 it.
 
 #### What the earlier guess cost
-
-
 
 Running the interpreter at half the size and doubling what comes back takes
 `stemedge` from 122 of 220 to **187** and `stemwide` on an EGA from 681 of 780
@@ -17028,11 +17054,11 @@ Courier New everything: `stemsize` on an EGA fell from 238 of 238 to 154, becaus
 Courier New passes two hundred and fifty-six in the same sweep and Windows draws
 it exactly. The flag itself is what refuted the guess:
 
-| face | flag off at | flag on at | `B` advance |
-| --- | --- | --- | --- |
-| Times New Roman | 252 across | **255** | 1366 units |
-| Arial | **255** across | 257 | 1366 units |
-| Courier New | 279 across, and every size asked | never | 1229 units |
+| face            | flag off at                      | flag on at | `B` advance |
+| --------------- | -------------------------------- | ---------- | ----------- |
+| Times New Roman | 252 across                       | **255**    | 1366 units  |
+| Arial           | **255** across                   | 257        | 1366 units  |
+| Courier New     | 279 across, and every size asked | never      | 1229 units  |
 
 **Arial at two hundred and fifty-five across has the flag off and Times New
 Roman at two hundred and fifty-five has it on**, so it is not the horizontal
@@ -17058,14 +17084,14 @@ already gone. So they are read **during** it, by the glyph itself.
 `arial-w-p0x` and `arial-w-p1x` copy the `w` onto the `7` -- the one Arial
 character the `hinting` sweep asks upright, where the program actually runs --
 and append a readout that moves the advance phantom onto the point, so what
-Windows reports as the width *is* the point's own coordinate. The foot needs
+Windows reports as the width _is_ the point's own coordinate. The foot needs
 sixteen pixels taken off first, because sixty-four times a coordinate past eight
 does not fit the word a width is reported in.
 
-| pixels per em | 68 | 70 | 73 | 76 | 77 | **79** | 80 | 83 | 85 | 88 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| pixels per em | 68    | 70    | 73    | 76    | 77    | **79**    | 80    | 83    | 85    | 88    |
+| ------------- | ----- | ----- | ----- | ----- | ----- | --------- | ----- | ----- | ----- | ----- |
 | Windows' foot | 13.73 | 15.11 | 13.67 | 14.95 | 16.31 | **16.23** | 17.28 | 17.23 | 18.64 | 19.88 |
-| this side | 13.73 | 15.11 | 13.67 | 14.95 | 16.31 | **17.31** | 17.28 | 17.23 | 18.64 | 19.88 |
+| this side     | 13.73 | 15.11 | 13.67 | 14.95 | 16.31 | **17.31** | 17.28 | 17.23 | 18.64 | 19.88 |
 
 The **head** agrees exactly -- -0.5 pixels on both sides at every size -- and
 every size but one agrees to the sixty-fourth. It is one point at one size.
@@ -17085,11 +17111,11 @@ The readout cuts the program where it likes, so the point can be read on either
 side of a single instruction -- everything before the cut runs untouched. Read
 at 429 bytes in, just before that `MDRP`, and at 430, just after it:
 
-| pixels per em | 77 | **79** | 80 |
-| --- | --- | --- | --- |
+| pixels per em                 | 77   | **79**   | 80   |
+| ----------------------------- | ---- | -------- | ---- |
 | before, Windows and this side | 1061 | **1082** | 1103 |
-| after, Windows | 996 | **991** | 1058 |
-| after, this side | 996 | **1060** | 1058 |
+| after, Windows                | 996  | **991**  | 1058 |
+| after, this side              | 996  | **1060** | 1058 |
 
 And `vectorReporter` reads what it is measuring **along**: the same cut, with
 `GPV` in the ending instead of `GC`, sends a component of the projection vector
@@ -17144,12 +17170,12 @@ exact. Nothing anywhere moved the other way.
 None of it could have been guessed from the pixels. The instrument was four
 readouts and a cut, and each one removed a candidate:
 
-| | | |
-| --- | --- | --- |
-| the point going in | 1082 on both sides | the divergence is not before |
-| the projection vector, by `GPV` | (15373, 5666) on both | it is not the vector |
-| the point coming out | 991 against 1060 | it is this one instruction |
-| the two orders, computed | 63 against 64 | and this is the arithmetic |
+|                                 |                       |                              |
+| ------------------------------- | --------------------- | ---------------------------- |
+| the point going in              | 1082 on both sides    | the divergence is not before |
+| the projection vector, by `GPV` | (15373, 5666) on both | it is not the vector         |
+| the point coming out            | 991 against 1060      | it is this one instruction   |
+| the two orders, computed        | 63 against 64         | and this is the arithmetic   |
 
 Two readings were refused by count along the way: truncating the stretched
 design x to a whole unit, which fits all three sizes of this glyph and costs 171
@@ -17165,13 +17191,13 @@ The half-size rule of 8k was found in the three regular faces. The **styled**
 files are a prediction, because they declare different boxes and so should cross
 it at different sizes:
 
-| face | `head.xMax` | halves above |
-| --- | --- | --- |
-| Arial, Arial Bold | 2048 | 256.0 across |
-| Arial Italic | 2174 | 241.2 |
-| Arial Bold Italic | 2209 | 237.3 |
-| Times New Roman, Bold, Bold Italic | 2066, 2067 | 253.8, 253.6 |
-| **Times Italic** | **2020** | **259.5** |
+| face                               | `head.xMax` | halves above |
+| ---------------------------------- | ----------- | ------------ |
+| Arial, Arial Bold                  | 2048        | 256.0 across |
+| Arial Italic                       | 2174        | 241.2        |
+| Arial Bold Italic                  | 2209        | 237.3        |
+| Times New Roman, Bold, Bold Italic | 2066, 2067  | 253.8, 253.6 |
+| **Times Italic**                   | **2020**    | **259.5**    |
 
 Twenty pixels per em between the extremes, and Times Italic crossing **later**
 than its own regular where Arial Italic crosses earlier -- which no rule about
@@ -17206,11 +17232,11 @@ New Roman Bold on a VGA, the answer is the best the table can do up to a cell of
 280 and the best scaling can do from 282 -- and 282 is exactly the cell at which
 scaling reaches the top of the table:
 
-| cell | 278 | **280** | **282** | 284 | 286 | 288 | 290 | 294 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| the table's best | 246 | **247** | 250 | 252 | 253 | 255 | 255 | 255 |
-| scaling's best | 251 | 253 | **255** | 256 | 258 | 260 | 262 | 265 |
-| **Windows** | 246 | **247** | **255** | 256 | 258 | 260 | 262 | 265 |
+| cell             | 278 | **280** | **282** | 284 | 286 | 288 | 290 | 294 |
+| ---------------- | --- | ------- | ------- | --- | --- | --- | --- | --- |
+| the table's best | 246 | **247** | 250     | 252 | 253 | 255 | 255 | 255 |
+| scaling's best   | 251 | 253     | **255** | 256 | 258 | 260 | 262 | 265 |
+| **Windows**      | 246 | **247** | **255** | 256 | 258 | 260 | 262 | 265 |
 
 So once the scaled extent reaches the top of the table, the table is not
 consulted at all. Taking the larger of the two instead answers 253 at a cell of
@@ -17223,7 +17249,7 @@ at cells of 285, 286, 288 and 290 -- scaling's best at every one.
 #### What is left
 
 A tie **inside** the table, at four cells below where the switch happens.
-Windows takes the *later* of two tabulated sizes that fit the cell exactly:
+Windows takes the _later_ of two tabulated sizes that fit the cell exactly:
 Times New Roman Bold has 242 and 243 both tabulated at exactly 274, and at a
 cell of 274 Windows draws 243 where this draws 242, leaving the glyph a row
 short.
@@ -17239,18 +17265,17 @@ resolve them. A tie in the cell is usually a tie in everything: two sizes a
 pixel apart fit the same cell with the **same ascent and descent** in almost
 every case -- Arial has forty such pairs and one where they differ, Courier New
 sixty and none, Times New Roman forty-one and three. Times New Roman Bold's 274
-is one of the exceptions: 242 is tabulated as 221 over 53 and 243 as 222 over
-52. The larger ascent is the later one, and the later one is what Windows draws.
+is one of the exceptions: 242 is tabulated as 221 over 53 and 243 as 222 over 52. The larger ascent is the later one, and the later one is what Windows draws.
 
 So "a tie in the cell keeps the first unless the ascent differs, in which case
 the larger ascent wins" explains `stemstyl` without touching the ties that are
 ties in everything -- and it is **refused by count**:
 
-| | `font` | `stemwide` | `stemstyl` |
-| --- | --- | --- | --- |
-| **keeping the first** | **11,382 of 11,382** | **779 and 780** | 866 and 856 |
-| the ascent breaking exact ties | 11,345 and 11,307 | 769 and 770 | 866 and 861 |
-| the ascent breaking every tie | 11,241 and 11,229 | 683 and 671 | 840 and 826 |
+|                                | `font`               | `stemwide`      | `stemstyl`  |
+| ------------------------------ | -------------------- | --------------- | ----------- |
+| **keeping the first**          | **11,382 of 11,382** | **779 and 780** | 866 and 856 |
+| the ascent breaking exact ties | 11,345 and 11,307    | 769 and 770     | 866 and 861 |
+| the ascent breaking every tie  | 11,241 and 11,229    | 683 and 671     | 840 and 826 |
 
 Thirty-seven records of `font` on two displays and seventy-five on the other two
 are ties whose ascents differ and which take the **first** all the same. So the
@@ -17310,14 +17335,14 @@ way. **Exact**: 624 records on each of the four displays, 2,496 in all.
 The multiples it reaches are two to eight, traced at the four corners of the
 sweep:
 
-| cell | 48 | 96 | 160 | 248 |
-| --- | --- | --- | --- | --- |
-| MS Sans Serif | 2 | 4 | 4 | 8 |
-| MS Serif | 3 | 5 | 6 | 7 |
-| Courier | 3 | 6 | 8 | **an outline face** |
+| cell          | 48  | 96  | 160 | 248                 |
+| ------------- | --- | --- | --- | ------------------- |
+| MS Sans Serif | 2   | 4   | 4   | 8                   |
+| MS Serif      | 3   | 5   | 6   | 7                   |
+| Courier       | 3   | 6   | 8   | **an outline face** |
 
 The last of those is the sweep catching something else for free: at a cell of
-two hundred and forty-eight the mapper stops answering *Courier* with a
+two hundred and forty-eight the mapper stops answering _Courier_ with a
 multiplied strike and answers it with Courier New instead, and the crossover is
 reproduced without being asked for.
 
@@ -17354,12 +17379,12 @@ at all.
 They fill from the pen to the end of the string's advance, solid, and they take
 their place and their thickness from the font's own tables:
 
-| | from | Arial | Courier New | Times New Roman |
-| --- | --- | --- | --- | --- |
-| underline position | `post` +8 | -217 | -477 | -223 |
-| underline thickness | `post` +10 | 150 | 84 | 100 |
-| strikeout position | `OS/2` +28 | 530 | 530 | 530 |
-| strikeout size | `OS/2` +26 | 102 | 102 | 102 |
+|                     | from       | Arial | Courier New | Times New Roman |
+| ------------------- | ---------- | ----- | ----------- | --------------- |
+| underline position  | `post` +8  | -217  | -477        | -223            |
+| underline thickness | `post` +10 | 150   | 84          | 100             |
+| strikeout position  | `OS/2` +28 | 530   | 530         | 530             |
+| strikeout size      | `OS/2` +26 | 102   | 102         | 102             |
 
 Scaled at the size and rounded, with a thickness of at least one row. The
 position is a distance from the baseline -- down for the underline, which is why
@@ -17402,7 +17427,7 @@ internal leading**:
     rows   = cell / 12, floored, at least one
 
 Three things had hidden it. The formula gives the rule's **centre**, not its
-top, and the thickness grows *upward* first -- two rows put the centre at the
+top, and the thickness grows _upward_ first -- two rows put the centre at the
 bottom, four put it second from the bottom -- so every reading with a thick rule
 looked a row out. The **internal leading** is in it, which is why Courier and MS
 Sans Serif part company at the same ascent: Courier at a cell of 16 has none and
@@ -17438,10 +17463,10 @@ the background black the two modes are plainly different and with it white they
 are the same, which is the control that says the difference is the mode and not
 the colour:
 
-| | background white | background black |
-| --- | --- | --- |
-| `TRANSPARENT` | a white cell, a black glyph | a white cell, a black glyph |
-| `OPAQUE` | a white cell, a black glyph | **a black rectangle**, the glyph lost in it |
+|               | background white            | background black                            |
+| ------------- | --------------------------- | ------------------------------------------- |
+| `TRANSPARENT` | a white cell, a black glyph | a white cell, a black glyph                 |
+| `OPAQUE`      | a white cell, a black glyph | **a black rectangle**, the glyph lost in it |
 
 Measured on four faces at four sizes, and the first replay was 48 of 64 -- the
 three of every four that ask for something invisible.
@@ -17467,8 +17492,8 @@ neither reason is obvious from the table:
 
 - **The third field is the parameter size in bytes, not an ordinal.** `HDC` and
   `INT` are two apiece, so `SetBkMode` is four. Putting the ordinal there sends
-  the emulator off the end of a segment, which surfaces as *access outside a
-  segment* in a program that never calls it.
+  the emulator off the end of a segment, which surfaces as _access outside a
+  segment_ in a program that never calls it.
 - **The `// n //` markers through the table count the entries before them**, and
   `dump-exports` refuses a table that disagrees with them. A row added anywhere
   but after the last marker means renumbering every marker past it, so the entry
@@ -17489,11 +17514,11 @@ forty-eight, four characters.
 A **strike** is the advance at every one of its cells -- MS Sans Serif and the
 System font, 328 records, no exception. An **outline face** is not:
 
-| | the advance | the ground |
-| --- | --- | --- |
-| Arial, cell 12, `A` | 6 | **7** |
-| Courier New, cell 24, `A` | 13 | **15**, and it starts a column left of the pen |
-| Arial, cell 28, `A` | 17 | **18** |
+|                           | the advance | the ground                                     |
+| ------------------------- | ----------- | ---------------------------------------------- |
+| Arial, cell 12, `A`       | 6           | **7**                                          |
+| Courier New, cell 24, `A` | 13          | **15**, and it starts a column left of the pen |
+| Arial, cell 28, `A`       | 17          | **18**                                         |
 
 Courier New's serifs at that size reach a column either side of the advance, and
 the ground reaches with them. So the rectangle is the advance **united with the
@@ -17519,11 +17544,11 @@ its buffer, in whole pixels and again in sixty-fourths, and
 `oracle/probes/groundsc.c` points that instrument at the cells this could not
 explain.
 
-| Arial's `l`, cell | 12 | 13 | 14 | 15 | 21 | 27 | 43 | 45 | 47 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| advance | 2 | 2 | 2 | 3 | 4 | 6 | 9 | 8 | 10 |
-| the scaler's bearing | 0 | 1 | 0 | 1 | 1 | 2 | 3 | 2 | 3 |
-| the rectangle | **2** | **3** | **2** | **4** | **5** | **8** | **12** | **10** | **13** |
+| Arial's `l`, cell    | 12    | 13    | 14    | 15    | 21    | 27    | 43     | 45     | 47     |
+| -------------------- | ----- | ----- | ----- | ----- | ----- | ----- | ------ | ------ | ------ |
+| advance              | 2     | 2     | 2     | 3     | 4     | 6     | 9      | 8      | 10     |
+| the scaler's bearing | 0     | 1     | 0     | 1     | 1     | 2     | 3      | 2      | 3      |
+| the rectangle        | **2** | **3** | **2** | **4** | **5** | **8** | **12** | **10** | **13** |
 
 The advance plus the bearing, at all nine -- and that is what the narrow letters
 were short of. They are the ones that show it because a bearing is the only
@@ -17544,7 +17569,8 @@ cell of the sweep settles on its own. Courier New's `W` at a cell of forty-four
 advances twenty-five pixels and bears minus one, and Windows paints twenty-five
 columns starting one to the left of the pen -- not twenty-six from the pen's own
 column to the glyph's right edge. Uniting the rectangle with a plain `[pen, pen
-+ advance)` as well costs exactly that one record of the 656.
+
+- advance)` as well costs exactly that one record of the 656.
 
 A strike never needs any of it: its glyphs are laid out in their own cells and
 its 328 records were the advance all along.
@@ -17555,8 +17581,7 @@ Refused, by count, each measured through the whole pipeline: the outline's
 extremes floored and ceiled rather than rounded, 536 of 656; the design advance
 carried across the size and rounded up, which took `textbk` backwards; the
 advance run from the bearing with no union with the glyph's box, 625 of 656 and
-62 of 64; and the advance run from the pen as well as from the bearing, 655 of
-656.
+62 of 64; and the advance run from the pen as well as from the bearing, 655 of 656.
 
 ### 8t. `ExtTextOut`, which nothing had ever called
 
@@ -17579,16 +17604,15 @@ everything 8o measured carries over unchanged.
 
 #### The rectangle, and the two flags
 
-| | |
-| --- | --- |
-| passed with neither flag | **not read at all** -- the drawing is the plain one |
-| `ETO_OPAQUE` | filled with the background colour first, and the mode's own ground painted over it afterwards |
-| `ETO_OPAQUE` under `TRANSPARENT` | **still filled** -- the flag decides, not the mode |
-| `ETO_OPAQUE` with a null rectangle | nothing extra; the plain drawing |
-| `ETO_CLIPPED` | nothing outside it is drawn, **the ground included** |
+|                                    |                                                                                               |
+| ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| passed with neither flag           | **not read at all** -- the drawing is the plain one                                           |
+| `ETO_OPAQUE`                       | filled with the background colour first, and the mode's own ground painted over it afterwards |
+| `ETO_OPAQUE` under `TRANSPARENT`   | **still filled** -- the flag decides, not the mode                                            |
+| `ETO_OPAQUE` with a null rectangle | nothing extra; the plain drawing                                                              |
+| `ETO_CLIPPED`                      | nothing outside it is drawn, **the ground included**                                          |
 
-and its right and bottom edges are outside it, the way a `RECT` always is: (4,
-2) to (40, 22) comes back as rows 2 to 21 and columns 4 to 39.
+and its right and bottom edges are outside it, the way a `RECT` always is: (4, 2) to (40, 22) comes back as rows 2 to 21 and columns 4 to 39.
 
 #### The array is what the pen moves by
 
@@ -17629,7 +17653,7 @@ whole of their advance and not the shifted one.
 
 #### What `ETO_OPAQUE` does to the ground
 
-It paints the rectangle it is given -- and it also changes what the *text*
+It paints the rectangle it is given -- and it also changes what the _text_
 paints behind itself, from the run's rectangle to the glyphs' own boxes. Arial's
 `AB` at a cell of sixteen is painted over **seventeen** columns under the flag
 and eighteen without it; Courier New's at twenty over nineteen against twenty. A
@@ -17656,13 +17680,13 @@ Arial. 178 records.
 Arial's ink runs from column 8 to column 24, and the sweeps bracket both edges
 to the column:
 
-| the rectangle | what is drawn |
-| --- | --- |
-| `right = 8` | **nothing** |
-| `right = 9` | column 8 alone |
-| `right = 25` | columns 8 to 24 -- all of it |
-| `left = 24` | column 24 alone |
-| `left = 25` | **nothing** |
+| the rectangle | what is drawn                |
+| ------------- | ---------------------------- |
+| `right = 8`   | **nothing**                  |
+| `right = 9`   | column 8 alone               |
+| `right = 25`  | columns 8 to 24 -- all of it |
+| `left = 24`   | column 24 alone              |
+| `left = 25`   | **nothing**                  |
 
 > **A pixel is kept when `left <= x < right` and `top <= y < bottom`.** The
 > rectangle's own edges, in other words, exactly as a `RECT` is drawn
@@ -17674,15 +17698,15 @@ to the column:
 Four of the eight asked on purpose come back as the comparison above already
 gives them, and the fifth does not.
 
-| | |
-| --- | --- |
-| **empty**, left equal to right | nothing drawn |
-| **flat**, top equal to bottom | nothing drawn |
-| **clear**, wholly past the text | nothing drawn |
+|                                          |                                          |
+| ---------------------------------------- | ---------------------------------------- |
+| **empty**, left equal to right           | nothing drawn                            |
+| **flat**, top equal to bottom            | nothing drawn                            |
+| **clear**, wholly past the text          | nothing drawn                            |
 | **negative**, corners left of the origin | clipped at the right edge like any other |
-| **huge**, far outside on all four sides | the whole drawing, unclipped |
-| **inverted**, `(20, 6)` to `(10, 14)` | drawn -- columns 10 to 19, rows 7 to 13 |
-| **upside**, `(10, 14)` to `(20, 6)` | **the same drawing** |
+| **huge**, far outside on all four sides  | the whole drawing, unclipped             |
+| **inverted**, `(20, 6)` to `(10, 14)`    | drawn -- columns 10 to 19, rows 7 to 13  |
+| **upside**, `(10, 14)` to `(20, 6)`      | **the same drawing**                     |
 
 The last two are the finding. A rectangle whose edges are the wrong way round
 is **normalised** before it is used, not refused: both of them clip exactly as
@@ -17724,7 +17748,7 @@ of a right angle, the reverse, and each against a pair that agree -- and the
 drawing is decided by the **escapement alone**, ink for ink, in a face that
 turns and in one that cannot. Five pairs, identical bitmaps.
 
-The *mapper* reads it, though, which the first version of this section missed:
+The _mapper_ reads it, though, which the first version of this section missed:
 the exact-strike arm refuses a request with either angle, and the penalty
 routine tests both. See below.
 
@@ -17752,7 +17776,7 @@ not merely the same box, in every face.
 
 The offset from the pen to the baseline **turns with the text**. Upright the
 baseline origin is the pen carried down by the ascent; at a right angle it is
-the ascent to the *right* of the pen, at a half turn the ascent above it. That
+the ascent to the _right_ of the pen, at a half turn the ascent above it. That
 is what puts the ink where the recording has it at all four quarters.
 
 #### A turned font is a different size, because `VDMX` is not consulted
@@ -17760,12 +17784,12 @@ is what puts the ink where the recording has it at all four quarters.
 This is the finding the pixels could not have given. Turning the text moves the
 metrics:
 
-| | upright | turned |
-| --- | --- | --- |
-| Arial, cell 16 | 13 per em | 14 |
-| Times New Roman, cell 16 | 14 | 15 |
-| Courier New, cell 16 | 13 | 14 |
-| Arial, cell 32 | 27 | 29 |
+|                          | upright   | turned |
+| ------------------------ | --------- | ------ |
+| Arial, cell 16           | 13 per em | 14     |
+| Times New Roman, cell 16 | 14        | 15     |
+| Courier New, cell 16     | 13        | 14     |
+| Arial, cell 32           | 27        | 29     |
 
 `VDMX` is a table of what the hinted outline came out as measured up and down
 the pixel grid, and a turned baseline does not run along it. So the turned size
@@ -17777,12 +17801,12 @@ at a right angle side by side. 520 records.
 > separately** and added. The size itself starts from the ratio of the cell to
 > the face's own extent, rounded; that estimate is walked **down** while the
 > extent it gives overflows the cell, and then **up** while the extent falls
-> *short* of the cell and the next size still fits.
+> _short_ of the cell and the next size still fits.
 
 **260 of 260**, and every clause is paid for. Without the downward walk 41 are
 wrong; without the upward walk 23; walking up from an exact fit as well as a
 short one 6. The estimate alone is wrong 64 times and the estimate truncated
-rather than rounded 16. Rounding the *sum* of the two design values rather than
+rather than rounded 16. Rounding the _sum_ of the two design values rather than
 each of them is wrong at Arial's twelve per em and fifteen others. And the
 upright search of 8f and 8r, run against this extent instead of the table's, is
 wrong 16 times -- the two rules are not the same rule with a different input.
@@ -17798,10 +17822,10 @@ a degree either side of nought and of a full turn, two and three turns, the
 negatives, and both ends of the sixteen-bit field. 192 records, and they fall
 into three groups and not two:
 
-| | Times, cell 16 |
-| --- | --- |
-| the field is nought | 14 per em, ascent 13, descent 3 |
-| every other angle | **15** per em, ascent 13, descent 3 |
+|                                 | Times, cell 16                          |
+| ------------------------------- | --------------------------------------- |
+| the field is nought             | 14 per em, ascent 13, descent 3         |
+| every other angle               | **15** per em, ascent 13, descent 3     |
 | 3600, 7200, 10800, -3600, -7200 | **15** per em, ascent 13, descent **4** |
 
 The second group includes a tenth of a degree either side of a whole turn, so
@@ -17839,7 +17863,7 @@ copy of the `LOGFONT` at `[bp-0xe8]` puts `lfEscapement` at `[bp-0xe4]` and
   only past `0f91` and `0f98`, which want **both** angles nought. So a face's own
   strike never answers a turned request outright -- which is Symbol at sixteen.
 - **The small lookup refuses the escapement.** `126a` begins `cmp word
-  [bp-0xe4],0 / jnz 12be`: turned, Arial at eight, ten or eleven pixels is not
+[bp-0xe4],0 / jnz 12be`: turned, Arial at eight, ten or eleven pixels is not
   handed to Small Fonts or MS Serif but realised, and at nine it was never going
   to be. The orientation is not tested here.
 - **A strike made bold or slanted pays one more.** The penalty routine keeps the
@@ -17850,8 +17874,7 @@ copy of the `LOGFONT` at `[bp-0xe8]` puts `lfEscapement` at `[bp-0xe4]` and
   charges `w[0x5c]` to a candidate whose `dfType & 3` is nought or one -- a
   raster or vector face. The table at `0x39c` is in data segment 48, and read a
   word at a time its entries sit where the known ones say: strikeout at `0x54`
-  is 3, the slant at `0x48` 1, the weight at `0x4c` 3, the flat charge at `0x68`
-  2. `0x5c` is **1** -- the smallest weight in the table.
+  is 3, the slant at `0x48` 1, the weight at `0x4c` 3, the flat charge at `0x68` 2. `0x5c` is **1** -- the smallest weight in the table.
 
 So `Modern` turned is MS Sans Serif because nothing is being synthesised and
 nothing is charged: the angle only costs a strike something when it would have
@@ -17897,7 +17920,7 @@ several languages, and the last Windows-platform entry is "Arial Gras".
 #### The oblique angles, read off a square
 
 Right angles and whole turns are exact. An oblique angle drew in the right
-*place* and inked it wrongly, and a letter cannot say which of three things is
+_place_ and inked it wrongly, and a letter cannot say which of three things is
 wrong -- where the origin lands, how the outline is carried through the
 transform, or what the scan converter does with edges no longer on the grid.
 So the instrument is a square. `oracle/probes/rotsq.c` draws the `rot-square`
@@ -17923,14 +17946,14 @@ is the square's pixels per em.
 > **The outline goes through a matrix whose entries are whole pixels**: the
 > size times the cosine and the size times the sine, each rounded, and not
 > normalised afterwards. At half a right angle and twenty-six per em the entries
-> are eighteen and eighteen, and the glyph is turned *and* drawn 25.46 pixels to
+> are eighteen and eighteen, and the glyph is turned _and_ drawn 25.46 pixels to
 > the em.
 
 70 of the 91 oblique squares are exact with it, against 15 for the exact
 rotation and 21 for the rounded pair normalised back to a unit. It also explains
 two things from `rotangle` that were written down last time as puzzles. Times at
 an escapement of one draws exactly what a whole turn draws, because at fifteen
-per em a tenth of a degree rounds the sine entry to nothing and the matrix *is*
+per em a tenth of a degree rounds the sine entry to nothing and the matrix _is_
 the identity. And Arial at twenty-nine per em changes at one degree and not at
 half of one, because that is where twenty-nine times the sine crosses a half.
 
@@ -17939,17 +17962,17 @@ says what `GETINFO`'s rotated bit means: a transform that is not a multiple of a
 right angle. Every installed family's `prep` asks it -- selector two, once -- and
 told yes, all four answer the same way:
 
-| | upright | rotated |
-| --- | --- | --- |
-| grid-fitting (`INSTCTRL`) | on | **off** |
-| `SCANCTRL` | Arial 0x111, Times 0x17c, Courier 0x12c, Symbol 0x1ff | **0x1ff** |
-| `SCANTYPE` | 1, stubs excluded | **never set**: 0, stubs rescued |
+|                           | upright                                               | rotated                         |
+| ------------------------- | ----------------------------------------------------- | ------------------------------- |
+| grid-fitting (`INSTCTRL`) | on                                                    | **off**                         |
+| `SCANCTRL`                | Arial 0x111, Times 0x17c, Courier 0x12c, Symbol 0x1ff | **0x1ff**                       |
+| `SCANTYPE`                | 1, stubs excluded                                     | **never set**: 0, stubs rescued |
 
 So a rotated glyph is drawn from the scaled outline, with dropout control on at
 every size and the ends of strokes rescued -- and the extra ink at the square's
 tips, four or five pixels more than its own area at the angles between the axes,
 is that rescue. Nothing here was chosen; the flag is passed and the font's own
-program decides. Whether a glyph is rotated is asked of the *rounded* matrix,
+program decides. Whether a glyph is rotated is asked of the _rounded_ matrix,
 which is why a tenth of a degree is not.
 
 This retracts a claim made last time: that a turned glyph is still fitted,
@@ -17989,7 +18012,7 @@ With the rules above, `rotate` was 88 of its 107 draws and every square that
 still disagreed was out by one pixel at a tip or a corner, where an edge passed
 within a sixty-fourth or two of a pixel centre. Twenty candidate roundings of
 the same numbers were tried against 363 single squares and none passed about 307
--- and they disagreed *with each other* by angle, which is what said the model
+-- and they disagreed _with each other_ by angle, which is what said the model
 itself was wrong rather than one rounding in it.
 
 The TrueType glue -- the part of the scaler that applies a transformation, and
@@ -18124,7 +18147,7 @@ turned grounds are pixel for pixel `Polygon` on those corners.
 
 **A turned rule thicker than a row is `Polygon` with a pen a pixel wide.** Its
 near edge is the one-row rule's line; its far edge is that line carried down
-by the thickness less one -- *from the near edge*, not from the pen, which at
+by the thickness less one -- _from the near edge_, not from the pen, which at
 thirty degrees puts the far edge a pixel further on; the inside is GDI's fill
 and the outline the driver's lines. A rule one row thick is the same polygon
 collapsed onto its line, which is why the thin rules looked like lines.
@@ -18215,7 +18238,7 @@ rules are the display driver's:
   - and it sends the glyphs to their own compositor (`13de` to `17c2`),
     which ORs each piece of a glyph into the string buffer **twice**: once
     at its bit phase and once at the phase plus one (`ror eax,1` then `ror
-    eax,cl`). The masks it uses (`cs:1190`, indexed by the phase) only split
+eax,cl`). The masks it uses (`cs:1190`, indexed by the phase) only split
     each byte between the buffer column it lands in and the next one. They
     are not cut to the piece's width, so **every glyph's overhang reaches the
     buffer**, the last one's included.
@@ -18224,6 +18247,7 @@ rules are the display driver's:
   first widens the glyph's own piece into the unused bits of its last byte,
   as far as the extra goes (`0332`: `neg ax`, `and ax,7`), and lays whatever
   is left as a blank piece. That is section 3's "does not begin a new byte".
+
 - **The 386 `StrBlt` only takes a version 3.0 `.FNT`** whose `FONTINFO` sits
   at `0x42`, straight after the file header's version, size and copyright
   (`cmp si,0x42`, `cmp word [0x0],0x300`, seg2 `099b`); anything else returns
@@ -18358,8 +18382,7 @@ came out of it, all of them in the code once looked for:
   four plus the two bold pixels -- and on a Hercules the pen's column on
   every row, left of the run's ground at x + 1.
 
-With the three, the VGA is 48 of 48 and the Hercules's upright records 12 of
-12. The Hercules's turned records disagreed plain and smeared alike: turned
+With the three, the VGA is 48 of 48 and the Hercules's upright records 12 of 12. The Hercules's turned records disagreed plain and smeared alike: turned
 text on a pixel that is not square had never been recorded. It is below.
 
 **Turned text on a pixel that is not square.** Everything above was read on
@@ -18497,12 +18520,12 @@ rather than at its corner, so a shift has somewhere to go, at all nine
 combinations. Reading the ink's box straight off the recording gives the rules
 whole:
 
-| flag | what moves | by |
-| --- | --- | --- |
-| `TA_RIGHT` (2) | the text, left | the whole advance |
-| `TA_CENTER` (6) | the text, left | half the advance, truncated |
-| `TA_BOTTOM` (8) | the text, up | the cell height |
-| `TA_BASELINE` (24) | the text, up | the ascent |
+| flag               | what moves     | by                          |
+| ------------------ | -------------- | --------------------------- |
+| `TA_RIGHT` (2)     | the text, left | the whole advance           |
+| `TA_CENTER` (6)    | the text, left | half the advance, truncated |
+| `TA_BOTTOM` (8)    | the text, up   | the cell height             |
+| `TA_BASELINE` (24) | the text, up   | the ascent                  |
 
 MS Sans Serif at a cell of twelve puts its `A` at columns 32 to 38 under
 `TA_LEFT` and 25 to 31 under `TA_RIGHT`, which is the advance of seven, and 29
@@ -18512,7 +18535,7 @@ under `TA_BASELINE`, eleven higher and the ascent is eleven.
 
 **36 of 36 on the first implementation**, on a VGA and on an EGA, and nothing
 else in the corpus moves. `TA_UPDATECP` is left out: it changes what the point
-*is* rather than where the text goes from it, and wants a probe that draws
+_is_ rather than where the text goes from it, and wants a probe that draws
 twice.
 
 #### A third thing about the export table
@@ -18530,7 +18553,7 @@ the corpus had ever set it, so every record said what nought does, and nought is
 the one value that cannot show the rest. It was a stub here and the drawing knew
 nothing of it.
 
-A single character cannot show it either -- the gap goes *after* each one, so it
+A single character cannot show it either -- the gap goes _after_ each one, so it
 moves the next and the string's width and nothing else. `oracle/probes/
 textxtra.c` draws **two**, at spacings of nought, one, two and five, on three
 faces at two sizes.
@@ -18559,14 +18582,14 @@ The string's **width** under a non-zero spacing. It decides three things -- the
 ground painted behind the text, how far the underline and strikeout run, and
 where `TA_RIGHT` and `TA_CENTER` put the string -- and `textxtra` draws with the
 ground transparent, no rule and the default alignment, so it asks none of them.
-Whether the gap after the *last* character counts toward the width is therefore
+Whether the gap after the _last_ character counts toward the width is therefore
 unknown, and nothing here depends on it yet.
 
 ### 8r. Which of two tied sizes, asked of the metrics rather than the pixels
 
-`stemstyl` drew four cells that only the *second* of a tied pair of sizes
+`stemstyl` drew four cells that only the _second_ of a tied pair of sizes
 reproduces, where 8f had measured -- over forty-eight ties -- that an exact fit
-takes the *first*. A recording of pixels cannot say whether Windows **chose**
+takes the _first_. A recording of pixels cannot say whether Windows **chose**
 the second size or merely **drew** at it, so the question went to the metrics.
 
 #### The instrument: the internal leading names the size
@@ -18595,10 +18618,10 @@ give one map from cell to size.
 Sorting every answer by where it falls in its **run** -- the stretch of
 consecutive sizes that grid-fit to the same cell -- gives:
 
-| | the run's first | the run's last | inside it |
-| --- | --- | --- | --- |
-| the cell fits exactly | **227** | 14 | 1 |
-| the cell falls short | 15 | **145** | 0 |
+|                       | the run's first | the run's last | inside it |
+| --------------------- | --------------- | -------------- | --------- |
+| the cell fits exactly | **227**         | 14             | 1         |
+| the cell falls short  | 15              | **145**        | 0         |
 
 The two large numbers are 8f's rule, restated and now measured over four times
 as many cases: an exact fit takes the first of the run, a short fit the last.
@@ -18666,12 +18689,12 @@ ratio and a display whose pixel is not square reads the **4:3** group, whose
 rows are not the catch-all's. Times New Roman's two groups differ in 55 rows
 above two hundred pixels per em.
 
-| | |
-| --- | --- |
-| ties recorded | **587** |
-| take the run's **first** | 521 |
-| take the run's **last** | 64 |
-| take one in the **middle** | 2 |
+|                            |         |
+| -------------------------- | ------- |
+| ties recorded              | **587** |
+| take the run's **first**   | 521     |
+| take the run's **last**    | 64      |
+| take one in the **middle** | 2       |
 
 **Every one of the 64 is at a cell of 255 or more**, and 35 of the ties at those
 cells take the first, so the cell is not the whole of it. Six faces switch over
@@ -18685,7 +18708,7 @@ were asked, up to 279.
 Symbol asked for a cell of 294 has a run of **three** -- 239, 240 and 241 all
 grid-fit to 294 -- and Windows answers **240**. Not the first, not the last. The
 scaled cell says why: 239 scales to 293, 240 to 294 and 241 to 295, so 240 is
-the largest of the run whose *unhinted* extent still fits the cell asked for.
+the largest of the run whose _unhinted_ extent still fits the cell asked for.
 
 **And that is the rule**, at a cell of 255 or more:
 
@@ -18697,8 +18720,8 @@ the largest of the run whose *unhinted* extent still fits the cell asked for.
 Rounded once from the sum, and not each of the two separately. Symbol settles
 that on its own, between two cells eight apart:
 
-| | the run | scales to | Windows |
-| --- | --- | --- | --- |
+|          | the run  | scales to    | Windows |
+| -------- | -------- | ------------ | ------- |
 | cell 275 | 224, 225 | 225 → 275.65 | **224** |
 | cell 284 | 231, 232 | 232 → 284.23 | **232** |
 
@@ -18716,12 +18739,12 @@ New at 238.
 
 #### What it was worth
 
-| | before | after |
-| --- | --- | --- |
-| `stemstyl`, each display | 872 and 862 of 900 | **900 of 900** |
-| `tiewide`, each display | 342 of 365 | **365 of 365** |
-| `tiepick`, each display | 3,474 of 3,516 | **3,514 of 3,516** |
-| `symadv` | 414 of 423 | **420 of 423** |
+|                          | before             | after              |
+| ------------------------ | ------------------ | ------------------ |
+| `stemstyl`, each display | 872 and 862 of 900 | **900 of 900**     |
+| `tiewide`, each display  | 342 of 365         | **365 of 365**     |
+| `tiepick`, each display  | 3,474 of 3,516     | **3,514 of 3,516** |
+| `symadv`                 | 414 of 423         | **420 of 423**     |
 
 and `font`, `hinting`, `glyphs`, `widths`, `charscal` and `maxwidth` did not
 move. The two `tiepick` records left are Symbol's cell of 190, which is 8s's
@@ -18739,12 +18762,12 @@ at that cell and the table's row 255 holds 233 over 55.
 
 #### The readings refused on the way
 
-| | |
-| --- | --- |
-| the ascent | 84 records of `font`, and a tie with equal ascents takes the last |
-| the run's last where it fits under the scaled size | 64 right, 319 wrong |
-| the run's last where the cell is 255 or more | 64 right, 35 wrong |
-| the largest whose ascent and descent scale and round **apart** | 2 wrong of 313 -- the Symbol pair above |
+|                                                                |                                                                   |
+| -------------------------------------------------------------- | ----------------------------------------------------------------- |
+| the ascent                                                     | 84 records of `font`, and a tie with equal ascents takes the last |
+| the run's last where it fits under the scaled size             | 64 right, 319 wrong                                               |
+| the run's last where the cell is 255 or more                   | 64 right, 35 wrong                                                |
+| the largest whose ascent and descent scale and round **apart** | 2 wrong of 313 -- the Symbol pair above                           |
 
 ### 8s. Symbol's advances past its own half-size crossing
 
@@ -18776,8 +18799,8 @@ An advance doubled from whole pixels is even, and delta's are not: 117 pixels at
 a size of 235 and 119 at 243. Doubling the sixty-fourths and rounding once gives
 those, and gives omega's plateaus with them --
 
-| size | 232 | 233 | 234 | 235 | 236 | 237 | 238 | 240 | 241 | 242 | 243 | 244 | 245 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| size  | 232 | 233 | 234 | 235 | 236 | 237 | 238 | 240 | 241 | 242 | 243 | 244 | 245 |
+| ----- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | omega | 150 | 150 | 150 | 154 | 154 | 154 | 154 | 154 | 158 | 158 | 158 | 158 | 158 |
 
 -- which are wider apart than any scaling would put them and exactly what the
@@ -18804,27 +18827,27 @@ asks it of every dip there is.
 answer lies past the dip and no size below it fits exactly, so which side is
 taken shows. With the two cells either side of each for company:
 
-| | the dip | cell | Windows |
-| --- | --- | --- | --- |
-| Arial Bold Italic | 105:121 → 106:120 | 120 | **106**, past it |
-| Arial Bold Italic | 150:172 → 151:171 | 171 | **151**, past it |
-| Arial Bold Italic | 168:192 → 169:191 | 191 | **169**, past it |
-| Times Bold | 79:91 → 80:90 | 90 | **80**, past it |
-| Times Bold | 112:128 → 113:127 | 127 | **113**, past it |
-| Times Italic | 189:211 → 190:210 | 210 | **190**, past it |
-| Symbol | 63:79 → 64:78 | 78 | **64**, past it |
-| Symbol | 155:191 → 156:190 | 190 | **154**, short of it |
-| Courier New Italic | 111:122 → 112:121 | 121 | **109**, short of it |
+|                    | the dip           | cell | Windows              |
+| ------------------ | ----------------- | ---- | -------------------- |
+| Arial Bold Italic  | 105:121 → 106:120 | 120  | **106**, past it     |
+| Arial Bold Italic  | 150:172 → 151:171 | 171  | **151**, past it     |
+| Arial Bold Italic  | 168:192 → 169:191 | 191  | **169**, past it     |
+| Times Bold         | 79:91 → 80:90     | 90   | **80**, past it      |
+| Times Bold         | 112:128 → 113:127 | 127  | **113**, past it     |
+| Times Italic       | 189:211 → 190:210 | 210  | **190**, past it     |
+| Symbol             | 63:79 → 64:78     | 78   | **64**, past it      |
+| Symbol             | 155:191 → 156:190 | 190  | **154**, short of it |
+| Courier New Italic | 111:122 → 112:121 | 121  | **109**, short of it |
 
 Seven go past the dip and two stop short, and what separates them is the
 **scaled** extent of the size on the far side:
 
-| | past the dip | scales to | |
-| --- | --- | --- | --- |
-| Symbol, cell 78 | 64 | 78 | taken |
-| Times Italic, cell 210 | 190 | 210 | taken |
-| Symbol, cell 190 | 156 | **191** | refused |
-| Courier New Italic, cell 121 | 112 | **127** | refused |
+|                              | past the dip | scales to |         |
+| ---------------------------- | ------------ | --------- | ------- |
+| Symbol, cell 78              | 64           | 78        | taken   |
+| Times Italic, cell 210       | 190          | 210       | taken   |
+| Symbol, cell 190             | 156          | **191**   | refused |
+| Courier New Italic, cell 121 | 112          | **127**   | refused |
 
 and five more taken, every one of them scaling to at or under the cell. So:
 
@@ -18837,7 +18860,7 @@ once -- and it grows with the size, so nothing above a size that fails it can
 pass either and the scan is done.
 
 **It is a rule about stepping over, not a rule about candidates.** Courier New's
-hinted cells run fifteen pixels below its scaled ones, so requiring *every*
+hinted cells run fifteen pixels below its scaled ones, so requiring _every_
 candidate to pass costs `stemsize` all 238 of its records. A size reached
 without stepping over anything is taken on the table's word.
 
@@ -18866,14 +18889,14 @@ and it costs none.
 
 #### Three readings refused on the way
 
-| | |
-| --- | --- |
-| give up at the first size too tall | 124 records of `hinting`, 6 of `font`, 12 of `stemstyl`, 10 of `tiepick` against 3 |
-| require *every* candidate's scaled cell to fit | `stemsize` 0 of 238 |
-| cap the scan at the size the height scales to | `stemsize` 0 of 238 |
-| start at that size and walk both ways | 1,662 of 1,697 against this scan's 1,677 |
+|                                                |                                                                                    |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
+| give up at the first size too tall             | 124 records of `hinting`, 6 of `font`, 12 of `stemstyl`, 10 of `tiepick` against 3 |
+| require _every_ candidate's scaled cell to fit | `stemsize` 0 of 238                                                                |
+| cap the scan at the size the height scales to  | `stemsize` 0 of 238                                                                |
+| start at that size and walk both ways          | 1,662 of 1,697 against this scan's 1,677                                           |
 
-The second of those is the rule above with the word *stepped* taken out of it,
+The second of those is the rule above with the word _stepped_ taken out of it,
 and the difference between 238 records and none is the whole of what that word
 is doing.
 
@@ -18900,11 +18923,12 @@ has to be 351 or less, so the question is where the phantom's original is.
 
 The phantom is a point of the glyph like any other. In the glyph's own
 coordinates its position is the advance less the bearing's shift -- `xMin - lsb
-+ aw`, which for omega is 1405 - 80 -- and it is carried across the bearing
-afterwards like every other point. One rounding, in the same place as the
-outline's:
 
-    toPixelsX(advance - shift) + bearing - whole        5782, and 351
+- aw`, which for omega is 1405 - 80 -- and it is carried across the bearing
+  afterwards like every other point. One rounding, in the same place as the
+  outline's:
+
+  toPixelsX(advance - shift) + bearing - whole 5782, and 351
 
 against scaling the advance on its own and adding an origin already rounded to
 a whole pixel:
@@ -18914,12 +18938,12 @@ a whole pixel:
 Both are two roundings; they differ only in where the split falls, and they
 differ at all in exactly one cell of `symadv`'s 141.
 
-**This is not the rule above it.** The phantom's *current* position is rounded
+**This is not the rule above it.** The phantom's _current_ position is rounded
 to a whole pixel **from the pen**, which Times New Roman Italic's `j` measured:
 adding the bearing and `xMin` before rounding carries an advance of 9.4531 over
 the half and Windows answers nine. That is a different number from this one --
 the place the rounding put it, against the place the scaling left it -- and only
-an instruction that measures an *original* distance ever reads this one.
+an instruction that measures an _original_ distance ever reads this one.
 
 Worth 3 records and costs none: `hinting`'s 14,928 and `glyphs`'s 6,046 are
 unmoved, and so are `widths`, `charscal`, `maxwidth` and the fabricated corpus.
@@ -18959,7 +18983,7 @@ width is settled by a floor:
 
     average = floor(dfAvgWidth * cell * dfVertRes / (dfPixHeight * dfHorizRes))
 
-The aspect in there is the *design's* -- three horizontal to two vertical for
+The aspect in there is the _design's_ -- three horizontal to two vertical for
 all three plotter fonts -- and the device's was missing, because on a VGA it is
 the identity. Multiplying by `aspectX / aspectY` inside the same floor brings
 **298 more cells** and takes Roman, Script and Modern from 414 wrong to 116.
@@ -19012,7 +19036,6 @@ scaled at the larger of the two and read back through stretch factors, and an
 EGA does not separate that from scaling at the horizontal size, because its
 horizontal size is always the larger.
 
-
 #### Tracing one cell to one instruction
 
 Counting says which group a cell belongs to; it does not say which line is
@@ -19052,10 +19075,9 @@ accent where Windows leaves it.
 That is the method for the 614 that remain: run the program, watch which
 instruction moves the point, and ask what it read.
 
-
 #### Two more from the same method, and what the shape of the rest is
 
-Tracing found `WCVTF`; looking at what each group's cells actually *are* found
+Tracing found `WCVTF`; looking at what each group's cells actually _are_ found
 two more, and both are the same mistake in a different place -- a horizontal
 quantity reached for down the page.
 
@@ -19116,6 +19138,7 @@ prediction held: the three still standing are exactly that shape.
   has failed to fit the selection rule three ways and says so. This is one more
   cell of it, and the useful thing here is the identification rather than any new
   measurement -- it is not two problems, it is one.
+
 - **Symbol's slanted `m` and `y` at fifteen.** One pixel each, both at the top
   of a stem. Symbol has no italic file, so these are sheared rather than hinted.
 
@@ -19131,7 +19154,7 @@ prediction held: the three still standing are exactly that shape.
   Which way the horizontal rescue leans is therefore the whole of it, and the
   routine that decides has now been read rather than guessed at. `DoHorizDropout`
   does its stub tests, then asks about the pixel left and the pixel right of the
-  *undecremented* coordinate -- each guarded on being clear of the corresponding
+  _undecremented_ coordinate -- each guarded on being clear of the corresponding
   edge, which is what this side already had -- and then picks between two
   placements on the scan kind: `lXDrop--` for a **simple** dropout, and for a
   **smart** one the average of the two exact crossings,
@@ -19147,7 +19170,7 @@ prediction held: the three still standing are exactly that shape.
   walk never forms an unrounded crossing at all: `calcLine` steps a Bresenham
   over pixels and emits indices outright, which is precisely why the reference
   recomputes the crossings through `pfnHCallBack` when smart control needs them.
-  The values the attempt averaged came from `Endpoints`, the *other* emitter,
+  The values the attempt averaged came from `Endpoints`, the _other_ emitter,
   whose lists hold only the vertices that land on a sample line -- so they
   belonged to different crossings than the runs being placed.
 
@@ -19159,7 +19182,7 @@ prediction held: the three still standing are exactly that shape.
 
   What stands is the structure of the routine, which is read: the stub tests,
   the two guarded neighbour tests, the two placements, the clamp. And the
-  question of *which* placement is moot, because **the run should not be a
+  question of _which_ placement is moot, because **the run should not be a
   dropout at all.**
 
   The reference calls one when the two list entries are equal --
@@ -19216,7 +19239,7 @@ prediction held: the three still standing are exactly that shape.
   shear's rounding are all excluded by measurement, and every one of them in the
   direction that would have helped.
 
-  What that leaves is the sheared outline's *values* rather than how they are
+  What that leaves is the sheared outline's _values_ rather than how they are
   rounded, and nothing recorded can see them: a glyph Windows is shearing runs no
   program, so the readout that settled `MSIRP` has nothing to attach to. The cell
   is exhausted at the observability this corpus has, and saying so is worth more
@@ -19226,7 +19249,6 @@ The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
 lean everywhere else -- `floor(ppem/3)` carried across the aspect -- leaves these
 three untouched.
-
 
 #### Chosen geometry, drawn through a pixel that is not square
 
@@ -19267,7 +19289,6 @@ neither instrument by one cell. The fabricated ceiling now keeps a figure per
 display, square at 32,394 of 32,394 with no wrong pixel and not-square at 1,881
 of 2,316.
 
-
 #### And the same conversion inside a composite
 
 With the bars scaled across, what still failed of the two instruments was 173
@@ -19292,7 +19313,7 @@ unhinted component's `x` across:
 
 **The whole upright half of both instruments is now exact on an EGA**, accented
 characters included, and the 44 cells each has left are identical between them
--- they are Courier New *Italic*, a real file the fabrication never rewrote, so
+-- they are Courier New _Italic_, a real file the fabrication never rewrote, so
 they are not instrument geometry at all. That also explains why the lean could
 never be measured on them.
 
@@ -19320,7 +19341,6 @@ coordinate rather than rounding it was refused earlier by both displays at once
 -- 412 records of the VGA say rounding -- so it is neither of the two obvious
 things, and the stroke walk wants an instrument of its own.
 
-
 #### An instrument for the synthesised slant, and the lean it finally gives up
 
 `symbol-slant` puts one upright bar in place of every Symbol letter, which is
@@ -19337,7 +19357,7 @@ have scored well and the one that scored least badly meant nothing.
 
 With the mapper and the pen fixed the upright half is exact, and the question can
 be asked properly. Sweep the numerator -- the lean is some whole number of pixels
-over one em of rise -- and ask, size by size, which whole numbers make *every*
+over one em of rise -- and ask, size by size, which whole numbers make _every_
 cell of that size right. **Nineteen of the twenty sizes answer with exactly one
 number**, which is what a real measurement looks like:
 
@@ -19362,7 +19382,7 @@ carried across the device's own aspect and rounded again.** On a square pixel th
 aspect is one and the second rounding returns the number it was given, which is
 why every reading of this taken on a VGA was right and incomplete at once.
 
-The horizontal size it is carried across is the *fractional* one, and not the
+The horizontal size it is carried across is the _fractional_ one, and not the
 whole `xWhole` that the advance and the hint program are both measured at. That
 is measured too, on the same sweep: the whole size is 322 cells of 352 against
 340, and truncating the product rather than rounding it is 306. The four earlier
@@ -19382,7 +19402,7 @@ the clue. They are not the lean; they are the **box**.
 
 A slanted glyph's box is built by un-shearing each point, rounding, and shearing
 it back, because the two roundings are kept apart. The un-shear subtracts the
-*unrounded* `lean * y`, and the shear that put the point there rounded it -- so
+_unrounded_ `lean * y`, and the shear that put the point there rounded it -- so
 where that rounding took a half upward, the un-shear lands exactly half a
 sixty-fourth above the coordinate it started from. All four corners of the bar
 say so: two have the shear term on a half, `round(-37.5)`, and come back at 69.50
@@ -19422,7 +19442,7 @@ the question they asked is not, and the recorded sweep still shows it on the
 Hercules, where ten bold upright Symbol cells are the largest thing left.
 
 So above `OUTLINE_FLOOR` a bold request is not answered by the face's own
-strike. That much both displays say plainly. What it does *not* say is the rule,
+strike. That much both displays say plainly. What it does _not_ say is the rule,
 because every way of writing it costs more on the VGA than it gains:
 
     require the weight to match          EGA +35   VGA -22 glyphs, -6 font, -84 styles
@@ -19437,7 +19457,7 @@ that and still loses sixty, so it is not simply smearing either.
 Both readings gain the same 35 records on the EGA, which says they agree about
 the EGA and differ only about the VGA.
 
-And the VGA case *is* recorded, which is what makes this interesting. The
+And the VGA case _is_ recorded, which is what makes this interesting. The
 `styles` sweep asks Symbol at sixteen pixels for every weight from 500 to 700 in
 tens, and all twenty-one agree today -- so on a VGA, bold Symbol at sixteen
 pixels **does** take the sixteen row strike. On an EGA, at the same height and
@@ -19453,7 +19473,7 @@ cells exist --
 
 -- and every EGA height with a strike is a bold failure while every one without
 is a pass. What differs between the two files is the resolution they are cut
-for, 96x96 against 72x96, and that `SYMBOLB.FON` carries *two* sixteen row
+for, 96x96 against 72x96, and that `SYMBOLB.FON` carries _two_ sixteen row
 strikes where `SYMBOLE.FON` carries one. Neither explains fifteen and twenty,
 which are single.
 
@@ -19494,7 +19514,7 @@ it.
 
 #### And the term that does it was already here
 
-The penalty routine charges a raster candidate for its *shape*. At `seg3:1d34`
+The penalty routine charges a raster candidate for its _shape_. At `seg3:1d34`
 it takes `MulDiv(100, dpAspectY, dpAspectX)` -- the device's own pixel -- and at
 `1db8` it takes `MulDiv(100, dfVertRes, dfHorizRes)` from the candidate's own
 header, scales it by the multiples the strike would be drawn at, and adds the
@@ -19506,7 +19526,7 @@ So the comparison was right all along and **the request never reached it**. A
 face's own strike, found by the name-directed search at `seg3:0e95`, was returned
 outright; the competition only ran when that search found nothing. Windows
 short-circuits too, but only for an **exact** answer -- the weight it was asked
-in and the slant it was asked in. Anything that would have to be *made* from the
+in and the slant it was asked in. Anything that would have to be _made_ from the
 strike goes to the competition, and there the off-square term decides:
 
 - on a square pixel the strike pays nothing, the outline ties with it, and the
@@ -19518,7 +19538,7 @@ Which is the measured surface exactly, and it explains the shape that made the
 old reading impossible: three hundred refuses the strike for the same reason
 eight hundred does, because neither of them is the weight the strike is cut at.
 
-The exactness is asked of the face's *own* strike only. A strike reached by
+The exactness is asked of the face's _own_ strike only. A strike reached by
 falling back to another family -- eight pixel Arial answered by Small Fonts -- is
 not the face's to be exact about.
 
@@ -19553,7 +19573,7 @@ for -- the same rule a strike follows and at the same threshold the smear itself
 begins at, which is above 550.
 
 This side had `>= 700` there for the outline path, which is the threshold for
-opening a family's bold *file* rather than for making bold out of the plain one.
+opening a family's bold _file_ rather than for making bold out of the plain one.
 The two are fifty apart, and only Symbol can tell them apart, since it is the
 one outline family with no bold file of its own -- so a sweep that asks 400 and
 700 can never see it and the sweep that asks 600 sees it at every height. 87
@@ -19635,7 +19655,7 @@ is worth saying so: it looked like the bold strike-or-outline question above, an
 it is not, because **every remaining cell is weight 400.**
 
 Split by what is drawn, it is two things. 29 of them on each display draw a
-*pair* of the same letter, and in every pair the first glyph is exact and the
+_pair_ of the same letter, and in every pair the first glyph is exact and the
 second is in the wrong column -- which is a width and not a shape. The rest draw
 one letter, slanted.
 
@@ -19647,8 +19667,8 @@ drawing is. Swept upright as well -- **14,928 records on each of two displays,
 every one exact** -- it says plainly that Symbol's `z` at a twenty-two pixel cell
 on an EGA advances by thirteen, and that we already knew it.
 
-So the ruler was right and the pen was not. `Surface` stepped by *the same
-sources* `LogicalFont.measure` asks, in the same order, rather than by the same
+So the ruler was right and the pen was not. `Surface` stepped by _the same
+sources_ `LogicalFont.measure` asks, in the same order, rather than by the same
 function -- and `outlineAdvance` asks them at the whole **horizontal** size while
 the pen asked at the vertical one. On a square pixel those are one number, and
 every reading of that code had been taken on a square pixel. The glyph corpus
@@ -19678,17 +19698,17 @@ Seven probes are recorded per display: `devcaps`, `maxwidth`, `charscal`,
 
 ### The four, and the numbers that separate them
 
-| | VGA | Super VGA | EGA | Hercules |
-| --- | --- | --- | --- | --- |
-| pixels | 640x480 | 800x600 | 640x350 | 720x348 |
-| planes, colours | 4, 16 | 4, 16 | 4, 16 | **1, 2** |
-| `LOGPIXELS` x, y | 96, 96 | 96, 96 | 96, **72** | 96, **72** |
-| `ASPECTX`, `ASPECTY` | 36, 36 | 36, 36 | 38, 48 | **11, 16** |
-| `RASTERCAPS` | 18137 | 18137 | 18137 | **665** |
-| `CLIPCAPS` | 1 | 1 | 1 | **0** |
-| `NUMPENS` | 80 | 80 | 80 | **10** |
+|                      | VGA     | Super VGA | EGA        | Hercules   |
+| -------------------- | ------- | --------- | ---------- | ---------- |
+| pixels               | 640x480 | 800x600   | 640x350    | 720x348    |
+| planes, colours      | 4, 16   | 4, 16     | 4, 16      | **1, 2**   |
+| `LOGPIXELS` x, y     | 96, 96  | 96, 96    | 96, **72** | 96, **72** |
+| `ASPECTX`, `ASPECTY` | 36, 36  | 36, 36    | 38, 48     | **11, 16** |
+| `RASTERCAPS`         | 18137   | 18137     | 18137      | **665**    |
+| `CLIPCAPS`           | 1       | 1         | 1          | **0**      |
+| `NUMPENS`            | 80      | 80        | 80         | **10**     |
 
-The EGA and the Hercules report the *same* two logical resolutions and a wholly
+The EGA and the Hercules report the _same_ two logical resolutions and a wholly
 different pixel, which is what makes the fourth display worth its recording: it
 tells apart every rule that `LOGPIXELS` and `ASPECT` had agreed about. And of
 the capability bits, one matters here -- `RC_BIGFONT`, bit ten, which the three
@@ -19720,7 +19740,7 @@ differ, because GDI's walk is not the driver's -- it turns the tie over and it
 draws the pixel the line stops on when that pixel is on the edge the line is
 running at, and it rounds the step the line enters on away from where the line
 began. This is the third driver property and the one that took longest to see,
-because it is not a difference in *how* a line is drawn but in *who* draws it.
+because it is not a difference in _how_ a line is drawn but in _who_ draws it.
 
 How much GDI takes is its own question, and it is not answered by whether the
 path leaves the surface. A **negative** coordinate anywhere in a polyline takes
@@ -19749,11 +19769,11 @@ ordinal 10 and dispatches on the object style through two parallel tables, one o
 handlers and one of realised sizes. In all three drivers the font entry is a
 handler of one byte -- `C3`, a bare `ret` -- and a size of **nought**:
 
-| driver | tables | font handler | size |
-| --- | --- | --- | --- |
-| `HERCULES.DRV` | `seg1:0x2d37` / `0x2d3d` | `0x2cc1` | 0 |
-| `VGA.DRV` | `0x2bd6` / `0x2bdc` | `0x2b3b` | 0 |
-| `EGA.DRV` | `0x2bba` / `0x2bc0` | `0x2b1f` | 0 |
+| driver         | tables                   | font handler | size |
+| -------------- | ------------------------ | ------------ | ---- |
+| `HERCULES.DRV` | `seg1:0x2d37` / `0x2d3d` | `0x2cc1`     | 0    |
+| `VGA.DRV`      | `0x2bd6` / `0x2bdc`      | `0x2b3b`     | 0    |
+| `EGA.DRV`      | `0x2bba` / `0x2bc0`      | `0x2b1f`     | 0    |
 
 No display driver in the set realises a font at all. The strike is GDI's to
 build on every one of them.
@@ -19787,7 +19807,7 @@ stretched both ways -- fits inside one.
   ring of fifteen and a fan of span thirty-one say both displays exclude it, in
   every one of them. What draws it is not the driver and not the edge on its
   own: it is GDI, in the lines it has to clip, and then only when the stop is on
-  the edge the line is *running at*.
+  the edge the line is _running at_.
 - **Re-seeding the walk at the crossing.** That GDI clips the segment to the
   edge, restarts from the crossing point and truncates rather than rounds. Four
   short clipped lines come out pixel-perfect under it, which is persuasive at
@@ -19796,7 +19816,7 @@ stretched both ways -- fits inside one.
 - **The tie depends on where the line begins.** 236 slopes across four origins,
   on a VGA and a Hercules, and not one turns on the parity of either coordinate.
 
-Four of those six are the same shape -- *this driver draws one more pixel* --
+Four of those six are the same shape -- _this driver draws one more pixel_ --
 and three of the four are wrong. The one that is right is right for a reason
 none of the others guessed: the extra pixel is not the driver's at all.
 
@@ -19815,7 +19835,7 @@ for it is `1 + 28 x 2 - 3 x 19`, which is **nought**; the loop branches on
 six. An `initialXStep` of 18 rather than 19 turns it over, and that is `x1` at
 334 rather than 333. The `m`'s edge is a straight one, `(240,-723) -> (364,-424)`,
 whose determinant at the deciding step is -92 against a step of 7,936; an
-`initialXStep` of 47 rather than 48 turns *it* over, and that is `x1` at 241
+`initialXStep` of 47 rather than 48 turns _it_ over, and that is `x1` at 241
 rather than 240. Two different glyphs, two different shapes, one quantity.
 
 **And the quantity was a rounding error in a double.** The `y`'s starting point
@@ -19833,7 +19853,7 @@ sixty-fourth, on one point.
 That one sixty-fourth moved the crossing across a rounding boundary; the
 crossing turned an ordinary run into a zero-length one; the zero-length run
 became a dropout; the dropout was placed a column to the left of where the run
-would have filled; and the pixel it placed there blocked the *vertical* rescue
+would have filled; and the pixel it placed there blocked the _vertical_ rescue
 in the row below, which `PerformVertDropout` declines where the pixel above is
 already lit. Three differing pixels in the `y`, from one unit in the last place.
 
@@ -19919,11 +19939,11 @@ implemented.
 **The flattening norm's threshold**, `0x80`:
 
 | threshold | fabricated | not square | EGA and Hercules |
-| --- | --- | --- | --- |
-| **0x80** | **32,394** | **2,668** | **6,044** |
-| 0x40 | 31,232 | 2,540 | 5,671 |
-| 0x20 | 30,688 | 2,484 | 5,538 |
-| 0x100 | 30,690 | 2,510 | 5,566 |
+| --------- | ---------- | ---------- | ---------------- |
+| **0x80**  | **32,394** | **2,668**  | **6,044**        |
+| 0x40      | 31,232     | 2,540      | 5,671            |
+| 0x20      | 30,688     | 2,484      | 5,538            |
+| 0x100     | 30,690     | 2,510      | 5,566            |
 
 **The depth itself.** One more subdivision everywhere gives 30,646, 2,474 and
 5,517; two more gives 30,282, 2,429 and 5,400. The flattening is not approximate
@@ -19932,12 +19952,12 @@ and it is not the locus of these cells.
 **The shear's rounding**, re-swept now that the corpus has moved under it:
 
 | the shear term rounds | fabricated | not square | EGA and Hercules |
-| --- | --- | --- | --- |
-| **up** | **32,394** | **2,668** | **6,044** |
-| away from zero | 32,383 | 2,656 | 6,044 |
-| down | 32,336 | 2,654 | 6,041 |
-| toward the floor | 31,973 | 2,652 | 6,021 |
-| toward the ceiling | 31,959 | 2,664 | 6,010 |
+| --------------------- | ---------- | ---------- | ---------------- |
+| **up**                | **32,394** | **2,668**  | **6,044**        |
+| away from zero        | 32,383     | 2,656      | 6,044            |
+| down                  | 32,336     | 2,654      | 6,041            |
+| toward the floor      | 31,973     | 2,652      | 6,021            |
+| toward the ceiling    | 31,959     | 2,664      | 6,010            |
 
 Upward is alone in being exact on both fabricated corpora, and the margin over
 the nearest rival has widened rather than narrowed.
