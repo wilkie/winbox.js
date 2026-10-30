@@ -5,27 +5,36 @@ import { Ddeml } from './ddeml/index.js';
 import { freed as ddemlFreed } from './ddeml/exports.js';
 import { LzExpand } from './lzexpand/index.js';
 import { OleCli } from './olecli/index.js';
+import { OleSvr } from './olesvr/index.js';
 import { Ver } from './ver/index.js';
 
 /**
  * The libraries WinBox keeps whose file is loaded beside them when there is
  * one, each import of an export WinBox answers linked to WinBox's stub
  * (`linker.ts`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
- * `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`) and `OLECLI` (`olecli/`). As
+ * `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`), `OLECLI` (`olecli/`) and
+ * `OLESVR` (`olesvr/`). As
  * `crates/winbox-win16/src/own_modules.rs`.
  */
-const OTHERS: Record<string, any> = { VER: Ver, LZEXPAND: LzExpand, DDEML: Ddeml, OLECLI: OleCli };
+const OTHERS: Record<string, any> = {
+  VER: Ver,
+  LZEXPAND: LzExpand,
+  DDEML: Ddeml,
+  OLECLI: OleCli,
+  OLESVR: OleSvr,
+};
 
 /** The names of those libraries. */
-export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND', 'DDEML', 'OLECLI'];
+export const OWN_WITH_FILE = ['COMMDLG', 'VER', 'LZEXPAND', 'DDEML', 'OLECLI', 'OLESVR'];
 
 /**
  * Those of them kept only once a program loads one, not as Windows starts:
- * `OLECLI` (`olecli/`). A kept module takes two descriptors, so one kept
+ * `OLECLI` (`olecli/`) and `OLESVR` (`olesvr/`). A kept module takes two
+ * descriptors, so one kept
  * as Windows starts moves every selector a program is given after; kept
  * as it is first loaded, a session that never loads it is as before.
  */
-const ON_LOAD: Record<string, any> = { OLECLI: OleCli };
+const ON_LOAD: Record<string, any> = { OLECLI: OleCli, OLESVR: OleSvr };
 
 /**
  * One of `ON_LOAD` by its module's name or its file's (`OLECLI.DLL`), kept
@@ -44,6 +53,11 @@ export function keepOnLoad(system: any, name: string) {
   if (module && !system._moduleData?.[own]) {
     system.keep(module, 'moveable');
   }
+}
+
+/** Whether a module's name is one of `ON_LOAD`'s, kept or not yet. As `own_modules::kept_on_load`. */
+export function keptOnLoad(name: string) {
+  return String(name ?? '').toUpperCase() in ON_LOAD;
 }
 
 /** Whether WinBox answers an ordinal of one of `OTHERS`. */
@@ -99,5 +113,10 @@ export function ownFreed(system: any, name: string) {
    * it started, done again as it is next loaded and called. */
   if (String(name ?? '').toUpperCase() === 'OLECLI') {
     delete system._olecli;
+  }
+
+  /* `OLESVR`'s too: its servers, documents and what it did as it started. */
+  if (String(name ?? '').toUpperCase() === 'OLESVR') {
+    delete system._olesvr;
   }
 }
