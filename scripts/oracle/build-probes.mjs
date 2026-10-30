@@ -184,6 +184,13 @@ async function buildChild(name) {
     await run('wlib', ['-q', '-n', basename(importLibrary), `+${name.toUpperCase()}D.DLL`], BUILD);
   }
 
+  /* A child that imports what is not there -- an ordinal or a name its
+   * module does not export -- names the imports in `<name>.child.lnk`, the
+   * linker's own `import` directives. One that defines `PROBE_PROTMODE` is
+   * marked as running in protected mode only, flag 08h of its header. */
+  const directives = join(PROBES, `${name}.child.lnk`);
+  const childText = await readFile(source, 'latin1');
+
   await run(
     'wlink',
     [
@@ -195,6 +202,8 @@ async function buildChild(name) {
       basename(executable),
       'file',
       basename(object),
+      ...((await stat(directives).catch(() => null)) ? [`@${directives}`] : []),
+      ...(childText.includes('#define PROBE_PROTMODE') ? ['option', 'protmode'] : []),
       ...(imports ? ['library', importLibrary] : []),
       /* And `MMSYSTEM`, for a child that opens files through it. */
       ...((await readFile(source, 'latin1')).includes('<mmsystem.h>')

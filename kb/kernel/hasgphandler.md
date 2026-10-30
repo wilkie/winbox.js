@@ -15,7 +15,7 @@ topics: [kernel-internals, application-errors, tool-helper]
   3. It looks in the same resident names for an entry named `__GP` and finds the address of its ordinal (seg1 `4fe7`, as `GetProcAddress` finds one) (`4cc8`-`4cfd`).
   4. That address must be a present segment. The table there is records of four words: a selector, a first offset, an offset past the last, and the offset of the handler. It ends at a selector of nought. The first record for CS whose range holds IP gives the answer, the handler's offset; none gives nought (`4cff`-`4d30`).
 - [[read out]] KERNEL's own fault handler asks it first. If it answers, the handler pushes the faulting CS and IP on the faulting stack and resumes at the handler's offset in the same segment (seg1 `5e3e`-`5e66`). Only otherwise are TOOLHELP, a debugger and the Application Error box told. See [[fn:KERNEL.__GP]] for KERNEL's own table.
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]]: an address in the probe's code, the probe's data at nought, and nought each answer nought, with DX kept. The probe's module is not one of the six names, and the owner of nought is none.
 
 ## Callers
 
@@ -25,6 +25,4 @@ topics: [kernel-internals, application-errors, tool-helper]
 
 ## Implementation
 
-A stub in both engines. WinBox's USER, GDI and KERNEL are its own and take no faults to recover from, and its TOOLHELP is its own.
-
-**Recommendation: implement as a fixed answer, nought.** No module of WinBox's has a `__GP` table, so nought is what Windows would answer for any address WinBox's own code can fault at. A program that calls it, a debugger perhaps, then learns nothing is handled. That is one line in each engine. See [[topic:kernel-internals]].
+Both engines answer nought and keep DX (`src/win16/kernel/internals.ts`, `crates/winbox-win16/src/kernel_calls/internals.rs`). [[read out]] Nought is what Windows answers for any address whose owner is not a module, or whose module is not one of the six names, or has no `__GP` entry, or whose table has no record for the address (`4c78`-`4c98`, `4cb5`, `4cd9`, `4d30`). A program's own address is always one of these. WinBox's own USER, GDI and KERNEL have no `__GP` entry among their exports, so nought holds for their addresses too. Windows' own modules would answer an offset for an address inside their handled ranges; WinBox's code there is its own, so no such address exists. See [[topic:kernel-internals]].

@@ -279,6 +279,8 @@ pub const AGREEING: &[&str] = &[
     "vislock",
     "invchild",
     "ictwrap",
+    "undefdl",
+    "kintrnl",
     "kowner",
     "systimer",
     "hwevent",
@@ -562,6 +564,7 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
         &[&[Step::Key(VK_RETURN)], &[Step::Key(VK_RETURN)]],
     ),
     ("sebhook", &[&[Step::Key(VK_RETURN)]]),
+    ("undefdl", &[&[Step::Key(VK_RETURN)]]),
 ];
 
 pub const VK_TAB: u16 = 0x09;

@@ -13,11 +13,11 @@ KERNEL exports 233 entries in Windows 3.1. The SDK's headers declare 130 of them
 - 128 Windows `NE` files and 62 corpus `NE` files were read. The same file in several installations is counted once; no `NE` file differs between them. The virtual device drivers and `WIN386.EXE` are `LE` and `W3` files and import nothing from KERNEL. `WING32.DLL` is a `PE` file.
 - **Documented** here means declared as a function in Open Watcom's headers for Windows 3.x (`h/win/*.h`, which follow the Windows 3.1 SDK's `windows.h`). The census records the header for each export (`declaredIn`). It is the only list of the SDK's functions the repository has. Earlier pages called a few undeclared calls documented (`GetLPErrMode`, `DefineHandleTable`, `OpenPathName` and others under [[topic:kernel-queries]]). They are counted as undeclared here, and settling each against the SDK's printed reference is left below.
 - Of the 103 undeclared exports, 56 are imported by some file. The corpus imports only seven of them: [[fn:KERNEL.InitTask]] and [[fn:KERNEL.WaitEvent]] (all 37 programs, from the C start-up), [[fn:KERNEL.DOS3Call]] (14), [[fn:KERNEL.AllocCStoDSAlias]] (7), and the numbers `__WINFLAGS` (14), `__AHINCR` (13) and `__AHSHIFT` (11). No corpus program imports any of the 32 exports WinBox leaves as stubs.
-- Of the 32 stubs, 12 are imported by Windows' own files: `ExitKernel`, `BUNNY_351`, `WriteOutProfiles`, `DiagOutput` and `K327` by USER (`K327` by GDI too); `GlobalMasterHandle` and `RegisterPtrace` by TOOLHELP; `DOSignal` and `CVWBreak` by KEYBOARD.DRV; `WinOldApCall` and `GetWinOldApHooks` by standard mode's WINOLDAP; `FlushCachedFileHandle` by Setup. Three more are taken by ordinal through `GetProcAddress`, all by TOOLHELP. The other seventeen have no caller outside KERNEL.
+- Of the 32 stubs, 12 are imported by Windows' own files: `ExitKernel`, `BUNNY_351`, `WriteOutProfiles`, `DiagOutput` and `K327` by USER (`K327` by GDI too); `GlobalMasterHandle` and `RegisterPtrace` by TOOLHELP; `DOSignal` and `CVWBreak` by KEYBOARD.DRV; `WinOldApCall` and `GetWinOldApHooks` by standard mode's WINOLDAP; `FlushCachedFileHandle` by Setup. Three more are taken by ordinal through `GetProcAddress`, all by TOOLHELP. The other seventeen have no caller outside KERNEL. Fourteen of the 32 are answered now (the ranked recommendations below) and eighteen remain stubs.
 
 ## How the pieces fit together
 
-**Start-up and the end of a session.** KERNEL's loader binds a program's imports. One it cannot find is bound to [[fn:KERNEL.UndefDynlink]], so the program loads and fails only when it makes that call. The loader also fixes up the prologues of each code segment's exported functions with [[fn:KERNEL.PatchCodeHandle]]. A program's start-up calls [[fn:KERNEL.InitTask]] and then `WaitEvent`. For a task of a module with flag 08h, `LoadModule` calls the procedure [[fn:KERNEL.InitTask1]] keeps, which nothing sets. [[fn:KERNEL.InitLib]] is a library start-up in registers that no library uses. At the other end, USER's `ExitWindows` calls [[fn:KERNEL.BUNNY_351]]. That makes unhandled faults go to a system debugger first. Then comes GDI's `Death` and last [[fn:KERNEL.ExitKernel]]: libraries' `WEP`s, the mouse, keyboard and timers off, the profiles written, then [[fn:KERNEL.DisableKernel]] to hand DOS back its vectors and prefixes, and DOS's exit or a restart.
+**Start-up and the end of a session.** KERNEL's loader binds a program's imports. One it cannot find is bound to [[fn:KERNEL.UndefDynlink]], so the program loads and fails only when it makes that call. The loader also fixes up the prologues of each code segment's exported functions with [[fn:KERNEL.PatchCodeHandle]]. A program's start-up calls [[fn:KERNEL.InitTask]] and then `WaitEvent`. For a task of a module with flag 08h, `LoadModule` calls the procedure [[fn:KERNEL.InitTask1]] keeps, which nothing sets. That flag is not the header's 08h: a program linked so was started with a procedure set, and it was not called ([[probe:kintrnl]]). [[fn:KERNEL.InitLib]] is a library start-up in registers that no library uses. At the other end, USER's `ExitWindows` calls [[fn:KERNEL.BUNNY_351]]. That makes unhandled faults go to a system debugger first. Then comes GDI's `Death` and last [[fn:KERNEL.ExitKernel]]: libraries' `WEP`s, the mouse, keyboard and timers off, the profiles written, then [[fn:KERNEL.DisableKernel]] to hand DOS back its vectors and prefixes, and DOS's exit or a restart.
 
 **Tasks and their queues.** USER keeps each task's message queue and asks KERNEL for it and its data: `GetTaskQueue`, `SetTaskQueue`, `GetTaskQueueDS`/`ES`, `GetTaskDS`, `PostEvent`, `LockCurrentTask`, `SetTaskSignalProc`, `GetExpWinVer`, `GetAppCompatFlags`. WinBox answers all of these ([[topic:kernel-queries]]).
 
@@ -29,7 +29,7 @@ KERNEL exports 233 entries in Windows 3.1. The SDK's headers declare 130 of them
 
 **Faults and parameter errors.** USER, GDI and KERNEL check a program's pointers and handles in their own code. A check that fails jumps to [[fn:KERNEL.K327]], which reports the error (to a debugger, in the retail build) and makes the API return nought to its caller, or carries on for a warning. Where they touch memory a program passed, a fault is caught instead. KERNEL's fault handler asks [[fn:KERNEL.HasGPHandler]] whether the faulting module's `__GP` table names a handler for the address ([[fn:KERNEL.__GP]] is KERNEL's own table). Only system modules are trusted: GDI, USER, KERNEL, PENWIN, DISPLAY and MMSYSTEM. Faults that no table, TOOLHELP or debugger takes go to the routine `BUNNY_351` switches.
 
-**Memory internals.** [[fn:KERNEL.K404]] and [[fn:KERNEL.K403]] read and write a global block's owner in its arena: word 12h of KRNL386's arena, word 1 of KRNL286's. Only KERNEL calls them. [[fn:KERNEL.EMSCopy]], [[fn:KERNEL.A20Proc]], [[fn:KERNEL.ReplaceInst]], [[fn:KERNEL.ValidateFreeSpaces]] and [[fn:KERNEL.SwapRecording]] are left from real mode or from the debugging build and do nothing in retail Windows 3.1.
+**Memory internals.** [[fn:KERNEL.K404]] and [[fn:KERNEL.K403]] read and write a global block's owner in its arena: word 12h of KRNL386's arena, word 1 of KRNL286's. Only KERNEL calls them. [[fn:KERNEL.EMSCopy]], [[fn:KERNEL.A20Proc]], [[fn:KERNEL.ReplaceInst]], [[fn:KERNEL.ValidateFreeSpaces]] and [[fn:KERNEL.SwapRecording]] are left from real mode or from the debugging build and do nothing in retail Windows 3.1. `SwapRecording` leaves the flag in AX and 167h in DX all the same. `EMSCopy`'s entry lies past the end of KERNEL's code once start-up is over, so a call to it faults ([[probe:emscopy]]).
 
 **Profiles and the file cache.** KERNEL holds `WIN.INI` and one private profile in memory and writes them back lazily: at a task switch, before a program's DOS call, at exit, and when asked with [[fn:KERNEL.WriteOutProfiles]]. It also keeps the files of the modules it loads open, in a small cache, closed one at a time by [[fn:KERNEL.FlushCachedFileHandle]] (Setup, before it replaces a file) or all at once by `WinOldApCall`.
 
@@ -49,9 +49,9 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 | Ord | Export                        | Callers                                                              | WinBox       | Recommendation            |
 | --- | ----------------------------- | -------------------------------------------------------------------- | ------------ | ------------------------- |
 | 91  | [[fn:KERNEL.InitTask]]        | CALC.EXE, CALENDAR.EXE, CARDFILE.EXE and 36 more; 37 corpus programs | implemented  | done                      |
-| 141 | [[fn:KERNEL.InitTask1]]       | none                                                                 | stub         | no-op (in effect)         |
+| 141 | [[fn:KERNEL.InitTask1]]       | none                                                                 | implemented  | done                      |
 | 116 | [[fn:KERNEL.InitLib]]         | none                                                                 | stub         | as Windows, if wanted (S) |
-| 120 | [[fn:KERNEL.UndefDynLink]]    | KERNEL's loader                                                      | stub         | **as Windows (S-M)**      |
+| 120 | [[fn:KERNEL.UndefDynLink]]    | KERNEL's loader                                                      | implemented  | done                      |
 | 110 | [[fn:KERNEL.PatchCodeHandle]] | KERNEL's loader                                                      | stub         | not needed                |
 | 2   | [[fn:KERNEL.ExitKernel]]      | USER.EXE                                                             | stub         | not needed                |
 | 125 | [[fn:KERNEL.DisableKernel]]   | KERNEL (`ExitKernel`)                                                | stub         | not applicable            |
@@ -83,12 +83,12 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 
 ### WinOldAp
 
-| Ord | Export                             | Callers                             | WinBox      | Recommendation                     |
-| --- | ---------------------------------- | ----------------------------------- | ----------- | ---------------------------------- |
-| 151 | [[fn:KERNEL.WinOldApCall]]         | WINOLDAP.MOD                        | stub        | not applicable                     |
-| 343 | [[fn:KERNEL.RegisterWinOldApHook]] | none                                | stub        | **as Windows, the chain (S)**      |
-| 344 | [[fn:KERNEL.GetWinOldApHooks]]     | WINOLDAP.MOD                        | stub        | **with RegisterWinOldApHook (XS)** |
-| 158 | [[fn:KERNEL.IsWinOldApTask]]       | USER.EXE, WINOLDAP.MOD, TASKMAN.EXE | implemented | done                               |
+| Ord | Export                             | Callers                             | WinBox      | Recommendation |
+| --- | ---------------------------------- | ----------------------------------- | ----------- | -------------- |
+| 151 | [[fn:KERNEL.WinOldApCall]]         | WINOLDAP.MOD                        | stub        | not applicable |
+| 343 | [[fn:KERNEL.RegisterWinOldApHook]] | none                                | implemented | done           |
+| 344 | [[fn:KERNEL.GetWinOldApHooks]]     | WINOLDAP.MOD                        | implemented | done           |
+| 158 | [[fn:KERNEL.IsWinOldApTask]]       | USER.EXE, WINOLDAP.MOD, TASKMAN.EXE | implemented | done           |
 
 ### DOS hooks and signals
 
@@ -113,63 +113,63 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 | --- | -------------------------------- | --------------------------------------- | ------------ | ------------------------------------ |
 | 332 | [[fn:KERNEL.ThHook]]             | TOOLHELP (by ordinal, `GetProcAddress`) | stub         | data, only if a reader appears (M-L) |
 | 341 | [[fn:KERNEL.ToolHelpHook]]       | TOOLHELP (by ordinal, `GetProcAddress`) | stub         | not needed (M)                       |
-| 202 | [[fn:KERNEL.RegisterPtrace]]     | TOOLHELP.DLL                            | stub         | no-op (XS)                           |
+| 202 | [[fn:KERNEL.RegisterPtrace]]     | TOOLHELP.DLL                            | implemented  | done                                 |
 | 205 | [[fn:KERNEL.CVWBreak]]           | KEYBOARD.DRV                            | stub         | not applicable                       |
 | 314 | [[fn:KERNEL.DebugDefineSegment]] | KERNEL (near)                           | stub         | not applicable                       |
 | 318 | [[fn:KERNEL.FatalExitHook]]      | none                                    | implemented  | done                                 |
 | 328 | [[fn:KERNEL._DEBUGOUTPUT]]       | none                                    | retail no-op | done                                 |
 | 329 | [[fn:KERNEL.K329]]               | none                                    | retail no-op | done                                 |
 | 339 | [[fn:KERNEL.DiagQuery]]          | none                                    | implemented  | done                                 |
-| 340 | [[fn:KERNEL.DiagOutput]]         | USER.EXE                                | stub         | no-op (XS)                           |
+| 340 | [[fn:KERNEL.DiagOutput]]         | USER.EXE                                | retail no-op | done                                 |
 
 ### Faults and parameter errors
 
-| Ord | Export                     | Callers                                         | WinBox | Recommendation            |
-| --- | -------------------------- | ----------------------------------------------- | ------ | ------------------------- |
-| 327 | [[fn:KERNEL.K327]]         | GDI.EXE, USER.EXE                               | stub   | not needed (S)            |
-| 338 | [[fn:KERNEL.HasGPHandler]] | TOOLHELP (by ordinal, `GetProcAddress`); KERNEL | stub   | fixed answer, nought (XS) |
-| 342 | [[fn:KERNEL.__GP]]         | KERNEL (`HasGPHandler`)                         | stub   | not applicable            |
-| 351 | [[fn:KERNEL.BUNNY_351]]    | USER.EXE                                        | stub   | no-op (XS)                |
+| Ord | Export                     | Callers                                         | WinBox       | Recommendation |
+| --- | -------------------------- | ----------------------------------------------- | ------------ | -------------- |
+| 327 | [[fn:KERNEL.K327]]         | GDI.EXE, USER.EXE                               | stub         | not needed (S) |
+| 338 | [[fn:KERNEL.HasGPHandler]] | TOOLHELP (by ordinal, `GetProcAddress`); KERNEL | implemented  | done           |
+| 342 | [[fn:KERNEL.__GP]]         | KERNEL (`HasGPHandler`)                         | stub         | not applicable |
+| 351 | [[fn:KERNEL.BUNNY_351]]    | USER.EXE                                        | retail no-op | done           |
 
 ### Memory and selectors
 
-| Ord | Export                                      | Callers                                                   | WinBox      | Recommendation              |
-| --- | ------------------------------------------- | --------------------------------------------------------- | ----------- | --------------------------- |
-| 28  | [[fn:KERNEL.GlobalMasterHandle]]            | TOOLHELP.DLL                                              | stub        | not needed; with THHOOK (M) |
-| 200 | [[fn:KERNEL.ValidateFreeSpaces]] (declared) | none                                                      | stub        | no-op (XS)                  |
-| 160 | [[fn:KERNEL.EMSCopy]]                       | none                                                      | stub        | no-op (XS)                  |
-| 165 | [[fn:KERNEL.A20Proc]]                       | none                                                      | stub        | no-op (XS)                  |
-| 403 | [[fn:KERNEL.K403]]                          | KERNEL                                                    | implemented | done ([[probe:kowner]])     |
-| 404 | [[fn:KERNEL.K404]]                          | KERNEL                                                    | implemented | done ([[probe:kowner]])     |
-| 201 | [[fn:KERNEL.ReplaceInst]]                   | none                                                      | stub        | no-op (XS)                  |
-| 204 | [[fn:KERNEL.SwapRecording]] (declared)      | none                                                      | stub        | no-op (XS)                  |
-| 159 | [[fn:KERNEL.GlobalHandleNoRIP]]             | MMSYSTEM.DLL                                              | implemented | done                        |
-| 14  | [[fn:KERNEL.LocalNotify]]                   | none                                                      | implemented | done                        |
-| 26  | [[fn:KERNEL.GlobalFreeAll]]                 | none                                                      | implemented | done                        |
-| 161 | [[fn:KERNEL.LocalCountFree]]                | GDI.EXE, MMSYSTEM.DLL, USER.EXE                           | implemented | done                        |
-| 162 | [[fn:KERNEL.LocalHeapSize]]                 | GDI.EXE, MMSYSTEM.DLL, USER.EXE                           | implemented | done                        |
-| 310 | [[fn:KERNEL.LocalHandleDelta]]              | none                                                      | implemented | done                        |
-| 138 | [[fn:KERNEL.GetHeapSpaces]]                 | USER.EXE                                                  | implemented | done                        |
-| 126 | [[fn:KERNEL.MemoryFreed]]                   | none                                                      | implemented | done                        |
-| 316 | [[fn:KERNEL.GetFreeMemInfo]]                | none                                                      | implemented | done                        |
-| 168 | [[fn:KERNEL.DirectResAlloc]]                | SHELL.DLL, USER.EXE, WINHELP.EXE                          | implemented | done                        |
-| 170 | [[fn:KERNEL.AllocCSToDSAlias]]              | 8514.DRV, COMM.DRV, EGA.DRV and 8 more; 7 corpus programs | implemented | done                        |
-| 172 | [[fn:KERNEL.AllocAlias]]                    | none                                                      | implemented | done                        |
-| 206 | [[fn:KERNEL.AllocSelectorArray]]            | WING.DLL, WINGDIB.DRV                                     | implemented | done                        |
-| 196 | [[fn:KERNEL.SelectorAccessRights]]          | none                                                      | implemented | done                        |
-| 180 | [[fn:KERNEL.LONGPTRADD]]                    | GDI.EXE, WINFILE.EXE                                      | implemented | done                        |
-| 345 | [[fn:KERNEL.IsSharedSelector]]              | none                                                      | implemented | done                        |
-| 133 | [[fn:KERNEL.GetExePtr]]                     | 8514.DRV, EGA.DRV, SUPERVGA.DRV and 2 more                | implemented | done                        |
-| 323 | [[fn:KERNEL.IsRomModule]]                   | PROGMAN.EXE                                               | implemented | done                        |
-| 326 | [[fn:KERNEL.IsRomFile]]                     | none                                                      | implemented | done                        |
-| 94  | [[fn:KERNEL.DefineHandleTable]]             | none                                                      | implemented | done                        |
+| Ord | Export                                      | Callers                                                   | WinBox       | Recommendation                                     |
+| --- | ------------------------------------------- | --------------------------------------------------------- | ------------ | -------------------------------------------------- |
+| 28  | [[fn:KERNEL.GlobalMasterHandle]]            | TOOLHELP.DLL                                              | stub         | not needed; with THHOOK (M)                        |
+| 200 | [[fn:KERNEL.ValidateFreeSpaces]] (declared) | none                                                      | retail no-op | done                                               |
+| 160 | [[fn:KERNEL.EMSCopy]]                       | none                                                      | stub         | a known gap: faults in Windows ([[probe:emscopy]]) |
+| 165 | [[fn:KERNEL.A20Proc]]                       | none                                                      | retail no-op | done                                               |
+| 403 | [[fn:KERNEL.K403]]                          | KERNEL                                                    | implemented  | done ([[probe:kowner]])                            |
+| 404 | [[fn:KERNEL.K404]]                          | KERNEL                                                    | implemented  | done ([[probe:kowner]])                            |
+| 201 | [[fn:KERNEL.ReplaceInst]]                   | none                                                      | retail no-op | done                                               |
+| 204 | [[fn:KERNEL.SwapRecording]] (declared)      | none                                                      | implemented  | done                                               |
+| 159 | [[fn:KERNEL.GlobalHandleNoRIP]]             | MMSYSTEM.DLL                                              | implemented  | done                                               |
+| 14  | [[fn:KERNEL.LocalNotify]]                   | none                                                      | implemented  | done                                               |
+| 26  | [[fn:KERNEL.GlobalFreeAll]]                 | none                                                      | implemented  | done                                               |
+| 161 | [[fn:KERNEL.LocalCountFree]]                | GDI.EXE, MMSYSTEM.DLL, USER.EXE                           | implemented  | done                                               |
+| 162 | [[fn:KERNEL.LocalHeapSize]]                 | GDI.EXE, MMSYSTEM.DLL, USER.EXE                           | implemented  | done                                               |
+| 310 | [[fn:KERNEL.LocalHandleDelta]]              | none                                                      | implemented  | done                                               |
+| 138 | [[fn:KERNEL.GetHeapSpaces]]                 | USER.EXE                                                  | implemented  | done                                               |
+| 126 | [[fn:KERNEL.MemoryFreed]]                   | none                                                      | implemented  | done                                               |
+| 316 | [[fn:KERNEL.GetFreeMemInfo]]                | none                                                      | implemented  | done                                               |
+| 168 | [[fn:KERNEL.DirectResAlloc]]                | SHELL.DLL, USER.EXE, WINHELP.EXE                          | implemented  | done                                               |
+| 170 | [[fn:KERNEL.AllocCSToDSAlias]]              | 8514.DRV, COMM.DRV, EGA.DRV and 8 more; 7 corpus programs | implemented  | done                                               |
+| 172 | [[fn:KERNEL.AllocAlias]]                    | none                                                      | implemented  | done                                               |
+| 206 | [[fn:KERNEL.AllocSelectorArray]]            | WING.DLL, WINGDIB.DRV                                     | implemented  | done                                               |
+| 196 | [[fn:KERNEL.SelectorAccessRights]]          | none                                                      | implemented  | done                                               |
+| 180 | [[fn:KERNEL.LONGPTRADD]]                    | GDI.EXE, WINFILE.EXE                                      | implemented  | done                                               |
+| 345 | [[fn:KERNEL.IsSharedSelector]]              | none                                                      | implemented  | done                                               |
+| 133 | [[fn:KERNEL.GetExePtr]]                     | 8514.DRV, EGA.DRV, SUPERVGA.DRV and 2 more                | implemented  | done                                               |
+| 323 | [[fn:KERNEL.IsRomModule]]                   | PROGMAN.EXE                                               | implemented  | done                                               |
+| 326 | [[fn:KERNEL.IsRomFile]]                     | none                                                      | implemented  | done                                               |
+| 94  | [[fn:KERNEL.DefineHandleTable]]             | none                                                      | implemented  | done                                               |
 
 ### Profiles and file cache
 
-| Ord | Export                              | Callers   | WinBox | Recommendation |
-| --- | ----------------------------------- | --------- | ------ | -------------- |
-| 315 | [[fn:KERNEL.WriteOutProfiles]]      | USER.EXE  | stub   | no-op (XS)     |
-| 319 | [[fn:KERNEL.FlushCachedFileHandle]] | SETUP.EXE | stub   | no-op (XS)     |
+| Ord | Export                              | Callers   | WinBox       | Recommendation |
+| --- | ----------------------------------- | --------- | ------------ | -------------- |
+| 315 | [[fn:KERNEL.WriteOutProfiles]]      | USER.EXE  | implemented  | done           |
+| 319 | [[fn:KERNEL.FlushCachedFileHandle]] | SETUP.EXE | retail no-op | done           |
 
 ### Exported numbers
 
@@ -201,10 +201,10 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 
 ## Recommendations, ranked
 
-1. **[[fn:KERNEL.UndefDynlink]], as Windows does (S-M).** Bind every import the linker cannot resolve to it, and have it end the program with `Call to Undefined Dynalink`. Today both engines leave such a relocation unwritten, so a program that imports something missing jumps to a wild address. This is the one item that changes what an ordinary program can see.
-2. **[[fn:KERNEL.RegisterWinOldApHook]] and [[fn:KERNEL.GetWinOldApHooks]], as Windows does (S).** WinBox reports standard mode, where Windows keeps the chain and answers 1. Keep it, never calling it.
-3. **The exact no-ops (XS each):** `WriteOutProfiles`, `FlushCachedFileHandle`, `DiagOutput`, `BUNNY_351`, `RegisterPtrace`, `ValidateFreeSpaces`, `SwapRecording`, `EMSCopy`, `A20Proc`, `ReplaceInst`, `InitTask1`. Each pops what Windows pops and changes nothing a program can see in WinBox. Moving them to the retail no-ops only removes the stub's log line.
-4. **[[fn:KERNEL.HasGPHandler]], a fixed nought (XS).** No WinBox module has a `__GP` table.
+1. **[[fn:KERNEL.UndefDynlink]], as Windows does: done.** Both engines' linkers bind every import they cannot resolve to it, and it ends the program with `Call to Undefined Dynalink` through `FatalAppExit`'s box ([[probe:undefdl]]). KERNEL's and USER's placeholder entries, at ordinals Windows does not export, were taken out of their tables for it, so `GetProcAddress` of those answers nought as in Windows.
+2. **[[fn:KERNEL.RegisterWinOldApHook]] and [[fn:KERNEL.GetWinOldApHooks]], as Windows does: done.** The chain is kept in the callers' records and never called ([[probe:kintrnl]]).
+3. **The no-ops: done, but for `EMSCopy`.** `FlushCachedFileHandle`, `DiagOutput`, `BUNNY_351`, `ValidateFreeSpaces`, `A20Proc` and `ReplaceInst` are retail no-ops. Four leave something in AX, which the census's pages had missed: `WriteOutProfiles` leaves KERNEL's data selector; `RegisterPtrace` and `InitTask1` leave the pointer's selector; `SwapRecording` leaves the flag, with 167h in DX ([[probe:kintrnl]]). `EMSCopy` is not a no-op in Windows: a call to it faults past the end of KERNEL's code, and it stays a stub ([[probe:emscopy]], a known gap).
+4. **[[fn:KERNEL.HasGPHandler]], a fixed nought: done.** Nought is what the read-out gives for any address whose module is not one of the six system names or has no `__GP` table ([[probe:kintrnl]]).
 5. **[[fn:KERNEL.K404]] and [[fn:KERNEL.K403]]: done.** [[probe:kowner]] recorded what a program is told -- the module for its segments, its database and a `GMEM_SHARE` block, the prefix for a block it allocated, the task for its database, nought for the prefix itself -- and both engines answer it from WinBox's own record of each block.
 6. **[[fn:KERNEL.SetSigHandler]] with [[fn:KERNEL.DOSignal]], if a program is found that sets a handler (S).**
 7. **[[fn:KERNEL.InitLib]], as Windows does, if wanted (S).**
@@ -213,9 +213,11 @@ Status is what WinBox does today: implemented, a retail no-op, its number for an
 
 ## Not yet done
 
-- No probe was written for these but [[probe:kowner]] ([[fn:KERNEL.K403]], [[fn:KERNEL.K404]]). Each read-out is from `KRNL386.EXE`, with its `KRNL286.EXE` offset. Probes worth making first: an import of a missing ordinal (the load, and the message when called); `RegisterWinOldApHook`'s answer and the link it writes; `THHOOK`'s address and its words against `GetCurrentTask`.
+- Each read-out is from `KRNL386.EXE`, with its `KRNL286.EXE` offset. [[probe:undefdl]], [[probe:kintrnl]] and [[probe:emscopy]] record the first four recommendations. [[probe:kowner]] records `K404` and `K403`. Probes still worth making: `THHOOK`'s address and its words against `GetCurrentTask`.
+- What KERNEL's fault handling does with a far call past the end of a code segment, which makes `EMSCopy` come back with AX 81h and six bytes popped ([[probe:emscopy]]).
+- The procedures `RegisterPtrace` sets are never called in WinBox, since it tells no debugger of KERNEL's events; that comes with `ToolHelpHook`.
 - Which undeclared exports the SDK's printed reference documents all the same (`DOS3Call`, `NetBIOSCall`, `AllocCStoDSAlias`, `DefineHandleTable`, `GetLPErrMode` and others). The census goes by the headers alone.
 - The words at 251h-257h of KERNEL's data that `WinOldApCall(0)` answers: no code of KERNEL's writes them.
-- What a module's flag 08h stands for, which decides whether `LoadModule` calls `InitTask1`'s procedure.
+- What a module's flag 08h stands for, which decides whether `LoadModule` calls `InitTask1`'s procedure. It is not the header's 08h, the flag `option protmode` sets ([[probe:kintrnl]]).
 - The event codes `ToolHelpHook` and `RegisterPtrace` procedures are called with, beyond 40h, 50h and 63h.
 - Whether WinBox's loader patches exported prologues as [[fn:KERNEL.PatchCodeHandle]] does.

@@ -57,6 +57,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "GetInstanceData" => Implementation::Sync(memory::get_instance_data),
         "OutputDebugString" => Implementation::Sync(nothing_shown),
         "FatalAppExit" => Implementation::Async(fatal_app_exit),
+        "UndefDynLink" => Implementation::Async(undef_dynlink),
         "IsDBCSLeadByte" => Implementation::Sync(is_dbcs_lead_byte),
         "FatalExit" => Implementation::Async(fatal_exit),
         "GetModuleHandle" => Implementation::Sync(get_module_handle),
@@ -716,6 +717,13 @@ fn fatal_app_exit(engine: &Engine, mut args: Args) -> Later<'_> {
 
         ended_in_box(engine, &text).await
     })
+}
+
+/// Where KERNEL's loader binds an import it cannot find: `FatalAppExit`'s
+/// routine with nought and KERNEL's text at 9BAh of its data (seg1
+/// `72d4`-`72eb`). As `kernel/internals.ts`; **recorded** by `undefdl`.
+fn undef_dynlink(engine: &Engine, _: Args) -> Later<'_> {
+    Box::pin(async move { ended_in_box(engine, b"Call to Undefined Dynalink").await })
 }
 
 /// The box `FatalAppExit` shows, and the task ended as at `INT 21h` 4Ch.

@@ -10,7 +10,7 @@ topics: [kernel-internals, task-list]
 ## Observed behaviour
 
 - [[read out]] `KRNL386.EXE` seg2 `06f3`-`0705` (the same offset in `KRNL286.EXE`). No arguments. DX:AX is the far pointer at 336h of KERNEL's data, the first record [[fn:KERNEL.RegisterWinOldApHook]] linked, or nought.
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]]: nought before any record is added, then the record added last, and nought again once all are taken out.
 
 ## Callers
 
@@ -18,6 +18,4 @@ topics: [kernel-internals, task-list]
 
 ## Implementation
 
-A stub in both engines, which leaves DX:AX as they were.
-
-**Recommendation: implement as Windows does, with [[fn:KERNEL.RegisterWinOldApHook]].** It answers the head of the chain that call keeps, or nought when none is kept. That is a few lines once the chain is there. See [[topic:kernel-internals]].
+Both engines answer the head of the chain that [[fn:KERNEL.RegisterWinOldApHook]] keeps: `src/win16/kernel/internals.ts` and `crates/winbox-win16/src/kernel_calls/internals.rs`. See [[topic:kernel-internals]].

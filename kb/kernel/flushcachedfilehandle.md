@@ -14,7 +14,7 @@ topics: [kernel-internals, programs-and-their-files]
   2. KERNEL keeps a cache of open files for the modules it loads from. It is a count at 5F2h of its data and entries from 5F4h, each a DOS handle and the module it belongs to. The call looks for the entry of this module (`5310`-`531f`).
   3. Found, the handle is closed through KERNEL's own `INT 21h` routine, with KERNEL's own prefix made the one the call is made for, and the entry is emptied (`5323`-`533f`).
 - [[read out]] The cache is filled by seg1 `5230`-`52ae` as a module's segments or resources are read. A module's entry is reused if it has one; otherwise a free entry is taken, or the next one round, from the word at 5EEh, whose handle is closed. [[fn:KERNEL.WinOldApCall]] closes all of them at once.
-- Not yet measured.
+- [[measured]] [[probe:kintrnl]]: of nought and of the probe's own module, AX and DX kept and two bytes popped.
 
 ## Callers
 
@@ -22,6 +22,4 @@ topics: [kernel-internals, programs-and-their-files]
 
 ## Implementation
 
-A stub in both engines, which pops the word. WinBox's loader works from the module's executable image as given to it (`src/win16/loader.ts`), not through a DOS handle in KERNEL's prefix. [[inferred]] No handle of a module's file is left open for a program to run into.
-
-**Recommendation: implement as a no-op.** With no handle held, closing one changes nothing a program can see. If WinBox's file layer turns out to hold a module's file open against writes, this should let it go instead. A no-op popping two bytes is exact: one line in each engine. See [[topic:kernel-internals]].
+A retail no-op in both engines, popping two bytes (`nothing` in `src/win16/kernel/retail.ts`, `crates/winbox-win16/src/kernel_calls/retail.rs`). WinBox's loader works from the module's image as given to it (`src/win16/loader.ts`), not through a DOS handle in KERNEL's prefix. [[inferred]] No handle of a module's file is left open for a program to run into. If WinBox's file layer turns out to hold a module's file open against writes, this should let it go instead. See [[topic:kernel-internals]].
