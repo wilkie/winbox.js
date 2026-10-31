@@ -10778,8 +10778,8 @@
    },
    "calls": {
     "total": 7,
-    "agreed": 6,
-    "disagreed": 1,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -10791,9 +10791,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "calls": "WinBox's own pop-up menu has no WM_PAINT for the message filter hooks to see"
-  }
+  "gaps": {}
  },
  "hotkey": {
   "probe": "hotkey",

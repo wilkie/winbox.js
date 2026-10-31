@@ -5832,7 +5832,10 @@ async function captureHooks(system: any) {
     }
 
     if (message === User.WM_COMMAND) {
-      if ((wParam & 0xffff) === 2) EndDialog.call(system, hwnd, 7);
+      /* Awaited, as the probe's `EndDialog` returns only once the owner is
+       * made active -- due whole (`enddlg`) -- before the dialog is
+       * destroyed. */
+      if ((wParam & 0xffff) === 2) await EndDialog.call(system, hwnd, 7);
       return 1;
     }
 
