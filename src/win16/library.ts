@@ -2,7 +2,14 @@
 
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
-import { OWN_WITH_FILE, keepOnLoad, ownByFile, ownFreed, ownPath } from './own-modules.js';
+import {
+  OWN_WITH_FILE,
+  keepOnLoad,
+  keptOnLoad,
+  ownByFile,
+  ownFreed,
+  ownPath,
+} from './own-modules.js';
 import { start as startCommDlg } from './commdlg/state.js';
 import { loaded as printLoaded } from './commdlg/print-dlg.js';
 import { searchPlaces } from './kernel/search.js';
@@ -120,7 +127,10 @@ export async function missingLibrary(system: any, executable: any, beside: strin
   await loader.parseHeaders();
 
   for (const name of importNames(loader)) {
-    if (system._modules.fromName(name)) {
+    /* One of WinBox's own kept only once loaded is there to be kept as the
+     * program is linked (`keptOnLoad`): a program started by another, as
+     * `OLESVR`'s server is, finds it. */
+    if (system._modules.fromName(name) || keptOnLoad(name)) {
       continue;
     }
 

@@ -1,8 +1,8 @@
 ---
 kind: topic
 name: Object linking and embedding
-summary: OLE 1.0's client library, OLECLI.DLL, as WinBox's own -- client documents, static objects, and embedded and linked objects with the DDE conversation each holds with its server, Paintbrush's objects drawn from their bitmaps -- written from the documented interface and from probes, not from the library's code; and what of OLESVR and object handlers is not yet done.
-probes: [olestat, olemem, oledde, olepbd]
+summary: OLE 1.0's two libraries as WinBox's own -- OLECLI.DLL's client documents, static objects, and embedded and linked objects with the DDE conversation each holds with its server, Paintbrush's objects drawn from their bitmaps; OLESVR.DLL's servers, documents and objects on the other side of that conversation -- written from the documented interface and from probes, not from the libraries' code; and what of object handlers is not yet done.
+probes: [olestat, olemem, oledde, olepbd, olesrv]
 ---
 
 OLE 1.0 is two libraries over DDE. A **client** -- Write, Cardfile -- keeps objects in its documents through `OLECLI.DLL`; a **server** -- Paintbrush, Packager -- makes and edits them through `OLESVR.DLL`. The two talk by DDE messages ([[topic:dynamic-data-exchange]]): the server's class is found in the registration database ([[topic:registration-database]]), started, and asked for the object's native data and a picture of it.
@@ -84,7 +84,7 @@ A handle is a document's where its block can be read and starts `CD`: a string t
 The documentation relied on beside `ole.h`: [[documented]] the OLE 1.0 programmer's reference's description of the DDE protocol a client and a server hold -- the `System` topic and a document's, the execute strings `StdNewDocument`, `StdEditDocument`, `StdOpenDocument`, `StdCloseDocument`, `StdShowItem` and `StdDoVerbItem`, the items `StdHostNames`, `StdTargetDevice`, `StdDocDimensions`, `StdColorScheme` and `StdDocumentName`, the formats `Native`, `OwnerLink`, `ObjectLink` and `Binary`, `/Save`, `/Close` and `/Change` advised, and a class's server found under `class\protocol\StdFileEditing\server` in the registration database -- and what the probes measured:
 
 - [[measured]] [[probe:oledde]] registers its second program as the server of a class and speaks the protocol by hand, writing into the probe's file every message `OLECLI` sends it -- its conversation, item, format, flags and data -- so the file holds both sides in the order they happened.
-- [[measured]] [[probe:olepbd]] is the same with the server registered as `PBrush`, its `Native` a bitmap file, and `olepbr` (not registered: Paintbrush takes minutes to run under WinBox) is Paintbrush itself, a server over Windows' `OLESVR`.
+- [[measured]] [[probe:olepbd]] is the same with the server registered as `PBrush`, its `Native` a bitmap file, and [[probe:olepbr]] is Paintbrush itself, a server over `OLESVR` -- Windows' under DOSBox, WinBox's or the file's under WinBox.
 
 An object is a block of A0h bytes ([[probe:oleemb]]), its method table the `LE` exports and entries 1000-1005; what WinBox keeps beyond the block's first words -- its class, document, item, `Native`, presentation, conversations and steps -- is kept beside it (`linked.ts`, `linked.rs`). [[measured]] [[probe:oledde]]:
 
@@ -102,11 +102,34 @@ An object is a block of A0h bytes ([[probe:oleemb]]), its method table the `LE` 
 
 [[measured]] [[probe:olepbd]]: `OLECLI` treats the class `PBrush` as its own. It keeps no picture of a Paintbrush object: only `Native` is advised and asked for (a link's item in `Native`, kept as a presentation of the class's `Native`), its stream has no presentation, its bounds are its bitmap's at its pixels to a metre, it is drawn from its bitmap, and `OleGetData` makes a picture for its caller, `OLE_WARN_DELETE_DATA`. These are the `PB` exports' (800-812) in `OLECLI.DLL`'s tables ([[probe:oleemb]]); WinBox does them in its `LE` methods.
 
+## OLESVR
+
+`OLESVR.DLL` is the other end of the conversation: a server registers itself and its documents with it, hands it method tables -- `OLESERVER`'s seven methods, `OLESERVERDOC`'s eight, and `OLEOBJECT`'s first ten for each object -- and it answers the client's DDE messages by calling them. WinBox's `OLESVR` is its own, written as `OLECLI` was: from `ole.h`'s server declarations and the programmer's reference's description of the server API and the protocol, and from a probe.
+
+- [[measured]] [[probe:olesrv]] registers its second program as the server of a class; that program registers itself with `OleRegisterServer` and writes into the probe's file every method OLESVR calls, with its arguments and answer. The probe is the client, speaking the protocol by hand, and writes every message it sends and is sent -- the window that answered, the item, format, flags, status and data. It is named `olesrv` and not `olesvr`: a program whose module is named `OLESVR` is the module its server's imports of `OLESVR` are found in.
+- [[measured]] As WinBox ran `OLESVR.DLL` from the drive, each call its code made into USER, KERNEL and SHELL logged: what its entry does as it loads (21 atoms, the formats `Native`, `Binary`, `ObjectLink`, `OwnerLink`, the classes `SrvrWndClass`, `DocWndClass`, `ItemWndClass`), which WinBox's does as a program first calls it. No read-out of its code was needed.
+
+### Kept with its file
+
+As `OLECLI` is, and kept only once a program loads it: with `OLESVR.DLL` on the drive the file is loaded beside WinBox's and every import of an export linked to WinBox's stub; with none, WinBox's is found by its file's name. A program another starts -- a server launched by `OLECLI` -- finds a module kept only on load as there when its imports are checked (`keptOnLoad`, `own_modules::kept_on_load`).
+
+### What a server sees
+
+[[measured]] [[probe:olesrv]]:
+
+- **Servers and documents.** A server's handle is a hidden top-level window of `SrvrWndClass`, its task's; a document's, a `DocWndClass` window, the server's child. Broadcast `WM_DDE_INITIATE` reaches only the server's window, which answers its class and `OLEsystem` -- never `System` -- and its documents' names from their windows. A class not in the registration database is `OLE_ERROR_CLASS`.
+- **One document an instance.** A server registered `OLE_SERVER_MULTI` that has a document answers no initiate on `OLEsystem` and refuses every `StdNewDocument`, `StdEditDocument`, `StdOpenDocument` and `StdNewFromTemplate`: `OLECLI` starts another instance. `OLE_SERVER_SINGLE` takes them all.
+- **The system topic.** The four commands are the server's `Create`, `Edit` (given the server's class), `Open` and `CreateFromTemplate`, each with a new document's handle; `StdExit` its `Exit`. A wrong count of arguments, another `Std` command or text not in brackets is refused without a call; anything else in brackets is the server's `Execute`, its answer the acknowledgement's. `Topics` answers `Doc`, `Formats` `Picture` and `Bitmap`, `Status` `Ready`.
+- **A document's topic.** An item's object is the document's `GetObject`, asked once, with an `OLECLIENT` OLESVR gives; a format is found by `EnumFormats` from nought. An advise is acknowledged only where it asks for `fAckReq`; a request answered flags 3000h. Pokes: `StdHostNames` is `SetHostNames`, `StdDocDimensions` `SetDocDimensions` with a rectangle from nought (the first width and height), `StdColorScheme` `SetColorScheme`, `StdTargetDevice` kept for each object's first data, anything else `SetData`. `StdShowItem` and `StdDoVerbItem` are `Show` and `DoVerb` with the focus turned over; `StdCloseDocument` is acknowledged and then `Close`; anything else the document's `Execute`.
+- **What a server tells.** Its object's client's `CallBack` ([[fn:OLESVR.ITEMCALLBACK]]): a change or a save sends every format advised for the object, to each conversation that advised that time, flags 2000h; a rename sends the document named in its `ObjectLink` to `StdDocumentName`'s advisers in `Binary`, as [[fn:OLESVR.OleRenameServerDoc]] does. [[fn:OLESVR.OleSavedServerDoc]] saves each object; [[fn:OLESVR.OleRevertServerDoc]] sends nothing.
+- **Revoking.** An object's `Release`, then each conversation ended; a document's `Release` and a server's as the client answers the last terminate (`OLE_WAIT_FOR_RELEASE`), at once where none is left. [[fn:OLESVR.OleRevokeObject]] ends the whole conversation the object was given in. [[fn:OLESVR.OleBlockServer]] queues what clients post until [[fn:OLESVR.OleUnblockServer]] takes it a message at a time.
+- **Paintbrush.** `olepbr`'s Paintbrush serves its picture through WinBox's `OLESVR` to WinBox's `OLECLI`, with either file on the drive or neither, and writes what it wrote under Windows (`test/win16/olesvr_test.ts`, `crates/winbox-win16/tests/olesvr.rs`).
+
 ## Not yet done
 
-- **What no probe has measured yet**: `OleUpdate` of an object not open (answered `OLE_OK`, nothing asked); `OleShow`, `OleCopyFromLink`, `OleObjectConvert`, `ChangeData` and `ObjectLong` of an embedded or linked object (`OLE_ERROR_GENERIC`); `OleCreateFromTemplate` (the file's where it is on the drive, else `OLE_ERROR_LAUNCH`); `OleCreateInvisible` to be activated (done as `OleCreate`); renderings other than `olerender_draw`; a server that answers `OLEsystem`; a server that refuses; the network helpers.
-- **Paintbrush itself** (`olepbr`): WinBox's `OLECLI` holds the conversation with Paintbrush and its answers agree as far as WinBox runs it in a probe's time; not registered, as it takes minutes.
+- **What no probe has measured yet**: `OleUpdate` of an object not open (answered `OLE_OK`, nothing asked); `OleShow`, `OleCopyFromLink`, `OleObjectConvert`, `ChangeData` and `ObjectLong` of an embedded or linked object (`OLE_ERROR_GENERIC`); `OleCreateFromTemplate` (the file's where it is on the drive, else `OLE_ERROR_LAUNCH`); `OleCreateInvisible` to be activated (done as `OleCreate`); renderings other than `olerender_draw`; a server that refuses; the network helpers.
 - **The method table of an object with no picture** ([[probe:oleemb]]'s `bare`, the `PB` exports): WinBox gives every embedded and linked object the `LE` table. `oleemb` stays unregistered: some of its records hold what the machine's memory held.
 - **Object handlers**: the `DEF` exports (110-117) and a class's handler DLL found in the registration database.
 - **Packager's objects** and the network helpers (950-954).
-- **`OLESVR.DLL`**: not WinBox's own; with the file on the drive the file runs, as before.
+- **`OLESVR`'s item windows**: the file keeps each object's clients on windows of `ItemWndClass` beneath a document's; WinBox's keeps them beside guest memory and makes none. Its internal exports (24, 25, 27-32) are stubs.
+- **What no probe has measured of `OLESVR`** (`unrecorded`): NULL pointers to its functions; `OLE_CLOSED` of an object advised for `/Close`; an object's `GetData` or `SetData` that fails; an advise of a format the object does not enumerate; the system topic's `Protocols` and `EditEnvItems`; a document renamed by `OLE_RENAMED` found by its new name; Write or Cardfile embedding a Paintbrush picture (`olepbr` is a probe's client).

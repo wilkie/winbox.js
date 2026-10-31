@@ -5986,6 +5986,7 @@ const RUN_WHOLE = new Set<string>([
   'olepbr',
   'kgaps',
   'ugaps',
+  'olesrv',
 ]);
 
 /**
@@ -6066,7 +6067,8 @@ export const BOX_KEYS: Record<string, string[][]> = {
  * `dirorder` waits four seconds of `GetTickCount` for the stamps it compares
  * to move. The Program Manager probes, `pmbare` and the rest, run with it as
  * `progdde` does, and `pmbare` waits out DDEML's ten seconds after
- * `[ExitProgman(1)]`.
+ * `[ExitProgman(1)]`. `olesrv` waits on its timers for answers that do
+ * not come, and gives its server a second after each thing it asks.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -6101,6 +6103,7 @@ const VIRTUAL_CLOCK = new Set([
   'instlay',
   ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
   ...['systimer', 'filport', 'findexe'],
+  'olesrv',
 ]);
 
 /**
@@ -6110,9 +6113,17 @@ const VIRTUAL_CLOCK = new Set([
  * `choosclr` read their dialogs a pixel at a time with `GetPixel`, tens of
  * thousands of calls, and `choosclr` draws its spectrum and bar again and
  * again besides. `ddenest` waits out a transaction's time-out of 10000h +
- * 500 milliseconds beside its other steps.
+ * 500 milliseconds beside its other steps. `olesrv` waits a second after
+ * each thing it asks its server and two where no answer is to come, some
+ * forty seconds of its timers'.
  */
-const SECONDS: Record<string, number> = { spiidle: 90, findrepl: 60, choosclr: 400, ddenest: 100 };
+const SECONDS: Record<string, number> = {
+  spiidle: 90,
+  findrepl: 60,
+  choosclr: 400,
+  ddenest: 100,
+  olesrv: 120,
+};
 
 /**
  * Whole-run probes run on each display they were recorded on, not only the

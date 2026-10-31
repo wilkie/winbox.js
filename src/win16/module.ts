@@ -39,6 +39,7 @@ export const KEPT_VERSIONS: Record<string, number> = {
   COMMDLG: 0x300,
   DDEML: 0x300,
   OLECLI: 0x300,
+  OLESVR: 0x300,
   LZEXPAND: 0x300,
   TOOLHELP: 0x300,
   VER: 0x300,

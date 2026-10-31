@@ -88,7 +88,7 @@ pub enum Held {
 /// Modules winbox.js keeps whose file on the disk is loaded beside them
 /// when there is one: the file's exports WinBox does not answer yet are
 /// the file's code (`commdlg/`, `own_modules.rs`).
-const STUBS_ONLY: [&str; 5] = crate::own_modules::OWN_WITH_FILE;
+const STUBS_ONLY: [&str; 6] = crate::own_modules::OWN_WITH_FILE;
 
 impl System {
     /// The module loaded from its file under a name, without regard to case.
@@ -290,6 +290,7 @@ impl System {
         Self::import_names(executable).into_iter().find(|name| {
             self.module_named(name).is_none()
                 && self.kept_named(name).is_none()
+                && !crate::own_modules::kept_on_load(name)
                 && self.find_library(name, beside).is_none()
         })
     }
