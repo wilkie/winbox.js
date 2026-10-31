@@ -4,6 +4,11 @@ module: KERNEL
 name: GlobalMasterHandle
 ordinal: 28
 summary: The handle and selector of the block that heads KERNEL's global heap — what TOOLHELP walks the heap from.
+versions:
+  '3.1': exact
+probes: [kgaps]
+records: [master]
+source: src/win16/kernel/thhook.ts
 topics: [kernel-internals, tool-helper]
 ---
 
@@ -12,6 +17,7 @@ topics: [kernel-internals, tool-helper]
 - [[read out]] `KRNL386.EXE` seg1 `1190`-`119e` (`KRNL286.EXE` seg1 `1159`). No arguments. AX is the word at 218h of KERNEL's data, DX the word at 21Ah. They are the first two words of the structure [[fn:KERNEL.THHOOK]] points to. 21Ah is the selector of the global heap's own block, which KERNEL loads to find an arena (seg1 `0ef6`); 218h is its handle.
 - [[read out]] In that block are the heap's counts and the offsets of its first and last arenas. TOOLHELP reads them: its start-up takes DX, finds the block, and reads its word 6 to tell the build apart (TOOLHELP seg1 `01e9`-`0208`).
 - Recorded on Windows earlier (noted under [[topic:kernel-queries]], with no probe of its own kept): AX the block's handle, its limit 257BFh, its first words 0, 0, then the count of arenas (one less than TOOLHELP's `wcItems`), the first and last arenas' offsets (80h, E0h) and 4000h.
+- [[measured]] [[probe:kgaps]]: AX and DX are the same selector, odd, and `GlobalHandle` of it answers it as both handle and selector: a fixed block. [[fn:KERNEL.THHOOK]]'s first two words are the same pair.
 
 ## Callers
 
@@ -19,6 +25,8 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-A stub in both engines. WinBox's TOOLHELP is its own and answers `GlobalFirst` and the rest from WinBox's own blocks ([[topic:tool-helper]]). WinBox has no master block.
+**Implemented (a).** Both engines make a fixed block of KERNEL's the first time it is asked for, 46h bytes, as far as the words KERNEL's own code touches in it run (seg1 `2bbe`-`2bcb`, `97fd`-`9802`), and answer its selector in AX and DX; `GlobalHandle` answers it as both handle and selector (`GlobalMasterHandle` in `src/win16/kernel/thhook.ts`, `kernel_calls/thhook.rs`). Its words read as noughts: WinBox keeps its blocks in itself and lays out no arenas for a walker. See [[topic:kernel-internals]].
 
-**Recommendation: not needed for now; a fixed answer if a program turns up that calls it.** Answering it faithfully means laying out a heap header that agrees with WinBox's blocks, a sizeable piece of work, and only a debugger or a memory viewer made for Windows 3.1 would read it. If one does, a block with the header's counts and two arena offsets, built from WinBox's blocks when the call comes, would be enough. That is medium work, and it pays only together with [[fn:KERNEL.THHOOK]]. See [[topic:kernel-internals]].
+## Not yet done
+
+- The heap's header and arenas in the block, kept to agree with WinBox's own blocks, for a debugger that walks them. Recorded on Windows earlier: its first words 0, 0, the count of arenas, the first and last arenas' offsets and 4000h.

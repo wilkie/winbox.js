@@ -139,6 +139,7 @@ export class Win16 {
   declare _options: any;
   declare _startTime: any;
   declare _moduleData: Record<string, number>;
+  declare _gdiHeap: GdiHeap;
   declare _windows: any;
   /**
    * Initializes a new OS instance.
@@ -199,10 +200,12 @@ export class Win16 {
 
     // Register modules
     this._modules = new ModuleManager(this._globalAllocator);
+    this._modules.system = this;
     /* Each module winbox.js keeps has a module handle and an instance, as
      * Windows' own do: see `keep`. */
     this.keep(Kernel, 'fixed');
-    this.keep(Gdi, 'moveable', new GdiHeap(this));
+    this._gdiHeap = new GdiHeap(this);
+    this.keep(Gdi, 'moveable', this._gdiHeap);
     this.keep(User, 'moveable');
     this.keep(MMSystem, 'moveable');
     this.keep(Sound, 'fixed');
@@ -871,7 +874,8 @@ export class Win16 {
     if (this._modules._handles[path] === undefined) {
       const index = this._globalAllocator.find(MODULE_DATABASES);
       const start = executable.headerOffset;
-      const end = start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
+      const end =
+        start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
       const bytes = new Uint8Array(executable._view.buffer.slice(start, end));
 
       this._globalAllocator.map(index, new DataView(bytes.buffer), { limit: bytes.length - 1 });

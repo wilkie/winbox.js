@@ -65,15 +65,25 @@ import {
   noughtWord,
 } from './kernel/retail.js';
 import {
+  ExitKernel,
+  GetSetKernelDosProc,
   GetWinOldApHooks,
   HasGPHandler,
+  InitLib,
   InitTask1,
+  K327,
+  PatchCodeHandle,
   RegisterPtrace,
   RegisterWinOldApHook,
   SwapRecording,
+  ToolHelpHook,
   UndefDynlink,
+  WinOldApCall,
   WriteOutProfiles,
 } from './kernel/internals.js';
+import { DoSignal, SetSigHandler } from './kernel/signals.js';
+import { GlobalMasterHandle, THHOOK } from './kernel/thhook.js';
+import { emptyGpTable } from './exported-data.js';
 
 import {
   BYTE,
@@ -308,7 +318,7 @@ export class Kernel extends Module {
       // 0 //
       null,
       [FatalExit, 'FatalExit', 2, [INT]],
-      [Kernel.stub, 'ExitKernel', 2],
+      [ExitKernel, 'ExitKernel', 2, [INT]],
       [GetVersion, 'GetVersion', 0, [], DWORD],
       [LocalInit, 'LocalInit', 6, [UINT, UINT, UINT], BOOL],
       [LocalAlloc, 'LocalAlloc', 4, [UINT, UINT], HLOCAL],
@@ -336,7 +346,7 @@ export class Kernel extends Module {
       [GlobalCompact, 'GlobalCompact', 4, [DWORD], DWORD],
       [GlobalFreeAll, 'GlobalFreeAll', 2, [UINT], UINT],
       null, // was SetSwapHook; Windows 3.1 exports nothing at this ordinal
-      [Kernel.stub, 'GlobalMasterHandle', 0],
+      [GlobalMasterHandle, 'GlobalMasterHandle', 0, [], DWORD],
       [Yield, 'Yield', 0, []],
       // 30 //
       [WaitEvent, 'WaitEvent', 2, [HANDLE], UINT],
@@ -428,13 +438,13 @@ export class Kernel extends Module {
       [SwitchStackTo, 'SwitchStackTo', 0],
       [SwitchStackBack, 'SwitchStackBack', 0],
       // 110 //
-      [Kernel.stub, 'PatchCodeHandle', 2, [UINT]],
+      [PatchCodeHandle, 'PatchCodeHandle', 2, [UINT], DWORD],
       [GlobalWire, 'GlobalWire', 2, [HGLOBAL], FARPTR],
       [GlobalUnWire, 'GlobalUnwire', 2, [HGLOBAL], BOOL],
       [KERNEL_CONSTANTS[113], '__AHSHIFT', 0],
       [KERNEL_CONSTANTS[114], '__AHINCR', 0],
       [OutputDebugString, 'OutputDebugString', 4, [LPCSTR]],
-      [Kernel.stub, 'InitLib', 0],
+      [InitLib, 'InitLib', 0],
       [OldYield, 'OldYield', 0, [], UINT],
       [GetTaskQueueDS, 'GetTaskQueueDS', 0, []],
       [GetTaskQueueES, 'GetTaskQueueES', 0, []],
@@ -444,7 +454,7 @@ export class Kernel extends Module {
       [IsTaskLocked, 'IsTaskLocked', 0, [], HANDLE],
       [nothing, 'KbdRst', 0, []],
       [nothing, 'EnableKernel', 0, []],
-      [Kernel.stub, 'DisableKernel', 0],
+      [nothing, 'DisableKernel', 0, []],
       [MemoryFreed, 'MemoryFreed', 2, [UINT], DWORD],
       [GetPrivateProfileInt, 'GetPrivateProfileInt', 14, [LPCSTR, LPCSTR, INT, LPCSTR], UINT],
       [
@@ -471,9 +481,9 @@ export class Kernel extends Module {
       [GetDriveType, 'GetDriveType', 2, [INT], UINT],
       [FatalAppExit, 'FatalAppExit', 6, [UINT, LPCSTR]],
       [GetHeapSpaces, 'GetHeapSpaces', 2, [HANDLE], DWORD],
-      [Kernel.stub, 'DoSignal', 0],
+      [DoSignal, 'DoSignal', 0],
       // 140 //
-      [Kernel.stub, 'SetSigHandler', 16],
+      [SetSigHandler, 'SetSigHandler', 16, [FARPTR, FARPTR, FARPTR, UINT, UINT]],
       [InitTask1, 'InitTask1', 4, [FARPTR], UINT],
       undefined,
       undefined,
@@ -485,7 +495,7 @@ export class Kernel extends Module {
       undefined,
       // 150 //
       [DirectedYield, 'DirectedYield', 2, [HANDLE]],
-      [Kernel.stub, 'WinOldApCall', 2],
+      [WinOldApCall, 'WinOldApCall', 2, [UINT]],
       [GetNumTasks, 'GetNumTasks', 0, [], UINT],
       undefined,
       [GlobalNotify, 'GlobalNotify', 4, [FARPTR]],
@@ -544,7 +554,7 @@ export class Kernel extends Module {
       [RegisterPtrace, 'RegisterPtrace', 4, [FARPTR], UINT],
       [nothing, 'DebugBreak', 0, []],
       [SwapRecording, 'SwapRecording', 2, [UINT], DWORD],
-      [Kernel.stub, 'CVWBreak', 2],
+      [nothing, 'CVWBreak', 2, [UINT]],
       [AllocSelectorArray, 'AllocSelectorArray', 2, [UINT], UINT],
       [IsDBCSLeadByte, 'IsDBCSLeadByte', 2, [BYTE], BOOL],
       // ... unknown ordinals ... //
@@ -652,10 +662,10 @@ export class Kernel extends Module {
       undefined,
       // 310 //
       [LocalHandleDelta, 'LocalHandleDelta', 2, [UINT], UINT],
-      [Kernel.stub, 'GetSetKernelDosProc', 4],
+      [GetSetKernelDosProc, 'GetSetKernelDosProc', 4, [FARPTR], DWORD],
       undefined,
       undefined,
-      [Kernel.stub, 'DebugDefineSegment', 0],
+      [nothing, 'DebugDefineSegment', 12, [FARPTR, UINT, UINT, UINT, UINT]],
       [WriteOutProfiles, 'WriteOutProfiles', 0, [], UINT],
       [GetFreeMemInfo, 'GetFreeMemInfo', 0, [], DWORD],
       undefined,
@@ -669,13 +679,13 @@ export class Kernel extends Module {
       [nothing, 'LogError', 6, [UINT, FARPTR]],
       [nothing, 'LogParamError', 10, [UINT, FARPTR, FARPTR]],
       [IsRomFile, 'IsRomFile', 6, [HANDLE, DWORD], BOOL],
-      [Kernel.stub, 'K327', 0],
+      [K327, 'K327', 0],
       [nothing, '_DEBUGOUTPUT', 0, []],
       [nothing, 'K329', 6, [UINT, UINT, UINT]],
       // 330 //
       undefined,
       undefined,
-      [Kernel.stub, 'ThHook', 4],
+      [THHOOK, 'ThHook', 0],
       undefined,
       [IsBadReadPtr, 'IsBadReadPtr', 6, [FARPTR, UINT], BOOL],
       [IsBadWritePtr, 'IsBadWritePtr', 6, [FARPTR, UINT], BOOL],
@@ -685,11 +695,11 @@ export class Kernel extends Module {
       [DiagQuery, 'DiagQuery', 0, [], UINT],
       // 340 //
       [nothing, 'DiagOutput', 4, [FARPTR]],
-      [Kernel.stub, 'ToolHelpHook', 4],
+      [ToolHelpHook, 'ToolHelpHook', 4, [FARPTR], DWORD],
       /* KERNEL's own table of the places in its code that handle a
        * general protection fault, which `HasGPHandler` reads: data in its
        * code segment (`KRNL386.EXE` seg1 `a820`), not a function. */
-      [Kernel.stub, '__GP', 14],
+      [emptyGpTable(), '__GP', 14],
       [RegisterWinOldApHook, 'RegisterWinOldApHook', 6, [FARPTR, UINT], UINT],
       [GetWinOldApHooks, 'GetWinOldApHooks', 0, [], FARPTR],
       [IsSharedSelector, 'IsSharedSelector', 2, [UINT], BOOL],

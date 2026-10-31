@@ -4,6 +4,11 @@ module: KERNEL
 name: THHOOK
 ordinal: 332
 summary: Not a function — the address of KERNEL's own variables at 218h of its data, the global heap, the chains of modules, prefixes and tasks, the running task and the selector table, exported so that TOOLHELP finds them in any build.
+versions:
+  '3.1': partial
+probes: [kgaps]
+records: [thhook, kernelpdb]
+source: src/win16/kernel/thhook.ts
 topics: [kernel-internals, tool-helper]
 ---
 
@@ -26,7 +31,7 @@ topics: [kernel-internals, tool-helper]
 | 230h   | the linear address of that table, each entry the linear address of a selector's arena  | seg1 `299d`-`29a3`, [[fn:KERNEL.K404]]                                   |
 
 - [[read out]] TOOLHELP reads them through it, in Windows 3.1 only. When `GetVersion` answers 3.10 (0A03h), its start-up takes the far address of KERNEL's ordinal 332 with `GetProcAddress`. It keeps that address +4, +0Eh, +10h, +16h and +18h, which are the words at 21Ch, 226h, 228h, 22Eh and 230h, as the places it reads the module chain, the task chain, the running task and the selector table from (TOOLHELP seg1 `022d`-`0266`). For Windows 3.0, which has no `THHOOK`, it uses fixed offsets in KERNEL's data instead (14h, 1Eh, 20h, 324h, 326h; seg1 `026b`-`0293`).
-- Not yet measured. A probe could take its address with `GetProcAddress` and read the words against `GetCurrentTask` and TOOLHELP's `TaskFirst`.
+- [[measured]] [[probe:kgaps]]: the address is KERNEL's data selector and 218h. There: [[fn:KERNEL.GlobalMasterHandle]]'s pair; `GetModuleHandle("KERNEL")`; the parent of the probe's prefix; the probe's own prefix, the newest; the probe's task as the first and the running one; nought for a task being made.
 
 ## Callers
 
@@ -34,6 +39,10 @@ topics: [kernel-internals, tool-helper]
 
 ## Implementation
 
-A stub in both engines, which gives it a function's stub address like any other export. A program that took its address would read the stub's code, not KERNEL's variables.
+**Implemented (b), data.** `THHOOK` is an export that is data in both engines (`exported-data.ts`, `exported_data.rs`): `GetProcAddress` and an import of it give KERNEL's data selector and 218h, and the words from 218h to 22Bh are laid out as the address is first handed out and again as each call returns, since a task switches only inside a call (`kernel/thhook.ts`, `kernel_calls/thhook.rs`): the heap's own block, KERNEL's module, the newest task's prefix, the head of the task chain, the running task, nought.
 
-**Recommendation: implement as data only if a program is found that reads it; otherwise not needed.** WinBox's TOOLHELP is its own and does not need it. A debugger or memory viewer that reads it would want 218h through 233h of a real KERNEL data segment, kept up to date: the running task, the task chain, the module chain, the heap block and the selector table. WinBox keeps the task records already (`task-order.ts`), but not the rest in this form. This is medium to large work, and it would bring [[fn:KERNEL.GlobalMasterHandle]] with it. See [[topic:kernel-internals]].
+## Not yet done
+
+- 220h, KERNEL's own prefix (`kgaps:kernelpdb`, a known gap): WinBox keeps none and writes nought.
+- 22Eh and 230h, the selector table: WinBox has none and writes nothing there.
+- The chains behind the words -- module databases linked by word 6, prefixes by word 42h, the master block's arenas -- as KERNEL lays them out.

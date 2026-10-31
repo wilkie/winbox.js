@@ -1,6 +1,9 @@
 'use strict';
 
 import { FatalAppExit } from './FatalAppExit.js';
+import { GlobalHandle } from './GlobalHandle.js';
+import { LocalInit } from './LocalInit.js';
+import { segmentSelector } from '../selectors.js';
 
 /**
  * KERNEL's internal calls that a program can reach and that WinBox answers
@@ -128,4 +131,186 @@ export function RegisterWinOldApHook(this: any, lpRecord: number, flag: number) 
 /** The head of the chain `RegisterWinOldApHook` keeps, the far pointer at 336h of KERNEL's data (seg2 `06f3`-`0705`). */
 export function GetWinOldApHooks(this: any) {
   return (this._winOldApHooks ?? 0) >>> 0;
+}
+
+/**
+ * The end of the session (`KRNL386.EXE` seg1 `9d6f`-`9e09`): every
+ * library's exit procedure, the drivers off, the profiles written, DOS
+ * given back with `DisableKernel`, and DOS's exit with the code, or a
+ * restart for 43h. It never returns. WinBox's end of the session, as its
+ * `ExitWindows` ends it. Not measured: under DOSBox it would end the
+ * recording.
+ */
+export function ExitKernel(this: any, _wExitCode: number) {
+  this.scheduler.task?.end();
+}
+
+/**
+ * A code segment's prologues patched (`KRNL386.EXE` seg1 `7bac`-`7ca5`):
+ * AX the handle given, DX its block's selector, or nought where it names
+ * no block (seg1 `0ede`). WinBox's loader patches every code segment's
+ * prologues as it loads the module, as KERNEL's loader calls this for
+ * each one it loads (`patchPrologues`, seg1 `7af3`), and patching again
+ * changes nothing: a prologue made `nop`s, `mov ax,ds` or `mov ax,DGROUP`
+ * is not one the routine patches. **Recorded** by `kgaps`: the probe's
+ * code segment, its data segment, a block of its own -- AX the handle, DX
+ * the selector -- and nought, AX and DX nought; the probe's exported
+ * prologue three `nop`s before and after.
+ */
+export function PatchCodeHandle(this: any, hSeg: number) {
+  const handle = hSeg & 0xffff;
+  const selector = handle ? (GlobalHandle.call(this, handle) >>> 16) & 0xffff : 0;
+
+  return ((selector << 16) | handle) >>> 0;
+}
+
+/**
+ * What `SI` holds as `InitLib` returns: left from KERNEL's own use
+ * (`KRNL386.EXE` seg2 `27b0`, `mov si,842Ah`).
+ */
+const INIT_LIB_SI = 0x842a;
+
+/**
+ * A library's start-up in registers (`KRNL386.EXE` seg2 `2797`-`27b3`): CX
+ * the size of its local heap, DS its data. With CX nought, AX nought;
+ * otherwise `LocalInit(0, 0, CX)`, the heap the last CX bytes of DS, its
+ * answer in AX, and CX kept unless it left CX nought. ES is KERNEL's data,
+ * SI 842Ah, DS as it came; nothing popped. **Recorded** by `kgaps`.
+ */
+export function InitLib(this: any) {
+  const core = this.machine.cpu.core;
+  const cx = core.cx & 0xffff;
+  const ds = core.ds & 0xffff;
+
+  core.ax = 0;
+
+  if (cx) {
+    core.ax = LocalInit.call(this, 0, 0, cx) & 0xffff;
+  }
+
+  core.cx = cx;
+  core.ds = ds;
+  core.es = this._moduleData?.KERNEL ?? 0;
+  core.si = INIT_LIB_SI;
+}
+
+/**
+ * The word at 271h of KERNEL's data, which `WinOldApCall(0)` answers in DI:
+ * set as KERNEL starts from the DOS it runs on (seg1 `b9cd`-`b9f5`, the
+ * routine at `ba10`). **Recorded** by `kgaps` on DOSBox's DOS, as WinBox's
+ * is: 10h.
+ */
+const WINOLDAP_DOS_WORD = 0x10;
+
+/**
+ * Standard mode's WinOldAp asking KERNEL (`KRNL386.EXE` seg3 `07e6`-`081a`).
+ * Not nought: KERNEL's cached module files closed for its own prefix
+ * (seg1 `534c`), which leaves DX that prefix; BX is SP as the routine
+ * found it after pushing DS (`07ea`). Nought: AX, BX, CX and DX the words
+ * at 251h-257h of KERNEL's data, which nothing writes, and DI the word at
+ * 271h. WinBox keeps no module file open. **Recorded** by `kgaps`.
+ */
+export function WinOldApCall(this: any, wFlag: number) {
+  const core = this.machine.cpu.core;
+
+  if (wFlag & 0xffff) {
+    core.bx = (core.sp - 2) & 0xffff;
+    core.dx = kernelPdb(this);
+    return;
+  }
+
+  core.ax = 0;
+  core.bx = 0;
+  core.cx = 0;
+  core.dx = 0;
+  core.di = WINOLDAP_DOS_WORD;
+}
+
+/**
+ * KERNEL's own prefix, the word at 220h of its data: in Windows each
+ * task's prefix's parent (word 16h), as `kgaps` found it. WinBox keeps no
+ * prefix of KERNEL's, and a task's prefix has no parent: the running
+ * task's word 16h, nought (`kgaps:kernelpdb`, a known gap).
+ */
+export function kernelPdb(system: any) {
+  const task = system.scheduler?.task;
+  const pdb = task?.programSegment ? segmentSelector(task.programSegment) : 0;
+
+  return pdb ? system.machine.cpu.core.read16(pdb, 0x16) & 0xffff : 0;
+}
+
+/**
+ * A procedure for KERNEL's events, exchanged with the one kept at 310h of
+ * its data (`KRNL386.EXE` seg3 `084c`-`0885`): the old one in DX:AX, BX the
+ * new one's offset and selector or'd together (`0862`-`0864`). WinBox
+ * tells no debugger of its events, so the procedure is kept and never
+ * called, as `RegisterPtrace`'s is not. **Recorded** by `kgaps`: nought
+ * first, then the procedure given.
+ */
+export function ToolHelpHook(this: any, lpfnNotify: number) {
+  const old = (this._toolHelpHook ?? 0) >>> 0;
+  const given = lpfnNotify >>> 0;
+
+  this._toolHelpHook = given;
+  this.machine.cpu.core.bx = (given | (given >>> 16)) & 0xffff;
+
+  return old;
+}
+
+/**
+ * The address KERNEL makes its DOS calls through, exchanged
+ * (`KRNL386.EXE` seg1 `9eaf`-`9ecc`): the far pointer at 3Ch of its code
+ * segment, the `INT 21h` vector it found before it put in its own, through
+ * which it makes its DOS calls and passes on a program's. WinBox's KERNEL
+ * has nothing beneath it and makes its DOS calls itself: nought until a
+ * procedure is given, which is kept and answered back, and never called.
+ * **Recorded** by `kgaps`: the procedure given back; the first answer,
+ * neither nought nor KERNEL's own code, is a known gap
+ * (`kgaps:dosprocold`).
+ */
+export function GetSetKernelDosProc(this: any, lpfnNewProc: number) {
+  const old = this._kernelDosProc ?? 0;
+
+  this._kernelDosProc = lpfnNewProc >>> 0;
+
+  return old >>> 0;
+}
+
+/** A warning's bit in `K327`'s code (seg1 `94af`). */
+const PARAMETER_WARNING = 0x8000;
+
+/**
+ * The end of a parameter check in USER, GDI or KERNEL (`KRNL386.EXE` seg1
+ * `949b`-`94c4`), reached by a far jump with BX the code, CX:AX the value
+ * and a far return into the check on the stack, above it the offset of the
+ * API's `RETF` and its caller's BP. `LogParamError` tells no one in the
+ * retail build. A warning, bit 15, returns to the check, every register
+ * kept. Otherwise the frame is unwound: BX the offset popped, BP the
+ * caller's with its low bit cleared, and the return made to that offset in
+ * the check's segment with AX, CX, DX and ES nought. **Recorded** by
+ * `kgaps`.
+ */
+export function K327(this: any) {
+  const core = this.machine.cpu.core;
+
+  if (core.bx & PARAMETER_WARNING) {
+    return;
+  }
+
+  const ss = core.ss & 0xffff;
+  const sp = core.sp & 0xffff;
+  const cs = core.read16(ss, (sp + 2) & 0xffff);
+  const offset = core.read16(ss, (sp + 4) & 0xffff);
+  const bp = core.read16(ss, (sp + 6) & 0xffff);
+  const top = (sp + 4) & 0xffff;
+
+  core.write16(ss, top, offset);
+  core.write16(ss, (top + 2) & 0xffff, cs);
+  core.sp = top;
+  core.bp = bp & ~1 & 0xffff;
+  core.bx = offset;
+  core.ax = 0;
+  core.cx = 0;
+  core.dx = 0;
+  core.es = 0;
 }

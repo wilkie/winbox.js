@@ -3,13 +3,18 @@ kind: function
 module: USER
 name: __GP
 ordinal: 484
-summary: USER's table of its own fault handlers, which KERNEL reads: data, not a function.
+summary: USER's table of its own fault handlers, which KERNEL reads: data, not a function. WinBox's is its end alone.
+versions:
+  '3.1': exact
+probes: [ugaps]
+records: [gp]
+source: src/win16/exported-data.ts
 topics: [user-internals]
 ---
 
 ## Observed behaviour
 
-- Not measured.
+- [[measured]] [[probe:ugaps]]: `GetProcAddress` gives an address for it.
 
 ## Inside Windows
 
@@ -21,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-A stub in both engines, and **not applicable**: WinBox's USER has no code of Windows' to fault in, and KERNEL's `HasGPHandler` is a stub.
+**Implemented (b), data.** In both engines the export is a table of its end alone, a selector of nought, laid where its stub would be (`exported-data.ts`): WinBox's USER has no code of Windows' to fault in, and [[fn:KERNEL.HasGPHandler]] answers nought. See [[topic:user-internals]].

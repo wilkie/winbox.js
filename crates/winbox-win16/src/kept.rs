@@ -21,7 +21,7 @@ pub static KEPT: &[Kept] = &[
                 name: "ExitKernel",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetVersion",
@@ -171,8 +171,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GlobalMasterHandle",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "Yield",
@@ -643,8 +643,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "PatchCodeHandle",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "GlobalWire",
@@ -680,7 +680,7 @@ pub static KEPT: &[Kept] = &[
                 name: "InitLib",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "OldYield",
@@ -734,7 +734,7 @@ pub static KEPT: &[Kept] = &[
                 name: "DisableKernel",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "MemoryFreed",
@@ -818,13 +818,13 @@ pub static KEPT: &[Kept] = &[
                 name: "DoSignal",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "SetSigHandler",
                 pops: 16,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "InitTask1",
@@ -850,7 +850,7 @@ pub static KEPT: &[Kept] = &[
                 name: "WinOldApCall",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "GetNumTasks",
@@ -1169,7 +1169,7 @@ pub static KEPT: &[Kept] = &[
                 name: "CVWBreak",
                 pops: 2,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "AllocSelectorArray",
@@ -1294,16 +1294,16 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GetSetKernelDosProc",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             None,
             None,
             Some(Export {
                 name: "DebugDefineSegment",
-                pops: 0,
+                pops: 12,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "WriteOutProfiles",
@@ -1366,7 +1366,7 @@ pub static KEPT: &[Kept] = &[
                 name: "K327",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "_DEBUGOUTPUT",
@@ -1384,9 +1384,9 @@ pub static KEPT: &[Kept] = &[
             None,
             Some(Export {
                 name: "ThHook",
-                pops: 4,
+                pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             None,
             Some(Export {
@@ -1434,14 +1434,14 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "ToolHelpHook",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "__GP",
                 pops: 14,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "RegisterWinOldApHook",
@@ -1862,7 +1862,7 @@ pub static KEPT: &[Kept] = &[
                 name: "__GP",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "CombineRgn",
@@ -2863,8 +2863,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "Brute",
                 pops: 0,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "DMExtTextOut",
@@ -3716,7 +3716,7 @@ pub static KEPT: &[Kept] = &[
                 name: "FTrapping0",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4003,8 +4003,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GDIInit2",
                 pops: 4,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4015,8 +4015,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "FinalGDIInit",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -4297,8 +4297,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "GDISeeGDIDo",
                 pops: 8,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "unknown",
@@ -6275,8 +6275,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "BozosLiveHere",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             None,
             None,
@@ -6415,8 +6415,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "_FFFE_FARFRAME",
                 pops: 2,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             None,
             Some(Export {
@@ -6894,7 +6894,7 @@ pub static KEPT: &[Kept] = &[
                 name: "__GP",
                 pops: 0,
                 returns: 0,
-                stub: true,
+                stub: false,
             }),
             None,
             None,
@@ -11337,9 +11337,9 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "mciParseCommand",
-                pops: 0,
-                returns: 0,
-                stub: true,
+                pops: 18,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "mciLoadCommandResource",
@@ -13723,8 +13723,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "WCI",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "AboutDlgProc",
@@ -13826,8 +13826,8 @@ pub static KEPT: &[Kept] = &[
             Some(Export {
                 name: "HERETHARBETYGARS",
                 pops: 10,
-                returns: 0,
-                stub: true,
+                returns: 4,
+                stub: false,
             }),
             Some(Export {
                 name: "FindExeDlgProc",

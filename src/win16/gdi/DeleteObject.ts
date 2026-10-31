@@ -99,8 +99,10 @@ function deleted(system: any, handle: number, item: any) {
     system.fonts?.release(item);
   }
 
-  /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`). */
+  /* The block a program was shown its bits in, if it asked (`gdi-heap.ts`),
+   * and any word of the object `GDIInit2` set. */
   forgetBitmap(system, item);
+  system._gdiHeap?.forgetWords(handle);
 
   /* Out of any metafile being recorded that holds it, by a record of its
    * own (`metafile`). */

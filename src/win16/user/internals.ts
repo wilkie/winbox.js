@@ -3,6 +3,7 @@
 import { W, word } from '../commdlg/api.js';
 import { indexFor } from '../selectors.js';
 import { systemQueue } from './system-queue.js';
+import { systemClass } from './control-classes.js';
 
 /**
  * USER's exports for Windows' own components that WinBox answers as a
@@ -132,4 +133,61 @@ export async function EnableOEMLayer(this: any) {
    * clients. */
   this.rasterDesktop?.repaintAll(true);
   await word(this, 'USER', 'ShowCursor', [W(1)]);
+}
+
+/** Where `_FFFE_FARFRAME` finds the procedure it calls: 18Ch of DS (`USER.EXE` seg1 `17a2`). */
+const FARFRAME_PROCEDURE = 0x18c;
+
+/** What `_FFFE_FARFRAME` puts in DX for the procedure (seg1 `179f`). */
+const FARFRAME_DX = 0x14;
+
+/**
+ * Ordinal 341, `_FFFE_FARFRAME` (`USER.EXE` seg1 `1798`-`17a7`): an `INT
+ * 3` -- which goes on past with no debugger (`kbreak`) -- then a call of
+ * the far procedure at 18Ch of DS, the caller's own data for a program,
+ * with AX its word and DX 14h; what it answers in DX:AX is the answer,
+ * and the word popped. **Recorded** by `ugaps`, with a procedure of the
+ * probe's at 18Ch of its data.
+ */
+export async function _FFFE_FARFRAME(this: any, wValue: number) {
+  const core = this.machine.cpu.core;
+  const procedure = core.read32(core.ds & 0xffff, FARFRAME_PROCEDURE) >>> 0;
+
+  return (
+    Number(
+      await this.scheduler.callProc(procedure, [], { ax: wValue & 0xffff, dx: FARFRAME_DX })
+    ) >>> 0
+  );
+}
+
+/**
+ * Ordinal 301, `BozosLiveHere` (`USER.EXE` seg26 `0000`): two bytes before
+ * the edit control's window procedure, which USER's `EDIT` class names at
+ * seg26 `0002` (seg3 `16d2`-`16e1`), so the procedure itself, DS from AX
+ * as USER sets it to the window's instance. WinBox's edit control is its
+ * own: the class's procedure, the window's text where WinBox keeps it.
+ * **Recorded** by `ugaps`, AX the probe's DS, on an edit control of its
+ * own: `WM_GETTEXTLENGTH`, `WM_SETTEXT` and `WM_GETTEXT` as sent.
+ */
+export async function BozosLiveHere(
+  this: any,
+  hwnd: number,
+  message: number,
+  wParam: number,
+  lParam: number
+) {
+  const proc = systemClass(this, 'EDIT')?.lpfnWndProc;
+
+  return (
+    Number(
+      await this.scheduler.callWindowProc(
+        proc,
+        hwnd & 0xffff,
+        message & 0xffff,
+        wParam & 0xffff,
+        lParam >>> 0,
+        this.machine.cpu.core.ax & 0xffff
+      )
+    ) >>> 0
+  );
 }

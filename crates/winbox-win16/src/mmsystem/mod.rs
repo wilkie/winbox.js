@@ -150,6 +150,9 @@ pub fn implementation(name: &str) -> Option<Implementation> {
             "mciSetYieldProc" => mci::mci_set_yield_proc,
             "mciGetYieldProc" => mci::mci_get_yield_proc,
             "mciGetCreatorTask" => mci::mci_get_creator_task,
+            // A near procedure behind a far export (seg5 `3994`-`39dd`): the
+            // parser's nought for a command it does not parse (`mci.ts`).
+            "mciParseCommand" => |_, _| Ok(Answer::Word(0)),
             "StackEnter" => stacks::stack_enter,
             "StackLeave" => stacks::stack_leave,
             // Nothing to let go: 1 (seg2 `14`).

@@ -1,0 +1,229 @@
+{
+  "probe": "ugaps",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "gp",
+      "args": "USER",
+      "result": "address"
+    },
+    {
+      "function": "gp",
+      "args": "GDI",
+      "result": "address"
+    },
+    {
+      "function": "gp",
+      "args": "KERNEL",
+      "result": "address"
+    },
+    {
+      "function": "farframe",
+      "args": "procedure saw",
+      "result": "calls=1,ax=4321,dx=14"
+    },
+    {
+      "function": "farframe",
+      "args": "answer",
+      "result": "ax=4322,dx=7777,left=0"
+    },
+    {
+      "function": "bozo",
+      "args": "WM_GETTEXTLENGTH",
+      "result": "ax=5,dx=0,left=0,sent=5"
+    },
+    {
+      "function": "bozo",
+      "args": "WM_SETTEXT",
+      "result": "ax=1,dx=0,left=0,text=abcdef"
+    },
+    {
+      "function": "bozo",
+      "args": "WM_GETTEXT 4",
+      "result": "ax=3,dx=0,left=0,text=abc"
+    },
+    {
+      "function": "ftrap",
+      "args": "FTrapping0",
+      "result": "selector=gdi-data,offset=2ef,word=0"
+    },
+    {
+      "function": "seegdi",
+      "args": "103",
+      "result": "ax=gdi-data,dx=0"
+    },
+    {
+      "function": "seegdi",
+      "args": "7",
+      "result": "ffffffff"
+    },
+    {
+      "function": "seegdi",
+      "args": "0",
+      "result": "ffffffff"
+    },
+    {
+      "function": "seegdi",
+      "args": "102",
+      "result": "ffffffff"
+    },
+    {
+      "function": "seegdiheap",
+      "args": "1 fixed 10",
+      "result": "ax=block,dx=0"
+    },
+    {
+      "function": "seegdiheap",
+      "args": "2 the block",
+      "result": "0"
+    },
+    {
+      "function": "seegdiheap",
+      "args": "3 nought",
+      "result": "ax=some,dx=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "object word",
+      "result": "handle"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "read",
+      "result": "ax=original,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "set 1234",
+      "result": "ax=given,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "read after set",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "object word after set",
+      "result": "1234"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "ffff",
+      "result": "ax=gdi-data,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "read after ffff",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "put back",
+      "result": "ax=original,dx=5678,left=0"
+    },
+    {
+      "function": "gdiinit2",
+      "args": "read last",
+      "result": "ax=original,dx=5678,left=0"
+    },
+    {
+      "function": "finalgdi",
+      "args": "0",
+      "result": "ax=76,left=0"
+    },
+    {
+      "function": "brute",
+      "args": "colour red",
+      "result": "same=yes,physical-same=yes,ax=ff,left=0"
+    },
+    {
+      "function": "brute",
+      "args": "colour grey",
+      "result": "same=yes,physical-same=yes,ax=8080,left=0"
+    },
+    {
+      "function": "brute",
+      "args": "not a bitmap",
+      "result": "same=yes,physical-same=yes,ax=0,left=0"
+    },
+    {
+      "function": "dde",
+      "args": "WM_USER",
+      "result": "ax=0,dx=0,left=0,alive=yes,prop=0,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "ack first",
+      "result": "ax=1,dx=0,left=0,alive=yes,prop=partner,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "block after first ack",
+      "result": "kept"
+    },
+    {
+      "function": "dde",
+      "args": "ack from partner",
+      "result": "ax=0,dx=0,left=0,alive=no,prop=-,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "block after partner's ack",
+      "result": "freed"
+    },
+    {
+      "function": "dde",
+      "args": "ack with 1",
+      "result": "ax=0,dx=0,left=0,alive=yes,prop=1,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "block after ack with 1",
+      "result": "freed"
+    },
+    {
+      "function": "dde",
+      "args": "terminate from another",
+      "result": "ax=0,dx=0,left=0,alive=yes,prop=partner,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "terminate from partner",
+      "result": "ax=0,dx=0,left=0,alive=no,prop=-,terminations=1,by=window"
+    },
+    {
+      "function": "dde",
+      "args": "destroy alone",
+      "result": "ax=0,dx=0,left=0,alive=yes,prop=0,terminations=0,by=0"
+    },
+    {
+      "function": "dde",
+      "args": "destroy with partner",
+      "result": "ax=0,dx=0,left=0,alive=yes,prop=0,terminations=1,by=window"
+    },
+    {
+      "function": "wci",
+      "args": "WM_USER",
+      "result": "ax=0,dx=0,left=0"
+    },
+    {
+      "function": "wci",
+      "args": "WM_PAINT",
+      "result": "ax=0,dx=0,left=0"
+    },
+    {
+      "function": "wci",
+      "args": "WM_NCDESTROY",
+      "result": "ax=0,dx=0,left=0"
+    }
+  ]
+}

@@ -102,9 +102,9 @@ describe('the knowledge base', () => {
         'a stub marked exact',
         [
           'kind: function',
-          'module: GDI',
-          'name: FTrapping0',
-          'ordinal: 355',
+          'module: KERNEL',
+          'name: EMSCopy',
+          'ordinal: 160',
           'versions:',
           '  "3.1": exact',
         ],

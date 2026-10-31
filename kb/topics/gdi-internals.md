@@ -63,14 +63,14 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 
 ### The display's life and tasks
 
-| Ord | Export                        | Callers  | WinBox      | Recommendation         |
-| --- | ----------------------------- | -------- | ----------- | ---------------------- |
-| 121 | [[fn:GDI.Death]]              | USER.EXE | implemented | done                   |
-| 122 | [[fn:GDI.Resurrection]]       | USER.EXE | implemented | done                   |
-| 405 | [[fn:GDI.FinalGDIInit]]       | USER.EXE | stub        | not applicable         |
-| 354 | [[fn:GDI.ShrinkGDIHeap]]      | USER.EXE | implemented | done (WinBox: no heap) |
-| 460 | [[fn:GDI.GDITaskTermination]] | USER.EXE | implemented | done (exact no-op)     |
-| 376 | [[fn:GDI.ResetDC]]            | none     | implemented | done                   |
+| Ord | Export                        | Callers  | WinBox      | Recommendation             |
+| --- | ----------------------------- | -------- | ----------- | -------------------------- |
+| 121 | [[fn:GDI.Death]]              | USER.EXE | implemented | done                       |
+| 122 | [[fn:GDI.Resurrection]]       | USER.EXE | implemented | done                       |
+| 405 | [[fn:GDI.FinalGDIInit]]       | USER.EXE | implemented | done (c) ([[probe:ugaps]]) |
+| 354 | [[fn:GDI.ShrinkGDIHeap]]      | USER.EXE | implemented | done (WinBox: no heap)     |
+| 460 | [[fn:GDI.GDITaskTermination]] | USER.EXE | implemented | done (exact no-op)         |
+| 376 | [[fn:GDI.ResetDC]]            | none     | implemented | done                       |
 
 ### Helpers for drivers
 
@@ -85,7 +85,7 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 | 210 | [[fn:GDI.DMRealizeObject]]  | PSCRIPT.DRV | implemented | as Windows; the display's routine (M)   |
 | 211 | [[fn:GDI.DMStrBlt]]         | PSCRIPT.DRV | implemented | with `DMExtTextOut`                     |
 | 212 | [[fn:GDI.DMScanLR]]         | PSCRIPT.DRV | implemented | done (the VGA's)                        |
-| 213 | [[fn:GDI.Brute]]            | none        | stub        | not needed as an export                 |
+| 213 | [[fn:GDI.Brute]]            | none        | implemented | done (a) ([[probe:ugaps]])              |
 | 214 | [[fn:GDI.DMExtTextOut]]     | none        | implemented | as Windows; the display's routine (M-L) |
 | 215 | [[fn:GDI.DMGetCharWidth]]   | none        | implemented | as Windows; the display's routine (S)   |
 | 216 | [[fn:GDI.DMStretchBlt]]     | none        | implemented | not applicable on the VGA               |
@@ -122,31 +122,31 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 | 300 | [[fn:GDI.EngineEnumerateFont]]   | PSCRIPT.DRV | implemented |
 | 301 | [[fn:GDI.EngineDeleteFont]]      | PSCRIPT.DRV | implemented |
 | 302 | [[fn:GDI.EngineRealizeFont]]     | PSCRIPT.DRV | implemented |
-| 303 | `EngineGetCharWidth`             | PSCRIPT.DRV | stub        |
-| 304 | `EngineSetFontContext`           | PSCRIPT.DRV | stub        |
-| 305 | `EngineGetGlyphBmp`              | PSCRIPT.DRV | stub        |
-| 306 | `EngineMakeFontDir`              | none        | stub        |
-| 312 | `ConvertOutlineFontFile`         | none        | stub        |
-| 314 | `EngineExtTextOut`               | none        | stub        |
-| 352 | [[fn:GDI.GetPhysicalFontHandle]] | none        | stub        |
+| 303 | `EngineGetCharWidth`             | PSCRIPT.DRV | implemented |
+| 304 | `EngineSetFontContext`           | PSCRIPT.DRV | implemented |
+| 305 | `EngineGetGlyphBmp`              | PSCRIPT.DRV | implemented |
+| 306 | `EngineMakeFontDir`              | none        | implemented |
+| 312 | `ConvertOutlineFontFile`         | none        | implemented |
+| 314 | `EngineExtTextOut`               | none        | implemented |
+| 352 | [[fn:GDI.GetPhysicalFontHandle]] | none        | implemented |
 
 ### Palettes, bitmaps and objects for USER and WinG
 
-| Ord | Export                                 | Callers                | WinBox      | Recommendation |
-| --- | -------------------------------------- | ---------------------- | ----------- | -------------- |
-| 361 | [[fn:GDI.GDISelectPalette]]            | USER.EXE               | implemented | done           |
-| 362 | [[fn:GDI.GDIRealizePalette]]           | USER.EXE               | implemented | done           |
-| 365 | [[fn:GDI.RealizeDefaultPalette]]       | USER.EXE               | implemented | done           |
-| 412 | [[fn:GDI.IsDCCurrentPalette]]          | USER.EXE, WING.DLL     | implemented | done           |
-| 401 | [[fn:GDI.GDIMoveBitmap]]               | none                   | implemented | done           |
-| 403 | [[fn:GDI.GDIInit2]]                    | WING.DLL               | stub        | not needed     |
-| 407 | [[fn:GDI.CreateUserBitmap]]            | USER.EXE               | implemented | done           |
-| 409 | [[fn:GDI.CreateUserDiscardableBitmap]] | USER.EXE               | implemented | done           |
-| 410 | `IsValidMetafile`                      | USER.EXE               | implemented | done           |
-| 461 | [[fn:GDI.SetObjectOwner]]              | WING.DLL, WINOA386.MOD | implemented | done           |
-| 463 | [[fn:GDI.MakeObjectPrivate]]           | USER.EXE               | implemented | done           |
-| 464 | [[fn:GDI.FixUpBogusPublisherMetafile]] | USER.EXE               | implemented | done           |
-| 467 | `UnicodeToAnsi`                        | MAIN.CPL               | implemented | done           |
+| Ord | Export                                 | Callers                | WinBox      | Recommendation             |
+| --- | -------------------------------------- | ---------------------- | ----------- | -------------------------- |
+| 361 | [[fn:GDI.GDISelectPalette]]            | USER.EXE               | implemented | done                       |
+| 362 | [[fn:GDI.GDIRealizePalette]]           | USER.EXE               | implemented | done                       |
+| 365 | [[fn:GDI.RealizeDefaultPalette]]       | USER.EXE               | implemented | done                       |
+| 412 | [[fn:GDI.IsDCCurrentPalette]]          | USER.EXE, WING.DLL     | implemented | done                       |
+| 401 | [[fn:GDI.GDIMoveBitmap]]               | none                   | implemented | done                       |
+| 403 | [[fn:GDI.GDIInit2]]                    | WING.DLL               | implemented | done (a) ([[probe:ugaps]]) |
+| 407 | [[fn:GDI.CreateUserBitmap]]            | USER.EXE               | implemented | done                       |
+| 409 | [[fn:GDI.CreateUserDiscardableBitmap]] | USER.EXE               | implemented | done                       |
+| 410 | `IsValidMetafile`                      | USER.EXE               | implemented | done                       |
+| 461 | [[fn:GDI.SetObjectOwner]]              | WING.DLL, WINOA386.MOD | implemented | done                       |
+| 463 | [[fn:GDI.MakeObjectPrivate]]           | USER.EXE               | implemented | done                       |
+| 464 | [[fn:GDI.FixUpBogusPublisherMetafile]] | USER.EXE               | implemented | done                       |
+| 467 | `UnicodeToAnsi`                        | MAIN.CPL               | implemented | done                       |
 
 ### Priority queues
 
@@ -161,29 +161,30 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 
 ### Debugging leftovers and data
 
-| Ord | Export                 | Callers | WinBox | Recommendation |
-| --- | ---------------------- | ------- | ------ | -------------- |
-| 452 | [[fn:GDI.GDISeeGDIDo]] | none    | stub   | not needed     |
-| 355 | [[fn:GDI.FTrapping0]]  | none    | stub   | not applicable |
-| 46  | [[fn:GDI.__GP]]        | none    | stub   | not applicable |
+| Ord | Export                 | Callers | WinBox      | Recommendation             |
+| --- | ---------------------- | ------- | ----------- | -------------------------- |
+| 452 | [[fn:GDI.GDISeeGDIDo]] | none    | implemented | done (a); GDI's heap a gap |
+| 355 | [[fn:GDI.FTrapping0]]  | none    | data        | done (b) ([[probe:ugaps]]) |
+| 46  | [[fn:GDI.__GP]]        | none    | data        | done (b), an empty table   |
 
 ## The named oddities
 
-- **`Brute`** is not a function a program could call: it takes CX in a register, CL the words to move and CH the routine's offset in a driver's table, and it moves its caller's frame down by 20h bytes before it calls the display driver ([[fn:GDI.Brute]]).
+- **`Brute`** takes CX in a register, CL the words to move and CH the routine's offset in a driver's table, and it moves its caller's frame down by 20h bytes before it calls the display driver; a program that sets CX as a helper does gets that helper's answer ([[fn:GDI.Brute]], [[probe:ugaps]]). For a device that is not a bitmap AX is nought, the device's check having cleared it (seg13 `0218`).
 - **`DMStrBlt`** is `DMExtTextOut` with five words of nought pushed after its own arguments, as the display drivers' `StrBlt` is their `ExtTextOut` ([[fn:GDI.DMStrBlt]]).
 - **`FixUpBogusPublisherMetafile`** puts right the size in a memory metafile's header where it disagrees with the records, as some program's metafiles on the clipboard had it wrong; USER's clipboard code calls it for an entry of `CF_METAFILEPICT` ([[fn:GDI.FixUpBogusPublisherMetafile]]).
 - **`GDIInit2`** has nothing to do with start-up: it reads or sets the word at 0Ah of an object in GDI's heap, a bitmap's block of bits, which is how WinG puts its own memory under a bitmap ([[fn:GDI.GDIInit2]]).
-- **`FTrapping0`** and **`__GP`** are data: a word in GDI's data segment and GDI's table of fault handlers.
+- **`FTrapping0`** and **`__GP`** are data: a word in GDI's data segment, nought once GDI has hooked the divide fault, and GDI's table of fault handlers -- WinBox's an empty one.
 
 ## Recommendations, ranked
 
 1. **The display driver's routines on a memory bitmap, for `DMBitBlt`, `DMOutput`, `DMRealizeObject`, `DMExtTextOut` and the rest (L).** WinBox has the VGA's `ColorInfo`, `Pixel`, `ScanLR` and `EnumObj` on a bitmap in memory. The others need the VGA's physical pens and brushes as its `RealizeObject` lays them out, and its drawing of each, read out of `VGA.DRV`. Nothing recorded reaches them: WinBox hands the PostScript driver only bitmaps of GDI's own stretching, and the PostScript driver stretches for itself.
 2. **The other displays' routines (M each).** On the EGA, the Super VGA, the Hercules and the 256-colour drivers the helpers answer nought for a memory bitmap; each driver's `ColorInfo`, `Pixel` and `ScanLR` would come first.
-3. Not needed or not applicable: `Brute` as an export, `FinalGDIInit`, `GDIInit2` (WinBox's WinG is its own), `GDISeeGDIDo`, `FTrapping0`, `__GP`.
+3. **The last of them, by [[probe:ugaps]]: done.** (a) `Brute` as an export, from CX; `GDIInit2` through WinBox's GDI heap; `GDISeeGDIDo`. (b) `FTrapping0` at 2EFh of GDI's data; `__GP`, its end alone. (c) `FinalGDIInit` called again, the length of its last string.
 
 ## Not yet done
 
 - The `Engine` calls and `GetPhysicalFontHandle` are mapped with the TrueType engine's calls, not here.
+- `GDISeeGDIDo`'s 1, 2 and 3 on a local heap of GDI's, which WinBox's GDI segment does not hold (`ugaps:seegdiheap`).
 - `DMBitBlt`, `DMOutput`, `DMRealizeObject`, `DMExtTextOut`, `DMStrBlt`, `DMGetCharWidth`, `DMDibBits`, `DMSetDibToDev` on a memory bitmap, and every helper on a display other than the VGA (above).
 - The `DI` device `Brute` knows, a table at GDI's `[0159h]` that no code of Windows 3.1's GDI was found to set.
 - What the device of GDI's `[063Eh]` is, whose text capabilities `DMExtTextOut` compares with the display's.

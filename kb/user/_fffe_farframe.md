@@ -3,13 +3,18 @@ kind: function
 module: USER
 name: _FFFE_FARFRAME
 ordinal: 341
-summary: An entry that begins with INT 3, a debugger's breakpoint, before a small routine: not a function a program calls.
+summary: An entry that begins with INT 3, a debugger's breakpoint, then calls the far procedure at 18Ch of DS with AX its word and DX 14h, answering what it answers.
+versions:
+  '3.1': exact
+probes: [ugaps]
+records: [farframe]
+source: src/win16/user/internals.ts
 topics: [user-internals]
 ---
 
 ## Observed behaviour
 
-- Not measured: entered, it stops at a breakpoint.
+- [[measured]] [[probe:ugaps]]: with a far pointer to a procedure of the probe's at 18Ch of its data, the `INT 3` goes on past, the procedure is called once with AX the word and DX 14h, and its DX:AX is the answer, the word popped.
 
 ## Inside Windows
 
@@ -21,4 +26,4 @@ topics: [user-internals]
 
 ## Implementation
 
-A stub in both engines, and **not applicable**: its first instruction is a breakpoint, which without a debugger is KERNEL's to report.
+**Implemented (a).** `[18Ch]` is read through the caller's DS, a program's own. Both engines call the far procedure there with AX and DX as above and answer what it answers (`_FFFE_FARFRAME` in `src/win16/user/internals.ts`); WinBox runs no `INT 3`, which goes on past with no debugger as [[fn:KERNEL.DebugBreak]] does. See [[topic:user-internals]].

@@ -1,0 +1,294 @@
+{
+  "probe": "kgaps",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "master",
+      "args": "GlobalMasterHandle",
+      "result": "ax-odd=1,dx-odd=1,ax-is-handle=yes,dx-is-selector=yes,ax-dx=0"
+    },
+    {
+      "function": "thhook",
+      "args": "address",
+      "result": "selector=kernel-data,offset=218"
+    },
+    {
+      "function": "thhook",
+      "args": "218 heap handle",
+      "result": "master-handle"
+    },
+    {
+      "function": "thhook",
+      "args": "21a heap selector",
+      "result": "master-selector"
+    },
+    {
+      "function": "thhook",
+      "args": "21c first module",
+      "result": "kernel-module"
+    },
+    {
+      "function": "kernelpdb",
+      "args": "thhook 220",
+      "result": "our-parent-pdb"
+    },
+    {
+      "function": "thhook",
+      "args": "222 first pdb",
+      "result": "our-pdb"
+    },
+    {
+      "function": "thhook",
+      "args": "226 first task",
+      "result": "task"
+    },
+    {
+      "function": "thhook",
+      "args": "228 running task",
+      "result": "task"
+    },
+    {
+      "function": "thhook",
+      "args": "22a task being made",
+      "result": "0"
+    },
+    {
+      "function": "sig",
+      "args": "signal 2",
+      "result": "ax=0,dx=5678,old=untouched,action=eeee,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 2",
+      "result": "ax=0,dx=kernel-code,old=kernel-code,action=0,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 2 again",
+      "result": "ax=0,dx=given,old=given,action=2,left=0"
+    },
+    {
+      "function": "dosignal",
+      "args": "focused",
+      "result": "calls=1,first=0,second=1,ax=1,bx=0"
+    },
+    {
+      "function": "dosignalds",
+      "args": "focused",
+      "result": "task"
+    },
+    {
+      "function": "dosignal",
+      "args": "registers",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,es=ours,left=0"
+    },
+    {
+      "function": "dosignal",
+      "args": "no focus",
+      "result": "calls=0,first=eeee,second=eeee,ax=eeee,bx=eeee"
+    },
+    {
+      "function": "dosignalds",
+      "args": "no focus",
+      "result": "-"
+    },
+    {
+      "function": "dosignal",
+      "args": "registers",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,es=ours,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 0",
+      "result": "ax=0,dx=given,old=given,action=2,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 2 after 0",
+      "result": "ax=0,dx=kernel-code,old=kernel-code,action=0,left=0"
+    },
+    {
+      "function": "dosignal",
+      "args": "after 0",
+      "result": "calls=1,first=0,second=1,ax=1,bx=0"
+    },
+    {
+      "function": "dosignalds",
+      "args": "after 0",
+      "result": "task"
+    },
+    {
+      "function": "dosignal",
+      "args": "registers",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,es=ours,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 1",
+      "result": "ax=0,dx=given,old=given,action=2,left=0"
+    },
+    {
+      "function": "dosignal",
+      "args": "action 1",
+      "result": "calls=0,first=eeee,second=eeee,ax=eeee,bx=eeee"
+    },
+    {
+      "function": "dosignalds",
+      "args": "action 1",
+      "result": "-"
+    },
+    {
+      "function": "dosignal",
+      "args": "registers",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,es=ours,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 4",
+      "result": "ax=0,dx=0,old=untouched,action=eeee,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "action 4 again",
+      "result": "ax=0,dx=given,old=untouched,action=eeee,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "no pointer",
+      "result": "ax=0,dx=given,old=untouched,action=1,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "registers after no pointer",
+      "result": "ds=ours,si=5a5a,di=kernel-data"
+    },
+    {
+      "function": "dosignal",
+      "args": "no pointer",
+      "result": "calls=1,first=0,second=1,ax=1,bx=0"
+    },
+    {
+      "function": "dosignalds",
+      "args": "no pointer",
+      "result": "task"
+    },
+    {
+      "function": "dosignal",
+      "args": "registers",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,es=ours,left=0"
+    },
+    {
+      "function": "sig",
+      "args": "put back",
+      "result": "ax=0,dx=given,old=given,action=2,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "0",
+      "result": "ax=0,bx=0,cx=0,dx=0,di=10,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "1",
+      "result": "ax=1234,bx=sp,cx=3456,di=789a,left=0"
+    },
+    {
+      "function": "kernelpdb",
+      "args": "winoldapcall 1 dx",
+      "result": "our-parent-pdb"
+    },
+    {
+      "function": "initlib",
+      "args": "cx 0",
+      "result": "ax=0,cx=0,dx=5678,si=842a,di=789a,es=kernel-data,ds=ours,left=0"
+    },
+    {
+      "function": "initlib",
+      "args": "cx 200 block",
+      "result": "ax=1,cx=200,si=842a,di=789a,es=kernel-data,ds=block,left=0"
+    },
+    {
+      "function": "initlib",
+      "args": "block header",
+      "result": "0 0 0 210 0 0 0 0"
+    },
+    {
+      "function": "patch",
+      "args": "prologue before",
+      "result": "90 90 90"
+    },
+    {
+      "function": "patch",
+      "args": "code",
+      "result": "ax=handle,dx=selector,left=0"
+    },
+    {
+      "function": "patch",
+      "args": "prologue after",
+      "result": "90 90 90"
+    },
+    {
+      "function": "patch",
+      "args": "data",
+      "result": "ax=handle,dx=selector,left=0"
+    },
+    {
+      "function": "patch",
+      "args": "block",
+      "result": "ax=handle,dx=selector,left=0"
+    },
+    {
+      "function": "patch",
+      "args": "nought",
+      "result": "ax=handle,dx=0,left=0"
+    },
+    {
+      "function": "tlhook",
+      "args": "set",
+      "result": "old=0,bx=offset-or-selector,cx=3456,left=0"
+    },
+    {
+      "function": "tlhook",
+      "args": "put back",
+      "result": "old=given,left=0"
+    },
+    {
+      "function": "k327",
+      "args": "warning 8008",
+      "result": "path=warning,ax=1234,bx=8008,cx=abcd,dx=5678,es=ours,bp=0,above=4"
+    },
+    {
+      "function": "k327",
+      "args": "error 7008",
+      "result": "path=unwound,ax=0,bx=107d,cx=0,dx=0,es=0,bp=1234,above=0"
+    },
+    {
+      "function": "cvw",
+      "args": "flags",
+      "result": "ax=1234,bx=2345,cx=3456,dx=5678,si=6789,di=789a,left=0"
+    },
+    {
+      "function": "dosproc",
+      "args": "set",
+      "result": "left=0"
+    },
+    {
+      "function": "dosprocold",
+      "args": "first",
+      "result": "other"
+    },
+    {
+      "function": "dosproc",
+      "args": "put back",
+      "result": "old=given"
+    }
+  ]
+}

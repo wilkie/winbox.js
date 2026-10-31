@@ -3,16 +3,17 @@ kind: function
 module: MMSYSTEM
 name: mciParseCommand
 ordinal: 704
-summary: Exported, but a near procedure: a program cannot call it.
+summary: Exported, but a near procedure of MMSYSTEM's command parser: a far call has no answer to follow, and WinBox answers nought.
 versions:
-  '3.1': stub
-source: src/win16/mmsystem.ts
+  '3.1': unrecorded
+source: src/win16/mmsystem/mci.ts
 topics: [sound-devices]
 ---
 
 ## Observed behaviour
 
 - [[read out]] No program can call it and come back: see below.
+- Not measured: a far call returns into MMSYSTEM's own segment at the caller's offset.
 
 ## Inside Windows
 
@@ -24,4 +25,4 @@ topics: [sound-devices]
 
 ## Implementation
 
-Both engines keep it a stub, and it is **not applicable**: confirmed again for the coverage of the Win16 API -- the entry is `enter`, the parser's arguments read from `[bp+4]` up, and `ret 12h` (seg5 `3994`-`39dd`) -- so a far call of it takes the caller's segment for its first argument and returns to the caller's offset in MMSYSTEM's segment, which is no behaviour to follow. See [[topic:user-internals]].
+**Not applicable (c).** Only MMSYSTEM's own parser calls it, near: the entry is `enter`, the parser's arguments read from `[bp+4]` up, and `ret 12h` (seg5 `3994`-`39dd`), so a far call takes the caller's return for its first arguments and returns to the caller's offset in MMSYSTEM's segment, which is no behaviour to follow. Both engines answer what the parser answers for a command it does not parse, nought (`39bf`-`39c1`), and pop the eighteen bytes its return pops (`mciParseCommand` in `src/win16/mmsystem/mci.ts`). See [[topic:user-internals]].

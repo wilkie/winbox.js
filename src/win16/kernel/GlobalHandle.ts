@@ -33,8 +33,12 @@ export function GlobalHandle(uGlobalSel) {
   }
 
   /* A block in the first megabyte: its handle is its selector
-   * (`GlobalDosAlloc`, `kmore`). */
-  if (this.allocator._objects?.[index]?.dos !== undefined) {
+   * (`GlobalDosAlloc`, `kmore`); and so is the global heap's own block,
+   * fixed (`GlobalMasterHandle`, `kgaps`). */
+  if (
+    this.allocator._objects?.[index]?.dos !== undefined ||
+    this.allocator._objects?.[index]?.selectorHandle
+  ) {
     return ((selectorFor(uGlobalSel) << 16) | selectorFor(uGlobalSel)) >>> 0;
   }
 

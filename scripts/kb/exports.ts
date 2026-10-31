@@ -28,6 +28,7 @@ import { Ver } from '../../src/win16/ver/index.js';
 import { Win87EM } from '../../src/win16/win87em.js';
 import { WinG } from '../../src/win16/wing.js';
 import { ExportedConstant } from '../../src/win16/kernel/constants.js';
+import { ExportedData } from '../../src/win16/exported-data.js';
 
 export interface ExportEntry {
   /** The ordinal the module exports it at. */
@@ -43,10 +44,11 @@ export interface ExportEntry {
    * constant, whether the table gives its number. */
   implemented: boolean;
 
-  /** A function a program calls, or a number it reads where its relocation
-   * puts it: an entry of segment FEh in the module's file, as KERNEL's
-   * `__AHINCR` and `__A000H` are. */
-  kind: 'function' | 'constant';
+  /** A function a program calls, a number it reads where its relocation
+   * puts it -- an entry of segment FEh in the module's file, as KERNEL's
+   * `__AHINCR` and `__A000H` are -- or a place it reads, as `THHOOK` is
+   * (`exported-data.ts`). */
+  kind: 'function' | 'constant' | 'data';
 
   /** The implementing function's own name, where it has one. */
   implementation: string | null;
@@ -103,16 +105,20 @@ export function collectExports(): ModuleEntry[] {
 
       const [implementation, name, argumentBytes] = entry;
       const constant = implementation instanceof ExportedConstant;
+      const data = implementation instanceof ExportedData;
       const implemented =
-        constant || (typeof implementation === 'function' && implementation !== module.stub);
+        constant ||
+        data ||
+        (typeof implementation === 'function' && implementation !== module.stub);
 
       exports.push({
         ordinal,
         name,
-        argumentBytes: constant ? null : typeof argumentBytes === 'number' ? argumentBytes : null,
+        argumentBytes:
+          constant || data ? null : typeof argumentBytes === 'number' ? argumentBytes : null,
         implemented,
-        kind: constant ? 'constant' : 'function',
-        implementation: implemented && !constant ? implementation.name || null : null,
+        kind: constant ? 'constant' : data ? 'data' : 'function',
+        implementation: implemented && !constant && !data ? implementation.name || null : null,
       });
     });
 

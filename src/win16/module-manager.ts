@@ -1,6 +1,8 @@
 'use strict';
 
 import { Loader } from './loader.js';
+import { ExportedData } from './exported-data.js';
+import { indexFor } from './selectors.js';
 
 /**
  * This manages all loaded modules known to the system.
@@ -12,6 +14,8 @@ export class ModuleManager {
   declare _loaded: any;
   declare _modules: any;
   declare _segments: any;
+  /** The system, for an export that is a place in a module's data. */
+  declare system: any;
   constructor(globalAllocator) {
     // Keep track of the modules we know of
     this._modules = {};
@@ -45,7 +49,23 @@ export class ModuleManager {
     const loadedModule: any = {
       instance: module,
       name: module.name,
-      lookup: function (ordinal) {
+      lookup: (ordinal) => {
+        /* An export that is a place in the module's data: its selector's
+         * descriptor and the offset, what is there laid out as the address
+         * is handed out (`exported-data.ts`). */
+        const data = module.exports?.[ordinal]?.[0];
+        const system = this.system;
+
+        if (data instanceof ExportedData && data.dataOffset !== null && system) {
+          const selector = system._moduleData?.[module.name] ?? 0;
+
+          if ('prepare' in data.place) {
+            data.place.prepare?.(system);
+          }
+
+          return { segment: indexFor(selector), offset: data.dataOffset };
+        }
+
         return {
           segment: loadedModule.segment,
           offset: loadedModule.step * (ordinal + 1),
@@ -114,6 +134,15 @@ export class ModuleManager {
        * word, which is every count under 256 and so nearly all of them.
        */
       const poph = (pop >> 8) & 0xff;
+
+      /* Data where the stub would be: a table in code (`exported-data.ts`). */
+      const data = tuple[0] instanceof ExportedData ? tuple[0].stubBytes : null;
+
+      if (data) {
+        code.set(data, position);
+        position += loadedModule.step;
+        continue;
+      }
 
       // INT 0x80
       code[position + 0] = 0xcd;

@@ -355,25 +355,31 @@ fn get_module_filename(system: &mut System, args: &mut Args) -> Result<Answer, S
 /// The handle and the selector of a block, nought for one never given.
 fn global_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let selector = args.word(system);
+
+    Ok(Answer::Dword(global_handle_of(system, selector)))
+}
+
+/// `GlobalHandle`'s answer for a selector or handle: the selector above,
+/// the handle below, or nought for no block.
+pub(crate) fn global_handle_of(system: &System, selector: u16) -> u32 {
     let index = index_for(selector);
 
     if system.global.size_of(index) == 0 && system.global.flags_of(index) == 0 {
-        return Ok(Answer::Dword(0));
+        return 0;
     }
 
     // A block in the first megabyte: its handle is its selector
-    // (`GlobalDosAlloc`, `kmore`).
-    if system.kernel_calls.dos_blocks.contains_key(&index) {
+    // (`GlobalDosAlloc`, `kmore`); and so is the global heap's own block,
+    // fixed (`GlobalMasterHandle`, `kgaps`).
+    if system.kernel_calls.dos_blocks.contains_key(&index)
+        || system.kernel_calls.master_block == Some(segment_selector(index))
+    {
         let selector = segment_selector(index);
 
-        return Ok(Answer::Dword(
-            u32::from(selector) << 16 | u32::from(selector),
-        ));
+        return u32::from(selector) << 16 | u32::from(selector);
     }
 
-    Ok(Answer::Dword(
-        u32::from(segment_selector(index)) << 16 | u32::from(handle_for(index)),
-    ))
+    u32::from(segment_selector(index)) << 16 | u32::from(handle_for(index))
 }
 
 fn global_size(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

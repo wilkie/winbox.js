@@ -49,7 +49,7 @@ USER exports some sixty functions no program is meant to call: KERNEL calls them
 
 **Drag and drop.** File Manager and Program Manager drag files and items with [[fn:USER.DragObject]]: a loop over the mouse that asks the windows under the cursor with `WM_QUERYDROPOBJECT`, tells the source and the windows it passes with `WM_DRAGLOOP`, `WM_DRAGSELECT` and `WM_DRAGMOVE`, and drops with `WM_DROPOBJECT` ([[probe:dragobj]]).
 
-**Window procedures.** [[fn:USER.Bear306]] is the procedure of USER's class `#32768`, the menus' pop-ups, as `GetClassInfo` gives it ([[probe:userproc]]); [[fn:USER.BozosLiveHere]] is the body of the edit control's procedure, entered with USER's data segment in AX by USER's own code, and the procedure of no class.
+**Window procedures.** [[fn:USER.Bear306]] is the procedure of USER's class `#32768`, the menus' pop-ups, as `GetClassInfo` gives it ([[probe:userproc]]); [[fn:USER.BozosLiveHere]] is two bytes before the edit control's procedure, which USER's `EDIT` class names past its `jmp short`: the procedure itself, DS from AX.
 
 ## Answered
 
@@ -66,14 +66,10 @@ USER exports some sixty functions no program is meant to call: KERNEL calls them
 ## Left, and why
 
 - [[fn:USER.SignalProc]]'s task end (20h, 666h) and module freed (80h): **not yet done**. WinBox's KERNEL and USER are one program and do a task's end and a module's freeing themselves; a program that sends them for a task still running is answered nought, nothing done.
-- [[fn:USER.BozosLiveHere]]: **not applicable**. Entered from a program, DS is whatever AX holds.
-- [[fn:USER._FFFE_FARFRAME]]: **not applicable**. Its first instruction is `INT 3`.
-- [[fn:USER.__GP]]: **not applicable**. A table of data for KERNEL's fault handling; WinBox's USER has no code of Windows' to fault in.
-- [[fn:SHELL.WCI]]: **not applicable** while WinBox's About box has no subclassed control; its credits are not yet done.
-- [[fn:SHELL.HERETHARBETYGARS]]: **not applicable** while `ShellExecute` does not follow an association that asks for DDE.
+- The last of them, by [[probe:ugaps]], **done**: [[fn:USER.BozosLiveHere]] as the edit control's procedure, (a); [[fn:USER._FFFE_FARFRAME]], the procedure at 18Ch of the caller's DS called, (a); [[fn:USER.__GP]], an empty table, (b); [[fn:SHELL.HERETHARBETYGARS]], SHELL's DDE windows' procedure on any window, (a); [[fn:SHELL.WCI]], `CallWindowProc` of the procedure WinBox's About box never keeps, nought, (c).
 - [[read out]] `DCHook` (seg1 `8a00`): the procedure USER gives GDI for its windows' device contexts; for `DCHC_INVALIDVISRGN` it makes the context's visible region again. Designed in [[topic:visible-regions]].
 - SHELL's nineteen exports with no name (104 to 128) and COMMDLG's twenty-two (32 to 53): entries of their own procedures and data, exported without names for their own segments to reach; a program has no name to import them by. SHELL's 119 is the routine that shows the box for finding a program ([[fn:SHELL.FindExeDlgProc]]).
-- MMSYSTEM's [[fn:MMSYSTEM.mciParseCommand]] stays a stub: its entry is a near procedure, and a far call of it returns into MMSYSTEM's own segment.
+- MMSYSTEM's [[fn:MMSYSTEM.mciParseCommand]]: **not applicable (c)**, its entry a near procedure whose far call returns into MMSYSTEM's own segment; WinBox answers the parser's nought for a command it does not parse.
 
 SHELL's [[fn:SHELL.AboutDlgProc]] and [[fn:SHELL.InternalExtractIcon]], [[fn:USER.GetWindowPlacement]]'s icon and maximized points, and KEYBOARD's [[fn:KEYBOARD.Enable]] and [[fn:KEYBOARD.Disable]] are done ([[probe:aboutdp]], [[probe:iextract]], [[probe:wplace]], [[probe:kbenable]]). The member of an icon group WinBox shows is the one [[fn:USER.GetIconID]] chooses, for every icon it loads.
 
@@ -109,7 +105,7 @@ Every named USER and SHELL export no header declares, with the files that import
 | 285 | [[fn:USER.Bear285]]                  | none                                                                 | implemented | done                             |
 | 289 | [[fn:USER.Keybd_Event]]              | none                                                                 | implemented | done                             |
 | 299 | [[fn:USER.Mouse_Event]]              | none                                                                 | implemented | done                             |
-| 301 | [[fn:USER.BozosLiveHere]]            | none                                                                 | stub        | not applicable                   |
+| 301 | [[fn:USER.BozosLiveHere]]            | none                                                                 | implemented | done (a) ([[probe:ugaps]])       |
 | 306 | [[fn:USER.Bear306]]                  | none                                                                 | implemented | done this wave                   |
 | 314 | [[fn:USER.SignalProc]]               | none                                                                 | implemented | done this wave, but a task's end |
 | 320 | [[fn:USER.SysErrorBox]]              | DRWATSON.EXE                                                         | implemented | done                             |
@@ -123,7 +119,7 @@ Every named USER and SHELL export no header declares, with the files that import
 | 333 | [[fn:USER.IsUserIdle]]               | none                                                                 | implemented | done                             |
 | 336 | [[fn:USER.LoadCursorIconHandler]]    | none                                                                 | implemented | done this wave                   |
 | 337 | [[fn:USER.GetMouseEventProc]]        | none                                                                 | implemented | done                             |
-| 341 | [[fn:USER._FFFE_FARFRAME]]           | none                                                                 | stub        | not applicable                   |
+| 341 | [[fn:USER._FFFE_FARFRAME]]           | none                                                                 | implemented | done (a) ([[probe:ugaps]])       |
 | 343 | [[fn:USER.GetFilePortName]]          | none                                                                 | implemented | done this wave                   |
 | 356 | [[fn:USER.LoadDibCursorHandler]]     | none                                                                 | implemented | done this wave                   |
 | 357 | [[fn:USER.LoadDibIconHandler]]       | none                                                                 | implemented | done this wave                   |
@@ -144,7 +140,7 @@ Every named USER and SHELL export no header declares, with the files that import
 | 470 | [[fn:USER.StringFunc]]               | none                                                                 | implemented | done this wave                   |
 | 480 | [[fn:USER.GetUserLocalObjType]]      | none                                                                 | implemented | done                             |
 | 481 | [[fn:USER.Hardware_Event]]           | none                                                                 | implemented | done this wave                   |
-| 484 | [[fn:USER.__GP]]                     | none                                                                 | stub        | not applicable                   |
+| 484 | [[fn:USER.__GP]]                     | none                                                                 | data        | done (b), an empty table         |
 | 499 | [[fn:USER.WNetErrorText]]            | WINFILE.EXE                                                          | implemented | done                             |
 | 501 | [[fn:USER.WNetOpenJob]]              | PRINTMAN.EXE                                                         | implemented | done                             |
 | 502 | [[fn:USER.WNetCloseJob]]             | PRINTMAN.EXE                                                         | implemented | done                             |
@@ -178,19 +174,19 @@ Every named USER and SHELL export no header declares, with the files that import
 
 ### SHELL
 
-| Ord | Export                             | Callers                                                            | WinBox      | State          |
-| --- | ---------------------------------- | ------------------------------------------------------------------ | ----------- | -------------- |
-| 22  | [[fn:SHELL.ShellAbout]]            | CALC.EXE, CALENDAR.EXE, CARDFILE.EXE and 17 more; 1 corpus program | implemented | done           |
-| 32  | [[fn:SHELL.WCI]]                   | none                                                               | stub        | not applicable |
-| 33  | [[fn:SHELL.AboutDlgProc]]          | none                                                               | implemented | done           |
-| 36  | [[fn:SHELL.ExtractAssociatedIcon]] | PACKAGER.EXE, PROGMAN.EXE                                          | implemented | done           |
-| 37  | [[fn:SHELL.DoEnvironmentSubst]]    | PROGMAN.EXE, WINOA386.MOD                                          | implemented | done           |
-| 38  | [[fn:SHELL.FindEnvironmentString]] | WINFILE.EXE                                                        | implemented | done           |
-| 39  | [[fn:SHELL.InternalExtractIcon]]   | PROGMAN.EXE                                                        | implemented | done           |
-| 100 | [[fn:SHELL.HERETHARBETYGARS]]      | none                                                               | stub        | not applicable |
-| 101 | [[fn:SHELL.FindExeDlgProc]]        | none                                                               | implemented | done this wave |
-| 102 | [[fn:SHELL.RegisterShellHook]]     | PROGMAN.EXE, WINOA386.MOD                                          | implemented | done           |
-| 103 | [[fn:SHELL.ShellHookProc]]         | none                                                               | implemented | done           |
+| Ord | Export                             | Callers                                                            | WinBox      | State                      |
+| --- | ---------------------------------- | ------------------------------------------------------------------ | ----------- | -------------------------- |
+| 22  | [[fn:SHELL.ShellAbout]]            | CALC.EXE, CALENDAR.EXE, CARDFILE.EXE and 17 more; 1 corpus program | implemented | done                       |
+| 32  | [[fn:SHELL.WCI]]                   | none                                                               | implemented | done (c) ([[probe:ugaps]]) |
+| 33  | [[fn:SHELL.AboutDlgProc]]          | none                                                               | implemented | done                       |
+| 36  | [[fn:SHELL.ExtractAssociatedIcon]] | PACKAGER.EXE, PROGMAN.EXE                                          | implemented | done                       |
+| 37  | [[fn:SHELL.DoEnvironmentSubst]]    | PROGMAN.EXE, WINOA386.MOD                                          | implemented | done                       |
+| 38  | [[fn:SHELL.FindEnvironmentString]] | WINFILE.EXE                                                        | implemented | done                       |
+| 39  | [[fn:SHELL.InternalExtractIcon]]   | PROGMAN.EXE                                                        | implemented | done                       |
+| 100 | [[fn:SHELL.HERETHARBETYGARS]]      | none                                                               | implemented | done (a) ([[probe:ugaps]]) |
+| 101 | [[fn:SHELL.FindExeDlgProc]]        | none                                                               | implemented | done this wave             |
+| 102 | [[fn:SHELL.RegisterShellHook]]     | PROGMAN.EXE, WINOA386.MOD                                          | implemented | done                       |
+| 103 | [[fn:SHELL.ShellHookProc]]         | none                                                               | implemented | done                       |
 
 ## Not yet done
 
@@ -199,6 +195,6 @@ Every named USER and SHELL export no header declares, with the files that import
 - [[fn:USER.LoadCursorIconHandler]]'s conversion of a Windows 2 module's icon is read out only: no probe of a Windows 2 module.
 - [[fn:USER.SignalProc]]'s task end and module freed, called by a program for a task that is still running.
 - [[fn:SHELL.FindExeDlgProc]]'s Locate button, which asks COMMDLG's `GetOpenFileName` for the program.
-- SHELL's About box's credits ([[fn:SHELL.WCI]]).
+- SHELL's About box's credits ([[fn:SHELL.WCI]]), and the DDE windows `ShellExecute` makes for an association that asks for DDE ([[fn:SHELL.HERETHARBETYGARS]]).
 - The classes `#32768` to `#32772` registered whatever the desktop, their procedures USER's addresses ([[probe:userproc]]).
 - [[fn:USER.GetDCEx]]'s `DCX_PARENTCLIP` and `DCX_USESTYLE`: read out and recorded in [[topic:visible-regions]], phases 2 and 3.
