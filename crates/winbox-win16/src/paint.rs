@@ -454,6 +454,12 @@ impl Engine {
         start: Option<usize>,
         flags: u16,
     ) -> Result<(), Stop> {
+        // The desktop's own part, where it is due, drawn first (`rdwmore`,
+        // `RDW_ERASENOW`).
+        if start.is_none() {
+            self.system().paint_background_due();
+        }
+
         let mut work: Vec<(Option<usize>, bool)> = vec![(start, false)];
 
         while let Some((at, checked)) = work.pop() {
@@ -611,6 +617,16 @@ impl Engine {
     pub async fn begin_paint(&self, hwnd: u16, index: usize) -> Result<(u16, Vec<u8>), Stop> {
         let hdc = {
             let mut system = self.system();
+
+            // The note that its paint was sent, and another task's making it
+            // due, taken off (`USER.EXE` seg1 `764c`; `update_now`).
+            {
+                let window = system.painted_mut(index);
+
+                window.paint_sent = false;
+                window.other_task = false;
+            }
+
             // One of USER's entries (`dc_entries`): `GetDCEx` with
             // `DCX_USESTYLE` and `DCX_INTERSECTRGN` of the update region
             // (`USER.EXE` seg1 `7640`-`7671`; `visrgn`): its visible region
@@ -1011,17 +1027,33 @@ impl Engine {
             };
 
             if let Some((message, wparam)) = send {
+                // Noted as sent, until `BeginPaint` takes the note off (seg1
+                // `447f`, `764c`).
+                self.system().painted_mut(index).paint_sent = true;
                 self.send_message(handle, message, wparam, &mut Param::Value(0))
                     .await?;
 
                 // Destroyed in its paint, nothing more (`44ac`).
-                let system = self.system();
+                let unsent = {
+                    let mut system = self.system();
 
-                if system.windows[index]
-                    .as_ref()
-                    .is_none_or(|window| window.hwnd != handle)
-                {
-                    continue;
+                    if system.windows[index]
+                        .as_ref()
+                        .is_none_or(|window| window.hwnd != handle)
+                    {
+                        continue;
+                    }
+
+                    std::mem::take(&mut system.painted_mut(index).paint_sent)
+                        && system.showing(index)
+                };
+
+                // Its paint taken without `BeginPaint`: what it is due of its
+                // frame and its erase is sent now, the window alone (seg1
+                // `44ab`-`44c0`: `7913` with nought, where it shows;
+                // `rdwmore`).
+                if unsent {
+                    self.sync_paint_from(Some(index), 0).await?;
                 }
             }
 

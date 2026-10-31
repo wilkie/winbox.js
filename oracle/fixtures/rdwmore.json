@@ -1,0 +1,384 @@
+{
+  "probe": "rdwmore",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "step",
+      "args": "nobegin",
+      "result": "update"
+    },
+    {
+      "function": "nobegin",
+      "args": "nobegin W",
+      "result": "none"
+    },
+    {
+      "function": "ncpaint",
+      "args": "nobegin W",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "nobegin W",
+      "result": "sent"
+    },
+    {
+      "function": "update",
+      "args": "nobegin W",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "nobegin",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "nobegin W",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "nobegin W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "noval",
+      "result": "update"
+    },
+    {
+      "function": "nobegin",
+      "args": "noval W",
+      "result": "validate"
+    },
+    {
+      "function": "ncpaint",
+      "args": "noval W",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "noval W",
+      "result": "sent"
+    },
+    {
+      "function": "update",
+      "args": "noval W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "noval",
+      "result": "pump"
+    },
+    {
+      "function": "update",
+      "args": "noval W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "nobegin",
+      "args": "rdwnow W",
+      "result": "none"
+    },
+    {
+      "function": "ncpaint",
+      "args": "rdwnow W",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "rdwnow W",
+      "result": "sent"
+    },
+    {
+      "function": "update",
+      "args": "rdwnow W",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "rdwnow",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "rdwnow W",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "rdwnow W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "lockfr C",
+      "result": "2 0,0,78,48 0-48:0-78;"
+    },
+    {
+      "function": "step",
+      "args": "lockfr",
+      "result": "unlock"
+    },
+    {
+      "function": "update",
+      "args": "lockfr P",
+      "result": "2 0,0,200,120 0-120:0-200;"
+    },
+    {
+      "function": "update",
+      "args": "lockfr C",
+      "result": "2 0,0,78,48 0-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "lockfr Q",
+      "result": "2 0,0,100,60 0-60:0-100;"
+    },
+    {
+      "function": "step",
+      "args": "lockfr",
+      "result": "pump"
+    },
+    {
+      "function": "ncpaint",
+      "args": "lockfr Q",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "lockfr Q",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "lockfr Q",
+      "result": "0,0,100,60 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "lockfr P",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "lockfr P",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "lockfr P",
+      "result": "0,0,200,120 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "lockfr C",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "lockfr C",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "lockfr C",
+      "result": "0,0,78,48 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "lockcl C",
+      "result": "2 0,0,78,48 0-48:0-78;"
+    },
+    {
+      "function": "step",
+      "args": "lockcl",
+      "result": "unlock"
+    },
+    {
+      "function": "update",
+      "args": "lockcl P",
+      "result": "2 21,21,99,69 21-69:21-99;"
+    },
+    {
+      "function": "update",
+      "args": "lockcl C",
+      "result": "2 0,0,78,48 0-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "lockcl Q",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "lockcl",
+      "result": "pump"
+    },
+    {
+      "function": "ncpaint",
+      "args": "lockcl P",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "lockcl P",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "lockcl P",
+      "result": "21,21,99,69 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "lockcl C",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "lockcl C",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "lockcl C",
+      "result": "0,0,78,48 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "desk",
+      "result": "400-440:560-600;"
+    },
+    {
+      "function": "deskdue",
+      "args": "desk",
+      "result": "1 560,400,600,440"
+    },
+    {
+      "function": "step",
+      "args": "desk",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "desk after",
+      "result": "-"
+    },
+    {
+      "function": "screen",
+      "args": "desknow",
+      "result": "-"
+    },
+    {
+      "function": "deskdue",
+      "args": "desknow",
+      "result": "0 0,0,0,0"
+    },
+    {
+      "function": "step",
+      "args": "desknow",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "desknow after",
+      "result": "-"
+    },
+    {
+      "function": "started",
+      "args": "R",
+      "result": "yes"
+    },
+    {
+      "function": "ncpaint",
+      "args": "desknow W2",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "desknow W2",
+      "result": "sent"
+    },
+    {
+      "function": "update",
+      "args": "other W2",
+      "result": "2 0,0,120,80 0-80:0-120;"
+    },
+    {
+      "function": "step",
+      "args": "other",
+      "result": "again"
+    },
+    {
+      "function": "update",
+      "args": "other W2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "other",
+      "result": "pump"
+    },
+    {
+      "function": "update",
+      "args": "othrdw W2",
+      "result": "2 0,0,120,80 0-80:0-120;"
+    },
+    {
+      "function": "step",
+      "args": "othrdw",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "othrdw W2",
+      "result": "0,0,120,80 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "theirs W2",
+      "result": "2 0,0,120,80 0-80:0-120;"
+    },
+    {
+      "function": "step",
+      "args": "theirs",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "theirs W2",
+      "result": "0,0,120,80 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "self W2",
+      "result": "2 0,0,120,80 0-80:0-120;"
+    },
+    {
+      "function": "step",
+      "args": "self",
+      "result": "validate"
+    },
+    {
+      "function": "update",
+      "args": "self W2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "self",
+      "result": "pump"
+    }
+  ]
+}

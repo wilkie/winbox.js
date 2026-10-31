@@ -5202,6 +5202,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `hooks`'s pop-up menu: in Windows its own `#32768` window's `WM_PAINT`
+   * passes the message filter hooks in the menu's loop. WinBox's menu has
+   * no window procedure to paint it; its owner's paint after the dialog
+   * before had stood in for it, and the dialog, of a `CS_SAVEBITS` class,
+   * now puts back its bits as Windows does, leaving the owner due nothing
+   * (`save-bits.ts`). */
+  'hooks:calls': "WinBox's own pop-up menu has no WM_PAINT for the message filter hooks to see",
   /* `popmax`'s pop-up made `WS_CAPTION | WS_MINIMIZE`: `CreateWindow`
    * minimizes it as it does an overlapped one (`USER.EXE` seg8 `0843`-`0861`
    * asks nothing of the kind of window), and its first `WM_SIZE` is the whole
@@ -5994,6 +6001,10 @@ const RUN_WHOLE = new Set<string>([
   'rdwwalk',
   'rdw31',
   'swpunc31',
+  'swplist',
+  'swplst31',
+  'savebit',
+  'rdwmore',
 ]);
 
 /**

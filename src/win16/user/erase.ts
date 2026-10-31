@@ -275,6 +275,12 @@ export async function syncPaintFrom(system: any, window: any, flags = DSP_ENUMCL
     return;
   }
 
+  /* The desktop's own part, where it is due, drawn first ([[probe:rdwmore]],
+   * `RDW_ERASENOW`). */
+  if (!window) {
+    desktop.paintBackgroundDue();
+  }
+
   if (window) {
     if (!(flags & DSP_NOCHECKPARENTS)) {
       if (parentPending(window)) {

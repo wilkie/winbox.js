@@ -554,6 +554,7 @@ impl System {
     /// `next_message`, as asking which is due makes it ready to paint.
     fn any_unpainted(&self) -> bool {
         self.background_due
+            || self.background_region.is_some()
             || self
                 .windows
                 .iter()

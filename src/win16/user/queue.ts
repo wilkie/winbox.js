@@ -397,6 +397,7 @@ export function noMessageNow(system: any, filter: Filter) {
   if (
     desktop &&
     (desktop.backgroundDue ||
+      desktop.backgroundRegion ||
       desktop.windows.some((window: any) => window.needsPaint || window.internalPaint))
   ) {
     return false;

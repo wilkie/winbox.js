@@ -1495,7 +1495,7 @@ export async function positionRaster(
     const move = await positionChanging(system, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags);
 
     if (move) {
-      await positionChanged(system, [{ ...move, slot: taken ? 0 : null }]);
+      await positionChanged(system, [{ ...move, slot: slotIn(taken, 0) }]);
     }
   } finally {
     giveDeferSlots(system, taken);
@@ -1515,28 +1515,50 @@ export async function positionRaster(
  * that entry until it is written again: `SetWindowPos` moving a window with
  * `SWP_NOCOPYBITS` and nothing else writes none (seg7 `1028`-`102c`), and
  * copies through that rectangle (`moveWithBits`). Each entry's rectangle,
- * on the screen. The second block of two, at A3Ch, handed out while USER's
- * word at E0h is set (`00c0`-`00cd`), is not followed.
+ * on the screen. While USER's word at E0h is set -- while its system
+ * error box is up (seg1 `9350`-`9359`, `9a76`-`9a79`; `sys-error-box.ts`)
+ * -- the second block, of two at A3Ch, is handed out instead, whatever is
+ * asked and whoever has it (`00c0`-`00cd`): entries 4 and 5 here.
  */
 function deferSlots(system: any): number[][] {
-  return (system._deferSlots ??= [0, 1, 2, 3].map(() => [0, 0, 0, 0]));
+  return (system._deferSlots ??= [0, 1, 2, 3, 4, 5].map(() => [0, 0, 0, 0]));
 }
 
-/** Whether a call of `count` windows has the block of four: taken until `giveDeferSlots`. */
-export function takeDeferSlots(system: any, count: number) {
+/** The second block's first entry (`deferSlots`). */
+const SECOND_BLOCK = 4;
+
+/**
+ * The block a call of `count` windows has, as its first entry's number:
+ * the second block while the system error box is up, else the block of four
+ * where it can, taken until `giveDeferSlots`; null for a block of its own.
+ */
+export function takeDeferSlots(system: any, count: number): number | null {
+  if (system._inSysErrorBox) {
+    return SECOND_BLOCK;
+  }
+
   if (count > 4 || system._deferSlotsTaken) {
-    return false;
+    return null;
   }
 
   system._deferSlotsTaken = true;
-  return true;
+  return 0;
 }
 
 /** The block of four given back, where the call had it. */
-export function giveDeferSlots(system: any, taken: boolean) {
-  if (taken) {
+export function giveDeferSlots(system: any, taken: number | null) {
+  if (taken === 0) {
     system._deferSlotsTaken = false;
   }
+}
+
+/** The entry of a block a call's `index`th window has, null past the block's end. */
+export function slotIn(taken: number | null, index: number) {
+  if (taken === null || index >= (taken === SECOND_BLOCK ? 2 : 4)) {
+    return null;
+  }
+
+  return taken + index;
 }
 
 /**
@@ -1546,14 +1568,16 @@ export function giveDeferSlots(system: any, taken: boolean) {
  * `10e3`-`1153`).
  */
 export function noteShownSlot(system: any, shown: any, clientWas: number[], placeWas: string) {
-  if (system._deferSlotsTaken) {
+  const first = system._inSysErrorBox ? SECOND_BLOCK : 0;
+
+  if (!first && system._deferSlotsTaken) {
     return;
   }
 
   const now = [shown.left, shown.top, shown.width, shown.height, shown.state].join();
 
   if (now === placeWas) {
-    deferSlots(system)[0] = [
+    deferSlots(system)[first] = [
       shown.left,
       shown.top,
       shown.left + shown.width,
@@ -1565,7 +1589,7 @@ export function noteShownSlot(system: any, shown: any, clientWas: number[], plac
   const left = shown.left + shown.client.left;
   const top = shown.top + shown.client.top;
 
-  deferSlots(system)[0] = [
+  deferSlots(system)[first] = [
     left,
     top,
     Math.min(shown.left + shown.client.right, left + clientWas[2] - clientWas[0]),
@@ -1854,6 +1878,22 @@ export async function positionChanged(
       !madeFor31(move.window.desktop, move.window.window)
   );
 
+  /* One list, every window of it -- and the windows at the top each brings
+   * up with it -- placed before any is drawn (`USER.EXE` seg7 `0526`; the
+   * desktop's `beginPlacing`), each with what it was asked. */
+  const listDesktop = moves[0]?.window.desktop;
+
+  listDesktop?.beginPlacing(
+    moves.flatMap((move) => [
+      move.window.window,
+      ...move.family.filter((member: any) => member !== move.window.window && !member.parent),
+    ])
+  );
+
+  for (const move of moves) {
+    listDesktop?.placingFlags(move.window.window, move.flags);
+  }
+
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
     const shown = window.window;
@@ -1936,7 +1976,10 @@ export async function positionChanged(
         shown.iconPlace = { left, top };
       }
     } else if (framed) {
+      /* Its frame changed in place is drawn as `frameChanged` has it
+       * (`swpframe`), not again with the list. */
       window.desktop.frameChanged(shown);
+      window.desktop.placingSkip(shown);
     }
 
     if (slot !== null) {
@@ -2045,6 +2088,9 @@ export async function positionChanged(
       client: client | inPlace,
     });
   }
+
+  /* All placed, the list is drawn (`USER.EXE` seg7 `0526`, `endPlacing`). */
+  listDesktop?.endPlacing(allShown);
 
   /* Made active, then erased where it is due, and only then told it moved
    * (`swpbits`, `swporder`, `showseq`). A window made active that is not

@@ -1,0 +1,324 @@
+{
+  "probe": "savebit",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "same",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "same W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "same S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "same",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "same after",
+      "result": "-"
+    },
+    {
+      "function": "ncpaint",
+      "args": "drawn W",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "drawn W",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "drawn",
+      "result": "80-90:340-370;90-110:340-350;"
+    },
+    {
+      "function": "update",
+      "args": "drawn W",
+      "result": "2 50,50,70,70 50-70:50-70;"
+    },
+    {
+      "function": "update",
+      "args": "drawn S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "drawn",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "drawn W",
+      "result": "50,50,70,70 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "drawn after",
+      "result": "80-90:340-370;90-110:340-350;"
+    },
+    {
+      "function": "screen",
+      "args": "drawoff",
+      "result": "40-60:300-320;"
+    },
+    {
+      "function": "update",
+      "args": "drawoff W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "drawoff S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "drawoff",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "drawoff after",
+      "result": "40-60:300-320;"
+    },
+    {
+      "function": "ncpaint",
+      "args": "inval W",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "inval W",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "inval",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "inval W",
+      "result": "2 60,60,90,90 60-90:60-90;"
+    },
+    {
+      "function": "update",
+      "args": "inval S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "inval",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "inval W",
+      "result": "60,60,90,90 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "inval after",
+      "result": "-"
+    },
+    {
+      "function": "ncpaint",
+      "args": "moved S",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "moved S",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "moved W",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "moved W",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "moved",
+      "result": "110-150:430-450;150-170:370-450;"
+    },
+    {
+      "function": "update",
+      "args": "moved W",
+      "result": "2 70,70,150,130 70-130:70-150;"
+    },
+    {
+      "function": "update",
+      "args": "moved S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "moved",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "moved W",
+      "result": "70,70,150,130 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "moved after",
+      "result": "110-150:430-450;150-170:370-450;"
+    },
+    {
+      "function": "screen",
+      "args": "noz",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "noz W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "noz S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "noz",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "noz after",
+      "result": "-"
+    },
+    {
+      "function": "ncpaint",
+      "args": "cover V",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "cover V",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "cover",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "cover W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "cover S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "cover V",
+      "result": "2 0,0,30,30 0-30:0-30;"
+    },
+    {
+      "function": "step",
+      "args": "cover",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "cover V",
+      "result": "0,0,30,30 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "cover after",
+      "result": "-"
+    },
+    {
+      "function": "screen",
+      "args": "two",
+      "result": "90-150:350-430;"
+    },
+    {
+      "function": "update",
+      "args": "two W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "two S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "two S2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "two",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "two after",
+      "result": "90-150:350-430;"
+    },
+    {
+      "function": "screen",
+      "args": "two2",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "two2 W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "two2 S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "two2 S2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "two2",
+      "result": "pump"
+    },
+    {
+      "function": "screen",
+      "args": "two2 after",
+      "result": "-"
+    }
+  ]
+}

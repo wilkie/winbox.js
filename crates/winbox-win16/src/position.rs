@@ -486,7 +486,7 @@ impl Engine {
                 return Ok(());
             };
 
-            change.slot = taken.then_some(0);
+            change.slot = slot_in(taken, 0);
             self.position_changed(vec![change]).await
         }
         .await;
@@ -786,6 +786,34 @@ impl Engine {
                 .and_then(|window| window.parent)
         });
 
+        // One list, every window of it -- and the windows at the top each
+        // brings up with it -- placed before any is drawn (`USER.EXE` seg7
+        // `0526`; `begin_placing`), each with what it was asked.
+        {
+            let mut system = self.system();
+            let mut listed = Vec::new();
+
+            for change in &changes {
+                listed.push(change.index);
+
+                for &member in &change.family {
+                    if member != change.index
+                        && system.windows[member]
+                            .as_ref()
+                            .is_some_and(|window| window.parent.is_none())
+                    {
+                        listed.push(member);
+                    }
+                }
+            }
+
+            system.begin_placing(&listed);
+
+            for change in &changes {
+                system.placing_flags(change.index, change.flags);
+            }
+        }
+
         for mut change in changes {
             let mut system = self.system();
             let [left, top, width, height] = change.place;
@@ -868,7 +896,7 @@ impl Engine {
                     change.place,
                     change.flags & SWP_NOCOPYBITS == 0,
                     kept,
-                    all_shown,
+                    Some(all_shown),
                     change.calc.is_some(),
                     stale,
                 )?;
@@ -877,7 +905,10 @@ impl Engine {
 
                 system.lock_touched(Some(change.index), place, DCX_WINDOW);
             } else if framed {
+                // Its frame changed in place is drawn as `frame_changed` has
+                // it (`swpframe`), not again with the list.
                 system.frame_changed(change.index)?;
+                system.placing_skip(change.index);
             }
 
             if let Some(slot) = change.slot {
@@ -1003,6 +1034,10 @@ impl Engine {
             ));
         }
 
+        // All placed, the list is drawn (`USER.EXE` seg7 `0526`,
+        // `end_placing`).
+        self.system().end_placing(Some(all_shown));
+
         // Made active, then erased where it is due, and only then told it
         // moved (`swpbits`, `swporder`, `showseq`); brought to the front
         // again where it is not then the first at the top (`alttab`).
@@ -1084,22 +1119,29 @@ impl System {
     /// window go (+16h) stays as the call before left it in that entry
     /// until it is written again: `SetWindowPos` moving a window with
     /// `SWP_NOCOPYBITS` and nothing else writes none (seg7 `1028`-`102c`),
-    /// and copies through that rectangle (`move_with_bits`). The second
-    /// block of two, at `A3Ch`, handed out while USER's word at `E0h` is set
-    /// (`00c0`-`00cd`), is not followed. The TypeScript engine's
+    /// and copies through that rectangle (`move_with_bits`). While USER's
+    /// word at E0h is set -- while its system error box is up (seg1
+    /// `9350`-`9359`, `9a76`-`9a79`) -- the second block, of two at `A3Ch`, is
+    /// handed out instead, whatever is asked and whoever has it
+    /// (`00c0`-`00cd`): entries 4 and 5 here. Answers the block's first
+    /// entry, none for a block of its own. The TypeScript engine's
     /// `takeDeferSlots`.
-    pub(crate) fn take_defer_slots(&mut self, count: i32) -> bool {
+    pub(crate) fn take_defer_slots(&mut self, count: i32) -> Option<usize> {
+        if self.user_calls.in_sys_error_box {
+            return Some(SECOND_BLOCK);
+        }
+
         if count > 4 || self.defer_slots_taken {
-            return false;
+            return None;
         }
 
         self.defer_slots_taken = true;
-        true
+        Some(0)
     }
 
     /// The block of four given back, where the call had it.
-    pub(crate) fn give_defer_slots(&mut self, taken: bool) {
-        if taken {
+    pub(crate) fn give_defer_slots(&mut self, taken: Option<usize>) {
+        if taken == Some(0) {
             self.defer_slots_taken = false;
         }
     }
@@ -1110,7 +1152,13 @@ impl System {
     /// (seg7 `1028`-`104c`, `10e3`-`1153`). The TypeScript engine's
     /// `noteShownSlot`.
     pub(crate) fn note_shown_slot(&mut self, index: usize, client_was: [i32; 4], same_place: bool) {
-        if self.defer_slots_taken {
+        let first = if self.user_calls.in_sys_error_box {
+            SECOND_BLOCK
+        } else {
+            0
+        };
+
+        if first == 0 && self.defer_slots_taken {
             return;
         }
 
@@ -1118,7 +1166,7 @@ impl System {
             return;
         };
 
-        self.defer_slots[0] = if same_place {
+        self.defer_slots[first] = if same_place {
             [
                 window.left,
                 window.top,
@@ -1301,6 +1349,18 @@ pub fn is_zoomed(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     )))
 }
 
+/// The second block's first entry (`System::take_defer_slots`).
+const SECOND_BLOCK: usize = 4;
+
+/// The entry of a block a call's `index`th window has, none past the
+/// block's end. The TypeScript engine's `slotIn`.
+fn slot_in(taken: Option<usize>, index: usize) -> Option<usize> {
+    let first = taken?;
+    let size = if first == SECOND_BLOCK { 2 } else { 4 };
+
+    (index < size).then_some(first + index)
+}
+
 /// A move kept: the window, the window it goes after, its place and size,
 /// and the flags.
 pub type Deferred = (u16, u16, [i16; 4], u16);
@@ -1384,7 +1444,7 @@ pub fn end_defer_window_pos(engine: &Engine, mut args: Args) -> Later<'_> {
                     .position_changing(hwnd, index, after, place.map(i32::from), flags)
                     .await?
                 {
-                    change.slot = (taken && at < 4).then_some(at);
+                    change.slot = slot_in(taken, at);
                     begun.push(change);
                 }
             }

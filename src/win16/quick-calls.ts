@@ -116,6 +116,7 @@ function nothingWaiting(system: any) {
     (task.quitCode !== undefined && task.quitCode !== null) ||
     (desktop &&
       (desktop.backgroundDue ||
+        desktop.backgroundRegion ||
         desktop.windows.some((window: any) => window.needsPaint || window.internalPaint))) ||
     system._timers?.size
   );

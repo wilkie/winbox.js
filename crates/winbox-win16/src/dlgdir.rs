@@ -507,7 +507,7 @@ impl Engine {
         let mut system = self.system();
 
         if let Some(index) = system.window_named(list) {
-            system.tell_lock(index, None);
+            system.tell_lock(index, None, false);
             system.invalidate(index, None, true);
         }
 

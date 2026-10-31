@@ -7,6 +7,63 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 
+/// Who keeps the bits a `CS_SAVEBITS` window saves
+/// (`Display::save_screen_bitmap_rule`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SaveRule {
+    /// The driver, through its `SaveScreenBitmap` (`save_screen_bitmap`).
+    Driver,
+    /// USER, in a bitmap of its own: the driver has no `RC_SAVEBITMAP`.
+    User,
+    /// A driver with `RC_SAVEBITMAP` not read out: nothing kept.
+    Unread,
+}
+
+/// `VGA.DRV`'s `SaveScreenBitmap(lpRect, cmd)` (seg1 `2be2`, ordinal 92):
+/// one rectangle kept at a time, in the video memory past the screen's.
+/// **Read out**: `cmd` 0 keeps it (`2c02`-`2c0c`, `2f10`-`300c`) -- nought
+/// where one is kept already, or the rectangle is empty one way, or its
+/// bytes, from the byte its left edge is in to the byte its right is, 640
+/// by 480 held to the screen, come to more than 6000h a plane; else −1.
+/// `cmd` 1 puts it back (`2c20`-`2f09`): nought where none is kept, else
+/// −1, nothing kept after. Any other lets it go, −1 (`2c18`). Its flag of
+/// the memory used since (bit 2 of its byte 1F4h, set as the screen's state
+/// is put back, seg1 `00a7`) is never set: WinBox's screen is never given
+/// up. `kept` is its bit 1. As `display-driver.ts`' `saveScreenBitmap`.
+pub fn save_screen_bitmap(kept: &mut bool, rect: [i32; 4], cmd: u16) -> u16 {
+    match cmd {
+        0 => {
+            if *kept || rect[0] == rect[2] || rect[1] == rect[3] {
+                return 0;
+            }
+
+            let held = |value: i32, most: i32| value.clamp(0, most);
+            let left = held(rect[0], 0x27f) & !7;
+            let right = (held(rect[2] - 1, 0x27f) & !7) + 7;
+            let rows = held(rect[3] - 1, 0x1df) - held(rect[1], 0x1df) + 1;
+
+            if ((right - left + 1) >> 3) * rows > 0x6000 {
+                return 0;
+            }
+
+            *kept = true;
+            0xffff
+        }
+        1 => {
+            if !*kept {
+                return 0;
+            }
+
+            *kept = false;
+            0xffff
+        }
+        _ => {
+            *kept = false;
+            0xffff
+        }
+    }
+}
+
 /// The system metrics that follow from the driver.
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -113,6 +170,21 @@ impl Display {
             "XGA.DRV" => 0,
             "8514.DRV" => 0x252f,
             _ => 0xffff,
+        }
+    }
+
+    /// Who keeps the bits a `CS_SAVEBITS` window saves (`save_bits`): USER
+    /// asks the driver where its `RASTERCAPS` has `RC_SAVEBITMAP` (`USER.EXE`
+    /// seg3 `1c06`-`1c28`) -- the driver, whose answer `save_screen_bitmap`
+    /// gives, read out of `VGA.DRV` alone; the Hercules's and `SVGA256.DRV`
+    /// have none, and USER keeps them in a bitmap of its own. The EGA's, the
+    /// Super VGA's, the 8514/a's and the XGA's have it and are not read out:
+    /// nothing kept. As `display-driver.ts`' `saveScreenBitmapRule`.
+    pub fn save_screen_bitmap_rule(&self) -> SaveRule {
+        match self.driver_file.to_ascii_uppercase().as_str() {
+            "VGA.DRV" => SaveRule::Driver,
+            "HERCULES.DRV" | "SVGA256.DRV" => SaveRule::User,
+            _ => SaveRule::Unread,
         }
     }
 

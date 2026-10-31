@@ -113,6 +113,7 @@ pub mod raster_input;
 pub mod reply_message;
 pub mod resources;
 mod run;
+pub mod save_bits;
 pub mod scheduler;
 pub mod screen_saver;
 pub mod scroll_bars;

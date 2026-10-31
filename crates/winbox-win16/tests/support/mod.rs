@@ -307,6 +307,10 @@ pub const AGREEING: &[&str] = &[
     "rdwwalk",
     "rdw31",
     "swpunc31",
+    "swplist",
+    "swplst31",
+    "savebit",
+    "rdwmore",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

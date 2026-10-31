@@ -162,8 +162,10 @@ export function GetUpdateRgn(this: any, hwnd: number, hrgn: number, _fErase: num
   }
 
   /* Within the client areas it is in too (`USER.EXE` seg1 `47c2`, `8bb3`;
-   * `invchild`). */
+   * `invchild`). Another task's making it due, looked at (`47a3`). */
   const window = owner.window;
+
+  (window as any).otherTask = false;
   const client = clientOf(window);
   const { left, top, right, bottom } = client.box;
   const seen = cutToParents(window, [left, top, right, bottom]);
