@@ -1,0 +1,1184 @@
+{
+  "probe": "swpunc31",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "erase",
+      "args": "sib R",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "sib",
+      "result": "50-60:50-110;60-90:50-80;90-100:160-220;100-130:160-190;"
+    },
+    {
+      "function": "update",
+      "args": "sib R",
+      "result": "2 10,10,70,50 10-50:10-70;"
+    },
+    {
+      "function": "update",
+      "args": "sib A",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "sib B",
+      "result": "2 0,0,30,30 0-30:0-30;"
+    },
+    {
+      "function": "step",
+      "args": "sib",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "sib R",
+      "result": "10,10,70,50 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sib B",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "sib B",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "sib B",
+      "result": "0,0,30,30 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "sibc R",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "sibc",
+      "result": "50-90:50-110;90-130:160-220;"
+    },
+    {
+      "function": "update",
+      "args": "sibc R",
+      "result": "2 10,10,70,50 10-50:10-70;"
+    },
+    {
+      "function": "update",
+      "args": "sibc A",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "sibc B",
+      "result": "2 0,0,30,30 0-30:0-30;"
+    },
+    {
+      "function": "step",
+      "args": "sibc",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "sibc R",
+      "result": "10,10,70,50 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sibc B",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "sibc B",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "sibc B",
+      "result": "0,0,30,30 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "par P",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "par",
+      "result": "50-80:310-360;80-90:310-360,410-460;90-120:410-460;"
+    },
+    {
+      "function": "update",
+      "args": "par P",
+      "result": "2 10,10,60,50 10-50:10-60;"
+    },
+    {
+      "function": "update",
+      "args": "par C",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "par S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "par",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "par P",
+      "result": "10,10,60,50 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "parc P",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "parc",
+      "result": "50-80:310-360;80-90:310-360,410-460;90-120:410-460;"
+    },
+    {
+      "function": "update",
+      "args": "parc P",
+      "result": "2 10,10,60,50 10-50:10-60;"
+    },
+    {
+      "function": "update",
+      "args": "parc C",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "parc S",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "parc",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "parc P",
+      "result": "10,10,60,50 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "nocopy X",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "nocopy X",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "nocopy",
+      "result": "260-270:60-120;270-310:60-100;"
+    },
+    {
+      "function": "update",
+      "args": "nocopy X",
+      "result": "2 0,0,80,60 0-60:0-80;"
+    },
+    {
+      "function": "update",
+      "args": "nocopy Y",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "nocopy",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "nocopy X",
+      "result": "0,0,80,60 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "copy",
+      "result": "260-270:60-140;270-320:60-100;"
+    },
+    {
+      "function": "update",
+      "args": "copy X",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "copy Y",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "copy",
+      "result": "pump"
+    },
+    {
+      "function": "erase",
+      "args": "defer2 Q",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "defer2",
+      "result": "260-290:310-350,400-440;310-340:310-350,400-440;"
+    },
+    {
+      "function": "update",
+      "args": "defer2 Q",
+      "result": "3 10,10,140,40 10-40:10-50,100-140;"
+    },
+    {
+      "function": "update",
+      "args": "defer2 D1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "defer2 D2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "defer2 U",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "defer2 H1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "defer2 H2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "defer2",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "defer2 Q",
+      "result": "10,10,140,40 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "show2 Q",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show2 U",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "show2 U",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show2 H1",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "show2 H1",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show2 H2",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "show2 H2",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "show2",
+      "result": "260-290:310-350,400-440;"
+    },
+    {
+      "function": "update",
+      "args": "show2 Q",
+      "result": "3 30,70,130,100 70-100:30-70,90-130;"
+    },
+    {
+      "function": "update",
+      "args": "show2 D1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "show2 D2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "show2 U",
+      "result": "3 10,10,110,40 10-40:10-50,70-110;"
+    },
+    {
+      "function": "update",
+      "args": "show2 H1",
+      "result": "2 0,0,40,30 0-30:0-40;"
+    },
+    {
+      "function": "update",
+      "args": "show2 H2",
+      "result": "2 0,0,40,30 0-30:0-40;"
+    },
+    {
+      "function": "step",
+      "args": "show2",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "show2 Q",
+      "result": "0,0,0,0 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "show2 U",
+      "result": "10,10,110,40 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "show2 H1",
+      "result": "0,0,40,30 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "show2 H2",
+      "result": "0,0,40,30 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "showmove Q",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "showmove U",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "showmove U",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "showmove H1",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "showmove H1",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "showmove",
+      "result": "260-290:310-350,400-440;310-340:400-440;"
+    },
+    {
+      "function": "update",
+      "args": "showmove Q",
+      "result": "3 30,10,140,100 10-40:100-140;70-100:30-70;"
+    },
+    {
+      "function": "update",
+      "args": "showmove D1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "showmove D2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "showmove U",
+      "result": "2 10,10,50,40 10-40:10-50;"
+    },
+    {
+      "function": "update",
+      "args": "showmove H1",
+      "result": "2 0,0,40,30 0-30:0-40;"
+    },
+    {
+      "function": "update",
+      "args": "showmove H2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "showmove",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "showmove Q",
+      "result": "100,10,140,40 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "showmove U",
+      "result": "10,10,50,40 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "showmove H1",
+      "result": "0,0,40,30 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "show1 Q",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show1 U",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "show1 U",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show1 H1",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "show1 H1",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "show1",
+      "result": "260-290:310-350,400-440;"
+    },
+    {
+      "function": "update",
+      "args": "show1 Q",
+      "result": "2 30,70,70,100 70-100:30-70;"
+    },
+    {
+      "function": "update",
+      "args": "show1 D1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "show1 D2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "show1 U",
+      "result": "2 10,10,50,40 10-40:10-50;"
+    },
+    {
+      "function": "update",
+      "args": "show1 H1",
+      "result": "2 0,0,40,30 0-30:0-40;"
+    },
+    {
+      "function": "update",
+      "args": "show1 H2",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "show1",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "show1 Q",
+      "result": "0,0,0,0 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "show1 U",
+      "result": "10,10,50,40 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "show1 H1",
+      "result": "0,0,40,30 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "pend V",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "pend V",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "pend Z",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "pend Z",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "pend",
+      "result": "100-120:100-200;120-160:100-230;160-180:130-230;"
+    },
+    {
+      "function": "update",
+      "args": "pend Z",
+      "result": "3 60,60,160,120 60-80:60-160;80-120:60-90;"
+    },
+    {
+      "function": "update",
+      "args": "pend V",
+      "result": "2 10,10,40,30 10-30:10-40;"
+    },
+    {
+      "function": "step",
+      "args": "pend",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "pend V",
+      "result": "10,10,40,30 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "pend Z",
+      "result": "60,60,160,120 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "pendall V",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "pendall V",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "pendall Z",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "pendall Z",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "pendall",
+      "result": "100-120:100-200;120-121:100-230;121-160:100-200,229-230;160-179:130-131,229-230;179-180:130-230;"
+    },
+    {
+      "function": "update",
+      "args": "pendall Z",
+      "result": "3 60,60,160,120 60-80:60-160;80-120:60-90;"
+    },
+    {
+      "function": "update",
+      "args": "pendall V",
+      "result": "2 0,0,98,58 0-58:0-98;"
+    },
+    {
+      "function": "step",
+      "args": "pendall",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "pendall V",
+      "result": "0,0,98,58 erase 0"
+    },
+    {
+      "function": "paint",
+      "args": "pendall Z",
+      "result": "60,60,160,120 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "grand K",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "grand",
+      "result": "270-290:60-90;290-310:150-170;"
+    },
+    {
+      "function": "update",
+      "args": "grand P3",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "grand K",
+      "result": "2 10,10,40,30 10-30:10-40;"
+    },
+    {
+      "function": "update",
+      "args": "grand G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "grand",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "grand K",
+      "result": "10,10,40,30 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "grandc K",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "grandc",
+      "result": "270-290:60-90;290-310:150-170;"
+    },
+    {
+      "function": "update",
+      "args": "grandc P3",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "grandc K",
+      "result": "2 10,10,40,30 10-30:10-40;"
+    },
+    {
+      "function": "update",
+      "args": "grandc G",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "grandc",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "grandc K",
+      "result": "10,10,40,30 erase 0"
+    },
+    {
+      "function": "screen",
+      "args": "grandp",
+      "result": "270-290:60-90;"
+    },
+    {
+      "function": "update",
+      "args": "grandp P3",
+      "result": "2 0,0,60,60 0-60:0-60;"
+    },
+    {
+      "function": "update",
+      "args": "grandp K",
+      "result": "3 0,0,120,50 0-30:0-50;30-50:0-50,100-120;"
+    },
+    {
+      "function": "update",
+      "args": "grandp G",
+      "result": "2 0,0,20,20 0-20:0-20;"
+    },
+    {
+      "function": "step",
+      "args": "grandp",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "grandp P3",
+      "result": "0,0,60,60 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "grandp K",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "grandp K",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "grandp K",
+      "result": "0,0,120,50 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "grandp G",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "grandp G",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "grandp G",
+      "result": "0,0,20,20 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "hide W",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "hide W",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "hide",
+      "result": "90-150:350-430;"
+    },
+    {
+      "function": "update",
+      "args": "hide W",
+      "result": "2 50,50,130,110 50-110:50-130;"
+    },
+    {
+      "function": "update",
+      "args": "hide T",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "hide",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "hide W",
+      "result": "50,50,130,110 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "show T",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "show T",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "show",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "show W",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "show T",
+      "result": "2 0,0,80,60 0-60:0-80;"
+    },
+    {
+      "function": "step",
+      "args": "show",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "show T",
+      "result": "0,0,80,60 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "hidec W2",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "hidec",
+      "result": "290-340:360-420;"
+    },
+    {
+      "function": "update",
+      "args": "hidec W2",
+      "result": "2 60,40,120,90 40-90:60-120;"
+    },
+    {
+      "function": "update",
+      "args": "hidec SB",
+      "result": "2 40,20,100,60 20-60:40-100;"
+    },
+    {
+      "function": "update",
+      "args": "hidec CH",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "hidec",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "hidec W2",
+      "result": "60,40,120,90 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "hidec SB",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "hidec SB",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "hidec SB",
+      "result": "40,20,100,60 erase 0"
+    },
+    {
+      "function": "erase",
+      "args": "showc W2",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "showc",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "showc W2",
+      "result": "2 60,40,120,90 40-90:60-120;"
+    },
+    {
+      "function": "update",
+      "args": "showc SB",
+      "result": "2 40,20,100,60 20-60:40-100;"
+    },
+    {
+      "function": "update",
+      "args": "showc CH",
+      "result": "2 0,0,60,50 0-50:0-60;"
+    },
+    {
+      "function": "step",
+      "args": "showc",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "showc W2",
+      "result": "60,40,120,90 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "showc SB",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "showc SB",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "showc SB",
+      "result": "40,20,100,60 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "showc CH",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "showc CH",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "showc CH",
+      "result": "0,0,60,50 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "size N",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "size N",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "size",
+      "result": "100-101:100-230;101-159:100-200,229-230;159-160:100-230;"
+    },
+    {
+      "function": "update",
+      "args": "size Z",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "size N",
+      "result": "2 0,0,128,58 0-58:0-128;"
+    },
+    {
+      "function": "step",
+      "args": "size",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "size N",
+      "result": "0,0,128,58 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sizev N",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "sizev N",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "sizev",
+      "result": "100-160:100-200;160-179:100-101,199-200;179-180:100-200;"
+    },
+    {
+      "function": "update",
+      "args": "sizev Z",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "sizev N",
+      "result": "2 0,0,98,78 0-78:0-98;"
+    },
+    {
+      "function": "step",
+      "args": "sizev",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "sizev N",
+      "result": "0,0,98,78 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sizep N",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "sizep N",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "sizep",
+      "result": "100-101:100-230;101-160:100-200,229-230;160-179:100-101,229-230;179-180:100-230;"
+    },
+    {
+      "function": "update",
+      "args": "sizep Z",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "update",
+      "args": "sizep N",
+      "result": "3 0,0,128,78 0-58:98-128;58-78:0-128;"
+    },
+    {
+      "function": "step",
+      "args": "sizep",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "sizep N",
+      "result": "0,0,128,78 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sizes N",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "sizes N",
+      "result": "sent"
+    },
+    {
+      "function": "ncpaint",
+      "args": "sizes Z",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "sizes Z",
+      "result": "sent"
+    },
+    {
+      "function": "screen",
+      "args": "sizes",
+      "result": "100-160:100-200;"
+    },
+    {
+      "function": "update",
+      "args": "sizes Z",
+      "result": "3 60,60,160,120 60-100:130-160;100-120:60-160;"
+    },
+    {
+      "function": "update",
+      "args": "sizes N",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "sizes",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "sizes Z",
+      "result": "60,60,160,120 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "nocopye X",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "nocopye X",
+      "result": "sent"
+    },
+    {
+      "function": "erasedc",
+      "args": "nocopye X",
+      "result": "org 60,260 clip 3 0,0,80,60 vis 3 60,260,140,320 260-310:120-140;310-320:60-140;"
+    },
+    {
+      "function": "screen",
+      "args": "nocopye",
+      "result": "260-310:60-120;"
+    },
+    {
+      "function": "update",
+      "args": "nocopye X",
+      "result": "3 0,0,80,60 0-50:60-80;50-60:0-80;"
+    },
+    {
+      "function": "step",
+      "args": "nocopye",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "nocopye X",
+      "result": "0,0,80,60 erase 0"
+    },
+    {
+      "function": "ncpaint",
+      "args": "nocopyf X",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "nocopyf X",
+      "result": "sent"
+    },
+    {
+      "function": "erasedc",
+      "args": "nocopyf X",
+      "result": "org 60,260 clip 3 0,0,80,60 vis 3 60,260,140,320 260-270:60-140;270-320:60-100;"
+    },
+    {
+      "function": "screen",
+      "args": "nocopyf",
+      "result": "-"
+    },
+    {
+      "function": "update",
+      "args": "nocopyf X",
+      "result": "2 0,0,80,60 0-60:0-80;"
+    },
+    {
+      "function": "update",
+      "args": "nocopyf Y",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "nocopyf",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "nocopyf X",
+      "result": "0,0,80,60 erase 0"
+    }
+  ]
+}

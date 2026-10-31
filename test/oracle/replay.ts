@@ -5990,6 +5990,7 @@ const RUN_WHOLE = new Set<string>([
   'olesrv',
   'rdwwalk',
   'rdw31',
+  'swpunc31',
 ]);
 
 /**
