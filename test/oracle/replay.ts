@@ -5988,6 +5988,8 @@ const RUN_WHOLE = new Set<string>([
   'kgaps',
   'ugaps',
   'olesrv',
+  'rdwwalk',
+  'rdw31',
 ]);
 
 /**

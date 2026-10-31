@@ -1,6 +1,7 @@
 //! USER's own invalidation of a region of the screen through a window and
-//! the windows in it, as `ScrollWindow`, `ScrollWindowEx` and the end of
-//! `LockWindowUpdate` make it (`USER.EXE` seg1 `3ed7`, its walk `4034` and
+//! the windows in it, as `RedrawWindow`, `InvalidateRect`, `InvalidateRgn`,
+//! `ValidateRect`, `ValidateRgn`, `ScrollWindow`, `ScrollWindowEx` and the
+//! end of `LockWindowUpdate` make it (`USER.EXE` seg1 `3ed7`, its walk `4034` and
 //! what each window is given `4202`). Twin of the TypeScript engine's
 //! `invalidate-through.ts`. **Read out**:
 //!
@@ -20,7 +21,13 @@
 //!   erase and draw its frame too (`4112`). One with `WS_CLIPSIBLINGS` whose
 //!   parent has `WS_CLIPCHILDREN` -- every window at the top, the desktop
 //!   having it -- takes its rectangle out of the region for those behind it
-//!   and for its parent; where nothing is left, the walk ends (`4190`-`41f5`).
+//!   and for its parent, unless it has `WS_EX_TRANSPARENT`; where nothing
+//!   is left, the walk ends (`4190`-`41f5`), or with `RDW_INTERNALPAINT` or
+//!   `RDW_NOINTERNALPAINT` goes on with those alone (`415e`-`416c`).
+//! * A window of a program made before 3.10 whose rectangle, or client
+//!   area, cut, is empty is still given all of itself (`406e`-`4084`,
+//!   `4117`-`4139`); one made for 3.10 is passed over. What each is given,
+//!   flag by flag, is `give_through` (`4202`; `rdwwalk`, `rdw31`).
 //!
 //! The desktop's own part, what is left of the region where no window
 //! shows, is its background, drawn at once.
@@ -31,19 +38,31 @@ use crate::system::System;
 use crate::windows::Placement;
 
 pub const RDW_INVALIDATE: u16 = 0x0001;
+pub const RDW_INTERNALPAINT: u16 = 0x0002;
 pub const RDW_ERASE: u16 = 0x0004;
 pub const RDW_VALIDATE: u16 = 0x0008;
+pub const RDW_NOINTERNALPAINT: u16 = 0x0010;
+pub const RDW_NOERASE: u16 = 0x0020;
 pub const RDW_NOCHILDREN: u16 = 0x0040;
 pub const RDW_ALLCHILDREN: u16 = 0x0080;
+pub const RDW_UPDATENOW: u16 = 0x0100;
+pub const RDW_ERASENOW: u16 = 0x0200;
 pub const RDW_FRAME: u16 = 0x0400;
+pub const RDW_NOFRAME: u16 = 0x0800;
 
 /// USER's own: a window walked as one in another, whose rectangle may be
 /// taken out (`403d`).
 const WALKED: u16 = 0x2000;
 
+/// What is left once the region is used up, where a paint of its own is
+/// asked (`4167`).
+const INTERNAL_ONLY: u16 =
+    !(RDW_INVALIDATE | RDW_ERASE | RDW_VALIDATE | RDW_NOERASE | RDW_FRAME | RDW_NOFRAME);
+
 const WS_MINIMIZE: u32 = 0x2000_0000;
 const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
+const WS_EX_TRANSPARENT: u32 = 0x0000_0020;
 
 pub type Rect = [i32; 4];
 
@@ -123,6 +142,14 @@ impl System {
         shown.placement == Placement::Minimized || shown.style & WS_MINIMIZE != 0
     }
 
+    /// USER's bit 4 of the byte at 26h of a window: made by a module marked
+    /// for Windows 3.10 or later, set by `CreateWindow` where `GetExpWinVer`
+    /// answers 30Ah or more (`USER.EXE` seg8 `0425`-`0432`). The TypeScript
+    /// engine's `madeFor31`.
+    pub(crate) fn made_for_31(&mut self, index: usize) -> bool {
+        self.expected_version(index) >= 0x30a
+    }
+
     /// One window and the windows in it (seg1 `4034`): false where nothing
     /// of the region is left.
     fn walk_through(
@@ -131,8 +158,9 @@ impl System {
         index: usize,
         mut whole: bool,
         within: Rect,
-        flags: u16,
+        mut flags: u16,
     ) -> bool {
+        let for_31 = self.made_for_31(index);
         // Validating, the window's rectangle is neither cut nor asked
         // against the region (`4052`, `40aa`).
         let rect = if flags & RDW_INVALIDATE != 0 {
@@ -140,10 +168,22 @@ impl System {
         } else {
             self.window_rect(index)
         };
+        // The flags the windows in it are walked with: these, and walked
+        // (`403d`).
+        let mut inner = flags | WALKED;
 
         if flags & RDW_INVALIDATE != 0 {
-            if is_empty(rect) && !whole {
-                return true;
+            // Nothing of it within the windows it is in: passed over, but
+            // for a window of a program made before 3.10 given all of
+            // itself, which then takes nothing out of the region
+            // (`406e`-`4084`).
+            if is_empty(rect) {
+                if for_31 || !whole {
+                    return true;
+                }
+
+                flags &= !WALKED;
+                inner &= !WALKED;
             }
 
             if !whole {
@@ -160,7 +200,7 @@ impl System {
         let style = self.shown(index).style;
 
         if style & WS_CLIPCHILDREN == 0 {
-            self.give_through(region, index, whole, flags);
+            self.give_through(region, index, whole, flags, for_31);
         }
 
         let children: Vec<usize> = self
@@ -174,39 +214,95 @@ impl System {
             && flags & RDW_NOCHILDREN == 0
             && (flags & RDW_ALLCHILDREN != 0 || style & WS_CLIPCHILDREN == 0)
         {
-            let inner = flags
-                | WALKED
-                | if flags & RDW_INVALIDATE != 0 {
-                    RDW_ERASE | RDW_FRAME
-                } else {
-                    0
-                };
+            if flags & RDW_INVALIDATE != 0 {
+                inner |= RDW_ERASE | RDW_FRAME;
+            }
+
             let inside = cut(rect, self.client_rect(index));
 
-            if !is_empty(inside) || whole {
+            // Nothing of its client area: the windows in it are passed
+            // over, but for a window of a program made before 3.10 given
+            // all of itself (`4117`-`4139`).
+            if !is_empty(inside) || (whole && !for_31) {
                 for child in children {
                     if !self.walk_through(region, child, whole, inside, inner) {
-                        return false;
+                        // The region used up: the rest still walked for
+                        // their paints of their own where those are asked,
+                        // nothing else (`415e`-`416c`).
+                        if flags & (RDW_INTERNALPAINT | RDW_NOINTERNALPAINT) == 0 {
+                            return false;
+                        }
+
+                        flags &= INTERNAL_ONLY;
+                        inner &= INTERNAL_ONLY & !WALKED;
                     }
                 }
             }
         }
 
         if style & WS_CLIPCHILDREN != 0 {
-            self.give_through(region, index, whole, flags);
+            self.give_through(region, index, whole, flags, for_31);
         }
 
         self.taken_through(region, index, rect, flags)
     }
 
-    /// One window given the region, all of itself where `whole`: made due
-    /// (seg1 `4202`, `due_through`) or valid (`4309`, `valid_through`).
-    fn give_through(&mut self, region: &ClipRegion, index: usize, whole: bool, flags: u16) {
+    /// One window given the region, all of itself where `whole` (seg1
+    /// `4202`). **Read out**:
+    ///
+    /// * Made due, where `RDW_INVALIDATE`, `RDW_INTERNALPAINT`, `RDW_ERASE`
+    ///   or `RDW_FRAME` is given (`4221`, `due_through`); else validated
+    ///   (`4309`, `valid_through`). Both given, it is made due alone.
+    /// * `RDW_INTERNALPAINT` gives it a paint of its own (`422b`).
+    /// * `RDW_ERASE` and `RDW_FRAME` count only with `RDW_INVALIDATE`
+    ///   (`4235`). All of a window of a program made before 3.10 made due
+    ///   without `RDW_ERASE` takes back an erase it was due (`4250`-`425c`).
+    /// * Validating: `RDW_NOINTERNALPAINT` takes its paint of its own off
+    ///   (`4323`); with `RDW_VALIDATE` alone, `RDW_NOERASE` its erase
+    ///   (`4334`) and `RDW_NOFRAME` its frame (`433d`), before what is
+    ///   validated is cut from what it is due (`434a`).
+    fn give_through(
+        &mut self,
+        region: &ClipRegion,
+        index: usize,
+        whole: bool,
+        flags: u16,
+        for_31: bool,
+    ) {
         let given = (!whole).then_some(region);
 
-        if flags & RDW_INVALIDATE != 0 {
-            self.due_through(index, given, flags & RDW_ERASE != 0, flags & RDW_FRAME != 0);
-        } else if flags & RDW_VALIDATE != 0 {
+        if flags & (RDW_INVALIDATE | RDW_INTERNALPAINT | RDW_ERASE | RDW_FRAME) != 0 {
+            if flags & RDW_INTERNALPAINT != 0 {
+                self.shown_mut(index).internal_paint = true;
+            }
+
+            if flags & RDW_INVALIDATE != 0 {
+                if whole && !for_31 {
+                    self.shown_mut(index).needs_erase = false;
+                }
+
+                self.due_through(index, given, flags & RDW_ERASE != 0, flags & RDW_FRAME != 0);
+            }
+
+            return;
+        }
+
+        if flags & RDW_NOINTERNALPAINT != 0 {
+            self.shown_mut(index).internal_paint = false;
+        }
+
+        if flags & RDW_VALIDATE != 0 {
+            let shown = self.shown_mut(index);
+
+            if flags & RDW_NOERASE != 0 {
+                shown.needs_erase = false;
+            }
+
+            if flags & RDW_NOFRAME != 0 {
+                shown.needs_nc_paint = false;
+                shown.needs_frame = false;
+            }
+
             self.valid_through(index, given);
         }
     }
@@ -220,7 +316,9 @@ impl System {
             .parent
             .is_none_or(|parent| self.shown(parent).style & WS_CLIPCHILDREN != 0);
 
+        // Not a window with `WS_EX_TRANSPARENT` (`4196`).
         if flags & WALKED != 0
+            && shown.ex_style & WS_EX_TRANSPARENT == 0
             && shown.style & WS_CLIPSIBLINGS != 0
             && (flags & RDW_VALIDATE != 0 || parent_clips)
         {
@@ -240,7 +338,7 @@ impl System {
         &mut self,
         index: Option<usize>,
         region: Option<&ClipRegion>,
-        flags: u16,
+        mut flags: u16,
     ) {
         let screen = [
             0,
@@ -252,7 +350,7 @@ impl System {
         let Some(index) = index else {
             let mut left = region.cloned().unwrap_or_else(|| region_of(screen));
             let whole = region.is_none();
-            let inner = flags
+            let mut inner = flags
                 | WALKED
                 | if flags & RDW_INVALIDATE != 0 {
                     RDW_ERASE | RDW_FRAME
@@ -265,25 +363,34 @@ impl System {
                 .filter(|&one| self.shown(one).visible)
                 .collect();
 
-            // With `RDW_NOCHILDREN` the windows at the top are not walked
-            // (`40e8`): the desktop is given the region, and draws only
-            // where none of them is, having `WS_CLIPCHILDREN`.
-            if flags & RDW_NOCHILDREN != 0 {
+            // The windows at the top are walked only with
+            // `RDW_ALLCHILDREN`, the desktop having `WS_CLIPCHILDREN`, and
+            // not with `RDW_NOCHILDREN` (`40e8`-`410a`): else the desktop is
+            // given the region, and draws only where none of them is.
+            if flags & RDW_NOCHILDREN != 0 || flags & RDW_ALLCHILDREN == 0 {
                 for child in children {
                     left = left.subtract(&region_of(self.window_rect(child)));
                 }
             } else {
                 for child in children {
                     if !self.walk_through(&mut left, child, whole, screen, inner) {
-                        return;
+                        if flags & (RDW_INTERNALPAINT | RDW_NOINTERNALPAINT) == 0 {
+                            return;
+                        }
+
+                        flags &= INTERNAL_ONLY;
+                        inner &= INTERNAL_ONLY & !WALKED;
                     }
                 }
             }
 
-            // The desktop, which has `WS_CLIPCHILDREN`, given what is left.
-            for band in &left.bands {
-                for &(span_left, span_right) in &band.spans {
-                    self.paint_background_in([span_left, band.top, span_right, band.bottom]);
+            // The desktop, which has `WS_CLIPCHILDREN`, given what is left:
+            // made due, drawn at once.
+            if flags & RDW_INVALIDATE != 0 {
+                for band in &left.bands {
+                    for &(span_left, span_right) in &band.spans {
+                        self.paint_background_in([span_left, band.top, span_right, band.bottom]);
+                    }
                 }
             }
 
@@ -340,9 +447,11 @@ impl System {
 
     /// Whether a window shows for `RedrawWindow`'s body (seg1 `3e4a`,
     /// `1c5f`): it and every window it is in shown, none of those
-    /// minimized. (A window itself minimized counts, where a bit of its own
-    /// at 26h, not followed, does not ask its class's icon: `3e35`-`3e46`.)
-    fn shows_for(&self, index: usize) -> bool {
+    /// minimized. The window itself minimized counts, but for its client
+    /// area alone -- asked for a window of a program made for 3.10 or later
+    /// without `RDW_FRAME` (`3e35`-`3e46`) -- where its class has an icon
+    /// (`1c7e`-`1c8c`).
+    fn shows_for(&self, index: usize, client: bool) -> bool {
         let mut at = Some(index);
 
         while let Some(one) = at {
@@ -353,26 +462,29 @@ impl System {
             at = self.shown(one).parent;
         }
 
-        true
+        !(client && self.minimized(index) && self.paints_icon(index))
     }
 
-    /// `RedrawWindow`'s body for `InvalidateRect`, `InvalidateRgn`,
-    /// `ValidateRect` and `ValidateRgn` (`USER.EXE` seg1 `3e1e`, their
-    /// bodies at `011c`-`0176` passing `RDW_INVALIDATE`, with `RDW_ERASE`
-    /// to erase, or `RDW_VALIDATE`): nothing for a window that does not
-    /// show; else a region of the screen, or all of the window for none,
-    /// made due or valid through it and the windows in it (`3ed7`). `told`
-    /// is what is made due, in its client area's terms, for the lock
-    /// (`3f41`-`3f7c`). The TypeScript engine's `redrawThrough`.
+    /// `RedrawWindow`'s body (`USER.EXE` seg1 `3e1e`), as `RedrawWindow`,
+    /// `InvalidateRect`, `InvalidateRgn`, `ValidateRect` and `ValidateRgn`
+    /// call it (their bodies at `011c`-`0176` passing `RDW_INVALIDATE`, with
+    /// `RDW_ERASE` to erase, or `RDW_VALIDATE`): nothing for a window that
+    /// does not show; else a region of the screen, or all of the window for
+    /// none, made due or valid through it and the windows in it (`3ed7`).
+    /// `told` is what is made due, in its client area's terms, for the lock
+    /// (`3f41`-`3f7c`). False where the window does not show: nothing is
+    /// painted now either. The TypeScript engine's `redrawThrough`.
     pub(crate) fn redraw_through(
         &mut self,
         index: usize,
         region: Option<&ClipRegion>,
         flags: u16,
         told: Option<[i32; 4]>,
-    ) {
-        if !self.shows_for(index) {
-            return;
+    ) -> bool {
+        let client = flags & RDW_FRAME == 0 && self.made_for_31(index);
+
+        if !self.shows_for(index, client) {
+            return false;
         }
 
         if flags & RDW_INVALIDATE != 0 {
@@ -380,5 +492,7 @@ impl System {
         }
 
         self.invalidate_through(Some(index), region, flags);
+
+        true
     }
 }

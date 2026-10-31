@@ -129,12 +129,16 @@ export async function BeginPaint(hwnd, lpps) {
      * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
     if (window.needsNcPaint) {
       window.needsNcPaint = false;
-      await sendNcPaint(this, hwnd, dialog, window.paintClip);
+      /* What it is due, whole, the region's own shape where it has one
+       * (seg1 `7ba0` with nought: a copy of the update region). */
+      await sendNcPaint(this, hwnd, dialog, window.paintClip, window.paintShape);
     }
 
     const erase = window.needsErase;
 
     dialog.window.needsPaint = false;
+    /* Its paint of its own taken too (`USER.EXE` seg1 `7643`). */
+    dialog.window.internalPaint = false;
     window.walked = undefined;
 
     if (erase && shows) {

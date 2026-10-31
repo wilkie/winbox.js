@@ -1161,16 +1161,18 @@ impl System {
         if !self
             .z_order
             .iter()
-            .any(|&index| self.shown(index).needs_paint)
+            .any(|&index| self.shown(index).needs_paint || self.shown(index).internal_paint)
         {
             return None;
         }
 
+        // Due where it has an update region or a paint of its own
+        // (`USER.EXE` seg1 `77d1`-`77db`).
         let due = |system: &Self, index: usize| {
             let shown = system.shown(index);
 
             shown.paints_itself()
-                && shown.needs_paint
+                && (shown.needs_paint || shown.internal_paint)
                 && system.showing(index)
                 && matches(system, index)
         };
@@ -1186,13 +1188,37 @@ impl System {
         Some(found)
     }
 
+    /// A window's frame drawn again first if its parent painted over it;
+    /// then its paint of its own taken as its `WM_PAINT` is (`USER.EXE`
+    /// seg1 `7864`-`786a`, `4469`-`446f`): true where it had no update
+    /// region, `BeginPaint`'s region then empty (`7640`) -- nothing of it is
+    /// painted, and nothing of the windows in it made due.
+    fn take_internal_paint(&mut self, index: usize) -> bool {
+        if self.shown(index).needs_frame {
+            self.shown_mut(index).needs_frame = false;
+            self.paint_frame(index);
+        }
+
+        let internal = std::mem::take(&mut self.shown_mut(index).internal_paint);
+
+        if !internal || self.shown(index).needs_paint {
+            return false;
+        }
+
+        let shown = self.shown_mut(index);
+
+        shown.paint_shape = Some(ClipRegion::EMPTY);
+        shown.paint_clip = None;
+        shown.walked = None;
+        true
+    }
+
     /// A window about to be sent `WM_PAINT`: for one without
     /// `WS_CLIPCHILDREN`, which paints over its children, its children
     /// where it is due made due again after it.
     pub fn about_to_paint(&mut self, index: usize) {
-        if self.shown(index).needs_frame {
-            self.shown_mut(index).needs_frame = false;
-            self.paint_frame(index);
+        if self.take_internal_paint(index) {
+            return;
         }
 
         let (mut dirty, quiet, mut shape, style, walked) = {

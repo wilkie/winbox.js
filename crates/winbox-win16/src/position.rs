@@ -1005,7 +1005,8 @@ impl Engine {
             .await?;
 
         if parent_of_first.is_none_or(|parent| self.system().showing(parent)) {
-            self.sync_paint_from(parent_of_first).await?;
+            self.sync_paint_from(parent_of_first, crate::paint::DSP_ENUMCLIPPEDCHILDREN)
+                .await?;
         }
 
         // A frame changed with nothing of its client area to paint is done.

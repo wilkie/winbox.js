@@ -167,7 +167,10 @@ impl System {
 impl Engine {
     /// `WM_NCPAINT` to a window whose frame is due: 1 for all of it, or a
     /// region of the screen for the part due, a handle of its own made for
-    /// the message and deleted after it (`showseq`).
+    /// the message and deleted after it (`showseq`). Where what it is due
+    /// is a region of its own, `shape`, a copy of it, whatever it covers
+    /// (`USER.EXE` seg1 `7ba0`-`7be4`, `7b52`; `rdwwalk`); 1 where it is due
+    /// all of itself (`7bab`). The TypeScript engine's `sendNcPaint`.
     async fn send_nc_paint(
         &self,
         hwnd: u16,
@@ -185,39 +188,45 @@ impl Engine {
                 window.left + window.width,
                 window.top + window.height,
             ];
-            // A region whose box covers it, but not all of it, is a region
-            // (`swpunc`: a window moved, what was copied of it not due).
-            let whole = due.is_none_or(|due| {
-                due[0] <= rect[0]
-                    && due[1] <= rect[1]
-                    && due[2] >= rect[2]
-                    && due[3] >= rect[3]
-                    && shape.is_none_or(|shape| {
-                        ClipRegion::rect(rect[0], rect[1], rect[2], rect[3])
-                            .subtract(shape)
-                            .kind()
-                            <= 1
-                    })
+            let copy = due.and_then(|due| {
+                shape.filter(|shape| {
+                    let bounds = shape.bounds();
+
+                    shape.kind() > 1
+                        && [bounds.left, bounds.top, bounds.right, bounds.bottom] == due
+                })
             });
+            // Its frame changed, or it was sized: a region of all of it
+            // (`swpframe`). A box with no region of its own that covers it:
+            // all of it.
             let due = if framed {
-                Some([
-                    window.left,
-                    window.top,
-                    window.left + window.width,
-                    window.top + window.height,
-                ])
+                Some(rect)
+            } else if copy.is_some() {
+                due
             } else {
-                due.filter(|_| !whole)
+                due.filter(|due| {
+                    !(due[0] <= rect[0]
+                        && due[1] <= rect[1]
+                        && due[2] >= rect[2]
+                        && due[3] >= rect[3])
+                })
             };
+            let copy = copy.filter(|_| !framed).cloned();
 
             due.map(|due| {
-                create_rect_rgn(
+                let made = create_rect_rgn(
                     &mut system,
                     due[0] as i16,
                     due[1] as i16,
                     due[2] as i16,
                     due[3] as i16,
-                )
+                );
+
+                if let (Some(copy), Some((object, _))) = (copy, system.region_named(made)) {
+                    system.gdi.objects[object] = crate::gdi::GdiObject::Region(copy);
+                }
+
+                made
             })
         };
 
@@ -436,9 +445,15 @@ impl Engine {
     /// `WM_SYNCPAINT` instead and the windows in it left (`79e6`-`7a02`);
     /// then the windows in it, front to back, where it has
     /// `WS_CLIPCHILDREN` -- the desktop has -- a child of another task
-    /// passed over (`796a`-`797f`, `7a04`-`7a59`). The TypeScript engine's
-    /// `syncPaintFrom`.
-    pub(crate) async fn sync_paint_from(&self, start: Option<usize>) -> Result<(), Stop> {
+    /// passed over (`796a`-`797f`, `7a04`-`7a59`). The windows in it with
+    /// `DSP_ALLCHILDREN` in `flags`, or with `DSP_ENUMCLIPPEDCHILDREN` where
+    /// it has `WS_CLIPCHILDREN`; none with neither (`796a`-`797c`). The
+    /// TypeScript engine's `syncPaintFrom`.
+    pub(crate) async fn sync_paint_from(
+        &self,
+        start: Option<usize>,
+        flags: u16,
+    ) -> Result<(), Stop> {
         let mut work: Vec<(Option<usize>, bool)> = vec![(start, false)];
 
         while let Some((at, checked)) = work.pop() {
@@ -500,7 +515,7 @@ impl Engine {
                     .is_some_and(|window| window.style & WS_CLIPCHILDREN_STYLE != 0)
             });
 
-            if !clips {
+            if !(flags & DSP_ALLCHILDREN != 0 || (flags & DSP_ENUMCLIPPEDCHILDREN != 0 && clips)) {
                 continue;
             }
 
@@ -569,6 +584,26 @@ impl Engine {
         Ok(())
     }
 
+    /// A frame that changed drawn first, by `WM_NCPAINT` to the window with
+    /// what it is due, whole, the region's own shape where it has one (seg1
+    /// `7ba0` with nought: a copy of the update region).
+    async fn frame_before_paint(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+        let nc = {
+            let mut system = self.system();
+            let window = system.painted_mut(index);
+
+            std::mem::take(&mut window.needs_nc_paint)
+                .then(|| (window.paint_clip, window.paint_shape.clone()))
+        };
+
+        if let Some((clip, shape)) = nc {
+            self.send_nc_paint(hwnd, index, clip, shape.as_ref())
+                .await?;
+        }
+
+        Ok(())
+    }
+
     /// A window made ready to paint, on a device context of its own: its
     /// frame drawn first if it changed, its background erased if it is due,
     /// and the window validated. Its answer: the handle, and `PAINTSTRUCT`
@@ -606,16 +641,7 @@ impl Engine {
             system.caret_before_paint(hwnd);
             hdc
         };
-        let nc = {
-            let mut system = self.system();
-            let window = system.painted_mut(index);
-
-            std::mem::take(&mut window.needs_nc_paint).then_some(window.paint_clip)
-        };
-
-        if let Some(clip) = nc {
-            self.send_nc_paint(hwnd, index, clip, None).await?;
-        }
+        self.frame_before_paint(hwnd, index).await?;
 
         // `rcPaint` is the context's clip box, cut to the client area for
         // a class with `CS_PARENTDC` (`USER.EXE` seg1 `7687`,
@@ -656,6 +682,8 @@ impl Engine {
             let window = system.painted_mut(index);
 
             window.needs_paint = false;
+            // Its paint of its own taken too (`7643`).
+            window.internal_paint = false;
             window.walked = None;
 
             if window.needs_erase && !shows {
@@ -856,6 +884,10 @@ pub fn update_window(engine: &Engine, mut args: Args) -> Later<'_> {
 const WS_EX_TRANSPARENT: u32 = 0x0000_0020;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
 
+/// `DoSyncPaint`'s flags (`USER.EXE` seg1 `7913`).
+pub(crate) const DSP_ENUMCLIPPEDCHILDREN: u16 = 0x0004;
+pub(crate) const DSP_ALLCHILDREN: u16 = 0x0020;
+
 impl System {
     /// Whether a window behind this one among its siblings is due a paint.
     fn behind_due(&self, index: usize) -> bool {
@@ -866,7 +898,7 @@ impl System {
         at.is_some_and(|at| {
             siblings[at + 1..]
                 .iter()
-                .any(|&other| self.painted(other).needs_paint)
+                .any(|&other| self.painted(other).due())
         })
     }
 
@@ -920,6 +952,15 @@ impl Engine {
     /// is validated where the window is (`4515`). The TypeScript engine's
     /// `UpdateWindow`.
     pub async fn update_window(&self, hwnd: u16) -> Result<(), Stop> {
+        self.update_now(hwnd, true).await
+    }
+
+    /// A window painted now, and with `children` the windows in it
+    /// (`USER.EXE` seg1 `441d`): `UpdateWindow`, and `RedrawWindow`'s
+    /// `RDW_UPDATENOW` without `RDW_NOCHILDREN` or with it (`3f93`-`3fad`).
+    /// A window is due where it has an update region or a paint of its own
+    /// (`4453`-`445d`). The TypeScript engine's `updateNow`.
+    pub async fn update_now(&self, hwnd: u16, children: bool) -> Result<(), Stop> {
         let root = {
             let system = self.system();
             let Some(index) = system.window_named(hwnd) else {
@@ -949,17 +990,20 @@ impl Engine {
 
                 if !first
                     && system.painted(index).ex_style & WS_EX_TRANSPARENT != 0
-                    && system.painted(index).needs_paint
+                    && system.painted(index).due()
                     && system.behind_due(index)
                 {
                     continue;
                 }
 
                 let window = system.painted(index);
-                let send = window.paints_itself() && window.needs_paint && system.showing(index);
+                let send = window.paints_itself() && window.due() && system.showing(index);
 
                 if send {
-                    system.validate_under(index);
+                    if system.painted(index).needs_paint {
+                        system.validate_under(index);
+                    }
+
                     system.about_to_paint(index);
                 }
 
@@ -979,6 +1023,10 @@ impl Engine {
                 {
                     continue;
                 }
+            }
+
+            if !children {
+                continue;
             }
 
             let system = self.system();

@@ -245,6 +245,14 @@ export class DesktopWindow {
   needsErase = false;
   needsPaint = false;
 
+  /**
+   * Due a paint of its own, with nothing to paint: `RedrawWindow`'s
+   * `RDW_INTERNALPAINT`, USER's flag 1000h of the word at 24h (`USER.EXE`
+   * seg1 `422b`). Taken off as its `WM_PAINT` is taken (`7864`, `446f`), by
+   * `BeginPaint` (`7643`) and by `RDW_NOINTERNALPAINT` (`4323`).
+   */
+  internalPaint = false;
+
   /** The window it is a child of, if it is one; its place is in the parent's client area. */
   parent: DesktopWindow | null = null;
 
@@ -3054,12 +3062,17 @@ export class Desktop {
 
     /* Nothing to paint, nothing to look for: a program that polls asks on
      * every call, and the walk below looks at every window for each. */
-    if (!this.windows.some((window) => window.needsPaint)) {
+    if (!this.windows.some((window) => window.needsPaint || window.internalPaint)) {
       return null;
     }
 
+    /* Due where it has an update region or a paint of its own (`USER.EXE`
+     * seg1 `77d1`-`77db`). */
     const due = (window: DesktopWindow) =>
-      paintsItself(window) && window.needsPaint && this.#showing(window) && match(window);
+      paintsItself(window) &&
+      (window.needsPaint || window.internalPaint) &&
+      this.#showing(window) &&
+      match(window);
     const walk = (window: DesktopWindow): DesktopWindow | null => {
       if (due(window)) {
         return window;
@@ -3100,6 +3113,21 @@ export class Desktop {
     if ((window as any).needsFrame) {
       (window as any).needsFrame = false;
       this.paintFrame(window);
+    }
+
+    /* Its paint of its own taken as its `WM_PAINT` is (`USER.EXE` seg1
+     * `7864`-`786a`, `4469`-`446f`). With no update region, `BeginPaint`'s
+     * region is empty (`7640`): nothing of it is painted, and nothing of
+     * the windows in it made due. */
+    const internal = window.internalPaint;
+
+    window.internalPaint = false;
+
+    if (internal && !window.needsPaint) {
+      (window as any).paintShape = ClipRegion.EMPTY;
+      (window as any).paintClip = undefined;
+      (window as any).walked = undefined;
+      return;
     }
 
     /* Only its children in what is to be painted again, when that is known. */

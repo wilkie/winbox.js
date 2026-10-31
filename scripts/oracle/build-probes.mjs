@@ -334,6 +334,18 @@ async function build(name) {
     await rm(compiled, { force: true });
   }
 
+  /* A probe that defines `PROBE_WIN31` is marked as made for Windows 3.10:
+   * its header's expected version, the word at 3Eh, 30Ah where the linker
+   * wrote 300h. USER gives the windows of such a program its bit for it
+   * (`USER.EXE` seg8 `0425`-`0432`), and takes other ways for them. */
+  if (text.includes('#define PROBE_WIN31')) {
+    const data = await readFile(executable);
+    const header = data.readUInt16LE(0x3c);
+
+    data.writeUInt16LE(0x030a, header + 0x3e);
+    await writeFile(executable, data);
+  }
+
   return { name, executable, ...(await describe(executable)) };
 }
 

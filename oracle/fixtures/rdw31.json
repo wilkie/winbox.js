@@ -1,0 +1,5129 @@
+{
+  "probe": "rdw31",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "inv P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "inv P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "inv P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "inv P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "inv P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "inv P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "inv P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "inv P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "inv Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "inv Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "inv rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv rect P P",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "inv rect P A",
+      "result": "2 9,9,78,48"
+    },
+    {
+      "function": "update",
+      "args": "inv rect P A1",
+      "result": "2 4,4,30,20"
+    },
+    {
+      "function": "update",
+      "args": "inv rect P B",
+      "result": "2 0,0,59,29"
+    },
+    {
+      "function": "update",
+      "args": "inv rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P P",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A",
+      "result": "paint 9,9,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A1",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P A1",
+      "result": "paint 4,4,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P B",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rect P B",
+      "result": "paint 0,0,59,29 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "inv rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv rect Q Q",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "inv rect Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rect Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rect Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rect Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv rect Q Q",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "inv rgn P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn P P",
+      "result": "3 0,0,130,90 0-30:0-30;60-90:100-130;"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn P A",
+      "result": "2 0,0,19,19"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn P A1",
+      "result": "2 0,0,14,14"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn P B",
+      "result": "2 39,19,69,48"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P P",
+      "result": "paint 0,0,130,90 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A",
+      "result": "ncpaint 3 21,21,151,111 21-51:21-51;81-111:121-151;"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A",
+      "result": "paint 0,0,19,19 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A1",
+      "result": "ncpaint 3 21,21,151,111 21-51:21-51;81-111:121-151;"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P A1",
+      "result": "paint 0,0,14,14 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P B",
+      "result": "ncpaint 3 21,21,151,111 21-51:21-51;81-111:121-151;"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn P B",
+      "result": "paint 39,19,69,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "inv rgn Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn Q Q",
+      "result": "3 0,0,130,90 0-30:0-30;60-90:100-130;"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "inv rgn Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "inv rgn Q Q",
+      "result": "paint 0,0,30,30 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "erase P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erase P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erase P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erase P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "erase P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erase P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erase P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erase P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erase P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erase P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erase P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erase P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erase P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erase P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erase P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erase P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erase P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "erase Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erase Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erase Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erase Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erase Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erase Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erase Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erase Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "frame P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "frame P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "frame P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "frame P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "frame P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "frame P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "frame P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "frame P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "frame P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "frame P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "frame P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "frame Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "frame Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "frame Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "frame Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "frame Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "frame rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "frame rect P P",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "frame rect P A",
+      "result": "2 9,9,78,48"
+    },
+    {
+      "function": "update",
+      "args": "frame rect P A1",
+      "result": "2 4,4,30,20"
+    },
+    {
+      "function": "update",
+      "args": "frame rect P B",
+      "result": "2 0,0,59,29"
+    },
+    {
+      "function": "update",
+      "args": "frame rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P P",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P P",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A",
+      "result": "paint 9,9,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A1",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P A1",
+      "result": "paint 4,4,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P B",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame rect P B",
+      "result": "paint 0,0,59,29 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "frame rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "frame rect Q Q",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "frame rect Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame rect Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame rect Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "frame rect Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "frame rect Q Q",
+      "result": "ncpaint 2 281,41,381,91"
+    },
+    {
+      "function": "after",
+      "args": "frame rect Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "frame rect Q Q",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "all P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "all P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "all P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "all P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "all P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "all Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "all Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "all Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "all Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "all Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "all Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "all rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "all rect P P",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "all rect P A",
+      "result": "2 9,9,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all rect P A1",
+      "result": "2 4,4,30,20"
+    },
+    {
+      "function": "update",
+      "args": "all rect P B",
+      "result": "2 0,0,59,29"
+    },
+    {
+      "function": "update",
+      "args": "all rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "all rect P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect P P",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A",
+      "result": "paint 9,9,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A1",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect P A1",
+      "result": "paint 4,4,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect P B",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "all rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect P B",
+      "result": "paint 0,0,59,29 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "all rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "all rect Q Q",
+      "result": "3 20,20,120,70 20-40:90-120;60-70:20-60;"
+    },
+    {
+      "function": "update",
+      "args": "all rect Q C",
+      "result": "2 9,9,78,48"
+    },
+    {
+      "function": "update",
+      "args": "all rect Q C1",
+      "result": "2 4,4,30,20"
+    },
+    {
+      "function": "update",
+      "args": "all rect Q D",
+      "result": "3 0,0,59,29 0-19:29-59;19-29:0-59;"
+    },
+    {
+      "function": "update",
+      "args": "all rect Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q Q",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C",
+      "result": "ncpaint 2 281,41,381,91"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C",
+      "result": "paint 9,9,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C1",
+      "result": "ncpaint 2 281,41,381,91"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q C1",
+      "result": "paint 4,4,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q D",
+      "result": "ncpaint 3 281,41,381,91 41-81:351-381;81-91:281-381;"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "all rect Q D",
+      "result": "paint 0,0,59,29 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "no P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "no P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "no P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "no P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "no P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "no Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "no Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "no Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "no Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "no Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "no erase P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "no erase P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "no erase Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "no erase Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "no erase Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "both P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "both P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "both P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "both P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "both P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "both P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "both P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "both P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "both P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "both P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "both P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "both P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "both P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "both P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "both P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "both P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "both Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "both Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "both Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "both Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "both Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "both Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "both Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P B",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P B",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow all P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q D",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q X",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow all Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow all Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow all Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow no P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow no P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow no P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "updatenow no Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "updatenow no Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "updatenow no Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "updatenow no Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow P P",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "erasenow P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all P B",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow all P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q C",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q D",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "erasenow all Q X",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow all Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow all Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow all Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow no P P",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow no P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow no P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow no Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow no Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow no Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow no Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow rect P P",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect P P",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect P A",
+      "result": "2 9,9,78,48"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect P A1",
+      "result": "2 4,4,30,20"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect P B",
+      "result": "2 0,0,59,29"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P P",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A",
+      "result": "paint 9,9,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A1",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P A1",
+      "result": "paint 4,4,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P B",
+      "result": "ncpaint 2 41,41,141,91"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect P B",
+      "result": "paint 0,0,59,29 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "erasenow rect Q Q",
+      "result": "ncpaint 2 281,41,381,91"
+    },
+    {
+      "function": "answer",
+      "args": "erasenow rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect Q Q",
+      "result": "2 20,20,120,70"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "erasenow rect Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "erasenow rect Q Q",
+      "result": "paint 20,20,120,70 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both P B",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "now both P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "now both P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "now both Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both Q D",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "now both Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "now both Q X",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "now both Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "now both Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "now both Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "now both Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P B",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre updatenow P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q D",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q X",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre updatenow Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre updatenow Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre updatenow Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P P",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P A",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P A1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow P B",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "pre erasenow P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q C",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q D",
+      "result": "erase"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "during",
+      "args": "pre erasenow Q X",
+      "result": "erase"
+    },
+    {
+      "function": "answer",
+      "args": "pre erasenow Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre erasenow Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre erasenow Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "internal P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal P A",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal P A1",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal P B",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal P Z",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "internal Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal all P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal all P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "internal all P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all P A",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all P A1",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all P B",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all P Z",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal all Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal all Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal all Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "internal all Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all Q C",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all Q C1",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all Q D",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal all Q X",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "internal now P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "internal now P A",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "internal now P A1",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "internal now P B",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "during",
+      "args": "internal now P Z",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal now P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal now P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "during",
+      "args": "internal now Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal now Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal now Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal now Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "internal no P",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "internal no P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal no P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "internal no Q",
+      "result": "1"
+    },
+    {
+      "function": "answer",
+      "args": "internal no Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal no Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "internal no Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "internal validate P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal validate P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "internal validate P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "internal validate P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "internal validate P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "internal validate P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate P Z",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "internal validate Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "internal validate Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "internal validate Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "internal validate Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "internal validate Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "internal validate Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "internal validate Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P P",
+      "result": "ncpaint 3 20,20,240,160 20-21:20-240;21-159:20-21,239-240;159-160:20-240;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P A",
+      "result": "ncpaint 3 31,31,111,81 31-32:31-111;32-80:31-32,110-111;80-81:31-111;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P A",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P B",
+      "result": "ncpaint 3 81,61,161,111 61-62:81-161;62-110:81-82,160-161;110-111:81-161;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate P B",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q Q",
+      "result": "ncpaint 3 260,20,480,160 20-21:260-480;21-159:260-261,479-480;159-160:260-480;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate all P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P P",
+      "result": "ncpaint 3 20,20,240,160 20-21:20-240;21-159:20-21,239-240;159-160:20-240;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P A",
+      "result": "ncpaint 3 31,31,111,81 31-32:31-111;32-80:31-32,110-111;80-81:31-111;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P A",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P B",
+      "result": "ncpaint 3 81,61,161,111 61-62:81-161;62-110:81-82,160-161;110-111:81-161;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all P B",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate all Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all Q C",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all Q C1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all Q D",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate all Q X",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q Q",
+      "result": "ncpaint 3 260,20,480,160 20-21:260-480;21-159:260-261,479-480;159-160:260-480;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q C",
+      "result": "ncpaint 3 271,31,351,81 31-32:271-351;32-80:271-272,350-351;80-81:271-351;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q C",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q D",
+      "result": "ncpaint 3 321,61,401,111 61-62:321-401;62-110:321-322,400-401;110-111:321-401;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate all Q D",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate no P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P P",
+      "result": "ncpaint 3 20,20,240,160 20-21:20-240;21-159:20-21,239-240;159-160:20-240;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P P",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate no Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate no Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q Q",
+      "result": "ncpaint 3 260,20,480,160 20-21:260-480;21-159:260-261,479-480;159-160:260-480;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q Q",
+      "result": "paint 0,0,0,0 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate no Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect P P",
+      "result": "3 0,0,218,138 0-20:0-218;20-70:0-20,120-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect P A",
+      "result": "3 0,0,78,48 0-9:0-78;9-48:0-9;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect P A1",
+      "result": "3 0,0,30,20 0-4:0-30;4-20:0-4;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect P B",
+      "result": "3 0,0,78,48 0-29:59-78;29-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P P",
+      "result": "ncpaint 3 20,20,240,160 20-41:20-240;41-91:20-41,141-240;91-160:20-240;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A",
+      "result": "ncpaint 3 31,31,111,81 31-41:31-111;41-81:31-41;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A1",
+      "result": "ncpaint 3 37,37,67,57 37-41:37-67;41-57:37-41;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P B",
+      "result": "ncpaint 3 81,61,161,111 61-91:141-161;91-111:81-161;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect Q Q",
+      "result": "3 0,0,218,138 0-20:0-218;20-40:0-90,120-218;40-60:0-218;60-70:0-20,60-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect Q C",
+      "result": "3 0,0,78,48 0-9:0-78;9-48:0-9;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect Q C1",
+      "result": "3 0,0,30,20 0-4:0-30;4-20:0-4;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect Q D",
+      "result": "3 0,0,78,48 0-19:0-29,59-78;19-29:59-78;29-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate rect Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q Q",
+      "result": "ncpaint 3 260,20,480,160 20-41:260-480;41-61:260-351,381-480;61-81:260-480;81-91:260-281,321-480;91-160:260-480;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C",
+      "result": "ncpaint 3 271,31,351,81 31-41:271-351;41-81:271-281;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C1",
+      "result": "ncpaint 3 277,37,307,57 37-41:277-307;41-57:277-281;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q D",
+      "result": "ncpaint 3 321,61,401,111 61-81:321-351,381-401;81-91:381-401;91-111:321-401;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q X",
+      "result": "ncpaint 2 381,41,441,101"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate rect Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre noerase P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre noerase Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noerase Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noerase Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noerase P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase P P",
+      "result": "3 0,0,218,138 0-20:0-218;20-70:0-20,120-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase P A",
+      "result": "3 0,0,78,48 0-9:0-78;9-48:0-9;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase P A1",
+      "result": "3 0,0,30,20 0-4:0-30;4-20:0-4;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase P B",
+      "result": "3 0,0,78,48 0-29:59-78;29-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P P",
+      "result": "ncpaint 3 20,20,240,160 20-41:20-240;41-91:20-41,141-240;91-160:20-240;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P A",
+      "result": "ncpaint 3 31,31,111,81 31-41:31-111;41-81:31-41;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P A1",
+      "result": "ncpaint 3 37,37,67,57 37-41:37-67;41-57:37-41;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P B",
+      "result": "ncpaint 3 81,61,161,111 61-91:141-161;91-111:81-161;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noerase Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase Q Q",
+      "result": "3 0,0,218,138 0-20:0-218;20-40:0-90,120-218;40-60:0-218;60-70:0-20,60-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase Q C",
+      "result": "3 0,0,78,48 0-9:0-78;9-48:0-9;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase Q C1",
+      "result": "3 0,0,30,20 0-4:0-30;4-20:0-4;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase Q D",
+      "result": "3 0,0,78,48 0-19:0-29,59-78;19-29:59-78;29-48:0-78;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noerase Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q Q",
+      "result": "ncpaint 3 260,20,480,160 20-41:260-480;41-61:260-351,381-480;61-81:260-480;81-91:260-281,321-480;91-160:260-480;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q C",
+      "result": "ncpaint 3 271,31,351,81 31-41:271-351;41-81:271-281;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q C1",
+      "result": "ncpaint 3 277,37,307,57 37-41:277-307;41-57:277-281;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q D",
+      "result": "ncpaint 3 321,61,401,111 61-81:321-351,381-401;81-91:381-401;91-111:321-401;"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q X",
+      "result": "ncpaint 2 381,41,441,101"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noerase Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noframe P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe P A",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe P A1",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe P B",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noframe Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noframe rect P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect P P",
+      "result": "3 0,0,218,138 0-20:0-218;20-70:0-20,120-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre validate noframe rect Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect Q Q",
+      "result": "3 0,0,218,138 0-20:0-218;20-70:0-20,120-218;70-138:0-218;"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre validate noframe rect Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre validate noframe rect Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre noframe noerase P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase P P",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre noframe noerase Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase Q Q",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre noframe noerase Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre noframe noerase Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre inv P",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre inv P P",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre inv P A",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre inv P A1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre inv P B",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre inv P Z",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P P",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P P",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P P",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P A1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P B",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P B",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv P B",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "pre inv Q",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "pre inv Q Q",
+      "result": "2 0,0,218,138"
+    },
+    {
+      "function": "update",
+      "args": "pre inv Q C",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre inv Q C1",
+      "result": "2 0,0,30,20"
+    },
+    {
+      "function": "update",
+      "args": "pre inv Q D",
+      "result": "2 0,0,78,48"
+    },
+    {
+      "function": "update",
+      "args": "pre inv Q X",
+      "result": "2 0,0,60,60"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q Q",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q Q",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q Q",
+      "result": "paint 0,0,218,138 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C1",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C1",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q C1",
+      "result": "paint 0,0,30,20 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q D",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q D",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q D",
+      "result": "paint 0,0,78,48 erase 0"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q X",
+      "result": "ncpaint 1"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q X",
+      "result": "erase"
+    },
+    {
+      "function": "after",
+      "args": "pre inv Q X",
+      "result": "paint 0,0,60,60 erase 0"
+    },
+    {
+      "function": "answer",
+      "args": "icon",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "icon I",
+      "result": "1 0,0,0,0"
+    },
+    {
+      "function": "answer",
+      "args": "icon frame",
+      "result": "1"
+    },
+    {
+      "function": "update",
+      "args": "icon frame I",
+      "result": "2 0,0,36,36"
+    },
+    {
+      "function": "after",
+      "args": "icon frame I",
+      "result": "ncpaint 1"
+    }
+  ]
+}

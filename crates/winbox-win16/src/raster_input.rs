@@ -626,7 +626,10 @@ impl System {
                 continue;
             };
 
-            if !(window.paints_itself() && window.needs_paint && self.showing(index)) {
+            if !(window.paints_itself()
+                && (window.needs_paint || window.internal_paint)
+                && self.showing(index))
+            {
                 continue;
             }
 

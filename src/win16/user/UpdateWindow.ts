@@ -42,11 +42,29 @@ export async function UpdateWindow(hwnd) {
     return;
   }
 
-  if (dialog.window.exStyle & WS_EX_TRANSPARENT && behindDue(dialog.desktop, dialog.window)) {
+  await updateNow(this, dialog.desktop, dialog.window, true);
+}
+
+/** Whether a window has an update region or is due a paint of its own (`USER.EXE` seg1 `4453`-`445d`). */
+const due = (window: DesktopWindow) => window.needsPaint || window.internalPaint;
+
+/**
+ * A window painted now, and with `children` the windows in it (`USER.EXE`
+ * seg1 `441d`): `UpdateWindow`, and `RedrawWindow`'s `RDW_UPDATENOW`
+ * without `RDW_NOCHILDREN` or with it (`3f93`-`3fad`). A window with
+ * `WS_EX_TRANSPARENT` waits while a window behind it is due (`4424`-`443e`).
+ */
+export async function updateNow(
+  system: any,
+  desktop: Desktop,
+  window: DesktopWindow,
+  children: boolean
+) {
+  if (window.exStyle & WS_EX_TRANSPARENT && behindDue(desktop, window)) {
     return;
   }
 
-  await paintTree(this, dialog.desktop, dialog.window);
+  await paintTree(system, desktop, window, children);
 }
 
 const WS_EX_TRANSPARENT = 0x00000020;
@@ -63,7 +81,7 @@ const windowRect = (window: DesktopWindow): [number, number, number, number] => 
 function behindDue(desktop: Desktop, window: DesktopWindow) {
   const siblings = desktop.windows.filter((other) => other.parent === window.parent);
 
-  return siblings.slice(siblings.indexOf(window) + 1).some((other) => other.needsPaint);
+  return siblings.slice(siblings.indexOf(window) + 1).some(due);
 }
 
 /** Whether a window and every window it is in are shown, none of those minimized. */
@@ -113,14 +131,17 @@ function validateUnder(desktop: Desktop, window: DesktopWindow) {
   }
 }
 
-/** A window painted where it is due, then the windows in it (seg1 `444c`). */
-async function paintTree(system: any, desktop: Desktop, window: DesktopWindow) {
-  if (paintsItself(window) && window.needsPaint && showing(window)) {
+/** A window painted where it is due, then with `children` the windows in it (seg1 `444c`). */
+async function paintTree(system: any, desktop: Desktop, window: DesktopWindow, children = true) {
+  if (paintsItself(window) && due(window) && showing(window)) {
     const hwnd = window.hwnd;
     const dialog = system.handles.resolve(hwnd);
     const windowClass = system.handles.retrieve(dialog.options.windowClass);
 
-    validateUnder(desktop, window);
+    if (window.needsPaint) {
+      validateUnder(desktop, window);
+    }
+
     desktop.aboutToPaint(window);
 
     const { message, wParam } = paintMessage(system, hwnd);
@@ -135,12 +156,16 @@ async function paintTree(system: any, desktop: Desktop, window: DesktopWindow) {
     }
   }
 
+  if (!children) {
+    return;
+  }
+
   for (const child of desktop.windows.filter((other) => other.parent === window)) {
     if (child.parent !== window) {
       continue;
     }
 
-    if (child.exStyle & WS_EX_TRANSPARENT && child.needsPaint && behindDue(desktop, child)) {
+    if (child.exStyle & WS_EX_TRANSPARENT && due(child) && behindDue(desktop, child)) {
       continue;
     }
 

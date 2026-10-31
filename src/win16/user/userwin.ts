@@ -86,7 +86,7 @@ export function GetQueueStatus(this: any, fuFlags: number) {
   if (
     desktop?.windows.some(
       (window: any) =>
-        window.needsPaint &&
+        (window.needsPaint || window.internalPaint) &&
         window.hwnd &&
         this.scheduler.windowTask?.(window.hwnd) === this.scheduler.active
     )

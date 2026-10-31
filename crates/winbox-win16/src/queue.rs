@@ -558,7 +558,7 @@ impl System {
                 .windows
                 .iter()
                 .flatten()
-                .any(|window| window.needs_paint)
+                .any(|window| window.needs_paint || window.internal_paint)
     }
 
     /// Whether a look that does not wait would find nothing, known without
@@ -1421,7 +1421,7 @@ pub fn get_queue_status(system: &mut System, args: &mut Args) -> Result<Answer, 
 
     let painting = system.z_order.iter().any(|&index| {
         system.windows[index].as_ref().is_some_and(|window| {
-            window.needs_paint
+            (window.needs_paint || window.internal_paint)
                 && window.hwnd != 0
                 && system.window_slot(window.hwnd) == system.current_slot()
         })

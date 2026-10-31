@@ -97,6 +97,13 @@ pub struct Window {
     /// drawn again by `WM_NCPAINT`, or by the desktop itself.
     pub needs_erase: bool,
     pub needs_paint: bool,
+    /// Due a paint of its own, with nothing to paint: `RedrawWindow`'s
+    /// `RDW_INTERNALPAINT`, USER's flag 1000h of the word at 24h
+    /// (`USER.EXE` seg1 `422b`). Taken off as its `WM_PAINT` is taken
+    /// (`7864`, `446f`), by `BeginPaint` (`7643`) and by
+    /// `RDW_NOINTERNALPAINT` (`4323`). The TypeScript engine's
+    /// `DesktopWindow.internalPaint`.
+    pub internal_paint: bool,
     pub needs_nc_paint: bool,
     pub needs_frame: bool,
     /// Its frame changed (`SWP_FRAMECHANGED`): `WM_NCPAINT` is given a
@@ -179,6 +186,12 @@ impl Window {
     /// an icon's title, which the desktop draws itself.
     pub fn paints_itself(&self) -> bool {
         self.hwnd != 0 && self.title_of.is_none()
+    }
+
+    /// Whether it has an update region or is due a paint of its own
+    /// (`USER.EXE` seg1 `4453`-`445d`).
+    pub fn due(&self) -> bool {
+        self.needs_paint || self.internal_paint
     }
 }
 
