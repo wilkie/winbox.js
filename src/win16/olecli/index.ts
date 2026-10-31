@@ -9,9 +9,16 @@ import * as api from './api.js';
 import { NAME, Ole, PATH } from './core.js';
 import { callOwnMethod, mfCallback } from './methods.js';
 import { Loader } from '../loader.js';
-import { protocolOf } from './api.js';
 import { exportAddress, isObject, kindOf, registerAddress, registerMethods } from './objects.js';
 import { convProc } from './linked.js';
+import { DEFAULTS, HANDLER_EXPORTS, PAINTBRUSH, type Way, leCreateInvisible } from './handlers.js';
+import {
+  checkNetDrive,
+  connectDlgProc,
+  getTaskVisibleWindow,
+  setNetName,
+  setNextNetDrive,
+} from './network.js';
 import { start } from './start.js';
 
 /**
@@ -549,6 +556,116 @@ Object.assign(METHOD_OF, {
   1005: 'DoVerb',
 });
 
+/** Paintbrush's methods, five `PB` exports (**measured** by `olehnd`). */
+Object.assign(METHOD_OF, {
+  805: 'Draw',
+  806: 'QueryBounds',
+  807: 'CopyToClipboard',
+  810: 'EnumFormats',
+  811: 'GetData',
+});
+
+/** Each way of making an object's `Dll` arguments, the `Def` and `Pb` exports' (`handlers.ts`). */
+const WAY_ARGS: Record<Way, number[]> = {
+  load: [PTR, PTR, PTR, DWORD, PTR, PTR, DWORD, UINT, UINT],
+  clip: [PTR, PTR, DWORD, PTR, PTR, UINT, UINT, DWORD],
+  linkClip: [PTR, PTR, DWORD, PTR, PTR, UINT, UINT],
+  template: [PTR, PTR, PTR, DWORD, PTR, PTR, UINT, UINT],
+  create: [PTR, PTR, PTR, DWORD, PTR, PTR, UINT, UINT],
+  file: [PTR, PTR, PTR, PTR, DWORD, PTR, PTR, UINT, UINT],
+  linkFile: [PTR, PTR, PTR, PTR, PTR, DWORD, PTR, PTR, UINT, UINT],
+  invisible: [PTR, PTR, PTR, DWORD, PTR, PTR, UINT, UINT, BOOL],
+};
+
+const WAY_NAME: Record<Way, string> = {
+  load: 'LoadFromStream',
+  clip: 'CreateFromClip',
+  linkClip: 'CreateLinkFromClip',
+  template: 'CreateFromTemplate',
+  create: 'Create',
+  file: 'CreateFromFile',
+  linkFile: 'CreateLinkFromFile',
+  invisible: 'CreateInvisible',
+};
+
+/** A `Def` or `Pb` export: its way's arguments, its default or Paintbrush's handler. */
+function handlerExport(ordinal: number): [any, string, number[], number] {
+  const [way, whose] = HANDLER_EXPORTS[ordinal];
+  const name = `${whose === 'def' ? 'Def' : 'Pb'}${WAY_NAME[way]}`;
+  const table = whose === 'def' ? DEFAULTS : PAINTBRUSH;
+  const implementation = {
+    [name](this: any, ...args: number[]) {
+      return table[way](
+        new Ole(this),
+        args.map((arg) => arg >>> 0)
+      );
+    },
+  }[name];
+
+  return [implementation, name, WAY_ARGS[way], UINT];
+}
+
+/** `LECREATEINVISIBLE` (230) and the network helpers (950-954), by ordinal. */
+const OTHERS: Record<number, [any, string, number[], number]> = {
+  230: [
+    function LeCreateInvisible(this: any, ...args: number[]) {
+      return leCreateInvisible(
+        new Ole(this),
+        args.map((arg) => arg >>> 0)
+      );
+    },
+    'LeCreateInvisible',
+    [PTR, PTR, DWORD, PTR, PTR, UINT, UINT, BOOL],
+    UINT,
+  ],
+  950: [
+    function ConnectDlgProc(
+      this: any,
+      hwnd: number,
+      message: number,
+      wParam: number,
+      lParam: number
+    ) {
+      return connectDlgProc(new Ole(this), hwnd, message, wParam, lParam);
+    },
+    'ConnectDlgProc',
+    [UINT, UINT, UINT, DWORD],
+    BOOL,
+  ],
+  951: [
+    function SetNetName(this: any, object: number) {
+      return setNetName(new Ole(this), object);
+    },
+    'SetNetName',
+    [PTR],
+    UINT,
+  ],
+  952: [
+    function CheckNetDrive(this: any, object: number, ask: number) {
+      return checkNetDrive(new Ole(this), object, ask);
+    },
+    'CheckNetDrive',
+    [PTR, UINT],
+    UINT,
+  ],
+  953: [
+    function SetNextNetDrive(this: any, object: number, drive: number, name: number) {
+      return setNextNetDrive(new Ole(this), object, drive, name);
+    },
+    'SetNextNetDrive',
+    [PTR, PTR, PTR],
+    UINT,
+  ],
+  954: [
+    function GetTaskVisibleWindow(this: any, hwnd: number, out: number) {
+      return getTaskVisibleWindow(new Ole(this), hwnd, out);
+    },
+    'GetTaskVisibleWindow',
+    [UINT, DWORD],
+    BOOL,
+  ],
+};
+
 for (const base of [300, 400, 500]) {
   Object.assign(METHOD_OF, {
     [base]: 'Release',
@@ -631,7 +748,6 @@ function ready(implementation: any, name: string) {
  * the file lays out as WinBox does (`olemem`). As `mod.rs`'s `delegated`.
  */
 const FILE_FIRST: Record<string, (ole: Ole, args: number[]) => boolean> = {
-  OLECREATEFROMTEMPLATE: (ole, args) => protocolOf(ole, args[0]) === 'std',
   OLELOCKSERVER: (ole, args) => isObject(ole, args[0]) && !kindOf(ole, args[0]),
   OLEUNLOCKSERVER: (ole, args) => !ole.state().locks.has(args[0] & 0xffff),
 };
@@ -730,6 +846,12 @@ export class OleCli extends Module {
           [UINT, PTR, PTR, INT, DWORD],
           BOOL,
         ];
+      } else if (HANDLER_EXPORTS[ordinal] || OTHERS[ordinal]) {
+        const [implementation, name, args, answer] = HANDLER_EXPORTS[ordinal]
+          ? handlerExport(ordinal)
+          : OTHERS[ordinal];
+
+        made[ordinal] = [ready(implementation, name), name, pops, args, answer];
       } else if (METHOD_OF[ordinal]) {
         const name = fileName ?? `Ordinal${ordinal}`;
         const [implementation, args, answer] = methodExport(ordinal, name);

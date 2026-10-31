@@ -36,15 +36,8 @@ import {
   savedClientDoc,
 } from './docs.js';
 import { loadStatic, staticFromClipboard } from './kinds.js';
-import {
-  classKnown,
-  create,
-  createFromFile,
-  fromClip,
-  load,
-  lockServer,
-  unlockServer,
-} from './linked.js';
+import { classOfFile, freePending, make } from './handlers.js';
+import { classKnown, clipClass, getClass, lockServer, unlockServer } from './linked.js';
 import { callMethod, docError, isObject, kindOf, nameError, writable } from './objects.js';
 import { get } from './streams.js';
 
@@ -62,9 +55,6 @@ const DWORD = 7;
 /** The protocols OLE 1.0 names (ole.h's comments, the reference): embedding and linking, and pictures alone. */
 const STD_FILE_EDITING = 'StdFileEditing';
 const STATIC = 'Static';
-
-/** `OLE_ERROR_LAUNCH` (ole.h). */
-const OLE_ERROR_LAUNCH = 35;
 
 /** A protocol's name, compared as `lstrcmpi` compares: `'std'`, `'static'`, or null for neither. */
 export function protocolOf(ole: Ole, at: number): 'std' | 'static' | null {
@@ -115,7 +105,7 @@ export async function OleSaveToStream(this: any, object: number, stream: number)
  * `OleLoadFromStream`: the stream's version and type read, then by the
  * protocol: `Static` reads a static object -- its class's name and what
  * that class keeps -- and `StdFileEditing` an embedded or linked one. A
- * version written by another system is `OLE_ERROR_STATIC_FROM_OTHER_OS`;
+ * static version written by another system is `OLE_ERROR_STATIC_FROM_OTHER_OS`;
  * type nought `OLE_OK` with no object; a type the protocol does not read
  * `OLE_ERROR_PROTOCOL`; a stream that gives fewer bytes than asked for, or
  * a class's name of nought bytes, `OLE_ERROR_STREAM` (**recorded** by
@@ -158,7 +148,9 @@ export async function OleLoadFromStream(
 
   const type = ole.r32(at);
 
-  if (version >>> 16) {
+  /* An embedded or linked object is read whatever system wrote it
+   * (**measured** by `oleemb`'s `other os`). */
+  if (version >>> 16 && !(kind === 'std' && (type === OT_LINK || type === OT_EMBEDDED))) {
     return OLE_ERROR_STATIC_FROM_OTHER_OS;
   }
 
@@ -167,7 +159,30 @@ export async function OleLoadFromStream(
   }
 
   if (kind === 'std' && (type === OT_LINK || type === OT_EMBEDDED)) {
-    return load(ole, stream, type, client, doc, name, out);
+    /* The class read, then its handler given the rest of the stream, the
+     * class as an atom and a format of nought (**measured** by `olehnd`:
+     * a handler that refuses has the stream read to the class's end). */
+    const klass = await getClass(ole, stream);
+
+    if (!klass) {
+      return OLE_ERROR_STREAM;
+    }
+
+    const atom = await ole.addAtomText(klass);
+    const answer = await make(ole, 'load', klass, [
+      d(stream),
+      d(protocol),
+      d(client),
+      d(doc),
+      d(name),
+      d(out),
+      d(type),
+      w(atom),
+      w(0),
+    ]);
+
+    /* The atom is the object's, taken by `DefLoadFromStream`; nothing made, its handler's to keep or let go (`unrecorded`). */
+    return answer;
   }
 
   if (kind !== 'static' || type !== OT_STATIC) {
@@ -367,7 +382,16 @@ export async function OleCreateFromClip(
 
   if (kind === 'std') {
     ole.w32(out, 0);
-    return fromClip(ole, client, doc, name, out, false);
+    return viaClip(ole, false, [
+      d(protocol),
+      d(client),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+      d(OT_EMBEDDED),
+    ]);
   }
 
   if (kind !== 'static') {
@@ -395,7 +419,7 @@ export async function OleCreateFromClip(
   }
 
   const handle = (await ole.user('GetClipboardData', [W(each)])) & 0xffff;
-  const kinds: Record<number, Exclude<Kind, 'gen' | 'le'>> = {
+  const kinds: Record<number, Exclude<Kind, 'gen' | 'le' | 'pb'>> = {
     [CF_METAFILEPICT]: 'mf',
     [CF_BITMAP]: 'bm',
     [CF_DIB]: 'dib',
@@ -411,7 +435,9 @@ export async function OleCreateLinkFromClip(
   client: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  render: number,
+  format: number
 ) {
   const ole = new Ole(this);
   const checked =
@@ -423,10 +449,41 @@ export async function OleCreateLinkFromClip(
 
   if (protocolOf(ole, protocol) === 'std') {
     ole.w32(out, 0);
-    return fromClip(ole, client, doc, name, out, true);
+    return viaClip(ole, true, [
+      d(protocol),
+      d(client),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+    ]);
   }
 
   return protocolOf(ole, protocol) ? OLE_ERROR_FORMAT : OLE_ERROR_PROTOCOL;
+}
+
+/**
+ * An object made from the clipboard by its class's handler: the class
+ * `OwnerLink` or `ObjectLink` names, none `OLE_ERROR_FORMAT`; the
+ * clipboard's defaults work only while this is under way (`handlers.ts`).
+ */
+async function viaClip(ole: Ole, linked: boolean, args: [number, number][]) {
+  const klass = await clipClass(ole, linked);
+
+  if (!klass) {
+    return OLE_ERROR_FORMAT;
+  }
+
+  const state = ole.state();
+
+  state.clipping = true;
+
+  try {
+    return await make(ole, linked ? 'linkClip' : 'clip', klass, args);
+  } finally {
+    state.clipping = false;
+  }
 }
 
 export async function OleCopyToClipboard(this: any, object: number) {
@@ -560,9 +617,9 @@ export async function OleQueryOutOfDate(this: any, object: number) {
  * class, a template or a file: `Static` makes none (`OLE_ERROR_PROTOCOL`,
  * **recorded** by `olestat`); `StdFileEditing` looks the class up in the
  * registration database, a class it does not find `OLE_ERROR_CLASS`
- * (**recorded** by `olestat`). A class found has its server reached or
- * launched (`linked.ts`); a template is not yet followed
- * (`OLE_ERROR_LAUNCH`, `kb/topics/ole.md`, "Not yet done").
+ * (**recorded** by `olestat`). A class found is made by its handler or
+ * its default (`handlers.ts`), its server reached or launched
+ * (`linked.ts`).
  */
 async function checkClass(
   ole: Ole,
@@ -597,28 +654,64 @@ export async function OleCreate(
   klass: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  render: number,
+  format: number
 ) {
   const ole = new Ole(this);
 
   return (
     (await checkClass(ole, protocol, klass, doc, name, out)) ||
-    create(ole, client, klass, doc, name, out, true)
+    make(ole, 'create', ole.string(klass), [
+      d(protocol),
+      d(client),
+      d(klass),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+    ])
   );
 }
 
+/**
+ * `OleCreateFromTemplate`: its class the registration database's for the
+ * template's extension (**measured** by `olehnd`, whose handler is so
+ * found and given the template); none, `OLE_ERROR_CLASS`.
+ */
 export async function OleCreateFromTemplate(
   this: any,
   protocol: number,
-  _client: number,
-  _template: number,
+  client: number,
+  template: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  render: number,
+  format: number
 ) {
   const ole = new Ole(this);
+  const klass = template && ole.readable(template) ? await classOfFile(ole, template) : null;
+  const at = ole.near(SCRATCH + 0x600);
 
-  return (await checkClass(ole, protocol, 0, doc, name, out)) || OLE_ERROR_LAUNCH;
+  if (klass) {
+    ole.write(at, [...klass, 0]);
+  }
+
+  return (
+    (await checkClass(ole, protocol, klass ? at : 0, doc, name, out)) ||
+    make(ole, 'template', klass!, [
+      d(protocol),
+      d(client),
+      d(template),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+    ])
+  );
 }
 
 export async function OleCreateFromFile(
@@ -629,13 +722,25 @@ export async function OleCreateFromFile(
   file: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  render: number,
+  format: number
 ) {
   const ole = new Ole(this);
 
   return (
     (await checkClass(ole, protocol, klass, doc, name, out)) ||
-    createFromFile(ole, client, klass, file, 0, doc, name, out, false)
+    make(ole, 'file', ole.string(klass), [
+      d(protocol),
+      d(client),
+      d(klass),
+      d(file),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+    ])
   );
 }
 
@@ -648,13 +753,26 @@ export async function OleCreateLinkFromFile(
   item: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  render: number,
+  format: number
 ) {
   const ole = new Ole(this);
 
   return (
     (await checkClass(ole, protocol, klass, doc, name, out)) ||
-    createFromFile(ole, client, klass, file, item, doc, name, out, true)
+    make(ole, 'linkFile', ole.string(klass), [
+      d(protocol),
+      d(client),
+      d(klass),
+      d(file),
+      d(item),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+    ])
   );
 }
 
@@ -667,15 +785,25 @@ export async function OleCreateInvisible(
   doc: number,
   name: number,
   out: number,
-  _render: number,
-  _format: number,
+  render: number,
+  format: number,
   activate: number
 ) {
   const ole = new Ole(this);
 
   return (
     (await checkClass(ole, protocol, klass, doc, name, out)) ||
-    create(ole, client, klass, doc, name, out, (activate & 0xffff) !== 0)
+    make(ole, 'invisible', ole.string(klass), [
+      d(protocol),
+      d(client),
+      d(klass),
+      d(doc),
+      d(name),
+      d(out),
+      w(render),
+      w(format),
+      w(activate),
+    ])
   );
 }
 
@@ -701,8 +829,12 @@ export async function OleRegisterClientDoc(
   return registerClientDoc(new Ole(this), klass, name, reserved, out);
 }
 
+/** `OleRevokeClientDoc`: first a handler none of whose objects is left let go (**read out**, seg2 `0aad`; **measured** by `olehnd`'s `usage`). */
 export async function OleRevokeClientDoc(this: any, doc: number) {
-  return revokeClientDoc(new Ole(this), doc);
+  const ole = new Ole(this);
+
+  await freePending(ole);
+  return revokeClientDoc(ole, doc);
 }
 
 export async function OleRenameClientDoc(this: any, doc: number, name: number) {
@@ -758,7 +890,7 @@ export async function OleLockServer(this: any, object: number, out: number) {
     return OLE_ERROR_OBJECT;
   }
 
-  if (kindOf(ole, object) === 'le') {
+  if (kindOf(ole, object) === 'le' || kindOf(ole, object) === 'pb') {
     return writable(ole, out) ? lockServer(ole, object, out) : OLE_ERROR_ADDRESS;
   }
 

@@ -309,6 +309,9 @@ pub const AGREEING: &[&str] = &[
     "scanscr-vga",
     "scanscr-ega",
     "scanscr-svga",
+    "oleemb",
+    "olehnd",
+    "olenet",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

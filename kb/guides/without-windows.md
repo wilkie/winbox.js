@@ -125,7 +125,7 @@ Until each is WinBox's own, a run with an installation keeps loading Microsoft's
 2. **The asset bundle**: made from the user's media, with the profiles written by WinBox, and the engines able to start from it alone.
 3. **Layered drives**: the stack of layers with content-addressed sharing, and a program's installer run into a layer of its own.
 4. **VER**, **LZEXPAND** and **DDEML** (done), which installers need; then WinBox's own Program Manager that collects groups and items (done: [[topic:program-manager-dde]]).
-5. **OLECLI** and **OLESVR**: OLECLI's documents, static, embedded and linked objects, and OLESVR's servers (done: [[topic:ole]]); object handlers next.
+5. **OLECLI** and **OLESVR**: OLECLI's documents, static, embedded and linked objects, object handlers, Paintbrush's table and the network helpers, and OLESVR's servers (done: [[topic:ole]]).
 
 A launcher, native and on the page, sits on top of steps 3 and 4 (not started; the groups it would show are listed already). It shows the groups and items installers made, runs each program on its layers, and uses seamless mode in the native build ([[guide:seamless-windows]]).
 

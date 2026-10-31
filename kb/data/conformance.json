@@ -19107,245 +19107,632 @@
   "probe": "oleemb",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 238,
+  "records": 247,
   "functions": {
    "block": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "bytes": {
-    "total": 27,
-    "agreed": 0,
+    "total": 24,
+    "agreed": 24,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 27
+    "unsupported": 0
    },
    "formats": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "length": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "obj": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleClone": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleClose": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleCopyToClipboard": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleDraw": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleEnumFormats": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleEqual": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleGetData": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "OleGetLinkUpdateOptions": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleLoadFromStream": {
     "total": 12,
-    "agreed": 0,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    },
    "OleQueryBounds": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryCreateFromClip": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryLinkFromClip": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleQueryName": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryOpen": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryOutOfDate": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryProtocol": {
     "total": 12,
-    "agreed": 0,
+    "agreed": 12,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    },
    "OleQueryReleaseError": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryReleaseMethod": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryReleaseStatus": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQuerySize": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleQueryType": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleRegisterClientDoc": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "OleRelease": {
     "total": 6,
-    "agreed": 0,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 6
+    "unsupported": 0
    },
    "OleRename": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleSaveToStream": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleSetHostNames": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    },
    "OleSetLinkUpdateOptions": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
+   },
+   "presentation": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    },
    "Put": {
-    "total": 44,
-    "agreed": 0,
+    "total": 47,
+    "agreed": 47,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 44
+    "unsupported": 0
+   },
+   "saved": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    },
    "vtbl": {
-    "total": 3,
-    "agreed": 0,
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "olehnd": {
+  "probe": "olehnd",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 286,
+  "functions": {
+   "atom": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateFromClip": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateFromTemplate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateInvisible": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateLinkFromClip": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefCreateLinkFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DefLoadFromStream": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "formats": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetProcAddress": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "handler": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "LeCreateInvisible": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "LoadLibrary": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleClone": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCopyToClipboard": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateFromClip": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateFromTemplate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateInvisible": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateLinkFromClip": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleCreateLinkFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleDraw": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleEnumFormats": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleGetData": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleLoadFromStream": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleQueryBounds": {
+    "total": 24,
+    "agreed": 24,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleQueryName": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleQuerySize": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleQueryType": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRegisterClientDoc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRelease": {
+    "total": 29,
+    "agreed": 29,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRevokeClientDoc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCopyToClipboard": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateFromClip": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateFromTemplate": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateInvisible": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateLinkFromClip": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbCreateLinkFromFile": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbDraw": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbEnumFormats": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbGetData": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbLoadFromStream": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "PbQueryBounds": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "RegSetValue": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "same table": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "table": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "usage": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vtbl": {
+    "total": 26,
+    "agreed": 26,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    }
   },
   "gaps": {}
@@ -19504,6 +19891,134 @@
     "unsupported": 0
    },
    "vtbl place": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "olenet": {
+  "probe": "olenet",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 73,
+  "functions": {
+   "CheckNetDrive": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "control": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dialog": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dialogs": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dropped": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "EnumTaskWindows": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetDriveType": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetTaskVisibleWindow": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "list": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleLoadFromStream": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRegisterClientDoc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRelease": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRevokeClientDoc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "placed": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "saved": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "SetNetName": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "SetNextNetDrive": {
     "total": 6,
     "agreed": 6,
     "disagreed": 0,

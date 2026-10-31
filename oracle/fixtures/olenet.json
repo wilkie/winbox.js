@@ -1,0 +1,450 @@
+{
+  "probe": "olenet",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0"
+    },
+    {
+      "function": "GetDriveType",
+      "args": "A,C,D,Q",
+      "result": "2,3,0,0"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "local",
+      "result": "0 object 70",
+      "section": "name"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "missing",
+      "result": "0 object 63",
+      "section": "name"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bare",
+      "result": "0 object 60",
+      "section": "name"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "share",
+      "result": "0 object 85",
+      "section": "name"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "embedded",
+      "result": "0 object 55",
+      "section": "name"
+    },
+    {
+      "function": "saved",
+      "args": "local",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "name"
+    },
+    {
+      "function": "saved",
+      "args": "missing",
+      "result": "0 1 \"OLENET\" \"Q:\\NET.BMP\" \"Item\" \"\"",
+      "section": "name"
+    },
+    {
+      "function": "saved",
+      "args": "bare",
+      "result": "0 1 \"OLENET\" \"NET.BMP\" \"Item\" \"\"",
+      "section": "name"
+    },
+    {
+      "function": "saved",
+      "args": "share",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\\\\SERVER\\SHARE\"",
+      "section": "name"
+    },
+    {
+      "function": "saved",
+      "args": "embedded",
+      "result": "0 2 \"OLENET\" \"\" \"\"",
+      "section": "name"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "local,0",
+      "result": "0",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "local,0",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "check"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "missing,0",
+      "result": "0",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "missing,0",
+      "result": "0 1 \"OLENET\" \"Q:\\NET.BMP\" \"Item\" \"\"",
+      "section": "check"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "bare,0",
+      "result": "0",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "bare,0",
+      "result": "0 1 \"OLENET\" \"NET.BMP\" \"Item\" \"\"",
+      "section": "check"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "share,0",
+      "result": "28",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "share,0",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\\\\SERVER\\SHARE\"",
+      "section": "check"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "embedded,0",
+      "result": "0",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "embedded,0",
+      "result": "0 2 \"OLENET\" \"\" \"\"",
+      "section": "check"
+    },
+    {
+      "function": "dialog",
+      "args": "",
+      "result": "#32770,Connect Network Drive,310,152,owned,94c80080,-1",
+      "section": "check"
+    },
+    {
+      "function": "placed",
+      "args": "",
+      "result": "152,109,472,290 00100008",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "-1",
+      "result": "Static,D&rive:,18,14,98,32,50020002",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "500",
+      "result": "ComboBox,D:,106,6,146,30,50030203",
+      "section": "check"
+    },
+    {
+      "function": "list",
+      "args": "500",
+      "result": "D:,E:,F:,G:,H:,I:,J:,K:,L:,M:,N:,O:,P:,Q:,R:,S:,T:,U:,V:,W:,X:,Y:, sel=0",
+      "section": "check"
+    },
+    {
+      "function": "dropped",
+      "args": "500",
+      "result": "106,6,146,86",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "-1",
+      "result": "Static,&Network Path:,6,42,98,58,50020002",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "502",
+      "result": "Edit,\\\\SERVER\\SHARE,106,40,298,64,50030480",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "-1",
+      "result": "Static,Pass&word:,26,74,98,94,50020002",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "501",
+      "result": "Edit,,106,70,226,94,500304a0",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "1",
+      "result": "Button,&Connect,46,108,130,136,50010001",
+      "section": "check"
+    },
+    {
+      "function": "control",
+      "args": "2",
+      "result": "Button,C&ancel,182,110,268,138,50030000",
+      "section": "check"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "share,1",
+      "result": "28",
+      "section": "check"
+    },
+    {
+      "function": "saved",
+      "args": "share,1",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\\\\SERVER\\SHARE\"",
+      "section": "check"
+    },
+    {
+      "function": "dialogs",
+      "args": "",
+      "result": "1",
+      "section": "check"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "local",
+      "result": "0 0 ",
+      "section": "next"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "missing",
+      "result": "0 0 ",
+      "section": "next"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "bare",
+      "result": "0 0 ",
+      "section": "next"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "share",
+      "result": "0 26 \\\\SERVER\\SHARE",
+      "section": "next"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "embedded",
+      "result": "0 0 ",
+      "section": "next"
+    },
+    {
+      "function": "SetNextNetDrive",
+      "args": "given",
+      "result": "0 26 \\\\SERVER\\SHARE",
+      "section": "next"
+    },
+    {
+      "function": "SetNetName",
+      "args": "local",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "local",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "local,0",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "local,0",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "SetNetName",
+      "args": "missing",
+      "result": "27",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "missing",
+      "result": "0 1 \"OLENET\" \"Q:\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "missing,0",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "missing,0",
+      "result": "0 1 \"OLENET\" \"Q:\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "SetNetName",
+      "args": "bare",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "bare",
+      "result": "0 1 \"OLENET\" \"NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "bare,0",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "bare,0",
+      "result": "0 1 \"OLENET\" \"NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "SetNetName",
+      "args": "share",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "share",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "share,0",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "share,0",
+      "result": "0 1 \"OLENET\" \"C:\\ORACLE\\NET.BMP\" \"Item\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "SetNetName",
+      "args": "embedded",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "embedded",
+      "result": "0 2 \"OLENET\" \"\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "CheckNetDrive",
+      "args": "embedded,0",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "saved",
+      "args": "embedded,0",
+      "result": "0 2 \"OLENET\" \"\" \"\"",
+      "section": "named"
+    },
+    {
+      "function": "OleRelease",
+      "args": "local",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "OleRelease",
+      "args": "missing",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "OleRelease",
+      "args": "bare",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "OleRelease",
+      "args": "share",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "OleRelease",
+      "args": "embedded",
+      "result": "0",
+      "section": "named"
+    },
+    {
+      "function": "GetTaskVisibleWindow",
+      "args": "visible",
+      "result": "0 window",
+      "section": "window"
+    },
+    {
+      "function": "GetTaskVisibleWindow",
+      "args": "hidden",
+      "result": "1 untouched",
+      "section": "window"
+    },
+    {
+      "function": "EnumTaskWindows",
+      "args": "GetTaskVisibleWindow",
+      "result": "window",
+      "section": "window"
+    },
+    {
+      "function": "EnumTaskWindows",
+      "args": "none visible",
+      "result": "0",
+      "section": "window"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "doc",
+      "result": "0",
+      "section": "window"
+    }
+  ]
+}

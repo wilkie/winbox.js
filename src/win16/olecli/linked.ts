@@ -20,6 +20,7 @@ import {
   LE_BLOCK,
   OBJ_HEIGHT,
   OBJ_MAPPING,
+  OBJ_VTBL,
   OBJ_TYPE,
   OBJ_UNKNOWN_FFFF,
   OBJ_WIDTH,
@@ -30,6 +31,9 @@ import {
   OLE_ERROR_OBJECT,
   OLE_ERROR_STREAM,
   OLE_OK,
+  OLERENDER_DRAW,
+  OLERENDER_FORMAT,
+  OLERENDER_NONE,
   OT_EMBEDDED,
   OT_LINK,
   Ole,
@@ -58,7 +62,7 @@ import {
   saveToStream as saveStatic,
   staticFromClipboard,
 } from './kinds.js';
-import { freeObject, kindOf, newObject } from './objects.js';
+import { freeObject, kindOf, newObject, vtblOf } from './objects.js';
 import { get, getLong, put, putLong, putName } from './streams.js';
 
 /**
@@ -189,6 +193,13 @@ export interface Le {
   blank: number;
   /** A Paintbrush object's picture, a DIB of its bitmap file's, drawn and measured but never saved. */
   view: number;
+  /** Its class's atom: the class is spelled as the atom is (**measured** by `olenet`, a class saved as a document's class registered first spelled it). */
+  classAtom: number;
+  /** The rendering it was made with (ole.h's `OLEOPT_RENDER`): a picture, none, or a format's. */
+  render: number;
+  /** A link's network name, its document's share, and the drive's letter connected to it; none, nought. */
+  network: number[];
+  drive: number;
 }
 
 const str = (bytes: number[]) => String.fromCharCode(...bytes);
@@ -259,7 +270,8 @@ async function newLe(
   name: number,
   klass: number[],
   topic: number[] | null,
-  item: number[]
+  item: number[],
+  atom = 0
 ): Promise<number> {
   const object = await newObject(ole, 'le', LE_BLOCK, client, doc, name);
 
@@ -270,9 +282,20 @@ async function newLe(
   ole.w32(plus(object, OBJ_TYPE), type);
   ole.w16(plus(object, OBJ_MAPPING), 0);
   ole.w16(plus(object, OBJ_UNKNOWN_FFFF), 0);
+
+  /* A class's atom given is the object's own, let go with it (**measured**
+   * by `olehnd`'s `atom` records: `DefLoadFromStream`'s object takes the
+   * atom it is given); else it adds one. */
+  const classAtom = atom || (await ole.addAtomText(klass));
+  const spelled = await atomText(ole, classAtom);
+
   ole.state().le.set(object >>> 0, {
     type,
-    klass,
+    klass: spelled.length ? spelled : klass,
+    classAtom,
+    render: OLERENDER_DRAW,
+    network: [],
+    drive: 0,
     topic: topic ?? (await embeddedTopic(ole, doc, ole.string(name))),
     item,
     native: 0,
@@ -362,9 +385,8 @@ async function refreshView(ole: Ole, object: number, le: Le) {
 
   if (view) {
     le.view = view;
+    /* Its block keeps no bounds of it (**measured** by `oleemb`'s `obj` of `bare`). */
     ole.state().owners.set(view >>> 0, object >>> 0);
-    ole.w32(plus(object, OBJ_WIDTH), ole.r32(plus(view, OBJ_WIDTH)));
-    ole.w32(plus(object, OBJ_HEIGHT), ole.r32(plus(view, OBJ_HEIGHT)));
   }
 }
 
@@ -437,7 +459,7 @@ async function nativePicture(ole: Ole, object: number, le: Le, block: number): P
 
 /** A presentation made from a handle of its format, its data copied: its pointer, or nought. */
 async function pictureFrom(ole: Ole, object: number, format: number, handle: number) {
-  const kind: Record<number, Exclude<Kind, 'gen' | 'le'>> = {
+  const kind: Record<number, Exclude<Kind, 'gen' | 'le' | 'pb'>> = {
     [CF_METAFILEPICT]: 'mf',
     [CF_BITMAP]: 'bm',
     [CF_DIB]: 'dib',
@@ -475,8 +497,17 @@ async function freeLe(ole: Ole, object: number, le: Le) {
     }
   }
 
+  await ole.deleteAtom(le.classAtom);
   ole.state().le.delete(object >>> 0);
   await freeObject(ole, object);
+  await releaseHook(ole, object);
+}
+
+/** What lets go of an object's handler as the object goes (`handlers.ts`), registered there. */
+let releaseHook: (ole: Ole, object: number) => Promise<void> = async () => {};
+
+export function registerRelease(hook: (ole: Ole, object: number) => Promise<void>) {
+  releaseHook = hook;
 }
 
 // The client told.
@@ -888,7 +919,7 @@ async function store(ole: Ole, object: number, le: Le, format: number, hData: nu
       le.native = handle;
     }
 
-    if (isPBrush(le)) {
+    if (kindOf(ole, object) === 'pb') {
       await refreshView(ole, object, le);
     }
   } else if (isPicture(format)) {
@@ -1264,13 +1295,15 @@ function doVerb(le: Le, verb: number, show: number, focus: number): number[] {
 export async function create(
   ole: Ole,
   client: number,
-  klass: number,
+  klass: number[],
   doc: number,
   name: number,
   out: number,
-  activate: boolean
+  activate: boolean,
+  render = OLERENDER_DRAW,
+  template: number[] | null = null
 ) {
-  const object = await newLe(ole, OT_EMBEDDED, client, doc, name, ole.string(klass), null, []);
+  const object = await newLe(ole, OT_EMBEDDED, client, doc, name, klass, null, []);
 
   if (!object) {
     return OLE_ERROR_MEMORY;
@@ -1278,6 +1311,7 @@ export async function create(
 
   const le = leOf(ole, object)!;
 
+  le.render = render;
   ole.w32(out, object);
 
   if (!activate) {
@@ -1290,17 +1324,32 @@ export async function create(
     return OLE_ERROR_LAUNCH;
   }
 
-  await begin(ole, object, le, [
-    {
-      k: 'execute',
-      conv: 'system',
-      text: [
+  /* From a template, the documented `StdNewFromTemplate` with the
+   * template's file (the OLE 1.0 programmer's reference; `unrecorded` on
+   * the client's side, the server's measured by `olesrv`). */
+  const command = template
+    ? [
+        ...bytesOf('[StdNewFromTemplate('),
+        ...quote(le.klass),
+        0x2c,
+        ...quote(le.topic),
+        0x2c,
+        ...quote(template),
+        ...bytesOf(')]'),
+      ]
+    : [
         ...bytesOf('[StdNewDocument('),
         ...quote(le.klass),
         0x2c,
         ...quote(le.topic),
         ...bytesOf(')]'),
-      ],
+      ];
+
+  await begin(ole, object, le, [
+    {
+      k: 'execute',
+      conv: 'system',
+      text: command,
       error: OLE_ERROR_NEW,
     },
     { k: 'initiate' },
@@ -1329,7 +1378,8 @@ export async function createFromFile(
   doc: number,
   name: number,
   out: number,
-  linked: boolean
+  linked: boolean,
+  render = OLERENDER_DRAW
 ) {
   const object = await newLe(
     ole,
@@ -1338,7 +1388,7 @@ export async function createFromFile(
     doc,
     name,
     ole.string(klass),
-    linked ? ole.string(file) : null,
+    ole.string(file),
     linked && item ? ole.string(item) : []
   );
 
@@ -1347,20 +1397,21 @@ export async function createFromFile(
   }
 
   const le = leOf(ole, object)!;
-  const topic = le.topic;
 
-  /* An embedded object's server is told the file. */
-  le.topic = ole.string(file);
+  le.render = render;
 
+  /* An embedded object's server is told the file; the object is numbered
+   * only once it is reached (**measured** by `olehnd`: one whose server
+   * cannot be started takes no number). */
   const connected = await connectDoc(ole, object, le, SW_HIDE);
-
-  if (!linked) {
-    le.topic = topic;
-  }
 
   if (!connected) {
     await freeLe(ole, object, le);
     return OLE_ERROR_LAUNCH;
+  }
+
+  if (!linked) {
+    le.topic = await embeddedTopic(ole, doc, ole.string(name));
   }
 
   ole.w32(out, object);
@@ -1378,6 +1429,15 @@ export async function createFromFile(
   return OLE_WAIT_FOR_RELEASE;
 }
 
+/** The class `OwnerLink` or `ObjectLink` on the clipboard names; null for none. */
+export async function clipClass(ole: Ole, linked: boolean): Promise<number[] | null> {
+  const owner =
+    (await ole.user('GetClipboardData', [W(cf(ole, linked ? 'ObjectLink' : 'OwnerLink'))])) &
+    0xffff;
+
+  return owner ? (await linkParts(ole, owner))[0] : null;
+}
+
 /** A clipboard's block of `OwnerLink` or `ObjectLink`: its class, document and item. */
 async function linkParts(ole: Ole, handle: number): Promise<[number[], number[], number[]]> {
   const at = await ole.globalLock(handle);
@@ -1390,11 +1450,15 @@ async function linkParts(ole: Ole, handle: number): Promise<[number[], number[],
 }
 
 /**
- * `OleCreateFromClip` and `OleCreateLinkFromClip` with `StdFileEditing`:
- * an embedded object of `OwnerLink`'s class and item with the clipboard's
- * `Native`, or a link to `ObjectLink`'s document and item; each with a
- * picture of the clipboard's. No server is asked (**recorded** by
- * `oledde`'s `clip`).
+ * `DefCreateFromClip` and `DefCreateLinkFromClip` (`OleCreateFromClip` and
+ * `OleCreateLinkFromClip` with `StdFileEditing`): an embedded object of
+ * `OwnerLink`'s class and item with the clipboard's `Native`, or a link to
+ * `ObjectLink`'s document and item; each with the clipboard's first
+ * picture, none where it is to render none, or the format it is to render
+ * -- its class's `Native` a presentation of that format. No server is asked
+ * (**recorded** by `oledde`'s `clip`, **measured** by `olehnd`'s `clip
+ * none`; Paintbrush's handler asks a link for `Native` and an embedded
+ * object for none, `OLECLI.DLL` seg7 `00ac`-`0176`).
  */
 export async function fromClip(
   ole: Ole,
@@ -1402,7 +1466,9 @@ export async function fromClip(
   doc: number,
   name: number,
   out: number,
-  linked: boolean
+  linked: boolean,
+  render = OLERENDER_DRAW,
+  format = 0
 ) {
   const owner =
     (await ole.user('GetClipboardData', [W(cf(ole, linked ? 'ObjectLink' : 'OwnerLink'))])) &
@@ -1430,6 +1496,8 @@ export async function fromClip(
 
   const le = leOf(ole, object)!;
 
+  le.render = render;
+
   if (!linked) {
     const native = (await ole.user('GetClipboardData', [W(cf(ole, 'Native'))])) & 0xffff;
 
@@ -1438,37 +1506,29 @@ export async function fromClip(
     }
   }
 
-  if (isPBrush(le)) {
-    /* A Paintbrush link's picture is the clipboard's `Native`. */
-    if (linked) {
-      const native = (await ole.user('GetClipboardData', [W(cf(ole, 'Native'))])) & 0xffff;
-      const picture = native
-        ? await nativePicture(ole, object, le, await copyBlock(ole, native))
-        : 0;
-
-      if (picture) {
-        setPicture(ole, object, le, picture);
-      }
-    }
-
-    await refreshView(ole, object, le);
-    ole.w32(out, object);
-    return OLE_OK;
-  }
-
   let each = 0;
 
-  for (;;) {
-    each = (await ole.user('EnumClipboardFormats', [W(each)])) & 0xffff;
+  if (render === OLERENDER_FORMAT) {
+    each = format & 0xffff;
+  } else if (render !== OLERENDER_NONE) {
+    for (;;) {
+      each = (await ole.user('EnumClipboardFormats', [W(each)])) & 0xffff;
 
-    if (!each || isPicture(each)) {
-      break;
+      if (!each || isPicture(each)) {
+        break;
+      }
     }
   }
 
   if (each) {
     const handle = (await ole.user('GetClipboardData', [W(each)])) & 0xffff;
-    const picture = handle ? await pictureFrom(ole, object, each, handle) : 0;
+    const picture = !handle
+      ? 0
+      : each === cf(ole, 'Native')
+        ? await nativePicture(ole, object, le, await copyBlock(ole, handle))
+        : isPicture(each)
+          ? await pictureFrom(ole, object, each, handle)
+          : 0;
 
     if (picture) {
       setPicture(ole, object, le, picture);
@@ -1533,7 +1593,7 @@ export async function saveToStream(ole: Ole, object: number, stream: number) {
     }
   } else if (ok) {
     ok =
-      (await putLong(ole, stream, 0)) &&
+      (await putString(ole, stream, le.network)) &&
       (await putLong(ole, stream, 0)) &&
       (await putLong(ole, stream, le.update));
   }
@@ -1554,10 +1614,18 @@ export async function saveToStream(ole: Ole, object: number, stream: number) {
 /** A presentation's type in a stream. */
 const PRESENTATION = 5;
 
+/** A stream's class's name, read after its version and type: `OleLoadFromStream` reads it before it finds the class's handler. */
+export async function getClass(ole: Ole, stream: number): Promise<number[] | null> {
+  const klass = await getString(ole, stream);
+
+  return klass && klass.length ? klass : null;
+}
+
 /**
- * `OleLoadFromStream` of an embedded (2) or linked (1) object, its version
- * and type read: what `LESAVETOSTREAM` writes read back. An embedded
- * object is numbered as it is loaded.
+ * `DefLoadFromStream`: an embedded (2) or linked (1) object of the class
+ * given, the stream read on from after its class's name -- what
+ * `LESAVETOSTREAM` writes read back. An embedded object is numbered as it
+ * is loaded.
  */
 export async function load(
   ole: Ole,
@@ -1566,13 +1634,15 @@ export async function load(
   client: number,
   doc: number,
   name: number,
-  out: number
+  out: number,
+  klass: number[],
+  atom = 0
 ) {
-  const klass = await getString(ole, stream);
-  const topic = klass && (await getString(ole, stream));
+  const topic = await getString(ole, stream);
   const item = topic && (await getString(ole, stream));
 
-  if (!klass || !klass.length || !topic || !item) {
+  if (!klass.length || !topic || !item) {
+    await ole.deleteAtom(atom);
     return OLE_ERROR_STREAM;
   }
 
@@ -1584,7 +1654,8 @@ export async function load(
     name,
     klass,
     type === OT_LINK ? topic : null,
-    item
+    item,
+    atom
   );
 
   if (!object) {
@@ -1621,6 +1692,7 @@ export async function load(
     }
 
     le.update = update & 0xffff;
+    le.network = network!;
   }
 
   const version = await getLong(ole, stream);
@@ -1638,7 +1710,7 @@ export async function load(
     }
 
     const which =
-      (Object.keys(CLASS_OF) as Exclude<Kind, 'gen' | 'le'>[]).find(
+      (Object.keys(CLASS_OF) as Exclude<Kind, 'gen' | 'le' | 'pb'>[]).find(
         (each) => CLASS_OF[each] === str(named)
       ) ?? 'gen';
     const picture = await newObject(ole, which, BLOCK_OF[which], ole.r32(plus(object, 8)), 0, 0);
@@ -1657,10 +1729,6 @@ export async function load(
     }
 
     setPicture(ole, object, le, picture);
-  }
-
-  if (isPBrush(le)) {
-    await refreshView(ole, object, le);
   }
 
   ole.w32(out, object);
@@ -1682,7 +1750,7 @@ export async function querySize(ole: Ole, object: number, out: number) {
   let size =
     8 + string(le.klass) + string(le.type === OT_EMBEDDED ? [] : le.topic) + string(le.item);
 
-  size += le.type === OT_EMBEDDED ? 4 + (await ole.globalSize(le.native)) : 12;
+  size += le.type === OT_EMBEDDED ? 4 + (await ole.globalSize(le.native)) : string(le.network) + 8;
   size += 8;
 
   if (le.picture) {
@@ -1697,55 +1765,50 @@ export async function querySize(ole: Ole, object: number, out: number) {
   return OLE_OK;
 }
 
+/** Noughts written to a rectangle, and `OLE_ERROR_BLANK`: a presentation's bounds where there is none. */
+function noBounds(ole: Ole, rect: number) {
+  for (let i = 0; i < 8; i += 2) {
+    ole.w16(plus(rect, i), 0);
+  }
+
+  return OLE_ERROR_BLANK;
+}
+
 /** `LEQUERYBOUNDS` (213): its presentation's; none `OLE_ERROR_BLANK`, noughts written. */
 function queryBounds(ole: Ole, object: number, rect: number) {
   const le = leOf(ole, object)!;
 
-  if (isPBrush(le)) {
-    if (!le.view) {
-      for (let i = 0; i < 8; i += 2) {
-        ole.w16(plus(rect, i), 0);
-      }
-
-      return OLE_ERROR_BLANK;
-    }
-
-    return staticBounds(ole, 'dib', le.view, rect);
-  }
-
   if (!le.picture) {
-    for (let i = 0; i < 8; i += 2) {
-      ole.w16(plus(rect, i), 0);
-    }
-
-    return OLE_ERROR_BLANK;
+    return noBounds(ole, rect);
   }
 
   return staticBounds(ole, kindOf(ole, le.picture) ?? 'mf', le.picture, rect);
 }
 
-/** The formats it gives, in `OleEnumFormats`' order: `Native` and `OwnerLink`, or `ObjectLink`, then its presentation's. */
+/**
+ * The formats it gives, in `OleEnumFormats`' order: `Native` and
+ * `OwnerLink`, or `ObjectLink`, then its presentation's -- a picture where
+ * it has none yet, nothing where it was made to render none (**measured**
+ * by `olehnd`'s `clip none` and `le invisible none`).
+ */
 function formats(ole: Ole, le: Le): number[] {
-  const picture =
-    le.picture && !isPBrush(le)
-      ? FORMAT_OF[(kindOf(ole, le.picture) ?? 'mf') as 'mf']
-      : CF_METAFILEPICT;
+  const picture = le.picture
+    ? [FORMAT_OF[(kindOf(ole, le.picture) ?? 'mf') as 'mf'] ?? CF_METAFILEPICT]
+    : le.render === OLERENDER_NONE
+      ? []
+      : [CF_METAFILEPICT];
 
   if (le.type === OT_EMBEDDED) {
-    return [cf(ole, 'Native'), cf(ole, 'OwnerLink'), picture];
+    return [cf(ole, 'Native'), cf(ole, 'OwnerLink'), ...picture];
   }
 
-  /* A Paintbrush link gives its `Native` too (**recorded** by `olepbd`). */
-  return isPBrush(le)
-    ? [cf(ole, 'ObjectLink'), cf(ole, 'Native'), picture]
-    : [cf(ole, 'ObjectLink'), picture];
+  return [cf(ole, 'ObjectLink'), ...picture];
 }
 
-function enumFormat(ole: Ole, object: number, format: number) {
-  const list = formats(ole, leOf(ole, object)!);
-
+/** The format after the one given in a list, nought after the last; the first for nought. */
+function nextFormat(list: number[], format: number) {
   if (!format) {
-    return list[0];
+    return list[0] ?? 0;
   }
 
   const at = list.indexOf(format & 0xffff);
@@ -1753,22 +1816,17 @@ function enumFormat(ole: Ole, object: number, format: number) {
   return at >= 0 && at + 1 < list.length ? list[at + 1] : 0;
 }
 
+function enumFormat(ole: Ole, object: number, format: number) {
+  return nextFormat(formats(ole, leOf(ole, object)!), format);
+}
+
 /** `OwnerLink`'s or `ObjectLink`'s bytes: its class, document and item, each with its nought, and a nought. */
 function linkBytes(le: Le): number[] {
   return [...le.klass, 0, ...le.topic, 0, ...le.item, 0, 0];
 }
 
-/**
- * `LEGETDATA` (202): `Native` where it has some, else `OLE_ERROR_FORMAT`;
- * `OwnerLink` or `ObjectLink` made of its class, document and item; its
- * presentation's; a picture where it has none, an empty `METAFILEPICT`
- * (**recorded** by `oledde`).
- */
-async function getData(ole: Ole, object: number, format: number, out: number) {
-  const le = leOf(ole, object)!;
-
-  format &= 0xffff;
-
+/** `Native`, `OwnerLink` or `ObjectLink`, as every embedded or linked object gives them; null for another format. */
+async function ownData(ole: Ole, le: Le, format: number, out: number): Promise<number | null> {
   if (format === cf(ole, 'Native') && le.type === OT_EMBEDDED) {
     if (!le.native) {
       return OLE_ERROR_FORMAT;
@@ -1788,25 +1846,24 @@ async function getData(ole: Ole, object: number, format: number, out: number) {
     return OLE_OK;
   }
 
-  if (isPBrush(le)) {
-    /* A Paintbrush link's `Native`, its presentation's; a picture made from
-     * the bitmap for the caller to let go; none, `OLE_ERROR_MEMORY`
-     * (**recorded** by `olepbd` and `olepbr`). */
-    if (format === cf(ole, 'Native') && le.picture) {
-      ole.w16(out, ole.r16(plus(le.picture, GEN_DATA)));
-      return OLE_OK;
-    }
+  return null;
+}
 
-    if (format !== CF_METAFILEPICT) {
-      return OLE_ERROR_FORMAT;
-    }
+/**
+ * `LEGETDATA` (202): `Native` where it has some, else `OLE_ERROR_FORMAT`;
+ * `OwnerLink` or `ObjectLink` made of its class, document and item; its
+ * presentation's; a picture where it has none, an empty `METAFILEPICT`
+ * (**recorded** by `oledde`).
+ */
+async function getData(ole: Ole, object: number, format: number, out: number) {
+  const le = leOf(ole, object)!;
 
-    if (!le.view) {
-      return OLE_ERROR_MEMORY;
-    }
+  format &= 0xffff;
 
-    ole.w16(out, await pictureOfView(ole, le));
-    return OLE_WARN_DELETE_DATA;
+  const own = await ownData(ole, le, format, out);
+
+  if (own !== null) {
+    return own;
   }
 
   if (le.picture) {
@@ -1825,10 +1882,8 @@ async function getData(ole: Ole, object: number, format: number, out: number) {
   return OLE_OK;
 }
 
-/** `LECOPY` (211): its data put on the clipboard: `Native`, `OwnerLink` and its presentation; a link's `OwnerLink` and presentation (**recorded** by `oledde`). */
-async function copyToClipboard(ole: Ole, object: number) {
-  const le = leOf(ole, object)!;
-
+/** `Native` and `OwnerLink` put on the clipboard, as every embedded or linked object puts them. */
+async function copyOwn(ole: Ole, le: Le) {
   if (le.type === OT_EMBEDDED && le.native) {
     await ole.user('SetClipboardData', [W(cf(ole, 'Native')), W(await copyBlock(ole, le.native))]);
   }
@@ -1837,16 +1892,126 @@ async function copyToClipboard(ole: Ole, object: number) {
     W(cf(ole, 'OwnerLink')),
     W(await sharedBlock(ole, linkBytes(le))),
   ]);
+}
 
-  if (isPBrush(le)) {
-    if (le.view) {
-      await ole.user('SetClipboardData', [W(CF_METAFILEPICT), W(await pictureOfView(ole, le))]);
-    }
-  } else if (le.picture) {
+/** `LECOPY` (211): its data put on the clipboard: `Native`, `OwnerLink` and its presentation; a link's `OwnerLink` and presentation (**recorded** by `oledde`). */
+async function copyToClipboard(ole: Ole, object: number) {
+  const le = leOf(ole, object)!;
+
+  await copyOwn(ole, le);
+
+  if (le.picture) {
     await copyStatic(ole, kindOf(ole, le.picture) ?? 'mf', le.picture);
   }
 
   return OLE_OK;
+}
+
+// Paintbrush's methods, the `PB` exports its table holds in five slots.
+
+/** `PBQUERYBOUNDS` (806): its bitmap's at its pixels to a metre; none `OLE_ERROR_BLANK`, noughts written (**recorded** by `olepbd`, **measured** by `olehnd`). */
+function pbQueryBounds(ole: Ole, object: number, rect: number) {
+  const le = leOf(ole, object)!;
+
+  return le.view ? staticBounds(ole, 'dib', le.view, rect) : noBounds(ole, rect);
+}
+
+/**
+ * `PBENUMFORMATS` (810): `Native`, `OwnerLink` and a picture; a link's
+ * `ObjectLink`, its `Native` where its presentation is that, and a picture
+ * (**measured** by `olehnd`'s `link native` and `link none`).
+ */
+function pbEnumFormats(ole: Ole, object: number, format: number) {
+  const le = leOf(ole, object)!;
+  const list =
+    le.type === OT_EMBEDDED
+      ? [cf(ole, 'Native'), cf(ole, 'OwnerLink'), CF_METAFILEPICT]
+      : [cf(ole, 'ObjectLink'), ...(le.picture ? [cf(ole, 'Native')] : []), CF_METAFILEPICT];
+
+  return nextFormat(list, format);
+}
+
+/**
+ * `PBGETDATA` (811): what every object gives; a link's `Native`, its
+ * presentation's; a picture made from the bitmap for the caller to let go,
+ * `OLE_WARN_DELETE_DATA`; none, `OLE_ERROR_MEMORY` (**recorded** by
+ * `olepbd` and `olepbr`, **measured** by `olehnd`).
+ */
+async function pbGetData(ole: Ole, object: number, format: number, out: number) {
+  const le = leOf(ole, object)!;
+
+  format &= 0xffff;
+
+  const own = await ownData(ole, le, format, out);
+
+  if (own !== null) {
+    return own;
+  }
+
+  if (format === cf(ole, 'Native') && le.picture) {
+    ole.w16(out, ole.r16(plus(le.picture, GEN_DATA)));
+    return OLE_OK;
+  }
+
+  if (format !== CF_METAFILEPICT) {
+    return OLE_ERROR_FORMAT;
+  }
+
+  if (!le.view) {
+    return OLE_ERROR_MEMORY;
+  }
+
+  ole.w16(out, await pictureOfView(ole, le));
+  return OLE_WARN_DELETE_DATA;
+}
+
+/** `PBCOPYTOCLIPBOARD` (807): `Native` and `OwnerLink`, and a picture made from the bitmap (**measured** by `olehnd`). */
+async function pbCopyToClipboard(ole: Ole, object: number) {
+  const le = leOf(ole, object)!;
+
+  await copyOwn(ole, le);
+
+  if (le.view) {
+    await ole.user('SetClipboardData', [W(CF_METAFILEPICT), W(await pictureOfView(ole, le))]);
+  }
+
+  return OLE_OK;
+}
+
+/** `PBDRAW` (805): its bitmap drawn; none `OLE_ERROR_BLANK`. */
+function pbDraw(ole: Ole, object: number, dc: number, bounds: number, window: number) {
+  const le = leOf(ole, object)!;
+
+  return le.view ? draw(ole, 'dib', le.view, dc, bounds, window) : OLE_ERROR_BLANK;
+}
+
+/** Paintbrush's methods by ordinal. */
+export const PB_METHODS: Record<number, (ole: Ole, args: number[]) => Promise<number> | number> = {
+  805: (ole, [object, dc, bounds, window]) => pbDraw(ole, object, dc, bounds, window),
+  806: (ole, [object, rect]) => pbQueryBounds(ole, object, rect),
+  807: (ole, [object]) => pbCopyToClipboard(ole, object),
+  810: (ole, [object, format]) => pbEnumFormats(ole, object, format),
+  811: (ole, [object, format, out]) => pbGetData(ole, object, format, out),
+};
+
+/**
+ * An object `OLECLI`'s handler of `PBrush` made, given Paintbrush's table
+ * where it has no picture -- no presentation, or one of another format,
+ * its class's `Native` -- and its picture made from its bitmap (**read
+ * out**: `OLECLI.DLL` seg7 `052a`, the routine each `Pb` export calls after
+ * its default, and seg7 `09ae`, which tells a presentation that is no
+ * picture by its `QueryType`'s `OLE_ERROR_GENERIC`; the table it gives is
+ * the object's with five methods changed, **measured** by `olehnd`).
+ */
+export async function pbTable(ole: Ole, object: number) {
+  const le = leOf(ole, object);
+
+  if (!le || (le.picture && kindOf(ole, le.picture) !== 'gen')) {
+    return;
+  }
+
+  ole.w32(plus(object, OBJ_VTBL), vtblOf(ole, 'pb'));
+  await refreshView(ole, object, le);
 }
 
 /** `LECLONE` (208): another of the same in the document given, numbered anew, its data and presentation copied. */
@@ -1897,7 +2062,13 @@ async function clone(
     }
   }
 
-  if (isPBrush(made)) {
+  made.render = le.render;
+  made.network = le.network;
+  made.drive = le.drive;
+
+  /* The copy holds its original's table: Paintbrush's, its picture made again. */
+  if (kindOf(ole, object) === 'pb') {
+    ole.w32(plus(copy, OBJ_VTBL), vtblOf(ole, 'pb'));
     await refreshView(ole, copy, made);
   }
 
@@ -2081,6 +2252,12 @@ async function setAndPoke(
 /** `LESETHOSTNAMES` (204): the two names kept, after two offsets to them, and poked as `StdHostNames` while open (**recorded** by `oledde`). */
 async function setHostNames(ole: Ole, object: number, client: number, doc: number) {
   const le = leOf(ole, object)!;
+
+  /* A link's server is not told host names: `OLE_ERROR_OBJECT` (**measured** by `oleemb`). */
+  if (le.type === OT_LINK) {
+    return OLE_ERROR_OBJECT;
+  }
+
   const first = ole.string(client);
   const second = ole.string(doc);
 
@@ -2139,7 +2316,7 @@ async function setData(ole: Ole, object: number, format: number, handle: number)
 
   le.native = copy;
 
-  if (isPBrush(le)) {
+  if (kindOf(ole, object) === 'pb') {
     await refreshView(ole, object, le);
   }
 
@@ -2311,10 +2488,6 @@ export const LE_METHODS: Record<number, (ole: Ole, args: number[]) => Promise<nu
   213: (ole, [object, rect]) => queryBounds(ole, object, rect),
   214: (ole, [object, dc, bounds, window]) => {
     const le = leOf(ole, object)!;
-
-    if (isPBrush(le)) {
-      return le.view ? draw(ole, 'dib', le.view, dc, bounds, window) : OLE_ERROR_BLANK;
-    }
 
     return le.picture
       ? draw(ole, kindOf(ole, le.picture) ?? 'mf', le.picture, dc, bounds, window)

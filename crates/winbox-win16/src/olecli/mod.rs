@@ -15,9 +15,11 @@ pub(crate) mod api;
 pub(crate) mod core;
 pub(crate) mod docs;
 pub(crate) mod draw;
+pub(crate) mod handlers;
 pub(crate) mod kinds;
 pub(crate) mod linked;
 pub(crate) mod methods;
+pub(crate) mod network;
 pub(crate) mod objects;
 pub(crate) mod start;
 pub(crate) mod streams;
@@ -42,7 +44,7 @@ pub(crate) fn data_selector(system: &System) -> u16 {
 }
 
 /// Its instance, WinBox's module's: the classes it registers are its.
-fn instance(system: &System) -> u16 {
+pub(crate) fn instance(system: &System) -> u16 {
     system
         .kept_named(NAME)
         .map_or(0, |kept| system.kept[kept].instance())
@@ -149,11 +151,6 @@ async fn or_file(
     Ok(o.call_far(address, &args).await? as u16)
 }
 
-/// Whether a protocol argument is `StdFileEditing`.
-fn std(o: &Ole<'_>, at: u32) -> bool {
-    api::protocol_of(o, at) == Some(api::Protocol::Std)
-}
-
 /// The method of an object called, the answer a word.
 async fn call(o: &Ole<'_>, object: u32, method: Method, args: &[objects::MethodArg]) -> R<u16> {
     api::method(o, object, method, args).await
@@ -187,7 +184,7 @@ export!(ole_query_create_from_clip, b"dww", |o, a| word(
     api::query_from_clip(&o, a[0], a[1] as u16, a[2] as u16, false).await
 ));
 export!(ole_create_link_from_clip, b"dddddww", |o, a| word(
-    api::create_link_from_clip(&o, a[0], a[1], a[2], a[3], a[4]).await
+    api::create_link_from_clip(&o, a[0], a[1], a[2], a[3], a[4], a[5] as u16, a[6] as u16).await
 ));
 export!(ole_create_from_clip, b"dddddww", |o, a| word(
     api::create_from_clip(&o, a[0], a[1], a[2], a[3], a[4], a[5] as u16, a[6] as u16).await
@@ -281,18 +278,10 @@ export!(ole_object_convert, b"dddddd", |o, a| word(
     api::object_convert(&o, a[0], a[1], a[2], a[3], a[4], a[5]).await
 ));
 export!(ole_create_from_template, b"ddddddww", |o, a| word(
-    or_file(
-        &o,
-        33,
-        b"ddddddww",
-        &a,
-        std(&o, a[0]),
-        api::create_by_class(&o, a[0], 0, a[3], a[4], a[5])
-    )
-    .await
+    api::create_from_template(&o, &a).await
 ));
 export!(ole_create, b"ddddddww", |o, a| word(
-    api::create(&o, a[0], a[1], a[2], a[3], a[4], a[5], true).await
+    api::create(&o, handlers::Way::Create, &a).await
 ));
 export!(ole_query_release_status, b"d", |o, a| word(
     call(&o, a[0], Method::QueryReleaseStatus, &[]).await
@@ -304,17 +293,20 @@ export!(ole_query_release_method, b"d", |o, a| word(
     call(&o, a[0], Method::QueryReleaseMethod, &[]).await
 ));
 export!(ole_create_from_file, b"dddddddww", |o, a| word(
-    api::create_from_file(&o, a[0], a[1], a[2], a[3], 0, a[4], a[5], a[6], false).await
+    api::create_from_file(&o, false, &a).await
 ));
 export!(ole_create_link_from_file, b"ddddddddww", |o, a| word(
-    api::create_from_file(&o, a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], true).await
+    api::create_from_file(&o, true, &a).await
 ));
 export!(ole_register_client_doc, b"dddd", |o, a| word(
     docs::register_client_doc(&o, a[0], a[1], a[3]).await
 ));
-export!(ole_revoke_client_doc, b"d", |o, a| word(
+export!(ole_revoke_client_doc, b"d", |o, a| word({
+    // First a handler none of whose objects is left let go (**read out**,
+    // seg2 `0aad`; **measured** by `olehnd`'s `usage`).
+    handlers::free_pending(&o).await?;
     docs::revoke_client_doc(&o, a[0]).await
-));
+}));
 export!(ole_rename_client_doc, b"dd", |o, a| word(
     docs::rename_client_doc(&o, a[0], a[1]).await
 ));
@@ -371,8 +363,85 @@ export!(ole_execute, b"dww", |o, a| word(
     call(&o, a[0], Method::Execute, &[W(a[1] as u16), W(a[2] as u16)]).await
 ));
 export!(ole_create_invisible, b"ddddddwww", |o, a| word(
-    api::create(&o, a[0], a[1], a[2], a[3], a[4], a[5], a[8] as u16 != 0).await
+    api::create(&o, handlers::Way::Invisible, &a).await
 ));
+export!(le_create_invisible, b"dddddwww", |o, a| word(
+    handlers::le_create_invisible(&o, &a).await
+));
+export!(connect_dlg_proc, b"wwwd", |o, a| word(Ok(
+    network::connect_dlg_proc(&o, a[0] as u16, a[1] as u16, a[2] as u16, a[3]).await? as u16
+)));
+export!(set_net_name, b"d", |o, a| word(
+    network::set_net_name(&o, a[0]).await
+));
+export!(check_net_drive, b"dw", |o, a| word(
+    network::check_net_drive(&o, a[0], a[1] as u16).await
+));
+export!(set_next_net_drive, b"ddd", |o, a| word(
+    network::set_next_net_drive(&o, a[0], a[1], a[2]).await
+));
+export!(get_task_visible_window, b"wd", |o, a| word(
+    network::get_task_visible_window(&o, a[0] as u16, a[1]).await
+));
+
+/// A `Def` or `Pb` export: its way's arguments read, then its default or
+/// Paintbrush's handler (`handlers.rs`).
+fn handler_export(engine: &Engine, mut args: Args, ordinal: u16) -> Later<'_> {
+    Box::pin(async move {
+        let Some((way, paintbrush)) = handlers::export_way(ordinal) else {
+            return Ok(Answer::Word(0));
+        };
+        let values = read(engine, &mut args, way.shape());
+        let ole = Ole::new(engine);
+
+        ready(&ole).await?;
+
+        let answer = if paintbrush {
+            handlers::paintbrush(&ole, way, &values).await?
+        } else {
+            handlers::default(&ole, way, &values).await?
+        };
+
+        Ok(Answer::Word(answer))
+    })
+}
+
+macro_rules! handler_exports {
+    ($($ordinal:literal => $name:ident),* $(,)?) => {
+        $(
+            fn $name(engine: &Engine, args: Args) -> Later<'_> {
+                handler_export(engine, args, $ordinal)
+            }
+        )*
+
+        /// A `Def` or `Pb` export by its name.
+        fn handler_named(name: &str) -> Option<Implementation> {
+            Some(match name {
+                $(stringify!($name) => Implementation::Async($name),)*
+                _ => return None,
+            })
+        }
+    };
+}
+
+#[allow(non_snake_case)]
+mod handler_names {
+    use super::{Engine, Implementation, Later, handler_export};
+    use crate::call::Args;
+
+    handler_exports! {
+        110 => DefLoadFromStream, 111 => DefCreateFromClip, 112 => DefCreateLinkFromClip,
+        113 => DefCreateFromTemplate, 114 => DefCreate, 115 => DefCreateFromFile,
+        116 => DefCreateLinkFromFile, 117 => DefCreateInvisible,
+        800 => PbLoadFromStream, 801 => PbCreateFromClip, 802 => PbCreateLinkFromClip,
+        803 => PbCreateFromTemplate, 804 => PbCreate, 808 => PbCreateFromFile,
+        809 => PbCreateLinkFromFile, 812 => PbCreateInvisible,
+    }
+
+    pub(super) fn named(name: &str) -> Option<Implementation> {
+        handler_named(name)
+    }
+}
 export!(doc_wnd_proc, b"wwwd", |o, a| dword(
     linked::conv_proc(&o, a[0] as u16, a[1] as u16, a[2] as u16, a[3]).await
 ));
@@ -438,9 +507,10 @@ const fn method_shape(ordinal: u16) -> &'static [u8] {
         | 219
         | 222
         | 225
-        | 1001..=1003 => b"d",
+        | 1001..=1003
+        | 807 => b"d",
         // GetData; ObjectLong.
-        301 | 401 | 501 | 601 | 718 | 202 | 229 => b"dwd",
+        301 | 401 | 501 | 601 | 718 | 202 | 229 | 811 => b"dwd",
         // SetData; Execute.
         602 | 702 | 717 | 203 | 228 => b"dww",
         // SaveToStream, Equal, QueryBounds, QueryType, QuerySize, Rename,
@@ -470,14 +540,17 @@ const fn method_shape(ordinal: u16) -> &'static [u8] {
         | 213
         | 221
         | 226
-        | 1004 => b"dd",
+        | 1004
+        | 806 => b"dd",
         // Clone; CopyFromLink.
         303 | 403 | 503 | 604 | 706 | 208 | 209 => b"ddddd",
         // Draw.
-        308 | 408 | 508 | 609 | 214 => b"dwddw",
+        308 | 408 | 508 | 609 | 214 | 805 => b"dwddw",
         // EnumFormats; Show; SetTargetDevice; SetLinkUpdateOptions;
         // RequestData.
-        309 | 409 | 509 | 610 | 701 | 704 | 716 | 1026 | 201 | 205 | 220 | 227 | 1000 => b"dw",
+        309 | 409 | 509 | 610 | 701 | 704 | 716 | 1026 | 201 | 205 | 220 | 227 | 1000 | 810 => {
+            b"dw"
+        }
         // ChangeData.
         310 | 410 | 510 | 611 | 224 => b"dwdw",
         // SetHostNames; QueryName.
@@ -548,6 +621,8 @@ mod method_names {
         229 => LEOBJECTLONG,
         1000 => Ordinal1000, 1001 => Ordinal1001, 1002 => Ordinal1002, 1003 => Ordinal1003,
         1004 => Ordinal1004, 1005 => Ordinal1005,
+        805 => PBDRAW, 806 => PBQUERYBOUNDS, 807 => PBCOPYTOCLIPBOARD, 810 => PBENUMFORMATS,
+        811 => PBGETDATA,
     }
 
     pub(super) fn named(name: &str) -> Option<Implementation> {
@@ -616,6 +691,12 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "OleIsDcMeta" => Implementation::Async(ole_is_dc_meta),
         "MFCALLBACKFUNC" => Implementation::Async(mf_callback_func),
         "DOCWNDPROC" | "SRVRWNDPROC" => Implementation::Async(doc_wnd_proc),
-        _ => return method_names::named(name),
+        "LeCreateInvisible" => Implementation::Async(le_create_invisible),
+        "ConnectDlgProc" => Implementation::Async(connect_dlg_proc),
+        "SetNetName" => Implementation::Async(set_net_name),
+        "CheckNetDrive" => Implementation::Async(check_net_drive),
+        "SetNextNetDrive" => Implementation::Async(set_next_net_drive),
+        "GetTaskVisibleWindow" => Implementation::Async(get_task_visible_window),
+        _ => return method_names::named(name).or_else(|| handler_names::named(name)),
     })
 }

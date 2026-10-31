@@ -63,12 +63,12 @@ import { get, getLong, put, putBytes, putLong, putName } from './streams.js';
  */
 
 /** Each kind's class, as a stream names it, and its clipboard format. */
-export const CLASS_OF: Record<Exclude<Kind, 'gen' | 'le'>, string> = {
+export const CLASS_OF: Record<Exclude<Kind, 'gen' | 'le' | 'pb'>, string> = {
   mf: 'METAFILEPICT',
   bm: 'BITMAP',
   dib: 'DIB',
 };
-export const FORMAT_OF: Record<Exclude<Kind, 'gen' | 'le'>, number> = {
+export const FORMAT_OF: Record<Exclude<Kind, 'gen' | 'le' | 'pb'>, number> = {
   mf: CF_METAFILEPICT,
   bm: CF_BITMAP,
   dib: CF_DIB,
@@ -281,6 +281,7 @@ async function dibFrom(ole: Ole, object: number, handle: number) {
 /** Each kind's block's size. */
 export const BLOCK_OF: Record<Kind, number> = {
   le: LE_BLOCK,
+  pb: LE_BLOCK,
   mf: MF_BLOCK,
   bm: SMALL_BLOCK,
   dib: SMALL_BLOCK,
@@ -293,7 +294,7 @@ export const BLOCK_OF: Record<Kind, number> = {
  */
 export async function staticFromClipboard(
   ole: Ole,
-  kind: Exclude<Kind, 'gen' | 'le'>,
+  kind: Exclude<Kind, 'gen' | 'le' | 'pb'>,
   handle: number,
   client: number,
   doc: number,
@@ -691,7 +692,7 @@ export async function loadStatic(
   out: number
 ): Promise<number> {
   const text = String.fromCharCode(...klass);
-  const kind = (Object.keys(CLASS_OF) as Exclude<Kind, 'gen' | 'le'>[]).find(
+  const kind = (Object.keys(CLASS_OF) as Exclude<Kind, 'gen' | 'le' | 'pb'>[]).find(
     (each) => CLASS_OF[each] === text
   );
   const classAtom = await ole.addAtomText(klass);
@@ -746,7 +747,7 @@ export async function readBlock(ole: Ole, stream: number, size: number): Promise
 
 export async function readStatic(
   ole: Ole,
-  kind: Exclude<Kind, 'gen' | 'le'>,
+  kind: Exclude<Kind, 'gen' | 'le' | 'pb'>,
   object: number,
   stream: number
 ) {
