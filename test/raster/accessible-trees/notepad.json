@@ -4,68 +4,68 @@
     "path": "C:\\CORPUS\\NOTEPAD\\NOTEPAD.EXE"
   },
   "seconds": 8,
-  "calls": 333,
+  "calls": 328,
   "stepMarks": [
     {
-      "calls": 236,
-      "instructions": 5108,
+      "calls": 230,
+      "instructions": 4933,
       "time": 3026
     },
     {
-      "calls": 236,
-      "instructions": 5108,
+      "calls": 230,
+      "instructions": 4933,
       "time": 3026,
       "key": "h",
       "code": "KeyH",
       "kind": "down"
     },
     {
-      "calls": 245,
-      "instructions": 5396,
-      "time": 3027,
+      "calls": 236,
+      "instructions": 4990,
+      "time": 3026,
       "key": "h",
       "code": "KeyH",
       "kind": "up"
     },
     {
-      "calls": 249,
-      "instructions": 5431,
-      "time": 3027,
+      "calls": 236,
+      "instructions": 4990,
+      "time": 3026,
       "key": "i",
       "code": "KeyI",
       "kind": "down"
     },
     {
-      "calls": 255,
-      "instructions": 5489,
-      "time": 3027,
+      "calls": 236,
+      "instructions": 4990,
+      "time": 3026,
       "key": "i",
       "code": "KeyI",
       "kind": "up"
     },
     {
-      "calls": 266,
-      "instructions": 5789,
+      "calls": 260,
+      "instructions": 5614,
       "time": 4033
     },
     {
-      "calls": 266,
-      "instructions": 5789,
+      "calls": 260,
+      "instructions": 5614,
       "time": 4033,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "down"
     },
     {
-      "calls": 270,
-      "instructions": 5824,
+      "calls": 264,
+      "instructions": 5649,
       "time": 4033,
       "key": "Alt_L",
       "code": "AltLeft",
       "kind": "up"
     },
     {
-      "calls": 275,
+      "calls": 282,
       "instructions": 5988,
       "time": 4033,
       "key": "f",
@@ -73,7 +73,7 @@
       "kind": "down"
     },
     {
-      "calls": 275,
+      "calls": 282,
       "instructions": 5988,
       "time": 4033,
       "key": "f",
@@ -81,87 +81,87 @@
       "kind": "up"
     },
     {
-      "calls": 301,
-      "instructions": 6648,
+      "calls": 295,
+      "instructions": 6473,
       "time": 5059
     },
     {
-      "calls": 301,
-      "instructions": 6648,
+      "calls": 295,
+      "instructions": 6473,
       "time": 5059,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "down"
     },
     {
-      "calls": 303,
-      "instructions": 6788,
+      "calls": 295,
+      "instructions": 6487,
       "time": 5059,
       "key": "Down",
       "code": "ArrowDown",
       "kind": "up"
     },
     {
-      "calls": 306,
-      "instructions": 6998,
+      "calls": 299,
+      "instructions": 6753,
       "time": 6085
     },
     {
-      "calls": 306,
-      "instructions": 6998,
+      "calls": 299,
+      "instructions": 6753,
       "time": 6085,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "down"
     },
     {
-      "calls": 309,
-      "instructions": 7265,
+      "calls": 301,
+      "instructions": 6986,
       "time": 6085,
       "key": "Right",
       "code": "ArrowRight",
       "kind": "up"
     },
     {
-      "calls": 312,
-      "instructions": 7475,
+      "calls": 305,
+      "instructions": 7230,
       "time": 7111
     },
     {
-      "calls": 312,
-      "instructions": 7475,
+      "calls": 305,
+      "instructions": 7230,
       "time": 7111,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 312,
-      "instructions": 7485,
+      "calls": 307,
+      "instructions": 7370,
       "time": 7111,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 312,
-      "instructions": 7485,
-      "time": 7111,
+      "calls": 308,
+      "instructions": 7440,
+      "time": 7112,
       "key": "Escape",
       "code": "Escape",
       "kind": "down"
     },
     {
-      "calls": 312,
+      "calls": 308,
       "instructions": 7485,
-      "time": 7111,
+      "time": 7112,
       "key": "Escape",
       "code": "Escape",
       "kind": "up"
     },
     {
-      "calls": 333,
-      "instructions": 7917,
+      "calls": 328,
+      "instructions": 7812,
       "time": 8137
     }
   ],

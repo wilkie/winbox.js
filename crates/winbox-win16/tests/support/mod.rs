@@ -299,6 +299,7 @@ pub const AGREEING: &[&str] = &[
     "oledde",
     "olepbd",
     "olepbr",
+    "swpunc",
     "olesrv",
     "oleemb",
     "olehnd",

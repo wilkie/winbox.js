@@ -11,7 +11,7 @@ import { askText } from './DefWindowProc.js';
 import { harvestAll, lockTouched } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
-import { eraseDue } from './erase.js';
+import { eraseDue, syncPaintFrom } from './erase.js';
 import { type Insert } from './desktop.js';
 import { GetSysModalWindow } from './userwin.js';
 import { GetWindowTask } from './window-queries.js';
@@ -508,6 +508,7 @@ export async function showRaster(
     parent.needsErase = true;
   }
 
+  noteShownSlot(system, shown, clientBefore, before);
   await eraseDue(system);
 
   if (changes || zoom) {
@@ -1487,13 +1488,88 @@ export async function positionRaster(
   cy: number,
   flags: number
 ) {
-  const move = await positionChanging(system, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags);
+  const taken = takeDeferSlots(system, 1);
 
-  if (move) {
-    await positionChanged(system, [move]);
+  try {
+    const move = await positionChanging(system, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags);
+
+    if (move) {
+      await positionChanged(system, [{ ...move, slot: taken ? 0 : null }]);
+    }
+  } finally {
+    giveDeferSlots(system, taken);
   }
 
   return TRUE;
+}
+
+/**
+ * The block of four entries USER keeps for `BeginDeferWindowPos`, and so
+ * for `SetWindowPos` and `ShowWindow`, which go through it: handed out for
+ * four windows or fewer while no other call has it (`USER.EXE` seg7
+ * `00d7`-`00e4`, its word at 7CCh taken), else a block made afresh, all
+ * noughts (`00e6`-`00ef`, `LocalAlloc` with `LMEM_ZEROINIT`).
+ * `DeferWindowPos` writes an entry's first fields only (`01c4`-`01ea`), so
+ * where the bits of a window go (+16h) stays as the call before left it in
+ * that entry until it is written again: `SetWindowPos` moving a window with
+ * `SWP_NOCOPYBITS` and nothing else writes none (seg7 `1028`-`102c`), and
+ * copies through that rectangle (`moveWithBits`). Each entry's rectangle,
+ * on the screen. The second block of two, at A3Ch, handed out while USER's
+ * word at E0h is set (`00c0`-`00cd`), is not followed.
+ */
+function deferSlots(system: any): number[][] {
+  return (system._deferSlots ??= [0, 1, 2, 3].map(() => [0, 0, 0, 0]));
+}
+
+/** Whether a call of `count` windows has the block of four: taken until `giveDeferSlots`. */
+export function takeDeferSlots(system: any, count: number) {
+  if (count > 4 || system._deferSlotsTaken) {
+    return false;
+  }
+
+  system._deferSlotsTaken = true;
+  return true;
+}
+
+/** The block of four given back, where the call had it. */
+export function giveDeferSlots(system: any, taken: boolean) {
+  if (taken) {
+    system._deferSlotsTaken = false;
+  }
+}
+
+/**
+ * Where `ShowWindow`'s own `SetWindowPos` leaves the bits of a window going,
+ * in the block's first entry where it is free: its whole window unmoved,
+ * else its client area as it kept it, from its corner (seg7 `1028`-`104c`,
+ * `10e3`-`1153`).
+ */
+export function noteShownSlot(system: any, shown: any, clientWas: number[], placeWas: string) {
+  if (system._deferSlotsTaken) {
+    return;
+  }
+
+  const now = [shown.left, shown.top, shown.width, shown.height, shown.state].join();
+
+  if (now === placeWas) {
+    deferSlots(system)[0] = [
+      shown.left,
+      shown.top,
+      shown.left + shown.width,
+      shown.top + shown.height,
+    ];
+    return;
+  }
+
+  const left = shown.left + shown.client.left;
+  const top = shown.top + shown.client.top;
+
+  deferSlots(system)[0] = [
+    left,
+    top,
+    Math.min(shown.left + shown.client.right, left + clientWas[2] - clientWas[0]),
+    Math.min(shown.top + shown.client.bottom, top + clientWas[3] - clientWas[1]),
+  ];
 }
 
 /**
@@ -1729,7 +1805,7 @@ function calcKept(
  */
 export async function positionChanged(
   system: any,
-  moves: NonNullable<Awaited<ReturnType<typeof positionChanging>>>[]
+  moves: (NonNullable<Awaited<ReturnType<typeof positionChanging>>> & { slot?: number | null })[]
 ) {
   const placed: {
     move: (typeof moves)[number];
@@ -1765,6 +1841,11 @@ export async function positionChanged(
    * seg7 `0e09`-`0e38`). */
   let inPlaceSoFar = true;
 
+  /* Whether every window placed was shown: what they uncovered is then
+   * made due in their parent alone, `RDW_NOCHILDREN` (`USER.EXE` seg7
+   * `08c6`-`08d5`, `093f`-`0958`). */
+  const allShown = moves.every((move) => move.flags & SWP_SHOWWINDOW);
+
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
     const shown = window.window;
@@ -1790,6 +1871,26 @@ export async function positionChanged(
       });
     }
 
+    /* Where the bits go, as the entry of USER's block keeps it
+     * (`deferSlots`): left as it was, moved alone with `SWP_NOCOPYBITS`;
+     * else the whole window, where `WM_NCCALCSIZE` was not sent; with it
+     * sent, nowhere with `SWP_NOCOPYBITS`, else its client area. Where it
+     * moves or is sized, as `moveWithBits` worked it out. */
+    const slot = move.slot ?? null;
+    const stale = slot !== null ? deferSlots(system)[slot] : [0, 0, 0, 0];
+    let dest = !move.calc
+      ? flags & SWP_NOCOPYBITS
+        ? stale
+        : [left, top, left + width, top + height]
+      : flags & SWP_NOCOPYBITS
+        ? [0, 0, 0, 0]
+        : [
+            shown.left + shown.client.left,
+            shown.top + shown.client.top,
+            shown.left + shown.client.right,
+            shown.top + shown.client.bottom,
+          ];
+
     if (moved || sized) {
       /* Where a window is locked, the place it leaves, the contexts' bounds
        * and the place it goes are told to the lock (`USER.EXE` seg7
@@ -1806,7 +1907,7 @@ export async function positionChanged(
       }
 
       harvestAll(system);
-      window.desktop.moveWithBits(
+      dest = window.desktop.moveWithBits(
         shown,
         left,
         top,
@@ -1814,7 +1915,10 @@ export async function positionChanged(
         height,
         !(flags & SWP_NOCOPYBITS),
         windowClass?.style ?? 0,
-        sized ? calcKept(move, windowClass?.style ?? 0, origin, clientWas) : null
+        sized ? calcKept(move, windowClass?.style ?? 0, origin, clientWas) : null,
+        allShown,
+        !!move.calc,
+        stale
       );
 
       lockTouched(system, shown, placeOf(shown), DCX_WINDOW);
@@ -1827,9 +1931,16 @@ export async function positionChanged(
       window.desktop.frameChanged(shown);
     }
 
-    /* Sized, its whole frame is due as a region of it (`swpframe`). */
+    if (slot !== null) {
+      deferSlots(system)[slot] = dest;
+    }
+
+    /* Sized, its whole frame is due as a region of it (`swpframe`) -- but
+     * where nothing of it was copied, it is due all over, `WM_NCPAINT` with
+     * 1 (seg7 `08de`-`08f0`; `swpunc`). */
     if (sized) {
-      (shown as any).frameRegion = (shown as any).needsNcPaint;
+      (shown as any).frameRegion =
+        (shown as any).needsNcPaint && !(shown.needsPaint && !(shown as any).dirtyRect);
     }
 
     const lay = !(flags & SWP_NOZORDER) && liesWhereAsked(window.desktop, shown, move.insert);
@@ -1880,7 +1991,7 @@ export async function positionChanged(
       ) {
         window.desktop.showInPlace(shown);
       } else {
-        window.desktop.show(shown);
+        window.desktop.show(shown, true, allShown);
       }
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
       /* Activated, and so brought to the top, unless asked not to be: even
@@ -1958,7 +2069,13 @@ export async function positionChanged(
       after = member.hwnd ?? 0;
     }
   });
-  await eraseDue(system);
+  /* Drawn at once from the parent of the first window placed, where it
+   * shows (seg7 `027a`-`028d`). */
+  const parentOfFirst = moves[0]?.window.window.parent ?? null;
+
+  if (!parentOfFirst || showing(parentOfFirst)) {
+    await syncPaintFrom(system, parentOfFirst);
+  }
 
   /* A frame changed with nothing of its client area to paint is done. */
   for (const { move } of placed) {

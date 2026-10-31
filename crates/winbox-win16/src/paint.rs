@@ -22,6 +22,9 @@ use crate::system::System;
 use crate::windows::Window;
 
 const CS_PARENTDC: u16 = 0x0080;
+const WS_CLIPCHILDREN_STYLE: u32 = 0x0200_0000;
+/// The high word of the flags USER erases a window with (seg1 `7ac1`).
+const ERASE_FLAGS: u32 = 0x0005_0000;
 
 pub const WM_PAINT: u16 = 0x000f;
 pub const WM_ERASEBKGND: u16 = 0x0014;
@@ -130,6 +133,29 @@ impl System {
         window.needs_erase |= erase;
     }
 
+    /// Whether a window's paint waits for a window it is in: one up to the
+    /// first with `WS_CLIPCHILDREN` that has an update region (`USER.EXE`
+    /// seg1 `7a64`). Its paint will draw over the window.
+    pub(crate) fn parent_pending(&self, index: usize) -> bool {
+        let mut up = self.painted(index).parent;
+
+        while let Some(parent) = up {
+            let window = self.painted(parent);
+
+            if window.style & WS_CLIPCHILDREN_STYLE != 0 {
+                return false;
+            }
+
+            if window.needs_paint {
+                return true;
+            }
+
+            up = window.parent;
+        }
+
+        false
+    }
+
     /// The Windows version a window's program was made for.
     pub(crate) fn expected_version(&mut self, index: usize) -> u16 {
         let instance = self.painted(index).instance;
@@ -147,16 +173,31 @@ impl Engine {
         hwnd: u16,
         index: usize,
         due: Option<[i32; 4]>,
+        shape: Option<&ClipRegion>,
     ) -> Result<(), Stop> {
         let region = {
             let mut system = self.system();
             let framed = std::mem::take(&mut system.painted_mut(index).frame_region);
             let window = system.painted(index);
+            let rect = [
+                window.left,
+                window.top,
+                window.left + window.width,
+                window.top + window.height,
+            ];
+            // A region whose box covers it, but not all of it, is a region
+            // (`swpunc`: a window moved, what was copied of it not due).
             let whole = due.is_none_or(|due| {
-                due[0] <= window.left
-                    && due[1] <= window.top
-                    && due[2] >= window.left + window.width
-                    && due[3] >= window.top + window.height
+                due[0] <= rect[0]
+                    && due[1] <= rect[1]
+                    && due[2] >= rect[2]
+                    && due[3] >= rect[3]
+                    && shape.is_none_or(|shape| {
+                        ClipRegion::rect(rect[0], rect[1], rect[2], rect[3])
+                            .subtract(shape)
+                            .kind()
+                            <= 1
+                    })
             });
             let due = if framed {
                 Some([
@@ -240,14 +281,29 @@ impl Engine {
             }
         }
 
-        let hdc = {
+        // USER's entry for the client area with `DCX_INTERSECTRGN` of what
+        // is due, its visible region within it (seg1 `7a83`-`7ac6`:
+        // `GetDCEx` with 50080h; `swpunc`): its clip box what the window is
+        // told is to be erased, nothing where nothing is (`swpframe`). All
+        // of it, where it is due all over. An icon is erased as before,
+        // through `GetDC`.
+        let (hdc, given, icon) = {
             let mut system = self.system();
-            let hdc = system.get_dc(hwnd);
-
-            // Clipped to what is due (`swpframe`): its clip box what the
-            // window is told is to be erased, nothing where nothing is.
             let window = system.painted(index);
-            let clip = window.paint_clip.map(|clip| {
+            let icon = window.placement == crate::windows::Placement::Minimized;
+            let due = window.paint_clip.filter(|_| !icon).map(|clip| {
+                if clip[2] <= clip[0] || clip[3] <= clip[1] {
+                    ClipRegion::EMPTY
+                } else {
+                    let rect = ClipRegion::rect(clip[0], clip[1], clip[2], clip[3]);
+
+                    match &window.paint_shape {
+                        Some(shape) => rect.intersect(shape),
+                        None => rect,
+                    }
+                }
+            });
+            let icon_clip = window.paint_clip.filter(|_| icon).map(|clip| {
                 let (x, y) = (
                     window.left + window.client.left,
                     window.top + window.client.top,
@@ -259,12 +315,23 @@ impl Engine {
                     ClipRegion::rect(clip[0] - x, clip[1] - y, clip[2] - x, clip[3] - y)
                 }
             });
+            let given = due.is_some();
+            let hdc = match due {
+                Some(due) => system.take_entry(
+                    hwnd,
+                    0,
+                    ERASE_FLAGS | crate::window_vis::DCX_INTERSECTRGN,
+                    Some(due),
+                ),
+                None => system.get_dc(hwnd),
+            };
 
-            if let (Some(clip), Some(dc)) = (clip, crate::gdi::dc::dc_of(&system, hdc)) {
+            if let (Some(clip), Some(dc)) = (icon_clip.clone(), crate::gdi::dc::dc_of(&system, hdc))
+            {
                 system.gdi.dcs[dc].state.clip = Some(clip);
             }
 
-            hdc
+            (hdc, given, icon_clip.is_some())
         };
 
         self.send_erase(hwnd, index, hdc).await?;
@@ -272,11 +339,17 @@ impl Engine {
         {
             let mut system = self.system();
 
-            if let Some(dc) = crate::gdi::dc::dc_of(&system, hdc) {
+            if icon && let Some(dc) = crate::gdi::dc::dc_of(&system, hdc) {
                 system.gdi.dcs[dc].state.clip = None;
             }
 
-            system.release_dc(hwnd, hdc)?;
+            // Given back as `EndPaint` gives one, its region given let go
+            // (`7b0e`-`7b13`: seg1 `8805` with 1).
+            if given {
+                system.release_entry(hdc, true);
+            } else {
+                system.release_dc(hwnd, hdc)?;
+            }
         }
 
         Ok(())
@@ -299,29 +372,45 @@ impl Engine {
             let window = system.painted_mut(index);
 
             std::mem::take(&mut window.needs_nc_paint).then(|| {
-                window
-                    .dirty
-                    .filter(|_| window.needs_paint)
-                    .map(|dirty| dirty.area)
+                let dirty = window.dirty.filter(|_| window.needs_paint);
+                let shape = match (dirty, &window.dirty_shape) {
+                    (Some(dirty), Some((shape, mark))) if *mark == dirty.mark => {
+                        Some(shape.clone())
+                    }
+                    _ => None,
+                };
+
+                (dirty.map(|dirty| dirty.area), shape)
             })
         };
 
-        if let Some(due) = nc {
-            self.send_nc_paint(hwnd, index, due).await?;
+        if let Some((due, shape)) = nc {
+            self.send_nc_paint(hwnd, index, due, shape.as_ref()).await?;
         }
 
+        // What it is due cut to its client area as its frame is drawn:
+        // nothing left, it is due no paint (seg1 `7ba0` with 1,
+        // `7bfa`-`7c5b`). The erase goes by what was due before (`7bdc`,
+        // `7a83`).
         let (clip, shape) = {
             let mut system = self.system();
-            let window = system.painted_mut(index);
+            let window = system.painted(index);
             let dirty = window.dirty;
-            let shape = match (dirty, &window.dirty_shape) {
-                (Some(dirty), Some((shape, mark))) if *mark == dirty.mark => Some(shape.clone()),
-                _ => None,
-            };
+            let due = (window.needs_paint && dirty.is_some()).then(|| system.update_region(index));
+
+            if let Some(due) = &due {
+                let client = system.client_on_screen(index);
+                let erase = system.painted(index).needs_erase;
+
+                system.set_update_of(index, due.intersect(&client), erase);
+                system.painted_mut(index).needs_erase = erase;
+            }
+
+            let window = system.painted_mut(index);
             let kept = (window.paint_clip, window.paint_shape.take());
 
             window.paint_clip = dirty.map(|dirty| dirty.area);
-            window.paint_shape = shape;
+            window.paint_shape = due;
             kept
         };
 
@@ -332,6 +421,105 @@ impl Engine {
         if let Some(window) = system.windows[index].as_mut() {
             window.paint_clip = clip;
             window.paint_shape = shape;
+        }
+
+        Ok(())
+    }
+
+    /// What the end of `SetWindowPos` draws at once (`USER.EXE` seg7
+    /// `0286`-`028d`, seg1 `7913`), from the parent of the windows it
+    /// placed -- the desktop for none -- with `DSP_ENUMCLIPPEDCHILDREN`. A
+    /// window whose paint waits for a window it is in is passed over with
+    /// the windows in it (`798d`-`799f`, `7a64`); one due its frame is sent
+    /// `WM_NCPAINT`, and one due an erase is erased where it has an update
+    /// region (`79a2`-`79d8`, `7930`-`7961`), one of another task sent
+    /// `WM_SYNCPAINT` instead and the windows in it left (`79e6`-`7a02`);
+    /// then the windows in it, front to back, where it has
+    /// `WS_CLIPCHILDREN` -- the desktop has -- a child of another task
+    /// passed over (`796a`-`797f`, `7a04`-`7a59`). The TypeScript engine's
+    /// `syncPaintFrom`.
+    pub(crate) async fn sync_paint_from(&self, start: Option<usize>) -> Result<(), Stop> {
+        let mut work: Vec<(Option<usize>, bool)> = vec![(start, false)];
+
+        while let Some((at, checked)) = work.pop() {
+            if let Some(index) = at {
+                let (hwnd, act) = {
+                    let mut system = self.system();
+                    let Some(window) = system.windows[index].as_ref() else {
+                        continue;
+                    };
+
+                    if !checked && system.parent_pending(index) {
+                        continue;
+                    }
+
+                    let hwnd = window.hwnd;
+                    let mut act = None;
+
+                    if window.needs_nc_paint || window.needs_erase {
+                        if window.visible {
+                            // With no update region it is not erased
+                            // (`79ce`-`79d8`); a frame changed in place is
+                            // due its frame alone, kept as an empty box
+                            // (`frame_changed`): it has one.
+                            if !window.needs_paint && window.dirty.is_none() {
+                                system.painted_mut(index).needs_erase = false;
+                            }
+
+                            act = Some(system.mine(hwnd));
+                        } else {
+                            let window = system.painted_mut(index);
+
+                            window.needs_nc_paint = false;
+                            window.needs_erase = false;
+                        }
+                    }
+
+                    (hwnd, act)
+                };
+
+                match act {
+                    Some(false) => {
+                        self.send_message(hwnd, WM_SYNCPAINT, 0, &mut Param::Value(0))
+                            .await?;
+                        continue;
+                    }
+                    Some(true) if self.system().painted(index).paints_itself() => {
+                        self.sync_paint(hwnd).await?;
+                    }
+                    _ => {}
+                }
+            }
+
+            let system = self.system();
+            let clips = at.is_none_or(|index| {
+                system
+                    .windows
+                    .get(index)
+                    .and_then(Option::as_ref)
+                    .is_some_and(|window| window.style & WS_CLIPCHILDREN_STYLE != 0)
+            });
+
+            if !clips {
+                continue;
+            }
+
+            let children: Vec<usize> = system
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&child| {
+                    system.windows[child]
+                        .as_ref()
+                        .is_some_and(|window| window.parent == at)
+                        && (at.is_none() || system.mine(system.painted(child).hwnd))
+                })
+                .collect();
+
+            // Front to back: the first taken first.
+            for child in children.into_iter().rev() {
+                work.push((Some(child), true));
+            }
         }
 
         Ok(())
@@ -426,7 +614,7 @@ impl Engine {
         };
 
         if let Some(clip) = nc {
-            self.send_nc_paint(hwnd, index, clip).await?;
+            self.send_nc_paint(hwnd, index, clip, None).await?;
         }
 
         // `rcPaint` is the context's clip box, cut to the client area for
@@ -500,7 +688,7 @@ impl Engine {
             };
 
             if let Some(child_hwnd) = target {
-                self.send_nc_paint(child_hwnd, child, None).await?;
+                self.send_nc_paint(child_hwnd, child, None, None).await?;
             }
         }
 

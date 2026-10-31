@@ -1,6 +1,6 @@
 //! A window moved, sized or put elsewhere in the order of windows as
-//! `SetWindowPos` does it, as winbox.js's `desktop.ts` does: what it keeps
-//! of what it showed, and what is due a paint after.
+//! `SetWindowPos` does it, as the TypeScript engine's `desktop.ts` does:
+//! what it keeps of what it showed, and what is due a paint after.
 //!
 //! **Recorded** by `swpbits`, a pop-up moved over a window beneath it:
 //!
@@ -9,8 +9,9 @@
 //!   `WM_ERASEBKGND`, not `WM_PAINT`. So is a window with a caption, and a
 //!   child in its parent. What could not come with it -- what another
 //!   window covered of it -- is due, and erased at once.
-//! * With `SWP_NOCOPYBITS` nothing is copied, and what of its new place
-//!   already showed it is left as it is: it is due everywhere else.
+//! * With `SWP_NOCOPYBITS`, what of its new place already showed it is
+//!   left as it is, and it is due everywhere else -- the copy going through
+//!   the rectangle the call before left in USER's entry (`stale`).
 //! * Sized, its client area's bits go with the client area, and the rest of
 //!   the window is due; made smaller, nothing is. With `CS_HREDRAW` and a
 //!   new width, or `CS_VREDRAW` and a new height, all of it is due. Moved
@@ -49,7 +50,11 @@
 
 use winbox_raster::ClipRegion;
 
+use crate::invalidate_through::{
+    RDW_ALLCHILDREN, RDW_ERASE, RDW_FRAME, RDW_INVALIDATE, RDW_NOCHILDREN,
+};
 use crate::system::System;
+use crate::window_vis::{DCX_CLIPSIBLINGS, DCX_WINDOW};
 
 const WS_CLIPSIBLINGS: u32 = 0x0400_0000;
 const WS_CLIPCHILDREN: u32 = 0x0200_0000;
@@ -79,32 +84,13 @@ pub enum Insert {
     NotTopmost,
 }
 
-/// A window's place before it moved, and what it was due then, if
-/// anything: the region, and whether it was to be erased.
-type Was = ([i32; 4], Option<(ClipRegion, bool)>);
-
-/// Rows of pixels, `(y, left, right)`, gathered a pixel at a time, row by
-/// row.
-#[derive(Debug, Default)]
-struct Spans(Vec<(i32, i32, i32)>);
-
-impl Spans {
-    fn add(&mut self, x: i32, y: i32) {
-        if let Some(last) = self.0.last_mut()
-            && last.0 == y
-            && last.2 == x
-        {
-            last.2 += 1;
-            return;
-        }
-
-        self.0.push((y, x, x + 1));
-    }
-
-    fn region(&self) -> ClipRegion {
-        ClipRegion::from_spans(&self.0)
-    }
-}
+/// A window's place before it moved, and what it was due then, if part of
+/// it: the region, whether it was to be erased, and what of it the walk
+/// gave.
+type Was = (
+    [i32; 4],
+    Option<(ClipRegion, bool, Option<Option<ClipRegion>>)>,
+);
 
 /// A window's place: left, top, right, bottom.
 fn place_of(system: &System, index: usize) -> [i32; 4] {
@@ -140,21 +126,13 @@ pub(crate) enum Kept {
     Bits { rect: [i32; 4], delta: (i32, i32) },
 }
 
-/// Whether a box lies wholly within another: left, top, right, bottom.
-fn within(inner: [i32; 4], outer: [i32; 4]) -> bool {
-    inner[0] >= outer[0] && inner[1] >= outer[1] && inner[2] <= outer[2] && inner[3] <= outer[3]
-}
-
-fn inside([left, top, right, bottom]: [i32; 4], x: i32, y: i32) -> bool {
-    x >= left && x < right && y >= top && y < bottom
-}
-
-fn union(a: [i32; 4], b: [i32; 4]) -> [i32; 4] {
+/// Where two rectangles meet; empty where they do not.
+fn cut(a: [i32; 4], b: [i32; 4]) -> [i32; 4] {
     [
-        a[0].min(b[0]),
-        a[1].min(b[1]),
-        a[2].max(b[2]),
-        a[3].max(b[3]),
+        a[0].max(b[0]),
+        a[1].max(b[1]),
+        a[2].min(b[2]),
+        a[3].min(b[3]),
     ]
 }
 
@@ -393,28 +371,39 @@ impl System {
         self.z_order.splice(at..at, family);
     }
 
-    /// A window moved or sized as `SetWindowPos` moves it: its bits, and
-    /// its children's, taken with it unless `copy` is false; what did not
-    /// come with it due, and what it uncovered due in the windows that show
-    /// there now. Sized, a window whose procedure answered `WM_NCCALCSIZE`
-    /// with what to keep keeps what it said, `kept` (`nccalc`).
-    #[allow(clippy::too_many_lines)]
+    /// A window moved or sized as `SetWindowPos` draws it (`USER.EXE` seg7
+    /// `0526`): its visible region before and after (`0c19`); what is
+    /// copied of its bits through the two (`060b`-`0768`); what showed or
+    /// shows of it and was not copied made due through its parent, its
+    /// children too -- only the parent where every window placed was shown,
+    /// `all_shown` (`07f5`-`0958`) -- and itself made due all over, frame
+    /// and all, where nothing was copied (`08de`-`08f0`). Where the bits go
+    /// is worked out as seg7 `0e8f`-`1166` does: with `nccalc` false, moved
+    /// alone, the whole window, or with `SWP_NOCOPYBITS` the rectangle
+    /// `stale` the entry kept from the call before; with `nccalc`, nowhere
+    /// with `SWP_NOCOPYBITS` or to be drawn again, else the client area as
+    /// `WM_NCCALCSIZE` kept it, `kept` (`nccalc`). The rectangle it went by
+    /// is answered, for the entry. The TypeScript engine's `moveWithBits`.
+    #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
     pub(crate) fn move_with_bits(
         &mut self,
         index: usize,
         place: [i32; 4],
         copy: bool,
         kept: Option<Kept>,
-    ) -> Result<(), crate::call::Stop> {
+        all_shown: bool,
+        nccalc: bool,
+        stale: [i32; 4],
+    ) -> Result<[i32; 4], crate::call::Stop> {
         let [left, top, width, height] = place;
-
-        if !self.showing(index) {
-            return self.place_window(index, left, top, width, height);
-        }
-
-        // Before: who showed where, what the screen showed, and each of the
-        // family's place and what it was due.
-        let before = std::rc::Rc::clone(&self.owners);
+        // Nothing is drawn for a window in one that does not show (seg7
+        // `0557`-`0560`); one hidden has no region before or after.
+        let showing = self.showing(index);
+        let old = if showing {
+            self.placed_region(index)
+        } else {
+            ClipRegion::EMPTY
+        };
         let screen = self.screen_bitmap();
         let bits = screen.indices.borrow().clone();
         let (old_width, old_height) = {
@@ -423,8 +412,10 @@ impl System {
             (shown.width, shown.height)
         };
         let old_client = client_of(self, index);
-        // The window first, then its children, then an icon's title.
-        let mut members: Vec<usize> = std::iter::once(index)
+        let old_place = place_of(self, index);
+        // The window and its children, whose update regions go with them
+        // (seg7 `0b1a`-`0b41`, seg2 `0a1d`); one due all over stays so.
+        let members: Vec<usize> = std::iter::once(index)
             .chain(
                 self.z_order
                     .iter()
@@ -432,341 +423,291 @@ impl System {
                     .filter(|&other| other != index && self.within(other, index)),
             )
             .collect();
-
-        if let Some(title) = self.shown(index).icon_title {
-            members.push(title);
-        }
-
         let was: Vec<Was> = members
             .iter()
             .map(|&member| {
-                let due = self
-                    .shown(member)
-                    .needs_paint
-                    .then(|| (self.update_region(member), self.shown(member).needs_erase));
+                let shown = self.shown(member);
+                let due = (shown.needs_paint && shown.dirty.is_some()).then(|| {
+                    (
+                        self.update_region(member),
+                        shown.needs_erase,
+                        shown.walked.clone(),
+                    )
+                });
 
                 (place_of(self, member), due)
             })
             .collect();
-        // What is not copied for being due (`USER.EXE` seg7 `06a5`-`06e9`):
-        // the window's own update region, where it goes with it, and its
-        // parents' up to one with `WS_CLIPCHILDREN`, where they are; nothing
-        // at all where one of them is due all over. The windows in it are
-        // copied, what they are due and all, and what they are due goes
-        // with them.
-        let due_own = was[0]
-            .1
-            .as_ref()
-            .filter(|_| self.shown(index).dirty.is_some())
-            .map(|(due, _)| due.clone());
-        let mut due_there: Option<ClipRegion> = None;
-        let mut due_all = was[0].1.is_some() && due_own.is_none();
-        let mut up = self.shown(index).parent;
-
-        while let Some(parent) = up {
-            let shown = self.shown(parent);
-
-            if shown.style & WS_CLIPCHILDREN != 0 {
-                break;
-            }
-
-            if shown.needs_paint {
-                if shown.dirty.is_none() {
-                    due_all = true;
-                } else {
-                    let due = self.update_region(parent);
-
-                    due_there = Some(match due_there {
-                        Some(there) => there.union(&due),
-                        None => due,
-                    });
-                }
-            }
-
-            up = shown.parent;
-        }
+        let title = self.shown(index).icon_title;
+        let title_was = title.map(|title| place_of(self, title));
 
         self.relocate(index, left, top, width, height)?;
+
+        for (k, &member) in members.iter().enumerate() {
+            if let Some((region, erase, walked)) = &was[k].1 {
+                let now = place_of(self, member);
+                let (mx, my) = (now[0] - was[k].0[0], now[1] - was[k].0[1]);
+
+                self.set_update_of(member, region.offset(mx, my), *erase);
+                self.shown_mut(member).walked = walked
+                    .as_ref()
+                    .map(|walked| walked.as_ref().map(|region| region.offset(mx, my)));
+            }
+        }
+
         self.own();
 
+        // Its visible region as it is now (seg7 `05e0`).
+        let now = if showing {
+            self.placed_region(index)
+        } else {
+            ClipRegion::EMPTY
+        };
         let sized = width != old_width || height != old_height;
-        let style = self.class_style(index);
+        let class_style = self.class_style(index);
         let redraw = match kept {
             Some(kept) => kept == Kept::Nothing,
             None => {
-                (style & CS_HREDRAW != 0 && width != old_width)
-                    || (style & CS_VREDRAW != 0 && height != old_height)
+                (class_style & CS_HREDRAW != 0 && width != old_width)
+                    || (class_style & CS_VREDRAW != 0 && height != old_height)
             }
         };
         let new_client = client_of(self, index);
-        let keeps = match kept {
-            Some(Kept::Bits { rect, delta }) => Some((rect, delta)),
-            _ => None,
+        // Where the bits go and how far they come (seg7 `0e8f`-`1166`).
+        let mut dest = [0; 4];
+        let mut delta = (left - old_place[0], top - old_place[1]);
+
+        if !nccalc {
+            dest = if copy { place_of(self, index) } else { stale };
+        } else if copy && !redraw {
+            if let Some(Kept::Bits { rect, delta: by }) = kept {
+                delta = by;
+                dest = cut(rect, new_client);
+            } else if sized {
+                delta = (new_client[0] - old_client[0], new_client[1] - old_client[1]);
+                dest = cut(
+                    new_client,
+                    [
+                        old_client[0] + delta.0,
+                        old_client[1] + delta.1,
+                        old_client[2] + delta.0,
+                        old_client[3] + delta.1,
+                    ],
+                );
+            } else {
+                dest = place_of(self, index);
+            }
+        }
+
+        if !showing {
+            return Ok(dest);
+        }
+
+        // What is copied (seg7 `060b`-`0768`): where the bits go, moved back
+        // to where they come from, within what showed of it; moved to where
+        // they go; less the window's update region and its parents' up to
+        // one with `WS_CLIPCHILDREN` -- nothing where one of them is due
+        // all over -- and within what shows of it now. Nothing where either
+        // region is empty or the window is due all over.
+        let mut copied: Option<ClipRegion> = None;
+        let due_all = {
+            let shown = self.shown(index);
+
+            shown.needs_paint && shown.dirty.is_none()
         };
-        // How far the bits go: with the window, or sized, with its client
-        // area or as its procedure said; without copying, nowhere.
-        let delta = if !copy {
-            (0, 0)
-        } else if let Some((_, delta)) = keeps {
-            delta
-        } else if sized {
-            (new_client[0] - old_client[0], new_client[1] - old_client[1])
-        } else {
-            (left - was[0].0[0], top - was[0].0[1])
-        };
-        let (screen_width, screen_height) = (
-            i32::from(self.display.width),
-            i32::from(self.display.height),
-        );
-        let area = members
-            .iter()
-            .zip(&was)
-            .fold(None, |area: Option<[i32; 4]>, (&member, (old, _))| {
-                let both = union(*old, place_of(self, member));
 
-                Some(area.map_or(both, |area| union(area, both)))
-            })
-            .unwrap_or_default();
-        let ids: Vec<u16> = members.iter().map(|&member| (member + 1) as u16).collect();
-        let mut invalid: Vec<Spans> = members.iter().map(|_| Spans::default()).collect();
-        let mut vacated: Vec<(usize, Spans)> = Vec::new();
-        let mut desktop: Option<[i32; 4]> = None;
+        if dest[0] < dest[2] && dest[1] < dest[3] && old.kind() > 1 && now.kind() > 1 && !due_all {
+            let mut part = Some(
+                ClipRegion::rect(
+                    dest[0] - delta.0,
+                    dest[1] - delta.1,
+                    dest[2] - delta.0,
+                    dest[3] - delta.1,
+                )
+                .intersect(&old)
+                .offset(delta.0, delta.1),
+            );
+            let mut up = Some(index);
 
-        for y in area[1].max(0)..area[3].min(screen_height) {
-            for x in area[0].max(0)..area[2].min(screen_width) {
-                let at = (y * screen_width + x) as usize;
-                let now = self.owners[at];
-                let then = before.get(at).copied().unwrap_or(0);
+            while let Some(window) = up {
+                let Some(left_over) = part.take() else {
+                    break;
+                };
+                let shown = self.shown(window);
+                let next = if !shown.needs_paint {
+                    Some(left_over)
+                } else if shown.dirty.is_some() {
+                    Some(left_over.subtract(&self.update_region(window)))
+                } else {
+                    None
+                };
 
-                if let Some(k) = ids.iter().position(|&id| id == now) {
-                    let (fx, fy) = (x - delta.0, y - delta.1);
-                    let from = (fy * screen_width + fx) as usize;
-                    let valid = !redraw
-                        && fx >= 0
-                        && fy >= 0
-                        && fx < screen_width
-                        && fy < screen_height
-                        && before.get(from).copied() == Some(now)
-                        && (!sized
-                            || members[k] != index
-                            || match keeps {
-                                Some((rect, _)) => inside(rect, x, y) && inside(new_client, x, y),
-                                None => inside(new_client, x, y) && inside(old_client, fx, fy),
-                            })
-                        && !due_all
-                        && !due_own.as_ref().is_some_and(|due| due.contains(fx, fy))
-                        && !due_there.as_ref().is_some_and(|due| due.contains(x, y));
+                part = next.filter(|part| part.kind() > 1);
+                up = shown
+                    .parent
+                    .filter(|&parent| self.shown(parent).style & WS_CLIPCHILDREN == 0);
+            }
 
-                    if !valid {
-                        invalid[k].add(x, y);
-                    } else if delta != (0, 0) {
-                        screen.put(x, y, bits[from]);
-                    }
-                } else if then != 0 && ids.contains(&then) {
-                    if now == 0 {
-                        let pixel = [x, y, x + 1, y + 1];
+            copied = part
+                .map(|part| part.intersect(&now))
+                .filter(|copied| copied.kind() > 1);
+        }
 
-                        desktop = Some(desktop.map_or(pixel, |box_| union(box_, pixel)));
-                    } else {
-                        let other = usize::from(now) - 1;
+        // Blitted through a screen context whose visible region it is (seg7
+        // `0727`-`0768`).
+        if let Some(copied) = &copied
+            && delta != (0, 0)
+        {
+            let (screen_width, screen_height) = (
+                i32::from(self.display.width),
+                i32::from(self.display.height),
+            );
 
-                        if let Some((_, spans)) =
-                            vacated.iter_mut().find(|(window, _)| *window == other)
-                        {
-                            spans.add(x, y);
-                        } else {
-                            let mut spans = Spans::default();
+            for band in &copied.bands {
+                for y in band.top.max(0)..band.bottom.min(screen_height) {
+                    for &(span_left, span_right) in &band.spans {
+                        for x in span_left.max(0)..span_right.min(screen_width) {
+                            let (fx, fy) = (x - delta.0, y - delta.1);
 
-                            spans.add(x, y);
-                            vacated.push((other, spans));
+                            if fx >= 0 && fy >= 0 && fx < screen_width && fy < screen_height {
+                                screen.put(x, y, bits[(fy * screen_width + fx) as usize]);
+                            }
                         }
                     }
                 }
             }
         }
 
-        // The family: due where its bits did not come with it, and where it
-        // was due before, which goes with it.
-        let mut not_copied = ClipRegion::EMPTY;
-        let regions: Vec<ClipRegion> = invalid.iter().map(Spans::region).collect();
+        // What is made due (seg7 `07f5`-`0958`): what showed of it and what
+        // shows, less what was copied. A window nothing of which was copied
+        // is made due all over through itself, frame and all (`08de`-
+        // `08f0`); the rest through its parent, the windows in it too --
+        // only it where every window placed was shown (`093f`-`0958`). An
+        // icon's title, a window of its own, is made due where it was and
+        // is.
+        let mut uncovered = if old.kind() <= 1 {
+            now.clone()
+        } else if now.kind() <= 1 {
+            old.clone()
+        } else {
+            old.union(&now)
+        };
 
-        for (k, &member) in members.iter().enumerate() {
-            let region = regions[k].clone();
-            // A window that paints over its children is due where they are
-            // due as well, as a parent a child was moved in is: Control
-            // Panel's Color, made wider, draws its colours' boxes over
-            // statics that draw nothing.
-            let over = members
-                .iter()
-                .zip(&regions)
-                .filter(|&(&other, _)| other != member && self.paints_over(member, other))
-                .fold(region.clone(), |due, (_, theirs)| due.union(theirs));
-            let moved = {
-                let now = place_of(self, member);
-
-                (now[0] - was[k].0[0], now[1] - was[k].0[1])
-            };
-            let (due, erase) = match &was[k].1 {
-                Some((due, erase)) => (
-                    over.union(&due.offset(moved.0, moved.1)),
-                    *erase || over.kind() > 1,
-                ),
-                None => (over, true),
-            };
-
-            not_copied = not_copied.union(&region);
-
-            {
-                let shown = self.shown_mut(member);
-
-                shown.needs_paint = false;
-                shown.needs_erase = false;
-                shown.dirty = None;
-                shown.dirty_shape = None;
-                shown.quiet_dirty = None;
-            }
-
-            if due.kind() <= 1 {
-                continue;
-            }
-
-            if self.showing(member) {
-                if self.shown(member).paints_itself() {
-                    self.shown_mut(member).needs_nc_paint = true;
-                }
-
-                self.paint_frame(member);
-            }
-
-            let client = client_of(self, member);
-            let part = due.intersect(&ClipRegion::rect(
-                client[0], client[1], client[2], client[3],
-            ));
-
-            self.set_update_of(member, part, erase);
-
-            // A window with no client area to paint that grew is due a
-            // paint still, of nothing: what it newly covers is due in its
-            // frame (`nccalc`: its procedure making its client area empty,
-            // it is sent `WM_ERASEBKGND` and `WM_PAINT` for nothing).
-            if (client[2] <= client[0] || client[3] <= client[1])
-                && !within(place_of(self, member), was[k].0)
-            {
-                let shown = self.shown_mut(member);
-
-                if !shown.needs_paint {
-                    shown.needs_paint = true;
-                    shown.needs_erase = true;
-                    shown.dirty = None;
-                }
-            }
+        if let Some(copied) = &copied {
+            uncovered = uncovered.subtract(copied);
         }
 
-        // What it uncovered: the desktop there drawn again, and each window
-        // that shows there now due there.
-        if let Some(area) = desktop {
-            self.paint_background_in(area);
+        if let (Some(title), Some(title_was)) = (title, title_was) {
+            let title_now = place_of(self, title);
+
+            uncovered = uncovered
+                .union(&ClipRegion::rect(
+                    title_was[0],
+                    title_was[1],
+                    title_was[2],
+                    title_was[3],
+                ))
+                .union(&ClipRegion::rect(
+                    title_now[0],
+                    title_now[1],
+                    title_now[2],
+                    title_now[3],
+                ));
+        }
+
+        if uncovered.kind() <= 1 {
+            return Ok(dest);
+        }
+
+        if copied.is_none() && now.kind() > 1 {
+            self.invalidate_through(
+                Some(index),
+                None,
+                RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN,
+            );
         }
 
         let parent = self.shown(index).parent;
 
-        for (other, spans) in &vacated {
-            if self.windows[*other].is_some() {
-                let frame = parent.is_none() || !self.within(index, *other);
+        self.invalidate_through(
+            parent,
+            Some(&uncovered),
+            RDW_INVALIDATE
+                | RDW_ERASE
+                | if all_shown {
+                    RDW_NOCHILDREN
+                } else {
+                    RDW_ALLCHILDREN
+                },
+        );
 
-                self.due_region(*other, &spans.region(), frame);
-            }
-        }
-
-        // What it uncovered is made due through its parent (seg7
-        // `093f`-`0958`): a parent without `WS_CLIPCHILDREN` is given all of
-        // it, where the windows in it show too (seg1 `40c9`).
-        if let Some(parent) = parent
-            && self.shown(parent).style & WS_CLIPCHILDREN == 0
-        {
-            let spans: Vec<(i32, i32, i32)> = vacated
-                .iter()
-                .filter(|(other, _)| {
-                    self.windows[*other].is_some()
-                        && *other != parent
-                        && self.within(*other, parent)
-                })
-                .flat_map(|(_, some)| some.0.iter().copied())
-                .collect();
-
-            if !spans.is_empty() {
-                self.due_region(parent, &ClipRegion::from_spans(&spans), false);
-            }
-        }
-
-        // A parent that paints over its children is due where the child is.
-        let mut child = index;
-
-        while let Some(up) = self.shown(child).parent {
-            if self.shown(up).style & WS_CLIPCHILDREN != 0 || not_copied.kind() <= 1 {
-                break;
-            }
-
-            self.due_region(up, &not_copied, false);
-            child = up;
-        }
-
-        Ok(())
+        Ok(dest)
     }
 
-    /// Whether a window paints over another: the other is within it, and
-    /// neither it nor any window between them has `WS_CLIPCHILDREN`.
-    fn paints_over(&self, window: usize, other: usize) -> bool {
-        let mut up = self.shown(other).parent;
-
-        while let Some(parent) = up {
-            if self.shown(parent).style & WS_CLIPCHILDREN != 0 {
-                return false;
-            }
-
-            if parent == window {
-                return true;
-            }
-
-            up = self.shown(parent).parent;
-        }
-
-        false
-    }
-
-    /// A window due a paint where `region` is, added to what it was due;
-    /// its frame by `WM_NCPAINT` with `frame`, and an icon's title, which
-    /// has no window procedure, drawn now.
-    fn due_region(&mut self, index: usize, region: &ClipRegion, frame: bool) {
-        if !self.shown(index).paints_itself() {
-            self.paint_frame(index);
-        } else if frame {
-            self.shown_mut(index).needs_nc_paint = true;
-        }
-
-        let client = client_of(self, index);
-        let part = region.intersect(&ClipRegion::rect(
-            client[0], client[1], client[2], client[3],
-        ));
-
-        if part.kind() <= 1 {
-            return;
-        }
-
+    /// A window's visible region as `SetWindowPos` works it out before and
+    /// after it places it (`USER.EXE` seg7 `0c19`): nothing for a window
+    /// hidden, else USER's rule for its whole window, with
+    /// `DCX_CLIPSIBLINGS` where it has `WS_CLIPSIBLINGS` (seg1 `1582`).
+    pub(crate) fn placed_region(&self, index: usize) -> ClipRegion {
         let shown = self.shown(index);
 
-        // Due all of it already, it stays so.
-        if shown.needs_paint && shown.dirty.is_none() {
-            self.shown_mut(index).needs_erase = true;
+        if !shown.visible {
+            return ClipRegion::EMPTY;
+        }
+
+        let flags = DCX_WINDOW
+            | if shown.style & WS_CLIPSIBLINGS != 0 {
+                DCX_CLIPSIBLINGS
+            } else {
+                0
+            };
+
+        self.window_region(index, index, flags)
+    }
+
+    /// A child shown or hidden as `SetWindowPos` draws it (`USER.EXE` seg7
+    /// `0526`): what showed of it as it was, or shows as it is, made due
+    /// through its parent, the windows in it too -- only the parent where
+    /// every window placed was shown (`all_shown`); a window shown made due
+    /// all over through itself, frame and all (`08de`-`08f0`). `old` is its
+    /// region before it was shown or hidden (`placed_region`). The
+    /// TypeScript engine's `placeShown`.
+    pub(crate) fn placed_shown(&mut self, index: usize, old: &ClipRegion, all_shown: bool) {
+        self.own();
+
+        let now = self.placed_region(index);
+        let uncovered = if old.kind() <= 1 {
+            now.clone()
+        } else if now.kind() <= 1 {
+            old.clone()
+        } else {
+            old.union(&now)
+        };
+
+        if uncovered.kind() <= 1 {
             return;
         }
 
-        let due = if shown.needs_paint {
-            self.update_region(index).union(&part)
-        } else {
-            part
-        };
+        if now.kind() > 1 {
+            self.invalidate_through(
+                Some(index),
+                None,
+                RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN,
+            );
+        }
 
-        self.set_update_of(index, due, true);
+        let parent = self.shown(index).parent;
+
+        self.invalidate_through(
+            parent,
+            Some(&uncovered),
+            RDW_INVALIDATE
+                | RDW_ERASE
+                | if all_shown {
+                    RDW_NOCHILDREN
+                } else {
+                    RDW_ALLCHILDREN
+                },
+        );
     }
 }

@@ -431,6 +431,26 @@ impl System {
         self.show_with(index, true);
     }
 
+    /// A child shown as `SetWindowPos` shows it (`placed_shown`): its own
+    /// children show with it. `all_shown`: every window of the call was
+    /// shown.
+    pub(crate) fn show_child(&mut self, index: usize, all_shown: bool) {
+        let old = self.placed_region(index);
+
+        self.shown_mut(index).visible = true;
+        self.placed_shown(index, &old, all_shown);
+    }
+
+    /// A window shown as `SetWindowPos` shows it: a child as
+    /// `show_child`, a window at the top as `show`.
+    pub(crate) fn show_placed(&mut self, index: usize, all_shown: bool) {
+        if self.shown(index).parent.is_some() {
+            self.show_child(index, all_shown);
+        } else {
+            self.show_with(index, true);
+        }
+    }
+
     /// A window shown and made active as `show` does it; with `whole`, all
     /// of it due a paint, else only what it came to show of itself where it
     /// was covered, as a window already shown is made active by
@@ -440,17 +460,7 @@ impl System {
     #[allow(clippy::too_many_lines)]
     pub fn show_with(&mut self, index: usize, whole: bool) {
         if self.shown(index).parent.is_some() {
-            self.shown_mut(index).visible = true;
-            self.own();
-            self.due_whole(index);
-
-            // Its own children show with it.
-            for other in self.z_order.clone() {
-                if other != index && self.shown(other).visible && self.within(other, index) {
-                    self.due_whole(other);
-                }
-            }
-
+            self.show_child(index, true);
             return;
         }
 
@@ -686,8 +696,27 @@ impl System {
         self.paint_frame(index);
         self.title_shows(index);
 
+        let drawn = {
+            let shown = self.shown(index);
+
+            shown.placement == Placement::Minimized && shown.icon.is_some()
+        };
+
+        // Shown, it is due all over through itself, frame and all, the
+        // windows in it too (`USER.EXE` seg7 `08de`-`08f0`): a child shown
+        // while it was hidden was due nothing (`0557`; `swpunc`).
+        if !drawn {
+            self.invalidate_through(
+                Some(index),
+                None,
+                crate::invalidate_through::RDW_INVALIDATE
+                    | crate::invalidate_through::RDW_ERASE
+                    | crate::invalidate_through::RDW_FRAME
+                    | crate::invalidate_through::RDW_ALLCHILDREN,
+            );
+        }
+
         let shown = self.shown_mut(index);
-        let drawn = shown.placement == Placement::Minimized && shown.icon.is_some();
 
         shown.needs_erase = !drawn;
         shown.needs_paint = !drawn;
@@ -819,6 +848,11 @@ impl System {
         } else {
             None
         };
+        // A child hidden is drawn as `SetWindowPos` hides it: what showed of
+        // it made due through its parent, the windows in it too
+        // (`placed_shown`).
+        let child_was = (self.shown(index).parent.is_some() && visible && self.showing(index))
+            .then(|| self.placed_region(index));
 
         // A focus left on a window destroyed is no focus, as `show_raster`
         // has it: a task's windows are taken away one after another as it
@@ -870,7 +904,22 @@ impl System {
             let before = self.owners.clone();
 
             self.own();
-            self.expose_owned(index, &before);
+
+            if let Some(old) = child_was {
+                if old.kind() > 1 {
+                    let parent = self.shown(index).parent;
+
+                    self.invalidate_through(
+                        parent,
+                        Some(&old),
+                        crate::invalidate_through::RDW_INVALIDATE
+                            | crate::invalidate_through::RDW_ERASE
+                            | crate::invalidate_through::RDW_ALLCHILDREN,
+                    );
+                }
+            } else {
+                self.expose_owned(index, &before);
+            }
         }
 
         if let Some(next) = next {

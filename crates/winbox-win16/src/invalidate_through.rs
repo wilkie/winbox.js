@@ -265,9 +265,18 @@ impl System {
                 .filter(|&one| self.shown(one).visible)
                 .collect();
 
-            for child in children {
-                if !self.walk_through(&mut left, child, whole, screen, inner) {
-                    return;
+            // With `RDW_NOCHILDREN` the windows at the top are not walked
+            // (`40e8`): the desktop is given the region, and draws only
+            // where none of them is, having `WS_CLIPCHILDREN`.
+            if flags & RDW_NOCHILDREN != 0 {
+                for child in children {
+                    left = left.subtract(&region_of(self.window_rect(child)));
+                }
+            } else {
+                for child in children {
+                    if !self.walk_through(&mut left, child, whole, screen, inner) {
+                        return;
+                    }
                 }
             }
 
