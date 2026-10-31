@@ -9168,8 +9168,7 @@
    "strblt": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
    "charwidth": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
    "dibget": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "dibset": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "dibtodev": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed"
+   "dibset": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed"
   }
  },
  "gdidmdrw-svga": {
