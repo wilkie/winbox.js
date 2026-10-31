@@ -23,12 +23,11 @@ use crate::gdi::dc::dc_of;
 use crate::gdi::draw::write_rect;
 use crate::system::System;
 
-const RDW_INVALIDATE: u16 = 0x0001;
-const RDW_ERASE: u16 = 0x0004;
-const RDW_VALIDATE: u16 = 0x0008;
-const RDW_ALLCHILDREN: u16 = 0x0080;
-const RDW_UPDATENOW: u16 = 0x0100;
-const RDW_FRAME: u16 = 0x0400;
+use crate::invalidate_through::{
+    RDW_ALLCHILDREN, RDW_ERASE, RDW_ERASENOW, RDW_INVALIDATE, RDW_NOCHILDREN, RDW_UPDATENOW,
+    RDW_VALIDATE,
+};
+use crate::paint::{DSP_ALLCHILDREN, DSP_ENUMCLIPPEDCHILDREN};
 
 impl System {
     /// A window's client area on the screen.
@@ -231,71 +230,125 @@ pub(super) fn exclude_update_rgn(system: &mut System, args: &mut Args) -> Result
     )))
 }
 
-/// A window drawn again, as `RedrawWindow`'s flags ask: its frame drawn
-/// again, the window -- and with `RDW_ALLCHILDREN` its children -- marked to
-/// be erased and painted, and painted at once with `RDW_UPDATENOW`. The
-/// whole of each window: the rectangle and region are not kept, as the
-/// TypeScript engine keeps neither. Validating leaves the box of what was
-/// due where it was, only no longer due. Nought for a handle that is no
-/// window of the desktop's, the desktop's own among them.
+/// `RedrawWindow` (`USER.EXE` seg1 `aabf`, `3e1e`, `3ed7`; `rdwwalk`). The
+/// TypeScript engine's `RedrawWindow`. **Read out**:
+///
+/// * A handle that is no window, or a region that is no region, answers
+///   nought (`aac8`, `aadd`-`aaec`, KERNEL's `HandleParamError`); flags
+///   above 0FFFh are warned of and go on (`aaef`-`aafa`). Else it answers
+///   1, for a window that does not show too (`3ecd`).
+/// * The rectangle or region is in the client area's terms, put on the
+///   screen (`3e5c`-`3ebb`); with neither, all of the window. Only with
+///   `RDW_INVALIDATE` or `RDW_VALIDATE` (`3e56`).
+/// * Made due or validated through USER's walk (`invalidate_through`).
+/// * Then `RDW_UPDATENOW` paints the window, and the windows in it but with
+///   `RDW_NOCHILDREN` (`3f93`-`3fad`, seg1 `441d`); else `RDW_ERASENOW`
+///   draws the frames and erases now (`3faf`-`3fcf`, seg1 `7913`): the
+///   windows in it with `RDW_ALLCHILDREN`, none with `RDW_NOCHILDREN`, else
+///   those of a window with `WS_CLIPCHILDREN`.
 pub(super) fn redraw_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let windows = {
+        let (index, hwnd, flags) = {
             let mut system = engine.system();
             let hwnd = args.word(&system);
-            let _rect = args.dword(&system);
-            let _hrgn = args.word(&system);
+            let far = args.dword(&system);
+            let hrgn = args.word(&system);
             let flags = args.word(&system);
-            let Some(index) = system.window_named(hwnd) else {
-                return Ok(Answer::Word(0));
+            // The desktop's own handle is the desktop, as none is
+            // (`3e2d`-`3e31`).
+            let desktop = system.handles.lookup(crate::handles::Object::Desktop);
+            let index = if hwnd == 0 || Some(hwnd) == desktop {
+                None
+            } else {
+                let Some(index) = system.window_named(hwnd) else {
+                    return Ok(Answer::Word(0));
+                };
+
+                Some(index)
             };
-            let mut windows = vec![index];
+            let given = if hrgn == 0 {
+                None
+            } else {
+                let Some((_, shape)) = system.region_named(hrgn) else {
+                    return Ok(Answer::Word(0));
+                };
 
-            if flags & RDW_ALLCHILDREN != 0 {
-                windows.extend(
-                    system
-                        .z_order
-                        .iter()
-                        .copied()
-                        .filter(|&other| other != index && system.within(other, index)),
-                );
-            }
+                Some(shape)
+            };
+            let rect = system.rect_given(far);
+            let (x, y) = index.map_or((0, 0), |index| {
+                let window = system.shown(index);
 
-            for &window in &windows {
-                if flags & RDW_INVALIDATE != 0 {
-                    if flags & RDW_FRAME != 0 {
-                        system.paint_frame(window);
+                (
+                    window.left + window.client.left,
+                    window.top + window.client.top,
+                )
+            });
+            let region = if flags & (RDW_INVALIDATE | RDW_VALIDATE) == 0 {
+                None
+            } else if let Some(shape) = &given {
+                Some(shape.offset(x, y))
+            } else {
+                rect.map(|[left, top, right, bottom]| {
+                    ClipRegion::rect(left + x, top + y, right + x, bottom + y)
+                })
+            };
+
+            match index {
+                Some(index) => {
+                    // Where a window is locked, what is made due is told to
+                    // it as drawn (`3f41`-`3f7c`).
+                    let told = match &given {
+                        Some(shape) => {
+                            let bounds = shape.bounds();
+
+                            Some([bounds.left, bounds.top, bounds.right, bounds.bottom])
+                        }
+                        None => rect,
+                    };
+
+                    if !system.redraw_through(index, region.as_ref(), flags, told) {
+                        return Ok(Answer::Word(1));
                     }
-
-                    let shown = system.windows[window].as_mut().expect("a window");
-
-                    shown.needs_paint = true;
-                    shown.dirty = None;
-                    shown.dirty_shape = None;
-                    shown.needs_erase |= flags & RDW_ERASE != 0;
                 }
-
-                if flags & RDW_VALIDATE != 0 {
-                    let shown = system.windows[window].as_mut().expect("a window");
-
-                    shown.needs_paint = false;
-                    shown.needs_erase = false;
-                }
+                None => system.invalidate_through(None, region.as_ref(), flags),
             }
 
-            if flags & RDW_UPDATENOW == 0 {
-                return Ok(Answer::Word(1));
-            }
-
-            windows
-                .into_iter()
-                .filter_map(|window| system.windows[window].as_ref().map(|shown| shown.hwnd))
-                .filter(|&hwnd| hwnd != 0)
-                .collect::<Vec<_>>()
+            (index, hwnd, flags)
         };
 
-        for hwnd in windows {
-            engine.update_window(hwnd).await?;
+        if flags & RDW_UPDATENOW != 0 {
+            let children = flags & RDW_NOCHILDREN == 0;
+
+            if index.is_some() {
+                engine.update_now(hwnd, children).await?;
+            } else if children {
+                // The desktop's own drawn already; the windows at the top,
+                // front to back (`44c5`-`450e`).
+                let tops: Vec<u16> = {
+                    let system = engine.system();
+
+                    system
+                        .windows_in(None)
+                        .into_iter()
+                        .map(|top| system.shown(top).hwnd)
+                        .collect()
+                };
+
+                for top in tops {
+                    engine.update_now(top, true).await?;
+                }
+            }
+        } else if flags & RDW_ERASENOW != 0 {
+            let dsp = if flags & RDW_NOCHILDREN != 0 {
+                0
+            } else if flags & RDW_ALLCHILDREN != 0 {
+                DSP_ALLCHILDREN
+            } else {
+                DSP_ENUMCLIPPEDCHILDREN
+            };
+
+            engine.sync_paint_from(index, dsp).await?;
         }
 
         Ok(Answer::Word(1))

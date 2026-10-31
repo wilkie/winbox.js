@@ -64,7 +64,9 @@
 #include "probe.h"
 #include "visprobe.h"
 
+#ifndef OUTPUT
 #define OUTPUT "C:\\ORACLE\\SWPUNC.OUT"
+#endif
 
 #define MOVE (SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE)
 #define SIZE (SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE)

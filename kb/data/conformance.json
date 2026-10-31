@@ -24800,6 +24800,80 @@
   },
   "gaps": {}
  },
+ "rdw31": {
+  "probe": "rdw31",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1023,
+  "functions": {
+   "after": {
+    "total": 441,
+    "agreed": 441,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "answer": {
+    "total": 76,
+    "agreed": 76,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "during": {
+    "total": 144,
+    "agreed": 144,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 362,
+    "agreed": 362,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "rdwwalk": {
+  "probe": "rdwwalk",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1064,
+  "functions": {
+   "after": {
+    "total": 470,
+    "agreed": 470,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "answer": {
+    "total": 76,
+    "agreed": 76,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "during": {
+    "total": 156,
+    "agreed": 156,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 362,
+    "agreed": 362,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "rectops": {
   "probe": "rectops",
   "display": "vga",
@@ -27812,6 +27886,64 @@
    "paint": {
     "total": 37,
     "agreed": 37,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 74,
+    "agreed": 74,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "swpunc31": {
+  "probe": "swpunc31",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 234,
+  "functions": {
+   "erase": {
+    "total": 40,
+    "agreed": 40,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "erasedc": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 28,
+    "agreed": 28,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 40,
+    "agreed": 40,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

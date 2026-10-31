@@ -312,6 +312,9 @@ pub const AGREEING: &[&str] = &[
     "oleemb",
     "olehnd",
     "olenet",
+    "rdwwalk",
+    "rdw31",
+    "swpunc31",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

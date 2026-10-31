@@ -1,16 +1,22 @@
 'use strict';
 
-import { TRUE, FALSE } from '../consts.js';
-
+import { ClipRegion } from '../../raster/clip-region.js';
+import { regionOf } from '../gdi/regions.js';
+import { DSP_ALLCHILDREN, DSP_ENUMCLIPPEDCHILDREN, syncPaintFrom } from './erase.js';
+import {
+  RDW_ALLCHILDREN,
+  RDW_ERASENOW,
+  RDW_INVALIDATE,
+  RDW_NOCHILDREN,
+  RDW_UPDATENOW,
+  RDW_VALIDATE,
+  invalidateThrough,
+  redrawThrough,
+} from './invalidate-through.js';
+import { DesktopHandle } from './desktop-handle.js';
+import { tellLock } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
-import { UpdateWindow } from './UpdateWindow.js';
-
-const RDW_INVALIDATE = 0x0001;
-const RDW_ERASE = 0x0004;
-const RDW_VALIDATE = 0x0008;
-const RDW_ALLCHILDREN = 0x0080;
-const RDW_UPDATENOW = 0x0100;
-const RDW_FRAME = 0x0400;
+import { updateNow } from './UpdateWindow.js';
 
 /**
  * The **RedrawWindow** function updates the specified rectangle or region in
@@ -101,63 +107,90 @@ const RDW_FRAME = 0x0400;
  * * `RDW_NOCHILDREN`: Excludes child windows, if any, from the repainting
  *                     operation.
  *
+ * **Read out** (`USER.EXE` seg1 `aabf`, `3e1e`, `3ed7`; [[probe:rdwwalk]]):
+ *
+ * * A handle that is no window, or a region that is no region, answers
+ *   nought (`aac8`, `aadd`-`aaec`, KERNEL's `HandleParamError`); flags
+ *   above 0FFFh are warned of and go on (`aaef`-`aafa`). Else it answers 1,
+ *   for a window that does not show too (`3ecd`).
+ * * The rectangle or region is in the client area's terms, put on the
+ *   screen (`3e5c`-`3ebb`); with neither, all of the window. Only with
+ *   `RDW_INVALIDATE` or `RDW_VALIDATE` (`3e56`).
+ * * Made due or validated through USER's walk (`invalidate-through.ts`).
+ * * Then `RDW_UPDATENOW` paints the window, and the windows in it but with
+ *   `RDW_NOCHILDREN` (`3f93`-`3fad`, seg1 `441d`); else `RDW_ERASENOW` draws
+ *   the frames and erases now (`3faf`-`3fcf`, seg1 `7913`): the windows in it
+ *   with `RDW_ALLCHILDREN`, none with `RDW_NOCHILDREN`, else those of a
+ *   window with `WS_CLIPCHILDREN`.
+ *
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise, it is zero.
  */
 export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
-  const dialog = this.handles.resolve(hwnd);
+  const desktop = this.rasterDesktop;
+  const resolved = hwnd ? this.handles.resolve(hwnd) : null;
+  /* The desktop's own handle is the desktop, as none is (`3e2d`-`3e31`). */
+  const owner = resolved instanceof DesktopHandle ? null : resolved;
 
-  if (!dialog) {
+  if (!desktop || (owner && !(owner instanceof RasterWindow)) || (hwnd && !resolved)) {
     return 0;
   }
 
-  /* On the raster desktop the flags are followed: the frame drawn again, the
-   * window -- and with `RDW_ALLCHILDREN` its children -- marked to be erased
-   * and painted, and painted at once with `RDW_UPDATENOW`. The whole of each
-   * window; the rectangle and region are not kept. */
-  if (dialog instanceof RasterWindow) {
-    const desktop = dialog.desktop;
-    const windows = [dialog.window];
+  const given = hrgnUpdate ? regionOf(this, hrgnUpdate) : null;
 
-    if (fuRedraw & RDW_ALLCHILDREN) {
-      for (const other of desktop.windows) {
-        for (let at = other.parent; at; at = at.parent) {
-          if (at === dialog.window) {
-            windows.push(other);
-            break;
-          }
-        }
-      }
-    }
-
-    for (const window of windows) {
-      if (fuRedraw & RDW_INVALIDATE) {
-        if (fuRedraw & RDW_FRAME) {
-          desktop.paintFrame(window);
-        }
-
-        window.needsPaint = true;
-        (window as any).dirtyRect = undefined;
-        window.needsErase ||= (fuRedraw & RDW_ERASE) !== 0;
-      }
-
-      if (fuRedraw & RDW_VALIDATE) {
-        window.needsPaint = false;
-        window.needsErase = false;
-      }
-    }
-
-    if (fuRedraw & RDW_UPDATENOW) {
-      for (const window of windows) {
-        if (window.hwnd) {
-          await UpdateWindow.call(this, window.hwnd);
-        }
-      }
-    }
-
-    return TRUE;
+  if (hrgnUpdate && !given) {
+    return 0;
   }
 
-  /* Not a window of the desktop's. */
-  return FALSE;
+  const window = owner ? owner.window : null;
+  const x = window ? window.left + window.client.left : 0;
+  const y = window ? window.top + window.client.top : 0;
+  let region: ClipRegion | null = null;
+
+  if (fuRedraw & (RDW_INVALIDATE | RDW_VALIDATE)) {
+    if (given) {
+      region = given.shape.offset(x, y);
+    } else if (lprcUpdate) {
+      region = ClipRegion.rect(
+        lprcUpdate.left + x,
+        lprcUpdate.top + y,
+        lprcUpdate.right + x,
+        lprcUpdate.bottom + y
+      );
+    }
+  }
+
+  if (window) {
+    const box = given ? given.shape.box : lprcUpdate;
+
+    if (!redrawThrough(desktop, window, region, fuRedraw, () => tellLock(this, window, box))) {
+      return 1;
+    }
+  } else {
+    invalidateThrough(desktop, null, region, fuRedraw);
+  }
+
+  if (fuRedraw & RDW_UPDATENOW) {
+    if (window) {
+      await updateNow(this, desktop, window, !(fuRedraw & RDW_NOCHILDREN));
+    } else if (!(fuRedraw & RDW_NOCHILDREN)) {
+      /* The desktop's own drawn already; the windows at the top, front to
+       * back (`44c5`-`450e`). */
+      for (const top of desktop.windows.filter((one: any) => !one.parent)) {
+        await updateNow(this, desktop, top, true);
+      }
+    }
+  } else if (fuRedraw & RDW_ERASENOW) {
+    await syncPaintFrom(
+      this,
+      window,
+      fuRedraw & RDW_NOCHILDREN
+        ? 0
+        : fuRedraw & RDW_ALLCHILDREN
+          ? DSP_ALLCHILDREN
+          : DSP_ENUMCLIPPEDCHILDREN
+    );
+  }
+
+  return 1;
 }

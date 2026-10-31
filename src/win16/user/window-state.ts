@@ -1,5 +1,6 @@
 'use strict';
 
+import { madeFor31 } from './invalidate-through.js';
 import { deliverActivation } from './activation.js';
 import { setFocus } from './dialogs.js';
 import { askCbt, askCbtCreate, HCBT_ACTIVATE, HCBT_MINMAX } from './hooks.js';
@@ -1841,10 +1842,17 @@ export async function positionChanged(
    * seg7 `0e09`-`0e38`). */
   let inPlaceSoFar = true;
 
-  /* Whether every window placed was shown: what they uncovered is then
-   * made due in their parent alone, `RDW_NOCHILDREN` (`USER.EXE` seg7
-   * `08c6`-`08d5`, `093f`-`0958`). */
-  const allShown = moves.every((move) => move.flags & SWP_SHOWWINDOW);
+  /* Whether every window placed was shown, and is of a program made before
+   * 3.10 -- USER's bit 4 of the byte at 26h clear (`madeFor31`): what they
+   * uncovered is then made due in their parent alone, `RDW_NOCHILDREN`
+   * (`USER.EXE` seg7 `08c6`-`08d5`, `093f`-`0958`). A window with
+   * `SWP_NOREDRAW` is not counted (`05c7`). */
+  const allShown = moves.every(
+    (move) =>
+      !(move.flags & SWP_NOREDRAW) &&
+      move.flags & SWP_SHOWWINDOW &&
+      !madeFor31(move.window.desktop, move.window.window)
+  );
 
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;

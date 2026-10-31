@@ -767,12 +767,17 @@ impl Engine {
         // they do, the next asked to go somewhere is looked at as well
         // (`USER.EXE` seg7 `0e09`-`0e38`).
         let mut in_place_so_far = true;
-        // Whether every window placed was shown: what they uncovered is then
-        // made due in their parent alone, `RDW_NOCHILDREN` (`USER.EXE` seg7
-        // `08c6`-`08d5`, `093f`-`0958`).
-        let all_shown = changes
-            .iter()
-            .all(|change| change.flags & SWP_SHOWWINDOW != 0);
+        // Whether every window placed was shown, and is of a program made
+        // before 3.10 -- USER's bit 4 of the byte at 26h clear
+        // (`made_for_31`): what they uncovered is then made due in their
+        // parent alone, `RDW_NOCHILDREN` (`USER.EXE` seg7 `08c6`-`08d5`,
+        // `093f`-`0958`). A window with `SWP_NOREDRAW` is not counted
+        // (`05c7`).
+        let all_shown = changes.iter().all(|change| {
+            change.flags & SWP_NOREDRAW == 0
+                && change.flags & SWP_SHOWWINDOW != 0
+                && !self.system().made_for_31(change.index)
+        });
         // Drawn at once from the parent of the first window placed
         // (seg7 `027a`-`028d`).
         let parent_of_first = changes.first().and_then(|change| {
@@ -1005,7 +1010,8 @@ impl Engine {
             .await?;
 
         if parent_of_first.is_none_or(|parent| self.system().showing(parent)) {
-            self.sync_paint_from(parent_of_first).await?;
+            self.sync_paint_from(parent_of_first, crate::paint::DSP_ENUMCLIPPEDCHILDREN)
+                .await?;
         }
 
         // A frame changed with nothing of its client area to paint is done.

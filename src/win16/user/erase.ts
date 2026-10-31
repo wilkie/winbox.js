@@ -34,7 +34,10 @@ const ERASE_FLAGS = 0x00050000;
  * `WM_NCPAINT` to a window whose frame is due: 1 for all of it, or a
  * region of the screen for the part due, a handle of its own made for the
  * message and deleted after it (`showseq`: a window a pop-up had covered
- * part of, as the pop-up went).
+ * part of, as the pop-up went). Where what it is due is a region of its
+ * own, `shape`, a copy of it, whatever it covers (`USER.EXE` seg1
+ * `7ba0`-`7be4`, `7b52`; [[probe:rdwwalk]]); 1 where it is due all of
+ * itself (`7bab`).
  */
 export async function sendNcPaint(
   system: any,
@@ -45,6 +48,7 @@ export async function sendNcPaint(
 ) {
   const window: any = dialog.window;
   const windowClass = system.handles.retrieve(dialog.options.windowClass);
+  let copy: ClipRegion | null = null;
 
   /* Its frame changed, or it was sized: a region of all of it
    * (`swpframe`). */
@@ -52,26 +56,36 @@ export async function sendNcPaint(
     window.frameRegion = false;
     due = [window.left, window.top, window.left + window.width, window.top + window.height];
   } else if (
+    due &&
+    shape &&
+    shape.kind > 1 &&
+    shape.box.left === due[0] &&
+    shape.box.top === due[1] &&
+    shape.box.right === due[2] &&
+    shape.box.bottom === due[3]
+  ) {
+    copy = shape;
+  } else if (
     !due ||
     (due[0] <= window.left &&
       due[1] <= window.top &&
       due[2] >= window.left + window.width &&
-      due[3] >= window.top + window.height &&
-      /* A region whose box covers it, but not all of it, is a region
-       * (`swpunc`: a window moved, what was copied of it not due). */
-      (!shape ||
-        ClipRegion.rect(
-          window.left,
-          window.top,
-          window.left + window.width,
-          window.top + window.height
-        ).subtract(shape).kind <= 1))
+      due[3] >= window.top + window.height)
   ) {
+    /* A box with no region of its own that covers it: all of it. */
     due = undefined;
   }
 
   const whole = !due;
   const region = due ? CreateRectRgn.call(system, due[0], due[1], due[2], due[3]) : 1;
+
+  if (copy) {
+    const made = system.handles.resolve(region);
+
+    if (made) {
+      made.shape = copy;
+    }
+  }
 
   await system.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, region, 0);
 
@@ -218,7 +232,7 @@ export async function eraseDue(system: any) {
 /** `DoSyncPaint`'s flags (`USER.EXE` seg1 `7913`). */
 export const DSP_ENUMCLIPPEDCHILDREN = 0x0004;
 const DSP_NOCHECKPARENTS = 0x0010;
-const DSP_ALLCHILDREN = 0x0020;
+export const DSP_ALLCHILDREN = 0x0020;
 const WS_CLIPCHILDREN = 0x02000000;
 
 /**
@@ -303,7 +317,13 @@ export async function syncPaintFrom(system: any, window: any, flags = DSP_ENUMCL
     }
   }
 
-  if (!(flags & DSP_ALLCHILDREN || !window || window.style & WS_CLIPCHILDREN)) {
+  /* The windows in it with `DSP_ALLCHILDREN`, or with
+   * `DSP_ENUMCLIPPEDCHILDREN` where it has `WS_CLIPCHILDREN` -- the desktop
+   * has (`796a`-`797c`). */
+  if (!(
+    flags & DSP_ALLCHILDREN ||
+    (flags & DSP_ENUMCLIPPEDCHILDREN && (!window || window.style & WS_CLIPCHILDREN))
+  )) {
     return;
   }
 
