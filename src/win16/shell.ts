@@ -2,6 +2,8 @@
 
 /** @namespace Shell */
 
+import { HERETHARBETYGARS, WCI } from './shell/internal-procs.js';
+
 import { DragFinish, DragQueryFile, DragQueryPoint } from './shell/drag.js';
 import { AboutDlgProc, ShellAbout } from './shell/about.js';
 import {
@@ -113,7 +115,13 @@ export class Shell extends Module {
     exports[102] = [RegisterShellHook, 'RegisterShellHook', 4, [HWND, UINT], BOOL];
     exports[103] = [ShellHookProc, 'ShellHookProc', 8, [INT, WPARAM, LPARAM], LRESULT];
 
-    exports[100] = [Shell.stub, 'HERETHARBETYGARS', 10];
+    exports[100] = [
+      HERETHARBETYGARS,
+      'HERETHARBETYGARS',
+      10,
+      [HWND, UINT, WPARAM, LPARAM],
+      LRESULT,
+    ];
     exports[104] = [Shell.stub, 'Unknown', 2];
     exports[105] = [Shell.stub, 'Unknown', 0];
     exports[106] = [Shell.stub, 'Unknown', 2];
@@ -132,7 +140,7 @@ export class Shell extends Module {
     exports[122] = [Shell.stub, 'Unknown', 4];
     exports[125] = [Shell.stub, 'Unknown', 0];
     exports[126] = [Shell.stub, 'Unknown', 10];
-    exports[32] = [Shell.stub, 'WCI', 10];
+    exports[32] = [WCI, 'WCI', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT];
     exports[119] = [Shell.stub, 'Unknown', 10];
     return exports;
   }

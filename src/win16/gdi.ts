@@ -2,6 +2,8 @@
 
 /** @namespace Gdi */
 
+import { ExportedData, emptyGpTable } from './exported-data.js';
+
 import { AbortDoc, EndDoc, EndPage, SetAbortProc, StartDoc, StartPage } from './gdi/printing.js';
 import {
   CloseMetaFile,
@@ -268,9 +270,13 @@ import {
   MakeObjectPrivate,
   SelectBitmap,
   ShrinkGDIHeap,
+  GDISeeGDIDo,
+  GDIInit2,
+  FinalGDIInit,
   WEP,
 } from './gdi/system-exports.js';
 import {
+  Brute,
   DMBitBlt,
   DMColorInfo,
   DMDibBits,
@@ -295,6 +301,15 @@ import { ExtTextOut } from './gdi/ExtTextOut.js';
  *
  * @memberof Win16
  */
+/**
+ * `FTrapping0`, ordinal 355: a word of GDI's data, at 2EFh (`GDI.EXE`'s
+ * entry table, seg48 `02ef`), FFFFh in the file and nought once GDI has
+ * hooked the divide fault as it starts (seg2 `011a`); GDI's own fault
+ * handler reads it, 1 while its arithmetic is guarded (seg1 `54c5`-`5548`).
+ * WinBox's GDI segment reads nought there. **Recorded** by `ugaps`.
+ */
+const FTRAPPING0 = new ExportedData({ offset: 0x2ef });
+
 export class Gdi extends Module {
   declare static ANSI_FIXED_FONT: any;
   declare static ANSI_VAR_FONT: any;
@@ -425,7 +440,7 @@ export class Gdi extends Module {
       [PaintRgn, 'PaintRgn', 4, [HDC, HRGN], BOOL],
       [SelectClipRgn, 'SelectClipRgn', 4, [HDC, HRGN], INT],
       [SelectObject, 'SelectObject', 4, [HDC, HGDIOBJ], HGDIOBJ],
-      [Gdi.stub, '__GP'],
+      [emptyGpTable(), '__GP', 0],
       [CombineRgn, 'CombineRgn', 8, [HRGN, HRGN, HRGN, INT], INT],
       [CreateBitmap, 'CreateBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [CreateBitmapIndirect, 'CreateBitmapIndirect', 4, [FARPTR], HBITMAP],
@@ -602,7 +617,13 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       // 200 //
       [Gdi.stub, 'unknown'],
-      [DMBitBlt, 'DMBitBlt', 32, [FARPTR, INT, INT, FARPTR, INT, INT, INT, INT, DWORD, FARPTR, FARPTR], BOOL],
+      [
+        DMBitBlt,
+        'DMBitBlt',
+        32,
+        [FARPTR, INT, INT, FARPTR, INT, INT, INT, INT, DWORD, FARPTR, FARPTR],
+        BOOL,
+      ],
       [DMColorInfo, 'DMColorInfo', 12, [FARPTR, DWORD, FARPTR], DWORD],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -613,15 +634,69 @@ export class Gdi extends Module {
       [DMPixel, 'DMPixel', 16, [FARPTR, INT, INT, DWORD, FARPTR], DWORD],
       // 210 //
       [DMRealizeObject, 'DMRealizeObject', 18, [FARPTR, INT, FARPTR, FARPTR, FARPTR], DWORD],
-      [DMStrBlt, 'DMStrBlt', 30, [FARPTR, INT, INT, FARPTR, FARPTR, INT, FARPTR, FARPTR, FARPTR], DWORD],
+      [
+        DMStrBlt,
+        'DMStrBlt',
+        30,
+        [FARPTR, INT, INT, FARPTR, FARPTR, INT, FARPTR, FARPTR, FARPTR],
+        DWORD,
+      ],
       [DMScanLR, 'DMScanLR', 14, [FARPTR, INT, INT, DWORD, UINT], INT],
-      [Gdi.stub, 'Brute', 0],
-      [DMExtTextOut, 'DMExtTextOut', 40, [FARPTR, INT, INT, FARPTR, FARPTR, INT, FARPTR, FARPTR, FARPTR, FARPTR, FARPTR, UINT], DWORD],
-      [DMGetCharWidth, 'DMGetCharWidth', 24, [FARPTR, FARPTR, UINT, UINT, FARPTR, FARPTR, FARPTR], INT],
-      [DMStretchBlt, 'DMStretchBlt', 40, [FARPTR, INT, INT, INT, INT, FARPTR, INT, INT, INT, INT, DWORD, FARPTR, FARPTR, FARPTR], INT],
+      [Brute, 'Brute', 0, [], DWORD],
+      [
+        DMExtTextOut,
+        'DMExtTextOut',
+        40,
+        [FARPTR, INT, INT, FARPTR, FARPTR, INT, FARPTR, FARPTR, FARPTR, FARPTR, FARPTR, UINT],
+        DWORD,
+      ],
+      [
+        DMGetCharWidth,
+        'DMGetCharWidth',
+        24,
+        [FARPTR, FARPTR, UINT, UINT, FARPTR, FARPTR, FARPTR],
+        INT,
+      ],
+      [
+        DMStretchBlt,
+        'DMStretchBlt',
+        40,
+        [FARPTR, INT, INT, INT, INT, FARPTR, INT, INT, INT, INT, DWORD, FARPTR, FARPTR, FARPTR],
+        INT,
+      ],
       [DMDibBits, 'DMDibBits', 26, [FARPTR, UINT, UINT, UINT, FARPTR, FARPTR, FARPTR, FARPTR], INT],
-      [DMStretchDIBits, 'DMStretchDIBits', 50, [FARPTR, UINT, INT, INT, INT, INT, INT, INT, INT, INT, FARPTR, FARPTR, FARPTR, DWORD, FARPTR, FARPTR, FARPTR], INT],
-      [DMSetDibToDev, 'DMSetDibToDev', 32, [FARPTR, INT, INT, UINT, UINT, FARPTR, FARPTR, FARPTR, FARPTR, FARPTR], INT],
+      [
+        DMStretchDIBits,
+        'DMStretchDIBits',
+        50,
+        [
+          FARPTR,
+          UINT,
+          INT,
+          INT,
+          INT,
+          INT,
+          INT,
+          INT,
+          INT,
+          INT,
+          FARPTR,
+          FARPTR,
+          FARPTR,
+          DWORD,
+          FARPTR,
+          FARPTR,
+          FARPTR,
+        ],
+        INT,
+      ],
+      [
+        DMSetDibToDev,
+        'DMSetDibToDev',
+        32,
+        [FARPTR, INT, INT, UINT, UINT, FARPTR, FARPTR, FARPTR, FARPTR, FARPTR],
+        INT,
+      ],
       // 220 //
       [DMTranspose, 'DMTranspose', 10, [FARPTR, FARPTR, INT]],
       [Gdi.stub, 'unknown'],
@@ -795,7 +870,7 @@ export class Gdi extends Module {
       [GetPhysicalFontHandle, 'GetPhysicalFontHandle', 2, [HDC], HANDLE],
       [GetAspectRatioFilter, 'GetAspectRatioFilter', 2, [HDC], DWORD],
       [ShrinkGDIHeap, 'ShrinkGDIHeap', 0, []],
-      [Gdi.stub, 'FTrapping0'], // TODO: floating-point instructions
+      [FTRAPPING0, 'FTrapping0', 0],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
@@ -848,9 +923,9 @@ export class Gdi extends Module {
       [FastWindowFrame, 'FastWindowFrame', 14, [HDC, [RECT], INT, INT, DWORD], BOOL],
       [GDIMoveBitmap, 'GDIMoveBitmap', 2, [HBITMAP], INT],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'GDIInit2', 4],
+      [GDIInit2, 'GDIInit2', 4, [HANDLE, UINT], UINT],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'FinalGDIInit', 2],
+      [FinalGDIInit, 'FinalGDIInit', 2, [HANDLE], UINT],
       [Gdi.stub, 'unknown'],
       [CreateBitmap, 'CreateUserBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'unknown'],
@@ -914,7 +989,7 @@ export class Gdi extends Module {
       // 450 // https://devblogs.microsoft.com/oldnewthing/20190731-00/?p=102743 :)
       [PolyPolygon, 'PolyPolygon', 12, [HDC, FARPTR, FARPTR, INT], BOOL],
       [CreatePolyPolygonRgn, 'CreatePolyPolygonRgn', 12, [FARPTR, FARPTR, INT, INT], HRGN],
-      [Gdi.stub, 'GDISeeGDIDo', 8],
+      [GDISeeGDIDo, 'GDISeeGDIDo', 8, [UINT, UINT, UINT, UINT], DWORD],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],

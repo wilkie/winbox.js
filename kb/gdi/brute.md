@@ -3,17 +3,20 @@ kind: function
 module: GDI
 name: Brute
 ordinal: 213
-summary: The dispatcher behind GDI's DM helpers -- it calls the display driver's routine on a memory bitmap a printer's driver was handed -- taking its routine in CX, not a function a program can call.
+summary: The dispatcher behind GDI's DM helpers -- it calls the display driver's routine on a memory bitmap a printer's driver was handed -- taking its routine and its words in CX.
 versions:
-  '3.1': stub
-probes: [gdidm]
-records: [notbitmap]
+  '3.1': exact
+probes: [gdidm, ugaps]
+records: [notbitmap, brute]
+source: src/win16/gdi/driver-helpers.ts
 topics: [gdi-internals, printer-drivers]
 ---
 
 ## Observed behaviour
 
 - [[measured]] Through the helpers that jump to it ([[probe:gdidm]]): for a device whose first word is not nought, or one marked `DI`, the answer's high word is the routine's offset in a driver's table -- 4 for `DMColorInfo`, 20h for `DMPixel`.
+- [[measured]] [[probe:ugaps]]: called far with CX 040Ah, as `DMColorInfo`'s jump sets it, and `DMColorInfo`'s arguments, it answers what `DMColorInfo` answers and writes the same colour, the arguments popped -- for a bitmap of four planes, and for a device that is not a bitmap, AX nought.
+- [[read out]] For a device that is not a bitmap AX is nought: `0218` clears it to test the device's first word, and `0224` leaves for `0204` with it so.
 
 ## Inside Windows
 
@@ -30,9 +33,7 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-Its work is done by each helper's own export in both engines (`driver-helpers.ts`, `brute`); the export itself is a stub.
-
-**Recommendation: not needed as an export.** It takes its routine in a register, and nothing outside GDI reaches it. See [[topic:gdi-internals]].
+**Implemented (a).** Both engines take CH and CL from CX, read the arguments CL counts, choose the routine as each helper chooses it -- the device the first argument -- and take the arguments off the stack (`Brute` in `src/win16/gdi/driver-helpers.ts`, `brute_call` in `gdi/driver_helpers.rs`). See [[topic:gdi-internals]].
 
 ## Not yet done
 

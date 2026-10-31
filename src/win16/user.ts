@@ -2,6 +2,8 @@
 
 /** @namespace User */
 
+import { emptyGpTable } from './exported-data.js';
+
 import { QuerySendMessage, ReplyMessage } from './user/reply-message.js';
 import {
   Bear285,
@@ -371,11 +373,13 @@ import { StringFunc } from './user/string-func.js';
 import { GetFilePortName } from './user/print-to-file.js';
 import { DragObject } from './user/drag-object.js';
 import {
+  BozosLiveHere,
   DisableOEMLayer,
   EnableOEMLayer,
   FinalUserInit,
   Hardware_Event,
   UserSeeUserDo,
+  _FFFE_FARFRAME,
 } from './user/internals.js';
 import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
@@ -1146,7 +1150,7 @@ export class User extends Module {
       [Mouse_Event, 'Mouse_Event', 0],
       // 300 //
       undefined,
-      [User.stub, 'BozosLiveHere', 10],
+      [BozosLiveHere, 'BozosLiveHere', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       undefined,
       undefined,
       undefined,
@@ -1198,7 +1202,7 @@ export class User extends Module {
       undefined,
       // 340 //
       undefined,
-      [User.stub, '_FFFE_FARFRAME', 2],
+      [_FFFE_FARFRAME, '_FFFE_FARFRAME', 2, [UINT], DWORD],
       undefined,
       [GetFilePortName, 'GetFilePortName', 4, [FARPTR], INT],
       undefined,
@@ -1368,8 +1372,8 @@ export class User extends Module {
       [EnableScrollBar, 'EnableScrollBar', 6, [HWND, UINT, UINT], BOOL],
       [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
       // The table of the fault handlers of USER (seg1 `b664`), data for
-      // `HasGPHandler`, not a function. See `kb/topics/user-internals.md`.
-      [User.stub, '__GP', 0],
+      // `HasGPHandler`, not a function: WinBox's, empty (`exported-data.ts`).
+      [emptyGpTable(), '__GP', 0],
       undefined,
       undefined,
       undefined,

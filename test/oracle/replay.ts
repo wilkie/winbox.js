@@ -5564,6 +5564,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`): the far
    * call faults, and Windows carries on with AX 81h and six bytes taken. */
   'emscopy:entry': "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+  /* KERNEL's own prefix, THHOOK's 220h and WinOldApCall(1)'s DX, is each
+   * task's prefix's parent in Windows (`kgaps`); WinBox keeps no prefix of
+   * KERNEL's, and a task's prefix has no parent. */
+  'kgaps:kernelpdb': "WinBox keeps no prefix of KERNEL's own",
+  /* DoSignal calls a task's handler with DS its database (`KRNL386.EXE`
+   * seg1 `6154`-`6158`); WinBox's task handles are no selectors. */
+  'kgaps:dosignalds': "WinBox's task handles are not selectors of a task database",
+  /* GetSetKernelDOSProc's first answer is the INT 21h vector KERNEL found
+   * beneath it, a DPMI host's; WinBox has nothing beneath its KERNEL. */
+  'kgaps:dosprocold': 'WinBox has no INT 21h vector beneath its KERNEL',
+  /* GDISeeGDIDo's 1, 2 and 3 are KERNEL's local heap calls on GDI's data
+   * segment; WinBox's GDI segment holds no local heap (`gdi-heap.ts`), as
+   * USER's does not for UserSeeUserDo. */
+  'ugaps:seegdiheap': "WinBox's GDI segment holds no local heap",
   'emscopy:call':
     "EMSCopy's entry is past the end of KERNEL's code once it has started; what Windows does after the fault is not read out",
   /* The PostScript driver names a face it downloads by the global atom it
@@ -5970,6 +5984,8 @@ const RUN_WHOLE = new Set<string>([
   'oledde',
   'olepbd',
   'olepbr',
+  'kgaps',
+  'ugaps',
   'olesrv',
   'oleemb',
   'olehnd',

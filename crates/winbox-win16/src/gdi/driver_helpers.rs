@@ -2,7 +2,7 @@
 //! GDI's `ScanLR`. The twin of `src/win16/gdi/driver-helpers.ts`, where
 //! the read-outs are told: `GDI.EXE` seg13, each `DM` routine a jump to
 //! `Brute` (seg13 `0171`), which calls the display driver's routine of the
-//! same offset for a memory bitmap and answers GDI's data segment and the
+//! same offset for a memory bitmap and answers nought and the
 //! offset for any other device; `VGA.DRV`'s `ColorInfo`, `Pixel`,
 //! `ScanLR` and `EnumObj` for a memory bitmap, which WinBox has, and the
 //! rest of the display driver's routines, which answer nought here.
@@ -20,7 +20,6 @@ use crate::system::System;
 use super::calls::enum_objects::enumerated_objects;
 use super::dc::{DcBitmap, dc_of};
 use super::objects::GdiObject;
-use super::text::enumerate::gdi_data_selector;
 
 /// The word at 8 of a bitmap of the display's four planes of a bit each.
 const FOUR_PLANES: u16 = 0x0104;
@@ -303,9 +302,10 @@ fn scan_bitmap(system: &System, device: u32, x: u16, y: u16, physical: u32, styl
 }
 
 /// What `Brute` answers for a device that is not a memory bitmap (seg13
-/// `0224`): GDI's data segment in AX and the routine's offset in DX.
-fn not_bitmap(system: &mut System, offset: u16) -> u32 {
-    u32::from(offset) << 16 | u32::from(gdi_data_selector(system))
+/// `0218`-`0224`): AX nought, as the device's check left it, and the
+/// routine's offset in DX. **Recorded** by `gdidm` (DX) and `ugaps` (AX).
+fn not_bitmap(_system: &mut System, offset: u16) -> u32 {
+    u32::from(offset) << 16
 }
 
 /// `Brute`'s choice (seg13 `0171`): `None` for a memory bitmap, where the
@@ -570,9 +570,73 @@ fn scan_lr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     })))
 }
 
+/// The words `Brute` moves that are not the arguments: the return address
+/// and its own two (seg13 `0174`-`0187`).
+const BRUTE_OWN_WORDS: u16 = 4;
+
+/// `Brute` called as a helper jumps to it (seg13 `0171`): CH the routine's
+/// offset in the display driver's table, CL the words it moves, the
+/// arguments among them. The routine chosen as each helper chooses it, and
+/// the arguments taken off the stack as the routine's own return takes
+/// them. **Recorded** by `ugaps`.
+fn brute_call(engine: &Engine, _args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (offset, bytes, stack, sp) = {
+            let system = engine.system();
+            let cx = system.cpu.regs[winbox_cpu::CX];
+            let bytes = u32::from((cx & 0xff).saturating_sub(BRUTE_OWN_WORDS)) * 2;
+
+            (
+                cx >> 8,
+                bytes,
+                system.cpu.segments[SS].base,
+                system.cpu.regs[winbox_cpu::SP],
+            )
+        };
+        let mut args = Args::on_stack(stack, u32::from(sp) + 4, bytes);
+        let answer = if offset == ENUM_OBJ {
+            dm_enum_obj(engine, args).await?
+        } else {
+            let mut system = engine.system();
+
+            match offset {
+                COLOR_INFO => dm_color_info(&mut system, &mut args)?,
+                PIXEL => dm_pixel(&mut system, &mut args)?,
+                SCAN_LR => dm_scan_lr(&mut system, &mut args)?,
+                _ => {
+                    let device = if bytes >= 4 {
+                        args.above(&system, bytes - 4)
+                    } else {
+                        0
+                    };
+
+                    Answer::Dword(brute(&mut system, device, offset).unwrap_or(0))
+                }
+            }
+        };
+
+        // The arguments taken off, the return address moved above them.
+        let mut system = engine.system();
+        let at = |offset: u16| stack + u32::from(offset);
+        let ip = system.cpu.bus.read16(at(sp));
+        let cs = system.cpu.bus.read16(at(sp.wrapping_add(2)));
+        let top = sp.wrapping_add(bytes as u16);
+
+        system.cpu.bus.write16(at(top), ip);
+        system.cpu.bus.write16(at(top.wrapping_add(2)), cs);
+        system.cpu.regs[winbox_cpu::SP] = top;
+
+        Ok(Answer::Dword(answer.value().unwrap_or(0)))
+    })
+}
+
 pub fn implementation(name: &str) -> Option<Implementation> {
     if name == "DMEnumObj" {
         return Some(Implementation::Async(dm_enum_obj));
+    }
+
+    if name == "Brute" {
+        return Some(Implementation::Async(brute_call));
     }
 
     Some(Implementation::Sync(match name {

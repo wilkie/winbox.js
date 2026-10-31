@@ -223,6 +223,11 @@ impl System {
             return None;
         }
 
+        // A place in the module's data, not a function (`exported_data.rs`).
+        if let Some((segment, offset)) = self.exported_data_place(kept, ordinal) {
+            return Some(Value::Place(segment, offset));
+        }
+
         let stubs = self.stubs(kept);
 
         Some(Value::Place(stubs, STEP * (ordinal + 1)))

@@ -3,14 +3,20 @@ kind: function
 module: USER
 name: BozosLiveHere
 ordinal: 301
-summary: The body of the edit control's window procedure, entered with USER's data segment in AX by USER's own code: not a procedure a program can call.
-probes: [userproc]
+summary: Two bytes before the edit control's window procedure, which USER's EDIT class names: the procedure itself, entered with DS from AX, as WinBox answers it with its own edit control's.
+versions:
+  '3.1': exact
+probes: [ugaps]
+records: [bozo]
+source: src/win16/user/internals.ts
 topics: [user-internals]
 ---
 
 ## Observed behaviour
 
 - [[measured]] [[probe:userproc]]: it is no class's procedure -- not the desktop's, nor `#32769` to `#32772`'s, nor any control's that `GetClassInfo` gives.
+- [[read out]] USER registers its `EDIT` class with the procedure seg26 `0002`, the export's second byte, past its `jmp short` (seg3 `16d2`-`16e1`): so this is the edit control's procedure, entered with DS from AX as USER sets AX to the window's instance.
+- [[measured]] [[probe:ugaps]], with AX the probe's DS on an edit control of its own: `WM_GETTEXTLENGTH` answers 5 as sent, `WM_SETTEXT` 1 and the text set, `WM_GETTEXT` of 4 three characters.
 
 ## Inside Windows
 
@@ -22,4 +28,4 @@ topics: [user-internals]
 
 ## Implementation
 
-A stub in both engines, and **not applicable**: entered from a program, DS is whatever AX holds, not USER's data segment, and nothing defined follows. WinBox's edit control is its own (`control-classes.ts`).
+**Implemented (a).** Both engines answer it as the `EDIT` class's procedure with the caller's AX (`BozosLiveHere` in `src/win16/user/internals.ts`, `user_internals.rs`). WinBox's edit control is its own and keeps the text itself, so DS does not choose where. See [[topic:user-internals]].

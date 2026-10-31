@@ -36,6 +36,9 @@ pub struct TaskRecord {
     /// Its table of handles, offset and DS (TDB 5Ch, 5Eh), once given
     /// (`DefineHandleTable`).
     pub handle_table: (u16, u16),
+    /// Its Ctrl+Break action and handler (TDB 24h, 26h), once asked for
+    /// (`SetSigHandler`, `kernel_calls/signals.rs`).
+    pub signal_handler: Option<(u16, u32)>,
 }
 
 /// The order and the records.

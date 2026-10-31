@@ -46,6 +46,7 @@ pub mod edit_paint;
 pub mod edit_undo;
 pub mod engine;
 pub mod enumerate;
+mod exported_data;
 pub mod fault;
 mod fault_vector;
 mod files_kernel;

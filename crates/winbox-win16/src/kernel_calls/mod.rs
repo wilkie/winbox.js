@@ -12,8 +12,10 @@ mod internals;
 pub(crate) mod more;
 mod owners;
 mod retail;
+mod signals;
 pub(crate) mod tasks;
 mod temp_files;
+pub(crate) mod thhook;
 
 pub(crate) use file_cdr::{dos3_call, lcreat, open_file, tells};
 pub use temp_files::temp_drive;
@@ -40,6 +42,18 @@ pub struct KernelCalls {
     /// The owners whose icons and cursors have USER's handlers set
     /// (`resources.rs`'s `seed_user_handlers`).
     pub user_handlers_set: std::collections::HashSet<crate::handles::Owner>,
+    /// The global heap's own block, once asked for (`GlobalMasterHandle`).
+    pub master_block: Option<u16>,
+    /// Whether `THHOOK`'s address has been handed out: its words are then
+    /// kept up to date (`thhook.rs`).
+    pub thhook_out: bool,
+    /// KERNEL's own signal handler, the words at 26h and 28h of its data
+    /// (`SetSigHandler`'s action 4).
+    pub kernel_sig_handler: u32,
+    /// The procedure `ToolHelpHook` keeps, at 310h of KERNEL's data.
+    pub tool_help_hook: u32,
+    /// The procedure `GetSetKernelDOSProc` keeps.
+    pub kernel_dos_proc: u32,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {
@@ -108,6 +122,19 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "HasGPHandler" => Implementation::Sync(internals::has_gp_handler),
         "RegisterWinOldApHook" => Implementation::Sync(internals::register_win_old_ap_hook),
         "GetWinOldApHooks" => Implementation::Sync(internals::get_win_old_ap_hooks),
+        "DisableKernel" | "CVWBreak" | "DebugDefineSegment" => {
+            Implementation::Sync(retail::nothing)
+        }
+        "ExitKernel" => Implementation::Sync(internals::exit_kernel),
+        "PatchCodeHandle" => Implementation::Sync(internals::patch_code_handle),
+        "InitLib" => Implementation::Sync(internals::init_lib),
+        "WinOldApCall" => Implementation::Sync(internals::win_old_ap_call),
+        "ToolHelpHook" => Implementation::Sync(internals::tool_help_hook),
+        "GetSetKernelDosProc" => Implementation::Sync(internals::get_set_kernel_dos_proc),
+        "K327" => Implementation::Sync(internals::k327),
+        "SetSigHandler" => Implementation::Sync(signals::set_sig_handler),
+        "DoSignal" => Implementation::Async(signals::do_signal),
+        "GlobalMasterHandle" => Implementation::Sync(thhook::global_master_handle),
         "LimitEmsPages" | "GetCurPID" => Implementation::Sync(retail::nought),
         "GetWinDebugInfo" | "SetWinDebugInfo" | "DiagQuery" => {
             Implementation::Sync(retail::nought_word)

@@ -169,6 +169,10 @@ export class Scheduler {
   resume(handle) {
     this.queue(handle);
 
+    /* What is written down for whatever reads KERNEL's variables, once a
+     * program has been given their address (`kernel/thhook.ts`). */
+    this._modules?.system?._onResume?.();
+
     if (this.task) {
       // A task that has ended stays ended; nothing resumes it.
       if (this.task.ended) {
