@@ -32,10 +32,10 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 
 ## Implementation
 
-In both engines as the VGA's driver has it (`driver-helpers.ts`, `driver_helpers.rs`): the match is `colour-match.ts`'s, the colours and flags named constants from the read-out. On a display whose driver is not `VGA.DRV` a memory bitmap answers nought. [[probe:gdidm]] agrees in both.
+In both engines as the VGA's driver has it (`driver-helpers.ts`, `driver_helpers.rs`): the match is `colour-match.ts`'s, the colours and flags named constants from the read-out. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. On the Hercules and the 256-colour display a memory bitmap answers nought. [[probe:gdidm]] agrees in both engines.
 
-**Recommendation:** done for the VGA.
+**Recommendation:** done for the VGA, the Super VGA and the EGA.
 
 ## Not yet done
 
-- The other display drivers' `ColorInfo` ([[topic:gdi-internals]]).
+- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]).

@@ -21,7 +21,7 @@ GDI exports 283 entries in Windows 3.1. The SDK's headers declare 192 of them as
 
 **The display's life.** USER turns the display off and on around a DOS session with [[fn:GDI.Death]] and [[fn:GDI.Resurrection]], and finishes GDI's start-up with [[fn:GDI.FinalGDIInit]] once it has its own entry points. [[fn:GDI.GDITaskTermination]] and [[fn:GDI.ShrinkGDIHeap]] are what USER tells GDI as a task ends; in Windows 3.1 the first does nothing, and the second gives back GDI's free heap.
 
-**Helpers for drivers.** A printer's driver is handed a memory bitmap where it expects its own device whenever a memory context is made compatible with its device context. It gives that work back to GDI through the `DM` helpers, 201 to 220. Each but [[fn:GDI.DMEnumDFonts]] and [[fn:GDI.DMTranspose]] goes through [[fn:GDI.Brute]], which calls the display driver's routine of the same name on the bitmap. So a printer's driver draws on bitmaps as the display's driver does. The PostScript driver imports 201, 202 and 208 to 212. [[fn:GDI.ScanLR]] is GDI's own call of a driver's `ScanLR`, as a flood fill would make it; [[fn:GDI.DeviceColorMatch]] matches a colour against a table a driver keeps.
+**Helpers for drivers.** A printer's driver is handed a memory bitmap where it expects its own device whenever a memory context is made compatible with its device context. It gives that work back to GDI through the `DM` helpers, 201 to 220. Each but [[fn:GDI.DMEnumDFonts]] and [[fn:GDI.DMTranspose]] goes through [[fn:GDI.Brute]], which calls the display driver's routine of the same name on the bitmap. So a printer's driver draws on bitmaps as the display's driver does: the display's pens and brushes ([[fn:GDI.DMRealizeObject]]), its block transfers, polylines and scanlines, and its raster text from a font of version 3.0 laid out as GDI loads one ([[fn:GDI.DMExtTextOut]]). WinBox has the VGA's, the Super VGA's and the EGA's routines for a memory bitmap (`driver-bitmap.ts`), drawing into the program's memory as the driver addresses it -- with no bound, as the driver has none. The PostScript driver imports 201, 202 and 208 to 212. [[fn:GDI.ScanLR]] is GDI's own call of a driver's `ScanLR`, as a flood fill would make it; [[fn:GDI.DeviceColorMatch]] matches a colour against a table a driver keeps.
 
 **The spooler.** A printer's driver writes its output through [[fn:GDI.OpenJob]], [[fn:GDI.StartSpoolPage]], [[fn:GDI.WriteSpool]], [[fn:GDI.EndSpoolPage]] and [[fn:GDI.CloseJob]], or throws it away with [[fn:GDI.DeleteJob]] and [[fn:GDI.DeleteSpoolPage]]. It asks [[fn:GDI.QueryJob]] whether a job is valid and whether Print Manager has disk space. [[fn:GDI.SpoolFile]] hands a whole file to Print Manager. Print Manager talks to GDI through [[fn:GDI.GetSpoolJob]]. See [[topic:printing]] and [[topic:printer-drivers]].
 
@@ -74,29 +74,29 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 
 ### Helpers for drivers
 
-| Ord | Export                      | Callers     | WinBox      | Recommendation                          |
-| --- | --------------------------- | ----------- | ----------- | --------------------------------------- |
-| 201 | [[fn:GDI.DMBitBlt]]         | PSCRIPT.DRV | implemented | as Windows; the display's routine (L)   |
-| 202 | [[fn:GDI.DMColorInfo]]      | PSCRIPT.DRV | implemented | done (the VGA's)                        |
-| 206 | [[fn:GDI.DMEnumDFonts]]     | none        | implemented | done                                    |
-| 207 | [[fn:GDI.DMEnumObj]]        | none        | implemented | done (the VGA's)                        |
-| 208 | [[fn:GDI.DMOutput]]         | PSCRIPT.DRV | implemented | as Windows; the display's routine (L)   |
-| 209 | [[fn:GDI.DMPixel]]          | PSCRIPT.DRV | implemented | done (the VGA's)                        |
-| 210 | [[fn:GDI.DMRealizeObject]]  | PSCRIPT.DRV | implemented | as Windows; the display's routine (M)   |
-| 211 | [[fn:GDI.DMStrBlt]]         | PSCRIPT.DRV | implemented | with `DMExtTextOut`                     |
-| 212 | [[fn:GDI.DMScanLR]]         | PSCRIPT.DRV | implemented | done (the VGA's)                        |
-| 213 | [[fn:GDI.Brute]]            | none        | implemented | done (a) ([[probe:ugaps]])              |
-| 214 | [[fn:GDI.DMExtTextOut]]     | none        | implemented | as Windows; the display's routine (M-L) |
-| 215 | [[fn:GDI.DMGetCharWidth]]   | none        | implemented | as Windows; the display's routine (S)   |
-| 216 | [[fn:GDI.DMStretchBlt]]     | none        | implemented | not applicable on the VGA               |
-| 217 | [[fn:GDI.DMDibBits]]        | none        | implemented | as Windows; the display's routine (M)   |
-| 218 | [[fn:GDI.DMStretchDIBits]]  | none        | implemented | not applicable on the VGA               |
-| 219 | [[fn:GDI.DMSetDibToDev]]    | none        | implemented | as Windows; the display's routine (M)   |
-| 220 | [[fn:GDI.DMTranspose]]      | none        | implemented | done                                    |
-| 135 | [[fn:GDI.ScanLR]]           | none        | implemented | done (a memory context's bitmap)        |
-| 449 | [[fn:GDI.DeviceColorMatch]] | none        | implemented | done                                    |
+| Ord | Export                      | Callers     | WinBox      | Recommendation                |
+| --- | --------------------------- | ----------- | ----------- | ----------------------------- |
+| 201 | [[fn:GDI.DMBitBlt]]         | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 202 | [[fn:GDI.DMColorInfo]]      | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidm]])    |
+| 206 | [[fn:GDI.DMEnumDFonts]]     | none        | implemented | done                          |
+| 207 | [[fn:GDI.DMEnumObj]]        | none        | implemented | done (d) ([[probe:gdidm]])    |
+| 208 | [[fn:GDI.DMOutput]]         | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 209 | [[fn:GDI.DMPixel]]          | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidm]])    |
+| 210 | [[fn:GDI.DMRealizeObject]]  | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 211 | [[fn:GDI.DMStrBlt]]         | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 212 | [[fn:GDI.DMScanLR]]         | PSCRIPT.DRV | implemented | done (d) ([[probe:gdidm]])    |
+| 213 | [[fn:GDI.Brute]]            | none        | implemented | done (a) ([[probe:ugaps]])    |
+| 214 | [[fn:GDI.DMExtTextOut]]     | none        | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 215 | [[fn:GDI.DMGetCharWidth]]   | none        | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 216 | [[fn:GDI.DMStretchBlt]]     | none        | implemented | not applicable on the VGA     |
+| 217 | [[fn:GDI.DMDibBits]]        | none        | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 218 | [[fn:GDI.DMStretchDIBits]]  | none        | implemented | not applicable on the VGA     |
+| 219 | [[fn:GDI.DMSetDibToDev]]    | none        | implemented | done (d) ([[probe:gdidmdrw]]) |
+| 220 | [[fn:GDI.DMTranspose]]      | none        | implemented | done                          |
+| 135 | [[fn:GDI.ScanLR]]           | none        | implemented | done (d) ([[probe:scanscr]])  |
+| 449 | [[fn:GDI.DeviceColorMatch]] | none        | implemented | done                          |
 
-"Implemented" for the `DM` helpers means `Brute`'s choice and each export's arguments are as Windows has them; where the display driver's routine is not WinBox's, a memory bitmap gets nought and nothing drawn (each page says which).
+"Implemented" for the `DM` helpers means `Brute`'s choice and each export's arguments are as Windows has them. (d) is the display driver's own routine on a memory bitmap, done for the VGA, the Super VGA and the EGA -- whose drivers [[probe:gdidmdrw]] finds alike record for record but the EGA's ninth colour -- and nought, nothing drawn, on the Hercules and the 256-colour display.
 
 ### The spooler
 
@@ -177,15 +177,16 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 
 ## Recommendations, ranked
 
-1. **The display driver's routines on a memory bitmap, for `DMBitBlt`, `DMOutput`, `DMRealizeObject`, `DMExtTextOut` and the rest (L).** WinBox has the VGA's `ColorInfo`, `Pixel`, `ScanLR` and `EnumObj` on a bitmap in memory. The others need the VGA's physical pens and brushes as its `RealizeObject` lays them out, and its drawing of each, read out of `VGA.DRV`. Nothing recorded reaches them: WinBox hands the PostScript driver only bitmaps of GDI's own stretching, and the PostScript driver stretches for itself.
-2. **The other displays' routines (M each).** On the EGA, the Super VGA, the Hercules and the 256-colour drivers the helpers answer nought for a memory bitmap; each driver's `ColorInfo`, `Pixel` and `ScanLR` would come first.
+1. **The display driver's routines on a memory bitmap: done** for the VGA, the Super VGA and the EGA ([[probe:gdidmdrw]], [[probe:gdidm]], [[probe:scanscr]]).
+2. **The Hercules's and the 256-colour display's routines (M each).** Each driver's own `ColorInfo`, `RealizeObject` and drawing, read out of `HERCULES.DRV` and `SVGA256.DRV`; [[probe:gdidmdrw]] has recorded both.
 3. **The last of them, by [[probe:ugaps]]: done.** (a) `Brute` as an export, from CX; `GDIInit2` through WinBox's GDI heap; `GDISeeGDIDo`. (b) `FTrapping0` at 2EFh of GDI's data; `__GP`, its end alone. (c) `FinalGDIInit` called again, the length of its last string.
 
 ## Not yet done
 
 - The `Engine` calls and `GetPhysicalFontHandle` are mapped with the TrueType engine's calls, not here.
 - `GDISeeGDIDo`'s 1, 2 and 3 on a local heap of GDI's, which WinBox's GDI segment does not hold (`ugaps:seegdiheap`).
-- `DMBitBlt`, `DMOutput`, `DMRealizeObject`, `DMExtTextOut`, `DMStrBlt`, `DMGetCharWidth`, `DMDibBits`, `DMSetDibToDev` on a memory bitmap, and every helper on a display other than the VGA (above).
+- Every helper on the Hercules and the 256-colour display, whose drivers' physical colours, pens and brushes are not the VGA's (a Hercules brush is 22 bytes): recorded by [[probe:gdidmdrw]], known gaps.
+- A compressed DIB through `DMDibBits`, which the driver reads by a routine of its own.
+- `DMExtTextOut` taking off the display's emboldening and italics for the device of `[063Eh]` -- the `GDIINFO` of the context GDI is drawing text for ([[fn:GDI.DMExtTextOut]]) -- which WinBox does not keep.
 - The `DI` device `Brute` knows, a table at GDI's `[0159h]` that no code of Windows 3.1's GDI was found to set.
-- What the device of GDI's `[063Eh]` is, whose text capabilities `DMExtTextOut` compares with the display's.
-- `ScanLR` on a window's or the screen's context, where the display driver scans the screen.
+- `ScanLR` on the Hercules and the 256-colour display.
