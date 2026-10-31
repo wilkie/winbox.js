@@ -10,7 +10,9 @@ use winbox_win16::Stop;
 use support::{Setup, box_hand, recorded, run_setup};
 
 /// The probes of `OLECLI`.
-const PROBES: &[&str] = &["olestat", "olemem", "oledde", "olepbd", "olepbr"];
+const PROBES: &[&str] = &[
+    "olestat", "olemem", "oledde", "olepbd", "olepbr", "oleemb", "olehnd", "olenet",
+];
 
 /// A probe run, with or without `OLECLI.DLL` on the drive: how it stopped,
 /// its records, and whether a library named `OLECLI` was loaded from a

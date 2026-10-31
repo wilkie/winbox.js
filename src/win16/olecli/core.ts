@@ -296,8 +296,26 @@ const LE_TABLE = {
   ChangeData: 224,
 };
 
+/**
+ * Paintbrush's table: an embedded or linked object's with five methods of
+ * the `PB` exports in their slots -- `GetData` 811, `EnumFormats` 810,
+ * `CopyToClipboard` 807, `Draw` 805, `QueryBounds` 806 (**measured** by
+ * `olehnd`'s and `oleemb`'s `vtbl` records). `OLECLI`'s handler of the
+ * class `PBrush` gives it an object with no picture, or whose presentation
+ * is of another format than a picture's (`handlers.ts`).
+ */
+const PB_TABLE = {
+  ...LE_TABLE,
+  GetData: 811,
+  EnumFormats: 810,
+  CopyToClipboard: 807,
+  Draw: 805,
+  QueryBounds: 806,
+};
+
 export const KINDS = {
   le: LE_TABLE,
+  pb: PB_TABLE,
   mf: { ...COMMON, ...ownMethods(300) },
   bm: { ...COMMON, ...ownMethods(400) },
   dib: { ...COMMON, ...ownMethods(500) },
@@ -332,6 +350,7 @@ export const VTBL_AT: Record<Kind, number> = {
   dib: 0x300,
   gen: 0x400,
   le: 0x500,
+  pb: 0x600,
 };
 export const SCRATCH = 0x800;
 export const FORMAT_NAME = 0x900;
@@ -555,6 +574,30 @@ export interface OleState {
   initiating: { hwnd: number; server: number } | null;
   /** Servers locked, by the window of the conversation that holds each. */
   locks: Map<number, { server: number }>;
+  /** Object handlers loaded, by their index, from 1 (`handlers.ts`). */
+  handlers: (Handler | null)[];
+  /** The handler whose objects are all let go, freed when another's are or a document is revoked; nought for none. */
+  pending: number;
+  /** Each object made through a handler: the handler's index. */
+  handlerOf: Map<number, number>;
+  /** Whether an `Ole` function that makes an object from the clipboard is under way: what its defaults read. */
+  clipping: boolean;
+  /** `DllCreate` called for `OleCreateInvisible` by a handler with no `DllCreateInvisible`: whether to activate; null for none. */
+  invisible: boolean | null;
+  /** The share the network dialog connects, a far pointer to its name. */
+  connecting: number;
+}
+
+/** A handler of a class's objects, as `handlers.ts` keeps it. */
+export interface Handler {
+  /** The class's name, lower case, and its atom. */
+  klass: string;
+  atom: number;
+  library: number;
+  /** How many of its objects there are. */
+  count: number;
+  /** Its eight `Dll` exports' far addresses, `DllCreateInvisible`'s nought where it has none. */
+  procs: number[];
 }
 
 function newState(): OleState {
@@ -570,6 +613,12 @@ function newState(): OleState {
     serial: 0,
     initiating: null,
     locks: new Map(),
+    handlers: [],
+    pending: 0,
+    handlerOf: new Map(),
+    clipping: false,
+    invisible: null,
+    connecting: 0,
   };
 }
 

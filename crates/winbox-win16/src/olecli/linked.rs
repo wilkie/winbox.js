@@ -26,7 +26,8 @@ use super::core::{
     GEN_FORMAT, GEN_SIZE, GMEM_DDESHARE, GMEM_MOVEABLE, GMEM_ZEROINIT, Kind, Le, MM_ANISOTROPIC,
     OBJ_CLIENT, OBJ_HEIGHT, OBJ_MAPPING, OBJ_TYPE, OBJ_UNKNOWN_FFFF, OBJ_VTBL, OBJ_WIDTH,
     OLE_ERROR_FORMAT, OLE_ERROR_GENERIC, OLE_ERROR_MEMORY, OLE_ERROR_NOT_EQUAL, OLE_ERROR_OBJECT,
-    OLE_ERROR_STREAM, OLE_OK, Ole, R, SCRATCH, SMALL_BLOCK, SRCCOPY, STREAM_VERSION, Step, plus,
+    OLE_ERROR_STREAM, OLE_OK, OLERENDER_DRAW, OLERENDER_FORMAT, OLERENDER_NONE, Ole, R, SCRATCH,
+    SMALL_BLOCK, SRCCOPY, STREAM_VERSION, Step, plus,
 };
 use super::draw::draw;
 use super::kinds::{
@@ -137,12 +138,25 @@ pub(crate) const LE_TABLE: [u16; 39] = [
     1000, 229, 224,
 ];
 
-/// Its table laid out in `OLECLI`'s data the first time one is wanted.
-fn vtbl(ole: &Ole<'_>) -> u32 {
-    let at = ole.near(LE_VTBL);
+/// Paintbrush's table: an embedded or linked object's with five methods of
+/// the `PB` exports in their slots -- `GetData` 811, `EnumFormats` 810,
+/// `CopyToClipboard` 807, `Draw` 805, `QueryBounds` 806 (**measured** by
+/// `olehnd`'s and `oleemb`'s `vtbl` records). `OLECLI`'s handler of the
+/// class `PBrush` gives it an object with no picture, or whose
+/// presentation is of another format than a picture's (`handlers.rs`).
+pub(crate) const PB_VTBL: u16 = 0x600;
+const PB_TABLE: [u16; 39] = [
+    221, 200, 201, 1005, 811, 203, 205, 206, 810, 1004, 200, 204, 207, 208, 209, 210, 807, 805,
+    216, 228, 225, 218, 219, 223, 226, 227, 911, 910, 212, 806, 913, 215, 222, 1003, 1002, 1001,
+    1000, 229, 224,
+];
+
+/// A table laid out in `OLECLI`'s data the first time one is wanted.
+fn table_at(ole: &Ole<'_>, at: u16, table: &[u16; 39]) -> u32 {
+    let at = ole.near(at);
 
     if ole.r32(at) == 0 {
-        for (index, ordinal) in LE_TABLE.iter().enumerate() {
+        for (index, ordinal) in table.iter().enumerate() {
             ole.w32(
                 plus(at, index as u16 * 4),
                 super::export_address(ole.e, *ordinal),
@@ -153,9 +167,24 @@ fn vtbl(ole: &Ole<'_>) -> u32 {
     at
 }
 
-/// Whether an object is an embedded or linked one of WinBox's: its table.
+/// Its table laid out in `OLECLI`'s data the first time one is wanted.
+fn vtbl(ole: &Ole<'_>) -> u32 {
+    table_at(ole, LE_VTBL, &LE_TABLE)
+}
+
+/// Whether an object is an embedded or linked one of WinBox's: its table,
+/// its kind's or Paintbrush's.
 pub(crate) fn is_le(ole: &Ole<'_>, object: u32) -> bool {
-    object != 0 && ole.r32(plus(object, OBJ_VTBL)) == ole.near(LE_VTBL)
+    object != 0 && {
+        let table = ole.r32(plus(object, OBJ_VTBL));
+
+        table == ole.near(LE_VTBL) || table == ole.near(PB_VTBL)
+    }
+}
+
+/// Whether an object holds Paintbrush's table.
+pub(crate) fn is_pb(ole: &Ole<'_>, object: u32) -> bool {
+    object != 0 && ole.r32(plus(object, OBJ_VTBL)) == ole.near(PB_VTBL)
 }
 
 /// What WinBox keeps of one, a copy.
@@ -252,6 +281,7 @@ async fn new_le(
     class: Vec<u8>,
     topic: Option<Vec<u8>>,
     item: Vec<u8>,
+    atom: u16,
 ) -> R<u32> {
     // Made as every object is, then its table its own.
     let object = new_object(ole, Kind::Gen, LE_BLOCK, client, doc, name).await?;
@@ -265,6 +295,16 @@ async fn new_le(
     ole.w16(plus(object, OBJ_MAPPING), 0);
     ole.w16(plus(object, OBJ_UNKNOWN_FFFF), 0);
 
+    // A class's atom given is the object's own, let go with it (**measured**
+    // by `olehnd`'s `atom` records: `DefLoadFromStream`'s object takes the
+    // atom it is given); else it adds one. The class is spelled as its atom
+    // is (**measured** by `olenet`).
+    let class_atom = if atom == 0 {
+        ole.add_atom_text(&class).await?
+    } else {
+        atom
+    };
+    let spelled = atom_text(ole, class_atom).await?;
     let topic = match topic {
         Some(topic) => topic,
         None => embedded_topic(ole, doc, &ole.string(name)).await?,
@@ -274,7 +314,9 @@ async fn new_le(
         object,
         Le {
             kind,
-            class,
+            class: if spelled.is_empty() { class } else { spelled },
+            class_atom,
+            render: OLERENDER_DRAW,
             topic,
             item,
             ..Le::default()
@@ -374,11 +416,11 @@ async fn refresh_view(ole: &Ole<'_>, object: u32) -> R<()> {
 
     ole.global_free(dib).await?;
 
+    // Its block keeps no bounds of it (**measured** by `oleemb`'s `obj` of
+    // `bare`).
     if view != 0 {
         with(ole, object, |le| le.view = view);
         ole.state().owners.insert(view, object);
-        ole.w32(plus(object, OBJ_WIDTH), ole.r32(plus(view, OBJ_WIDTH)));
-        ole.w32(plus(object, OBJ_HEIGHT), ole.r32(plus(view, OBJ_HEIGHT)));
     }
 
     Ok(())
@@ -488,8 +530,10 @@ async fn free_le(ole: &Ole<'_>, object: u32) -> R<()> {
         }
     }
 
+    ole.delete_atom(le.class_atom).await?;
     ole.state().le.remove(&object);
-    free_object(ole, object).await
+    free_object(ole, object).await?;
+    super::handlers::released(ole, object).await
 }
 
 // The client told.
@@ -1100,7 +1144,7 @@ async fn store(ole: &Ole<'_>, object: u32, format: u16, h_data: u16) -> R<()> {
             with(ole, object, |le| le.native = handle);
         }
 
-        if is_pbrush(&le) {
+        if is_pb(ole, object) {
             refresh_view(ole, object).await?;
         }
     } else if is_picture(format) {
@@ -1565,19 +1609,25 @@ fn do_verb(le: &Le, verb: u16, show: u16, focus: u16) -> Vec<u8> {
 
 // Making them.
 
-/// `OleCreate` with `StdFileEditing`: an embedded object of the class, its
-/// server reached or launched shown, then `[StdNewDocument("class","doc")]`
-/// on its system topic, its document's conversation begun, `/Save` and
-/// `/Close` advised, `[StdShowItem("")]`; released `OLE_CREATE`. A server
-/// that cannot be started is `OLE_ERROR_LAUNCH`.
+/// `DefCreate` (`OleCreate` with `StdFileEditing`): an embedded object of
+/// the class, its server reached or launched shown, then
+/// `[StdNewDocument("class","doc")]` on its system topic -- from a
+/// template, the documented `StdNewFromTemplate` with the template's file
+/// (the OLE 1.0 programmer's reference; `unrecorded` on the client's side,
+/// the server's measured by `olesrv`) -- its document's conversation
+/// begun, `/Save` and `/Close` advised, `[StdShowItem("")]`; released
+/// `OLE_CREATE`. A server that cannot be started is `OLE_ERROR_LAUNCH`.
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn create(
     ole: &Ole<'_>,
     client: u32,
-    class: u32,
+    class: Vec<u8>,
     doc: u32,
     name: u32,
     out: u32,
     activate: bool,
+    render: u16,
+    template: Option<Vec<u8>>,
 ) -> R<u16> {
     let object = new_le(
         ole,
@@ -1585,9 +1635,10 @@ pub(crate) async fn create(
         client,
         doc,
         name,
-        ole.string(class),
+        class,
         None,
         Vec::new(),
+        0,
     )
     .await?;
 
@@ -1595,6 +1646,7 @@ pub(crate) async fn create(
         return Ok(OLE_ERROR_MEMORY);
     }
 
+    with(ole, object, |le| le.render = render);
     ole.w32(out, object);
 
     if !activate {
@@ -1608,11 +1660,21 @@ pub(crate) async fn create(
     }
 
     let le = le(ole, object).unwrap_or_default();
-    let mut command = b"[StdNewDocument(".to_vec();
+    let mut command = if template.is_some() {
+        b"[StdNewFromTemplate(".to_vec()
+    } else {
+        b"[StdNewDocument(".to_vec()
+    };
 
     command.extend_from_slice(&quote(&le.class));
     command.push(b',');
     command.extend_from_slice(&quote(&le.topic));
+
+    if let Some(template) = template {
+        command.push(b',');
+        command.extend_from_slice(&quote(&template));
+    }
+
     command.extend_from_slice(b")]");
 
     let mut steps = vec![
@@ -1631,13 +1693,15 @@ pub(crate) async fn create(
     Ok(OLE_WAIT_FOR_RELEASE)
 }
 
-/// `OleCreateFromFile` and `OleCreateLinkFromFile` with `StdFileEditing`:
-/// the file's document reached as a topic of the class, its server
-/// launched hidden with the file where none answers; an embedded object
-/// asks for its data, a link advises its item and `StdDocumentName` and
-/// asks for its item; its client told it changed, the conversation ended;
-/// released `OLE_CREATEFROMFILE` or `OLE_CREATELINKFROMFILE`
-/// (**recorded** by `oledde`).
+/// `DefCreateFromFile` and `DefCreateLinkFromFile` (`OleCreateFromFile`
+/// and `OleCreateLinkFromFile` with `StdFileEditing`): the file's document
+/// reached as a topic of the class, its server launched hidden with the
+/// file where none answers; an embedded object asks for its data, a link
+/// advises its item and `StdDocumentName` and asks for its item; its client
+/// told it changed, the conversation ended; released `OLE_CREATEFROMFILE`
+/// or `OLE_CREATELINKFROMFILE` (**recorded** by `oledde`). An embedded
+/// object is numbered only once it is reached (**measured** by `olehnd`:
+/// one whose server cannot be started takes no number).
 #[allow(clippy::too_many_arguments)]
 pub(crate) async fn create_from_file(
     ole: &Ole<'_>,
@@ -1649,6 +1713,7 @@ pub(crate) async fn create_from_file(
     name: u32,
     out: u32,
     linked: bool,
+    render: u16,
 ) -> R<u16> {
     let object = new_le(
         ole,
@@ -1657,12 +1722,13 @@ pub(crate) async fn create_from_file(
         doc,
         name,
         ole.string(class),
-        linked.then(|| ole.string(file)),
+        Some(ole.string(file)),
         if linked && item != 0 {
             ole.string(item)
         } else {
             Vec::new()
         },
+        0,
     )
     .await?;
 
@@ -1670,18 +1736,18 @@ pub(crate) async fn create_from_file(
         return Ok(OLE_ERROR_MEMORY);
     }
 
+    with(ole, object, |le| le.render = render);
+
     // An embedded object's server is told the file.
-    let path = ole.string(file);
-    let own = with(ole, object, |le| std::mem::replace(&mut le.topic, path)).unwrap_or_default();
-    let connected = connect_doc(ole, object, Some(SW_HIDE)).await?;
-
-    if !linked {
-        with(ole, object, |le| le.topic = own);
-    }
-
-    if !connected {
+    if !connect_doc(ole, object, Some(SW_HIDE)).await? {
         free_le(ole, object).await?;
         return Ok(OLE_ERROR_LAUNCH);
+    }
+
+    if !linked {
+        let topic = embedded_topic(ole, doc, &ole.string(name)).await?;
+
+        with(ole, object, |le| le.topic = topic);
     }
 
     ole.w32(out, object);
@@ -1706,6 +1772,19 @@ pub(crate) async fn create_from_file(
     Ok(OLE_WAIT_FOR_RELEASE)
 }
 
+/// The class `OwnerLink` or `ObjectLink` on the clipboard names; none for
+/// none.
+pub(crate) async fn clip_class(ole: &Ole<'_>, linked: bool) -> R<Option<Vec<u8>>> {
+    let format = cf(ole, if linked { "ObjectLink" } else { "OwnerLink" });
+    let owner = ole.user("GetClipboardData", &[Arg::W(format)]).await? as u16;
+
+    if owner == 0 {
+        return Ok(None);
+    }
+
+    Ok(Some(link_parts(ole, owner).await?.0))
+}
+
 /// A clipboard's block of `OwnerLink` or `ObjectLink`: its class,
 /// document and item.
 async fn link_parts(ole: &Ole<'_>, handle: u16) -> R<(Vec<u8>, Vec<u8>, Vec<u8>)> {
@@ -1718,12 +1797,16 @@ async fn link_parts(ole: &Ole<'_>, handle: u16) -> R<(Vec<u8>, Vec<u8>, Vec<u8>)
     Ok((class, doc, item))
 }
 
-/// `OleCreateFromClip` and `OleCreateLinkFromClip` with `StdFileEditing`:
-/// an embedded object of `OwnerLink`'s class and item with the
-/// clipboard's `Native`, or a link to `ObjectLink`'s document and item;
-/// each with a picture of the clipboard's, but Paintbrush's, whose link's
-/// picture is the clipboard's `Native`. No server is asked (**recorded**
-/// by `oledde`'s `clip`).
+/// `DefCreateFromClip` and `DefCreateLinkFromClip` (`OleCreateFromClip`
+/// and `OleCreateLinkFromClip` with `StdFileEditing`): an embedded object
+/// of `OwnerLink`'s class and item with the clipboard's `Native`, or a link
+/// to `ObjectLink`'s document and item; each with the clipboard's first
+/// picture, none where it is to render none, or the format it is to render
+/// -- its class's `Native` a presentation of that format. No server is
+/// asked (**recorded** by `oledde`'s `clip`, **measured** by `olehnd`'s
+/// `clip none`; Paintbrush's handler asks a link for `Native` and an
+/// embedded object for none, `OLECLI.DLL` seg7 `00ac`-`0176`).
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn from_clip(
     ole: &Ole<'_>,
     client: u32,
@@ -1731,9 +1814,13 @@ pub(crate) async fn from_clip(
     name: u32,
     out: u32,
     linked: bool,
+    render: u16,
+    format: u16,
 ) -> R<u16> {
-    let format = cf(ole, if linked { "ObjectLink" } else { "OwnerLink" });
-    let owner = ole.user("GetClipboardData", &[Arg::W(format)]).await? as u16;
+    let owner_format = cf(ole, if linked { "ObjectLink" } else { "OwnerLink" });
+    let owner = ole
+        .user("GetClipboardData", &[Arg::W(owner_format)])
+        .await? as u16;
 
     if owner == 0 {
         return Ok(OLE_ERROR_FORMAT);
@@ -1749,12 +1836,15 @@ pub(crate) async fn from_clip(
         class,
         linked.then_some(file),
         item,
+        0,
     )
     .await?;
 
     if object == 0 {
         return Ok(OLE_ERROR_MEMORY);
     }
+
+    with(ole, object, |le| le.render = render);
 
     let native_format = cf(ole, "Native");
 
@@ -1770,37 +1860,17 @@ pub(crate) async fn from_clip(
         }
     }
 
-    let le = le(ole, object).unwrap_or_default();
-
-    if is_pbrush(&le) {
-        // A Paintbrush link's picture is the clipboard's `Native`.
-        if linked {
-            let native = ole
-                .user("GetClipboardData", &[Arg::W(native_format)])
-                .await? as u16;
-
-            if native != 0 {
-                let copy = copy_block(ole, native).await?;
-                let picture = native_picture(ole, object, &le.class, copy).await?;
-
-                if picture != 0 {
-                    set_picture(ole, object, picture);
-                }
-            }
-        }
-
-        refresh_view(ole, object).await?;
-        ole.w32(out, object);
-        return Ok(OLE_OK);
-    }
-
     let mut each = 0;
 
-    loop {
-        each = ole.user("EnumClipboardFormats", &[Arg::W(each)]).await? as u16;
+    if render == OLERENDER_FORMAT {
+        each = format;
+    } else if render != OLERENDER_NONE {
+        loop {
+            each = ole.user("EnumClipboardFormats", &[Arg::W(each)]).await? as u16;
 
-        if each == 0 || is_picture(each) {
-            break;
+            if each == 0 || is_picture(each) {
+                break;
+            }
         }
     }
 
@@ -1808,8 +1878,15 @@ pub(crate) async fn from_clip(
         let handle = ole.user("GetClipboardData", &[Arg::W(each)]).await? as u16;
         let picture = if handle == 0 {
             0
-        } else {
+        } else if each == native_format {
+            let copy = copy_block(ole, handle).await?;
+            let class = le(ole, object).unwrap_or_default().class;
+
+            native_picture(ole, object, &class, copy).await?
+        } else if is_picture(each) {
             picture_from(ole, object, each, handle).await?
+        } else {
+            0
         };
 
         if picture != 0 {
@@ -1883,7 +1960,7 @@ async fn save_to_stream(ole: &Ole<'_>, object: u32, stream: u32) -> R<u16> {
             ole.global_unlock(le.native).await?;
         }
     } else if ok {
-        ok = put_long(ole, stream, 0).await?
+        ok = put_string(ole, stream, &le.network).await?
             && put_long(ole, stream, 0).await?
             && put_long(ole, stream, u32::from(le.update)).await?;
     }
@@ -1907,10 +1984,19 @@ async fn save_to_stream(ole: &Ole<'_>, object: u32, stream: u32) -> R<u16> {
     save_typed(ole, kind, le.picture, stream, PRESENTATION).await
 }
 
-/// `OleLoadFromStream` of an embedded (2) or linked (1) object, its version
-/// and type read: what `LESAVETOSTREAM` writes read back. An embedded
-/// object is numbered as it is loaded.
-#[allow(clippy::too_many_lines)]
+/// A stream's class's name, read after its version and type:
+/// `OleLoadFromStream` reads it before it finds the class's handler.
+pub(crate) async fn get_class(ole: &Ole<'_>, stream: u32) -> R<Option<Vec<u8>>> {
+    Ok(get_string(ole, stream)
+        .await?
+        .filter(|class| !class.is_empty()))
+}
+
+/// `DefLoadFromStream`: an embedded (2) or linked (1) object of the class
+/// given, the stream read on from after its class's name -- what
+/// `LESAVETOSTREAM` writes read back. An embedded object is numbered as it
+/// is loaded. The class's atom given is the object's.
+#[allow(clippy::too_many_arguments)]
 pub(crate) async fn load(
     ole: &Ole<'_>,
     stream: u32,
@@ -1919,18 +2005,21 @@ pub(crate) async fn load(
     doc: u32,
     name: u32,
     out: u32,
+    class: Vec<u8>,
+    atom: u16,
 ) -> R<u16> {
-    let Some(class) = get_string(ole, stream).await? else {
-        return Ok(OLE_ERROR_STREAM);
+    let topic = get_string(ole, stream).await?;
+    let item = match topic {
+        Some(_) => get_string(ole, stream).await?,
+        None => None,
     };
-    let Some(topic) = get_string(ole, stream).await? else {
-        return Ok(OLE_ERROR_STREAM);
-    };
-    let Some(item) = get_string(ole, stream).await? else {
+    let (Some(topic), Some(item)) = (topic, item) else {
+        ole.delete_atom(atom).await?;
         return Ok(OLE_ERROR_STREAM);
     };
 
     if class.is_empty() {
+        ole.delete_atom(atom).await?;
         return Ok(OLE_ERROR_STREAM);
     }
 
@@ -1943,6 +2032,7 @@ pub(crate) async fn load(
         class,
         (kind == OT_LINK).then_some(topic),
         item,
+        atom,
     )
     .await?;
 
@@ -1953,10 +2043,6 @@ pub(crate) async fn load(
     if !read_rest(ole, stream, kind, object).await? {
         free_le(ole, object).await?;
         return Ok(OLE_ERROR_STREAM);
-    }
-
-    if le(ole, object).is_some_and(|le| is_pbrush(&le)) {
-        refresh_view(ole, object).await?;
     }
 
     ole.w32(out, object);
@@ -1980,7 +2066,11 @@ async fn read_rest(ole: &Ole<'_>, stream: u32, kind: u32, object: u32) -> R<bool
             with(ole, object, |le| le.native = native);
         }
     } else {
-        if get_string(ole, stream).await?.is_none() || get_long(ole, stream).await?.is_none() {
+        let Some(network) = get_string(ole, stream).await? else {
+            return Ok(false);
+        };
+
+        if get_long(ole, stream).await?.is_none() {
             return Ok(false);
         }
 
@@ -1988,7 +2078,10 @@ async fn read_rest(ole: &Ole<'_>, stream: u32, kind: u32, object: u32) -> R<bool
             return Ok(false);
         };
 
-        with(ole, object, |le| le.update = update as u16);
+        with(ole, object, |le| {
+            le.update = update as u16;
+            le.network = network;
+        });
     }
 
     if get_long(ole, stream).await?.is_none() {
@@ -2067,7 +2160,7 @@ pub(crate) async fn query_size(ole: &Ole<'_>, object: u32, out: u32) -> R<u16> {
     size += if le.kind == OT_EMBEDDED {
         4 + ole.global_size(le.native).await?
     } else {
-        12
+        string(&le.network) as u32 + 8
     };
     size += 8;
 
@@ -2098,17 +2191,9 @@ fn blank_rect(ole: &Ole<'_>, rect: u32) -> u16 {
     OLE_ERROR_BLANK
 }
 
-/// `LEQUERYBOUNDS` (213): its presentation's, or a Paintbrush object's
-/// picture's; none `OLE_ERROR_BLANK`, noughts written.
+/// `LEQUERYBOUNDS` (213): its presentation's; none `OLE_ERROR_BLANK`,
+/// noughts written.
 fn query_bounds(ole: &Ole<'_>, le: &Le, rect: u32) -> u16 {
-    if is_pbrush(le) {
-        if le.view == 0 {
-            return blank_rect(ole, rect);
-        }
-
-        return static_bounds(ole, Kind::Dib, le.view, rect);
-    }
-
     if le.picture == 0 {
         return blank_rect(ole, rect);
     }
@@ -2122,35 +2207,40 @@ fn query_bounds(ole: &Ole<'_>, le: &Le, rect: u32) -> u16 {
 }
 
 /// The formats it gives, in `OleEnumFormats`' order: `Native` and
-/// `OwnerLink`, or `ObjectLink` -- a Paintbrush link's `Native` too
-/// (**recorded** by `olepbd`) -- then its presentation's.
+/// `OwnerLink`, or `ObjectLink`, then its presentation's -- a picture where
+/// it has none yet, nothing where it was made to render none (**measured**
+/// by `olehnd`'s `clip none` and `le invisible none`).
 fn formats(ole: &Ole<'_>, le: &Le) -> Vec<u16> {
-    let picture = if le.picture != 0 && !is_pbrush(le) {
-        format_of_kind(kind_of(ole, le.picture).unwrap_or(Kind::Mf))
+    let mut list = if le.kind == OT_EMBEDDED {
+        vec![cf(ole, "Native"), cf(ole, "OwnerLink")]
     } else {
-        CF_METAFILEPICT
+        vec![cf(ole, "ObjectLink")]
     };
 
-    if le.kind == OT_EMBEDDED {
-        vec![cf(ole, "Native"), cf(ole, "OwnerLink"), picture]
-    } else if is_pbrush(le) {
-        vec![cf(ole, "ObjectLink"), cf(ole, "Native"), picture]
-    } else {
-        vec![cf(ole, "ObjectLink"), picture]
+    if le.picture != 0 {
+        list.push(format_of_kind(kind_of(ole, le.picture).unwrap_or(Kind::Mf)));
+    } else if le.render != OLERENDER_NONE {
+        list.push(CF_METAFILEPICT);
     }
+
+    list
 }
 
-fn enum_format(ole: &Ole<'_>, le: &Le, format: u16) -> u16 {
-    let list = formats(ole, le);
-
+/// The format after the one given in a list, nought after the last; the
+/// first for nought.
+fn next_format(list: &[u16], format: u16) -> u16 {
     if format == 0 {
-        return list[0];
+        return list.first().copied().unwrap_or(0);
     }
 
     list.iter()
         .position(|each| *each == format)
         .and_then(|at| list.get(at + 1).copied())
         .unwrap_or(0)
+}
+
+fn enum_format(ole: &Ole<'_>, le: &Le, format: u16) -> u16 {
+    next_format(&formats(ole, le), format)
 }
 
 /// `OwnerLink`'s or `ObjectLink`'s bytes: its class, document and item,
@@ -2166,21 +2256,16 @@ fn link_bytes(le: &Le) -> Vec<u8> {
     out
 }
 
-/// `LEGETDATA` (202): `Native` where it has some, else `OLE_ERROR_FORMAT`;
-/// `OwnerLink` or `ObjectLink` made of its class, document and item; its
-/// presentation's; a picture where it has none, an empty `METAFILEPICT`;
-/// a Paintbrush object's picture made for the caller (**recorded** by
-/// `oledde` and `olepbd`).
-async fn get_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) -> R<u16> {
-    let native = cf(ole, "Native");
-
-    if format == native && le.kind == OT_EMBEDDED {
+/// `Native`, `OwnerLink` or `ObjectLink`, as every embedded or linked
+/// object gives them; none for another format.
+async fn own_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) -> R<Option<u16>> {
+    if format == cf(ole, "Native") && le.kind == OT_EMBEDDED {
         if le.native == 0 {
-            return Ok(OLE_ERROR_FORMAT);
+            return Ok(Some(OLE_ERROR_FORMAT));
         }
 
         ole.w16(out, le.native);
-        return Ok(OLE_OK);
+        return Ok(Some(OLE_OK));
     }
 
     let own = cf(
@@ -2201,25 +2286,19 @@ async fn get_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) ->
 
         with(ole, object, |le| le.link = block);
         ole.w16(out, block);
-        return Ok(OLE_OK);
+        return Ok(Some(OLE_OK));
     }
 
-    if is_pbrush(le) {
-        if format == native && le.picture != 0 {
-            ole.w16(out, ole.r16(plus(le.picture, GEN_DATA)));
-            return Ok(OLE_OK);
-        }
+    Ok(None)
+}
 
-        if format != CF_METAFILEPICT {
-            return Ok(OLE_ERROR_FORMAT);
-        }
-
-        if le.view == 0 {
-            return Ok(OLE_ERROR_MEMORY);
-        }
-
-        ole.w16(out, picture_of_view(ole, le.view).await?);
-        return Ok(OLE_WARN_DELETE_DATA);
+/// `LEGETDATA` (202): `Native` where it has some, else `OLE_ERROR_FORMAT`;
+/// `OwnerLink` or `ObjectLink` made of its class, document and item; its
+/// presentation's; a picture where it has none, an empty `METAFILEPICT`
+/// (**recorded** by `oledde`).
+async fn get_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) -> R<u16> {
+    if let Some(answer) = own_data(ole, object, le, format, out).await? {
+        return Ok(answer);
     }
 
     if le.picture != 0 {
@@ -2243,10 +2322,9 @@ async fn get_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) ->
     Ok(OLE_OK)
 }
 
-/// `LECOPY` (211): its data put on the clipboard: `Native`, `OwnerLink`
-/// and its presentation; a link's `OwnerLink` and presentation
-/// (**recorded** by `oledde`).
-async fn copy_to_clipboard(ole: &Ole<'_>, le: &Le) -> R<u16> {
+/// `Native` and `OwnerLink` put on the clipboard, as every embedded or
+/// linked object puts them.
+async fn copy_own(ole: &Ole<'_>, le: &Le) -> R<()> {
     if le.kind == OT_EMBEDDED && le.native != 0 {
         let copy = copy_block(ole, le.native).await?;
 
@@ -2264,18 +2342,16 @@ async fn copy_to_clipboard(ole: &Ole<'_>, le: &Le) -> R<u16> {
         &[Arg::W(cf(ole, "OwnerLink")), Arg::W(block)],
     )
     .await?;
+    Ok(())
+}
 
-    if is_pbrush(le) {
-        if le.view != 0 {
-            let picture = picture_of_view(ole, le.view).await?;
+/// `LECOPY` (211): its data put on the clipboard: `Native`, `OwnerLink`
+/// and its presentation; a link's `OwnerLink` and presentation
+/// (**recorded** by `oledde`).
+async fn copy_to_clipboard(ole: &Ole<'_>, le: &Le) -> R<u16> {
+    copy_own(ole, le).await?;
 
-            ole.user(
-                "SetClipboardData",
-                &[Arg::W(CF_METAFILEPICT), Arg::W(picture)],
-            )
-            .await?;
-        }
-    } else if le.picture != 0 {
+    if le.picture != 0 {
         copy_static(
             ole,
             kind_of(ole, le.picture).unwrap_or(Kind::Mf),
@@ -2287,9 +2363,111 @@ async fn copy_to_clipboard(ole: &Ole<'_>, le: &Le) -> R<u16> {
     Ok(OLE_OK)
 }
 
+// Paintbrush's methods, the `PB` exports its table holds in five slots.
+
+/// `PBQUERYBOUNDS` (806): its bitmap's at its pixels to a metre; none
+/// `OLE_ERROR_BLANK`, noughts written (**recorded** by `olepbd`,
+/// **measured** by `olehnd`).
+fn pb_query_bounds(ole: &Ole<'_>, le: &Le, rect: u32) -> u16 {
+    if le.view == 0 {
+        blank_rect(ole, rect)
+    } else {
+        static_bounds(ole, Kind::Dib, le.view, rect)
+    }
+}
+
+/// `PBENUMFORMATS` (810): `Native`, `OwnerLink` and a picture; a link's
+/// `ObjectLink`, its `Native` where its presentation is that, and a
+/// picture (**measured** by `olehnd`'s `link native` and `link none`).
+fn pb_enum_formats(ole: &Ole<'_>, le: &Le, format: u16) -> u16 {
+    let list = if le.kind == OT_EMBEDDED {
+        vec![cf(ole, "Native"), cf(ole, "OwnerLink"), CF_METAFILEPICT]
+    } else if le.picture != 0 {
+        vec![cf(ole, "ObjectLink"), cf(ole, "Native"), CF_METAFILEPICT]
+    } else {
+        vec![cf(ole, "ObjectLink"), CF_METAFILEPICT]
+    };
+
+    next_format(&list, format)
+}
+
+/// `PBGETDATA` (811): what every object gives; a link's `Native`, its
+/// presentation's; a picture made from the bitmap for the caller to let
+/// go, `OLE_WARN_DELETE_DATA`; none, `OLE_ERROR_MEMORY` (**recorded** by
+/// `olepbd` and `olepbr`, **measured** by `olehnd`).
+async fn pb_get_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, out: u32) -> R<u16> {
+    if let Some(answer) = own_data(ole, object, le, format, out).await? {
+        return Ok(answer);
+    }
+
+    if format == cf(ole, "Native") && le.picture != 0 {
+        ole.w16(out, ole.r16(plus(le.picture, GEN_DATA)));
+        return Ok(OLE_OK);
+    }
+
+    if format != CF_METAFILEPICT {
+        return Ok(OLE_ERROR_FORMAT);
+    }
+
+    if le.view == 0 {
+        return Ok(OLE_ERROR_MEMORY);
+    }
+
+    ole.w16(out, picture_of_view(ole, le.view).await?);
+    Ok(OLE_WARN_DELETE_DATA)
+}
+
+/// `PBCOPYTOCLIPBOARD` (807): `Native` and `OwnerLink`, and a picture made
+/// from the bitmap (**measured** by `olehnd`).
+async fn pb_copy_to_clipboard(ole: &Ole<'_>, le: &Le) -> R<u16> {
+    copy_own(ole, le).await?;
+
+    if le.view != 0 {
+        let picture = picture_of_view(ole, le.view).await?;
+
+        ole.user(
+            "SetClipboardData",
+            &[Arg::W(CF_METAFILEPICT), Arg::W(picture)],
+        )
+        .await?;
+    }
+
+    Ok(OLE_OK)
+}
+
+/// An object `OLECLI`'s handler of `PBrush` made, given Paintbrush's table
+/// where it has no picture -- no presentation, or one of another format,
+/// its class's `Native` -- and its picture made from its bitmap (**read
+/// out**: `OLECLI.DLL` seg7 `052a`, the routine each `Pb` export calls
+/// after its default, and seg7 `09ae`, which tells a presentation that is
+/// no picture by its `QueryType`'s `OLE_ERROR_GENERIC`; the table it gives
+/// is the object's with five methods changed, **measured** by `olehnd`).
+pub(crate) async fn pb_table(ole: &Ole<'_>, object: u32) -> R<()> {
+    let Some(le) = le(ole, object) else {
+        return Ok(());
+    };
+
+    if le.picture != 0 && kind_of(ole, le.picture) != Some(Kind::Gen) {
+        return Ok(());
+    }
+
+    ole.w32(plus(object, OBJ_VTBL), table_at(ole, PB_VTBL, &PB_TABLE));
+    refresh_view(ole, object).await
+}
+
 /// `LECLONE` (208): another of the same in the document given, numbered
-/// anew, its data and presentation copied.
-async fn clone(ole: &Ole<'_>, le: &Le, client: u32, doc: u32, name: u32, out: u32) -> R<u16> {
+/// anew, its data and presentation copied; the copy holds its original's
+/// table, Paintbrush's with its picture made again.
+#[allow(clippy::too_many_arguments)]
+async fn clone(
+    ole: &Ole<'_>,
+    object: u32,
+    le: &Le,
+    client: u32,
+    doc: u32,
+    name: u32,
+    out: u32,
+) -> R<u16> {
     let copy = new_le(
         ole,
         le.kind,
@@ -2299,6 +2477,7 @@ async fn clone(ole: &Ole<'_>, le: &Le, client: u32, doc: u32, name: u32, out: u3
         le.class.clone(),
         (le.kind == OT_LINK).then(|| le.topic.clone()),
         le.item.clone(),
+        0,
     )
     .await?;
 
@@ -2330,7 +2509,14 @@ async fn clone(ole: &Ole<'_>, le: &Le, client: u32, doc: u32, name: u32, out: u3
         }
     }
 
-    if is_pbrush(le) {
+    with(ole, copy, |made| {
+        made.render = le.render;
+        made.network.clone_from(&le.network);
+        made.drive = le.drive;
+    });
+
+    if is_pb(ole, object) {
+        ole.w32(plus(copy, OBJ_VTBL), table_at(ole, PB_VTBL, &PB_TABLE));
         refresh_view(ole, copy).await?;
     }
 
@@ -2530,6 +2716,12 @@ async fn set_and_poke(
 /// `LESETHOSTNAMES` (204): the two names kept, after two offsets to them,
 /// and poked as `StdHostNames` while open (**recorded** by `oledde`).
 async fn set_host_names(ole: &Ole<'_>, object: u32, client: u32, doc: u32) -> R<u16> {
+    // A link's server is not told host names: `OLE_ERROR_OBJECT`
+    // (**measured** by `oleemb`).
+    if le(ole, object).is_some_and(|le| le.kind == OT_LINK) {
+        return Ok(OLE_ERROR_OBJECT);
+    }
+
     let first = ole.string(client);
     let second = ole.string(doc);
     let mut bytes = word(0).to_vec();
@@ -2631,7 +2823,7 @@ async fn set_data(ole: &Ole<'_>, object: u32, le: &Le, format: u16, handle: u16)
 
     with(ole, object, |le| le.native = copy);
 
-    if is_pbrush(le) {
+    if is_pb(ole, object) {
         refresh_view(ole, object).await?;
     }
 
@@ -2795,11 +2987,15 @@ pub(crate) async fn unlock_server(ole: &Ole<'_>, handle: u32) -> R<Option<u16>> 
 
 /// The methods of the `LE` exports and the unnamed entries an embedded or
 /// linked object's table holds, by ordinal; none for another ordinal.
+#[allow(clippy::too_many_lines)]
 pub(crate) async fn method(ole: &Ole<'_>, ordinal: u16, args: &[u32]) -> R<Option<u32>> {
     let arg = |at: usize| args.get(at).copied().unwrap_or(0);
     let object = arg(0);
 
-    if !(200..=229).contains(&ordinal) && !(1000..=1005).contains(&ordinal) {
+    if !(200..=229).contains(&ordinal)
+        && !(1000..=1005).contains(&ordinal)
+        && !matches!(ordinal, 805..=807 | 810 | 811)
+    {
         return Ok(None);
     }
 
@@ -2815,7 +3011,7 @@ pub(crate) async fn method(ole: &Ole<'_>, ordinal: u16, args: &[u32]) -> R<Optio
         205 => set_target_device(ole, object, arg(1) as u16).await?,
         206 => set_bounds(ole, object, arg(1)).await?,
         207 => save_to_stream(ole, object, arg(1)).await?,
-        208 => clone(ole, &le, arg(1), arg(2), arg(3), arg(4)).await?,
+        208 => clone(ole, object, &le, arg(1), arg(2), arg(3), arg(4)).await?,
         210 => equal(ole, &le, arg(1)).await?,
         211 => copy_to_clipboard(ole, &le).await?,
         212 => {
@@ -2823,14 +3019,20 @@ pub(crate) async fn method(ole: &Ole<'_>, ordinal: u16, args: &[u32]) -> R<Optio
             OLE_OK
         }
         213 => query_bounds(ole, &le, arg(1)),
+        // Paintbrush's: its bitmap drawn, none `OLE_ERROR_BLANK`.
+        805 => {
+            if le.view == 0 {
+                OLE_ERROR_BLANK
+            } else {
+                draw(ole, Kind::Dib, le.view, arg(1) as u16, arg(2), arg(3)).await?
+            }
+        }
+        806 => pb_query_bounds(ole, &le, arg(1)),
+        807 => pb_copy_to_clipboard(ole, &le).await?,
+        810 => pb_enum_formats(ole, &le, arg(1) as u16),
+        811 => pb_get_data(ole, object, &le, arg(1) as u16, arg(2)).await?,
         214 => {
-            if is_pbrush(&le) {
-                if le.view == 0 {
-                    OLE_ERROR_BLANK
-                } else {
-                    draw(ole, Kind::Dib, le.view, arg(1) as u16, arg(2), arg(3)).await?
-                }
-            } else if le.picture == 0 {
+            if le.picture == 0 {
                 OLE_ERROR_BLANK
             } else {
                 let kind = kind_of(ole, le.picture).unwrap_or(Kind::Mf);
@@ -2894,4 +3096,19 @@ pub(crate) async fn method(ole: &Ole<'_>, ordinal: u16, args: &[u32]) -> R<Optio
     };
 
     Ok(Some(u32::from(answer)))
+}
+
+/// What WinBox keeps of an embedded or linked object, a copy; none for
+/// another.
+pub(crate) fn le_of(ole: &Ole<'_>, object: u32) -> Option<Le> {
+    le(ole, object)
+}
+
+/// What WinBox keeps of one changed.
+pub(crate) fn with_le<T>(
+    ole: &Ole<'_>,
+    object: u32,
+    change: impl FnOnce(&mut Le) -> T,
+) -> Option<T> {
+    with(ole, object, change)
 }
