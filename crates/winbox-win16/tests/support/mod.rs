@@ -291,7 +291,9 @@ pub const AGREEING: &[&str] = &[
     "gdimisc",
     "olestat",
     "olemem",
-    "gdidm",
+    "gdidm-vga",
+    "gdidm-ega",
+    "gdidm-svga",
     "gdispool",
     "gdiint",
     "iconhand-vga",
@@ -301,6 +303,12 @@ pub const AGREEING: &[&str] = &[
     "olepbr",
     "swpunc",
     "olesrv",
+    "gdidmdrw-vga",
+    "gdidmdrw-ega",
+    "gdidmdrw-svga",
+    "scanscr-vga",
+    "scanscr-ega",
+    "scanscr-svga",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
