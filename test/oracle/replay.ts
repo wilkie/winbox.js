@@ -5988,6 +5988,9 @@ const RUN_WHOLE = new Set<string>([
   'kgaps',
   'ugaps',
   'olesrv',
+  'oleemb',
+  'olehnd',
+  'olenet',
   'rdwwalk',
   'rdw31',
   'swpunc31',
@@ -6073,6 +6076,8 @@ export const BOX_KEYS: Record<string, string[][]> = {
  * `progdde` does, and `pmbare` waits out DDEML's ten seconds after
  * `[ExitProgman(1)]`. `olesrv` waits on its timers for answers that do
  * not come, and gives its server a second after each thing it asks.
+ * `olenet` reads OLECLI's network dialog from a timer a second after it
+ * asks for it.
  */
 const VIRTUAL_CLOCK = new Set([
   'enddlg',
@@ -6108,6 +6113,7 @@ const VIRTUAL_CLOCK = new Set([
   ...['pmbare', 'pmraw', 'pmsyntax', 'pmgroups', 'pmfiles', 'pmshell'],
   ...['systimer', 'filport', 'findexe'],
   'olesrv',
+  'olenet',
 ]);
 
 /**

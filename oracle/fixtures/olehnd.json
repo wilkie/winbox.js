@@ -1,0 +1,1721 @@
+{
+  "probe": "olehnd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "RegSetValue",
+      "args": "OleHnd",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleHnd\\protocol\\StdFileEditing\\server",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleHnd\\protocol\\StdFileEditing\\handler",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": ".hnd",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleHndNone",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleHndNone\\protocol\\StdFileEditing\\server",
+      "result": "0"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "PBrush\\protocol\\StdFileEditing\\server",
+      "result": "0"
+    },
+    {
+      "function": "LoadLibrary",
+      "args": "C:\\WINDOWS\\OLEHNDD.DLL",
+      "result": "loaded"
+    },
+    {
+      "function": "OleRegisterClientDoc",
+      "args": "doc",
+      "result": "0"
+    },
+    {
+      "function": "usage",
+      "args": "start",
+      "result": "1",
+      "section": "handler"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "embedded",
+      "result": "0 object 182",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "embedded",
+      "result": "DllLoadFromStream(stream=given,protocol=StdFileEditing,client=same,doc=same,name=Obj1,out=same,type=2,class=OLEHND,cf=0)|DefLoadFromStream=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "usage",
+      "args": "embedded",
+      "result": "2",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "embedded",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "embedded",
+      "result": "0 2",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "embedded",
+      "result": "0 0,0,2000,-1000",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "embedded",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "embedded",
+      "result": "0 180",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "embedded",
+      "result": "0 Obj1",
+      "section": "handler"
+    },
+    {
+      "function": "OleClone",
+      "args": "embedded",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "clone",
+      "result": "",
+      "section": "handler"
+    },
+    {
+      "function": "usage",
+      "args": "clone",
+      "result": "2",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "clone",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "clone",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "usage",
+      "args": "clone released",
+      "result": "2",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "embedded",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "usage",
+      "args": "embedded released",
+      "result": "2",
+      "section": "handler"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "linked",
+      "result": "0 object 188",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "linked",
+      "result": "DllLoadFromStream(stream=given,protocol=StdFileEditing,client=same,doc=same,name=Obj2,out=same,type=1,class=OLEHND,cf=0)|DefLoadFromStream=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "linked",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "linked",
+      "result": "0 1",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "linked",
+      "result": "0 0,0,2000,-1000",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "linked",
+      "result": "ObjectLink,3,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "linked",
+      "result": "0 187",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "linked",
+      "result": "0 Obj2",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "linked",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "formats",
+      "args": "OleHnd",
+      "result": "Native,OwnerLink,3,ObjectLink,",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "draw",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "clip draw",
+      "result": "DllCreateFromClip(protocol=StdFileEditing,client=same,doc=same,name=Clip1,out=same,render=1,cf=0,type=2)|DefCreateFromClip=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "clip draw",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "clip draw",
+      "result": "0 2",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "clip draw",
+      "result": "0 0,0,2000,-1000",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "clip draw",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "clip draw",
+      "result": "0 209",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "clip draw",
+      "result": "0 Clip1",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "clip draw",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "none",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "clip none",
+      "result": "DllCreateFromClip(protocol=StdFileEditing,client=same,doc=same,name=Clip2,out=same,render=0,cf=0,type=2)|DefCreateFromClip=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "clip none",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "clip none",
+      "result": "0 2",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "clip none",
+      "result": "7 0,0,0,0",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "clip none",
+      "result": "Native,OwnerLink,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "clip none",
+      "result": "0 76",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "clip none",
+      "result": "0 Clip2",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "clip none",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "format",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "clip format",
+      "result": "DllCreateFromClip(protocol=StdFileEditing,client=same,doc=same,name=Clip3,out=same,render=2,cf=3,type=2)|DefCreateFromClip=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "clip format",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateLinkFromClip",
+      "args": "draw",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "link clip",
+      "result": "DllCreateLinkFromClip(protocol=StdFileEditing,client=same,doc=same,name=Clip4,out=same,render=1,cf=0)|DefCreateLinkFromClip=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "link clip",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "link clip",
+      "result": "0 1",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "link clip",
+      "result": "0 0,0,2000,-1000",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "link clip",
+      "result": "ObjectLink,3,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "link clip",
+      "result": "0 206",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "link clip",
+      "result": "0 Clip4",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "link clip",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreate",
+      "args": "OleHnd",
+      "result": "35 0",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "create",
+      "result": "DllCreate(protocol=StdFileEditing,client=same,class=OleHnd,doc=same,name=Obj3,out=same,render=1,cf=0)|DefCreate=35 0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateFromTemplate",
+      "args": "OleHnd",
+      "result": "35 0",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "template",
+      "result": "DllCreateFromTemplate(protocol=StdFileEditing,client=same,template=C:\\ORACLE\\OLEHND.HND,doc=same,name=Obj4,out=same,render=1,cf=0)|DefCreateFromTemplate=35 0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateFromFile",
+      "args": "OleHnd",
+      "result": "35 0",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "from file",
+      "result": "DllCreateFromFile(protocol=StdFileEditing,client=same,class=OleHnd,file=C:\\ORACLE\\OLEHND.HND,doc=same,name=Obj5,out=same,render=1,cf=0)|DefCreateFromFile=35 0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateLinkFromFile",
+      "args": "OleHnd",
+      "result": "35 0",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "link file",
+      "result": "DllCreateLinkFromFile(protocol=StdFileEditing,client=same,class=OleHnd,file=C:\\ORACLE\\OLEHND.HND,item=Item,doc=same,name=Obj6,out=same,render=1,cf=0)|DefCreateLinkFromFile=35 0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateInvisible",
+      "args": "hidden",
+      "result": "0 object",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "invisible",
+      "result": "DllCreateInvisible(protocol=StdFileEditing,client=same,class=OleHnd,doc=same,name=Obj7,out=same,render=1,cf=0,activate=0)|DefCreateInvisible=0 object",
+      "section": "handler"
+    },
+    {
+      "function": "vtbl",
+      "args": "invisible",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "invisible",
+      "result": "0 2",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "invisible",
+      "result": "7 0,0,0,0",
+      "section": "handler"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "invisible",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "handler"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "invisible",
+      "result": "7 0",
+      "section": "handler"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "invisible",
+      "result": "0 Obj7",
+      "section": "handler"
+    },
+    {
+      "function": "OleRelease",
+      "args": "invisible",
+      "result": "0",
+      "section": "handler"
+    },
+    {
+      "function": "OleCreateInvisible",
+      "args": "activate",
+      "result": "35 0",
+      "section": "handler"
+    },
+    {
+      "function": "handler",
+      "args": "invisible activate",
+      "result": "DllCreateInvisible(protocol=StdFileEditing,client=same,class=OleHnd,doc=same,name=Obj8,out=same,render=1,cf=0,activate=1)|DefCreateInvisible=35 0",
+      "section": "handler"
+    },
+    {
+      "function": "usage",
+      "args": "handler end",
+      "result": "2",
+      "section": "handler"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "refused",
+      "result": "19 0 19",
+      "section": "refuse"
+    },
+    {
+      "function": "handler",
+      "args": "refused",
+      "result": "DllLoadFromStream(stream=given,protocol=StdFileEditing,client=same,doc=same,name=Ref1,out=same,type=2,class=OLEHND,cf=0)",
+      "section": "refuse"
+    },
+    {
+      "function": "formats",
+      "args": "OleHnd",
+      "result": "Native,OwnerLink,3,ObjectLink,",
+      "section": "refuse"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "refused",
+      "result": "19 0",
+      "section": "refuse"
+    },
+    {
+      "function": "handler",
+      "args": "refused clip",
+      "result": "DllCreateFromClip(protocol=StdFileEditing,client=same,doc=same,name=Ref2,out=same,render=1,cf=0,type=2)",
+      "section": "refuse"
+    },
+    {
+      "function": "OleCreateInvisible",
+      "args": "refused",
+      "result": "19 0",
+      "section": "refuse"
+    },
+    {
+      "function": "handler",
+      "args": "refused invisible",
+      "result": "DllCreateInvisible(protocol=StdFileEditing,client=same,class=OleHnd,doc=same,name=Ref3,out=same,render=1,cf=0,activate=0)",
+      "section": "refuse"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "override",
+      "result": "0 object 182",
+      "section": "override"
+    },
+    {
+      "function": "handler",
+      "args": "override",
+      "result": "DllLoadFromStream(stream=given,protocol=StdFileEditing,client=same,doc=same,name=Ovr1,out=same,type=2,class=OLEHND,cf=0)|DefLoadFromStream=0 object|patched",
+      "section": "override"
+    },
+    {
+      "function": "vtbl",
+      "args": "override",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,H,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "override"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "override",
+      "result": "0 0,0,2000,-1000",
+      "section": "override"
+    },
+    {
+      "function": "handler",
+      "args": "override bounds",
+      "result": "HndQueryBounds=0",
+      "section": "override"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "other",
+      "result": "0 object 186",
+      "section": "override"
+    },
+    {
+      "function": "handler",
+      "args": "other",
+      "result": "",
+      "section": "override"
+    },
+    {
+      "function": "table",
+      "args": "other",
+      "result": "1",
+      "section": "override"
+    },
+    {
+      "function": "vtbl",
+      "args": "other",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,H,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "override"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "other",
+      "result": "0 0,0,2000,-1000",
+      "section": "override"
+    },
+    {
+      "function": "handler",
+      "args": "other bounds",
+      "result": "HndQueryBounds=0",
+      "section": "override"
+    },
+    {
+      "function": "vtbl",
+      "args": "restored",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "override"
+    },
+    {
+      "function": "OleRelease",
+      "args": "override",
+      "result": "0",
+      "section": "override"
+    },
+    {
+      "function": "OleRelease",
+      "args": "other",
+      "result": "0",
+      "section": "override"
+    },
+    {
+      "function": "GetProcAddress",
+      "args": "Def",
+      "result": "111111111",
+      "section": "def"
+    },
+    {
+      "function": "DefLoadFromStream",
+      "args": "embedded",
+      "result": "0 object 186",
+      "section": "def"
+    },
+    {
+      "function": "vtbl",
+      "args": "def embedded",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "def embedded",
+      "result": "0 2",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "def embedded",
+      "result": "0 0,0,2000,-1000",
+      "section": "def"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "def embedded",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "def"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "def embedded",
+      "result": "0 184",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "def embedded",
+      "result": "0 Def1",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "def embedded",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "atom",
+      "args": "def embedded",
+      "result": "gone",
+      "section": "def"
+    },
+    {
+      "function": "DefLoadFromStream",
+      "args": "linked",
+      "result": "0 object 192",
+      "section": "def"
+    },
+    {
+      "function": "vtbl",
+      "args": "def linked",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "def linked",
+      "result": "0 1",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "def linked",
+      "result": "0 0,0,2000,-1000",
+      "section": "def"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "def linked",
+      "result": "ObjectLink,3,0,",
+      "section": "def"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "def linked",
+      "result": "0 191",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "def linked",
+      "result": "0 Def2",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "def linked",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "atom",
+      "args": "def linked",
+      "result": "gone",
+      "section": "def"
+    },
+    {
+      "function": "DefLoadFromStream",
+      "args": "static",
+      "result": "0 object 186",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "def static",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "atom",
+      "args": "def static",
+      "result": "gone",
+      "section": "def"
+    },
+    {
+      "function": "formats",
+      "args": "OleHndNone",
+      "result": "Native,OwnerLink,3,ObjectLink,",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateFromClip",
+      "args": "draw",
+      "result": "4 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateLinkFromClip",
+      "args": "draw",
+      "result": "4 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateInvisible",
+      "args": "hidden",
+      "result": "0 object",
+      "section": "def"
+    },
+    {
+      "function": "vtbl",
+      "args": "def invisible",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "def invisible",
+      "result": "0 2",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "def invisible",
+      "result": "7 0,0,0,0",
+      "section": "def"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "def invisible",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "def"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "def invisible",
+      "result": "7 0",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "def invisible",
+      "result": "0 Def6",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "def invisible",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateInvisible",
+      "args": "static",
+      "result": "0 object",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "def invisible static",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "LeCreateInvisible",
+      "args": "hidden",
+      "result": "0 object",
+      "section": "def"
+    },
+    {
+      "function": "vtbl",
+      "args": "le invisible",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "le invisible",
+      "result": "0 2",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "le invisible",
+      "result": "7 0,0,0,0",
+      "section": "def"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "le invisible",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "def"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "le invisible",
+      "result": "7 0",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "le invisible",
+      "result": "0 Le1",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "le invisible",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "LeCreateInvisible",
+      "args": "none",
+      "result": "0 object",
+      "section": "def"
+    },
+    {
+      "function": "vtbl",
+      "args": "le invisible none",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "le invisible none",
+      "result": "0 2",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "le invisible none",
+      "result": "7 0,0,0,0",
+      "section": "def"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "le invisible none",
+      "result": "Native,OwnerLink,0,",
+      "section": "def"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "le invisible none",
+      "result": "7 0",
+      "section": "def"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "le invisible none",
+      "result": "0 Le2",
+      "section": "def"
+    },
+    {
+      "function": "OleRelease",
+      "args": "le invisible none",
+      "result": "0",
+      "section": "def"
+    },
+    {
+      "function": "LeCreateInvisible",
+      "args": "activate",
+      "result": "35 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreate",
+      "args": "OleHndNone",
+      "result": "35 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateFromTemplate",
+      "args": "OleHndNone",
+      "result": "35 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateFromFile",
+      "args": "OleHndNone",
+      "result": "35 0",
+      "section": "def"
+    },
+    {
+      "function": "DefCreateLinkFromFile",
+      "args": "OleHndNone",
+      "result": "35 0",
+      "section": "def"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bare",
+      "result": "0 object 175",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "bare",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "bare",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "bare",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "bare",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "bare",
+      "result": "0 199",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "bare",
+      "result": "0 Pb1",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,OwnerLink",
+      "result": "0 handle PBrush OLEHND%HND.DOC%Pb1#021 ",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "bare,3",
+      "result": "1000 handle 8 211 105",
+      "section": "pb"
+    },
+    {
+      "function": "PbQueryBounds",
+      "args": "bare",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "PbEnumFormats",
+      "args": "bare",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "PbGetData",
+      "args": "bare,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "pb"
+    },
+    {
+      "function": "PbGetData",
+      "args": "bare,OwnerLink",
+      "result": "0 handle PBrush OLEHND%HND.DOC%Pb1#021 ",
+      "section": "pb"
+    },
+    {
+      "function": "PbGetData",
+      "args": "bare,3",
+      "result": "1000 handle 8 211 105",
+      "section": "pb"
+    },
+    {
+      "function": "PbDraw",
+      "args": "bare",
+      "result": "0 e4627e40",
+      "section": "pb"
+    },
+    {
+      "function": "OleDraw",
+      "args": "bare",
+      "result": "0 e4627e40",
+      "section": "pb"
+    },
+    {
+      "function": "PbCopyToClipboard",
+      "args": "bare",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "formats",
+      "args": "bare",
+      "result": "Native,OwnerLink,3,",
+      "section": "pb"
+    },
+    {
+      "function": "OleCopyToClipboard",
+      "args": "bare",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "formats",
+      "args": "bare",
+      "result": "Native,OwnerLink,3,",
+      "section": "pb"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "bare again",
+      "result": "0 object 175",
+      "section": "pb"
+    },
+    {
+      "function": "same table",
+      "args": "bare",
+      "result": "yes",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "bare again",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "picture",
+      "result": "0 object 284",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "picture",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "picture",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "picture",
+      "result": "0 0,0,2000,-1000",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "picture",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "picture",
+      "result": "0 308",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "picture",
+      "result": "0 Pb3",
+      "section": "pb"
+    },
+    {
+      "function": "same table",
+      "args": "bare, picture",
+      "result": "no",
+      "section": "pb"
+    },
+    {
+      "function": "OleDraw",
+      "args": "picture",
+      "result": "0 01daf5c0",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "picture",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "bare",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "link native",
+      "result": "0 object 243",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "link native",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "link native",
+      "result": "0 1",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "link native",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "link native",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "link native",
+      "result": "0 242",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "link native",
+      "result": "0 Pb4",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "link native,ObjectLink",
+      "result": "0 handle PBrush C:\\ORACLE\\OLEHND.HND 1 1 10 10",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "link native,Native",
+      "result": "0 handle 42 4d 86 00 00 00 00 00 00 00 76 00 00 00 28 00",
+      "section": "pb"
+    },
+    {
+      "function": "OleGetData",
+      "args": "link native,3",
+      "result": "1000 handle 8 211 105",
+      "section": "pb"
+    },
+    {
+      "function": "OleDraw",
+      "args": "link native",
+      "result": "0 e4627e40",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "link native",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "link picture",
+      "result": "0 object 188",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "link picture",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "link picture",
+      "result": "0 1",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "link picture",
+      "result": "0 0,0,2000,-1000",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "link picture",
+      "result": "ObjectLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "link picture",
+      "result": "0 187",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "link picture",
+      "result": "0 Pb5",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "link picture",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleLoadFromStream",
+      "args": "link none",
+      "result": "0 object 79",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "link none",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "link none",
+      "result": "0 1",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "link none",
+      "result": "7 0,0,0,0",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "link none",
+      "result": "ObjectLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "link none",
+      "result": "0 78",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "link none",
+      "result": "0 Pb6",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "link none",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "formats",
+      "args": "PBrush",
+      "result": "Native,OwnerLink,3,ObjectLink,",
+      "section": "pb"
+    },
+    {
+      "function": "OleCreateFromClip",
+      "args": "PBrush",
+      "result": "0 object",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "clip",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "clip",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "clip",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "clip",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "clip",
+      "result": "0 204",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "clip",
+      "result": "0 Pb7",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "clip",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleCreateLinkFromClip",
+      "args": "PBrush",
+      "result": "0 object",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "link clip",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "link clip",
+      "result": "0 1",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "link clip",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "link clip",
+      "result": "ObjectLink,Native,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "link clip",
+      "result": "0 263",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "link clip",
+      "result": "0 Pb8",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "link clip",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateFromClip",
+      "args": "draw",
+      "result": "4 0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateLinkFromClip",
+      "args": "draw",
+      "result": "4 0",
+      "section": "pb"
+    },
+    {
+      "function": "PbLoadFromStream",
+      "args": "picture",
+      "result": "0 object 284",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "pb load picture",
+      "result": "221,200,201,1005,202,203,205,206,220,1004,200,204,207,208,209,210,211,214,216,228,225,218,219,223,226,227,911,910,212,213,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "pb load picture",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "pb load picture",
+      "result": "0 0,0,2000,-1000",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "pb load picture",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "pb load picture",
+      "result": "0 308",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "pb load picture",
+      "result": "0 Pb11",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "pb load picture",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "atom",
+      "args": "pb load picture",
+      "result": "gone",
+      "section": "pb"
+    },
+    {
+      "function": "PbLoadFromStream",
+      "args": "bare",
+      "result": "0 object 175",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "pb load bare",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "pb load bare",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "pb load bare",
+      "result": "0 0,0,211,-105",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "pb load bare",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "pb load bare",
+      "result": "0 199",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "pb load bare",
+      "result": "0 Pb12",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "pb load bare",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "atom",
+      "args": "pb load bare",
+      "result": "gone",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateInvisible",
+      "args": "hidden",
+      "result": "0 object",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "pb invisible",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "pb invisible",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "pb invisible",
+      "result": "7 0,0,0,0",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "pb invisible",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "pb invisible",
+      "result": "7 0",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "pb invisible",
+      "result": "0 Pb13",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "pb invisible",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "OleCreateInvisible",
+      "args": "PBrush",
+      "result": "0 object",
+      "section": "pb"
+    },
+    {
+      "function": "vtbl",
+      "args": "invisible",
+      "result": "221,200,201,1005,811,203,205,206,810,1004,200,204,207,208,209,210,807,805,216,228,225,218,219,223,226,227,911,910,212,806,913,215,222,1003,1002,1001,1000,229,224,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryType",
+      "args": "invisible",
+      "result": "0 2",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryBounds",
+      "args": "invisible",
+      "result": "7 0,0,0,0",
+      "section": "pb"
+    },
+    {
+      "function": "OleEnumFormats",
+      "args": "invisible",
+      "result": "Native,OwnerLink,3,0,",
+      "section": "pb"
+    },
+    {
+      "function": "OleQuerySize",
+      "args": "invisible",
+      "result": "7 0",
+      "section": "pb"
+    },
+    {
+      "function": "OleQueryName",
+      "args": "invisible",
+      "result": "0 Pb14",
+      "section": "pb"
+    },
+    {
+      "function": "OleRelease",
+      "args": "invisible",
+      "result": "0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreate",
+      "args": "PBrush",
+      "result": "35 0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateFromTemplate",
+      "args": "PBrush",
+      "result": "35 0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateFromFile",
+      "args": "PBrush",
+      "result": "35 0",
+      "section": "pb"
+    },
+    {
+      "function": "PbCreateLinkFromFile",
+      "args": "PBrush",
+      "result": "35 0",
+      "section": "pb"
+    },
+    {
+      "function": "OleRevokeClientDoc",
+      "args": "doc",
+      "result": "0",
+      "section": "end"
+    },
+    {
+      "function": "usage",
+      "args": "end",
+      "result": "1",
+      "section": "end"
+    }
+  ]
+}

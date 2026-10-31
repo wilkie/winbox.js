@@ -8,17 +8,22 @@
  *
  * * `embedded`, `linked`: the class `PBrush`, a picture for each; an
  *   embedded one with native data, a linked one with a file and an item.
- * * `bare`: an embedded object with no picture.
+ * * `bare`: an embedded object with no picture, its `Native` a bitmap
+ *   file as Paintbrush's is.
  * * `vtbl`, `obj`: the object's method table, by the OLECLI export each
  *   slot is, and its block's words, as `olemem` writes them.
  * * `bad`: the same streams under `Static`, cut short, another version.
  *
  * Nothing that differs between machines is written: a handle is written
- * as whether it is nought, a format by its name.
+ * as whether it is nought, a format by its name; a block's bytes only as
+ * many as were put in it, a saved stream field by field -- its `Native`'s
+ * size, which is its block's, and as many bytes of it as were put there,
+ * a picture's metafile's handle as whether it is nought.
  */
 
 #include "probe.h"
 #include <ole.h>
+#include "olebmp.h"
 
 #pragma library("olecli")
 
@@ -171,6 +176,9 @@ static void putPicture(void)
     DeleteMetaFile(SetMetaFileBits(bits));
 }
 
+/* The bytes put in an embedded object's `Native`: 32 bytes, or a bitmap file. */
+static DWORD nativeLength;
+
 static void makeEmbedded(int picture)
 {
     unsigned i;
@@ -181,13 +189,19 @@ static void makeEmbedded(int picture)
     putString("PBrush");
     putString("");
     putString("");
-    putLong(16L);
-
-    for (i = 0; i < 16; i++) buffer[at++] = (unsigned char)(0x40 + i);
 
     if (picture) {
+        nativeLength = 32;
+        putLong(32L);
+
+        for (i = 0; i < 32; i++) buffer[at++] = (unsigned char)(0x40 + i);
+
         putPicture();
     } else {
+        nativeLength = OLEBMP_SIZE;
+        putLong(OLEBMP_SIZE);
+        oleBmp((BYTE far *)(buffer + at), 7);
+        at += OLEBMP_SIZE;
         putLong(0x0501L);
         putLong(0L);
     }
@@ -210,25 +224,145 @@ static void makeLinked(void)
     length = at;
 }
 
-static void dumpStream(LPCSTR what)
+/* A doubleword of the stream, at `*from`, moved past. */
+static DWORD getLong(DWORD *from)
+{
+    unsigned i = (unsigned)*from;
+    DWORD value = (DWORD)buffer[i] | (DWORD)buffer[i + 1] << 8 | (DWORD)buffer[i + 2] << 16 |
+                  (DWORD)buffer[i + 3] << 24;
+
+    *from += 4;
+    return value;
+}
+
+/* A string of the stream, its length and bytes, written and moved past. */
+static LPSTR getText(LPSTR out, DWORD *from)
+{
+    DWORD n = getLong(from);
+    DWORD i;
+
+    *out++ = '"';
+
+    for (i = 0; i < n && buffer[(unsigned)(*from + i)]; i++) {
+        *out++ = buffer[(unsigned)(*from + i)];
+    }
+
+    *out++ = '"';
+    *out++ = ' ';
+    *out = 0;
+    *from += n;
+    return out;
+}
+
+/* Bytes of the stream as hex, from `from` to `to`, a record each 32. */
+static void hexRecords(LPCSTR what, DWORD from, DWORD to)
 {
     DWORD i;
     DWORD j;
     LPSTR out;
 
-    wsprintf(probeResult, "%lu", length);
-    probe("length", what, probeResult);
-
-    for (i = 0; i < length; i += 32) {
+    for (i = from; i < to; i += 32) {
         out = probeResult;
 
-        for (j = i; j < i + 32 && j < length; j++) {
+        for (j = i; j < i + 32 && j < to; j++) {
             out += wsprintf(out, "%02x", buffer[(unsigned)j]);
         }
 
         wsprintf(probeArgs, "%s@%lx", what, i);
         probe("bytes", probeArgs, probeResult);
     }
+}
+
+/*
+ * A stream OLECLI wrote, field by field: version, type, class, document,
+ * item; an embedded object's `Native`'s size and as many of its bytes as
+ * were put there, a link's network name, nought and update option; then
+ * the presentation's version and type, and for a picture its class, size,
+ * the `METAFILEPICT`'s mode and extents, whether its handle is nought, and
+ * its metafile's bytes.
+ */
+static void dumpSaved(LPCSTR what)
+{
+    DWORD from = 0;
+    DWORD type;
+    DWORD size;
+    LPSTR out = probeResult;
+    char klass[40];
+    DWORD known;
+
+    wsprintf(probeResult, "%lu", length);
+    probe("length", what, probeResult);
+
+    size = getLong(&from);
+    type = getLong(&from);
+    out += wsprintf(out, "%lx %lu ", size, type);
+    out = getText(out, &from);
+    out = getText(out, &from);
+    out = getText(out, &from);
+
+    if (type == 2) {
+        size = getLong(&from);
+        out += wsprintf(out, "%lu", size);
+
+        known = nativeLength;
+
+        *out++ = ' ';
+
+        for (; from < length && size && known; size--, known--) {
+            out += wsprintf(out, "%02x", buffer[(unsigned)from++]);
+        }
+
+        from += size;
+    } else {
+        out = getText(out, &from);
+        out += wsprintf(out, "%lu ", getLong(&from));
+        out += wsprintf(out, "%lu", getLong(&from));
+    }
+
+    probe("saved", what, probeResult);
+
+    if (from >= length) {
+        return;
+    }
+
+    out = probeResult;
+    out += wsprintf(out, "%lx ", getLong(&from));
+    type = getLong(&from);
+    out += wsprintf(out, "%lu ", type);
+
+    if (type) {
+        unsigned i;
+        DWORD n = (DWORD)buffer[(unsigned)from];
+
+        for (i = 0; i < n && i < sizeof klass - 1; i++) klass[i] = buffer[(unsigned)from + 4 + i];
+
+        klass[i] = 0;
+        out = getText(out, &from);
+        out += wsprintf(out, "%ld ", (LONG)getLong(&from));
+        out += wsprintf(out, "%ld ", (LONG)getLong(&from));
+        size = getLong(&from);
+        out += wsprintf(out, "%lu", size);
+
+        if (!lstrcmp(klass, "METAFILEPICT") && size >= 8) {
+            unsigned i = (unsigned)from;
+
+            out += wsprintf(out, " %u %d %d %s", buffer[i] | buffer[i + 1] << 8,
+                            (int)(buffer[i + 2] | buffer[i + 3] << 8),
+                            (int)(buffer[i + 4] | buffer[i + 5] << 8),
+                            buffer[i + 6] | buffer[i + 7] ? "handle" : "0");
+            from += 8;
+        }
+    }
+
+    probe("presentation", what, probeResult);
+    hexRecords(what, from, length);
+}
+
+static void dumpStream(LPCSTR what)
+{
+    wsprintf(probeResult, "%lu", length);
+    probe("length", what, probeResult);
+    hexRecords(what, 0, length);
 }
 
 static void vtbl(LPCSTR what, LPOLEOBJECT object)
@@ -312,11 +446,25 @@ static void queries(LPCSTR what, LPOLEOBJECT object)
 
         if (answer == OLE_OK && data && format != CF_METAFILEPICT && format != CF_BITMAP) {
             LPBYTE bytes = (LPBYTE)GlobalLock(data);
-            DWORD length = GlobalSize(data);
             DWORD i;
+            char kind[16];
 
-            for (i = 0; i < length && i < 40; i++) {
-                out += wsprintf(out, " %02x", bytes[(unsigned)i]);
+            kind[0] = 0;
+            GetClipboardFormatName(format, kind, sizeof kind);
+
+            if (lstrcmp(kind, "Native")) {
+                /* OwnerLink, ObjectLink: class, document, item. */
+                LPSTR text = (LPSTR)bytes;
+
+                for (i = 0; i < 3; i++) {
+                    out += wsprintf(out, " %s", text);
+                    text += lstrlen(text) + 1;
+                }
+            } else {
+                /* Native: as many bytes as were put there. */
+                for (i = 0; i < nativeLength && i < 24; i++) {
+                    out += wsprintf(out, " %02x", bytes[(unsigned)i]);
+                }
             }
 
             GlobalUnlock(data);
@@ -413,14 +561,18 @@ static void words(LPCSTR what, LPOLEOBJECT object)
     wsprintf(probeResult, "%lu", size);
     probe("block", what, probeResult);
 
-    /* The words that are no handle, selector or atom: nought, small numbers, and the signature. */
-    for (i = 0; i < 48 && i * 2 < size; i++) {
-        if (w[i] == 0) {
-            out += wsprintf(out, "0 ");
-        } else if (w[i] < 0x100 || w[i] == 0x454c) {
+    /*
+     * The block's first 2Ch bytes, the part every object has (`olemem`):
+     * the signature (word 2), the type (6, 7), the mapping mode (12) and
+     * the word after it (14) as numbers; every other word -- a pointer, a
+     * handle, an atom, an extent -- as whether it is nought. What lies
+     * after is the library's own and not written.
+     */
+    for (i = 0; i < 22 && i * 2 < size; i++) {
+        if (i == 2 || i == 6 || i == 7 || i == 12 || i == 14) {
             out += wsprintf(out, "%x ", w[i]);
         } else {
-            out += wsprintf(out, "* ");
+            out += wsprintf(out, w[i] ? "* " : "0 ");
         }
     }
 
@@ -465,7 +617,7 @@ static void kind(LPCSTR what, LHCLIENTDOC doc)
     wsprintf(probeResult, "%u", (unsigned)answer);
     probe("OleSaveToStream", what, probeResult);
     wsprintf(args, "%s saved", what);
-    dumpStream(args);
+    dumpSaved(args);
 
     answer = OleClone(object, &client, doc, "Copy", &copy);
     wsprintf(probeResult, "%u %s", (unsigned)answer, copy ? "object" : "0");
@@ -474,6 +626,7 @@ static void kind(LPCSTR what, LHCLIENTDOC doc)
     if (copy) {
         wsprintf(probeResult, "%u", (unsigned)OleEqual(object, copy));
         probe("OleEqual", what, probeResult);
+        vtbl("copy", copy);
         queries("copy", copy);
         wsprintf(probeResult, "%u", (unsigned)OleRelease(copy));
         probe("OleRelease", "copy", probeResult);

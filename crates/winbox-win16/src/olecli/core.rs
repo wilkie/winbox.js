@@ -60,6 +60,7 @@ pub(crate) const OLE_ERROR_STATIC_FROM_OTHER_OS: u16 = 55;
 pub(crate) const OT_STATIC: u32 = 3;
 
 /// `OLEOPT_RENDER` (ole.h).
+pub(crate) const OLERENDER_NONE: u16 = 0;
 pub(crate) const OLERENDER_DRAW: u16 = 1;
 pub(crate) const OLERENDER_FORMAT: u16 = 2;
 
@@ -324,6 +325,35 @@ pub struct State {
     /// Servers locked, by the window of the conversation that holds each:
     /// the server's window.
     pub locks: std::collections::HashMap<u16, u16>,
+    /// Object handlers loaded, by their index, from 1 (`handlers.rs`).
+    pub handlers: Vec<Option<Handler>>,
+    /// The handler whose objects are all let go, freed when another's are
+    /// or a document is revoked; nought for none.
+    pub pending: usize,
+    /// Each object made through a handler: the handler's index.
+    pub handler_of: std::collections::HashMap<u32, usize>,
+    /// Whether an `Ole` function that makes an object from the clipboard is
+    /// under way: what its defaults read.
+    pub clipping: bool,
+    /// `DllCreate` called for `OleCreateInvisible` by a handler with no
+    /// `DllCreateInvisible`: whether to activate.
+    pub invisible: Option<bool>,
+    /// The share the network dialog connects, a far pointer to its name.
+    pub connecting: u32,
+}
+
+/// A handler of a class's objects, as `handlers.rs` keeps it.
+#[derive(Debug, Default, Clone)]
+pub struct Handler {
+    /// The class's name, lower case, and its atom.
+    pub class: Vec<u8>,
+    pub atom: u16,
+    pub library: u16,
+    /// How many of its objects there are.
+    pub count: i32,
+    /// Its eight `Dll` exports' far addresses, `DllCreateInvisible`'s
+    /// nought where it has none.
+    pub procs: [u32; 8],
 }
 
 /// A conversation an object holds: the system topic's or its document's.
@@ -398,6 +428,15 @@ pub struct Le {
     pub waiting: Option<Step>,
     pub link: u16,
     pub blank: u16,
+    /// Its class's atom: the class is spelled as the atom is (**measured**
+    /// by `olenet`).
+    pub class_atom: u16,
+    /// The rendering it was made with (ole.h's `OLEOPT_RENDER`).
+    pub render: u16,
+    /// A link's network name, its document's share, and the drive's letter
+    /// connected to it; none, nought.
+    pub network: Vec<u8>,
+    pub drive: u8,
 }
 
 /// A picture being drawn, as `MFCALLBACKFUNC` plays its records.
