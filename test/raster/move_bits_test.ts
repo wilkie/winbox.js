@@ -1,5 +1,6 @@
 'use strict';
 
+import { ClipRegion } from '../../src/raster/clip-region.js';
 import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
 import { Desktop, type DesktopWindow } from '../../src/win16/user/desktop.js';
 import { updateOf } from '../../src/win16/user/update-region.js';
@@ -106,16 +107,58 @@ const WS_CHILD = 0x40000000;
     expect(due.contains(200, 150)).toBe(false);
   });
 
-  it('takes nothing with SWP_NOCOPYBITS, and leaves what already showed it', () => {
+  it('copies with SWP_NOCOPYBITS through the rectangle the entry kept, all due without one', () => {
+    const fresh = make();
+
+    /* A block made afresh, all noughts: nothing copied, due all over
+     * (`USER.EXE` seg7 `00e6`, `1028`-`102c`, `08de`). */
+    fresh.desktop.moveWithBits(
+      fresh.mover,
+      150,
+      120,
+      200,
+      100,
+      false,
+      0,
+      null,
+      false,
+      false,
+      [0, 0, 0, 0]
+    );
+    expect(fresh.mover.needsPaint).toBe(true);
+    expect((fresh.mover as any).dirtyRect).toBeUndefined();
+  });
+
+  it('takes with SWP_NOCOPYBITS what the call before left in the entry, and leaves what already showed it', () => {
     const { screen, desktop, mover } = make();
 
-    desktop.moveWithBits(mover, 150, 120, 200, 100, false, 0);
+    /* The entry kept the window's own place, from the call that showed it
+     * (`swpbits`, `swpunc`). */
+    desktop.moveWithBits(
+      mover,
+      150,
+      120,
+      200,
+      100,
+      false,
+      0,
+      null,
+      false,
+      false,
+      [100, 100, 300, 200]
+    );
 
     const due = updateOf(mover);
 
     expect(wrong(screen)).toBeGreaterThan(0);
     expect(mover.needsPaint).toBe(true);
-    expect(due.box).toEqual({ left: 150, top: 120, right: 350, bottom: 220 });
+    /* Given whole by USER's walk, not cut to the window (seg1 `42e9`): within it, the box of what was not copied. */
+    expect(due.intersect(ClipRegion.rect(150, 120, 350, 220)).box).toEqual({
+      left: 150,
+      top: 120,
+      right: 350,
+      bottom: 220,
+    });
     expect(due.contains(320, 150)).toBe(true);
     expect(due.contains(200, 150)).toBe(false);
   });
