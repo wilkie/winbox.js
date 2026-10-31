@@ -62,7 +62,8 @@ export function ExtTextOut(hdc, nXStart, nYStart, fuOptions, lpRect, lpszString,
         fuOptions,
         lpRect >>> 0,
         farOf(lpszString),
-        cbString
+        cbString,
+        lpDx >>> 0
       )
     );
   }

@@ -84,7 +84,7 @@
     {
       "function": "engine",
       "args": "10,10 2 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial"
     },
     {
@@ -210,7 +210,7 @@
     {
       "function": "engine",
       "args": "8,6 3 2",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial"
     },
     {
@@ -294,7 +294,7 @@
     {
       "function": "engine",
       "args": "2,30 4 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial"
     },
     {
@@ -366,7 +366,7 @@
     {
       "function": "engine",
       "args": "10,10 2 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial bold"
     },
     {
@@ -492,7 +492,7 @@
     {
       "function": "engine",
       "args": "8,6 3 2",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial bold"
     },
     {
@@ -576,7 +576,7 @@
     {
       "function": "engine",
       "args": "2,30 4 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Arial bold"
     },
     {
@@ -648,7 +648,7 @@
     {
       "function": "engine",
       "args": "10,10 2 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Wingdings slanted"
     },
     {
@@ -774,7 +774,7 @@
     {
       "function": "engine",
       "args": "8,6 3 2",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Wingdings slanted"
     },
     {
@@ -858,7 +858,7 @@
     {
       "function": "engine",
       "args": "2,30 4 0",
-      "result": "0,2927",
+      "result": "pdevice",
       "section": "Wingdings slanted"
     },
     {

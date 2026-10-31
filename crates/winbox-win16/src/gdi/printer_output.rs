@@ -23,6 +23,9 @@ const COLOR_INFO: u16 = 2;
 const OUTPUT: u16 = 8;
 const REALIZE_OBJECT: u16 = 10;
 const EXT_TEXT_OUT: u16 = 14;
+/// The `GDIINFO`'s word 5Eh, whose bit 2 lets a driver draw a turned
+/// engine font.
+const GDIINFO_CAPS: usize = 0x5e;
 const GET_CHAR_WIDTH: u16 = 15;
 const STRETCH_DIBITS: u16 = 28;
 
@@ -1356,10 +1359,10 @@ pub async fn driver_polygon(
 /// rectangle, the driver's `ExtTextOut` given the start, the region's
 /// rectangle as the clip, the string and its count, the realized
 /// `FONTINFO`, the `DRAWMODE`, the `TEXTXFORM`, the opaque rectangle GDI
-/// was given, mapped, and the options. 1. Not followed: the alignments
-/// other than the top left, the current position, the spacing given
-/// (`lpDx`) and justification's second call, rotation, a complex region,
-/// and GDI's own text for a font it realized itself.
+/// was given, mapped, no spacing, and the options. 1. Not followed: the
+/// alignments other than the top left, the current position,
+/// justification's second call, rotation, a complex region, and GDI's own
+/// text for a font it realized itself.
 #[allow(clippy::too_many_arguments, clippy::many_single_char_names)]
 pub async fn driver_ext_text_out(
     engine: &Engine,
@@ -1371,6 +1374,33 @@ pub async fn driver_ext_text_out(
     string: u32,
     count: u16,
 ) -> Result<u16, Stop> {
+    driver_ext_text_out_spaced(engine, dc, (x, y), options, rect, string, count, 0).await
+}
+
+/// `driver_ext_text_out` with the spacing a program gave (`lpDx`), which
+/// goes to the driver as it is under `MM_TEXT` (`32ad`-`32c1`); under
+/// another mapping GDI scales it into a block of its own, which is not
+/// followed.
+///
+/// # Errors
+///
+/// What the driver's code stops with.
+#[allow(clippy::too_many_arguments, clippy::many_single_char_names)]
+pub async fn driver_ext_text_out_spaced(
+    engine: &Engine,
+    dc: usize,
+    (x, y): (i32, i32),
+    options: u16,
+    rect: u32,
+    string: u32,
+    count: u16,
+    spacing: u32,
+) -> Result<u16, Stop> {
+    let spacing = if super::mapping::mapping_of(&engine.system(), dc).is_identity() {
+        spacing
+    } else {
+        0
+    };
     let (procedure, lp_pdevice) = proc(&engine.system(), dc, EXT_TEXT_OUT);
     let Some(realized) = super::printer_driver::device_font(engine, dc).await? else {
         return Ok(0);
@@ -1413,8 +1443,42 @@ pub async fn driver_ext_text_out(
     };
     let (dx, dy, xform, mode) = args;
     let font = realized.far;
+    // A turned font the engine realized, where the device's `GDIINFO` word
+    // 5Eh has no bit 2, GDI draws itself without the driver's `ExtTextOut`
+    // (seg1 `3a1a`-`3a86`, into `620e`), as `driverExtTextOut`.
+    let turned_engine_font = realized.info.first().is_some_and(|kind| kind & 3 == 3)
+        && realized
+            .info
+            .get(0x33)
+            .is_some_and(|flags| flags & 0x10 != 0)
+        && count as i16 > 0
+        && caps(&engine.system(), dc, GDIINFO_CAPS) & 4 == 0;
 
     on_stack(engine, &bytes, |far| async move {
+        if turned_engine_font {
+            return super::engine_text::draw_engine_text(
+                engine,
+                super::engine_text::EngineTextArgs {
+                    hdc: 0,
+                    device: lp_pdevice,
+                    x: dx as i16,
+                    y: dy as i16,
+                    clip: far,
+                    string,
+                    count: count as i16,
+                    font,
+                    draw_mode: mode,
+                    xform,
+                    widths: spacing,
+                    opaque: if has_opaque { offset_by(far, 8) } else { 0 },
+                    options,
+                    dc: Some(dc),
+                },
+            )
+            .await
+            .map(|_| 0);
+        }
+
         call_driver(
             engine,
             procedure,
@@ -1428,7 +1492,7 @@ pub async fn driver_ext_text_out(
                 GuestArg::Long(font),
                 GuestArg::Long(mode),
                 GuestArg::Long(xform),
-                GuestArg::Long(0),
+                GuestArg::Long(spacing),
                 GuestArg::Long(if has_opaque { offset_by(far, 8) } else { 0 }),
                 GuestArg::Word(options),
             ],
@@ -2205,7 +2269,7 @@ fn ext_text_out_call(engine: &Engine, args: Args) -> Later<'_> {
         let Some(dc) = first(engine, &args).1 else {
             return otherwise(engine, "ExtTextOut", args).await;
         };
-        let (x, y, options, rect, string, count) = {
+        let (x, y, options, rect, string, count, spacing) = {
             let mut args = args;
             let system = engine.system();
 
@@ -2217,11 +2281,13 @@ fn ext_text_out_call(engine: &Engine, args: Args) -> Later<'_> {
                 args.dword(&system),
                 args.dword(&system),
                 args.word(&system),
+                args.dword(&system),
             )
         };
 
         Ok(Answer::Word(
-            driver_ext_text_out(engine, dc, x, y, options, rect, string, count).await?,
+            driver_ext_text_out_spaced(engine, dc, (x, y), options, rect, string, count, spacing)
+                .await?,
         ))
     })
 }

@@ -276,7 +276,7 @@ export function EngineGetGlyphBmp(
  * the font is its default character, kept from the first as in a font
  * file; a font of fixed pitch is all its width.
  */
-function widthsOf(system: any, far: number): ((code: number) => number) | null {
+export function widthsOf(system: any, far: number): ((code: number) => number) | null {
   const core = system.machine.cpu.core;
   const flagsAt = ((far & 0xffff) + 0x33) & 0xffff;
   let flags = core.read8(far >>> 16, flagsAt);
@@ -364,32 +364,53 @@ export function EngineGetCharWidth(
  * the font's cell down. An extent past 7FFFh is 7FFFh; a font whose widths
  * could not be filled answers nought across and 8000h down.
  *
+ * A count of nought or more draws the string (`engine-text.ts`).
+ *
  * Not followed: GDI measures with the context's own realized `FONTINFO`
- * (`6b73`), WinBox with the one given, which a driver hands on; a turned
- * font's extent where the pixel is not square; and the string drawn, for a
- * count of nought or more, which answers nought and draws nothing.
+ * (`6b73`), WinBox with the one given, which a driver hands on; and a
+ * turned font's extent where the pixel is not square.
  */
 export function EngineExtTextOut(
   this: any,
   hdc: number,
-  _lpDevice: number,
-  _x: number,
-  _y: number,
-  _lpClipRect: number,
+  lpDevice: number,
+  x: number,
+  y: number,
+  lpClipRect: number,
   lpString: number,
   nCount: number,
   lpFontInfo: number,
-  _lpDrawMode: number,
-  _lpTextXform: number,
-  _lpCharWidths: number,
-  _lpOpaqueRect: number,
-  _wOptions: number
+  lpDrawMode: number,
+  lpTextXform: number,
+  lpCharWidths: number,
+  lpOpaqueRect: number,
+  wOptions: number
 ) {
   const count = ((nCount & 0xffff) << 16) >> 16;
   const far = lpFontInfo >>> 0;
 
-  if (count >= 0 || !(far >>> 16)) {
+  if (!(far >>> 16)) {
     return 0;
+  }
+
+  if (count >= 0) {
+    return import('./engine-text.js').then(({ drawEngineText }) =>
+      drawEngineText(this, {
+        hdc,
+        device: lpDevice >>> 0,
+        x,
+        y,
+        clip: lpClipRect >>> 0,
+        string: lpString >>> 0,
+        count,
+        font: far,
+        drawMode: lpDrawMode >>> 0,
+        xform: lpTextXform >>> 0,
+        widths: lpCharWidths >>> 0,
+        opaque: lpOpaqueRect >>> 0,
+        options: wOptions,
+      })
+    );
   }
 
   const surface = this.handles.resolve(hdc);

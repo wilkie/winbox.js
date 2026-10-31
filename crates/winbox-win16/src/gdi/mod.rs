@@ -22,6 +22,7 @@ pub mod driver_bitmap;
 pub mod driver_helpers;
 pub mod engine_font;
 pub mod engine_glyphs;
+pub mod engine_text;
 pub mod environment;
 pub mod heap;
 pub mod mapping;

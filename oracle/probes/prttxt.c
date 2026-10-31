@@ -6,7 +6,8 @@
  * its own with `DMExtTextOut`. The probe reads the driver's log back as its
  * records.
  *
- * * `engine`: the engine's answer, for the driver's own font.
+ * * `engine`: the engine's answer, for the driver's own font: `pdevice`
+ *   where it is the `PDEVICE` GDI handed the driver.
  * * `drawn`: what GDI hands the driver's `ExtTextOut` then -- the place,
  *   the count, the options, the clip, the `DRAWMODE` and `TEXTXFORM`, the
  *   widths and the opaque rectangle.
