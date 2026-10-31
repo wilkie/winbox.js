@@ -1,0 +1,901 @@
+{
+  "probe": "prttxt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1"
+    },
+    {
+      "function": "textout",
+      "args": "Arial",
+      "result": "Ab",
+      "section": "Arial"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=27,11,0,0,400,0 widths=17,14",
+      "section": "Arial"
+    },
+    {
+      "function": "font",
+      "args": "10,10 2 0",
+      "result": "at=0042 version=0300 type=3 points=18 res=96,96 ascent=21 leading=3,1 italic=0 weight=400 charset=0 pix=0,27 pitch=27 avg=11 max=25 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A66",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "10,10 2 0 41",
+      "result": "width=15 offset=some sum=65E6",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "10,10 2 0 62",
+      "result": "width=11 offset=some sum=145E",
+      "section": "Arial"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "10,10 2 0",
+      "result": "0,0",
+      "section": "Arial"
+    },
+    {
+      "function": "band",
+      "args": "10,10 2 0",
+      "result": "set=8028 sum=F378",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fe7ffffffffffffffffffffffffffff1fe7ffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 1",
+      "result": "fffe4fe7fffffffffffffffffffffffffffe4fe7fffffffffffffffffffffffffffc47e61ffffffffffffffffffffffffffce7e40ffffffffffffffffffffffffffce7e1c7fffffffffffffffffffffffff9f3e3e7fffffffffffffffffffffffff9f3e7f3fffffffffffffffffffffffff9f3e7f3fffffffffffffffffffffffff001e7f3fffffffffffffffffffffffff001e7f3ffffffffffffffffffffffffe3f8e7f3ffffffffffffffffffffffffe7fce3e7ffffffffffffffffffffffffe7fce1c7ffffffffffffffffffffffffcffe640fffffffffffffffffffffffffcffe661fffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "engine",
+      "args": "10,10 2 0",
+      "result": "0,2927",
+      "section": "Arial"
+    },
+    {
+      "function": "exttextout",
+      "args": "Arial",
+      "result": "xAy",
+      "section": "Arial"
+    },
+    {
+      "function": "drawn",
+      "args": "8,6 0 6",
+      "result": "clip=0,0,128,64 opaque=some mode=13,2,00ffffff,00000000,0,0,0,0,0,0 xform=27,11,0,0,400,0 widths=none opaquerect=4,4,100,50",
+      "section": "Arial"
+    },
+    {
+      "function": "font",
+      "args": "8,6 0 6",
+      "result": "at=0042 version=0300 type=3 points=18 res=96,96 ascent=21 leading=3,1 italic=0 weight=400 charset=0 pix=0,27 pitch=27 avg=11 max=25 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A66",
+      "section": "Arial"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "8,6 0 6",
+      "result": "0,0",
+      "section": "Arial"
+    },
+    {
+      "function": "band",
+      "args": "8,6 0 6",
+      "result": "set=8192 sum=C000",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "drawn",
+      "args": "8,6 3 0",
+      "result": "clip=0,0,128,64 opaque=some mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=27,11,0,0,400,0 widths=30,26,20 opaquerect=4,4,100,50",
+      "section": "Arial"
+    },
+    {
+      "function": "font",
+      "args": "8,6 3 0",
+      "result": "at=0042 version=0300 type=3 points=18 res=96,96 ascent=21 leading=3,1 italic=0 weight=400 charset=0 pix=0,27 pitch=27 avg=11 max=25 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A66",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 78",
+      "result": "width=11 offset=some sum=26EA",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 41",
+      "result": "width=15 offset=some sum=65E6",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 79",
+      "result": "width=10 offset=some sum=0F59",
+      "section": "Arial"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "8,6 3 0",
+      "result": "0,0",
+      "section": "Arial"
+    },
+    {
+      "function": "band",
+      "args": "8,6 3 0",
+      "result": "set=7990 sum=5E5B",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffffffffffffffffff1ffffffffffffffffffffffffffffffe4ffffffffffffffffffffffffffffffe4ffffffffffffffffffffff1f9fffffc47fff3f3fffffffffffffff9f3fffffce7fff3f3fffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 1",
+      "result": "ffce3fffffce7fff3e7fffffffffffffffc67fffff9f3fff9e7fffffffffffffffe4ffffff9f3fff9e7ffffffffffffffff1ffffff9f3fff9cfffffffffffffffff1ffffff001fffccfffffffffffffffff1ffffff001fffccffffffffffffffffe4fffffe3f8fffe4ffffffffffffffffc47ffffe7fcfffe1ffffffffffffffffce7ffffe7fcfffe1ffffffffffffffff9f3ffffcffe7fff1ffffffffffffffff1f1ffffcffe7fff3fffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffff3ffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffff87ffffffffffffffffffffffffffffff8fffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "engine",
+      "args": "8,6 3 2",
+      "result": "0,2927",
+      "section": "Arial"
+    },
+    {
+      "function": "textout extra",
+      "args": "Arial",
+      "result": "Wing",
+      "section": "Arial"
+    },
+    {
+      "function": "drawn",
+      "args": "2,30 4 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=27,11,0,0,400,0 widths=27,7,15,16",
+      "section": "Arial"
+    },
+    {
+      "function": "font",
+      "args": "2,30 4 0",
+      "result": "at=0042 version=0300 type=3 points=18 res=96,96 ascent=21 leading=3,1 italic=0 weight=400 charset=0 pix=0,27 pitch=27 avg=11 max=25 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A66",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 57",
+      "result": "width=23 offset=some sum=EE2A",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 69",
+      "result": "width=2 offset=some sum=C8C0",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 6E",
+      "result": "width=10 offset=some sum=8CBF",
+      "section": "Arial"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 67",
+      "result": "width=11 offset=some sum=B401",
+      "section": "Arial"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "2,30 4 0",
+      "result": "0,0",
+      "section": "Arial"
+    },
+    {
+      "function": "band",
+      "args": "2,30 4 0",
+      "result": "set=7867 sum=E1BA",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcff1fe79ffffffffffffffffffffffffcff1fe79ffffffffffffffffffffffffe7e4fcffffffffffffffffffffffffffe7e4fcffffffffffffffffffffffffffe7e4fcf9f30ffc33ffffffffffffffffe7ce7cf9f207f813fffffffffffffffff3ce79f9f0e3f1c3fffffffffffffffff3ce79f9f1f3f3e3fffffffffffffffff39f39f9f3f3e7f3fffffffffffffffff39f39f9f3f3e7f3fffffffffffffffff19f31f9f3f3e7f3fffffffffffffffff91f13f9f3f3e7f3fffffffffffffffff93f93f9f3f3e7f3fffffffffffffffff93f93f9f3f3f3e3ffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 3",
+      "result": "f93f93f9f3f3f1c3fffffffffffffffffc7fc7f9f3f3f813fffffffffffffffffc7fc7f9f3f3fc33fffffffffffffffffffffffffffffff3ffffffffffffffffffffffffffffe7e3ffffffffffffffffffffffffffffe3c7fffffffffffffffffffffffffffff00ffffffffffffffffffffffffffffff81fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial"
+    },
+    {
+      "function": "engine",
+      "args": "2,30 4 0",
+      "result": "0,2927",
+      "section": "Arial"
+    },
+    {
+      "function": "textout",
+      "args": "Arial bold",
+      "result": "Ab",
+      "section": "Arial bold"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=21,9,0,0,700,0 widths=14,11",
+      "section": "Arial bold"
+    },
+    {
+      "function": "font",
+      "args": "10,10 2 0",
+      "result": "at=0042 version=0300 type=3 points=13 res=96,96 ascent=17 leading=3,1 italic=0 weight=700 charset=0 pix=0,21 pitch=27 avg=9 max=19 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A36",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "10,10 2 0 41",
+      "result": "width=13 offset=some sum=D9DD",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "10,10 2 0 62",
+      "result": "width=9 offset=some sum=B8E0",
+      "section": "Arial bold"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "10,10 2 0",
+      "result": "0,0",
+      "section": "Arial bold"
+    },
+    {
+      "function": "band",
+      "args": "10,10 2 0",
+      "result": "set=8029 sum=D90D",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1f1ffffffffffffffffffffffffffffc1f1fffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 1",
+      "result": "fffc1f1ffffffffffffffffffffffffffff88f11fffffffffffffffffffffffffff88f00fffffffffffffffffffffffffff88f087ffffffffffffffffffffffffff1c71c7ffffffffffffffffffffffffff0071c7ffffffffffffffffffffffffff0071c7fffffffffffffffffffffffffe0031c7fffffffffffffffffffffffffe3e3087fffffffffffffffffffffffffe3e300ffffffffffffffffffffffffffc7f111ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,10 2 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "engine",
+      "args": "10,10 2 0",
+      "result": "0,2927",
+      "section": "Arial bold"
+    },
+    {
+      "function": "exttextout",
+      "args": "Arial bold",
+      "result": "xAy",
+      "section": "Arial bold"
+    },
+    {
+      "function": "drawn",
+      "args": "8,6 0 6",
+      "result": "clip=0,0,128,64 opaque=some mode=13,2,00ffffff,00000000,0,0,0,0,0,0 xform=21,9,0,0,700,0 widths=none opaquerect=4,4,100,50",
+      "section": "Arial bold"
+    },
+    {
+      "function": "font",
+      "args": "8,6 0 6",
+      "result": "at=0042 version=0300 type=3 points=13 res=96,96 ascent=17 leading=3,1 italic=0 weight=700 charset=0 pix=0,21 pitch=27 avg=9 max=19 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A36",
+      "section": "Arial bold"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "8,6 0 6",
+      "result": "0,0",
+      "section": "Arial bold"
+    },
+    {
+      "function": "band",
+      "args": "8,6 0 6",
+      "result": "set=8192 sum=C000",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "drawn",
+      "args": "8,6 3 0",
+      "result": "clip=0,0,128,64 opaque=some mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=21,9,0,0,700,0 widths=30,25,20 opaquerect=4,4,100,50",
+      "section": "Arial bold"
+    },
+    {
+      "function": "font",
+      "args": "8,6 3 0",
+      "result": "at=0042 version=0300 type=3 points=13 res=96,96 ascent=17 leading=3,1 italic=0 weight=700 charset=0 pix=0,21 pitch=27 avg=9 max=19 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A36",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 78",
+      "result": "width=11 offset=some sum=E180",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 41",
+      "result": "width=13 offset=some sum=D9DD",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "8,6 3 0 79",
+      "result": "width=11 offset=some sum=4519",
+      "section": "Arial bold"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "8,6 3 0",
+      "result": "0,0",
+      "section": "Arial bold"
+    },
+    {
+      "function": "band",
+      "args": "8,6 3 0",
+      "result": "set=7987 sum=E048",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1ffffffffffffffffffffffffffffffc1ffffffffffffffffffffffffffffffc1ffffffffffffffffffffff8e3fffff88fffe3e3fffffffffffffffc47fffff88fffe3e3fffffffffffffffc47fffff88ffff1c7fffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 1",
+      "result": "ffe0ffffff1c7fff1c7ffffffffffffffff1ffffff007fff9cfffffffffffffffff1ffffff007fff88ffffffffffffffffe0fffffe003fffc8ffffffffffffffffc47ffffe3e3fffc1ffffffffffffffffc47ffffe3e3fffc1ffffffffffffffff8e3ffffc7f1fffe3ffffffffffffffffffffffffffffffe3ffffffffffffffffffffffffffffffc7ffffffffffffffffffffffffffffff07ffffffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 3 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "engine",
+      "args": "8,6 3 2",
+      "result": "0,2927",
+      "section": "Arial bold"
+    },
+    {
+      "function": "textout extra",
+      "args": "Arial bold",
+      "result": "Wing",
+      "section": "Arial bold"
+    },
+    {
+      "function": "drawn",
+      "args": "2,30 4 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=21,9,0,0,700,0 widths=20,7,13,13",
+      "section": "Arial bold"
+    },
+    {
+      "function": "font",
+      "args": "2,30 4 0",
+      "result": "at=0042 version=0300 type=3 points=13 res=96,96 ascent=17 leading=3,1 italic=0 weight=700 charset=0 pix=0,21 pitch=27 avg=9 max=19 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A36",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 57",
+      "result": "width=17 offset=some sum=CA00",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 69",
+      "result": "width=3 offset=some sum=F000",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 6E",
+      "result": "width=9 offset=some sum=6F20",
+      "section": "Arial bold"
+    },
+    {
+      "function": "glyph",
+      "args": "2,30 4 0 67",
+      "result": "width=9 offset=some sum=EFE1",
+      "section": "Arial bold"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "2,30 4 0",
+      "result": "0,0",
+      "section": "Arial bold"
+    },
+    {
+      "function": "band",
+      "args": "2,30 4 0",
+      "result": "set=7871 sum=564E",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc78f1c7fffffffffffffffffffffffffc78f1c7fffffffffffffffffffffffffc7071fffffffffffffffffffffffffffe3263c7887f11fffffffffffffffffffe3263c7803e01fffffffffffffffffffe2223c7863c21fffffffffffffffffffe2223c78e3c71fffffffffffffffffffe2723c78e3c71fffffffffffffffffffe2723c78e3c71ffffffffffffffffffff0707c78e3c71ffffffffffffffffffff0707c78e3c21ffffffffffffffffffff0f87c78e3e01ffffffffffffffffffff0f87c78e3f11fffffffffffffffffffffffffffffff1fffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "bandrows",
+      "args": "2,30 4 0 3",
+      "result": "ffffffffffc71fffffffffffffffffffffffffffffc03fffffffffffffffffffffffffffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Arial bold"
+    },
+    {
+      "function": "engine",
+      "args": "2,30 4 0",
+      "result": "0,2927",
+      "section": "Arial bold"
+    },
+    {
+      "function": "textout",
+      "args": "Wingdings slanted",
+      "result": "Ab",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "drawn",
+      "args": "13,10 2 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=22,18,0,0,400,255 widths=11,19",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "font",
+      "args": "13,10 2 0",
+      "result": "at=0042 version=0300 type=3 points=15 res=96,96 ascent=18 leading=2,0 italic=255 weight=400 charset=2 pix=0,22 pitch=07 avg=18 max=27 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A3E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "13,10 2 0 41",
+      "result": "width=11 offset=some sum=47D4",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "13,10 2 0 62",
+      "result": "width=18 offset=some sum=65A9",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "13,10 2 0",
+      "result": "0,0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "band",
+      "args": "13,10 2 0",
+      "result": "set=8060 sum=CF81",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "13,10 2 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffff1ffffffffffffffffffffffffffaeffc07fffffffffffffffffffffffffacff3e7fffffffffffffffffffffffffaaff7f7fffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "13,10 2 0 1",
+      "result": "ffffa5fe7f7fffffffffffffffffffffffffa3feff7fffffffffffffffffffffffffabfefe7fffffffffffffffffffffffff07fefefffffffffffffffffffffffffea7fafcfffffffffffffffffffffffff857e0f9fffffffffffffffffffffffffa57defbfffffffffffffffffffffffffa6fbe77fffffffffffffffffffffffff9efbee7fffffffffffffffffffffffffbdfbccffffffffffffffffffffffffffbbfb9dffffffffffffffffffffffffff83fc79fffffffffffffffffffffffffffffffbfffffffffffffffffffffffffffffff3fffffffffffffffffffffffffffffff33ffffffffffffffffffffffffffffff87ffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "13,10 2 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "13,10 2 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "engine",
+      "args": "10,10 2 0",
+      "result": "0,2927",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "exttextout",
+      "args": "Wingdings slanted",
+      "result": "xAy",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "drawn",
+      "args": "8,6 0 6",
+      "result": "clip=0,0,128,64 opaque=some mode=13,2,00ffffff,00000000,0,0,0,0,0,0 xform=22,18,0,0,400,255 widths=none opaquerect=4,4,100,50",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "font",
+      "args": "8,6 0 6",
+      "result": "at=0042 version=0300 type=3 points=15 res=96,96 ascent=18 leading=2,0 italic=255 weight=400 charset=2 pix=0,22 pitch=07 avg=18 max=27 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A3E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "8,6 0 6",
+      "result": "0,0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "band",
+      "args": "8,6 0 6",
+      "result": "set=8192 sum=C000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "8,6 0 6 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "drawn",
+      "args": "10,6 3 0",
+      "result": "clip=0,0,128,64 opaque=some mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=22,18,0,0,400,255 widths=31,24,20 opaquerect=4,4,100,50",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "font",
+      "args": "10,6 3 0",
+      "result": "at=0042 version=0300 type=3 points=15 res=96,96 ascent=18 leading=2,0 italic=255 weight=400 charset=2 pix=0,22 pitch=07 avg=18 max=27 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A3E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "10,6 3 0 78",
+      "result": "width=22 offset=some sum=ECC5",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "10,6 3 0 41",
+      "result": "width=11 offset=some sum=47D4",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "10,6 3 0 79",
+      "result": "width=22 offset=some sum=A6FE",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "10,6 3 0",
+      "result": "0,0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "band",
+      "args": "10,6 3 0",
+      "result": "set=7935 sum=4714",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,6 3 0 0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffaeffffffffffffffffffffffc0000fffacffff80001fffffffffffff9fffdfffaaffff3fffbfffffffffffff9dfbdfffa5ffff3f7fbfffffffffffffb9f39fffa3ffff7f3f3fffffffffffffbce7bfffabffff7c1f7fffffffffffff3e1fbfff07fffe799f7ffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,6 3 0 1",
+      "result": "fff7f3f3ffea7fffef3ce7fffffffffffff7e3f7ff857fffee7e6fffffffffffffe789f7ffa57fffc9fe6fffffffffffffef3ce7ffa6ffffdbfecfffffffffffffee7ce7ff9effffdfffcfffffffffffffcfffefffbdffff9fffdfffffffffffffcfffefffbbffff9fffdfffffffffffffc0000fff83ffff80001fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,6 3 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "10,6 3 0 3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "engine",
+      "args": "8,6 3 2",
+      "result": "0,2927",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "textout extra",
+      "args": "Wingdings slanted",
+      "result": "Wing",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "drawn",
+      "args": "6,30 4 0",
+      "result": "clip=0,0,128,64 opaque=none mode=13,1,00ffffff,00000000,0,0,0,0,0,0 xform=22,18,0,0,400,255 widths=14,18,21,24",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "font",
+      "args": "6,30 4 0",
+      "result": "at=0042 version=0300 type=3 points=15 res=96,96 ascent=18 leading=2,0 italic=255 weight=400 charset=2 pix=0,22 pitch=07 avg=18 max=27 chars=30-255 default=1 break=2 widthbytes=0 flags=00000000 bitsoffset=00000A3E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "6,30 4 0 57",
+      "result": "width=12 offset=some sum=182E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "6,30 4 0 69",
+      "result": "width=16 offset=some sum=5C1E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "6,30 4 0 6E",
+      "result": "width=15 offset=some sum=D6C8",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "glyph",
+      "args": "6,30 4 0 67",
+      "result": "width=16 offset=some sum=1A17",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "dmexttextout",
+      "args": "6,30 4 0",
+      "result": "0,0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "band",
+      "args": "6,30 4 0",
+      "result": "set=7863 sum=34DA",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "6,30 4 0 0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "6,30 4 0 1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "6,30 4 0 2",
+      "result": "ffffffffffffffffffffffffffffffffffffff3fefffffffcffffffffffffffffffbffbf9fffffe38fffffffffffffffffe1ff9f3f8007f32fffffffffffffffffc0ff9f7f8007fb6fffffffffffffffffb4ff9eff800ffaeffffffffffffffffe003fdcff800ff1cffffffffffffffffc007f9dff000ff1cfffffffffffffffff6dfc003f000ff3cfffffffffffffffff03ffb9ff001ff3d83fffffffffffffff87ff39fe001ff7d3bfffffffffffffffdfff7bfe001ff7c79fffffffffffffffdffe7bfe003fffcfbfffffffffffffff9ffcf9fc003fffdf3fffffffffffffffbffdf9fc003fffae7fffffffffffffffbff3fcffffffff30ffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bandrows",
+      "args": "6,30 4 0 3",
+      "result": "fffffffffffffffe7ffffffffffffffffffffffffffffffcffffffffffffffffffffffffffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "engine",
+      "args": "2,30 4 0",
+      "result": "0,2927",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "textout",
+      "args": "Arial turned",
+      "result": "Ab",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "15,0 0,5 17x10 00e20746",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "textout",
+      "args": "Arial 45",
+      "result": "Ab",
+      "section": "Arial 45"
+    },
+    {
+      "function": "bitblt",
+      "args": "18,7 0,0 19x19 00e20746",
+      "result": "",
+      "section": "Arial 45"
+    },
+    {
+      "function": "bitblt",
+      "args": "26,0 0,1 18x14 00e20746",
+      "result": "",
+      "section": "Arial 45"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "Arial 45"
+    }
+  ]
+}

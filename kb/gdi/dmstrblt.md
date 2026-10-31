@@ -5,7 +5,9 @@ name: DMStrBlt
 ordinal: 211
 summary: DMExtTextOut with no widths, no opaque rectangle and no options -- a printer's driver's plain text on a memory bitmap.
 versions:
-  '3.1': unrecorded
+  '3.1': partial
+probes: [gdidmdrw]
+records: [strblt]
 source: src/win16/gdi/driver-helpers.ts
 topics: [gdi-internals, printer-drivers]
 ---
@@ -13,6 +15,7 @@ topics: [gdi-internals, printer-drivers]
 ## Observed behaviour
 
 - [[read out]] `DMStrBlt(lpDestDev, DestX, DestY, lpClipRect, lpString, wCount, lpFontInfo, lpDrawMode, lpTextXForm)` takes 30 bytes and answers what [[fn:GDI.DMExtTextOut]] answers for the same arguments.
+- [[measured]] [[probe:gdidmdrw]]: a string drawn as `DMExtTextOut` draws it, and a negative count's extent, on the VGA, the Super VGA and the EGA.
 
 ## Inside Windows
 
@@ -24,10 +27,8 @@ topics: [gdi-internals, printer-drivers]
 
 ## Implementation
 
-As `DMExtTextOut` in both engines: for a device that is not a memory bitmap, GDI's data segment and 34h; for a memory bitmap nought, nothing drawn.
-
-**Recommendation:** with `DMExtTextOut`.
+`DMExtTextOut` with nought for the last three, in both engines (`driver-helpers.ts`, `driver_helpers.rs`). [[probe:gdidmdrw]] agrees.
 
 ## Not yet done
 
-- The display driver's `ExtTextOut` on a memory bitmap ([[topic:gdi-internals]]).
+- As [[fn:GDI.DMExtTextOut]]'s.

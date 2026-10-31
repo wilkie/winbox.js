@@ -18,6 +18,7 @@ pub mod dc_internals;
 pub mod ddb;
 pub mod dib;
 pub mod draw;
+pub mod driver_bitmap;
 pub mod driver_helpers;
 pub mod engine_font;
 pub mod engine_glyphs;

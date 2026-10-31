@@ -6,6 +6,19 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DWORD, FARPTR, Struct } from '../types.js';
 import { LOGPEN, enumeratedObjects } from './EnumObjects.js';
 import { devicePoint } from './mapping.js';
+import {
+  MONO_WHITE,
+  familyOf,
+  flagsOf,
+  physicalOf,
+  bitBlt,
+  deviceBitmapBits,
+  dibToDevice,
+  extTextOut,
+  getCharWidth,
+  output,
+  realizeObject,
+} from './driver-bitmap.js';
 
 /**
  * GDI's device-independent helpers for drivers, ordinals 201 to 220: the
@@ -36,17 +49,17 @@ import { devicePoint } from './mapping.js';
  * * **Any other device** (`0224`): nothing is called; AX is nought and DX
  *   the routine's offset, which is the answer.
  *
- * **Recorded** by `gdidm` on the VGA, each helper called on a `BITMAP` of
- * the probe's of four planes or of one: what the VGA's driver does there
- * is what each answers. WinBox draws with its own raster code, not a
- * display driver's (`display-driver.ts`), so the display driver's routines
- * for a memory bitmap are here, as `VGA.DRV` has them, for the routines
- * that read and write single pixels and colours: `ColorInfo`, `Pixel`,
- * `ScanLR` and `EnumObj`. The others -- `BitBlt`, `Output`,
- * `RealizeObject`, `ExtTextOut`, `StrBlt`, `GetCharWidth`, `StretchBlt`,
- * `DeviceBitmapBits`, `StretchDIBits`, `DIBToDevice` -- answer nought and
- * draw nothing, as WinBox's display driver's stubs answer; and on a
- * display whose driver is not `VGA.DRV` every routine does.
+ * **Recorded** by `gdidm` and `gdidmdrw` on the VGA, the Super VGA and the
+ * EGA, each helper called on a `BITMAP` of the probe's: what the display
+ * driver does there is what each answers. WinBox draws with its own raster
+ * code, not a display driver's (`display-driver.ts`), so the display
+ * driver's routines for a memory bitmap are here, as `VGA.DRV` has them --
+ * `ColorInfo`, `Pixel`, `ScanLR` and `EnumObj` in this file, and
+ * `RealizeObject`, `BitBlt`, `Output`, `ExtTextOut`, `StrBlt`,
+ * `GetCharWidth`, `DeviceBitmapBits` and `DIBToDevice` in
+ * `driver-bitmap.ts`. `StretchBlt` and `StretchDIBits`, which the VGA's
+ * driver has not, answer nought; and on the Hercules and the 256-colour
+ * display every routine does (`familyOf`).
  */
 
 /** A memory bitmap as a driver is handed it, read from GDI's `BITMAP` for drivers. */
@@ -64,57 +77,6 @@ interface DriverBitmap {
 
 /** The word at 8 of a bitmap of the display's four planes of a bit each. */
 const FOUR_PLANES = 0x0104;
-
-/**
- * `VGA.DRV`'s colours, by index, as its `ColorInfo` gives them back (seg1
- * `003c`, three bytes each, red first): the sixteen of the VGA's palette.
- */
-const VGA_COLOURS: [number, number, number][] = [
-  [0x00, 0x00, 0x00],
-  [0x80, 0x00, 0x00],
-  [0x00, 0x80, 0x00],
-  [0x80, 0x80, 0x00],
-  [0x00, 0x00, 0x80],
-  [0x80, 0x00, 0x80],
-  [0x00, 0x80, 0x80],
-  [0x80, 0x80, 0x80],
-  [0xc0, 0xc0, 0xc0],
-  [0xff, 0x00, 0x00],
-  [0x00, 0xff, 0x00],
-  [0xff, 0xff, 0x00],
-  [0x00, 0x00, 0xff],
-  [0xff, 0x00, 0xff],
-  [0x00, 0xff, 0xff],
-  [0xff, 0xff, 0xff],
-];
-
-/** The flag of a colour a monochrome bitmap takes as white (seg1 `002c`). */
-const MONO_WHITE = 0x10;
-/** The flag black and white carry besides (seg1 `002c`). */
-const PURE = 0x20;
-
-/**
- * The flags `VGA.DRV` keeps beside each colour, in the top byte of its
- * physical colour with the index (seg1 `002c`): white on a monochrome
- * bitmap for light grey, green, yellow, magenta, cyan and white, and the
- * second flag for black and white.
- */
-function flagsOf(index: number) {
-  return (
-    ([8, 10, 11, 13, 14, 15].includes(index) ? MONO_WHITE : 0) |
-    (index === 0 || index === 15 ? PURE : 0)
-  );
-}
-
-/**
- * The VGA's physical colour for an index: red, green and blue in the low
- * three bytes, the index and its flags in the top one (seg1 `19f4`).
- */
-function physicalOf(index: number) {
-  const [red, green, blue] = VGA_COLOURS[index];
-
-  return (red | (green << 8) | (blue << 16) | ((index | flagsOf(index)) << 24)) >>> 0;
-}
 
 /** What `Pixel` answers for a pixel of a monochrome bitmap (seg7 `01fe`). */
 const MONO_BLACK = 0x20000000;
@@ -158,9 +120,9 @@ function readBitmap(system: any, far: number): DriverBitmap {
   };
 }
 
-/** Whether WinBox has the display driver's routines: the VGA's. */
+/** Whether WinBox has the display driver's routines (`familyOf`). */
 function vga(system: any) {
-  return String(system.display?.driverFile ?? 'VGA.DRV').toUpperCase() === 'VGA.DRV';
+  return familyOf(system) !== null;
 }
 
 /**
@@ -224,6 +186,7 @@ function colorInfo(system: any, device: number, colour: number, lpPhysical: numb
     const palette = DevicePalette.forDisplay(system.display, 4);
 
     physical = physicalOf(
+      system,
       matchedIndex(
         system.display,
         palette,
@@ -272,7 +235,7 @@ function pixel(
       return value ? MONO_WHITE_PHYSICAL : MONO_BLACK;
     }
 
-    return physicalOf(value);
+    return physicalOf(system, value);
   }
 
   const rop = (read16(system, lpDrawMode, 0) - 1) & 0xf;
@@ -410,8 +373,36 @@ async function brute(
   return routine && vga(system) ? routine() : 0;
 }
 
-export function DMBitBlt(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, BIT_BLT, null);
+export function DMBitBlt(
+  this: any,
+  lpDestDev: number,
+  wDestX: number,
+  wDestY: number,
+  lpSrcDev: number,
+  wSrcX: number,
+  wSrcY: number,
+  wXext: number,
+  wYext: number,
+  rop3: number,
+  lpPBrush: number,
+  lpDrawMode: number
+) {
+  return brute(this, lpDestDev, BIT_BLT, () =>
+    bitBlt(
+      this,
+      lpDestDev,
+      wDestX,
+      wDestY,
+      lpSrcDev,
+      wSrcX,
+      wSrcY,
+      wXext,
+      wYext,
+      rop3,
+      lpPBrush,
+      lpDrawMode
+    )
+  );
 }
 
 export function DMColorInfo(this: any, lpDestDev: number, dwColorIn: number, lpPColor: number) {
@@ -430,8 +421,20 @@ export function DMEnumObj(
   );
 }
 
-export function DMOutput(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, OUTPUT, null);
+export function DMOutput(
+  this: any,
+  lpDestDev: number,
+  wStyle: number,
+  wCount: number,
+  lpPoints: number,
+  lpPPen: number,
+  lpPBrush: number,
+  lpDrawMode: number,
+  lpClipRect: number
+) {
+  return brute(this, lpDestDev, OUTPUT, () =>
+    output(this, lpDestDev, wStyle, wCount, lpPoints, lpPPen, lpPBrush, lpDrawMode, lpClipRect)
+  );
 }
 
 export function DMPixel(
@@ -445,8 +448,17 @@ export function DMPixel(
   return brute(this, lpDestDev, PIXEL, () => pixel(this, lpDestDev, x, y, dwPhysColor, lpDrawMode));
 }
 
-export function DMRealizeObject(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, REALIZE_OBJECT, null);
+export function DMRealizeObject(
+  this: any,
+  lpDestDev: number,
+  wStyle: number,
+  lpInObj: number,
+  lpOutObj: number,
+  lpTextXForm: number
+) {
+  return brute(this, lpDestDev, REALIZE_OBJECT, () =>
+    realizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm)
+  );
 }
 
 export function DMScanLR(
@@ -470,8 +482,38 @@ export function DMScanLR(
  * the italic flag nought, and put back after; then the display driver's
  * `ExtTextOut` through `Brute`.
  */
-export function DMExtTextOut(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, EXT_TEXT_OUT, null);
+export function DMExtTextOut(
+  this: any,
+  lpDestDev: number,
+  x: number,
+  y: number,
+  lpClipRect: number,
+  lpString: number,
+  count: number,
+  lpFontInfo: number,
+  lpDrawMode: number,
+  lpTextXForm: number,
+  lpCharWidths = 0,
+  lpOpaqueRect = 0,
+  wOptions = 0
+) {
+  return brute(this, lpDestDev, EXT_TEXT_OUT, () =>
+    extTextOut(
+      this,
+      lpDestDev,
+      x,
+      y,
+      lpClipRect,
+      lpString,
+      count,
+      lpFontInfo,
+      lpDrawMode,
+      lpTextXForm,
+      lpCharWidths,
+      lpOpaqueRect,
+      wOptions
+    )
+  );
 }
 
 /**
@@ -479,20 +521,68 @@ export function DMExtTextOut(this: any, lpDestDev: number) {
  * five words of nought after them -- no widths, no opaque rectangle, no
  * options.
  */
-export function DMStrBlt(this: any, lpDestDev: number) {
-  return DMExtTextOut.call(this, lpDestDev);
+export function DMStrBlt(
+  this: any,
+  lpDestDev: number,
+  x: number,
+  y: number,
+  lpClipRect: number,
+  lpString: number,
+  count: number,
+  lpFontInfo: number,
+  lpDrawMode: number,
+  lpTextXForm: number
+) {
+  return DMExtTextOut.call(
+    this,
+    lpDestDev,
+    x,
+    y,
+    lpClipRect,
+    lpString,
+    count,
+    lpFontInfo,
+    lpDrawMode,
+    lpTextXForm,
+    0,
+    0,
+    0
+  );
 }
 
-export function DMGetCharWidth(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, GET_CHAR_WIDTH, null);
+export function DMGetCharWidth(
+  this: any,
+  lpDestDev: number,
+  lpBuffer: number,
+  wFirstChar: number,
+  wLastChar: number,
+  lpFontInfo: number,
+  _lpDrawMode: number,
+  lpTextXForm: number
+) {
+  return brute(this, lpDestDev, GET_CHAR_WIDTH, () =>
+    getCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo, lpTextXForm)
+  );
 }
 
 export function DMStretchBlt(this: any, lpDestDev: number) {
   return brute(this, lpDestDev, STRETCH_BLT, null);
 }
 
-export function DMDibBits(this: any, lpBitmap: number) {
-  return brute(this, lpBitmap, DEVICE_BITMAP_BITS, null);
+export function DMDibBits(
+  this: any,
+  lpBitmap: number,
+  fGet: number,
+  iStart: number,
+  cScans: number,
+  lpDIBits: number,
+  lpBitmapInfo: number,
+  lpDrawMode: number,
+  _lpTranslate: number
+) {
+  return brute(this, lpBitmap, DEVICE_BITMAP_BITS, () =>
+    deviceBitmapBits(this, lpBitmap, fGet, iStart, cScans, lpDIBits, lpBitmapInfo, lpDrawMode)
+  );
 }
 
 export function DMStretchDIBits(this: any, lpDestDev: number) {
@@ -500,7 +590,7 @@ export function DMStretchDIBits(this: any, lpDestDev: number) {
 }
 
 export function DMSetDibToDev(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, DIB_TO_DEVICE, null);
+  return brute(this, lpDestDev, DIB_TO_DEVICE, () => dibToDevice());
 }
 
 /**
@@ -544,8 +634,13 @@ export function DMTranspose(this: any, lpSrc: number, lpDst: number, nStride: nu
  * context brought up to date, its point taken to device units, the colour
  * made physical by its driver's `ColorInfo`, and the driver's `ScanLR` on
  * its device answered; -1 for a context of nought. WinBox has the VGA's
- * for a memory context's bitmap of the display's format or of one plane,
- * which it reads from its own pixels; any other answers nought.
+ * and the EGA's (`familyOf`), which it reads from its own pixels:
+ *
+ * * A memory context's bitmap of the display's format or of one plane.
+ * * A window's context or the screen's: the screen's own `ScanLR`, the
+ *   point moved by the context's origin on the screen and the answer the
+ *   screen's x. The whole row of the screen is scanned, whatever windows
+ *   are over it or the context's region (**recorded** by `scanscr`).
  */
 export function ScanLR(
   this: any,
@@ -562,12 +657,20 @@ export function ScanLR(
   const surface = this.handles.resolve(hdc);
   const bitmap = surface?.bitmap;
 
-  /* A window's context draws on a view of the screen: not followed. */
-  if (!(bitmap instanceof DeviceBitmap) || bitmap.isView || !vga(this)) {
+  if (!(bitmap instanceof DeviceBitmap) || !vga(this)) {
     return 0;
   }
 
-  const [px, py] = devicePoint(surface, (x << 16) >> 16, (y << 16) >> 16);
+  const [vx, vy] = devicePoint(surface, (x << 16) >> 16, (y << 16) >> 16);
+  /* A window's context draws on a view of the screen, which reaches all of
+   * it from its origin (`DeviceBitmap.screenView`): the screen's point. */
+  const left = bitmap.isView ? bitmap.context.ownerX : 0;
+  const top = bitmap.isView ? bitmap.context.ownerY : 0;
+  const reach = bitmap.context.reach;
+  const width = bitmap.isView ? reach.right + left : bitmap.width;
+  const height = bitmap.isView ? reach.bottom + top : bitmap.height;
+  const px = vx + left;
+  const py = vy + top;
   const mono = bitmap.depth === 1;
 
   if (!mono && bitmap.depth !== 4) {
@@ -582,8 +685,7 @@ export function ScanLR(
     (crColor >>> 8) & 0xff,
     (crColor >>> 16) & 0xff
   );
-  const colour = mono ? (flagsOf(index) & MONO_WHITE ? 1 : 0) : index;
-  const { width, height } = bitmap;
+  const colour = mono ? (flagsOf(this, index) & MONO_WHITE ? 1 : 0) : index;
 
   if ((py & 0xffff) >= height || (px & 0xffff) >= width) {
     return OFF_SCAN;
@@ -593,7 +695,7 @@ export function ScanLR(
   const step = wStyle & 2 ? -1 : 1;
 
   for (let at = px; at >= 0 && at < width; at += step) {
-    if ((bitmap.indexAt(at, py) === colour) === equal) {
+    if ((bitmap.indexAt(at - left, py - top) === colour) === equal) {
       return at;
     }
   }

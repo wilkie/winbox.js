@@ -1,0 +1,464 @@
+{
+  "probe": "scanscr",
+  "display": "svga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "svga",
+    "displayDescription": "Super VGA, 800x600, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "window",
+      "args": "0,10 00ffffff style 0",
+      "result": "50"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00ffffff style 1",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00ffffff style 2",
+      "result": "39"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00ffffff style 3",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "10,10 000000ff style 0",
+      "result": "70"
+    },
+    {
+      "function": "window",
+      "args": "10,10 000000ff style 1",
+      "result": "50"
+    },
+    {
+      "function": "window",
+      "args": "10,10 000000ff style 2",
+      "result": "49"
+    },
+    {
+      "function": "window",
+      "args": "10,10 000000ff style 3",
+      "result": "50"
+    },
+    {
+      "function": "window",
+      "args": "29,10 000000ff style 0",
+      "result": "70"
+    },
+    {
+      "function": "window",
+      "args": "29,10 000000ff style 1",
+      "result": "69"
+    },
+    {
+      "function": "window",
+      "args": "29,10 000000ff style 2",
+      "result": "49"
+    },
+    {
+      "function": "window",
+      "args": "29,10 000000ff style 3",
+      "result": "69"
+    },
+    {
+      "function": "window",
+      "args": "31,10 00ffffff style 0",
+      "result": "75"
+    },
+    {
+      "function": "window",
+      "args": "31,10 00ffffff style 1",
+      "result": "71"
+    },
+    {
+      "function": "window",
+      "args": "31,10 00ffffff style 2",
+      "result": "69"
+    },
+    {
+      "function": "window",
+      "args": "31,10 00ffffff style 3",
+      "result": "71"
+    },
+    {
+      "function": "window",
+      "args": "40,10 00ff0000 style 0",
+      "result": "85"
+    },
+    {
+      "function": "window",
+      "args": "40,10 00ff0000 style 1",
+      "result": "80"
+    },
+    {
+      "function": "window",
+      "args": "40,10 00ff0000 style 2",
+      "result": "74"
+    },
+    {
+      "function": "window",
+      "args": "40,10 00ff0000 style 3",
+      "result": "80"
+    },
+    {
+      "function": "window",
+      "args": "60,10 0000ff00 style 0",
+      "result": "120"
+    },
+    {
+      "function": "window",
+      "args": "60,10 0000ff00 style 1",
+      "result": "100"
+    },
+    {
+      "function": "window",
+      "args": "60,10 0000ff00 style 2",
+      "result": "89"
+    },
+    {
+      "function": "window",
+      "args": "60,10 0000ff00 style 3",
+      "result": "100"
+    },
+    {
+      "function": "window",
+      "args": "0,40 00ffffff style 0",
+      "result": "60"
+    },
+    {
+      "function": "window",
+      "args": "0,40 00ffffff style 1",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,40 00ffffff style 2",
+      "result": "39"
+    },
+    {
+      "function": "window",
+      "args": "0,40 00ffffff style 3",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "30,40 00000000 style 0",
+      "result": "110"
+    },
+    {
+      "function": "window",
+      "args": "30,40 00000000 style 1",
+      "result": "70"
+    },
+    {
+      "function": "window",
+      "args": "30,40 00000000 style 2",
+      "result": "59"
+    },
+    {
+      "function": "window",
+      "args": "30,40 00000000 style 3",
+      "result": "70"
+    },
+    {
+      "function": "window",
+      "args": "99,50 00ffffff style 0",
+      "result": "140"
+    },
+    {
+      "function": "window",
+      "args": "99,50 00ffffff style 1",
+      "result": "139"
+    },
+    {
+      "function": "window",
+      "args": "99,50 00ffffff style 2",
+      "result": "39"
+    },
+    {
+      "function": "window",
+      "args": "99,50 00ffffff style 3",
+      "result": "139"
+    },
+    {
+      "function": "window",
+      "args": "120,50 00ffffff style 0",
+      "result": "160"
+    },
+    {
+      "function": "window",
+      "args": "120,50 00ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "window",
+      "args": "120,50 00ffffff style 2",
+      "result": "160"
+    },
+    {
+      "function": "window",
+      "args": "120,50 00ffffff style 3",
+      "result": "139"
+    },
+    {
+      "function": "window",
+      "args": "-10,50 00ffffff style 0",
+      "result": "30"
+    },
+    {
+      "function": "window",
+      "args": "-10,50 00ffffff style 1",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "-10,50 00ffffff style 2",
+      "result": "30"
+    },
+    {
+      "function": "window",
+      "args": "-10,50 00ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "window",
+      "args": "0,70 00ffffff style 0",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,70 00ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "window",
+      "args": "0,70 00ffffff style 2",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,70 00ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "window",
+      "args": "0,-40 00ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "window",
+      "args": "0,-40 00ffffff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "window",
+      "args": "0,-40 00ffffff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "window",
+      "args": "0,-40 00ffffff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00000afa style 0",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00000afa style 1",
+      "result": "50"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00000afa style 2",
+      "result": "40"
+    },
+    {
+      "function": "window",
+      "args": "0,10 00000afa style 3",
+      "result": "-1"
+    },
+    {
+      "function": "window",
+      "args": "700,10 00ffffff style 0",
+      "result": "740"
+    },
+    {
+      "function": "window",
+      "args": "-50,10 00ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "window",
+      "args": "0,500 00ffffff style 0",
+      "result": "40"
+    },
+    {
+      "function": "origin",
+      "args": "0,10 00ffffff style 0",
+      "result": "50"
+    },
+    {
+      "function": "origin",
+      "args": "0,10 00ffffff style 1",
+      "result": "45"
+    },
+    {
+      "function": "origin",
+      "args": "0,10 00ffffff style 2",
+      "result": "39"
+    },
+    {
+      "function": "origin",
+      "args": "0,10 00ffffff style 3",
+      "result": "45"
+    },
+    {
+      "function": "origin",
+      "args": "10,10 000000ff style 0",
+      "result": "70"
+    },
+    {
+      "function": "origin",
+      "args": "10,10 000000ff style 1",
+      "result": "55"
+    },
+    {
+      "function": "origin",
+      "args": "10,10 000000ff style 2",
+      "result": "49"
+    },
+    {
+      "function": "origin",
+      "args": "10,10 000000ff style 3",
+      "result": "55"
+    },
+    {
+      "function": "screen",
+      "args": "40,40 00ffffff style 0",
+      "result": "50"
+    },
+    {
+      "function": "screen",
+      "args": "40,40 00ffffff style 1",
+      "result": "40"
+    },
+    {
+      "function": "screen",
+      "args": "40,40 00ffffff style 2",
+      "result": "39"
+    },
+    {
+      "function": "screen",
+      "args": "40,40 00ffffff style 3",
+      "result": "40"
+    },
+    {
+      "function": "screen",
+      "args": "50,40 000000ff style 0",
+      "result": "70"
+    },
+    {
+      "function": "screen",
+      "args": "50,40 000000ff style 1",
+      "result": "50"
+    },
+    {
+      "function": "screen",
+      "args": "50,40 000000ff style 2",
+      "result": "49"
+    },
+    {
+      "function": "screen",
+      "args": "50,40 000000ff style 3",
+      "result": "50"
+    },
+    {
+      "function": "screen",
+      "args": "100,40 0000ff00 style 0",
+      "result": "120"
+    },
+    {
+      "function": "screen",
+      "args": "100,40 0000ff00 style 1",
+      "result": "100"
+    },
+    {
+      "function": "screen",
+      "args": "100,40 0000ff00 style 2",
+      "result": "89"
+    },
+    {
+      "function": "screen",
+      "args": "100,40 0000ff00 style 3",
+      "result": "100"
+    },
+    {
+      "function": "screen",
+      "args": "75,40 00ff0000 style 0",
+      "result": "85"
+    },
+    {
+      "function": "screen",
+      "args": "75,40 00ff0000 style 1",
+      "result": "75"
+    },
+    {
+      "function": "screen",
+      "args": "75,40 00ff0000 style 2",
+      "result": "74"
+    },
+    {
+      "function": "screen",
+      "args": "75,40 00ff0000 style 3",
+      "result": "75"
+    },
+    {
+      "function": "screen",
+      "args": "639,40 00000000 style 0",
+      "result": "639"
+    },
+    {
+      "function": "screen",
+      "args": "640,40 00000000 style 0",
+      "result": "640"
+    },
+    {
+      "function": "screen",
+      "args": "-1,40 00000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "screen",
+      "args": "10,-1 00000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "screen",
+      "args": "10,479 00000000 style 0",
+      "result": "10"
+    },
+    {
+      "function": "screen",
+      "args": "10,480 00000000 style 0",
+      "result": "10"
+    },
+    {
+      "function": "screen",
+      "args": "10,600 00000000 style 0",
+      "result": "-32768"
+    }
+  ]
+}

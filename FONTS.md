@@ -6903,6 +6903,14 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   default character's -- kept, as in a font file, from the first, so the
   missing glyph's. GDI's slant moves some: Wingdings' `A` is 23 upright and
   24 slanted.
+- **Drawing** (`EngineExtTextOut`, seg1 `669a` into `6223`): GDI makes the
+  string's glyphs in the font's own cache (`7010`), a raster font of 3.0 in
+  the global block at the font's 54h -- characters 1Eh to FFh, a glyph's
+  offset nought until it is made -- and calls the driver's `ExtTextOut`
+  back with that font at 42h of its segment, each glyph's width its ink and
+  the widths given its advances. A turned string goes glyph by glyph through
+  the driver's `BitBlt`. **Recorded** by `prttxt`, its driver drawing GDI's
+  font with `DMExtTextOut`; not yet drawn by WinBox.
 - **The realization had failed for Wingdings** in the TypeScript engine,
   which realized the face without the device's horizontal resolution: at
   96 by 300 Wingdings' `VDMX` has no group, and no size was found. The

@@ -1,0 +1,954 @@
+{
+  "probe": "gdidmdrw",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "display",
+      "args": "planes bits",
+      "result": "4 1"
+    },
+    {
+      "function": "colour",
+      "args": "colour 00000000",
+      "result": "00000000 20000000"
+    },
+    {
+      "function": "colour",
+      "args": "colour 00ffffff",
+      "result": "00ffffff 3fffffff"
+    },
+    {
+      "function": "colour",
+      "args": "colour 000000ff",
+      "result": "000000ff 090000ff"
+    },
+    {
+      "function": "colour",
+      "args": "colour 00ff0000",
+      "result": "00ff0000 0cff0000"
+    },
+    {
+      "function": "colour",
+      "args": "colour 0000ff00",
+      "result": "0000ff00 1a00ff00"
+    },
+    {
+      "function": "colour",
+      "args": "colour 0000ffff",
+      "result": "0000ffff 1b00ffff"
+    },
+    {
+      "function": "colour",
+      "args": "colour 00808080",
+      "result": "00808080 07808080"
+    },
+    {
+      "function": "colour",
+      "args": "colour 00c0c0c0",
+      "result": "00c0c0c0 18c0c0c0"
+    },
+    {
+      "function": "colour",
+      "args": "mono 00000000",
+      "result": "00000000 20000000"
+    },
+    {
+      "function": "colour",
+      "args": "mono 00ffffff",
+      "result": "00ffffff 3fffffff"
+    },
+    {
+      "function": "size",
+      "args": "colour 1",
+      "result": "6"
+    },
+    {
+      "function": "size",
+      "args": "colour 2",
+      "result": "54"
+    },
+    {
+      "function": "size",
+      "args": "colour 3",
+      "result": "0"
+    },
+    {
+      "function": "size",
+      "args": "colour 0",
+      "result": "11067"
+    },
+    {
+      "function": "size",
+      "args": "colour 4",
+      "result": "0"
+    },
+    {
+      "function": "size",
+      "args": "colour 5",
+      "result": "0"
+    },
+    {
+      "function": "size",
+      "args": "colour -1",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "colour -2",
+      "result": "1"
+    },
+    {
+      "function": "size",
+      "args": "mono 1",
+      "result": "6"
+    },
+    {
+      "function": "size",
+      "args": "mono 2",
+      "result": "54"
+    },
+    {
+      "function": "pen",
+      "args": "colour 0 0 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 0 1 00ff0000",
+      "result": "6 0000ff0c0000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 1 1 0000ff00",
+      "result": "6 00ff001a0100eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 2 0 004080c0",
+      "result": "6 ff0000090200eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 0 3 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 4 3 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 5 0 00000000",
+      "result": "6 000024000500eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 6 1 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 4 0 00ffffff",
+      "result": "6 ffffff3f0400eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "colour 7 0 00ffffff",
+      "result": "6 ffffff3f0000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "mono 0 0 00ffffff",
+      "result": "6 ffffff3f0000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "mono 1 0 000000ff",
+      "result": "6 ff0000090100eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "pen",
+      "args": "mono 0 0 0000ffff",
+      "result": "6 ffff001b0000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffff00000000000000000000000000000000ffffffffffffffff8822882288228822000089eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 00808080 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000aa55aa55aa55aa55000087eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 004080c0 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffaaffaaffaaffaaffaa55aa55aa55aa5555aa55aa55aa55aaaa55aa55aa55aa55000009eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 0040ff00 0 at 0,0 on 00ffffff",
+      "result": "54 0000000000000000ffffffffffffffff00aa00aa00aa00aaffffffffffffffffee55aa55ee55aa5500001aeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 004080c0 0 at 3,2 on 00ffffff",
+      "result": "54 ffffffffffffffff55ff55ff55ff55ff55aa55aa55aa55aaaa55aa55aa55aa5555aa55aa55aa55aa000009eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 004080c0 0 at 9,13 on 00ffffff",
+      "result": "54 ffffffffffffffffff55ff55ff55ff55aa55aa55aa55aa5555aa55aa55aa55aaaa55aa55aa55aa55000009eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 1 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee0100e0eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffffffffff00ffffffffffffff00ffffffffffffffffffffffffffffff00ffffff020000eeeeeeffffffff00ffffffeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00ff0000 5 at 0,0 on 00ffffff",
+      "result": "54 7ebddbe7e7dbbd7e7ebddbe7e7dbbd7effffffffffffffffffffffffffffffff7ebddbe7e7dbbd7e020000eeeeee7ebddbe7e7dbbd7eeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00ff0000 5 at 1,5 on 00ffffff",
+      "result": "54 f3f3edde3f3fdeedf3f3edde3f3fdeedfffffffffffffffffffffffffffffffff3f3edde3f3fdeed020000eeeeeef3f3edde3f3fdeedeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 004080c0 3 at 0,0 on 00ffffff",
+      "result": "54 fffffffffffffffffefdfbf7efdfbf7ffefdfbf7efdfbf7ffffffffffffffffffefdfbf7efdfbf7f020000eeeeeefefdfbf7efdfbf7feeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 000000ff 6 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffff00000000000000000000000000000000ffffffffffffffff8822882288228822000089eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00ff0000 4 at 0,0 on 0000ffff",
+      "result": "54 f7f7f7f700f7f7f7f7f7f7f700f7f7f708080808ff080808fffffffffffffffff7f7f7f700f7f7f7020000eeeeeef7f7f7f700f7f7f7eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00808080 2 at 3,6 on 0000ffff",
+      "result": "54 ffffffffffffffffffffffffffffffff0402018040201008fbfdfe7fbfdfeff7fbfdfe7fbfdfeff7020000eeeeeefbfdfe7fbfdfeff7eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 00000000 0 at 3,2 on 00ffffff",
+      "result": "54 000000000000000000000000000000000000000000000000000000000000000000000000000000000000e0eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 00ffffff 0 at 3,2 on 00ffffff",
+      "result": "54 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000ffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 10e0e0e0 0 at 0,0 on 00ffffff",
+      "result": "54 55aa55aa55aa55aa55aa55aa55aa55aa55aa55aa55aa55aaffffffffffffffffffddff77ffddff7700003feeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 00c0c0c0 0 at 0,0 on 00ffffff",
+      "result": "54 000000000000000000000000000000000000000000000000ffffffffffffffffdd77dd77dd77dd77000098eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 00ff8040 0 at 0,0 on 00ffffff",
+      "result": "54 00aa00aa00aa00aa55aa55aa55aa55aaffffffffffffffffffffffffffffffffee55aa55ee55aa5500000ceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 0020a0ff 0 at 5,7 on 00ffffff",
+      "result": "54 ffffffffffffffffddaa77aaddaa77aa1100440011004400ffffffffffffffffaad5aa77aa5daa7700001beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 3 00000000 0 at 0,0 on 00ffffff",
+      "result": "54 03dbb38b633b13eb79512901d9b18961efc79f774f27ffd7653d15edc59d754d61311101c1911141030000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 3 00000000 0 at 0,0 on 00ffffff",
+      "result": "54 81eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd67040000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 3 00000000 0 at 2,1 on 00ffffff",
+      "result": "54 fac0f6ece2d8cec4585e544a40766c62f5fbf1e7ddd3c9ff53594f457b71675d50584c4440706444030000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 7 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffff00000000000000000000000000000000ffffffffffffffff8822882288228822000089eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "mono 0 00808080 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000aa55aa55aa55aa55000087eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "mono 0 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffff00000000000000000000000000000000ffffffffffffffff8822882288228822000089eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "mono 0 00ffffff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000ffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "mono 2 00000000 4 at 0,0 on 00ffffff",
+      "result": "54 f7f7f7f700f7f7f7f7f7f7f700f7f7f7f7f7f7f700f7f7f7f7f7f7f700f7f7f7f7f7f7f700f7f7f7020000eeeeeef7f7f7f700f7f7f7eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "mono 3 00000000 0 at 0,0 on 00ffffff",
+      "result": "54 81eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd67040000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "font",
+      "args": "colour",
+      "result": "0 eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f6e12b487fca143cec3640bd551f69b1c14b95b24a74bea6d6a0eb275f89d41bcbf6001c34df2910a10b55912a347e85b660aa863f4993faabb5c07b149ee96f80cb157009f43e6496206ae51f0953d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00ee0086",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f7ef2b487fca9fbcee3760bd5f7ffdb1dbfb95b24f7cbfa6d6edeb275fe9fe9bcff6ff1c3ddf7b90bbdff5912e7f7e85bfeceb863f49dffaaff5defb1cbffb6f99ffd7f00dfe7f649eabeae51f1f7fd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 008800c6",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f0002b486582143ce402003d501700b1c14815324a6488a6d0a00a274401541bc1e2001c30562110a00354112a006885a640a8062340117aa081c07b1014406f8082117009200664862048e50209105983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00660046",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e7ef00487a488bbcea3560bd4f68fd31dab380b245183726c64de1275be8aa9bce14ff1c2d895a90bbdca191247f1605b9ac43863c09cefaaf741efb0cabbb6f997dc6f004de7964988ba2651d166fd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00440328",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e6e100487a48003ce83440bd45086931c00380b240103626c600e1275b88801bca14001c24890810a108019120341605b02002863c0982faab34007b048aa96f8049047000d43864900022651d0043d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00330008",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e91ed4c86035ebbcf3c9bf3d4ae09631deb46a32558b4126c95f14a740762b9bd409ff9c2b20d690bef4aa1135cb8105a99f550620b66c7ab44a3ffb0b6116ef9f34eaf0160bc1e489df956500f6ac5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 001100a6",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e810d4c86035603cf1c89f3d40800231c4046a3250834026c91214a74016011bd009009c22208410a4200a1131808105a013140620b6207ab00a217b034004ef86002870120180e48154156500e0805983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00c000ca",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f4a129487d88143cec3640bd551f69b1c14b91b24a509aa6d6a0eb275f89d41bc3e6001c24c72110a10b55912a347e85a660a286274183faabb5c07b149ee96f80cb117009d01a6496206ae51f0953d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00bb0226",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f91effc865b7ffbcf7cbbf3d5af796b1dffc7f325fefc9a6d9ff1ea744777f9bd5ebff9c3b76f790bef7fe113fcbe985afdffd0623f67d7ab4cbfffb1b7556ef9fb6fbf01f2bc7e48fffdde502ffbc5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7fdbdbdc87dbdbdbcffffffbd5fffffb1dbdbdbb25bdbdba6dfffffa75fffff9bc7e7e79c27e7e790bfffff913fffff85a7e7e78627e7e7fabffffffb1fffffef9bdbdbf01bdbdbe49fffffe51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00fb0a09",
+      "result": "1 0724415e7b98b5d2fc193653708daac7fdbfffc87dbfffbcffffffbd5fffffb1dfffffb25fffdba6dfffffa75fffff9bd7efff9c3ff7f790bfffff913fffff85afffff8627f7fffabffffffb1fffffef9ffffbf01ffbdfe49fffffe51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 005a0049",
+      "result": "1 0724415e7b98b5d2fc193653708daac7ecb396c8783f223cf9fcdfbd45886b31c023ceb254b75226cf12f5a75b9e811bc205189c3eb19410a5280b9131b49705a82b0e8624a7bafabb3e217b07caadef826d087016f19ce4915437651de0c3d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00550009",
+      "result": "1 0724415e7b98b5d2fc193653708daac7eef1d4c87a7d603cf9fcdfbd45886b31c407eab250937626cf12f5a75b9e811bda1d009c26a98c10a5280b9131b49705b03316863cbfa2fabb3e217b07caadef86492c7012d5b8e4915437651de0c3d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00000042",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e00000486000003ce000003d40000031c000003240000026c00000274000001bc000001c20000010a000001120000005a00000062000007aa000007b0000006f8000007000000064800000650000005983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00ff0062",
+      "result": "1 0724415e7b98b5d2fc193653708daac7ffffffc87fffffbcffffffbd5fffffb1dfffffb25fffffa6dfffffa75fffff9bdfffff9c3fffff90bfffff913fffff85bfffff863ffffffabffffffb1fffffef9ffffff01fffffe49fffffe51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 00b8074a",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f91cbfc865b7bdbcf7cbbf3d5af796b1dbd85f325befc9a6d9ff1ea744777f9bc5e3e79c3376e790bef7fe113fcbe985a7c7ed0623e6757ab4cbfffb1b7556ef9b92dbf01b2bc7e48fffdde502ffbc5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour 006a01e9",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e5af0248780a8bbcea3560bd4f68fd31dab384b2453c1326c64de1275be8aa9bc604ff1c3d915290bbdca191247f1605a9ac4b862401defaaf741efb0cabbb6f997dc2f004fa5d64988ba2651d166fd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00cc0020",
+      "result": "1 0724415e77216bd2e00a54d36c7680c7f55fa9c8618bd63ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00ee0086",
+      "result": "1 0724415e7fb9ffd2fc1b76d37cffaac7f55fabc8658bdfbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 008800c6",
+      "result": "1 0724415e730021d2e0081453600480c7f10e29486182963ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00660046",
+      "result": "1 0724415e6cb9de52fc1362d37cfb2a47e45182c8640949bce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00440328",
+      "result": "1 0724415e64214a52e00240d36c720047e45180c86009403ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00330008",
+      "result": "1 0724415e68de9452fff5ab5373897f47eaa056487e7429bce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 001100a6",
+      "result": "1 0724415e60460052e3e4895363005547eaa054487a74203ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00c000ca",
+      "result": "1 0724415e772163d2e00254d3647680c7e00000486183d63ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00bb0226",
+      "result": "1 0724415e7bdeb5d2fffdbf53738dffc7fbae7f487ff6bfbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00f00021",
+      "result": "1 0724415e77f7f7d2f7f7f7d377f7f7c7e000004877f7f7bce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00fb0a09",
+      "result": "1 0724415e7ffff7d2ffffffd377ffffc7fbae7f487ff7ffbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 005a0049",
+      "result": "1 0724415e6c6f4252ebeec1d3677a5d47f10e2b487275683ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00550009",
+      "result": "1 0724415e64674a52e3e6c9d36f725547eef1d4c87a7d603ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00000042",
+      "result": "1 0724415e60000052e000005360000047e00000486000003ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00ff0062",
+      "result": "1 0724415e7fffffd2ffffffd37fffffc7ffffffc87fffffbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 00b8074a",
+      "result": "1 0724415e73d6b5d2f7fdb7537385f7c7f10e294877f6b7bce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono 006a01e9",
+      "result": "1 0724415e6cb9d652fc1b62d374fb2a47f10e2b48640149bce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 004080c0 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffaaffaaffaaffaaffaa55aa55aa55aa5555aa55aa55aa55aaaa55aa55aa55aa55000009eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "blt",
+      "args": "colour dithered 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7ffffffc87fffffbcf555553d4aaaaab1dfffffb24aaaaaa6caaaaaa75555551bdfffff9c3fffff90b55555112aaaaa85bfffff862aaaaafaaaaaaafb1555556f9ffffff01fffffe4955555650aaaaad983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour dithered 005a0049",
+      "result": "1 0724415e7b98b5d2fc193653708daac7eef1d4c87a7d603cf356753d50dd3e31c407eab245c62326da47a0a751342b9bda1d009c26a98c10af82a11124e1c205b033168629eaf7faae6b747b0d60076f86492c7012d5b8e49bfe9de508b596d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 3 00000000 0 at 0,0 on 00ffffff",
+      "result": "54 81eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd6781eb55bf2993fd67040000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "blt",
+      "args": "colour monopattern 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f41414486000003cebebebbd5fffffb1caaaaab240000026d55555275fffff9bc040401c20000010bfbfbf913fffff85b6d6d6862000007aa929297b1fffffef8c6c6c7000000064939393e51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 3 00000000 0 at 0,0 on 00ffffff",
+      "result": "54 03dbb38b633b13eb79512901d9b18961efc79f774f27ffd7653d15edc59d754d61311101c1911141030000ffffeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "blt",
+      "args": "colour pattern 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7fbdbdbc87151513ce7c7c7bd5d3d3d31d3b3b3b249292926df9f9fa75515151bcb8b8b9c21010110b77777112deded85a363630639d9d9faaf4f4f7b05c5c5ef9b3b3b7011b1b1e4872727651d9d9dd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00ff0000 5 at 0,0 on 00ffffff",
+      "result": "54 7ebddbe7e7dbbd7e7ebddbe7e7dbbd7effffffffffffffffffffffffffffffff7ebddbe7e7dbbd7e020000eeeeee7ebddbe7e7dbbd7eeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "blt",
+      "args": "colour hatched 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7fdbdbdc87dbdbdbcffffffbd5fffffb1dbdbdbb25bdbdba6dfffffa75fffff9bc7e7e79c27e7e790bfffff913fffff85a7e7e78627e7e7fabffffffb1fffffef9bdbdbf01bdbdbe49fffffe51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour hatched transparent 00f00021",
+      "result": "1 0724415e7b98b5d2fc193653708daac7fdbdbdc87dbdbdbcffffffbd5fffffb1dbdbdbb25bdbdba6dfffffa75fffff9bc7e7e79c27e7e790bfffff913fffff85a7e7e78627e7e7fabffffffb1fffffef9bdbdbf01bdbdbe49fffffe51fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour from mono 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7e8de94486000003cf7216bbd5fffffb1dff5ab3240000026c00a54a75fffff9bd3897f1c20000010ac7680913fffff85aaa056062000007ab55fa9fb1fffffef9e7429f000000064818bd6651fffffd983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour from mono 00660046",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f9d0bf4865829fbcf1224bbd45886b31c40dbe324f6c89a6d0e75ea75b9e811bd66b801c39567390b6a1749131b49705a56cbf0623405d7ab19e777b07caadef87c2fa700d2a47648f201ee51de0c3d983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono from colour bk red 00cc0020",
+      "result": "1 0724415e60012952e10900536a200047e00028486009013ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono from colour bk black 00cc0020",
+      "result": "1 0724415e60008052e000005360008047e00004486000803ce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour overlap right 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1de21c5724cb053e6dcc064274b4ef29bcb7f029c39ed9110ba1da151288c2fc5a8bc5fc6272ace7aa75afebb15c96d2f95f99d3004680ba484983be50306aa598336da5af1a548ce71d5790fe043e7836d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour overlap left 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7dfc0a9487b644dbc8768503d230bf4b1af17f9324ab39da6d6bfa027725b449bfe67491c1a02eb90a60ef61141aa9285cdb69f0669523b7af55e46fb10f9e26f9d05eff038a18b64c4ad96e56049325983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "mono overlap right 00cc0020",
+      "result": "1 0724415e7b98b5d2ff7316937f8326c7fe11b5486e21c57cecb053fd5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour edge 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bdd07714314ab895b2c5cc0926400d8aa7cb11fe1b35527f9cb066f3102aa5a5a5a5b5a5a5af"
+    },
+    {
+      "function": "blt",
+      "args": "colour wide 00330008",
+      "result": "1 f8cfa67d542b02d9a37a5128ffd6ad844e25fcd3aa81582ff9d0a77e552c03daa47b522900d7ae854f26fdd4ab825930fad1a87f562d04dba57c532a01d8af865027fed5ac835a31fbd2a980572e05dca67d542b02d9b0875128ffd6ad845b32fcd3aa81582f06dda77e552c03dab188522900d7ae855c33fdd4ab82593007dea5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "blt",
+      "args": "colour narrow 00cc0020",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc582ff1c39467390bad7f4112e1b6885aface90623605d7aa4f1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "pen",
+      "args": "colour 0 0 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 004080c0 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffffaaffaaffaaffaaffaa55aa55aa55aa5555aa55aa55aa55aaaa55aa55aa55aa55000009eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline 18",
+      "result": "1 3f24415e4398b5d2c4193653788daac7f7ce2b4800029fbc8003203d7ff794b1dffe1532400089a6c0010a275fff7e9bd5ffff1c29407390aac074113e7fe885afccfd062340017aa4c102fb1835fe6f99b6d3f0052a440486abc8050a1f3ff987a0bffef314000078958001ec093fff6fffe7c4e0001b3860001cb9d7ffd02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline clipped 18",
+      "result": "1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dffe1532400089a6d0010a274fff7e9bc5ffff1c39407390bac074112e7fe885afccf90623400d7aa4c10efb1835f26f99b6d3f0052a476486abc8e50a1f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline xor 18",
+      "result": "1 3f24415e7b98b5d2fc193653488daac7a6ce2b4865829fbce603203d0db794b1c40615324f6c89a6d0ed0a275b9f7e9bd5dc7f1c39567390bad7f4113e75e885a7cc150623405d7aa4c1defb1035ae6f91b6d0000d2a47648eabc8e50a1f3fa987a08228f714314e7895b2cfe80919b16a7567c4e1fe1b38627f9cb9d10cd02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline not 18",
+      "result": "1 3f24415e4398b5d2c4193653488daac7a6ce2b4832429fbcb1c3203d0db794b1c4061532509289a6cf130a275b9f7e9bd5dc7f1c2968f390aae974113e75e885a7cc15062b40a17aacc122fb1035ae6f91b6d000052a449486abcb150a1f3fa987a08228f3140ebc7c958d3de80919b16a7567c4e601db3865805cb9d10cd02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "pen",
+      "args": "colour 1 1 0000ff00",
+      "result": "6 00ff001a0100eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline dash 18",
+      "result": "1 0724415e7b98b5d2c4193653788daac7800e2b4877c29fbc8003203d7ff794b1c00015325ffe89a6c0010a275fff7e9bc5c07f1c39787390aac7f4113e7fe885a7cc01062b40057aa4c1fafb1835fe6f91b6d0000d2a47f486abc8050a1f3ff983a08000f7143ffe78958001ec093fff680027c4e700db3860ff1cb9d7ffd02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline dash transparent 18",
+      "result": "1 0724415e7b98b5d2c4193653788daac7800e2b4877c29fbc8003203d7ff794b1c00015325ffe89a6c0010a275fff7e9bc5c2ff1c397e7390aac7f4113e7b6885a7cce9062b405d7aa4c1dafb1835566f91b6d0000d2a47f486abc8050a1f3ff983a08000f7143ffe78958001ec093fff688a27c4e7fedb38607f1cb9d7f3d02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "pen",
+      "args": "colour 2 0 004080c0",
+      "result": "6 ff0000090200eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour polyline dot 18",
+      "result": "1 3f24415e6398b5d2e4193653788daac7f7ce2b4821c29fbca1c3203d7ff794b1dffe153257a089a6d7a10a275fff7e9bd5ffff1c2947f390aac7f4113e7fe885afccfd062340857aa4c186fb1835fe6f99b6d3f0052a478486abcb850a1f3ff987a0bffef7140f0e7c958f0fec093fff6fffe7c4e70f1b38670f1cb9d7ffd02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "pen",
+      "args": "colour 0 0 000000ff",
+      "result": "6 ff0000090000eeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1fff9fffa2aacaaaeaaacaaaf55615553c5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines clipped 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1fff9fffa2aacaaaeaaacaaaf55615553c5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines xor 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1a439eaca65ec230efa6da08f11202bcbc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 2 00ff0000 5 at 0,0 on 00ffffff",
+      "result": "54 7ebddbe7e7dbbd7e7ebddbe7e7dbbd7effffffffffffffffffffffffffffffff7ebddbe7e7dbbd7e020000eeeeee7ebddbe7e7dbbd7eeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines hatched 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf9dbda5beddbdeffedffff7fe1fffbc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines hatched transparent 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf811124b6c8986f4ed2e2764617ebbc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour scanlines nobrush 4",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1fff9fffa002c0006802c00077fe1fffbc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "mono polyline 18",
+      "result": "1 3f24415e7fd8b5d2ffff365370bfaac7f90eff486d829ffce6033fff5fffd4b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "mono polyline clipped 18",
+      "result": "1 0724415e7b98b5d2ffff365370bfaac7f90efb486d829fbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "mono scanlines 4",
+      "result": "0 0724415e7b98b5d2f7d9f7f3708daac7f10e2b4865829fbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "brush",
+      "args": "colour 0 000000ff 0 at 0,0 on 00ffffff",
+      "result": "54 ffffffffffffffff00000000000000000000000000000000ffffffffffffffff8822882288228822000089eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+    },
+    {
+      "function": "output",
+      "args": "colour other 1",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 2",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 3",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 6",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 7",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 20",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 22",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "output",
+      "args": "colour other 146",
+      "result": "-1 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour transparent",
+      "result": "00000000 37e757de4b18a050c818205174cfbfcff35e7beb6480851ce401001c5b77feb3dbfadf764c4401a2c045002357fbfedfffefff1d0152228080d2a4007e4f799defdded3621405848a4405ac95ab5f77fd9f6dbf7040a4720860bc0205bff3cdfa7e8bffad314200658952007ec49bfeb7ddfe7cdc120183042201c30f6fff3ada5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour opaque",
+      "result": "00000000 0618ba5e6618bad2f9e745537fffffc7fab3d3487ab3d3bce54c2c3d5fffffb1ddd670325dd670a6c2298f275fffff9bd06a891c306a8990af9576113fffff85b48d2e06348d2e7aab72d1fb1fffff6f8f2044f00f20446490dfbbe51fffff598244fddae244fd4e7dbb02cfffffff4366ff1ac4e6ff1a387900e5b9dfffff2da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour clipped",
+      "result": "00000000 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1d3bac53243bac9a6dc453a274ffffe9bce0d5f1c3e0d5390b1f2a4112ffff885aa91a9062a91ad7aa56e5efb1ffff26f99e403f009e40764861bf8e50ffffc5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour eto opaque",
+      "result": "00000000 0618b95e6618bdd2f9e746537ffffac7dab3d0005ab3d000e54c2ffd7ffffffdddd670025dd67002e2298fff7fffffffd06a8800106a8800af9577fd3ffffffd948d2802148d2802ab72d7ff3fffffff8f2040000f204000b0dfbffd3ffffffd8244f802c244f8027dbb07ffffffffff66ff1fc4e6ff1b387900e4b9dffff82da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour eto clipped",
+      "result": "00000000 0724415e7b98b5d2fc193653708daac7fab3d5187ab3d518e54c2ae55ffffffdddd672225dd67222c2298ddf5fffffffd06a88c8306a88c8af9577353ffffffdb48d2992348d2992ab72d66f1fffffff8f2046bc0f2046bc90dfb9411ffffffd8244ff46e244ff467dbb00bbffffffff6d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour eto both",
+      "result": "00000000 0724415e7b98b5d2fc193653708daac7dab3d5185ab3d518e54c2ae57ffffffdddd672225dd67222e2298ddf7fffffffd06a88c8106a88c8af9577353ffffffd948d2992148d2992ab72d66f3fffffff8f2046bc0f2046bcb0dfb9413ffffffd8244ff46c244ff467dbb00bbffffffff6d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour widths",
+      "result": "00000000 68cc7fe268cc7fe29733801fffffffff035de8f4035de8f4fca21709fffffffd23bb391e23bb391edc44c6e3fffffffffa0d4664fa0d466405f2b999fffffffd92969cca92969cca6d696337ffffffffb1e435f0b1e435f04e1bca0dfffffffd484a7eba484a7ebab7b58147ffffffff60dfaf6c60dfaf6c9f205091fffffffda5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour negative x",
+      "result": "00000000 0724415e7b98b5d2fc193653708daac72f1d0b482f1d1fbcd0e2e03dfffff4b1f546b532f546a9a60ab94a27fffffe9b9c88ff1c9c88f39063771411ffffe885a2322906a2323d7a5dcddefbfffff26f4a6453f04a644764b59ba8e5fffffc5911af9dda11af914eee5072cfffffe6433fd1c7c43fd1db38c02e3cb9fffff02da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour default",
+      "result": "00000000 363a155e363a15d2c9c5ea537ffffec7828d5f48028d5fbcfd72a03d7ffffcb19111c5321111c5a6eeee3a277ffffe9bfc644f1c7c644f90839bb0117ffffc85c8c8b10648c8b17ab7374efb7ffffe6fdb5f3bf05b5f3b64a4a0c4e57ffffc59a7a3a1daa7a3a14e585c5ecffffffe433236d7c4b236d7384dc928b9fffffc2da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour extra",
+      "result": "00000000 68a1815e68a181d2975e7e53fffffec700e6a94800e6a9bcff19563dfffffeb120277132202771a6dfd88e27fffffe9bf864191cf8641990079be611fffffe85918521069185217a6e7adefbfffffe6fb1c3c9f0b1c3c9644e3c36e5fffffe59490091da4900914eb6ff6ecffffffe4360a1b9c460a1b9389f5e46b9fffffe2da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour break",
+      "result": "00000000 6a8305316a830531957cfaceffffffff038d5727038d5727fc72a8d8ffffffff208ee12c208ee12cdf711ed3fffffffff9883315f98833150677cceaffffffff960a4c1a960a4c1a69f5b3e5ffffffffb7079e00b7079e0048f861ffffffffff4c0128094c012809b3fed7f6ffffffff6283753e6283753e9d7c8ac1ffffffffa5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour bold",
+      "result": "00000000 3e70415e3e7035d2c18fb6537fffaac781ff2b4801ff1fbcfe00a03d7fff94b199fe153219fe09a6e6018a277ffffe9bff877f1c7f8773908078f4117fffe885edec69066dec5d7a9213defb7fffd26ffcfb53f07cfb47648304c8e57fffbc59b6363ddab636314e49c9b2cfffffa643387f27c4b87f1b3847809cb9ffff902da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour extent",
+      "result": "00080023 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "colour extent extra",
+      "result": "0008002f 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "mono transparent",
+      "result": "00000000 37e757de7bdefff3ffbbfe577e8dfbdffb9faf7a7de69fffe64bbffd7afff7bda5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "text",
+      "args": "mono opaque",
+      "result": "00000000 0724415e7b98b5d2f22986537f957ac7fb72db4860dfbfbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "strblt",
+      "args": "colour",
+      "result": "00000000 1a618bde5a618bd2e59e74537fffffc7c1ab3d4841ab3d3cfe54c2bd7fffffb1c9dd673249dd6726f62298a77fffff9bff06a89c3f06a89080f957113fffff85a548d2862548d2fa9ab72d7b3fffffefacf204702cf20464930dfbe53fffffd992244fdad2244fce6ddbb04fffffffc3586ff1c4d86ff1b867900e39ffffffada5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "strblt",
+      "args": "colour extent",
+      "result": "00080017 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "charwidth",
+      "args": "colour 64-69",
+      "result": "1 4 5 8 10 12 3 -99 -99 -99 -99 -99 -99"
+    },
+    {
+      "function": "charwidth",
+      "args": "colour 62-71",
+      "result": "1 12 12 4 5 8 10 12 3 0 28752 -99 -99"
+    },
+    {
+      "function": "charwidth",
+      "args": "colour 67-65",
+      "result": "0 -99 -99 -99 -99 -99 -99 -99 -99 -99 -99 -99 -99"
+    },
+    {
+      "function": "charwidth",
+      "args": "colour bold 64-69",
+      "result": "1 6 7 10 12 14 5 -99 -99 -99 -99 -99 -99"
+    },
+    {
+      "function": "charwidth",
+      "args": "mono 64-69",
+      "result": "1 4 5 8 10 12 3 -99 -99 -99 -99 -99 -99"
+    },
+    {
+      "function": "dibget",
+      "args": "colour 1 0 8",
+      "result": "8 d0f21028e4082042000a24481030506a284a60804460688a487294b07088a8c2 colours 00000000ffffff00"
+    },
+    {
+      "function": "dibget",
+      "args": "colour 4 0 8",
+      "result": "8 af7819c3beee76fc501e653351e6e90cbee6ca335016860c50f719c35f0176fc500176c35079e9fc5789ca335f79860c507895335788190c5f1e76c34ee6e9fc51e6e9c35f1686fc5ff79533a007190c5f053a335ff1760c2889e9c3a07986fc5f7986c3288819fca05a3a33a1ee760c4eee6533a016e90ca1e686c3af0719fc colours 0000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00"
+    },
+    {
+      "function": "dibget",
+      "args": "colour 8 2 3",
+      "result": "3 0500000107060c03050007090e090f0c050708090c0a0303050f07090806000c0500070809050303050708080109000c050f010e07060c03040e0e060e090f0c05010e060e090c03050f010608060f0c050f0f07090503030a0000070109000c colours 0000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00"
+    },
+    {
+      "function": "dibget",
+      "args": "colour 24 1 2",
+      "result": "2 00ffffffff00ffff00808000ff000000ff00008080008080800080000000000080808000c0c0c0808000000000ff0000800080000000ffffff8080800000800000ffff0000008080800080ffffff000000000080808080808000ffffffff0000800080000000000000000080808080808000ff00000080808000800000008080800000ffffff000000ffffffffff0000800080808080c0c0c00000ffff000000ff00008080008080800080ffffff8080800000ffc0c0c0808000000000ff0000 colours "
+    },
+    {
+      "function": "dibget",
+      "args": "colour 4 6 5",
+      "result": "2 5f7986c3288819fca05a3a33a1ee760c4eee6533a016e90ca1e686c3af0719fceeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee colours 0000000000008000008000000080800080000000800080008080000080808000c0c0c0000000ff0000ff000000ffff00ff000000ff00ff00ffff0000ffffff00"
+    },
+    {
+      "function": "dibget",
+      "args": "mono 1 0 8",
+      "result": "8 5a7794b1e603203d65829fbcf10e2b48708daac7fc1936537b98b5d20724415e colours 00000000ffffff00"
+    },
+    {
+      "function": "dibget",
+      "args": "mono 4 0 8",
+      "result": "8 0f0ff0f00fff0ffff00f0f00f0ff000ffff00ff0000000ff00f0000000ffff0f0ff00f0ff00000f0f00ffffff0ffff00ffff000f0000fff000f0f0ff0f00f0000fff0000f000ff0ff0f0f0f0ff000fffffffff00000ff00f00ff0ff00f0f00ff0ffff0fff00ff000f0ff0f0fff0f00f000000fff00f00f000f00000f0f0ffff0 colours 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffffff00"
+    },
+    {
+      "function": "dibset",
+      "args": "colour 1 0 8",
+      "result": "8 ffffffff89a0b7ce00000000ffffffffffffffff2d445b7200000000ffffffffffffffffd1e8ff1600000000ffffffffffffffff758ca3ba00000000ffffffffffffffff1930475e00000000ffffffffffffffffbdd4eb0200000000ffffffffffffffff61788fa600000000ffffffffffffffff051c334a00000000ffffffffa5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibset",
+      "args": "colour 4 0 8",
+      "result": "8 ef463fb9d7ceee4d770fadcbd6ffee5fe7ee979bff64e6eff70d87cb7ef5ecffe56cbf91d7eece4dddad8761dedfee7f4fec1d3bfd64eee7dda72f61fe77e6ffc5c6bf13d7ee4e4ff7a72fcbfeffcefdefe437bbfd64eee7f72dafcbfc7feef74f6ebd39dfee4e6f5f2d8d6bf6ff4edfef469fbb7d66ece75d878d63fcfdeef7a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibset",
+      "args": "colour 8 2 3",
+      "result": "3 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bbc75b976feabfbabbc35b0b6ebafeeaf9f5f9c7dffabfeab5b4b4c6dfaefebefb9568f57fbabefabb09683d3eeaffabf83a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibset",
+      "args": "colour 24 1 2",
+      "result": "2 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f2aa654ca2aae55ca6eaed5dadd99b3364cea99535deab9575dfabb57333666cc6d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibset",
+      "args": "mono 1 0 8",
+      "result": "8 89a0b7ce2d445b72d1e8ff16758ca3ba1930475ebdd4eb0261788fa6051c334aa5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibset",
+      "args": "mono 4 0 8",
+      "result": "8 d6feee4d7e74ecefd6dece4ffc74e6e7defe4e6dfc76eee7f6fe4ecf7c7cece7a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibtodev",
+      "args": "colour 4 2,1 0 8",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibtodev",
+      "args": "colour clipped 4 2,1 0 8",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1dbf815324f6c89a6d0ed0a2744617e9bc5e2ff1c39567390bad7f4112e4b6885afcce90623405d7aa4c1defb1835526f99b6d3f00d2a47648eabc8e5021f3c5983a0bddaf714314e7895b2cfec0926436d8aa7c4e1fe1b38627f9cb9d6f3102da5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "dibtodev",
+      "args": "mono 1 0,0 0 8",
+      "result": "0 0724415e7b98b5d2fc193653708daac7f10e2b4865829fbce603203d5a7794b1a5a5a5a5a5a5a5a5"
+    }
+  ]
+}

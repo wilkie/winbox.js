@@ -108,6 +108,13 @@ export const PER_DISPLAY = new Set([
   /* USER makes an icon resource's picture in the display's format: four
    * planes of a bit on the VGA, a plane of eight on the 256-colour one. */
   'iconhand',
+  /* GDI's drawing helpers for drivers call the display driver's own
+   * routines on a memory bitmap of its format. */
+  'gdidm',
+  'gdidmdrw',
+  /* GDI's `ScanLR` on a window's context and the screen's, which the
+   * display driver scans. */
+  'scanscr',
 ]);
 
 /**
@@ -116,7 +123,15 @@ export const PER_DISPLAY = new Set([
  * device there is beside what they do with none. A probe recorded only with
  * a card, `wavedev`, needs no suffix.
  */
-export const PER_SOUND = new Set(['mmdevs', 'sndplay', 'mcidevs', 'mplopen', 'sndrec', 'mmmisc', 'mmnodev']);
+export const PER_SOUND = new Set([
+  'mmdevs',
+  'sndplay',
+  'mcidevs',
+  'mplopen',
+  'sndrec',
+  'mmmisc',
+  'mmnodev',
+]);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */
 export const fixtureFor = (probe, display) =>

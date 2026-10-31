@@ -4,14 +4,13 @@
 //! `Brute` (seg13 `0171`), which calls the display driver's routine of the
 //! same offset for a memory bitmap and answers nought and the
 //! offset for any other device; `VGA.DRV`'s `ColorInfo`, `Pixel`,
-//! `ScanLR` and `EnumObj` for a memory bitmap, which WinBox has, and the
-//! rest of the display driver's routines, which answer nought here.
+//! `ScanLR` and `EnumObj` for a memory bitmap here, and its drawing in
+//! `driver_bitmap.rs`, on the VGA, the Super VGA and the EGA; on the
+//! Hercules and the 256-colour display, nought.
 //!
-//! **Recorded** by `gdidm` and `gdiint`.
+//! **Recorded** by `gdidm`, `gdidmdrw`, `gdiint` and `scanscr`.
 
 use winbox_cpu::{AX, DS, ES, SS};
-use winbox_raster::DevicePalette;
-use winbox_raster::colour_match::matched_index;
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, GuestArg, Register};
@@ -19,36 +18,11 @@ use crate::system::System;
 
 use super::calls::enum_objects::enumerated_objects;
 use super::dc::{DcBitmap, dc_of};
+use super::driver_bitmap::{self, MONO_WHITE, family_of, flags_of, matched_of, physical_of};
 use super::objects::GdiObject;
 
 /// The word at 8 of a bitmap of the display's four planes of a bit each.
 const FOUR_PLANES: u16 = 0x0104;
-
-/// `VGA.DRV`'s colours, by index, as its `ColorInfo` gives them back (seg1
-/// `003c`, three bytes each, red first): the sixteen of the VGA's palette.
-const VGA_COLOURS: [[u8; 3]; 16] = [
-    [0x00, 0x00, 0x00],
-    [0x80, 0x00, 0x00],
-    [0x00, 0x80, 0x00],
-    [0x80, 0x80, 0x00],
-    [0x00, 0x00, 0x80],
-    [0x80, 0x00, 0x80],
-    [0x00, 0x80, 0x80],
-    [0x80, 0x80, 0x80],
-    [0xc0, 0xc0, 0xc0],
-    [0xff, 0x00, 0x00],
-    [0x00, 0xff, 0x00],
-    [0xff, 0xff, 0x00],
-    [0x00, 0x00, 0xff],
-    [0xff, 0x00, 0xff],
-    [0x00, 0xff, 0xff],
-    [0xff, 0xff, 0xff],
-];
-
-/// The flag of a colour a monochrome bitmap takes as white (seg1 `002c`).
-const MONO_WHITE: u8 = 0x10;
-/// The flag black and white carry besides (seg1 `002c`).
-const PURE: u8 = 0x20;
 
 /// What `Pixel` answers for a pixel of a monochrome bitmap (seg7 `01fe`).
 const MONO_BLACK: u32 = 0x2000_0000;
@@ -79,25 +53,6 @@ const STRETCH_DIBITS: u16 = 0x6c;
 const PEN_AT: u16 = 0x16;
 const SOLID_AT: u16 = 0x14;
 const HATCHED_AT: u16 = 0x16;
-
-/// The flags `VGA.DRV` keeps beside each colour (seg1 `002c`).
-fn flags_of(index: u8) -> u8 {
-    (if [8, 10, 11, 13, 14, 15].contains(&index) {
-        MONO_WHITE
-    } else {
-        0
-    }) | if index == 0 || index == 15 { PURE } else { 0 }
-}
-
-/// The VGA's physical colour for an index (seg1 `19f4`).
-fn physical_of(index: u8) -> u32 {
-    let [red, green, blue] = VGA_COLOURS[usize::from(index & 0xf)];
-
-    u32::from(red)
-        | u32::from(green) << 8
-        | u32::from(blue) << 16
-        | u32::from(index | flags_of(index)) << 24
-}
 
 /// A memory bitmap as a driver is handed it.
 struct DriverBitmap {
@@ -142,7 +97,7 @@ fn read_bitmap(system: &System, far: u32) -> DriverBitmap {
 
 /// Whether WinBox has the display driver's routines: the VGA's.
 fn vga(system: &System) -> bool {
-    system.display.driver_file.eq_ignore_ascii_case("VGA.DRV")
+    family_of(system).is_some()
 }
 
 impl DriverBitmap {
@@ -195,25 +150,12 @@ impl DriverBitmap {
     }
 }
 
-/// The index the VGA's driver matches a colour to (`colour_match`).
-fn matched(system: &System, colour: u32) -> u8 {
-    let mut palette = DevicePalette::for_display(16, false, false);
-
-    matched_index(
-        super::bitmaps::display_kind(system),
-        &mut palette,
-        colour as u8,
-        (colour >> 8) as u8,
-        (colour >> 16) as u8,
-    ) as u8
-}
-
 /// `ColorInfo` (`VGA.DRV` seg1 `18f8`).
 fn color_info(system: &mut System, device: u32, colour: u32, buffer: u32) -> u32 {
     let mut physical = colour;
 
     if buffer != 0 {
-        physical = physical_of(matched(system, colour));
+        physical = physical_of(system, matched_of(system, colour));
         system.write_far(buffer, &physical.to_le_bytes());
     }
 
@@ -238,7 +180,7 @@ fn pixel(system: &mut System, device: u32, x: u16, y: u16, physical: u32, draw_m
         let value = bitmap.pixel(system, x, y);
 
         return if bitmap.format == FOUR_PLANES {
-            physical_of(value)
+            physical_of(system, value)
         } else if value != 0 {
             MONO_WHITE_PHYSICAL
         } else {
@@ -333,29 +275,120 @@ fn unfollowed(system: &mut System, args: &mut Args, offset: u16, dword: bool) ->
 }
 
 fn dm_bit_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, BIT_BLT, false))
+    let device = args.dword(system);
+    let x = args.word(system);
+    let y = args.word(system);
+    let source = args.dword(system);
+    let sx = args.word(system);
+    let sy = args.word(system);
+    let width = args.word(system);
+    let height = args.word(system);
+    let rop = args.dword(system);
+    let brush = args.dword(system);
+    let draw_mode = args.dword(system);
+    let answer = match brute(system, device, BIT_BLT) {
+        Some(answer) => answer,
+        None if vga(system) => driver_bitmap::bit_blt(
+            system, device, x, y, source, sx, sy, width, height, rop, brush, draw_mode,
+        ),
+        None => 0,
+    };
+
+    Ok(Answer::Word(answer as u16))
 }
 
 fn dm_output(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, OUTPUT, false))
+    let device = args.dword(system);
+    let style = args.word(system);
+    let count = args.word(system);
+    let points = args.dword(system);
+    let pen = args.dword(system);
+    let brush = args.dword(system);
+    let draw_mode = args.dword(system);
+    let clip = args.dword(system);
+    let answer = match brute(system, device, OUTPUT) {
+        Some(answer) => answer,
+        None if vga(system) => driver_bitmap::output(
+            system, device, style, count, points, pen, brush, draw_mode, clip,
+        ),
+        None => 0,
+    };
+
+    Ok(Answer::Word(answer as u16))
 }
 
 fn dm_realize_object(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, REALIZE_OBJECT, true))
+    let device = args.dword(system);
+    let style = args.word(system);
+    let input = args.dword(system);
+    let out = args.dword(system);
+    let xform = args.dword(system);
+    let answer = match brute(system, device, REALIZE_OBJECT) {
+        Some(answer) => answer,
+        None if vga(system) => driver_bitmap::realize_object(system, style, input, out, xform),
+        None => 0,
+    };
+
+    Ok(Answer::Dword(answer))
+}
+
+/// `DMExtTextOut` and `DMStrBlt`'s common part: the display driver's
+/// `ExtTextOut` on a memory bitmap, the last three arguments nought for
+/// `StrBlt`.
+fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
+    let device = args.dword(system);
+    let x = args.word(system);
+    let y = args.word(system);
+    let clip = args.dword(system);
+    let string = args.dword(system);
+    let count = args.word(system);
+    let font = args.dword(system);
+    let draw_mode = args.dword(system);
+    let xform = args.dword(system);
+    let (widths, opaque, options) = if extended {
+        (args.dword(system), args.dword(system), args.word(system))
+    } else {
+        (0, 0, 0)
+    };
+    let answer = match brute(system, device, EXT_TEXT_OUT) {
+        Some(answer) => answer,
+        None if vga(system) => driver_bitmap::ext_text_out(
+            system, device, x, y, clip, string, count, font, draw_mode, xform, widths, opaque,
+            options,
+        ),
+        None => 0,
+    };
+
+    Answer::Dword(answer)
 }
 
 fn dm_ext_text_out(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, EXT_TEXT_OUT, true))
+    Ok(text_out(system, args, true))
 }
 
 /// `DMStrBlt` (seg13 `00df`): `DMExtTextOut` with five words of nought
 /// after its own arguments.
 fn dm_str_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, EXT_TEXT_OUT, true))
+    Ok(text_out(system, args, false))
 }
 
 fn dm_get_char_width(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, GET_CHAR_WIDTH, false))
+    let device = args.dword(system);
+    let buffer = args.dword(system);
+    let first = args.word(system);
+    let last = args.word(system);
+    let font = args.dword(system);
+    let _draw_mode = args.dword(system);
+    let xform = args.dword(system);
+    let answer = match brute(system, device, GET_CHAR_WIDTH) {
+        Some(answer) => answer,
+        None if vga(system) => {
+            driver_bitmap::get_char_width(system, buffer, first, last, font, xform)
+        }
+        None => 0,
+    };
+
+    Ok(Answer::Word(answer as u16))
 }
 
 fn dm_stretch_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -363,7 +396,23 @@ fn dm_stretch_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 }
 
 fn dm_dib_bits(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, DEVICE_BITMAP_BITS, false))
+    let device = args.dword(system);
+    let get = args.word(system);
+    let start = args.word(system);
+    let scans = args.word(system);
+    let bits = args.dword(system);
+    let info = args.dword(system);
+    let _draw_mode = args.dword(system);
+    let _translate = args.dword(system);
+    let answer = match brute(system, device, DEVICE_BITMAP_BITS) {
+        Some(answer) => answer,
+        None if vga(system) => {
+            driver_bitmap::device_bitmap_bits(system, device, get, start, scans, bits, info)
+        }
+        None => 0,
+    };
+
+    Ok(Answer::Word(answer as u16))
 }
 
 fn dm_stretch_dibits(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -371,7 +420,14 @@ fn dm_stretch_dibits(system: &mut System, args: &mut Args) -> Result<Answer, Sto
 }
 
 fn dm_set_dib_to_dev(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    Ok(unfollowed(system, args, DIB_TO_DEVICE, false))
+    let device = args.dword(system);
+    let answer = match brute(system, device, DIB_TO_DEVICE) {
+        Some(answer) => answer,
+        None if vga(system) => driver_bitmap::dib_to_device(),
+        None => 0,
+    };
+
+    Ok(Answer::Word(answer as u16))
 }
 
 fn dm_color_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -520,9 +576,15 @@ fn dm_transpose(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Nothing)
 }
 
-/// GDI's `ScanLR` (seg15 `087f`): a memory context's bitmap scanned as the
-/// VGA's driver scans one; -1 for a context of nought, nought for anything
-/// WinBox does not follow.
+/// GDI's `ScanLR` (seg15 `087f`): -1 for a context of nought, nought for
+/// anything WinBox does not follow; the VGA's and the EGA's driver's scan
+/// (`family_of`), read from WinBox's own pixels:
+///
+/// * A memory context's bitmap of the display's format or of one plane.
+/// * A window's context or the screen's: the screen's own `ScanLR`, the
+///   point moved by the context's origin on the screen and the answer the
+///   screen's x. The whole row of the screen is scanned, whatever windows
+///   are over it or the context's region (**recorded** by `scanscr`).
 fn scan_lr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
     let x = i32::from(args.signed(system));
@@ -537,9 +599,6 @@ fn scan_lr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let Some(dc) = dc_of(system, hdc) else {
         return Ok(Answer::Word(0));
     };
-    let DcBitmap::Bitmap(object) = system.gdi.dcs[dc].bitmap else {
-        return Ok(Answer::Word(0));
-    };
 
     if !vga(system) {
         return Ok(Answer::Word(0));
@@ -549,13 +608,23 @@ fn scan_lr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         Some(mapping) => super::draw::device_point(&mapping, x, y),
         None => (x, y),
     };
-    let index = matched(system, colour);
-    let GdiObject::Bitmap(bitmap) = &system.gdi.objects[object] else {
-        return Ok(Answer::Word(0));
+    let index = matched_of(system, colour);
+    let (pixels, x, y) = match system.gdi.dcs[dc].bitmap {
+        DcBitmap::Bitmap(object) => {
+            let GdiObject::Bitmap(bitmap) = &system.gdi.objects[object] else {
+                return Ok(Answer::Word(0));
+            };
+
+            (bitmap.pixels.clone(), x, y)
+        }
+        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => {
+            let (left, top) = super::dc::origin_of(system, dc);
+
+            (system.screen_bitmap(), x + left, y + top)
+        }
     };
-    let pixels = &bitmap.pixels;
     let colour = match pixels.depth {
-        1 => u8::from(flags_of(index) & MONO_WHITE != 0),
+        1 => u8::from(flags_of(system, index) & MONO_WHITE != 0),
         4 => index,
         _ => return Ok(Answer::Word(0)),
     };
