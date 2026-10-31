@@ -389,6 +389,9 @@ pub(crate) struct Move {
     /// `WM_NCCALCSIZE`'s rectangles as the window procedure left them, and
     /// its answer, where it was sent.
     calc: Option<([[i32; 4]; 3], u16)>,
+    /// Its entry in USER's block of four, where the call has the block
+    /// (`System::take_defer_slots`).
+    slot: Option<usize>,
 }
 
 const WVR_ALIGNBOTTOM: u16 = 0x0040;
@@ -474,14 +477,22 @@ impl Engine {
         cy: i16,
         flags: u16,
     ) -> Result<(), Stop> {
-        let Some(change) = self
-            .position_changing(hwnd, index, after, [x, y, cx, cy].map(i32::from), flags)
-            .await?
-        else {
-            return Ok(());
-        };
+        let taken = self.system().take_defer_slots(1);
+        let done = async {
+            let Some(mut change) = self
+                .position_changing(hwnd, index, after, [x, y, cx, cy].map(i32::from), flags)
+                .await?
+            else {
+                return Ok(());
+            };
 
-        self.position_changed(vec![change]).await
+            change.slot = taken.then_some(0);
+            self.position_changed(vec![change]).await
+        }
+        .await;
+
+        self.system().give_defer_slots(taken);
+        done
     }
 
     /// The first half of a window's move: what it is told before, and where
@@ -652,6 +663,7 @@ impl Engine {
             flags,
             family,
             calc,
+            slot: None,
         }))
     }
 
@@ -755,6 +767,19 @@ impl Engine {
         // they do, the next asked to go somewhere is looked at as well
         // (`USER.EXE` seg7 `0e09`-`0e38`).
         let mut in_place_so_far = true;
+        // Whether every window placed was shown: what they uncovered is then
+        // made due in their parent alone, `RDW_NOCHILDREN` (`USER.EXE` seg7
+        // `08c6`-`08d5`, `093f`-`0958`).
+        let all_shown = changes
+            .iter()
+            .all(|change| change.flags & SWP_SHOWWINDOW != 0);
+        // Drawn at once from the parent of the first window placed
+        // (seg7 `027a`-`028d`).
+        let parent_of_first = changes.first().and_then(|change| {
+            self.system().windows[change.index]
+                .as_ref()
+                .and_then(|window| window.parent)
+        });
 
         for mut change in changes {
             let mut system = self.system();
@@ -792,6 +817,32 @@ impl Engine {
                 )?;
             }
 
+            // Where the bits go, as the entry of USER's block keeps it
+            // (`System::defer_slots`): left as it was, moved alone with
+            // `SWP_NOCOPYBITS`; else the whole window, where
+            // `WM_NCCALCSIZE` was not sent; with it sent, nowhere with
+            // `SWP_NOCOPYBITS`, else its client area. Where it moves or is
+            // sized, as `move_with_bits` worked it out.
+            let stale = change.slot.map_or([0; 4], |slot| system.defer_slots[slot]);
+            let mut dest = if change.calc.is_none() {
+                if change.flags & SWP_NOCOPYBITS != 0 {
+                    stale
+                } else {
+                    [left, top, left + width, top + height]
+                }
+            } else if change.flags & SWP_NOCOPYBITS != 0 {
+                [0; 4]
+            } else {
+                let window = system.windows[change.index].as_ref().expect("a window");
+
+                [
+                    window.left + window.client.left,
+                    window.top + window.client.top,
+                    window.left + window.client.right,
+                    window.top + window.client.bottom,
+                ]
+            };
+
             if moved || resized {
                 let kept = change.calc.as_ref().filter(|_| resized).and_then(|calc| {
                     calc_kept(calc, system.class_style(change.index), origin, client_was)
@@ -807,11 +858,14 @@ impl Engine {
                 }
 
                 system.harvest_all();
-                system.move_with_bits(
+                dest = system.move_with_bits(
                     change.index,
                     change.place,
                     change.flags & SWP_NOCOPYBITS == 0,
                     kept,
+                    all_shown,
+                    change.calc.is_some(),
+                    stale,
                 )?;
 
                 let place = system.window_rect(change.index);
@@ -821,9 +875,16 @@ impl Engine {
                 system.frame_changed(change.index)?;
             }
 
-            // Sized, its whole frame is due as a region of it (`swpframe`).
+            if let Some(slot) = change.slot {
+                system.defer_slots[slot] = dest;
+            }
+
+            // Sized, its whole frame is due as a region of it (`swpframe`)
+            // -- but where nothing of it was copied, it is due all over,
+            // `WM_NCPAINT` with 1 (seg7 `08de`-`08f0`; `swpunc`).
             if resized && let Some(window) = system.windows[change.index].as_mut() {
-                window.frame_region = window.needs_nc_paint;
+                window.frame_region =
+                    window.needs_nc_paint && !(window.needs_paint && window.dirty.is_none());
             }
 
             if moved || resized {
@@ -887,7 +948,7 @@ impl Engine {
                 {
                     system.show_in_place(change.index);
                 } else {
-                    system.show(change.index);
+                    system.show_placed(change.index, all_shown);
                 }
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {
                 // Activated, and so brought to the top, unless asked not to be
@@ -942,7 +1003,10 @@ impl Engine {
         // again where it is not then the first at the top (`alttab`).
         self.deliver_activation(Some(crate::window_state::Between::Again))
             .await?;
-        self.erase_due().await?;
+
+        if parent_of_first.is_none_or(|parent| self.system().showing(parent)) {
+            self.sync_paint_from(parent_of_first).await?;
+        }
 
         // A frame changed with nothing of its client area to paint is done.
         for (change, ..) in &placed {
@@ -1001,6 +1065,71 @@ impl Engine {
 
         self.system().nudge()?;
         Ok(())
+    }
+}
+
+impl System {
+    /// Whether a call of `count` windows has USER's block of four entries,
+    /// taken until `give_defer_slots`: handed out for four windows or fewer
+    /// while no other call has it (`USER.EXE` seg7 `00d7`-`00e4`, its word
+    /// at 7CCh taken), else a block made afresh, all noughts (`00e6`-`00ef`,
+    /// `LocalAlloc` with `LMEM_ZEROINIT`). `DeferWindowPos` writes an
+    /// entry's first fields only (`01c4`-`01ea`), so where the bits of a
+    /// window go (+16h) stays as the call before left it in that entry
+    /// until it is written again: `SetWindowPos` moving a window with
+    /// `SWP_NOCOPYBITS` and nothing else writes none (seg7 `1028`-`102c`),
+    /// and copies through that rectangle (`move_with_bits`). The second
+    /// block of two, at `A3Ch`, handed out while USER's word at `E0h` is set
+    /// (`00c0`-`00cd`), is not followed. The TypeScript engine's
+    /// `takeDeferSlots`.
+    pub(crate) fn take_defer_slots(&mut self, count: i32) -> bool {
+        if count > 4 || self.defer_slots_taken {
+            return false;
+        }
+
+        self.defer_slots_taken = true;
+        true
+    }
+
+    /// The block of four given back, where the call had it.
+    pub(crate) fn give_defer_slots(&mut self, taken: bool) {
+        if taken {
+            self.defer_slots_taken = false;
+        }
+    }
+
+    /// Where `ShowWindow`'s own `SetWindowPos` leaves the bits of a window
+    /// going, in the block's first entry where it is free: its whole
+    /// window unmoved, else its client area as it kept it, from its corner
+    /// (seg7 `1028`-`104c`, `10e3`-`1153`). The TypeScript engine's
+    /// `noteShownSlot`.
+    pub(crate) fn note_shown_slot(&mut self, index: usize, client_was: [i32; 4], same_place: bool) {
+        if self.defer_slots_taken {
+            return;
+        }
+
+        let Some(window) = self.windows[index].as_ref() else {
+            return;
+        };
+
+        self.defer_slots[0] = if same_place {
+            [
+                window.left,
+                window.top,
+                window.left + window.width,
+                window.top + window.height,
+            ]
+        } else {
+            let left = window.left + window.client.left;
+            let top = window.top + window.client.top;
+
+            [
+                left,
+                top,
+                (window.left + window.client.right).min(left + client_was[2] - client_was[0]),
+                (window.top + window.client.bottom).min(top + client_was[3] - client_was[1]),
+            ]
+        };
     }
 }
 
@@ -1172,8 +1301,11 @@ pub type Deferred = (u16, u16, [i16; 4], u16);
 
 /// Moves kept to be made together: a handle for them.
 pub fn begin_defer_window_pos(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    args.word(system);
+    let count = args.signed(system);
+    let taken = system.take_defer_slots(i32::from(count));
+
     system.deferred.push(Some(Vec::new()));
+    system.deferred_slots.push(taken);
 
     let index = system.deferred.len() - 1;
 
@@ -1228,23 +1360,35 @@ pub fn end_defer_window_pos(engine: &Engine, mut args: Args) -> Later<'_> {
             };
 
             system.handles.free(set);
-            system.deferred[index].take().unwrap_or_default()
+            (
+                system.deferred[index].take().unwrap_or_default(),
+                std::mem::take(&mut system.deferred_slots[index]),
+            )
         };
-        let mut begun = Vec::with_capacity(moves.len());
+        let (moves, taken) = moves;
+        let done = async {
+            let mut begun = Vec::with_capacity(moves.len());
 
-        for (hwnd, after, place, flags) in moves {
-            let Some(index) = engine.system().window_named(hwnd) else {
-                continue;
-            };
+            for (at, (hwnd, after, place, flags)) in moves.into_iter().enumerate() {
+                let Some(index) = engine.system().window_named(hwnd) else {
+                    continue;
+                };
 
-            begun.extend(
-                engine
+                if let Some(mut change) = engine
                     .position_changing(hwnd, index, after, place.map(i32::from), flags)
-                    .await?,
-            );
-        }
+                    .await?
+                {
+                    change.slot = (taken && at < 4).then_some(at);
+                    begun.push(change);
+                }
+            }
 
-        engine.position_changed(begun).await?;
+            engine.position_changed(begun).await
+        }
+        .await;
+
+        engine.system().give_defer_slots(taken);
+        done?;
         Ok(Answer::Word(1))
     })
 }

@@ -217,10 +217,21 @@ export function invalidateThrough(
     const state: Walk = { desktop, region: region ?? regionOf(screen) };
     const whole = !region;
     const inner = flags | WALKED | (flags & RDW_INVALIDATE ? RDW_ERASE | RDW_FRAME : 0);
+    const shown = childrenOf(desktop, null).filter((one) => one.visible);
 
-    for (const child of childrenOf(desktop, null).filter((one) => one.visible)) {
-      if (!walk(state, child, whole, screen, inner)) {
-        return;
+    /* With `RDW_NOCHILDREN` the windows at the top are not walked (`40e8`):
+     * the desktop is given the region, and draws only where none of them
+     * is, having `WS_CLIPCHILDREN`. */
+    if (flags & RDW_NOCHILDREN) {
+      state.region = shown.reduce(
+        (left, one) => left.subtract(regionOf(windowRect(one))),
+        state.region
+      );
+    } else {
+      for (const child of shown) {
+        if (!walk(state, child, whole, screen, inner)) {
+          return;
+        }
       }
     }
 

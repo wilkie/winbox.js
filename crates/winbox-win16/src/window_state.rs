@@ -1501,6 +1501,13 @@ impl Engine {
             self.system().child_shown(index);
         }
 
+        {
+            let mut system = self.system();
+            let same = system.place_key(index) == before;
+
+            system.note_shown_slot(index, client_before, same);
+        }
+
         self.erase_due().await?;
 
         if changes || zoom.is_some() {

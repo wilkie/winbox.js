@@ -5970,6 +5970,7 @@ const RUN_WHOLE = new Set<string>([
   'oledde',
   'olepbd',
   'olepbr',
+  'swpunc',
 ]);
 
 /**

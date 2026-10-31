@@ -268,6 +268,15 @@ pub struct System {
     /// The sets of moves begun and not yet made: each window, the window it
     /// goes after, its place and size, and the flags.
     pub deferred: Vec<Option<Vec<crate::position::Deferred>>>,
+    /// Whether each set of moves has USER's block of four
+    /// (`take_defer_slots`).
+    pub deferred_slots: Vec<bool>,
+    /// The block of four entries USER keeps for `BeginDeferWindowPos`: each
+    /// entry's rectangle where the bits of a window go, on the screen, as
+    /// the last call that used it left it (`take_defer_slots`).
+    pub defer_slots: [[i32; 4]; 4],
+    /// Whether a call has the block of four.
+    pub defer_slots_taken: bool,
     /// Whether the desktop itself is to be drawn again when paints are next
     /// looked for, as after the system colours change.
     pub background_due: bool,
@@ -610,6 +619,9 @@ impl System {
             double_click: crate::mouse_scan::DoubleClick::default(),
             background_due: false,
             deferred: Vec::new(),
+            deferred_slots: Vec::new(),
+            defer_slots: [[0; 4]; 4],
+            defer_slots_taken: false,
             notifications: Vec::new(),
             task_order: crate::task_order::TaskOrder::default(),
             block_owners: HashMap::new(),

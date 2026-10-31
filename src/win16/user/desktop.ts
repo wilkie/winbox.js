@@ -20,7 +20,21 @@ import { type MenuData } from './menu-data.js';
 import { type Desk } from './desk.js';
 import { layoutText, type TextOps } from './DrawText.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
-import { DCX_USESTYLE, DCX_WINDOW, regionFlags, windowRegion } from './visible-region-rule.js';
+import {
+  DCX_CLIPSIBLINGS,
+  DCX_USESTYLE,
+  DCX_WINDOW,
+  regionFlags,
+  windowRegion,
+} from './visible-region-rule.js';
+import {
+  invalidateThrough,
+  RDW_ALLCHILDREN,
+  RDW_ERASE,
+  RDW_FRAME,
+  RDW_INVALIDATE,
+  RDW_NOCHILDREN,
+} from './invalidate-through.js';
 import { windowDestroyed, windowsChanged } from './dc-entries.js';
 
 /**
@@ -70,16 +84,9 @@ export type Insert =
   | { to: 'stay' | 'top' | 'bottom' | 'topmost' | 'notTopmost' }
   | { to: 'after'; other: DesktopWindow };
 
-/** A box's union with another: left, top, right, bottom. */
-function union(a: number[], b: number[]) {
-  return [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.max(a[2], b[2]), Math.max(a[3], b[3])];
-}
-
-/** Whether a box lies wholly within another: left, top, right, bottom. */
-function within(inner: number[], outer: number[]) {
-  return (
-    inner[0] >= outer[0] && inner[1] >= outer[1] && inner[2] <= outer[2] && inner[3] <= outer[3]
-  );
+/** Where two rectangles meet; empty where they do not. */
+function cut(a: number[], b: number[]) {
+  return [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.min(a[2], b[2]), Math.min(a[3], b[3])];
 }
 
 /** Two regions' union. */
@@ -87,23 +94,6 @@ function unite(a: ClipRegion, b: ClipRegion) {
   return ClipRegion.combine(a, b, (x, y) => x || y);
 }
 
-/**
- * Whether a window paints over another: the other is within it, and neither
- * it nor any window between them has `WS_CLIPCHILDREN`.
- */
-function paintsOver(window: DesktopWindow, other: DesktopWindow) {
-  for (let up = other.parent; up; up = up.parent) {
-    if (up.style & WS_CLIPCHILDREN) {
-      return false;
-    }
-
-    if (up === window) {
-      return true;
-    }
-  }
-
-  return false;
-}
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_WINDOWTEXT = 8;
 const COLOR_CAPTIONTEXT = 9;
@@ -998,20 +988,18 @@ export class Desktop {
    * sent `WM_PAINT` for that window's place, and already at the top,
    * nothing).
    */
-  show(window: DesktopWindow, whole = true) {
+  show(window: DesktopWindow, whole = true, allShown = true) {
+    /* A child as `SetWindowPos` shows it (`placeShown`): its own children
+     * show with it -- a document window made in an MDI client not yet shown
+     * was drawn nowhere, and is drawn now. */
     if (window.parent) {
-      window.visible = true;
-      this.#own();
-      this.#dueWhole(window);
-
-      /* Its own children show with it: a document window made in an MDI
-       * client not yet shown was drawn nowhere, and is drawn now. */
-      for (const other of this.windows) {
-        if (other !== window && other.visible && this.#within(other, window)) {
-          this.#dueWhole(other);
-        }
-      }
-
+      this.placeShown(
+        window,
+        () => {
+          window.visible = true;
+        },
+        allShown
+      );
       return;
     }
 
@@ -1292,6 +1280,10 @@ export class Desktop {
      * one hidden stays active, hidden (`USER.EXE` seg8 `0bb7`-`0bc0`, seg14
      * `0dc2`). `SetWindowPos` hiding it makes no other active. */
     const destroying = remove || !!(window as any).destroying;
+    /* A child hidden is drawn as `SetWindowPos` hides it: what showed of it
+     * made due through its parent, the windows in it too (`placeShown`). */
+    const childWas =
+      window.parent && window.visible && this.#showing(window) ? this.#placedRegion(window) : null;
     const wasActive = window.active && !window.parent && !window.titleOf;
     const next = wasActive && activateNext ? this.#nextActive(window, destroying) : null;
 
@@ -1336,7 +1328,16 @@ export class Desktop {
 
       this.#own();
 
-      if (!this.#restoreBits(window)) {
+      if (childWas) {
+        if (childWas.kind > 1) {
+          invalidateThrough(
+            this,
+            window.parent,
+            childWas,
+            RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN
+          );
+        }
+      } else if (!this.#restoreBits(window)) {
         this.#exposeOwned(window, before);
       }
     }
@@ -1921,8 +1922,9 @@ export class Desktop {
    *   `WM_ERASEBKGND`, not `WM_PAINT`. So is a window with a caption, and a
    *   child in its parent. What could not come with it -- what another
    *   window covered of it -- is due, and erased at once.
-   * * With `SWP_NOCOPYBITS` nothing is copied, and what of its new place
-   *   already showed it is left as it is: it is due everywhere else.
+   * * With `SWP_NOCOPYBITS`, what of its new place already showed it is
+   *   left as it is, and it is due everywhere else -- the copy going
+   *   through the rectangle the call before left in USER's entry (`stale`).
    * * Sized, its client area's bits go with the client area, and the rest
    *   of the window is due; made smaller, nothing is. With `CS_HREDRAW` and a
    *   new width, or `CS_VREDRAW` and a new height, all of it is due. Moved
@@ -1970,18 +1972,21 @@ export class Desktop {
     height: number,
     copy: boolean,
     classStyle: number,
-    kept: { rect: number[]; dx: number; dy: number } | 'none' | null = null
-  ) {
-    if (!this.#showing(window)) {
-      this.place(window, left, top, width, height);
-      return;
-    }
+    kept: { rect: number[]; dx: number; dy: number } | 'none' | null = null,
+    allShown = false,
+    nccalc = true,
+    stale: number[] | null = null
+  ): number[] {
+    /* Nothing is drawn for a window in one that does not show (seg7
+     * `0557`-`0560`); one hidden has no region before or after. */
+    const showing = this.#showing(window);
 
-    /* Before: who showed where, what the screen showed, and each of the
-     * family's place and what it was due. */
-    const before = this.owners.slice();
-    const stride = this.screen.width;
+    /* Before anything moves, its visible region as it was (seg7 `09a0`,
+     * `0c19`): its whole window, with `DCX_CLIPSIBLINGS` where it has
+     * `WS_CLIPSIBLINGS`, its children not taken out. */
+    const old = showing ? this.#placedRegion(window) : ClipRegion.EMPTY;
     const bits = this.screen.indices.slice();
+    const stride = this.screen.width;
     const [oldWidth, oldHeight] = [window.width, window.height];
     const clientOf = (one: DesktopWindow) => [
       one.left + one.client.left,
@@ -1995,48 +2000,44 @@ export class Desktop {
       one.left + one.width,
       one.top + one.height,
     ];
-    const inside = ([l, t, r, b]: number[], x: number, y: number) =>
-      x >= l && x < r && y >= t && y < b;
     const oldClient = clientOf(window);
+    const oldPlace = placeOf(window);
 
-    /* The window first, then its children, then an icon's title. */
+    /* The window and its children, whose update regions go with them
+     * (seg7 `0b1a`-`0b41`, seg2 `0a1d`); one due all over stays so. */
     const members = [
       window,
       ...this.windows.filter((other) => other !== window && this.#within(other, window)),
     ];
-
-    if (window.iconTitle) {
-      members.push(window.iconTitle);
-    }
-
     const was = members.map((member) => ({
-      place: placeOf(member),
-      due: member.needsPaint ? { region: updateOf(member), erase: member.needsErase } : null,
+      left: member.left,
+      top: member.top,
+      due:
+        member.needsPaint && (member as any).dirtyRect
+          ? { region: updateOf(member), erase: member.needsErase, walked: (member as any).walked }
+          : null,
     }));
-
-    /* What is not copied for being due (`USER.EXE` seg7 `06a5`-`06e9`): the
-     * window's own update region, where it goes with it, and its parents'
-     * up to one with `WS_CLIPCHILDREN`, where they are; nothing at all where
-     * one of them is due all over. The windows in it are copied, what they
-     * are due and all, and what they are due goes with them. */
-    const dueOwn: ClipRegion | null =
-      was[0].due && (window as any).dirtyRect ? was[0].due.region : null;
-    let dueThere: ClipRegion | null = null;
-    let dueAll = !!was[0].due && !dueOwn;
-
-    for (let up = window.parent; up && !(up.style & WS_CLIPCHILDREN); up = up.parent) {
-      if (up.needsPaint) {
-        if (!(up as any).dirtyRect) {
-          dueAll = true;
-        } else {
-          dueThere = dueThere ? unite(dueThere, updateOf(up)) : updateOf(up);
-        }
-      }
-    }
+    const title = window.iconTitle;
+    const titleWas = title ? placeOf(title) : null;
 
     this.#relocate(window, left, top, width, height);
+
+    members.forEach((member, k) => {
+      const due = was[k].due;
+
+      if (due) {
+        const [mx, my] = [member.left - was[k].left, member.top - was[k].top];
+        const shown: any = member;
+
+        setUpdate(member, due.region.offset(mx, my), due.erase);
+        shown.walked = due.walked instanceof ClipRegion ? due.walked.offset(mx, my) : due.walked;
+      }
+    });
+
     this.#own();
 
+    /* Its visible region as it is now (seg7 `05e0`). */
+    const now = showing ? this.#placedRegion(window) : ClipRegion.EMPTY;
     const sized = width !== oldWidth || height !== oldHeight;
     const redraw = kept
       ? kept === 'none'
@@ -2045,238 +2046,206 @@ export class Desktop {
     const newClient = clientOf(window);
     const keeps = kept && kept !== 'none' ? kept : null;
 
-    /* How far the bits go: with the window, or sized, with its client area
-     * or as its procedure said; without copying, nowhere. */
-    const [dx, dy] = !copy
-      ? [0, 0]
-      : keeps
-        ? [keeps.dx, keeps.dy]
-        : sized
-          ? [newClient[0] - oldClient[0], newClient[1] - oldClient[1]]
-          : [left - was[0].place[0], top - was[0].place[1]];
-    let area: number[] | null = null;
+    /* Where the bits go and how far they come (seg7 `0e8f`-`1166`). Moved
+     * only, with no `WM_NCCALCSIZE`: the whole window (`1028`-`104c`) --
+     * or, with `SWP_NOCOPYBITS`, the rectangle left in the entry by the
+     * call before that used it, `stale` (`1028`-`102c`). Otherwise its
+     * client area as `WM_NCCALCSIZE` kept it, the whole window where the
+     * client area moved with it unsized (`1010`); nowhere with
+     * `SWP_NOCOPYBITS` or to be drawn again (`0fed`, `10a7`-`10e1`,
+     * `1158`). */
+    let dest: number[] = [0, 0, 0, 0];
+    let [dx, dy] = [left - oldPlace[0], top - oldPlace[1]];
 
-    members.forEach((member, k) => {
-      const both = union(was[k].place, placeOf(member));
-
-      area = area ? union(area, both) : both;
-    });
-
-    const [aLeft, aTop, aRight, aBottom] = area ?? [0, 0, 0, 0];
-    const ids = members.map((member) => member.id);
-    const invalid: [number, number, number][][] = members.map(() => []);
-    const vacated = new Map<number, [number, number, number][]>();
-    let desktop: number[] | null = null;
-    let copied: number[] | null = null;
-    const add = (spans: [number, number, number][], x: number, y: number) => {
-      const last = spans.at(-1);
-
-      if (last && last[0] === y && last[2] === x) {
-        last[2]++;
+    if (!nccalc) {
+      dest = copy ? placeOf(window) : (stale ?? dest);
+    } else if (copy && !redraw) {
+      if (keeps) {
+        [dx, dy] = [keeps.dx, keeps.dy];
+        dest = cut(keeps.rect, newClient);
+      } else if (sized) {
+        [dx, dy] = [newClient[0] - oldClient[0], newClient[1] - oldClient[1]];
+        dest = cut(newClient, [
+          oldClient[0] + dx,
+          oldClient[1] + dy,
+          oldClient[2] + dx,
+          oldClient[3] + dy,
+        ]);
       } else {
-        spans.push([y, x, x + 1]);
+        dest = placeOf(window);
       }
-    };
+    }
 
-    for (let y = Math.max(aTop, 0); y < Math.min(aBottom, this.screen.height); y++) {
-      for (let x = Math.max(aLeft, 0); x < Math.min(aRight, stride); x++) {
-        const at = y * stride + x;
-        const now = this.owners[at];
-        const then = before[at];
-        const k = ids.indexOf(now);
+    if (!showing) {
+      return dest;
+    }
 
-        if (k >= 0) {
-          const [fx, fy] = [x - dx, y - dy];
-          const from = fy * stride + fx;
-          const valid =
-            !redraw &&
-            fx >= 0 &&
-            fy >= 0 &&
-            fx < stride &&
-            fy < this.screen.height &&
-            before[from] === now &&
-            (!sized ||
-              members[k] !== window ||
-              (keeps
-                ? inside(keeps.rect, x, y) && inside(newClient, x, y)
-                : inside(newClient, x, y) && inside(oldClient, fx, fy))) &&
-            !dueAll &&
-            !dueOwn?.contains(fx, fy) &&
-            !dueThere?.contains(x, y);
+    /* What is copied (seg7 `060b`-`0768`): where the bits go, moved back to
+     * where they come from, within what showed of it; moved to where they
+     * go; less the window's update region and its parents' up to one with
+     * `WS_CLIPCHILDREN` -- nothing where one of them is due all over --
+     * and within what shows of it now. Nothing where either region is
+     * empty or the window is due all over. */
+    let copied: ClipRegion | null = null;
 
-          if (!valid) {
-            add(invalid[k], x, y);
-          } else if (dx || dy) {
-            this.screen.put(x, y, bits[from]);
+    if (
+      dest[0] < dest[2] &&
+      dest[1] < dest[3] &&
+      old.kind > 1 &&
+      now.kind > 1 &&
+      !(window.needsPaint && !(window as any).dirtyRect)
+    ) {
+      let part: ClipRegion | null = ClipRegion.rect(
+        dest[0] - dx,
+        dest[1] - dy,
+        dest[2] - dx,
+        dest[3] - dy
+      )
+        .intersect(old)
+        .offset(dx, dy);
 
-            const pixel = [x, y, x + 1, y + 1];
+      for (let up: DesktopWindow | null = window; up && part; up = up.parent) {
+        if (up.needsPaint) {
+          part = (up as any).dirtyRect ? part.subtract(updateOf(up)) : null;
+        }
 
-            copied = copied ? union(copied, pixel) : pixel;
-          }
-        } else if (then && ids.includes(then)) {
-          if (!now) {
-            const pixel = [x, y, x + 1, y + 1];
+        if (part && part.kind <= 1) {
+          part = null;
+        }
 
-            desktop = desktop ? union(desktop, pixel) : pixel;
-          } else {
-            const spans = vacated.get(now);
+        if (up.parent && up.parent.style & WS_CLIPCHILDREN) {
+          break;
+        }
+      }
 
-            if (spans) {
-              add(spans, x, y);
-            } else {
-              vacated.set(now, [[y, x, x + 1]]);
+      copied = part ? part.intersect(now) : null;
+
+      if (copied && copied.kind <= 1) {
+        copied = null;
+      }
+    }
+
+    /* Blitted through a screen context whose visible region it is (seg7
+     * `0727`-`0768`). */
+    if (copied && (dx || dy)) {
+      for (const band of copied.bands) {
+        for (let y = Math.max(band.top, 0); y < Math.min(band.bottom, this.screen.height); y++) {
+          for (const [l, r] of band.spans) {
+            for (let x = Math.max(l, 0); x < Math.min(r, stride); x++) {
+              const [fx, fy] = [x - dx, y - dy];
+
+              if (fx >= 0 && fy >= 0 && fx < stride && fy < this.screen.height) {
+                this.screen.put(x, y, bits[fy * stride + fx]);
+              }
             }
           }
         }
       }
+
+      const box = copied.box;
+
+      this.screen.context.markRect(box.left, box.top, box.right, box.bottom);
     }
+
+    /* What is made due (seg7 `07f5`-`0958`): what showed of it and what
+     * shows, less what was copied. A window nothing of which was copied is
+     * made due all over through itself, frame and all (`08de`-`08f0`); the
+     * rest through its parent, the windows in it too -- only it where every
+     * window placed was shown (`093f`-`0958`). An icon's title, a window of
+     * its own, is made due where it was and is. */
+    let uncovered = old.kind <= 1 ? now : now.kind <= 1 ? old : unite(old, now);
 
     if (copied) {
-      const [cLeft, cTop, cRight, cBottom] = copied;
-
-      this.screen.context.markRect(cLeft, cTop, cRight, cBottom);
+      uncovered = uncovered.subtract(copied);
     }
 
-    /* The family: due where its bits did not come with it, and where it was
-     * due before, which goes with it. */
-    let notCopied = ClipRegion.EMPTY;
-    const regions = invalid.map((spans) => ClipRegion.fromSpans(spans));
-
-    members.forEach((member, k) => {
-      const region = regions[k];
-      /* A window that paints over its children is due where they are due as
-       * well, as a parent a child was moved in is: Control Panel's Color,
-       * made wider, draws its colours' boxes over statics that draw nothing. */
-      const over = members.reduce(
-        (due, other, j) =>
-          other !== member && paintsOver(member, other) ? unite(due, regions[j]) : due,
-        region
+    if (title && titleWas) {
+      uncovered = unite(
+        unite(uncovered, ClipRegion.rect(titleWas[0], titleWas[1], titleWas[2], titleWas[3])),
+        ClipRegion.rect(title.left, title.top, title.left + title.width, title.top + title.height)
       );
-      const moved = [member.left - was[k].place[0], member.top - was[k].place[1]];
-      const old = was[k].due;
-      const due = old ? unite(over, old.region.offset(moved[0], moved[1])) : over;
-      const erase = old ? old.erase || over.kind > 1 : true;
-      const shown: any = member;
-
-      notCopied = unite(notCopied, region);
-      member.needsPaint = false;
-      member.needsErase = false;
-      shown.dirtyRect = undefined;
-      shown.dirtyShape = undefined;
-      shown.dirtyShapeFor = undefined;
-      shown.quietDirty = undefined;
-
-      if (due.kind <= 1) {
-        return;
-      }
-
-      if (this.#showing(member)) {
-        if (paintsItself(member)) {
-          shown.needsNcPaint = true;
-        }
-
-        this.paintFrame(member);
-      }
-
-      const [l, t, r, b] = clientOf(member);
-
-      setUpdate(member, due.intersect(ClipRegion.rect(l, t, r, b)), erase);
-
-      /* A window with no client area to paint that grew is due a paint
-       * still, of nothing: what it newly covers is due in its frame
-       * (`nccalc`: its procedure making its client area empty, it is sent
-       * `WM_ERASEBKGND` and `WM_PAINT` for nothing). */
-      if (!member.needsPaint && (r <= l || b <= t) && !within(placeOf(member), was[k].place)) {
-        member.needsPaint = true;
-        member.needsErase = true;
-        shown.dirtyRect = undefined;
-      }
-    });
-
-    /* What it uncovered: the desktop there drawn again, and each window that
-     * shows there now due there. */
-    if (desktop) {
-      const [l, t, r, b] = desktop;
-
-      this.paintBackground(l, t, r, b);
     }
 
-    for (const [id, spans] of vacated) {
-      const other = this.#byId.get(id);
-
-      if (other) {
-        this.#dueRegion(
-          other,
-          ClipRegion.fromSpans(spans),
-          !window.parent || !this.#within(window, other)
-        );
-      }
+    if (uncovered.kind <= 1) {
+      return dest;
     }
 
-    /* What it uncovered is made due through its parent (seg7 `093f`-`0958`):
-     * a parent without `WS_CLIPCHILDREN` is given all of it, where the
-     * windows in it show too (seg1 `40c9`). */
-    const parent = window.parent;
-
-    if (parent && !(parent.style & WS_CLIPCHILDREN)) {
-      const spans: [number, number, number][] = [];
-
-      for (const [id, some] of vacated) {
-        const other = this.#byId.get(id);
-
-        if (other && other !== parent && this.#within(other, parent)) {
-          spans.push(...some);
-        }
-      }
-
-      if (spans.length) {
-        this.#dueRegion(parent, ClipRegion.fromSpans(spans), false);
-      }
+    if (!copied && now.kind > 1) {
+      invalidateThrough(
+        this,
+        window,
+        null,
+        RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
+      );
     }
 
-    /* A parent that paints over its children is due where the child is. */
-    for (let child = window; child.parent; child = child.parent) {
-      if (child.parent.style & WS_CLIPCHILDREN || notCopied.kind <= 1) {
-        break;
-      }
+    invalidateThrough(
+      this,
+      window.parent,
+      uncovered,
+      RDW_INVALIDATE | RDW_ERASE | (allShown ? RDW_NOCHILDREN : RDW_ALLCHILDREN)
+    );
 
-      this.#dueRegion(child.parent, notCopied, false);
-    }
+    return dest;
   }
 
   /**
-   * A window due a paint where `region` is, added to what it was due; its
-   * frame by `WM_NCPAINT` with `frame`, and an icon's title, which has no
-   * window procedure, drawn now.
+   * A window's visible region as `SetWindowPos` works it out before and
+   * after it places it (`USER.EXE` seg7 `0c19`): nothing for a window
+   * hidden, else USER's rule for its whole window, with `DCX_CLIPSIBLINGS`
+   * where it has `WS_CLIPSIBLINGS` (seg1 `1582`).
    */
-  #dueRegion(window: DesktopWindow, region: ClipRegion, frame: boolean) {
-    const shown: any = window;
-
-    if (!paintsItself(window)) {
-      this.paintFrame(window);
-    } else if (frame) {
-      shown.needsNcPaint = true;
+  #placedRegion(window: DesktopWindow) {
+    if (!window.visible) {
+      return ClipRegion.EMPTY;
     }
 
-    const left = window.left + window.client.left;
-    const top = window.top + window.client.top;
-    const part = region.intersect(
-      ClipRegion.rect(left, top, left + window.clientWidth, top + window.clientHeight)
+    return windowRegion(
+      this.system ?? ALONE,
+      this,
+      window,
+      window,
+      DCX_WINDOW | (window.style & WS_CLIPSIBLINGS ? DCX_CLIPSIBLINGS : 0)
     );
-
-    if (part.kind <= 1) {
-      return;
-    }
-
-    /* Due all of it already, it stays so. */
-    if (window.needsPaint && !shown.dirtyRect) {
-      window.needsErase = true;
-      return;
-    }
-
-    setUpdate(window, window.needsPaint ? unite(updateOf(window), part) : part, true);
   }
 
+  /**
+   * A child shown or hidden as `SetWindowPos` draws it (`USER.EXE` seg7
+   * `0526`): what showed of it as it was, or shows as it is, made due
+   * through its parent, the windows in it too -- only the parent where
+   * every window placed was shown (`allShown`); a window shown made due all
+   * over through itself, frame and all (`08de`-`08f0`). `change` shows or
+   * hides it, nothing drawn.
+   */
+  placeShown(window: DesktopWindow, change: () => void, allShown: boolean) {
+    const old = this.#placedRegion(window);
+
+    change();
+    this.#own();
+
+    const now = this.#placedRegion(window);
+    const uncovered = old.kind <= 1 ? now : now.kind <= 1 ? old : unite(old, now);
+
+    if (uncovered.kind <= 1) {
+      return;
+    }
+
+    if (now.kind > 1) {
+      invalidateThrough(
+        this,
+        window,
+        null,
+        RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
+      );
+    }
+
+    invalidateThrough(
+      this,
+      window.parent,
+      uncovered,
+      RDW_INVALIDATE | RDW_ERASE | (allShown ? RDW_NOCHILDREN : RDW_ALLCHILDREN)
+    );
+  }
   /**
    * A window's children moved with its pixels by a scroll, as `USER.EXE`
    * seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
@@ -4146,6 +4115,18 @@ export class Desktop {
     }
 
     const drawn = window.state === 'minimized' && window.icon !== null;
+
+    /* Shown, it is due all over through itself, frame and all, the windows
+     * in it too (`USER.EXE` seg7 `08de`-`08f0`): a child shown while it was
+     * hidden was due nothing (`0557`; `swpunc`). */
+    if (!drawn) {
+      invalidateThrough(
+        this,
+        window,
+        null,
+        RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
+      );
+    }
 
     window.needsErase = !drawn;
     window.needsPaint = !drawn;

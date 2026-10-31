@@ -2,7 +2,12 @@
 
 import { FALSE, TRUE } from '../consts.js';
 import { RasterWindow } from './raster-window.js';
-import { positionChanged, positionChanging } from './window-state.js';
+import {
+  giveDeferSlots,
+  positionChanged,
+  positionChanging,
+  takeDeferSlots,
+} from './window-state.js';
 
 /**
  * Moving several windows at once, as `SetWindowPos` moves one: the moves
@@ -35,17 +40,23 @@ interface Deferred {
 
 class DeferredMoves {
   moves: Deferred[] = [];
+  /** Whether it is USER's block of four (`takeDeferSlots`). */
+  slots = false;
 }
 
 /**
  * Begins a set of moves.
  *
- * @param {Types.INT} _nNumWindows - How many windows it is for, which does not bound it.
+ * @param {Types.INT} nNumWindows - How many windows it is for, which does not bound it.
  *
  * @returns {Types.HANDLE} The set's handle.
  */
-export function BeginDeferWindowPos(this: any, _nNumWindows: number) {
-  return this.handles.allocate(new DeferredMoves());
+export function BeginDeferWindowPos(this: any, nNumWindows: number) {
+  const set = new DeferredMoves();
+
+  set.slots = takeDeferSlots(this, nNumWindows);
+
+  return this.handles.allocate(set);
 }
 
 /**
@@ -100,20 +111,26 @@ export async function EndDeferWindowPos(this: any, hdwp: number) {
 
   this.handles.free(hdwp);
 
-  const begun: NonNullable<Awaited<ReturnType<typeof positionChanging>>>[] = [];
+  const begun: (NonNullable<Awaited<ReturnType<typeof positionChanging>>> & {
+    slot: number | null;
+  })[] = [];
 
-  for (const { hwnd, hwndInsertAfter, x, y, cx, cy, flags } of set.moves) {
-    const window = this.handles.resolve(hwnd);
-    const move =
-      window instanceof RasterWindow &&
-      (await positionChanging(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags));
+  try {
+    for (const [index, { hwnd, hwndInsertAfter, x, y, cx, cy, flags }] of set.moves.entries()) {
+      const window = this.handles.resolve(hwnd);
+      const move =
+        window instanceof RasterWindow &&
+        (await positionChanging(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags));
 
-    if (move) {
-      begun.push(move);
+      if (move) {
+        begun.push({ ...move, slot: set.slots && index < 4 ? index : null });
+      }
     }
-  }
 
-  await positionChanged(this, begun);
+    await positionChanged(this, begun);
+  } finally {
+    giveDeferSlots(this, set.slots);
+  }
 
   return TRUE;
 }

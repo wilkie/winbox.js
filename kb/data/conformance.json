@@ -25859,6 +25859,64 @@
    "zorder": "an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records"
   }
  },
+ "swpunc": {
+  "probe": "swpunc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 225,
+  "functions": {
+   "erase": {
+    "total": 37,
+    "agreed": 37,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "erasedc": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 37,
+    "agreed": 37,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 25,
+    "agreed": 25,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 74,
+    "agreed": 74,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "symadv-vga": {
   "probe": "symadv",
   "display": "vga",
