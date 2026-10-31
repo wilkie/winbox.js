@@ -15,6 +15,7 @@
 //! **Recorded** by `gdidmdrw` on the VGA, the Super VGA (`SUPERVGA.DRV`,
 //! every record the VGA's) and the EGA.
 
+use super::driver_hercules::{hercules_white, is_hercules};
 use winbox_raster::DevicePalette;
 use winbox_raster::colour_match::matched_index;
 use winbox_raster::dither::dithered_index;
@@ -280,6 +281,38 @@ fn style_nought(family: Family) -> u32 {
 
 /// Where a physical brush keeps its parts (seg1 `28ed`-`28f3`, `2af1`).
 const MONO_PLANE: i32 = 0x20;
+
+/// Where a realized brush keeps the parts the drawing reads, as
+/// `brushLayout`: the VGA's and the EGA's, or the Hercules's 22 bytes.
+struct BrushLayout {
+    mono: i32,
+    style: i32,
+    hatch: i32,
+    pattern: bool,
+    hatch_drawn: bool,
+}
+
+impl BrushLayout {
+    fn of(system: &System) -> Self {
+        if is_hercules(system) {
+            Self {
+                mono: 0,
+                style: super::driver_hercules::BRUSH_STYLE,
+                hatch: super::driver_hercules::SECOND,
+                pattern: true,
+                hatch_drawn: true,
+            }
+        } else {
+            Self {
+                mono: MONO_PLANE,
+                style: BRUSH_STYLE,
+                hatch: HATCH_MASK,
+                pattern: false,
+                hatch_drawn: false,
+            }
+        }
+    }
+}
 const BRUSH_STYLE: i32 = 0x28;
 const BRUSH_FLAGS: i32 = 0x2a;
 const HATCH_MASK: i32 = 0x2e;
@@ -652,7 +685,19 @@ fn brush_pixel(
     let row = y & 7;
 
     if bitmap.format != FOUR_PLANES {
-        return u8::from(read8(system, brush, MONO_PLANE + row) & mask != 0);
+        let layout = BrushLayout::of(system);
+        let set = read8(system, brush, layout.mono + row) & mask != 0;
+
+        // The Hercules's pattern is drawn as a monochrome one, in the
+        // `DRAWMODE`'s colours (**recorded** by `gdidmdrw`).
+        if layout.pattern
+            && let Some(mode) = mode
+            && read16(system, brush, layout.style) == COLOUR_PATTERN
+        {
+            return bitmap.bits_of(if set { mode.bk_color } else { mode.text_color });
+        }
+
+        return u8::from(set);
     }
 
     if let Some(mode) = mode
@@ -905,7 +950,9 @@ pub fn output(
             .unwrap_or(0xff);
         let ink = dest.bits_of(read32(system, pen, 0));
         let gap = (mode.bk_mode == 2).then(|| dest.bits_of(mode.bk_color));
-        let (left, top, right, bottom) = if clip != 0 {
+        // The Hercules's polyline is not cut to the rectangle (**recorded**
+        // by `gdidmdrw`).
+        let (left, top, right, bottom) = if clip != 0 && !is_hercules(system) {
             read_rect(system, clip)
         } else {
             (0, 0, i32::from(dest.width), i32::from(dest.height))
@@ -938,15 +985,19 @@ pub fn output(
         let (lines, y) = read_point(system, points, 0);
         let ink = dest.bits_of(read32(system, pen, 0));
         // A hatched brush on a transparent background draws its hatch alone.
+        let layout = BrushLayout::of(system);
         let see_through =
-            brush != 0 && mode.bk_mode == 1 && read16(system, brush, BRUSH_STYLE) == HATCHED;
+            brush != 0 && mode.bk_mode == 1 && read16(system, brush, layout.style) == HATCHED;
 
         for index in 1..lines {
             let (from, to) = read_point(system, points, index);
 
             for px in from..to {
+                // The VGA keeps its hatch's mask clear where the hatch is
+                // drawn; the Hercules keeps the hatch's own rows.
                 if see_through
-                    && read8(system, brush, HATCH_MASK + (y & 7)) & (0x80 >> (px & 7)) != 0
+                    && (read8(system, brush, layout.hatch + (y & 7)) & (0x80 >> (px & 7)) != 0)
+                        != layout.hatch_drawn
                 {
                     continue;
                 }
@@ -965,7 +1016,8 @@ pub fn output(
         return 0;
     }
 
-    0xffff
+    // The Hercules answers nought for any other style (seg1 `2b02`).
+    if is_hercules(system) { 0 } else { 0xffff }
 }
 
 /* ExtTextOut, StrBlt and GetCharWidth ---------------------------------- */
@@ -1510,6 +1562,11 @@ fn set_pixel(
             | u32::from(read8(system, table, index * 4 + 1)) << 8
             | u32::from(read8(system, table, index * 4)) << 16
     };
+    if is_hercules(system) {
+        dest.put(system, x, y, u8::from(hercules_white(rgb)));
+        return;
+    }
+
     let index = matched_of(system, rgb);
     let value = if dest.format == FOUR_PLANES {
         index

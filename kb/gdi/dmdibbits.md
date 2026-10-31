@@ -37,4 +37,4 @@ topics: [gdi-internals, printer-drivers]
 ## Not yet done
 
 - A compressed DIB, which the driver reads through a routine of its own.
-- The Hercules's and the 256-colour display's own `DeviceBitmapBits` (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `DeviceBitmapBits` (known gaps of [[probe:gdidmdrw]]).

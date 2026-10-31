@@ -36,4 +36,4 @@ topics: [gdi-internals, printer-drivers]
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own `GetCharWidth` (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `GetCharWidth` (known gaps of [[probe:gdidmdrw]]).

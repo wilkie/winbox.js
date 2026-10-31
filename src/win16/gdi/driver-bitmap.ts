@@ -1,5 +1,6 @@
 'use strict';
 
+import { herculesWhite, isHercules } from './driver-hercules.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { ditheredIndex } from '../../raster/dither.js';
@@ -244,6 +245,23 @@ const MONO_PLANE = 0x20;
 const BRUSH_STYLE = 0x28;
 const BRUSH_FLAGS = 0x2a;
 const HATCH_MASK = 0x2e;
+
+/**
+ * Where a realized brush keeps the parts the drawing reads: the VGA's
+ * and the EGA's, or the Hercules's 22 bytes -- its pattern first, its
+ * style at 8 and its hatch's rows at 0Eh (`driver-hercules.ts`).
+ */
+function brushLayout(system: any) {
+  return isHercules(system)
+    ? { mono: 0, style: 8, hatch: 0x0e, pattern: true, hatchDrawn: true }
+    : {
+        mono: MONO_PLANE,
+        style: BRUSH_STYLE,
+        hatch: HATCH_MASK,
+        pattern: false,
+        hatchDrawn: false,
+      };
+}
 
 /** The brush's style word: solid, hollow, hatched, and the two patterns. */
 const SOLID = 0;
@@ -633,7 +651,16 @@ function brushPixel(
   const row = y & 7;
 
   if (bitmap.format !== FOUR_PLANES) {
-    return read8(system, brush, MONO_PLANE + row) & mask ? 1 : 0;
+    const layout = brushLayout(system);
+    const set = read8(system, brush, layout.mono + row) & mask;
+
+    /* The Hercules's pattern is drawn as a monochrome one, in the
+     * `DRAWMODE`'s colours (**recorded** by `gdidmdrw`). */
+    if (layout.pattern && mode && read16(system, brush, layout.style) === COLOUR_PATTERN) {
+      return bitsOfPhysical(bitmap, set ? mode.bkColor : mode.textColor);
+    }
+
+    return set ? 1 : 0;
   }
 
   if (read16(system, brush, BRUSH_STYLE) === MONO_PATTERN && mode) {
@@ -875,9 +902,12 @@ export function output(
     const bits = STYLE_MASKS[penStyle] ?? 0xff;
     const ink = bitsOfPhysical(dest, read32(system, pen, 0));
     const gap = mode.bkMode === 2 ? bitsOfPhysical(dest, mode.bkColor) : null;
-    const box = clip
-      ? readRect(system, clip)
-      : { left: 0, top: 0, right: dest.width, bottom: dest.height };
+    /* The Hercules's polyline is not cut to the rectangle (**recorded** by
+     * `gdidmdrw`). */
+    const box =
+      clip && !isHercules(system)
+        ? readRect(system, clip)
+        : { left: 0, top: 0, right: dest.width, bottom: dest.height };
 
     if (penStyle === 5) {
       return 1;
@@ -910,13 +940,21 @@ export function output(
     const [lines, y] = readPoint(system, points, 0);
     const ink = bitsOfPhysical(dest, read32(system, pen, 0));
     /* A hatched brush on a transparent background draws its hatch alone. */
-    const seeThrough = brush && mode.bkMode === 1 && read16(system, brush, BRUSH_STYLE) === HATCHED;
+    const layout = brushLayout(system);
+    const seeThrough =
+      brush && mode.bkMode === 1 && read16(system, brush, layout.style) === HATCHED;
 
     for (let index = 1; index < lines; index++) {
       const [from, to] = readPoint(system, points, index);
 
       for (let px = from; px < to; px++) {
-        if (seeThrough && read8(system, brush, HATCH_MASK + (y & 7)) & (0x80 >> (px & 7))) {
+        /* The VGA keeps its hatch's mask clear where the hatch is drawn; the
+         * Hercules keeps the hatch's own rows (`driver-hercules.ts`). */
+        if (
+          seeThrough &&
+          !!(read8(system, brush, layout.hatch + (y & 7)) & (0x80 >> (px & 7))) !==
+            layout.hatchDrawn
+        ) {
           continue;
         }
 
@@ -929,7 +967,8 @@ export function output(
     return 0;
   }
 
-  return 0xffff;
+  /* The Hercules answers nought for any other style (seg1 `2b02`). */
+  return isHercules(system) ? 0 : 0xffff;
 }
 
 /* ExtTextOut, StrBlt and GetCharWidth ------------------------------------ */
@@ -1398,6 +1437,11 @@ export function deviceBitmapBits(
               read8(system, table, index * 4 + 2) |
               (read8(system, table, index * 4 + 1) << 8) |
               (read8(system, table, index * 4) << 16);
+          }
+
+          if (isHercules(system)) {
+            putPixel(system, dest, x, y, herculesWhite(rgb) ? 1 : 0);
+            continue;
           }
 
           const index = matchedOf(system, rgb);

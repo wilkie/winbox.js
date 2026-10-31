@@ -40,4 +40,4 @@ topics: [gdi-internals, printer-drivers]
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own `BitBlt` on a memory bitmap, which answer nought here (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `BitBlt` on a memory bitmap, which answers nought here (known gaps of [[probe:gdidmdrw]]).

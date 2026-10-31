@@ -31,4 +31,4 @@ Nought, nothing drawn, in both engines (`driver-bitmap.ts`, `driver_bitmap.rs`).
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own (known gaps of [[probe:gdidmdrw]]).

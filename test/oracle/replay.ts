@@ -5590,44 +5590,34 @@ export const KNOWN_GAPS: Record<string, string> = {
    * glyph's box, three of the 52. */
   'prtteng:EngineGetGlyphBmp':
     "the engine's advance of a glyph turned or slanted, and a slanted glyph's box, at one size each",
-  /* `kb/gdi/engineexttextout.md`: GDI draws a string for a driver through
-   * the font's own cache of glyphs, a raster font it hands back to the
-   * driver's `ExtTextOut` (`GDI.EXE` seg1 `6223`, `7010`), and a turned
-   * string glyph by glyph through its `BitBlt`; WinBox draws nothing. */
+  /* `kb/topics/gdi-internals.md`: the 256-colour display's own routines on
+   * a memory bitmap -- its physical colours, pens and brushes are not the
+   * VGA's -- are not read out. */
   ...Object.fromEntries(
-    ['drawn', 'font', 'glyph', 'dmexttextout', 'band', 'bandrows', 'engine', 'bitblt'].map(
-      (name) => [
-        `prttxt:${name}`,
-        "EngineExtTextOut draws nothing: GDI's cache of the font's glyphs, handed back to the driver, is not followed",
-      ]
-    )
+    [
+      'colour',
+      'size',
+      'pen',
+      'brush',
+      'blt',
+      'output',
+      'text',
+      'strblt',
+      'charwidth',
+      'dibget',
+      'dibset',
+      'dibtodev',
+    ].map((name) => [
+      `gdidmdrw-vga256:${name}`,
+      "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
+    ])
   ),
-  /* `kb/topics/gdi-internals.md`: the Hercules's and the 256-colour
-   * display's own routines on a memory bitmap -- their physical colours,
-   * pens and brushes are not the VGA's -- are not read out. */
-  ...Object.fromEntries(
-    ['hercules', 'vga256'].flatMap((display) =>
-      [
-        'colour',
-        'size',
-        'pen',
-        'brush',
-        'blt',
-        'output',
-        'text',
-        'strblt',
-        'charwidth',
-        'dibget',
-        'dibset',
-        /* The Hercules's draws nothing on a memory bitmap and answers
-         * nought, as WinBox does. */
-        ...(display === 'vga256' ? ['dibtodev'] : []),
-      ].map((name) => [
-        `gdidmdrw-${display}:${name}`,
-        "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-      ])
-    )
-  ),
+  /* The Hercules walks a styled line in runs (`HERCULES.DRV` seg4
+   * `02f6`-`0360`), its steps 40h and 48h; where each pixel falls in the
+   * style is not followed, and a dashed line on a transparent background
+   * differs. */
+  'gdidmdrw-hercules:output':
+    "the Hercules's walk along a styled line, which shows on a transparent background, is not followed",
 };
 
 /**
