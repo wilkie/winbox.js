@@ -1,0 +1,2162 @@
+{
+  "probe": "olesrv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe\\protocol\\StdFileEditing\\server",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe\\protocol\\StdFileEditing\\verb\\0",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe\\protocol\\StdExecute\\server",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe2",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "RegSetValue",
+      "args": "OleSvrProbe2\\protocol\\StdFileEditing\\server",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "srv.start",
+      "args": "-Embedding",
+      "result": "1",
+      "section": "register"
+    },
+    {
+      "function": "OleQueryServerVersion",
+      "args": "",
+      "result": "1001",
+      "section": "register"
+    },
+    {
+      "function": "OleRevokeServer",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleBlockServer",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleUnblockServer",
+      "args": "0",
+      "result": "18 7",
+      "section": "register"
+    },
+    {
+      "function": "OleRevokeServerDoc",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleRenameServerDoc",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleRevertServerDoc",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleSavedServerDoc",
+      "args": "0",
+      "result": "18",
+      "section": "register"
+    },
+    {
+      "function": "OleRevokeObject",
+      "args": "0",
+      "result": "16",
+      "section": "register"
+    },
+    {
+      "function": "OleRegisterServerDoc",
+      "args": "0",
+      "result": "18 0",
+      "section": "register"
+    },
+    {
+      "function": "OleRegisterServer",
+      "args": "NoSuchClass",
+      "result": "20 0",
+      "section": "register"
+    },
+    {
+      "function": "OleRegisterServer",
+      "args": "OleSvrProbe",
+      "result": "0 lh",
+      "section": "register"
+    },
+    {
+      "function": "OleRegisterServer",
+      "args": "again",
+      "result": "0 lh",
+      "section": "register"
+    },
+    {
+      "function": "srv.Release",
+      "args": "",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "OleRevokeServer",
+      "args": "again",
+      "result": "0",
+      "section": "register"
+    },
+    {
+      "function": "OleRegisterServer",
+      "args": "OleSvrProbe2",
+      "result": "0 lh",
+      "section": "register"
+    },
+    {
+      "function": "window",
+      "args": "",
+      "result": "SrvrWndClass 0",
+      "section": "register"
+    },
+    {
+      "function": "window",
+      "args": "",
+      "result": "SrvrWndClass 0",
+      "section": "register"
+    },
+    {
+      "function": "window",
+      "args": "",
+      "result": "OleSvrSrv 0",
+      "section": "register"
+    },
+    {
+      "function": "WinExec",
+      "args": "OLESRVC.EXE",
+      "result": "ok",
+      "section": "register"
+    },
+    {
+      "function": "ready",
+      "args": "",
+      "result": "yes",
+      "section": "register"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,OLEsystem",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "OLEsystem",
+      "result": "SrvrWndClass OleSvrProbe,OLEsystem",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,System",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,System",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "Other,System",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "Other,System",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,NoSuchDoc",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,NoSuchDoc",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Topics,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Topics,1",
+      "result": "3000 Doc",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Formats,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Formats,1",
+      "result": "3000 Picture\tBitmap",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,SysItems,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,SysItems",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Status,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Status,1",
+      "result": "3000 Ready",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewDocument(\"OleSvrProbe\",\"Doc1\")]",
+      "section": "system"
+    },
+    {
+      "function": "srv.Create",
+      "args": "OleSvrProbe,Doc1",
+      "result": "0 doc0 lh",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewDocument(\"OleSvrProbe\",\"Doc1\")]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdEditDocument(\"Doc6\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdEditDocument(\"Doc6\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,Doc1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "Doc1",
+      "result": "DocWndClass<SrvrWndClass OleSvrProbe,Doc1",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,OLEsystem",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,OLEsystem",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdEditDocument(\"Doc2\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdEditDocument(\"Doc2\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,Doc2",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,Doc2",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdOpenDocument(\"C:\\ORACLE\\OLESVR.FIL\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdOpenDocument(\"C:\\ORACLE\\OLESVR.FIL\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,C:\\ORACLE\\OLESVR.FIL",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,C:\\ORACLE\\OLESVR.FIL",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewFromTemplate(\"OleSvrProbe\",\"Doc4\",\"C:\\ORACLE\\OLESVR.TPL\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewFromTemplate(\"OleSvrProbe\",\"Doc4\",\"C:\\ORACLE\\OLESVR.TPL\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,Doc4",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "initiated",
+      "args": "OleSvrProbe,Doc4",
+      "result": "none",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe2,OLEsystem",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "OLEsystem",
+      "result": "SrvrWndClass OleSvrProbe2,OLEsystem",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewDocument(\"OleSvrProbe2\",\"DocA\")]",
+      "section": "system"
+    },
+    {
+      "function": "srv2.Create",
+      "args": "OleSvrProbe2,DocA",
+      "result": "0 doc1 lh",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewDocument(\"OleSvrProbe2\",\"DocA\")]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdEditDocument(\"DocB\")]",
+      "section": "system"
+    },
+    {
+      "function": "srv2.Edit",
+      "args": "OleSvrProbe2,DocB",
+      "result": "0 doc2 lh",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdEditDocument(\"DocB\")]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdOpenDocument(\"C:\\ORACLE\\OLESVR.FIL\")]",
+      "section": "system"
+    },
+    {
+      "function": "srv2.Open",
+      "args": "C:\\ORACLE\\OLESVR.FIL",
+      "result": "0 doc3 lh",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdOpenDocument(\"C:\\ORACLE\\OLESVR.FIL\")]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewFromTemplate(\"OleSvrProbe2\",\"DocC\",\"C:\\ORACLE\\OLESVR.TPL\")]",
+      "section": "system"
+    },
+    {
+      "function": "srv2.CreateFromTemplate",
+      "args": "OleSvrProbe2,DocC,C:\\ORACLE\\OLESVR.TPL",
+      "result": "0 doc4 lh",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewFromTemplate(\"OleSvrProbe2\",\"DocC\",\"C:\\ORACLE\\OLESVR.TPL\")]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe2,DocA",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "DocA",
+      "result": "DocWndClass<SrvrWndClass OleSvrProbe2,DocA",
+      "section": "system"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe2,OLEsystem",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "OLEsystem",
+      "result": "SrvrWndClass OleSvrProbe2,OLEsystem",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Topics,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Topics,1",
+      "result": "3000 Doc",
+      "section": "system"
+    },
+    {
+      "function": "terminate",
+      "args": "DocA",
+      "result": "client",
+      "section": "system"
+    },
+    {
+      "function": "terminate",
+      "args": "DocA",
+      "result": "answer",
+      "section": "system"
+    },
+    {
+      "function": "terminate",
+      "args": "OLEsystem",
+      "result": "client",
+      "section": "system"
+    },
+    {
+      "function": "terminate",
+      "args": "OLEsystem",
+      "result": "answer",
+      "section": "system"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Topics,1",
+      "result": "",
+      "section": "system"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Topics,1",
+      "result": "3000 Doc",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[ProbeCommand(1)]",
+      "section": "system"
+    },
+    {
+      "function": "srv.Execute",
+      "args": "[ProbeCommand(1)]",
+      "result": "0",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[ProbeCommand(1)]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[ProbeFail(1)]",
+      "section": "system"
+    },
+    {
+      "function": "srv.Execute",
+      "args": "[ProbeFail(1)]",
+      "result": "38",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[ProbeFail(1)]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[ProbeCommand(1)][ProbeCommand(2)]",
+      "section": "system"
+    },
+    {
+      "function": "srv.Execute",
+      "args": "[ProbeCommand(1)][ProbeCommand(2)]",
+      "result": "0",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[ProbeCommand(1)][ProbeCommand(2)]",
+      "result": "8000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewDocument(\"Doc5\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewDocument(\"Doc5\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdNewDocument(\"OleSvrProbe\",\"Doc1\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdNewDocument(\"OleSvrProbe\",\"Doc1\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdShowItem(\"x\")]",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdShowItem(\"x\")]",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "garbage",
+      "section": "system"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,garbage",
+      "result": "0000",
+      "section": "system"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,/Save,Native,8000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc0,,client",
+      "result": "0 obj0",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,/Save",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,/Save,3,8000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,ObjectLink",
+      "result": "3",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,/Save",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,/Close,Native,8000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,/Close",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,/Close,3,8000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,ObjectLink",
+      "result": "3",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,/Close",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdShowItem(\"\")]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.Show",
+      "args": "obj0,1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdShowItem(\"\")]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdShowItem(\"\",FALSE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.Show",
+      "args": "obj0,1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdShowItem(\"\",FALSE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdShowItem(\"\",TRUE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.Show",
+      "args": "obj0,0",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdShowItem(\"\",TRUE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,StdHostNames,Binary",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.SetHostNames",
+      "args": "doc0,Probe Client,Probe Object",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,StdHostNames",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,StdDocDimensions,Binary",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.SetDocDimensions",
+      "args": "doc0,0,750,1500,0",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,StdDocDimensions",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,StdDocDimensions,Binary",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.SetDocDimensions",
+      "args": "doc0,0,750,1500,0",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,StdDocDimensions",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,StdColorScheme,Binary",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.SetColorScheme",
+      "args": "doc0,300 4 0010ff004011fe008012fd00c013fc00",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,StdColorScheme",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,StdTargetDevice,Binary",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,StdTargetDevice",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,,Native",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.SetData",
+      "args": "obj0,Native",
+      "result": "707172737475767778797a7b7c7d7e7f",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,(none)",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "poke",
+      "args": "Doc1,,1",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.SetData",
+      "args": "obj0,1",
+      "result": "text",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,(none)",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,,Native",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.SetTargetDevice",
+      "args": "obj0",
+      "result": "0,14,22,28,0,28,0 Probe Printer",
+      "section": "doc"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,Native",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,(none),Native",
+      "result": "3000 005152535455565758595a5b5c5d5e5f",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,,3",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,ObjectLink",
+      "result": "3",
+      "section": "doc"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,3",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,(none),3",
+      "result": "3000 8 2000 1000",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,,1",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,ObjectLink",
+      "result": "3",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,3",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,(none)",
+      "result": "0000",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,,ObjectLink",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,ObjectLink",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,(none),ObjectLink",
+      "result": "3000 OleSvrProbe|OleSvrProbe,Doc1|",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,,OwnerLink",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj0,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,OwnerLink",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,(none),OwnerLink",
+      "result": "3000 OleSvrProbe|OleSvrProbe,Doc1|",
+      "section": "doc"
+    },
+    {
+      "function": "request",
+      "args": "Doc1,Missing,Native",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc0,Missing,client",
+      "result": "29",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,Missing",
+      "result": "0000",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,Item1,Native,8000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc0,Item1,client",
+      "result": "0 obj1",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,Item1",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,Item1,3,4000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,Native",
+      "result": "OwnerLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,OwnerLink",
+      "result": "ObjectLink",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,ObjectLink",
+      "result": "3",
+      "section": "doc"
+    },
+    {
+      "function": "noanswer",
+      "args": "Doc1",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,Item1/Save,Native,0000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,0",
+      "result": "Native",
+      "section": "doc"
+    },
+    {
+      "function": "noanswer",
+      "args": "Doc1",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "advise",
+      "args": "Doc1,Missing,Native,0000",
+      "result": "",
+      "section": "doc"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc0,Missing,client",
+      "result": "29",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,Missing",
+      "result": "0000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdDoVerbItem(\"\",1,TRUE,FALSE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.DoVerb",
+      "args": "obj0,1,1,1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdDoVerbItem(\"\",1,TRUE,FALSE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdDoVerbItem(\"Item1\",0,FALSE,TRUE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.DoVerb",
+      "args": "obj1,0,0,0",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdDoVerbItem(\"Item1\",0,FALSE,TRUE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdDoVerbItem(\"\",0,TRUE,TRUE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.DoVerb",
+      "args": "obj0,0,1,0",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdDoVerbItem(\"\",0,TRUE,TRUE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdDoVerbItem(\"\",0,FALSE,FALSE)]",
+      "section": "doc"
+    },
+    {
+      "function": "obj.DoVerb",
+      "args": "obj0,0,0,1",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdDoVerbItem(\"\",0,FALSE,FALSE)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[DocCommand(2)]",
+      "section": "doc"
+    },
+    {
+      "function": "doc.Execute",
+      "args": "doc0,[DocCommand(2)]",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[DocCommand(2)]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "execute",
+      "args": "Doc1",
+      "result": "[StdNewDocument(\"OleSvrProbe\",\"DocX\")]",
+      "section": "doc"
+    },
+    {
+      "function": "doc.Execute",
+      "args": "doc0,[StdNewDocument(\"OleSvrProbe\",\"DocX\")]",
+      "result": "0",
+      "section": "doc"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,[StdNewDocument(\"OleSvrProbe\",\"DocX\")]",
+      "result": "8000",
+      "section": "doc"
+    },
+    {
+      "function": "ask",
+      "args": "change,0",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj0,0",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "change",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "change,1",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "obj.SetTargetDevice",
+      "args": "obj1",
+      "result": "0,14,22,28,0,28,0 Probe Printer",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,Native",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,3",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,0",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1,Native",
+      "result": "2000 025152535455565758595a5b5c5d5e5f",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1,3",
+      "result": "2000 8 2000 1000",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "change",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "saved,0",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,Native",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,3",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj0,1",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,/Save,Native",
+      "result": "2000 025152535455565758595a5b5c5d5e5f",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,/Save,3",
+      "result": "2000 8 2000 1000",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "saved",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "saved,1",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,Native",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,3",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,1",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1/Save,Native",
+      "result": "2000 025152535455565758595a5b5c5d5e5f",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1/Save,3",
+      "result": "2000 8 2000 1000",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "saved",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "OleSavedServerDoc,0",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,Native",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj0,3",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,Native",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,3",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "OleSavedServerDoc",
+      "args": "doc0",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,/Save,Native",
+      "result": "2000 025152535455565758595a5b5c5d5e5f",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,/Save,3",
+      "result": "2000 8 2000 1000",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1/Save,Native",
+      "result": "2000 025152535455565758595a5b5c5d5e5f",
+      "section": "notify"
+    },
+    {
+      "function": "data",
+      "args": "Doc1,Item1/Save,3",
+      "result": "2000 8 2000 1000",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "OleSavedServerDoc",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "OleRevertServerDoc,0",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "OleRevertServerDoc",
+      "args": "doc0",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "OleRevertServerDoc",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "unadvise",
+      "args": "Doc1,Item1,Native",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,Item1",
+      "result": "8000",
+      "section": "notify"
+    },
+    {
+      "function": "unadvise",
+      "args": "Doc1,Item1,0",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "ack",
+      "args": "Doc1,Item1",
+      "result": "8000",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "change,1",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,0",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "change",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "OleRevokeObject,1",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "obj.Release",
+      "args": "obj1",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "OleRevokeObject",
+      "args": "obj1",
+      "result": "0",
+      "section": "notify"
+    },
+    {
+      "function": "terminate",
+      "args": "Doc1",
+      "result": "server",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "OleRevokeObject",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "change,1",
+      "result": "",
+      "section": "notify"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,0",
+      "result": "no client",
+      "section": "notify"
+    },
+    {
+      "function": "asked",
+      "args": "change",
+      "result": "done",
+      "section": "notify"
+    },
+    {
+      "function": "ask",
+      "args": "OleBlockServer,0",
+      "result": "",
+      "section": "block"
+    },
+    {
+      "function": "OleBlockServer",
+      "args": "server",
+      "result": "0",
+      "section": "block"
+    },
+    {
+      "function": "asked",
+      "args": "OleBlockServer",
+      "result": "done",
+      "section": "block"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[ProbeCommand(3)]",
+      "section": "block"
+    },
+    {
+      "function": "noanswer",
+      "args": "OLEsystem",
+      "result": "",
+      "section": "block"
+    },
+    {
+      "function": "ask",
+      "args": "OleUnblockServer,0",
+      "result": "",
+      "section": "block"
+    },
+    {
+      "function": "srv.Execute",
+      "args": "[ProbeCommand(3)]",
+      "result": "0",
+      "section": "block"
+    },
+    {
+      "function": "OleUnblockServer",
+      "args": "server",
+      "result": "0 0",
+      "section": "block"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[ProbeCommand(3)]",
+      "result": "8000",
+      "section": "block"
+    },
+    {
+      "function": "asked",
+      "args": "OleUnblockServer",
+      "result": "done",
+      "section": "block"
+    },
+    {
+      "function": "ask",
+      "args": "OleRegisterServerDoc,0",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "OleRegisterServerDoc",
+      "args": "C:\\ORACLE\\OLESVR3.FIL",
+      "result": "0 doc5 lh",
+      "section": "link"
+    },
+    {
+      "function": "asked",
+      "args": "OleRegisterServerDoc",
+      "result": "done",
+      "section": "link"
+    },
+    {
+      "function": "initiate",
+      "args": "OleSvrProbe,C:\\ORACLE\\OLESVR3.FIL",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "ack.initiate",
+      "args": "C:\\ORACLE\\OLESVR3.FIL",
+      "result": "DocWndClass<SrvrWndClass OleSvrProbe,C:\\ORACLE\\OLESVR3.FIL",
+      "section": "link"
+    },
+    {
+      "function": "request",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,,Native",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc5,,client",
+      "result": "0 obj1",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,0",
+      "result": "Native",
+      "section": "link"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,Native",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "data",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,(none),Native",
+      "result": "3000 045152535455565758595a5b5c5d5e5f",
+      "section": "link"
+    },
+    {
+      "function": "advise",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,Item2,Native,8000",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "doc.GetObject",
+      "args": "doc5,Item2,client",
+      "result": "0 obj2",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj2,0",
+      "result": "Native",
+      "section": "link"
+    },
+    {
+      "function": "ack",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,Item2",
+      "result": "8000",
+      "section": "link"
+    },
+    {
+      "function": "advise",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,StdDocumentName,Native,8000",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "ack",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,StdDocumentName",
+      "result": "8000",
+      "section": "link"
+    },
+    {
+      "function": "request",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,Item2,ObjectLink",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj2,0",
+      "result": "Native",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj2,Native",
+      "result": "OwnerLink",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj2,OwnerLink",
+      "result": "ObjectLink",
+      "section": "link"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj2,ObjectLink",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "data",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,Item2,ObjectLink",
+      "result": "3000 OleSvrProbe|C:\\ORACLE\\OLESVR3.FIL|Item2|",
+      "section": "link"
+    },
+    {
+      "function": "ask",
+      "args": "OleRenameServerDoc,0",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "OleRenameServerDoc",
+      "args": "doc5",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "data",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,StdDocumentName,Binary",
+      "result": "2000 C:\\ORACLE\\OLESVR2.FIL",
+      "section": "link"
+    },
+    {
+      "function": "asked",
+      "args": "OleRenameServerDoc",
+      "result": "done",
+      "section": "link"
+    },
+    {
+      "function": "ask",
+      "args": "closed,1",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,2",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "asked",
+      "args": "closed",
+      "result": "done",
+      "section": "link"
+    },
+    {
+      "function": "ask",
+      "args": "renamed,1",
+      "result": "",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,0",
+      "result": "Native",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,Native",
+      "result": "OwnerLink",
+      "section": "link"
+    },
+    {
+      "function": "obj.EnumFormats",
+      "args": "obj1,OwnerLink",
+      "result": "ObjectLink",
+      "section": "link"
+    },
+    {
+      "function": "obj.GetData",
+      "args": "obj1,ObjectLink",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "CallBack",
+      "args": "obj1,3",
+      "result": "0",
+      "section": "link"
+    },
+    {
+      "function": "data",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,StdDocumentName,Binary",
+      "result": "2000 C:\\ORACLE\\OLESVR2.FIL",
+      "section": "link"
+    },
+    {
+      "function": "asked",
+      "args": "renamed",
+      "result": "done",
+      "section": "link"
+    },
+    {
+      "function": "execute",
+      "args": "C:\\ORACLE\\OLESVR3.FIL",
+      "result": "[StdCloseDocument]",
+      "section": "close"
+    },
+    {
+      "function": "doc.Close",
+      "args": "doc5",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "obj.Release",
+      "args": "obj1",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "obj.Release",
+      "args": "obj2",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleRevokeServerDoc",
+      "args": "doc5",
+      "result": "1",
+      "section": "close"
+    },
+    {
+      "function": "ack",
+      "args": "C:\\ORACLE\\OLESVR3.FIL,[StdCloseDocument]",
+      "result": "8000",
+      "section": "close"
+    },
+    {
+      "function": "terminate",
+      "args": "C:\\ORACLE\\OLESVR3.FIL",
+      "result": "server",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc5",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "request",
+      "args": "OLEsystem,Topics,1",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "data",
+      "args": "OLEsystem,Topics,1",
+      "result": "3000 Doc",
+      "section": "close"
+    },
+    {
+      "function": "execute",
+      "args": "OLEsystem",
+      "result": "[StdExit]",
+      "section": "close"
+    },
+    {
+      "function": "srv.Exit",
+      "args": "",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "ack",
+      "args": "OLEsystem,[StdExit]",
+      "result": "8000",
+      "section": "close"
+    },
+    {
+      "function": "ask",
+      "args": "OleRevokeServerDoc,1",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "OleRevokeServerDoc",
+      "args": "doc5",
+      "result": "18",
+      "section": "close"
+    },
+    {
+      "function": "asked",
+      "args": "OleRevokeServerDoc",
+      "result": "done",
+      "section": "close"
+    },
+    {
+      "function": "ask",
+      "args": "OleRevokeServer,0",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc1",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc2",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc3",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc4",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleRevokeServer",
+      "args": "server2",
+      "result": "1",
+      "section": "close"
+    },
+    {
+      "function": "terminate",
+      "args": "OLEsystem",
+      "result": "server",
+      "section": "close"
+    },
+    {
+      "function": "asked",
+      "args": "OleRevokeServer",
+      "result": "done",
+      "section": "close"
+    },
+    {
+      "function": "srv2.Release",
+      "args": "",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "ask",
+      "args": "OleRevokeServer,0",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "obj.Release",
+      "args": "obj0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "doc.Release",
+      "args": "doc0",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "OleRevokeServer",
+      "args": "server",
+      "result": "1",
+      "section": "close"
+    },
+    {
+      "function": "terminate",
+      "args": "OLEsystem",
+      "result": "server",
+      "section": "close"
+    },
+    {
+      "function": "asked",
+      "args": "OleRevokeServer",
+      "result": "done",
+      "section": "close"
+    },
+    {
+      "function": "srv.Release",
+      "args": "",
+      "result": "0",
+      "section": "close"
+    },
+    {
+      "function": "srv.end",
+      "args": "",
+      "result": "",
+      "section": "close"
+    },
+    {
+      "function": "server",
+      "args": "",
+      "result": "gone",
+      "section": "close"
+    }
+  ]
+}

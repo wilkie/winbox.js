@@ -300,6 +300,7 @@ pub const AGREEING: &[&str] = &[
     "olepbd",
     "olepbr",
     "swpunc",
+    "olesrv",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

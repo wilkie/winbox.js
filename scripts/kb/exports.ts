@@ -17,6 +17,7 @@ import { Keyboard } from '../../src/win16/keyboard.js';
 import { LzExpand } from '../../src/win16/lzexpand/index.js';
 import { Ddeml } from '../../src/win16/ddeml/index.js';
 import { OleCli } from '../../src/win16/olecli/index.js';
+import { OleSvr } from '../../src/win16/olesvr/index.js';
 import { Shell } from '../../src/win16/shell.js';
 import { ToolHelp } from '../../src/win16/toolhelp.js';
 import { MMSystem } from '../../src/win16/mmsystem.js';
@@ -85,6 +86,7 @@ const MODULES: [any, boolean][] = [
   [LzExpand, false],
   [Ddeml, false],
   [OleCli, false],
+  [OleSvr, false],
   [Win87EM, false],
   [WinG, true],
 ];

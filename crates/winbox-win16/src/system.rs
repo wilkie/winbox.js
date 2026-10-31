@@ -433,6 +433,8 @@ pub struct System {
     pub ddeml: crate::ddeml::State,
     /// WinBox's `OLECLI`'s own (`olecli/`).
     pub olecli: crate::olecli::State,
+    /// WinBox's `OLESVR`'s own (`olesvr/`).
+    pub olesvr: crate::olesvr::State,
     /// What WinBox's Program Manager keeps of its own (`progman/`).
     pub progman: crate::progman::State,
     /// What `SwapMouseButton` was last given.
@@ -666,6 +668,7 @@ impl System {
             lzexpand: crate::lzexpand::State::default(),
             ddeml: crate::ddeml::State::default(),
             olecli: crate::olecli::State::default(),
+            olesvr: crate::olesvr::State::default(),
             progman: crate::progman::State::default(),
             loaded_resources: HashMap::new(),
             resource_blocks: HashMap::new(),

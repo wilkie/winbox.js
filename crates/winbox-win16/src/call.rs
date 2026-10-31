@@ -546,6 +546,7 @@ pub(crate) fn implementation(module: &str, name: &str) -> Option<Implementation>
         crate::lzexpand::NAME => crate::lzexpand::implementation(name),
         crate::ddeml::NAME => crate::ddeml::implementation(name),
         crate::olecli::NAME => crate::olecli::implementation(name),
+        crate::olesvr::NAME => crate::olesvr::implementation(name),
         crate::progman::NAME => crate::progman::implementation(name),
         "DISPLAY" => crate::display::implementation(name),
         _ => None,

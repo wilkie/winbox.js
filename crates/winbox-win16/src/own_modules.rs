@@ -1,7 +1,8 @@
 //! The libraries WinBox keeps whose file is loaded beside them when there
 //! is one, each import of an export WinBox answers linked to WinBox's stub
 //! (`linker.rs`, `GetProcAddress`): `COMMDLG` (`commdlg/`), `VER` (`ver/`),
-//! `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`) and `OLECLI` (`olecli/`).
+//! `LZEXPAND` (`lzexpand/`), `DDEML` (`ddeml/`), `OLECLI` (`olecli/`) and
+//! `OLESVR` (`olesvr/`).
 //! As `src/win16/own-modules.ts`.
 
 use crate::call::Implementation;
@@ -10,16 +11,17 @@ use crate::modules::Kept;
 use crate::system::{STEP, System};
 
 /// The names of those libraries.
-pub const OWN_WITH_FILE: [&str; 5] = [
+pub const OWN_WITH_FILE: [&str; 6] = [
     crate::commdlg::NAME,
     crate::ver::NAME,
     crate::lzexpand::NAME,
     crate::ddeml::NAME,
     crate::olecli::NAME,
+    crate::olesvr::NAME,
 ];
 
 /// One of those kept only once a program loads one, not as Windows starts
-/// (`crate::kept::ON_LOAD`): `OLECLI`. A kept module takes two
+/// (`crate::kept::ON_LOAD`): `OLECLI` and `OLESVR`. A kept module takes two
 /// descriptors, so one kept as Windows starts moves every selector a
 /// program is given after; kept as it is first loaded, a session that
 /// never loads it is as before. By its module's name or its file's
@@ -36,6 +38,15 @@ pub(crate) fn keep_on_load(system: &mut System, name: &str) {
     {
         system.keep_on_load(module);
     }
+}
+
+/// Whether a module's name is one of `crate::kept::ON_LOAD`'s, kept or not
+/// yet: a program started by another, as `OLESVR`'s server is, finds it
+/// to be kept as it is linked. As `own-modules.ts`'s `keptOnLoad`.
+pub(crate) fn kept_on_load(name: &str) -> bool {
+    crate::kept::ON_LOAD
+        .iter()
+        .any(|module| module.name.eq_ignore_ascii_case(name))
 }
 
 /// Whether a module is one of those.
@@ -155,6 +166,8 @@ fn implementation(module: &str, name: &str) -> Option<Implementation> {
         crate::ddeml::implementation(name)
     } else if module.eq_ignore_ascii_case(crate::olecli::NAME) {
         crate::olecli::implementation(name)
+    } else if module.eq_ignore_ascii_case(crate::olesvr::NAME) {
+        crate::olesvr::implementation(name)
     } else {
         None
     }
@@ -176,6 +189,7 @@ pub(crate) fn redirect(system: &mut System, module: usize, ordinal: u16) -> Opti
         crate::lzexpand::NAME,
         crate::ddeml::NAME,
         crate::olecli::NAME,
+        crate::olesvr::NAME,
     ]
     .into_iter()
     .find(|own| own.eq_ignore_ascii_case(&name))?;
@@ -210,5 +224,10 @@ fn freed_named(system: &mut System, name: &str) {
     // it started, done again as it is next loaded and called.
     if name.eq_ignore_ascii_case(crate::olecli::NAME) {
         system.olecli = crate::olecli::State::default();
+    }
+
+    // `OLESVR`'s too: its servers, documents and what it did as it started.
+    if name.eq_ignore_ascii_case(crate::olesvr::NAME) {
+        system.olesvr = crate::olesvr::State::default();
     }
 }
