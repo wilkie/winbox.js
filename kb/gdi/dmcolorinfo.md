@@ -6,7 +6,7 @@ ordinal: 202
 summary: A colour made physical for a memory bitmap, or a physical colour made logical, by the display driver's ColorInfo -- for a printer's driver.
 versions:
   '3.1': partial
-probes: [gdidm]
+probes: [gdidm, gdidmdrw]
 records: [colorinfo, colorback, notbitmap]
 source: src/win16/gdi/driver-helpers.ts
 topics: [gdi-internals, printer-drivers, brush-dithering]
@@ -20,11 +20,14 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 - [[measured]] The answer is the physical colour's red, green and blue for the bitmap of four planes -- the colour the VGA has, `0000FFFF` for `000080C0` -- and white `00FFFFFF` or black for the monochrome one, by the flag.
 - [[measured]] The colour's top byte is not looked at: `PALETTEINDEX(5)` is black, `PALETTERGB` the colour.
 - [[measured]] With no buffer, the colour given is taken as a physical one and answered the same way: its low three bytes for four planes, white or black by its flag for one.
+- [[measured]] On the Hercules ([[probe:gdidmdrw]]) a colour is white where its red, green and blue come to 17Eh or more: `00808080` is white and `000000FF` black, and the answer is white or black whatever the bitmap. The physical colour is each of red, green and blue FFh at 80h or more and nought below, and a top byte of a bit for each so made, 10h for white and 20h for black and for white with all three: red `010000FF`, yellow `1300FFFF`, `00808080` `37FFFFFF`.
 - [[measured]] For a device whose first word is not nought, or one marked `DI`, the answer's high word is 4, `ColorInfo`'s offset in a driver's table.
 
 ## Inside Windows
 
 [[read out]] `GDI.EXE` seg13 `014f`: `mov cx,040Ah` and a jump to [[fn:GDI.Brute]], which calls the display driver's `ColorInfo` for a memory bitmap. `VGA.DRV`'s (seg1 `18f8`) matches the colour with the routine at `1956` that its `RealizeObject` shares ([[topic:brush-dithering]]) and writes the result; then it looks at the device's word 8, the planes and the bits a pixel: 104h answers the physical colour with its top byte cleared, anything else white or black by bit 4 of the top byte (`191d`-`1930`). The physical colour is the index's red, green and blue from the table at seg1 `003c` and the flags from `002c` (`19f4`-`1a0b`).
+
+[[read out]] `HERCULES.DRV` seg1 `2d44`, into `2bb6`: the sum of the three bytes against 17Eh, then each byte shifted right by 8 so that its sign fills it, its bit 7 kept as the flag; the answer from bit 4 of the top byte, or of the colour given with no buffer.
 
 ## Callers
 
@@ -32,10 +35,10 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 
 ## Implementation
 
-In both engines as the VGA's driver has it (`driver-helpers.ts`, `driver_helpers.rs`): the match is `colour-match.ts`'s, the colours and flags named constants from the read-out. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. On the Hercules and the 256-colour display a memory bitmap answers nought. [[probe:gdidm]] agrees in both engines.
+In both engines as the VGA's driver has it (`driver-helpers.ts`, `driver_helpers.rs`): the match is `colour-match.ts`'s, the colours and flags named constants from the read-out. On the Super VGA and the EGA as on the VGA -- [[probe:gdidm]] recorded on each gives every record the VGA's but the EGA's ninth colour, 404040h, which is not white on a monochrome bitmap. On the Hercules as its own driver has it (`driver-hercules.ts`, `driver_hercules.rs`), [[probe:gdidmdrw]] agreeing. On the 256-colour display a memory bitmap answers nought. [[probe:gdidm]] agrees in both engines.
 
-**Recommendation:** done for the VGA, the Super VGA and the EGA.
+**Recommendation:** done for the VGA, the Super VGA, the EGA and the Hercules.
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]).
+- The 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]).

@@ -43,4 +43,5 @@ topics: [gdi-internals, printer-drivers]
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own `Output`, which answer nought here (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `Output`, which answers nought here (known gaps of [[probe:gdidmdrw]]).
+- The Hercules's walk along a styled line, in runs (`HERCULES.DRV` seg4 `02f6`-`0360`, its steps 40h and 48h): where each pixel falls in the style shows on a transparent background, one record of [[probe:gdidmdrw]].

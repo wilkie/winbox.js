@@ -6910,7 +6910,30 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   back with that font at 42h of its segment, each glyph's width its ink and
   the widths given its advances. A turned string goes glyph by glyph through
   the driver's `BitBlt`. **Recorded** by `prttxt`, its driver drawing GDI's
-  font with `DMExtTextOut`; not yet drawn by WinBox.
+  font with `DMExtTextOut`, and drawn by WinBox to the bit in both engines.
+- **The cache's layout** (seg3 `2fd3`): after the character table, a word
+  of each character's advance and a word of its A and C spaces, 20h bytes
+  for the face's name, then the rasterizer's scratch, the widest glyph's
+  bytes a row -- `(dfMaxWidth + 3Fh) / 8`, its low two bits cleared --
+  times the cell, then the glyphs: so `dfBitsOffset` is A66h for Arial at
+  an em of 24, its widest glyph 25 and its cell 27. An upright glyph is
+  laid a column of the cell at a time, its top row at the ascent less its
+  top (`7300`); a turned one is kept a row a doubleword as the rasterizer
+  made it, after 12 bytes of its box and corner (`752d`).
+- **Widths and places** (`6874`): each width the driver is given is the
+  advance moved by the next glyph's A space less its own, and the string
+  starts at the first glyph's A space past the place, so the ink falls
+  where the outline would put it: Arial's `Ab` at 24 is given 17 and 14,
+  its advances 15 and 14, the `b`'s A space 2. A turned string carries the
+  advances alone, each glyph at the baseline point of those before it,
+  turned by GDI's own table of sines (seg33 `00b6`), moved by its corner.
+- **A display driver's text on a memory bitmap** (`DMExtTextOut`,
+  `DMGetCharWidth`, **recorded** by `gdidmdrw`): the VGA's draws only a font
+  of 3.0 laid out as GDI loads one, its `FONTINFO` at 42h; the Hercules's
+  only one of 2.0 (`HERCULES.DRV` seg1 `11f8`-`1204`), answering 80000000h
+  for the 3.0 font the VGA draws, and its `GetCharWidth` reads any font as
+  one of 2.0, four bytes an entry at 76h (`30f2`) -- so a 3.0 font's widths
+  come from its header's bytes.
 - **The realization had failed for Wingdings** in the TypeScript engine,
   which realized the face without the device's horizontal resolution: at
   96 by 300 Wingdings' `VDMX` has no group, and no size was found. The

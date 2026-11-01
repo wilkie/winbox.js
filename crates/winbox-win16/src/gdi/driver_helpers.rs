@@ -10,6 +10,9 @@
 //!
 //! **Recorded** by `gdidm`, `gdidmdrw`, `gdiint` and `scanscr`.
 
+use super::driver_hercules::{
+    CANNOT, hercules_color_info, hercules_get_char_width, hercules_realize_object, is_hercules,
+};
 use winbox_cpu::{AX, DS, ES, SS};
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
@@ -288,7 +291,7 @@ fn dm_bit_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let draw_mode = args.dword(system);
     let answer = match brute(system, device, BIT_BLT) {
         Some(answer) => answer,
-        None if vga(system) => driver_bitmap::bit_blt(
+        None if vga(system) || is_hercules(system) => driver_bitmap::bit_blt(
             system, device, x, y, source, sx, sy, width, height, rop, brush, draw_mode,
         ),
         None => 0,
@@ -308,7 +311,7 @@ fn dm_output(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let clip = args.dword(system);
     let answer = match brute(system, device, OUTPUT) {
         Some(answer) => answer,
-        None if vga(system) => driver_bitmap::output(
+        None if vga(system) || is_hercules(system) => driver_bitmap::output(
             system, device, style, count, points, pen, brush, draw_mode, clip,
         ),
         None => 0,
@@ -325,6 +328,7 @@ fn dm_realize_object(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let xform = args.dword(system);
     let answer = match brute(system, device, REALIZE_OBJECT) {
         Some(answer) => answer,
+        None if is_hercules(system) => hercules_realize_object(system, style, input, out, xform),
         None if vga(system) => driver_bitmap::realize_object(system, style, input, out, xform),
         None => 0,
     };
@@ -352,6 +356,7 @@ fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
     };
     let answer = match brute(system, device, EXT_TEXT_OUT) {
         Some(answer) => answer,
+        None if is_hercules(system) => CANNOT,
         None if vga(system) => driver_bitmap::ext_text_out(
             system, device, x, y, clip, string, count, font, draw_mode, xform, widths, opaque,
             options,
@@ -382,6 +387,7 @@ fn dm_get_char_width(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let xform = args.dword(system);
     let answer = match brute(system, device, GET_CHAR_WIDTH) {
         Some(answer) => answer,
+        None if is_hercules(system) => hercules_get_char_width(system, buffer, first, last, font),
         None if vga(system) => {
             driver_bitmap::get_char_width(system, buffer, first, last, font, xform)
         }
@@ -406,7 +412,7 @@ fn dm_dib_bits(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let _translate = args.dword(system);
     let answer = match brute(system, device, DEVICE_BITMAP_BITS) {
         Some(answer) => answer,
-        None if vga(system) => {
+        None if vga(system) || is_hercules(system) => {
             driver_bitmap::device_bitmap_bits(system, device, get, start, scans, bits, info)
         }
         None => 0,
@@ -423,7 +429,7 @@ fn dm_set_dib_to_dev(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let device = args.dword(system);
     let answer = match brute(system, device, DIB_TO_DEVICE) {
         Some(answer) => answer,
-        None if vga(system) => driver_bitmap::dib_to_device(),
+        None if vga(system) || is_hercules(system) => driver_bitmap::dib_to_device(),
         None => 0,
     };
 
@@ -436,6 +442,7 @@ fn dm_color_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let buffer = args.dword(system);
     let answer = match brute(system, device, COLOR_INFO) {
         Some(answer) => answer,
+        None if is_hercules(system) => hercules_color_info(system, colour, buffer),
         None if vga(system) => color_info(system, device, colour, buffer),
         None => 0,
     };

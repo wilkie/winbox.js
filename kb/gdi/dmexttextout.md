@@ -42,4 +42,5 @@ topics: [gdi-internals, printer-drivers]
 ## Not yet done
 
 - The emboldening and italics taken off for `[063Eh]`, which WinBox does not keep: it follows the `TEXTXFORM` as given.
-- The Hercules's and the 256-colour display's own `ExtTextOut` (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `ExtTextOut` (known gaps of [[probe:gdidmdrw]]).
+- The Hercules's drawing of a font of 2.0, which WinBox answers as it answers a font of 3.0.

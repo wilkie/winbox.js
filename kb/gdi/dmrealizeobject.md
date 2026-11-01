@@ -31,14 +31,16 @@ topics: [gdi-internals, printer-drivers, brush-dithering]
 
 [[read out]] `VGA.DRV` seg1 `286e`: a negative style answers 1; the style less one indexes a table of routines at `2bd6` and of sizes at `2bdc` -- `6`, `36h`, `0` -- so style nought reads the word before the sizes, `2b3b`, the font's routine. The routines: the pen `28b6`, the brush `28db`, the font `2b3b` (a bare `ret`). The brush's own routines by its style at `2b9e`: solid `292a`, hollow `2b36`, hatched `2ab9`, pattern `2a20`. Solid: white and black at `2930`-`2942`; the special colour 10E0E0E0h at `2957`; the colour matched (`1956`), an exact one at `2992`, any other dithered (`24a1`); the monochrome plane from `210e`. Hatched: the colour's and the background's flags, plane by plane (`2b16`), the hatches at `2ba6`. The turning: bytes at `2b3c`, rows at `2b63`.
 
+[[read out]] `HERCULES.DRV` seg1 `2b08`: a pen of 6 bytes, a brush of 16h, a font of nought, style nought the word before the sizes, 2CC1h. The pen as the VGA's, its colour the Hercules's ([[fn:GDI.DMColorInfo]]). A brush (`2b73`) is eight rows of its pattern, its style word at 8, its flags at 0Ah and eight more rows at 0Eh, turned to its origin unless hollow (`2b8e`): solid (`2bf0`) a dither of the colour's grey -- the three bytes a third each taken to a level of 0 to 64, a pattern of four rows for each group of four levels laid twice (seg1 `307f`), a pixel more for each level past the group's start (`305f`), the greys at 16, 32 and 48 patterns of their own (`2c34`), black and white flagged 80h -- with the colour's white flag; hatched (`2c68`) the hatch's rows at 0Eh and the pattern the hatch against the background where one is white and the other not, else the background; a pattern (`2c3c`) its bitmap's first byte of eight rows, twice, FFFFh at 0Bh; hollow E0h. [[probe:gdidmdrw]] records each on the Hercules.
+
 ## Callers
 
 [[read out]] `PSCRIPT.DRV` imports it by ordinal. No program of the corpus does.
 
 ## Implementation
 
-`driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA: each object laid out from named constants of the read-out; the colour matched by `colour-match.ts` and dithered by `dither.ts`, as the display's brushes are. [[probe:gdidmdrw]] agrees in both engines on the three.
+`driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA: each object laid out from named constants of the read-out; the colour matched by `colour-match.ts` and dithered by `dither.ts`, as the display's brushes are. [[probe:gdidmdrw]] agrees in both engines on the three. On the Hercules its own (`driver-hercules.ts`, `driver_hercules.rs`), [[probe:gdidmdrw]] agreeing.
 
 ## Not yet done
 
-- The Hercules's (a 22-byte brush) and the 256-colour display's own `RealizeObject`, which answer nought here (known gaps of [[probe:gdidmdrw]]).
+- The 256-colour display's own `RealizeObject`, which answers nought here (known gaps of [[probe:gdidmdrw]]).

@@ -401,7 +401,15 @@ DWORD FAR PASCAL _export ExtTextOut(PDEV FAR *pdev, WORD x, WORD y, LPRECT clip,
         answer = EngineExtTextOut(context, pdev, x, y, clip, string, count, font, mode, xform,
                                   widths, opaque, options);
         wsprintf(args, "%d,%d %d %u", x, y, count, options);
-        wsprintf(text, "%u,%u", LOWORD(answer), HIWORD(answer));
+
+        /* GDI answers the context's device as it was: the `PDEVICE` it
+         * handed the driver, whose selector is GDI's own. */
+        if (answer == (DWORD)(LPVOID)pdev) {
+            lstrcpy(text, "pdevice");
+        } else {
+            wsprintf(text, "%u,%u", LOWORD(answer), HIWORD(answer));
+        }
+
         append("engine", args, text);
         return answer;
     }

@@ -7,7 +7,7 @@ import { DWORD, UINT } from '../types.js';
 import { clipOf } from './clipping.js';
 import { handleHeld } from './DeleteObject.js';
 import { GetStockObject } from './GetStockObject.js';
-import { devicePoint, mapped, mappingOf, scale } from './mapping.js';
+import { devicePoint, isIdentity, mapped, mappingOf, scale } from './mapping.js';
 import { MulDiv } from './MulDiv.js';
 import { deviceFont, type PDevice } from './printer-driver.js';
 
@@ -28,6 +28,8 @@ const COLOR_INFO = 2;
 const OUTPUT = 8;
 const REALIZE_OBJECT = 10;
 const EXT_TEXT_OUT = 14;
+/** The `GDIINFO`'s word 5Eh, whose bit 2 lets a driver draw a turned engine font. */
+const GDIINFO_CAPS = 0x5e;
 const GET_CHAR_WIDTH = 15;
 const STRETCH_DIBITS = 28;
 
@@ -1093,10 +1095,11 @@ export async function driverPolygon(system: any, surface: any, logical: [number,
  * rectangle, the driver's `ExtTextOut` given the start, the region's
  * rectangle as the clip, the string and its count, the realized
  * `FONTINFO`, the `DRAWMODE`, the `TEXTXFORM`, the opaque rectangle GDI
- * was given, mapped, and the options. 1. Not followed: the alignments
- * other than the top left, the current position, the spacing given
- * (`lpDx`) and justification's second call, rotation, a complex region,
- * and GDI's own text for a font it realized itself.
+ * was given, mapped, the spacing given (`lpDx`) under `MM_TEXT`, and the
+ * options. 1. Not followed: the alignments other than the top left, the
+ * current position, the spacing under another mapping and justification's
+ * second call, rotation, a complex region, and GDI's own text for a font
+ * it realized itself.
  */
 export async function driverExtTextOut(
   system: any,
@@ -1106,12 +1109,17 @@ export async function driverExtTextOut(
   options: number,
   lpRect: number,
   lpString: number,
-  count: number
+  count: number,
+  lpDx = 0
 ) {
   const pdevice: PDevice = surface.driverDevice;
   const procedure = proc(pdevice, EXT_TEXT_OUT);
   const realized = await deviceFont(system, surface);
   const region = visibleRegion(surface);
+  /* The spacing given goes to the driver as it is under `MM_TEXT`
+   * (`32ad`-`32c1`); under another mapping GDI scales it into a block of
+   * its own, which is not followed. */
+  const spacing = isIdentity(mappingOf(surface)) ? lpDx >>> 0 : 0;
 
   if (!procedure || !realized || region.kind !== 2) {
     return 0;
@@ -1128,6 +1136,16 @@ export async function driverExtTextOut(
   const box = region.box;
   const mode = drawMode(system, surface);
   let opaque: number[] | null = null;
+  /* A turned font the engine realized, where the device's `GDIINFO` word
+   * 5Eh has no bit 2, GDI draws itself, as `EngineExtTextOut` would,
+   * without the driver's `ExtTextOut` (seg1 `3a1a`-`3a86`, into `620e`).
+   * GDI asks too for the context's flag 4 at 0Bh, taken here as set for a
+   * font the driver realized. */
+  const turnedEngineFont =
+    (realized.info[0] & 3) === 3 &&
+    realized.info[0x33] & 0x10 &&
+    (count << 16) >> 16 > 0 &&
+    !(caps(pdevice, GDIINFO_CAPS) & 4);
 
   if (lpRect) {
     const cpu = core(system);
@@ -1139,21 +1157,43 @@ export async function driverExtTextOut(
     opaque = [Math.min(l, r), Math.min(t, b), Math.max(l, r), Math.max(t, b)];
   }
 
-  await onStack(system, words(box.left, box.top, box.right, box.bottom, ...(opaque ?? [])), (far) =>
-    callDriver(system, procedure, [
-      [pdevice.lpPDevice, DWORD],
-      [dx & 0xffff, UINT],
-      [dy & 0xffff, UINT],
-      [far, DWORD],
-      [lpString >>> 0, DWORD],
-      [count & 0xffff, UINT],
-      [realized.far, DWORD],
-      [mode, DWORD],
-      [xform, DWORD],
-      [0, DWORD],
-      [opaque ? offsetBy(far, 8) : 0, DWORD],
-      [options & 0xffff, UINT],
-    ])
+  await onStack(
+    system,
+    words(box.left, box.top, box.right, box.bottom, ...(opaque ?? [])),
+    (far) =>
+      turnedEngineFont
+        ? import('./engine-text.js').then(({ drawEngineText }) =>
+            drawEngineText(system, {
+              hdc: 0,
+              surface,
+              device: pdevice.lpPDevice >>> 0,
+              x: dx,
+              y: dy,
+              clip: far,
+              string: lpString >>> 0,
+              count,
+              font: realized.far,
+              drawMode: mode,
+              xform,
+              widths: spacing,
+              opaque: opaque ? offsetBy(far, 8) : 0,
+              options,
+            })
+          )
+        : callDriver(system, procedure, [
+            [pdevice.lpPDevice, DWORD],
+            [dx & 0xffff, UINT],
+            [dy & 0xffff, UINT],
+            [far, DWORD],
+            [lpString >>> 0, DWORD],
+            [count & 0xffff, UINT],
+            [realized.far, DWORD],
+            [mode, DWORD],
+            [xform, DWORD],
+            [spacing, DWORD],
+            [opaque ? offsetBy(far, 8) : 0, DWORD],
+            [options & 0xffff, UINT],
+          ])
   );
 
   return 1;

@@ -1,5 +1,12 @@
 'use strict';
 
+import {
+  herculesColorInfo,
+  herculesExtTextOut,
+  herculesGetCharWidth,
+  herculesRealizeObject,
+  isHercules,
+} from './driver-hercules.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -358,16 +365,24 @@ function notBitmap(_system: any, offset: number) {
 
 /**
  * `Brute`'s choice for a routine of the display driver's (seg13 `0171`):
- * `routine` for a memory bitmap, where WinBox has the VGA's, else nought.
+ * `routine` for a memory bitmap, where WinBox has the VGA's; on the
+ * Hercules, `hercules` -- its own, or `'monochrome'` where its drawing on a
+ * monochrome bitmap is the VGA's record for record (`gdidmdrw`); else
+ * nought.
  */
 async function brute(
   system: any,
   device: number,
   offset: number,
-  routine: (() => number | Promise<number>) | null
+  routine: (() => number | Promise<number>) | null,
+  hercules: (() => number) | 'monochrome' | null = null
 ) {
   if (read16(system, device, 0) !== 0) {
     return notBitmap(system, offset);
+  }
+
+  if (isHercules(system)) {
+    return hercules === 'monochrome' ? (routine?.() ?? 0) : hercules ? hercules() : 0;
   }
 
   return routine && vga(system) ? routine() : 0;
@@ -387,26 +402,37 @@ export function DMBitBlt(
   lpPBrush: number,
   lpDrawMode: number
 ) {
-  return brute(this, lpDestDev, BIT_BLT, () =>
-    bitBlt(
-      this,
-      lpDestDev,
-      wDestX,
-      wDestY,
-      lpSrcDev,
-      wSrcX,
-      wSrcY,
-      wXext,
-      wYext,
-      rop3,
-      lpPBrush,
-      lpDrawMode
-    )
+  return brute(
+    this,
+    lpDestDev,
+    BIT_BLT,
+    () =>
+      bitBlt(
+        this,
+        lpDestDev,
+        wDestX,
+        wDestY,
+        lpSrcDev,
+        wSrcX,
+        wSrcY,
+        wXext,
+        wYext,
+        rop3,
+        lpPBrush,
+        lpDrawMode
+      ),
+    'monochrome'
   );
 }
 
 export function DMColorInfo(this: any, lpDestDev: number, dwColorIn: number, lpPColor: number) {
-  return brute(this, lpDestDev, COLOR_INFO, () => colorInfo(this, lpDestDev, dwColorIn, lpPColor));
+  return brute(
+    this,
+    lpDestDev,
+    COLOR_INFO,
+    () => colorInfo(this, lpDestDev, dwColorIn, lpPColor),
+    () => herculesColorInfo(this, dwColorIn >>> 0, lpPColor >>> 0)
+  );
 }
 
 export function DMEnumObj(
@@ -432,8 +458,13 @@ export function DMOutput(
   lpDrawMode: number,
   lpClipRect: number
 ) {
-  return brute(this, lpDestDev, OUTPUT, () =>
-    output(this, lpDestDev, wStyle, wCount, lpPoints, lpPPen, lpPBrush, lpDrawMode, lpClipRect)
+  return brute(
+    this,
+    lpDestDev,
+    OUTPUT,
+    () =>
+      output(this, lpDestDev, wStyle, wCount, lpPoints, lpPPen, lpPBrush, lpDrawMode, lpClipRect),
+    'monochrome'
   );
 }
 
@@ -456,8 +487,12 @@ export function DMRealizeObject(
   lpOutObj: number,
   lpTextXForm: number
 ) {
-  return brute(this, lpDestDev, REALIZE_OBJECT, () =>
-    realizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm)
+  return brute(
+    this,
+    lpDestDev,
+    REALIZE_OBJECT,
+    () => realizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm),
+    () => herculesRealizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm)
   );
 }
 
@@ -497,22 +532,27 @@ export function DMExtTextOut(
   lpOpaqueRect = 0,
   wOptions = 0
 ) {
-  return brute(this, lpDestDev, EXT_TEXT_OUT, () =>
-    extTextOut(
-      this,
-      lpDestDev,
-      x,
-      y,
-      lpClipRect,
-      lpString,
-      count,
-      lpFontInfo,
-      lpDrawMode,
-      lpTextXForm,
-      lpCharWidths,
-      lpOpaqueRect,
-      wOptions
-    )
+  return brute(
+    this,
+    lpDestDev,
+    EXT_TEXT_OUT,
+    () =>
+      extTextOut(
+        this,
+        lpDestDev,
+        x,
+        y,
+        lpClipRect,
+        lpString,
+        count,
+        lpFontInfo,
+        lpDrawMode,
+        lpTextXForm,
+        lpCharWidths,
+        lpOpaqueRect,
+        wOptions
+      ),
+    herculesExtTextOut
   );
 }
 
@@ -560,8 +600,12 @@ export function DMGetCharWidth(
   _lpDrawMode: number,
   lpTextXForm: number
 ) {
-  return brute(this, lpDestDev, GET_CHAR_WIDTH, () =>
-    getCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo, lpTextXForm)
+  return brute(
+    this,
+    lpDestDev,
+    GET_CHAR_WIDTH,
+    () => getCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo, lpTextXForm),
+    () => herculesGetCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo)
   );
 }
 
@@ -580,8 +624,13 @@ export function DMDibBits(
   lpDrawMode: number,
   _lpTranslate: number
 ) {
-  return brute(this, lpBitmap, DEVICE_BITMAP_BITS, () =>
-    deviceBitmapBits(this, lpBitmap, fGet, iStart, cScans, lpDIBits, lpBitmapInfo, lpDrawMode)
+  return brute(
+    this,
+    lpBitmap,
+    DEVICE_BITMAP_BITS,
+    () =>
+      deviceBitmapBits(this, lpBitmap, fGet, iStart, cScans, lpDIBits, lpBitmapInfo, lpDrawMode),
+    'monochrome'
   );
 }
 
@@ -590,7 +639,7 @@ export function DMStretchDIBits(this: any, lpDestDev: number) {
 }
 
 export function DMSetDibToDev(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, DIB_TO_DEVICE, () => dibToDevice());
+  return brute(this, lpDestDev, DIB_TO_DEVICE, () => dibToDevice(), 'monochrome');
 }
 
 /**

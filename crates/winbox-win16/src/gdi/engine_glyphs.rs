@@ -7,7 +7,8 @@
 use winbox_raster::logical_font::Outline;
 use winbox_raster::{LogicalFont, Style};
 
-use crate::call::{Answer, Args, Implementation, Stop};
+use crate::call::{Answer, Args, Implementation, Later, Stop};
+use crate::engine::Engine;
 use crate::fonts::{FontManager, Request};
 use crate::system::System;
 
@@ -26,7 +27,7 @@ pub struct EngineContext {
 
 /// What the engine reads of a `FONTINFO` it realized (`GDI.EXE` seg3
 /// `22b3`).
-struct FontInfo {
+pub(crate) struct FontInfo {
     res_y: u16,
     res_x: u16,
     italic: u8,
@@ -179,6 +180,27 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
     answer
 }
 
+/// A character's glyph as the engine's context makes it at an angle, as
+/// `Surface.glyphOf` is asked of the context's font: `None` where the
+/// context has no face.
+pub(crate) fn context_glyph(
+    system: &System,
+    code: u8,
+    turn: u16,
+) -> Result<Option<super::text_out::outline::GlyphOutline>, Stop> {
+    let Some(font) = system
+        .printing
+        .drivers
+        .engine
+        .as_ref()
+        .and_then(|context| context.font.as_ref())
+    else {
+        return Ok(None);
+    };
+
+    glyph_of(font, code, f64::from(turn))
+}
+
 fn engine_set_font_context_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
     let angle = args.word(system);
@@ -274,7 +296,7 @@ fn engine_get_glyph_bmp_call(system: &mut System, args: &mut Args) -> Result<Ans
 /// A `FONTINFO`'s widths, filled as GDI fills them the first time they are
 /// asked for (`GDI.EXE` seg1 `6d04`-`6ddf`), as `widthsOf`: the font they
 /// are the engine's of, or `None`.
-fn widths_of(system: &mut System, far: u32) -> Option<(LogicalFont, FontInfo)> {
+pub(crate) fn widths_of(system: &mut System, far: u32) -> Option<(LogicalFont, FontInfo)> {
     let flags_at = at(far, 0x33);
     let mut flags = system.read_far(flags_at, 1)[0];
 
@@ -300,7 +322,7 @@ fn widths_of(system: &mut System, far: u32) -> Option<(LogicalFont, FontInfo)> {
 /// A character's width as `widths_of` fills them: the first character's
 /// 8, one outside the font its default character's, a font of fixed pitch
 /// all its width.
-fn width_of(font: &LogicalFont, info: &FontInfo, code: u16) -> Result<u16, Stop> {
+pub(crate) fn width_of(font: &LogicalFont, info: &FontInfo, code: u16) -> Result<u16, Stop> {
     if info.pix_width != 0 {
         return Ok(info.pix_width);
     }
@@ -350,6 +372,42 @@ fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<An
 
 /// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`), as in `engine-glyphs.ts`:
 /// a negative count's extent; nought for the rest.
+/// `EngineExtTextOut`: a negative count measured here, any other drawn
+/// (`engine_text.rs`).
+fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let given = {
+            let system = engine.system();
+            let mut peek = args;
+
+            super::engine_text::EngineTextArgs {
+                hdc: peek.word(&system),
+                device: peek.dword(&system),
+                x: peek.word(&system) as i16,
+                y: peek.word(&system) as i16,
+                clip: peek.dword(&system),
+                string: peek.dword(&system),
+                count: peek.word(&system) as i16,
+                font: peek.dword(&system),
+                draw_mode: peek.dword(&system),
+                xform: peek.dword(&system),
+                widths: peek.dword(&system),
+                opaque: peek.dword(&system),
+                options: peek.word(&system),
+                dc: None,
+            }
+        };
+
+        if given.count < 0 || given.font >> 16 == 0 {
+            let mut args = args;
+
+            return engine_ext_text_out_call(&mut engine.system(), &mut args);
+        }
+
+        super::engine_text::draw_engine_text(engine, given).await
+    })
+}
+
 fn engine_ext_text_out_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let hdc = args.word(system);
 
@@ -557,7 +615,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "EngineSetFontContext" => Implementation::Sync(engine_set_font_context_call),
         "EngineGetGlyphBmp" => Implementation::Sync(engine_get_glyph_bmp_call),
         "EngineGetCharWidth" => Implementation::Sync(engine_get_char_width_call),
-        "EngineExtTextOut" => Implementation::Sync(engine_ext_text_out_call),
+        "EngineExtTextOut" => Implementation::Async(engine_ext_text_out_any),
         "EngineMakeFontDir" => Implementation::Sync(engine_make_font_dir_call),
         "ConvertOutlineFontFile" => Implementation::Sync(convert_outline_font_file_call),
         _ => return None,
