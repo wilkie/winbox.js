@@ -1988,6 +1988,31 @@ impl System {
         self.place_window(index, -cx, -cy, width + 2 * cx, height + 2 * cy)
     }
 
+    /// A minimized window no longer one, where it lies: its title hidden,
+    /// its placement normal again; the place it had before, for its caller
+    /// to put it at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`). `None`
+    /// where it was not minimized. The TypeScript engine's
+    /// `leaveMinimized`.
+    pub(crate) fn leave_minimized(
+        &mut self,
+        index: usize,
+    ) -> Result<Option<[i32; 4]>, crate::call::Stop> {
+        let (placement, rect) = {
+            let shown = self.shown(index);
+
+            (shown.placement, shown.restore_rect)
+        };
+        let Some(rect) = rect.filter(|_| placement == Placement::Minimized) else {
+            return Ok(None);
+        };
+
+        self.keep_icon_place(index);
+        self.leave_icon(index);
+        self.shown_mut(index).placement = Placement::Normal;
+        self.layout(index)?;
+        Ok(Some(rect))
+    }
+
     /// A maximized window put back where it was.
     pub fn restore(&mut self, index: usize) -> Result<(), crate::call::Stop> {
         let (placement, rect) = {

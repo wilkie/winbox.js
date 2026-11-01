@@ -87,6 +87,22 @@ export async function showRaster(
     return was ? TRUE : FALSE;
   }
 
+  /* A window at the top that shows restored from its icon, as `MinMaximize`
+   * does it (`USER.EXE` seg6 `1ca6`-`1d81`, `1e2c`-`1e4b`): one
+   * `SetWindowPos`, its activation inside (`restoreFromIcon`). */
+  if (fromIcon && was && !child) {
+    await restoreFromIcon(
+      system,
+      hwnd,
+      window,
+      restoringQuietly && !!window.desktop.activeTop,
+      send
+    );
+    system.rasterInput?.nudge();
+
+    return TRUE;
+  }
+
   /* A hidden window minimized and not made active is not told it shows: it
    * is put among the icons, at the bottom, in one move (`showmin`). */
   if (show === User.SW_SHOWMINNOACTIVE && !was && !shown.parent) {
@@ -691,6 +707,61 @@ export async function showRaster(
   return was ? TRUE : FALSE;
 }
 
+/**
+ * A window at the top restored from its icon, as `MinMaximize` restores it
+ * (`USER.EXE` seg6 `1ca6`-`1d81`), once `WM_QUERYOPEN` let it: its title
+ * hidden (`1cdd`-`1ce0`, seg1 `6e25` with nought), `WS_MINIMIZE` taken off
+ * and the place it had before put back (`1d1c`-`1d39`), then one
+ * `SetWindowPos` of the block's first entry after `HWND_TOP`,
+ * `SWP_NOCOPYBITS | SWP_FRAMECHANGED` -- and `SWP_NOACTIVATE` for
+ * `SW_SHOWNOACTIVATE` where a window is active, USER's `[108h]` (`1b3d`-
+ * `1b44`) -- so that it is asked, made active, drawn and told as any
+ * `SetWindowPos` (`1d56`-`1d81`; `minact`: 120h, the activation's messages
+ * between `WM_NCCALCSIZE` and `WM_NCPAINT`). Then the windows it owns shown
+ * again (`1d86`-`1d91`, seg14 `0e37` with 3), the focus given it (`1e2c`-
+ * `1e35`, seg1 `381d`), and, at the top, `WM_ACTIVATE` with `WA_ACTIVE` and
+ * nought (`1e3a`-`1e4b`).
+ */
+async function restoreFromIcon(
+  system: any,
+  hwnd: number,
+  window: RasterWindow,
+  quiet: boolean,
+  send: (message: number, wParam: number, lParam: any) => Promise<any>
+) {
+  const desktop = window.desktop;
+  const shown = window.window;
+  const rect = desktop.leaveMinimized(shown);
+  const origin = originOf(shown);
+
+  if (!rect) {
+    return;
+  }
+
+  await positionRaster(
+    system,
+    hwnd,
+    window,
+    0,
+    rect.left - origin.x,
+    rect.top - origin.y,
+    rect.width,
+    rect.height,
+    SWP_NOCOPYBITS | SWP_FRAMECHANGED | (quiet ? SWP_NOACTIVATE : 0)
+  );
+
+  if (!system.handles.resolve(hwnd)) {
+    return;
+  }
+
+  desktop.hideOwned(shown, false);
+  await setFocus(system, hwnd);
+
+  if (system.handles.resolve(hwnd)) {
+    await send(User.WM_ACTIVATE, WA_ACTIVE, 0);
+  }
+}
+
 /** Where a window's parent's client area is on the screen: the screen's corner for one at the top. */
 function originOf(shown: any) {
   const parent = shown.parent;
@@ -1259,36 +1330,78 @@ function sendTo(system: any, member: any, message: number, wParam: number, lPara
 }
 
 /**
- * The windows that come to the front with a window at the top: the owner
- * it is under, if any, at the head, and every shown window that owner owns
- * above it, as they lie; top first.
+ * The windows that come to the front with a window at the top, top first,
+ * as `SetWindowPos` lists them (`USER.EXE` seg7 `12af`, `14ae`-`15c6`,
+ * `1606`-`16f8`). **Read out**:
+ *
+ * * The head is the window it is owned under at the end of its owners,
+ *   each owner taken as the window at the top it is in (`14fa`-`150f`,
+ *   `173a`). A window owned by none that owns none brings nothing
+ *   (`14df`-`14f7`).
+ * * From the head, each window it owns -- hidden or shown, an icon's title
+ *   among them, the windows at the top front to back (`177d`) -- with the
+ *   windows it owns before it, the same way, and the head after them
+ *   (`1631`-`16c5`); each after the one before (`16da`-`16ed`).
+ * * The window moved, or the window it is owned under among those, goes
+ *   where it was asked among them -- for `HWND_TOP`, which is all this is
+ *   asked for, before the first of them (`1611`-`1622`, `1631`-`1662`,
+ *   `15d7`).
  */
 function familyOf(desktop: any, shown: any) {
+  /* An icon's title is USER's window from the time it is first shown
+   * (seg1 `6e25`, `6ab8`: made as it is to be shown); winbox.js makes it
+   * with the icon. */
+  const tops = desktop.windows.filter(
+    (other: any) => !other.parent && (!other.titleOf || other.titleOf.titleAsked)
+  );
+  const topOwner = (window: any) => {
+    let at = window.owner ?? window.titleOf ?? null;
+
+    while (at?.parent) {
+      at = at.parent;
+    }
+
+    return at;
+  };
+  const ownedBy = (owner: any) => tops.filter((other: any) => topOwner(other) === owner);
   let head = shown;
 
-  while (head.owner && !head.owner.parent) {
-    head = head.owner;
+  for (let up = topOwner(head); up; up = topOwner(up)) {
+    head = up;
   }
 
-  const owns = (window: any): boolean => {
-    for (let at = window.owner; at; at = at.owner) {
-      if (at === head) {
-        return true;
+  if (!shown.owner && !ownedBy(shown).length) {
+    return [shown];
+  }
+
+  const seen = new Set<any>();
+  const build = (owner: any, moved: any): any[] => {
+    if (seen.has(owner)) {
+      return [];
+    }
+
+    seen.add(owner);
+
+    let branch = moved;
+
+    while (branch && topOwner(branch) !== owner) {
+      branch = topOwner(branch);
+    }
+
+    const out: any[] = branch ? build(branch, moved) : [];
+
+    for (const window of ownedBy(owner)) {
+      if (window !== branch) {
+        out.push(...build(window, null));
       }
     }
 
-    return false;
+    out.push(owner);
+
+    return out;
   };
-  const owned = desktop.windows.filter(
-    (other: any) => !other.parent && other !== shown && owns(other) && other.visible
-  );
-  const members = [...owned, ...(shown === head ? [] : [shown])];
 
-  members.sort(
-    (one: any, other: any) => desktop.windows.indexOf(one) - desktop.windows.indexOf(other)
-  );
-
-  return shown === head ? [...members, head] : [...members.filter((m: any) => m !== head), head];
+  return build(head, shown);
 }
 
 /** Whether a window and every window it is in are shown. */

@@ -103,57 +103,115 @@ pub enum Between {
 }
 
 impl System {
-    /// The windows that come to the front with a window at the top: the
-    /// owner it is under, if any, at the head, and every shown window that
-    /// owner owns above it, as they lie; top first.
+    /// The windows that come to the front with a window at the top, top
+    /// first, as `SetWindowPos` lists them for `HWND_TOP` (`USER.EXE` seg7
+    /// `12af`, `14ae`-`15c6`, `1606`-`16f8`). **Read out**: the head is the
+    /// window it is owned under at the end of its owners, each owner taken
+    /// as the window at the top it is in (`14fa`-`150f`, `173a`); a window
+    /// owned by none that owns none brings nothing (`14df`-`14f7`). From the
+    /// head, each window it owns -- hidden or shown, an icon's title among
+    /// them once USER has made it, front to back (`177d`) -- with the windows
+    /// it owns before it, the same way, and the head after them
+    /// (`1631`-`16c5`); the window moved, or the one it is owned under among
+    /// them, first of them for `HWND_TOP` (`1611`-`1662`, `15d7`). The
+    /// TypeScript engine's `familyOf`.
     pub(crate) fn family_of(&self, shown: usize) -> Vec<usize> {
-        let mut head = shown;
-
-        while let Some(owner) = self.windows[head].as_ref().and_then(|window| window.owner) {
-            if self.windows[owner]
-                .as_ref()
-                .is_some_and(|window| window.parent.is_some())
-            {
-                break;
-            }
-
-            head = owner;
-        }
-
-        let owns = |window: usize| {
-            let mut at = self.windows[window]
-                .as_ref()
-                .and_then(|window| window.owner);
-
-            while let Some(owner) = at {
-                if owner == head {
-                    return true;
-                }
-
-                at = self.windows[owner].as_ref().and_then(|window| window.owner);
-            }
-
-            false
-        };
-        let mut members: Vec<usize> = self
+        let tops: Vec<usize> = self
             .z_order
             .iter()
             .copied()
             .filter(|&other| {
                 let window = self.windows[other].as_ref().expect("a window");
 
-                window.parent.is_none() && other != shown && owns(other) && window.visible
+                window.parent.is_none()
+                    && window.title_of.is_none_or(|icon| {
+                        self.windows[icon]
+                            .as_ref()
+                            .is_some_and(|icon| icon.title_asked)
+                    })
             })
             .collect();
+        let top_owner = |window: usize| {
+            let window = self.windows[window].as_ref()?;
+            let mut at = window.owner.or(window.title_of)?;
 
-        if shown != head {
-            members.push(shown);
+            while let Some(parent) = self.windows[at].as_ref().and_then(|window| window.parent) {
+                at = parent;
+            }
+
+            Some(at)
+        };
+        let owned_by = |owner: usize| -> Vec<usize> {
+            tops.iter()
+                .copied()
+                .filter(|&other| top_owner(other) == Some(owner))
+                .collect()
+        };
+        let mut head = shown;
+
+        while let Some(up) = top_owner(head) {
+            head = up;
         }
 
-        members.sort_by_key(|member| self.z_order.iter().position(|other| other == member));
-        members.retain(|&member| member != head);
-        members.push(head);
-        members
+        if self.windows[shown]
+            .as_ref()
+            .is_some_and(|window| window.owner.is_none())
+            && owned_by(shown).is_empty()
+        {
+            return vec![shown];
+        }
+
+        fn build(
+            owner: usize,
+            moved: Option<usize>,
+            top_owner: &dyn Fn(usize) -> Option<usize>,
+            owned_by: &dyn Fn(usize) -> Vec<usize>,
+            seen: &mut Vec<usize>,
+            out: &mut Vec<usize>,
+        ) {
+            if seen.contains(&owner) {
+                return;
+            }
+
+            seen.push(owner);
+
+            let mut branch = moved;
+
+            while let Some(at) = branch {
+                if top_owner(at) == Some(owner) {
+                    break;
+                }
+
+                branch = top_owner(at);
+            }
+
+            // For `HWND_TOP` the branch moved goes before the first window
+            // the head owns (`15d7`).
+            if let Some(branch) = branch {
+                build(branch, moved, top_owner, owned_by, seen, out);
+            }
+
+            for window in owned_by(owner) {
+                if Some(window) != branch {
+                    build(window, None, top_owner, owned_by, seen, out);
+                }
+            }
+
+            out.push(owner);
+        }
+
+        let mut seen = Vec::new();
+        let mut out = Vec::new();
+
+        build(
+            head,
+            Some(shown),
+            &top_owner,
+            &owned_by,
+            &mut seen,
+            &mut out,
+        );
+        out
     }
 
     /// The windows `ActivateWindow` brings to the front with a window at the
@@ -1019,6 +1077,57 @@ impl Engine {
         Ok(zoom)
     }
 
+    /// A window at the top restored from its icon, as `MinMaximize` restores
+    /// it (`USER.EXE` seg6 `1ca6`-`1d81`), once `WM_QUERYOPEN` let it: its
+    /// title hidden (`1cdd`-`1ce0`, seg1 `6e25` with nought), `WS_MINIMIZE`
+    /// taken off and the place it had before put back (`1d1c`-`1d39`), then
+    /// one `SetWindowPos` of the block's first entry after `HWND_TOP`,
+    /// `SWP_NOCOPYBITS | SWP_FRAMECHANGED` -- and `SWP_NOACTIVATE` for
+    /// `SW_SHOWNOACTIVATE` where a window is active, USER's `[108h]`
+    /// (`1b3d`-`1b44`) -- asked, made active, drawn and told as any
+    /// `SetWindowPos` (`1d56`-`1d81`; `minact`: 120h). Then the windows it
+    /// owns shown again (`1d86`-`1d91`, seg14 `0e37` with 3), the focus
+    /// given it (`1e2c`-`1e35`, seg1 `381d`), and `WM_ACTIVATE` with
+    /// `WA_ACTIVE` and nought (`1e3a`-`1e4b`). The TypeScript engine's
+    /// `restoreFromIcon`.
+    async fn restore_from_icon(&self, hwnd: u16, index: usize, quiet: bool) -> Result<(), Stop> {
+        let (rect, origin) = {
+            let mut system = self.system();
+            let rect = system.leave_minimized(index)?;
+
+            (rect, system.origin_of(index))
+        };
+        let Some([left, top, width, height]) = rect else {
+            return Ok(());
+        };
+
+        self.position_raster(
+            hwnd,
+            index,
+            0,
+            (left - origin.0) as i16,
+            (top - origin.1) as i16,
+            width as i16,
+            height as i16,
+            SWP_NOCOPYBITS | SWP_FRAMECHANGED | if quiet { SWP_NOACTIVATE } else { 0 },
+        )
+        .await?;
+
+        if self.gone(index) {
+            return Ok(());
+        }
+
+        self.system().hide_owned(index, false);
+        self.set_focus(hwnd).await?;
+
+        if !self.gone(index) {
+            self.send_message(hwnd, WM_ACTIVATE, WA_ACTIVE, &mut Param::Value(0))
+                .await?;
+        }
+
+        Ok(())
+    }
+
     /// A window shown, hidden or brought forward on the raster desktop; its
     /// answer, whether it was visible before. `told` is whether it is sent
     /// `WM_SHOWWINDOW` -- not when `DestroyWindow` hides it.
@@ -1086,6 +1195,18 @@ impl Engine {
             || self.gone(index)
         {
             return Ok(was);
+        }
+
+        // A window at the top that shows restored from its icon, as
+        // `MinMaximize` does it (`USER.EXE` seg6 `1ca6`-`1d81`,
+        // `1e2c`-`1e4b`): one `SetWindowPos`, its activation inside
+        // (`restore_from_icon`).
+        if from_icon && was && !child {
+            let quiet = restoring_quietly && self.system().active_top().is_some();
+
+            self.restore_from_icon(hwnd, index, quiet).await?;
+            self.system().nudge()?;
+            return Ok(true);
         }
 
         // A hidden window minimized and not made active is not told it

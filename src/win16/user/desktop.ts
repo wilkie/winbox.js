@@ -3774,6 +3774,25 @@ export class Desktop {
     this.place(window, -cx, -cy, this.screen.width + 2 * cx, this.screen.height + 2 * cy);
   }
 
+  /**
+   * A minimized window no longer one, where it lies: its title hidden, its
+   * state normal again; the place it had before, for its caller to put it
+   * at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`). Null where it was
+   * not minimized.
+   */
+  leaveMinimized(window: DesktopWindow) {
+    if (window.state !== 'minimized' || !window.restoreRect) {
+      return null;
+    }
+
+    this.#keepIconPlace(window);
+    this.#leaveIcon(window);
+    window.state = 'normal';
+    this.#layout(window);
+
+    return { ...window.restoreRect };
+  }
+
   /** Puts a maximized or minimized window back where it was. */
   restore(window: DesktopWindow) {
     if (window.state === 'normal' || !window.restoreRect) {
