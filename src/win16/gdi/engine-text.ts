@@ -6,15 +6,16 @@ import { GlobalLock } from '../kernel/GlobalLock.js';
 import { GlobalReAlloc } from '../kernel/GlobalReAlloc.js';
 import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
 import { DWORD, UINT } from '../types.js';
+import { CreatePen } from './CreatePen.js';
 import { CreateSolidBrush } from './CreateSolidBrush.js';
 import { DeleteObject } from './DeleteObject.js';
 import { SelectObject } from './SelectObject.js';
-import { SetBkColor } from './SetBkColor.js';
+import { GetBkColor, SetBkColor } from './SetBkColor.js';
 import { GetTextColor, SetTextColor } from './SetTextColor.js';
 import { engineGlyph, setContext, sineOf, widthsOf } from './engine-glyphs.js';
 import { blitRects } from './printer-blits.js';
 import { keptDeviceFont } from './printer-driver.js';
-import { callDriver, drawingOf, drawMode, onStackBytes } from './printer-output.js';
+import { callDriver, drawingOf, drawMode, driverPolygon, onStackBytes } from './printer-output.js';
 
 /**
  * GDI drawing a string of a TrueType font for a printer's driver:
@@ -115,7 +116,12 @@ const ETO_CLIPPED = 4;
 
 /** The driver's table of entries GDI calls through (the context's 2Eh). */
 const BIT_BLT = 1;
+const STR_BLT = 11;
 const EXT_TEXT_OUT = 14;
+
+/** `PATCOPY`, the raster operation GDI fills a background with. */
+const PATCOPY = 0x00f00021;
+const PS_NULL = 5;
 
 /**
  * The raster operation a turned glyph is drawn with, by the context's
@@ -772,15 +778,17 @@ export interface EngineTextArgs {
  * * Otherwise the string once, transparent, the options as given.
  *
  * The string starts at the first glyph's A space past the place
- * (`6565`). A turned font goes glyph by glyph (`turnedGlyphs`). The
- * driver's answers are not kept.
+ * (`6565`). A turned font goes glyph by glyph (`turnedGlyphs`), on an
+ * opaque background first filled as a polygon of the turned box
+ * (`turnedGround`, `63ea`-`64be`). A driver without `RC_GDI20_OUTPUT` is
+ * given each call through `byStrBlt` instead of its `ExtTextOut` (seg8
+ * `00e4`). The driver's answers are not kept.
  *
- * Not followed: a turned string's opaque background, which GDI fills as a
- * region of the turned box (`63ea`-`64be`); the driver's `StrBlt` a glyph
- * at a time for a driver without `RC_GDI20_OUTPUT` (seg8 `00e4`); the
- * count cut to what GDI's stack holds (`62a5`); the context's flag 40h at
- * 0Bh, which counts the string turned; and the `DRAWMODE` GDI hands on
- * for no characters, which is what its stack held.
+ * Not followed: the count cut to what GDI's stack holds (`62a5`), which
+ * hangs on how deep GDI's own frames are; the context's flag 40h at 0Bh,
+ * which counts the string turned, and which only a context of the display
+ * has (`CreateDC`, seg1 `0249`-`024f`); and the `DRAWMODE` GDI hands on for
+ * no characters, which is what its stack held.
  */
 export async function drawEngineText(system: any, args: EngineTextArgs) {
   const surface = args.surface ?? system.handles.resolve(args.hdc);
@@ -813,7 +821,9 @@ export async function drawEngineText(system: any, args: EngineTextArgs) {
     raster &= ~(RC_GDI20_OUTPUT | RC_OP_DX_OUTPUT);
   }
 
-  if (!(raster & RC_GDI20_OUTPUT) && !(turned && !outline)) {
+  /* A font GDI draws as an outline itself (seg8 `01a4`, into `042a`),
+   * which no font WinBox realizes is. */
+  if (outline) {
     return answer;
   }
 
@@ -907,7 +917,7 @@ async function drawString(
   let state = 2;
   let shift = spaced.firstSpace;
   const calls: number[] = [];
-  const plan = { transparent: false };
+  const plan = { transparent: false, ground: false };
 
   if (!count) {
     shift = 0;
@@ -977,9 +987,34 @@ async function drawString(
       }
     } else {
       plan.transparent = true;
+      plan.ground = true;
     }
   } else {
     plan.transparent = true;
+  }
+
+  if (plan.ground) {
+    await turnedGround(system, surface, args, font, spaced, options, opaque);
+  }
+
+  /* A driver without `RC_GDI20_OUTPUT` has each call made through its
+   * `StrBlt` (`62e1`-`62f2`: the procedure at `621f` rather than `6221`). */
+  if (!(raster & RC_GDI20_OUTPUT)) {
+    const strings = { device: args.device >>> 0, cacheFont, modeBytes, spaced, font, options };
+
+    for (const call of calls) {
+      await byStrBlt(system, surface, args, strings, call, box, x + (call === 0xc2 ? shift : 0));
+    }
+
+    if (plan.transparent && turned) {
+      await turnedGlyphs(system, surface, args, font, file, spaced.widths, modeBytes);
+    } else if (plan.transparent) {
+      modeBytes[2] = TRANSPARENT;
+      modeBytes[3] = 0;
+      await byStrBlt(system, surface, args, strings, state | 0xf8, box, x + shift);
+    }
+
+    return;
   }
 
   const procedure = pdevice.driver.procs[EXT_TEXT_OUT - 1] ?? 0;
@@ -1048,6 +1083,265 @@ async function drawString(
   modeBytes[2] = TRANSPARENT;
   modeBytes[3] = 0;
   await callBack(state | 0xf8, x + shift);
+}
+
+/**
+ * A brush of the context's background colour selected (seg8 `0023`-`0061`),
+ * and with `pen` a null pen (`0004`-`001b`), for `body`; then both put back
+ * and deleted (seg1 `6585`).
+ */
+async function withGround(system: any, hdc: number, pen: boolean, body: () => Promise<void>) {
+  const brush = CreateSolidBrush.call(system, GetBkColor.call(system, hdc));
+  const oldBrush = await SelectObject.call(system, hdc, brush);
+  const nullPen = pen ? CreatePen.call(system, PS_NULL, 0, 0) : 0;
+  const oldPen = pen ? await SelectObject.call(system, hdc, nullPen) : 0;
+
+  try {
+    await body();
+  } finally {
+    await SelectObject.call(system, hdc, oldBrush);
+    await DeleteObject.call(system, brush);
+
+    if (pen) {
+      await SelectObject.call(system, hdc, oldPen);
+      await DeleteObject.call(system, nullPen);
+    }
+  }
+}
+
+/**
+ * A turned string's opaque background (seg1 `63ea`-`64be`): with a brush of
+ * the background colour and a null pen, a polygon of the turned box filled
+ * through GDI's own `Polygon` in the device's terms, `WINDING` (seg24
+ * `0396`) -- the place, carried along the baseline by the string's extent
+ * (its widths and its two A spaces, past 7FFFh cut to 7FFFh less the place,
+ * `63bd`-`63d5`) and down by the font's cell, each carry through GDI's own
+ * sines (seg33) with the resolutions' ratio taken across (`625b`); then,
+ * with options and an opaque rectangle given, the rectangle filled with
+ * `PATCOPY` through the driver's `BitBlt` for each of the clip's
+ * rectangles within it (`2ef2`).
+ *
+ * **Recorded** by `prttx2`: Arial at an em of 24 turned 90 degrees, `Ab` at
+ * 30,40 is the polygon 30,40 30,11 57,11 57,40, `OS_WINDPOLYGON`; at 30
+ * degrees 30,40 55,25 69,48 44,63.
+ */
+async function turnedGround(
+  system: any,
+  surface: any,
+  args: EngineTextArgs,
+  font: number,
+  spaced: { widths: number[]; firstSpace: number; lastSpace: number },
+  options: number,
+  opaque: number
+) {
+  const x = signed16(args.x);
+  const y = signed16(args.y);
+  const resY = read16(system, font, 4);
+  const resX = read16(system, font, 6);
+  const across = Math.floor((0x100 * resX + (resY >> 1)) / resY) & 0xffff;
+  const down = Math.floor((0x100 * resY + (resX >> 1)) / resX) & 0xffff;
+  const angle = read16(system, font, 0x48);
+  const cell = signed16(read16(system, font, 0x16));
+  const scaled = (value: number, ratio: number) =>
+    signed16(Math.floor((signed16(value) * ratio) / 0x100) & 0xffff);
+  let extent = spaced.firstSpace - spaced.lastSpace;
+
+  for (const width of spaced.widths) {
+    extent += signed16(width);
+  }
+
+  if (extent > 0x7fff || extent + x > 0x7fff) {
+    extent = 0x7fff - x;
+  }
+
+  const alongX = x + sineOf(extent, angle, true);
+  const alongY = y - sineOf(scaled(extent, down), angle, false);
+  const acrossX = sineOf(scaled(cell, across), angle, false);
+  const acrossY = sineOf(cell, angle, true);
+
+  await withGround(system, args.hdc, true, async () => {
+    await driverPolygon(
+      system,
+      surface,
+      [
+        [x, y],
+        [alongX, alongY],
+        [alongX + acrossX, alongY + acrossY],
+        [x + acrossX, y + acrossY],
+      ],
+      { winding: true }
+    );
+
+    if (options && opaque >>> 16) {
+      const [l, t, r, b] = [0, 2, 4, 6].map((offset) => signed16(read16(system, opaque, offset)));
+
+      await fillRects(
+        system,
+        surface,
+        args.device >>> 0,
+        blitRects(surface, [l, t, r, b], true, true)
+      );
+    }
+  });
+}
+
+/** The driver's `BitBlt` filling each rectangle with `PATCOPY`, no source. */
+async function fillRects(system: any, surface: any, device: number, rects: number[][]) {
+  const procedure = surface.driverDevice.driver.procs[BIT_BLT - 1] ?? 0;
+
+  if (!procedure) {
+    return;
+  }
+
+  for (const rect of rects) {
+    await callDriver(system, procedure, [
+      [device, DWORD],
+      [rect[0] & 0xffff, UINT],
+      [rect[1] & 0xffff, UINT],
+      [0, DWORD],
+      [0, UINT],
+      [0, UINT],
+      [(rect[2] - rect[0]) & 0xffff, UINT],
+      [(rect[3] - rect[1]) & 0xffff, UINT],
+      [PATCOPY, DWORD],
+      [drawingOf(surface).brush?.far ?? 0, DWORD],
+      [drawMode(system, surface), DWORD],
+    ]);
+  }
+}
+
+/** What `byStrBlt` draws with, the same for each call of a string. */
+interface Strings {
+  device: number;
+  cacheFont: number;
+  modeBytes: Uint8Array;
+  spaced: { widths: number[]; firstSpace: number; lastSpace: number };
+  font: number;
+  options: number;
+}
+
+/**
+ * One of the calls `drawString` plans, for a driver without
+ * `RC_GDI20_OUTPUT` (seg8 `00e4`-`020a`), `call` its flag byte:
+ *
+ * * A call of no string (its bits 78h not all set) fills: the opaque
+ *   rectangle given where bit 80h is set, else the text's box, cut to the
+ *   clip (`663e`), with `PATCOPY` through the driver's `BitBlt`, a brush of
+ *   the background colour selected (`0065`-`00c8`).
+ * * The string's call fills the opaque rectangle the same way where
+ *   `ETO_OPAQUE` is among the options (`00fa`); cuts the clip to the
+ *   rectangle for `ETO_CLIPPED`, drawing nothing where nothing is left
+ *   (`0118`); and hands the driver's `StrBlt` each character on its own --
+ *   the place moved by the ascent turned, each character at the widths
+ *   before it carried along the baseline, through GDI's sines with the
+ *   resolutions' ratio taken across (`0138`-`0205`) -- with the clip, the
+ *   cache's font, GDI's copy of the `DRAWMODE` and the `TEXTXFORM`.
+ *
+ * **Recorded** by `prttx2`'s device "Plain": `xAy` of Arial at 24 at 10,10
+ * is `StrBlt` at 10, 21 and 37, a character each, the font at 42h of the
+ * cache's segment; given `ETO_OPAQUE` and a rectangle, the rectangle is
+ * filled twice before them, once by the call that fills it and once by the
+ * string's.
+ */
+async function byStrBlt(
+  system: any,
+  surface: any,
+  args: EngineTextArgs,
+  strings: Strings,
+  call: number,
+  box: [number, number, number, number] | null,
+  xAt: number
+) {
+  const opaque = args.opaque >>> 0;
+  const rectOf = (far: number) =>
+    [0, 2, 4, 6].map((offset) => signed16(read16(system, far, offset)));
+  const clip = args.clip >>> 16 ? rectOf(args.clip >>> 0) : [-0x8000, -0x8000, 0x7fff, 0x7fff];
+  const cut = (a: number[], b: number[]) => {
+    const r = [
+      Math.max(a[0], b[0]),
+      Math.max(a[1], b[1]),
+      Math.min(a[2], b[2]),
+      Math.min(a[3], b[3]),
+    ];
+
+    return r[0] < r[2] && r[1] < r[3] ? r : null;
+  };
+  const fill = async (rect: number[] | null) => {
+    const within = rect && cut(rect, clip);
+
+    if (within) {
+      await withGround(system, args.hdc, false, () =>
+        fillRects(system, surface, strings.device, [within])
+      );
+    }
+  };
+  const given = call & 0x80 && opaque >>> 16 ? rectOf(opaque) : null;
+
+  if ((call & 0x78) !== 0x78) {
+    await fill(call & 0x80 ? given : box);
+    return;
+  }
+
+  if (strings.options & ETO_OPAQUE) {
+    await fill(given);
+  }
+
+  let bounds: number[] | null = clip;
+
+  if (strings.options & ETO_CLIPPED && opaque >>> 16) {
+    bounds = cut(clip, rectOf(opaque));
+  }
+
+  const procedure = surface.driverDevice.driver.procs[STR_BLT - 1] ?? 0;
+
+  if (!bounds || !procedure) {
+    return;
+  }
+
+  const font = strings.font;
+  const resY = read16(system, font, 4);
+  const resX = read16(system, font, 6);
+  const across = Math.floor((0x100 * resX + (resY >> 1)) / resY) & 0xffff;
+  const down = Math.floor((0x100 * resY + (resX >> 1)) / resX) & 0xffff;
+  const angle = read16(system, font, 0x48);
+  const ascent = read16(system, font, 8);
+  const scaled = (value: number, ratio: number) =>
+    signed16(Math.floor(((value & 0xffff) * ratio) / 0x100) & 0xffff);
+  const x0 = signed16(sineOf(scaled(ascent, across), angle, false) + xAt);
+  const y0 = signed16(signed16(args.y) - (ascent - sineOf(ascent, angle, true)));
+  const clipBytes = new Uint8Array(8);
+
+  bounds.forEach((value, step) => {
+    clipBytes[step * 2] = value & 0xff;
+    clipBytes[step * 2 + 1] = (value >> 8) & 0xff;
+  });
+
+  await onStackBytes(system, new Uint8Array([...strings.modeBytes, ...clipBytes]), async (far) => {
+    let before = 0;
+
+    for (let step = 0; step < strings.spaced.widths.length; step++) {
+      const along = before;
+
+      before = (before + signed16(strings.spaced.widths[step])) & 0xffff;
+
+      const sx = sineOf(signed16(along), angle, true) + x0;
+      const sy = -sineOf(scaled(along, down), angle, false) + y0;
+
+      await callDriver(system, procedure, [
+        [strings.device, DWORD],
+        [sx & 0xffff, UINT],
+        [sy & 0xffff, UINT],
+        [(far + 0x20) >>> 0, DWORD],
+        [((args.string & 0xffff0000) | ((args.string + step) & 0xffff)) >>> 0, DWORD],
+        [1, UINT],
+        [strings.cacheFont >>> 0, DWORD],
+        [far >>> 0, DWORD],
+        [args.xform >>> 0, DWORD],
+      ]);
+    }
+
+    return 0;
+  });
 }
 
 /**

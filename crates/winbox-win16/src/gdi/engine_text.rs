@@ -74,6 +74,9 @@ const TURNED_HEADER: u16 = 12;
 const DP_TEXT: usize = 0x22;
 const DP_RASTER: usize = 0x26;
 const RC_GDI20_OUTPUT: u16 = 0x10;
+/// `PATCOPY`, the raster operation GDI fills a background with.
+const PATCOPY: u32 = 0x00f0_0021;
+const PS_NULL: u16 = 5;
 const RC_OP_DX_OUTPUT: u16 = 0x4000;
 const TC_EA_DOUBLE: u16 = 0x200;
 const TEXTXFORM_ACCELERATOR: usize = 0x0f;
@@ -83,6 +86,7 @@ const ETO_OPAQUE: u16 = 2;
 const ETO_CLIPPED: u16 = 4;
 
 const BIT_BLT: u16 = 1;
+const STR_BLT: u16 = 11;
 const EXT_TEXT_OUT: u16 = 14;
 
 /// The raster operation a turned glyph is drawn with, by the context's
@@ -855,7 +859,9 @@ pub async fn draw_engine_text(engine: &Engine, args: EngineTextArgs) -> Result<A
         raster &= !(RC_GDI20_OUTPUT | RC_OP_DX_OUTPUT);
     }
 
-    if (outline || !turned) && raster & RC_GDI20_OUTPUT == 0 {
+    // A font GDI draws as an outline itself (seg8 `01a4`, into `042a`),
+    // which no font WinBox realizes is.
+    if outline {
         return Ok(Answer::Dword(answer));
     }
 
@@ -995,6 +1001,7 @@ async fn draw_string(
     };
     let mut calls: Vec<Call> = Vec::new();
     let mut transparent = false;
+    let mut ground = false;
 
     if count == 0 {
         calls.push(Call {
@@ -1090,9 +1097,53 @@ async fn draw_string(
             }
         } else {
             transparent = true;
+            ground = true;
         }
     } else {
         transparent = true;
+    }
+
+    if ground {
+        turned_ground(engine, dc, args, font, &spaced, options).await?;
+    }
+
+    // A driver without `RC_GDI20_OUTPUT` has each call made through its
+    // `StrBlt` (`62e1`-`62f2`), as `drawString`.
+    if raster & RC_GDI20_OUTPUT == 0 {
+        let strings = Strings {
+            cache_font,
+            mode: mode_bytes.clone(),
+            widths: spaced.widths.clone(),
+            font,
+            options,
+        };
+
+        for call in &calls {
+            by_str_blt(engine, dc, args, &strings, call.flags, boxed, call.x).await?;
+        }
+
+        if transparent && turned {
+            return turned_glyphs(engine, dc, args, font, file, &spaced.widths, &mode_bytes).await;
+        }
+
+        if transparent {
+            let mut strings = strings;
+
+            strings.mode[2] = TRANSPARENT;
+            strings.mode[3] = 0;
+            by_str_blt(
+                engine,
+                dc,
+                args,
+                &strings,
+                state | 0xf8,
+                boxed,
+                x.wrapping_add(shift),
+            )
+            .await?;
+        }
+
+        return Ok(());
     }
 
     let procedure = proc(&engine.system(), dc, EXT_TEXT_OUT).0;
@@ -1177,6 +1228,350 @@ async fn draw_string(
     mode[2] = TRANSPARENT;
     mode[3] = 0;
     call_back(state | 0xf8, x.wrapping_add(shift), mode).await
+}
+
+/// A GDI call of the engine's, answering its value.
+async fn gdi(engine: &Engine, name: &'static str, args: Vec<GuestArg>) -> Result<u32, Stop> {
+    call_named(engine, "GDI", name, &args)
+        .await
+        .map(|(answer, _)| answer.value().unwrap_or(0))
+}
+
+/// A brush of the background colour selected, and with `pen` a null pen
+/// (seg8 `0023`, `0004`), as `withGround`; what to put back after.
+async fn ground_selected(engine: &Engine, hdc: u16, pen: bool) -> Result<[u32; 4], Stop> {
+    let colour = gdi(engine, "GetBkColor", vec![GuestArg::Word(hdc)]).await?;
+    let brush = gdi(engine, "CreateSolidBrush", vec![GuestArg::Long(colour)]).await?;
+    let old_brush = gdi(
+        engine,
+        "SelectObject",
+        vec![GuestArg::Word(hdc), GuestArg::Word(brush as u16)],
+    )
+    .await?;
+    let (null_pen, old_pen) = if pen {
+        let null_pen = gdi(
+            engine,
+            "CreatePen",
+            vec![
+                GuestArg::Word(PS_NULL),
+                GuestArg::Word(0),
+                GuestArg::Long(0),
+            ],
+        )
+        .await?;
+        let old_pen = gdi(
+            engine,
+            "SelectObject",
+            vec![GuestArg::Word(hdc), GuestArg::Word(null_pen as u16)],
+        )
+        .await?;
+
+        (null_pen, old_pen)
+    } else {
+        (0, 0)
+    };
+
+    Ok([brush, old_brush, null_pen, old_pen])
+}
+
+/// The brush and pen `ground_selected` chose put back and deleted (seg1
+/// `6585`).
+async fn ground_restored(engine: &Engine, hdc: u16, kept: [u32; 4]) -> Result<(), Stop> {
+    let [brush, old_brush, null_pen, old_pen] = kept;
+
+    gdi(
+        engine,
+        "SelectObject",
+        vec![GuestArg::Word(hdc), GuestArg::Word(old_brush as u16)],
+    )
+    .await?;
+    gdi(engine, "DeleteObject", vec![GuestArg::Word(brush as u16)]).await?;
+
+    if null_pen != 0 {
+        gdi(
+            engine,
+            "SelectObject",
+            vec![GuestArg::Word(hdc), GuestArg::Word(old_pen as u16)],
+        )
+        .await?;
+        gdi(
+            engine,
+            "DeleteObject",
+            vec![GuestArg::Word(null_pen as u16)],
+        )
+        .await?;
+    }
+
+    Ok(())
+}
+
+/// The driver's `BitBlt` filling each rectangle with `PATCOPY`, as
+/// `fillRects`.
+async fn fill_rects(
+    engine: &Engine,
+    dc: usize,
+    device: u32,
+    rects: &[[i32; 4]],
+) -> Result<(), Stop> {
+    let procedure = proc(&engine.system(), dc, BIT_BLT).0;
+
+    if procedure == 0 {
+        return Ok(());
+    }
+
+    for rect in rects {
+        let (brush, mode) = {
+            let mut system = engine.system();
+
+            (brush_far(&system, dc), draw_mode(&mut system, dc))
+        };
+
+        call_driver(
+            engine,
+            procedure,
+            &[
+                GuestArg::Long(device),
+                GuestArg::Word(rect[0] as u16),
+                GuestArg::Word(rect[1] as u16),
+                GuestArg::Long(0),
+                GuestArg::Word(0),
+                GuestArg::Word(0),
+                GuestArg::Word((rect[2] - rect[0]) as u16),
+                GuestArg::Word((rect[3] - rect[1]) as u16),
+                GuestArg::Long(PATCOPY),
+                GuestArg::Long(brush),
+                GuestArg::Long(mode),
+            ],
+        )
+        .await?;
+    }
+
+    Ok(())
+}
+
+/// A turned string's opaque background (seg1 `63ea`-`64be`), as
+/// `turnedGround`: the turned box a polygon filled `WINDING` in the
+/// device's terms with a brush of the background colour and a null pen;
+/// then, with options and an opaque rectangle, the rectangle filled.
+async fn turned_ground(
+    engine: &Engine,
+    dc: usize,
+    args: EngineTextArgs,
+    font: u32,
+    spaced: &Spaced,
+    options: u16,
+) -> Result<(), Stop> {
+    let (res_y, res_x, angle, cell, given) = {
+        let system = engine.system();
+        let given = (args.opaque >> 16 != 0).then(|| {
+            let word = |offset: u16| i32::from(read16(&system, args.opaque, offset) as i16);
+
+            [word(0), word(2), word(4), word(6)]
+        });
+
+        (
+            u32::from(read16(&system, font, 4)),
+            u32::from(read16(&system, font, 6)),
+            i32::from(read16(&system, font, 0x48)),
+            i32::from(read16(&system, font, 0x16) as i16),
+            given,
+        )
+    };
+    let across = ((0x100 * res_x + (res_y >> 1)) / res_y.max(1)) & 0xffff;
+    let down = ((0x100 * res_y + (res_x >> 1)) / res_x.max(1)) & 0xffff;
+    let scaled = |value: i32, ratio: u32| {
+        i32::from(((i32::from(value as i16) * ratio as i32).div_euclid(0x100)) as u16 as i16)
+    };
+    let x = i32::from(args.x);
+    let y = i32::from(args.y);
+    let mut extent = spaced.first_space - spaced.last_space;
+
+    for &width in &spaced.widths {
+        extent += i32::from(width as i16);
+    }
+
+    if extent > 0x7fff || extent + x > 0x7fff {
+        extent = 0x7fff - x;
+    }
+
+    let along_x = x + sine_of(extent, angle, true);
+    let along_y = y - sine_of(scaled(extent, down), angle, false);
+    let across_x = sine_of(scaled(cell, across), angle, false);
+    let across_y = sine_of(cell, angle, true);
+    let kept = ground_selected(engine, args.hdc, true).await?;
+    let filled = async {
+        super::printer_output::driver_polygon(
+            engine,
+            dc,
+            &[
+                (x, y),
+                (along_x, along_y),
+                (along_x + across_x, along_y + across_y),
+                (x + across_x, y + across_y),
+            ],
+            Some(true),
+        )
+        .await?;
+
+        if options != 0
+            && let Some(rect) = given
+        {
+            let rects = blit_rects(&mut engine.system(), dc, rect, true, true);
+
+            fill_rects(engine, dc, args.device, &rects).await?;
+        }
+
+        Ok::<(), Stop>(())
+    }
+    .await;
+
+    ground_restored(engine, args.hdc, kept).await?;
+    filled
+}
+
+/// What `by_str_blt` draws with, as `Strings`.
+struct Strings {
+    cache_font: u32,
+    mode: Vec<u8>,
+    widths: Vec<u16>,
+    font: u32,
+    options: u16,
+}
+
+/// One of the calls `draw_string` plans, for a driver without
+/// `RC_GDI20_OUTPUT` (seg8 `00e4`-`020a`), as `byStrBlt`.
+#[allow(clippy::too_many_lines)]
+async fn by_str_blt(
+    engine: &Engine,
+    dc: usize,
+    args: EngineTextArgs,
+    strings: &Strings,
+    call: u8,
+    boxed: Option<[i32; 4]>,
+    x_at: i16,
+) -> Result<(), Stop> {
+    let rect_of = |system: &System, far: u32| {
+        let word = |offset: u16| i32::from(read16(system, far, offset) as i16);
+
+        [word(0), word(2), word(4), word(6)]
+    };
+    let (clip, given) = {
+        let system = engine.system();
+        let clip = if args.clip >> 16 != 0 {
+            rect_of(&system, args.clip)
+        } else {
+            [-0x8000, -0x8000, 0x7fff, 0x7fff]
+        };
+        let given = (args.opaque >> 16 != 0).then(|| rect_of(&system, args.opaque));
+
+        (clip, given)
+    };
+    let cut = |a: [i32; 4], b: [i32; 4]| {
+        let r = [
+            a[0].max(b[0]),
+            a[1].max(b[1]),
+            a[2].min(b[2]),
+            a[3].min(b[3]),
+        ];
+
+        (r[0] < r[2] && r[1] < r[3]).then_some(r)
+    };
+    let fill = |rect: Option<[i32; 4]>| async move {
+        if let Some(within) = rect.and_then(|rect| cut(rect, clip)) {
+            let kept = ground_selected(engine, args.hdc, false).await?;
+            let filled = fill_rects(engine, dc, args.device, &[within]).await;
+
+            ground_restored(engine, args.hdc, kept).await?;
+            filled?;
+        }
+
+        Ok::<(), Stop>(())
+    };
+    let given_here = if call & 0x80 != 0 { given } else { None };
+
+    if call & 0x78 != 0x78 {
+        return fill(if call & 0x80 != 0 { given_here } else { boxed }).await;
+    }
+
+    if strings.options & ETO_OPAQUE != 0 {
+        fill(given_here).await?;
+    }
+
+    let bounds = if strings.options & ETO_CLIPPED != 0
+        && let Some(rect) = given
+    {
+        cut(clip, rect)
+    } else {
+        Some(clip)
+    };
+    let procedure = proc(&engine.system(), dc, STR_BLT).0;
+    let Some(bounds) = bounds else {
+        return Ok(());
+    };
+
+    if procedure == 0 {
+        return Ok(());
+    }
+
+    let (res_y, res_x, angle, ascent) = {
+        let system = engine.system();
+
+        (
+            u32::from(read16(&system, strings.font, 4)),
+            u32::from(read16(&system, strings.font, 6)),
+            i32::from(read16(&system, strings.font, 0x48)),
+            read16(&system, strings.font, 8),
+        )
+    };
+    let across = ((0x100 * res_x + (res_y >> 1)) / res_y.max(1)) & 0xffff;
+    let down = ((0x100 * res_y + (res_x >> 1)) / res_x.max(1)) & 0xffff;
+    let scaled =
+        |value: u16, ratio: u32| i32::from(((u32::from(value) * ratio) >> 8) as u16 as i16);
+    let x0 = i32::from((sine_of(scaled(ascent, across), angle, false) + i32::from(x_at)) as i16);
+    let y0 = i32::from(
+        (i32::from(args.y) - (i32::from(ascent) - sine_of(i32::from(ascent), angle, true))) as i16,
+    );
+    let mut stack = strings.mode.clone();
+
+    stack.extend(
+        bounds
+            .iter()
+            .flat_map(|value| (*value as u16).to_le_bytes()),
+    );
+
+    on_stack(engine, &stack, |far| async move {
+        let mut before: u16 = 0;
+
+        for (step, &width) in strings.widths.iter().enumerate() {
+            let along = before;
+
+            before = before.wrapping_add(width);
+
+            let sx = sine_of(i32::from(along as i16), angle, true) + x0;
+            let sy = -sine_of(scaled(along, down), angle, false) + y0;
+
+            call_driver(
+                engine,
+                procedure,
+                &[
+                    GuestArg::Long(args.device),
+                    GuestArg::Word(sx as u16),
+                    GuestArg::Word(sy as u16),
+                    GuestArg::Long(at(far, 0x20)),
+                    GuestArg::Long(at(args.string, step as u16)),
+                    GuestArg::Word(1),
+                    GuestArg::Long(strings.cache_font),
+                    GuestArg::Long(far),
+                    GuestArg::Long(args.xform),
+                ],
+            )
+            .await?;
+        }
+
+        Ok(())
+    })
+    .await
+    .map(|_| ())
 }
 
 /// A turned string, glyph by glyph (seg1 `6693`, seg8 `024b`), as

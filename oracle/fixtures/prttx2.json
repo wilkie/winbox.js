@@ -1,0 +1,343 @@
+{
+  "probe": "prttx2",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1"
+    },
+    {
+      "function": "textout opaque",
+      "args": "Arial turned",
+      "result": "Ab",
+      "section": "Arial turned"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "30,40 30,11 57,11 57,40 30,40",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "35,25 0,0 17x15 00e20746",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "35,12 0,0 17x11 00e20746",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "exttextout opaque",
+      "args": "Arial turned",
+      "result": "Ab",
+      "section": "Arial turned"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "30,40 30,11 57,11 57,40 30,40",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "35,25 0,0 17x15 00e20746",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "35,12 0,0 17x11 00e20746",
+      "result": "",
+      "section": "Arial turned"
+    },
+    {
+      "function": "textout opaque",
+      "args": "Arial 30",
+      "result": "Ab",
+      "section": "Arial 30"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "30,40 55,25 69,48 44,63 30,40",
+      "section": "Arial 30"
+    },
+    {
+      "function": "bitblt",
+      "args": "38,39 0,0 17x20 00e20746",
+      "result": "",
+      "section": "Arial 30"
+    },
+    {
+      "function": "bitblt",
+      "args": "47,34 0,0 16x16 00e20746",
+      "result": "",
+      "section": "Arial 30"
+    },
+    {
+      "function": "exttextout opaque",
+      "args": "Arial 30",
+      "result": "Ab",
+      "section": "Arial 30"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "30,40 55,25 69,48 44,63 30,40",
+      "section": "Arial 30"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Arial 30"
+    },
+    {
+      "function": "bitblt",
+      "args": "38,39 0,0 17x20 00e20746",
+      "result": "",
+      "section": "Arial 30"
+    },
+    {
+      "function": "bitblt",
+      "args": "47,34 0,0 16x16 00e20746",
+      "result": "",
+      "section": "Arial 30"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "Arial 30"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC Plain",
+      "result": "1",
+      "section": "Arial 30"
+    },
+    {
+      "function": "strblt",
+      "args": "10,10 1",
+      "result": "'x' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "21,10 1",
+      "result": "'A' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "37,10 1",
+      "result": "'y' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial 10,10 3 0",
+      "result": "pdevice",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "10,10 1",
+      "result": "'x' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "21,10 1",
+      "result": "'A' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "37,10 1",
+      "result": "'y' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial 10,10 3 2",
+      "result": "pdevice",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "10,10 1",
+      "result": "'x' font+0042 clip=12,8,40,30",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "21,10 1",
+      "result": "'A' font+0042 clip=12,8,40,30",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "37,10 1",
+      "result": "'y' font+0042 clip=12,8,40,30",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial 10,10 3 4",
+      "result": "pdevice",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "bitblt",
+      "args": "10,10 0,0 29x27 00f00021",
+      "result": "",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "10,10 1",
+      "result": "'A' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "strblt",
+      "args": "27,10 1",
+      "result": "'b' font+0042 clip=0,0,128,64",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial 10,10 2 0",
+      "result": "pdevice",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial 10,10 0 2",
+      "result": "pdevice",
+      "section": "Plain Arial"
+    },
+    {
+      "function": "bitblt",
+      "args": "19,0 0,1 13x10 00e20746",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial turned 10,10 3 0",
+      "result": "pdevice",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "10,10 10,-28 37,-28 37,10 10,10",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "19,0 0,1 13x10 00e20746",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial turned 10,10 3 2",
+      "result": "pdevice",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "19,0 0,1 13x10 00e20746",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial turned 10,10 3 4",
+      "result": "pdevice",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "output",
+      "args": "20 5",
+      "result": "10,10 10,-19 37,-19 37,10 10,10",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "15,0 0,5 17x10 00e20746",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial turned 10,10 2 0",
+      "result": "pdevice",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "bitblt",
+      "args": "4,4 0,0 96x46 00f00021",
+      "result": "",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "direct",
+      "args": "Plain Arial turned 10,10 0 2",
+      "result": "pdevice",
+      "section": "Plain Arial turned"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC Plain",
+      "result": "1",
+      "section": "Plain Arial turned"
+    }
+  ]
+}

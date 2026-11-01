@@ -6019,6 +6019,7 @@ const RUN_WHOLE = new Set<string>([
   'rdwmore',
   'gdidmdib',
   'prttrot',
+  'prttx2',
 ]);
 
 /**

@@ -1028,8 +1028,17 @@ export async function driverPolyline(system: any, surface: any, logical: [number
  * or `PC_WINDPOLYGON` for `WINDING`, and what the pen and brush need, is
  * given `OS_ALTPOLYGON` or `OS_WINDPOLYGON`. 1 where it drew. Not
  * followed: GDI's own drawing for a driver that cannot.
+ *
+ * GDI's own callers reach `0396` with the points in the device's terms
+ * already and the fill mode their own: `EngineExtTextOut`'s ground for a
+ * turned string, `WINDING` (seg1 `6477`-`647d`) -- `inDevice`.
  */
-export async function driverPolygon(system: any, surface: any, logical: [number, number][]) {
+export async function driverPolygon(
+  system: any,
+  surface: any,
+  logical: [number, number][],
+  inDevice: { winding: boolean } | null = null
+) {
   const pdevice: PDevice = surface.driverDevice;
   const drawing = drawingOf(surface);
   const given = [...logical];
@@ -1046,7 +1055,9 @@ export async function driverPolygon(system: any, surface: any, logical: [number,
     return 1;
   }
 
-  const points = given.map(([x, y]) => devicePoint(surface, x, y));
+  const points = given.map(([x, y]) =>
+    inDevice ? ([x, y] as [number, number]) : devicePoint(surface, x, y)
+  );
 
   points.push(points[0]);
 
@@ -1054,7 +1065,7 @@ export async function driverPolygon(system: any, surface: any, logical: [number,
   const ys = points.map(([, y]) => y);
   const bounds: Rect = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
   const pen = penStyle(surface);
-  const winding = surface.polyFillMode === 2;
+  const winding = inDevice ? inDevice.winding : surface.polyFillMode === 2;
   let needs = winding ? 4 : 1;
 
   if (brushStyle(surface) !== BS_HOLLOW) {

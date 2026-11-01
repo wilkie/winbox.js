@@ -1924,7 +1924,7 @@ async fn play_on_driver(
                 let points = output::points_at(&engine.system(), far_at(far, 8), count);
 
                 if function == META_POLYGON {
-                    output::driver_polygon(engine, dc, &points).await?;
+                    output::driver_polygon(engine, dc, &points, None).await?;
                 } else {
                     output::driver_polyline(engine, dc, &points).await?;
                 }
