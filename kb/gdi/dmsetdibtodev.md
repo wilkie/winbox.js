@@ -21,6 +21,8 @@ topics: [gdi-internals, printer-drivers]
 
 [[read out]] `GDI.EXE` seg13 `0145`: `mov cx,5014h`, CL the words `Brute` moves and CH the offset 50h of `DIBToDevice` in the display driver's table, a jump to [[fn:GDI.Brute]] (seg13 `0171`). In `VGA.DRV` that entry is `DIBScreenBlt`, ordinal 21, seg9 `0e2a`.
 
+[[read out]] `SVGA256.DRV` seg9 `0dba`, into its `StretchDIBits` (`0e1d`): a destination whose first word is nought, a memory bitmap, answers -1 and draws nothing (`0eae`-`0eb4`).
+
 ## Callers
 
 [[read out]] None imports it (`kb/data/gdi-callers.json`).
@@ -29,6 +31,8 @@ topics: [gdi-internals, printer-drivers]
 
 Nought, nothing drawn, in both engines (`driver-bitmap.ts`, `driver_bitmap.rs`). [[probe:gdidmdrw]] agrees.
 
+On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
+
 ## Not yet done
 
-- The 256-colour display's own (known gaps of [[probe:gdidmdrw]]).
+- Nothing on a memory bitmap: every display WinBox has answers as recorded.

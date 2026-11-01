@@ -38,4 +38,4 @@ In both engines as the VGA's driver has it. On the Super VGA and the EGA as on t
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]).
+- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]): no probe calls it there yet.

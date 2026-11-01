@@ -29,6 +29,8 @@ topics: [gdi-internals, printer-drivers]
 
 `DMExtTextOut` with nought for the last three, in both engines (`driver-helpers.ts`, `driver_helpers.rs`). [[probe:gdidmdrw]] agrees.
 
+On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing.
+
 ## Not yet done
 
 - As [[fn:GDI.DMExtTextOut]]'s.
