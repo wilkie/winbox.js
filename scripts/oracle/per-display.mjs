@@ -115,6 +115,9 @@ export const PER_DISPLAY = new Set([
   /* GDI's `ScanLR` on a window's context and the screen's, which the
    * display driver scans. */
   'scanscr',
+  /* `DMDibBits` through a translation table, which the 256-colour display's
+   * driver reads. */
+  'gdidmdib',
 ]);
 
 /**

@@ -6006,6 +6006,7 @@ const RUN_WHOLE = new Set<string>([
   'rdwwalk',
   'rdw31',
   'swpunc31',
+  'gdidmdib',
 ]);
 
 /**
@@ -6152,7 +6153,7 @@ const SECONDS: Record<string, number> = {
  * VGA's: `pmbare`'s group files hold the display's icons, and its windows
  * are placed by the screen's size, on the EGA as on the VGA.
  */
-const ON_THEIR_DISPLAYS = new Set(['pmbare', 'gdidmdrw', 'scanscr', 'gdidm']);
+const ON_THEIR_DISPLAYS = new Set(['pmbare', 'gdidmdrw', 'scanscr', 'gdidm', 'gdidmdib']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 
