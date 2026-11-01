@@ -440,6 +440,25 @@ export function tellLock(system: any, window: DesktopWindow, lprc: any, frame = 
   }
 }
 
+/**
+ * What is made due of the desktop told to the records USER keeps, as
+ * `tellLock` tells a window's (`USER.EXE` seg1 `3f41`-`3f7c`): the box
+ * given, within the screen, the desktop window's client area.
+ */
+export function tellDesktop(system: any, box: Rect) {
+  const desktop = system.rasterDesktop;
+
+  if (!anyKept(system) || !desktop) {
+    return;
+  }
+
+  const r = cut(box, [0, 0, desktop.screen.width, desktop.screen.height]);
+
+  if (r[0] < r[2] && r[1] < r[3]) {
+    lockTouched(system, null, r, 0);
+  }
+}
+
 export function LockWindowUpdate(this: any, hwndLock: number) {
   const lock = lockOf(this);
   const desktop = this.rasterDesktop;

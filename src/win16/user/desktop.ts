@@ -2261,6 +2261,18 @@ export class Desktop {
     }
   }
 
+  /**
+   * Where a window of the list not moved nor sized has its bits go, as the
+   * entry of USER's block gives it with `SWP_NOCOPYBITS`: the rectangle the
+   * call before left there, or nowhere where `WM_NCCALCSIZE` was sent (seg7
+   * `1028`-`102c`, `0fed`).
+   */
+  placingDest(window: DesktopWindow, dest: number[]) {
+    if (this.#list) {
+      this.#entryOf(window).dest = dest;
+    }
+  }
+
   /** A window of the list drawn by its caller already: nothing more for it here. */
   placingSkip(window: DesktopWindow) {
     if (this.#list) {
@@ -2704,8 +2716,10 @@ export class Desktop {
    * (`USER.EXE` seg4 `01af`-`0356`): the icons are taken in the order they
    * lie on the screen, not among the windows -- each by its row, its top in
    * the client area measured from the bottom and rounded to the nearest
-   * spacing down (seg4 `0238`-`0292`, the spacing USER keeps at its `[0C2h]`,
-   * taken here for `SM_CYICONSPACING`), the lowest row first, and along a
+   * spacing down (seg4 `0238`-`0292`, the spacing USER keeps at its `[0C2h]`:
+   * `SM_CYICONSPACING`, the word `GetSystemMetrics` reads at `74h` plus twice
+   * 27h, seg1 `1b92`-`1baa`, written as USER starts, seg3 `1e30`-`1eed`, and by
+   * `SPI_ICONVERTICALSPACING`, seg41 `1259`), the lowest row first, and along a
    * row from the left (`029d`-`0341`, an insertion sort that keeps the
    * order of icons alike). **Recorded** by `userwin`: of two icons, one
    * moved up the screen, the one left on the bottom row takes the first
@@ -3758,6 +3772,25 @@ export class Desktop {
     const cy = this.environment.metric(SM_CYFRAME);
 
     this.place(window, -cx, -cy, this.screen.width + 2 * cx, this.screen.height + 2 * cy);
+  }
+
+  /**
+   * A minimized window no longer one, where it lies: its title hidden, its
+   * state normal again; the place it had before, for its caller to put it
+   * at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`). Null where it was
+   * not minimized.
+   */
+  leaveMinimized(window: DesktopWindow) {
+    if (window.state !== 'minimized' || !window.restoreRect) {
+      return null;
+    }
+
+    this.#keepIconPlace(window);
+    this.#leaveIcon(window);
+    window.state = 'normal';
+    this.#layout(window);
+
+    return { ...window.restoreRect };
   }
 
   /** Puts a maximized or minimized window back where it was. */

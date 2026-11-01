@@ -6,7 +6,7 @@ ordinal: 30
 summary: Answers the window at a point of the screen by USER's hit test, asking the calling task's windows WM_NCHITTEST, passing over hidden and disabled children, static controls and group boxes.
 versions:
   '3.1': exact
-probes: [winpoint, iconkid, wfpwalk]
+probes: [winpoint, iconkid, wfpwalk, uwleft]
 source: src/win16/user/window-from-point.ts
 topics: [mouse-input, standard-controls]
 ---
@@ -52,6 +52,6 @@ A static control and a group box are passed over by their own answers: the stati
 
 `Desktop.hitSteps` (`src/win16/user/desktop.ts`) and `hit_steps` (`crates/winbox-win16/src/raster_input.rs`) walk the windows as `71b9` does and give the steps it comes to, each a window and its answer or a window to be asked; the mouse's scan (`hitTest`, `scan_hit`) and `WindowFromPoint` ask each in turn. `Desktop.windowAt` and `window_at`, for WinBox's own use, take every window for the caller's and the answers of an icon's title and a group box as known.
 
-Where the system-modal window itself answers `HTTRANSPARENT`, Windows' walk ends at no window and `WindowFromPoint` answers nought; WinBox answers the desktop window. Not recorded.
+[[read out]] Where the system-modal window itself answers `HTTRANSPARENT`, the walk ends at no window (`7282`-`7285` to `71c6`) and `WindowFromPoint` answers nought. [[measured]] [[probe:uwleft]]: with a pop-up made system-modal answering `HTTRANSPARENT`, every point -- in it, in another window, where no window is -- answers nought; answering `HTCLIENT`, every point answers it. `hitWalk` and `hit_walk` tell the walk that ended at no window from the desktop window's.
 
-winbox.js agrees with all 30 records of [[probe:winpoint]], with [[probe:iconkid]]'s, and with all 38 of [[probe:wfpwalk]].
+winbox.js agrees with all 30 records of [[probe:winpoint]], with [[probe:iconkid]]'s, with all 38 of [[probe:wfpwalk]], and with [[probe:uwleft]]'s.

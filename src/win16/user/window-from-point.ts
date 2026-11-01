@@ -2,7 +2,7 @@
 
 import { GetDesktopWindow } from './GetDesktopWindow.js';
 import { RasterWindow } from './raster-window.js';
-import { hitTest } from './mouse-scan.js';
+import { hitWalk } from './mouse-scan.js';
 
 /**
  * Which window a point is on. **Recorded** by `winpoint`:
@@ -55,7 +55,13 @@ export async function WindowFromPoint(this: any, pt: number) {
     return 0;
   }
 
-  const found = await hitTest(this, x, y);
+  const found = await hitWalk(this, x, y);
+
+  /* The walk ended at no window: the system-modal window it began at
+   * answered `HTTRANSPARENT` (seg1 `7282`-`7285`, `71c6`). */
+  if (found === undefined) {
+    return 0;
+  }
 
   return found ? (found.window.hwnd ?? 0) : GetDesktopWindow.call(this);
 }

@@ -655,6 +655,16 @@ impl System {
         }
     }
 
+    /// Where a window of the list not moved nor sized has its bits go, as
+    /// the entry of USER's block gives it with `SWP_NOCOPYBITS`: the
+    /// rectangle the call before left there, or nowhere where
+    /// `WM_NCCALCSIZE` was sent (seg7 `1028`-`102c`, `0fed`).
+    pub(crate) fn placing_dest(&mut self, window: usize, dest: [i32; 4]) {
+        if let Some(entry) = self.placing_entry(window) {
+            entry.dest = Some(dest);
+        }
+    }
+
     /// A window of the list drawn by its caller already: nothing more for
     /// it here.
     pub(crate) fn placing_skip(&mut self, window: usize) {

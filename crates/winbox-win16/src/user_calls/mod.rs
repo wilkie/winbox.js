@@ -15,7 +15,7 @@ mod popups;
 pub mod props;
 mod scroll_window;
 pub mod system_menu;
-mod update_region;
+pub(crate) mod update_region;
 
 use std::collections::HashMap;
 
@@ -64,10 +64,10 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "EnumProps" => Async(props::enum_props),
         "GetSystemMenu" => Sync(system_menu::get_system_menu),
         "MessageBox" => Async(message_box::message_box_call),
-        "GetUpdateRect" => Sync(update_region::get_update_rect),
+        "GetUpdateRect" => Async(update_region::get_update_rect),
         "InvalidateRgn" => Sync(update_region::invalidate_rgn),
         "ValidateRgn" => Sync(update_region::validate_rgn),
-        "GetUpdateRgn" => Sync(update_region::get_update_rgn),
+        "GetUpdateRgn" => Async(update_region::get_update_rgn),
         "ExcludeUpdateRgn" => Sync(update_region::exclude_update_rgn),
         "RedrawWindow" => Async(update_region::redraw_window),
         "ScrollWindow" => Async(scroll_window::scroll_window),

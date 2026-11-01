@@ -323,6 +323,7 @@ pub const AGREEING: &[&str] = &[
     "wfpwalk",
     "gdidmdrw-hercules",
     "gdidmdib-vga256",
+    "uwleft",
     "prttx2",
 ];
 

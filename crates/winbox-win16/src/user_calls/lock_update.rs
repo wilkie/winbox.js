@@ -488,6 +488,28 @@ impl System {
             self.lock_touched(Some(index), told, 0);
         }
     }
+
+    /// What is made due of the desktop told to the records USER keeps, as
+    /// `tell_lock` tells a window's (`USER.EXE` seg1 `3f41`-`3f7c`): the box
+    /// given, or all, within the screen, the desktop window's client area.
+    /// The TypeScript engine's `tellDesktop`.
+    pub(crate) fn tell_desktop(&mut self, rect: Option<Rect>) {
+        if !self.any_kept() {
+            return;
+        }
+
+        let screen = [
+            0,
+            0,
+            i32::from(self.display.width),
+            i32::from(self.display.height),
+        ];
+        let told = rect.map_or(screen, |rect| cut(rect, screen));
+
+        if told[0] < told[2] && told[1] < told[3] {
+            self.lock_touched(None, told, 0);
+        }
+    }
 }
 
 pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

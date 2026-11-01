@@ -825,17 +825,36 @@ pub fn end_paint(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
 /// meets it, erase and frame too (`invalidate_through`; `invchild`). It is
 /// painted when its program next asks for a message and none is queued.
 /// What is due is kept as a region on the screen (`updrgn`).
-pub fn invalidate_rect(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-    let far = args.dword(system);
-    let erase = args.word(system) != 0;
-    let Some(index) = system.window_named(hwnd) else {
-        return Ok(Answer::Nothing);
-    };
-    let rect = system.rect_given(far);
+pub fn invalidate_rect(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, far, erase) = {
+            let system = engine.system();
 
-    system.invalidate(index, rect, erase);
-    Ok(Answer::Nothing)
+            (
+                args.word(&system),
+                args.dword(&system),
+                args.word(&system) != 0,
+            )
+        };
+
+        // Of no window: every window drawn again, `RedrawWindow` of no window
+        // and no rectangle with `RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN
+        // | RDW_ERASENOW`, 285h, whatever was given (`USER.EXE` seg1
+        // `015d`-`0176`; `uwleft`).
+        if hwnd == 0 {
+            crate::user_calls::update_region::redraw(engine, 0, 0, 0, 0x285).await?;
+            return Ok(Answer::Nothing);
+        }
+
+        let mut system = engine.system();
+        let Some(index) = system.window_named(hwnd) else {
+            return Ok(Answer::Nothing);
+        };
+        let rect = system.rect_given(far);
+
+        system.invalidate(index, rect, erase);
+        Ok(Answer::Nothing)
+    })
 }
 
 impl System {

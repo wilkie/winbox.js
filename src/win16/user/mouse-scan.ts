@@ -293,6 +293,16 @@ const signed = (value: number) => (value << 16) >> 16;
  * the running task it comes to. `other` where the window is another task's.
  */
 export async function hitTest(system: any, x: number, y: number) {
+  return (await hitWalk(system, x, y)) ?? null;
+}
+
+/**
+ * USER's hit test as `hitTest` has it, but undefined where the walk ends at
+ * no window, not even the desktop window's: the system-modal window, which
+ * the walk begins at, answering `HTTRANSPARENT` (`USER.EXE` seg1
+ * `7282`-`7285` to `71c6`), so that `WindowFromPoint` answers nought.
+ */
+export async function hitWalk(system: any, x: number, y: number) {
   const desktop: Desktop = system.rasterDesktop;
   const sysModal = system.handles.resolve(system._sysModal ?? 0);
   const steps = desktop.hitSteps(
@@ -333,7 +343,7 @@ export async function hitTest(system: any, x: number, y: number) {
     }
   }
 
-  return null;
+  return steps.length ? undefined : null;
 }
 
 function classStyle(system: any, hwnd: number) {

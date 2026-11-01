@@ -166,7 +166,10 @@ pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Re
     // Taken in the order they lie on the screen (`USER.EXE` seg4
     // `01af`-`0356`): by row, the top in the client area measured from the
     // bottom and rounded to the nearest spacing down (`0238`-`0292`, USER's
-    // `[0C2h]`, taken for `SM_CYICONSPACING`), the lowest row first, then
+    // `[0C2h]`: `SM_CYICONSPACING`, the word `GetSystemMetrics` reads at
+    // 74h plus twice 27h, seg1 `1b92`-`1baa`, written as USER starts, seg3
+    // `1e30`-`1eed`, and by `SPI_ICONVERTICALSPACING`, seg41 `1259`), the
+    // lowest row first, then
     // from the left (`029d`-`0341`, an insertion sort, stable). The
     // TypeScript engine's `arrangeIcons`.
     let spacing = system.metric(SM_CYICONSPACING);

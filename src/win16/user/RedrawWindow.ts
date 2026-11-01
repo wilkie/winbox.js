@@ -16,7 +16,7 @@ import {
   redrawThrough,
 } from './invalidate-through.js';
 import { DesktopHandle } from './desktop-handle.js';
-import { tellLock } from './lock-window-update.js';
+import { tellDesktop, tellLock } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
 import { updateNow } from './UpdateWindow.js';
 
@@ -171,6 +171,20 @@ export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
       return 1;
     }
   } else {
+    /* What is made due of the desktop told to the records USER keeps, as a
+     * window's is: the box of it within the screen (`3f41`-`3f7c`; `uwleft`:
+     * a window locked, or a window's saved bits, under it count it drawn). */
+    if (fuRedraw & RDW_INVALIDATE) {
+      const box = region ? region.box : null;
+
+      tellDesktop(
+        this,
+        box
+          ? [box.left, box.top, box.right, box.bottom]
+          : [0, 0, desktop.screen.width, desktop.screen.height]
+      );
+    }
+
     invalidateThrough(desktop, null, region, fuRedraw | RDW_CALLED);
   }
 
