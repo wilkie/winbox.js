@@ -6790,8 +6790,47 @@
   "functions": {
    "call": {
     "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "entry": {
+    "total": 1,
     "agreed": 0,
     "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "entry": "WinBox's EMSCopy is an export it answers, within its stubs' segment"
+  }
+ },
+ "emspast": {
+  "probe": "emspast",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "block": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "bytes": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -6805,7 +6844,8 @@
   },
   "gaps": {
    "entry": "WinBox's EMSCopy is an export it answers, within its stubs' segment",
-   "call": "EMSCopy's entry is past the end of KERNEL's code once it has started; what Windows does after the fault is not read out"
+   "block": "WinBox's EMSCopy lies in its stubs' segment, not past KERNEL's code",
+   "bytes": "the bytes past KERNEL's code are MMSYSTEM.DLL's, and WinBox's MMSYSTEM is its own"
   }
  },
  "enddlg": {
@@ -19743,6 +19783,304 @@
    }
   },
   "gaps": {}
+ },
+ "oleitem": {
+  "probe": "oleitem",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 174,
+  "functions": {
+   "ack": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ack.initiate": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "advise": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ask": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "asked": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "CallBack": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "data": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "DELETECLIENTINFO": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "doc.GetObject": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "doc.Release": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ENUMFORTERMINATE": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "execute": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "FINDITEMWND": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetProp": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "initiate": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "initiated": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "item": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "long": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "noanswer": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "obj.GetData": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "obj.Release": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRegisterServer": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRevokeObject": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleRevokeServer": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "OleSavedServerDoc": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "props": {
+    "total": 23,
+    "agreed": 22,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ready": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "RegSetValue": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "request": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "SENDDATAMSG": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "SENDRENAMEMSG": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "server": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "srv.end": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "srv.Release": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "terminate": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "TERMINATECLIENTS": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "TERMINATEDOCCLIENTS": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "tree": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "unadvise": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "window": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "WinExec": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "props": "a property DELETECLIENTINFO took away is still listed by Windows' EnumProps"
+  }
  },
  "olemem": {
   "probe": "olemem",

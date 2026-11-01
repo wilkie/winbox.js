@@ -5,7 +5,7 @@ name: DELETECLIENTINFO
 ordinal: 29
 summary: "The procedure `OLESVR.DLL` hands `EnumProps` for an item's window as the item goes: a client's block freed and its property taken away."
 versions:
-  '3.1': exact
+  '3.1': partial
 probes: [oleitem]
 source: src/win16/olesvr/server.ts
 topics: [ole]
