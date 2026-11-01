@@ -6,7 +6,7 @@ ordinal: 217
 summary: A memory bitmap's bits got or set as a DIB by the display driver's DeviceBitmapBits, its scans counted from the DIB's bottom.
 versions:
   '3.1': partial
-probes: [gdidmdrw]
+probes: [gdidmdrw, gdidmdib]
 records: [dibget, dibset]
 source: src/win16/gdi/driver-bitmap.ts
 topics: [gdi-internals, printer-drivers]
@@ -36,9 +36,9 @@ topics: [gdi-internals, printer-drivers]
 
 `driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out; a compressed DIB answers nought. [[probe:gdidmdrw]] agrees in both engines on the three.
 
-On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts.
+On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts. [[probe:gdidmdib]], a translation table of its own, agrees in both engines: a get of 1, 4, 8 and 24 bits from both formats, and a set of 24 bits through `DeviceColorMatch`.
 
 ## Not yet done
 
 - A compressed DIB, which the driver reads through a routine of its own.
-- On the 256-colour display, a DIB got of 1, 4 or 24 bits, through the translation table, and one set of 24 bits, through `DeviceColorMatch` with it: [[probe:gdidmdrw]] hands a null table, which Windows would fault on and DOSBox reads as its real-mode vectors (known gaps). A probe with a table of its own would record them.
+- [[probe:gdidmdrw]]'s records on the 256-colour display of a DIB got of 1, 4 or 24 bits, and of one set of 24: it hands a null translation table, which Windows would fault on and DOSBox reads as its real-mode vectors (known gaps). [[probe:gdidmdib]] records the same paths with a table of its own.
