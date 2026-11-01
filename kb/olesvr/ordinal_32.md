@@ -12,6 +12,7 @@ topics: [ole]
 ## Nuances
 
 - [[documented]] OLE 1.0's headers and reference name no function at this ordinal.
+- [[read out]] `OLESVR.DLL` seg3 `0010`: an exported far procedure popping ten bytes, as a timer's procedure is; `OLESVR.DLL` imports `SetTimer` once. Neither the timer nor what it does is measured; WinBox's sets none.
 
 ## Implementation
 

@@ -5548,9 +5548,21 @@ export const KNOWN_GAPS: Record<string, string> = {
   'ttqmap:abc': "a font's height under a mapping mode is taken as pixels",
   'ttqmap:otm': "a font's height under a mapping mode is taken as pixels",
   /* EMSCopy's entry, seg1 `a940`, is past the limit KERNEL leaves its first
-   * code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`): the far
-   * call faults, and Windows carries on with AX 81h and six bytes taken. */
+   * code segment once started (`KRNL386.EXE` seg1 `b565`-`b573`); DOSBox runs
+   * what lies past it, MMSYSTEM's first code segment (`emspast`), and WinBox
+   * answers the call as that does. Where the block lies, and its bytes, are
+   * the global heap's and the file's. */
   'emscopy:entry': "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+  'emspast:entry': "WinBox's EMSCopy is an export it answers, within its stubs' segment",
+  'emspast:block': "WinBox's EMSCopy lies in its stubs' segment, not past KERNEL's code",
+  'emspast:bytes':
+    "the bytes past KERNEL's code are MMSYSTEM.DLL's, and WinBox's MMSYSTEM is its own",
+  /* `oleitem` calls DELETECLIENTINFO on Item3's window with the second
+   * conversation's property: Windows' GetProp no longer finds it, yet its
+   * EnumProps still lists it. USER's RemoveProp (seg13 `1057`-`1147`) and
+   * EnumProps (seg13 `114a`-`120f`), read out, give no cause; WinBox's
+   * lists it no more. One record. */
+  'oleitem:props': "a property DELETECLIENTINFO took away is still listed by Windows' EnumProps",
   /* KERNEL's own prefix, THHOOK's 220h and WinOldApCall(1)'s DX, is each
    * task's prefix's parent in Windows (`kgaps`); WinBox keeps no prefix of
    * KERNEL's, and a task's prefix has no parent. */
@@ -5565,8 +5577,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * segment; WinBox's GDI segment holds no local heap (`gdi-heap.ts`), as
    * USER's does not for UserSeeUserDo. */
   'ugaps:seegdiheap': "WinBox's GDI segment holds no local heap",
-  'emscopy:call':
-    "EMSCopy's entry is past the end of KERNEL's code once it has started; what Windows does after the fault is not read out",
   /* The PostScript driver names a face it downloads by the global atom it
    * adds for the face's key, which starts with a selector
    * (`PSCRIPT.DRV` seg9 `0ba3`, `170a`): WinBox numbers global atoms from
@@ -6009,6 +6019,8 @@ const RUN_WHOLE = new Set<string>([
   'uwleft',
   'prttrot',
   'prttx2',
+  'emspast',
+  'oleitem',
   'maxcopy',
 ]);
 
@@ -6090,8 +6102,8 @@ export const BOX_KEYS: Record<string, string[][]> = {
  * `dirorder` waits four seconds of `GetTickCount` for the stamps it compares
  * to move. The Program Manager probes, `pmbare` and the rest, run with it as
  * `progdde` does, and `pmbare` waits out DDEML's ten seconds after
- * `[ExitProgman(1)]`. `olesrv` waits on its timers for answers that do
- * not come, and gives its server a second after each thing it asks.
+ * `[ExitProgman(1)]`. `olesrv` and `oleitem` wait on their timers for answers that do
+ * not come, and give their servers a second after each thing they ask.
  * `olenet` reads OLECLI's network dialog from a timer a second after it
  * asks for it.
  */
@@ -6130,6 +6142,7 @@ const VIRTUAL_CLOCK = new Set([
   ...['systimer', 'filport', 'findexe'],
   'olesrv',
   'olenet',
+  'oleitem',
 ]);
 
 /**
@@ -6141,7 +6154,7 @@ const VIRTUAL_CLOCK = new Set([
  * again besides. `ddenest` waits out a transaction's time-out of 10000h +
  * 500 milliseconds beside its other steps. `olesrv` waits a second after
  * each thing it asks its server and two where no answer is to come, some
- * forty seconds of its timers'.
+ * forty seconds of its timers', and `oleitem` as long.
  */
 const SECONDS: Record<string, number> = {
   spiidle: 90,
@@ -6149,6 +6162,7 @@ const SECONDS: Record<string, number> = {
   choosclr: 400,
   ddenest: 100,
   olesrv: 120,
+  oleitem: 120,
 };
 
 /**

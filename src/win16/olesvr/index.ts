@@ -22,8 +22,11 @@ import * as server from './server.js';
  *
  * The ordinals and names are the file's entry table's: its API (2-12),
  * its windows' procedures (21-23), and the procedures it hands USER and
- * the `OLECLIENT` it gives a server's object (24-32), which WinBox answers
- * where a program can reach them: `ITEMCALLBACK` is that client's method.
+ * the `OLECLIENT` it gives a server's object (24-32): `ITEMCALLBACK` is
+ * that client's method, and the others are what it hands `EnumProps` and
+ * `EnumChildWindows` to walk the clients it keeps on its windows, which
+ * WinBox's hands them too. 32, unnamed, is a timer's procedure WinBox's
+ * sets no timer for.
  *
  * @memberof Win16
  */
@@ -57,6 +60,7 @@ const ENTRIES: [number, string | null, number][] = [
 ];
 
 const PTR = DWORD;
+const WM_DESTROY = 0x0002;
 
 /** The API's functions, by the file's name: the function, the name WinBox's table gives it, its arguments and its answer. */
 const API: Record<string, [(svr: Svr, ...args: number[]) => any, string, number[], number]> = {
@@ -113,12 +117,64 @@ const API: Record<string, [(svr: Svr, ...args: number[]) => any, string, number[
     [UINT, UINT, UINT, DWORD],
     DWORD,
   ],
+  /* An item's window holds its clients and takes no message of its own:
+   * `WM_DESTROY` answered nought, anything else `DefWindowProc`'s (read
+   * out, seg3 `23b2`-`23f4`). */
   ITEMWNDPROC: [
     (s, hwnd, message, wParam, lParam) =>
-      s.user('DefWindowProc', [{ w: hwnd }, { w: message }, { w: wParam }, { d: lParam >>> 0 }]),
+      message === WM_DESTROY
+        ? 0
+        : s.user('DefWindowProc', [
+            { w: hwnd },
+            { w: message },
+            { w: wParam },
+            { d: lParam >>> 0 },
+          ]),
     'ITEMWNDPROC',
     [UINT, UINT, UINT, DWORD],
     DWORD,
+  ],
+  SENDDATAMSG: [
+    (s, hwnd, name, info) => server.sendDataMsg(s, hwnd, name, info),
+    'SENDDATAMSG',
+    [UINT, PTR, UINT],
+    INT,
+  ],
+  FINDITEMWND: [
+    (s, hwnd, lParam) => server.findItemWnd(s, hwnd, lParam),
+    'FINDITEMWND',
+    [UINT, DWORD],
+    INT,
+  ],
+  TERMINATECLIENTS: [
+    (s, hwnd, name, client) => server.terminateClients(s, hwnd, name, client),
+    'TERMINATECLIENTS',
+    [UINT, PTR, UINT],
+    INT,
+  ],
+  TERMINATEDOCCLIENTS: [
+    (s, hwnd, name, client) => server.terminateClients(s, hwnd, name, client),
+    'TERMINATEDOCCLIENTS',
+    [UINT, PTR, UINT],
+    INT,
+  ],
+  DELETECLIENTINFO: [
+    (s, hwnd, name, info) => server.deleteClientInfo(s, hwnd, name, info),
+    'DELETECLIENTINFO',
+    [UINT, PTR, UINT],
+    INT,
+  ],
+  SENDRENAMEMSG: [
+    (s, hwnd, name, info) => server.sendRenameMsg(s, hwnd, name, info),
+    'SENDRENAMEMSG',
+    [UINT, PTR, UINT],
+    INT,
+  ],
+  ENUMFORTERMINATE: [
+    (s, hwnd, name, client) => server.enumForTerminate(s, hwnd, name, client),
+    'ENUMFORTERMINATE',
+    [UINT, PTR, UINT],
+    INT,
   ],
   ITEMCALLBACK: [
     (s, client, what, object) => server.itemCallback(s, client, what, object),

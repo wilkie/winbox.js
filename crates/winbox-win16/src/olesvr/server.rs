@@ -2,22 +2,38 @@
 //! conversations a client's `OLECLI` holds with it, over the methods of
 //! the server's `OLESERVER`, `OLESERVERDOC` and `OLEOBJECT` tables.
 //! Written from OLE 1.0's documented interface and protocol and from what
-//! the probe `olesrv` measured under DOSBox -- the messages on the wire and
-//! the methods the server is called with, in their order -- not from the
-//! code of `OLESVR.DLL` (`kb/topics/ole.md`). As
-//! `src/win16/olesvr/server.ts`.
+//! the probes `olesrv` and `oleitem` measured under DOSBox -- the messages
+//! on the wire, the methods the server is called with, in their order,
+//! and the windows and properties a client's conversation leaves -- not
+//! from the code of `OLESVR.DLL` (`kb/topics/ole.md`). Where a read-out
+//! of the file settled what no probe could -- which of its internal
+//! procedures does what, and the fields of what it keeps -- it is cited
+//! and described.
+//!
+//! Its clients are kept as the file keeps them: each conversation as a
+//! property of its server's or document's window, named `@` and the
+//! client's window in four hex digits; each object as a window of
+//! `ItemWndClass` beneath its document's, its words the `OLECLIENT` the
+//! object was given; and what each client asked of an item as that
+//! client's property on the item's window. USER's `EnumProps` and
+//! `EnumChildWindows` walk them, calling the internal exports as the file
+//! does. As `src/win16/olesvr/server.ts`.
 
 use crate::commdlg::api::{Arg, text};
 use crate::engine::GuestArg;
 use crate::olecli::core::{R, plus};
 
 use super::core::{
-    ACK, ADVISE_ACK_REQ, Advise, CF_BITMAP, CF_METAFILEPICT, CF_PALETTE, CF_TEXT, CLASS_NAME,
-    CLIENT_VTBL, DATA_ADVISED, DATA_RESPONSE, GMEM_DDESHARE, GMEM_MOVEABLE, HKEY_CLASSES_ROOT,
-    NACK, OLE_CHANGED, OLE_CLOSED, OLE_ERROR_ADDRESS, OLE_ERROR_CLASS, OLE_ERROR_HANDLE, OLE_OK,
+    ACK, ADVISE_ACK_REQ, ADVISE_DEFER, CF_BITMAP, CF_METAFILEPICT, CF_PALETTE, CF_TEXT, CLASS_NAME,
+    CLIENT_VTBL, DATA_ADVISED, DATA_RESPONSE, DELETECLIENTINFO, DESTROY_ITEM, DOC_TEXT, FIND_ITEM,
+    FINDITEMWND, FORGET_CLIENT, GMEM_DDESHARE, GMEM_MOVEABLE, GMEM_ZEROINIT, HKEY_CLASSES_ROOT,
+    INFO_CLIENT, INFO_DATA, INFO_FORMAT, INFO_NATIVE, INFO_WHENS, ITEM_ATOM, ITEM_HANDLE,
+    ITEM_HWND, ITEM_OBJECT, ITEM_SIZE, ITEM_TEXT, ITEM_VTBL, NACK, OLE_CHANGED, OLE_CLOSED,
+    OLE_ERROR_ADDRESS, OLE_ERROR_CANT_UPDATE_CLIENT, OLE_ERROR_CLASS, OLE_ERROR_HANDLE, OLE_OK,
     OLE_RENAMED, OLE_SAVED, OLE_SERVER_MULTI, OLE_WAIT_FOR_RELEASE, RECT_AT, REG_SIZE, REG_VALUE,
-    Server, Svr, SvrDoc, SvrObject, WM_DDE_ACK, WM_DDE_ADVISE, WM_DDE_DATA, WM_DDE_EXECUTE,
-    WM_DDE_INITIATE, WM_DDE_POKE, WM_DDE_REQUEST, WM_DDE_TERMINATE, WM_DDE_UNADVISE, WS_CHILD,
+    SENDDATAMSG, Server, Svr, SvrDoc, SvrObject, TELL_SAVED, WHENS, WM_DDE_ACK, WM_DDE_ADVISE,
+    WM_DDE_DATA, WM_DDE_EXECUTE, WM_DDE_INITIATE, WM_DDE_POKE, WM_DDE_REQUEST, WM_DDE_TERMINATE,
+    WM_DDE_UNADVISE, WS_CHILD,
 };
 
 /// The methods of `OLESERVERVTBL` (ole.h), by their slots.
@@ -81,6 +97,7 @@ async fn method(svr: &Svr<'_>, this: u32, slot: u16, args: &[GuestArg]) -> R<u16
 /// The formats it registers, in its order (as WinBox runs `OLESVR.DLL`,
 /// each call it makes logged).
 const FORMATS: [&str; 4] = ["Native", "Binary", "ObjectLink", "OwnerLink"];
+const NATIVE: usize = 0;
 const BINARY: usize = 1;
 const OBJECT_LINK: usize = 2;
 
@@ -194,7 +211,7 @@ fn format(svr: &Svr<'_>, index: usize) -> u16 {
 
 // Windows and messages.
 
-async fn make_window(svr: &Svr<'_>, class: &str, style: u32, parent: u16) -> R<u16> {
+async fn make_window(svr: &Svr<'_>, class: &str, title: &str, style: u32, parent: u16) -> R<u16> {
     let at = svr.near(CLASS_NAME);
     let mut bytes = class.as_bytes().to_vec();
 
@@ -208,7 +225,7 @@ async fn make_window(svr: &Svr<'_>, class: &str, style: u32, parent: u16) -> R<u
             "CreateWindow",
             &[
                 Arg::D(at),
-                text(b""),
+                text(title.as_bytes()),
                 Arg::D(style),
                 Arg::W(0),
                 Arg::W(0),
@@ -272,6 +289,74 @@ async fn block_bytes(svr: &Svr<'_>, handle: u16) -> R<Vec<u8>> {
 
     svr.global_unlock(handle).await?;
     Ok(bytes)
+}
+
+// What it keeps on windows.
+
+/// A client's property's name on a window of OLESVR's: `@` and its window
+/// in four hex digits, capitals (read out, seg3 `358c`-`35e6`).
+fn prop_name(client: u16) -> Vec<u8> {
+    format!("@{client:04X}").into_bytes()
+}
+
+async fn set_prop(svr: &Svr<'_>, hwnd: u16, client: u16, data: u16) -> R<()> {
+    svr.user(
+        "SetProp",
+        &[Arg::W(hwnd), text(&prop_name(client)), Arg::W(data)],
+    )
+    .await?;
+    Ok(())
+}
+
+async fn get_prop(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<u16> {
+    Ok(svr
+        .user("GetProp", &[Arg::W(hwnd), text(&prop_name(client))])
+        .await? as u16)
+}
+
+async fn remove_prop(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<()> {
+    svr.user("RemoveProp", &[Arg::W(hwnd), text(&prop_name(client))])
+        .await?;
+    Ok(())
+}
+
+/// A window's properties each handed one of OLESVR's procedures, as the
+/// file walks them.
+async fn each_prop(svr: &Svr<'_>, hwnd: u16, ordinal: u16) -> R<()> {
+    let procedure = super::export_address(svr.e, ordinal);
+
+    svr.user("EnumProps", &[Arg::W(hwnd), Arg::D(procedure)])
+        .await?;
+    Ok(())
+}
+
+/// A document's items each handed `FINDITEMWND`, with a request and its
+/// word.
+async fn each_item(svr: &Svr<'_>, doc: u16, request: u16, value: u16) -> R<()> {
+    let procedure = super::export_address(svr.e, FINDITEMWND);
+
+    svr.user(
+        "EnumChildWindows",
+        &[Arg::W(doc), Arg::D(procedure), Arg::D(long(value, request))],
+    )
+    .await?;
+    Ok(())
+}
+
+async fn is_window(svr: &Svr<'_>, hwnd: u16) -> R<bool> {
+    Ok(hwnd != 0 && svr.user("IsWindow", &[Arg::W(hwnd)]).await? != 0)
+}
+
+/// The document and object whose item's window this is.
+fn item_of_window(svr: &Svr<'_>, hwnd: u16) -> Option<(u16, SvrObject)> {
+    let state = svr.svr();
+
+    state.docs.values().find_map(|doc| {
+        doc.objects
+            .iter()
+            .find(|object| object.hwnd == hwnd)
+            .map(|object| (doc.hwnd, object.clone()))
+    })
 }
 
 // The protocol's commands.
@@ -471,14 +556,18 @@ pub(crate) async fn register_server(
         return Ok(OLE_ERROR_CLASS);
     }
 
-    let hwnd = make_window(svr, "SrvrWndClass", 0, 0).await?;
+    let hwnd = make_window(svr, "SrvrWndClass", "", 0, 0).await?;
+    let record = svr.new_record(server);
 
+    svr.user("SetWindowLong", &[Arg::W(hwnd), Arg::W(0), Arg::D(record)])
+        .await?;
     svr.svr().servers.insert(
         hwnd,
         Server {
             hwnd,
             class: name,
             pointer: server,
+            record,
             multi: use_ == OLE_SERVER_MULTI,
             ..Server::default()
         },
@@ -489,14 +578,25 @@ pub(crate) async fn register_server(
 
 /// A document's window made, the document to be kept as the server's.
 async fn new_doc(svr: &Svr<'_>, server: u16, name: Vec<u8>) -> R<SvrDoc> {
-    let hwnd = make_window(svr, "DocWndClass", WS_CHILD, server).await?;
+    let hwnd = make_window(svr, "DocWndClass", DOC_TEXT, WS_CHILD, server).await?;
+    let record = svr.new_record(0);
+
+    svr.user("SetWindowLong", &[Arg::W(hwnd), Arg::W(0), Arg::D(record)])
+        .await?;
 
     Ok(SvrDoc {
         hwnd,
         server,
         name,
+        record,
         ..SvrDoc::default()
     })
+}
+
+/// A document's pointer kept, and in its window words' record.
+fn doc_pointer(svr: &Svr<'_>, doc: &mut SvrDoc, pointer: u32) {
+    doc.doc = pointer;
+    svr.w32(doc.record, pointer);
 }
 
 fn keep_doc(svr: &Svr<'_>, doc: SvrDoc) {
@@ -515,7 +615,7 @@ pub(crate) async fn register_server_doc(
     svr: &Svr<'_>,
     handle: u32,
     name: u32,
-    doc_pointer: u32,
+    pointer: u32,
     out: u32,
 ) -> R<u16> {
     let Some(server) = server_of(svr, handle) else {
@@ -523,7 +623,7 @@ pub(crate) async fn register_server_doc(
     };
     let mut doc = new_doc(svr, server.hwnd, svr.string(name)).await?;
 
-    doc.doc = doc_pointer;
+    doc_pointer(svr, &mut doc, pointer);
 
     let hwnd = doc.hwnd;
 
@@ -550,32 +650,48 @@ async fn release_doc(svr: &Svr<'_>, hwnd: u16) -> R<()> {
 
     method(svr, doc.doc, doc_slot::RELEASE, &[]).await?;
     svr.user("DestroyWindow", &[Arg::W(hwnd)]).await?;
+    svr.free_record(doc.record);
 
-    if let Some((server, true)) = server {
-        finish_server(svr, server).await?;
+    match server {
+        Some((server, true)) => finish_server(svr, server).await?,
+        Some((server, false)) => release_idle(svr, server).await?,
+        None => {}
     }
 
     Ok(())
 }
 
-/// An object let go: its `Release` called, its client and advises
-/// forgotten.
+/// An object let go, its item with it (read out, seg3 `2164`-`222b`): its
+/// `Release`; the item's atom deleted; its window's words cleared; each
+/// client's property handed `DELETECLIENTINFO`; its window destroyed; its
+/// block unlocked and freed.
 async fn release_object(svr: &Svr<'_>, doc: u16, client: u32) -> R<()> {
     let object = with_doc(svr, doc, |doc| {
-        let object = doc
-            .objects
+        doc.objects
             .iter()
             .position(|each| each.client == client)
-            .map(|index| doc.objects.remove(index));
-
-        doc.advises.retain(|advise| advise.client != client);
-        object
+            .map(|index| doc.objects.remove(index))
     })
     .flatten();
 
     if let Some(object) = object {
-        svr.free_client(client);
+        svr.svr().clients.remove(&client);
         method(svr, object.object, object_slot::RELEASE, &[]).await?;
+
+        if object.atom != 0 {
+            svr.delete_atom(object.atom).await?;
+        }
+
+        svr.user(
+            "SetWindowLong",
+            &[Arg::W(object.hwnd), Arg::W(0), Arg::D(0)],
+        )
+        .await?;
+        svr.svr().ending = false;
+        each_prop(svr, object.hwnd, DELETECLIENTINFO).await?;
+        svr.user("DestroyWindow", &[Arg::W(object.hwnd)]).await?;
+        svr.global_unlock(object.handle).await?;
+        svr.global_free(object.handle).await?;
     }
 
     Ok(())
@@ -635,8 +751,50 @@ async fn finish_server(svr: &Svr<'_>, hwnd: u16) -> R<()> {
     if let Some(server) = server {
         method(svr, server.pointer, server_slot::RELEASE, &[]).await?;
         svr.user("DestroyWindow", &[Arg::W(hwnd)]).await?;
+        svr.free_record(server.record);
     }
 
+    Ok(())
+}
+
+/// A server no client is connected to told so by its `Release`, as a
+/// client ends its last conversation or a document goes (read out, seg3
+/// `1024`-`108b`, called from `0969`, `1636` and `18ce`): unless a
+/// document was just made for a client that has yet to begin its
+/// conversation, or a system conversation or any document's is left. The
+/// server stays registered (**recorded** by `oleitem`: its `Release` as
+/// the system conversation ends, and again at `OleRevokeServer`).
+async fn release_idle(svr: &Svr<'_>, hwnd: u16) -> R<()> {
+    let pointer = {
+        let mut state = svr.svr();
+        let docs = {
+            let Some(server) = state.servers.get_mut(&hwnd) else {
+                return Ok(());
+            };
+
+            if server.fresh {
+                server.fresh = false;
+                return Ok(());
+            }
+
+            if !server.convs.is_empty() {
+                return Ok(());
+            }
+
+            server.docs.clone()
+        };
+
+        if docs
+            .iter()
+            .any(|doc| state.docs.get(doc).is_some_and(|doc| !doc.convs.is_empty()))
+        {
+            return Ok(());
+        }
+
+        state.servers.get(&hwnd).map_or(0, |server| server.pointer)
+    };
+
+    method(svr, pointer, server_slot::RELEASE, &[]).await?;
     Ok(())
 }
 
@@ -722,7 +880,10 @@ pub(crate) async fn rename_server_doc(svr: &Svr<'_>, handle: u32, name: u32) -> 
     };
     let name = svr.string(name);
 
-    with_doc(svr, doc.hwnd, |doc| doc.name.clone_from(&name));
+    with_doc(svr, doc.hwnd, |doc| {
+        doc.name.clone_from(&name);
+        doc.embedded = false;
+    });
     tell_name(svr, doc.hwnd, &name).await?;
     Ok(OLE_OK)
 }
@@ -736,18 +897,25 @@ pub(crate) fn revert_server_doc(svr: &Svr<'_>, handle: u32) -> u16 {
     }
 }
 
-/// `OleSavedServerDoc`: each object's `/Save` advises told, in the order
-/// the objects were given.
+/// `OleSavedServerDoc`: each item with an object handed `FINDITEMWND` to
+/// be told saved, in the order made (read out, seg3 `14ba`-`1525`); an
+/// embedded document one of whose objects no client was sent at a save
+/// answers `OLE_ERROR_CANT_UPDATE_CLIENT` (**recorded** by `oleitem`).
 pub(crate) async fn saved_server_doc(svr: &Svr<'_>, handle: u32) -> R<u16> {
     let Some(doc) = doc_of(svr, handle) else {
         return Ok(OLE_ERROR_HANDLE);
     };
 
-    for object in &doc.objects {
-        tell(svr, doc.hwnd, object.client, b"Save").await?;
-    }
+    svr.svr().saved = true;
+    each_item(svr, doc.hwnd, TELL_SAVED, 0).await?;
 
-    Ok(OLE_OK)
+    let embedded = doc_of(svr, handle).is_some_and(|doc| doc.embedded);
+
+    Ok(if embedded && !svr.svr().saved {
+        OLE_ERROR_CANT_UPDATE_CLIENT
+    } else {
+        OLE_OK
+    })
 }
 
 /// The document and object of an `OLECLIENT` WinBox gave.
@@ -772,15 +940,7 @@ pub(crate) async fn revoke_object(svr: &Svr<'_>, client: u32) -> R<u16> {
     let Some((doc, object)) = object_of_client(svr, client) else {
         return Ok(OLE_ERROR_ADDRESS);
     };
-    let mut given = object.convs.clone();
-
-    if let Some(doc) = doc_of(svr, u32::from(doc)) {
-        for advise in doc.advises.iter().filter(|advise| advise.client == client) {
-            if !given.contains(&advise.conv) {
-                given.push(advise.conv);
-            }
-        }
-    }
+    let given = object.convs.clone();
 
     release_object(svr, doc, client).await?;
 
@@ -795,16 +955,33 @@ pub(crate) async fn revoke_object(svr: &Svr<'_>, client: u32) -> R<u16> {
 }
 
 /// `ITEMCALLBACK`, the method of the `OLECLIENT` an object is given: what
-/// its server tells of it sent to the conversations that advised it.
+/// its server tells of it sent to the clients that advised it -- its
+/// item's properties each handed `SENDDATAMSG` with the time (read out,
+/// seg3 `2c04`-`2c4e`). A save that reached no client of an embedded
+/// document answers `OLE_ERROR_CANT_UPDATE_CLIENT` (**recorded** by
+/// `oleitem`).
 pub(crate) async fn item_callback(svr: &Svr<'_>, client: u32, what: u16) -> R<u16> {
     let Some((doc, object)) = object_of_client(svr, client) else {
         return Ok(OLE_OK);
     };
 
     match what {
-        OLE_CHANGED => tell(svr, doc, client, b"Change").await?,
-        OLE_SAVED => tell(svr, doc, client, b"Save").await?,
-        OLE_CLOSED => tell(svr, doc, client, b"Close").await?,
+        OLE_CHANGED | OLE_SAVED | OLE_CLOSED => {
+            {
+                let mut state = svr.svr();
+
+                state.when = what;
+                state.sent = false;
+            }
+
+            each_prop(svr, object.hwnd, SENDDATAMSG).await?;
+
+            let embedded = doc_of(svr, u32::from(doc)).is_some_and(|doc| doc.embedded);
+
+            if what == OLE_SAVED && embedded && !svr.svr().sent {
+                return Ok(OLE_ERROR_CANT_UPDATE_CLIENT);
+            }
+        }
         OLE_RENAMED => {
             let link = format(svr, OBJECT_LINK);
 
@@ -818,7 +995,10 @@ pub(crate) async fn item_callback(svr: &Svr<'_>, client: u32, what: u16) -> R<u1
                     let name = rest[..rest.iter().position(|&b| b == 0).unwrap_or(0)].to_vec();
 
                     svr.global_free(handle).await?;
-                    with_doc(svr, doc, |doc| doc.name.clone_from(&name));
+                    with_doc(svr, doc, |doc| {
+                        doc.name.clone_from(&name);
+                        doc.embedded = false;
+                    });
                     tell_name(svr, doc, &name).await?;
                 }
             }
@@ -852,94 +1032,129 @@ async fn tell_name(svr: &Svr<'_>, doc: u16, name: &[u8]) -> R<()> {
     Ok(())
 }
 
-/// What a conversation advised of an object for a time -- `Change`,
-/// `Save` or `Close` -- sent: every format it advised of the object, each
-/// asked of it in turn, the item named as it was advised (**recorded** by
-/// `olesrv`: an item advised for a change in two formats and for a save
-/// in one is sent in both when saved).
-async fn tell(svr: &Svr<'_>, doc: u16, client: u32, when: &[u8]) -> R<()> {
-    let Some(found) = doc_of(svr, u32::from(doc)) else {
-        return Ok(());
-    };
-    let Some(object) = found.objects.iter().find(|o| o.client == client).cloned() else {
-        return Ok(());
-    };
-    let advises: Vec<Advise> = found
-        .advises
-        .iter()
-        .filter(|advise| {
-            advise.client == client && advise.whens.iter().any(|each| same(each, when))
-        })
-        .cloned()
-        .collect();
+/// An item's name as data is sent of it at a time: the item, and `/Save`
+/// or `/Close` after it.
+fn item_at(item: &[u8], when: u16) -> Vec<u8> {
+    let mut name = item.to_vec();
 
-    for advise in advises {
-        for format in advise.formats {
-            let data = data_block(svr, doc, client, format, DATA_ADVISED).await?;
-
-            if data == 0 {
-                continue;
-            }
-
-            let mut item = object.item.clone();
-
-            if !same(when, b"Change") {
-                item.push(b'/');
-                item.extend_from_slice(when);
-            }
-
-            let atom = svr.add_atom_text(&item).await?;
-
-            post(svr, advise.conv, WM_DDE_DATA, doc, long(data, atom)).await?;
-        }
+    if when != 0 {
+        name.push(b'/');
+        name.extend_from_slice(WHENS[usize::from(when).min(WHENS.len() - 1)]);
     }
 
-    Ok(())
+    name
 }
 
 // What a server's object is asked.
 
-/// An object of a document by its item, asked for once (**recorded** by
-/// `olesrv`); none where its document refuses.
-async fn object_of(svr: &Svr<'_>, doc: u16, item: &[u8], conv: u16) -> R<Option<SvrObject>> {
+/// An item's window found by its atom, `FINDITEMWND` handed each (read
+/// out, seg3 `1f00`-`1f38`): its object, or none.
+async fn find_item(svr: &Svr<'_>, doc: u16, item: &[u8]) -> R<Option<SvrObject>> {
+    let atom = if item.is_empty() {
+        0
+    } else {
+        svr.user("GlobalFindAtom", &[text(item)]).await? as u16
+    };
+
+    svr.svr().found = 0;
+    each_item(svr, doc, FIND_ITEM, atom).await?;
+
+    let found = svr.svr().found;
+
+    Ok(doc_of(svr, u32::from(doc)).and_then(|doc| {
+        doc.objects
+            .iter()
+            .find(|object| found != 0 && object.hwnd == found)
+            .cloned()
+    }))
+}
+
+/// An item made: its block, `GMEM_MOVEABLE | GMEM_ZEROINIT |
+/// GMEM_DDESHARE`, locked; the item's atom; the block given its
+/// document's `GetObject` as the object's `OLECLIENT`; then its window,
+/// its words the block (read out, seg3 `1feb`-`2108`; **recorded** by
+/// `oleitem`). None where the document gives no object.
+async fn new_item(svr: &Svr<'_>, doc: u16, item: &[u8]) -> R<Option<SvrObject>> {
     let Some(found) = doc_of(svr, u32::from(doc)) else {
         return Ok(None);
     };
-    let mut object = found.objects.iter().find(|o| same(&o.item, item)).cloned();
-
-    if object.is_none() {
-        let client = svr.new_client();
-        let out = svr.out_arg();
-        let item_at = svr.string_arg(item);
-        let status = method(
-            svr,
-            found.doc,
-            doc_slot::GET_OBJECT,
-            &[
-                GuestArg::Long(item_at),
-                GuestArg::Long(out),
-                GuestArg::Long(client),
-            ],
-        )
+    let handle = svr
+        .global_alloc(GMEM_MOVEABLE | GMEM_ZEROINIT | GMEM_DDESHARE, ITEM_SIZE)
         .await?;
+    let client = if handle == 0 {
+        0
+    } else {
+        svr.global_lock(handle).await?
+    };
 
-        if status != OLE_OK || svr.r32(out) == 0 {
-            svr.free_client(client);
-            return Ok(None);
-        }
-
-        let made = SvrObject {
-            item: item.to_vec(),
-            object: svr.r32(out),
-            client,
-            ..SvrObject::default()
-        };
-
-        with_doc(svr, doc, |doc| doc.objects.push(made.clone()));
-        svr.svr().clients.insert(client, doc);
-        object = Some(made);
+    if client == 0 {
+        return Ok(None);
     }
 
+    let atom = if item.is_empty() {
+        0
+    } else {
+        svr.add_atom_text(item).await?
+    };
+
+    svr.w32(plus(client, ITEM_VTBL), svr.near(CLIENT_VTBL));
+    svr.w16(plus(client, ITEM_HANDLE), handle);
+    svr.w16(plus(client, ITEM_ATOM), atom);
+
+    let out = svr.out_arg();
+    let item_at = svr.string_arg(item);
+    let status = method(
+        svr,
+        found.doc,
+        doc_slot::GET_OBJECT,
+        &[
+            GuestArg::Long(item_at),
+            GuestArg::Long(out),
+            GuestArg::Long(client),
+        ],
+    )
+    .await?;
+
+    if status != OLE_OK || svr.r32(out) == 0 {
+        if atom != 0 {
+            svr.delete_atom(atom).await?;
+        }
+
+        svr.global_unlock(handle).await?;
+        svr.global_free(handle).await?;
+        return Ok(None);
+    }
+
+    svr.w32(plus(client, ITEM_OBJECT), svr.r32(out));
+
+    let hwnd = make_window(svr, "ItemWndClass", ITEM_TEXT, WS_CHILD, doc).await?;
+
+    svr.w16(plus(client, ITEM_HWND), hwnd);
+    svr.user("SetWindowLong", &[Arg::W(hwnd), Arg::W(0), Arg::D(client)])
+        .await?;
+
+    let made = SvrObject {
+        item: item.to_vec(),
+        object: svr.r32(out),
+        client,
+        handle,
+        atom,
+        hwnd,
+        ..SvrObject::default()
+    };
+
+    with_doc(svr, doc, |doc| doc.objects.push(made.clone()));
+    svr.svr().clients.insert(client, doc);
+    Ok(Some(made))
+}
+
+/// An object of a document by its item, asked for once (**recorded** by
+/// `olesrv`); none where its document refuses.
+async fn object_of(svr: &Svr<'_>, doc: u16, item: &[u8], conv: u16) -> R<Option<SvrObject>> {
+    let object = match find_item(svr, doc, item).await? {
+        Some(object) => Some(object),
+        None => new_item(svr, doc, item).await?,
+    };
     let Some(object) = object else {
         return Ok(None);
     };
@@ -1131,8 +1346,9 @@ pub(crate) async fn doc_wnd_proc(
     Ok(0)
 }
 
-/// `ITEMWNDPROC` (23): an item's window, its class registered; its
-/// messages `DefWindowProc`'s.
+/// `ITEMWNDPROC` (23): an item's window holds its clients and takes no
+/// message of its own: `WM_DESTROY` answered nought, anything else
+/// `DefWindowProc`'s (read out, seg3 `23b2`-`23f4`).
 pub(crate) async fn item_wnd_proc(
     svr: &Svr<'_>,
     hwnd: u16,
@@ -1140,14 +1356,22 @@ pub(crate) async fn item_wnd_proc(
     w_param: u16,
     l_param: u32,
 ) -> R<u32> {
+    const WM_DESTROY: u16 = 0x0002;
+
+    if message == WM_DESTROY {
+        return Ok(0);
+    }
+
     def_window_proc(svr, hwnd, message, w_param, l_param).await
 }
 
 /// `WM_DDE_INITIATE` broadcast, which only a top-level window is sent: the
 /// class's system topic answered by its server's window, `OLEsystem` and
 /// not `System`, and only where it may take a document -- a server of
-/// `OLE_SERVER_MULTI` with one takes no more; a document's name by the
-/// document's window (**recorded** by `olesrv`).
+/// `OLE_SERVER_MULTI` with one, or with a system conversation already,
+/// takes no more; a document's name by the document's window (**recorded**
+/// by `olesrv` and `oleitem`). The conversation kept as the client's
+/// property of the window that answered, its datum the client's window.
 async fn initiated(svr: &Svr<'_>, server: &Server, client: u16, app: u16, topic: u16) -> R<()> {
     let app_name = atom_text(svr, app).await?;
     let topic_name = atom_text(svr, topic).await?;
@@ -1159,7 +1383,7 @@ async fn initiated(svr: &Svr<'_>, server: &Server, client: u16, app: u16, topic:
     let mut from = 0;
 
     if same(&topic_name, b"OLEsystem") {
-        if !server.multi || server.docs.is_empty() {
+        if !server.multi || (server.docs.is_empty() && server.convs.is_empty()) {
             from = server.hwnd;
             with_server(svr, server.hwnd, |server| server.convs.push(client));
         }
@@ -1177,6 +1401,9 @@ async fn initiated(svr: &Svr<'_>, server: &Server, client: u16, app: u16, topic:
     }
 
     if from != 0 {
+        with_server(svr, server.hwnd, |server| server.fresh = false);
+        set_prop(svr, from, client, client).await?;
+
         let a = svr.add_atom_text(&server.class).await?;
         let t = svr.add_atom_text(&topic_name).await?;
 
@@ -1244,7 +1471,13 @@ async fn terminated(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<()> {
         post(svr, client, WM_DDE_TERMINATE, hwnd, 0).await?;
     }
 
-    if server.is_some() {
+    if let Some(server) = &server {
+        let was = server.convs.contains(&client);
+
+        if was {
+            remove_prop(svr, hwnd, client).await?;
+        }
+
         let revoking = with_server(svr, hwnd, |server| {
             server.convs.retain(|&conv| conv != client);
             server.revoking
@@ -1253,20 +1486,31 @@ async fn terminated(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<()> {
 
         if revoking {
             finish_server(svr, hwnd).await?;
+        } else if was {
+            release_idle(svr, hwnd).await?;
         }
     }
 
-    if doc.is_some() {
+    if let Some(doc) = &doc {
+        let was = doc.convs.contains(&client);
+
+        if was {
+            remove_prop(svr, hwnd, client).await?;
+            each_item(svr, hwnd, FORGET_CLIENT, client).await?;
+        }
+
         let done = with_doc(svr, hwnd, |doc| {
             doc.convs.retain(|&conv| conv != client);
-            doc.advises.retain(|advise| advise.conv != client);
             doc.named.retain(|&conv| conv != client);
             doc.revoking && doc.convs.is_empty()
         })
         .unwrap_or(false);
+        let owner = server_of(svr, u32::from(doc.server)).filter(|owner| !owner.revoking);
 
         if done {
             release_doc(svr, hwnd).await?;
+        } else if !doc.revoking && was && owner.is_some() {
+            release_idle(svr, doc.server).await?;
         }
     }
 
@@ -1365,11 +1609,16 @@ async fn system_command(svr: &Svr<'_>, server: &Server, command: &Command) -> R<
 
     if status != OLE_OK || svr.r32(out) == 0 {
         svr.user("DestroyWindow", &[Arg::W(doc.hwnd)]).await?;
+        svr.free_record(doc.record);
         return Ok(false);
     }
 
-    doc.doc = svr.r32(out);
+    doc_pointer(svr, &mut doc, svr.r32(out));
+    // Made for a client to embed, not opened from a file (read out, seg3
+    // `0dda`-`0e0d`): what `OleSavedServerDoc` and a save hold it to.
+    doc.embedded = slot != server_slot::OPEN;
     keep_doc(svr, doc);
+    with_server(svr, server.hwnd, |server| server.fresh = true);
     Ok(true)
 }
 
@@ -1515,11 +1764,51 @@ async fn doc_request(svr: &Svr<'_>, doc: u16, client: u16, format: u16, item: u1
     post(svr, client, WM_DDE_DATA, doc, long(block, item)).await
 }
 
+/// What a client advised of an item, kept in its block, the datum of its
+/// property on the item's window (read out, seg3 `26a9`-`2735`): native
+/// data marked, any other format in place of the last; the time's bit
+/// added; whether data goes with it, as the advise asks. The property set
+/// again, last of the window's (**recorded** by `oleitem`: native data is
+/// sent first, then the one other format last advised).
+async fn advised(
+    svr: &Svr<'_>,
+    object: &SvrObject,
+    client: u16,
+    format: u16,
+    flags: u16,
+    when: &[u8],
+) -> R<()> {
+    let mut info = get_prop(svr, object.hwnd, client).await?;
+
+    if !svr.is_info(info) {
+        info = svr.new_info();
+    }
+
+    svr.set_info(info, INFO_CLIENT, client);
+
+    if format == self::format(svr, NATIVE) {
+        svr.set_info(info, INFO_NATIVE, 1);
+    } else {
+        svr.set_info(info, INFO_FORMAT, format);
+    }
+
+    if let Some(bit) = WHENS.iter().position(|each| same(each, when)) {
+        let whens = svr.info(info, INFO_WHENS);
+
+        svr.set_info(info, INFO_WHENS, whens | 1 << bit);
+    }
+
+    svr.set_info(info, INFO_DATA, u16::from(flags & ADVISE_DEFER == 0));
+    remove_prop(svr, object.hwnd, client).await?;
+    set_prop(svr, object.hwnd, client, info).await
+}
+
 /// An advise of a document's item: `StdDocumentName` kept; else the
-/// object's formats enumerated until the one advised, and the format and
-/// when kept. Acknowledged only where the advise asks its data be
-/// acknowledged (**recorded** by `olesrv`: an advise without `fAckReq` is
-/// answered with nothing); refused where there is no such item.
+/// object's formats enumerated until the one advised, and what was asked
+/// kept on the item's window (`advised`). Acknowledged only where the
+/// advise asks its data be acknowledged (**recorded** by `olesrv`: an
+/// advise without `fAckReq` is answered with nothing); refused where
+/// there is no such item.
 async fn doc_advise(svr: &Svr<'_>, doc: u16, client: u16, options: u16, item: u16) -> R<()> {
     let name = atom_text(svr, item).await?;
     let at = svr.global_lock(options).await?;
@@ -1544,29 +1833,7 @@ async fn doc_advise(svr: &Svr<'_>, doc: u16, client: u16, options: u16, item: u1
             _ => return ack(svr, client, doc, NACK, item).await,
         };
 
-        with_doc(svr, doc, |doc| {
-            let index = doc
-                .advises
-                .iter()
-                .position(|a| a.conv == client && a.client == object.client)
-                .unwrap_or_else(|| {
-                    doc.advises.push(Advise {
-                        conv: client,
-                        client: object.client,
-                        ..Advise::default()
-                    });
-                    doc.advises.len() - 1
-                });
-            let advise = &mut doc.advises[index];
-
-            if !advise.formats.contains(&format) {
-                advise.formats.push(format);
-            }
-
-            if !advise.whens.iter().any(|each| same(each, &when)) {
-                advise.whens.push(when);
-            }
-        });
+        advised(svr, &object, client, format, flags, &when).await?;
     }
 
     svr.global_free(options).await?;
@@ -1579,35 +1846,31 @@ async fn doc_advise(svr: &Svr<'_>, doc: u16, client: u16, options: u16, item: u1
     }
 }
 
-/// An unadvise: the format, or every format where it names none, no
-/// longer sent.
-async fn doc_unadvise(svr: &Svr<'_>, doc: u16, client: u16, format: u16, item: u16) -> R<()> {
+/// An unadvise (read out, seg3 `24bc`-`2586`): of the document itself,
+/// the client forgotten by every item, `FINDITEMWND` handed each; of an
+/// item, the time's bit taken from the client's block, whatever the
+/// format -- its property stays (**recorded** by `oleitem`: native data is
+/// no longer sent once another format is unadvised).
+async fn doc_unadvise(svr: &Svr<'_>, doc: u16, client: u16, _format: u16, item: u16) -> R<()> {
     let name = atom_text(svr, item).await?;
 
     if same(&name, b"StdDocumentName") {
         with_doc(svr, doc, |doc| doc.named.retain(|&conv| conv != client));
+    } else if name.is_empty() {
+        each_item(svr, doc, FORGET_CLIENT, client).await?;
     } else {
-        let (base, _) = item_when(&name);
+        let (base, when) = item_when(&name);
+        let info = match find_item(svr, doc, &base).await? {
+            Some(object) => get_prop(svr, object.hwnd, client).await?,
+            None => 0,
+        };
+        let bit = WHENS.iter().position(|each| same(each, &when));
 
-        with_doc(svr, doc, |doc| {
-            let clients: Vec<u32> = doc
-                .objects
-                .iter()
-                .filter(|o| same(&o.item, &base))
-                .map(|o| o.client)
-                .collect();
+        if let Some(bit) = bit.filter(|_| svr.is_info(info)) {
+            let whens = svr.info(info, INFO_WHENS);
 
-            for advise in &mut doc.advises {
-                if advise.conv == client && clients.contains(&advise.client) {
-                    if format == 0 {
-                        advise.formats.clear();
-                        advise.whens.clear();
-                    } else {
-                        advise.formats.retain(|&each| each != format);
-                    }
-                }
-            }
-        });
+            svr.set_info(info, INFO_WHENS, whens & !(1 << bit));
+        }
     }
 
     ack(svr, client, doc, ACK, item).await
@@ -1716,4 +1979,185 @@ async fn doc_poke(svr: &Svr<'_>, doc: u16, client: u16, data: u16, item: u16) ->
         item,
     )
     .await
+}
+
+// The procedures it hands USER, its internal exports.
+
+/// `SENDDATAMSG` (24), for `EnumProps` of an item's window: one client's
+/// data sent where it advised the time `ITEMCALLBACK` tells (read out,
+/// seg3 `2d3c`-`2edc`) -- native data first where it asked for it, then
+/// the one other format, each asked of the object for that client; a
+/// deferred advise's sent with no data. From the document's window, the
+/// item named at its time. A word that names no client's block, or a
+/// client gone, sends nothing (**recorded** by `oleitem`). Always 1.
+pub(crate) async fn send_data_msg(svr: &Svr<'_>, hwnd: u16, info: u16) -> R<u16> {
+    if !svr.is_info(info) {
+        return Ok(1);
+    }
+
+    let client = svr.info(info, INFO_CLIENT);
+    let when = svr.svr().when;
+
+    if !is_window(svr, client).await? || svr.info(info, INFO_WHENS) & (1 << when) == 0 {
+        return Ok(1);
+    }
+
+    svr.svr().sent = true;
+
+    let Some((doc, object)) = item_of_window(svr, hwnd) else {
+        return Ok(1);
+    };
+    let mut formats = Vec::new();
+
+    if svr.info(info, INFO_NATIVE) != 0 {
+        formats.push(format(svr, NATIVE));
+    }
+
+    if svr.info(info, INFO_FORMAT) != 0 {
+        formats.push(svr.info(info, INFO_FORMAT));
+    }
+
+    let wanted = svr.info(info, INFO_DATA) != 0;
+
+    for each in formats {
+        let data = if wanted {
+            data_block(svr, doc, object.client, each, DATA_ADVISED).await?
+        } else {
+            0
+        };
+
+        if wanted && data == 0 {
+            return Ok(1);
+        }
+
+        let atom = svr.add_atom_text(&item_at(&object.item, when)).await?;
+
+        post(svr, client, WM_DDE_DATA, doc, long(data, atom)).await?;
+    }
+
+    Ok(1)
+}
+
+/// `FINDITEMWND` (25), for `EnumChildWindows` of a document's window: the
+/// high word of its `LPARAM` the request, the low its word (read out,
+/// seg3 `22ac`-`236e`): 1 finds the item whose atom it is, answering
+/// nought there to stop; 2 forgets a client, its block freed and its
+/// property taken away; 3 lets the item go; 4 tells the item's object
+/// saved, noting a save that reached no client. Otherwise 1 (**recorded**
+/// by `oleitem`).
+pub(crate) async fn find_item_wnd(svr: &Svr<'_>, hwnd: u16, l_param: u32) -> R<u16> {
+    let value = l_param as u16;
+    let request = (l_param >> 16) as u16;
+    let found = item_of_window(svr, hwnd);
+
+    match request {
+        FIND_ITEM
+            if found
+                .as_ref()
+                .is_some_and(|(_, object)| object.atom == value) =>
+        {
+            svr.svr().found = hwnd;
+            return Ok(0);
+        }
+        FORGET_CLIENT => {
+            let info = get_prop(svr, hwnd, value).await?;
+
+            if info != 0 {
+                svr.free_info(info);
+                remove_prop(svr, hwnd, value).await?;
+            }
+        }
+        DESTROY_ITEM => {
+            if let Some((doc, object)) = found {
+                release_object(svr, doc, object.client).await?;
+            }
+        }
+        TELL_SAVED => {
+            if let Some((_, object)) = found.filter(|(_, object)| object.object != 0) {
+                let answer = Box::pin(item_callback(svr, object.client, OLE_SAVED)).await?;
+
+                if answer == OLE_ERROR_CANT_UPDATE_CLIENT {
+                    svr.svr().saved = false;
+                }
+            }
+        }
+        _ => {}
+    }
+
+    Ok(1)
+}
+
+/// `TERMINATECLIENTS` (27) and `TERMINATEDOCCLIENTS` (28), for `EnumProps`
+/// of a server's and a document's window: the client the datum names sent
+/// `WM_DDE_TERMINATE` from the window where it is a window (read out, seg3
+/// `0752`-`079e`, `1554`-`15a0`; **recorded** by `oleitem`). Its answer is
+/// taken as a client's own terminate, and answered. Always 1.
+pub(crate) async fn terminate_clients(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<u16> {
+    if is_window(svr, client).await? {
+        post(svr, client, WM_DDE_TERMINATE, hwnd, 0).await?;
+    }
+
+    Ok(1)
+}
+
+/// `DELETECLIENTINFO` (29), for `EnumProps` of an item's window: the
+/// client's block freed -- its conversation with the document ended first
+/// where the item is let go so -- and the property taken away (read out,
+/// seg3 `222e`-`22a9`; **recorded** by `oleitem`). Always 1.
+pub(crate) async fn delete_client_info(svr: &Svr<'_>, hwnd: u16, name: u32, info: u16) -> R<u16> {
+    if svr.is_info(info) {
+        if svr.svr().ending {
+            let parent = svr.user("GetParent", &[Arg::W(hwnd)]).await? as u16;
+
+            terminate_clients(svr, parent, svr.info(info, INFO_CLIENT)).await?;
+        }
+
+        svr.free_info(info);
+    }
+
+    svr.user("RemoveProp", &[Arg::W(hwnd), Arg::D(name)])
+        .await?;
+    Ok(1)
+}
+
+/// `SENDRENAMEMSG` (30), for `EnumProps`: the document's name sent to the
+/// client a block names, `Binary` under `StdDocumentName`, from the
+/// window's parent (read out, seg3 `2cbc`-`2d39`). A word that names no
+/// block sends nothing (**recorded** by `oleitem`). Always 1.
+pub(crate) async fn send_rename_msg(svr: &Svr<'_>, hwnd: u16, info: u16) -> R<u16> {
+    if !svr.is_info(info) {
+        return Ok(1);
+    }
+
+    let parent = svr.user("GetParent", &[Arg::W(hwnd)]).await? as u16;
+
+    if let Some(doc) = doc_of(svr, u32::from(parent)) {
+        let mut bytes = word(DATA_ADVISED).to_vec();
+
+        bytes.extend_from_slice(&word(format(svr, BINARY)));
+        bytes.extend_from_slice(&doc.name);
+        bytes.push(0);
+
+        let block = shared(svr, &bytes).await?;
+        let atom = svr.add_atom_text(b"StdDocumentName").await?;
+        let client = svr.info(info, INFO_CLIENT);
+
+        post(svr, client, WM_DDE_DATA, parent, long(block, atom)).await?;
+    }
+
+    Ok(1)
+}
+
+/// `ENUMFORTERMINATE` (31), for `EnumProps` of a document's window: the
+/// client the datum names sent `WM_DDE_TERMINATE` from the document,
+/// unless it is a client of the item set aside (read out, seg3
+/// `2c5e`-`2cb8`; **recorded** by `oleitem`). Always 1.
+pub(crate) async fn enum_for_terminate(svr: &Svr<'_>, hwnd: u16, client: u16) -> R<u16> {
+    let spared = svr.svr().spared;
+
+    if spared == 0 || get_prop(svr, spared, client).await? == 0 {
+        terminate_clients(svr, hwnd, client).await?;
+    }
+
+    Ok(1)
 }

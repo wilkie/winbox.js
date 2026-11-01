@@ -1,0 +1,34 @@
+{
+  "probe": "emspast",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "entry",
+      "args": "EMSCopy",
+      "result": "offset=a940,limit=a93f"
+    },
+    {
+      "function": "block",
+      "args": "EMSCopy",
+      "result": "own=no,type=code,owner=MMSYSTEM,datum=1,at=0,size=480"
+    },
+    {
+      "function": "bytes",
+      "args": "EMSCopy",
+      "result": "558bec837e06087305b88100eb179a9a02ff0ac45e08268947022689570426c7"
+    },
+    {
+      "function": "call",
+      "args": "EMSCopy",
+      "result": "ax=81,dx=5678,left=8"
+    }
+  ]
+}

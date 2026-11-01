@@ -65,6 +65,7 @@ import {
   noughtWord,
 } from './kernel/retail.js';
 import {
+  EMSCopy,
   ExitKernel,
   GetSetKernelDosProc,
   GetWinOldApHooks,
@@ -505,7 +506,7 @@ export class Kernel extends Module {
       [IsWinOldApTask, 'IsWinOldApTask', 2, [HANDLE], BOOL],
       [GlobalHandleNoRIP, 'GlobalHandleNoRIP', 2, [UINT], DWORD],
       // 160 //
-      [Kernel.stub, 'EMSCopy', 14],
+      [EMSCopy, 'EMSCopy', 6, [FARPTR, UINT], UINT],
       [LocalCountFree, 'LocalCountFree', 0, [], UINT],
       [LocalHeapSize, 'LocalHeapSize', 0, [], UINT],
       [GlobalLRU, 'GlobalLRUOldest', 2, [HGLOBAL], HGLOBAL],

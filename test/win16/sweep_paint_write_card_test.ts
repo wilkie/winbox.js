@@ -272,5 +272,126 @@ const redBox = (from: string, to: string) => step(`click:220,372;click:49,214;dr
         [4, 0, 430, 320],
       ]);
     }, 300000);
+
+    /* OLE end to end: a picture drawn in Paintbrush, copied, and pasted into
+     * Write, or onto a Cardfile card in its picture mode -- an embedded
+     * object; double-clicked, the Paintbrush its server starts edits it, a
+     * blue box is drawn over it, File's Update and Exit & Return, and the
+     * client's picture is what Paintbrush made it. With OLE's libraries'
+     * files on the drive and with WinBox's own alone. As
+     * `write_embeds_a_paintbrush_picture_and_edits_it` and the others in
+     * `crates/winbox-web/tests/sweep_paint_write_card.rs`. */
+    const OLE_FILES = [
+      ['WINDOWS', 'SYSTEM', 'OLECLI.DLL'],
+      ['WINDOWS', 'SYSTEM', 'OLESVR.DLL'],
+    ];
+
+    /** The colours of the screen inside a box, as `0xRRGGBB`. */
+    const boxColours = (win16: any, [left, top, right, bottom]: number[]) => {
+      const seen = new Set<number>();
+
+      for (let y = top; y < bottom; y++) {
+        for (let x = left; x < right; x++) {
+          const [r, g, b] = colourAt(win16, x, y);
+
+          seen.add((r << 16) | (g << 8) | b);
+        }
+      }
+
+      return seen;
+    };
+
+    async function embedsAndEdits(
+      client: string,
+      paste: string,
+      at: string,
+      box: number[],
+      without: string[][]
+    ) {
+      const copied = mkdtempSync(join(tmpdir(), 'winbox-sweep-'));
+      const before: Set<number>[] = [];
+      const after: Set<number>[] = [];
+      let editing = false;
+      /* Paintbrush editing the picture, its place found as it shows: the
+       * filled box 48, 190 from its corner, the palette's blue 337, 333, the
+       * picture at 66, 44. */
+      const draw = step('', 1);
+      const placed = (win16: any) => {
+        const found = win16.rasterDesktop.windows.find((one: any) =>
+          String(one.title).includes('Paintbrush Picture in')
+        );
+
+        if (found) {
+          const [x, y] = [found.left, found.top];
+
+          draw.keys = [
+            `click:${x + 337},${y + 333}`,
+            `click:${x + 48},${y + 190}`,
+            `drag:${x + 81},${y + 61},${x + 116},${y + 91}`,
+          ];
+        }
+      };
+
+      try {
+        copyFileSync(join(WINDOWS, 'PBRUSH.EXE'), join(copied, 'PBRUSH.EXE'));
+
+        const ran = runProbe('sweep', 0, false, true, 3, {
+          program: { directory: copied, file: 'PBRUSH.EXE', folder: 'SWEEP' },
+          virtual: true,
+          keepCalls: 0,
+          without,
+          steps: [
+            redBox('100,70', '160,120'),
+            step('click:49,59;drag:95,65,170,130'),
+            step('Control_L+c'),
+            step(`start:C:\\WINDOWS\\${client}`, 3),
+            step(paste, 3, (win16) => before.push(boxColours(win16, box))),
+            step(`dblclick:${at}`, 5, placed),
+            draw,
+            step('Alt_L+f;u', 3),
+            step('Alt_L+f;x', 5, (win16) => {
+              editing = win16.rasterDesktop.windows.some((one: any) =>
+                String(one.title).includes('Paintbrush Picture in')
+              );
+            }),
+            step('click:300,300', 2, (win16) => after.push(boxColours(win16, box))),
+          ],
+        });
+
+        await ran;
+
+        return { before: before[0], after: after[0], editing };
+      } finally {
+        rmSync(copied, { recursive: true, force: true });
+      }
+    }
+
+    const RED_WORD = 0xff0000;
+    const BLUE_WORD = 0x0000ff;
+
+    for (const [client, paste, at, box] of [
+      ['WRITE.EXE', 'Alt_L+e;p', '85,95', [50, 66, 130, 136]],
+      ['CARDFILE.EXE', 'Alt_L+e;e;Alt_L+e;p', '75,197', [44, 172, 124, 240]],
+    ] as [string, string, string, number[]][]) {
+      for (const without of [false, true]) {
+        it(`${client === 'WRITE.EXE' ? 'Write' : 'Cardfile'} embeds a Paintbrush picture and edits it${
+          without ? ' with WinBox OLE alone' : ''
+        }`, async () => {
+          const { before, after, editing } = await embedsAndEdits(
+            client,
+            paste,
+            at,
+            box,
+            without ? OLE_FILES : []
+          );
+
+          expect(before.has(RED_WORD)).toBe(true);
+          expect(before.has(BLUE_WORD)).toBe(false);
+          expect(editing).toBe(false);
+          expect(after.has(RED_WORD)).toBe(true);
+          expect(after.has(BLUE_WORD)).toBe(true);
+        }, 600000);
+      }
+    }
   }
 );

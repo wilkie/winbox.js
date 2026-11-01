@@ -14,7 +14,9 @@ import { makeStacksForTimer } from './stacks.js';
  * * `timeGetTime` counts milliseconds from where `GetTickCount` counts
  *   them, a millisecond at a time.
  * * `timeGetSystemTime` answers nought and gives milliseconds, whatever
- *   type it was asked for.
+ *   type it was asked for; for a size under 8 it answers `TIMERR_STRUCT`,
+ *   81h, and writes nothing (`MMSYSTEM.DLL` seg1 `0003`-`000c`; **recorded**
+ *   by `emscopy` and `emspast`, whose call of KERNEL's `EMSCopy` runs it).
  * * `timeSetEvent` answers an event's id, or nought for a delay of nought.
  *   The procedure is called at interrupt time with the id, nought, the
  *   caller's `DWORD` and two noughts: once for `TIME_ONESHOT`, after which
@@ -27,6 +29,10 @@ import { makeStacksForTimer } from './stacks.js';
  */
 
 const TIMERR_NOCANDO = 97;
+/** `TIMERR_STRUCT`: a structure too small. */
+const TIMERR_STRUCT = 0x81;
+/** The size of an `MMTIME`: its type and a doubleword. */
+const MMTIME_SIZE = 8;
 const MMSYSERR_INVALPARAM = 11;
 
 /**
@@ -165,8 +171,12 @@ export function timeEndPeriod(this: any, uPeriod: number) {
   return uPeriod === 0 ? TIMERR_NOCANDO : 0;
 }
 
-/** The time as an `MMTIME`, in milliseconds whatever was asked. */
-export function timeGetSystemTime(this: any, lpTime: number, _uSize: number) {
+/** The time as an `MMTIME`, in milliseconds whatever was asked; nothing for a structure too small. */
+export function timeGetSystemTime(this: any, lpTime: number, uSize: number) {
+  if (uSize < MMTIME_SIZE) {
+    return TIMERR_STRUCT;
+  }
+
   const core = this.machine.cpu.core;
   const segment = (lpTime >>> 16) & 0xffff;
   const offset = lpTime & 0xffff;

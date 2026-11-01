@@ -4,6 +4,7 @@ import { FatalAppExit } from './FatalAppExit.js';
 import { GlobalHandle } from './GlobalHandle.js';
 import { LocalInit } from './LocalInit.js';
 import { segmentSelector } from '../selectors.js';
+import { timeGetSystemTime } from '../mmsystem/time.js';
 
 /**
  * KERNEL's internal calls that a program can reach and that WinBox answers
@@ -74,6 +75,23 @@ const SWAP_RECORDING_RETURN = 0x0167;
  */
 export function SwapRecording(this: any, flag: number) {
   return ((SWAP_RECORDING_RETURN << 16) | (flag & 0xffff)) >>> 0;
+}
+
+/**
+ * `EMSCopy` (160), left from the real-mode KERNEL's expanded memory: its
+ * routine (seg1 `a940`-`a94a`) is never reached. KERNEL cuts its first code
+ * segment at A940h as start-up ends (seg1 `b565`-`b573`), so the entry lies
+ * one byte past the segment's limit. On a 386 a far call there is a general
+ * protection fault; DOSBox checks no offset against a code segment's limit
+ * and runs what lies in memory past it. That is the block the global heap
+ * gave next: `MMSYSTEM.DLL`'s first code segment, loaded at start-up, whose
+ * first routine is `timeGetSystemTime` (`MMSYSTEM.DLL` seg1 `0000`-`0026`,
+ * `RETF 6`). **Recorded** by `emspast`, which found the block and its bytes,
+ * and by `emscopy`: seven noughts give 81h, `TIMERR_STRUCT` for a size
+ * under 8, DX kept, six bytes popped.
+ */
+export function EMSCopy(this: any, lpTime: number, uSize: number) {
+  return timeGetSystemTime.call(this, lpTime, uSize);
 }
 
 /**

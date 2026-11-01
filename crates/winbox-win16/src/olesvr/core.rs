@@ -4,8 +4,9 @@
 //!
 //! Written from OLE 1.0's documented interface (`ole.h`, the OLE 1.0
 //! programmer's reference: the server API and the DDE protocol) and from
-//! what the probe `olesrv` measured under DOSBox; nothing here is taken
-//! from the code of `OLESVR.DLL` (`kb/topics/ole.md`).
+//! what the probes `olesrv` and `oleitem` measured under DOSBox; where a
+//! read-out of `OLESVR.DLL` settled what no probe could, it is described
+//! in prose and cited (`kb/topics/ole.md`).
 
 use std::collections::{HashMap, HashSet};
 
@@ -21,6 +22,9 @@ pub(crate) const OLE_WAIT_FOR_RELEASE: u16 = 1;
 pub(crate) const OLE_ERROR_ADDRESS: u16 = 16;
 pub(crate) const OLE_ERROR_HANDLE: u16 = 18;
 pub(crate) const OLE_ERROR_CLASS: u16 = 20;
+/// `OLE_ERROR_CANT_UPDATE_CLIENT` (ole.h): an embedded document saved
+/// where no client was sent its data.
+pub(crate) const OLE_ERROR_CANT_UPDATE_CLIENT: u16 = 52;
 
 /// `OleQueryServerVersion`'s answer, 1001h (**recorded** by `olesrv`).
 pub(crate) const SERVER_VERSION: u32 = 0x1001;
@@ -52,8 +56,9 @@ pub(crate) const NACK: u16 = 0x0000;
 /// data advised, the client to free it (**recorded** by `olesrv`).
 pub(crate) const DATA_RESPONSE: u16 = 0x3000;
 pub(crate) const DATA_ADVISED: u16 = 0x2000;
-/// A `DDEADVISE`'s `fAckReq`.
+/// A `DDEADVISE`'s `fAckReq`, and its `fDeferUpd`.
 pub(crate) const ADVISE_ACK_REQ: u16 = 0x8000;
+pub(crate) const ADVISE_DEFER: u16 = 0x4000;
 
 pub(crate) const CF_TEXT: u16 = 1;
 pub(crate) const CF_BITMAP: u16 = 2;
@@ -62,6 +67,7 @@ pub(crate) const CF_PALETTE: u16 = 9;
 
 pub(crate) const GMEM_MOVEABLE: u16 = 0x0002;
 pub(crate) const GMEM_DDESHARE: u16 = 0x2000;
+pub(crate) const GMEM_ZEROINIT: u16 = 0x0040;
 pub(crate) const HKEY_CLASSES_ROOT: u32 = 1;
 pub(crate) const WS_CHILD: u32 = 0x4000_0000;
 
@@ -72,8 +78,10 @@ pub(crate) const WS_CHILD: u32 = 0x4000_0000;
 /// strings and out-pointers a server's methods are given, each in a slot
 /// of its own taken in turn; a `RECT` a document's dimensions are given
 /// in; where a class's value in the registration database is read, and
-/// its size; and the `OLECLIENT`s themselves, one for each object a
-/// server gives, each a far pointer to the table.
+/// its size; what a client asked of an item, one block for each client
+/// of each item, a word naming it kept as the client's property on the
+/// item's window; and the records a server's and a document's window
+/// words point at.
 pub(crate) const CLIENT_VTBL: u16 = 0x100;
 pub(crate) const CLASS_NAME: u16 = 0x180;
 pub(crate) const STRINGS: u16 = 0x200;
@@ -84,33 +92,86 @@ pub(crate) const OUT_SLOTS: u16 = 16;
 pub(crate) const RECT_AT: u16 = 0xa80;
 pub(crate) const REG_VALUE: u16 = 0xb00;
 pub(crate) const REG_SIZE: u16 = 0xbfc;
-pub(crate) const CLIENTS: u16 = 0x1000;
-pub(crate) const CLIENT_SIZE: u16 = 4;
-pub(crate) const CLIENT_SLOTS: u16 = 0x400;
 
-/// One object a server's document gave, by its item.
+/// What a client asked of an item, as `OLESVR.DLL` keeps it: a block of
+/// 0Eh bytes in its data segment, named by a word that is the datum of
+/// the client's property on the item's window (**recorded** by `oleitem`:
+/// a handle, not the client's window). Its fields, by the file's use of
+/// them (read out, `OLESVR.DLL` seg3 `26d4`-`270f`, `2d74`-`2e73`): the
+/// client's window; whether it advised native data; the one other format
+/// it advised, the last; the times it advised, a bit for each (`Change`
+/// 0, `Save` 1, `Close` 2); whether it wants data with them, the last
+/// advise's say; a target device's block and whether it is new, which
+/// WinBox keeps by the document instead (`SvrDoc::target`). WinBox's
+/// blocks are slots of 10h bytes from `INFOS`, each named by its offset:
+/// below 2000h, where no window's handle is, as the file's local handles
+/// are none.
+pub(crate) const INFOS: u16 = 0x1000;
+pub(crate) const INFO_SIZE: u16 = 0x10;
+pub(crate) const INFO_SLOTS: u16 = 0x100;
+pub(crate) const INFO_CLIENT: u16 = 0;
+pub(crate) const INFO_NATIVE: u16 = 2;
+pub(crate) const INFO_FORMAT: u16 = 4;
+pub(crate) const INFO_WHENS: u16 = 6;
+pub(crate) const INFO_DATA: u16 = 8;
+/// The times an item is advised for, by their bits in `INFO_WHENS`.
+pub(crate) const WHENS: [&[u8]; 3] = [b"Change", b"Save", b"Close"];
+
+/// The records a server's and a document's window words point at: the
+/// program's `LPOLESERVER` or `LPOLESERVERDOC`, each in a slot of 4 bytes.
+pub(crate) const RECORDS: u16 = 0x6000;
+pub(crate) const RECORD_SIZE: u16 = 4;
+pub(crate) const RECORD_SLOTS: u16 = 0x400;
+
+/// An item's block, the `OLECLIENT` its object is given, as `OLESVR.DLL`
+/// lays it out (**recorded** by `oleitem`, an item window's words
+/// pointing at it): a block of 10h bytes, `GMEM_MOVEABLE | GMEM_ZEROINIT
+/// | GMEM_DDESHARE`, locked; the client's method table; the object; the
+/// block's handle; the item's atom, nought for the document itself; the
+/// item's window.
+pub(crate) const ITEM_SIZE: u32 = 0x10;
+pub(crate) const ITEM_VTBL: u16 = 0;
+pub(crate) const ITEM_OBJECT: u16 = 4;
+pub(crate) const ITEM_HANDLE: u16 = 8;
+pub(crate) const ITEM_ATOM: u16 = 0xa;
+pub(crate) const ITEM_HWND: u16 = 0xc;
+
+/// An item's window's and a document's window's texts (**recorded** by
+/// `oleitem`).
+pub(crate) const ITEM_TEXT: &str = "ITEM";
+pub(crate) const DOC_TEXT: &str = "Doc";
+
+/// `FINDITEMWND`'s requests, the high word of its `LPARAM` (read out,
+/// `OLESVR.DLL` seg3 `22c9`-`22d8`).
+pub(crate) const FIND_ITEM: u16 = 1;
+pub(crate) const FORGET_CLIENT: u16 = 2;
+pub(crate) const DESTROY_ITEM: u16 = 3;
+pub(crate) const TELL_SAVED: u16 = 4;
+
+/// WinBox's `OLESVR`'s exports it hands USER as procedures, by ordinal.
+pub(crate) const SENDDATAMSG: u16 = 24;
+pub(crate) const FINDITEMWND: u16 = 25;
+pub(crate) const DELETECLIENTINFO: u16 = 29;
+
+/// One object a server's document gave, by its item: its window holds
+/// its clients.
 #[derive(Debug, Clone, Default)]
 pub struct SvrObject {
     pub item: Vec<u8>,
     /// The `LPOLEOBJECT` its document gave.
     pub object: u32,
-    /// The `LPOLECLIENT` WinBox gave for it.
+    /// The `LPOLECLIENT` WinBox gave for it: its item's block, locked.
     pub client: u32,
+    /// The block's handle, and the item's atom (nought for the document
+    /// itself).
+    pub handle: u16,
+    pub atom: u16,
+    /// The item's window, `ItemWndClass`, its document's child.
+    pub hwnd: u16,
     /// Whether the target device poked to its document has been given it.
     pub targeted: bool,
     /// The clients' windows of the conversations it was given in.
     pub convs: Vec<u16>,
-}
-
-/// What one conversation advised of one object: its formats in the order
-/// first advised, and when.
-#[derive(Debug, Clone, Default)]
-pub struct Advise {
-    pub conv: u16,
-    /// The object's client, which names it.
-    pub client: u32,
-    pub formats: Vec<u16>,
-    pub whens: Vec<Vec<u8>>,
 }
 
 /// A document: its window is its handle, `LHSERVERDOC`.
@@ -121,27 +182,37 @@ pub struct SvrDoc {
     pub name: Vec<u8>,
     /// The `LPOLESERVERDOC`.
     pub doc: u32,
+    /// Its window words' record.
+    pub record: u32,
     /// The clients' windows of its conversations.
     pub convs: Vec<u16>,
     pub objects: Vec<SvrObject>,
-    pub advises: Vec<Advise>,
     /// The conversations that advised `StdDocumentName`.
     pub named: Vec<u16>,
     /// A target device poked, its bytes; given each object before its
     /// first data.
     pub target: Option<Vec<u8>>,
+    /// Made by `StdNewDocument`, `StdEditDocument` or
+    /// `StdNewFromTemplate`, and not renamed since.
+    pub embedded: bool,
     /// Revoked, waiting for its conversations to end.
     pub revoking: bool,
 }
 
 /// A server: its window is its handle, `LHSERVER`.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Default)]
 pub struct Server {
     pub hwnd: u16,
     pub class: Vec<u8>,
     /// The `LPOLESERVER`.
     pub pointer: u32,
+    /// Its window words' record.
+    pub record: u32,
     pub multi: bool,
+    /// A document just made for a client, which has not yet begun a
+    /// conversation: its server is not let go meanwhile.
+    pub fresh: bool,
     /// Its documents' windows, in the order made.
     pub docs: Vec<u16>,
     /// The clients' windows of its system conversations.
@@ -154,6 +225,7 @@ pub struct Server {
 }
 
 /// What WinBox's `OLESVR` keeps beside guest memory.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(Debug, Clone, Default)]
 pub struct State {
     pub started: bool,
@@ -166,11 +238,29 @@ pub struct State {
     pub clients: HashMap<u32, u16>,
     pub next_string: u16,
     pub next_out: u16,
-    pub free_clients: std::collections::VecDeque<u16>,
-    pub next_client: u16,
+    /// The clients' blocks in use, and those to take again.
+    pub infos: HashSet<u16>,
+    pub free_infos: std::collections::VecDeque<u16>,
+    pub next_info: u16,
+    pub free_records: std::collections::VecDeque<u16>,
+    pub next_record: u16,
     /// The conversations WinBox ended and waits to hear end: window and
     /// client.
     pub terminating: HashSet<(u16, u16)>,
+    /// What `SENDDATAMSG` sends: the time's bit, and whether any client
+    /// was sent it.
+    pub when: u16,
+    pub sent: bool,
+    /// The window `FINDITEMWND` found.
+    pub found: u16,
+    /// Whether every object saved was sent to a client
+    /// (`OleSavedServerDoc`).
+    pub saved: bool,
+    /// Whether `DELETECLIENTINFO` ends a client's conversation with the
+    /// document: set as an item is let go so.
+    pub ending: bool,
+    /// The item whose clients `ENUMFORTERMINATE` leaves be.
+    pub spared: u16,
 }
 
 /// WinBox's `OLESVR` as it runs.
@@ -250,32 +340,74 @@ impl<'e> Svr<'e> {
         at
     }
 
-    /// An `OLECLIENT` for an object, its table WinBox's: its far pointer.
-    pub(crate) fn new_client(&self) -> u32 {
+    /// A client's block for an item, cleared: the word naming it.
+    pub(crate) fn new_info(&self) -> u16 {
+        let handle = {
+            let mut state = self.svr();
+            let slot = if let Some(slot) = state.free_infos.pop_front() {
+                slot
+            } else {
+                let slot = state.next_info % INFO_SLOTS;
+
+                state.next_info = state.next_info.wrapping_add(1);
+                slot
+            };
+            let handle = INFOS + slot * INFO_SIZE;
+
+            state.infos.insert(handle);
+            handle
+        };
+
+        self.write(self.near(handle), &[0; INFO_SIZE as usize]);
+        handle
+    }
+
+    /// Whether a word names a client's block in use.
+    pub(crate) fn is_info(&self, handle: u16) -> bool {
+        self.svr().infos.contains(&handle)
+    }
+
+    pub(crate) fn info(&self, handle: u16, field: u16) -> u16 {
+        self.r16(self.near(handle.wrapping_add(field)))
+    }
+
+    pub(crate) fn set_info(&self, handle: u16, field: u16, value: u16) {
+        self.w16(self.near(handle.wrapping_add(field)), value);
+    }
+
+    pub(crate) fn free_info(&self, handle: u16) {
+        let mut state = self.svr();
+
+        if state.infos.remove(&handle) {
+            state.free_infos.push_back((handle - INFOS) / INFO_SIZE);
+        }
+    }
+
+    /// A record for a window's words, holding a program's pointer: its far
+    /// pointer.
+    pub(crate) fn new_record(&self, pointer: u32) -> u32 {
         let slot = {
             let mut state = self.svr();
 
-            if let Some(slot) = state.free_clients.pop_front() {
+            if let Some(slot) = state.free_records.pop_front() {
                 slot
             } else {
-                let slot = state.next_client % CLIENT_SLOTS;
+                let slot = state.next_record % RECORD_SLOTS;
 
-                state.next_client = state.next_client.wrapping_add(1);
+                state.next_record = state.next_record.wrapping_add(1);
                 slot
             }
         };
-        let at = self.near(CLIENTS + slot * CLIENT_SIZE);
+        let at = self.near(RECORDS + slot * RECORD_SIZE);
 
-        self.w32(at, self.near(CLIENT_VTBL));
+        self.w32(at, pointer);
         at
     }
 
-    pub(crate) fn free_client(&self, client: u32) {
-        let mut state = self.svr();
-
-        state.clients.remove(&client);
-        state
-            .free_clients
-            .push_back(((client as u16).wrapping_sub(CLIENTS)) / CLIENT_SIZE);
+    pub(crate) fn free_record(&self, at: u32) {
+        self.w32(at, 0);
+        self.svr()
+            .free_records
+            .push_back((at as u16).wrapping_sub(RECORDS) / RECORD_SIZE);
     }
 }
