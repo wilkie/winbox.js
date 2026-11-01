@@ -1,7 +1,8 @@
 //! `OLESVR`, OLE 1.0's server library, as WinBox's own: written from OLE
-//! 1.0's documented interface and protocol and from the probe `olesrv`,
-//! not from the code of `OLESVR.DLL` (`kb/topics/ole.md`). As
-//! `src/win16/olesvr/`.
+//! 1.0's documented interface and protocol and from the probes `olesrv`
+//! and `oleitem`, not from the code of `OLESVR.DLL`; where a read-out
+//! settled what no probe could, it is cited and described
+//! (`kb/topics/ole.md`). As `src/win16/olesvr/`.
 //!
 //! Kept as `OLECLI` is (`own_modules.rs`): with `OLESVR.DLL` on the drive,
 //! a program that imports it gets the file's library, and each import of
@@ -138,6 +139,24 @@ export!(item_wnd_proc, b"wwwd", |o, a| dword(
 export!(item_callback, b"dwd", |o, a| word(
     server::item_callback(&o, a[0], a[1] as u16).await
 ));
+export!(send_data_msg, b"wdw", |o, a| word(
+    server::send_data_msg(&o, a[0] as u16, a[2] as u16).await
+));
+export!(find_item_wnd, b"wd", |o, a| word(
+    server::find_item_wnd(&o, a[0] as u16, a[1]).await
+));
+export!(terminate_clients, b"wdw", |o, a| word(
+    server::terminate_clients(&o, a[0] as u16, a[2] as u16).await
+));
+export!(delete_client_info, b"wdw", |o, a| word(
+    server::delete_client_info(&o, a[0] as u16, a[1], a[2] as u16).await
+));
+export!(send_rename_msg, b"wdw", |o, a| word(
+    server::send_rename_msg(&o, a[0] as u16, a[2] as u16).await
+));
+export!(enum_for_terminate, b"wdw", |o, a| word(
+    server::enum_for_terminate(&o, a[0] as u16, a[2] as u16).await
+));
 
 /// `WEP`: 1, as a library's is.
 #[allow(clippy::unnecessary_wraps)]
@@ -165,6 +184,12 @@ pub(crate) fn implementation(name: &str) -> Option<Implementation> {
         "DOCWNDPROC" => Implementation::Async(doc_wnd_proc),
         "ITEMWNDPROC" => Implementation::Async(item_wnd_proc),
         "ITEMCALLBACK" => Implementation::Async(item_callback),
+        "SENDDATAMSG" => Implementation::Async(send_data_msg),
+        "FINDITEMWND" => Implementation::Async(find_item_wnd),
+        "TERMINATECLIENTS" | "TERMINATEDOCCLIENTS" => Implementation::Async(terminate_clients),
+        "DELETECLIENTINFO" => Implementation::Async(delete_client_info),
+        "SENDRENAMEMSG" => Implementation::Async(send_rename_msg),
+        "ENUMFORTERMINATE" => Implementation::Async(enum_for_terminate),
         _ => return None,
     })
 }

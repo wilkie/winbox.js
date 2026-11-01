@@ -10,8 +10,9 @@ import { Ole, far } from '../olecli/core.js';
  *
  * Written from OLE 1.0's documented interface (`ole.h`, the OLE 1.0
  * programmer's reference: the server API and the DDE protocol) and from
- * what the probe `olesrv` measured under DOSBox; nothing here is taken
- * from the code of `OLESVR.DLL` (`kb/topics/ole.md`).
+ * what the probes `olesrv` and `oleitem` measured under DOSBox; where a
+ * read-out of `OLESVR.DLL` settled what no probe could, it is described
+ * in prose and cited (`kb/topics/ole.md`).
  */
 
 export const NAME = 'OLESVR';
@@ -53,8 +54,9 @@ export const NACK = 0x0000;
 /** A `DDEDATA`'s flags: an answer to a request, the client to free it; data advised, the client to free it (**recorded** by `olesrv`). */
 export const DATA_RESPONSE = 0x3000;
 export const DATA_ADVISED = 0x2000;
-/** A `DDEADVISE`'s `fAckReq`. */
+/** A `DDEADVISE`'s `fAckReq`, and its `fDeferUpd`. */
 export const ADVISE_ACK_REQ = 0x8000;
+export const ADVISE_DEFER = 0x4000;
 
 export const CF_TEXT = 1;
 export const CF_BITMAP = 2;
@@ -73,8 +75,10 @@ export const WS_CHILD = 0x40000000;
  * the name of a window class as it is registered or a window made; the
  * strings and out-pointers a server's methods are given, each in a slot
  * of its own taken in turn; a `RECT` a document's dimensions are given
- * in; and the `OLECLIENT`s themselves, one for each object a server
- * gives, each a far pointer to the table.
+ * in; what a client asked of an item, one block for each client of each
+ * item, a word naming it kept as the client's property on the item's
+ * window; and the records a server's and a document's window words point
+ * at.
  */
 export const CLIENT_VTBL = 0x100;
 export const CLASS_NAME = 0x180;
@@ -87,29 +91,92 @@ export const RECT_AT = 0xa80;
 /** Where a class's value in the registration database is read into, and its size. */
 export const REG_VALUE = 0xb00;
 export const REG_SIZE = 0xbfc;
-export const CLIENTS = 0x1000;
-export const CLIENT_SIZE = 4;
-export const CLIENT_SLOTS = 0x400;
 
-/** One object a server's document gave, by its item. */
+/**
+ * What a client asked of an item, as `OLESVR.DLL` keeps it: a block of
+ * 0Eh bytes in its data segment, named by a word that is the datum of the
+ * client's property on the item's window (**recorded** by `oleitem`: a
+ * handle, not the client's window). Its fields, by the file's use of them
+ * (read out, `OLESVR.DLL` seg3 `26d4`-`270f`, `2d74`-`2e73`): the client's
+ * window; whether it advised native data; the one other format it advised,
+ * the last; the times it advised, a bit for each (`Change` 0, `Save` 1,
+ * `Close` 2); whether it wants data with them (an advise without
+ * `fDeferUpd`), the last advise's say; a target device's block and whether
+ * it is new, which WinBox keeps by the document instead (`SvrDoc.target`).
+ * WinBox's blocks are slots of 10h bytes from `INFOS`, each named by its
+ * offset: below 2000h, where no window's handle is, as the file's local
+ * handles are none.
+ */
+export const INFOS = 0x1000;
+export const INFO_SIZE = 0x10;
+export const INFO_SLOTS = 0x100;
+export const INFO_CLIENT = 0;
+export const INFO_NATIVE = 2;
+export const INFO_FORMAT = 4;
+export const INFO_WHENS = 6;
+export const INFO_DATA = 8;
+/** The times an item is advised for, by their bits in `INFO_WHENS`. */
+export const WHENS: Record<string, number> = { Change: 0, Save: 1, Close: 2 };
+
+/** The records a server's and a document's window words point at: the program's `LPOLESERVER` or `LPOLESERVERDOC`, each in a slot of 4 bytes. */
+export const RECORDS = 0x6000;
+export const RECORD_SIZE = 4;
+export const RECORD_SLOTS = 0x400;
+
+/**
+ * An item's block, the `OLECLIENT` its object is given, as `OLESVR.DLL`
+ * lays it out (**recorded** by `oleitem`, an item window's words pointing
+ * at it): a block of 10h bytes, `GMEM_MOVEABLE | GMEM_ZEROINIT |
+ * GMEM_DDESHARE`, locked; the client's method table; the object; the
+ * block's handle; the item's atom, nought for the document itself; the
+ * item's window.
+ */
+export const ITEM_SIZE = 0x10;
+export const ITEM_VTBL = 0;
+export const ITEM_OBJECT = 4;
+export const ITEM_HANDLE = 8;
+export const ITEM_ATOM = 0xa;
+export const ITEM_HWND = 0xc;
+export const GMEM_ZEROINIT = 0x0040;
+
+/** An item's window, its document's, and a server's: their classes' names and their windows' texts (**recorded** by `oleitem`). */
+export const ITEM_TEXT = 'ITEM';
+export const DOC_TEXT = 'Doc';
+
+/** `OLE_ERROR_CANT_UPDATE_CLIENT` (ole.h): an embedded document saved where no client was sent its data. */
+export const OLE_ERROR_CANT_UPDATE_CLIENT = 52;
+
+/** `FINDITEMWND`'s requests, the high word of its `LPARAM` (read out, `OLESVR.DLL` seg3 `22c9`-`22d8`). */
+export const FIND_ITEM = 1;
+export const FORGET_CLIENT = 2;
+export const DESTROY_ITEM = 3;
+export const TELL_SAVED = 4;
+
+/** WinBox's `OLESVR`'s exports it hands USER as procedures, by ordinal. */
+export const SENDDATAMSG = 24;
+export const FINDITEMWND = 25;
+export const TERMINATECLIENTS = 27;
+export const TERMINATEDOCCLIENTS = 28;
+export const DELETECLIENTINFO = 29;
+export const SENDRENAMEMSG = 30;
+export const ENUMFORTERMINATE = 31;
+
+/** One object a server's document gave, by its item: its window holds its clients. */
 export interface SvrObject {
   item: number[];
   /** The `LPOLEOBJECT` its document gave. */
   object: number;
-  /** The `LPOLECLIENT` WinBox gave for it. */
+  /** The `LPOLECLIENT` WinBox gave for it: its item's block, locked. */
   client: number;
+  /** The block's handle, and the item's atom (nought for the document itself). */
+  handle: number;
+  atom: number;
+  /** The item's window, `ItemWndClass`, its document's child. */
+  hwnd: number;
   /** Whether the target device poked to its document has been given it. */
   targeted: boolean;
   /** The clients' windows of the conversations it was given in. */
   convs: number[];
-}
-
-/** What one conversation advised of one object: its formats in the order first advised, and when. */
-export interface Advise {
-  conv: number;
-  object: SvrObject;
-  formats: number[];
-  whens: Set<string>;
 }
 
 /** A document: its window is its handle, `LHSERVERDOC`. */
@@ -119,14 +186,17 @@ export interface SvrDoc {
   name: number[];
   /** The `LPOLESERVERDOC`. */
   doc: number;
+  /** Its window words' record. */
+  record: number;
   /** The clients' windows of its conversations. */
   convs: number[];
   objects: SvrObject[];
-  advises: Advise[];
   /** The conversations that advised `StdDocumentName`. */
   named: number[];
   /** A target device poked, its bytes; given each object before its first data. */
   target: number[] | null;
+  /** Made by `StdNewDocument`, `StdEditDocument` or `StdNewFromTemplate`, and not renamed since. */
+  embedded: boolean;
   /** Revoked, waiting for its conversations to end. */
   revoking: boolean;
 }
@@ -137,7 +207,11 @@ export interface Server {
   klass: number[];
   /** The `LPOLESERVER`. */
   pointer: number;
+  /** Its window words' record. */
+  record: number;
   multi: boolean;
+  /** A document just made for a client, which has not yet begun a conversation: its server is not let go meanwhile. */
+  fresh: boolean;
   /** Its documents' windows, in the order made. */
   docs: number[];
   /** The clients' windows of its system conversations. */
@@ -159,13 +233,31 @@ export interface SvrState {
   docs: Map<number, SvrDoc>;
   /** Each object by its `OLECLIENT`'s far pointer. */
   clients: Map<number, { doc: number; object: SvrObject }>;
-  /** The next string slot, out slot and client slot to take. */
+  /** The next string slot and out slot to take. */
   nextString: number;
   nextOut: number;
-  freeClients: number[];
-  nextClient: number;
+  /** The clients' blocks in use, and those to take again. */
+  infos: Set<number>;
+  freeInfos: number[];
+  nextInfo: number;
+  freeRecords: number[];
+  nextRecord: number;
   /** The conversations WinBox ended and waits to hear end, as `window:client`. */
   terminating: Set<string>;
+  /** What `SENDDATAMSG` sends: the time's bit, the object, and whether any client was sent it. */
+  when: number;
+  object: number;
+  sent: boolean;
+  /** The window `FINDITEMWND` found. */
+  found: number;
+  /** Whether every object saved was sent to a client (`OleSavedServerDoc`). */
+  saved: boolean;
+  /** Whether `DELETECLIENTINFO` ends a client's conversation with the document: set as an item is let go. */
+  ending: boolean;
+  /** The item whose clients `ENUMFORTERMINATE` leaves be. */
+  spared: number;
+  /** Its exports' far addresses, by ordinal, as it hands them USER. */
+  procs: Record<number, number>;
 }
 
 function newState(): SvrState {
@@ -179,9 +271,20 @@ function newState(): SvrState {
     clients: new Map(),
     nextString: 0,
     nextOut: 0,
-    freeClients: [],
-    nextClient: 0,
+    infos: new Set(),
+    freeInfos: [],
+    nextInfo: 0,
+    freeRecords: [],
+    nextRecord: 0,
     terminating: new Set(),
+    when: 0,
+    object: 0,
+    sent: false,
+    found: 0,
+    saved: false,
+    ending: false,
+    spared: 0,
+    procs: {},
   };
 }
 
@@ -216,19 +319,51 @@ export class Svr extends Ole {
     return at;
   }
 
-  /** An `OLECLIENT` for an object, its table WinBox's: its far pointer. */
-  newClient(): number {
+  /** A client's block for an item, cleared: the word naming it. */
+  newInfo(): number {
     const state = this.svr();
-    const slot = state.freeClients.shift() ?? state.nextClient++ % CLIENT_SLOTS;
-    const at = this.near(CLIENTS + slot * CLIENT_SIZE);
+    const slot = state.freeInfos.shift() ?? state.nextInfo++ % INFO_SLOTS;
+    const handle = INFOS + slot * INFO_SIZE;
 
-    this.w32(at, this.near(CLIENT_VTBL));
+    this.write(this.near(handle), new Array(INFO_SIZE).fill(0));
+    state.infos.add(handle);
+    return handle;
+  }
+
+  /** Whether a word names a client's block in use. */
+  isInfo(handle: number): boolean {
+    return this.svr().infos.has(handle & 0xffff);
+  }
+
+  info(handle: number, field: number): number {
+    return this.r16(this.near((handle & 0xffff) + field));
+  }
+
+  setInfo(handle: number, field: number, value: number) {
+    this.w16(this.near((handle & 0xffff) + field), value);
+  }
+
+  freeInfo(handle: number) {
+    const state = this.svr();
+
+    if (state.infos.delete(handle & 0xffff)) {
+      state.freeInfos.push(((handle & 0xffff) - INFOS) / INFO_SIZE);
+    }
+  }
+
+  /** A record for a window's words, holding a program's pointer: its far pointer. */
+  newRecord(pointer: number): number {
+    const state = this.svr();
+    const slot = state.freeRecords.shift() ?? state.nextRecord++ % RECORD_SLOTS;
+    const at = this.near(RECORDS + slot * RECORD_SIZE);
+
+    this.w32(at, pointer);
     return at;
   }
 
-  freeClient(client: number) {
-    this.svr().clients.delete(client);
-    this.svr().freeClients.push(((client & 0xffff) - CLIENTS) / CLIENT_SIZE);
+  freeRecord(at: number) {
+    this.w32(at, 0);
+    this.svr().freeRecords.push(((at & 0xffff) - RECORDS) / RECORD_SIZE);
   }
 }
 

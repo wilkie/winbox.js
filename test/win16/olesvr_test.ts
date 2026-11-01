@@ -10,11 +10,18 @@ import { Loader } from '../../src/win16/loader.js';
  * `OLESVR` is WinBox's own (`src/win16/olesvr/`): its probes, run whole,
  * write what Windows wrote with `OLESVR.DLL` on the drive -- each import of
  * its linked to WinBox's stub -- and with no `OLESVR.DLL` on the drive at
- * all. As `crates/winbox-win16/tests/olesvr.rs`.
+ * all: the conversations (`olesrv`), Paintbrush's (`olepbr`), and the
+ * windows and properties its clients are kept on (`oleitem`). As
+ * `crates/winbox-win16/tests/olesvr.rs`.
  */
 
 const FIXTURES = join(__dirname, '..', '..', 'oracle', 'fixtures');
-const PROBE_NAMES = ['olesrv', 'olepbr'];
+const PROBE_NAMES = ['olesrv', 'olepbr', 'oleitem'];
+
+/* `oleitem`'s one known gap (`replay.ts`'s `KNOWN_GAPS`): Windows' EnumProps
+ * still lists the property DELETECLIENTINFO took from Item3's window. */
+const GAP = /^props\(Item3\) = /;
+const unlessGap = (lines: string[]) => lines.filter((line) => !GAP.test(line));
 const FILES = [['WINDOWS', 'SYSTEM', 'OLESVR.DLL']];
 
 /** What the oracle recorded, as `function(args) = result` lines. */
@@ -47,7 +54,7 @@ describe('OLESVR, WinBox own', () => {
         if (without) {
           expect(win16._modules.fromName('OLESVR') instanceof Loader).toBe(false);
         }
-        expect(written).toEqual(recorded(probe));
+        expect(unlessGap(written)).toEqual(unlessGap(recorded(probe)));
       }, 300000);
     }
   }

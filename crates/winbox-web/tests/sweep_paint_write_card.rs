@@ -53,6 +53,11 @@ fn hold(session: &mut Session, folder: &Path, dos: &str) {
 /// program named in `C:\WINDOWS` started; none where the oracle's build is
 /// not here.
 fn started(program: &str) -> Option<Session> {
+    started_without(program, &[])
+}
+
+/// The same, the installation's files named taken off C: first.
+fn started_without(program: &str, without: &[&str]) -> Option<Session> {
     let windows = root().join("oracle/build/drive-c");
 
     if !windows.join("WINDOWS").join(program).is_file() {
@@ -73,6 +78,11 @@ fn started(program: &str) -> Option<Session> {
 
     session.stay_up();
     hold(&mut session, &windows, "");
+
+    for file in without {
+        assert!(session.remove('C', file), "no {file}");
+    }
+
     session.mark_planned();
     start(&mut session, program);
     Some(session)
@@ -882,4 +892,159 @@ fn cardfile_is_placed_and_keeps_its_views_heights() {
         [card, list, place(&session)],
         [(4, 0, 430, 323), (4, 0, 430, 320), (4, 0, 430, 320)]
     );
+}
+
+/// OLE's libraries, which a run may leave off the drive: WinBox's own are
+/// then found by their files' names.
+const OLE_FILES: [&str; 2] = [
+    "\\WINDOWS\\SYSTEM\\OLECLI.DLL",
+    "\\WINDOWS\\SYSTEM\\OLESVR.DLL",
+];
+
+/// Whether a library of a name was loaded from its file.
+fn loaded(session: &Session, name: &str) -> bool {
+    session
+        .system()
+        .modules
+        .iter()
+        .any(|module| module.name.eq_ignore_ascii_case(name))
+}
+
+/// The window of Paintbrush editing an embedded picture, its place: Paintbrush's
+/// title for it is "Paintbrush - Paintbrush Picture in" its client's document.
+fn editing(session: &Session) -> Option<(i16, i16)> {
+    let system = session.system();
+
+    system
+        .windows
+        .iter()
+        .flatten()
+        .find(|window| window.visible && window.title.contains("Paintbrush Picture in"))
+        .map(|window| (window.left as i16, window.top as i16))
+}
+
+/// A box of the screen held as it shows: the colours inside it.
+fn picture(
+    session: &Session,
+    (left, top, right, bottom): (usize, usize, usize, usize),
+) -> Vec<u32> {
+    colours(session, left, top, right, bottom)
+}
+
+/// An embedded Paintbrush picture double-clicked where it shows, a blue box
+/// drawn over its middle in the Paintbrush its server starts, the client
+/// updated from File's Update, and Paintbrush left by Exit & Return. The
+/// tools and palette are found from the editing window's place: the filled
+/// box 48, 190 from its corner, the palette's blue 337, 333, the picture
+/// at 66, 44.
+fn edit_in_paintbrush(session: &mut Session, at: (i16, i16)) {
+    click_with(session, at.0, at.1, 0, true);
+    frames(session, 300);
+
+    let (left, top) = editing(session).expect("no Paintbrush editing the picture");
+
+    click(session, left + 337, top + 333);
+    click(session, left + 48, top + 190);
+    drag(session, (left + 81, top + 61), (left + 116, top + 91));
+    menu(session, 'f', 'u');
+    frames(session, 200);
+    menu(session, 'f', 'x');
+    frames(session, 300);
+    assert!(editing(session).is_none(), "Paintbrush stays");
+}
+
+/// A picture drawn in Paintbrush, selected and copied, and Paintbrush's
+/// first instance left running as a person leaves it.
+fn copied_picture(session: &mut Session) {
+    filled_box(session, PALETTE_RED, (100, 70), (160, 120));
+    click(session, PICK.0, PICK.1);
+    drag(session, (95, 65), (170, 130));
+    chord(session, Some("Control"), 'c');
+}
+
+/// A Paintbrush picture copied and pasted into Write, an embedded object:
+/// double-clicked, Paintbrush edits it, and Write's picture is what
+/// Paintbrush updated it to -- red with a blue box in it -- with OLE's
+/// libraries' files on the drive, or with WinBox's own alone.
+fn write_embeds_and_edits(without: &[&str]) {
+    let Some(mut session) = started_without("PBRUSH.EXE", without) else {
+        return;
+    };
+
+    copied_picture(&mut session);
+    start(&mut session, "WRITE.EXE");
+    menu(&mut session, 'e', 'p');
+    frames(&mut session, 100);
+
+    // The picture at the top of Write's document.
+    let shown_at = (50, 66, 130, 136);
+    let before = picture(&session, shown_at);
+
+    assert!(before.contains(&RED), "no picture pasted");
+    assert!(!before.contains(&BLUE));
+
+    edit_in_paintbrush(&mut session, (85, 95));
+    // Write leaves the object selected, shown inverted: the selection let go.
+    click(&mut session, 300, 300);
+
+    let after = picture(&session, shown_at);
+
+    assert!(after.contains(&RED), "the picture is gone");
+    assert!(after.contains(&BLUE), "Write's picture was not updated");
+
+    for name in ["OLECLI", "OLESVR"] {
+        assert_eq!(loaded(&session, name), without.is_empty(), "{name}");
+    }
+}
+
+#[test]
+fn write_embeds_a_paintbrush_picture_and_edits_it() {
+    write_embeds_and_edits(&[]);
+}
+
+#[test]
+fn write_embeds_a_paintbrush_picture_with_winbox_ole_alone() {
+    write_embeds_and_edits(&OLE_FILES);
+}
+
+/// The same with Cardfile: the picture pasted onto a card in its picture
+/// mode, double-clicked, edited in Paintbrush and updated.
+fn cardfile_embeds_and_edits(without: &[&str]) {
+    let Some(mut session) = started_without("PBRUSH.EXE", without) else {
+        return;
+    };
+
+    copied_picture(&mut session);
+    start(&mut session, "CARDFILE.EXE");
+    menu(&mut session, 'e', 'e');
+    menu(&mut session, 'e', 'p');
+    frames(&mut session, 100);
+
+    // The picture at the card's top left.
+    let shown_at = (44, 172, 124, 240);
+    let before = picture(&session, shown_at);
+
+    assert!(before.contains(&RED), "no picture pasted");
+    assert!(!before.contains(&BLUE));
+
+    edit_in_paintbrush(&mut session, (75, 197));
+
+    let after = picture(&session, shown_at);
+
+    assert!(after.contains(&RED), "the picture is gone");
+    assert!(after.contains(&BLUE), "the card's picture was not updated");
+
+    for name in ["OLECLI", "OLESVR"] {
+        assert_eq!(loaded(&session, name), without.is_empty(), "{name}");
+    }
+}
+
+#[test]
+fn cardfile_embeds_a_paintbrush_picture_and_edits_it() {
+    cardfile_embeds_and_edits(&[]);
+}
+
+#[test]
+fn cardfile_embeds_a_paintbrush_picture_with_winbox_ole_alone() {
+    cardfile_embeds_and_edits(&OLE_FILES);
 }

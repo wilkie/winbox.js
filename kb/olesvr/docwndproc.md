@@ -6,7 +6,77 @@ ordinal: 22
 summary: "The window procedure of `DocWndClass`, a document's window: its conversations' advises, requests, pokes and executes."
 versions:
   '3.1': exact
-probes: [olesrv]
+probes: [olesrv, oleitem]
+records:
+  [
+    ack,
+    'ack.initiate',
+    advise,
+    ask,
+    asked,
+    CallBack,
+    data,
+    DELETECLIENTINFO,
+    'doc.Close',
+    'doc.Execute',
+    'doc.GetObject',
+    'doc.Release',
+    'doc.SetColorScheme',
+    'doc.SetDocDimensions',
+    'doc.SetHostNames',
+    ENUMFORTERMINATE,
+    execute,
+    FINDITEMWND,
+    GetProp,
+    initiate,
+    initiated,
+    item,
+    long,
+    noanswer,
+    'obj.DoVerb',
+    'obj.EnumFormats',
+    'obj.GetData',
+    'obj.Release',
+    'obj.SetData',
+    'obj.SetTargetDevice',
+    'obj.Show',
+    OleBlockServer,
+    OleQueryServerVersion,
+    OleRegisterServer,
+    OleRegisterServerDoc,
+    OleRenameServerDoc,
+    OleRevertServerDoc,
+    OleRevokeObject,
+    OleRevokeServer,
+    OleRevokeServerDoc,
+    OleSavedServerDoc,
+    OleUnblockServer,
+    poke,
+    ready,
+    RegSetValue,
+    request,
+    SENDDATAMSG,
+    SENDRENAMEMSG,
+    server,
+    'srv.Create',
+    'srv.end',
+    'srv.Execute',
+    'srv.Exit',
+    'srv.Release',
+    'srv.start',
+    'srv2.Create',
+    'srv2.CreateFromTemplate',
+    'srv2.Edit',
+    'srv2.Open',
+    'srv2.Release',
+    terminate,
+    TERMINATECLIENTS,
+    TERMINATEDOCCLIENTS,
+    tree,
+    unadvise,
+    window,
+    WinExec,
+  ]
 source: src/win16/olesvr/server.ts
 topics: [ole]
 ---
@@ -22,11 +92,14 @@ topics: [ole]
 - **Poke**: `StdHostNames` is the document's `SetHostNames` with the two names; `StdDocDimensions` its `SetDocDimensions` with a rectangle from nought whose right is the first word poked and top the second (the third and fourth are not used); `StdColorScheme` its `SetColorScheme` with the poked `LOGPALETTE`; `StdTargetDevice` is kept and given to each object's `SetTargetDevice` just before its first `GetData`. Any other item is its object's `SetData` with a new block of the data alone. Acknowledged 8000h with the item's atom.
 - **Execute**: `[StdShowItem("item"[,b])]` is the object's `Show` with the focus to take TRUE unless `b` is TRUE; `[StdDoVerbItem("item",verb,show,b)]` its `DoVerb` with the verb, `show`, and the focus the same way; `[StdCloseDocument]` is acknowledged first and then the document's `Close`. Anything else is the document's `Execute`, `Std` command or not, acknowledged by its answer.
 - **Unadvise** of a format, or of nought for every format, acknowledged 8000h.
+- **The windows** ([[probe:oleitem]]): the document's window has the text `Doc` and window words not nought; each conversation is its property, as on a server's window ([[fn:OLESVR.SRVRWNDPROC]]). Each object's first naming makes an item window beneath it ([[fn:OLESVR.ITEMWNDPROC]]), whose words point at the object's `OLECLIENT`: a block of 10h bytes, `GMEM_MOVEABLE | GMEM_ZEROINIT | GMEM_DDESHARE`, holding the client's table, the object, the block's own handle, the item's atom (nought for the document itself) and the item's window. A request makes one too.
+- **What a client asked** ([[probe:oleitem]]): an advise keeps, as the client's property on the item's window, a block of whether it advised native data, the one other format it advised last, the times, and whether data goes with them; native data is sent first, then that format. An unadvise of an item takes away the time's bit whatever the format, so nothing is sent that client then, and the property stays; of the document itself (`""`), it forgets the client by every item. A client's terminate takes its properties off the document's and every item's window. [[read out]] seg3 `24bc`-`2586`, `26a9`-`2735`.
 - **Terminate** from the client is answered with `WM_DDE_TERMINATE`, nothing called.
 
 ## Nuances
 
-- `unrecorded`: a `GetData` or `SetData` that fails; an advise of a format the object does not enumerate; `StdShowItem` of an item never named. WinBox refuses each with 0000h.
+- [[measured]] [[probe:oleitem]]: an advise that defers its data (`fDeferUpd`) is sent `WM_DDE_DATA` with no block at each change.
+- `unrecorded`: an unadvise of an item never named, which WinBox acknowledges 8000h; a `GetData` or `SetData` that fails; an advise of a format the object does not enumerate; `StdShowItem` of an item never named. WinBox refuses each with 0000h.
 
 ## Implementation
 

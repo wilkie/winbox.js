@@ -12,8 +12,20 @@ use support::{Setup, box_hand, recorded, run_setup};
 
 const OLESVR_DLL: &str = "WINDOWS\\SYSTEM\\OLESVR.DLL";
 
-/// The probes of `OLESVR`.
-const PROBES: &[&str] = &["olesrv", "olepbr"];
+/// The probes of `OLESVR`: the conversations, Paintbrush's, and the
+/// windows and properties its clients are kept on.
+const PROBES: &[&str] = &["olesrv", "olepbr", "oleitem"];
+
+/// `oleitem`'s one known gap (`replay.ts`'s `KNOWN_GAPS`): Windows'
+/// `EnumProps` still lists the property `DELETECLIENTINFO` took from
+/// Item3's window.
+fn unless_gap(records: &[[String; 3]]) -> Vec<[String; 3]> {
+    records
+        .iter()
+        .filter(|[function, args, _]| !(function == "props" && args == "Item3"))
+        .cloned()
+        .collect()
+}
 
 /// A probe run, with or without `OLESVR.DLL` on the drive: how it stopped,
 /// its records, and whether a library named `OLESVR` was loaded from a
@@ -48,7 +60,7 @@ fn check(name: &str, records: &[[String; 3]]) {
         return;
     };
 
-    assert_eq!(records, &windows[..], "{name}");
+    assert_eq!(unless_gap(records), unless_gap(&windows), "{name}");
 }
 
 #[test]

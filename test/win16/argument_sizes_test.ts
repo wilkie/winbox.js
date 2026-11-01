@@ -83,6 +83,11 @@ const MODULES: [any, string][] = [
  *   frame down by 20h bytes and let the display driver's routine take the
  *   arguments: CL less the four words of the frame is what each takes,
  *   as the display driver's own routine of that offset does.
+ * * `EMSCopy`'s `RETF 0Eh` (`KRNL386.EXE` seg1 `a940`) is never reached: its
+ *   entry lies past the limit KERNEL cuts its first code segment to (seg1
+ *   `b565`-`b573`), and the oracle runs on into the block the heap gave
+ *   next, `MMSYSTEM`'s `timeGetSystemTime`, which pops six bytes
+ *   (`MMSYSTEM.DLL` seg1 `0000`-`0026`; probes emscopy and emspast).
  */
 const EXCEPTIONS: Record<string, number> = {
   'KERNEL:56': 6,
@@ -100,6 +105,7 @@ const EXCEPTIONS: Record<string, number> = {
   'GDI:217': 26,
   'GDI:218': 50,
   'GDI:219': 32,
+  'KERNEL:160': 6,
 };
 
 (existsSync(SYSTEM) ? describe : describe.skip)('argument sizes', () => {

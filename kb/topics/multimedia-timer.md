@@ -2,7 +2,7 @@
 kind: topic
 name: The multimedia timer
 summary: MMSYSTEM's timer services in Windows 3.1 — the periods it offers, a millisecond clock, and events that call a program's procedure at interrupt time, once or every period — measured, and how winbox.js calls a program at interrupt time.
-probes: [mmtime]
+probes: [mmtime, emspast]
 ---
 
 MMSYSTEM keeps a clock to the millisecond, and it calls a program back on time whatever the program is doing. `USER`'s timers can't do that: they arrive as messages. Games use MMSYSTEM's timer to pace themselves. Bubble Girl, Slam! and Flak of the corpus each call it, and Flak drew nothing until it answered.
@@ -14,7 +14,7 @@ MMSYSTEM keeps a clock to the millisecond, and it calls a program back on time w
 - [[fn:MMSYSTEM.timeGetDevCaps]] gives periods from 1 to 65535. Asked with a structure too small, it answers `TIMERR_NOCANDO`, 97, and writes nothing.
 - [[fn:MMSYSTEM.timeBeginPeriod]] and [[fn:MMSYSTEM.timeEndPeriod]] answer nought for a period of 1, and 97 for nought. `timeBeginPeriod` answers 97 for 65535 as well, although the device's largest period is 65535.
 - [[fn:MMSYSTEM.timeGetTime]] counts from where [[fn:USER.GetTickCount]] counts, a millisecond at a time.
-- [[fn:MMSYSTEM.timeGetSystemTime]] answers nought and gives milliseconds, `TIME_MS`, even when asked for samples.
+- [[fn:MMSYSTEM.timeGetSystemTime]] answers nought and gives milliseconds, `TIME_MS`, even when asked for samples. [[read out]] For a size under 8 it answers `TIMERR_STRUCT`, 81h, and writes nothing (`MMSYSTEM.DLL` seg1 `0003`-`000c`); [[measured]] [[probe:emspast]] ran it so, through KERNEL's `EMSCopy`, whose entry lies at its first byte under DOSBox ([[fn:KERNEL.EMSCopy]]).
 
 ## Events
 

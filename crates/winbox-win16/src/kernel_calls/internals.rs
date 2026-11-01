@@ -41,6 +41,19 @@ pub fn swap_recording(system: &mut System, args: &mut Args) -> Result<Answer, St
     Ok(Answer::Dword(SWAP_RECORDING_RETURN << 16 | u32::from(flag)))
 }
 
+/// `EMSCopy` (160), left from the real-mode KERNEL's expanded memory: its
+/// routine (seg1 `a940`-`a94a`) is never reached. KERNEL cuts its first
+/// code segment at A940h as start-up ends (seg1 `b565`-`b573`), so the
+/// entry lies one byte past the segment's limit: a general protection
+/// fault on a 386, but DOSBox checks no offset against a code segment's
+/// limit and runs what lies there, the block the heap gave next --
+/// `MMSYSTEM.DLL`'s first code segment, whose first routine is
+/// `timeGetSystemTime` (`MMSYSTEM.DLL` seg1 `0000`-`0026`, `RETF 6`).
+/// **Recorded** by `emspast` and `emscopy`: 81h for seven noughts.
+pub fn ems_copy(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
+    crate::mmsystem::time::time_get_system_time(system, args)
+}
+
 /// `HasGPHandler` (seg1 `4c72`-`4d36`): no module of WinBox's has a `__GP`
 /// table, and a program's is not trusted: nought, DX as it was.
 pub fn has_gp_handler(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

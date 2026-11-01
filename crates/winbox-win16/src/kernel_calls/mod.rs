@@ -119,6 +119,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "WriteOutProfiles" => Implementation::Sync(internals::write_out_profiles),
         "InitTask1" | "RegisterPtrace" => Implementation::Sync(internals::pointer_selector),
         "SwapRecording" => Implementation::Sync(internals::swap_recording),
+        "EMSCopy" => Implementation::Sync(internals::ems_copy),
         "HasGPHandler" => Implementation::Sync(internals::has_gp_handler),
         "RegisterWinOldApHook" => Implementation::Sync(internals::register_win_old_ap_hook),
         "GetWinOldApHooks" => Implementation::Sync(internals::get_win_old_ap_hooks),
