@@ -167,6 +167,12 @@ pub struct Window {
     /// its icon's title, which USER makes once (`window_state.rs`,
     /// `title_made`).
     pub title_asked: bool,
+    /// Minimized while it was maximized: restored, it is maximized again
+    /// (`MinMaximize`).
+    pub maximized_before: bool,
+    /// For an icon's title: invalidated, to be drawn when it is next
+    /// painted (`paint_due_titles`).
+    pub title_due: bool,
     /// Told to the shell hooks as it was made, and so as it is destroyed.
     pub shell_window: bool,
     /// The parent `CreateWindow` was given, which owns a pop-up.

@@ -81,6 +81,74 @@ export async function askText(system: any, hwnd: number, dialog: any, count: num
 }
 
 /**
+ * An icon's title made to show its window's text again, as USER's
+ * `RedrawIconTitle` does (`USER.EXE` seg1 `6de3`-`6e1e`): where the window
+ * has a title, kept hidden or shown, the title is sent `WM_SHOWWINDOW`
+ * with 1, which measures the window's text again -- `WM_GETTEXT` for 80
+ * characters (`6d67`-`6db6`, `6c14`, `6b43`) -- and places the title, and
+ * then the title is invalidated whole, drawn when it is next painted
+ * (`paintDueTitles`). Asked by `DefWindowProc`'s `WM_NCACTIVATE` of an
+ * icon that shows (seg1 `5cfc`-`5d03`), and by `ActivateWindow` of the
+ * icon losing the activation and of the one gaining it (`3646`-`3662`,
+ * `37d7`-`37e9`). **Recorded** by `minact`.
+ */
+export async function redrawIconTitle(system: any, icon: any) {
+  const title = icon?.iconTitle;
+
+  if (!title?.hwnd || !icon.titleAsked || !icon.hwnd) {
+    return;
+  }
+
+  const raster = system.handles.resolve(icon.hwnd);
+
+  if (!(raster instanceof RasterWindow)) {
+    return;
+  }
+
+  await askText(system, icon.hwnd, raster, 0x50);
+
+  if (title.visible) {
+    title.titleDue = true;
+  }
+}
+
+/**
+ * The icons' titles due a paint drawn, front to back, as the end of a
+ * `SetWindowPos` erases what it showed or made due (seg7 `028d`): each
+ * title's `WM_ERASEBKGND` draws it (seg1 `6d0b`-`6d62`), and drawing it
+ * asks its window's text, 80 characters (`6984`). **Recorded** by
+ * `minact`: a title made due as its icon was made active is drawn as the
+ * next icon's title is shown, before it.
+ */
+export async function paintDueTitles(system: any) {
+  const desktop = system.rasterDesktop;
+
+  for (const title of desktop?.windows ?? []) {
+    if (title.titleOf && title.titleDue) {
+      await paintTitle(system, title);
+    }
+  }
+}
+
+/** One icon's title drawn, its window's text asked as USER asks it (`6984`). */
+export async function paintTitle(system: any, title: any) {
+  title.titleDue = false;
+
+  if (!title.visible || !system.rasterDesktop?.windows.includes(title)) {
+    return;
+  }
+
+  const icon = title.titleOf;
+  const raster = icon?.hwnd ? system.handles.resolve(icon.hwnd) : null;
+
+  if (raster instanceof RasterWindow) {
+    await askText(system, icon.hwnd, raster, 0x50);
+  }
+
+  system.rasterDesktop.paintFrame(title);
+}
+
+/**
  * A caption about to be drawn is asked of its window first, with
  * `WM_GETTEXT` for 79 characters at most (`showseq`: after every
  * `WM_NCACTIVATE` and `WM_NCPAINT` of a window with a caption).
@@ -227,6 +295,11 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
         if (dialog.window.visible) {
           dialog.desktop.paintFrame(dialog.window);
+
+          /* An icon's title drawn again with it (seg1 `5cfc`-`5d03`). */
+          if (dialog.window.state === 'minimized') {
+            await redrawIconTitle(this, dialog.window);
+          }
         }
       }
 

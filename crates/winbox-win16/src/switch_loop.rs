@@ -273,25 +273,28 @@ impl System {
     }
 
     /// Each pixel of a window's rectangle on the screen that something else
-    /// shows at: the window's rectangle, on the screen, less where it shows
-    /// -- it or what lies in it (seg23 `0187`-`01e1`).
+    /// shows at, as USER works it out for its switch window (`USER.EXE`
+    /// seg23 `0180`-`01d4`): the window's rectangle cut to the screen (seg1
+    /// `1e3e`), less the visible region of its window's device context,
+    /// `GetWindowDC`'s (`8457`; `window_region` with `DCX_WINDOW |
+    /// DCX_USESTYLE`), worked out from the windows as USER keeps them, not
+    /// from what the screen shows. The TypeScript engine's `coveredPoints`.
     fn covered(&self, index: usize) -> Vec<(i32, i32)> {
+        use crate::window_vis::{DCX_USESTYLE, DCX_WINDOW};
+
         let width = i32::from(self.display.width);
         let height = i32::from(self.display.height);
         let window = self.windows[index].as_ref().expect("a window");
         let (x0, y0) = (window.left.max(0), window.top.max(0));
         let x1 = (window.left + window.width).min(width);
         let y1 = (window.top + window.height).min(height);
+        let (flags, of) = self.region_flags(index, DCX_WINDOW | DCX_USESTYLE);
+        let shows = self.window_region(index, of, flags);
         let mut out = Vec::new();
 
         for sy in y0..y1 {
             for sx in x0..x1 {
-                let owner = usize::from(self.owners[(sy * width + sx) as usize]);
-                let shows = owner != 0
-                    && self.windows.get(owner - 1).is_some_and(Option::is_some)
-                    && self.within(owner - 1, index);
-
-                if !shows {
+                if !shows.contains(sx, sy) {
                     out.push((sx, sy));
                 }
             }

@@ -6,6 +6,7 @@ import { User } from '../user.js';
 import { changeFocus } from './dialogs.js';
 import { topLevel } from './enumerate.js';
 import { focusNothing } from './SetFocus.js';
+import { redrawIconTitle } from './DefWindowProc.js';
 
 /**
  * The messages of a change of active window, sent once the desktop has made
@@ -91,6 +92,18 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
     if (fromHwnd) {
       await send(system, fromHwnd, WM_NCACTIVATE, 0, (minimized(from) | toHwnd) >>> 0);
       await send(system, fromHwnd, User.WM_ACTIVATE, WA_INACTIVE, (minimized(from) | toHwnd) >>> 0);
+
+      /* An icon losing it has its title drawn again (`USER.EXE` seg1
+       * `3646`-`3662`: the window at the top it is in, minimized). */
+      let top = from;
+
+      while (top?.parent) {
+        top = top.parent;
+      }
+
+      if (top?.state === 'minimized' && system.handles.resolve(fromHwnd)) {
+        await redrawIconTitle(system, from);
+      }
     }
 
     /* What the window coming to the front is told as it is put there, when
@@ -147,6 +160,14 @@ export async function deliverActivation(system: any, between?: () => Promise<voi
           await changeFocus(system, toHwnd);
         }
       }
+    }
+
+    /* The window active now, an icon, has its title drawn again (`37d7`-
+     * `37e9`): the icon a title made active in its place, too (`minact`). */
+    const now = desktop.activeTop;
+
+    if (now?.state === 'minimized') {
+      await redrawIconTitle(system, now);
     }
 
     /* Counted, once the focus has moved (`USER.EXE` seg1 `37ee`, `[112h]`):

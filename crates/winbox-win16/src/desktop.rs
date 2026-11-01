@@ -153,7 +153,7 @@ impl System {
         self.z_order.iter().copied().find(|&index| {
             let shown = self.shown(index);
 
-            shown.active && shown.parent.is_none() && shown.title_of.is_none()
+            shown.active && shown.parent.is_none()
         })
     }
 
@@ -464,7 +464,7 @@ impl System {
 
         self.placing_flags(index, flags);
 
-        if let Some(title) = self.shown(index).icon_title
+        if let Some(title) = self.shown_title(index)
             && !self.shown(title).visible
         {
             self.placed_whole(title);
@@ -682,7 +682,7 @@ impl System {
 
     /// An icon's title shows with its icon.
     fn title_shows(&mut self, index: usize) {
-        if let Some(title) = self.shown(index).icon_title
+        if let Some(title) = self.shown_title(index)
             && !self.shown(title).visible
         {
             self.shown_mut(title).visible = true;
@@ -740,7 +740,7 @@ impl System {
         self.placing_flags(index, flags);
         self.placed_whole(index);
 
-        if let Some(title) = self.shown(index).icon_title
+        if let Some(title) = self.shown_title(index)
             && !self.shown(title).visible
         {
             self.placed_whole(title);
@@ -875,9 +875,13 @@ impl System {
             return;
         }
 
-        // A minimized window's title goes with it.
-        if let Some(title) = self.shown_mut(index).icon_title.take() {
-            self.destroy_title(title);
+        // A minimized window's title is hidden with it, and kept:
+        // `ShowWindow` of an icon shows or hides its title with it
+        // (`USER.EXE` seg14 `0de0`-`0def`, seg1 `6e25`).
+        if let Some(title) = self.shown(index).icon_title
+            && self.shown(title).visible
+        {
+            self.hide_with(title, false);
         }
 
         self.take_away_with(index, false, activate_next);
@@ -1058,8 +1062,11 @@ impl System {
     /// first that is from the window after the last of those kept on top
     /// (seg7 `02c9`), or after the first window, to the back -- else, as a
     /// window hidden, the next that can take it (`next_active`, which seg1
-    /// `38e4` is asked with 3 for). An icon's title is passed over, as
-    /// `next_active` passes it (`34dc`). **Recorded** by `minact`.
+    /// `38e4` is asked with 3 for). The look asks only that a window shows,
+    /// is enabled and is no icon (`1de3`-`1df3`), so an icon's title that
+    /// shows is one: made active, it makes its icon active (`minact`: A
+    /// minimized with B an icon gives the activation to B's title first).
+    /// `next_active` passes titles over (`34dc`).
     pub fn next_after_minimize(&self, index: usize) -> Option<usize> {
         const WS_DISABLED: u32 = 0x0800_0000;
 
@@ -1069,7 +1076,6 @@ impl System {
                     && shown.visible
                     && shown.style & WS_DISABLED == 0
                     && shown.placement != Placement::Minimized
-                    && shown.title_of.is_none()
             }) && self.z_order.contains(&other)
         };
         let tops: Vec<usize> = self
@@ -1259,21 +1265,23 @@ impl System {
             }
         }
 
-        if !self
-            .z_order
-            .iter()
-            .any(|&index| self.shown(index).needs_paint || self.shown(index).internal_paint)
-        {
+        if !self.z_order.iter().any(|&index| {
+            let shown = self.shown(index);
+
+            shown.needs_paint || shown.internal_paint || shown.title_due
+        }) {
             return None;
         }
 
         // Due where it has an update region or a paint of its own
-        // (`USER.EXE` seg1 `77d1`-`77db`).
+        // (`USER.EXE` seg1 `77d1`-`77db`); an icon's title invalidated is
+        // painted as its own window is, by its own procedure
+        // (`paint_title`).
         let due = |system: &Self, index: usize| {
             let shown = system.shown(index);
 
-            shown.paints_itself()
-                && (shown.needs_paint || shown.internal_paint)
+            ((shown.paints_itself() && (shown.needs_paint || shown.internal_paint))
+                || (shown.title_of.is_some() && shown.title_due))
                 && system.showing(index)
                 && matches(system, index)
         };
@@ -1285,7 +1293,10 @@ impl System {
             .filter(|&index| self.shown(index).parent.is_none())
             .find_map(|index| walk(self, index, &due))?;
 
-        self.about_to_paint(found);
+        if self.shown(found).title_of.is_none() {
+            self.about_to_paint(found);
+        }
+
         Some(found)
     }
 
@@ -1988,12 +1999,12 @@ impl System {
         self.place_window(index, -cx, -cy, width + 2 * cx, height + 2 * cy)
     }
 
-    /// A minimized window no longer one, where it lies: its title hidden,
-    /// its placement normal again; the place it had before, for its caller
-    /// to put it at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`). `None`
-    /// where it was not minimized. The TypeScript engine's
-    /// `leaveMinimized`.
-    pub(crate) fn leave_minimized(
+    /// A minimized or maximized window no longer one, where it lies: an
+    /// icon's title hidden, its placement normal again; the place it had
+    /// before, for its caller to put it at (`MinMaximize`, `USER.EXE` seg6
+    /// `1cdd`-`1d39`). `None` where it was neither. The TypeScript engine's
+    /// `leaveToNormal`.
+    pub(crate) fn leave_to_normal(
         &mut self,
         index: usize,
     ) -> Result<Option<[i32; 4]>, crate::call::Stop> {
@@ -2002,7 +2013,7 @@ impl System {
 
             (shown.placement, shown.restore_rect)
         };
-        let Some(rect) = rect.filter(|_| placement == Placement::Minimized) else {
+        let Some(rect) = rect.filter(|_| placement != Placement::Normal) else {
             return Ok(None);
         };
 
@@ -2128,8 +2139,32 @@ impl System {
         }
     }
 
-    /// A window's icon title taken away, as it stops being an icon.
+    /// An icon's title hidden as its window stops being an icon, and kept,
+    /// where it lies among the windows, for the next time it is one: USER
+    /// hides it with `ShowWindow(SW_HIDE)` (`USER.EXE` seg6 `1cdd`-`1ce0`,
+    /// seg1 `6e25`-`6e9e`) and keeps it in the window's own record until
+    /// the window is destroyed (`minact`). The TypeScript engine's
+    /// `#leaveIcon`.
     pub(crate) fn leave_icon(&mut self, index: usize) {
+        if let Some(title) = self.shown(index).icon_title
+            && self.shown(title).visible
+        {
+            self.hide_with(title, false);
+        }
+    }
+
+    /// A window's icon title while it is an icon: the title kept hidden
+    /// otherwise is none. The TypeScript engine's `shownTitle`.
+    pub(crate) fn shown_title(&self, index: usize) -> Option<usize> {
+        let shown = self.shown(index);
+
+        shown
+            .icon_title
+            .filter(|_| shown.placement == Placement::Minimized)
+    }
+
+    /// A window's icon title taken away with it, as it is destroyed.
+    pub(crate) fn drop_icon_title(&mut self, index: usize) {
         if let Some(title) = self.shown_mut(index).icon_title.take() {
             self.destroy_title(title);
         }
@@ -2256,6 +2291,9 @@ impl System {
             self.shown_mut(index).restore_rect = Some(place);
         }
 
+        // Whether it was maximized, which it is again when it is restored
+        // (`USER.EXE` seg6 `1c2a`-`1c3c`, the window's record's flag 2).
+        self.shown_mut(index).maximized_before = placement == Placement::Maximized;
         self.shown_mut(index).placement = Placement::Minimized;
 
         let icon_wide = self.metric(SM_CXICON);
@@ -2318,7 +2356,26 @@ impl System {
             None => self.place_window(index, left + inset, top, icon_wide + 4, icon_high + 4)?,
         }
 
-        self.make_title(index);
+        // Its title made the first time, and kept after (`leave_icon`);
+        // put just before it, as `ShowIconTitle` puts it after the window
+        // before its icon (`USER.EXE` seg1 `6e69`-`6e85`).
+        match self.shown(index).icon_title {
+            Some(title) => {
+                self.z_order.retain(|&other| other != title);
+
+                let at = self
+                    .z_order
+                    .iter()
+                    .position(|&other| other == index)
+                    .unwrap_or(0);
+
+                self.z_order.insert(at, title);
+            }
+            None => {
+                self.make_title(index);
+            }
+        }
+
         self.place_title(index)?;
 
         // With an icon, USER draws it; without one, the window is erased and

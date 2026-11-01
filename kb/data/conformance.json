@@ -14529,6 +14529,36 @@
   },
   "gaps": {}
  },
+ "maxcopy": {
+  "probe": "maxcopy",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 44,
+  "functions": {
+   "screen": {
+    "total": 26,
+    "agreed": 26,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "maxorder": {
   "probe": "maxorder",
   "display": "vga",
@@ -16022,8 +16052,8 @@
   "functions": {
    "msg": {
     "total": 136,
-    "agreed": 109,
-    "disagreed": 27,
+    "agreed": 136,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -16035,9 +16065,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "msg": "no icon's title is kept hidden among the windows, nor made active before its icon, nor asked as the activation leaves it, 27 records"
-  }
+  "gaps": {}
  },
  "minis": {
   "probe": "minis",
@@ -28198,8 +28226,8 @@
   "functions": {
    "msg": {
     "total": 140,
-    "agreed": 125,
-    "disagreed": 15,
+    "agreed": 129,
+    "disagreed": 11,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -28219,7 +28247,7 @@
    }
   },
   "gaps": {
-   "msg": "an icon made active does not name its title as the window it goes after, and one made visible behind a topmost window is not asked again as it is activated, 15 records"
+   "msg": "a window made visible behind a topmost window is not asked again as it is activated, 11 records"
   }
  },
  "swpunc": {

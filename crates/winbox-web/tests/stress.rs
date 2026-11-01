@@ -656,13 +656,15 @@ fn an_icons_title_pressed_twice_restores_its_window() {
     assert_eq!(session.stop(), None);
     assert!(!titles_astray(&session));
     assert_eq!(tops(&session, "Clock"), [(true, false)]);
+    // The title is kept, hidden, while its window is restored (`USER.EXE`
+    // seg1 `6e25`; `minact`).
     assert!(
         !session
             .system()
             .windows
             .iter()
             .flatten()
-            .any(|window| window.title_of.is_some())
+            .any(|window| window.title_of.is_some() && window.visible)
     );
 }
 

@@ -11,7 +11,8 @@ import { GetTextMetrics } from '../gdi/GetTextMetrics.js';
 
 import { Desktop } from './desktop.js';
 import { RasterWindow } from './raster-window.js';
-import { DefWindowProc } from './DefWindowProc.js';
+import { DefWindowProc, paintTitle } from './DefWindowProc.js';
+import { activateWindow } from './window-state.js';
 import { SendMessage } from './SendMessage.js';
 import { WNDCLASS } from '../user.js';
 import { type DriverResources } from './driver-resources.js';
@@ -114,6 +115,8 @@ export function rasterDesktop(system: any, resources: DriverResources) {
 
 const ICON_TITLE_CLASS = '#32772';
 
+const WM_ACTIVATE = 0x0006;
+const WM_PAINT = 0x000f;
 const WM_CLOSE = 0x0010;
 const WM_NCHITTEST = 0x0084;
 const WM_NCMOUSEMOVE = 0x00a0;
@@ -127,11 +130,10 @@ const HTCAPTION = 2;
  * off the client area are sent on to the icon (`6dc2`), so that a title pressed
  * is its icon pressed, and twice, its icon restored; `WM_CLOSE` is answered
  * nought and nothing more (`6dd9`), so that Alt+F4 never takes a title away
- * from its icon. The rest is `DefWindowProc`'s (`6cdf`). Not followed here:
- * `WM_ACTIVATE` making the icon active instead (`6cf4`), which nothing here
- * asks of a title, since a press on it no longer activates it; and
- * `WM_ERASEBKGND` and `WM_SHOWWINDOW` drawing and placing it (`6d0b`,
- * `6d67`), which the desktop does.
+ * from its icon. The rest is `DefWindowProc`'s (`6cdf`). `WM_ACTIVATE`
+ * with non-nought makes its icon active in its place (`6cf4`-`6d08`), and
+ * a paint draws it, its icon's text asked (`6d0b`-`6d62`, `6984`). Placing
+ * it on `WM_SHOWWINDOW` (`6d67`) is the desktop's (`redrawIconTitle`).
  */
 async function iconTitleProc(
   system: any,
@@ -141,6 +143,34 @@ async function iconTitleProc(
   lParam: any
 ) {
   if (message === WM_CLOSE) {
+    return 0;
+  }
+
+  /* Made active, it makes its icon active in its place (`6cf4`-`6d08`,
+   * `SetActiveWindow`; `minact`: the activation passing to an icon goes to
+   * its title first, as the title is a window that shows). */
+  if (message === WM_ACTIVATE) {
+    const icon = system.handles.resolve(hwnd)?.window?.titleOf;
+    const raster = icon?.hwnd ? system.handles.resolve(icon.hwnd) : null;
+
+    /* Brought up by `SetWindowPos` as `ActivateWindow` brings it, only what
+     * that uncovers of it due (`minact`: B, an icon at the bottom already
+     * showing, is not painted again). */
+    if (wParam && raster instanceof RasterWindow && !raster.window.parent) {
+      await activateWindow(system, raster.window, false, false);
+    }
+
+    return 0;
+  }
+
+  /* Painted, it is drawn, its icon's text asked (`6d0b`-`6d62`, `6984`). */
+  if (message === WM_PAINT) {
+    const title = system.handles.resolve(hwnd)?.window;
+
+    if (title?.titleOf) {
+      await paintTitle(system, title);
+    }
+
     return 0;
   }
 

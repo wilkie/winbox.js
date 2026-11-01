@@ -258,10 +258,9 @@ impl System {
     /// topmost the first after the last topmost window; after a window,
     /// right after it, topmost as that one is. One made topmost, or topmost
     /// no more, does not. An icon's title is not counted as a brother:
-    /// winbox.js keeps it just in front of its icon, where Windows keeps it
-    /// among the topmost windows (`swpshow`: an icon brought to `HWND_TOP`
-    /// goes after its own title, `#32772`, and is not where it was asked to
-    /// go).
+    /// it lies just in front of its icon, a window the icon owns, which
+    /// comes up with it first (`swpshow`, `minact`: an icon brought to
+    /// `HWND_TOP` goes after its own title, `#32772`).
     pub(crate) fn lies_where_asked(&self, index: usize, to: Insert) -> bool {
         let shown = self.shown(index);
         let (parent, topmost) = (shown.parent, shown.topmost);
@@ -518,7 +517,7 @@ impl System {
         // An icon's title, a window of its own, is made due where it was and
         // is.
         let extra = match (title, title_was) {
-            (Some(title), Some(title_was)) => {
+            (Some(title), Some(title_was)) if self.shown(title).visible => {
                 let title_now = place_of(self, title);
 
                 Some(

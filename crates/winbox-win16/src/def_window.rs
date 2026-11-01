@@ -67,11 +67,11 @@ impl Engine {
     /// icon (`6dc2`), so that a title pressed is its icon pressed, and
     /// twice, its icon restored; `WM_CLOSE` is answered nought and nothing
     /// more (`6dd9`), so that Alt+F4 never takes a title away from its
-    /// icon. The rest is `DefWindowProc`'s (`6cdf`). Not followed here:
-    /// `WM_ACTIVATE` making the icon active instead (`6cf4`), which nothing
-    /// here asks of a title, since a press on it no longer activates it;
-    /// and `WM_ERASEBKGND` and `WM_SHOWWINDOW` drawing and placing it
-    /// (`6d0b`, `6d67`), which the desktop does (`desktop_paint.rs`).
+    /// icon. The rest is `DefWindowProc`'s (`6cdf`). `WM_ACTIVATE` with
+    /// non-nought makes its icon active in its place (`6cf4`-`6d08`), and a
+    /// paint draws it, its icon's text asked (`6d0b`-`6d62`, `6984`).
+    /// Placing it on `WM_SHOWWINDOW` (`6d67`) is the desktop's
+    /// (`redraw_icon_title`).
     pub(crate) async fn icon_title_proc(
         &self,
         hwnd: u16,
@@ -79,9 +79,46 @@ impl Engine {
         wparam: u16,
         lparam: &mut Param,
     ) -> Result<u32, Stop> {
+        let (title, icon) = {
+            let system = self.system();
+            let title = system.window_named(hwnd);
+            let icon = title
+                .and_then(|title| system.windows[title].as_ref())
+                .and_then(|title| title.title_of);
+
+            (title, icon)
+        };
+
         match message {
             WM_CLOSE => Ok(0),
             WM_NCHITTEST => Ok(u32::from(HTCAPTION)),
+            // Made active, it makes its icon active in its place, brought
+            // up by `SetWindowPos` as `ActivateWindow` brings it, only what
+            // that uncovers of it due (`minact`: the activation passing to
+            // an icon goes to its title first; B, an icon at the bottom
+            // already showing, is not painted again).
+            WM_ACTIVATE => {
+                let top = icon.filter(|&icon| {
+                    self.system().windows[icon]
+                        .as_ref()
+                        .is_some_and(|icon| icon.parent.is_none() && icon.hwnd != 0)
+                });
+
+                if wparam != 0
+                    && let Some(icon) = top
+                {
+                    Box::pin(self.activate_window(icon, false, false)).await?;
+                }
+
+                Ok(0)
+            }
+            WM_PAINT => {
+                if let Some(title) = title.filter(|_| icon.is_some()) {
+                    self.paint_title(title).await?;
+                }
+
+                Ok(0)
+            }
             WM_NCMOUSEMOVE..=WM_NCLBUTTONDBLCLK => {
                 let icon = {
                     let system = self.system();
@@ -102,6 +139,106 @@ impl Engine {
             }
             _ => self.def_window_proc(hwnd, message, wparam, lparam).await,
         }
+    }
+
+    /// An icon's title made to show its window's text again, as USER's
+    /// `RedrawIconTitle` does (`USER.EXE` seg1 `6de3`-`6e1e`): where the
+    /// window has a title, kept hidden or shown, the title is sent
+    /// `WM_SHOWWINDOW` with 1, which measures the window's text again --
+    /// `WM_GETTEXT` for 80 characters (`6d67`-`6db6`, `6c14`, `6b43`) --
+    /// and places the title, and then the title is invalidated whole, drawn
+    /// when it is next painted (`paint_due_titles`). Asked by
+    /// `DefWindowProc`'s `WM_NCACTIVATE` of an icon that shows (seg1
+    /// `5cfc`-`5d03`), and by `ActivateWindow` of the icon losing the
+    /// activation and of the one gaining it (`3646`-`3662`, `37d7`-`37e9`).
+    /// **Recorded** by `minact`. The TypeScript engine's `redrawIconTitle`.
+    pub(crate) async fn redraw_icon_title(&self, icon: usize) -> Result<(), Stop> {
+        let (hwnd, title) = {
+            let system = self.system();
+            let Some(window) = system.windows.get(icon).and_then(Option::as_ref) else {
+                return Ok(());
+            };
+            let Some(title) = window.icon_title.filter(|_| window.title_asked) else {
+                return Ok(());
+            };
+
+            if window.hwnd == 0 || system.hwnd_of(title) == 0 {
+                return Ok(());
+            }
+
+            (window.hwnd, title)
+        };
+
+        self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
+            .await?;
+
+        let mut system = self.system();
+
+        if let Some(title) = system.windows[title].as_mut()
+            && title.visible
+        {
+            title.title_due = true;
+        }
+
+        Ok(())
+    }
+
+    /// The icons' titles due a paint drawn, front to back, as the end of a
+    /// `SetWindowPos` erases what it showed or made due (seg7 `028d`): each
+    /// title's `WM_ERASEBKGND` draws it (seg1 `6d0b`-`6d62`), and drawing
+    /// it asks its window's text, 80 characters (`6984`). **Recorded** by
+    /// `minact`. The TypeScript engine's `paintDueTitles`.
+    pub(crate) async fn paint_due_titles(&self) -> Result<(), Stop> {
+        let due: Vec<usize> = {
+            let system = self.system();
+
+            system
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    system.windows[other]
+                        .as_ref()
+                        .is_some_and(|window| window.title_of.is_some() && window.title_due)
+                })
+                .collect()
+        };
+
+        for title in due {
+            self.paint_title(title).await?;
+        }
+
+        Ok(())
+    }
+
+    /// One icon's title drawn, its window's text asked as USER asks it
+    /// (`6984`). The TypeScript engine's `paintTitle`.
+    pub(crate) async fn paint_title(&self, title: usize) -> Result<(), Stop> {
+        let icon = {
+            let mut system = self.system();
+            let Some(window) = system.windows.get_mut(title).and_then(Option::as_mut) else {
+                return Ok(());
+            };
+
+            window.title_due = false;
+
+            if !window.visible || !system.z_order.contains(&title) {
+                return Ok(());
+            }
+
+            system.windows[title]
+                .as_ref()
+                .and_then(|window| window.title_of)
+                .map_or(0, |icon| system.hwnd_of(icon))
+        };
+
+        if icon != 0 {
+            self.send_message(icon, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
+                .await?;
+        }
+
+        self.system().paint_frame(title);
+        Ok(())
     }
 
     /// What `DefWindowProc` does on the raster desktop with a message, if
@@ -303,6 +440,16 @@ impl Engine {
 
                 if visible {
                     self.system().paint_frame(index);
+
+                    // An icon's title drawn again with it (seg1
+                    // `5cfc`-`5d03`).
+                    let minimized = self.system().windows[index]
+                        .as_ref()
+                        .is_some_and(|window| window.placement == Placement::Minimized);
+
+                    if minimized {
+                        self.redraw_icon_title(index).await?;
+                    }
                 }
 
                 1

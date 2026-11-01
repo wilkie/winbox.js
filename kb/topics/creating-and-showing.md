@@ -104,9 +104,6 @@ What a window answers `WM_GETMINMAXINFO`, and what USER does with it, is in [[to
 What [[probe:swpshow]] recorded that neither engine follows yet:
 
 - A window shown by `ShowWindow`, or made visible, while a topmost window is in front of it, is placed at the top again between the two halves of its activation. Both engines place it there only where the first window at the top is not a topmost one.
-- Minimized by `SC_MINIMIZE`, a window goes to the very bottom of the windows, and is sent `WM_WINDOWPOSCHANGING`, `WM_NCPAINT` and its icon's erase, `WM_WINDOWPOSCHANGED`, `WM_MOVE` and `WM_SIZE` before what its `WM_SIZE` does, and is placed after its title once activation has gone elsewhere. Both engines leave it where it lay and send `WM_MOVE` after `WM_SIZE`'s work ([[topic:activation-and-focus]] has the rest).
-- Restored from an icon by `SC_RESTORE`, the window is asked `WM_WINDOWPOSCHANGING` with 100h among its flags, then sent `WM_NCPAINT` and `WM_ERASEBKGND` before `WM_WINDOWPOSCHANGED`. Both engines send neither before it, nor 100h.
-- An icon's title, `#32772`, lies among the topmost windows, and an icon brought to the top goes after it. Both engines keep it just in front of its icon, so `HWND_TOP` is reported as the last topmost window, `#32771`; the check for a window already in place leaves titles out for that.
 
 What [[probe:popmax]] recorded that neither engine follows yet:
 
@@ -122,5 +119,5 @@ What [[probe:popmax]] recorded that neither engine follows yet:
 - `showRaster` in `window-state.ts` sends a showing's or a hiding's messages. It works out the family, the window each goes after, and whether it moved. `deliverActivation` in `activation.ts` takes the second placing between its two halves.
 - `Desktop.show` brings an owned window's owner up beneath it. `#gained` and `#exposeOwned` in `desktop.ts` mark what a window came to show or left showing, from the screen's owners before and after. `unpaintedWhere` hands out `WM_PAINT` from the top down.
 - `sendNcPaint` in `erase.ts` makes the region `WM_NCPAINT` carries when only part of a frame is due.
-- `minimizeToBottom` in `window-state.ts` minimizes a window hidden, or shown and not made active, in one move to the bottom, and `titleShown` sends what its title's making asks.
-- An icon's title is a window of the class `#32772`, given a handle by `rasterDesktop` in `raster-desktop.ts` as the desktop makes it. The desktop draws it, and `paintsItself` in `desktop.ts` tells it from the windows drawn by their own messages.
+- `minimizeToBottom` in `window-state.ts` minimizes a window hidden, or shown and not made active, in one move to the bottom, the windows it owns moved first, and `titleShown` shows its title as `ShowIconTitle` does.
+- An icon's title is a window of the class `#32772`, given a handle by `rasterDesktop` in `raster-desktop.ts` as the desktop makes it the first time its window is minimized, and kept, hidden, while the window is restored (`#leaveIcon`, `shownTitle`). The desktop draws it, and `paintsItself` in `desktop.ts` tells it from the windows drawn by their own messages; `redrawIconTitle` and `paintDueTitles` in `DefWindowProc.ts` send what measuring and drawing it ask ([[topic:window-states]]).

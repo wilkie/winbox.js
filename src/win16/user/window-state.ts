@@ -7,7 +7,7 @@ import { askCbt, askCbtCreate, HCBT_ACTIVATE, HCBT_MINMAX } from './hooks.js';
 import { focusNothing, setFocusNothing } from './SetFocus.js';
 import { FALSE, TRUE } from '../consts.js';
 import { MINMAXINFO, NCCALCSIZE_PARAMS, User, WINDOWPOS } from '../user.js';
-import { askText } from './DefWindowProc.js';
+import { askText, paintDueTitles } from './DefWindowProc.js';
 
 import { harvestAll, lockTouched } from './lock-window-update.js';
 import { RasterWindow } from './raster-window.js';
@@ -80,11 +80,54 @@ export async function showRaster(
 
   /* An icon restored is asked first, and stays one if its window says no
    * (`iconclk`; the answer is documented, not recorded). */
-  const fromIcon = show === User.SW_RESTORE && shown.state === 'minimized';
+  let fromIcon = show === User.SW_RESTORE && shown.state === 'minimized';
   const activeIcon = fromIcon && shown.active;
 
   if (fromIcon && !(await send(User.WM_QUERYOPEN, 0, 0))) {
     return was ? TRUE : FALSE;
+  }
+
+  /* An icon of a window that was maximized is maximized again (`USER.EXE`
+   * seg6 `1b48`-`1b5d`: `SW_RESTORE` of a window with `WS_MINIMIZE` whose
+   * record's flag 2 is set is `SW_SHOWMAXIMIZED`; `maxcopy`). */
+  if (fromIcon && shown.maximizedBefore) {
+    show = User.SW_SHOWMAXIMIZED;
+    fromIcon = false;
+  }
+
+  /* A maximized window at the top that shows restored, as `MinMaximize`
+   * does it: one `SetWindowPos` to the place it had before with
+   * `SWP_FRAMECHANGED` alone, its bits copied as any `SetWindowPos` copies
+   * them -- `SWP_NOCOPYBITS` is only an icon's (seg6 `1cd9`, `1d39`); and
+   * none of the icon's focus or `WM_ACTIVATE` after (`1cc4`-`1cd6`).
+   * **Recorded** by `maxcopy`: asked 20h, `WM_GETMINMAXINFO`,
+   * `WM_NCCALCSIZE`, its frame drawn, the window beneath drawn, told 24h,
+   * and its client area, kept from its corner, not due. */
+  if (
+    (show === User.SW_RESTORE || show === User.SW_SHOWNORMAL) &&
+    shown.state === 'maximized' &&
+    was &&
+    !child
+  ) {
+    const rect = desktop.leaveToNormal(shown);
+    const origin = originOf(shown);
+
+    if (rect) {
+      await positionRaster(
+        system,
+        hwnd,
+        window,
+        0,
+        rect.left - origin.x,
+        rect.top - origin.y,
+        rect.width,
+        rect.height,
+        SWP_FRAMECHANGED | (restoringQuietly && !!desktop.activeTop ? SWP_NOACTIVATE : 0)
+      );
+      system.rasterInput?.nudge();
+
+      return TRUE;
+    }
   }
 
   /* A window at the top that shows restored from its icon, as `MinMaximize`
@@ -107,7 +150,7 @@ export async function showRaster(
    * is put among the icons, at the bottom, in one move (`showmin`). */
   if (show === User.SW_SHOWMINNOACTIVE && !was && !shown.parent) {
     await minimizeToBottom(system, hwnd, window, true);
-    await titleShown(system, hwnd, window, false);
+    await titleShown(system, hwnd, window);
     system.rasterInput?.nudge();
 
     /* Told its place and size so, it is owed none when it is next shown
@@ -182,7 +225,12 @@ export async function showRaster(
   let zoom: { x: number; y: number; cx: number; cy: number } | null = null;
 
   if (zooming) {
-    flags = (flags & ~(SWP_NOSIZE | SWP_NOMOVE)) | SWP_FRAMECHANGED;
+    /* From an icon, nothing of its bits copied (seg6 `1cd9`; `maxcopy`:
+     * 120h). */
+    flags =
+      (flags & ~(SWP_NOSIZE | SWP_NOMOVE)) |
+      SWP_FRAMECHANGED |
+      (shown.state === 'minimized' ? SWP_NOCOPYBITS : 0);
 
     if (was) {
       flags &= ~SWP_SHOWWINDOW;
@@ -678,16 +726,14 @@ export async function showRaster(
     }
   }
 
-  if (shown.state === 'minimized') {
-    await titleMade(system, hwnd, window);
-  }
+  const titleNew = shown.state === 'minimized' && (await titleMade(system, hwnd, window));
 
   if (changes && !hiding && shown.state === 'minimized') {
-    await titleShown(system, hwnd, window, !(flags & SWP_NOACTIVATE));
+    await titleShown(system, hwnd, window, titleNew);
   } else if (placedAndTold) {
     /* Its title shown once the activation has moved on (seg6 `1e16`-`1e27`,
      * seg1 `6e25`). */
-    await titleShown(system, hwnd, window, false);
+    await titleShown(system, hwnd, window, titleNew);
   }
 
   /* Hidden, a window that has the focus itself gives it to its parent, or a
@@ -731,7 +777,7 @@ async function restoreFromIcon(
 ) {
   const desktop = window.desktop;
   const shown = window.window;
-  const rect = desktop.leaveMinimized(shown);
+  const rect = desktop.leaveToNormal(shown);
   const origin = originOf(shown);
 
   if (!rect) {
@@ -854,6 +900,23 @@ export async function minimizeToBottom(
     SWP_NOCOPYBITS |
     (show ? SWP_SHOWWINDOW : 0) |
     (last ? 0 : SWP_NOZORDER);
+  /* Moved among the windows, the windows it owns go first -- its icon's
+   * title, kept hidden since it was last an icon, among them -- each after
+   * the one before, and it after the last of them (`USER.EXE` seg7 `12af`,
+   * `16da`-`16ed`; `minact`: minimized again, B goes after its title). */
+  const family = last ? familyOf(desktop, shown) : [shown];
+  const before = family.slice(0, Math.max(family.indexOf(shown), 0));
+  let named = after;
+
+  for (const member of before) {
+    const place: any = new WINDOWPOS();
+
+    place.hwnd = member.hwnd;
+    place.hwndInsertAfter = named;
+    place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+    await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+    named = member.hwnd ?? 0;
+  }
 
   /* Placed as one `SetWindowPos` places it, and drawn as its list is
    * drawn once it is placed (`Desktop.beginPlacing`, `endPlacing`). */
@@ -861,7 +924,7 @@ export async function minimizeToBottom(
   desktop.placingFlags(shown, flags);
 
   try {
-    await minimizedPlace(system, hwnd, window, show, flags, after, last, old, oldClient);
+    await minimizedPlace(system, hwnd, window, show, flags, named, last, old, oldClient);
   } finally {
     desktop.endPlacing(false);
   }
@@ -875,7 +938,7 @@ export async function minimizeToBottom(
   const place: any = new WINDOWPOS();
 
   place.hwnd = hwnd;
-  place.hwndInsertAfter = after;
+  place.hwndInsertAfter = named;
   place.x = shown.left;
   place.y = shown.top;
   place.cx = shown.width;
@@ -890,9 +953,9 @@ export async function minimizeToBottom(
  * `SW_SHOWMINNOACTIVE` (`USER.EXE` seg6 `1b70`-`1b7d`, `1e58`-`1e89`): after
  * the last of the brothers beneath it owned as it is, before the first
  * whose being topmost differs from its; none, where none is, and it stays
- * where it lies. An icon's title hidden is taken for owned by none
- * (`minact`: a window minimized again goes after its title, left hidden
- * beneath the windows as it was restored).
+ * where it lies. An icon's title is owned by its icon, so is none of its
+ * brothers': `minact`'s B, minimized again, is named to go after its title
+ * only as the title, a window it owns, goes first (`minimizeToBottom`).
  */
 function minimizedAfter(desktop: any, shown: any) {
   const brothers = desktop.windows.filter(
@@ -905,7 +968,8 @@ function minimizedAfter(desktop: any, shown: any) {
       break;
     }
 
-    if (other.owner === shown.owner) {
+    /* An icon's title is owned by its icon (seg1 `6afc`-`6b20`). */
+    if ((other.owner ?? other.titleOf ?? null) === (shown.owner ?? null)) {
       last = other;
     }
   }
@@ -1015,36 +1079,58 @@ async function titleMade(system: any, hwnd: number, window: RasterWindow) {
       ...words(0x8004, 2),
       ...words(0, 2),
     ]);
+
+    return true;
   }
+
+  return false;
 }
 
 /**
- * An icon's title made and shown: its window asked for its text, 80
- * characters, as the title is made and again as it is drawn; and, when the
- * icon was not made active, the icon asked to go after its title, which it
- * already does -- nothing more is sent (`showmin`).
+ * An icon's title shown, as `ShowIconTitle` shows it (`USER.EXE` seg1
+ * `6e25`-`6e99`): made the first time (`titleMade`); sent `WM_SHOWWINDOW`,
+ * which measures its window's text, 80 characters (`6d67`, `6b43`); then
+ * put after the window before its icon with `SWP_SHOWWINDOW |
+ * SWP_NOACTIVATE`, its icon asked to go after it as a window it owns
+ * (seg7 `16da`-`16ed`), or shown where it lies, `SWP_NOZORDER`, where it
+ * is that window already. A title kept since the icon was last one moved
+ * with it, and lies there (`minact`: B minimized again asks nothing); one
+ * made now lies at the front, after the topmost windows, as `CreateWindow`
+ * puts it, so is just before an icon at the front alone (`showmin`). Shown,
+ * it is drawn as `SetWindowPos` ends, with the titles due before it
+ * (`paintDueTitles`).
  */
-async function titleShown(system: any, hwnd: number, window: RasterWindow, activated: boolean) {
+async function titleShown(system: any, hwnd: number, window: RasterWindow, madeNow = false) {
   const shown = window.window;
-
-  await titleMade(system, hwnd, window);
+  const desktop = window.desktop;
+  const made = (await titleMade(system, hwnd, window)) || madeNow;
+  const title = shown.iconTitle;
 
   await askText(system, hwnd, window, 0x50);
 
-  if (!activated && shown.iconTitle?.hwnd) {
-    const place: any = new WINDOWPOS();
+  if (made && title?.hwnd) {
+    const tops = desktop.windows.filter((other: any) => !other.parent && other !== title);
+    const first = tops.find((other: any) => !other.topmost) ?? null;
 
-    place.hwnd = hwnd;
-    place.hwndInsertAfter = shown.iconTitle.hwnd;
-    place.x = 0;
-    place.y = 0;
-    place.cx = 0;
-    place.cy = 0;
-    place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-    await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
+    if (first !== shown) {
+      const place: any = new WINDOWPOS();
+
+      place.hwnd = hwnd;
+      place.hwndInsertAfter = title.hwnd;
+      place.x = 0;
+      place.y = 0;
+      place.cx = 0;
+      place.cy = 0;
+      place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+      await sendTo(system, shown, User.WM_WINDOWPOSCHANGING, 0, [place]);
+    }
   }
 
-  await askText(system, hwnd, window, 0x50);
+  if (title?.visible) {
+    title.titleDue = true;
+  }
+
+  await paintDueTitles(system);
 }
 
 /**
@@ -1106,8 +1192,14 @@ export async function activateWindow(
   }
 
   const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
-  const family = first !== top ? activationFamily(desktop, top) : [];
-  const orderBefore = desktop.windows.filter((other: any) => !other.parent && !other.titleOf);
+  /* Listed as `SetWindowPos` lists the family it brings up (`familyOf`;
+   * seg1 `3697`, seg7 `1836`), and each one's place before looked at
+   * among all the windows at the top, the icons' titles too: an owner
+   * whose title, kept hidden, it goes after lies after it already, and is
+   * not told (`enddlg`: O, minimized and restored before, made active
+   * again with its dialog). */
+  const family = first !== top ? familyOf(desktop, top) : [];
+  const orderBefore = desktop.windows.filter((other: any) => !other.parent);
   /* The system-modal window goes to the very front, before the topmost
    * windows too, and is asked to go after none. **Recorded** by `sysdlg`:
    * a system-modal dialog made active as it is made is asked so, and once
@@ -1136,8 +1228,6 @@ export async function activateWindow(
    * told goes after the window it was asked to, and one hidden is told
    * `SWP_NOREDRAW` as well (seg7 `0df5`-`0e05`). */
   const shownBefore = top.visible;
-
-  family.sort((a: any, b: any) => desktop.windows.indexOf(a) - desktop.windows.indexOf(b));
 
   await deliverActivation(
     system,
@@ -1236,35 +1326,6 @@ export async function askActivate(system: any, top: any, mouse: number) {
 /** `SetFocus`'s activation of the window at the top the focus goes into. */
 export async function activateForFocus(system: any, top: any) {
   return activateWindow(system, top, true);
-}
-
-/**
- * The windows `ActivateWindow` brings to the front with a window at the top:
- * as `familyOf`, with the windows the head owns that are hidden among them
- * (`enddlg`: an owner made active again asks the hidden dialog it owns).
- */
-function activationFamily(desktop: any, shown: any) {
-  let head = shown;
-
-  while (head.owner && !head.owner.parent) {
-    head = head.owner;
-  }
-
-  const owns = (window: any): boolean => {
-    for (let at = window.owner; at; at = at.owner) {
-      if (at === head) {
-        return true;
-      }
-    }
-
-    return false;
-  };
-  const members = desktop.windows.filter(
-    (other: any) =>
-      !other.parent && !other.titleOf && other !== head && (other === shown || owns(other))
-  );
-
-  return [...members, head];
 }
 
 /**
@@ -1942,6 +2003,15 @@ export async function positionChanging(
 
   await askFamily(family.slice(0, at), hwndInsertAfter);
 
+  /* After the last of its family asked before it: an icon's title, hidden
+   * or not, before the window whose title it is (`USER.EXE` seg7
+   * `16da`-`16ed`; `minact`: restored to the top, B goes after its title). */
+  if (at > 0) {
+    windowPos.hwndInsertAfter = family[at - 1].hwnd ?? 0;
+  }
+
+  const named = windowPos.hwndInsertAfter;
+
   if (windowClass) {
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [
       windowPos,
@@ -1974,7 +2044,7 @@ export async function positionChanging(
 
   if (flags & SWP_NOZORDER) {
     insert = { to: 'stay' };
-  } else if (asked !== hwndInsertAfter) {
+  } else if (asked !== named) {
     insert = window.desktop.insertFor(shown, asked, false)?.[1] ?? { to: 'stay' };
   }
 

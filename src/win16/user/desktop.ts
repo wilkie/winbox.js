@@ -24,6 +24,7 @@ import {
   DCX_CLIPSIBLINGS,
   DCX_USESTYLE,
   DCX_WINDOW,
+  regionByRule,
   regionFlags,
   windowRegion,
 } from './visible-region-rule.js';
@@ -367,6 +368,10 @@ export class DesktopWindow {
 
   /** For an icon's title window: the window whose title it shows. */
   titleOf: DesktopWindow | null = null;
+  /** Minimized while it was maximized: restored, it is maximized again (`MinMaximize`). */
+  maximizedBefore = false;
+  /** For an icon's title: invalidated, to be drawn when it is next painted (`paintDueTitles`). */
+  titleDue = false;
 
   constructor(
     id: number,
@@ -791,13 +796,34 @@ export class Desktop {
 
   /**
    * Where other windows cover a window, as USER works it out for its switch
-   * window: the window's rectangle, on the screen, less where it shows -- it
-   * or what lies in it (`USER.EXE` seg23 `0187`-`01e1`). Each pixel of it.
+   * window (`USER.EXE` seg23 `0180`-`01d4`): the window's rectangle cut to
+   * the screen (seg1 `1e3e`), less the visible region of its window's
+   * device context, `GetWindowDC`'s (`8457`; `regionByRule` with
+   * `DCX_WINDOW | DCX_USESTYLE`), worked out from the windows as USER keeps
+   * them, not from what the screen shows. Each pixel of it.
    */
   coveredPoints(window: DesktopWindow): [number, number][] {
     const points: [number, number][] = [];
+    const x0 = Math.max(window.left, 0);
+    const y0 = Math.max(window.top, 0);
+    const x1 = Math.min(window.left + window.width, this.screen.width);
+    const y1 = Math.min(window.top + window.height, this.screen.height);
+    const shows = this.system
+      ? regionByRule(this.system, window, DCX_WINDOW | DCX_USESTYLE)
+      : null;
 
-    this.#eachCovered(window, (sx, sy) => points.push([sx, sy]));
+    if (!shows) {
+      this.#eachCovered(window, (sx, sy) => points.push([sx, sy]));
+      return points;
+    }
+
+    for (let sy = y0; sy < y1; sy++) {
+      for (let sx = x0; sx < x1; sx++) {
+        if (!shows.contains(sx, sy)) {
+          points.push([sx, sy]);
+        }
+      }
+    }
 
     return points;
   }
@@ -937,7 +963,7 @@ export class Desktop {
 
   /** The active top-level window: a document window inside one does not count. */
   get activeTop() {
-    return this.windows.find((w) => w.active && !w.parent && !w.titleOf) ?? null;
+    return this.windows.find((w) => w.active && !w.parent) ?? null;
   }
 
   /**
@@ -1063,9 +1089,11 @@ export class Desktop {
       window.visible ? SWP_NOMOVE | SWP_NOSIZE : SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
     );
 
-    if (window.iconTitle && !window.iconTitle.visible) {
-      this.#entryOf(window.iconTitle);
-      this.#placedWhole(window.iconTitle);
+    const title = this.shownTitle(window);
+
+    if (title && !title.visible) {
+      this.#entryOf(title);
+      this.#placedWhole(title);
     }
 
     const was = this.active;
@@ -1096,10 +1124,10 @@ export class Desktop {
     this.paintFrame(window);
 
     if (!whole) {
-      if (window.iconTitle && !window.iconTitle.visible) {
-        window.iconTitle.visible = true;
+      if (title && !title.visible) {
+        title.visible = true;
         this.#own();
-        this.paintFrame(window.iconTitle);
+        this.paintFrame(title);
       }
 
       this.endPlacing(allShown);
@@ -1120,10 +1148,10 @@ export class Desktop {
     }
 
     /* An icon's title shows with it. */
-    if (window.iconTitle && !window.iconTitle.visible) {
-      window.iconTitle.visible = true;
+    if (title && !title.visible) {
+      title.visible = true;
       this.#own();
-      this.paintFrame(window.iconTitle);
+      this.paintFrame(title);
     }
 
     /* An icon USER draws itself; anything else is erased and painted. */
@@ -1573,8 +1601,11 @@ export class Desktop {
    * from the window after the last of those kept on top (seg7 `02c9`), or
    * after the first window, to the back -- else, as a window hidden, the next
    * that can take it (`#nextActive`, which seg1 `38e4` is asked with 3 for).
-   * An icon's title is passed over, as `#nextActive` passes it (`34dc`).
-   * Recorded by `minact`.
+   * The look asks only that a window shows, is enabled and is no icon
+   * (`1de3`-`1df3`), so an icon's title that shows is one: made active, it
+   * makes its icon active (`minact`: A minimized with B an icon gives the
+   * activation to B's title first). `#nextActive` passes titles over
+   * (`34dc`).
    */
   nextAfterMinimize(window: DesktopWindow): DesktopWindow | null {
     const suits = (other: DesktopWindow | null | undefined): other is DesktopWindow =>
@@ -1583,8 +1614,7 @@ export class Desktop {
       this.windows.includes(other) &&
       other.visible &&
       !(other.style & WS_DISABLED) &&
-      other.state !== 'minimized' &&
-      !other.titleOf;
+      other.state !== 'minimized';
     const tops = this.windows.filter((other) => !other.parent);
     let keptOnTop = 0;
 
@@ -2157,7 +2187,7 @@ export class Desktop {
 
     /* An icon's title, a window of its own, is made due where it was and
      * is. */
-    if (title && titleWas) {
+    if (title && titleWas && title.visible) {
       const both = unite(
         ClipRegion.rect(titleWas[0], titleWas[1], titleWas[2], titleWas[3]),
         ClipRegion.rect(title.left, title.top, title.left + title.width, title.top + title.height)
@@ -2804,10 +2834,11 @@ export class Desktop {
       return;
     }
 
-    /* A minimized window's title goes with it. */
-    if (window.iconTitle) {
-      this.destroy(window.iconTitle);
-      window.iconTitle = null;
+    /* A minimized window's title is hidden with it, and kept: `ShowWindow`
+     * of an icon shows or hides its title with it (`USER.EXE` seg14
+     * `0de0`-`0def`, seg1 `6e25`). */
+    if (window.iconTitle?.visible) {
+      this.hide(window.iconTitle, false);
     }
 
     if (this.menuOwner === window) {
@@ -3528,15 +3559,18 @@ export class Desktop {
 
     /* Nothing to paint, nothing to look for: a program that polls asks on
      * every call, and the walk below looks at every window for each. */
-    if (!this.windows.some((window) => window.needsPaint || window.internalPaint)) {
+    if (
+      !this.windows.some((window) => window.needsPaint || window.internalPaint || window.titleDue)
+    ) {
       return null;
     }
 
     /* Due where it has an update region or a paint of its own (`USER.EXE`
-     * seg1 `77d1`-`77db`). */
+     * seg1 `77d1`-`77db`); an icon's title invalidated is painted as its
+     * own window is, by its own procedure (`paintTitle`). */
     const due = (window: DesktopWindow) =>
-      paintsItself(window) &&
-      (window.needsPaint || window.internalPaint) &&
+      ((paintsItself(window) && (window.needsPaint || window.internalPaint)) ||
+        (!!window.titleOf && window.titleDue)) &&
       this.#showing(window) &&
       match(window);
     const walk = (window: DesktopWindow): DesktopWindow | null => {
@@ -3561,7 +3595,10 @@ export class Desktop {
       const found = window.parent ? null : walk(window);
 
       if (found) {
-        this.aboutToPaint(found);
+        if (!found.titleOf) {
+          this.aboutToPaint(found);
+        }
+
         return found;
       }
     }
@@ -3775,13 +3812,13 @@ export class Desktop {
   }
 
   /**
-   * A minimized window no longer one, where it lies: its title hidden, its
-   * state normal again; the place it had before, for its caller to put it
-   * at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`). Null where it was
-   * not minimized.
+   * A minimized or maximized window no longer one, where it lies: an icon's
+   * title hidden, its state normal again; the place it had before, for its
+   * caller to put it at (`MinMaximize`, `USER.EXE` seg6 `1cdd`-`1d39`).
+   * Null where it was neither.
    */
-  leaveMinimized(window: DesktopWindow) {
-    if (window.state !== 'minimized' || !window.restoreRect) {
+  leaveToNormal(window: DesktopWindow) {
+    if (window.state === 'normal' || !window.restoreRect) {
       return null;
     }
 
@@ -3840,6 +3877,9 @@ export class Desktop {
       };
     }
 
+    /* Whether it was maximized, which it is again when it is restored
+     * (`USER.EXE` seg6 `1c2a`-`1c3c`, the window's record's flag 2). */
+    window.maximizedBefore = window.state === 'maximized';
     window.state = 'minimized';
 
     const cxIcon = this.environment.metric(SM_CXICON);
@@ -3880,23 +3920,27 @@ export class Desktop {
       this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4);
     }
 
-    const title = new DesktopWindow(
-      this.#next++,
-      0,
-      0,
-      0,
-      0,
-      0x80000000,
-      window.title,
-      undefined,
-      null
-    );
+    /* Its title made the first time, and kept after (`#leaveIcon`); put
+     * just before it, as `ShowIconTitle` puts it after the window before
+     * its icon (`USER.EXE` seg1 `6e69`-`6e85`). */
+    const kept = window.iconTitle;
+    const title =
+      kept ??
+      new DesktopWindow(this.#next++, 0, 0, 0, 0, 0x80000000, window.title, undefined, null);
 
     title.titleOf = window;
     window.iconTitle = title;
+
+    if (kept && this.windows.includes(kept)) {
+      this.windows.splice(this.windows.indexOf(kept), 1);
+    }
+
     this.windows.splice(this.windows.indexOf(window), 0, title);
     this.#placeTitle(window);
-    this.onTitle?.(title);
+
+    if (!kept) {
+      this.onTitle?.(title);
+    }
 
     /* With an icon, USER draws it; without one, the window is erased and
      * painted like any other -- the `icons` probe's bare window shows its
@@ -4004,11 +4048,23 @@ export class Desktop {
     }
   }
 
+  /**
+   * An icon's title hidden as its window stops being an icon, and kept,
+   * where it lies among the windows, for the next time it is one: USER
+   * hides it with `ShowWindow(SW_HIDE)` (`USER.EXE` seg6 `1cdd`-`1ce0`,
+   * seg1 `6e25`-`6e9e`) and keeps it in the window's own record until the
+   * window is destroyed (`minact`: restored, its window goes after it;
+   * minimized again, it goes after it as a window it owns).
+   */
   #leaveIcon(window: DesktopWindow) {
-    if (window.iconTitle) {
-      this.destroy(window.iconTitle);
-      window.iconTitle = null;
+    if (window.iconTitle?.visible) {
+      this.hide(window.iconTitle, false);
     }
+  }
+
+  /** A window's icon title while it is an icon: the title kept hidden otherwise is none. */
+  shownTitle(window: DesktopWindow) {
+    return window.state === 'minimized' ? window.iconTitle : null;
   }
 
   /** An icon: its background, and the icon drawn over it through its mask. */
@@ -4629,19 +4685,21 @@ export class Desktop {
     );
     this.#placedWhole(window);
 
-    if (window.iconTitle && !window.iconTitle.visible) {
-      this.#entryOf(window.iconTitle);
-      this.#placedWhole(window.iconTitle);
+    const title = this.shownTitle(window);
+
+    if (title && !title.visible) {
+      this.#entryOf(title);
+      this.#placedWhole(title);
     }
 
     window.visible = true;
     this.#own();
     this.paintFrame(window);
 
-    if (window.iconTitle && !window.iconTitle.visible) {
-      window.iconTitle.visible = true;
+    if (title && !title.visible) {
+      title.visible = true;
       this.#own();
-      this.paintFrame(window.iconTitle);
+      this.paintFrame(title);
     }
 
     const drawn = window.state === 'minimized' && window.icon !== null;
@@ -4750,12 +4808,14 @@ export class Desktop {
     }
 
     /* Of a list being placed, it is drawn as the list is (`endPlacing`). */
+    const title = this.shownTitle(window);
+
     if (this.#list) {
       if (show) {
         window.visible = true;
 
-        if (window.iconTitle) {
-          window.iconTitle.visible = true;
+        if (title) {
+          title.visible = true;
         }
       }
 
@@ -4765,15 +4825,15 @@ export class Desktop {
     if (show) {
       window.visible = true;
 
-      if (window.iconTitle) {
-        window.iconTitle.visible = true;
+      if (title) {
+        title.visible = true;
       }
 
       this.#own();
       this.paintFrame(window);
 
-      if (window.iconTitle) {
-        this.paintFrame(window.iconTitle);
+      if (title) {
+        this.paintFrame(title);
       }
 
       window.needsErase = true;

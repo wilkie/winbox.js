@@ -5229,30 +5229,14 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
-  /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
-   * is made active, and where the focus goes, agree (`state`); a window at
-   * the top minimized so is asked, drawn and told as `MinMaximize`'s one
-   * `SetWindowPos` does it, the window beneath made active where it lies,
-   * and an icon restored is asked with 120h, made active inside, drawn and
-   * told as `SetWindowPos` does it (`USER.EXE` seg6 `1ca6`-`1d81`). The
-   * messages do not all agree: winbox.js keeps no icon's title hidden
-   * among the windows once its icon is restored, as Windows keeps it -- the
-   * window it goes after then, and the next icon after it; the icon's title
-   * is not asked for its text as the activation leaves the icon; and
-   * Windows makes the title active first as the activation passes to an
-   * icon, which makes its icon active (seg1 `6cf4`-`6d08`). 27 records. */
-  'minact:msg':
-    "no icon's title is kept hidden among the windows, nor made active before its icon, nor asked as the activation leaves it, 27 records",
   /* `swpshow` shows hidden pop-ups with `SetWindowPos`, which agree, then
    * minimizes and restores a window by `WM_SYSCOMMAND`. Which window is
    * active, and the order of the windows, agree at every step (`state`,
-   * `zorder`); the restore's messages agree but for the window named to go
-   * after, which is the icon's title in Windows, which winbox.js does not
-   * bring with its icon as it is made active; and a window made visible
-   * behind a topmost one is not asked again between the halves of its
-   * activation (`kb/topics/creating-and-showing.md`). 15 records. */
+   * `zorder`), and so do the minimizing and the restoring; a window made
+   * visible behind a topmost one is not asked again between the halves of
+   * its activation (`kb/topics/creating-and-showing.md`). 11 records. */
   'swpshow:msg':
-    'an icon made active does not name its title as the window it goes after, and one made visible behind a topmost window is not asked again as it is activated, 15 records',
+    'a window made visible behind a topmost window is not asked again as it is activated, 11 records',
 
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
@@ -6025,6 +6009,7 @@ const RUN_WHOLE = new Set<string>([
   'uwleft',
   'prttrot',
   'prttx2',
+  'maxcopy',
 ]);
 
 /**

@@ -533,8 +533,6 @@ impl Engine {
             }
         };
 
-        let mut structure = Param::Struct(window_pos(hwnd, after, [x, y, cx, cy], flags));
-
         // A window at the top brought to the front brings the family it
         // heads, as `ShowWindow` does: each asked in turn from the top down,
         // the rest neither sized, moved nor made active (`alttab`: a pop-up
@@ -557,6 +555,17 @@ impl Engine {
             .unwrap_or(0);
 
         self.ask_family(&family[..at], after).await?;
+
+        // After the last of its family asked before it: an icon's title,
+        // hidden or not, before the window whose title it is (`USER.EXE`
+        // seg7 `16da`-`16ed`; `minact`: restored to the top, B goes after
+        // its title).
+        let named = match at.checked_sub(1) {
+            Some(before) => self.system().hwnd_of(family[before]),
+            None => after,
+        };
+        let mut structure = Param::Struct(window_pos(hwnd, named, [x, y, cx, cy], flags));
+
         self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
             .await?;
         self.ask_family(&family[at + 1..], hwnd).await?;
@@ -575,7 +584,7 @@ impl Engine {
                     word(12),
                 )
             }
-            Param::Value(_) => (after, x, y, cx, cy, flags),
+            Param::Value(_) => (named, x, y, cx, cy, flags),
         };
         // A size below nought is nought (`USER.EXE` seg7 `0da1`-`0db5`;
         // `minmax`): a window that answers `WM_WINDOWPOSCHANGING` itself is
@@ -588,7 +597,7 @@ impl Engine {
         // Put elsewhere by the window procedure, it goes where it was put.
         let insert = if flags & SWP_NOZORDER != 0 {
             Insert::Stay
-        } else if asked == after {
+        } else if asked == named {
             insert
         } else {
             self.system()

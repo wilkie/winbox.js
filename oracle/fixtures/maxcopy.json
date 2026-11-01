@@ -1,0 +1,234 @@
+{
+  "probe": "maxcopy",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "screen",
+      "args": "start, y 130",
+      "result": "ssssssssss####################ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "start, y 300",
+      "result": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "max, at once",
+      "result": "M:24,M:46/20,M:24,M:83,M:85,M:14,M:47/24,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "max",
+      "result": "{0,0,640,461} none"
+    },
+    {
+      "function": "screen",
+      "args": "max, at once, y 130",
+      "result": "................................................................"
+    },
+    {
+      "function": "screen",
+      "args": "max, at once, y 300",
+      "result": "................................................................"
+    },
+    {
+      "function": "sent",
+      "args": "max, messages taken",
+      "result": "M:f{0,0,640,461}0,"
+    },
+    {
+      "function": "screen",
+      "args": "max, messages taken, y 130",
+      "result": "################################################################"
+    },
+    {
+      "function": "screen",
+      "args": "max, messages taken, y 300",
+      "result": "################################################################"
+    },
+    {
+      "function": "sent",
+      "args": "restore, at once",
+      "result": "M:46/20,M:24,M:83,M:85,M:14,B:85,B:14,M:47/24,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "restore",
+      "result": "none {0,0,640,480}"
+    },
+    {
+      "function": "screen",
+      "args": "restore, at once, y 130",
+      "result": "ssssssssss####################ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "restore, at once, y 300",
+      "result": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "restore, messages taken",
+      "result": "B:f{0,0,640,480}0,"
+    },
+    {
+      "function": "screen",
+      "args": "restore, messages taken, y 130",
+      "result": "ssssssssss####################ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "restore, messages taken, y 300",
+      "result": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "maxredraw, at once",
+      "result": "M:24,M:46/20,M:24,M:83,M:85,M:14,M:47/24,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "maxredraw",
+      "result": "{0,0,640,461} none"
+    },
+    {
+      "function": "screen",
+      "args": "maxredraw, at once, y 130",
+      "result": "................................................................"
+    },
+    {
+      "function": "screen",
+      "args": "maxredraw, at once, y 300",
+      "result": "................................................................"
+    },
+    {
+      "function": "sent",
+      "args": "maxredraw, messages taken",
+      "result": "M:f{0,0,640,461}0,"
+    },
+    {
+      "function": "screen",
+      "args": "maxredraw, messages taken, y 130",
+      "result": "################################################################"
+    },
+    {
+      "function": "screen",
+      "args": "maxredraw, messages taken, y 300",
+      "result": "################################################################"
+    },
+    {
+      "function": "sent",
+      "args": "restoreredraw, at once",
+      "result": "M:46/20,M:24,M:83,M:85,M:14,B:85,B:14,M:47/24,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "restoreredraw",
+      "result": "{0,0,192,73} {0,0,640,480}"
+    },
+    {
+      "function": "screen",
+      "args": "restoreredraw, at once, y 130",
+      "result": "ssssssssss....................ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "restoreredraw, at once, y 300",
+      "result": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "restoreredraw, messages taken",
+      "result": "M:f{0,0,192,73}0,B:f{0,0,640,480}0,"
+    },
+    {
+      "function": "screen",
+      "args": "restoreredraw, messages taken, y 130",
+      "result": "ssssssssss####################ssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "screen",
+      "args": "restoreredraw, messages taken, y 300",
+      "result": "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+    },
+    {
+      "function": "sent",
+      "args": "maxicon, at once",
+      "result": "M:24,M:46/120,M:24,M:83,M:85,M:14,M:47/120,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "maxicon",
+      "result": "{0,0,640,461} none"
+    },
+    {
+      "function": "screen",
+      "args": "maxicon, at once, y 130",
+      "result": "................................................................"
+    },
+    {
+      "function": "screen",
+      "args": "maxicon, at once, y 300",
+      "result": "................................................................"
+    },
+    {
+      "function": "sent",
+      "args": "maxicon, messages taken",
+      "result": "M:f{0,0,640,461}0,"
+    },
+    {
+      "function": "screen",
+      "args": "maxicon, messages taken, y 130",
+      "result": "################################################################"
+    },
+    {
+      "function": "screen",
+      "args": "maxicon, messages taken, y 300",
+      "result": "################################################################"
+    },
+    {
+      "function": "sent",
+      "args": "restoreicon, at once",
+      "result": "M:24,M:46/120,M:24,M:83,M:85,M:14,M:47/120,M:3,M:5,"
+    },
+    {
+      "function": "update",
+      "args": "restoreicon",
+      "result": "{0,0,640,461} none"
+    },
+    {
+      "function": "screen",
+      "args": "restoreicon, at once, y 130",
+      "result": "................................................................"
+    },
+    {
+      "function": "screen",
+      "args": "restoreicon, at once, y 300",
+      "result": "................................................................"
+    },
+    {
+      "function": "sent",
+      "args": "restoreicon, messages taken",
+      "result": "M:f{0,0,640,461}0,"
+    },
+    {
+      "function": "screen",
+      "args": "restoreicon, messages taken, y 130",
+      "result": "################################################################"
+    },
+    {
+      "function": "screen",
+      "args": "restoreicon, messages taken, y 300",
+      "result": "################################################################"
+    }
+  ]
+}

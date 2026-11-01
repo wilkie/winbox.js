@@ -728,7 +728,7 @@ impl System {
             window.visible = false;
         }
 
-        self.leave_icon(index);
+        self.drop_icon_title(index);
 
         if self.z_order.contains(&index) {
             self.take_away(index, true);

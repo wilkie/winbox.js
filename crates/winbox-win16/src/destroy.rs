@@ -95,7 +95,7 @@ impl System {
         }
 
         // A minimized window's title goes with it.
-        self.leave_icon(index);
+        self.drop_icon_title(index);
 
         if self.z_order.contains(&index) {
             self.take_away(index, true);

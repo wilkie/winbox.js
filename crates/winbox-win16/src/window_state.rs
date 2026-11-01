@@ -214,57 +214,6 @@ impl System {
         out
     }
 
-    /// The windows `ActivateWindow` brings to the front with a window at the
-    /// top: as `family_of`, with the windows the head owns that are hidden
-    /// among them (`enddlg`: an owner made active again asks the hidden
-    /// dialog it owns).
-    pub(crate) fn activation_family(&self, shown: usize) -> Vec<usize> {
-        let mut head = shown;
-
-        while let Some(owner) = self.windows[head].as_ref().and_then(|window| window.owner) {
-            if self.windows[owner]
-                .as_ref()
-                .is_some_and(|window| window.parent.is_some())
-            {
-                break;
-            }
-
-            head = owner;
-        }
-
-        let owns = |window: usize| {
-            let mut at = self.windows[window]
-                .as_ref()
-                .and_then(|window| window.owner);
-
-            while let Some(owner) = at {
-                if owner == head {
-                    return true;
-                }
-
-                at = self.windows[owner].as_ref().and_then(|window| window.owner);
-            }
-
-            false
-        };
-        let mut members: Vec<usize> = self
-            .z_order
-            .iter()
-            .copied()
-            .filter(|&other| {
-                let window = self.windows[other].as_ref().expect("a window");
-
-                window.parent.is_none()
-                    && window.title_of.is_none()
-                    && other != head
-                    && (other == shown || owns(other))
-            })
-            .collect();
-
-        members.push(head);
-        members
-    }
-
     /// The windows at the top above a window at the top, the front first
     /// -- an icon's title, which goes with its icon, passed over
     /// (`showmin`): where it lies in the order, which a window hidden keeps
@@ -547,6 +496,8 @@ impl Engine {
                     &mut Param::Value(other),
                 )
                 .await?;
+
+                self.redraw_icon_left(from, from_hwnd).await?;
             }
 
             if let Some(between) = between {
@@ -589,6 +540,8 @@ impl Engine {
             self.focus_to_active(to, to_hwnd, to_min != 0, for_focus)
                 .await?;
 
+            self.redraw_icon_active().await?;
+
             // Counted, once the focus has moved (`USER.EXE` seg1 `37ee`,
             // `[112h]`): Alt and Tab's loop ends where the active window
             // changes under it. And the time noted where none is (`37f2`-
@@ -610,6 +563,50 @@ impl Engine {
         }
 
         Ok(())
+    }
+
+    /// The window active now, an icon, has its title drawn again (`USER.EXE`
+    /// seg1 `37d7`-`37e9`): the icon a title made active in its place, too
+    /// (`minact`).
+    async fn redraw_icon_active(&self) -> Result<(), Stop> {
+        let now = {
+            let system = self.system();
+
+            system.active_top().filter(|&now| {
+                system.windows[now]
+                    .as_ref()
+                    .is_some_and(|window| window.placement == Placement::Minimized)
+            })
+        };
+
+        match now {
+            Some(now) => self.redraw_icon_title(now).await,
+            None => Ok(()),
+        }
+    }
+
+    /// An icon losing the activation has its title drawn again (`USER.EXE`
+    /// seg1 `3646`-`3662`: the window at the top it is in, minimized).
+    async fn redraw_icon_left(&self, from: Option<usize>, from_hwnd: u16) -> Result<(), Stop> {
+        let icon = {
+            let system = self.system();
+            let mut top = from.filter(|_| system.window_named(from_hwnd).is_some());
+
+            while let Some(parent) = top
+                .and_then(|index| system.windows[index].as_ref())
+                .and_then(|window| window.parent)
+            {
+                top = Some(parent);
+            }
+
+            top.and_then(|top| system.windows[top].as_ref())
+                .is_some_and(|window| window.placement == Placement::Minimized)
+        };
+
+        match from {
+            Some(from) if icon => self.redraw_icon_title(from).await,
+            _ => Ok(()),
+        }
     }
 
     /// A focus left in another window at the top moved to the window made
@@ -763,10 +760,17 @@ impl Engine {
                     .as_ref()
                     .is_some_and(|window| window.parent.is_none() && window.visible)
             });
-            let mut family = if first == Some(top) {
+            // Listed as `SetWindowPos` lists the family it brings up
+            // (`family_of`; seg1 `3697`, seg7 `1836`), and each one's place
+            // before looked at among all the windows at the top, the icons'
+            // titles too: an owner whose title, kept hidden, it goes after
+            // lies after it already, and is not told (`enddlg`: O,
+            // minimized and restored before, made active again with its
+            // dialog).
+            let family = if first == Some(top) {
                 Vec::new()
             } else {
-                system.activation_family(top)
+                system.family_of(top)
             };
             let order_before: Vec<usize> = system
                 .z_order
@@ -775,7 +779,7 @@ impl Engine {
                 .filter(|&other| {
                     system.windows[other]
                         .as_ref()
-                        .is_some_and(|window| window.parent.is_none() && window.title_of.is_none())
+                        .is_some_and(|window| window.parent.is_none())
                 })
                 .collect();
             // The system-modal window goes to the very front, before the
@@ -797,8 +801,6 @@ impl Engine {
             if for_focus {
                 system.activating_for_focus = true;
             }
-
-            family.sort_by_key(|member| system.z_order.iter().position(|other| other == member));
 
             (!family.is_empty()).then_some(Between::Activate {
                 family,
@@ -1093,7 +1095,7 @@ impl Engine {
     async fn restore_from_icon(&self, hwnd: u16, index: usize, quiet: bool) -> Result<(), Stop> {
         let (rect, origin) = {
             let mut system = self.system();
-            let rect = system.leave_minimized(index)?;
+            let rect = system.leave_to_normal(index)?;
 
             (rect, system.origin_of(index))
         };
@@ -1184,7 +1186,7 @@ impl Engine {
 
         // An icon restored is asked first, and stays one if its window says
         // no (`iconclk`).
-        let from_icon = show == SW_RESTORE && placement == Placement::Minimized;
+        let mut from_icon = show == SW_RESTORE && placement == Placement::Minimized;
         let active_icon = from_icon && active;
 
         if from_icon
@@ -1195,6 +1197,56 @@ impl Engine {
             || self.gone(index)
         {
             return Ok(was);
+        }
+
+        // An icon of a window that was maximized is maximized again
+        // (`USER.EXE` seg6 `1b48`-`1b5d`: `SW_RESTORE` of a window with
+        // `WS_MINIMIZE` whose record's flag 2 is set is `SW_SHOWMAXIMIZED`;
+        // `maxcopy`).
+        let show = if from_icon && self.system().shown(index).maximized_before {
+            from_icon = false;
+            SW_SHOWMAXIMIZED
+        } else {
+            show
+        };
+
+        // A maximized window at the top that shows restored, as
+        // `MinMaximize` does it: one `SetWindowPos` to the place it had
+        // before with `SWP_FRAMECHANGED` alone, its bits copied as any
+        // `SetWindowPos` copies them -- `SWP_NOCOPYBITS` is only an icon's
+        // (seg6 `1cd9`, `1d39`); and none of the icon's focus or
+        // `WM_ACTIVATE` after (`1cc4`-`1cd6`). **Recorded** by `maxcopy`:
+        // asked 20h, `WM_GETMINMAXINFO`, `WM_NCCALCSIZE`, its frame drawn,
+        // the window beneath drawn, told 24h, and its client area, kept from
+        // its corner, not due.
+        if matches!(show, SW_RESTORE | SW_SHOWNORMAL)
+            && placement == Placement::Maximized
+            && was
+            && !child
+        {
+            let (rect, origin, quiet) = {
+                let mut system = self.system();
+                let rect = system.leave_to_normal(index)?;
+                let quiet = restoring_quietly && system.active_top().is_some();
+
+                (rect, system.origin_of(index), quiet)
+            };
+
+            if let Some([left, top, width, height]) = rect {
+                self.position_raster(
+                    hwnd,
+                    index,
+                    0,
+                    (left - origin.0) as i16,
+                    (top - origin.1) as i16,
+                    width as i16,
+                    height as i16,
+                    SWP_FRAMECHANGED | if quiet { SWP_NOACTIVATE } else { 0 },
+                )
+                .await?;
+                self.system().nudge()?;
+                return Ok(true);
+            }
         }
 
         // A window at the top that shows restored from its icon, as
@@ -1293,7 +1345,15 @@ impl Engine {
         let zooming = show == SW_SHOWMAXIMIZED && placement != Placement::Maximized;
 
         if zooming {
-            flags = (flags & !(SWP_NOSIZE | SWP_NOMOVE)) | SWP_FRAMECHANGED;
+            // From an icon, nothing of its bits copied (seg6 `1cd9`;
+            // `maxcopy`: 120h).
+            flags = (flags & !(SWP_NOSIZE | SWP_NOMOVE))
+                | SWP_FRAMECHANGED
+                | if placement == Placement::Minimized {
+                    SWP_NOCOPYBITS
+                } else {
+                    0
+                };
 
             if was {
                 flags &= !SWP_SHOWWINDOW;
@@ -1842,17 +1902,14 @@ impl Engine {
             }
         }
 
-        if minimized {
-            self.title_made(hwnd, index).await?;
-        }
+        let title_new = minimized && self.title_made(hwnd, index).await?;
 
         if changes && !hiding && minimized {
-            self.title_shown(hwnd, index, flags & SWP_NOACTIVATE == 0)
-                .await?;
+            self.title_shown(hwnd, index, title_new).await?;
         } else if placed_and_told {
             // Its title shown once the activation has moved on (seg6
             // `1e16`-`1e27`, seg1 `6e25`).
-            self.title_shown(hwnd, index, false).await?;
+            self.title_shown(hwnd, index, title_new).await?;
         }
 
         // Hidden, a window that has the focus itself gives it to its parent,
@@ -1897,25 +1954,25 @@ impl Engine {
     /// asks only the first. What a hook answers is not followed: Windows
     /// would take the title apart as it takes any window refused
     /// (`cbteat`).
-    async fn title_made(&self, hwnd: u16, index: usize) -> Result<(), Stop> {
+    async fn title_made(&self, hwnd: u16, index: usize) -> Result<bool, Stop> {
         let (title, instance) = {
             let mut system = self.system();
             let Some(window) = system.windows[index].as_mut() else {
-                return Ok(());
+                return Ok(false);
             };
 
             if window.title_asked {
-                return Ok(());
+                return Ok(false);
             }
 
             let (title, instance) = (window.icon_title, window.instance);
             let Some(title) = title.and_then(|title| system.windows[title].as_ref()) else {
-                return Ok(());
+                return Ok(false);
             };
             let title = title.hwnd;
 
             if title == 0 {
-                return Ok(());
+                return Ok(false);
             }
 
             if let Some(window) = system.windows[index].as_mut() {
@@ -1940,29 +1997,48 @@ impl Engine {
         create.extend_from_slice(&0x8004u32.to_le_bytes());
         create.extend_from_slice(&0u32.to_le_bytes());
         self.ask_cbt_create(title, &create).await?;
-        Ok(())
+        Ok(true)
     }
 
-    /// An icon's title made and shown: its window asked for its text, 80
-    /// characters, as the title is made and again as it is drawn; and, when
-    /// the icon was not made active, the icon asked to go after its title,
-    /// which it already does -- nothing more is sent (`showmin`).
-    async fn title_shown(&self, hwnd: u16, index: usize, activated: bool) -> Result<(), Stop> {
-        self.title_made(hwnd, index).await?;
+    /// An icon's title shown, as `ShowIconTitle` shows it (`USER.EXE` seg1
+    /// `6e25`-`6e99`): made the first time (`title_made`); sent
+    /// `WM_SHOWWINDOW`, which measures its window's text, 80 characters
+    /// (`6d67`, `6b43`); then put after the window before its icon with
+    /// `SWP_SHOWWINDOW | SWP_NOACTIVATE`, its icon asked to go after it as a
+    /// window it owns (seg7 `16da`-`16ed`), or shown where it lies,
+    /// `SWP_NOZORDER`, where it is that window already. A title kept since
+    /// the icon was last one moved with it, and lies there (`minact`: B
+    /// minimized again asks nothing); one made now lies at the front, after
+    /// the topmost windows, as `CreateWindow` puts it, so is just before an
+    /// icon at the front alone (`showmin`). Shown, it is drawn as
+    /// `SetWindowPos` ends, with the titles due before it
+    /// (`paint_due_titles`). The TypeScript engine's `titleShown`.
+    async fn title_shown(&self, hwnd: u16, index: usize, made_now: bool) -> Result<(), Stop> {
+        let made = self.title_made(hwnd, index).await? || made_now;
 
         self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
             .await?;
 
-        let title = {
+        let (title, title_index, first) = {
             let system = self.system();
-
-            system.windows[index]
+            let title_index = system.windows[index]
                 .as_ref()
-                .and_then(|window| window.icon_title)
-                .map_or(0, |title| system.hwnd_of(title))
+                .and_then(|window| window.icon_title);
+            let first = system.z_order.iter().copied().find(|&other| {
+                Some(other) != title_index
+                    && system.windows[other]
+                        .as_ref()
+                        .is_some_and(|window| window.parent.is_none() && !window.topmost)
+            });
+
+            (
+                title_index.map_or(0, |title| system.hwnd_of(title)),
+                title_index,
+                first,
+            )
         };
 
-        if !activated && title != 0 {
+        if made && title != 0 && first != Some(index) {
             self.send_message(
                 hwnd,
                 WM_WINDOWPOSCHANGING,
@@ -1977,9 +2053,18 @@ impl Engine {
             .await?;
         }
 
-        self.send_message(hwnd, WM_GETTEXT, 0x50, &mut Param::Struct(vec![0; 80]))
-            .await?;
-        Ok(())
+        if let Some(title) = title_index {
+            let mut system = self.system();
+
+            if system.windows[title]
+                .as_ref()
+                .is_some_and(|window| window.visible)
+            {
+                system.shown_mut(title).title_due = true;
+            }
+        }
+
+        self.paint_due_titles().await
     }
 
     /// A window minimized to the first free place among the icons and put
@@ -2025,6 +2110,47 @@ impl Engine {
             | SWP_NOCOPYBITS
             | if show { SWP_SHOWWINDOW } else { 0 }
             | if last.is_some() { 0 } else { SWP_NOZORDER };
+        // Moved among the windows, the windows it owns go first -- its
+        // icon's title, kept hidden since it was last an icon, among them
+        // -- each after the one before, and it after the last of them
+        // (`USER.EXE` seg7 `12af`, `16da`-`16ed`; `minact`: minimized
+        // again, B goes after its title).
+        let before: Vec<u16> = {
+            let system = self.system();
+            let family = if last.is_some() {
+                system.family_of(index)
+            } else {
+                vec![index]
+            };
+            let at = family
+                .iter()
+                .position(|&member| member == index)
+                .unwrap_or(0);
+
+            family[..at]
+                .iter()
+                .map(|&member| system.hwnd_of(member))
+                .collect()
+        };
+        let mut named = after;
+
+        for member_hwnd in before {
+            self.send_message(
+                member_hwnd,
+                WM_WINDOWPOSCHANGING,
+                0,
+                &mut Param::Struct(window_pos(
+                    member_hwnd,
+                    named,
+                    [0; 4],
+                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE,
+                )),
+            )
+            .await?;
+            named = member_hwnd;
+        }
+
+        let after = named;
 
         {
             let mut system = self.system();
@@ -2172,10 +2298,10 @@ impl System {
     /// `SW_SHOWMINNOACTIVE` (`USER.EXE` seg6 `1b70`-`1b7d`, `1e58`-`1e89`):
     /// after the last of the brothers beneath it owned as it is, before the
     /// first whose being topmost differs from its; none, where none is, and
-    /// it stays where it lies. An icon's title hidden is taken for owned by
-    /// none (`minact`: a window minimized again goes after its title, left
-    /// hidden beneath the windows as it was restored). The TypeScript
-    /// engine's `minimizedAfter`.
+    /// it stays where it lies. An icon's title is owned by its icon, so is
+    /// none of its brothers': `minact`'s B, minimized again, is named to go
+    /// after its title only as the title, a window it owns, goes first
+    /// (`minimize_to_bottom`). The TypeScript engine's `minimizedAfter`.
     pub(crate) fn minimized_after(&self, index: usize) -> Option<usize> {
         let window = self.windows[index].as_ref().expect("a window");
         let (parent, owner, topmost) = (window.parent, window.owner, window.topmost);
@@ -2199,7 +2325,8 @@ impl System {
                 break;
             }
 
-            if one.owner == owner {
+            // An icon's title is owned by its icon (seg1 `6afc`-`6b20`).
+            if one.owner.or(one.title_of) == owner {
                 last = Some(other);
             }
         }
