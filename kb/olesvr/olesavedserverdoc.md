@@ -6,7 +6,7 @@ ordinal: 10
 summary: "A document saved: each object's `/Save` advises sent."
 versions:
   '3.1': exact
-probes: [olesrv]
+probes: [olesrv, oleitem]
 source: src/win16/olesvr/server.ts
 topics: [ole]
 ---
@@ -14,6 +14,7 @@ topics: [ole]
 ## Observed behaviour
 
 - [[measured]] [[probe:olesrv]]: for each object in the order given, its data is asked for in each format advised and sent to each conversation that advised the object for `/Save`, as [[fn:OLESVR.ITEMCALLBACK]] does for `OLE_SAVED`; then `OLE_OK`. Nought, `OLE_ERROR_HANDLE`.
+- [[measured]] [[probe:oleitem]]: an embedded document with objects no client advised for `/Save` answers 52, `OLE_ERROR_CANT_UPDATE_CLIENT`, having sent the others. [[read out]] `OLESVR.DLL` seg3 `14ba`-`1525`: each item window is handed [[fn:OLESVR.FINDITEMWND]] to be told saved, and an embedded document one of whose saves reached no client gives that answer.
 
 ## Implementation
 

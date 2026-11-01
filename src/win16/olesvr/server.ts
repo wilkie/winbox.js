@@ -6,6 +6,7 @@ import { DWORD, UINT } from '../types.js';
 import {
   ACK,
   ADVISE_ACK_REQ,
+  ADVISE_DEFER,
   CF_BITMAP,
   CF_METAFILEPICT,
   CF_PALETTE,
@@ -31,7 +32,33 @@ import {
   RECT_AT,
   REG_SIZE,
   REG_VALUE,
-  type Advise,
+  DELETECLIENTINFO,
+  DESTROY_ITEM,
+  DOC_TEXT,
+  ENUMFORTERMINATE,
+  FIND_ITEM,
+  FINDITEMWND,
+  FORGET_CLIENT,
+  GMEM_ZEROINIT,
+  INFO_CLIENT,
+  INFO_DATA,
+  INFO_FORMAT,
+  INFO_NATIVE,
+  INFO_WHENS,
+  ITEM_ATOM,
+  ITEM_HANDLE,
+  ITEM_HWND,
+  ITEM_OBJECT,
+  ITEM_SIZE,
+  ITEM_TEXT,
+  ITEM_VTBL,
+  OLE_ERROR_CANT_UPDATE_CLIENT,
+  SENDDATAMSG,
+  SENDRENAMEMSG,
+  TELL_SAVED,
+  TERMINATECLIENTS,
+  TERMINATEDOCCLIENTS,
+  WHENS,
   type Server,
   type SvrDoc,
   type SvrObject,
@@ -52,11 +79,22 @@ import {
  * OLE 1.0's server library as WinBox's own: the server's side of the DDE
  * conversations a client's `OLECLI` holds with it, over the methods of the
  * server's `OLESERVER`, `OLESERVERDOC` and `OLEOBJECT` tables. Written from
- * OLE 1.0's documented interface and protocol and from what the probe
- * `olesrv` measured under DOSBox -- the messages on the wire and the
- * methods the server is called with, in their order -- not from the code
- * of `OLESVR.DLL` (`kb/topics/ole.md`). As
- * `crates/winbox-win16/src/olesvr/server.rs`.
+ * OLE 1.0's documented interface and protocol and from what the probes
+ * `olesrv` and `oleitem` measured under DOSBox -- the messages on the
+ * wire, the methods the server is called with, in their order, and the
+ * windows and properties a client's conversation leaves -- not from the
+ * code of `OLESVR.DLL` (`kb/topics/ole.md`). Where a read-out of the file
+ * settled what no probe could -- which of its internal procedures does
+ * what, and the fields of what it keeps -- it is cited and described.
+ *
+ * Its clients are kept as the file keeps them: each conversation as a
+ * property of its server's or document's window, named `@` and the
+ * client's window in four hex digits; each object as a window of
+ * `ItemWndClass` beneath its document's, its words the `OLECLIENT` the
+ * object was given; and what each client asked of an item as that
+ * client's property on the item's window. USER's `EnumProps` and
+ * `EnumChildWindows` walk them, calling the internal exports as the file
+ * does. As `crates/winbox-win16/src/olesvr/server.rs`.
  */
 
 /** The methods of `OLESERVERVTBL`, `OLESERVERDOCVTBL` and `OLEOBJECTVTBL` (ole.h), by their slots. */
@@ -196,18 +234,30 @@ export async function start(svr: Svr, address: (ordinal: number) => number, inst
   }
 
   svr.w32(svr.near(CLIENT_VTBL), address(26));
+
+  for (const ordinal of [
+    SENDDATAMSG,
+    FINDITEMWND,
+    TERMINATECLIENTS,
+    TERMINATEDOCCLIENTS,
+    DELETECLIENTINFO,
+    SENDRENAMEMSG,
+    ENUMFORTERMINATE,
+  ]) {
+    state.procs[ordinal] = address(ordinal);
+  }
 }
 
 // Windows and messages.
 
-async function makeWindow(svr: Svr, klass: string, style: number, parent: number) {
+async function makeWindow(svr: Svr, klass: string, title: string, style: number, parent: number) {
   const at = svr.near(CLASS_NAME);
 
   svr.write(at, [...bytesOf(klass), 0]);
   return (
     (await svr.user('CreateWindow', [
       D(at),
-      text([]),
+      text(bytesOf(title)),
       D(style),
       W(0),
       W(0),
@@ -254,6 +304,43 @@ async function blockBytes(svr: Svr, handle: number, skip = 0): Promise<number[]>
 }
 
 const word = (value: number) => [value & 0xff, (value >> 8) & 0xff];
+
+// What it keeps on windows.
+
+/** A client's property's name on a window of OLESVR's: `@` and its window in four hex digits, capitals (read out, seg3 `358c`-`35e6`). */
+function propName(client: number): number[] {
+  return bytesOf(`@${(client & 0xffff).toString(16).toUpperCase().padStart(4, '0')}`);
+}
+
+async function setProp(svr: Svr, hwnd: number, client: number, data: number) {
+  return svr.user('SetProp', [W(hwnd), text(propName(client)), W(data)]);
+}
+
+async function getProp(svr: Svr, hwnd: number, client: number) {
+  return (await svr.user('GetProp', [W(hwnd), text(propName(client))])) & 0xffff;
+}
+
+async function removeProp(svr: Svr, hwnd: number, client: number) {
+  return svr.user('RemoveProp', [W(hwnd), text(propName(client))]);
+}
+
+/** A window's properties each handed one of OLESVR's procedures, as the file walks them. */
+async function eachProp(svr: Svr, hwnd: number, ordinal: number) {
+  await svr.user('EnumProps', [W(hwnd), D(svr.svr().procs[ordinal])]);
+}
+
+/** A document's items each handed `FINDITEMWND`, with a request and its word. */
+async function eachItem(svr: Svr, doc: SvrDoc, request: number, value: number) {
+  await svr.user('EnumChildWindows', [
+    W(doc.hwnd),
+    D(svr.svr().procs[FINDITEMWND]),
+    D(long(value, request)),
+  ]);
+}
+
+async function isWindow(svr: Svr, hwnd: number) {
+  return (hwnd & 0xffff) !== 0 && (await svr.user('IsWindow', [W(hwnd)])) !== 0;
+}
 
 // The protocol's commands.
 
@@ -404,13 +491,17 @@ export async function registerServer(
     return OLE_ERROR_CLASS;
   }
 
-  const hwnd = await makeWindow(svr, 'SrvrWndClass', 0, 0);
+  const hwnd = await makeWindow(svr, 'SrvrWndClass', '', 0, 0);
+  const record = svr.newRecord(server);
 
+  await svr.user('SetWindowLong', [W(hwnd), W(0), D(record)]);
   svr.svr().servers.set(hwnd, {
     hwnd,
     klass: name,
     pointer: server,
+    record,
     multi: (use & 0xffff) === OLE_SERVER_MULTI,
+    fresh: false,
     docs: [],
     convs: [],
     blocked: false,
@@ -423,21 +514,30 @@ export async function registerServer(
 
 /** A document's window made, the document kept as the server's. */
 async function newDoc(svr: Svr, server: Server, name: number[]): Promise<SvrDoc> {
-  const hwnd = await makeWindow(svr, 'DocWndClass', WS_CHILD, server.hwnd);
-  const doc: SvrDoc = {
+  const hwnd = await makeWindow(svr, 'DocWndClass', DOC_TEXT, WS_CHILD, server.hwnd);
+  const record = svr.newRecord(0);
+
+  await svr.user('SetWindowLong', [W(hwnd), W(0), D(record)]);
+
+  return {
     hwnd,
     server: server.hwnd,
     name,
     doc: 0,
+    record,
     convs: [],
     objects: [],
-    advises: [],
     named: [],
     target: null,
+    embedded: false,
     revoking: false,
   };
+}
 
-  return doc;
+/** A document's pointer kept, and in its window words' record. */
+function docPointer(svr: Svr, doc: SvrDoc, pointer: number) {
+  doc.doc = pointer;
+  svr.w32(doc.record, pointer);
 }
 
 function keepDoc(svr: Svr, server: Server, doc: SvrDoc) {
@@ -450,7 +550,7 @@ export async function registerServerDoc(
   svr: Svr,
   handle: number,
   name: number,
-  docPointer: number,
+  pointer: number,
   out: number
 ) {
   const server = serverOf(svr, handle);
@@ -461,7 +561,7 @@ export async function registerServerDoc(
 
   const doc = await newDoc(svr, server, svr.string(name));
 
-  doc.doc = docPointer;
+  docPointer(svr, doc, pointer);
   keepDoc(svr, server, doc);
   svr.w32(out, doc.hwnd);
   return OLE_OK;
@@ -480,18 +580,38 @@ async function releaseDoc(svr: Svr, doc: SvrDoc) {
 
   await method(svr, doc.doc, DOC.Release, []);
   await svr.user('DestroyWindow', [W(doc.hwnd)]);
+  svr.freeRecord(doc.record);
 
   if (server?.revoking) {
     await finishServer(svr, server);
+  } else if (server) {
+    await releaseIdle(svr, server);
   }
 }
 
-/** An object let go: its `Release` called, its client and advises forgotten. */
+/**
+ * An object let go, its item with it (read out, seg3 `2164`-`222b`): its
+ * `Release`; the item's atom deleted; its window's words cleared; each
+ * client's property handed `DELETECLIENTINFO`; its window destroyed; its
+ * block unlocked and freed.
+ */
 async function releaseObject(svr: Svr, doc: SvrDoc, object: SvrObject) {
+  const state = svr.svr();
+
   doc.objects = doc.objects.filter((each) => each !== object);
-  doc.advises = doc.advises.filter((advise) => advise.object !== object);
-  svr.freeClient(object.client);
+  state.clients.delete(object.client);
   await method(svr, object.object, OBJECT.Release, []);
+
+  if (object.atom) {
+    await svr.deleteAtom(object.atom);
+  }
+
+  await svr.user('SetWindowLong', [W(object.hwnd), W(0), D(0)]);
+  state.ending = false;
+  await eachProp(svr, object.hwnd, DELETECLIENTINFO);
+  await svr.user('DestroyWindow', [W(object.hwnd)]);
+  await svr.globalUnlock(object.handle);
+  await svr.globalFree(object.handle);
 }
 
 /**
@@ -529,6 +649,34 @@ export async function revokeServerDoc(svr: Svr, handle: number) {
   return revokeDoc(svr, doc);
 }
 
+/**
+ * A server no client is connected to told so by its `Release`, as a
+ * client ends its last conversation or a document goes (read out, seg3
+ * `1024`-`108b`, called from `0969`, `1636` and `18ce`): unless a document
+ * was just made for a client that has yet to begin its conversation, or
+ * a system conversation or any document's is left. The server stays
+ * registered (**recorded** by `oleitem`: its `Release` as the system
+ * conversation ends, and again at `OleRevokeServer`).
+ */
+async function releaseIdle(svr: Svr, server: Server) {
+  if (server.fresh) {
+    server.fresh = false;
+    return;
+  }
+
+  if (server.convs.length) {
+    return;
+  }
+
+  for (const hwnd of server.docs) {
+    if (docOf(svr, hwnd)?.convs.length) {
+      return;
+    }
+  }
+
+  await method(svr, server.pointer, SERVER.Release, []);
+}
+
 /** A server let go once nothing of it is left: its `Release`, its window. */
 async function finishServer(svr: Svr, server: Server) {
   if (server.convs.length || server.docs.length || !svr.svr().servers.has(server.hwnd)) {
@@ -538,6 +686,7 @@ async function finishServer(svr: Svr, server: Server) {
   svr.svr().servers.delete(server.hwnd);
   await method(svr, server.pointer, SERVER.Release, []);
   await svr.user('DestroyWindow', [W(server.hwnd)]);
+  svr.freeRecord(server.record);
 }
 
 /**
@@ -624,6 +773,7 @@ export async function renameServerDoc(svr: Svr, handle: number, name: number) {
   }
 
   doc.name = svr.string(name);
+  doc.embedded = false;
   await tellName(svr, doc, doc.name);
   return OLE_OK;
 }
@@ -633,7 +783,12 @@ export function revertServerDoc(svr: Svr, handle: number) {
   return docOf(svr, handle) && !(handle >>> 16) ? OLE_OK : OLE_ERROR_HANDLE;
 }
 
-/** `OleSavedServerDoc`: each object's `/Save` advises told, in the order the objects were given. */
+/**
+ * `OleSavedServerDoc`: each item with an object handed `FINDITEMWND` to
+ * be told saved, in the order made (read out, seg3 `14ba`-`1525`); an
+ * embedded document one of whose objects no client was sent at a save
+ * answers `OLE_ERROR_CANT_UPDATE_CLIENT` (**recorded** by `oleitem`).
+ */
 export async function savedServerDoc(svr: Svr, handle: number) {
   const doc = docOf(svr, handle);
 
@@ -641,11 +796,10 @@ export async function savedServerDoc(svr: Svr, handle: number) {
     return OLE_ERROR_HANDLE;
   }
 
-  for (const object of [...doc.objects]) {
-    await tell(svr, doc, object, 'Save');
-  }
+  svr.svr().saved = true;
+  await eachItem(svr, doc, TELL_SAVED, 0);
 
-  return OLE_OK;
+  return doc.embedded && !svr.svr().saved ? OLE_ERROR_CANT_UPDATE_CLIENT : OLE_OK;
 }
 
 /**
@@ -661,8 +815,7 @@ export async function revokeObject(svr: Svr, client: number) {
     return OLE_ERROR_ADDRESS;
   }
 
-  const convs = doc.advises.filter((a) => a.object === found.object).map((a) => a.conv);
-  const given = [...new Set([...found.object.convs, ...convs])];
+  const given = [...found.object.convs];
 
   await releaseObject(svr, doc, found.object);
 
@@ -678,7 +831,11 @@ export async function revokeObject(svr: Svr, client: number) {
 
 /**
  * `ITEMCALLBACK`, the method of the `OLECLIENT` an object is given: what
- * its server tells of it sent to the conversations that advised it.
+ * its server tells of it sent to the clients that advised it -- its
+ * item's properties each handed `SENDDATAMSG` with the time (read out,
+ * seg3 `2c04`-`2c4e`). A save that reached no client of an embedded
+ * document answers `OLE_ERROR_CANT_UPDATE_CLIENT` (**recorded** by
+ * `oleitem`).
  */
 export async function itemCallback(svr: Svr, client: number, what: number, _object: number) {
   const found = svr.svr().clients.get(client >>> 0);
@@ -688,12 +845,18 @@ export async function itemCallback(svr: Svr, client: number, what: number, _obje
     return OLE_OK;
   }
 
-  if (what === OLE_CHANGED) {
-    await tell(svr, doc, found.object, 'Change');
-  } else if (what === OLE_SAVED) {
-    await tell(svr, doc, found.object, 'Save');
-  } else if (what === OLE_CLOSED) {
-    await tell(svr, doc, found.object, 'Close');
+  if (what === OLE_CHANGED || what === OLE_SAVED || what === OLE_CLOSED) {
+    const state = svr.svr();
+    const when = what === OLE_CHANGED ? 'Change' : what === OLE_SAVED ? 'Save' : 'Close';
+
+    state.when = WHENS[when];
+    state.object = found.object.object;
+    state.sent = false;
+    await eachProp(svr, found.object.hwnd, SENDDATAMSG);
+
+    if (what === OLE_SAVED && doc.embedded && !state.sent) {
+      return OLE_ERROR_CANT_UPDATE_CLIENT;
+    }
   } else if (what === OLE_RENAMED) {
     const link = svr.svr().formats.ObjectLink;
 
@@ -708,6 +871,7 @@ export async function itemCallback(svr: Svr, client: number, what: number, _obje
 
         await svr.globalFree(handle);
         doc.name = name;
+        doc.embedded = false;
         await tellName(svr, doc, name);
       }
     }
@@ -731,56 +895,91 @@ async function tellName(svr: Svr, doc: SvrDoc, name: number[]) {
   }
 }
 
-/**
- * What a conversation advised of an object for a time -- `Change`, `Save`
- * or `Close` -- sent: every format it advised of the object, each asked of
- * it in turn, the item named as it was advised (**recorded** by
- * `olesrv`: an item advised for a change in two formats and for a save in
- * one is sent in both when saved).
- */
-async function tell(svr: Svr, doc: SvrDoc, object: SvrObject, when: string) {
-  for (const advise of doc.advises.filter((a) => a.object === object && a.whens.has(when))) {
-    for (const format of advise.formats) {
-      const data = await dataBlock(svr, doc, object, format, DATA_ADVISED);
+/** An item's name as data is sent of it at a time: the item, and `/Save` or `/Close` after it. */
+function itemAt(item: number[], when: number): number[] {
+  const name = Object.keys(WHENS).find((each) => WHENS[each] === when) ?? 'Change';
 
-      if (!data) {
-        continue;
-      }
-
-      const item = when === 'Change' ? object.item : [...object.item, 0x2f, ...bytesOf(when)];
-      const atom = await svr.addAtomText(item);
-
-      await post(svr, advise.conv, WM_DDE_DATA, doc.hwnd, long(data, atom));
-    }
-  }
+  return when === WHENS.Change ? item : [...item, 0x2f, ...bytesOf(name)];
 }
 
 // What a server's object is asked.
 
-/** An object of a document by its item, asked for once (**recorded** by `olesrv`); null where its document refuses. */
-async function objectOf(svr: Svr, doc: SvrDoc, item: number[], conv: number) {
-  let object = doc.objects.find((each) => same(each.item, item));
+/** An item's window found by its atom, `FINDITEMWND` handed each (read out, seg3 `1f00`-`1f38`): its object, or none. */
+async function findItem(svr: Svr, doc: SvrDoc, item: number[]) {
+  const atom = item.length ? (await svr.user('GlobalFindAtom', [text(item)])) & 0xffff : 0;
+  const state = svr.svr();
 
-  if (!object) {
-    const client = svr.newClient();
-    const out = svr.outArg();
-    const status = await method(svr, doc.doc, DOC.GetObject, [
-      [svr.stringArg(item), FAR],
-      [out, FAR],
-      [client, FAR],
-    ]);
+  state.found = 0;
+  await eachItem(svr, doc, FIND_ITEM, atom);
+  return doc.objects.find((each) => each.hwnd === state.found) ?? null;
+}
 
-    if (status !== OLE_OK || !svr.r32(out)) {
-      svr.freeClient(client);
-      return null;
-    }
+/**
+ * An item made: its block, `GMEM_MOVEABLE | GMEM_ZEROINIT |
+ * GMEM_DDESHARE`, locked; the item's atom; the block given its document's
+ * `GetObject` as the object's `OLECLIENT`; then its window, its words the
+ * block (read out, seg3 `1feb`-`2108`; **recorded** by `oleitem`). Null
+ * where the document gives no object.
+ */
+async function newItem(svr: Svr, doc: SvrDoc, item: number[]) {
+  const handle = await svr.globalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT | GMEM_DDESHARE, ITEM_SIZE);
+  const client = handle ? await svr.globalLock(handle) : 0;
 
-    object = { item, object: svr.r32(out), client, targeted: false, convs: [] };
-    doc.objects.push(object);
-    svr.svr().clients.set(client, { doc: doc.hwnd, object });
+  if (!client) {
+    return null;
   }
 
-  if (!object.convs.includes(conv)) {
+  const atom = item.length ? await svr.addAtomText(item) : 0;
+
+  svr.w32(plus(client, ITEM_VTBL), svr.near(CLIENT_VTBL));
+  svr.w16(plus(client, ITEM_HANDLE), handle);
+  svr.w16(plus(client, ITEM_ATOM), atom);
+
+  const out = svr.outArg();
+  const status = await method(svr, doc.doc, DOC.GetObject, [
+    [svr.stringArg(item), FAR],
+    [out, FAR],
+    [client, FAR],
+  ]);
+
+  if (status !== OLE_OK || !svr.r32(out)) {
+    if (atom) {
+      await svr.deleteAtom(atom);
+    }
+
+    await svr.globalUnlock(handle);
+    await svr.globalFree(handle);
+    return null;
+  }
+
+  svr.w32(plus(client, ITEM_OBJECT), svr.r32(out));
+
+  const hwnd = await makeWindow(svr, 'ItemWndClass', ITEM_TEXT, WS_CHILD, doc.hwnd);
+
+  svr.w16(plus(client, ITEM_HWND), hwnd);
+  await svr.user('SetWindowLong', [W(hwnd), W(0), D(client)]);
+
+  const object: SvrObject = {
+    item,
+    object: svr.r32(out),
+    client,
+    handle,
+    atom,
+    hwnd,
+    targeted: false,
+    convs: [],
+  };
+
+  doc.objects.push(object);
+  svr.svr().clients.set(client, { doc: doc.hwnd, object });
+  return object;
+}
+
+/** An object of a document by its item, asked for once (**recorded** by `olesrv`); null where its document refuses. */
+async function objectOf(svr: Svr, doc: SvrDoc, item: number[], conv: number) {
+  const object = (await findItem(svr, doc, item)) ?? (await newItem(svr, doc, item));
+
+  if (object && !object.convs.includes(conv)) {
     object.convs.push(conv);
   }
 
@@ -903,8 +1102,10 @@ export async function docWndProc(
  * `WM_DDE_INITIATE` broadcast, which only a top-level window is sent: the
  * class's system topic answered by its server's window, `OLEsystem` and
  * not `System`, and only where it may take a document -- a server of
- * `OLE_SERVER_MULTI` with one takes no more; a document's name by the
- * document's window (**recorded** by `olesrv`).
+ * `OLE_SERVER_MULTI` with one, or with a system conversation already,
+ * takes no more; a document's name by the document's window (**recorded**
+ * by `olesrv` and `oleitem`). The conversation kept as the client's
+ * property of the window that answered, its datum the client's window.
  */
 async function initiated(svr: Svr, server: Server, client: number, app: number, topic: number) {
   const appName = await atomText(svr, app);
@@ -917,7 +1118,7 @@ async function initiated(svr: Svr, server: Server, client: number, app: number, 
   let from = 0;
 
   if (same(topicName, bytesOf('OLEsystem'))) {
-    if (!server.multi || !server.docs.length) {
+    if (!server.multi || (!server.docs.length && !server.convs.length)) {
       from = server.hwnd;
       server.convs.push(client);
     }
@@ -930,6 +1131,11 @@ async function initiated(svr: Svr, server: Server, client: number, app: number, 
       from = doc.hwnd;
       doc.convs.push(client);
     }
+  }
+
+  if (from) {
+    server.fresh = false;
+    await setProp(svr, from, client, client);
   }
 
   if (from) {
@@ -981,20 +1187,37 @@ async function terminated(svr: Svr, hwnd: number, client: number) {
   }
 
   if (server) {
+    if (server.convs.includes(client)) {
+      await removeProp(svr, hwnd, client);
+    }
+
+    const was = server.convs.includes(client);
+
     server.convs = server.convs.filter((conv) => conv !== client);
 
     if (server.revoking) {
       await finishServer(svr, server);
+    } else if (was) {
+      await releaseIdle(svr, server);
     }
   }
 
   if (doc) {
+    if (doc.convs.includes(client)) {
+      await removeProp(svr, hwnd, client);
+      await eachItem(svr, doc, FORGET_CLIENT, client);
+    }
+
+    const was = doc.convs.includes(client);
+    const owner = svr.svr().servers.get(doc.server);
+
     doc.convs = doc.convs.filter((conv) => conv !== client);
-    doc.advises = doc.advises.filter((advise) => advise.conv !== client);
     doc.named = doc.named.filter((conv) => conv !== client);
 
     if (doc.revoking && !doc.convs.length) {
       await releaseDoc(svr, doc);
+    } else if (!doc.revoking && was && owner && !owner.revoking) {
+      await releaseIdle(svr, owner);
     }
   }
 }
@@ -1058,11 +1281,16 @@ async function systemCommand(svr: Svr, server: Server, command: Command): Promis
 
   if (status !== OLE_OK || !svr.r32(out)) {
     await svr.user('DestroyWindow', [W(doc.hwnd)]);
+    svr.freeRecord(doc.record);
     return false;
   }
 
-  doc.doc = svr.r32(out);
+  docPointer(svr, doc, svr.r32(out));
+  /* Made for a client to embed, not opened from a file (read out, seg3
+   * `0dda`-`0e0d`): what `OleSavedServerDoc` and a save hold it to. */
+  doc.embedded = slot !== SERVER.Open;
   keepDoc(svr, server, doc);
+  server.fresh = true;
   return true;
 }
 
@@ -1174,11 +1402,51 @@ async function docRequest(svr: Svr, doc: SvrDoc, client: number, format: number,
 }
 
 /**
+ * What a client advised of an item, kept in its block, the datum of its
+ * property on the item's window (read out, seg3 `26a9`-`2735`): native
+ * data marked, any other format in place of the last; the time's bit
+ * added; whether data goes with it, as the advise asks. The property set
+ * again, last of the window's (**recorded** by `oleitem`: native data is
+ * sent first, then the one other format last advised).
+ */
+async function advised(
+  svr: Svr,
+  object: SvrObject,
+  client: number,
+  format: number,
+  flags: number,
+  when: string
+) {
+  let info = await getProp(svr, object.hwnd, client);
+
+  if (!svr.isInfo(info)) {
+    info = svr.newInfo();
+  }
+
+  svr.setInfo(info, INFO_CLIENT, client);
+
+  if (format === svr.svr().formats.Native) {
+    svr.setInfo(info, INFO_NATIVE, 1);
+  } else {
+    svr.setInfo(info, INFO_FORMAT, format);
+  }
+
+  if (when in WHENS) {
+    svr.setInfo(info, INFO_WHENS, svr.info(info, INFO_WHENS) | (1 << WHENS[when]));
+  }
+
+  svr.setInfo(info, INFO_DATA, flags & ADVISE_DEFER ? 0 : 1);
+  await removeProp(svr, object.hwnd, client);
+  await setProp(svr, object.hwnd, client, info);
+}
+
+/**
  * An advise of a document's item: `StdDocumentName` kept; else the
- * object's formats enumerated until the one advised, and the format and
- * when kept. Acknowledged only where the advise asks its data be
- * acknowledged (**recorded** by `olesrv`: an advise without `fAckReq` is
- * answered with nothing); refused where there is no such item.
+ * object's formats enumerated until the one advised, and what was asked
+ * kept on the item's window (`advised`). Acknowledged only where the
+ * advise asks its data be acknowledged (**recorded** by `olesrv`: an
+ * advise without `fAckReq` is answered with nothing); refused where there
+ * is no such item.
  */
 async function docAdvise(svr: Svr, doc: SvrDoc, client: number, options: number, item: number) {
   const name = await atomText(svr, item);
@@ -1201,20 +1469,7 @@ async function docAdvise(svr: Svr, doc: SvrDoc, client: number, options: number,
       return;
     }
 
-    let advise: Advise | undefined = doc.advises.find(
-      (each) => each.conv === client && each.object === object
-    );
-
-    if (!advise) {
-      advise = { conv: client, object, formats: [], whens: new Set() };
-      doc.advises.push(advise);
-    }
-
-    if (!advise.formats.includes(format)) {
-      advise.formats.push(format);
-    }
-
-    advise.whens.add(when);
+    await advised(svr, object, client, format, flags, when);
   }
 
   await svr.globalFree(options);
@@ -1226,23 +1481,27 @@ async function docAdvise(svr: Svr, doc: SvrDoc, client: number, options: number,
   }
 }
 
-/** An unadvise: the format, or every format where it names none, no longer sent. */
-async function docUnadvise(svr: Svr, doc: SvrDoc, client: number, format: number, item: number) {
+/**
+ * An unadvise (read out, seg3 `24bc`-`2586`): of the document itself, the
+ * client forgotten by every item, `FINDITEMWND` handed each; of an item,
+ * the time's bit taken from the client's block, whatever the format --
+ * its property stays (**recorded** by `oleitem`: native data is no longer
+ * sent once another format is unadvised).
+ */
+async function docUnadvise(svr: Svr, doc: SvrDoc, client: number, _format: number, item: number) {
   const name = await atomText(svr, item);
 
   if (same(name, bytesOf('StdDocumentName'))) {
     doc.named = doc.named.filter((conv) => conv !== client);
+  } else if (!name.length) {
+    await eachItem(svr, doc, FORGET_CLIENT, client);
   } else {
-    const [base] = itemWhen(name);
+    const [base, when] = itemWhen(name);
+    const object = await findItem(svr, doc, base);
+    const info = object ? await getProp(svr, object.hwnd, client) : 0;
 
-    for (const advise of doc.advises) {
-      if (advise.conv === client && same(advise.object.item, base)) {
-        advise.formats = format ? advise.formats.filter((each) => each !== format) : [];
-
-        if (!format) {
-          advise.whens.clear();
-        }
-      }
+    if (svr.isInfo(info) && when in WHENS) {
+      svr.setInfo(info, INFO_WHENS, svr.info(info, INFO_WHENS) & ~(1 << WHENS[when]));
     }
   }
 
@@ -1310,4 +1569,191 @@ async function docPoke(svr: Svr, doc: SvrDoc, client: number, data: number, item
   }
 
   await ack(svr, client, doc.hwnd, status === OLE_OK ? ACK : NACK, item);
+}
+
+// The procedures it hands USER, its internal exports.
+
+/**
+ * `SENDDATAMSG` (24), for `EnumProps` of an item's window: one client's
+ * data sent where it advised the time `ITEMCALLBACK` tells (read out, seg3
+ * `2d3c`-`2edc`) -- native data first where it asked for it, then the one
+ * other format, each asked of the object for that client; a deferred
+ * advise's sent with no data. From the document's window, the item named
+ * at its time. A word that names no client's block, or a client gone,
+ * sends nothing (**recorded** by `oleitem`). Always 1.
+ */
+export async function sendDataMsg(svr: Svr, hwnd: number, _name: number, info: number) {
+  const state = svr.svr();
+
+  if (!svr.isInfo(info)) {
+    return 1;
+  }
+
+  const client = svr.info(info, INFO_CLIENT);
+
+  if (!(await isWindow(svr, client)) || !(svr.info(info, INFO_WHENS) & (1 << state.when))) {
+    return 1;
+  }
+
+  state.sent = true;
+
+  const found = [...state.clients.values()].find((each) => each.object.hwnd === (hwnd & 0xffff));
+  const doc = found && docOf(svr, found.doc);
+
+  if (!found || !doc) {
+    return 1;
+  }
+
+  const formats = [
+    ...(svr.info(info, INFO_NATIVE) ? [state.formats.Native] : []),
+    ...(svr.info(info, INFO_FORMAT) ? [svr.info(info, INFO_FORMAT)] : []),
+  ];
+
+  for (const format of formats) {
+    const data = svr.info(info, INFO_DATA)
+      ? await dataBlock(svr, doc, found.object, format, DATA_ADVISED)
+      : 0;
+
+    if (svr.info(info, INFO_DATA) && !data) {
+      return 1;
+    }
+
+    const atom = await svr.addAtomText(itemAt(found.object.item, state.when));
+
+    await post(svr, client, WM_DDE_DATA, doc.hwnd, long(data, atom));
+  }
+
+  return 1;
+}
+
+/**
+ * `FINDITEMWND` (25), for `EnumChildWindows` of a document's window: the
+ * high word of its `LPARAM` the request, the low its word (read out, seg3
+ * `22ac`-`236e`): 1 finds the item whose atom it is, answering nought
+ * there to stop; 2 forgets a client, its block freed and its property
+ * taken away; 3 lets the item go; 4 tells the item's object saved, noting
+ * a save that reached no client. Otherwise 1 (**recorded** by `oleitem`).
+ */
+export async function findItemWnd(svr: Svr, hwnd: number, lParam: number) {
+  const state = svr.svr();
+  const value = lParam & 0xffff;
+  const request = lParam >>> 16;
+  const found = [...state.clients.values()].find((each) => each.object.hwnd === (hwnd & 0xffff));
+  const doc = found && docOf(svr, found.doc);
+
+  if (request === FIND_ITEM) {
+    if (found && found.object.atom === value) {
+      state.found = hwnd & 0xffff;
+      return 0;
+    }
+  } else if (request === FORGET_CLIENT) {
+    const info = await getProp(svr, hwnd, value);
+
+    if (info) {
+      svr.freeInfo(info);
+      await removeProp(svr, hwnd, value);
+    }
+  } else if (request === DESTROY_ITEM) {
+    if (found && doc) {
+      await releaseObject(svr, doc, found.object);
+    }
+  } else if (request === TELL_SAVED) {
+    if (found && found.object.object) {
+      const answer = await itemCallback(svr, found.object.client, OLE_SAVED, found.object.object);
+
+      if (answer === OLE_ERROR_CANT_UPDATE_CLIENT) {
+        state.saved = false;
+      }
+    }
+  }
+
+  return 1;
+}
+
+/** A client's conversation ended from a window of OLESVR's, where the client's window is one: whether it was posted. */
+async function endConversation(svr: Svr, hwnd: number, client: number) {
+  if (!(await isWindow(svr, client))) {
+    return false;
+  }
+
+  await post(svr, client, WM_DDE_TERMINATE, hwnd, 0);
+  return true;
+}
+
+/**
+ * `TERMINATECLIENTS` (27) and `TERMINATEDOCCLIENTS` (28), for `EnumProps`
+ * of a server's and a document's window: the client the datum names sent
+ * `WM_DDE_TERMINATE` from the window where it is a window (read out, seg3
+ * `0752`-`079e`, `1554`-`15a0`; **recorded** by `oleitem`). Its answer is
+ * taken as a client's own terminate, and answered. Always 1.
+ */
+export async function terminateClients(svr: Svr, hwnd: number, _name: number, client: number) {
+  await endConversation(svr, hwnd, client);
+  return 1;
+}
+
+/**
+ * `DELETECLIENTINFO` (29), for `EnumProps` of an item's window: the
+ * client's block freed -- its conversation with the document ended first
+ * where the item is let go so -- and the property taken away (read out,
+ * seg3 `222e`-`22a9`; **recorded** by `oleitem`). Always 1.
+ */
+export async function deleteClientInfo(svr: Svr, hwnd: number, name: number, info: number) {
+  if (svr.isInfo(info)) {
+    if (svr.svr().ending) {
+      const parent = (await svr.user('GetParent', [W(hwnd)])) & 0xffff;
+
+      await terminateClients(svr, parent, 0, svr.info(info, INFO_CLIENT));
+    }
+
+    svr.freeInfo(info);
+  }
+
+  await svr.user('RemoveProp', [W(hwnd), D(name)]);
+  return 1;
+}
+
+/**
+ * `SENDRENAMEMSG` (30), for `EnumProps`: the document's name sent to the
+ * client a block names, `Binary` under `StdDocumentName`, from the
+ * window's parent (read out, seg3 `2cbc`-`2d39`). A word that names no
+ * block sends nothing (**recorded** by `oleitem`). Always 1.
+ */
+export async function sendRenameMsg(svr: Svr, hwnd: number, _name: number, info: number) {
+  if (!svr.isInfo(info)) {
+    return 1;
+  }
+
+  const parent = (await svr.user('GetParent', [W(hwnd)])) & 0xffff;
+  const doc = docOf(svr, parent);
+
+  if (doc) {
+    const block = await shared(svr, [
+      ...word(DATA_ADVISED),
+      ...word(svr.svr().formats.Binary),
+      ...doc.name,
+      0,
+    ]);
+    const atom = await svr.addAtomText(bytesOf('StdDocumentName'));
+
+    await post(svr, svr.info(info, INFO_CLIENT), WM_DDE_DATA, parent, long(block, atom));
+  }
+
+  return 1;
+}
+
+/**
+ * `ENUMFORTERMINATE` (31), for `EnumProps` of a document's window: the
+ * client the datum names sent `WM_DDE_TERMINATE` from the document,
+ * unless it is a client of the item set aside (read out, seg3
+ * `2c5e`-`2cb8`; **recorded** by `oleitem`). Always 1.
+ */
+export async function enumForTerminate(svr: Svr, hwnd: number, _name: number, client: number) {
+  const spared = svr.svr().spared;
+
+  if (!spared || !(await getProp(svr, spared, client))) {
+    await endConversation(svr, hwnd, client);
+  }
+
+  return 1;
 }
