@@ -1460,6 +1460,23 @@ impl System {
         width: i32,
         height: i32,
     ) -> Result<(), crate::call::Stop> {
+        // Of a list being placed -- a window minimized, maximized or
+        // restored, as `MinMaximize` places it with one `SetWindowPos`
+        // (`USER.EXE` seg6 `1d56`-`1d81`) -- it is moved now and drawn as the
+        // list is drawn (`end_placing`): its old region and its new, nothing
+        // of its bits copied, as `SWP_NOCOPYBITS` has it for an icon made or
+        // restored (`1c59`, `1cd9`). The TypeScript engine's `place`.
+        if self.placing.is_some() {
+            self.placing_entry(index);
+            self.relocate(index, left, top, width, height)?;
+
+            if let Some(entry) = self.placing_entry(index) {
+                entry.dest = Some([0, 0, 0, 0]);
+            }
+
+            return Ok(());
+        }
+
         let (was, family) = self.relocate(index, left, top, width, height)?;
 
         if !self.shown(index).visible {
@@ -2292,23 +2309,45 @@ impl System {
     /// A window put at the very bottom of the windows at the top, its icon's
     /// title just above it and its children with it, and shown there if
     /// `show` -- not made active (`showmin`).
-    pub fn to_bottom(&mut self, index: usize, show: bool) {
+    pub fn to_bottom(&mut self, index: usize, show: bool, after: Option<usize>) {
         let title = self.shown(index).icon_title;
         let family =
             self.take_out(|system, other| system.within(other, index) || Some(other) == title);
+        let ordered: Vec<usize> = family
+            .iter()
+            .copied()
+            .filter(|&member| Some(member) == title)
+            .chain(
+                family
+                    .iter()
+                    .copied()
+                    .filter(|&member| Some(member) != title),
+            )
+            .collect();
 
-        self.z_order.extend(
-            family
-                .iter()
-                .copied()
-                .filter(|&member| Some(member) == title),
-        );
-        self.z_order.extend(
-            family
-                .iter()
-                .copied()
-                .filter(|&member| Some(member) != title),
-        );
+        // `after`: put after that window instead, as `MinMaximize` puts an
+        // icon after the last of its brothers beneath it owned as it is
+        // (`USER.EXE` seg6 `1e58`).
+        match after.and_then(|after| self.z_order.iter().position(|&other| other == after)) {
+            Some(at) => {
+                self.z_order.splice(at + 1..at + 1, ordered);
+            }
+            None => self.z_order.extend(ordered),
+        }
+
+        // Of a list being placed, it is drawn as the list is
+        // (`end_placing`).
+        if self.placing.is_some() {
+            if show {
+                self.shown_mut(index).visible = true;
+
+                if let Some(title) = title {
+                    self.shown_mut(title).visible = true;
+                }
+            }
+
+            return;
+        }
 
         if !show {
             self.own();

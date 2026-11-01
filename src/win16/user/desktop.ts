@@ -1611,6 +1611,20 @@ export class Desktop {
    * shows, what it covered and what it now covers are painted again.
    */
   place(window: DesktopWindow, left: number, top: number, width: number, height: number) {
+    /* Of a list being placed -- a window minimized, maximized or restored,
+     * as `MinMaximize` places it with one `SetWindowPos` (`USER.EXE` seg6
+     * `1d56`-`1d81`) -- it is moved now and drawn as the list is drawn
+     * (`endPlacing`): its old region and its new, nothing of its bits
+     * copied, as `SWP_NOCOPYBITS` has it for an icon made or restored
+     * (`1c59`, `1cd9`). */
+    if (this.#list) {
+      const entry = this.#entryOf(window);
+
+      this.#relocate(window, left, top, width, height);
+      entry.dest = [0, 0, 0, 0];
+      return;
+    }
+
     const { was, family } = this.#relocate(window, left, top, width, height);
 
     if (!window.visible) {
@@ -4651,17 +4665,48 @@ export class Desktop {
    * `show` -- not made active, as a window minimized with
    * `SW_SHOWMINNOACTIVE` or made minimized goes (`showmin`).
    */
-  toBottom(window: DesktopWindow, show: boolean) {
+  toBottom(window: DesktopWindow, show: boolean, after: DesktopWindow | null = null) {
     const family = this.windows.filter(
       (other) => this.#within(other, window) || other === window.iconTitle
     );
 
-    for (const member of family) {
-      this.windows.splice(this.windows.indexOf(member), 1);
+    /* `after`: put after that window instead, as `MinMaximize` puts an icon
+     * after the last of its brothers beneath it owned as it is (`USER.EXE`
+     * seg6 `1e58`). */
+    if (after) {
+      for (const member of family) {
+        this.windows.splice(this.windows.indexOf(member), 1);
+      }
+
+      const at = this.windows.indexOf(after) + 1;
+
+      this.windows.splice(
+        at,
+        0,
+        ...family.filter((member) => member === window.iconTitle),
+        ...family.filter((member) => member !== window.iconTitle)
+      );
+    } else {
+      for (const member of family) {
+        this.windows.splice(this.windows.indexOf(member), 1);
+      }
+
+      this.windows.push(...family.filter((member) => member === window.iconTitle));
+      this.windows.push(...family.filter((member) => member !== window.iconTitle));
     }
 
-    this.windows.push(...family.filter((member) => member === window.iconTitle));
-    this.windows.push(...family.filter((member) => member !== window.iconTitle));
+    /* Of a list being placed, it is drawn as the list is (`endPlacing`). */
+    if (this.#list) {
+      if (show) {
+        window.visible = true;
+
+        if (window.iconTitle) {
+          window.iconTitle.visible = true;
+        }
+      }
+
+      return;
+    }
 
     if (show) {
       window.visible = true;
