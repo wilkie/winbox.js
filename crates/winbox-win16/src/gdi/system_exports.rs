@@ -129,6 +129,13 @@ fn word_at(system: &System, segment: u16, offset: u32) -> u16 {
 fn device_color_match(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let colour = args.dword(system);
     let device = args.dword(system);
+
+    Ok(Answer::Word(device_color_match_of(system, colour, device)))
+}
+
+/// `DeviceColorMatch`'s answer for a colour and a device, as a driver
+/// calls it (`SVGA256.DRV` seg9 `05ac`).
+pub(crate) fn device_color_match_of(system: &System, colour: u32, device: u32) -> u16 {
     let segment = (device >> 16) as u16;
     let field = word_at(system, segment, device);
     let table = word_at(system, segment, device + 2);
@@ -167,7 +174,7 @@ fn device_color_match(system: &mut System, args: &mut Args) -> Result<Answer, St
     let index = u32::from(word_at(system, table_segment, 0)).wrapping_sub(found) & 0xffff;
     let at = u32::from(table) + 4 + ((index * 10) & 0xffff) + u32::from(field);
 
-    Ok(Answer::Word(word_at(system, table_segment, at)))
+    word_at(system, table_segment, at)
 }
 
 /// A memory metafile's size checked against its records (seg19 `1862`):
