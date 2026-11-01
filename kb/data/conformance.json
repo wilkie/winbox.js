@@ -24473,8 +24473,8 @@
    },
    "EngineGetGlyphBmp": {
     "total": 52,
-    "agreed": 49,
-    "disagreed": 3,
+    "agreed": 51,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24543,8 +24543,151 @@
    }
   },
   "gaps": {
-   "EngineGetGlyphBmp": "the engine's advance of a glyph turned or slanted, and a slanted glyph's box, at one size each"
+   "EngineGetGlyphBmp": "the box of a glyph GDI's engine slants, at one size"
   }
+ },
+ "prttrot": {
+  "probe": "prttrot",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 331,
+  "functions": {
+   "bytes": {
+    "total": 231,
+    "agreed": 0,
+    "disagreed": 231,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "element": {
+    "total": 21,
+    "agreed": 0,
+    "disagreed": 21,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "EngineGetGlyphBmp": {
+    "total": 21,
+    "agreed": 20,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "EngineSetFontContext": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "fields": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "gdi data": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "metrics": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "realize": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "scaler": {
+    "total": 21,
+    "agreed": 0,
+    "disagreed": 21,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "gdi data": "GDI's data segment, which the probe finds in the global heap",
+   "EngineGetGlyphBmp": "the box of a glyph GDI's engine slants, at one size",
+   "scaler": "where GDI's TrueType scaler keeps its context, which WinBox has not",
+   "bytes": "GDI's TrueType scaler's own memory, which WinBox has not",
+   "element": "the scaler's glyph element, which WinBox has not"
+  }
+ },
+ "prttx2": {
+  "probe": "prttx2",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 55,
+  "functions": {
+   "bitblt": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "call": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "direct": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "exttextout opaque": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "output": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "strblt": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "textout opaque": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
  },
  "prttxt": {
   "probe": "prttxt",

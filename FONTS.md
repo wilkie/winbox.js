@@ -6925,7 +6925,10 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   offset nought until it is made -- and calls the driver's `ExtTextOut`
   back with that font at 42h of its segment, each glyph's width its ink and
   the widths given its advances. A turned string goes glyph by glyph through
-  the driver's `BitBlt`. **Recorded** by `prttxt`, its driver drawing GDI's
+  the driver's `BitBlt`, after a polygon of the turned box where the
+  background is opaque (`63ea`). A driver without `RC_GDI20_OUTPUT` is given
+  the string through its `StrBlt` a character at a time instead (seg8
+  `00e4`). **Recorded** by `prttxt` and `prttx2`, the driver drawing GDI's
   font with `DMExtTextOut`, and drawn by WinBox to the bit in both engines.
 - **The cache's layout** (seg3 `2fd3`): after the character table, a word
   of each character's advance and a word of its A and C spaces, 20h bytes
