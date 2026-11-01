@@ -14,6 +14,7 @@ import { Machine } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
 import { startShell } from '../../src/win16/progman/main.js';
+import { previousInstance } from '../../src/win16/kernel/WinExec.js';
 import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
 import { accessibleTree, type AccessibleTree } from '../../src/win16/user/accessible-tree.js';
 import { withCursor } from '../../src/win16/user/cursor-api.js';
@@ -1033,6 +1034,32 @@ export async function runProbe(
 
           pointer('up', { ...at(toX, toY), buttons: 0, double: false });
           await new Promise((next) => setImmediate(next));
+          continue;
+        }
+
+        /* `start:C:\WINDOWS\WRITE.EXE`: another program started beside those
+         * running, as the page starts one (`src/run/engines/ts.ts`): loaded,
+         * linked and run in its own folder, a second instance given the
+         * first as its previous one. */
+        const starting = /^start:(.+)$/.exec(keysym);
+
+        if (starting) {
+          const path = starting[1].toUpperCase();
+          const parts = path.replace(/^[A-Z]:\\/, '').split('\\');
+          const file = await fileSystem.open(parts);
+          const besideExecutable: any = new Executable(
+            parts[parts.length - 1].replace(/\.EXE$/, ''),
+            path,
+            file
+          );
+
+          await besideExecutable.parse();
+
+          const previous = previousInstance(win16, path);
+          const beside = await win16.load(besideExecutable);
+
+          win16.link(beside);
+          win16.run(beside, { previous, directory: path.slice(0, path.lastIndexOf('\\')) });
           continue;
         }
 
