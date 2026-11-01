@@ -7,6 +7,8 @@ import {
   herculesRealizeObject,
   isHercules,
 } from './driver-hercules.js';
+import * as vga256 from './driver-vga256.js';
+import { isVga256 } from './driver-vga256.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
@@ -367,15 +369,16 @@ function notBitmap(_system: any, offset: number) {
  * `Brute`'s choice for a routine of the display driver's (seg13 `0171`):
  * `routine` for a memory bitmap, where WinBox has the VGA's; on the
  * Hercules, `hercules` -- its own, or `'monochrome'` where its drawing on a
- * monochrome bitmap is the VGA's record for record (`gdidmdrw`); else
- * nought.
+ * monochrome bitmap is the VGA's record for record (`gdidmdrw`); on the
+ * 256-colour display, `vga256` (`driver-vga256.ts`); else nought.
  */
 async function brute(
   system: any,
   device: number,
   offset: number,
   routine: (() => number | Promise<number>) | null,
-  hercules: (() => number) | 'monochrome' | null = null
+  hercules: (() => number) | 'monochrome' | null = null,
+  vga256: (() => number | Promise<number>) | null = null
 ) {
   if (read16(system, device, 0) !== 0) {
     return notBitmap(system, offset);
@@ -383,6 +386,10 @@ async function brute(
 
   if (isHercules(system)) {
     return hercules === 'monochrome' ? (routine?.() ?? 0) : hercules ? hercules() : 0;
+  }
+
+  if (isVga256(system)) {
+    return vga256 ? vga256() : 0;
   }
 
   return routine && vga(system) ? routine() : 0;
@@ -421,7 +428,22 @@ export function DMBitBlt(
         lpPBrush,
         lpDrawMode
       ),
-    'monochrome'
+    'monochrome',
+    () =>
+      vga256.bitBlt(
+        this,
+        lpDestDev,
+        wDestX,
+        wDestY,
+        lpSrcDev,
+        wSrcX,
+        wSrcY,
+        wXext,
+        wYext,
+        rop3,
+        lpPBrush,
+        lpDrawMode
+      )
   );
 }
 
@@ -431,7 +453,8 @@ export function DMColorInfo(this: any, lpDestDev: number, dwColorIn: number, lpP
     lpDestDev,
     COLOR_INFO,
     () => colorInfo(this, lpDestDev, dwColorIn, lpPColor),
-    () => herculesColorInfo(this, dwColorIn >>> 0, lpPColor >>> 0)
+    () => herculesColorInfo(this, dwColorIn >>> 0, lpPColor >>> 0),
+    () => vga256.colorInfo(this, dwColorIn >>> 0, lpPColor >>> 0)
   );
 }
 
@@ -464,7 +487,19 @@ export function DMOutput(
     OUTPUT,
     () =>
       output(this, lpDestDev, wStyle, wCount, lpPoints, lpPPen, lpPBrush, lpDrawMode, lpClipRect),
-    'monochrome'
+    'monochrome',
+    () =>
+      vga256.output(
+        this,
+        lpDestDev,
+        wStyle,
+        wCount,
+        lpPoints,
+        lpPPen,
+        lpPBrush,
+        lpDrawMode,
+        lpClipRect
+      )
   );
 }
 
@@ -492,7 +527,8 @@ export function DMRealizeObject(
     lpDestDev,
     REALIZE_OBJECT,
     () => realizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm),
-    () => herculesRealizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm)
+    () => herculesRealizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm),
+    () => vga256.realizeObject(this, wStyle, lpInObj, lpOutObj, lpTextXForm)
   );
 }
 
@@ -552,7 +588,23 @@ export function DMExtTextOut(
         lpOpaqueRect,
         wOptions
       ),
-    herculesExtTextOut
+    herculesExtTextOut,
+    () =>
+      vga256.extTextOut(
+        this,
+        lpDestDev,
+        x,
+        y,
+        lpClipRect,
+        lpString,
+        count,
+        lpFontInfo,
+        lpDrawMode,
+        lpTextXForm,
+        lpCharWidths,
+        lpOpaqueRect,
+        wOptions
+      )
   );
 }
 
@@ -605,7 +657,8 @@ export function DMGetCharWidth(
     lpDestDev,
     GET_CHAR_WIDTH,
     () => getCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo, lpTextXForm),
-    () => herculesGetCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo)
+    () => herculesGetCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo),
+    () => vga256.getCharWidth(this, lpBuffer, wFirstChar, wLastChar, lpFontInfo)
   );
 }
 
@@ -622,7 +675,7 @@ export function DMDibBits(
   lpDIBits: number,
   lpBitmapInfo: number,
   lpDrawMode: number,
-  _lpTranslate: number
+  lpTranslate: number
 ) {
   return brute(
     this,
@@ -630,7 +683,19 @@ export function DMDibBits(
     DEVICE_BITMAP_BITS,
     () =>
       deviceBitmapBits(this, lpBitmap, fGet, iStart, cScans, lpDIBits, lpBitmapInfo, lpDrawMode),
-    'monochrome'
+    'monochrome',
+    () =>
+      vga256.deviceBitmapBits(
+        this,
+        lpBitmap,
+        fGet,
+        iStart,
+        cScans,
+        lpDIBits,
+        lpBitmapInfo,
+        lpDrawMode,
+        lpTranslate
+      )
   );
 }
 
@@ -639,7 +704,14 @@ export function DMStretchDIBits(this: any, lpDestDev: number) {
 }
 
 export function DMSetDibToDev(this: any, lpDestDev: number) {
-  return brute(this, lpDestDev, DIB_TO_DEVICE, () => dibToDevice(), 'monochrome');
+  return brute(
+    this,
+    lpDestDev,
+    DIB_TO_DEVICE,
+    () => dibToDevice(),
+    'monochrome',
+    () => vga256.dibToDevice()
+  );
 }
 
 /**
