@@ -7,7 +7,9 @@
 //! * `timeGetTime` counts milliseconds from where `GetTickCount` counts
 //!   them, a millisecond at a time.
 //! * `timeGetSystemTime` answers nought and gives milliseconds, whatever
-//!   type it was asked for.
+//!   type it was asked for; for a size under 8 it answers `TIMERR_STRUCT`,
+//!   81h, and writes nothing (`MMSYSTEM.DLL` seg1 `0003`-`000c`;
+//!   **recorded** by `emscopy` and `emspast`, whose `EMSCopy` runs it).
 //! * `timeSetEvent` answers an event's id, or nought for a delay of nought.
 //!   The procedure is called at interrupt time with the id, nought, the
 //!   caller's `DWORD` and two noughts: once for `TIME_ONESHOT`, after which
@@ -30,6 +32,10 @@ use crate::interrupts::Interrupt;
 use crate::system::System;
 
 const TIMERR_NOCANDO: u16 = 97;
+/// `TIMERR_STRUCT`: a structure too small.
+const TIMERR_STRUCT: u16 = 0x81;
+/// The size of an `MMTIME`: its type and a doubleword.
+const MMTIME_SIZE: u16 = 8;
 const TIME_PERIODIC: u16 = 1;
 const TIME_MS: u16 = 1;
 
@@ -191,10 +197,16 @@ pub fn time_end_period(system: &mut System, args: &mut Args) -> Result<Answer, S
     Ok(Answer::Word(if period == 0 { TIMERR_NOCANDO } else { 0 }))
 }
 
-/// The time as an `MMTIME`, in milliseconds whatever was asked.
+/// The time as an `MMTIME`, in milliseconds whatever was asked; nothing
+/// and `TIMERR_STRUCT` for a structure too small (seg1 `0003`-`000c`).
 pub fn time_get_system_time(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let far = args.dword(system);
-    let _size = args.word(system);
+    let size = args.word(system);
+
+    if size < MMTIME_SIZE {
+        return Ok(Answer::Word(TIMERR_STRUCT));
+    }
+
     let ms = system.milliseconds();
     let mut bytes = TIME_MS.to_le_bytes().to_vec();
 

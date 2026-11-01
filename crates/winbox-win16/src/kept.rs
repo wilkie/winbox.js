@@ -897,9 +897,9 @@ pub static KEPT: &[Kept] = &[
             }),
             Some(Export {
                 name: "EMSCopy",
-                pops: 14,
-                returns: 0,
-                stub: true,
+                pops: 6,
+                returns: 2,
+                stub: false,
             }),
             Some(Export {
                 name: "LocalCountFree",

@@ -99,17 +99,6 @@ describe('the knowledge base', () => {
         ['kind: function', 'module: GDI', 'name: GetGlyphOutline', 'ordinal: 310'],
       ],
       [
-        'a stub marked exact',
-        [
-          'kind: function',
-          'module: KERNEL',
-          'name: EMSCopy',
-          'ordinal: 160',
-          'versions:',
-          '  "3.1": exact',
-        ],
-      ],
-      [
         'an implemented function marked stub',
         [
           'kind: function',
@@ -132,6 +121,33 @@ describe('the knowledge base', () => {
       ],
     ])('%s', (_, lines) => {
       expect(() => assemble(survey, tables, [page(lines)])).toThrow();
+    });
+
+    /* Every named export is answered now, so the stub is made here: the
+     * tables as they are, with KERNEL's `EMSCopy` left to its stub. */
+    it('a stub marked exact', () => {
+      const stubbed = tables.map((module) =>
+        module.name !== 'KERNEL'
+          ? module
+          : {
+              ...module,
+              exports: module.exports.map((entry) =>
+                entry.name === 'EMSCopy'
+                  ? { ...entry, implemented: false, implementation: null }
+                  : entry
+              ),
+            }
+      );
+      const lines = [
+        'kind: function',
+        'module: KERNEL',
+        'name: EMSCopy',
+        'ordinal: 160',
+        'versions:',
+        '  "3.1": exact',
+      ];
+
+      expect(() => assemble(survey, stubbed, [page(lines)])).toThrow();
     });
 
     it('a guide outside kb/guides/', () => {
