@@ -5,7 +5,9 @@ import { regionOf } from '../gdi/regions.js';
 import { DSP_ALLCHILDREN, DSP_ENUMCLIPPEDCHILDREN, syncPaintFrom } from './erase.js';
 import {
   RDW_ALLCHILDREN,
+  RDW_CALLED,
   RDW_ERASENOW,
+  RDW_FRAME,
   RDW_INVALIDATE,
   RDW_NOCHILDREN,
   RDW_UPDATENOW,
@@ -163,19 +165,23 @@ export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
   if (window) {
     const box = given ? given.shape.box : lprcUpdate;
 
-    if (!redrawThrough(desktop, window, region, fuRedraw, () => tellLock(this, window, box))) {
+    const told = () => tellLock(this, window, box, !!(fuRedraw & RDW_FRAME));
+
+    if (!redrawThrough(desktop, window, region, fuRedraw, told)) {
       return 1;
     }
   } else {
-    invalidateThrough(desktop, null, region, fuRedraw);
+    invalidateThrough(desktop, null, region, fuRedraw | RDW_CALLED);
   }
 
   if (fuRedraw & RDW_UPDATENOW) {
     if (window) {
       await updateNow(this, desktop, window, !(fuRedraw & RDW_NOCHILDREN));
     } else if (!(fuRedraw & RDW_NOCHILDREN)) {
-      /* The desktop's own drawn already; the windows at the top, front to
+      /* The desktop's own drawn first; the windows at the top, front to
        * back (`44c5`-`450e`). */
+      desktop.paintBackgroundDue();
+
       for (const top of desktop.windows.filter((one: any) => !one.parent)) {
         await updateNow(this, desktop, top, true);
       }

@@ -59,6 +59,13 @@ export const RDW_ERASENOW = 0x0200;
 export const RDW_FRAME = 0x0400;
 export const RDW_NOFRAME = 0x0800;
 
+/**
+ * USER's own: asked by a program, through `RedrawWindow`'s body (`3ec5`):
+ * `RedrawWindow`, `InvalidateRect`, `InvalidateRgn`, `ValidateRect` and
+ * `ValidateRgn`.
+ */
+export const RDW_CALLED = 0x1000;
+
 /** USER's own: a window walked as one in another, whose rectangle may be taken out (`403d`). */
 const WALKED = 0x2000;
 
@@ -257,6 +264,14 @@ function give(state: Walk, window: DesktopWindow, whole: boolean, flags: number,
     }
 
     if (flags & RDW_INVALIDATE) {
+      /* Made due by another task than its own: noted, its flag 20h of the
+       * word at 24h (`4242`-`424c`), until it is looked at -- `BeginPaint`,
+       * its `WM_PAINT` taken, `GetUpdateRect` or `GetUpdateRgn` (seg1
+       * `764c`, `787a`, `4483`, `4684`, `47a3`). */
+      if (byAnotherTask(desktop, window)) {
+        shown.otherTask = true;
+      }
+
       if (whole && !for31) {
         window.needsErase = false;
       }
@@ -269,6 +284,12 @@ function give(state: Walk, window: DesktopWindow, whole: boolean, flags: number,
       );
     }
 
+    return;
+  }
+
+  /* Validated by a program while another task's making it due is not yet
+   * looked at: nothing at all (`4315`-`4320`; [[probe:rdwmore]]). */
+  if (flags & RDW_CALLED && shown.otherTask) {
     return;
   }
 
@@ -288,6 +309,14 @@ function give(state: Walk, window: DesktopWindow, whole: boolean, flags: number,
 
     desktop.validThrough(window, whole ? null : state.region);
   }
+}
+
+/** Whether the task running is not the window's own (`USER.EXE` seg1 `817b`, the word at 18h). */
+function byAnotherTask(desktop: Desktop, window: DesktopWindow) {
+  const scheduler = desktop.system?.scheduler;
+  const task = window.hwnd ? scheduler?.windowTask?.(window.hwnd) : null;
+
+  return !!task && !!scheduler?.active && task !== scheduler.active;
 }
 
 /**
@@ -356,12 +385,16 @@ export function invalidateThrough(
     }
 
     /* The desktop, which has `WS_CLIPCHILDREN`, given what is left: made
-     * due, drawn at once. */
+     * due. Asked by a program, through `RedrawWindow`, it stays due until
+     * its paint -- the message loop looking for paints, `RDW_ERASENOW` or
+     * `RDW_UPDATENOW` ([[probe:rdwmore]]: `GetUpdateRect` of the desktop
+     * window answers it); else drawn at once, as USER's own callers have
+     * it drawn by `7913` from the desktop after. */
     if (flags & RDW_INVALIDATE) {
-      for (const band of state.region.bands) {
-        for (const [left, right] of band.spans) {
-          desktop.paintBackground(left, band.top, right, band.bottom);
-        }
+      if (flags & RDW_CALLED) {
+        desktop.backgroundDueIn(state.region);
+      } else {
+        desktop.paintBackgroundIn(state.region);
       }
     }
 
@@ -448,7 +481,7 @@ export function redrawThrough(
     told();
   }
 
-  invalidateThrough(desktop, window, region, flags);
+  invalidateThrough(desktop, window, region, flags | RDW_CALLED);
 
   return true;
 }

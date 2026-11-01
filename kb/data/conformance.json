@@ -16004,8 +16004,8 @@
   "functions": {
    "msg": {
     "total": 136,
-    "agreed": 57,
-    "disagreed": 79,
+    "agreed": 56,
+    "disagreed": 80,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -24818,6 +24818,78 @@
   },
   "gaps": {}
  },
+ "rdwmore": {
+  "probe": "rdwmore",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 74,
+  "functions": {
+   "deskdue": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "erase": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nobegin": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "started": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 20,
+    "agreed": 20,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "rdwwalk": {
   "probe": "rdwwalk",
   "display": "vga",
@@ -25288,6 +25360,57 @@
    "glyph": {
     "total": 224,
     "agreed": 224,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "savebit": {
+  "probe": "savebit",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 62,
+  "functions": {
+   "erase": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 5,
+    "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 21,
+    "agreed": 21,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -27767,6 +27890,108 @@
    "sent": {
     "total": 6,
     "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "swplist": {
+  "probe": "swplist",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 121,
+  "functions": {
+   "erase": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 24,
+    "agreed": 24,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 36,
+    "agreed": 36,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "swplst31": {
+  "probe": "swplst31",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 121,
+  "functions": {
+   "erase": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 24,
+    "agreed": 24,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 36,
+    "agreed": 36,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

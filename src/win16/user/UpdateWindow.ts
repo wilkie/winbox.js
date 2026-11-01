@@ -5,6 +5,7 @@ import { paintMessage } from './paint-icon.js';
 import { RasterWindow } from './raster-window.js';
 import { paintsItself, type Desktop, type DesktopWindow } from './desktop.js';
 import { cutToParents } from './invalidate-through.js';
+import { syncPaintFrom } from './erase.js';
 
 /**
  * The **UpdateWindow** function updates the client area of the given window by
@@ -146,6 +147,10 @@ async function paintTree(system: any, desktop: Desktop, window: DesktopWindow, c
 
     const { message, wParam } = paintMessage(system, hwnd);
 
+    /* Noted as sent, until `BeginPaint` takes the note off (seg1 `447f`,
+     * `764c`). */
+    (window as any).paintSent = true;
+
     await system.scheduler.callWndProc(windowClass, hwnd, message, wParam, 0);
 
     /* Destroyed in its paint, nothing more (`44ac`). */
@@ -153,6 +158,17 @@ async function paintTree(system: any, desktop: Desktop, window: DesktopWindow, c
 
     if (!(still instanceof RasterWindow) || still.window !== window) {
       return;
+    }
+
+    /* Its paint taken without `BeginPaint`: what it is due of its frame and
+     * its erase is sent now, the window alone (seg1 `44ab`-`44c0`: `7913`
+     * with nought, where it shows; [[probe:rdwmore]]). */
+    if ((window as any).paintSent) {
+      (window as any).paintSent = false;
+
+      if (showing(window)) {
+        await syncPaintFrom(system, window, 0);
+      }
     }
   }
 

@@ -131,6 +131,27 @@ pub(super) fn get_update_rect(system: &mut System, args: &mut Args) -> Result<An
     let hwnd = args.word(system);
     let far = args.dword(system);
     let _erase = args.word(system);
+
+    // The desktop window: what of the desktop itself is due (`rdwmore`).
+    if hwnd != 0 && system.handles.lookup(crate::handles::Object::Desktop) == Some(hwnd) {
+        let due = system.background_region.as_ref().map(|region| {
+            let bounds = region.bounds();
+
+            [bounds.left, bounds.top, bounds.right, bounds.bottom]
+        });
+
+        if far != 0 {
+            write_rect(system, far, due.unwrap_or([0; 4]));
+        }
+
+        return Ok(Answer::Word(u16::from(due.is_some())));
+    }
+
+    // Another task's making it due, looked at (`USER.EXE` seg1 `4684`).
+    if let Some(index) = system.window_named(hwnd) {
+        system.shown_mut(index).other_task = false;
+    }
+
     let rect = system.update_rect(hwnd);
 
     if far != 0 {
@@ -206,6 +227,9 @@ pub(super) fn get_update_rgn(system: &mut System, args: &mut Args) -> Result<Ans
     else {
         return Ok(Answer::Word(0));
     };
+    // Another task's making it due, looked at (`USER.EXE` seg1 `47a3`).
+    system.shown_mut(index).other_task = false;
+
     let update = system.update_seen(index);
     let kind = update.kind();
 
@@ -311,7 +335,11 @@ pub(super) fn redraw_window(engine: &Engine, mut args: Args) -> Later<'_> {
                         return Ok(Answer::Word(1));
                     }
                 }
-                None => system.invalidate_through(None, region.as_ref(), flags),
+                None => system.invalidate_through(
+                    None,
+                    region.as_ref(),
+                    flags | crate::invalidate_through::RDW_CALLED,
+                ),
             }
 
             (index, hwnd, flags)
@@ -323,10 +351,12 @@ pub(super) fn redraw_window(engine: &Engine, mut args: Args) -> Later<'_> {
             if index.is_some() {
                 engine.update_now(hwnd, children).await?;
             } else if children {
-                // The desktop's own drawn already; the windows at the top,
+                // The desktop's own drawn first; the windows at the top,
                 // front to back (`44c5`-`450e`).
                 let tops: Vec<u16> = {
-                    let system = engine.system();
+                    let mut system = engine.system();
+
+                    system.paint_background_due();
 
                     system
                         .windows_in(None)

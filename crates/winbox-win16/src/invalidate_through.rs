@@ -41,6 +41,10 @@ pub const RDW_INVALIDATE: u16 = 0x0001;
 pub const RDW_INTERNALPAINT: u16 = 0x0002;
 pub const RDW_ERASE: u16 = 0x0004;
 pub const RDW_VALIDATE: u16 = 0x0008;
+/// USER's own: asked by a program, through `RedrawWindow`'s body (`3ec5`):
+/// `RedrawWindow`, `InvalidateRect`, `InvalidateRgn`, `ValidateRect` and
+/// `ValidateRgn`.
+pub const RDW_CALLED: u16 = 0x1000;
 pub const RDW_NOINTERNALPAINT: u16 = 0x0010;
 pub const RDW_NOERASE: u16 = 0x0020;
 pub const RDW_NOCHILDREN: u16 = 0x0040;
@@ -277,6 +281,15 @@ impl System {
             }
 
             if flags & RDW_INVALIDATE != 0 {
+                // Made due by another task than its own: noted, its flag
+                // 20h of the word at 24h (`4242`-`424c`), until it is looked
+                // at.
+                let hwnd = self.shown(index).hwnd;
+
+                if hwnd != 0 && !self.mine(hwnd) {
+                    self.shown_mut(index).other_task = true;
+                }
+
                 if whole && !for_31 {
                     self.shown_mut(index).needs_erase = false;
                 }
@@ -284,6 +297,12 @@ impl System {
                 self.due_through(index, given, flags & RDW_ERASE != 0, flags & RDW_FRAME != 0);
             }
 
+            return;
+        }
+
+        // Validated by a program while another task's making it due is not
+        // yet looked at: nothing at all (`4315`-`4320`; `rdwmore`).
+        if flags & RDW_CALLED != 0 && self.shown(index).other_task {
             return;
         }
 
@@ -385,12 +404,17 @@ impl System {
             }
 
             // The desktop, which has `WS_CLIPCHILDREN`, given what is left:
-            // made due, drawn at once.
+            // made due. Asked by a program, through `RedrawWindow`, it stays
+            // due until its paint -- the message loop looking for paints,
+            // `RDW_ERASENOW` or `RDW_UPDATENOW` (`rdwmore`: `GetUpdateRect`
+            // of the desktop window answers it); else drawn at once, as
+            // USER's own callers have it drawn by `7913` from the desktop
+            // after.
             if flags & RDW_INVALIDATE != 0 {
-                for band in &left.bands {
-                    for &(span_left, span_right) in &band.spans {
-                        self.paint_background_in([span_left, band.top, span_right, band.bottom]);
-                    }
+                if flags & RDW_CALLED != 0 {
+                    self.background_due_in(&left);
+                } else {
+                    self.paint_background_region(&left);
                 }
             }
 
@@ -488,10 +512,10 @@ impl System {
         }
 
         if flags & RDW_INVALIDATE != 0 {
-            self.tell_lock(index, told);
+            self.tell_lock(index, told, flags & RDW_FRAME != 0);
         }
 
-        self.invalidate_through(Some(index), region, flags);
+        self.invalidate_through(Some(index), region, flags | RDW_CALLED);
 
         true
     }

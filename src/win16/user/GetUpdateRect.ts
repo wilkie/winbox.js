@@ -1,5 +1,6 @@
 'use strict';
 
+import { DesktopHandle } from './desktop-handle.js';
 import { RasterWindow } from './raster-window.js';
 import { cutToParents } from './invalidate-through.js';
 
@@ -20,6 +21,29 @@ export function GetUpdateRect(this: any, hwnd: number, lprc: any, _bErase: numbe
 
     return 0;
   };
+
+  /* The desktop window: what of the desktop itself is due ([[probe:rdwmore]]). */
+  if (dialog instanceof DesktopHandle) {
+    const box = this.rasterDesktop?.backgroundRegion?.box;
+
+    if (!box) {
+      return empty();
+    }
+
+    if (lprc) {
+      lprc.left = box.left;
+      lprc.top = box.top;
+      lprc.right = box.right;
+      lprc.bottom = box.bottom;
+    }
+
+    return 1;
+  }
+
+  /* Another task's making it due, looked at (`USER.EXE` seg1 `4684`). */
+  if (dialog instanceof RasterWindow) {
+    (dialog.window as any).otherTask = false;
+  }
 
   if (!(dialog instanceof RasterWindow) || !dialog.window.needsPaint) {
     return empty();

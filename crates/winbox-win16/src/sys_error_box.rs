@@ -575,8 +575,24 @@ fn note_async_key(system: &mut System, key: u16, down: bool) {
 impl Engine {
     /// Shows the box and waits for a button to be chosen: its place, 1 to
     /// 3, or nought with no screen to draw on. Afterwards what the box
-    /// covered is drawn again. Nothing else runs while it is up.
+    /// covered is drawn again. Nothing else runs while it is up. USER's
+    /// word at E0h is set while it is, as it was before after (`USER.EXE`
+    /// seg1 `9350`-`9359`, `9a76`-`9a79`): `SetWindowPos` takes its second
+    /// block then, and no bits are saved (`take_defer_slots`, `save_bits`).
     pub async fn sys_error_box(
+        &self,
+        text: &[u8],
+        caption: &[u8],
+        buttons: [u16; 3],
+    ) -> Result<u16, Stop> {
+        let was = std::mem::replace(&mut self.system().user_calls.in_sys_error_box, true);
+        let answer = self.sys_error_box_up(text, caption, buttons).await;
+
+        self.system().user_calls.in_sys_error_box = was;
+        answer
+    }
+
+    async fn sys_error_box_up(
         &self,
         text: &[u8],
         caption: &[u8],

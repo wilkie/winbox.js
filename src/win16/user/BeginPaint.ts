@@ -127,6 +127,12 @@ export async function BeginPaint(hwnd, lpps) {
 
     /* A frame that changed is painted first, by `WM_NCPAINT` to the window:
      * `showsb` recorded it between `WM_PAINT` and `WM_ERASEBKGND`. */
+    /* The note that its paint was sent, taken off (`USER.EXE` seg1
+     * `764c`; `UpdateWindow.ts`). */
+    window.paintSent = false;
+    /* And another task's making it due, looked at (`764c`). */
+    window.otherTask = false;
+
     if (window.needsNcPaint) {
       window.needsNcPaint = false;
       /* What it is due, whole, the region's own shape where it has one

@@ -6006,6 +6006,10 @@ const RUN_WHOLE = new Set<string>([
   'rdwwalk',
   'rdw31',
   'swpunc31',
+  'swplist',
+  'swplst31',
+  'savebit',
+  'rdwmore',
   'gdidmdib',
 ]);
 

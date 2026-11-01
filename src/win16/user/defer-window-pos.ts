@@ -4,6 +4,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { RasterWindow } from './raster-window.js';
 import {
   giveDeferSlots,
+  slotIn,
   positionChanged,
   positionChanging,
   takeDeferSlots,
@@ -40,8 +41,8 @@ interface Deferred {
 
 class DeferredMoves {
   moves: Deferred[] = [];
-  /** Whether it is USER's block of four (`takeDeferSlots`). */
-  slots = false;
+  /** USER's block it has, by its first entry (`takeDeferSlots`); null for its own. */
+  slots: number | null = null;
 }
 
 /**
@@ -123,7 +124,7 @@ export async function EndDeferWindowPos(this: any, hdwp: number) {
         (await positionChanging(this, hwnd, window, hwndInsertAfter, x, y, cx, cy, flags));
 
       if (move) {
-        begun.push({ ...move, slot: set.slots && index < 4 ? index : null });
+        begun.push({ ...move, slot: slotIn(set.slots, index) });
       }
     }
 

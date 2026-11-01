@@ -11,6 +11,7 @@
 
 use winbox_raster::ClipRegion;
 
+use crate::moved::{SWP_HIDEWINDOW, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW};
 use crate::system::System;
 use crate::windows::{Dirty, Placement, Window};
 
@@ -348,19 +349,6 @@ impl System {
         areas
     }
 
-    /// Every window that came to show where it had been covered, but those
-    /// `except`, due its frame and a paint there.
-    pub(crate) fn gained(&mut self, before: &[u16], except: &[usize]) {
-        let skip: Vec<u16> = except.iter().map(|&index| (index + 1) as u16).collect();
-        let areas = self.areas_since(before, None, |now, was| now != was && !skip.contains(&now));
-
-        for (index, area) in areas {
-            if self.windows[index].is_some() {
-                self.due_at(index, area);
-            }
-        }
-    }
-
     /// What a window gone from where it lay uncovered: each window that
     /// shows there now due there, and each parent of it that does not leave
     /// its children out of its own painting.
@@ -435,10 +423,9 @@ impl System {
     /// children show with it. `all_shown`: every window of the call was
     /// shown.
     pub(crate) fn show_child(&mut self, index: usize, all_shown: bool) {
-        let old = self.placed_region(index);
-
+        self.begin_placing(&[index]);
         self.shown_mut(index).visible = true;
-        self.placed_shown(index, &old, all_shown);
+        self.end_placing(Some(all_shown));
     }
 
     /// A window shown as `SetWindowPos` shows it: a child as
@@ -464,10 +451,27 @@ impl System {
             return;
         }
 
+        // Drawn as `SetWindowPos` draws its list: the window, and the
+        // windows brought up with it (`bring_up`), each where it shows now
+        // and did not (`end_placing`).
+        self.begin_placing(&[index]);
+
+        let flags = if self.shown(index).visible {
+            SWP_NOMOVE | SWP_NOSIZE
+        } else {
+            SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+        };
+
+        self.placing_flags(index, flags);
+
+        if let Some(title) = self.shown(index).icon_title
+            && !self.shown(title).visible
+        {
+            self.placed_whole(title);
+        }
+
         let was = self.active_window();
         let was_top = self.active_top();
-        let shown_before = self.owners.clone();
-
         let family = self.bring_up(index, false);
         self.shown_mut(index).visible = true;
         self.set_active(index, true);
@@ -488,17 +492,6 @@ impl System {
 
         self.own();
 
-        let mine: Vec<usize> = std::iter::once(index)
-            .chain(
-                family
-                    .iter()
-                    .copied()
-                    .filter(|&member| self.within(member, index)),
-            )
-            .collect();
-
-        self.gained(&shown_before, if whole { &mine } else { &[] });
-
         if let Some(was) = was.filter(|&was| was != index) {
             self.paint_frame(was);
         }
@@ -507,6 +500,7 @@ impl System {
 
         if !whole {
             self.title_shows(index);
+            self.end_placing(None);
             return;
         }
 
@@ -535,6 +529,8 @@ impl System {
 
         shown.needs_erase = !drawn;
         shown.needs_paint = !drawn;
+        self.placed_whole(index);
+        self.end_placing(None);
     }
 
     /// A window at the top brought to the front of the windows, its children
@@ -543,6 +539,44 @@ impl System {
     /// beneath it (`showseq`). Answers what moved with it of its own.
     fn bring_up(&mut self, index: usize, absolute: bool) -> Vec<usize> {
         let title = self.shown(index).icon_title;
+
+        // The windows at the top it brings, and the family of the window
+        // that owns it, are of the list being placed, as they were
+        // (`end_placing`).
+        if self.placing.is_some() {
+            let mut head = index;
+
+            while let Some(owner) = self.shown(head).owner {
+                if self.shown(owner).parent.is_some() {
+                    break;
+                }
+
+                head = owner;
+            }
+
+            let head_title = self.shown(head).icon_title;
+            let members: Vec<usize> = self
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    self.shown(other).parent.is_none()
+                        && (self.within(other, index)
+                            || self.owned_within(other, index)
+                            || Some(other) == title
+                            || (head != index
+                                && (self.owned_within(other, head)
+                                    || other == head
+                                    || Some(other) == head_title)))
+                })
+                .collect();
+
+            for member in members {
+                if let Some(entry) = self.placing_entry(member) {
+                    entry.flags.get_or_insert(SWP_NOMOVE | SWP_NOSIZE);
+                }
+            }
+        }
         let family = self.take_out(|system, other| {
             system.within(other, index) || system.owned_within(other, index) || Some(other) == title
         });
@@ -691,6 +725,27 @@ impl System {
 
     /// A window shown where it lies, not brought to the top nor made active.
     pub fn show_in_place(&mut self, index: usize) {
+        // Drawn as `SetWindowPos` draws its list (`end_placing`).
+        self.begin_placing(&[index]);
+
+        let flags = SWP_NOMOVE
+            | SWP_NOSIZE
+            | SWP_NOZORDER
+            | if self.shown(index).visible {
+                0
+            } else {
+                SWP_SHOWWINDOW
+            };
+
+        self.placing_flags(index, flags);
+        self.placed_whole(index);
+
+        if let Some(title) = self.shown(index).icon_title
+            && !self.shown(title).visible
+        {
+            self.placed_whole(title);
+        }
+
         self.shown_mut(index).visible = true;
         self.own();
         self.paint_frame(index);
@@ -720,11 +775,26 @@ impl System {
 
         shown.needs_erase = !drawn;
         shown.needs_paint = !drawn;
+        self.end_placing(None);
     }
 
     /// A window shown at the front of its kind, with its children, not
     /// made active (`SW_SHOWNA`).
     pub fn show_on_top(&mut self, index: usize) {
+        // Drawn as `SetWindowPos` draws its list (`end_placing`).
+        self.begin_placing(&[index]);
+
+        let flags = SWP_NOMOVE
+            | SWP_NOSIZE
+            | if self.shown(index).visible {
+                0
+            } else {
+                SWP_SHOWWINDOW
+            };
+
+        self.placing_flags(index, flags);
+        self.placed_whole(index);
+
         let family = self.take_out(|system, other| system.within(other, index));
         let at = self.front_of(index);
 
@@ -732,6 +802,7 @@ impl System {
         self.shown_mut(index).visible = true;
         self.own();
         self.due_whole(index);
+        self.end_placing(None);
     }
 
     /// The windows a window owns, hidden as it is minimized and shown again
@@ -742,7 +813,14 @@ impl System {
                 continue;
             }
 
+            // Drawn as `SetWindowPos` draws its list (`end_placing`).
             if hide && self.shown(other).visible {
+                self.begin_placing(&[other]);
+                self.placing_flags(
+                    other,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW,
+                );
+
                 {
                     let shown = self.shown_mut(other);
 
@@ -750,12 +828,16 @@ impl System {
                     shown.visible = false;
                 }
                 self.set_active(other, false);
-
-                let before = self.owners.clone();
-
                 self.own();
-                self.expose_owned(other, &before);
+                self.end_placing(Some(false));
             } else if !hide && self.shown(other).hidden_with_owner {
+                self.begin_placing(&[other]);
+                self.placing_flags(
+                    other,
+                    SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW,
+                );
+                self.placed_whole(other);
+
                 {
                     let shown = self.shown_mut(other);
 
@@ -764,6 +846,7 @@ impl System {
                 }
                 self.own();
                 self.due_whole(other);
+                self.end_placing(None);
             }
         }
     }
@@ -848,11 +931,16 @@ impl System {
         } else {
             None
         };
-        // A child hidden is drawn as `SetWindowPos` hides it: what showed of
-        // it made due through its parent, the windows in it too
-        // (`placed_shown`).
-        let child_was = (self.shown(index).parent.is_some() && visible && self.showing(index))
-            .then(|| self.placed_region(index));
+        // Hidden, it is drawn as `SetWindowPos` hides it (`end_placing`):
+        // what showed of it made due through its parent, the windows in it
+        // too, or the bits it saved put back.
+        if visible {
+            self.begin_placing(&[index]);
+            self.placing_flags(
+                index,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW,
+            );
+        }
 
         // A focus left on a window destroyed is no focus, as `show_raster`
         // has it: a task's windows are taken away one after another as it
@@ -901,25 +989,12 @@ impl System {
                 self.set_active(index, false);
             }
 
-            let before = self.owners.clone();
-
             self.own();
+            self.end_placing(Some(false));
+        }
 
-            if let Some(old) = child_was {
-                if old.kind() > 1 {
-                    let parent = self.shown(index).parent;
-
-                    self.invalidate_through(
-                        parent,
-                        Some(&old),
-                        crate::invalidate_through::RDW_INVALIDATE
-                            | crate::invalidate_through::RDW_ERASE
-                            | crate::invalidate_through::RDW_ALLCHILDREN,
-                    );
-                }
-            } else {
-                self.expose_owned(index, &before);
-            }
+        if remove {
+            self.discard_within(index);
         }
 
         if let Some(next) = next {
@@ -947,18 +1022,14 @@ impl System {
     /// (`bring_up`). Whether the order changed.
     pub fn bring_family_up(&mut self, index: usize) -> bool {
         let order = self.z_order.clone();
-        let before = self.owners.clone();
 
+        // Drawn as `SetWindowPos` draws its list (`end_placing`).
+        self.begin_placing(&[]);
         self.bring_up(index, false);
         self.own();
+        self.end_placing(Some(false));
 
-        let changed = self.z_order != order;
-
-        if changed {
-            self.gained(&before, &[]);
-        }
-
-        changed
+        self.z_order != order
     }
 
     /// The window a window at the top destroyed makes active (seg8
@@ -1139,10 +1210,40 @@ impl System {
         None
     }
 
+    /// A region of the desktop itself made due (`invalidate_through`).
+    pub(crate) fn background_due_in(&mut self, region: &ClipRegion) {
+        if region.kind() > 1 {
+            self.background_region = Some(match self.background_region.take() {
+                Some(due) => due.union(region),
+                None => region.clone(),
+            });
+        }
+    }
+
+    /// The desktop itself drawn where it is due, now, nothing of it due
+    /// after.
+    pub(crate) fn paint_background_due(&mut self) {
+        if let Some(region) = self.background_region.take() {
+            self.paint_background_region(&region);
+        }
+    }
+
+    /// The desktop itself drawn in a region of the screen, where no window
+    /// shows.
+    pub(crate) fn paint_background_region(&mut self, region: &ClipRegion) {
+        for band in &region.bands {
+            for &(span_left, span_right) in &band.spans {
+                self.paint_background_in([span_left, band.top, span_right, band.bottom]);
+            }
+        }
+    }
+
     /// The first window due a paint that `matches` takes: the windows at the
     /// top from the front back, each before its children (`showseq`), made
     /// ready to paint.
     pub fn unpainted_where(&mut self, matches: impl Fn(&Self, usize) -> bool) -> Option<usize> {
+        self.paint_background_due();
+
         // The desktop drawn again first, and what it draws itself.
         if self.background_due {
             self.background_due = false;
@@ -1217,6 +1318,10 @@ impl System {
     /// `WS_CLIPCHILDREN`, which paints over its children, its children
     /// where it is due made due again after it.
     pub fn about_to_paint(&mut self, index: usize) {
+        // Another task's making it due looked at as its `WM_PAINT` is taken
+        // (`USER.EXE` seg1 `787a`, `4483`).
+        self.shown_mut(index).other_task = false;
+
         if self.take_internal_paint(index) {
             return;
         }

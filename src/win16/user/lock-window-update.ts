@@ -13,6 +13,7 @@ import {
 } from './invalidate-through.js';
 import { RasterWindow } from './raster-window.js';
 import { setUpdate, updateOf } from './update-region.js';
+import { discardSaved } from './save-bits.js';
 
 /**
  * One window at a time kept from drawing on the screen, as `USER.EXE`
@@ -64,6 +65,31 @@ interface Lock {
   still: ClipRegion | null;
   /** All of it drawn over: the lock let go of its rectangle (`081c`). */
   gone: boolean;
+}
+
+/**
+ * One of USER's records of a rectangle of the screen kept as it was, the
+ * list at its word 13Eh (seg13 `1e72`): the lock's (its flag 2), and those
+ * of the bits a `CS_SAVEBITS` window saved (`save-bits.ts`), kept in
+ * `system._saves`. Each is told what is drawn alike (seg1 `074e`).
+ */
+export interface Kept {
+  window: DesktopWindow;
+  rect: Rect | null;
+  still: ClipRegion | null;
+  gone: boolean;
+  /** A record of saved bits, not the lock's. */
+  saved?: boolean;
+}
+
+/** The records of saved bits, newest first (`USER.EXE` seg13 `2017`-`2024`). */
+export function savesOf(system: any): Kept[] {
+  return (system._saves ??= []);
+}
+
+/** Whether USER keeps any record, the lock or saved bits (its word 13Eh). */
+export function anyKept(system: any) {
+  return !!lockOf(system) || savesOf(system).length > 0;
 }
 
 const cut = (a: Rect, b: Rect): Rect => [
@@ -145,10 +171,15 @@ function shows(system: any, window: DesktopWindow | null, client: boolean) {
  * Whether drawing in `window` (null, the desktop) over `rect` counts
  * against the lock, and the part that does (seg1 `087b`).
  */
-function counts(system: any, lock: Lock, window: DesktopWindow | null, rect: Rect, flags: number) {
+function counts(system: any, lock: Kept, window: DesktopWindow | null, rect: Rect, flags: number) {
   const locked = lock.window;
 
-  if (!shows(system, window, !(flags & DCX_WINDOW)) || flags & DCX_LOCKWINDOWUPDATE) {
+  /* Drawing with `DCX_LOCKWINDOWUPDATE` does not count against the lock,
+   * and does against saved bits (`08a9`-`08b3`). */
+  if (
+    !shows(system, window, !(flags & DCX_WINDOW)) ||
+    (flags & DCX_LOCKWINDOWUPDATE && !lock.saved)
+  ) {
     return null;
   }
 
@@ -193,6 +224,12 @@ function counts(system: any, lock: Lock, window: DesktopWindow | null, rect: Rec
   };
 
   if (at === locked) {
+    /* The saving window's own drawing, and its children's, does not count
+     * against what it saved (`08cd`-`08d7`). */
+    if (lock.saved) {
+      return null;
+    }
+
     if (window === locked) {
       return within(rect);
     }
@@ -226,21 +263,38 @@ function counts(system: any, lock: Lock, window: DesktopWindow | null, rect: Rec
 export function lockTouched(system: any, window: DesktopWindow | null, rect: Rect, flags: number) {
   const lock = lockOf(system);
 
-  if (!lock || lock.gone || !lock.rect) {
-    return;
+  if (lock) {
+    touch(system, lock, window, rect, flags);
+  }
+
+  /* Saved bits all drawn over are let go (`081c`, seg1 `0959`). */
+  for (const kept of [...savesOf(system)]) {
+    if (touch(system, kept, window, rect, flags)) {
+      discardSaved(system, kept.window);
+    }
+  }
+}
+
+/** One record told of drawing (seg1 `079a`): true where all of it is now drawn over. */
+function touch(system: any, lock: Kept, window: DesktopWindow | null, rect: Rect, flags: number) {
+  if (lock.gone || !lock.rect) {
+    return false;
   }
 
   const part = counts(system, lock, window, rect, flags);
 
   if (!part) {
-    return;
+    return false;
   }
 
   lock.still = (lock.still ?? regionOf(lock.rect)).subtract(regionOf(part));
 
   if (lock.still.kind === 1) {
     lock.gone = true;
+    return true;
   }
+
+  return false;
 }
 
 /** The window an entry is lent for, null for the desktop's, undefined for none. */
@@ -290,7 +344,7 @@ export function harvest(system: any, entry: Entry) {
 
 /** Every context's bounds taken back, where a window is locked (seg1 `06df`). */
 export function harvestAll(system: any) {
-  if (!lockOf(system) || !system._dcEntries) {
+  if (!anyKept(system) || !system._dcEntries) {
     return;
   }
 
@@ -306,7 +360,7 @@ export function harvestAll(system: any) {
  * counted as drawn; then the windows in it, with `deep` (seg13 `206b`):
  * false where all of the rectangle was taken.
  */
-function takeDue(system: any, lock: Lock, window: DesktopWindow, deep: boolean): boolean {
+export function takeDue(system: any, lock: Kept, window: DesktopWindow, deep: boolean): boolean {
   if (window.needsPaint) {
     const due = updateOf(window);
     let box: Rect = (window as any).dirtyRect
@@ -337,7 +391,10 @@ function takeDue(system: any, lock: Lock, window: DesktopWindow, deep: boolean):
         window.needsErase = false;
       }
 
-      lockTouched(system, window, box, DCX_WINDOW);
+      /* Told to this record alone (seg13 `20e1`, seg1 `079a`). */
+      if (touch(system, lock, window, box, DCX_WINDOW) && lock.saved) {
+        discardSaved(system, lock.window);
+      }
 
       if (lock.gone) {
         return false;
@@ -356,26 +413,30 @@ function takeDue(system: any, lock: Lock, window: DesktopWindow, deep: boolean):
   return true;
 }
 
-/** What a window is made due, its client area or a rectangle of it, told to the lock. */
-export function tellLock(system: any, window: DesktopWindow, lprc: any) {
-  if (!system._windowLock) {
+/**
+ * What a window is made due, told to the records USER keeps (`USER.EXE` seg1
+ * `3f41`-`3f7c`): the rectangle given, in its client area's terms, or all,
+ * within its client area -- within its whole window with `frame`,
+ * `RDW_FRAME` (`3edd`-`3efc`; [[probe:rdwmore]]: a child locked and given
+ * `RDW_FRAME` all of itself has the lock let go of, everything due as it
+ * is unlocked).
+ */
+export function tellLock(system: any, window: DesktopWindow, lprc: any, frame = false) {
+  if (!anyKept(system)) {
     return;
   }
 
   const x = window.left + window.client.left;
   const y = window.top + window.client.top;
-  const [w, h] = [window.clientWidth, window.clientHeight];
-  const r = lprc
-    ? [
-        Math.max(lprc.left, 0) + x,
-        Math.max(lprc.top, 0) + y,
-        Math.min(lprc.right, w) + x,
-        Math.min(lprc.bottom, h) + y,
-      ]
-    : [x, y, x + w, y + h];
+  const within: Rect = frame
+    ? windowRect(window)
+    : [x, y, x + window.clientWidth, y + window.clientHeight];
+  const r: Rect = lprc
+    ? cut([lprc.left + x, lprc.top + y, lprc.right + x, lprc.bottom + y], within)
+    : within;
 
   if (r[0] < r[2] && r[1] < r[3]) {
-    lockTouched(system, window, r as [number, number, number, number], 0);
+    lockTouched(system, window, r, 0);
   }
 }
 
@@ -392,7 +453,10 @@ export function LockWindowUpdate(this: any, hwndLock: number) {
 
     const window = owner.window;
 
-    /* Windows' bounds emptied in every context (`1eaa`-`1ec3`). */
+    /* Windows' bounds emptied in every context (`1eaa`-`1ec3`) -- taken
+     * back for the records kept, where USER keeps any (`1e9c`-`1ea8`). */
+    harvestAll(this);
+
     for (const entry of entriesOf(this).list) {
       const bounds = boundsOf(entry.surface);
 

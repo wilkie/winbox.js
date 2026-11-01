@@ -268,18 +268,25 @@ pub struct System {
     /// The sets of moves begun and not yet made: each window, the window it
     /// goes after, its place and size, and the flags.
     pub deferred: Vec<Option<Vec<crate::position::Deferred>>>,
-    /// Whether each set of moves has USER's block of four
-    /// (`take_defer_slots`).
-    pub deferred_slots: Vec<bool>,
-    /// The block of four entries USER keeps for `BeginDeferWindowPos`: each
-    /// entry's rectangle where the bits of a window go, on the screen, as
-    /// the last call that used it left it (`take_defer_slots`).
-    pub defer_slots: [[i32; 4]; 4],
+    /// The block of USER's each set of moves has, by its first entry
+    /// (`take_defer_slots`); none for a block of its own.
+    pub deferred_slots: Vec<Option<usize>>,
+    /// The block of four entries USER keeps for `BeginDeferWindowPos`, and
+    /// after them the second, of two (entries 4 and 5): each entry's
+    /// rectangle where the bits of a window go, on the screen, as the last
+    /// call that used it left it (`take_defer_slots`).
+    pub defer_slots: [[i32; 4]; 6],
+    /// The windows `SetWindowPos` is placing, as one list, until
+    /// `end_placing` (`moved.rs`).
+    pub placing: Option<crate::moved::PlacingList>,
     /// Whether a call has the block of four.
     pub defer_slots_taken: bool,
     /// Whether the desktop itself is to be drawn again when paints are next
     /// looked for, as after the system colours change.
     pub background_due: bool,
+    /// What of the desktop itself is due, drawn when paints are next
+    /// looked for, or sooner (`invalidate_through`).
+    pub background_region: Option<winbox_raster::ClipRegion>,
     /// The mouse's buttons down, left 1, right 2, middle 4; the window whose
     /// caption they were pressed on, until let go; and the last press that
     /// may begin a double click, as USER keeps it (`mouse_scan.rs`).
@@ -620,9 +627,11 @@ impl System {
             caption_press: None,
             double_click: crate::mouse_scan::DoubleClick::default(),
             background_due: false,
+            background_region: None,
             deferred: Vec::new(),
             deferred_slots: Vec::new(),
-            defer_slots: [[0; 4]; 4],
+            defer_slots: [[0; 4]; 6],
+            placing: None,
             defer_slots_taken: false,
             notifications: Vec::new(),
             task_order: crate::task_order::TaskOrder::default(),

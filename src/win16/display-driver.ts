@@ -239,6 +239,81 @@ export function disableAnswer(driverFile: string | undefined) {
 }
 
 /**
+ * Who keeps the bits a `CS_SAVEBITS` window saves, by the display driver's
+ * file (`save-bits.ts`): USER asks the driver where its `RASTERCAPS` has
+ * `RC_SAVEBITMAP` (`USER.EXE` seg3 `1c06`-`1c28`) -- `'driver'`, whose
+ * answer `saveScreenBitmap` gives, read out of `VGA.DRV` alone; the
+ * Hercules's and `SVGA256.DRV` have none, and USER keeps them in a bitmap
+ * of its own, `'user'`. The EGA's, the Super VGA's, the 8514/a's and the
+ * XGA's have it and are not read out (the files here are blanked):
+ * `'unread'`, nothing kept.
+ */
+export function saveScreenBitmapRule(driverFile: string | undefined) {
+  switch ((driverFile ?? 'VGA.DRV').toUpperCase()) {
+    case 'VGA.DRV':
+      return 'driver';
+    case 'HERCULES.DRV':
+    case 'SVGA256.DRV':
+      return 'user';
+    default:
+      return 'unread';
+  }
+}
+
+/**
+ * `VGA.DRV`'s `SaveScreenBitmap(lpRect, cmd)` (seg1 `2be2`, ordinal 92):
+ * one rectangle kept at a time, in the video memory past the screen's,
+ * its flags the byte at 1F4h -- bit 0 the driver has `RC_SAVEBITMAP`
+ * (seg4 `0128`-`0134`), bit 1 a rectangle kept, bit 2 the memory used
+ * since, as the screen's state is put back (seg1 `00a7`). **Read out**:
+ *
+ * * `cmd` 0 keeps it (`2c02`-`2c0c`, `2f10`-`300c`): nought where one is
+ *   kept already, or the rectangle is empty one way, or its bytes -- from
+ *   the byte its left edge is in to the byte its right is, 640 by 480 held
+ *   to the screen -- come to more than 6000h a plane; else −1.
+ * * `cmd` 1 puts it back (`2c20`-`2f09`): nought, nothing kept after, where
+ *   none is kept or the memory was used since; else −1, all of the
+ *   rectangle put back.
+ * * Any other lets it go, −1 (`2c18`).
+ *
+ * The bits themselves are kept with USER's record (`save-bits.ts`).
+ * WinBox's screen is never given up, so the memory is never used since.
+ */
+export function saveScreenBitmap(system: any, rect: number[], cmd: number) {
+  const state = (system._saveScreen ??= { kept: false });
+
+  if (cmd === 0) {
+    if (state.kept || rect[0] === rect[2] || rect[1] === rect[3]) {
+      return 0;
+    }
+
+    const held = (value: number, most: number) => Math.min(Math.max(value, 0), most);
+    const left = held(rect[0], 0x27f) & ~7;
+    const right = (held(rect[2] - 1, 0x27f) & ~7) + 7;
+    const rows = held(rect[3] - 1, 0x1df) - held(rect[1], 0x1df) + 1;
+
+    if (((right - left + 1) >> 3) * rows > 0x6000) {
+      return 0;
+    }
+
+    state.kept = true;
+    return 0xffff;
+  }
+
+  if (cmd === 1) {
+    if (!state.kept) {
+      return 0;
+    }
+
+    state.kept = false;
+    return 0xffff;
+  }
+
+  state.kept = false;
+  return 0xffff;
+}
+
+/**
  * What a display driver's `Enable` answers to `Resurrection`, which asks
  * for the device set up (the style's bit 0 clear), by the driver's file:
  * 1 where the mode is set. **Read out** of `VGA.DRV` seg4 `02b2` (seg4

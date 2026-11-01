@@ -104,6 +104,16 @@ pub struct Window {
     /// `RDW_NOINTERNALPAINT` (`4323`). The TypeScript engine's
     /// `DesktopWindow.internalPaint`.
     pub internal_paint: bool,
+    /// Made due by another task than its own, not yet looked at: USER's
+    /// flag 20h of the word at 24h (`USER.EXE` seg1 `4242`-`424c`); a
+    /// program's validation passes it over (`4315`-`4320`). Taken off by
+    /// `BeginPaint`, its `WM_PAINT` taken, `GetUpdateRect` and
+    /// `GetUpdateRgn` (`764c`, `787a`, `4483`, `4684`, `47a3`). The
+    /// TypeScript engine's `otherTask`.
+    pub other_task: bool,
+    /// Its `WM_PAINT` sent by `UpdateWindow`, `BeginPaint` not yet called
+    /// (`447f`, `764c`). The TypeScript engine's `paintSent`.
+    pub paint_sent: bool,
     pub needs_nc_paint: bool,
     pub needs_frame: bool,
     /// Its frame changed (`SWP_FRAMECHANGED`): `WM_NCPAINT` is given a

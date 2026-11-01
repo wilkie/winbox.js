@@ -281,6 +281,22 @@ export function drawSysErrorBox(
  * Afterwards what the box covered is drawn again.
  */
 export async function sysErrorBox(system: any, text: string, caption: string, buttons: number[]) {
+  /* USER's word at E0h set while the box is up, as it was before after
+   * (`USER.EXE` seg1 `9350`-`9359`, `9a76`-`9a79`): `SetWindowPos` takes its
+   * second block then, and no bits are saved (`takeDeferSlots`,
+   * `save-bits.ts`). */
+  const was = system._inSysErrorBox;
+
+  system._inSysErrorBox = true;
+
+  try {
+    return await sysErrorBoxUp(system, text, caption, buttons);
+  } finally {
+    system._inSysErrorBox = was;
+  }
+}
+
+async function sysErrorBoxUp(system: any, text: string, caption: string, buttons: number[]) {
   const desktop = system.rasterDesktop;
   const input = system.rasterInput;
 

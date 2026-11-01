@@ -64,6 +64,16 @@ pub struct Lock {
     pub gone: bool,
 }
 
+/// One of USER's records of a rectangle kept as it was, the list at its
+/// word 13Eh (seg13 `1e72`): the lock's (its flag 2), or the bits a
+/// `CS_SAVEBITS` window saved, by its place in `saves` (`save_bits`). Each
+/// is told what is drawn alike (seg1 `074e`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Record {
+    Lock,
+    Save(usize),
+}
+
 /// What a context of USER's is lent for.
 enum Lent {
     Desktop,
@@ -125,6 +135,7 @@ impl System {
     fn lock_counts(
         &self,
         lock: &Lock,
+        saved: bool,
         window: Option<usize>,
         mut rect: Rect,
         flags: u32,
@@ -132,9 +143,11 @@ impl System {
         let locked = lock.window;
         let lock_rect = lock.rect?;
 
+        // Drawing with `DCX_LOCKWINDOWUPDATE` does not count against the
+        // lock, and does against saved bits (`08a9`-`08b3`).
         if self.windows[locked].is_none()
             || !self.user_shows(window, flags & DCX_WINDOW == 0)
-            || flags & DCX_LOCKWINDOWUPDATE != 0
+            || (flags & DCX_LOCKWINDOWUPDATE != 0 && !saved)
         {
             return None;
         }
@@ -186,6 +199,12 @@ impl System {
         };
 
         if at == locked {
+            // The saving window's own drawing, and its children's, does not
+            // count against what it saved (`08cd`-`08d7`).
+            if saved {
+                return None;
+            }
+
             if window == locked {
                 return within(rect);
             }
@@ -230,21 +249,63 @@ impl System {
     /// longer as it was. `flags` are the context's, `DCX_WINDOW` and
     /// `DCX_LOCKWINDOWUPDATE`.
     pub(crate) fn lock_touched(&mut self, window: Option<usize>, rect: Rect, flags: u32) {
-        let Some(lock) = self.user_calls.locked.as_ref() else {
-            return;
+        self.touch(Record::Lock, window, rect, flags);
+
+        // Saved bits all drawn over are let go (`081c`, seg1 `0959`).
+        let saving: Vec<usize> = self
+            .user_calls
+            .saves
+            .iter()
+            .map(|saved| saved.kept.window)
+            .collect();
+
+        for window_saved in saving {
+            let Some(at) = self
+                .user_calls
+                .saves
+                .iter()
+                .position(|saved| saved.kept.window == window_saved)
+            else {
+                continue;
+            };
+
+            if self.touch(Record::Save(at), window, rect, flags) {
+                self.discard_saved(window_saved);
+            }
+        }
+    }
+
+    /// A record of USER's, if it is kept.
+    fn record(&self, which: Record) -> Option<&Lock> {
+        match which {
+            Record::Lock => self.user_calls.locked.as_ref(),
+            Record::Save(at) => self.user_calls.saves.get(at).map(|saved| &saved.kept),
+        }
+    }
+
+    /// One record told of drawing (seg1 `079a`): true where all of it is now
+    /// drawn over.
+    fn touch(&mut self, which: Record, window: Option<usize>, rect: Rect, flags: u32) -> bool {
+        let Some(lock) = self.record(which) else {
+            return false;
         };
 
         if lock.gone {
-            return;
+            return false;
         }
 
         let Some(lock_rect) = lock.rect else {
-            return;
+            return false;
         };
-        let Some(part) = self.lock_counts(lock, window, rect, flags) else {
-            return;
+        let Some(part) =
+            self.lock_counts(lock, matches!(which, Record::Save(_)), window, rect, flags)
+        else {
+            return false;
         };
-        let lock = self.user_calls.locked.as_mut().expect("the lock");
+        let lock = match which {
+            Record::Lock => self.user_calls.locked.as_mut().expect("the lock"),
+            Record::Save(at) => &mut self.user_calls.saves[at].kept,
+        };
         let still = lock
             .still
             .take()
@@ -253,6 +314,13 @@ impl System {
 
         lock.gone = still.kind() == 1;
         lock.still = Some(still);
+        lock.gone
+    }
+
+    /// Whether USER keeps any record, the lock or saved bits (its word
+    /// 13Eh).
+    pub(crate) fn any_kept(&self) -> bool {
+        self.user_calls.locked.is_some() || !self.user_calls.saves.is_empty()
     }
 
     /// What an entry is lent for: none for no window.
@@ -311,7 +379,7 @@ impl System {
     /// Every context's bounds taken back, where a window is locked (seg1
     /// `06df`).
     pub(crate) fn harvest_all(&mut self) {
-        if self.user_calls.locked.is_none() || self.dc_entries.list.is_empty() {
+        if !self.any_kept() || self.dc_entries.list.is_empty() {
             return;
         }
 
@@ -325,7 +393,13 @@ impl System {
     /// What a window was due within the lock's rectangle no longer due, and
     /// counted as drawn; then the windows in it, with `deep` (seg13 `206b`):
     /// false where all of the rectangle was taken.
-    fn take_due(&mut self, lock_rect: Rect, index: usize, deep: bool) -> bool {
+    pub(crate) fn take_due(
+        &mut self,
+        which: Record,
+        lock_rect: Rect,
+        index: usize,
+        deep: bool,
+    ) -> bool {
         if self.shown(index).needs_paint {
             let due = self.update_region(index);
             let mut area = if self.shown(index).dirty.is_some() {
@@ -360,14 +434,14 @@ impl System {
                     self.shown_mut(index).needs_erase = false;
                 }
 
-                self.lock_touched(Some(index), area, DCX_WINDOW);
+                // Told to this record alone (seg13 `20e1`, seg1 `079a`).
+                if self.touch(which, Some(index), area, DCX_WINDOW) {
+                    if let Record::Save(at) = which {
+                        let window = self.user_calls.saves[at].kept.window;
 
-                if self
-                    .user_calls
-                    .locked
-                    .as_ref()
-                    .is_some_and(|lock| lock.gone)
-                {
+                        self.discard_saved(window);
+                    }
+
                     return false;
                 }
             }
@@ -375,7 +449,7 @@ impl System {
 
         if deep {
             for child in self.windows_in(Some(index)) {
-                if !self.take_due(lock_rect, child, true) {
+                if !self.take_due(which, lock_rect, child, true) {
                     return false;
                 }
             }
@@ -384,10 +458,12 @@ impl System {
         true
     }
 
-    /// What a window is made due, its client area or a rectangle of it,
-    /// told to the lock (`USER.EXE` seg1 `3f41`-`3f7c`).
-    pub(crate) fn tell_lock(&mut self, index: usize, rect: Option<Rect>) {
-        if self.user_calls.locked.is_none() {
+    /// What a window is made due, told to the records USER keeps
+    /// (`USER.EXE` seg1 `3f41`-`3f7c`): the rectangle given, in its client
+    /// area's terms, or all, within its client area -- within its whole
+    /// window with `frame`, `RDW_FRAME` (`3edd`-`3efc`; `rdwmore`).
+    pub(crate) fn tell_lock(&mut self, index: usize, rect: Option<Rect>, frame: bool) {
+        if !self.any_kept() {
             return;
         }
 
@@ -395,14 +471,17 @@ impl System {
         let left = shown.left + shown.client.left;
         let top = shown.top + shown.client.top;
         let (width, height) = (shown.client_width(), shown.client_height());
+        let within = if frame {
+            self.window_rect(index)
+        } else {
+            [left, top, left + width, top + height]
+        };
         let told = match rect {
-            Some(rect) => [
-                rect[0].max(0) + left,
-                rect[1].max(0) + top,
-                rect[2].min(width) + left,
-                rect[3].min(height) + top,
-            ],
-            None => [left, top, left + width, top + height],
+            Some(rect) => cut(
+                [rect[0] + left, rect[1] + top, rect[2] + left, rect[3] + top],
+                within,
+            ),
+            None => within,
         };
 
         if told[0] < told[2] && told[1] < told[3] {
@@ -423,8 +502,10 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             return Ok(Answer::Word(0));
         }
 
-        // Windows' bounds emptied in every context (`1eaa`-`1ec3`).
+        // Windows' bounds emptied in every context (`1eaa`-`1ec3`) -- taken
+        // back for the records kept, where USER keeps any (`1e9c`-`1ea8`).
         system.dc_entries_made();
+        system.harvest_all();
 
         for at in 0..system.dc_entries.list.len() {
             let dc = system.dc_entries.list[at].dc;
@@ -456,7 +537,7 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
             let parent = system.shown(window).parent;
 
             if let Some(parent) = parent {
-                system.take_due(rect, parent, false);
+                system.take_due(Record::Lock, rect, parent, false);
             }
 
             let brothers = system.windows_in(parent);
@@ -466,7 +547,7 @@ pub(super) fn lock_window_update(system: &mut System, args: &mut Args) -> Result
                 .unwrap_or(brothers.len());
 
             for &brother in &brothers[from..] {
-                if !system.take_due(rect, brother, true) {
+                if !system.take_due(Record::Lock, rect, brother, true) {
                     break;
                 }
             }
@@ -573,7 +654,7 @@ mod tests {
         let hwnd = with_window(&mut system);
 
         assert_eq!(lock(&mut system, hwnd), Answer::Word(1));
-        system.tell_lock(0, Some([2, 3, 6, 8]));
+        system.tell_lock(0, Some([2, 3, 6, 8]), false);
         assert!(!system.windows[0].as_ref().expect("the window").needs_paint);
         assert_eq!(lock(&mut system, 0), Answer::Word(1));
 

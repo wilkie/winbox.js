@@ -9,7 +9,7 @@
 #![allow(clippy::unnecessary_wraps)]
 
 pub(crate) mod arrange;
-mod lock_update;
+pub(crate) mod lock_update;
 pub mod message_box;
 mod popups;
 pub mod props;
@@ -42,6 +42,14 @@ pub struct UserCalls {
     pub document_menus: std::collections::HashSet<usize>,
     /// The window `LockWindowUpdate` locked.
     pub locked: Option<lock_update::Lock>,
+    /// The bits `CS_SAVEBITS` windows saved, newest first (`save_bits`).
+    pub saves: Vec<crate::save_bits::Saved>,
+    /// `VGA.DRV`'s rectangle kept by its `SaveScreenBitmap`, its byte
+    /// 1F4h's bit 1 (`display::save_screen_bitmap`).
+    pub screen_kept: bool,
+    /// USER's word at E0h: its system error box is up (`USER.EXE` seg1
+    /// `9350`-`9359`).
+    pub in_sys_error_box: bool,
     /// How many message boxes are open.
     pub message_boxes: u16,
 }

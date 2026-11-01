@@ -34,8 +34,11 @@ import {
   RDW_FRAME,
   RDW_INVALIDATE,
   RDW_NOCHILDREN,
+  madeFor31,
 } from './invalidate-through.js';
 import { windowDestroyed, windowsChanged } from './dc-entries.js';
+import { anyKept, harvestAll } from './lock-window-update.js';
+import { discardSaved, discardWithin, hasSaved, restoreUnder, saveUnder } from './save-bits.js';
 
 /**
  * The screen as USER keeps it: one bitmap of the display's pixels, and the
@@ -83,6 +86,42 @@ export const HWND_NOTOPMOST = 0xfffe;
 export type Insert =
   | { to: 'stay' | 'top' | 'bottom' | 'topmost' | 'notTopmost' }
   | { to: 'after'; other: DesktopWindow };
+
+const SWP_NOSIZE = 0x0001;
+const SWP_NOMOVE = 0x0002;
+const SWP_NOZORDER = 0x0004;
+const SWP_SHOWWINDOW = 0x0040;
+const SWP_HIDEWINDOW = 0x0080;
+
+/** A window of a list `SetWindowPos` places (`Desktop.beginPlacing`), one of USER's entries. */
+interface Placing {
+  window: DesktopWindow;
+  /** Its visible region before anything of the list was placed (`USER.EXE` seg7 `09a0`). */
+  old: ClipRegion;
+  wasVisible: boolean;
+  /** Where it was, and whether it showed (`Desktop.#placingKey`). */
+  wasAt: string;
+  /** Where its bits go, on the screen (the entry's +16h); null for its whole window. */
+  dest: number[] | null;
+  /** How far its bits come. */
+  dx: number;
+  dy: number;
+  /** Due all of itself already, by its caller. */
+  whole: boolean;
+  /** Drawn by its caller already (`placingSkip`). */
+  skip: boolean;
+  /** What it was asked (`placingFlags`), null for moved or sized. */
+  flags: number | null;
+  /** More of the screen made due with it: an icon's title where it was and is. */
+  extra: ClipRegion | null;
+}
+
+/** The windows of a list being placed, and the screen as it was before (`Desktop.beginPlacing`). */
+interface PlacingList {
+  entries: Placing[];
+  screen: Uint8Array;
+  depth: number;
+}
 
 /** Where two rectangles meet; empty where they do not. */
 function cut(a: number[], b: number[]) {
@@ -996,7 +1035,7 @@ export class Desktop {
    * sent `WM_PAINT` for that window's place, and already at the top,
    * nothing).
    */
-  show(window: DesktopWindow, whole = true, allShown = true) {
+  show(window: DesktopWindow, whole = true, allShown?: boolean) {
     /* A child as `SetWindowPos` shows it (`placeShown`): its own children
      * show with it -- a document window made in an MDI client not yet shown
      * was drawn nowhere, and is drawn now. */
@@ -1011,9 +1050,22 @@ export class Desktop {
       return;
     }
 
+    /* Drawn as `SetWindowPos` draws its list: the window, and the windows
+     * brought up with it (`#bringUp`), each where it shows now and did not
+     * (`endPlacing`). */
+    this.beginPlacing([window]);
+    this.placingFlags(
+      window,
+      window.visible ? SWP_NOMOVE | SWP_NOSIZE : SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW
+    );
+
+    if (window.iconTitle && !window.iconTitle.visible) {
+      this.#entryOf(window.iconTitle);
+      this.#placedWhole(window.iconTitle);
+    }
+
     const was = this.active;
     const wasTop = this.activeTop;
-    const shownBefore = this.owners.slice();
     const family = this.#bringUp(window);
 
     window.visible = true;
@@ -1033,14 +1085,6 @@ export class Desktop {
 
     this.#own();
 
-    /* Any other window brought up where it had been covered is due there --
-     * an owner come up beneath the window it owns, where that had lain under
-     * another (`showseq`). */
-    this.#gained(
-      shownBefore,
-      whole ? [window, ...family.filter((member) => this.#within(member, window))] : []
-    );
-
     if (was && was !== window) {
       this.paintFrame(was);
     }
@@ -1054,6 +1098,7 @@ export class Desktop {
         this.paintFrame(window.iconTitle);
       }
 
+      this.endPlacing(allShown);
       return;
     }
 
@@ -1082,6 +1127,8 @@ export class Desktop {
 
     window.needsErase = !drawn;
     window.needsPaint = !drawn;
+    this.#placedWhole(window);
+    this.endPlacing(allShown);
   }
 
   /**
@@ -1166,6 +1213,27 @@ export class Desktop {
         this.#ownedWithin(other, window) ||
         other === window.iconTitle
     );
+
+    /* The windows at the top it brings, and the family of the window that
+     * owns it, are of the list being placed, as they were (`endPlacing`). */
+    if (this.#list) {
+      let head = window;
+
+      while (head.owner && !head.owner.parent) {
+        head = head.owner;
+      }
+
+      for (const other of this.windows) {
+        if (
+          !other.parent &&
+          (family.includes(other) ||
+            (head !== window &&
+              (this.#ownedWithin(other, head) || other === head || other === head.iconTitle)))
+        ) {
+          this.#entryOf(other).flags ??= SWP_NOMOVE | SWP_NOSIZE;
+        }
+      }
+    }
 
     for (const member of family) {
       this.windows.splice(this.windows.indexOf(member), 1);
@@ -1288,10 +1356,17 @@ export class Desktop {
      * one hidden stays active, hidden (`USER.EXE` seg8 `0bb7`-`0bc0`, seg14
      * `0dc2`). `SetWindowPos` hiding it makes no other active. */
     const destroying = remove || !!(window as any).destroying;
-    /* A child hidden is drawn as `SetWindowPos` hides it: what showed of it
-     * made due through its parent, the windows in it too (`placeShown`). */
-    const childWas =
-      window.parent && window.visible && this.#showing(window) ? this.#placedRegion(window) : null;
+    /* Hidden, it is drawn as `SetWindowPos` hides it (`endPlacing`): what
+     * showed of it made due through its parent, the windows in it too, or
+     * the bits it saved put back. USER's own pop-up menus and switch window
+     * keep theirs by WinBox's own rule (`#restoreBits`). */
+    const listed = window.visible && !window.savedBits;
+
+    if (listed) {
+      this.beginPlacing([window]);
+      this.placingFlags(window, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW);
+    }
+
     const wasActive = window.active && !window.parent && !window.titleOf;
     const next = wasActive && activateNext ? this.#nextActive(window, destroying) : null;
 
@@ -1336,18 +1411,17 @@ export class Desktop {
 
       this.#own();
 
-      if (childWas) {
-        if (childWas.kind > 1) {
-          invalidateThrough(
-            this,
-            window.parent,
-            childWas,
-            RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN
-          );
-        }
-      } else if (!this.#restoreBits(window)) {
+      if (!listed && !this.#restoreBits(window)) {
         this.#exposeOwned(window, before);
       }
+    }
+
+    if (listed) {
+      this.endPlacing(false);
+    }
+
+    if (remove && this.system) {
+      discardWithin(this.system, this, window);
     }
 
     if (next) {
@@ -1373,18 +1447,14 @@ export class Desktop {
    */
   bringFamilyUp(window: DesktopWindow) {
     const order = this.windows.slice();
-    const before = this.owners.slice();
 
+    /* Drawn as `SetWindowPos` draws its list (`endPlacing`). */
+    this.beginPlacing([]);
     this.#bringUp(window);
     this.#own();
+    this.endPlacing(false);
 
-    const changed = this.windows.some((other, at) => other !== order[at]);
-
-    if (changed) {
-      this.#gained(before, []);
-    }
-
-    return changed;
+    return this.windows.some((other, at) => other !== order[at]);
   }
 
   /** The window a window at the top destroyed makes active (seg8 `0b95`-`0bb7`). */
@@ -1836,11 +1906,19 @@ export class Desktop {
     const parent = window.parent;
     const order = this.windows.slice();
     const topmost = window.topmost;
-    const before = this.owners.slice();
+
+    if (to.to === 'stay') {
+      return false;
+    }
+
+    /* Drawn as `SetWindowPos` draws its list (`endPlacing`): what it
+     * uncovers due where it now shows -- children that draw over their
+     * brothers, without `WS_CLIPSIBLINGS`, show as much as before, and
+     * nothing is. */
+    this.beginPlacing([window]);
+    this.placingFlags(window, SWP_NOMOVE | SWP_NOSIZE);
 
     switch (to.to) {
-      case 'stay':
-        return false;
       case 'top':
       case 'topmost':
       case 'notTopmost': {
@@ -1896,25 +1974,7 @@ export class Desktop {
       this.windows.length !== order.length ||
       this.windows.some((other, at) => other !== order[at]);
 
-    if (changed && this.#showing(window)) {
-      this.#own();
-
-      /* Children that draw over their brothers are not drawn again for
-       * being put in front of them or behind. */
-      const except = parent
-        ? this.windows.filter((other) => {
-            for (let at = other; at.parent; at = at.parent) {
-              if (at.parent === parent) {
-                return !(at.style & WS_CLIPSIBLINGS);
-              }
-            }
-
-            return false;
-          })
-        : [];
-
-      this.#gained(before, except);
-    }
+    this.endPlacing(false);
 
     return changed;
   }
@@ -1981,20 +2041,13 @@ export class Desktop {
     copy: boolean,
     classStyle: number,
     kept: { rect: number[]; dx: number; dy: number } | 'none' | null = null,
-    allShown = false,
+    allShown?: boolean,
     nccalc = true,
     stale: number[] | null = null
   ): number[] {
-    /* Nothing is drawn for a window in one that does not show (seg7
-     * `0557`-`0560`); one hidden has no region before or after. */
-    const showing = this.#showing(window);
+    this.beginPlacing([window]);
 
-    /* Before anything moves, its visible region as it was (seg7 `09a0`,
-     * `0c19`): its whole window, with `DCX_CLIPSIBLINGS` where it has
-     * `WS_CLIPSIBLINGS`, its children not taken out. */
-    const old = showing ? this.#placedRegion(window) : ClipRegion.EMPTY;
-    const bits = this.screen.indices.slice();
-    const stride = this.screen.width;
+    const entry = this.#entryOf(window);
     const [oldWidth, oldHeight] = [window.width, window.height];
     const clientOf = (one: DesktopWindow) => [
       one.left + one.client.left,
@@ -2042,10 +2095,6 @@ export class Desktop {
       }
     });
 
-    this.#own();
-
-    /* Its visible region as it is now (seg7 `05e0`). */
-    const now = showing ? this.#placedRegion(window) : ClipRegion.EMPTY;
     const sized = width !== oldWidth || height !== oldHeight;
     const redraw = kept
       ? kept === 'none'
@@ -2084,117 +2133,357 @@ export class Desktop {
       }
     }
 
-    if (!showing) {
-      return dest;
+    entry.dest = dest;
+    entry.dx = dx;
+    entry.dy = dy;
+
+    /* An icon's title, a window of its own, is made due where it was and
+     * is. */
+    if (title && titleWas) {
+      const both = unite(
+        ClipRegion.rect(titleWas[0], titleWas[1], titleWas[2], titleWas[3]),
+        ClipRegion.rect(title.left, title.top, title.left + title.width, title.top + title.height)
+      );
+
+      entry.extra = entry.extra ? unite(entry.extra, both) : both;
     }
 
-    /* What is copied (seg7 `060b`-`0768`): where the bits go, moved back to
-     * where they come from, within what showed of it; moved to where they
-     * go; less the window's update region and its parents' up to one with
-     * `WS_CLIPCHILDREN` -- nothing where one of them is due all over --
-     * and within what shows of it now. Nothing where either region is
-     * empty or the window is due all over. */
-    let copied: ClipRegion | null = null;
+    this.endPlacing(allShown);
 
-    if (
-      dest[0] < dest[2] &&
-      dest[1] < dest[3] &&
-      old.kind > 1 &&
-      now.kind > 1 &&
-      !(window.needsPaint && !(window as any).dirtyRect)
-    ) {
-      let part: ClipRegion | null = ClipRegion.rect(
-        dest[0] - dx,
-        dest[1] - dy,
-        dest[2] - dx,
-        dest[3] - dy
-      )
-        .intersect(old)
-        .offset(dx, dy);
+    return dest;
+  }
 
-      for (let up: DesktopWindow | null = window; up && part; up = up.parent) {
-        if (up.needsPaint) {
-          part = (up as any).dirtyRect ? part.subtract(updateOf(up)) : null;
+  /**
+   * The windows `SetWindowPos` is placing, as one list (`USER.EXE` seg7
+   * `0526`), until `endPlacing`: each window's visible region as it was,
+   * taken before anything of the list is placed (`09a0`); and the screen as
+   * it was, for the bits a `CS_SAVEBITS` window saves as it is shown
+   * (`0b75`-`0bde`). Lists begun within a list are of it.
+   */
+  #list: PlacingList | null = null;
+
+  /**
+   * A list of windows begun (`beginPlacing`), its windows' regions as they
+   * are. Every context's bounds are taken back first for the records USER
+   * keeps (`057a`).
+   */
+  beginPlacing(windows: DesktopWindow[]) {
+    if (this.#list) {
+      this.#list.depth++;
+    } else {
+      if (this.system && anyKept(this.system)) {
+        harvestAll(this.system);
+      }
+
+      this.#list = { entries: [], screen: this.screen.indices.slice(), depth: 1 };
+    }
+
+    for (const window of windows) {
+      this.#entryOf(window);
+    }
+  }
+
+  /**
+   * Where a window is, to tell whether the list changed it: its place and
+   * size, whether it is shown, and the windows in front of it among its
+   * brothers.
+   */
+  #placingKey(window: DesktopWindow) {
+    const front = this.windows
+      .slice(0, Math.max(this.windows.indexOf(window), 0))
+      .filter((other) => other.parent === window.parent)
+      .map((other) => other.id);
+
+    return [window.left, window.top, window.width, window.height, window.visible, ...front].join();
+  }
+
+  /** A window's entry in the list, its region as it was taken as it is first named. */
+  #entryOf(window: DesktopWindow): Placing {
+    const list = this.#list as PlacingList;
+    let entry = list.entries.find((one) => one.window === window);
+
+    if (!entry) {
+      entry = {
+        window,
+        old: this.#showing(window) ? this.#placedRegion(window) : ClipRegion.EMPTY,
+        wasVisible: window.visible,
+        wasAt: this.#placingKey(window),
+        dest: null,
+        dx: 0,
+        dy: 0,
+        whole: false,
+        flags: null,
+        skip: false,
+        extra: null,
+      };
+      list.entries.push(entry);
+    }
+
+    return entry;
+  }
+
+  /**
+   * A window of the list due all of itself by its caller, as a window shown
+   * by `ShowWindow` is: not made due again through itself.
+   */
+  #placedWhole(window: DesktopWindow) {
+    if (this.#list) {
+      this.#entryOf(window).whole = true;
+    }
+  }
+
+  /**
+   * What a window of the list was asked, `SWP_` flags: where none are
+   * given, moved or sized. The bits it kept are let go by them
+   * (`088f`-`08b3`).
+   */
+  placingFlags(window: DesktopWindow, flags: number) {
+    if (this.#list) {
+      this.#entryOf(window).flags = flags;
+    }
+  }
+
+  /** A window of the list drawn by its caller already: nothing more for it here. */
+  placingSkip(window: DesktopWindow) {
+    if (this.#list) {
+      this.#entryOf(window).skip = true;
+    }
+  }
+
+  /**
+   * The list drawn as `SetWindowPos` draws it once every window of it is
+   * placed (`USER.EXE` seg7 `0526`), at the end of the outermost list.
+   * **Read out**, window by window in the list's order (`05c4`-`092e`):
+   *
+   * * Nothing at all where the parent of the first window does not show
+   *   (`0557`-`0560`).
+   * * A window shown with `CS_SAVEBITS` keeps the bits beneath it first, as
+   *   it is placed (`0b75`-`0bde`; `save-bits.ts`).
+   * * Its visible region as it is now (`05e0`); what is copied
+   *   (`060b`-`0705`): where its bits go (`dest`), moved back by how far
+   *   they come, within its old region, **less what the windows before it
+   *   copied** -- taken where its bits come from, which those copies may
+   *   have drawn over (`066e`-`068c`) -- moved on, less its update region
+   *   and its parents' up to one with `WS_CLIPCHILDREN` (none at all where
+   *   one is due all over), within its new region. Nothing where either
+   *   region is empty or it is due all over. Blitted from the screen as it
+   *   is, the windows before it copied already (`0713`-`0768`).
+   * * A window that kept bits, and showed where it does not now, has them
+   *   put back there; what is left due is that, with all of its new region
+   *   (`076d`-`07f3`), and what was copied counts only outside it. Else
+   *   what is due is its old region and its new together (`07f5`-`0828`).
+   * * **Less what every window so far copied** (`082a`-`088c`).
+   * * The bits a window kept let go where it was placed otherwise than
+   *   shown, or than with nothing but `SWP_NOZORDER | SWP_NOMOVE |
+   *   SWP_NOSIZE` (`088f`-`08b3`; `placingFlags`).
+   * * A window nothing of which was copied, that shows now, due all over
+   *   through itself, frame and all (`08de`-`08f0`, 485h).
+   * * What is due gathered (`08f5`-`092a`), and made due once through the
+   *   parent of the first window (`0939`-`0958`): `RDW_NOCHILDREN` where
+   *   every window was shown and is of a program made before 3.10
+   *   (`allShown`; counted by the windows themselves where not given),
+   *   else `RDW_ALLCHILDREN`.
+   */
+  endPlacing(allShown?: boolean) {
+    const list = this.#list as PlacingList;
+
+    if (--list.depth > 0) {
+      return;
+    }
+
+    this.#list = null;
+    this.#own();
+
+    const system = this.system;
+    const entries = list.entries;
+    const parent = entries[0]?.window.parent ?? null;
+
+    if (!entries.length || (parent && !this.#showing(parent))) {
+      return;
+    }
+
+    /* Kept as each is shown, the screen as it was (`0b75`-`0bde`). */
+    if (system) {
+      for (const entry of entries) {
+        if (!entry.wasVisible && entry.window.visible && this.windows.includes(entry.window)) {
+          saveUnder(system, this, entry.window, list.screen);
+        }
+      }
+    }
+
+    allShown ??= entries.every(
+      (entry) => !entry.wasVisible && entry.window.visible && !madeFor31(this, entry.window)
+    );
+
+    const stride = this.screen.width;
+    let copiedSoFar: ClipRegion | null = null;
+    let gathered: ClipRegion | null = null;
+
+    for (const entry of entries) {
+      const { window, old, dx, dy } = entry;
+
+      /* Nothing done to it -- not moved, sized, shown, hidden nor put
+       * elsewhere among its brothers -- it is passed over (seg7
+       * `0a4f`-`0a96`: its flags against 1807h, or against 1803h where it
+       * lies where it was asked, `1184`, marked `SWP_NOREDRAW`; `05c7`). */
+      if (entry.skip || entry.wasAt === this.#placingKey(window)) {
+        continue;
+      }
+      const now =
+        this.windows.includes(window) && this.#showing(window)
+          ? this.#placedRegion(window)
+          : ClipRegion.EMPTY;
+      const dest = entry.dest ?? [
+        window.left,
+        window.top,
+        window.left + window.width,
+        window.top + window.height,
+      ];
+      const oldShows = old.kind > 1;
+      const nowShows = now.kind > 1;
+
+      /* What is copied (`060b`-`0705`). */
+      let copied: ClipRegion | null = null;
+
+      if (
+        dest[0] < dest[2] &&
+        dest[1] < dest[3] &&
+        oldShows &&
+        nowShows &&
+        !(window.needsPaint && !(window as any).dirtyRect)
+      ) {
+        let part: ClipRegion | null = ClipRegion.rect(
+          dest[0] - dx,
+          dest[1] - dy,
+          dest[2] - dx,
+          dest[3] - dy
+        ).intersect(old);
+
+        if (part.kind > 1 && copiedSoFar) {
+          part = part.subtract(copiedSoFar);
         }
 
-        if (part && part.kind <= 1) {
-          part = null;
+        part = part.kind > 1 ? part.offset(dx, dy) : null;
+
+        for (let up: DesktopWindow | null = window; up && part; up = up.parent) {
+          if (up.needsPaint) {
+            part = (up as any).dirtyRect ? part.subtract(updateOf(up)) : null;
+          }
+
+          if (part && part.kind <= 1) {
+            part = null;
+          }
+
+          if (up.parent && up.parent.style & WS_CLIPCHILDREN) {
+            break;
+          }
         }
 
-        if (up.parent && up.parent.style & WS_CLIPCHILDREN) {
-          break;
+        copied = part ? part.intersect(now) : null;
+
+        if (copied && copied.kind <= 1) {
+          copied = null;
         }
       }
 
-      copied = part ? part.intersect(now) : null;
+      /* Blitted from the screen as it is (`0727`-`0768`). */
+      if (copied && (dx || dy)) {
+        const bits = this.screen.indices.slice();
 
-      if (copied && copied.kind <= 1) {
-        copied = null;
-      }
-    }
+        for (const band of copied.bands) {
+          for (let y = Math.max(band.top, 0); y < Math.min(band.bottom, this.screen.height); y++) {
+            for (const [l, r] of band.spans) {
+              for (let x = Math.max(l, 0); x < Math.min(r, stride); x++) {
+                const [fx, fy] = [x - dx, y - dy];
 
-    /* Blitted through a screen context whose visible region it is (seg7
-     * `0727`-`0768`). */
-    if (copied && (dx || dy)) {
-      for (const band of copied.bands) {
-        for (let y = Math.max(band.top, 0); y < Math.min(band.bottom, this.screen.height); y++) {
-          for (const [l, r] of band.spans) {
-            for (let x = Math.max(l, 0); x < Math.min(r, stride); x++) {
-              const [fx, fy] = [x - dx, y - dy];
-
-              if (fx >= 0 && fy >= 0 && fx < stride && fy < this.screen.height) {
-                this.screen.put(x, y, bits[fy * stride + fx]);
+                if (fx >= 0 && fy >= 0 && fx < stride && fy < this.screen.height) {
+                  this.screen.put(x, y, bits[fy * stride + fx]);
+                }
               }
             }
           }
         }
+
+        const box = copied.box;
+
+        this.screen.context.markRect(box.left, box.top, box.right, box.bottom);
       }
 
-      const box = copied.box;
+      const nothingCopied = !copied;
 
-      this.screen.context.markRect(box.left, box.top, box.right, box.bottom);
+      /* What is due: put back where it kept bits (`076d`-`07f3`), else its
+       * old region and its new together (`07f5`-`0828`). */
+      let due: ClipRegion | null = null;
+      const uncovered = oldShows ? (nowShows ? old.subtract(now) : old) : ClipRegion.EMPTY;
+
+      if (system && hasSaved(system, window) && oldShows && uncovered.kind > 1) {
+        const put = restoreUnder(system, this, window, uncovered);
+
+        if (put.due || nowShows) {
+          due = nowShows ? unite(put.region, now) : put.region;
+
+          if (copied) {
+            copied = copied.subtract(due);
+
+            if (copied.kind <= 1) {
+              copied = ClipRegion.EMPTY;
+            }
+          }
+        }
+      } else if (oldShows || nowShows) {
+        due = !oldShows ? now : !nowShows ? old : unite(old, now);
+      }
+
+      if (copied) {
+        copiedSoFar = copiedSoFar ? unite(copiedSoFar, copied) : copied;
+      }
+
+      if (due && copiedSoFar) {
+        due = due.subtract(copiedSoFar);
+      }
+
+      if (due && entry.extra) {
+        due = unite(due, entry.extra);
+      }
+
+      /* Placed otherwise than shown, or than with nothing but
+       * `SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE`, the bits it kept are let go
+       * (`088f`-`08b3`). */
+      const flags = entry.flags ?? 0;
+
+      if (
+        system &&
+        hasSaved(system, window) &&
+        !(flags & SWP_SHOWWINDOW) &&
+        (flags & 0x87) !== (SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE)
+      ) {
+        discardSaved(system, window);
+      }
+
+      if (!due || due.kind <= 1) {
+        continue;
+      }
+
+      if (nothingCopied && nowShows && !entry.whole) {
+        invalidateThrough(
+          this,
+          window,
+          null,
+          RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
+        );
+      }
+
+      gathered = gathered ? unite(gathered, due) : due;
     }
 
-    /* What is made due (seg7 `07f5`-`0958`): what showed of it and what
-     * shows, less what was copied. A window nothing of which was copied is
-     * made due all over through itself, frame and all (`08de`-`08f0`); the
-     * rest through its parent, the windows in it too -- only it where every
-     * window placed was shown (`093f`-`0958`). An icon's title, a window of
-     * its own, is made due where it was and is. */
-    let uncovered = old.kind <= 1 ? now : now.kind <= 1 ? old : unite(old, now);
-
-    if (copied) {
-      uncovered = uncovered.subtract(copied);
-    }
-
-    if (title && titleWas) {
-      uncovered = unite(
-        unite(uncovered, ClipRegion.rect(titleWas[0], titleWas[1], titleWas[2], titleWas[3])),
-        ClipRegion.rect(title.left, title.top, title.left + title.width, title.top + title.height)
-      );
-    }
-
-    if (uncovered.kind <= 1) {
-      return dest;
-    }
-
-    if (!copied && now.kind > 1) {
+    if (gathered && gathered.kind > 1) {
       invalidateThrough(
         this,
-        window,
-        null,
-        RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
+        parent,
+        gathered,
+        RDW_INVALIDATE | RDW_ERASE | (allShown ? RDW_NOCHILDREN : RDW_ALLCHILDREN)
       );
     }
-
-    invalidateThrough(
-      this,
-      window.parent,
-      uncovered,
-      RDW_INVALIDATE | RDW_ERASE | (allShown ? RDW_NOCHILDREN : RDW_ALLCHILDREN)
-    );
-
-    return dest;
   }
 
   /**
@@ -2218,6 +2507,21 @@ export class Desktop {
   }
 
   /**
+   * Windows shown, hidden or put elsewhere in the order of windows by
+   * `change`, drawn as `SetWindowPos` draws its list (`beginPlacing`,
+   * `endPlacing`): `members` the windows of the list.
+   */
+  #placing(members: DesktopWindow[], change: () => void, allShown?: boolean) {
+    this.beginPlacing(members);
+
+    try {
+      change();
+    } finally {
+      this.endPlacing(allShown);
+    }
+  }
+
+  /**
    * A child shown or hidden as `SetWindowPos` draws it (`USER.EXE` seg7
    * `0526`): what showed of it as it was, or shows as it is, made due
    * through its parent, the windows in it too -- only the parent where
@@ -2225,34 +2529,8 @@ export class Desktop {
    * over through itself, frame and all (`08de`-`08f0`). `change` shows or
    * hides it, nothing drawn.
    */
-  placeShown(window: DesktopWindow, change: () => void, allShown: boolean) {
-    const old = this.#placedRegion(window);
-
-    change();
-    this.#own();
-
-    const now = this.#placedRegion(window);
-    const uncovered = old.kind <= 1 ? now : now.kind <= 1 ? old : unite(old, now);
-
-    if (uncovered.kind <= 1) {
-      return;
-    }
-
-    if (now.kind > 1) {
-      invalidateThrough(
-        this,
-        window,
-        null,
-        RDW_INVALIDATE | RDW_ERASE | RDW_FRAME | RDW_ALLCHILDREN
-      );
-    }
-
-    invalidateThrough(
-      this,
-      window.parent,
-      uncovered,
-      RDW_INVALIDATE | RDW_ERASE | (allShown ? RDW_NOCHILDREN : RDW_ALLCHILDREN)
-    );
+  placeShown(window: DesktopWindow, change: () => void, allShown?: boolean) {
+    this.#placing([window], change, allShown);
   }
   /**
    * A window's children moved with its pixels by a scroll, as `USER.EXE`
@@ -2691,6 +2969,36 @@ export class Desktop {
   /** Whether the desktop itself is to be drawn again, when paints are next looked for. */
   backgroundDue = false;
 
+  /** What of the desktop itself is due, drawn when paints are next looked for, or sooner. */
+  backgroundRegion: ClipRegion | null = null;
+
+  /** A region of the desktop itself made due (`invalidateThrough`). */
+  backgroundDueIn(region: ClipRegion) {
+    if (region.kind > 1) {
+      this.backgroundRegion = this.backgroundRegion ? unite(this.backgroundRegion, region) : region;
+    }
+  }
+
+  /** The desktop itself drawn where it is due, now, nothing of it due after. */
+  paintBackgroundDue() {
+    const region = this.backgroundRegion;
+
+    this.backgroundRegion = null;
+
+    if (region) {
+      this.paintBackgroundIn(region);
+    }
+  }
+
+  /** The desktop itself drawn in a region of the screen, where no window shows. */
+  paintBackgroundIn(region: ClipRegion) {
+    for (const band of region.bands) {
+      for (const [left, right] of band.spans) {
+        this.paintBackground(left, band.top, right, band.bottom);
+      }
+    }
+  }
+
   /** The desktop itself, where no window shows: its wallpaper or its brush. */
   paintBackground(left = 0, top = 0, right = this.screen.width, bottom = this.screen.height) {
     const desktop = DeviceBitmap.view(
@@ -3048,6 +3356,8 @@ export class Desktop {
 
   /** The first window due a paint that also passes `match`, as `unpainted`. */
   unpaintedWhere(match: (window: DesktopWindow) => boolean) {
+    this.paintBackgroundDue();
+
     if (this.backgroundDue) {
       this.backgroundDue = false;
       this.paintBackground();
@@ -3114,6 +3424,10 @@ export class Desktop {
       (window as any).needsFrame = false;
       this.paintFrame(window);
     }
+
+    /* Another task's making it due looked at as its `WM_PAINT` is taken
+     * (`USER.EXE` seg1 `787a`, `4483`). */
+    (window as any).otherTask = false;
 
     /* Its paint of its own taken as its `WM_PAINT` is (`USER.EXE` seg1
      * `7864`-`786a`, `4469`-`446f`). With no update region, `BeginPaint`'s
@@ -4132,6 +4446,19 @@ export class Desktop {
    * (`owners`).
    */
   showInPlace(window: DesktopWindow) {
+    /* Drawn as `SetWindowPos` draws its list (`endPlacing`). */
+    this.beginPlacing([window]);
+    this.placingFlags(
+      window,
+      SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | (window.visible ? 0 : SWP_SHOWWINDOW)
+    );
+    this.#placedWhole(window);
+
+    if (window.iconTitle && !window.iconTitle.visible) {
+      this.#entryOf(window.iconTitle);
+      this.#placedWhole(window.iconTitle);
+    }
+
     window.visible = true;
     this.#own();
     this.paintFrame(window);
@@ -4158,6 +4485,7 @@ export class Desktop {
 
     window.needsErase = !drawn;
     window.needsPaint = !drawn;
+    this.endPlacing();
   }
 
   /** Whether a window, or the window at the top it is in, is owned by another, at any remove. */
@@ -4187,21 +4515,25 @@ export class Desktop {
         continue;
       }
 
-      /* Hidden where it lies: its place is kept for when it shows again. */
+      /* Hidden where it lies: its place is kept for when it shows again.
+       * Drawn as `SetWindowPos` draws its list (`endPlacing`). */
       if (hide && other.visible) {
+        this.beginPlacing([other]);
+        this.placingFlags(other, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW);
         other.hiddenWithOwner = true;
         other.visible = false;
         other.active = false;
-
-        const before = this.owners.slice();
-
         this.#own();
-        this.#exposeOwned(other, before);
+        this.endPlacing(false);
       } else if (!hide && other.hiddenWithOwner) {
+        this.beginPlacing([other]);
+        this.placingFlags(other, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+        this.#placedWhole(other);
         other.hiddenWithOwner = false;
         other.visible = true;
         this.#own();
         this.#dueWhole(other);
+        this.endPlacing();
       }
     }
   }
@@ -4248,6 +4580,11 @@ export class Desktop {
   showOnTop(window: DesktopWindow) {
     const family = this.windows.filter((other) => this.#within(other, window));
 
+    /* Drawn as `SetWindowPos` draws its list (`endPlacing`). */
+    this.beginPlacing([window]);
+    this.placingFlags(window, SWP_NOMOVE | SWP_NOSIZE | (window.visible ? 0 : SWP_SHOWWINDOW));
+    this.#placedWhole(window);
+
     for (const member of family) {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
@@ -4256,6 +4593,7 @@ export class Desktop {
     window.visible = true;
     this.#own();
     this.#dueWhole(window);
+    this.endPlacing();
   }
 
   /** Takes a child from its parent to lie on the desktop where it is, as `SetParent` with none does. */
@@ -4588,67 +4926,6 @@ export class Desktop {
    * part unless it leaves its children out of its painting. `before` is who
    * showed where, as it was.
    */
-  /**
-   * Each window, but those `except`, that shows now where it did not before
-   * -- `before` is who showed where, as it was -- due its frame, an erase and
-   * a paint of the rectangle round that part.
-   */
-  #gained(before: Uint16Array, except: DesktopWindow[]) {
-    const skip = new Set(except.map((window) => window.id));
-    const areas = new Map<number, number[]>();
-    const stride = this.screen.width;
-
-    for (let at = 0; at < this.owners.length; at++) {
-      const now = this.owners[at];
-
-      if (!now || now === before[at] || skip.has(now)) {
-        continue;
-      }
-
-      const x = at % stride;
-      const y = (at - x) / stride;
-      const area = areas.get(now);
-
-      if (area) {
-        area[0] = Math.min(area[0], x);
-        area[1] = Math.min(area[1], y);
-        area[2] = Math.max(area[2], x + 1);
-        area[3] = Math.max(area[3], y + 1);
-      } else {
-        areas.set(now, [x, y, x + 1, y + 1]);
-      }
-    }
-
-    for (const [id, area] of areas) {
-      const window = this.#byId.get(id);
-
-      if (!window) {
-        continue;
-      }
-
-      if (!paintsItself(window)) {
-        this.paintFrame(window);
-      } else {
-        (window as any).needsNcPaint = true;
-      }
-
-      const was = (window as any).dirtyRect;
-
-      (window as any).dirtyRect = !window.needsPaint
-        ? area
-        : was
-          ? [
-              Math.min(was[0], area[0]),
-              Math.min(was[1], area[1]),
-              Math.max(was[2], area[2]),
-              Math.max(was[3], area[3]),
-            ]
-          : undefined;
-      window.needsErase = true;
-      window.needsPaint = true;
-    }
-  }
-
   #exposeOwned(gone: DesktopWindow, before: Uint16Array) {
     this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
 
