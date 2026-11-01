@@ -745,6 +745,33 @@ export interface EngineTextArgs {
   options: number;
   /** The context itself, where GDI draws for it without the driver. */
   surface?: any;
+  /**
+   * The stack pointer as GDI's drawing reaches its stack's measure (seg1
+   * `62a5`), where it is known: `EngineExtTextOut`'s.
+   */
+  stack?: number;
+}
+
+/** The room GDI keeps on the stack below the string's (seg1 `62ac`). */
+const STACK_KEPT = 0x400;
+
+/**
+ * The count cut to what the stack holds (seg1 `62a5`-`62c0`): the stack
+ * pointer less the task's stack limit at 0Ah of the stack's segment, as
+ * unsigned words; under 400h nothing is drawn (null); else that less 400h,
+ * shifted right two with its sign, the most characters, compared unsigned.
+ */
+export function stackCut(system: any, stack: number, count: number) {
+  const core = system.machine.cpu.core;
+  const room = (stack - core.read16(core.ss, 0x0a)) & 0xffff;
+
+  if (room < STACK_KEPT) {
+    return null;
+  }
+
+  const most = (((room - STACK_KEPT) << 16) >> 18) & 0xffff;
+
+  return most < (count & 0xffff) ? most : count;
 }
 
 /**
@@ -784,11 +811,16 @@ export interface EngineTextArgs {
  * given each call through `byStrBlt` instead of its `ExtTextOut` (seg8
  * `00e4`). The driver's answers are not kept.
  *
- * Not followed: the count cut to what GDI's stack holds (`62a5`), which
- * hangs on how deep GDI's own frames are; the context's flag 40h at 0Bh,
- * which counts the string turned, and which only a context of the display
- * has (`CreateDC`, seg1 `0249`-`024f`); and the `DRAWMODE` GDI hands on for
- * no characters, which is what its stack held.
+ * The count is cut to what GDI's stack holds (`stackCut`, `62a5`) where
+ * the stack pointer is known, `EngineExtTextOut`'s; a context flagged 40h
+ * at 0Bh, one of a driver named `MGXWMF.DRV` (`CreateDC`, seg1 `024f`),
+ * has its string's widths the advances alone, as a turned font's
+ * (`62d0`), the first glyph's A space not taken. **Recorded** by
+ * `prttstk`.
+ *
+ * Not followed: the cut for GDI's own `ExtTextOut` (`620e`), which hangs on
+ * how deep its frames are, which WinBox's GDI does not have; and the
+ * `DRAWMODE` GDI hands on for no characters, which is what its stack held.
  */
 export async function drawEngineText(system: any, args: EngineTextArgs) {
   const surface = args.surface ?? system.handles.resolve(args.hdc);
@@ -827,7 +859,18 @@ export async function drawEngineText(system: any, args: EngineTextArgs) {
     return answer;
   }
 
-  const count = signed16(args.count);
+  let count = signed16(args.count);
+
+  if (args.stack !== undefined) {
+    const cut = stackCut(system, args.stack, count);
+
+    if (cut === null) {
+      return answer;
+    }
+
+    count = cut;
+  }
+
   const cacheFont = readyGlyphs(system, font, args.string, count);
   const handle = read16(system, font, FI_BLOCK);
 
@@ -836,7 +879,17 @@ export async function drawEngineText(system: any, args: EngineTextArgs) {
   }
 
   try {
-    await drawString(system, surface, args, font, cacheFont, raster, turned && !outline, count);
+    await drawString(
+      system,
+      surface,
+      args,
+      font,
+      cacheFont,
+      raster,
+      turned && !outline,
+      count,
+      turned || Boolean(surface?.mgxwmf)
+    );
   } finally {
     GlobalUnlock.call(system, handle);
   }
@@ -852,7 +905,8 @@ async function drawString(
   cacheFont: number,
   raster: number,
   turned: boolean,
-  count: number
+  count: number,
+  advancesAlone: boolean
 ) {
   const pdevice = surface.driverDevice;
   const file = (cacheFont & 0xffff0000) >>> 0;
@@ -885,7 +939,7 @@ async function drawString(
         file,
         args.string,
         count,
-        turned,
+        advancesAlone,
         args.widths >>> 0,
         justification,
         bold,

@@ -539,6 +539,13 @@ fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<An
     Ok(Answer::Word(1))
 }
 
+/// What `EngineExtTextOut`'s frames and `6223`'s take of the stack below
+/// the return address of the call: its own `enter 6` and two words
+/// (`669d`-`66a4`), the 20 words of arguments it pushes and the near call
+/// (`66f0`-`6728`), `6223`'s `enter 90h` and three words (`6222`-`6229`).
+/// `CEh`.
+const ENGINE_TEXT_FRAMES: u16 = 2 + 6 + 4 + 20 * 2 + 2 + 2 + 0x90 + 6;
+
 /// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`), as in `engine-glyphs.ts`:
 /// a negative count's extent; nought for the rest.
 /// `EngineExtTextOut`: a negative count measured here, any other drawn
@@ -548,6 +555,9 @@ fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
         let given = {
             let system = engine.system();
             let mut peek = args;
+            // The stack pointer at the return address, less the frames GDI's
+            // drawing makes before it measures the stack (seg1 `62a5`).
+            let stack = system.cpu.regs[winbox_cpu::SP].wrapping_sub(ENGINE_TEXT_FRAMES);
 
             super::engine_text::EngineTextArgs {
                 hdc: peek.word(&system),
@@ -564,6 +574,7 @@ fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
                 opaque: peek.dword(&system),
                 options: peek.word(&system),
                 dc: None,
+                stack: Some(stack),
             }
         };
 

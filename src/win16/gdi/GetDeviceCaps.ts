@@ -116,3 +116,27 @@ export function GetDeviceCaps(hdc, iCapability) {
 
   return 0;
 }
+
+/**
+ * GDI's `[063Eh]`: the `GDIINFO` of the context it last drew or measured
+ * text for, kept as the context (`system._textSurface`) and read here as
+ * its `dpText`. `ExtTextOut` -- and `TextOut`, which is it -- sets it from
+ * the context's device as it starts, but for a metafile's (`GDI.EXE` seg1
+ * `31d5`-`31d8`); `GetTextExtent` as it measures with a font that is not
+ * one GDI's TrueType engine realized itself, the string not empty (`3cb4`,
+ * into `3ba3`, `3bd8`). Read by `DMExtTextOut` (seg13 `0037`); before any,
+ * the display's. **Recorded** by `prttstk`.
+ */
+export function textCapsOf(system: any) {
+  const surface = system._textSurface;
+
+  if (surface?.driverDevice) {
+    return driverCaps(surface, Gdi.TEXTCAPS) & 0xffff;
+  }
+
+  if (surface?.compatibleDevice) {
+    return driverCaps({ driverDevice: surface.compatibleDevice }, Gdi.TEXTCAPS) & 0xffff;
+  }
+
+  return ((surface?.device ?? system.display)?.textCaps ?? 0) & 0xffff;
+}

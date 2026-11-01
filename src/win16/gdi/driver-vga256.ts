@@ -5,6 +5,7 @@ import { nearestStatic } from '../../raster/colour-match.js';
 import { ditheredIndex } from '../../raster/dither.js';
 import { combine } from '../../raster/raster-op.js';
 import { DeviceColorMatch } from './system-exports.js';
+import { monoScan, ropBit } from './driver-hercules.js';
 import {
   STYLE_MASKS,
   entryOf,
@@ -925,10 +926,20 @@ function readRect(system: any, far: number) {
   return { left: signed(0), top: signed(2), right: signed(4), bottom: signed(6) };
 }
 
+/** `Output`'s styles that begin and end a run of scanlines (seg1 `12f2`-`12fa`). */
+const OS_BEGIN_SCANS = 0x50;
+const OS_END_SCANS = 0x51;
+
 /**
  * `Output` (`SVGA256.DRV` seg1 `12e2`): a polyline (`OS_POLYLINE`, seg6
- * `010c`) and scanlines (`OS_SCANLINES`, seg8 `00c9`); any other style but
- * the two of 50h and 51h answers nought and draws nothing.
+ * `010c`) and scanlines (`OS_SCANLINES`, seg8 `00c9`); 50h answers 1 and
+ * 51h nought, drawing nothing (seg8 `01b2`, `0222`); any other style
+ * answers nought and draws nothing.
+ *
+ * Not followed: between 50h and 51h the driver keeps what it set up for
+ * the device given at 50h (seg8 `01d5`, its flag at 86h) and scanlines
+ * skip setting up their own (seg8 `00e1`); WinBox sets up each.
+ * **Recorded** by `gdidmpx`, the scanlines between drawn on their device.
  */
 export function output(
   system: any,
@@ -944,6 +955,14 @@ export function output(
   const dest = readBitmap(system, destFar);
   const mode = readDrawMode(system, drawMode);
   const bits = isColour(dest) ? 8 : 1;
+
+  if (style === OS_BEGIN_SCANS) {
+    return 1;
+  }
+
+  if (style === OS_END_SCANS) {
+    return 0;
+  }
 
   if (style === OS_POLYLINE) {
     const path: [number, number][] = [];
@@ -988,7 +1007,9 @@ export function output(
 
   if (style === OS_SCANLINES) {
     const [lines, y] = readPoint(system, points, 0);
-    const ink = pixelOfPhysical(dest, read32(system, pen, 0));
+    /* The pen read only where there is no brush: **recorded** by
+     * `gdidmpx`, a brush and no pen. */
+    const ink = brush ? 0 : pixelOfPhysical(dest, read32(system, pen, 0));
     const seeThrough = brush && mode.bkMode === 1 && read16(system, brush, BRUSH_STYLE) === HATCHED;
 
     for (let index = 1; index < lines; index++) {
@@ -1325,4 +1346,160 @@ export function deviceBitmapBits(
  */
 export function dibToDevice() {
   return 0xffff;
+}
+
+/* Pixel, ScanLR and EnumObj ------------------------------------------- */
+
+/** A pixel or a scan off the bitmap (seg7 `00d1`, seg4 `01b8`). */
+const OFF_PIXEL = 0x80000000;
+const OFF_SCAN = 0x8000;
+
+/** What `Pixel` answers for a pixel got: FF00h in DX (seg7 `01da`, `01e7`). */
+const GOT = 0xff000000;
+
+/**
+ * `Pixel` (`SVGA256.DRV` seg7 `0048`) on a memory bitmap: a point at or
+ * past the width or the height, taken unsigned, answers 80000000h. A
+ * bitmap a byte a pixel (`bmPlanes` and `bmBitsPixel` 801h) has the
+ * pixel's byte, a monochrome one its bit, at `x / 8`; but one whose
+ * `bmWidthBytes` is odd is taken a byte at a time too, its byte at `x / 8`
+ * and its pen 1 (`00f8`-`012f`, the test at `0149`). With no `DRAWMODE`
+ * the answer is FF00h and the byte, or for a bit FFh where it is set
+ * (`01d5`-`01ec`). With one, the byte is made by the raster operation of
+ * the pen -- the physical colour's low byte -- and the byte there (its
+ * tables at `0000`-`003f`), or the bit by the operation of the low byte's
+ * bit nought and the bit there (`0204`); nought is answered.
+ */
+export function pixel(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  physical: number,
+  lpDrawMode: number
+) {
+  const bitmap = readBitmap(system, device);
+
+  if ((x & 0xffff) >= bitmap.width || (y & 0xffff) >= bitmap.height) {
+    return OFF_PIXEL;
+  }
+
+  const bytes = bitmap.format === BYTE_A_PIXEL;
+  const byteWise = bytes || (bitmap.widthBytes & 1) !== 0;
+  const row = rowOf(bitmap, y & 0xffff);
+  const at = bytes ? x & 0xffff : (x & 0xffff) >> 3;
+  const there = read8(system, row, at);
+
+  if (!(lpDrawMode >>> 0)) {
+    if (byteWise) {
+      return (GOT | there) >>> 0;
+    }
+
+    const set = (there & (0x80 >> (x & 7))) !== 0;
+
+    return (GOT | (set ? 0xff : 0)) >>> 0;
+  }
+
+  const rop2 = read16(system, lpDrawMode, 0);
+
+  if (byteWise) {
+    const pen = bytes ? physical & 0xff : 1;
+    let value = 0;
+
+    for (let bit = 0; bit < 8; bit++) {
+      value |= ropBit(rop2, (pen >> bit) & 1, (there >> bit) & 1) << bit;
+    }
+
+    write8(system, row, at, value);
+    return 0;
+  }
+
+  const mask = 0x80 >> (x & 7);
+  const bit = ropBit(rop2, physical & 1, there & mask ? 1 : 0);
+
+  write8(system, row, at, bit ? there | mask : there & ~mask);
+  return 0;
+}
+
+/**
+ * `ScanLR` (`SVGA256.DRV` seg4 `0154`) on a memory bitmap: a point at or
+ * past the width or the height, taken unsigned, answers 8000h. A bitmap a
+ * byte a pixel is scanned a byte at a time from the point for the first
+ * byte that is not the colour's low byte -- with style bit 0, the first
+ * that is (`0231`, `023a`) -- to the left (style bit 1) as far as the row's
+ * start, to the right for `bmWidthBytes` less the point less one bytes,
+ * the row's last byte never reached (`0224`-`0229`): its x, or -1. A
+ * monochrome one as the Hercules scans it (`monoScan`), the colour white
+ * where bit nought of the physical colour's second byte is set
+ * (`027a`-`027f`).
+ */
+export function scanLR(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  physical: number,
+  style: number
+) {
+  const bitmap = readBitmap(system, device);
+
+  if ((y & 0xffff) >= bitmap.height || (x & 0xffff) >= bitmap.width) {
+    return OFF_SCAN;
+  }
+
+  if (bitmap.format !== BYTE_A_PIXEL) {
+    return monoScan(system, device, x, y, ((physical >>> 8) & 1) !== 0, style);
+  }
+
+  const row = rowOf(bitmap, y & 0xffff);
+  const colour = physical & 0xff;
+  const left = (style & 2) !== 0;
+  const equal = (style & 1) !== 0;
+  const start = x & 0xffff;
+  const count = (left ? start + 1 : bitmap.widthBytes - start - 1) & 0xffff;
+
+  for (let step = 0, at = start; step < count; step++, at += left ? -1 : 1) {
+    if ((read8(system, row, at) === colour) === equal) {
+      return at & 0xffff;
+    }
+  }
+
+  return 0xffff;
+}
+
+/** Where `SVGA256.DRV`'s `EnumObj` lays each object, up the stack from the procedure's entry (seg4 `0086`-`00c3`). */
+export const ENUMERATED_AT = 0x1c;
+
+/** The driver's twenty colours, red, green and blue a colour (its data segment at 22h). */
+const STATIC_COLOURS: [number, number, number][] = [
+  [0x00, 0x00, 0x00],
+  [0x80, 0x00, 0x00],
+  [0x00, 0x80, 0x00],
+  [0x80, 0x80, 0x00],
+  [0x00, 0x00, 0x80],
+  [0x80, 0x00, 0x80],
+  [0x00, 0x80, 0x80],
+  [0xc0, 0xc0, 0xc0],
+  [0xc0, 0xdc, 0xc0],
+  [0xa6, 0xca, 0xf0],
+  [0xff, 0xfb, 0xf0],
+  [0xa0, 0xa0, 0xa4],
+  [0x80, 0x80, 0x80],
+  [0xff, 0x00, 0x00],
+  [0x00, 0xff, 0x00],
+  [0xff, 0xff, 0x00],
+  [0x00, 0x00, 0xff],
+  [0xff, 0x00, 0xff],
+  [0x00, 0xff, 0xff],
+  [0xff, 0xff, 0xff],
+];
+
+/**
+ * The colours `EnumObj` hands out, in its order (seg4 `00fa`-`0149`): the
+ * last seven of the twenty, then the first thirteen.
+ */
+export function enumeratedColours() {
+  return [...STATIC_COLOURS.slice(13), ...STATIC_COLOURS.slice(0, 13)].map(
+    ([red, green, blue]) => (red | (green << 8) | (blue << 16)) >>> 0
+  );
 }

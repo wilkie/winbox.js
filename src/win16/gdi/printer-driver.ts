@@ -182,6 +182,9 @@ export async function deleteDriverFonts(system: any, font: any) {
 }
 
 /** A name as GDI's atom keeps it: compared without case. */
+/** The driver's name GDI flags a context of (seg2 `0242`, seg1 `024f`). */
+const MGXWMF = 'MGXWMF.DRV';
+
 function key(name: string) {
   return name.toUpperCase();
 }
@@ -505,6 +508,14 @@ export async function createDriverDC(
   surface.device = capsOf(pdevice.info, device);
   surface.driverDevice = pdevice;
   surface.informationOnly = ic;
+
+  /* The context's flag 40h at 0Bh: set where the driver's name is the atom
+   * of `MGXWMF.DRV`, which GDI adds to its atoms as it starts (seg2
+   * `024e`-`0259`, through seg1 `210e`, `AddAtom`) -- so without case --
+   * and compares with the atom of the name given (seg1 `0093`,
+   * `0249`-`024f`). `EngineExtTextOut` counts the string of such a
+   * context turned (seg1 `62d0`). **Recorded** by `prttstk`. */
+  surface.mgxwmf = key(name) === MGXWMF;
 
   /* A printer's context starts with `DEVICE_DEFAULT_FONT`, the display's
    * with `SYSTEM_FONT` (seg1 `0217`-`0225`). */

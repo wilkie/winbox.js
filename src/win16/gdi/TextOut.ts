@@ -34,6 +34,9 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     return FALSE;
   }
 
+  /* GDI's `[063Eh]`, the device text is drawn for (`textCapsOf`). */
+  this._textSurface = surface;
+
   /* A printer driver's from the drive draws it: `ExtTextOut` with no
    * options, rectangle or spacing (`GDI.EXE` seg1 `3884`). */
   if (surface.driverDevice) {

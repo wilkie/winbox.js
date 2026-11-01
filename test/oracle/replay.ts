@@ -5609,6 +5609,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'prttrot:scaler': "where GDI's TrueType scaler keeps its context, which WinBox has not",
   'prttrot:bytes': "GDI's TrueType scaler's own memory, which WinBox has not",
   'prttrot:element': "the scaler's glyph element, which WinBox has not",
+  /* `kb/gdi/enginegetglyphbmp.md`: of the glyphs GDI's engine slants,
+   * Symbol's corner comes with a fraction across and Wingdings' E9h has its
+   * arrowhead's tip rescued a column or a row past WinBox's box; a few
+   * others differ by a pixel. */
+  'prttslt:EngineGetGlyphBmp': "the corner and box of a glyph GDI's engine slants",
+  'prttslt:row': "a pixel or a column of a glyph GDI's engine slants",
 };
 
 /**
@@ -6025,6 +6031,9 @@ const RUN_WHOLE = new Set<string>([
   'uwleft',
   'prttrot',
   'prttx2',
+  'prttstk',
+  'prttslt',
+  'gdidmpx',
 ]);
 
 /**
@@ -6171,7 +6180,14 @@ const SECONDS: Record<string, number> = {
  * VGA's: `pmbare`'s group files hold the display's icons, and its windows
  * are placed by the screen's size, on the EGA as on the VGA.
  */
-const ON_THEIR_DISPLAYS = new Set(['pmbare', 'gdidmdrw', 'scanscr', 'gdidm', 'gdidmdib']);
+const ON_THEIR_DISPLAYS = new Set([
+  'pmbare',
+  'gdidmdrw',
+  'scanscr',
+  'gdidm',
+  'gdidmdib',
+  'gdidmpx',
+]);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

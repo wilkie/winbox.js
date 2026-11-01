@@ -453,3 +453,209 @@ pub fn hercules_dashes(points: &[(i32, i32)], end: (i32, i32), style: u16) -> Ve
         })
         .collect()
 }
+
+/* Pixel and ScanLR ------------------------------------------------------ */
+
+/// A monochrome bitmap's fields the Hercules's routines read.
+#[derive(Debug, Clone, Copy)]
+struct MonoBitmap {
+    width: u16,
+    height: u16,
+    width_bytes: u16,
+    bits: u32,
+    segment_index: u16,
+    scan_segment: u16,
+}
+
+fn mono_bitmap_of(system: &System, far: u32) -> MonoBitmap {
+    MonoBitmap {
+        width: read16(system, far, 2),
+        height: read16(system, far, 4),
+        width_bytes: read16(system, far, 6),
+        bits: read32(system, far, 0x0a),
+        segment_index: read16(system, far, 0x16),
+        scan_segment: read16(system, far, 0x18),
+    }
+}
+
+/// Where a row starts (`HERCULES.DRV` seg5 `0078`-`009f`), as
+/// `monoRowOf`: one plane, whatever the bitmap says.
+fn mono_row_of(bitmap: &MonoBitmap, y: u16) -> u32 {
+    let mut segment = bitmap.bits >> 16;
+    let mut row = u32::from(y);
+
+    if bitmap.segment_index != 0 && bitmap.scan_segment != 0 {
+        let segments = row / u32::from(bitmap.scan_segment);
+
+        segment = (segment + segments * u32::from(bitmap.segment_index)) & 0xffff;
+        row -= segments * u32::from(bitmap.scan_segment);
+    }
+
+    segment << 16 | ((bitmap.bits & 0xffff) + row * u32::from(bitmap.width_bytes)) & 0xffff
+}
+
+/// A pixel or a scan off the bitmap (seg5 `0070`, seg3 `0087`).
+const OFF_PIXEL: u32 = 0x8000_0000;
+const OFF_SCAN: u16 = 0x8000;
+
+/// What `Pixel` answers for a pixel got (seg5 `00fc`-`0106`).
+const GOT_BLACK: u32 = 0x2000_0000;
+const GOT_WHITE: u32 = 0x3fff_ffff;
+
+/// A pen's bit through a raster operation on a bit there, as `ropBit`.
+pub fn rop_bit(rop2: u16, pen: u8, there: u8) -> u8 {
+    ((rop2.wrapping_sub(1) & 0xf) >> ((pen << 1) | there)) as u8 & 1
+}
+
+/// `Pixel` (`HERCULES.DRV` seg5 `0010`) on a memory bitmap, as
+/// `herculesPixel`.
+pub fn hercules_pixel(
+    system: &mut System,
+    device: u32,
+    x: u16,
+    y: u16,
+    physical: u32,
+    draw_mode: u32,
+) -> u32 {
+    let bitmap = mono_bitmap_of(system, device);
+
+    if x >= bitmap.width || y >= bitmap.height {
+        return OFF_PIXEL;
+    }
+
+    let row = mono_row_of(&bitmap, y);
+    let at = i32::from(x >> 3);
+    let mask = 0x80u8 >> (x & 7);
+    let byte = read8(system, row, at);
+
+    if draw_mode == 0 {
+        return if byte & mask != 0 {
+            GOT_WHITE
+        } else {
+            GOT_BLACK
+        };
+    }
+
+    let pen = u8::from((physical >> 24) as u8 & WHITE != 0);
+    let bit = rop_bit(
+        read16(system, draw_mode, 0),
+        pen,
+        u8::from(byte & mask != 0),
+    );
+
+    write8(
+        system,
+        row,
+        at,
+        if bit != 0 { byte | mask } else { byte & !mask },
+    );
+    0
+}
+
+/// A row of a monochrome bitmap scanned a byte at a time (`HERCULES.DRV`
+/// seg3 `00c9`-`016f`, `SVGA256.DRV` seg4 `0246`-`02d8`), as `monoScan`.
+pub fn mono_scan(system: &System, device: u32, x: u16, y: u16, white: bool, style: u16) -> u16 {
+    let bitmap = mono_bitmap_of(system, device);
+
+    if y >= bitmap.height || x >= bitmap.width {
+        return OFF_SCAN;
+    }
+
+    let row = mono_row_of(&bitmap, y);
+    let left = style & 2 != 0;
+    let flip: u8 = (if style & 1 != 0 { 0xff } else { 0 }) ^ (if white { 0xff } else { 0 });
+    let first = i32::from(x >> 3);
+    let right = (0x80u8 >> (x & 7)).wrapping_sub(1);
+    let mask = if left { !right } else { (right << 1) | 1 };
+    let step = if left { -1 } else { 1 };
+    let mut count = if left {
+        first + 1
+    } else {
+        i32::from(bitmap.width_bytes) - first
+    };
+    let mut at = first;
+    let mut found = (read8(system, row, at) ^ flip) & mask;
+
+    if found == 0 {
+        count -= 1;
+
+        if count == 0 {
+            return 0xffff;
+        }
+
+        let mut more = count;
+
+        loop {
+            at += step;
+            more -= 1;
+
+            if read8(system, row, at) != flip {
+                break;
+            }
+
+            if more == 0 {
+                return 0xffff;
+            }
+        }
+
+        count = more + 1;
+        found = read8(system, row, at) ^ flip;
+    }
+
+    if left {
+        let mut place = count * 8;
+        let mut bits = u16::from(flip) << 8 | u16::from(found);
+
+        loop {
+            place -= 1;
+
+            let carry = bits & 1;
+
+            bits >>= 1;
+
+            if carry != 0 {
+                return place as u16;
+            }
+        }
+    }
+
+    let mut place = !(count * 8 - i32::from(bitmap.width_bytes) * 8) as u16;
+
+    loop {
+        place = place.wrapping_add(1);
+
+        let carry = found & 0x80;
+
+        found <<= 1;
+
+        if carry != 0 {
+            break;
+        }
+    }
+
+    if place as i16 >= bitmap.width as i16 {
+        0xffff
+    } else {
+        place
+    }
+}
+
+/// `ScanLR` (`HERCULES.DRV` seg3 `001c`) on a memory bitmap: `mono_scan`,
+/// the colour white where 10h of its high byte is set.
+pub fn hercules_scan_lr(
+    system: &System,
+    device: u32,
+    x: u16,
+    y: u16,
+    physical: u32,
+    style: u16,
+) -> u16 {
+    mono_scan(
+        system,
+        device,
+        x,
+        y,
+        (physical >> 24) as u8 & WHITE != 0,
+        style,
+    )
+}

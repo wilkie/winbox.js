@@ -38,6 +38,14 @@ export function GetTextExtent(hdc, lpszString, cbString) {
   // Get the surface instance
   const surface = this.handles.resolve(hdc);
 
+  /* GDI's `[063Eh]` set for any font but a TrueType one its engine
+   * realized itself (seg1 `3cb4`, `3bd8`): every font a printer's driver
+   * realized, and the display's raster fonts. */
+  if (surface && cbString > 0 && (surface.driverDevice || !surface.font?.outline)) {
+    /* GDI's `[063Eh]` (`textCapsOf`). */
+    this._textSurface = surface;
+  }
+
   /* A printer driver's from the drive measures it with its `ExtTextOut`
    * (`GDI.EXE` seg1 `3ba3`). */
   if (surface?.driverDevice) {

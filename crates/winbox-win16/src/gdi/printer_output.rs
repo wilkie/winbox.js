@@ -1488,6 +1488,7 @@ pub async fn driver_ext_text_out_spaced(
                     opaque: if has_opaque { offset_by(far, 8) } else { 0 },
                     options,
                     dc: Some(dc),
+                    stack: None,
                 },
             )
             .await
@@ -1743,6 +1744,14 @@ fn get_text_extent_call(engine: &Engine, args: Args) -> Later<'_> {
             args.word(&system);
             (args.dword(&system), args.word(&system))
         };
+
+        // GDI's `[063Eh]` set for every font a printer's driver realized
+        // (seg1 `3cb4`, `3bd8`).
+        if count as i16 > 0 {
+            let hdc = first(engine, &args).0;
+
+            super::note_text_device(&mut engine.system(), hdc);
+        }
 
         Ok(Answer::Dword(
             driver_text_extent(engine, dc, string, count).await?,
@@ -2257,7 +2266,16 @@ fn polygon_call(engine: &Engine, args: Args) -> Later<'_> {
 /// rectangle or spacing (`GDI.EXE` seg1 `3884`).
 fn text_out_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
-        let Some(dc) = first(engine, &args).1 else {
+        let (hdc, dc) = first(engine, &args);
+
+        if matches!(
+            engine.system().handles.resolve(hdc),
+            Some(crate::handles::Object::Dc(_))
+        ) {
+            super::note_text_device(&mut engine.system(), hdc);
+        }
+
+        let Some(dc) = dc else {
             return otherwise(engine, "TextOut", args).await;
         };
         let (x, y, string, count) = {
@@ -2281,7 +2299,16 @@ fn text_out_call(engine: &Engine, args: Args) -> Later<'_> {
 
 fn ext_text_out_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
-        let Some(dc) = first(engine, &args).1 else {
+        let (hdc, dc) = first(engine, &args);
+
+        if matches!(
+            engine.system().handles.resolve(hdc),
+            Some(crate::handles::Object::Dc(_))
+        ) {
+            super::note_text_device(&mut engine.system(), hdc);
+        }
+
+        let Some(dc) = dc else {
             return otherwise(engine, "ExtTextOut", args).await;
         };
         let (x, y, options, rect, string, count, spacing) = {

@@ -356,6 +356,13 @@ pub fn get_text_extent(
     let Some(font) = font_of(system, index)? else {
         return Err(Stop::Unsupported("GetTextExtent with no font"));
     };
+
+    // GDI's `[063Eh]` set for any font but a TrueType one its engine
+    // realized itself (seg1 `3cb4`, `3bd8`): the display's raster fonts.
+    if count > 0 && font.outline.is_none() {
+        super::note_text_device(system, hdc);
+    }
+
     let text = sliced(text, count);
     let (width, height) = font
         .try_measure(text, Measure::default())

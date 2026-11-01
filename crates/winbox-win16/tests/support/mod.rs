@@ -325,6 +325,10 @@ pub const AGREEING: &[&str] = &[
     "gdidmdib-vga256",
     "uwleft",
     "prttx2",
+    "prttstk",
+    "gdidmpx-vga",
+    "gdidmpx-hercules",
+    "gdidmpx-vga256",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
