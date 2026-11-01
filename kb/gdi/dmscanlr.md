@@ -36,4 +36,4 @@ In both engines as the VGA's driver has it, a pixel at a time. On the Super VGA 
 
 ## Not yet done
 
-- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]).
+- The Hercules's and the 256-colour display's own, whose physical colours are not the VGA's ([[topic:gdi-internals]]): no probe calls it there yet.

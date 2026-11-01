@@ -5591,34 +5591,15 @@ export const KNOWN_GAPS: Record<string, string> = {
    * glyph's box, three of the 52. */
   'prtteng:EngineGetGlyphBmp':
     "the engine's advance of a glyph turned or slanted, and a slanted glyph's box, at one size each",
-  /* `kb/topics/gdi-internals.md`: the 256-colour display's own routines on
-   * a memory bitmap -- its physical colours, pens and brushes are not the
-   * VGA's -- are not read out. */
-  ...Object.fromEntries(
-    [
-      'colour',
-      'size',
-      'pen',
-      'brush',
-      'blt',
-      'output',
-      'text',
-      'strblt',
-      'charwidth',
-      'dibget',
-      'dibset',
-      'dibtodev',
-    ].map((name) => [
-      `gdidmdrw-vga256:${name}`,
-      "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-    ])
-  ),
-  /* The Hercules walks a styled line in runs (`HERCULES.DRV` seg4
-   * `02f6`-`0360`), its steps 40h and 48h; where each pixel falls in the
-   * style is not followed, and a dashed line on a transparent background
-   * differs. */
-  'gdidmdrw-hercules:output':
-    "the Hercules's walk along a styled line, which shows on a transparent background, is not followed",
+  /* `gdidmdrw` hands `DMDibBits` a null translation table, which the
+   * 256-colour driver reads for a DIB got of 1, 4 or 24 bits and hands GDI's
+   * `DeviceColorMatch` for one set of 24 (`SVGA256.DRV` seg9 `0a1a`, `05ac`):
+   * Windows would fault there, and DOSBox, where the probe was recorded,
+   * reads linear nought -- its real-mode vectors -- which WinBox has not. */
+  'gdidmdrw-vga256:dibget':
+    "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
+  'gdidmdrw-vga256:dibset':
+    "the driver matches a DIB of 24 bits through the probe's null translation table, which DOSBox reads as its real-mode vectors",
 };
 
 /**
@@ -6031,6 +6012,7 @@ const RUN_WHOLE = new Set<string>([
   'savebit',
   'rdwmore',
   'wfpwalk',
+  'gdidmdib',
 ]);
 
 /**
@@ -6177,7 +6159,7 @@ const SECONDS: Record<string, number> = {
  * VGA's: `pmbare`'s group files hold the display's icons, and its windows
  * are placed by the screen's size, on the EGA as on the VGA.
  */
-const ON_THEIR_DISPLAYS = new Set(['pmbare', 'gdidmdrw', 'scanscr', 'gdidm']);
+const ON_THEIR_DISPLAYS = new Set(['pmbare', 'gdidmdrw', 'scanscr', 'gdidm', 'gdidmdib']);
 
 const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
 

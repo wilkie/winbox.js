@@ -8945,6 +8945,36 @@
   },
   "gaps": {}
  },
+ "gdidmdib-vga256": {
+  "probe": "gdidmdib",
+  "display": "vga256",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 12,
+  "functions": {
+   "display": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "get": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "gdidmdrw-ega": {
   "probe": "gdidmdrw",
   "display": "ega",
@@ -9123,8 +9153,8 @@
    },
    "output": {
     "total": 24,
-    "agreed": 23,
-    "disagreed": 1,
+    "agreed": 24,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9157,9 +9187,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "output": "the Hercules's walk along a styled line, which shows on a transparent background, is not followed"
-  }
+  "gaps": {}
  },
  "gdidmdrw-svga": {
   "probe": "gdidmdrw",
@@ -9383,50 +9411,50 @@
   "functions": {
    "blt": {
     "total": 50,
-    "agreed": 0,
-    "disagreed": 50,
+    "agreed": 50,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "brush": {
     "total": 36,
-    "agreed": 0,
-    "disagreed": 36,
+    "agreed": 36,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "charwidth": {
     "total": 5,
-    "agreed": 1,
-    "disagreed": 4,
+    "agreed": 5,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "colour": {
     "total": 10,
-    "agreed": 0,
-    "disagreed": 10,
+    "agreed": 10,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "dibget": {
     "total": 7,
-    "agreed": 0,
-    "disagreed": 7,
+    "agreed": 3,
+    "disagreed": 4,
     "unimplemented": 0,
     "unsupported": 0
    },
    "dibset": {
     "total": 6,
-    "agreed": 0,
-    "disagreed": 6,
+    "agreed": 5,
+    "disagreed": 1,
     "unimplemented": 0,
     "unsupported": 0
    },
    "dibtodev": {
     "total": 3,
-    "agreed": 0,
-    "disagreed": 3,
+    "agreed": 3,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -9446,53 +9474,43 @@
    },
    "output": {
     "total": 24,
-    "agreed": 8,
-    "disagreed": 16,
+    "agreed": 24,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "pen": {
     "total": 17,
-    "agreed": 0,
-    "disagreed": 17,
+    "agreed": 17,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "size": {
     "total": 10,
-    "agreed": 3,
-    "disagreed": 7,
+    "agreed": 10,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "strblt": {
     "total": 2,
-    "agreed": 0,
-    "disagreed": 2,
+    "agreed": 2,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "text": {
     "total": 16,
-    "agreed": 0,
-    "disagreed": 16,
+    "agreed": 16,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
   "gaps": {
-   "colour": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "size": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "pen": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "brush": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "blt": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "output": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "text": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "strblt": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "charwidth": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "dibget": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "dibset": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed",
-   "dibtodev": "the display driver's own routines on a memory bitmap are not the VGA's and are not followed"
+   "dibget": "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
+   "dibset": "the driver matches a DIB of 24 bits through the probe's null translation table, which DOSBox reads as its real-mode vectors"
   }
  },
  "gdidraw": {

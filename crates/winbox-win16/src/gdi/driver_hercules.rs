@@ -408,3 +408,48 @@ pub fn hercules_get_char_width(
 
     1
 }
+
+/// The pen styles' masks, taken from bit 7 (seg4 `001a`).
+const HERCULES_STYLE_MASKS: [u8; 5] = [0xff, 0xe7, 0xaa, 0xe4, 0xea];
+
+/// How far along its style each move takes a line (seg4 `0257`-`026b`),
+/// and a bit of the mask (`016a`, `0b4f`).
+const ACROSS: i32 = 0x0b;
+const DOWN: i32 = 0x10;
+const DIAGONAL: i32 = 0x13;
+const STRETCH: i32 = 0x26;
+
+/// Whether each pixel of a styled polyline is drawn as the Hercules walks
+/// its style (seg4 `0b41`), as `herculesDashes` in the TypeScript: a count
+/// from 26h less each move to the next pixel, the mask turned left a bit
+/// and 26h added back where it has fallen below nought, a dash where the
+/// mask's top bit is set.
+pub fn hercules_dashes(points: &[(i32, i32)], end: (i32, i32), style: u16) -> Vec<bool> {
+    let mut mask = HERCULES_STYLE_MASKS
+        .get(usize::from(style))
+        .copied()
+        .unwrap_or(0xff);
+    let mut count = STRETCH;
+
+    points
+        .iter()
+        .enumerate()
+        .map(|(index, &(x, y))| {
+            if count < 0 {
+                mask = mask.rotate_left(1);
+                count += STRETCH;
+            }
+
+            let (nx, ny) = points.get(index + 1).copied().unwrap_or(end);
+            let (across, down) = (nx != x, ny != y);
+
+            count -= match (across, down) {
+                (true, true) => DIAGONAL,
+                (true, false) => ACROSS,
+                (false, true) => DOWN,
+                (false, false) => 0,
+            };
+            mask & 0x80 != 0
+        })
+        .collect()
+}

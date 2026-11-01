@@ -1,0 +1,74 @@
+{
+  "probe": "gdidmdib",
+  "display": "vga256",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "8et4480",
+    "displayDescription": "Super VGA, 640x480, 256 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "display",
+      "args": "planes bits",
+      "result": "1 8"
+    },
+    {
+      "function": "get",
+      "args": "colour 1",
+      "result": "4 ffffeeee7fffeeeeffffeeeeffffeeee"
+    },
+    {
+      "function": "get",
+      "args": "colour 4",
+      "result": "4 61c72d8394fa50b60b61c72d3e94fa50a50b61c7d83e94fa4fa50b6172d83e94"
+    },
+    {
+      "function": "get",
+      "args": "colour 8",
+      "result": "4 c5e2ff1c39567390bad7f4112e4b6885dbf815324f6c89a6d0ed0a2744617e9bf10e2b4865829fbce603203d5a7794b10724415e7b98b5d2fc193653708daac7"
+    },
+    {
+      "function": "get",
+      "args": "colour 24",
+      "result": "4 8f969dbbc2c9e7eef5131a213f464d6b7279979ea5c3cad15b6269878e95b3bac1dfe6ed0b1219373e45636a718f969df7fe05232a314f565d7b8289a7aeb5d3dae1ff060d2b3239c3cad1eff6fd1b2229474e55737a819fa6adcbd2d9f7fe055f666d8b9299b7bec5e3eaf10f161d3b4249676e75939aa12b3239575e65838a91afb6bddbe2e9070e15333a415f666dc7ced5f3fa011f262d4b5259777e85a3aab1cfd6ddfb0209939aa1bfc6cdebf2f9171e25434a516f767d9ba2a9c7ced5"
+    },
+    {
+      "function": "get",
+      "args": "mono 1",
+      "result": "4 4a2deeee8467eeeebea1eeeef8dbeeee"
+    },
+    {
+      "function": "get",
+      "args": "mono 4",
+      "result": "4 a3aa3a3aaa3a33a33aaaa3aaa33aa3333a33333a3a3aaaa333333aaa33a33a33"
+    },
+    {
+      "function": "get",
+      "args": "mono 8",
+      "result": "4 0a030a0a030a030a0a0a030a03030a03030a0a0a0a030a0a0a03030a0a030303030a03030303030a030a030a0a0a0a0303030303030a0a0a03030a03030a0303"
+    },
+    {
+      "function": "get",
+      "args": "mono 24",
+      "result": "4 e7eef5030a11e7eef5e7eef5030a11e7eef5030a11e7eef5e7eef5e7eef5030a11e7eef5030a11030a11e7eef5030a11030a11e7eef5e7eef5e7eef5e7eef5030a11e7eef5e7eef5e7eef5030a11030a11e7eef5e7eef5030a11030a11030a11030a11e7eef5030a11030a11030a11030a11030a11e7eef5030a11e7eef5030a11e7eef5e7eef5e7eef5e7eef5030a11030a11030a11030a11030a11030a11e7eef5e7eef5e7eef5030a11030a11e7eef5030a11030a11e7eef5030a11030a11"
+    },
+    {
+      "function": "set",
+      "args": "colour 0",
+      "result": "4 4172417272727241724172727272417241724172a3727241724172a37272417241724172417272727241724172727272727241724172a3727241724172a37272a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "set",
+      "args": "colour 2",
+      "result": "4 81828182828282818281828282828182818281828382828182818283828281828182818281828282828182818282828282828182818283828281828182838282a5a5a5a5a5a5a5a5"
+    },
+    {
+      "function": "set",
+      "args": "mono 2",
+      "result": "4 ffffffffffffffffa5a5a5a5a5a5a5a5"
+    }
+  ]
+}

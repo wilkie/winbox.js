@@ -321,6 +321,8 @@ pub const AGREEING: &[&str] = &[
     "rdwmore",
     "prttxt",
     "wfpwalk",
+    "gdidmdrw-hercules",
+    "gdidmdib-vga256",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

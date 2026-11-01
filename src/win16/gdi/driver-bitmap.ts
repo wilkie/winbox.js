@@ -1,6 +1,6 @@
 'use strict';
 
-import { herculesWhite, isHercules } from './driver-hercules.js';
+import { herculesDashes, herculesWhite, isHercules } from './driver-hercules.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { ditheredIndex } from '../../raster/dither.js';
@@ -779,7 +779,7 @@ const OS_POLYLINE = 18;
  * driver keeps each beside its own reverse, for a line it draws from the
  * other end, which comes to the same bits.
  */
-const STYLE_MASKS = [0xff, 0xe7, 0x55, 0x27, 0x57];
+export const STYLE_MASKS = [0xff, 0xe7, 0x55, 0x27, 0x57];
 
 /**
  * How far along its style a pixel moves a line (seg6 `0350`-`038f`): 40h
@@ -790,7 +790,7 @@ const FLAT_STEP = 0x40;
 const STEEP_STEP = 0x55;
 
 /** A pixel set by a `DRAWMODE`'s binary raster operation of a colour's bits and the pixel's. */
-function mix(rop2: number, pen: number, there: number, planes: number) {
+export function mix(rop2: number, pen: number, there: number, planes: number) {
   const table = (rop2 - 1) & 0xf;
   let out = 0;
 
@@ -811,7 +811,7 @@ function mix(rop2: number, pen: number, there: number, planes: number) {
  * `03a8`-`03ad`), each segment moving it by its step times its longer
  * span.
  */
-function polylinePixels(points: [number, number][]) {
+export function polylinePixels(points: [number, number][]) {
   const out: [number, number, number][] = [];
   let style = 0;
 
@@ -913,12 +913,22 @@ export function output(
       return 1;
     }
 
-    for (const [px, py, at] of polylinePixels(path)) {
+    const pixels = polylinePixels(path);
+    /* The Hercules walks its style in steps of its own (`driver-hercules.ts`). */
+    const dashes = isHercules(system)
+      ? herculesDashes(
+          pixels.map(([px, py]) => [px, py]),
+          path[path.length - 1],
+          penStyle
+        )
+      : null;
+
+    for (const [index, [px, py, at]] of pixels.entries()) {
       if (px < box.left || px >= box.right || py < box.top || py >= box.bottom) {
         continue;
       }
 
-      const on = !!((bits >> ((at >> 8) & 7)) & 1);
+      const on = dashes ? dashes[index] : !!((bits >> ((at >> 8) & 7)) & 1);
 
       if (!on && gap === null) {
         continue;
@@ -988,7 +998,7 @@ const DF_BREAK_CHAR = 0x62;
 const DF_BITS_POINTER = 0x6d;
 
 /** A character's entry, by its index from the first: six bytes in a font of 3.0, four before. */
-function entryOf(system: any, segment: number, index: number) {
+export function entryOf(system: any, segment: number, index: number) {
   return read16(system, segment, 0) >= VERSION_3 ? 0x94 + index * 6 : 0x76 + index * 4;
 }
 
@@ -1010,7 +1020,7 @@ function emboldened(system: any, segment: number, xform: number) {
  * the break count then added back. Answers the characters and how far the
  * farthest of their glyphs and advances reach.
  */
-function layOut(
+export function layOut(
   system: any,
   segment: number,
   string: number,
@@ -1073,7 +1083,7 @@ function layOut(
 }
 
 /** A rectangle's intersection, or null where it is empty. */
-function within(
+export function within(
   a: { left: number; top: number; right: number; bottom: number },
   b: { left: number; top: number; right: number; bottom: number }
 ) {
@@ -1228,7 +1238,8 @@ export function extTextOut(
  * read on for as many as the font's last character -- its code, not its
  * index -- less the index allows, past the table's end where the request
  * goes beyond the font; and the last width read for any left. Answers 1,
- * and nought for a last below the first.
+ * and nought for a last below the first. `SVGA256.DRV`'s (seg1 `0358`) is
+ * the same but for the emboldening, which it does not add (`emboldens`).
  */
 export function getCharWidth(
   system: any,
@@ -1236,10 +1247,11 @@ export function getCharWidth(
   firstAsked: number,
   lastAsked: number,
   font: number,
-  xform: number
+  xform: number,
+  emboldens = true
 ) {
   const segment = (font & 0xffff0000) >>> 0;
-  const bold = emboldened(system, segment, xform) ? 2 : 0;
+  const bold = emboldens && emboldened(system, segment, xform) ? 2 : 0;
   let count = lastAsked - firstAsked;
 
   if (count < 0) {

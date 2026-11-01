@@ -15,7 +15,7 @@
 //! **Recorded** by `gdidmdrw` on the VGA, the Super VGA (`SUPERVGA.DRV`,
 //! every record the VGA's) and the EGA.
 
-use super::driver_hercules::{hercules_white, is_hercules};
+use super::driver_hercules::{hercules_dashes, hercules_white, is_hercules};
 use winbox_raster::DevicePalette;
 use winbox_raster::colour_match::matched_index;
 use winbox_raster::dither::dithered_index;
@@ -50,7 +50,7 @@ fn signed16(system: &System, far: u32, at: i32) -> i32 {
     i32::from(read16(system, far, at) as i16)
 }
 
-fn read32(system: &System, far: u32, at: i32) -> u32 {
+pub(crate) fn read32(system: &System, far: u32, at: i32) -> u32 {
     u32::from(read16(system, far, at)) | u32::from(read16(system, far, at + 2)) << 16
 }
 
@@ -60,7 +60,7 @@ pub fn write8(system: &mut System, far: u32, at: i32, value: u8) {
     system.cpu.bus.write8(linear, value);
 }
 
-fn write16(system: &mut System, far: u32, at: i32, value: u16) {
+pub(crate) fn write16(system: &mut System, far: u32, at: i32, value: u16) {
     write8(system, far, at, value as u8);
     write8(system, far, at + 1, (value >> 8) as u8);
 }
@@ -643,19 +643,19 @@ pub fn realize_object(system: &mut System, style: u16, input: u32, out: u32, xfo
 
 /// A `DRAWMODE`'s fields the routines read.
 #[derive(Debug, Clone, Copy)]
-struct DrawMode {
-    rop2: u16,
-    bk_mode: u16,
-    bk_color: u32,
-    text_color: u32,
-    break_extra: i32,
-    break_err: i32,
-    break_rem: i32,
-    break_count: i32,
-    character_extra: i32,
+pub(crate) struct DrawMode {
+    pub rop2: u16,
+    pub bk_mode: u16,
+    pub bk_color: u32,
+    pub text_color: u32,
+    pub break_extra: i32,
+    pub break_err: i32,
+    pub break_rem: i32,
+    pub break_count: i32,
+    pub character_extra: i32,
 }
 
-fn read_draw_mode(system: &System, far: u32) -> DrawMode {
+pub(crate) fn read_draw_mode(system: &System, far: u32) -> DrawMode {
     DrawMode {
         rop2: read16(system, far, 0),
         bk_mode: read16(system, far, 2),
@@ -822,7 +822,7 @@ const OS_POLYLINE: u16 = 18;
 /// nought (seg6 `0056`): solid, dash, dot, dash-dot and dash-dot-dot. The
 /// driver keeps each beside its own reverse, for a line it draws from the
 /// other end, which comes to the same bits.
-const STYLE_MASKS: [u8; 5] = [0xff, 0xe7, 0x55, 0x27, 0x57];
+pub(crate) const STYLE_MASKS: [u8; 5] = [0xff, 0xe7, 0x55, 0x27, 0x57];
 
 /// How far along its style a pixel moves a line (seg6 `0350`-`038f`): 40h
 /// a step along a line whose rise is no more than 40h/55h of its run, else
@@ -832,7 +832,7 @@ const STEEP_STEP: i32 = 0x55;
 
 /// A pixel set by a `DRAWMODE`'s binary raster operation of a colour's
 /// bits and the pixel's.
-fn mix(rop2: u16, pen: u8, there: u8, planes: i32) -> u8 {
+pub(crate) fn mix(rop2: u16, pen: u8, there: u8, planes: i32) -> u8 {
     let table = rop2.wrapping_sub(1) & 0xf;
 
     (0..planes).fold(0, |out, plane| {
@@ -848,7 +848,7 @@ fn mix(rop2: u16, pen: u8, there: u8, planes: i32) -> u8 {
 /// along the pen's style. The style goes on from one segment into the next
 /// (seg6 `03a8`-`03ad`), each segment moving it by its step times its
 /// longer span.
-fn polyline_pixels(points: &[(i32, i32)]) -> Vec<(i32, i32, i32)> {
+pub(crate) fn polyline_pixels(points: &[(i32, i32)]) -> Vec<(i32, i32, i32)> {
     let mut out = Vec::new();
     let mut style = 0;
 
@@ -892,7 +892,7 @@ fn polyline_pixels(points: &[(i32, i32)]) -> Vec<(i32, i32, i32)> {
     out
 }
 
-fn read_point(system: &System, far: u32, index: i32) -> (i32, i32) {
+pub(crate) fn read_point(system: &System, far: u32, index: i32) -> (i32, i32) {
     (
         signed16(system, far, index * 4),
         signed16(system, far, index * 4 + 2),
@@ -900,9 +900,9 @@ fn read_point(system: &System, far: u32, index: i32) -> (i32, i32) {
 }
 
 /// A rectangle as left, top, right and bottom.
-type Rect = (i32, i32, i32, i32);
+pub(crate) type Rect = (i32, i32, i32, i32);
 
-fn read_rect(system: &System, far: u32) -> Rect {
+pub(crate) fn read_rect(system: &System, far: u32) -> Rect {
     (
         signed16(system, far, 0),
         signed16(system, far, 2),
@@ -962,12 +962,24 @@ pub fn output(
             return 1;
         }
 
-        for (px, py, at) in polyline_pixels(&path) {
+        let pixels = polyline_pixels(&path);
+        // The Hercules walks its style in steps of its own
+        // (`driver_hercules.rs`).
+        let dashes = (is_hercules(system) && !path.is_empty()).then(|| {
+            let points: Vec<_> = pixels.iter().map(|&(px, py, _)| (px, py)).collect();
+
+            hercules_dashes(&points, path[path.len() - 1], pen_style)
+        });
+
+        for (index, &(px, py, at)) in pixels.iter().enumerate() {
             if px < left || px >= right || py < top || py >= bottom {
                 continue;
             }
 
-            let on = (bits >> ((at >> 8) & 7)) & 1 != 0;
+            let on = match &dashes {
+                Some(dashes) => dashes[index],
+                None => (bits >> ((at >> 8) & 7)) & 1 != 0,
+            };
             let colour = match (on, gap) {
                 (true, _) => ink,
                 (false, Some(gap)) => gap,
@@ -1040,7 +1052,7 @@ const DF_BITS_POINTER: i32 = 0x6d;
 
 /// A character's entry, by its index from the first: six bytes in a font
 /// of 3.0, four before.
-fn entry_of(system: &System, segment: u32, index: i32) -> i32 {
+pub(crate) fn entry_of(system: &System, segment: u32, index: i32) -> i32 {
     if read16(system, segment, 0) >= VERSION_3 {
         0x94 + index * 6
     } else {
@@ -1060,10 +1072,10 @@ fn emboldened(system: &System, segment: u32, xform: u32) -> bool {
 
 /// A character as the driver lays it: its index from the first, its
 /// glyph's width and where it starts.
-struct Laid {
-    index: i32,
-    width: i32,
-    at: i32,
+pub(crate) struct Laid {
+    pub index: i32,
+    pub width: i32,
+    pub at: i32,
 }
 
 /// A string's characters as the driver lays them (seg2 `0c4b`-`0ce6`):
@@ -1075,7 +1087,7 @@ struct Laid {
 /// nought, the break count then added back. Answers the characters and how
 /// far the farthest of their glyphs and advances reach.
 #[allow(clippy::too_many_arguments)]
-fn lay_out(
+pub(crate) fn lay_out(
     system: &System,
     segment: u32,
     string: u32,
@@ -1145,7 +1157,7 @@ fn lay_out(
 }
 
 /// A rectangle's intersection, or `None` where it is empty.
-fn within(a: Rect, b: Rect) -> Option<Rect> {
+pub(crate) fn within(a: Rect, b: Rect) -> Option<Rect> {
     let rect = (a.0.max(b.0), a.1.max(b.1), a.2.min(b.2), a.3.min(b.3));
 
     (rect.2 > rect.0 && rect.3 > rect.1).then_some(rect)
@@ -1288,7 +1300,9 @@ pub fn ext_text_out(
 /// table read on for as many as the font's last character -- its code, not
 /// its index -- less the index allows, past the table's end where the
 /// request goes beyond the font; and the last width read for any left.
-/// Answers 1, and nought for a last below the first.
+/// Answers 1, and nought for a last below the first. `SVGA256.DRV`'s
+/// (seg1 `0358`) is the same but for the emboldening, which it does not add
+/// (`emboldens`).
 pub fn get_char_width(
     system: &mut System,
     buffer: u32,
@@ -1296,9 +1310,10 @@ pub fn get_char_width(
     last_asked: u16,
     font: u32,
     xform: u32,
+    emboldens: bool,
 ) -> u32 {
     let segment = font & 0xffff_0000;
-    let bold = if emboldened(system, segment, xform) {
+    let bold = if emboldens && emboldened(system, segment, xform) {
         2
     } else {
         0

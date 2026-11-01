@@ -6897,7 +6897,13 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   baseline. **Recorded** to the bit for Arial and Wingdings upright, slanted
   and turned, but three: Windows' advance of Wingdings' `A` turned 90 degrees
   is 24, one more than upright; slanted Wingdings' E9h is a pixel wider; and
-  slanted Wingdings' `A` at 45 degrees carries the upright advance.
+  slanted Wingdings' `A` at 45 degrees carries the upright advance. **Read
+  out** where the advance comes from: the difference of the glyph's two
+  phantom points after its program has run, each 26.6 word shifted to 16.16
+  (seg36 `1f46`-`1fdb`), each half then rounded by adding 8000h (`0e07`).
+  So 24 is the unhinted 23.496 kept at a 64th, 23.5, and rounded up; what
+  leaves the phantom points unhinted at 90 degrees and hinted at 45 is the
+  glyph program's run (`4b81`), not read out.
 - **Widths** (`EngineGetCharWidth`, seg3 `2662`): the advances at the
   context upright, the first character 8, a character outside the font its
   default character's -- kept, as in a font file, from the first, so the
@@ -6933,7 +6939,15 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   only one of 2.0 (`HERCULES.DRV` seg1 `11f8`-`1204`), answering 80000000h
   for the 3.0 font the VGA draws, and its `GetCharWidth` reads any font as
   one of 2.0, four bytes an entry at 76h (`30f2`) -- so a 3.0 font's widths
-  come from its header's bytes.
+  come from its header's bytes. The 256-colour display's (`SVGA256.DRV` seg2
+  `0375`, seg1 `0358`) draws a font of 3.0 at 42h as the VGA's does, a byte
+  a pixel, but never emboldens it, nor adds the bold's widths.
+- **GDI's own drawing of a turned engine font** (seg1 `3a1a`) asks the
+  context's flag 4 at 0Bh, which selecting a font sets for a device font --
+  the mapper's 539h, the `FONTINFO` a driver's `RealizeObject` made, which
+  is how a driver realizing TrueType with `EngineRealizeFont` hands its font
+  back (seg1 `3ff9`-`4094`, seg3 `0740`-`080b`); a font GDI's engine realized
+  itself, 53Ah, sets 10h instead.
 - **The realization had failed for Wingdings** in the TypeScript engine,
   which realized the face without the device's horizontal resolution: at
   96 by 300 Wingdings' `VDMX` has no group, and no size was found. The

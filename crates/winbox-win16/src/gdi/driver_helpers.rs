@@ -5,14 +5,16 @@
 //! same offset for a memory bitmap and answers nought and the
 //! offset for any other device; `VGA.DRV`'s `ColorInfo`, `Pixel`,
 //! `ScanLR` and `EnumObj` for a memory bitmap here, and its drawing in
-//! `driver_bitmap.rs`, on the VGA, the Super VGA and the EGA; on the
-//! Hercules and the 256-colour display, nought.
+//! `driver_bitmap.rs`, on the VGA, the Super VGA and the EGA; the
+//! Hercules's in `driver_hercules.rs` and the 256-colour display's in
+//! `driver_vga256.rs`.
 //!
 //! **Recorded** by `gdidm`, `gdidmdrw`, `gdiint` and `scanscr`.
 
 use super::driver_hercules::{
     CANNOT, hercules_color_info, hercules_get_char_width, hercules_realize_object, is_hercules,
 };
+use super::driver_vga256::{self, is_vga256};
 use winbox_cpu::{AX, DS, ES, SS};
 
 use crate::call::{Answer, Args, Implementation, Later, Stop};
@@ -294,6 +296,9 @@ fn dm_bit_blt(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         None if vga(system) || is_hercules(system) => driver_bitmap::bit_blt(
             system, device, x, y, source, sx, sy, width, height, rop, brush, draw_mode,
         ),
+        None if is_vga256(system) => driver_vga256::bit_blt(
+            system, device, x, y, source, sx, sy, width, height, rop, brush, draw_mode,
+        ),
         None => 0,
     };
 
@@ -314,6 +319,9 @@ fn dm_output(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         None if vga(system) || is_hercules(system) => driver_bitmap::output(
             system, device, style, count, points, pen, brush, draw_mode, clip,
         ),
+        None if is_vga256(system) => driver_vga256::output(
+            system, device, style, count, points, pen, brush, draw_mode, clip,
+        ),
         None => 0,
     };
 
@@ -330,6 +338,9 @@ fn dm_realize_object(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         Some(answer) => answer,
         None if is_hercules(system) => hercules_realize_object(system, style, input, out, xform),
         None if vga(system) => driver_bitmap::realize_object(system, style, input, out, xform),
+        None if is_vga256(system) => {
+            driver_vga256::realize_object(system, style, input, out, xform)
+        }
         None => 0,
     };
 
@@ -361,6 +372,9 @@ fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
             system, device, x, y, clip, string, count, font, draw_mode, xform, widths, opaque,
             options,
         ),
+        None if is_vga256(system) => driver_vga256::ext_text_out(
+            system, device, x, y, clip, string, count, font, draw_mode, widths, opaque, options,
+        ),
         None => 0,
     };
 
@@ -389,7 +403,10 @@ fn dm_get_char_width(system: &mut System, args: &mut Args) -> Result<Answer, Sto
         Some(answer) => answer,
         None if is_hercules(system) => hercules_get_char_width(system, buffer, first, last, font),
         None if vga(system) => {
-            driver_bitmap::get_char_width(system, buffer, first, last, font, xform)
+            driver_bitmap::get_char_width(system, buffer, first, last, font, xform, true)
+        }
+        None if is_vga256(system) => {
+            driver_vga256::get_char_width(system, buffer, first, last, font)
         }
         None => 0,
     };
@@ -409,12 +426,15 @@ fn dm_dib_bits(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let bits = args.dword(system);
     let info = args.dword(system);
     let _draw_mode = args.dword(system);
-    let _translate = args.dword(system);
+    let translate = args.dword(system);
     let answer = match brute(system, device, DEVICE_BITMAP_BITS) {
         Some(answer) => answer,
         None if vga(system) || is_hercules(system) => {
             driver_bitmap::device_bitmap_bits(system, device, get, start, scans, bits, info)
         }
+        None if is_vga256(system) => driver_vga256::device_bitmap_bits(
+            system, device, get, start, scans, bits, info, translate,
+        ),
         None => 0,
     };
 
@@ -430,6 +450,7 @@ fn dm_set_dib_to_dev(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let answer = match brute(system, device, DIB_TO_DEVICE) {
         Some(answer) => answer,
         None if vga(system) || is_hercules(system) => driver_bitmap::dib_to_device(),
+        None if is_vga256(system) => driver_vga256::dib_to_device(),
         None => 0,
     };
 
@@ -444,6 +465,7 @@ fn dm_color_info(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
         Some(answer) => answer,
         None if is_hercules(system) => hercules_color_info(system, colour, buffer),
         None if vga(system) => color_info(system, device, colour, buffer),
+        None if is_vga256(system) => driver_vga256::color_info(system, colour, buffer),
         None => 0,
     };
 

@@ -1445,7 +1445,11 @@ pub async fn driver_ext_text_out_spaced(
     let font = realized.far;
     // A turned font the engine realized, where the device's `GDIINFO` word
     // 5Eh has no bit 2, GDI draws itself without the driver's `ExtTextOut`
-    // (seg1 `3a1a`-`3a86`, into `620e`), as `driverExtTextOut`.
+    // (seg1 `3a1a`-`3a86`, into `620e`), as `driverExtTextOut`. GDI asks
+    // too for the context's flag 4 at 0Bh, which selecting a font sets for a
+    // device font -- the mapper's answer 539h, a font the driver's
+    // `RealizeObject` realized (seg3 `080b`, `13c1`) -- and clears for any
+    // other (seg1 `3ff9`-`400a`): every font this path is given is one.
     let turned_engine_font = realized.info.first().is_some_and(|kind| kind & 3 == 3)
         && realized
             .info

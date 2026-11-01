@@ -28,6 +28,7 @@ topics: [printer-drivers]
 - With TrueType off, -1.
 - The character is found at itself plus the `FONTINFO`'s offset at 4Eh, where it has one; otherwise through GDI's table of the ANSI characters' codes (`0a13`, seg48 `067e`).
 - Format 2, the outline as curves, goes to the rasterizer at once. For a font GDI draws as outlines itself (bit 5 of byte 33h) the outline is filled into a bitmap of GDI's own through the context given (`0a55`-`0d0f`). Otherwise the rasterizer (seg36 `00a2`) makes the glyph with the engine's context ([[fn:GDI.EngineSetFontContext]]) and fills the record. Its failure is -1, and the record is made nought.
+- The rasterizer is entered through a table of far pointers in GDI's segment 47 (seg36 `00a2`, `00e1`-`011e`, entry 10h: seg36 `0aa3`). The record's advance is copied from its output's 16.16 pair at 5Ah (`0dc3`-`0dd9`), which is the difference of the glyph's two phantom points, after the glyph's program has run, each 26.6 word turned to 16.16 by a shift of 10 (`1f46`-`1fdb`); the record's corner from the pair at 62h (`0d42`-`0d58`). Where the request asks it (bit 3 of its flags), each half of the advance is rounded to a whole pixel by adding 8000h and clearing the fraction (`0e07`-`0e3d`).
 - [[fn:GDI.GetGlyphOutline]] is this, called with its own context set (seg7 `1059`). It turns the record into a `GLYPHMETRICS`: the box's two words, and the last four rounded to whole pixels (`1068`).
 
 ## Implementation
@@ -37,5 +38,5 @@ topics: [printer-drivers]
 ## Not yet done
 
 - Format 2, which answers -1 here as `GetGlyphOutline`'s does.
-- Three of [[probe:prtteng]]'s records, known gaps. Wingdings' `A` at 90 degrees: Windows' advance is 24, one more than upright, where WinBox carries the upright 23. Slanted Wingdings' E9h: Windows' box is a pixel wider on the left. Slanted Wingdings' `A` at 45 degrees: Windows' advance is 16 each way, the upright one carried, where WinBox carries the slanted 24.
+- Three of [[probe:prtteng]]'s records, known gaps -- the advance is the phantom points' (above), so what moves them under a turn or GDI's slant is the glyph program's run (seg36 `4b81`, into `263a`) and the scaling before it, not read out yet. [[measured]] What the records show of it: Wingdings' `A` (23 hinted upright, 23.496 unhinted) carries 24 turned 90 degrees and 24 slanted, the unhinted advance at a 64th rounded up, but 16 each way at 45 degrees, slanted or not -- the hinted 23 turned -- where Arial's `A` (27, 26.68) comes out alike either way. Wingdings' `A` at 90 degrees: Windows' advance is 24, one more than upright, where WinBox carries the upright 23. Slanted Wingdings' E9h: Windows' box is a pixel wider on the left. Slanted Wingdings' `A` at 45 degrees: Windows' advance is 16 each way, the upright one carried, where WinBox carries the slanted 24.
 - A font GDI draws as outlines itself, which no font WinBox realizes is.

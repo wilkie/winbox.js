@@ -21,6 +21,7 @@ pub mod draw;
 pub mod driver_bitmap;
 pub mod driver_helpers;
 pub mod driver_hercules;
+pub mod driver_vga256;
 pub mod engine_font;
 pub mod engine_glyphs;
 pub mod engine_text;

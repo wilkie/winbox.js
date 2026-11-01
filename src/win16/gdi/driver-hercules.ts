@@ -493,3 +493,45 @@ export function herculesGetCharWidth(
 export function herculesWhite(colour: number) {
   return ((physicalOf(colour).physical >>> 24) & WHITE) !== 0;
 }
+
+/** The pen styles' masks, taken from bit 7 (seg4 `001a`): solid, dash, dot, dash-dot and dash-dot-dot. */
+const HERCULES_STYLE_MASKS = [0xff, 0xe7, 0xaa, 0xe4, 0xea];
+
+/**
+ * How far along its style each move takes a line (seg4 `0257`-`026b`):
+ * 0Bh across, 10h down and 13h on the diagonal -- the Hercules's pixels
+ * taller than wide -- and 26h a bit of the mask (`016a`, `0b4f`).
+ */
+const ACROSS = 0x0b;
+const DOWN = 0x10;
+const DIAGONAL = 0x13;
+const STRETCH = 0x26;
+
+/**
+ * Whether each pixel of a styled polyline is drawn as the Hercules walks
+ * its style (seg4 `0b41`): a count from 26h, the move to the next pixel
+ * taken off it after each pixel (the run routines from `0975`, each run's
+ * pixels by one move and its end by what makes the diagonal); where it has
+ * fallen below nought, the mask turned left a bit and 26h added back
+ * before the pixel is drawn; the pixel a dash where the mask's top bit is
+ * set. The count and the mask go on from one segment into the next.
+ * `points` are the pixels in order, `end` the polyline's last point.
+ */
+export function herculesDashes(points: [number, number][], end: [number, number], style: number) {
+  let mask = HERCULES_STYLE_MASKS[style] ?? 0xff;
+  let count = STRETCH;
+
+  return points.map(([x, y], index) => {
+    if (count < 0) {
+      mask = ((mask << 1) | (mask >> 7)) & 0xff;
+      count += STRETCH;
+    }
+
+    const [nx, ny] = points[index + 1] ?? end;
+    const across = nx !== x;
+    const down = ny !== y;
+
+    count -= across && down ? DIAGONAL : across ? ACROSS : down ? DOWN : 0;
+    return (mask & 0x80) !== 0;
+  });
+}
