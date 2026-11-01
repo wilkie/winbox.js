@@ -15,7 +15,7 @@
 //! **Recorded** by `gdidmdrw` on the VGA, the Super VGA (`SUPERVGA.DRV`,
 //! every record the VGA's) and the EGA.
 
-use super::driver_hercules::{hercules_white, is_hercules};
+use super::driver_hercules::{hercules_dashes, hercules_white, is_hercules};
 use winbox_raster::DevicePalette;
 use winbox_raster::colour_match::matched_index;
 use winbox_raster::dither::dithered_index;
@@ -962,12 +962,24 @@ pub fn output(
             return 1;
         }
 
-        for (px, py, at) in polyline_pixels(&path) {
+        let pixels = polyline_pixels(&path);
+        // The Hercules walks its style in steps of its own
+        // (`driver_hercules.rs`).
+        let dashes = (is_hercules(system) && !path.is_empty()).then(|| {
+            let points: Vec<_> = pixels.iter().map(|&(px, py, _)| (px, py)).collect();
+
+            hercules_dashes(&points, path[path.len() - 1], pen_style)
+        });
+
+        for (index, &(px, py, at)) in pixels.iter().enumerate() {
             if px < left || px >= right || py < top || py >= bottom {
                 continue;
             }
 
-            let on = (bits >> ((at >> 8) & 7)) & 1 != 0;
+            let on = match &dashes {
+                Some(dashes) => dashes[index],
+                None => (bits >> ((at >> 8) & 7)) & 1 != 0,
+            };
             let colour = match (on, gap) {
                 (true, _) => ink,
                 (false, Some(gap)) => gap,

@@ -1,6 +1,6 @@
 'use strict';
 
-import { herculesWhite, isHercules } from './driver-hercules.js';
+import { herculesDashes, herculesWhite, isHercules } from './driver-hercules.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { ditheredIndex } from '../../raster/dither.js';
@@ -913,12 +913,22 @@ export function output(
       return 1;
     }
 
-    for (const [px, py, at] of polylinePixels(path)) {
+    const pixels = polylinePixels(path);
+    /* The Hercules walks its style in steps of its own (`driver-hercules.ts`). */
+    const dashes = isHercules(system)
+      ? herculesDashes(
+          pixels.map(([px, py]) => [px, py]),
+          path[path.length - 1],
+          penStyle
+        )
+      : null;
+
+    for (const [index, [px, py, at]] of pixels.entries()) {
       if (px < box.left || px >= box.right || py < box.top || py >= box.bottom) {
         continue;
       }
 
-      const on = !!((bits >> ((at >> 8) & 7)) & 1);
+      const on = dashes ? dashes[index] : !!((bits >> ((at >> 8) & 7)) & 1);
 
       if (!on && gap === null) {
         continue;

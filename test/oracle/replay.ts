@@ -5599,12 +5599,6 @@ export const KNOWN_GAPS: Record<string, string> = {
     "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
   'gdidmdrw-vga256:dibset':
     "the driver matches a DIB of 24 bits through the probe's null translation table, which DOSBox reads as its real-mode vectors",
-  /* The Hercules walks a styled line in runs (`HERCULES.DRV` seg4
-   * `02f6`-`0360`), its steps 40h and 48h; where each pixel falls in the
-   * style is not followed, and a dashed line on a transparent background
-   * differs. */
-  'gdidmdrw-hercules:output':
-    "the Hercules's walk along a styled line, which shows on a transparent background, is not followed",
 };
 
 /**

@@ -316,6 +316,7 @@ pub const AGREEING: &[&str] = &[
     "rdw31",
     "swpunc31",
     "prttxt",
+    "gdidmdrw-hercules",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
