@@ -52,4 +52,6 @@ A static control and a group box are passed over by their own answers: the stati
 
 `Desktop.hitSteps` (`src/win16/user/desktop.ts`) and `hit_steps` (`crates/winbox-win16/src/raster_input.rs`) walk the windows as `71b9` does and give the steps it comes to, each a window and its answer or a window to be asked; the mouse's scan (`hitTest`, `scan_hit`) and `WindowFromPoint` ask each in turn. `Desktop.windowAt` and `window_at`, for WinBox's own use, take every window for the caller's and the answers of an icon's title and a group box as known.
 
+Where the system-modal window itself answers `HTTRANSPARENT`, Windows' walk ends at no window and `WindowFromPoint` answers nought; WinBox answers the desktop window. Not recorded.
+
 winbox.js agrees with all 30 records of [[probe:winpoint]], with [[probe:iconkid]]'s, and with all 38 of [[probe:wfpwalk]].

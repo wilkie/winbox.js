@@ -16004,8 +16004,8 @@
   "functions": {
    "msg": {
     "total": 136,
-    "agreed": 56,
-    "disagreed": 80,
+    "agreed": 91,
+    "disagreed": 45,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -16018,7 +16018,7 @@
    }
   },
   "gaps": {
-   "msg": "a window minimized is not asked with WM_WINDOWPOSCHANGING, WM_GETMINMAXINFO and WM_NCCALCSIZE, and an icon's title takes no part in the activation"
+   "msg": "an icon restored is not asked as Windows asks it, and no icon's title is kept hidden among the windows, 45 records"
   }
  },
  "minis": {
@@ -28037,8 +28037,8 @@
   "functions": {
    "msg": {
     "total": 140,
-    "agreed": 69,
-    "disagreed": 71,
+    "agreed": 117,
+    "disagreed": 23,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -28051,15 +28051,14 @@
    },
    "zorder": {
     "total": 14,
-    "agreed": 12,
-    "disagreed": 2,
+    "agreed": 14,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
   "gaps": {
-   "msg": "a window minimized and restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 71 records",
-   "zorder": "an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records"
+   "msg": "a window restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 23 records"
   }
  },
  "swpunc": {
@@ -30778,14 +30777,14 @@
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
   "records": 38,
   "functions": {
-   "window": {
+   "asked": {
     "total": 19,
     "agreed": 19,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
-   "asked": {
+   "window": {
     "total": 19,
     "agreed": 19,
     "disagreed": 0,

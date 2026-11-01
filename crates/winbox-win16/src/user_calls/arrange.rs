@@ -163,19 +163,44 @@ pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Re
     }
 
     let parent = system.arranged(hwnd);
-    let icons: Vec<usize> = system
+    // Taken in the order they lie on the screen (`USER.EXE` seg4
+    // `01af`-`0356`): by row, the top in the client area measured from the
+    // bottom and rounded to the nearest spacing down (`0238`-`0292`, USER's
+    // `[0C2h]`, taken for `SM_CYICONSPACING`), the lowest row first, then
+    // from the left (`029d`-`0341`, an insertion sort, stable). The
+    // TypeScript engine's `arrangeIcons`.
+    let spacing = system.metric(SM_CYICONSPACING);
+    let (origin_x, origin_y, high) = parent
+        .and_then(|index| system.windows[index].as_ref())
+        .map_or((0, 0, i32::from(system.display.height)), |window| {
+            (
+                window.left + window.client.left,
+                window.top + window.client.top,
+                window.client_height(),
+            )
+        });
+    let mut icons: Vec<(usize, i32, i32)> = system
         .z_order
         .iter()
         .copied()
-        .filter(|&other| {
-            system.windows[other].as_ref().is_some_and(|window| {
-                window.parent == parent
-                    && window.visible
-                    && window.placement == Placement::Minimized
-                    && window.title_of.is_none()
+        .filter_map(|other| {
+            let window = system.windows[other].as_ref()?;
+
+            (window.parent == parent
+                && window.visible
+                && window.placement == Placement::Minimized
+                && window.title_of.is_none())
+            .then(|| {
+                let up = high - (window.top - origin_y) + (spacing >> 1);
+
+                (other, high - (up - up % spacing), window.left - origin_x)
             })
         })
         .collect();
+
+    icons.sort_by(|a, b| b.1.cmp(&a.1).then(a.2.cmp(&b.2)));
+
+    let icons: Vec<usize> = icons.into_iter().map(|(icon, _, _)| icon).collect();
 
     for (slot, &icon) in icons.iter().enumerate() {
         let (left, top) = system.icon_slot(parent, slot as i32);

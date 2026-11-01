@@ -2699,15 +2699,36 @@ export class Desktop {
   }
 
   /**
-   * A parent's icons put in their slots again, from the one at the top, any
-   * place set for them forgotten: `ArrangeIconicWindows`. Answers how many
-   * (`userwin`: of two, the one minimized last, above, takes the first slot).
+   * A parent's icons put in their slots again, any place set for them
+   * forgotten: `ArrangeIconicWindows`. Answers how many. **Read out**
+   * (`USER.EXE` seg4 `01af`-`0356`): the icons are taken in the order they
+   * lie on the screen, not among the windows -- each by its row, its top in
+   * the client area measured from the bottom and rounded to the nearest
+   * spacing down (seg4 `0238`-`0292`, the spacing USER keeps at its `[0C2h]`,
+   * taken here for `SM_CYICONSPACING`), the lowest row first, and along a
+   * row from the left (`029d`-`0341`, an insertion sort that keeps the
+   * order of icons alike). **Recorded** by `userwin`: of two icons, one
+   * moved up the screen, the one left on the bottom row takes the first
+   * slot.
    */
   arrangeIcons(parent: DesktopWindow | null) {
-    const icons = this.windows.filter(
-      (other) =>
-        other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
-    );
+    const high = parent ? parent.clientHeight : this.screen.height;
+    const spacing = this.environment.metric(SM_CYICONSPACING);
+    const originY = parent ? parent.top + parent.client.top : 0;
+    const originX = parent ? parent.left + parent.client.left : 0;
+    const row = (icon: DesktopWindow) => {
+      const up = high - (icon.top - originY) + (spacing >> 1);
+
+      return high - (up - (up % spacing));
+    };
+    const icons = this.windows
+      .filter(
+        (other) =>
+          other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
+      )
+      .map((icon) => ({ icon, row: row(icon), x: icon.left - originX }))
+      .sort((a, b) => b.row - a.row || a.x - b.x)
+      .map(({ icon }) => icon);
 
     icons.forEach((icon, slot) => {
       const { left, top } = this.iconSlot(parent, slot);
