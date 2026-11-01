@@ -203,8 +203,7 @@ fn lean_of(ppem: f64, across: f64) -> f64 {
 /// Leans an outline over, each point sheared in sixty-fourths with the two
 /// roundings apart, a half going up. **Measured**: every slant instrument
 /// exact, and 32,394 fabricated cells of 32,394.
-fn slant(contours: &[Contour], scale: f64, ppem: f64, across: f64) -> Vec<Contour> {
-    let lean = lean_of(ppem, across);
+fn slant(contours: &[Contour], scale: f64, lean: f64) -> Vec<Contour> {
     let k = scale * 64.0;
 
     contours
@@ -695,8 +694,7 @@ impl Pen<'_> {
                     slant(
                         contours,
                         if fitted.scaled { 1.0 } else { scale },
-                        ppem,
-                        across_pixels,
+                        outline.lean.unwrap_or_else(|| lean_of(ppem, across_pixels)),
                     )
                 } else {
                     contours.clone()
@@ -748,7 +746,7 @@ impl Pen<'_> {
                         // excluding stubs spares a stroke's ends.
                         stubs: !italic && fitted.scan_type.unwrap_or(1.0) == 1.0,
                         lean: if italic && !turned_already {
-                            lean_of(ppem, across_pixels)
+                            outline.lean.unwrap_or_else(|| lean_of(ppem, across_pixels))
                         } else {
                             0.0
                         },

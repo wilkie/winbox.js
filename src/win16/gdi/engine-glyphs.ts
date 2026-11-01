@@ -158,7 +158,17 @@ export function setContext(system: any, far: number, angle: number): number {
     return FAILED;
   }
 
-  system._engineContext = { key, answer: 0, font, turn: angle, matrix: engineMatrix(info, angle) };
+  const matrix = engineMatrix(info, angle);
+
+  /* GDI's slant leans the outline by its matrix's `m10` over `m11`, across
+   * pixels for each down (`6f5b`-`6f7a`, `6fa3`-`6fce`): 13/40 at an em of
+   * 40, 18/53 at 53, where the display's own synthesis leans by a third
+   * rounded down, 17/53 (`Surface.leanOf`). **Recorded** by `prttslt`. */
+  if (info.flags & 4 && !angle && matrix[3]) {
+    (font as any).engineLean = matrix[2] / matrix[3];
+  }
+
+  system._engineContext = { key, answer: 0, font, turn: angle, matrix };
   return 0;
 }
 

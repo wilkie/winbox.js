@@ -6914,6 +6914,16 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   stretch of 28, slanted or not. So the 24 turned is the hinted phantom, and
   the 16 slanted at 45 degrees the unhinted one at the smaller stretch; of
   the three records `prtteng` had left, only E9h's box stays.
+  **Recorded** by `prttslt`, slanted Wingdings and Symbol at ems from 40 to
+  72: the slant leans by the matrix's `m10` over `m11`, `(57h * em) >> 8`
+  over the em, which parts from the display's own synthesis, `floor(em / 3)`,
+  first at 53 (18 to 17); drawn so, Wingdings' `A`, `a` and `l` come right to
+  the bit from 53 up. Left: Symbol's corner carries a fraction across -- `S`
+  and `W` exactly `7/256` of the em, 1.09375 at 40 -- where WinBox's is a
+  whole pixel, its bitmaps agreeing; Wingdings' E9h has its arrowhead's tip
+  rescued a column past WinBox's box on the left at 40 (the pixel at the
+  bottom of the tip, column 0), or a row past it at the top elsewhere; and
+  one pixel of a few others.
 - **Widths** (`EngineGetCharWidth`, seg3 `2662`): the advances at the
   context upright, the first character 8, a character outside the font its
   default character's -- kept, as in a font file, from the first, so the

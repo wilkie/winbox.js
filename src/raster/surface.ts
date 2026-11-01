@@ -2264,7 +2264,10 @@ export class Surface {
           /* And the box is built from the sheared corners of the glyph's
            * bounding box rather than from the outline's own extent; see
            * `leanOf` and the note in `glyph-raster`. */
-          lean: italic && !fitted.turnedAlready ? Surface.leanOf(ppem, acrossPixels) : 0,
+          lean:
+            italic && !fitted.turnedAlready
+              ? (this._font?.engineLean ?? Surface.leanOf(ppem, acrossPixels))
+              : 0,
         });
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
@@ -2625,7 +2628,9 @@ export class Surface {
    * furthest. The proportion is the same one the bitmap faces lean by.
    */
   slant(contours, scale, ppem, across = ppem) {
-    const lean = Surface.leanOf(ppem, across);
+    /* GDI's TrueType engine leans by its own matrix's shear instead, which
+     * `EngineSetFontContext` keeps on the font (`engine-glyphs.ts`). */
+    const lean = this._font?.engineLean ?? Surface.leanOf(ppem, across);
 
     /* Each point is sheared in sixty-fourths, with the two roundings apart.
      *

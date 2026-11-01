@@ -135,6 +135,7 @@ fn engine_font(system: &mut System, info: &FontInfo, turn: u16) -> Option<Logica
             horizontal_res: or_96(info.res_x),
             vertical_res: or_96(info.res_y),
             bold_always: false,
+            lean: None,
         },
     ))
 }
@@ -168,7 +169,21 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
         return kept.answer;
     }
 
-    let font = engine_font(system, &info, angle);
+    let mut font = engine_font(system, &info, angle);
+    let matrix = engine_matrix(&info, angle);
+
+    // GDI's slant leans the outline by its matrix's `m10` over `m11`, across
+    // pixels for each down (`6f5b`-`6f7a`, `6fa3`-`6fce`): 13/40 at an em of
+    // 40, 18/53 at 53, where the display's own synthesis leans by a third
+    // rounded down, 17/53 (`lean_of`). **Recorded** by `prttslt`.
+    if info.flags & 4 != 0
+        && angle == 0
+        && matrix[3] != 0
+        && let Some(outline) = font.as_mut().and_then(|font| font.outline.as_mut())
+    {
+        outline.lean = Some(f64::from(matrix[2]) / f64::from(matrix[3]));
+    }
+
     let (key, answer) = if font.is_some() {
         (key, 0)
     } else {
@@ -180,7 +195,7 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
         answer,
         font,
         turn: f64::from(angle),
-        matrix: engine_matrix(&info, angle),
+        matrix,
     });
     answer
 }

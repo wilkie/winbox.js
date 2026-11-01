@@ -81,6 +81,10 @@ pub struct Outline {
     /// Whether the display's driver keeps the emboldening overhang -- a
     /// Hercules -- which makes a smeared string measure one wider.
     pub bold_always: bool,
+    /// The lean GDI's TrueType engine slants a glyph by, across pixels for
+    /// each down -- its matrix's `m10` over `m11` (`GDI.EXE` seg1
+    /// `6f5b`-`6f7a`) -- where it is not the display's own synthesis's.
+    pub lean: Option<f64>,
 }
 
 /// The same file, realised the same way.
@@ -105,6 +109,7 @@ impl PartialEq for Outline {
             && numbers(self) == numbers(other)
             && (self.exact_style, self.face_bold, self.bold_always)
                 == (other.exact_style, other.face_bold, other.bold_always)
+            && self.lean.map(f64::to_bits) == other.lean.map(f64::to_bits)
     }
 }
 
