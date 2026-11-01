@@ -6,7 +6,7 @@ ordinal: 126
 summary: Adds a region to what a window is due to paint, and to the windows in it where it has no WS_CLIPCHILDREN; ValidateRgn takes one away, GetUpdateRgn gives what is left, ExcludeUpdateRgn keeps a device context out of it, UpdateWindow paints a window and those in it, and BeginPaint's rectangle is its clip box.
 versions:
   '3.1': exact
-probes: [updrgn, invchild]
+probes: [updrgn, invchild, uwleft]
 source: src/win16/user/update-region.ts
 topics: [painting]
 ---
@@ -42,6 +42,17 @@ winbox.js agrees with all 7 records. All four were stubs. [[fn:USER.InvalidateRe
 
 Both engines agree with all 215 records.
 
+### Of no window, and erasing as they answer
+
+[[probe:uwleft]] has W, a pop-up with `WS_BORDER` 120 by 80, everything painted and nothing due. [[measured]]
+
+- [[fn:USER.InvalidateRect]] of no window, given a rectangle (0, 0, 10, 10) and no erase, makes W due all over and draws it at once, inside the call: `WM_NCPAINT` with 1 and `WM_ERASEBKGND`; its paint, of all its client area and `fErase` nought, comes with the message loop. [[read out]] With no window the rectangle is dropped and the flags are 285h, `RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_ERASENOW`, whatever was given (`USER.EXE` seg1 `015d`-`0176`): every window is made due and erased again.
+- `InvalidateRgn` of no window does nothing: the handle is refused before the body (`aa6d`, `ae6d`, KERNEL's `HandleParamError`); `InvalidateRect` alone lets none through (`aa30`, `ae69`).
+- [[fn:USER.GetUpdateRect]] and `GetUpdateRgn` with `bErase` erase the window first, where an erase is due: `WM_ERASEBKGND` comes inside the call, before the answer, and the window is still due its paint, which comes with `fErase` nought. Made due without an erase, nothing is sent; with `bErase` FALSE the erase waits for the paint, as before. [[read out]] The body draws what is due of the window's frame and erase through seg1 `7913`, the window alone, before it answers (`466f`-`467c`, `478e`-`479b`).
+- What is made due of the desktop is told to the records USER keeps, as a window's is (`3f41`-`3f7c`, the box of it within the screen): W locked by [[fn:USER.LockWindowUpdate]], `RedrawWindow` of no window with (320, 60, 360, 100) and `RDW_INVALIDATE`, and W unlocked, W is due (19, 19, 59, 59) of its client area, what the rectangle covered of it, its frame with it; of no rectangle, all of W. A pop-up of a `CS_SAVEBITS` class over W, the desktop made due beneath it and the pop-up hidden, W is due all the pop-up covered.
+
+Both engines agree with all 64 records.
+
 ## Implementation
 
-`src/win16/user/update-region.ts`, through `redrawThrough` in `src/win16/user/invalidate-through.ts` (`InvalidateRect.ts`, `ValidateRect.ts`, `UpdateWindow.ts`, `BeginPaint.ts`); in Rust `user_calls/update_region.rs`, `invalidate_through.rs` and `paint.rs`. Not followed: `GetUpdateRect` answering 1 for an update region whose box is empty; [[fn:USER.InvalidateRect]] of no window, which repaints every window (`015d`-`0172`, 285h). The desktop still keeps a window's update as `dirtyRect`, its box, which everything else reads. The region beside it counts only while it is that box's: whatever sets `dirtyRect` another way falls back to the box, as before.
+`src/win16/user/update-region.ts`, through `redrawThrough` in `src/win16/user/invalidate-through.ts` (`InvalidateRect.ts`, `ValidateRect.ts`, `UpdateWindow.ts`, `BeginPaint.ts`); in Rust `user_calls/update_region.rs`, `invalidate_through.rs` and `paint.rs`. `InvalidateRect` of no window calls `RedrawWindow`'s body with 285h; `GetUpdateRect` and `GetUpdateRgn` with `bErase` call `syncPaintFrom` (`sync_paint_from`) for the window alone first; `RedrawWindow` of no window tells the records with `tellDesktop` (`tell_desktop`). Not followed: `GetUpdateRect` answering 1 for an update region whose box is empty; `bErase` given with the desktop window. The desktop still keeps a window's update as `dirtyRect`, its box, which everything else reads. The region beside it counts only while it is that box's: whatever sets `dirtyRect` another way falls back to the box, as before.

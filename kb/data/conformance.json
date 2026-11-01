@@ -16022,8 +16022,8 @@
   "functions": {
    "msg": {
     "total": 136,
-    "agreed": 91,
-    "disagreed": 45,
+    "agreed": 109,
+    "disagreed": 27,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -16036,7 +16036,7 @@
    }
   },
   "gaps": {
-   "msg": "an icon restored is not asked as Windows asks it, and no icon's title is kept hidden among the windows, 45 records"
+   "msg": "no icon's title is kept hidden among the windows, nor made active before its icon, nor asked as the activation leaves it, 27 records"
   }
  },
  "minis": {
@@ -28055,8 +28055,8 @@
   "functions": {
    "msg": {
     "total": 140,
-    "agreed": 117,
-    "disagreed": 23,
+    "agreed": 125,
+    "disagreed": 15,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -28076,7 +28076,7 @@
    }
   },
   "gaps": {
-   "msg": "a window restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 23 records"
+   "msg": "an icon made active does not name its title as the window it goes after, and one made visible behind a topmost window is not asked again as it is activated, 15 records"
   }
  },
  "swpunc": {
@@ -30114,6 +30114,64 @@
    "timer": {
     "total": 1,
     "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "uwleft": {
+  "probe": "uwleft",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 64,
+  "functions": {
+   "asked": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "erase": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ncpaint": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "paint": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "step": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "update": {
+    "total": 17,
+    "agreed": 17,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "wfp": {
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

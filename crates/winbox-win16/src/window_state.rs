@@ -116,6 +116,45 @@ impl System {
     /// them, first of them for `HWND_TOP` (`1611`-`1662`, `15d7`). The
     /// TypeScript engine's `familyOf`.
     pub(crate) fn family_of(&self, shown: usize) -> Vec<usize> {
+        fn build(
+            owner: usize,
+            moved: Option<usize>,
+            top_owner: &dyn Fn(usize) -> Option<usize>,
+            owned_by: &dyn Fn(usize) -> Vec<usize>,
+            seen: &mut Vec<usize>,
+            out: &mut Vec<usize>,
+        ) {
+            if seen.contains(&owner) {
+                return;
+            }
+
+            seen.push(owner);
+
+            let mut branch = moved;
+
+            while let Some(at) = branch {
+                if top_owner(at) == Some(owner) {
+                    break;
+                }
+
+                branch = top_owner(at);
+            }
+
+            // For `HWND_TOP` the branch moved goes before the first window
+            // the head owns (`15d7`).
+            if let Some(branch) = branch {
+                build(branch, moved, top_owner, owned_by, seen, out);
+            }
+
+            for window in owned_by(owner) {
+                if Some(window) != branch {
+                    build(window, None, top_owner, owned_by, seen, out);
+                }
+            }
+
+            out.push(owner);
+        }
+
         let tops: Vec<usize> = self
             .z_order
             .iter()
@@ -159,45 +198,6 @@ impl System {
             && owned_by(shown).is_empty()
         {
             return vec![shown];
-        }
-
-        fn build(
-            owner: usize,
-            moved: Option<usize>,
-            top_owner: &dyn Fn(usize) -> Option<usize>,
-            owned_by: &dyn Fn(usize) -> Vec<usize>,
-            seen: &mut Vec<usize>,
-            out: &mut Vec<usize>,
-        ) {
-            if seen.contains(&owner) {
-                return;
-            }
-
-            seen.push(owner);
-
-            let mut branch = moved;
-
-            while let Some(at) = branch {
-                if top_owner(at) == Some(owner) {
-                    break;
-                }
-
-                branch = top_owner(at);
-            }
-
-            // For `HWND_TOP` the branch moved goes before the first window
-            // the head owns (`15d7`).
-            if let Some(branch) = branch {
-                build(branch, moved, top_owner, owned_by, seen, out);
-            }
-
-            for window in owned_by(owner) {
-                if Some(window) != branch {
-                    build(window, None, top_owner, owned_by, seen, out);
-                }
-            }
-
-            out.push(owner);
         }
 
         let mut seen = Vec::new();
