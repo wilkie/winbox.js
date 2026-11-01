@@ -12,6 +12,7 @@ use crate::engine::Engine;
 use crate::fonts::{FontManager, Request};
 use crate::system::System;
 
+use super::calls::mul_div;
 use super::text::scalable::true_type_facts;
 use super::text_out::outline::glyph_of;
 
@@ -23,6 +24,9 @@ pub struct EngineContext {
     answer: u32,
     font: Option<LogicalFont>,
     turn: f64,
+    /// The transformation's matrix, `[m00, m01, m10, m11]` in pixels
+    /// (`engine_matrix`).
+    matrix: [i32; 4],
 }
 
 /// What the engine reads of a `FONTINFO` it realized (`GDI.EXE` seg3
@@ -176,29 +180,179 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
         answer,
         font,
         turn: f64::from(angle),
+        matrix: engine_matrix(&info, angle),
     });
     answer
 }
 
+/// The matrix GDI hands the scaler for a `FONTINFO` at an angle (`GDI.EXE`
+/// seg1 `6f22`-`6fce`), `[m00, m01, m10, m11]` in whole pixels, as
+/// `engineMatrix`: the em times the cosine and sine; GDI's slant adding
+/// 57h/100h of `m00` to `m10` and of `m01` to `m11`; a stretch scaling `m00`
+/// and a `m01` that is not nought; differing resolutions scaling `m00` and a
+/// `m10` that is not nought by their ratio, the half added to the low word
+/// alone.
+fn engine_matrix(info: &FontInfo, angle: u16) -> [i32; 4] {
+    let word = |value: i32| i32::from(value as i16);
+    let high = |product: i32| word(product.div_euclid(256));
+    let em = i32::from(info.em);
+    let cosine = sine_of(em, i32::from(angle), true);
+    let sine = sine_of(em, i32::from(angle), false);
+    let (mut m00, mut m01, mut m10, mut m11) = (cosine, sine, word(-sine), cosine);
+
+    if info.flags & 4 != 0 {
+        m10 = word(m10 + high(0x57 * m00));
+        m11 = word(m11 + high(0x57 * m01));
+    }
+
+    if info.stretch != 0x100 {
+        let stretch = i32::from(info.stretch as i16);
+
+        m00 = high(stretch * m00);
+
+        if m01 != 0 {
+            m01 = high(stretch * m01);
+        }
+    }
+
+    if info.res_x != info.res_y && info.res_y != 0 {
+        let res_x = i32::from(info.res_x as i16);
+        let res_y = i32::from(info.res_y);
+        let across = |entry: i32| {
+            let product = i64::from(entry * res_x);
+            let low = (product + i64::from(res_y / 2)) & 0xffff;
+            let dividend = product.div_euclid(0x10000) * 0x10000 + low;
+
+            word((dividend / i64::from(res_y)) as i32)
+        };
+
+        m00 = across(m00);
+
+        if m10 != 0 {
+            m10 = across(m10);
+        }
+    }
+
+    [m00, m01, m10, m11]
+}
+
 /// A character's glyph as the engine's context makes it at an angle, as
-/// `Surface.glyphOf` is asked of the context's font: `None` where the
-/// context has no face.
+/// `engineGlyph`: `Surface.glyphOf` of the context's font, its advance the
+/// scaler's where the context's matrix is not a plain upright scale;
+/// `None` where the context has no face.
 pub(crate) fn context_glyph(
     system: &System,
     code: u8,
     turn: u16,
 ) -> Result<Option<super::text_out::outline::GlyphOutline>, Stop> {
-    let Some(font) = system
-        .printing
-        .drivers
-        .engine
-        .as_ref()
-        .and_then(|context| context.font.as_ref())
-    else {
+    let Some(context) = system.printing.drivers.engine.as_ref() else {
+        return Ok(None);
+    };
+    let Some(font) = context.font.as_ref() else {
+        return Ok(None);
+    };
+    let Some(mut glyph) = glyph_of(font, code, f64::from(turn))? else {
         return Ok(None);
     };
 
-    glyph_of(font, code, f64::from(turn))
+    if let Some((across, up)) = engine_advance(context, u32::from(code)) {
+        glyph.advance_x = across;
+        glyph.advance_y = up;
+    }
+
+    Ok(Some(glyph))
+}
+
+/// The advance of a glyph made through a matrix that is not a plain upright
+/// scale, as the scaler makes it (`GDI.EXE` seg36 `0796`, `103b`, `1f46`,
+/// `3ff9`, `6ebb`, `4bb2`, `4882`), as `engineAdvance`: `None` for one that
+/// is. The phantoms scaled at each row's stretch, rounded to pixels where
+/// `prep` leaves the program to run, turned by the entries over the
+/// stretch, differenced and each half rounded.
+fn engine_advance(context: &EngineContext, code: u32) -> Option<(i64, i64)> {
+    let [m00, m01, m10, m11] = context.matrix;
+    let outline = context.font.as_ref()?.outline.as_ref()?;
+
+    if m01 == 0 && m10 == 0 && m00 == m11 && m00 > 0 {
+        return None;
+    }
+
+    let font = &outline.font;
+    let glyph = font.glyph_for(code);
+    let stretch_x = m00.abs().max(m01.abs());
+    let stretch_y = m10.abs().max(m11.abs());
+
+    if stretch_x == 0 || stretch_y == 0 {
+        return None;
+    }
+
+    let rotated = !(m00 == 0 && m11 == 0) && (m01 != 0 || m10 != 0);
+    let units = font.units_per_em() as i64;
+    let shift = font.bearing_shift(glyph).unwrap_or(0.0) as i64;
+    let wide = f64::from(stretch_x) / f64::from(stretch_y);
+    let scale = engine_scaler(i64::from(stretch_x), units);
+    let mut origin = scale(-shift);
+    let mut advance = scale(font.advance_of(glyph) as i64 - shift);
+
+    if font
+        .prep_grid_fit(f64::from(stretch_y), wide, rotated)
+        .unwrap_or(false)
+    {
+        let grid = |value: i64| (value + 32).div_euclid(64) * 64;
+        let fitted = font
+            .hinted_outline(glyph, f64::from(stretch_y), true, wide, rotated)
+            .ok();
+
+        origin = grid(origin);
+        advance = match fitted {
+            Some(fitted) if fitted.hinted => origin + fitted.advance.unwrap_or(0.0) as i64,
+            _ => grid(advance),
+        };
+    }
+
+    let across = fix_div(i64::from(m00), i64::from(stretch_x));
+    let up = fix_div(i64::from(m01), i64::from(stretch_x));
+    let whole = |value: i64| (value * 1024 + 0x8000).div_euclid(0x10000);
+
+    Some((
+        whole(fix_mul(advance, across) - fix_mul(origin, across)),
+        whole(fix_mul(advance, up) - fix_mul(origin, up)),
+    ))
+}
+
+/// Design units into sixty-fourths at a stretch, as `3f55` reduces the
+/// ratio, as `engineScaler`: a power of two shifts with a half up (`3e5e`),
+/// otherwise it divides with a half away from nought (`3e80`).
+fn engine_scaler(stretch: i64, units_per_em: i64) -> impl Fn(i64) -> i64 {
+    let mut multiplier = stretch * 64;
+    let mut divisor = units_per_em.max(1);
+
+    while multiplier % 2 == 0 && divisor % 2 == 0 {
+        multiplier /= 2;
+        divisor /= 2;
+    }
+
+    let shifted = divisor & (divisor - 1) == 0;
+
+    move |value: i64| {
+        if shifted || value >= 0 {
+            (value * multiplier + divisor / 2).div_euclid(divisor)
+        } else {
+            -((-value * multiplier + divisor / 2).div_euclid(divisor))
+        }
+    }
+}
+
+/// `FixDiv` of two whole numbers (seg36 `0270`), as `fixDiv`.
+fn fix_div(numerator: i64, denominator: i64) -> i64 {
+    numerator.signum()
+        * denominator.signum()
+        * ((numerator.abs() * 65536 + denominator.abs() / 2) / denominator.abs())
+}
+
+/// `FixMul` (seg36 `0200`), as `fixMul`.
+fn fix_mul(value: i64, factor: i64) -> i64 {
+    (value * factor + 32768).div_euclid(65536)
 }
 
 fn engine_set_font_context_call(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
@@ -240,10 +394,10 @@ fn engine_get_glyph_bmp_call(system: &mut System, args: &mut Args) -> Result<Ans
         return failed(system);
     }
 
-    let (Some(font), Some(context)) = (font, context.as_ref()) else {
+    let (Some(_), Some(context)) = (font, context.as_ref()) else {
         return failed(system);
     };
-    let Some(glyph) = glyph_of(font, character as u8, context.turn)? else {
+    let Some(glyph) = context_glyph(system, character as u8, context.turn as u16)? else {
         return failed(system);
     };
 
@@ -620,4 +774,50 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ConvertOutlineFontFile" => Implementation::Sync(convert_outline_font_file_call),
         _ => return None,
     })
+}
+
+/// The sine of each whole degree to 90, times 10000 (seg33 `0000`).
+const SINES: [i32; 91] = [
+    0, 175, 349, 523, 698, 872, 1045, 1219, 1392, 1564, 1736, 1908, 2079, 2250, 2419, 2588, 2756,
+    2924, 3090, 3256, 3420, 3584, 3746, 3907, 4067, 4226, 4384, 4540, 4695, 4848, 5000, 5150, 5299,
+    5446, 5592, 5736, 5878, 6018, 6157, 6293, 6428, 6561, 6691, 6820, 6947, 7071, 7193, 7314, 7431,
+    7547, 7660, 7771, 7880, 7986, 8090, 8192, 8290, 8387, 8480, 8572, 8660, 8746, 8829, 8910, 8988,
+    9063, 9135, 9205, 9272, 9336, 9397, 9455, 9511, 9563, 9613, 9659, 9703, 9744, 9781, 9816, 9848,
+    9877, 9903, 9925, 9945, 9962, 9976, 9986, 9994, 9998, 10000,
+];
+
+/// `value` times the sine, or the cosine, of an angle in tenths of a
+/// degree, from GDI's table (seg33 `00b6`, `00fb`, `013f`).
+pub(crate) fn sine_of(value: i32, angle: i32, cosine: bool) -> i32 {
+    let a = if angle < 0 {
+        3600 - (-angle % 3600)
+    } else {
+        angle % 3600
+    };
+    let (tenths, negative) = if cosine {
+        if a <= 900 {
+            (900 - a, false)
+        } else if a <= 1800 {
+            (a - 900, true)
+        } else if a < 2700 {
+            (2700 - a, true)
+        } else {
+            (a - 2700, false)
+        }
+    } else if a <= 900 {
+        (a, false)
+    } else if a <= 1800 {
+        (1800 - a, false)
+    } else if a <= 2700 {
+        (a - 1800, true)
+    } else {
+        (3600 - a, true)
+    };
+    let degree = (tenths / 10) as usize;
+    let low = SINES[degree];
+    let high = SINES.get(degree + 1).copied().unwrap_or(low);
+    let sine = low + mul_div(tenths % 10, high - low, 10);
+    let product = mul_div(value, sine, 10000);
+
+    if negative { -product } else { product }
 }

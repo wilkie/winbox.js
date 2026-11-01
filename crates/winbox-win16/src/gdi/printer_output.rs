@@ -1282,10 +1282,15 @@ fn polyline_plan(system: &mut System, dc: usize, logical: &[(i32, i32)]) -> Line
 /// or `PC_WINDPOLYGON` for `WINDING`, and what the pen and brush need, is
 /// given `OS_ALTPOLYGON` or `OS_WINDPOLYGON`. 1 where it drew. Not
 /// followed: GDI's own drawing for a driver that cannot.
+///
+/// GDI's own callers reach `0396` with the points in the device's terms
+/// and a fill mode of their own -- `in_device`, `WINDING` where true -- as
+/// `driverPolygon`'s `inDevice`.
 pub async fn driver_polygon(
     engine: &Engine,
     dc: usize,
     logical: &[(i32, i32)],
+    in_device: Option<bool>,
 ) -> Result<u16, Stop> {
     let mut given = logical.to_vec();
 
@@ -1301,7 +1306,13 @@ pub async fn driver_polygon(
         let mut system = engine.system();
         let mut points: Vec<(i32, i32)> = given
             .iter()
-            .map(|&(x, y)| device_point(&system, dc, x, y))
+            .map(|&(x, y)| {
+                if in_device.is_some() {
+                    (x, y)
+                } else {
+                    device_point(&system, dc, x, y)
+                }
+            })
             .collect();
 
         points.push(points[0]);
@@ -1313,7 +1324,7 @@ pub async fn driver_polygon(
             points.iter().map(|p| p.1).max().unwrap_or(0),
         ];
         let pen = pen_style(&system, dc);
-        let winding = system.gdi.dcs[dc].state.poly_fill_mode == Some(2);
+        let winding = in_device.unwrap_or(system.gdi.dcs[dc].state.poly_fill_mode == Some(2));
         let mut needs: u16 = if winding { 4 } else { 1 };
 
         if brush_style(&system, dc) != BS_HOLLOW {
@@ -2225,7 +2236,7 @@ fn points_call<'a>(engine: &'a Engine, args: Args, polygon: bool, name: &'static
             points_at(&system, far, count)
         };
         let answer = if polygon {
-            driver_polygon(engine, dc, &points).await?
+            driver_polygon(engine, dc, &points, None).await?
         } else {
             driver_polyline(engine, dc, &points).await?
         };

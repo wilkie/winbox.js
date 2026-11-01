@@ -5589,10 +5589,10 @@ export const KNOWN_GAPS: Record<string, string> = {
    * C000h and gives other selectors (`kb/topics/atoms.md`). Every glyph and
    * the document's size agree. */
   'prtt:line': "the downloaded face's name is a global atom, and its key a selector",
-  /* `kb/gdi/enginegetglyphbmp.md`: a turned glyph's advance and a slanted
-   * glyph's box, three of the 52. */
-  'prtteng:EngineGetGlyphBmp':
-    "the engine's advance of a glyph turned or slanted, and a slanted glyph's box, at one size each",
+  /* `kb/gdi/enginegetglyphbmp.md`: slanted Wingdings' E9h, a column wider
+   * on the left in Windows, one of the 52 (and of `prttrot`'s glyphs). */
+  'prtteng:EngineGetGlyphBmp': "the box of a glyph GDI's engine slants, at one size",
+  'prttrot:EngineGetGlyphBmp': "the box of a glyph GDI's engine slants, at one size",
   /* `gdidmdrw` hands `DMDibBits` a null translation table, which the
    * 256-colour driver reads for a DIB got of 1, 4 or 24 bits and hands GDI's
    * `DeviceColorMatch` for one set of 24 (`SVGA256.DRV` seg9 `0a1a`, `05ac`):
@@ -5602,6 +5602,13 @@ export const KNOWN_GAPS: Record<string, string> = {
     "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
   'gdidmdrw-vga256:dibset':
     "the driver matches a DIB of 24 bits through the probe's null translation table, which DOSBox reads as its real-mode vectors",
+  /* `prttrot` reads GDI's TrueType scaler's own memory with `TOOLHELP` after
+   * each glyph -- the read-out behind `kb/gdi/enginegetglyphbmp.md` -- and
+   * WinBox's engine keeps no such memory; its glyphs agree. */
+  'prttrot:gdi data': "GDI's data segment, which the probe finds in the global heap",
+  'prttrot:scaler': "where GDI's TrueType scaler keeps its context, which WinBox has not",
+  'prttrot:bytes': "GDI's TrueType scaler's own memory, which WinBox has not",
+  'prttrot:element': "the scaler's glyph element, which WinBox has not",
 };
 
 /**
@@ -6016,6 +6023,8 @@ const RUN_WHOLE = new Set<string>([
   'wfpwalk',
   'gdidmdib',
   'uwleft',
+  'prttrot',
+  'prttx2',
 ]);
 
 /**

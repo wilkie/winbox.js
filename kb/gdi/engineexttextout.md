@@ -6,8 +6,22 @@ ordinal: 314
 summary: GDI drawing a string of a TrueType font for a printer's driver -- through the font's own cache of glyphs, a raster font of 3.0 handed back to the driver's ExtTextOut -- or, given a negative count, measuring it.
 versions:
   '3.1': partial
-probes: [prtteng, prttxt]
-records: [extent, textextent, engine, drawn, font, glyph, dmexttextout, band, bitblt]
+probes: [prtteng, prttxt, prttx2]
+records:
+  [
+    extent,
+    textextent,
+    engine,
+    drawn,
+    font,
+    glyph,
+    dmexttextout,
+    band,
+    bitblt,
+    output,
+    strblt,
+    direct,
+  ]
 source: src/win16/gdi/engine-text.ts
 topics: [printer-drivers]
 ---
@@ -23,6 +37,8 @@ topics: [printer-drivers]
 - [[measured]] An italic font GDI slants itself comes with the string moved right, three pixels at an em of 20.
 - [[measured]] A turned string never reaches the driver's `ExtTextOut`: GDI draws each glyph through the driver's `BitBlt`, raster operation E20746h, the glyph's bitmap the source, cut to the device -- Arial's `Ab` turned 90 degrees at 10,10 is one blit of the `A`, 17 by 10 at 15,0 from 0,5 of the glyph, the `b` falling above the device.
 - [[measured]] The driver draws GDI's font with [[fn:GDI.DMExtTextOut]] onto a band of its own; the band's bits are recorded.
+- [[measured]] [[probe:prttx2]]: a turned string on an opaque background is preceded by a polygon the driver's `Output` fills, style 20 (`OS_WINDPOLYGON`): `Ab` of Arial at an em of 24 turned 90 degrees at 30,40 is 30,40 30,11 57,11 57,40 -- 29 along the baseline, the string's extent, and 27 across, the cell -- and at 30 degrees 30,40 55,25 69,48 44,63. With `ETO_OPAQUE` and a rectangle, the rectangle is filled after it with `PATCOPY` (F00021h) through the driver's `BitBlt`, then the glyphs are blitted.
+- [[measured]] For a driver without `RC_GDI20_OUTPUT` (its device "Plain"), the string comes to the driver's `StrBlt` a character at a time: `xAy` at 10,10 is three calls, at 10, 21 and 37, each of count 1, the font at 42h of the cache's segment and the clip the one given -- cut to the opaque rectangle for `ETO_CLIPPED`. An opaque background is the driver's `BitBlt` with `PATCOPY`: the text's box, 29 by 27 for `Ab`; given `ETO_OPAQUE` and a rectangle, the rectangle twice, before the characters. A turned string goes glyph by glyph through `BitBlt` as for any driver, after its polygon.
 
 ## Nuances
 
@@ -45,17 +61,23 @@ topics: [printer-drivers]
 
 [[read out]] The calls, `637f`-`656b`, through the context's table, entry 34h, its `ExtTextOut` (`65be`-`663a`), with GDI's copy of the `DRAWMODE` -- its justification and character extra nought -- and the cache's font. Which arguments go is a flag byte: the count or nought, GDI's widths or none, the opaque rectangle given or the text's own box, and the options given, given less `ETO_OPAQUE`, or 6. No characters: one call with what was given. A driver whose `dpRaster` has `RC_OP_DX_OUTPUT` (4000h) draws an opaque background in its one call. Otherwise an opaque background is a call of no characters filling the rectangle, the options 6, where `ETO_OPAQUE` and a rectangle are given (`6521`); one filling the text's box where the rectangle does not hold it, cut to it for `ETO_CLIPPED` (`6548`); then the string, transparent. A driver without `RC_GDI20_OUTPUT` (10h), and a font GDI draws as an outline (20h at 33h), go by seg8 `00e4`: GDI's own fill and the driver's `StrBlt` a character at a time.
 
-[[read out]] A turned font (flag 10h at 33h) goes by seg8 `024b`: a brush of the text colour selected, the text white and the background black (`002d`, `0268`); the first baseline point the place moved by the ascent, turned by GDI's own sine and cosine (seg33 `00b6`, `00fb`: a table of each degree's sine times 10000, the tenths between taken in proportion, `MulDiv` each), across by the resolutions' ratio; each glyph at the baseline point of the widths before it, moved by its corner, through seg1 `2ef2`: the driver's `BitBlt` for each rectangle of the clip within the glyph's box, top down, the source a monochrome `BITMAP` of the glyph -- its width taken up to 32 -- and the raster operation of the context's `ROP2` from a table at seg8 `020b`, E20746h for `R2_COPYPEN`. An opaque background is a region of the turned box GDI fills first (`63ea`-`64be`).
+[[read out]] A turned font (flag 10h at 33h) goes by seg8 `024b`: a brush of the text colour selected, the text white and the background black (`002d`, `0268`); the first baseline point the place moved by the ascent, turned by GDI's own sine and cosine (seg33 `00b6`, `00fb`: a table of each degree's sine times 10000, the tenths between taken in proportion, `MulDiv` each), across by the resolutions' ratio; each glyph at the baseline point of the widths before it, moved by its corner, through seg1 `2ef2`: the driver's `BitBlt` for each rectangle of the clip within the glyph's box, top down, the source a monochrome `BITMAP` of the glyph -- its width taken up to 32 -- and the raster operation of the context's `ROP2` from a table at seg8 `020b`, E20746h for `R2_COPYPEN`. An opaque background is filled first (`63ea`-`64be`): a brush of the background colour and a null pen selected (seg8 `0023`, `0004`), and the turned box filled through GDI's own `Polygon` in the device's terms, `WINDING` (seg24 `0396`, given 2): the place; the place carried along the baseline by the string's extent -- its widths and the two A spaces 6874 answers, past 7FFFh cut to 7FFFh less the place -- across by its cosine and up by its sine of the extent times the vertical-to-horizontal ratio (`[bp-52h]`, `256 * V / H` rounded, `625b`-`6288`); that point and the place carried down the cell, across by the sine of the cell times the other ratio and down by its cosine. Then, where options and an opaque rectangle are given, the rectangle filled with `PATCOPY` through `2ef2`, the clip's rectangles within it (`6482`-`64bb`); the brush and pen put back and deleted (`6585`).
 
 [[read out]] GDI's own `ExtTextOut` on a driver's context draws a turned engine font itself, without the driver's `ExtTextOut` (seg1 `3a1a`-`3a86`, into `620e`, which makes the block and goes to `6223`): where the device's `GDIINFO` word 5Eh has no bit 2, the context's flag 4 at 0Bh is set, the realized font is of type 3 and turned, and there are characters. [[measured]] So [[probe:prttxt]]'s driver logs no `engine` for a turned string, only the blits. [[read out]] The flag is the selected font's kind. Selecting a font (seg1 `3ff9`-`4094`) clears flags 4, 8 and 10h at 0Bh and sets one by the font mapper's answer: 4 for 539h, a device font -- the `FONTINFO` the driver's `RealizeObject` made, scored against GDI's own fonts and found better (seg3 `0740`-`080b`, and `13c1`) -- 10h for 53Ah, a TrueType font GDI's engine realized (seg3 `142a`, `2af2`), and 8 for some of GDI's vector fonts, by the device's `dpText` (`401a`-`404d`). seg3 `0261`-`0272` tells the same three apart. So a turned engine font a driver realized with `EngineRealizeFont` is drawn by GDI, and one GDI realized itself goes through GDI's own text, not this test; WinBox's driver path is only ever given the first.
 
+[[read out]] A driver without `RC_GDI20_OUTPUT`, and a font GDI draws as an outline, are called through seg8 `00e4` instead of the driver's `ExtTextOut` -- the near procedure at `621f` rather than `6221` (`62e1`-`62f2`) -- for every call the flag byte plans. A call that is not the string's (its bits 78h not all set) fills: the opaque rectangle given where bit 80h is set, else the text's box, cut to the clip (`663e`), through the driver's `BitBlt` with `PATCOPY`, the context's brush a solid one of the background colour for it (`0065`-`00c8`). The string's call fills the opaque rectangle the same way where `ETO_OPAQUE` is among the options (`00fa`) -- a second time, where a call before it filled it -- cuts the clip to the rectangle for `ETO_CLIPPED`, drawing nothing where nothing is left (`0109`-`012a`), and hands the driver's `StrBlt` each character with a count of 1 (`016d`-`01c5`): the first place the place moved by the ascent at 8 of the `FONTINFO` turned -- across by its sine times `256 * H / V`, up by what the ascent's cosine leaves of it -- and each character at the widths before it (`01c7`, a running total written over them) carried along the baseline, through GDI's sines (`01e1`, `01f0`); the clip, the cache's font, GDI's copy of the `DRAWMODE` with the background transparent and the `TEXTXFORM` given. A font GDI draws as an outline goes to its own drawing at `042a` instead.
+
+[[read out]] The count is cut to what GDI's stack holds as it starts: the stack pointer less the task's stack limit at `[SS:000Ah]` -- nothing at all under 400h -- less 400h, a quarter of that the most characters (`62a5`-`62c0`). The string counts as turned -- its widths the advances alone -- for a turned font, and for a context flagged 40h at 0Bh (`62d0`), which `CreateDC` sets for a context of the display driver's own device (seg1 `0249`-`024f`, the driver against `[014Dh]`).
+
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `src/win16/gdi/engine-text.ts` and `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). [[probe:prttxt]] agrees in every record, in both engines.
+`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `src/win16/gdi/engine-text.ts` and `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). The turned string's opaque background and the driver's `StrBlt` path for a driver without `RC_GDI20_OUTPUT` are drawn as read out (`turnedGround`, `byStrBlt`). [[probe:prttxt]] and [[probe:prttx2]] agree in every record, in both engines.
 
 ## Not yet done
 
 - The context's own realized font, where a driver gives another, for the extent.
 - A turned font's extent where the pixel is not square.
-- A turned string's opaque background; the driver's `StrBlt` a character at a time for a driver without `RC_GDI20_OUTPUT`, or a font GDI draws as an outline; the count cut to what GDI's stack holds (`62a5`); the context's flag 40h at 0Bh, which counts a string as turned.
+- The count cut to what GDI's stack holds (`62a5`), which hangs on the depth of GDI's own frames below the program's, which WinBox's GDI does not have; no probe reaches it.
+- A context flagged 40h at 0Bh, a context of the display, given to `EngineExtTextOut`: its string counted as turned; no probe hands the engine one.
+- A font GDI draws as an outline itself (seg8 `042a`), which no font WinBox realizes is.
 - The `DRAWMODE` handed on for no characters, which is what GDI's stack held there.

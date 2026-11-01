@@ -6895,15 +6895,25 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   the context: a box, a 16.16 corner and advance, and a bitmap a doubleword
   a row. Turned by the context's angle, the advance is carried along the
   baseline. **Recorded** to the bit for Arial and Wingdings upright, slanted
-  and turned, but three: Windows' advance of Wingdings' `A` turned 90 degrees
-  is 24, one more than upright; slanted Wingdings' E9h is a pixel wider; and
-  slanted Wingdings' `A` at 45 degrees carries the upright advance. **Read
-  out** where the advance comes from: the difference of the glyph's two
-  phantom points after its program has run, each 26.6 word shifted to 16.16
-  (seg36 `1f46`-`1fdb`), each half then rounded by adding 8000h (`0e07`).
-  So 24 is the unhinted 23.496 kept at a 64th, 23.5, and rounded up; what
-  leaves the phantom points unhinted at 90 degrees and hinted at 45 is the
-  glyph program's run (`4b81`), not read out.
+  and turned, but one: slanted Wingdings' E9h is a column wider on the left.
+  **Read out** where the advance comes from: only a matrix with nothing off
+  its diagonal and the same positive entry on it asks `hdmx` and `LTSH`
+  (seg36 `081b`, `0957`, `103b`); every other takes the difference of the
+  glyph's two phantom points after its program (`1f46`-`1fdb`), each half
+  rounded by adding 8000h (`0e07`). GDI's matrix is whole pixels (seg1
+  `6f22`-`6fce`), the slant's entry `(57h * em) >> 8`. The outline is scaled
+  at each row's stretch, the larger of its two entries (`3f16`), and the
+  phantoms are turned with every other point afterwards (`6ebb`). The
+  program runs unless `prep`, told by `GETINFO` that the matrix is rotated --
+  off its diagonal and not a right angle (`3e38`) -- sets `INSTCTRL`, which
+  every installed face does (`4bb2`); hinted, the phantoms are rounded to
+  pixels first (`4882`). **Recorded** by `prttrot`, which reads them out of
+  the scaler's memory with `TOOLHELP`: Wingdings' `A` at an em of 40 has its
+  advance phantom at 24.0 upright and turned by right angles -- upright the
+  answer is `hdmx`'s 23 -- and 16.45 each way at 45 degrees, unhinted at a
+  stretch of 28, slanted or not. So the 24 turned is the hinted phantom, and
+  the 16 slanted at 45 degrees the unhinted one at the smaller stretch; of
+  the three records `prtteng` had left, only E9h's box stays.
 - **Widths** (`EngineGetCharWidth`, seg3 `2662`): the advances at the
   context upright, the first character 8, a character outside the font its
   default character's -- kept, as in a font file, from the first, so the
@@ -6915,7 +6925,10 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   offset nought until it is made -- and calls the driver's `ExtTextOut`
   back with that font at 42h of its segment, each glyph's width its ink and
   the widths given its advances. A turned string goes glyph by glyph through
-  the driver's `BitBlt`. **Recorded** by `prttxt`, its driver drawing GDI's
+  the driver's `BitBlt`, after a polygon of the turned box where the
+  background is opaque (`63ea`). A driver without `RC_GDI20_OUTPUT` is given
+  the string through its `StrBlt` a character at a time instead (seg8
+  `00e4`). **Recorded** by `prttxt` and `prttx2`, the driver drawing GDI's
   font with `DMExtTextOut`, and drawn by WinBox to the bit in both engines.
 - **The cache's layout** (seg3 `2fd3`): after the character table, a word
   of each character's advance and a word of its A and C spaces, 20h bytes
