@@ -2520,6 +2520,13 @@ impl Hinter {
         self.dropout_from(self.scan_control)
     }
 
+    /// Whether glyph programs run at this size, read once `prep` has run.
+    pub fn prep_grid_fit(&mut self, font: &FontData) -> Result<bool, Fault> {
+        self.prepare(font)?;
+
+        Ok(self.grid_fit())
+    }
+
     /// What `prep` alone left for the scan converter, for a glyph with no
     /// program of its own -- which needs `prep` to have run.
     pub fn prep_dropout(&mut self, font: &FontData) -> Result<bool, Fault> {

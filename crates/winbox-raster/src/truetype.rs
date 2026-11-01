@@ -1273,6 +1273,21 @@ impl TrueTypeFont {
         .ok()
     }
 
+    /// Whether glyph programs run at a size once `prep` has run, by the
+    /// `INSTCTRL` it left -- `Hinter.gridFit` after `prepare` in
+    /// `truetype-font.ts`'s callers (`engine-glyphs.ts`). `None` where the
+    /// programs cannot run.
+    pub fn prep_grid_fit(&self, ppem: f64, stretch: f64, rotated: bool) -> Option<bool> {
+        if ppem == 0.0 || ppem.is_nan() {
+            return None;
+        }
+
+        self.with_hinter(ppem, true, stretch, rotated, |hinter, data| {
+            hinter.prep_grid_fit(data)
+        })
+        .ok()
+    }
+
     /// Whether `prep` asks for dropout control at a size, for a glyph with no
     /// program of its own: without this a face that gives it up at a size --
     /// Courier New above forty-four pixels per em, Arial above sixteen --

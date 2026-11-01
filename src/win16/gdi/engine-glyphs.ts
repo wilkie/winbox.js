@@ -6,6 +6,7 @@ import { Surface } from '../../raster/surface.js';
 import { trueTypeFacts } from './CreateScalableFontResource.js';
 import { gdiDataSelector } from './gdi-data.js';
 import { justifiedExtent } from './justify.js';
+import { MulDiv } from './MulDiv.js';
 
 /**
  * GDI's TrueType engine as a printer's driver puts a font it realized to
@@ -110,6 +111,8 @@ interface EngineContext {
   answer: number;
   font: any;
   turn: number;
+  /** The transformation's matrix, `[m00, m01, m10, m11]` in pixels (`engineMatrix`). */
+  matrix: number[];
 }
 
 const FAILED = 0xffffffff;
@@ -151,12 +154,222 @@ export function setContext(system: any, far: number, angle: number): number {
   const font = engineFont(system, info, angle);
 
   if (!font) {
-    system._engineContext = { key: '', answer: FAILED, font: null, turn: angle };
+    system._engineContext = { key: '', answer: FAILED, font: null, turn: angle, matrix: [] };
     return FAILED;
   }
 
-  system._engineContext = { key, answer: 0, font, turn: angle };
+  system._engineContext = { key, answer: 0, font, turn: angle, matrix: engineMatrix(info, angle) };
   return 0;
+}
+
+/**
+ * The matrix GDI hands the scaler for a `FONTINFO` at an angle, read out of
+ * `GDI.EXE` seg1 `6f22`-`6fce`: whole pixels, each the high word of a 16.16
+ * entry whose fraction is nought, `[m00, m01, m10, m11]` -- across is
+ * `x * m00 + y * m10`, up `x * m01 + y * m11`.
+ *
+ * * The em (4Ch) times the angle's cosine and sine from GDI's own table
+ *   (seg33 `00fb`, `00b6`): `m00` and `m11` the cosine, `m01` the sine,
+ *   `m10` its negative (`6f38`-`6f58`).
+ * * GDI's slant (33h bit 2) adds 57h/100h of `m00` to `m10` and of `m01` to
+ *   `m11`, each product's bits 8 to 23, a fraction dropped toward minus
+ *   infinity (`6f5b`-`6f7a`): 13 at an em of 40.
+ * * A stretch other than 100h (4Ah) scales `m00`, and `m01` where it is not
+ *   nought, the same way (`6f7d`-`6fa0`).
+ * * Resolutions that differ (6 across, 4 down) scale `m00`, and `m10` where
+ *   it is not nought, by their ratio: the product, half the vertical
+ *   resolution added to its low word alone -- the carry is lost -- and
+ *   divided, truncating toward nought (`6fa3`-`6fce`).
+ */
+function engineMatrix(info: FontInfo, angle: number): number[] {
+  const word = (value: number) => (value << 16) >> 16;
+  const high = (product: number) => word(Math.floor(product / 256));
+  const cosine = sineOf(info.em, angle, true);
+  const sine = sineOf(info.em, angle, false);
+  let m00 = cosine;
+  let m01 = sine;
+  let m10 = word(-sine);
+  let m11 = cosine;
+
+  if (info.flags & 4) {
+    m10 = word(m10 + high(0x57 * m00));
+    m11 = word(m11 + high(0x57 * m01));
+  }
+
+  if (info.stretch !== 0x100) {
+    m00 = high(word(info.stretch) * m00);
+
+    if (m01) {
+      m01 = high(word(info.stretch) * m01);
+    }
+  }
+
+  if (info.resX !== info.resY && info.resY) {
+    const across = (entry: number) => {
+      const product = entry * word(info.resX);
+      const low = (product + Math.floor(info.resY / 2)) & 0xffff;
+      const dividend = Math.floor(product / 0x10000) * 0x10000 + low;
+
+      return word(Math.trunc(dividend / info.resY));
+    };
+
+    m00 = across(m00);
+
+    if (m10) {
+      m10 = across(m10);
+    }
+  }
+
+  return [m00, m01, m10, m11];
+}
+
+/**
+ * A character's glyph as the engine's context makes it (`Surface.glyphOf`,
+ * at the context's angle), its advance the scaler's where the context's
+ * matrix is not a plain upright scale (`engineAdvance`). What
+ * `EngineGetGlyphBmp` answers and what GDI's cache of a font's glyphs is
+ * filled from (`engine-text.ts`).
+ */
+export function engineGlyph(system: any, code: number, turn: number) {
+  const context: EngineContext | undefined = system._engineContext;
+
+  if (!context?.font) {
+    return null;
+  }
+
+  const glyph = Surface.glyphOf(context.font, code, turn);
+
+  if (!glyph) {
+    return null;
+  }
+
+  const advance = engineAdvance(context, code);
+
+  return advance ? { ...glyph, advanceX: advance[0], advanceY: advance[1] } : glyph;
+}
+
+/**
+ * The advance of a glyph made through a matrix that is not a plain upright
+ * scale, as the scaler makes it: null for one that is, whose advance is the
+ * upright chain's (`hdmx`, `LTSH`, the program; `LogicalFont.outlineAdvance`).
+ *
+ * **Read out** of `GDI.EXE` segment 36:
+ *
+ * * The scaler's glue (`0796`) asks `hdmx` and `LTSH` only of a matrix with
+ *   nothing off its diagonal (`081b`-`0845`, the flag at 96h) whose two
+ *   diagonal entries are the same (`0957`); `LTSH`'s linear advance needs
+ *   the size at least the glyph's threshold (`103b`-`10d5`), which a
+ *   negative one never is. Everything else takes the record's advance from
+ *   the glyph's two phantom points (`0dc3`): their difference after the
+ *   program (`1f46`-`1fdb`), each half then rounded by adding 8000h
+ *   (`0e07`-`0e3d`).
+ * * The outline is scaled at each row's stretch, the larger of its two
+ *   entries (`3ff9`, `3f16`), and every point -- the phantoms with them --
+ *   turned afterwards by the entries divided by it (`4c15`, `6ebb`;
+ *   `Surface.transformOutline`).
+ * * Whether the program runs is the font's: `prep` runs with `GETINFO`'s
+ *   rotated flag set from the matrix (`4261`, `6641`) -- something off the
+ *   diagonal, and not a turn by a right angle, whose diagonal is nought
+ *   (`3e38`) -- and every installed face answers it with `INSTCTRL`, which
+ *   `4bb2` reads to leave the glyph unhinted. Hinted, the origin phantom is
+ *   rounded to a pixel and the advance phantom to a pixel from it (`4882`-
+ *   `4926`); unhinted, both are where scaling put them.
+ *
+ * **Recorded** by `prttrot`, which reads the phantoms out of the scaler's
+ * memory after each glyph: Wingdings' `A` at an em of 40 has its advance
+ * phantom at 24.0 upright and turned by right angles, where upright the
+ * record carries `hdmx`'s 23; at 45 degrees, slanted or not, unhinted at a
+ * stretch of 28, 16.45; slanted upright, unhinted, 23.5.
+ */
+function engineAdvance(context: EngineContext, code: number): [number, number] | null {
+  const [m00, m01, m10, m11] = context.matrix;
+  const outline = context.font?.outline;
+
+  if (!outline || (!m01 && !m10 && m00 === m11 && m00 > 0)) {
+    return null;
+  }
+
+  const glyph = outline.glyphFor(code);
+  const stretchX = Math.max(Math.abs(m00), Math.abs(m01));
+  const stretchY = Math.max(Math.abs(m10), Math.abs(m11));
+
+  if (!stretchX || !stretchY) {
+    return null;
+  }
+
+  const rotated = !(m00 === 0 && m11 === 0) && (m01 !== 0 || m10 !== 0);
+  const scale = engineScaler(stretchX, outline.unitsPerEm);
+  const shift = outline.bearingShift(glyph);
+  let origin = scale(-shift);
+  let advance = scale(outline.advanceOf(glyph) - shift);
+  let gridFit = false;
+
+  /* `prep` has to have run for its `INSTCTRL` to be read; a program this
+   * cannot run leaves the glyph unhinted, as `hintedOutline` does. */
+  try {
+    const hinter = outline.hinterAt(stretchY, true, stretchX / stretchY, rotated);
+
+    hinter.prepare();
+    gridFit = hinter.gridFit;
+  } catch {
+    gridFit = false;
+  }
+
+  if (gridFit) {
+    const fitted = outline.hintedOutline(glyph, stretchY, true, stretchX / stretchY, rotated);
+    const grid = (value: number) => Math.floor((value + 32) / 64) * 64;
+
+    origin = grid(origin);
+    advance = fitted.hinted ? origin + fitted.advance : grid(advance);
+  }
+
+  const across = fixDiv(m00, stretchX);
+  const up = fixDiv(m01, stretchX);
+  const whole = (value: number) => Math.floor((value * 1024 + 0x8000) / 0x10000);
+
+  return [
+    whole(fixMul(advance, across) - fixMul(origin, across)),
+    whole(fixMul(advance, up) - fixMul(origin, up)),
+  ];
+}
+
+/**
+ * Design units into sixty-fourths at a stretch, as `3f55` reduces the ratio
+ * of the stretch times 64 to the em: a power of two multiplies and shifts,
+ * a half going up (`3e5e`); otherwise it divides, a half away from nought
+ * (`3e80`). As `Surface.transformOutline`.
+ */
+function engineScaler(stretch: number, unitsPerEm: number) {
+  let multiplier = stretch * 64;
+  let divisor = unitsPerEm;
+
+  while (multiplier % 2 === 0 && divisor % 2 === 0) {
+    multiplier /= 2;
+    divisor /= 2;
+  }
+
+  const shifted = (divisor & (divisor - 1)) === 0;
+
+  return (value: number) =>
+    shifted || value >= 0
+      ? Math.floor((value * multiplier + Math.floor(divisor / 2)) / divisor)
+      : -Math.floor((-value * multiplier + Math.floor(divisor / 2)) / divisor);
+}
+
+/** `FixDiv` of two whole numbers (seg36 `0270`): magnitudes, half the divisor added, the sign put back. */
+function fixDiv(numerator: number, denominator: number) {
+  return (
+    Math.sign(numerator) *
+    Math.sign(denominator) *
+    Math.floor(
+      (Math.abs(numerator) * 65536 + Math.floor(Math.abs(denominator) / 2)) / Math.abs(denominator)
+    )
+  );
+}
+
+/** `FixMul` (seg36 `0200`): the product, 8000h added, shifted. */
+function fixMul(value: number, factor: number) {
+  return Math.floor((value * factor + 32768) / 65536);
 }
 
 /**
@@ -223,7 +436,7 @@ export function EngineGetGlyphBmp(
     return failed();
   }
 
-  const glyph = Surface.glyphOf(context.font, wChar & 0xff, context.turn);
+  const glyph = engineGlyph(this, wChar & 0xff, context.turn);
 
   if (!glyph) {
     return failed();
@@ -608,3 +821,60 @@ const FF_SCRIPT = 0x40;
 const FF_DECORATIVE = 0x50;
 const ANSI_CHARSET = 0;
 const SYMBOL_CHARSET = 2;
+
+/** `v` times the sine, or the cosine, of an angle in tenths of a degree, from GDI's table (seg33 `00b6`, `00fb`, `013f`). */
+export function sineOf(value: number, angle: number, cosine: boolean) {
+  let a = angle;
+
+  if (a < 0) {
+    a = 3600 - (-a % 3600);
+  } else {
+    a %= 3600;
+  }
+
+  let negative = false;
+  let tenths: number;
+
+  if (cosine) {
+    if (a <= 900) {
+      tenths = 900 - a;
+    } else if (a <= 1800) {
+      negative = true;
+      tenths = a - 900;
+    } else if (a < 2700) {
+      negative = true;
+      tenths = 2700 - a;
+    } else {
+      tenths = a - 2700;
+    }
+  } else if (a <= 900) {
+    tenths = a;
+  } else if (a <= 1800) {
+    tenths = 1800 - a;
+  } else if (a <= 2700) {
+    negative = true;
+    tenths = a - 1800;
+  } else {
+    negative = true;
+    tenths = 3600 - a;
+  }
+
+  const degree = Math.trunc(tenths / 10);
+  const part = tenths % 10;
+  const low = SINES[degree];
+  const high = SINES[degree + 1] ?? low;
+  const sine = low + MulDiv(part, high - low, 10);
+  const product = MulDiv(value, sine, 10000);
+
+  return negative ? -product : product;
+}
+
+/** The sine of each whole degree to 90, times 10000 (seg33 `0000`). */
+const SINES = [
+  0, 175, 349, 523, 698, 872, 1045, 1219, 1392, 1564, 1736, 1908, 2079, 2250, 2419, 2588, 2756,
+  2924, 3090, 3256, 3420, 3584, 3746, 3907, 4067, 4226, 4384, 4540, 4695, 4848, 5000, 5150, 5299,
+  5446, 5592, 5736, 5878, 6018, 6157, 6293, 6428, 6561, 6691, 6820, 6947, 7071, 7193, 7314, 7431,
+  7547, 7660, 7771, 7880, 7986, 8090, 8192, 8290, 8387, 8480, 8572, 8660, 8746, 8829, 8910, 8988,
+  9063, 9135, 9205, 9272, 9336, 9397, 9455, 9511, 9563, 9613, 9659, 9703, 9744, 9781, 9816, 9848,
+  9877, 9903, 9925, 9945, 9962, 9976, 9986, 9994, 9998, 10000,
+];

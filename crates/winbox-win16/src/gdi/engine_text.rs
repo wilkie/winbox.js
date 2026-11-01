@@ -8,8 +8,7 @@ use crate::call::{Answer, Stop, call_named};
 use crate::engine::{Engine, GuestArg};
 use crate::system::System;
 
-use super::calls::mul_div;
-use super::engine_glyphs::{context_glyph, set_context, width_of, widths_of};
+use super::engine_glyphs::{context_glyph, set_context, sine_of, width_of, widths_of};
 use super::printer_blits::{blit_rects, brush_far};
 use super::printer_output::{call_driver, draw_mode, kernel, on_stack, proc};
 
@@ -105,16 +104,6 @@ const GLYPH_ROPS: [u32; 16] = [
     0x00e6_1ce8,
     0x00ea_02e9,
     0x00ee_0086,
-];
-
-/// The sine of each whole degree to 90, times 10000 (seg33 `0000`).
-const SINES: [i32; 91] = [
-    0, 175, 349, 523, 698, 872, 1045, 1219, 1392, 1564, 1736, 1908, 2079, 2250, 2419, 2588, 2756,
-    2924, 3090, 3256, 3420, 3584, 3746, 3907, 4067, 4226, 4384, 4540, 4695, 4848, 5000, 5150, 5299,
-    5446, 5592, 5736, 5878, 6018, 6157, 6293, 6428, 6561, 6691, 6820, 6947, 7071, 7193, 7314, 7431,
-    7547, 7660, 7771, 7880, 7986, 8090, 8192, 8290, 8387, 8480, 8572, 8660, 8746, 8829, 8910, 8988,
-    9063, 9135, 9205, 9272, 9336, 9397, 9455, 9511, 9563, 9613, 9659, 9703, 9744, 9781, 9816, 9848,
-    9877, 9903, 9925, 9945, 9962, 9976, 9986, 9994, 9998, 10000,
 ];
 
 fn at(far: u32, offset: u16) -> u32 {
@@ -794,42 +783,6 @@ fn text_widths(
         first_space,
         last_space,
     }
-}
-
-/// `value` times the sine, or the cosine, of an angle in tenths of a
-/// degree, from GDI's table (seg33 `00b6`, `00fb`, `013f`).
-fn sine_of(value: i32, angle: i32, cosine: bool) -> i32 {
-    let a = if angle < 0 {
-        3600 - (-angle % 3600)
-    } else {
-        angle % 3600
-    };
-    let (tenths, negative) = if cosine {
-        if a <= 900 {
-            (900 - a, false)
-        } else if a <= 1800 {
-            (a - 900, true)
-        } else if a < 2700 {
-            (2700 - a, true)
-        } else {
-            (a - 2700, false)
-        }
-    } else if a <= 900 {
-        (a, false)
-    } else if a <= 1800 {
-        (1800 - a, false)
-    } else if a <= 2700 {
-        (a - 1800, true)
-    } else {
-        (3600 - a, true)
-    };
-    let degree = (tenths / 10) as usize;
-    let low = SINES[degree];
-    let high = SINES.get(degree + 1).copied().unwrap_or(low);
-    let sine = low + mul_div(tenths % 10, high - low, 10);
-    let product = mul_div(value, sine, 10000);
-
-    if negative { -product } else { product }
 }
 
 /// What `draw_engine_text` is given: `EngineExtTextOut`'s arguments.

@@ -1,6 +1,5 @@
 'use strict';
 
-import { Surface } from '../../raster/surface.js';
 import { GlobalAlloc } from '../kernel/GlobalAlloc.js';
 import { GlobalFree } from '../kernel/GlobalFree.js';
 import { GlobalLock } from '../kernel/GlobalLock.js';
@@ -9,11 +8,10 @@ import { GlobalUnlock } from '../kernel/GlobalUnlock.js';
 import { DWORD, UINT } from '../types.js';
 import { CreateSolidBrush } from './CreateSolidBrush.js';
 import { DeleteObject } from './DeleteObject.js';
-import { MulDiv } from './MulDiv.js';
 import { SelectObject } from './SelectObject.js';
 import { SetBkColor } from './SetBkColor.js';
 import { GetTextColor, SetTextColor } from './SetTextColor.js';
-import { setContext, widthsOf } from './engine-glyphs.js';
+import { engineGlyph, setContext, sineOf, widthsOf } from './engine-glyphs.js';
 import { blitRects } from './printer-blits.js';
 import { keptDeviceFont } from './printer-driver.js';
 import { callDriver, drawingOf, drawMode, onStackBytes } from './printer-output.js';
@@ -368,8 +366,7 @@ function makeGlyph(
   angle: number
 ): number {
   const turned = Boolean(read8(system, font, FI_FLAGS) & FLAG_TURNED);
-  const context = system._engineContext;
-  const glyph: Glyph | null = context?.font ? Surface.glyphOf(context.font, code, angle) : null;
+  const glyph: Glyph | null = engineGlyph(system, code, angle);
 
   if (!glyph) {
     return -1;
@@ -724,63 +721,6 @@ function textWidths(
 
   return { widths: widths.map((width) => width & 0xffff), firstSpace, lastSpace };
 }
-
-/** `v` times the sine, or the cosine, of an angle in tenths of a degree, from GDI's table (seg33 `00b6`, `00fb`, `013f`). */
-function sineOf(value: number, angle: number, cosine: boolean) {
-  let a = angle;
-
-  if (a < 0) {
-    a = 3600 - (-a % 3600);
-  } else {
-    a %= 3600;
-  }
-
-  let negative = false;
-  let tenths: number;
-
-  if (cosine) {
-    if (a <= 900) {
-      tenths = 900 - a;
-    } else if (a <= 1800) {
-      negative = true;
-      tenths = a - 900;
-    } else if (a < 2700) {
-      negative = true;
-      tenths = 2700 - a;
-    } else {
-      tenths = a - 2700;
-    }
-  } else if (a <= 900) {
-    tenths = a;
-  } else if (a <= 1800) {
-    tenths = 1800 - a;
-  } else if (a <= 2700) {
-    negative = true;
-    tenths = a - 1800;
-  } else {
-    negative = true;
-    tenths = 3600 - a;
-  }
-
-  const degree = Math.trunc(tenths / 10);
-  const part = tenths % 10;
-  const low = SINES[degree];
-  const high = SINES[degree + 1] ?? low;
-  const sine = low + MulDiv(part, high - low, 10);
-  const product = MulDiv(value, sine, 10000);
-
-  return negative ? -product : product;
-}
-
-/** The sine of each whole degree to 90, times 10000 (seg33 `0000`). */
-const SINES = [
-  0, 175, 349, 523, 698, 872, 1045, 1219, 1392, 1564, 1736, 1908, 2079, 2250, 2419, 2588, 2756,
-  2924, 3090, 3256, 3420, 3584, 3746, 3907, 4067, 4226, 4384, 4540, 4695, 4848, 5000, 5150, 5299,
-  5446, 5592, 5736, 5878, 6018, 6157, 6293, 6428, 6561, 6691, 6820, 6947, 7071, 7193, 7314, 7431,
-  7547, 7660, 7771, 7880, 7986, 8090, 8192, 8290, 8387, 8480, 8572, 8660, 8746, 8829, 8910, 8988,
-  9063, 9135, 9205, 9272, 9336, 9397, 9455, 9511, 9563, 9613, 9659, 9703, 9744, 9781, 9816, 9848,
-  9877, 9903, 9925, 9945, 9962, 9976, 9986, 9994, 9998, 10000,
-];
 
 /** What `drawEngineText` is given: `EngineExtTextOut`'s arguments. */
 export interface EngineTextArgs {

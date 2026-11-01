@@ -1,0 +1,1997 @@
+{
+  "probe": "prttrot",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "gdi data",
+      "args": "selector",
+      "result": "085f"
+    },
+    {
+      "function": "call",
+      "args": "CreateDC",
+      "result": "1"
+    },
+    {
+      "function": "realize",
+      "args": "0 0  size",
+      "result": "0"
+    },
+    {
+      "function": "metrics",
+      "args": "Wingdings",
+      "result": "44 36 36",
+      "section": "Wingdings"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings size",
+      "result": "150",
+      "section": "Wingdings"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings",
+      "result": "150",
+      "section": "Wingdings"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Wingdings",
+      "result": "type=3 flags=80 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=FA47 first=0C",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 0 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b794c3953d814000041f00000000000000a6a01004e0000000000000000005020a90f8000c00652032400b30400000000000000000000000000000000000000000000000000000000000000001800000000000000030000002000f94b04000300000014002000c0000000000500080000000001000500f8361839bc2d1a2e383b503ed81441f0040028002800000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 key +1699",
+      "result": "00050008160018002000200000080c0000000000280000002800018e018f0190019100002800000028000000280000000000000000000000000000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100010000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c28000000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000280020900000000000002800209000000000000028002090000000100000001000100960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 0 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 x +3838",
+      "result": "000000060000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 900",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "68 box=32,17 origin=FFE00000,140000 inc=0,180000 after=55555555 sum=E330 first=1E",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 900 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c008403000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b3d4c8f4fd814000041f00000000000000a6a01004e0000000000000000005020a90f44005203c0062400b30400000000000000000000000000000000000000000000000000000000000000000000000018000000e0ff00001400f94b0400e0ff03000000140000f8c000000000050000000001000500f8361839bc2d1a2e383b503ed81441f0048000000000000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 key +1699",
+      "result": "00000005180016001100200000080c0000000000280000002800018e018f0190019100002800000028000000000000002800000000000000d8ff00000000000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c28180000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000280020900000000000002800209000000000000028002090000000100000001000000960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 900 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 x +3838",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 y +3a58",
+      "result": "000000060000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 900 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 450",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "116 box=27,29 origin=FFEF0000,220000 inc=100000,100000 after=55555555 sum=FA5D first=00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 450 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c00c201000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b6d4c8b52d814000041f00000000000000a6a01004e0000000000000000005020a90f74001e06b2052400b30400000000000000000000000000000000000000000000000000000000000000741000007410000000efff00002200f94b0400efff05000a002200d3fb33019f0287080000000001000500f8361839bc2d1a2e383b503ed81441f004801c001c00000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 key +1699",
+      "result": "9f028708180018001d00200000080c00000000001c0000001c00018e018f0190019100001c0000001c0000001c0000001c00000000000000e4ff00001c00000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000101000000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c1c140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 global +437c",
+      "result": "f81b483c503e1c0000001080800000000000000000006600000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff6600000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000480030a0000000000000480030a0000000000000480030a0000000100000001000001960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 450 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 x +3838",
+      "result": "00001d0400009700",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 y +3a58",
+      "result": "00001d0400009700",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 450 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 1800",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "128 box=17,32 origin=FFEC0000,0 inc=FFE80000,0 after=55555555 sum=394D first=03",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 1800 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000807000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b794c3953d814000041f00000000000000a6a01004e0000000000000000005020a90f8000c00696032400b3040000000000000000000000000000000000000000000000000000000000000000e8ff000000000000ecff00000000f94b0400ecffe0fffdff000000fb00f840ff00000000000001000500f8361839bc2d1a2e383b503ed81441f00400d8ffd8ff000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 key +1699",
+      "result": "40ff0000180018002000200000080c0000000000280000002800018e018f0190019100002800000028000000d8ff0000000000000000000000000000d8ff000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c28180000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000280020900000000000002800209000000000000028002090000000100000001000000960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 1800 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 x +3838",
+      "result": "000000fa000028ff",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 1800 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 2700",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "68 box=32,17 origin=0,FFFD0000 inc=0,FFE80000 after=55555555 sum=7C30 first=01",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 2700 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c008c0a000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b3d4cd34fd814000041f00000000000000a6a01004e0000000000000000005020a90f44009603c0062400b304000000000000000000000000000000000000000000000000000000000000000000000000e8ff000000000000fdfff94b04000000ecff2000fdff000000fb000840ff0000000001000500f8361839bc2d1a2e383b503ed81441f0048000000000000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 key +1699",
+      "result": "000840ff180018001100200000080c0000000000280000002800018e018f019001910000280000002800000000000000d8ff000000000000280000000000000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c28180000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000280020900000000000002800209000000000000028002090000000100000001000000960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 2700 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 x +3838",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 y +3a58",
+      "result": "000000fa000028ff",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 2700 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 65 1 4096",
+      "result": "128 box=17,32 origin=30000,200000 inc=170000,0 after=55555555 sum=FA47 first=0C",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 0 65",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b794c3953d814000041f00000000000000a6a01004e0000000000000000005020a90f8000c00652032400b30400000000000000000000000000000000000000000000000000000000000000001800000000000000030000002000f94b04000300000014002000c0000000000500080000000001000500f8361839bc2d1a2e383b503ed81441f0040028002800000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 key +1699",
+      "result": "00050008160018002000200000080c0000000000280000002800018e018f0190019100002800000028000000280000000000000000000000000000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100010000001b000a6a0100b304",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be200050001000000100072630c656e76656c28000000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e000003005e3e5e3e5e3e9d4854033e445f04140005000000000000000000000000000000000000000000000280020900000000000002800209000000000000028002090000000100000001000100960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 0 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 x +3838",
+      "result": "000000060000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings 0",
+      "result": "0",
+      "section": "Wingdings"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings 233 1 4096",
+      "result": "144 box=30,36 origin=30000,1D0000 inc=240000,0 after=55555555 sum=A822 first=00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings 0 233",
+      "result": "0857:1573",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000000000010000731557080000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b894c114fd8140000e9f00000000000000a6a01004e0000000000000000005020a90f900088022c01cf00210700000000000000000000000000000000000000000000000000000000000000002400000000000000030000001d00f94b04000300f9ff21001d00c00040fe400840070000000001000100f8361839bc2d1a2e383b503ed814e9f0040028002800000000000000e4000000d8140000962e2001cf00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 key +1699",
+      "result": "40084007020006002400200000080c0000000000280000002800000028000000280000002800000028000000280000000000000000000000000000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000000010000001b000a6a01002107",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 key +1719",
+      "result": "ad0001c2ff010100483c703c503e503e7c433e449d48880001000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000100010001008700ad0075066e76656c28000000090001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010100000000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000100960096003200320000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings 0 233",
+      "result": "contours=1 points=9",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 x +370a",
+      "result": "000000090000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 y +392a",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 ox +32ca",
+      "result": "0000e9080000d800",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 oy +34ea",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 oox +2e8a",
+      "result": "000021070000ad00",
+      "section": "Wingdings"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings 0 233 ooy +30aa",
+      "result": "0000000000000000",
+      "section": "Wingdings"
+    },
+    {
+      "function": "metrics",
+      "args": "Wingdings slanted",
+      "result": "44 36 36",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings size",
+      "result": "150",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Wingdings",
+      "result": "150",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Wingdings",
+      "result": "type=3 flags=84 3c=12 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=F000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=4D6B first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 0 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b754cff52d814000041f00000000000000a6a01004e0000000000000000005020a90f7c008a06ee052400210700000000000000000000000000000000000000000000000000000000000000801700000000000000060000001f00f94b0400060000001d001f008001e1ff5c07d5070000000001000500f8361839bc2d1a2e383b503ed81441f0048028002800000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 key +1699",
+      "result": "5c07d5071e0018001f00200000080c00000000002800000028000000280000002800000028000000280000002800000000000000000000000d0000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c28140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000001960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 0 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 x +3838",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 900",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "92 box=31,23 origin=FFE10000,1D0000 inc=0,180000 after=55555555 sum=7F1D first=78",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 900 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c008403040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b554c4352d814000041f00000000000000a6a01004e0000000000000000005020a90f5c00ee058a062400210700000000000000000000000000000000000000000000000000000000000000000000008017000000e1ff00001d00f94b0400e1ff060000001d002bf880011f005c070000000001000500f8361839bc2d1a2e383b503ed81441f0048000000d00000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 key +1699",
+      "result": "1f005c0718001e001700200000080c0000000000280000002800000028000000280000002800000028000000000000002800000000000000d8ff00000d00000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c28140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000003960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 900 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 x +3838",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 y +3a58",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 900 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 450",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "144 box=21,36 origin=FFF60000,290000 inc=100000,100000 after=55555555 sum=79F8 first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 450 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c00c201040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b894c2154d814000041f00000000000000a6a01004e0000000000000000005020a90f90009807c2042400210700000000000000000000000000000000000000000000000000000000000000741000007410000000f6ff00002900f94b0400f6ff05000b00290087fd3a01a702310a0000000001000500f8361839bc2d1a2e383b503ed81441f004801c002500000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 key +1699",
+      "result": "a702310a1a0018002400200000080c00000000001c0000002500000028000000280000001c000000250000001c0000001c00000000000000edff00002500000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000101000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c25140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 global +437c",
+      "result": "f81b483c503e250000001080800000000000000000006600000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff6600000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000480030a0000000000001080120c0000000000001080120c00bbc10000000001000003960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 450 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 x +3838",
+      "result": "00001d0400009700",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 y +3a58",
+      "result": "00001d0400009700",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 450 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 1800",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "124 box=24,31 origin=FFE20000,0 inc=FFE90000,0 after=55555555 sum=3C6B first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 1800 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000807040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b754cff52d814000041f00000000000000a6a01004e0000000000000000005020a90f7c008a067005240021070000000000000000000000000000000000000000000000000000000000000080e8ff000000000000e2ff00000000f94b0400e2ffe1fffaff000076f82bf874fe1f000000000001000500f8361839bc2d1a2e383b503ed81441f00480d8ffd8ff000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 key +1699",
+      "result": "74fe1f001a0018001f00200000080c0000000000280000002800000028000000280000002800000028000000d8ff00000000000000000000f2ff0000d8ff000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c28140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000001960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 1800 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 x +3838",
+      "result": "000020fa000028ff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 1800 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 2700",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "96 box=31,24 origin=0,FFFA0000 inc=0,FFE90000 after=55555555 sum=9B3A first=0E",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 2700 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c008c0a040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b594cc951d814000041f00000000000000a6a01004e0000000000000000005020a90f600070058a0624002107000000000000000000000000000000000000000000000000000000000000000000000080e8ff000000000000fafff94b04000000e2ff1f00faffe1ff76f8d50774fe0000000001000500f8361839bc2d1a2e383b503ed81441f004800000f2ff000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 key +1699",
+      "result": "d50774fe18001a001800200000080c000000000028000000280000002800000028000000280000002800000000000000d8ff00000000000028000000f2ff000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c28140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000003960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 2700 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 x +3838",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 y +3a58",
+      "result": "000020fa000028ff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 2700 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 65 1 4096",
+      "result": "124 box=23,31 origin=60000,1F0000 inc=180000,0 after=55555555 sum=4D6B first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 0 65",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b754cff52d814000041f00000000000000a6a01004e0000000000000000005020a90f7c008a06ee052400210700000000000000000000000000000000000000000000000000000000000000801700000000000000060000001f00f94b0400060000001d001f008001e1ff5c07d5070000000001000500f8361839bc2d1a2e383b503ed81441f0048028002800000000000000e4000000d8140000962e20012400",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 key +1699",
+      "result": "5c07d5071e0018001f00200000080c00000000002800000028000000280000002800000028000000280000002800000000000000000000000d0000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000100000000001b000a6a0100b304",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48f60201000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000500010000001000ad0075066e76656c28140000a00001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000001960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 0 65",
+      "result": "contours=5 points=160",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 x +3838",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 y +3a58",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 ox +33f8",
+      "result": "0000e0050000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 oy +3618",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 oox +2fb8",
+      "result": "0000b3040000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 65 ooy +31d8",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Wingdings slanted 0",
+      "result": "0",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Wingdings slanted 233 1 4096",
+      "result": "288 box=33,36 origin=40000,1D0000 inc=240000,0 after=55555555 sum=1FFC first=00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "scaler",
+      "args": "Wingdings slanted 0 233",
+      "result": "0857:1573",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000c000000040000010000731557080000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 context +1573",
+      "result": "000000001916ec17ec17f81b483cf94b194da14fd8140000e9f00000000000000a6a01004e0000000000000000005020a90f20018802ce01cf00210700000000000000000000000000000000000000000000000000000000000000a42300000000000000040000001d00f94b08000400f9ff25001d0004012afe210928070000000001000100f8361839bc2d1a2e383b503ed814e9f0048028002800000000000000e4000000d8140000962e2001cf00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 key +1699",
+      "result": "21092807040006002400400000080c00000000002800000028000000280000002800000028000000280000002800000000000000000000000d0000002800000000000000000000000000010000000000010000000000000000000000000000000100000000000000000000000000000001000000000000001b000a6a01002107",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 key +1719",
+      "result": "ad0001c2ff010000483c703c503e503e7c433e449d48880001000000e2000c012f008d000e000200100014003c000000e807a60506000100d4fc000036000cfd00002400b8000100c601800201002000001100002c053812010054038c1a0000decc30fd00008803000e000000032c1600005f04b4070100840a6ce7000068150c010000e800a00201001405f40100004e0044020000bc0be2000100010001008700ad0075066e76656c28140000090001000000df0a3107706566726f6e740e007c140d",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 global +437c",
+      "result": "f81b483c503e280000001080800000000000000000005a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff5a00000010c0ff010000010000004000c34dc0ff10ff400000001000090003008000000001ff703c503e5e3e5e3e5e3e5e3e5e3e9d4854033e445f04000000000002800209000000000000028002090000000000000280020900000000000002800209000000000000028002090000000100000001000001960096003200320000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "element",
+      "args": "Wingdings slanted 0 233",
+      "result": "contours=1 points=9",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 x +370a",
+      "result": "0000e9080000d800",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 y +392a",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 ox +32ca",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 oy +34ea",
+      "result": "000053f5000028ff",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 oox +2e8a",
+      "result": "000021070000ad00",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "bytes",
+      "args": "Wingdings slanted 0 233 ooy +30aa",
+      "result": "0000000000000000",
+      "section": "Wingdings slanted"
+    },
+    {
+      "function": "metrics",
+      "args": "Arial",
+      "result": "45 36 18",
+      "section": "Arial"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Arial size",
+      "result": "150",
+      "section": "Arial"
+    },
+    {
+      "function": "realize",
+      "args": "-40 0 Arial",
+      "result": "150",
+      "section": "Arial"
+    },
+    {
+      "function": "fields",
+      "args": "-40 0 Arial",
+      "result": "type=3 flags=80 3c=0 3e=2048 40=-19195,0,-19195,0 esc=0 stretch=256 em=40 4e=0000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 0 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000000000000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca93cb33e7315000041000000000000000a6a01004e000000000000000000c80aff1474000a0200002400560500000000000000000000000000000000000000000000000000000000000000001b00000000000000000000001d00353c0400000000001b001d00f3ff0000cd064007000000000100020062251a2666227422d226562973154100040028002800000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 key +1707",
+      "result": "cd064007040006001d00200000080c0000000000280000002800fff400380034fff3000028000000280000002800000000000000000000000000000028000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000100000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 key +1787",
+      "result": "fdff0049110101002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea280000000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000694d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100010000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 0 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 x +2580",
+      "result": "0000c0060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 y +2638",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 900",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "108 box=29,27 origin=FFE30000,1B0000 inc=0,1B0000 after=55555555 sum=2009 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 900 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000008403000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca13c1b3e7315000041000000000000000a6a01004e000000000000000000c80aff146c007a010000240056050000000000000000000000000000000000000000000000000000000000000000000000001b000000e3ff00001b00353c0400e3ff000000001b00c0f8f3ff0000cd06000000000100020062251a2666227422d226562973154100048000000000000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 key +1707",
+      "result": "0000cd06060004001b00200000080c0000000000280000002800fff400380034fff300002800000028000000000000002800000000000000d8ff000000000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000000000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 key +1787",
+      "result": "fdff0049110101002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea281800000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000694d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100000000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 900 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 x +2580",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 y +2638",
+      "result": "0000c0060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 900 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 450",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "124 box=31,31 origin=FFF40000,1F0000 inc=130000,130000 after=55555555 sum=96B3 first=20",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 450 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b500000000c201000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353cb13cdf3e7315000041000000000000000a6a01004e000000000000000000c80aff147c002e022e022400560500000000000000000000000000000000000000000000000000000000000000ac120000ac12000000f4ff00001f00353c0400f4ff000013001f00e8fcfdffaf04a407000000000100020062251a2666227422d22656297315410004801c001c00000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 key +1707",
+      "result": "af04a407060006001f00200000080c00000000001c0000001c00fff400380034fff300001c0000001c0000001c0000001c00000000000000e4ff00001c000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001010000000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 key +1787",
+      "result": "fdff0049ff0100002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea1c1400000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 global +2ed4",
+      "result": "661c2e2756291c00000000d800c20000000000000000ff000000ffd1ff010000010000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd1ff010000010000004000c34d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee000480030a0000d7ffcc000480030a00ffcd00ee000480030a000000010000000100000100daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 450 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 x +2580",
+      "result": "0000ab040000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 y +2638",
+      "result": "0000ab040000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 450 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 1800",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "116 box=27,29 origin=FFE50000,0 inc=FFE50000,0 after=55555555 sum=00D3 first=F0",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 1800 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000000807000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca93cb33e7315000041000000000000000a6a01004e000000000000000000c80aff1474000a020000240056050000000000000000000000000000000000000000000000000000000000000000e5ff000000000000e5ff00000000353c0400e5ffe3ff0000000033f9c0f80d000000000000000100020062251a2666227422d2265629731541000400d8ffd8ff000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 key +1707",
+      "result": "0d000000040006001d00200000080c0000000000280000002800fff400380034fff300002800000028000000d8ff0000000000000000000000000000d8ff0000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000000000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 key +1787",
+      "result": "fdff0049110101002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea281800000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000694d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100000000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 1800 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 x +2580",
+      "result": "000040f900000400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 y +2638",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 1800 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 2700",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "108 box=29,27 origin=0,0 inc=0,FFE50000 after=55555555 sum=F0AC first=C0",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 2700 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000008c0a000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca13c1b3e7315000041000000000000000a6a01004e000000000000000000c80aff146c007a01000024005605000000000000000000000000000000000000000000000000000000000000000000000000e5ff0000000000000000353c04000000e5ff1d000000000033f940070d00000000000100020062251a2666227422d226562973154100048000000000000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 key +1707",
+      "result": "40070d00060004001b00200000080c0000000000280000002800fff400380034fff30000280000002800000000000000d8ff0000000000002800000000000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000000000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 key +1787",
+      "result": "fdff0049110101002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea281800000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000694d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100000000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 2700 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 x +2580",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 y +2638",
+      "result": "000040f900000400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 2700 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 65 1 4096",
+      "result": "116 box=27,29 origin=0,1D0000 inc=1B0000,0 after=55555555 sum=7287 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 0 65",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000000000000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca93cb33e7315000041000000000000000a6a01004e000000000000000000c80aff1474000a0200002400560500000000000000000000000000000000000000000000000000000000000000001b00000000000000000000001d00353c0400000000001b001d00f3ff0000cd064007000000000100020062251a2666227422d226562973154100040028002800000000000000e000000073150000962e20012400",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 key +1707",
+      "result": "cd064007040006001d00200000080c0000000000280000002800fff400380034fff3000028000000280000002800000000000000000000000000000028000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000100000019000a6a01005605",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 key +1787",
+      "result": "fdff0049110101002e27562756295629d42e962fa434600101000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000200010000001000ffea0064005affea280000000f000100000000082c07005cffe90068005d007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000694d80ff00c6800000005000090003008000000001e05627562900d0ffce5e3e5e3e5e3ea4348907962f0e0500d2ffcd00eb00d3ffcd00ec00d3ffcd00ed00d4ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100010000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 0 65",
+      "result": "contours=2 points=15",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 x +2580",
+      "result": "0000c0060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 y +2638",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 ox +2410",
+      "result": "0000ac060000fcff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 oy +24c8",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 oox +22a0",
+      "result": "000056050000fdff",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 65 ooy +2358",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineSetFontContext",
+      "args": "Arial 0",
+      "result": "0",
+      "section": "Arial"
+    },
+    {
+      "function": "EngineGetGlyphBmp",
+      "args": "Arial 233 1 4096",
+      "result": "112 box=18,28 origin=20000,1C0000 inc=160000,0 after=55555555 sum=0240 first=00",
+      "section": "Arial"
+    },
+    {
+      "function": "scaler",
+      "args": "Arial 0 233",
+      "result": "0857:15e1",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 gdi +0660",
+      "result": "860828002c012c0105b5000005b5000000000000000000010000e11557080000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 context +15e1",
+      "result": "0000000087165a185a18661c2e27353ca53c0d3f73150000e9000000000000000a6a01004e000000000000000000c80aff147000680200007000730400000000000000000000000000000000000000000000000000000000000000001600000000000000020000001c00353c04000200000014001c008000000000050007000000000100030062251a2666227422d22656297315e900040028002800000000000000e000000073150000962e20017000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 key +1707",
+      "result": "00050007080008001c00200000080c0000000000280000002800fff400380034fff3000028000000280000002800000000000000000000000000000028000000000000000000000000000100000000000100000000000000000000000000000001000000000000000000000000000000010001000100000019000a6a01007304",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 key +1787",
+      "result": "4b000049110101002e27562756295629d42e962fa4347c0001000000dc005800070050000400020010001400400000005f02a1020200010084e800003600bce8000024001c010000bc01d8ee00002000781b00007e0580f6000089070826000074ade0e8000070030cfe00009002f82000000e0594f40000ec017cd300000815d8020000e000f8ee00009b05b80300004e00080400007017dc000300020001000701f3000000005affea2800000004000100000000082c070000000080050000007c140d",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 global +2ed4",
+      "result": "661c2e2756292800000000d800c20000000000000000ff000000ffd111010100000000004000c34d80ff00c6800000005000090003008000000001e0ff000000ffd111010100000000004000c34dc0ff00c6400000002000090003008000000001e0562756295e3e5e3e5e3e5e3e5e3ea4348907962f0e05ffcd00ee00028002090000d7ffcc000280020900ffcd00ee00028002090000d7ffcc000280020900ffcd00ee0002800209000000010000000100010000daffcc00f500dc00000000",
+      "section": "Arial"
+    },
+    {
+      "function": "element",
+      "args": "Arial 0 233",
+      "result": "contours=3 points=34",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 x +25a6",
+      "result": "0000800500005e00",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 y +265e",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 ox +2436",
+      "result": "0000900500005e00",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 oy +24ee",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 oox +22c6",
+      "result": "0000730400004b00",
+      "section": "Arial"
+    },
+    {
+      "function": "bytes",
+      "args": "Arial 0 233 ooy +237e",
+      "result": "0000000000000000",
+      "section": "Arial"
+    },
+    {
+      "function": "call",
+      "args": "DeleteDC",
+      "result": "1",
+      "section": "Arial"
+    }
+  ]
+}
