@@ -126,12 +126,30 @@ impl System {
 /// paints, and paints nothing -- validating nothing -- when told there is
 /// nothing, so `WM_PAINT` came back for ever while this answered nought.
 ///
-/// Not followed: `bErase`, which would have the background erased first.
-pub(super) fn get_update_rect(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-    let far = args.dword(system);
-    let _erase = args.word(system);
+/// With `bErase`, the window's frame is drawn and its erase sent first,
+/// where they are due, the window alone (`USER.EXE` seg1 `466f`-`467c`,
+/// `7913`; `uwleft`).
+pub(super) fn get_update_rect(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, far, erase) = {
+            let system = engine.system();
 
+            (args.word(&system), args.dword(&system), args.word(&system))
+        };
+        let index = engine.system().window_named(hwnd);
+
+        if erase != 0
+            && let Some(index) = index
+        {
+            engine.sync_paint_from(Some(index), 0).await?;
+        }
+
+        update_rect_answer(&mut engine.system(), hwnd, far)
+    })
+}
+
+/// `GetUpdateRect`'s answer, once anything due is erased.
+fn update_rect_answer(system: &mut System, hwnd: u16, far: u32) -> Result<Answer, Stop> {
     // The desktop window: what of the desktop itself is due (`rdwmore`).
     if hwnd != 0 && system.handles.lookup(crate::handles::Object::Desktop) == Some(hwnd) {
         let due = system.background_region.as_ref().map(|region| {
@@ -219,10 +237,37 @@ pub(super) fn validate_rgn(system: &mut System, args: &mut Args) -> Result<Answe
 
 /// What a window is due to paint, put in a program's region, in its client
 /// area; the region's kind, nought for no window or no region.
-pub(super) fn get_update_rgn(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let hwnd = args.word(system);
-    let hrgn = args.word(system);
-    let _erase = args.word(system);
+///
+/// With `bErase`, the window's frame is drawn and its erase sent first,
+/// where they are due, the window alone (`USER.EXE` seg1 `478e`-`479b`,
+/// `7913`; `uwleft`).
+pub(super) fn get_update_rgn(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (hwnd, hrgn, erase) = {
+            let system = engine.system();
+
+            (args.word(&system), args.word(&system), args.word(&system))
+        };
+        let index = {
+            let system = engine.system();
+
+            system
+                .window_named(hwnd)
+                .filter(|_| system.region_named(hrgn).is_some())
+        };
+
+        if erase != 0
+            && let Some(index) = index
+        {
+            engine.sync_paint_from(Some(index), 0).await?;
+        }
+
+        update_rgn_answer(&mut engine.system(), hwnd, hrgn)
+    })
+}
+
+/// `GetUpdateRgn`'s answer, once anything due is erased.
+fn update_rgn_answer(system: &mut System, hwnd: u16, hrgn: u16) -> Result<Answer, Stop> {
     let (Some(index), Some((object, _))) = (system.window_named(hwnd), system.region_named(hrgn))
     else {
         return Ok(Answer::Word(0));
@@ -272,115 +317,142 @@ pub(super) fn exclude_update_rgn(system: &mut System, args: &mut Args) -> Result
 ///   those of a window with `WS_CLIPCHILDREN`.
 pub(super) fn redraw_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
-        let (index, hwnd, flags) = {
-            let mut system = engine.system();
+        let (hwnd, far, hrgn, flags) = {
+            let system = engine.system();
             let hwnd = args.word(&system);
             let far = args.dword(&system);
             let hrgn = args.word(&system);
             let flags = args.word(&system);
-            // The desktop's own handle is the desktop, as none is
-            // (`3e2d`-`3e31`).
-            let desktop = system.handles.lookup(crate::handles::Object::Desktop);
-            let index = if hwnd == 0 || Some(hwnd) == desktop {
-                None
-            } else {
-                let Some(index) = system.window_named(hwnd) else {
-                    return Ok(Answer::Word(0));
-                };
 
-                Some(index)
-            };
-            let given = if hrgn == 0 {
-                None
-            } else {
-                let Some((_, shape)) = system.region_named(hrgn) else {
-                    return Ok(Answer::Word(0));
-                };
-
-                Some(shape)
-            };
-            let rect = system.rect_given(far);
-            let (x, y) = index.map_or((0, 0), |index| {
-                let window = system.shown(index);
-
-                (
-                    window.left + window.client.left,
-                    window.top + window.client.top,
-                )
-            });
-            let region = if flags & (RDW_INVALIDATE | RDW_VALIDATE) == 0 {
-                None
-            } else if let Some(shape) = &given {
-                Some(shape.offset(x, y))
-            } else {
-                rect.map(|[left, top, right, bottom]| {
-                    ClipRegion::rect(left + x, top + y, right + x, bottom + y)
-                })
-            };
-
-            match index {
-                Some(index) => {
-                    // Where a window is locked, what is made due is told to
-                    // it as drawn (`3f41`-`3f7c`).
-                    let told = match &given {
-                        Some(shape) => {
-                            let bounds = shape.bounds();
-
-                            Some([bounds.left, bounds.top, bounds.right, bounds.bottom])
-                        }
-                        None => rect,
-                    };
-
-                    if !system.redraw_through(index, region.as_ref(), flags, told) {
-                        return Ok(Answer::Word(1));
-                    }
-                }
-                None => system.invalidate_through(
-                    None,
-                    region.as_ref(),
-                    flags | crate::invalidate_through::RDW_CALLED,
-                ),
-            }
-
-            (index, hwnd, flags)
+            (hwnd, far, hrgn, flags)
         };
 
-        if flags & RDW_UPDATENOW != 0 {
-            let children = flags & RDW_NOCHILDREN == 0;
+        redraw(engine, hwnd, far, hrgn, flags).await
+    })
+}
 
-            if index.is_some() {
-                engine.update_now(hwnd, children).await?;
-            } else if children {
-                // The desktop's own drawn first; the windows at the top,
-                // front to back (`44c5`-`450e`).
-                let tops: Vec<u16> = {
-                    let mut system = engine.system();
-
-                    system.paint_background_due();
-
-                    system
-                        .windows_in(None)
-                        .into_iter()
-                        .map(|top| system.shown(top).hwnd)
-                        .collect()
-                };
-
-                for top in tops {
-                    engine.update_now(top, true).await?;
-                }
-            }
-        } else if flags & RDW_ERASENOW != 0 {
-            let dsp = if flags & RDW_NOCHILDREN != 0 {
-                0
-            } else if flags & RDW_ALLCHILDREN != 0 {
-                DSP_ALLCHILDREN
-            } else {
-                DSP_ENUMCLIPPEDCHILDREN
+/// `RedrawWindow`'s body as a program calls it, for `InvalidateRect` of no
+/// window too (`redraw_window`).
+pub(crate) async fn redraw(
+    engine: &Engine,
+    hwnd: u16,
+    far: u32,
+    hrgn: u16,
+    flags: u16,
+) -> Result<Answer, Stop> {
+    let (index, hwnd, flags) = {
+        let mut system = engine.system();
+        // The desktop's own handle is the desktop, as none is
+        // (`3e2d`-`3e31`).
+        let desktop = system.handles.lookup(crate::handles::Object::Desktop);
+        let index = if hwnd == 0 || Some(hwnd) == desktop {
+            None
+        } else {
+            let Some(index) = system.window_named(hwnd) else {
+                return Ok(Answer::Word(0));
             };
 
-            engine.sync_paint_from(index, dsp).await?;
+            Some(index)
+        };
+        let given = if hrgn == 0 {
+            None
+        } else {
+            let Some((_, shape)) = system.region_named(hrgn) else {
+                return Ok(Answer::Word(0));
+            };
+
+            Some(shape)
+        };
+        let rect = system.rect_given(far);
+        let (x, y) = index.map_or((0, 0), |index| {
+            let window = system.shown(index);
+
+            (
+                window.left + window.client.left,
+                window.top + window.client.top,
+            )
+        });
+        let region = if flags & (RDW_INVALIDATE | RDW_VALIDATE) == 0 {
+            None
+        } else if let Some(shape) = &given {
+            Some(shape.offset(x, y))
+        } else {
+            rect.map(|[left, top, right, bottom]| {
+                ClipRegion::rect(left + x, top + y, right + x, bottom + y)
+            })
+        };
+
+        if let Some(index) = index {
+            // Where a window is locked, what is made due is told to it as
+            // drawn (`3f41`-`3f7c`).
+            let told = match &given {
+                Some(shape) => {
+                    let bounds = shape.bounds();
+
+                    Some([bounds.left, bounds.top, bounds.right, bounds.bottom])
+                }
+                None => rect,
+            };
+
+            if !system.redraw_through(index, region.as_ref(), flags, told) {
+                return Ok(Answer::Word(1));
+            }
+        } else {
+            // What is made due of the desktop told to the records USER
+            // keeps, as a window's is (`3f41`-`3f7c`; `uwleft`).
+            if flags & RDW_INVALIDATE != 0 {
+                system.tell_desktop(region.as_ref().map(|region| {
+                    let bounds = region.bounds();
+
+                    [bounds.left, bounds.top, bounds.right, bounds.bottom]
+                }));
+            }
+
+            system.invalidate_through(
+                None,
+                region.as_ref(),
+                flags | crate::invalidate_through::RDW_CALLED,
+            );
         }
 
-        Ok(Answer::Word(1))
-    })
+        (index, hwnd, flags)
+    };
+
+    if flags & RDW_UPDATENOW != 0 {
+        let children = flags & RDW_NOCHILDREN == 0;
+
+        if index.is_some() {
+            engine.update_now(hwnd, children).await?;
+        } else if children {
+            // The desktop's own drawn first; the windows at the top,
+            // front to back (`44c5`-`450e`).
+            let tops: Vec<u16> = {
+                let mut system = engine.system();
+
+                system.paint_background_due();
+
+                system
+                    .windows_in(None)
+                    .into_iter()
+                    .map(|top| system.shown(top).hwnd)
+                    .collect()
+            };
+
+            for top in tops {
+                engine.update_now(top, true).await?;
+            }
+        }
+    } else if flags & RDW_ERASENOW != 0 {
+        let dsp = if flags & RDW_NOCHILDREN != 0 {
+            0
+        } else if flags & RDW_ALLCHILDREN != 0 {
+            DSP_ALLCHILDREN
+        } else {
+            DSP_ENUMCLIPPEDCHILDREN
+        };
+
+        engine.sync_paint_from(index, dsp).await?;
+    }
+
+    Ok(Answer::Word(1))
 }

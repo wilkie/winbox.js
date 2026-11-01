@@ -319,6 +319,19 @@ impl Engine {
         x: i32,
         y: i32,
     ) -> Result<Option<(usize, i16, bool)>, Stop> {
+        Ok(self.hit_walk(x, y).await?.flatten())
+    }
+
+    /// USER's hit test as `scan_hit` has it, but `None` where the walk ends
+    /// at no window, not even the desktop window's: the system-modal
+    /// window, which the walk begins at, answering `HTTRANSPARENT`
+    /// (`USER.EXE` seg1 `7282`-`7285` to `71c6`), so that `WindowFromPoint`
+    /// answers nought. The TypeScript engine's `hitWalk`.
+    pub(crate) async fn hit_walk(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<Option<Option<(usize, i16, bool)>>, Stop> {
         let steps = {
             let system = self.system();
             let sys_modal = system.window_named(system.sys_modal_window());
@@ -333,14 +346,16 @@ impl Engine {
             system.hit_steps(x, y, &mine, sys_modal)
         };
 
+        let walked = !steps.is_empty();
+
         for (index, hit) in steps {
             // The desktop window's: no window.
             let Some(index) = index else {
-                return Ok(None);
+                return Ok(Some(None));
             };
 
             if let Some(hit) = hit {
-                return Ok(Some((index, hit, hit == HTCLIENT)));
+                return Ok(Some(Some((index, hit, hit == HTCLIENT))));
             }
 
             let (title, hwnd) = {
@@ -353,7 +368,7 @@ impl Engine {
             // An icon's title, whose procedure answers `WM_NCHITTEST` with
             // `HTCAPTION` (seg1 `6dbd`).
             if title {
-                return Ok(Some((index, HTCAPTION, false)));
+                return Ok(Some(Some((index, HTCAPTION, false))));
             }
 
             let hit = signed(
@@ -362,11 +377,11 @@ impl Engine {
             );
 
             if hit != HTTRANSPARENT {
-                return Ok(Some((index, hit, false)));
+                return Ok(Some(Some((index, hit, false))));
             }
         }
 
-        Ok(None)
+        Ok(if walked { None } else { Some(None) })
     }
 
     /// What a look does with a mouse message it comes to (`resolveMouse`).

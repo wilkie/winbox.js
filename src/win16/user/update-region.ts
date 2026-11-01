@@ -1,5 +1,7 @@
 'use strict';
 
+import { syncPaintFrom } from './erase.js';
+
 import { ClipRegion } from '../../raster/clip-region.js';
 import { Surface } from '../../raster/surface.js';
 import { narrow } from '../gdi/clipping.js';
@@ -153,12 +155,22 @@ export function ValidateRgn(this: any, hwnd: number, hrgn: number) {
  * What a window is due to paint, into a program's region, in its client
  * area; answers the region's kind.
  */
-export function GetUpdateRgn(this: any, hwnd: number, hrgn: number, _fErase: number) {
+export async function GetUpdateRgn(this: any, hwnd: number, hrgn: number, fErase: number) {
   const owner = this.handles.resolve(hwnd);
   const region = regionOf(this, hrgn);
 
   if (!(owner instanceof RasterWindow) || !region) {
     return 0;
+  }
+
+  /* With `bErase`, its frame drawn and its erase sent first, where they are
+   * due, the window alone (`USER.EXE` seg1 `478e`-`479b`, `7913`; `uwleft`). */
+  if (fErase) {
+    await syncPaintFrom(this, owner.window, 0);
+
+    if (!(this.handles.resolve(hwnd) instanceof RasterWindow)) {
+      return 0;
+    }
   }
 
   /* Within the client areas it is in too (`USER.EXE` seg1 `47c2`, `8bb3`;

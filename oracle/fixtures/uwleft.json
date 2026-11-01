@@ -1,0 +1,334 @@
+{
+  "probe": "uwleft",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ncpaint",
+      "args": "invnull W 0",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "invnull W 1",
+      "result": "sent"
+    },
+    {
+      "function": "step",
+      "args": "invnull 2",
+      "result": "update"
+    },
+    {
+      "function": "update",
+      "args": "invnull W 3",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "invnull 4",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "invnull W 5",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "invnull W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "rgnnull 0",
+      "result": "update"
+    },
+    {
+      "function": "update",
+      "args": "rgnnull W 1",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "rgnnull 2",
+      "result": "pump"
+    },
+    {
+      "function": "step",
+      "args": "berase 0",
+      "result": "ask"
+    },
+    {
+      "function": "erase",
+      "args": "berase W 1",
+      "result": "sent"
+    },
+    {
+      "function": "asked",
+      "args": "berase 2",
+      "result": "1 0,0,118,78"
+    },
+    {
+      "function": "update",
+      "args": "berase W 3",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "berase 4",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "berase W 5",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "berase W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "bernoe 0",
+      "result": "ask"
+    },
+    {
+      "function": "asked",
+      "args": "bernoe 1",
+      "result": "1 0,0,118,78"
+    },
+    {
+      "function": "update",
+      "args": "bernoe W 2",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "bernoe 3",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "bernoe W 4",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "bernoe W 5",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "bergn 0",
+      "result": "ask"
+    },
+    {
+      "function": "erase",
+      "args": "bergn W 1",
+      "result": "sent"
+    },
+    {
+      "function": "asked",
+      "args": "bergn 2",
+      "result": "2"
+    },
+    {
+      "function": "update",
+      "args": "bergn W 3",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "bergn 4",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "bergn W 5",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "bergn W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "berect0 0",
+      "result": "ask"
+    },
+    {
+      "function": "asked",
+      "args": "berect0 1",
+      "result": "1 0,0,118,78"
+    },
+    {
+      "function": "update",
+      "args": "berect0 W 2",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "berect0 3",
+      "result": "pump"
+    },
+    {
+      "function": "erase",
+      "args": "berect0 W 4",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "berect0 W 5",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "berect0 W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "desklock 0",
+      "result": "unlock"
+    },
+    {
+      "function": "update",
+      "args": "desklock W 1",
+      "result": "2 19,19,59,59 19-59:19-59;"
+    },
+    {
+      "function": "step",
+      "args": "desklock 2",
+      "result": "pump"
+    },
+    {
+      "function": "ncpaint",
+      "args": "desklock W 3",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "desklock W 4",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "desklock W 5",
+      "result": "19,19,59,59 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "desklock W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "deskall 0",
+      "result": "unlock"
+    },
+    {
+      "function": "update",
+      "args": "deskall W 1",
+      "result": "2 0,0,118,78 0-78:0-118;"
+    },
+    {
+      "function": "step",
+      "args": "deskall 2",
+      "result": "pump"
+    },
+    {
+      "function": "ncpaint",
+      "args": "deskall W 3",
+      "result": "1"
+    },
+    {
+      "function": "erase",
+      "args": "deskall W 4",
+      "result": "sent"
+    },
+    {
+      "function": "paint",
+      "args": "deskall W 5",
+      "result": "0,0,118,78 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "deskall W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "step",
+      "args": "desksave 0",
+      "result": "hide"
+    },
+    {
+      "function": "ncpaint",
+      "args": "desksave W 1",
+      "result": "2"
+    },
+    {
+      "function": "erase",
+      "args": "desksave W 2",
+      "result": "sent"
+    },
+    {
+      "function": "update",
+      "args": "desksave W 3",
+      "result": "2 29,19,89,59 19-59:29-89;"
+    },
+    {
+      "function": "step",
+      "args": "desksave 4",
+      "result": "pump"
+    },
+    {
+      "function": "paint",
+      "args": "desksave W 5",
+      "result": "29,19,89,59 erase 0"
+    },
+    {
+      "function": "update",
+      "args": "desksave W 6",
+      "result": "1 0,0,0,0 -"
+    },
+    {
+      "function": "wfp",
+      "args": "modal 60,320",
+      "result": "0"
+    },
+    {
+      "function": "wfp",
+      "args": "modal 350,70",
+      "result": "0"
+    },
+    {
+      "function": "wfp",
+      "args": "modal 600,450",
+      "result": "0"
+    },
+    {
+      "function": "wfp",
+      "args": "modalc 60,320",
+      "result": "M"
+    },
+    {
+      "function": "wfp",
+      "args": "modalc 350,70",
+      "result": "M"
+    },
+    {
+      "function": "wfp",
+      "args": "modalc 600,450",
+      "result": "M"
+    }
+  ]
+}

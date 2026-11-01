@@ -167,7 +167,11 @@ pub fn window_from_point(engine: &Engine, mut args: Args) -> Later<'_> {
             return Ok(Answer::Word(0));
         }
 
-        let found = engine.scan_hit(x, y).await?;
+        // `None`: the walk ended at no window, the system-modal window it
+        // began at answering `HTTRANSPARENT` (seg1 `7282`-`7285`, `71c6`).
+        let Some(found) = engine.hit_walk(x, y).await? else {
+            return Ok(Answer::Word(0));
+        };
         let system = engine.system();
 
         Ok(Answer::Word(match found {

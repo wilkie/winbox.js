@@ -2129,6 +2129,11 @@ export async function positionChanged(
        * (`swpframe`), not again with the list. */
       window.desktop.frameChanged(shown);
       window.desktop.placingSkip(shown);
+    } else if (flags & SWP_NOCOPYBITS) {
+      /* Not moved nor sized, with `SWP_NOCOPYBITS`: its bits go where the
+       * entry of the block says, not through its whole window (seg7
+       * `1028`-`102c`, `0fed`). */
+      window.desktop.placingDest(shown, dest);
     }
 
     if (slot !== null) {

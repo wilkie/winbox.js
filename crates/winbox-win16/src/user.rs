@@ -172,7 +172,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "SetActiveWindow" => Implementation::Async(crate::position::set_active_window),
         "BeginPaint" => Implementation::Async(crate::paint::begin_paint),
         "EndPaint" => Implementation::Sync(crate::paint::end_paint),
-        "InvalidateRect" => Implementation::Sync(crate::paint::invalidate_rect),
+        "InvalidateRect" => Implementation::Async(crate::paint::invalidate_rect),
         "UpdateWindow" => Implementation::Async(crate::paint::update_window),
         "GetFocus" => Implementation::Sync(crate::def_window::get_focus),
         "SetFocus" => Implementation::Async(crate::def_window::set_focus),

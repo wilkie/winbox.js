@@ -909,6 +909,11 @@ impl Engine {
                 // it (`swpframe`), not again with the list.
                 system.frame_changed(change.index)?;
                 system.placing_skip(change.index);
+            } else if change.flags & SWP_NOCOPYBITS != 0 {
+                // Not moved nor sized, with `SWP_NOCOPYBITS`: its bits go
+                // where the entry of the block says, not through its whole
+                // window (seg7 `1028`-`102c`, `0fed`).
+                system.placing_dest(change.index, dest);
             }
 
             if let Some(slot) = change.slot {

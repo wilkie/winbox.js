@@ -2,6 +2,7 @@
 
 import { ClipRegion } from '../../raster/clip-region.js';
 import { RasterWindow } from './raster-window.js';
+import { RedrawWindow } from './RedrawWindow.js';
 import { tellLock } from './lock-window-update.js';
 import { RDW_ERASE, RDW_INVALIDATE, redrawThrough } from './invalidate-through.js';
 
@@ -19,6 +20,15 @@ import { RDW_ERASE, RDW_INVALIDATE, redrawThrough } from './invalidate-through.j
  * `BeginPaint` clips to the region (`update-region.ts`).
  */
 export async function InvalidateRect(hwnd, lprc, fErase) {
+  /* Of no window: every window drawn again, `RedrawWindow` of no window and
+   * no rectangle with `RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN |
+   * RDW_ERASENOW`, 285h, whatever was given (`USER.EXE` seg1 `015d`-`0176`;
+   * `uwleft`). */
+  if (!hwnd) {
+    await RedrawWindow.call(this, 0, null, 0, 0x285);
+    return;
+  }
+
   const dialog = this.handles.resolve(hwnd);
 
   if (!(dialog instanceof RasterWindow)) {

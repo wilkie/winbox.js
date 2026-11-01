@@ -3,6 +3,7 @@
 import { DesktopHandle } from './desktop-handle.js';
 import { RasterWindow } from './raster-window.js';
 import { cutToParents } from './invalidate-through.js';
+import { syncPaintFrom } from './erase.js';
 
 /**
  * The smallest rectangle around what a window is due to paint, in its
@@ -12,8 +13,16 @@ import { cutToParents } from './invalidate-through.js';
  *
  * Not followed: `bErase`, which would have the background erased first.
  */
-export function GetUpdateRect(this: any, hwnd: number, lprc: any, _bErase: number) {
-  const dialog = this.handles.resolve(hwnd);
+export async function GetUpdateRect(this: any, hwnd: number, lprc: any, bErase: number) {
+  let dialog = this.handles.resolve(hwnd);
+
+  /* With `bErase`, its frame drawn and its erase sent first, where they are
+   * due, the window alone (`USER.EXE` seg1 `466f`-`467c`, `7913`; `uwleft`). */
+  if (bErase && dialog instanceof RasterWindow) {
+    await syncPaintFrom(this, dialog.window, 0);
+    dialog = this.handles.resolve(hwnd);
+  }
+
   const empty = () => {
     if (lprc) {
       lprc.left = lprc.top = lprc.right = lprc.bottom = 0;
