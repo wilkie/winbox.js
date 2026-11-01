@@ -44,6 +44,7 @@ pub const BM_SETCHECK: u16 = 0x0401;
 pub const BM_SETSTYLE: u16 = 0x0404;
 
 const BS_OWNERDRAW: u32 = 0x0b;
+const BS_GROUPBOX: u32 = 0x07;
 const TRANSPARENT: u16 = 1;
 const WS_BORDER: u32 = 0x0080_0000;
 const WS_DISABLED: u32 = 0x0800_0000;
@@ -989,6 +990,15 @@ impl Engine {
         // `24f2`). Control Panel's Color takes clicks on its sample and its
         // colours' boxes, which it draws over statics.
         if kind == "STATIC" && message == WM_NCHITTEST {
+            return Ok(0xffff_ffff);
+        }
+
+        // And a group box, the button procedure answering for it alone so
+        // (`USER.EXE` seg25 `1c9b`-`1ca8`).
+        if kind == "BUTTON"
+            && message == WM_NCHITTEST
+            && self.system().control_mut(index).style & 0x0f == BS_GROUPBOX
+        {
             return Ok(0xffff_ffff);
         }
 

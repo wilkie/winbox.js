@@ -6029,6 +6029,7 @@ const RUN_WHOLE = new Set<string>([
   'swplst31',
   'savebit',
   'rdwmore',
+  'wfpwalk',
 ]);
 
 /**

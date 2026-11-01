@@ -6,12 +6,11 @@
 // or not it can stop the program.
 #![allow(clippy::unnecessary_wraps)]
 
-use crate::call::{Answer, Args, Stop};
+use crate::call::{Answer, Args, Later, Stop};
+use crate::engine::Engine;
 use crate::handles::Object;
 use crate::system::System;
 use crate::windows::Placement;
-
-const WS_DISABLED: u32 = 0x0800_0000;
 
 impl System {
     /// Where a window's client area is on the screen; the screen's corner
@@ -138,75 +137,46 @@ pub fn map_window_points(system: &mut System, args: &mut Args) -> Result<Answer,
     Ok(Answer::Nothing)
 }
 
-/// The window at a point of the screen: the top-level window there, then
-/// its children down as far as one holds the point -- passing over a
-/// hidden one -- but not inside a disabled window, nor an icon
-/// (`iconkid`); the desktop where there is none.
-const BS_GROUPBOX: u32 = 7;
+/// The window at a point of the screen: USER's hit test from the desktop
+/// window (`USER.EXE` seg1 `713c`, `71b9`; `hit_steps`), with nowhere to
+/// keep the hit-test code. The windows of the calling task it comes to are
+/// asked `WM_NCHITTEST` as the mouse's are, a static control and a group
+/// box passed over by their answer, `HTTRANSPARENT` (seg25 `24f2`,
+/// `1c9b`); a window of another task answers without being asked. The
+/// desktop window past every window, nought off the screen (`winpoint`,
+/// `iconkid`).
+pub fn window_from_point(engine: &Engine, mut args: Args) -> Later<'_> {
+    Box::pin(async move {
+        let (x, y, on_screen) = {
+            let mut system = engine.system();
+            let point = args.dword(&system);
+            let (x, y) = (i32::from(point as i16), i32::from((point >> 16) as i16));
 
-pub fn window_from_point(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
-    let point = args.dword(system);
-    let (x, y) = (i32::from(point as i16), i32::from((point >> 16) as i16));
+            (
+                x,
+                y,
+                system.raster()
+                    && x >= 0
+                    && y >= 0
+                    && x < i32::from(system.display.width)
+                    && y < i32::from(system.display.height),
+            )
+        };
 
-    if !system.raster()
-        || x < 0
-        || y < 0
-        || x >= i32::from(system.display.width)
-        || y >= i32::from(system.display.height)
-    {
-        return Ok(Answer::Word(0));
-    }
-
-    let Some(mut found) = system.window_at(x, y) else {
-        return Ok(Answer::Word(
-            system.handles.lookup(Object::Desktop).unwrap_or(0),
-        ));
-    };
-
-    while let Some(parent) = system.windows[found]
-        .as_ref()
-        .and_then(|window| window.parent)
-    {
-        found = parent;
-    }
-
-    loop {
-        let window = system.windows[found].as_ref().expect("a window");
-
-        if window.style & WS_DISABLED != 0 || window.placement == Placement::Minimized {
-            break;
+        if !on_screen {
+            return Ok(Answer::Word(0));
         }
 
-        // A hidden child is passed over, and a control that lets the
-        // mouse through: static text and a group box.
-        let next = system.children_of(found).into_iter().find(|&child| {
-            system.windows[child].as_ref().is_some_and(|window| {
-                window.visible
-                    && !window.control.as_ref().is_some_and(|control| {
-                        control.class_name == "STATIC"
-                            || (control.class_name == "BUTTON"
-                                && control.style & 0x0f == BS_GROUPBOX)
-                    })
-            }) && system.holds(child, x, y)
-        });
+        let found = engine.scan_hit(x, y).await?;
+        let system = engine.system();
 
-        match next {
-            Some(next)
-                if system.windows[next]
-                    .as_ref()
-                    .is_some_and(|window| window.style & WS_DISABLED == 0) =>
-            {
-                found = next;
-            }
-            _ => break,
-        }
-    }
-
-    Ok(Answer::Word(
-        system.windows[found]
-            .as_ref()
-            .map_or(0, |window| window.hwnd),
-    ))
+        Ok(Answer::Word(match found {
+            Some((index, _, _)) => system.windows[index]
+                .as_ref()
+                .map_or(0, |window| window.hwnd),
+            None => system.handles.lookup(Object::Desktop).unwrap_or(0),
+        }))
+    })
 }
 
 /// The child of a window at a point of its client area -- hidden or not --
@@ -328,7 +298,7 @@ pub fn set_parent(system: &mut System, args: &mut Args) -> Result<Answer, Stop> 
 /// A window's caption drawn active or not, its activation unchanged: turned
 /// from how it is drawn, or put back to its activation; whether it was drawn
 /// active, as 40h. An icon's title is turned without being told.
-pub fn flash_window(engine: &crate::engine::Engine, mut args: Args) -> crate::call::Later<'_> {
+pub fn flash_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let (hwnd, invert, index) = {
             let system = engine.system();
@@ -388,7 +358,7 @@ pub fn flash_window(engine: &crate::engine::Engine, mut args: Args) -> crate::ca
 /// The system colours set, each element's from the two arrays given; then
 /// everything to be drawn again, and each window at the top told
 /// `WM_SYSCOLORCHANGE` (`syscol`). TRUE.
-pub fn set_sys_colors(engine: &crate::engine::Engine, mut args: Args) -> crate::call::Later<'_> {
+pub fn set_sys_colors(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let tops = {
             let mut system = engine.system();
@@ -443,10 +413,7 @@ pub fn set_sys_colors(engine: &crate::engine::Engine, mut args: Args) -> crate::
 /// `HC_SYSMODALON` for a window and `HC_SYSMODALOFF` for none (`USER.EXE`
 /// seg1 `1a0c`-`1a4a`; `jrnlrec`); while a window is system-modal they are
 /// not called (`system_queue.rs`).
-pub fn set_sys_modal_window(
-    engine: &crate::engine::Engine,
-    mut args: Args,
-) -> crate::call::Later<'_> {
+pub fn set_sys_modal_window(engine: &Engine, mut args: Args) -> Later<'_> {
     Box::pin(async move {
         let hwnd = args.word(&engine.system());
 
@@ -454,7 +421,7 @@ pub fn set_sys_modal_window(
     })
 }
 
-impl crate::engine::Engine {
+impl Engine {
     /// `SetSysModalWindow`'s part that `LockInput` calls too (`USER.EXE`
     /// seg1 `19de`): the journal hooks told, and the window made
     /// system-modal; the one before.

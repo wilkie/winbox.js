@@ -1,0 +1,204 @@
+{
+  "probe": "wfpwalk",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "window",
+      "args": "client",
+      "result": "top"
+    },
+    {
+      "function": "asked",
+      "args": "client",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "glass-only",
+      "result": "top"
+    },
+    {
+      "function": "asked",
+      "args": "glass-only",
+      "result": "glass/top"
+    },
+    {
+      "function": "window",
+      "args": "glass-under",
+      "result": "under"
+    },
+    {
+      "function": "asked",
+      "args": "glass-under",
+      "result": "glass/under"
+    },
+    {
+      "function": "window",
+      "args": "under-only",
+      "result": "under"
+    },
+    {
+      "function": "asked",
+      "args": "under-only",
+      "result": "under"
+    },
+    {
+      "function": "window",
+      "args": "dis-only",
+      "result": "top"
+    },
+    {
+      "function": "asked",
+      "args": "dis-only",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "dis-beneath",
+      "result": "beneath"
+    },
+    {
+      "function": "asked",
+      "args": "dis-beneath",
+      "result": "beneath"
+    },
+    {
+      "function": "window",
+      "args": "spill-in",
+      "result": "spill"
+    },
+    {
+      "function": "asked",
+      "args": "spill-in",
+      "result": "spill"
+    },
+    {
+      "function": "window",
+      "args": "spill-beyond",
+      "result": "desktop"
+    },
+    {
+      "function": "asked",
+      "args": "spill-beyond",
+      "result": "-"
+    },
+    {
+      "function": "window",
+      "args": "spill-outside",
+      "result": "desktop"
+    },
+    {
+      "function": "asked",
+      "args": "spill-outside",
+      "result": "-"
+    },
+    {
+      "function": "window",
+      "args": "cap",
+      "result": "cap"
+    },
+    {
+      "function": "asked",
+      "args": "cap",
+      "result": "cap"
+    },
+    {
+      "function": "window",
+      "args": "kid",
+      "result": "kid"
+    },
+    {
+      "function": "asked",
+      "args": "kid",
+      "result": "kid"
+    },
+    {
+      "function": "window",
+      "args": "caption",
+      "result": "top"
+    },
+    {
+      "function": "asked",
+      "args": "caption",
+      "result": "top"
+    },
+    {
+      "function": "window",
+      "args": "over",
+      "result": "over"
+    },
+    {
+      "function": "asked",
+      "args": "over",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "desktop",
+      "result": "desktop"
+    },
+    {
+      "function": "asked",
+      "args": "desktop",
+      "result": "-"
+    },
+    {
+      "function": "window",
+      "args": "modal-client",
+      "result": "over"
+    },
+    {
+      "function": "asked",
+      "args": "modal-client",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "modal-kid",
+      "result": "over"
+    },
+    {
+      "function": "asked",
+      "args": "modal-kid",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "modal-over",
+      "result": "over"
+    },
+    {
+      "function": "asked",
+      "args": "modal-over",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "modal-desktop",
+      "result": "over"
+    },
+    {
+      "function": "asked",
+      "args": "modal-desktop",
+      "result": "over"
+    },
+    {
+      "function": "window",
+      "args": "after-modal",
+      "result": "top"
+    },
+    {
+      "function": "asked",
+      "args": "after-modal",
+      "result": "top"
+    }
+  ]
+}

@@ -63,7 +63,6 @@ use crate::handles::Object;
 use crate::messages::Param;
 use crate::queue::{Filter, Message, WM_MOUSEMOVE};
 use crate::system::System;
-use crate::windows::Placement;
 
 const WM_SETCURSOR: u16 = 0x0020;
 const WM_MOUSEACTIVATE: u16 = 0x0021;
@@ -302,96 +301,11 @@ impl System {
         filter_kinds(filter) & held != 0
     }
 
-    fn within_window(&self, index: usize, x: i32, y: i32) -> bool {
-        let window = self.windows[index].as_ref().expect("a window");
-
-        x >= window.left
-            && x < window.left + window.width
-            && y >= window.top
-            && y < window.top + window.height
-    }
-
-    fn in_client(&self, index: usize, x: i32, y: i32) -> bool {
-        let window = self.windows[index].as_ref().expect("a window");
-        let client = window.client;
-
-        x >= window.left + client.left
-            && x < window.left + client.right
-            && y >= window.top + client.top
-            && y < window.top + client.bottom
-    }
-
     /// A child, as USER tells one: `WS_CHILD` without `WS_POPUP`.
     fn child_styled(&self, index: usize) -> bool {
         self.windows[index]
             .as_ref()
             .is_some_and(|window| window.style & (WS_CHILD | WS_POPUP) == WS_CHILD)
-    }
-
-    /// The window the scan comes to first in one the point is on: where the
-    /// point is in its client area and not an icon's, the first of its
-    /// children shown under the point, and so on down.
-    fn descend(&self, index: usize, x: i32, y: i32) -> usize {
-        let window = self.windows[index].as_ref().expect("a window");
-
-        if window.placement == Placement::Minimized || !self.in_client(index, x, y) {
-            return index;
-        }
-
-        let child = self.z_order.iter().copied().find(|&other| {
-            self.windows[other].as_ref().is_some_and(|one| {
-                one.parent == Some(index)
-                    && one.hwnd != 0
-                    && one.visible
-                    && self.within_window(other, x, y)
-            })
-        });
-
-        child.map_or(index, |child| self.descend(child, x, y))
-    }
-
-    /// The window the scan comes to after one it passed over: the next of
-    /// its brothers behind it that is shown under the point, or else the
-    /// window it is in -- none, the desktop's, past the windows at the top.
-    fn beneath(&self, index: usize, x: i32, y: i32) -> Option<usize> {
-        let parent = self.windows[index].as_ref().expect("a window").parent;
-        let brothers: Vec<usize> = self
-            .z_order
-            .iter()
-            .copied()
-            .filter(|&other| {
-                self.windows[other]
-                    .as_ref()
-                    .is_some_and(|one| one.parent == parent && one.hwnd != 0)
-            })
-            .collect();
-        let at = brothers.iter().position(|&one| one == index);
-
-        for &other in &brothers[at.map_or(brothers.len(), |at| at + 1)..] {
-            let shown = self.windows[other].as_ref().expect("a window").visible;
-
-            if shown && self.within_window(other, x, y) {
-                return Some(self.descend(other, x, y));
-            }
-        }
-
-        parent
-    }
-
-    /// The outermost disabled window a window is, or is in.
-    fn disabled_around(&self, index: usize) -> Option<usize> {
-        let mut found = None;
-        let mut at = Some(index);
-
-        while let Some(window) = at.and_then(|at| self.windows[at].as_ref().map(|w| (at, w))) {
-            if window.1.style & WS_DISABLED != 0 {
-                found = Some(window.0);
-            }
-
-            at = window.1.parent;
-        }
-
-        found
     }
 }
 
@@ -400,41 +314,46 @@ impl Engine {
     /// USER's hit test finds them (seg1 `71b9`): `WM_NCHITTEST` sent to the
     /// windows of the running task it comes to. With it, whether the window
     /// is another task's.
-    async fn scan_hit(&self, x: i32, y: i32) -> Result<Option<(usize, i16, bool)>, Stop> {
-        let mut candidate = self.system().window_at(x, y);
-
-        while let Some(index) = candidate {
-            let (disabled, minimized, mine, hwnd) = {
-                let system = self.system();
-                let window = system.windows[index].as_ref().expect("a window");
-
-                (
-                    system.disabled_around(index),
-                    window.placement == Placement::Minimized || window.title_of.is_some(),
-                    system.mine(window.hwnd),
-                    window.hwnd,
+    pub(crate) async fn scan_hit(
+        &self,
+        x: i32,
+        y: i32,
+    ) -> Result<Option<(usize, i16, bool)>, Stop> {
+        let steps = {
+            let system = self.system();
+            let sys_modal = system.window_named(system.sys_modal_window());
+            let mine = |index: usize| {
+                system.mine(
+                    system.windows[index]
+                        .as_ref()
+                        .map_or(0, |window| window.hwnd),
                 )
             };
 
-            if let Some(disabled) = disabled {
+            system.hit_steps(x, y, &mine, sys_modal)
+        };
+
+        for (index, hit) in steps {
+            // The desktop window's: no window.
+            let Some(index) = index else {
+                return Ok(None);
+            };
+
+            if let Some(hit) = hit {
+                return Ok(Some((index, hit, hit == HTCLIENT)));
+            }
+
+            let (title, hwnd) = {
                 let system = self.system();
+                let window = system.windows[index].as_ref().expect("a window");
 
-                if !system.child_styled(disabled) {
-                    return Ok(Some((disabled, HTERROR, false)));
-                }
+                (window.title_of.is_some(), window.hwnd)
+            };
 
-                candidate = system.beneath(disabled, x, y);
-                continue;
-            }
-
-            // An icon is all caption, and so is its title, whose procedure
-            // answers `WM_NCHITTEST` so (seg1 `6dbd`).
-            if minimized {
+            // An icon's title, whose procedure answers `WM_NCHITTEST` with
+            // `HTCAPTION` (seg1 `6dbd`).
+            if title {
                 return Ok(Some((index, HTCAPTION, false)));
-            }
-
-            if !mine {
-                return Ok(Some((index, HTCLIENT, true)));
             }
 
             let hit = signed(
@@ -445,8 +364,6 @@ impl Engine {
             if hit != HTTRANSPARENT {
                 return Ok(Some((index, hit, false)));
             }
-
-            candidate = self.system().beneath(index, x, y);
         }
 
         Ok(None)

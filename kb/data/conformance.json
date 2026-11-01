@@ -30772,6 +30772,29 @@
   },
   "gaps": {}
  },
+ "wfpwalk": {
+  "probe": "wfpwalk",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 38,
+  "functions": {
+   "window": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "asked": {
+    "total": 19,
+    "agreed": 19,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "widelin": {
   "probe": "widelin",
   "display": "vga",

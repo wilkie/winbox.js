@@ -70,6 +70,10 @@ const WS_CLIPCHILDREN = 0x02000000;
 const WS_EX_TOPMOST = 0x00000008;
 const WS_DISABLED = 0x08000000;
 const WS_POPUP = 0x80000000;
+const WS_CHILD = 0x40000000;
+const HTERROR = -2;
+const HTCLIENT = 1;
+const HTCAPTION = 2;
 const CS_VREDRAW = 0x0001;
 const CS_HREDRAW = 0x0002;
 
@@ -2768,39 +2772,142 @@ export class Desktop {
     this.#takeAway(window, false, activateNext);
   }
 
-  /** The window that shows at a point of the screen, if any. */
-  windowAt(x: number, y: number) {
+  /**
+   * The steps of USER's hit test for a point of the screen (`USER.EXE` seg1
+   * `71b9`, from `WindowFromPoint`'s `713c` and the mouse's scan), in the
+   * order it comes to them. **Read out**: it walks the windows by their
+   * rectangles alone (seg1 `1dc0`), from the desktop window down, each
+   * window's children front to back, no visible region asked. A window
+   * hidden, or not holding the point, is passed over (`71bf`-`71e3`); a
+   * disabled child is passed over, its children with it, and a disabled
+   * window at the top answers `HTERROR` for itself (`71e5`-`71f9`). Under a
+   * system-modal window, a window not it nor a child in it is taken for it
+   * (`71fc`-`7208`, seg1 `287d`, `1bd3`) -- the desktop window first, so
+   * that only it and the windows in it are walked. An icon answers `HTCAPTION`
+   * (`720c`-`7217`). Where the point is in its client area, its children
+   * are walked first (`7219`-`7256`); then a window of another task answers
+   * `HTCLIENT` (`725d`-`726c`), and one of this task is a step that asks it
+   * `WM_NCHITTEST`, passed over where it answers `HTTRANSPARENT`
+   * (`726e`-`7285`). Past every window the desktop window answers, its task
+   * no program's: `hit` given, `window` null. A step with `hit` null asks.
+   * Off the screen there are none.
+   */
+  hitSteps(
+    x: number,
+    y: number,
+    mine: (window: DesktopWindow) => boolean,
+    sysModal: DesktopWindow | null = null
+  ): { window: DesktopWindow | null; hit: number | null }[] {
+    const steps: { window: DesktopWindow | null; hit: number | null }[] = [];
+
     if (x < 0 || y < 0 || x >= this.screen.width || y >= this.screen.height) {
-      return null;
+      return steps;
     }
 
-    const id = this.owners[y * this.screen.width + x];
-    const at = this.windows.findIndex((window) => window.id === id);
-
-    /* A group box answers `WM_NCHITTEST` with `HTTRANSPARENT` (`USER.EXE`
-     * seg25 `1c9b`): the mouse goes to what lies beneath it. */
-    for (let index = at; index >= 0 && index < this.windows.length; index++) {
-      const window = this.windows[index];
-      const clip = (window as any).clipRect;
-
-      if (
-        index !== at &&
-        (!this.#showing(window) ||
-          !clip ||
-          x < clip[0] ||
-          y < clip[1] ||
-          x >= clip[2] ||
-          y >= clip[3])
-      ) {
-        continue;
+    const holds = (window: DesktopWindow) =>
+      x >= window.left &&
+      y >= window.top &&
+      x < window.left + window.width &&
+      y < window.top + window.height;
+    const inClient = (window: DesktopWindow) =>
+      x >= window.left + window.client.left &&
+      y >= window.top + window.client.top &&
+      x < window.left + window.client.right &&
+      y < window.top + window.client.bottom;
+    const childStyled = (window: DesktopWindow) =>
+      (window.style & (WS_CHILD | WS_POPUP)) >>> 0 === WS_CHILD;
+    /* Whether a window is the system-modal one, or a child in it through
+     * windows styled children (seg1 `287d`, `1bd3`). */
+    const underModal = (window: DesktopWindow) => {
+      if (!sysModal || window === sysModal) {
+        return true;
       }
 
-      if (!(window.control?.className === 'BUTTON' && (window.control.style & 0x0f) === 7)) {
+      for (let at = window; childStyled(at) && at.parent; at = at.parent) {
+        if (at.parent === sysModal) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+    /* A window walked: true where the walk ends at it or in it. */
+    const walk = (start: DesktopWindow): boolean => {
+      const window = start;
+
+      if (!window.visible || !holds(window)) {
+        return false;
+      }
+
+      if (window.style & WS_DISABLED) {
+        if (childStyled(window)) {
+          return false;
+        }
+
+        steps.push({ window, hit: HTERROR });
+        return true;
+      }
+
+      return walkIn(underModal(window) ? window : (sysModal as DesktopWindow));
+    };
+    /* The rest of a window's walk, once it is found to hold the point. */
+    const walkIn = (window: DesktopWindow): boolean => {
+      if (window.state === 'minimized') {
+        steps.push({ window, hit: HTCAPTION });
+        return true;
+      }
+
+      const parent = window;
+
+      if (
+        inClient(parent) &&
+        this.windows.some((child) => child.parent === parent && walk(child))
+      ) {
+        return true;
+      }
+
+      if (!mine(window)) {
+        steps.push({ window, hit: HTCLIENT });
+        return true;
+      }
+
+      steps.push({ window, hit: null });
+      return false;
+    };
+
+    /* The walk begins at the desktop window, which is no system-modal
+     * window's child: with one, it is taken for that one, and nothing
+     * outside it is walked (`wfpwalk`: a point over the desktop answers
+     * it). */
+    if (sysModal) {
+      walkIn(sysModal);
+    } else if (!this.windows.some((window) => !window.parent && walk(window))) {
+      steps.push({ window: null, hit: HTCLIENT });
+    }
+
+    return steps;
+  }
+
+  /**
+   * The window USER's hit test comes to at a point of the screen
+   * (`hitSteps`), if any but the desktop window, every window taken for
+   * this task's: an icon's title answers `HTCAPTION` (seg1 `6dbd`) and a
+   * group box `HTTRANSPARENT` (seg25 `1c9b`), which passes it over; any
+   * other window asked is taken to answer for itself.
+   */
+  windowAt(x: number, y: number) {
+    for (const { window, hit } of this.hitSteps(x, y, () => true)) {
+      if (
+        hit !== null ||
+        !window ||
+        window.titleOf ||
+        !(window.control?.className === 'BUTTON' && (window.control.style & 0x0f) === 7)
+      ) {
         return window;
       }
     }
 
-    return at >= 0 ? this.windows[at] : null;
+    return null;
   }
 
   /**

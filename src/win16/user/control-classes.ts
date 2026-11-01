@@ -531,6 +531,16 @@ async function controlProc(
     return -1;
   }
 
+  /* And a group box, the button procedure answering for it alone so
+   * (`USER.EXE` seg25 `1c9b`-`1ca8`). */
+  if (
+    kind === 'BUTTON' &&
+    message === User.WM_NCHITTEST &&
+    (control.style & 0x0f) === BS_GROUPBOX
+  ) {
+    return -1;
+  }
+
   /* Static text is drawn again, enabled or not (`btndis`); a button draws
    * itself at once (`button.ts`). */
   if (kind === 'STATIC' && message === User.WM_ENABLE) {
@@ -1810,6 +1820,7 @@ async function paintComboBox(system: any, window: RasterWindow) {
 }
 
 const BS_OWNERDRAW = 0x0b;
+const BS_GROUPBOX = 0x07;
 
 /**
  * An owner-drawn button drawn by its parent, with `WM_DRAWITEM` (documented):
