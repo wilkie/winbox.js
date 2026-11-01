@@ -2330,7 +2330,7 @@ impl System {
         // (`USER.EXE` seg6 `1e58`).
         match after.and_then(|after| self.z_order.iter().position(|&other| other == after)) {
             Some(at) => {
-                self.z_order.splice(at + 1..at + 1, ordered);
+                self.z_order.splice(at + 1..=at, ordered);
             }
             None => self.z_order.extend(ordered),
         }

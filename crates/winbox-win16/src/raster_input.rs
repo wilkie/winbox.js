@@ -335,9 +335,7 @@ impl System {
     /// other window asked is taken to answer for itself.
     pub fn window_at(&self, x: i32, y: i32) -> Option<usize> {
         for (index, hit) in self.hit_steps(x, y, &|_| true, None) {
-            let Some(found) = index else {
-                return None;
-            };
+            let found = index?;
             let window = self.windows[found].as_ref().expect("a window");
             let group_box = window
                 .control
