@@ -68,6 +68,11 @@ pub const HTERROR: u16 = 0xfffe;
 
 const WS_DISABLED: u32 = 0x0800_0000;
 const WS_CHILD: u32 = 0x4000_0000;
+const WS_POPUP: u32 = 0x8000_0000;
+/// The hit-test codes as `hit_steps` gives them, signed as `WM_NCHITTEST` answers.
+const HIT_CLIENT: i16 = 1;
+const HIT_CAPTION: i16 = 2;
+const HIT_ERROR: i16 = -2;
 const WS_BORDER: u32 = 0x0080_0000;
 const WS_DLGFRAME: u32 = 0x0040_0000;
 const WS_THICKFRAME: u32 = 0x0004_0000;
@@ -142,51 +147,207 @@ pub(crate) fn dialog_framed(window: &Window) -> bool {
 }
 
 impl System {
-    /// The window that shows at a point of the screen, if any. (A group
-    /// box passes the mouse to what lies beneath it; there are no controls
-    /// here yet.)
-    pub fn window_at(&self, x: i32, y: i32) -> Option<usize> {
-        let (width, height) = (
-            i32::from(self.display.width),
-            i32::from(self.display.height),
-        );
+    /// The steps of USER's hit test for a point of the screen (`USER.EXE`
+    /// seg1 `71b9`, from `WindowFromPoint`'s `713c` and the mouse's scan),
+    /// in the order it comes to them: a window and the hit-test code it
+    /// answers, or `None` where it is asked `WM_NCHITTEST`; the desktop
+    /// window, past every window, as no window. **Read out**: it walks the
+    /// windows by their rectangles alone (seg1 `1dc0`), from the desktop
+    /// window down, each window's children front to back, no visible region
+    /// asked. A window hidden, or not holding the point, is passed over
+    /// (`71bf`-`71e3`); a disabled child is passed over, its children with
+    /// it, and a disabled window at the top answers `HTERROR` for itself
+    /// (`71e5`-`71f9`). Under a system-modal window, a window not it nor a
+    /// child in it is taken for it (`71fc`-`7208`, seg1 `287d`, `1bd3`). An
+    /// icon answers `HTCAPTION` (`720c`-`7217`). Where the point is in its
+    /// client area, its children are walked first (`7219`-`7256`); then a
+    /// window of another task answers `HTCLIENT` (`725d`-`726c`), and one of
+    /// this task is asked, passed over where it answers `HTTRANSPARENT`
+    /// (`726e`-`7285`). Off the screen there are none (`Desktop.hitSteps`).
+    pub(crate) fn hit_steps(
+        &self,
+        x: i32,
+        y: i32,
+        mine: &dyn Fn(usize) -> bool,
+        sys_modal: Option<usize>,
+    ) -> Vec<(Option<usize>, Option<i16>)> {
+        let mut steps = Vec::new();
 
-        if x < 0 || y < 0 || x >= width || y >= height {
-            return None;
+        if x < 0
+            || y < 0
+            || x >= i32::from(self.display.width)
+            || y >= i32::from(self.display.height)
+        {
+            return steps;
         }
 
-        let id = *self.owners.get((y * width + x) as usize)?;
-
-        if id == 0 {
-            return None;
+        // The walk begins at the desktop window, which is no system-modal
+        // window's child: with one, it is taken for that one, and nothing
+        // outside it is walked (`wfpwalk`: a point over the desktop answers
+        // it).
+        if let Some(modal) = sys_modal {
+            self.hit_walk_in(modal, x, y, mine, sys_modal, &mut steps);
+            return steps;
         }
 
-        let found = usize::from(id) - 1;
-        let at = self.z_order.iter().position(|&other| other == found)?;
+        let walked = self
+            .z_order
+            .iter()
+            .copied()
+            .filter(|&index| {
+                self.windows[index]
+                    .as_ref()
+                    .is_some_and(|window| window.parent.is_none())
+            })
+            .collect::<Vec<_>>()
+            .into_iter()
+            .any(|index| self.hit_walk(index, x, y, mine, sys_modal, &mut steps));
 
-        // A group box answers `WM_NCHITTEST` with `HTTRANSPARENT` (`USER.EXE`
-        // seg25 `1c9b`): the mouse goes to what lies beneath it.
-        for (step, &index) in self.z_order[at..].iter().enumerate() {
-            let window = self.windows[index].as_ref().expect("a window");
-            let [left, top, right, bottom] = window.clip_rect;
+        if !walked {
+            steps.push((None, Some(HIT_CLIENT)));
+        }
 
-            if step != 0
-                && (!self.showing(index) || x < left || y < top || x >= right || y >= bottom)
-            {
-                continue;
+        steps
+    }
+
+    /// One window of USER's hit test (`hit_steps`): true where the walk ends
+    /// at it or in it.
+    fn hit_walk(
+        &self,
+        start: usize,
+        x: i32,
+        y: i32,
+        mine: &dyn Fn(usize) -> bool,
+        sys_modal: Option<usize>,
+        steps: &mut Vec<(Option<usize>, Option<i16>)>,
+    ) -> bool {
+        let child_styled = |index: usize| {
+            self.windows[index]
+                .as_ref()
+                .is_some_and(|window| window.style & (WS_CHILD | WS_POPUP) == WS_CHILD)
+        };
+        let window = self.windows[start].as_ref().expect("a window");
+
+        if !window.visible
+            || x < window.left
+            || y < window.top
+            || x >= window.left + window.width
+            || y >= window.top + window.height
+        {
+            return false;
+        }
+
+        if window.style & WS_DISABLED != 0 {
+            if child_styled(start) {
+                return false;
             }
 
+            steps.push((Some(start), Some(HIT_ERROR)));
+            return true;
+        }
+
+        // A window not the system-modal one, nor a child in it through
+        // windows styled children, is taken for it (seg1 `287d`, `1bd3`).
+        let mut index = start;
+
+        if let Some(modal) = sys_modal.filter(|&modal| modal != start) {
+            let mut at = start;
+            let mut under = false;
+
+            while child_styled(at) {
+                let Some(parent) = self.windows[at].as_ref().and_then(|window| window.parent)
+                else {
+                    break;
+                };
+
+                if parent == modal {
+                    under = true;
+                    break;
+                }
+
+                at = parent;
+            }
+
+            if !under {
+                index = modal;
+            }
+        }
+
+        self.hit_walk_in(index, x, y, mine, sys_modal, steps)
+    }
+
+    /// The rest of a window's walk (`hit_walk`), once it is found to hold
+    /// the point.
+    fn hit_walk_in(
+        &self,
+        index: usize,
+        x: i32,
+        y: i32,
+        mine: &dyn Fn(usize) -> bool,
+        sys_modal: Option<usize>,
+        steps: &mut Vec<(Option<usize>, Option<i16>)>,
+    ) -> bool {
+        let window = self.windows[index].as_ref().expect("a window");
+
+        if window.placement == Placement::Minimized {
+            steps.push((Some(index), Some(HIT_CAPTION)));
+            return true;
+        }
+
+        let client = window.client;
+        let in_client = x >= window.left + client.left
+            && y >= window.top + client.top
+            && x < window.left + client.right
+            && y < window.top + client.bottom;
+
+        if in_client {
+            let children: Vec<usize> = self
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    self.windows[other]
+                        .as_ref()
+                        .is_some_and(|one| one.parent == Some(index))
+                })
+                .collect();
+
+            for child in children {
+                if self.hit_walk(child, x, y, mine, sys_modal, steps) {
+                    return true;
+                }
+            }
+        }
+
+        if !mine(index) {
+            steps.push((Some(index), Some(HIT_CLIENT)));
+            return true;
+        }
+
+        steps.push((Some(index), None));
+        false
+    }
+
+    /// The window USER's hit test comes to at a point of the screen
+    /// (`hit_steps`), if any but the desktop window, every window taken for
+    /// this task's: an icon's title answers `HTCAPTION` (seg1 `6dbd`) and a
+    /// group box `HTTRANSPARENT` (seg25 `1c9b`), which passes it over; any
+    /// other window asked is taken to answer for itself.
+    pub fn window_at(&self, x: i32, y: i32) -> Option<usize> {
+        for (index, hit) in self.hit_steps(x, y, &|_| true, None) {
+            let found = index?;
+            let window = self.windows[found].as_ref().expect("a window");
             let group_box = window
                 .control
                 .as_ref()
                 .is_some_and(|control| control.class_name == "BUTTON" && control.style & 0x0f == 7);
 
-            if !group_box {
-                return Some(index);
+            if hit.is_some() || window.title_of.is_some() || !group_box {
+                return Some(found);
             }
         }
 
-        Some(found)
+        None
     }
 
     /// Whether a window has a menu bar, as the desktop keeps one: a menu

@@ -151,7 +151,7 @@ pub fn implementation(name: &str) -> Option<Implementation> {
         "ReleaseCapture" => Implementation::Sync(crate::window_misc::release_capture),
         "GetCapture" => Implementation::Sync(crate::window_misc::get_capture),
         "MapWindowPoints" => Implementation::Sync(crate::window_misc::map_window_points),
-        "WindowFromPoint" => Implementation::Sync(crate::window_misc::window_from_point),
+        "WindowFromPoint" => Implementation::Async(crate::window_misc::window_from_point),
         "ChildWindowFromPoint" => Implementation::Sync(crate::window_misc::child_window_from_point),
         "ValidateRect" => Implementation::Sync(crate::window_misc::validate_rect),
         "SetWindowsHook" => Implementation::Sync(crate::hooks::set_windows_hook),

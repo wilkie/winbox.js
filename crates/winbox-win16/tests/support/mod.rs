@@ -320,6 +320,7 @@ pub const AGREEING: &[&str] = &[
     "savebit",
     "rdwmore",
     "prttxt",
+    "wfpwalk",
     "gdidmdrw-hercules",
     "gdidmdib-vga256",
     "prttx2",

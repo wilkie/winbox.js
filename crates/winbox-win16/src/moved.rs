@@ -144,7 +144,7 @@ pub(crate) struct Placing {
     was_at: PlaceKey,
     /// Where its bits go, on the screen (the entry's +16h); none for its
     /// whole window.
-    dest: Option<[i32; 4]>,
+    pub(crate) dest: Option<[i32; 4]>,
     /// How far its bits come.
     delta: (i32, i32),
     /// Due all of itself already, by its caller.

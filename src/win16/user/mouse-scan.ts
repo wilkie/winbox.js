@@ -31,7 +31,9 @@ import { type Desktop, type DesktopWindow } from './desktop.js';
  *   `HTCLIENT`. Else, from the desktop window down, front first: a hidden
  *   window, and one the point is not on, is passed over; a disabled child
  *   is passed over, its children with it; a disabled window at the top is
- *   `HTERROR` there and then; an icon is `HTCAPTION`. Where the point is in
+ *   `HTERROR` there and then; under a system-modal window, a window neither
+ *   it nor in it -- the desktop window first -- is taken for it
+ *   (`Desktop.hitSteps`); an icon is `HTCAPTION`. Where the point is in
  *   a window's client area, its children are looked at first, and the
  *   window itself after them. A window of another task is `HTCLIENT`, and
  *   its task is left to take the message, hit-testing it again. Any other
@@ -270,81 +272,9 @@ export function looksAtInput(task: any, filter: Filter) {
   return (filterKinds(filter) & inputKinds(task)) !== 0;
 }
 
-function within(window: DesktopWindow, x: number, y: number) {
-  return (
-    x >= window.left &&
-    x < window.left + window.width &&
-    y >= window.top &&
-    y < window.top + window.height
-  );
-}
-
-function inClient(window: DesktopWindow, x: number, y: number) {
-  const { left, top, right, bottom } = window.client;
-
-  return (
-    x >= window.left + left &&
-    x < window.left + right &&
-    y >= window.top + top &&
-    y < window.top + bottom
-  );
-}
-
 /** A child, as USER tells one: `WS_CHILD` without `WS_POPUP`. */
 function isChild(window: DesktopWindow) {
   return ((window.style >>> 0) & (WS_CHILD | WS_POPUP)) === WS_CHILD;
-}
-
-/** A window's brothers, itself among them, the front first: windows of the program, with handles. */
-function brothers(desktop: Desktop, window: DesktopWindow) {
-  return desktop.windows.filter((other) => other.parent === window.parent && other.hwnd);
-}
-
-/**
- * The window the scan comes to first in one the point is on: where the point
- * is in its client area and not an icon's, the first of its children shown
- * under the point, and so on down.
- */
-function descend(desktop: Desktop, window: DesktopWindow, x: number, y: number): DesktopWindow {
-  if (window.state === 'minimized' || !inClient(window, x, y)) {
-    return window;
-  }
-
-  const child = desktop.windows.find(
-    (other) => other.parent === window && other.hwnd && other.visible && within(other, x, y)
-  );
-
-  return child ? descend(desktop, child, x, y) : window;
-}
-
-/**
- * The window the scan comes to after one it passed over: the next of its
- * brothers behind it that is shown under the point, or else the window it is
- * in -- none, the desktop's, past the windows at the top.
- */
-function beneath(desktop: Desktop, window: DesktopWindow, x: number, y: number) {
-  const all = brothers(desktop, window);
-
-  for (const other of all.slice(all.indexOf(window) + 1)) {
-    if (other.visible && within(other, x, y)) {
-      return descend(desktop, other, x, y);
-    }
-  }
-
-  return window.parent;
-}
-
-/** The outermost disabled window a window is, or is in; none if none is. */
-function disabledAround(window: DesktopWindow) {
-  let found: DesktopWindow | null = null;
-
-  for (let at: DesktopWindow | null = window; at; at = at.parent) {
-    if (at.style & WS_DISABLED) {
-      found = at;
-    }
-  }
-
-  return found;
 }
 
 /** Whether a window is the running task's, as a look tells its own. */
@@ -362,47 +292,45 @@ const signed = (value: number) => (value << 16) >> 16;
  * hit test finds them (seg1 `71b9`): `WM_NCHITTEST` sent to the windows of
  * the running task it comes to. `other` where the window is another task's.
  */
-async function hitTest(system: any, x: number, y: number) {
+export async function hitTest(system: any, x: number, y: number) {
   const desktop: Desktop = system.rasterDesktop;
-  let candidate: DesktopWindow | null = desktop.windowAt(x, y);
+  const sysModal = system.handles.resolve(system._sysModal ?? 0);
+  const steps = desktop.hitSteps(
+    x,
+    y,
+    (window) => mine(system, window.hwnd),
+    sysModal instanceof RasterWindow ? sysModal.window : null
+  );
 
-  while (candidate) {
-    const disabled = disabledAround(candidate);
-
-    if (disabled) {
-      if (!isChild(disabled)) {
-        return { window: disabled, hit: HTERROR, other: false };
-      }
-
-      candidate = beneath(desktop, disabled, x, y);
-      continue;
+  for (const { window, hit } of steps) {
+    /* The desktop window's: no window. */
+    if (!window) {
+      return null;
     }
 
-    /* An icon is all caption, and so is its title, whose procedure answers
-     * `WM_NCHITTEST` so (seg1 `6dbd`). */
-    if (candidate.state === 'minimized' || candidate.titleOf) {
-      return { window: candidate, hit: HTCAPTION, other: false };
+    if (hit !== null) {
+      return { window, hit, other: hit === HTCLIENT };
     }
 
-    if (!mine(system, candidate.hwnd)) {
-      return { window: candidate, hit: HTCLIENT, other: true };
+    /* An icon's title, whose procedure answers `WM_NCHITTEST` with
+     * `HTCAPTION` (seg1 `6dbd`). */
+    if (window.titleOf) {
+      return { window, hit: HTCAPTION, other: false };
     }
 
-    const hit = signed(
+    const answer = signed(
       await SendMessage.call(
         system,
-        candidate.hwnd,
+        window.hwnd,
         WM_NCHITTEST,
         0,
         ((y & 0xffff) << 16) | (x & 0xffff)
       )
     );
 
-    if (hit !== HTTRANSPARENT) {
-      return { window: candidate, hit, other: false };
+    if (answer !== HTTRANSPARENT) {
+      return { window, hit: answer, other: false };
     }
-
-    candidate = beneath(desktop, candidate, x, y);
   }
 
   return null;

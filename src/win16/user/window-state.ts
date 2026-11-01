@@ -291,6 +291,8 @@ export async function showRaster(
   const clientBefore = clientInParent(shown);
   const before = [shown.left, shown.top, shown.width, shown.height, shown.state].join();
   const aboveBefore = new Map(family.map((member: any) => [member, above(desktop, member)]));
+  /* Placed, drawn and told as `SetWindowPos` does it, by `minimizeToBottom`. */
+  let placedAndTold = false;
 
   switch (show) {
     case User.SW_HIDE:
@@ -303,12 +305,39 @@ export async function showRaster(
       /* The windows it owns hidden with it; and a window not active, minimized
        * with `SW_MINIMIZE`, keeps its place (`owners`). */
       desktop.hideOwned(shown, true);
-      desktop.minimize(shown);
 
-      if (show === User.SW_MINIMIZE && was && !shown.active) {
-        desktop.showInPlace(shown);
-      } else {
-        desktop.show(shown);
+      /* A window at the top that shows, minimized with `SW_MINIMIZE` or
+       * `SW_SHOWMINNOACTIVE`, is placed as `MinMaximize` places it (`USER.EXE`
+       * seg6 `1b65`-`1c5e`, `1d3d`-`1d81`): one `SetWindowPos` to its icon's
+       * place, after the last of its brothers beneath it owned as it is,
+       * `SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_SHOWWINDOW` and
+       * `SWP_NOACTIVATE` (`minact`: 170h), asked, drawn and told as
+       * `SetWindowPos` does (`minimizeToBottom`). */
+      if (
+        !child &&
+        was &&
+        minimizing &&
+        (show === User.SW_MINIMIZE || show === User.SW_SHOWMINNOACTIVE)
+      ) {
+        await minimizeToBottom(system, hwnd, window, true);
+        placedAndTold = true;
+        break;
+      }
+
+      /* Placed and shown as one list, drawn once (`Desktop.place`). */
+      desktop.beginPlacing([shown]);
+      desktop.placingFlags(shown, SWP_NOCOPYBITS | SWP_FRAMECHANGED | (was ? 0 : SWP_SHOWWINDOW));
+
+      try {
+        desktop.minimize(shown);
+
+        if (show === User.SW_MINIMIZE && was && !shown.active) {
+          desktop.showInPlace(shown);
+        } else {
+          desktop.show(shown);
+        }
+      } finally {
+        desktop.endPlacing();
       }
 
       /* A child minimized with `SW_MINIMIZE` or `SW_SHOWMINNOACTIVE` goes
@@ -342,34 +371,65 @@ export async function showRaster(
       const origin = originOf(shown);
       const zoomed = zoom as { x: number; y: number; cx: number; cy: number } | null;
 
-      desktop.maximize(
+      /* Placed and shown as one list, drawn once (`Desktop.place`):
+       * `SWP_FRAMECHANGED`, and `SWP_NOCOPYBITS` from an icon (`USER.EXE`
+       * seg6 `1cd9`, `1d39`). */
+      desktop.beginPlacing([shown]);
+      desktop.placingFlags(
         shown,
-        zoomed
-          ? {
-              left: zoomed.x + origin.x,
-              top: zoomed.y + origin.y,
-              width: Math.max(zoomed.cx, 0),
-              height: Math.max(zoomed.cy, 0),
-            }
-          : undefined
+        SWP_FRAMECHANGED |
+          (shown.state === 'minimized' ? SWP_NOCOPYBITS : 0) |
+          (was ? 0 : SWP_SHOWWINDOW)
       );
-      desktop.show(shown);
+
+      try {
+        desktop.maximize(
+          shown,
+          zoomed
+            ? {
+                left: zoomed.x + origin.x,
+                top: zoomed.y + origin.y,
+                width: Math.max(zoomed.cx, 0),
+                height: Math.max(zoomed.cy, 0),
+              }
+            : undefined
+        );
+        desktop.show(shown);
+      } finally {
+        desktop.endPlacing();
+      }
       break;
     }
 
     case User.SW_SHOWNORMAL:
     case User.SW_RESTORE:
-      desktop.restore(shown);
-      desktop.hideOwned(shown, false);
+      /* Placed and shown as one list, drawn once (`Desktop.place`); the
+       * windows it owns shown again after, as `MinMaximize` shows them
+       * once it is placed (seg6 `1d86`-`1d91`). */
+      desktop.beginPlacing([shown]);
+      desktop.placingFlags(
+        shown,
+        SWP_FRAMECHANGED |
+          (shown.state === 'minimized' ? SWP_NOCOPYBITS : 0) |
+          (was ? 0 : SWP_SHOWWINDOW)
+      );
 
-      /* Made active hidden first, as for a class with `CS_SAVEBITS`, it is
-       * shown with `SWP_NOZORDER` where `ActivateWindow` put it (`sysdlg`:
-       * a system-modal dialog stays at the very front). */
-      if (flags & SWP_NOZORDER && !shown.parent && shown.active) {
-        desktop.showInPlace(shown);
-      } else {
-        desktop.show(shown);
+      try {
+        desktop.restore(shown);
+
+        /* Made active hidden first, as for a class with `CS_SAVEBITS`, it is
+         * shown with `SWP_NOZORDER` where `ActivateWindow` put it (`sysdlg`:
+         * a system-modal dialog stays at the very front). */
+        if (flags & SWP_NOZORDER && !shown.parent && shown.active) {
+          desktop.showInPlace(shown);
+        } else {
+          desktop.show(shown);
+        }
+      } finally {
+        desktop.endPlacing();
       }
+
+      desktop.hideOwned(shown, false);
       break;
 
     case SW_SHOWNOACTIVATE:
@@ -443,7 +503,7 @@ export async function showRaster(
     await send(User.WM_WINDOWPOSCHANGING, 0, [place]);
     place.flags = SWP_NOZORDER | SWP_FRAMECHANGED;
     await send(User.WM_WINDOWPOSCHANGED, 0, [place]);
-  } else if (moved && !hiding && !zoom) {
+  } else if (moved && !hiding && !zoom && !placedAndTold) {
     await notifySize(system, hwnd, window);
   }
 
@@ -565,8 +625,16 @@ export async function showRaster(
     if (next && next !== shown && !((await askActivate(system, next, 0)) & 0xffff)) {
       const nextFamily = familyOf(desktop, next);
       const nextAbove = above(desktop, next);
+      const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
 
-      desktop.show(next, false);
+      /* The first window that shows at the top is made active where it lies
+       * (seg1 `3674`-`3697`; `minact`: the icon gone to the bottom, the
+       * window beneath it is first). */
+      if (first === next) {
+        desktop.activateInPlace(next, false);
+      } else {
+        desktop.show(next, false);
+      }
 
       const nextMoved = above(desktop, next) !== nextAbove;
 
@@ -600,6 +668,10 @@ export async function showRaster(
 
   if (changes && !hiding && shown.state === 'minimized') {
     await titleShown(system, hwnd, window, !(flags & SWP_NOACTIVATE));
+  } else if (placedAndTold) {
+    /* Its title shown once the activation has moved on (seg6 `1e16`-`1e27`,
+     * seg1 `6e25`). */
+    await titleShown(system, hwnd, window, false);
   }
 
   /* Hidden, a window that has the focus itself gives it to its parent, or a
@@ -695,10 +767,9 @@ export async function minimizeToBottom(
 ) {
   const desktop = window.desktop;
   const shown = window.window;
-  const tops = desktop.windows.filter(
-    (other: any) => !other.parent && other !== shown && other.titleOf !== shown
-  );
-  const after = tops.length ? (tops[tops.length - 1].hwnd ?? 0) : 0;
+  const wasShown = shown.visible;
+  const last = minimizedAfter(desktop, shown);
+  const after = last ? (last.hwnd ?? 0) : 0;
   const old = [shown.left, shown.top, shown.left + shown.width, shown.top + shown.height];
   const oldClient = [
     shown.left + shown.client.left,
@@ -706,10 +777,88 @@ export async function minimizeToBottom(
     shown.left + shown.client.left + shown.clientWidth,
     shown.top + shown.client.top + shown.clientHeight,
   ];
+  const flags =
+    SWP_NOACTIVATE |
+    SWP_FRAMECHANGED |
+    SWP_NOCOPYBITS |
+    (show ? SWP_SHOWWINDOW : 0) |
+    (last ? 0 : SWP_NOZORDER);
+
+  /* Placed as one `SetWindowPos` places it, and drawn as its list is
+   * drawn once it is placed (`Desktop.beginPlacing`, `endPlacing`). */
+  desktop.beginPlacing([shown]);
+  desktop.placingFlags(shown, flags);
+
+  try {
+    await minimizedPlace(system, hwnd, window, show, flags, after, last, old, oldClient);
+  } finally {
+    desktop.endPlacing(false);
+  }
+
+  if (show) {
+    (shown as any).needsNcPaint = true;
+    (shown as any).dirtyRect = undefined;
+    await eraseDue(system);
+  }
+
+  const place: any = new WINDOWPOS();
+
+  place.hwnd = hwnd;
+  place.hwndInsertAfter = after;
+  place.x = shown.left;
+  place.y = shown.top;
+  place.cx = shown.width;
+  place.cy = shown.height;
+  /* Shown already, it is not told it was shown (`minact`). */
+  place.flags = (show ? flags : flags | SWP_NOREDRAW) & ~(wasShown ? SWP_SHOWWINDOW : 0);
+  await sendTo(system, shown, User.WM_WINDOWPOSCHANGED, 0, [place]);
+}
+
+/**
+ * Where `MinMaximize` puts a window minimized with `SW_MINIMIZE` or
+ * `SW_SHOWMINNOACTIVE` (`USER.EXE` seg6 `1b70`-`1b7d`, `1e58`-`1e89`): after
+ * the last of the brothers beneath it owned as it is, before the first
+ * whose being topmost differs from its; none, where none is, and it stays
+ * where it lies. An icon's title hidden is taken for owned by none
+ * (`minact`: a window minimized again goes after its title, left hidden
+ * beneath the windows as it was restored).
+ */
+function minimizedAfter(desktop: any, shown: any) {
+  const brothers = desktop.windows.filter(
+    (other: any) => other.parent === shown.parent && (other === shown || other.hwnd)
+  );
+  let last = null;
+
+  for (const other of brothers.slice(brothers.indexOf(shown) + 1)) {
+    if (!!other.topmost !== !!shown.topmost) {
+      break;
+    }
+
+    if (other.owner === shown.owner) {
+      last = other;
+    }
+  }
+
+  return last;
+}
+
+/** A window minimized to the bottom asked and placed, within its list (`minimizeToBottom`). */
+async function minimizedPlace(
+  system: any,
+  hwnd: number,
+  window: RasterWindow,
+  show: boolean,
+  flags: number,
+  after: number,
+  last: any,
+  old: number[],
+  oldClient: number[]
+) {
+  const desktop = window.desktop;
+  const shown = window.window;
 
   desktop.minimize(shown);
 
-  const flags = SWP_NOACTIVATE | SWP_FRAMECHANGED | SWP_NOCOPYBITS | (show ? SWP_SHOWWINDOW : 0);
   const place: any = new WINDOWPOS();
 
   place.hwnd = hwnd;
@@ -749,16 +898,16 @@ export async function minimizeToBottom(
   params.lppos = 0;
 
   await sendTo(system, shown, User.WM_NCCALCSIZE, 1, [params]);
-  desktop.toBottom(shown, show);
 
-  if (show) {
-    (shown as any).needsNcPaint = true;
-    (shown as any).dirtyRect = undefined;
-    await eraseDue(system);
+  if (last) {
+    desktop.toBottom(shown, show, last);
+  } else if (show) {
+    shown.visible = true;
+
+    if (shown.iconTitle) {
+      shown.iconTitle.visible = true;
+    }
   }
-
-  place.flags = show ? flags : flags | SWP_NOREDRAW;
-  await sendTo(system, shown, User.WM_WINDOWPOSCHANGED, 0, [place]);
 }
 
 /**

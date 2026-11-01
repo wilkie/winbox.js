@@ -1,8 +1,8 @@
 'use strict';
 
-import { User } from '../user.js';
 import { GetDesktopWindow } from './GetDesktopWindow.js';
 import { RasterWindow } from './raster-window.js';
+import { hitTest } from './mouse-scan.js';
 
 /**
  * Which window a point is on. **Recorded** by `winpoint`:
@@ -19,11 +19,21 @@ import { RasterWindow } from './raster-window.js';
  *   disabled or not: the first whose rectangle holds the point, a point of
  *   the window's client area, or else the window itself; nought for a point
  *   outside the client area.
+ *
+ * **Read out**: `WindowFromPoint` (`USER.EXE` seg1 `713c`) is USER's hit
+ * test (`71b9`, `Desktop.hitSteps`) from the desktop window, with nowhere to
+ * keep the hit-test code: the windows of the calling task it comes to are
+ * asked `WM_NCHITTEST` as the mouse's are, a static control and a group box
+ * passed over by their answer, `HTTRANSPARENT` (seg25 `24f2`, `1c9b`); a
+ * window of another task answers without being asked. `ChildWindowFromPoint`
+ * (seg1 `715b`) takes the point into the screen's terms by the window's
+ * client area (`7166`-`7172`), answers nought for a point outside it
+ * (`7175`-`7187`), and else the first child, front to back, whose
+ * rectangle holds it, hidden and disabled alike (`7189`-`71a8`), or the
+ * window.
  */
 
 const signed = (value: number) => (value << 16) >> 16;
-
-const BS_GROUPBOX = 7;
 
 /** The window's children, those in front first. */
 function childrenOf(desktop: any, window: any) {
@@ -36,18 +46,7 @@ const holds = (window: any, x: number, y: number) =>
   x < window.left + window.width &&
   y < window.top + window.height;
 
-/** A child `WindowFromPoint` passes over: hidden, or a control that lets the mouse through. */
-function passedOver(window: any) {
-  const kind = window.control?.className;
-
-  return (
-    !window.visible ||
-    kind === 'STATIC' ||
-    (kind === 'BUTTON' && (window.control.style & 0x0f) === BS_GROUPBOX)
-  );
-}
-
-export function WindowFromPoint(this: any, pt: number) {
+export async function WindowFromPoint(this: any, pt: number) {
   const desktop = this.rasterDesktop;
   const x = signed(pt & 0xffff);
   const y = signed((pt >>> 16) & 0xffff);
@@ -56,31 +55,9 @@ export function WindowFromPoint(this: any, pt: number) {
     return 0;
   }
 
-  let found = desktop.windowAt(x, y);
+  const found = await hitTest(this, x, y);
 
-  if (!found) {
-    return GetDesktopWindow.call(this);
-  }
-
-  while (found.parent) {
-    found = found.parent;
-  }
-
-  /* Nothing inside a disabled window is looked at, the top-level one too,
-   * nor inside a minimized one: its icon is its own (`iconkid`). */
-  while (!(found.style & User.WS_DISABLED) && found.state !== 'minimized') {
-    const next = childrenOf(desktop, found).find(
-      (child: any) => !passedOver(child) && holds(child, x, y)
-    );
-
-    if (!next || next.style & User.WS_DISABLED) {
-      break;
-    }
-
-    found = next;
-  }
-
-  return found.hwnd ?? 0;
+  return found ? (found.window.hwnd ?? 0) : GetDesktopWindow.call(this);
 }
 
 export function ChildWindowFromPoint(this: any, hwnd: number, pt: number) {

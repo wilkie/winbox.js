@@ -5230,26 +5230,27 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:media': 'DOS function 1Ch is not answered',
 
   /* `minact` minimizes the active window with `SW_MINIMIZE`. Which window
-   * is made active, and where the focus goes, agree (`state`); the messages
-   * do not: winbox.js minimizes a shown window without `WM_WINDOWPOSCHANGING`,
-   * `WM_GETMINMAXINFO` and `WM_NCCALCSIZE`, and keeps no icon's title among
-   * the windows where Windows keeps one, which its activation passes through
-   * (`USER.EXE` seg1 `6cf4`). */
+   * is made active, and where the focus goes, agree (`state`); a window at
+   * the top minimized so is asked, drawn and told as `MinMaximize`'s one
+   * `SetWindowPos` does it, and the window beneath made active where it
+   * lies. The messages do not all agree: an icon restored is asked with
+   * `SWP_NOCOPYBITS` before its activation, not after it with
+   * `SWP_FRAMECHANGED` alone; winbox.js keeps no icon's title hidden among
+   * the windows as Windows keeps one, which the next icon goes after; and
+   * the icon's title is not asked for its text as the activation leaves it
+   * (`USER.EXE` seg6 `1c66`-`1d3d`, seg1 `6cf4`). 45 records. */
   'minact:msg':
-    "a window minimized is not asked with WM_WINDOWPOSCHANGING, WM_GETMINMAXINFO and WM_NCCALCSIZE, and an icon's title takes no part in the activation",
+    "an icon restored is not asked as Windows asks it, and no icon's title is kept hidden among the windows, 45 records",
   /* `swpshow` shows hidden pop-ups with `SetWindowPos`, which agree, then
    * minimizes and restores a window by `WM_SYSCOMMAND`. Which window is
-   * active agrees at every step (`state`); the minimize and the restore's
-   * messages do not, as `minact`'s: the icon is not moved to the bottom of
-   * the windows nor asked `WM_WINDOWPOSCHANGING` there, its title is not
-   * among the topmost windows, `SC_RESTORE` asks no 100h and draws the frame
-   * after `WM_WINDOWPOSCHANGED`; and a window made visible behind a topmost
-   * one is not asked again between the halves of its activation
-   * (`kb/topics/creating-and-showing.md`). 71 records, and 2 of the order. */
+   * active, and the order of the windows, agree at every step (`state`,
+   * `zorder`); the restore's messages do not, as `minact`'s: `SC_RESTORE`
+   * asks no 120h before the activation and draws the frame after
+   * `WM_WINDOWPOSCHANGED`; and a window made visible behind a topmost one
+   * is not asked again between the halves of its activation
+   * (`kb/topics/creating-and-showing.md`). 23 records. */
   'swpshow:msg':
-    'a window minimized and restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 71 records',
-  'swpshow:zorder':
-    'an icon is not moved to the bottom of the windows, and its title is not among the topmost windows, 2 records',
+    'a window restored by WM_SYSCOMMAND is not asked and drawn as Windows asks and draws it, and one made visible behind a topmost window is not asked again as it is activated, 23 records',
 
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
@@ -6017,6 +6018,7 @@ const RUN_WHOLE = new Set<string>([
   'swplst31',
   'savebit',
   'rdwmore',
+  'wfpwalk',
   'gdidmdib',
   'prttrot',
   'prttx2',

@@ -31,6 +31,7 @@ const SWP_NOREDRAW: u16 = 0x0008;
 const SWP_FRAMECHANGED: u16 = 0x0020;
 const SWP_SHOWWINDOW: u16 = 0x0040;
 const SWP_HIDEWINDOW: u16 = 0x0080;
+const SWP_NOCOPYBITS: u16 = 0x0100;
 const SWP_NOCLIENTSIZE: u16 = 0x0800;
 const SWP_NOCLIENTMOVE: u16 = 0x1000;
 
@@ -1281,30 +1282,66 @@ impl Engine {
             return Ok(was);
         }
 
+        // A window at the top that shows, minimized with `SW_MINIMIZE` or
+        // `SW_SHOWMINNOACTIVE`, is placed as `MinMaximize` places it
+        // (`USER.EXE` seg6 `1b65`-`1c5e`, `1d3d`-`1d81`): one `SetWindowPos`
+        // to its icon's place, after the last of its brothers beneath it
+        // owned as it is, `SWP_NOCOPYBITS | SWP_FRAMECHANGED |
+        // SWP_SHOWWINDOW` and `SWP_NOACTIVATE` (`minact`: 170h), asked, drawn
+        // and told as `SetWindowPos` does (`minimize_to_bottom`). Its owned
+        // windows hidden first.
+        let placed_and_told =
+            !child && was && minimizing && matches!(show, SW_MINIMIZE | SW_SHOWMINNOACTIVE);
         let (before, above_before) = {
+            let system = self.system();
+
+            (
+                system.place_key(index),
+                family
+                    .iter()
+                    .map(|&member| system.above(member))
+                    .collect::<Vec<Vec<usize>>>(),
+            )
+        };
+
+        if placed_and_told {
+            self.system().hide_owned(index, true);
+            self.minimize_to_bottom(hwnd, index, true).await?;
+        }
+
+        {
             let mut system = self.system();
-            let before = system.place_key(index);
-            let above_before: Vec<Vec<usize>> =
-                family.iter().map(|&member| system.above(member)).collect();
 
             match show {
+                _ if placed_and_told => {}
                 SW_HIDE => system.hide(index),
                 // The windows it owns hidden with it; and a window not
                 // active, minimized with `SW_MINIMIZE`, keeps its place
-                // (`owners`).
+                // (`owners`). Placed and shown as one list, drawn once
+                // (`place_window`).
                 SW_SHOWMINIMIZED | SW_MINIMIZE | SW_SHOWMINNOACTIVE => {
                     system.hide_owned(index, true);
-                    system.minimize(index)?;
+                    system.begin_placing(&[index]);
+                    system.placing_flags(
+                        index,
+                        SWP_NOCOPYBITS | SWP_FRAMECHANGED | if was { 0 } else { SWP_SHOWWINDOW },
+                    );
 
+                    let minimized = system.minimize(index);
                     let active = system.windows[index]
                         .as_ref()
                         .is_some_and(|window| window.active);
 
-                    if show == SW_MINIMIZE && was && !active {
-                        system.show_in_place(index);
-                    } else {
-                        system.show(index);
+                    if minimized.is_ok() {
+                        if show == SW_MINIMIZE && was && !active {
+                            system.show_in_place(index);
+                        } else {
+                            system.show(index);
+                        }
                     }
+
+                    system.end_placing(None);
+                    minimized?;
 
                     // A child minimized with `SW_MINIMIZE` or
                     // `SW_SHOWMINNOACTIVE` goes after the last of the
@@ -1340,6 +1377,9 @@ impl Engine {
                         }
                     }
                 }
+                // Placed and shown as one list, drawn once (`place_window`):
+                // `SWP_FRAMECHANGED`, and `SWP_NOCOPYBITS` from an icon
+                // (`USER.EXE` seg6 `1cd9`, `1d39`).
                 SW_SHOWMAXIMIZED => {
                     let to = zoom.map(|[x, y, cx, cy]| {
                         let origin = system.origin_of(index);
@@ -1347,12 +1387,43 @@ impl Engine {
                         [x + origin.0, y + origin.1, cx.max(0), cy.max(0)]
                     });
 
-                    system.maximize_to(index, to)?;
-                    system.show(index);
+                    system.begin_placing(&[index]);
+                    system.placing_flags(
+                        index,
+                        SWP_FRAMECHANGED
+                            | if placement == Placement::Minimized {
+                                SWP_NOCOPYBITS
+                            } else {
+                                0
+                            }
+                            | if was { 0 } else { SWP_SHOWWINDOW },
+                    );
+
+                    let maximized = system.maximize_to(index, to);
+
+                    if maximized.is_ok() {
+                        system.show(index);
+                    }
+
+                    system.end_placing(None);
+                    maximized?;
                 }
+                // The windows it owns shown again after, as `MinMaximize`
+                // shows them once it is placed (seg6 `1d86`-`1d91`).
                 SW_SHOWNORMAL | SW_RESTORE => {
-                    system.restore(index)?;
-                    system.hide_owned(index, false);
+                    system.begin_placing(&[index]);
+                    system.placing_flags(
+                        index,
+                        SWP_FRAMECHANGED
+                            | if placement == Placement::Minimized {
+                                SWP_NOCOPYBITS
+                            } else {
+                                0
+                            }
+                            | if was { 0 } else { SWP_SHOWWINDOW },
+                    );
+
+                    let restored = system.restore(index);
 
                     // Made active hidden first, as for a class with
                     // `CS_SAVEBITS`, it is shown with `SWP_NOZORDER` where
@@ -1362,11 +1433,17 @@ impl Engine {
                         .as_ref()
                         .is_some_and(|window| window.active && window.parent.is_none());
 
-                    if flags & SWP_NOZORDER != 0 && active {
-                        system.show_in_place(index);
-                    } else {
-                        system.show(index);
+                    if restored.is_ok() {
+                        if flags & SWP_NOZORDER != 0 && active {
+                            system.show_in_place(index);
+                        } else {
+                            system.show(index);
+                        }
                     }
+
+                    system.end_placing(None);
+                    restored?;
+                    system.hide_owned(index, false);
                 }
                 SW_SHOWNOACTIVATE => system.show_in_place(index),
                 // A child is shown where it lies: `ShowWindow` gives a
@@ -1380,9 +1457,7 @@ impl Engine {
                 _ if was => system.show_with(index, false),
                 _ => system.show(index),
             }
-
-            (before, above_before)
-        };
+        }
 
         // A window shown active: its messages, and the focus they move; put
         // at the front between them if it was not there yet with the
@@ -1463,7 +1538,7 @@ impl Engine {
                 &mut Param::Struct(window_pos(hwnd, 0, place, SWP_NOZORDER | SWP_FRAMECHANGED)),
             )
             .await?;
-        } else if moved && !hiding && zoom.is_none() {
+        } else if moved && !hiding && zoom.is_none() && !placed_and_told {
             self.notify_size(hwnd, index).await?;
         }
 
@@ -1614,8 +1689,21 @@ impl Engine {
                     let mut system = self.system();
                     let family = system.family_of(next);
                     let above_before = system.above(next);
+                    let first = system.z_order.iter().copied().find(|&other| {
+                        system.windows[other]
+                            .as_ref()
+                            .is_some_and(|window| window.parent.is_none() && window.visible)
+                    });
 
-                    system.show_with(next, false);
+                    // The first window that shows at the top is made active
+                    // where it lies (seg1 `3674`-`3697`; `minact`: the icon
+                    // gone to the bottom, the window beneath it is first).
+                    if first == Some(next) {
+                        system.activate_in_place(next, false);
+                    } else {
+                        system.show_with(next, false);
+                    }
+
                     (family, above_before)
                 };
                 let moved = self.system().above(next) != above_before;
@@ -1640,6 +1728,10 @@ impl Engine {
         if changes && !hiding && minimized {
             self.title_shown(hwnd, index, flags & SWP_NOACTIVATE == 0)
                 .await?;
+        } else if placed_and_told {
+            // Its title shown once the activation has moved on (seg6
+            // `1e16`-`1e27`, seg1 `6e25`).
+            self.title_shown(hwnd, index, false).await?;
         }
 
         // Hidden, a window that has the focus itself gives it to its parent,
@@ -1770,36 +1862,27 @@ impl Engine {
     }
 
     /// A window minimized to the first free place among the icons and put
-    /// at the very bottom, after the last window there, **recorded** by
-    /// `showmin`: `WM_WINDOWPOSCHANGING` with its place -- for which
-    /// `DefWindowProc` asks `WM_GETMINMAXINFO` --
-    /// `WM_NCCALCSIZE` with the icon's rectangle, then `WM_WINDOWPOSCHANGED`,
-    /// from which `DefWindowProc` tells it its place and size. Shown, its
-    /// flags say so, and it is drawn before it is told; hidden, as a window
-    /// made minimized is, it is not drawn.
-    #[allow(clippy::too_many_lines)]
+    /// after the last of its brothers beneath it owned as it is
+    /// (`minimized_after`), **recorded** by `showmin` and `minact`:
+    /// `WM_WINDOWPOSCHANGING` with its place -- for which `DefWindowProc`
+    /// asks `WM_GETMINMAXINFO` -- `WM_NCCALCSIZE` with the icon's rectangle,
+    /// then `WM_WINDOWPOSCHANGED`, from which `DefWindowProc` tells it its
+    /// place and size. Placed as one `SetWindowPos` places it, and drawn as
+    /// its list is drawn once it is placed (`begin_placing`,
+    /// `end_placing`). Shown, its flags say so, and it is drawn before it is
+    /// told -- not told it was shown where it showed already; hidden, as a
+    /// window made minimized is, it is not drawn. The TypeScript engine's
+    /// `minimizeToBottom`.
     pub async fn minimize_to_bottom(
         &self,
         hwnd: u16,
         index: usize,
         show: bool,
     ) -> Result<(), Stop> {
-        const SWP_NOCOPYBITS: u16 = 0x0100;
-        const SWP_NOREDRAW: u16 = 0x0008;
-
-        let (after, old, old_client, place) = {
-            let mut system = self.system();
-            let tops: Vec<usize> = system
-                .z_order
-                .iter()
-                .copied()
-                .filter(|&other| {
-                    let window = system.windows[other].as_ref().expect("a window");
-
-                    window.parent.is_none() && other != index && window.title_of != Some(index)
-                })
-                .collect();
-            let after = tops.last().map_or(0, |&other| system.hwnd_of(other));
+        let (was_shown, last, after, old, old_client) = {
+            let system = self.system();
+            let last = system.minimized_after(index);
+            let after = last.map_or(0, |other| system.hwnd_of(other));
             let window = system.windows[index].as_ref().expect("a window");
             let old = [
                 window.left,
@@ -1813,21 +1896,79 @@ impl Engine {
                 window.left + window.client.left + window.client_width(),
                 window.top + window.client.top + window.client_height(),
             ];
-            system.minimize(index)?;
 
-            let window = system.windows[index].as_ref().expect("a window");
-
-            (
-                after,
-                old,
-                old_client,
-                [window.left, window.top, window.width, window.height],
-            )
+            (window.visible, last, after, old, old_client)
         };
         let flags = SWP_NOACTIVATE
             | SWP_FRAMECHANGED
             | SWP_NOCOPYBITS
-            | if show { SWP_SHOWWINDOW } else { 0 };
+            | if show { SWP_SHOWWINDOW } else { 0 }
+            | if last.is_some() { 0 } else { SWP_NOZORDER };
+
+        {
+            let mut system = self.system();
+
+            system.begin_placing(&[index]);
+            system.placing_flags(index, flags);
+        }
+
+        let placed = self
+            .minimized_place(hwnd, index, show, flags, after, last, old, old_client)
+            .await;
+
+        self.system().end_placing(Some(false));
+
+        let place = placed?;
+
+        if show {
+            {
+                let mut system = self.system();
+                let window = system.windows[index].as_mut().expect("a window");
+
+                window.needs_nc_paint = true;
+                window.dirty = None;
+            }
+
+            self.erase_due().await?;
+        }
+
+        // Shown already, it is not told it was shown (`minact`).
+        let flags = if show { flags } else { flags | SWP_NOREDRAW }
+            & !if was_shown { SWP_SHOWWINDOW } else { 0 };
+
+        self.send_message(
+            hwnd,
+            WM_WINDOWPOSCHANGED,
+            0,
+            &mut Param::Struct(window_pos(hwnd, after, place, flags)),
+        )
+        .await?;
+        Ok(())
+    }
+
+    /// A window minimized to the bottom asked and placed, within its list
+    /// (`minimize_to_bottom`): where it is placed.
+    #[allow(clippy::too_many_arguments)]
+    async fn minimized_place(
+        &self,
+        hwnd: u16,
+        index: usize,
+        show: bool,
+        flags: u16,
+        after: u16,
+        last: Option<usize>,
+        old: [i32; 4],
+        old_client: [i32; 4],
+    ) -> Result<[i32; 4], Stop> {
+        let place = {
+            let mut system = self.system();
+
+            system.minimize(index)?;
+
+            let window = system.windows[index].as_ref().expect("a window");
+
+            [window.left, window.top, window.width, window.height]
+        };
         let mut structure = Param::Struct(window_pos(hwnd, after, place, flags));
 
         // For which `DefWindowProc` asks `WM_GETMINMAXINFO`, and holds the
@@ -1888,30 +2029,61 @@ impl Engine {
             &mut Param::Struct(params),
         )
         .await?;
-        self.system().to_bottom(index, show);
 
-        if show {
-            {
-                let mut system = self.system();
-                let window = system.windows[index].as_mut().expect("a window");
+        let mut system = self.system();
 
-                window.needs_nc_paint = true;
-                window.dirty = None;
+        if last.is_some() {
+            system.to_bottom(index, show, last);
+        } else if show {
+            system.shown_mut(index).visible = true;
+
+            if let Some(title) = system.shown(index).icon_title {
+                system.shown_mut(title).visible = true;
             }
-
-            self.erase_due().await?;
         }
 
-        let flags = if show { flags } else { flags | SWP_NOREDRAW };
+        Ok(place)
+    }
+}
 
-        self.send_message(
-            hwnd,
-            WM_WINDOWPOSCHANGED,
-            0,
-            &mut Param::Struct(window_pos(hwnd, after, place, flags)),
-        )
-        .await?;
-        Ok(())
+impl System {
+    /// Where `MinMaximize` puts a window minimized with `SW_MINIMIZE` or
+    /// `SW_SHOWMINNOACTIVE` (`USER.EXE` seg6 `1b70`-`1b7d`, `1e58`-`1e89`):
+    /// after the last of the brothers beneath it owned as it is, before the
+    /// first whose being topmost differs from its; none, where none is, and
+    /// it stays where it lies. An icon's title hidden is taken for owned by
+    /// none (`minact`: a window minimized again goes after its title, left
+    /// hidden beneath the windows as it was restored). The TypeScript
+    /// engine's `minimizedAfter`.
+    pub(crate) fn minimized_after(&self, index: usize) -> Option<usize> {
+        let window = self.windows[index].as_ref().expect("a window");
+        let (parent, owner, topmost) = (window.parent, window.owner, window.topmost);
+        let mut last = None;
+
+        for &other in self
+            .z_order
+            .iter()
+            .skip_while(|&&other| other != index)
+            .skip(1)
+        {
+            let Some(one) = self.windows[other].as_ref() else {
+                continue;
+            };
+
+            if one.parent != parent || one.hwnd == 0 {
+                continue;
+            }
+
+            if one.topmost != topmost {
+                break;
+            }
+
+            if one.owner == owner {
+                last = Some(other);
+            }
+        }
+
+        last
     }
 }
 

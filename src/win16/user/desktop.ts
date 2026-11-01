@@ -70,6 +70,10 @@ const WS_CLIPCHILDREN = 0x02000000;
 const WS_EX_TOPMOST = 0x00000008;
 const WS_DISABLED = 0x08000000;
 const WS_POPUP = 0x80000000;
+const WS_CHILD = 0x40000000;
+const HTERROR = -2;
+const HTCLIENT = 1;
+const HTCAPTION = 2;
 const CS_VREDRAW = 0x0001;
 const CS_HREDRAW = 0x0002;
 
@@ -1607,6 +1611,20 @@ export class Desktop {
    * shows, what it covered and what it now covers are painted again.
    */
   place(window: DesktopWindow, left: number, top: number, width: number, height: number) {
+    /* Of a list being placed -- a window minimized, maximized or restored,
+     * as `MinMaximize` places it with one `SetWindowPos` (`USER.EXE` seg6
+     * `1d56`-`1d81`) -- it is moved now and drawn as the list is drawn
+     * (`endPlacing`): its old region and its new, nothing of its bits
+     * copied, as `SWP_NOCOPYBITS` has it for an icon made or restored
+     * (`1c59`, `1cd9`). */
+    if (this.#list) {
+      const entry = this.#entryOf(window);
+
+      this.#relocate(window, left, top, width, height);
+      entry.dest = [0, 0, 0, 0];
+      return;
+    }
+
     const { was, family } = this.#relocate(window, left, top, width, height);
 
     if (!window.visible) {
@@ -2681,15 +2699,36 @@ export class Desktop {
   }
 
   /**
-   * A parent's icons put in their slots again, from the one at the top, any
-   * place set for them forgotten: `ArrangeIconicWindows`. Answers how many
-   * (`userwin`: of two, the one minimized last, above, takes the first slot).
+   * A parent's icons put in their slots again, any place set for them
+   * forgotten: `ArrangeIconicWindows`. Answers how many. **Read out**
+   * (`USER.EXE` seg4 `01af`-`0356`): the icons are taken in the order they
+   * lie on the screen, not among the windows -- each by its row, its top in
+   * the client area measured from the bottom and rounded to the nearest
+   * spacing down (seg4 `0238`-`0292`, the spacing USER keeps at its `[0C2h]`,
+   * taken here for `SM_CYICONSPACING`), the lowest row first, and along a
+   * row from the left (`029d`-`0341`, an insertion sort that keeps the
+   * order of icons alike). **Recorded** by `userwin`: of two icons, one
+   * moved up the screen, the one left on the bottom row takes the first
+   * slot.
    */
   arrangeIcons(parent: DesktopWindow | null) {
-    const icons = this.windows.filter(
-      (other) =>
-        other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
-    );
+    const high = parent ? parent.clientHeight : this.screen.height;
+    const spacing = this.environment.metric(SM_CYICONSPACING);
+    const originY = parent ? parent.top + parent.client.top : 0;
+    const originX = parent ? parent.left + parent.client.left : 0;
+    const row = (icon: DesktopWindow) => {
+      const up = high - (icon.top - originY) + (spacing >> 1);
+
+      return high - (up - (up % spacing));
+    };
+    const icons = this.windows
+      .filter(
+        (other) =>
+          other.parent === parent && other.visible && other.state === 'minimized' && !other.titleOf
+      )
+      .map((icon) => ({ icon, row: row(icon), x: icon.left - originX }))
+      .sort((a, b) => b.row - a.row || a.x - b.x)
+      .map(({ icon }) => icon);
 
     icons.forEach((icon, slot) => {
       const { left, top } = this.iconSlot(parent, slot);
@@ -2768,39 +2807,142 @@ export class Desktop {
     this.#takeAway(window, false, activateNext);
   }
 
-  /** The window that shows at a point of the screen, if any. */
-  windowAt(x: number, y: number) {
+  /**
+   * The steps of USER's hit test for a point of the screen (`USER.EXE` seg1
+   * `71b9`, from `WindowFromPoint`'s `713c` and the mouse's scan), in the
+   * order it comes to them. **Read out**: it walks the windows by their
+   * rectangles alone (seg1 `1dc0`), from the desktop window down, each
+   * window's children front to back, no visible region asked. A window
+   * hidden, or not holding the point, is passed over (`71bf`-`71e3`); a
+   * disabled child is passed over, its children with it, and a disabled
+   * window at the top answers `HTERROR` for itself (`71e5`-`71f9`). Under a
+   * system-modal window, a window not it nor a child in it is taken for it
+   * (`71fc`-`7208`, seg1 `287d`, `1bd3`) -- the desktop window first, so
+   * that only it and the windows in it are walked. An icon answers `HTCAPTION`
+   * (`720c`-`7217`). Where the point is in its client area, its children
+   * are walked first (`7219`-`7256`); then a window of another task answers
+   * `HTCLIENT` (`725d`-`726c`), and one of this task is a step that asks it
+   * `WM_NCHITTEST`, passed over where it answers `HTTRANSPARENT`
+   * (`726e`-`7285`). Past every window the desktop window answers, its task
+   * no program's: `hit` given, `window` null. A step with `hit` null asks.
+   * Off the screen there are none.
+   */
+  hitSteps(
+    x: number,
+    y: number,
+    mine: (window: DesktopWindow) => boolean,
+    sysModal: DesktopWindow | null = null
+  ): { window: DesktopWindow | null; hit: number | null }[] {
+    const steps: { window: DesktopWindow | null; hit: number | null }[] = [];
+
     if (x < 0 || y < 0 || x >= this.screen.width || y >= this.screen.height) {
-      return null;
+      return steps;
     }
 
-    const id = this.owners[y * this.screen.width + x];
-    const at = this.windows.findIndex((window) => window.id === id);
-
-    /* A group box answers `WM_NCHITTEST` with `HTTRANSPARENT` (`USER.EXE`
-     * seg25 `1c9b`): the mouse goes to what lies beneath it. */
-    for (let index = at; index >= 0 && index < this.windows.length; index++) {
-      const window = this.windows[index];
-      const clip = (window as any).clipRect;
-
-      if (
-        index !== at &&
-        (!this.#showing(window) ||
-          !clip ||
-          x < clip[0] ||
-          y < clip[1] ||
-          x >= clip[2] ||
-          y >= clip[3])
-      ) {
-        continue;
+    const holds = (window: DesktopWindow) =>
+      x >= window.left &&
+      y >= window.top &&
+      x < window.left + window.width &&
+      y < window.top + window.height;
+    const inClient = (window: DesktopWindow) =>
+      x >= window.left + window.client.left &&
+      y >= window.top + window.client.top &&
+      x < window.left + window.client.right &&
+      y < window.top + window.client.bottom;
+    const childStyled = (window: DesktopWindow) =>
+      (window.style & (WS_CHILD | WS_POPUP)) >>> 0 === WS_CHILD;
+    /* Whether a window is the system-modal one, or a child in it through
+     * windows styled children (seg1 `287d`, `1bd3`). */
+    const underModal = (window: DesktopWindow) => {
+      if (!sysModal || window === sysModal) {
+        return true;
       }
 
-      if (!(window.control?.className === 'BUTTON' && (window.control.style & 0x0f) === 7)) {
+      for (let at = window; childStyled(at) && at.parent; at = at.parent) {
+        if (at.parent === sysModal) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+    /* A window walked: true where the walk ends at it or in it. */
+    const walk = (start: DesktopWindow): boolean => {
+      const window = start;
+
+      if (!window.visible || !holds(window)) {
+        return false;
+      }
+
+      if (window.style & WS_DISABLED) {
+        if (childStyled(window)) {
+          return false;
+        }
+
+        steps.push({ window, hit: HTERROR });
+        return true;
+      }
+
+      return walkIn(underModal(window) ? window : (sysModal as DesktopWindow));
+    };
+    /* The rest of a window's walk, once it is found to hold the point. */
+    const walkIn = (window: DesktopWindow): boolean => {
+      if (window.state === 'minimized') {
+        steps.push({ window, hit: HTCAPTION });
+        return true;
+      }
+
+      const parent = window;
+
+      if (
+        inClient(parent) &&
+        this.windows.some((child) => child.parent === parent && walk(child))
+      ) {
+        return true;
+      }
+
+      if (!mine(window)) {
+        steps.push({ window, hit: HTCLIENT });
+        return true;
+      }
+
+      steps.push({ window, hit: null });
+      return false;
+    };
+
+    /* The walk begins at the desktop window, which is no system-modal
+     * window's child: with one, it is taken for that one, and nothing
+     * outside it is walked (`wfpwalk`: a point over the desktop answers
+     * it). */
+    if (sysModal) {
+      walkIn(sysModal);
+    } else if (!this.windows.some((window) => !window.parent && walk(window))) {
+      steps.push({ window: null, hit: HTCLIENT });
+    }
+
+    return steps;
+  }
+
+  /**
+   * The window USER's hit test comes to at a point of the screen
+   * (`hitSteps`), if any but the desktop window, every window taken for
+   * this task's: an icon's title answers `HTCAPTION` (seg1 `6dbd`) and a
+   * group box `HTTRANSPARENT` (seg25 `1c9b`), which passes it over; any
+   * other window asked is taken to answer for itself.
+   */
+  windowAt(x: number, y: number) {
+    for (const { window, hit } of this.hitSteps(x, y, () => true)) {
+      if (
+        hit !== null ||
+        !window ||
+        window.titleOf ||
+        !(window.control?.className === 'BUTTON' && (window.control.style & 0x0f) === 7)
+      ) {
         return window;
       }
     }
 
-    return at >= 0 ? this.windows[at] : null;
+    return null;
   }
 
   /**
@@ -4544,17 +4686,48 @@ export class Desktop {
    * `show` -- not made active, as a window minimized with
    * `SW_SHOWMINNOACTIVE` or made minimized goes (`showmin`).
    */
-  toBottom(window: DesktopWindow, show: boolean) {
+  toBottom(window: DesktopWindow, show: boolean, after: DesktopWindow | null = null) {
     const family = this.windows.filter(
       (other) => this.#within(other, window) || other === window.iconTitle
     );
 
-    for (const member of family) {
-      this.windows.splice(this.windows.indexOf(member), 1);
+    /* `after`: put after that window instead, as `MinMaximize` puts an icon
+     * after the last of its brothers beneath it owned as it is (`USER.EXE`
+     * seg6 `1e58`). */
+    if (after) {
+      for (const member of family) {
+        this.windows.splice(this.windows.indexOf(member), 1);
+      }
+
+      const at = this.windows.indexOf(after) + 1;
+
+      this.windows.splice(
+        at,
+        0,
+        ...family.filter((member) => member === window.iconTitle),
+        ...family.filter((member) => member !== window.iconTitle)
+      );
+    } else {
+      for (const member of family) {
+        this.windows.splice(this.windows.indexOf(member), 1);
+      }
+
+      this.windows.push(...family.filter((member) => member === window.iconTitle));
+      this.windows.push(...family.filter((member) => member !== window.iconTitle));
     }
 
-    this.windows.push(...family.filter((member) => member === window.iconTitle));
-    this.windows.push(...family.filter((member) => member !== window.iconTitle));
+    /* Of a list being placed, it is drawn as the list is (`endPlacing`). */
+    if (this.#list) {
+      if (show) {
+        window.visible = true;
+
+        if (window.iconTitle) {
+          window.iconTitle.visible = true;
+        }
+      }
+
+      return;
+    }
 
     if (show) {
       window.visible = true;
