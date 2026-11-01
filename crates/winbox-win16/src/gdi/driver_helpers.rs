@@ -21,7 +21,7 @@ use crate::call::{Answer, Args, Implementation, Later, Stop};
 use crate::engine::{Engine, GuestArg, Register};
 use crate::system::System;
 
-use super::calls::enum_objects::enumerated_objects;
+use super::calls::enum_objects::{LogBrushRecord, LogPenRecord, enumerated_objects};
 use super::dc::{DcBitmap, dc_of};
 use super::driver_bitmap::{self, MONO_WHITE, family_of, flags_of, matched_of, physical_of};
 use super::objects::GdiObject;
@@ -347,9 +347,65 @@ fn dm_realize_object(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     Ok(Answer::Dword(answer))
 }
 
-/// `DMExtTextOut` and `DMStrBlt`'s common part: the display driver's
-/// `ExtTextOut` on a memory bitmap, the last three arguments nought for
-/// `StrBlt`.
+/// The `TEXTXFORM`'s weight, italic flag and accelerator (seg13
+/// `0014`-`0027`).
+const FT_WEIGHT: i32 = 0x08;
+const FT_ITALIC: i32 = 0x0a;
+const FT_ACCELERATOR: i32 = 0x0f;
+const TC_EA_DOUBLE: u16 = 0x0200;
+const TC_IA_ABLE: u16 = 0x0400;
+
+/// `DMExtTextOut`'s taking off (seg13 `0011`-`0072`), as in
+/// `driver-helpers.ts`: where the `TEXTXFORM` asks for emboldening or
+/// italics the display can make and the device of `[063Eh]` cannot
+/// (`TC_EA_DOUBLE` and `TC_IA_ABLE` of each `dpText`), the weight made 400
+/// or the italic flag nought and the bit cleared. Answers what to put back
+/// after the call (`00b9`-`00d4`): the accelerator, the weight and the
+/// italic flag. `[063Eh]` before any text, the display's. **Recorded** by
+/// `prttstk`.
+fn taken_off(system: &mut System, form: u32) -> Option<(u16, u16, u8)> {
+    use driver_bitmap::{read8, read16, write8, write16};
+
+    if form >> 16 == 0 {
+        return None;
+    }
+
+    let accelerator = read16(system, form, FT_ACCELERATOR);
+
+    if accelerator & (TC_EA_DOUBLE | TC_IA_ABLE) == 0 {
+        return None;
+    }
+
+    let saved = (
+        accelerator,
+        read16(system, form, FT_WEIGHT),
+        read8(system, form, FT_ITALIC),
+    );
+    let display = super::display_text_caps(system);
+    let text = system.gdi.text_caps.unwrap_or(display);
+    let off = |bit: u16| accelerator & bit != 0 && display & bit != 0 && text & bit == 0;
+
+    if off(TC_EA_DOUBLE) {
+        let now = read16(system, form, FT_ACCELERATOR);
+
+        write16(system, form, FT_WEIGHT, 400);
+        write16(system, form, FT_ACCELERATOR, now & !TC_EA_DOUBLE);
+    }
+
+    if off(TC_IA_ABLE) {
+        let now = read16(system, form, FT_ACCELERATOR);
+
+        write8(system, form, FT_ITALIC, 0);
+        write16(system, form, FT_ACCELERATOR, now & !TC_IA_ABLE);
+    }
+
+    Some(saved)
+}
+
+/// `DMExtTextOut` and `DMStrBlt`'s common part: the emboldening and
+/// italics the device of `[063Eh]` cannot make taken off (`taken_off`),
+/// then the display driver's `ExtTextOut` on a memory bitmap, the last
+/// three arguments nought for `StrBlt`; what was taken off put back.
 fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
     let device = args.dword(system);
     let x = args.word(system);
@@ -365,6 +421,7 @@ fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
     } else {
         (0, 0, 0)
     };
+    let saved = taken_off(system, xform);
     let answer = match brute(system, device, EXT_TEXT_OUT) {
         Some(answer) => answer,
         None if is_hercules(system) => CANNOT,
@@ -377,6 +434,12 @@ fn text_out(system: &mut System, args: &mut Args, extended: bool) -> Answer {
         ),
         None => 0,
     };
+
+    if let Some((accelerator, weight, italic)) = saved {
+        driver_bitmap::write16(system, xform, FT_ACCELERATOR, accelerator);
+        driver_bitmap::write16(system, xform, FT_WEIGHT, weight);
+        driver_bitmap::write8(system, xform, FT_ITALIC, italic);
+    }
 
     Answer::Dword(answer)
 }
@@ -480,6 +543,12 @@ fn dm_pixel(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let draw_mode = args.dword(system);
     let answer = match brute(system, device, PIXEL) {
         Some(answer) => answer,
+        None if is_hercules(system) => {
+            super::driver_hercules::hercules_pixel(system, device, x, y, physical, draw_mode)
+        }
+        None if is_vga256(system) => {
+            driver_vga256::pixel(system, device, x, y, physical, draw_mode)
+        }
         None if vga(system) => pixel(system, device, x, y, physical, draw_mode),
         None => 0,
     };
@@ -495,6 +564,10 @@ fn dm_scan_lr(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let style = args.word(system);
     let answer = match brute(system, device, SCAN_LR) {
         Some(answer) => answer as u16,
+        None if is_hercules(system) => {
+            super::driver_hercules::hercules_scan_lr(system, device, x, y, physical, style)
+        }
+        None if is_vga256(system) => driver_vga256::scan_lr(system, device, x, y, physical, style),
         None if vga(system) => scan_bitmap(system, device, x, y, physical, style),
         None => 0,
     };
@@ -514,16 +587,64 @@ fn dm_enum_obj(engine: &Engine, mut args: Args) -> Later<'_> {
 
             match brute(&mut system, device, ENUM_OBJ) {
                 Some(answer) => return Ok(Answer::Word(answer as u16)),
-                None if !vga(&system) => return Ok(Answer::Word(0)),
+                None if !vga(&system) && !is_hercules(&system) && !is_vga256(&system) => {
+                    return Ok(Answer::Word(0));
+                }
                 None => {}
             }
 
-            let (pens, brushes) = enumerated_objects(&system, style);
+            // `SVGA256.DRV`'s (seg4 `0086`): pens of the five styles in each of
+            // its twenty colours, last seven first, or a solid brush of each,
+            // laid 1Ch up the stack; any other style answers 1. **Recorded**
+            // by `gdidmpx`. The Hercules's is the VGA's, in its two colours.
+            let vga256 = is_vga256(&system);
+            let (pens, brushes) = if vga256 {
+                let colours = driver_vga256::enumerated_colours();
+
+                match style {
+                    1 => (
+                        (0..5)
+                            .flat_map(|pen_style| {
+                                colours.iter().map(move |&color| LogPenRecord {
+                                    style: pen_style,
+                                    color,
+                                })
+                            })
+                            .collect(),
+                        Vec::new(),
+                    ),
+                    2 => (
+                        Vec::new(),
+                        colours
+                            .iter()
+                            .map(|&color| LogBrushRecord {
+                                style: 0,
+                                color,
+                                hatch: 0,
+                            })
+                            .collect(),
+                    ),
+                    _ => (Vec::new(), Vec::new()),
+                }
+            } else {
+                enumerated_objects(&system, style)
+            };
             let objects: Vec<(Vec<u8>, u16)> = pens
                 .into_iter()
-                .map(|pen| (pen.bytes(), PEN_AT))
+                .map(|pen| {
+                    (
+                        pen.bytes(),
+                        if vga256 {
+                            driver_vga256::ENUMERATED_AT
+                        } else {
+                            PEN_AT
+                        },
+                    )
+                })
                 .chain(brushes.into_iter().map(|brush| {
-                    let at = if brush.style == 0 {
+                    let at = if vga256 {
+                        driver_vga256::ENUMERATED_AT
+                    } else if brush.style == 0 {
                         SOLID_AT
                     } else {
                         HATCHED_AT

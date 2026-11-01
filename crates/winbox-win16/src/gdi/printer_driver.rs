@@ -39,7 +39,7 @@
 //! and at nought `FreeLibrary` (`0947`); then the device's `PDEVICE`
 //! freed with what was realized for it (`09dd`-`09ef`).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::future::Future;
 
 use winbox_cpu::{SP, SS};
@@ -112,6 +112,9 @@ pub struct Drivers {
     pub next: u32,
     /// Each driver's device context, by its context's index: its device.
     pub contexts: HashMap<usize, u32>,
+    /// The contexts flagged 40h at 0Bh, of a driver named `MGXWMF.DRV`
+    /// (seg1 `024f`), by their index.
+    pub mgxwmf: HashSet<usize>,
     /// WIN.INI's `NullPort`, once read.
     pub null_port: Option<Vec<u8>>,
     /// Each driver's device context's abort procedure, as `SETABORTPROC`
@@ -145,6 +148,9 @@ pub struct Drivers {
     /// (`engine_glyphs.rs`).
     pub engine: Option<super::engine_glyphs::EngineContext>,
 }
+
+/// The driver's name GDI flags a context of (seg2 `0242`, seg1 `024f`).
+const MGXWMF: &[u8] = b"MGXWMF.DRV";
 
 /// A name as GDI's atom keeps it: compared without case.
 fn key(name: &[u8]) -> Vec<u8> {
@@ -560,6 +566,18 @@ pub async fn create_driver_dc(engine: &Engine, pointers: [u32; 4], ic: bool) -> 
         system.gdi.dcs[index].state.font = font;
         system.printing.drivers.contexts.insert(index, id);
 
+        // The context's flag 40h at 0Bh: set where the driver's name is the
+        // atom of `MGXWMF.DRV`, which GDI adds to its atoms as it starts
+        // (seg2 `024e`-`0259`, through seg1 `210e`, `AddAtom`) -- so without
+        // case -- and compares with the atom of the name given (seg1
+        // `0093`, `0249`-`024f`). `EngineExtTextOut` counts the string of
+        // such a context turned (seg1 `62d0`). **Recorded** by `prttstk`.
+        if key(&name) == MGXWMF {
+            system.printing.drivers.mgxwmf.insert(index);
+        } else {
+            system.printing.drivers.mgxwmf.remove(&index);
+        }
+
         let hdc = system
             .handles
             .allocate(Kind::Gdi, Object::Dc(index))
@@ -601,6 +619,7 @@ pub async fn delete_driver_dc(engine: &Engine, dc: usize) -> Result<(), Stop> {
     let (id, name, gone, disable, lp_pdevice) = {
         let mut system = engine.system();
         system.printing.drivers.abort.remove(&dc);
+        system.printing.drivers.mgxwmf.remove(&dc);
 
         let Some(id) = system.printing.drivers.contexts.remove(&dc) else {
             return Ok(());

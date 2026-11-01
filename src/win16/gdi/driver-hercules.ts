@@ -535,3 +535,208 @@ export function herculesDashes(points: [number, number][], end: [number, number]
     return (mask & 0x80) !== 0;
   });
 }
+
+/* Pixel and ScanLR ----------------------------------------------------- */
+
+/** A monochrome bitmap's fields the Hercules's routines read. */
+interface MonoBitmap {
+  width: number;
+  height: number;
+  widthBytes: number;
+  bits: number;
+  segmentIndex: number;
+  scanSegment: number;
+}
+
+function monoBitmapOf(system: any, far: number): MonoBitmap {
+  return {
+    width: read16(system, far, 2),
+    height: read16(system, far, 4),
+    widthBytes: read16(system, far, 6),
+    bits: read32(system, far, 0x0a),
+    segmentIndex: read16(system, far, 0x16),
+    scanSegment: read16(system, far, 0x18),
+  };
+}
+
+/**
+ * Where a row starts (`HERCULES.DRV` seg5 `0078`-`009f`): past as many
+ * segments as the rows before fill, each `bmSegmentIndex` selectors on,
+ * then `bmWidthBytes` a row -- one plane, whatever the bitmap says.
+ */
+function monoRowOf(bitmap: MonoBitmap, y: number) {
+  let segment = bitmap.bits >>> 16;
+  let row = y;
+
+  if (bitmap.segmentIndex && bitmap.scanSegment) {
+    const segments = Math.floor(row / bitmap.scanSegment);
+
+    segment = (segment + segments * bitmap.segmentIndex) & 0xffff;
+    row -= segments * bitmap.scanSegment;
+  }
+
+  return ((segment << 16) | (((bitmap.bits & 0xffff) + row * bitmap.widthBytes) & 0xffff)) >>> 0;
+}
+
+/** A pixel or a scan off the bitmap: DX 8000h (seg5 `0070`), AX 8000h (seg3 `0087`). */
+const OFF_PIXEL = 0x80000000;
+const OFF_SCAN = 0x8000;
+
+/** What `Pixel` answers for a pixel got: black or white (seg5 `00fc`-`0106`). */
+const GOT_BLACK = 0x20000000;
+const GOT_WHITE = 0x3fffffff;
+
+/** A pen's bit through a raster operation on a bit there: the operation's own truth table. */
+export function ropBit(rop2: number, pen: number, there: number) {
+  return (((rop2 - 1) & 0xf) >> ((pen << 1) | there)) & 1;
+}
+
+/**
+ * `Pixel` (`HERCULES.DRV` seg5 `0010`) on a memory bitmap: a point at or
+ * past the width or the height, taken unsigned, answers 80000000h. With no
+ * `DRAWMODE`, 3FFFFFFFh for a set bit and 20000000h for a clear one. With
+ * one, the bit is set by the raster operation (its table at `011f`: clear,
+ * invert, set or leave) of the pen's bit -- the physical colour's white
+ * flag, 10h of its high byte -- and the bit there; nought is answered.
+ * Every bitmap is one plane of a bit to it.
+ */
+export function herculesPixel(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  physical: number,
+  lpDrawMode: number
+) {
+  const bitmap = monoBitmapOf(system, device);
+
+  if ((x & 0xffff) >= bitmap.width || (y & 0xffff) >= bitmap.height) {
+    return OFF_PIXEL;
+  }
+
+  const row = monoRowOf(bitmap, y & 0xffff);
+  const at = (x & 0xffff) >> 3;
+  const mask = 0x80 >> (x & 7);
+  const byte = read8(system, row, at);
+
+  if (!(lpDrawMode >>> 0)) {
+    return byte & mask ? GOT_WHITE : GOT_BLACK;
+  }
+
+  const pen = (physical >>> 24) & WHITE ? 1 : 0;
+  const bit = ropBit(read16(system, lpDrawMode, 0), pen, byte & mask ? 1 : 0);
+
+  write8(system, row, at, bit ? byte | mask : byte & ~mask);
+  return 0;
+}
+
+/**
+ * A row of a monochrome bitmap scanned a byte at a time, as `HERCULES.DRV`
+ * seg3 `00c9`-`016f` scans it and `SVGA256.DRV` seg4 `0246`-`02d8` the
+ * same: from the point's byte, its bits from the point on masked, then
+ * whole bytes, for the first bit that is not the colour -- that is, with
+ * style bit 0, the first that is -- across the row's `bmWidthBytes`. To
+ * the left (style bit 1) or the right, the answer is that bit's x, counted
+ * from the row's start; to the right, -1 where that reaches the width. -1
+ * where none is found; 8000h for a point at or past the width or the
+ * height, taken unsigned.
+ */
+export function monoScan(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  white: boolean,
+  style: number
+) {
+  const bitmap = monoBitmapOf(system, device);
+
+  if ((y & 0xffff) >= bitmap.height || (x & 0xffff) >= bitmap.width) {
+    return OFF_SCAN;
+  }
+
+  const row = monoRowOf(bitmap, y & 0xffff);
+  const left = (style & 2) !== 0;
+  const flip = (style & 1 ? 0xff : 0) ^ (white ? 0xff : 0);
+  const first = (x & 0xffff) >> 3;
+  const right = (0x80 >> (x & 7)) - 1;
+  const mask = left ? ~right & 0xff : ((right << 1) | 1) & 0xff;
+  const step = left ? -1 : 1;
+  let count = left ? first + 1 : bitmap.widthBytes - first;
+  let at = first;
+  let found = (read8(system, row, at) ^ flip) & mask;
+
+  if (!found) {
+    count--;
+
+    if (!count) {
+      return 0xffff;
+    }
+
+    let more = count;
+
+    for (;;) {
+      at += step;
+      more--;
+
+      if (read8(system, row, at) !== flip) {
+        break;
+      }
+
+      if (!more) {
+        return 0xffff;
+      }
+    }
+
+    count = more + 1;
+    found = read8(system, row, at) ^ flip;
+  }
+
+  if (left) {
+    let place = count * 8;
+    let bits = (flip << 8) | found;
+
+    for (;;) {
+      place--;
+
+      const carry = bits & 1;
+
+      bits >>= 1;
+
+      if (carry) {
+        return place & 0xffff;
+      }
+    }
+  }
+
+  let place = ~(count * 8 - bitmap.widthBytes * 8) & 0xffff;
+
+  for (;;) {
+    place = (place + 1) & 0xffff;
+
+    const carry = found & 0x80;
+
+    found = (found << 1) & 0xff;
+
+    if (carry) {
+      break;
+    }
+  }
+
+  return (place << 16) >> 16 >= (bitmap.width << 16) >> 16 ? 0xffff : place;
+}
+
+/**
+ * `ScanLR` (`HERCULES.DRV` seg3 `001c`) on a memory bitmap: `monoScan`,
+ * the colour white where 10h of its high byte is set (`0109`-`0114`).
+ */
+export function herculesScanLR(
+  system: any,
+  device: number,
+  x: number,
+  y: number,
+  physical: number,
+  style: number
+) {
+  return monoScan(system, device, x, y, ((physical >>> 24) & WHITE) !== 0, style);
+}

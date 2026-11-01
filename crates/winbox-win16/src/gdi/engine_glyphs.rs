@@ -135,6 +135,7 @@ fn engine_font(system: &mut System, info: &FontInfo, turn: u16) -> Option<Logica
             horizontal_res: or_96(info.res_x),
             vertical_res: or_96(info.res_y),
             bold_always: false,
+            lean: None,
         },
     ))
 }
@@ -168,7 +169,21 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
         return kept.answer;
     }
 
-    let font = engine_font(system, &info, angle);
+    let mut font = engine_font(system, &info, angle);
+    let matrix = engine_matrix(&info, angle);
+
+    // GDI's slant leans the outline by its matrix's `m10` over `m11`, across
+    // pixels for each down (`6f5b`-`6f7a`, `6fa3`-`6fce`): 13/40 at an em of
+    // 40, 18/53 at 53, where the display's own synthesis leans by a third
+    // rounded down, 17/53 (`lean_of`). **Recorded** by `prttslt`.
+    if info.flags & 4 != 0
+        && angle == 0
+        && matrix[3] != 0
+        && let Some(outline) = font.as_mut().and_then(|font| font.outline.as_mut())
+    {
+        outline.lean = Some(f64::from(matrix[2]) / f64::from(matrix[3]));
+    }
+
     let (key, answer) = if font.is_some() {
         (key, 0)
     } else {
@@ -180,7 +195,7 @@ pub(crate) fn set_context(system: &mut System, far: u32, angle: u16) -> u32 {
         answer,
         font,
         turn: f64::from(angle),
-        matrix: engine_matrix(&info, angle),
+        matrix,
     });
     answer
 }
@@ -524,6 +539,13 @@ fn engine_get_char_width_call(system: &mut System, args: &mut Args) -> Result<An
     Ok(Answer::Word(1))
 }
 
+/// What `EngineExtTextOut`'s frames and `6223`'s take of the stack below
+/// the return address of the call: its own `enter 6` and two words
+/// (`669d`-`66a4`), the 20 words of arguments it pushes and the near call
+/// (`66f0`-`6728`), `6223`'s `enter 90h` and three words (`6222`-`6229`).
+/// `CEh`.
+const ENGINE_TEXT_FRAMES: u16 = 2 + 6 + 4 + 20 * 2 + 2 + 2 + 0x90 + 6;
+
 /// `EngineExtTextOut` (`GDI.EXE` seg1 `669a`), as in `engine-glyphs.ts`:
 /// a negative count's extent; nought for the rest.
 /// `EngineExtTextOut`: a negative count measured here, any other drawn
@@ -533,6 +555,9 @@ fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
         let given = {
             let system = engine.system();
             let mut peek = args;
+            // The stack pointer at the return address, less the frames GDI's
+            // drawing makes before it measures the stack (seg1 `62a5`).
+            let stack = system.cpu.regs[winbox_cpu::SP].wrapping_sub(ENGINE_TEXT_FRAMES);
 
             super::engine_text::EngineTextArgs {
                 hdc: peek.word(&system),
@@ -549,6 +574,7 @@ fn engine_ext_text_out_any(engine: &Engine, args: Args) -> Later<'_> {
                 opaque: peek.dword(&system),
                 options: peek.word(&system),
                 dc: None,
+                stack: Some(stack),
             }
         };
 

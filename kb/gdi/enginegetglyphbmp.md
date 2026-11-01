@@ -6,7 +6,7 @@ ordinal: 305
 summary: A character's glyph from GDI's TrueType engine for a printer's driver, as the engine's context makes it — a 24-byte record of its box, corner and advance, and its bitmap.
 versions:
   '3.1': partial
-probes: [prtteng, prtt, prttrot]
+probes: [prtteng, prtt, prttrot, prttslt]
 records: [EngineGetGlyphBmp, line, size]
 source: src/win16/gdi/engine-glyphs.ts
 topics: [printer-drivers]
@@ -19,6 +19,8 @@ topics: [printer-drivers]
 - [[measured]] Format nought fills the record and answers nought, the buffer untouched. Format 1 with no buffer answers the size and writes nothing. With a buffer of 8 bytes it still answers the whole size, and the 8 bytes are the bitmap's first.
 - [[measured]] The context's angle turns the glyph: at 90 degrees Arial's `A` is 29 by 27, its corner at -29 across and 27 up, its advance 27 up. At 45 degrees the advance is 19 each way.
 - [[measured]] Wingdings' characters are found through its offset, F000h: its `a` is the glyph at F061h. GDI's slant slants the glyph.
+- [[measured]] [[probe:prttslt]]: slanted, a glyph leans by GDI's matrix -- `(57h * em) >> 8` across for each em down -- not by the display's synthesis, `floor(em / 3)`: from an em of 53, where the two part (18 and 17), Wingdings' `A`, `a` and `l` are a column wider than the display's slant would make them, and agree to the bit drawn with the matrix's lean.
+- [[measured]] Symbol slanted has its corner's x with a fraction: `S` and `W` at `7/256` of the em -- 11800h at 40, 1C000h at 64 -- and `a` at 3A400h at 40.
 - [[measured]] [[probe:prtt]]: the PostScript driver downloads each glyph of Wingdings it prints as a bitmap from this, writing the record's numbers beside it, `/G61 [109.0 0.0 8.0 0.0 100.0 72.0]`. Every one of the four glyphs' lines agrees.
 
 ## Inside Windows
@@ -35,12 +37,13 @@ topics: [printer-drivers]
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`. The glyph is drawn as `GetGlyphOutline` draws one, by the face the engine's context holds, turned by its angle. Turned, the box is the ink's and the corner is measured from where the baseline's origin falls as the character would be drawn. The context keeps GDI's matrix (`engineMatrix`); where it is not a plain upright scale the advance is the scaler's phantoms', made as read out above (`engineAdvance`), both engines alike, and otherwise the upright face's.
+`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`. The glyph is drawn as `GetGlyphOutline` draws one, by the face the engine's context holds, turned by its angle. Turned, the box is the ink's and the corner is measured from where the baseline's origin falls as the character would be drawn. The context keeps GDI's matrix (`engineMatrix`); where it is not a plain upright scale the advance is the scaler's phantoms', made as read out above (`engineAdvance`), both engines alike, and otherwise the upright face's. GDI's slant leans the outline by the matrix's `m10` over `m11` (`engineLean`, the `Outline`'s `lean`), not the display's `floor(em / 3)`.
 
 ## Not yet done
 
 - Format 2, which answers -1 here as `GetGlyphOutline`'s does.
-- Slanted Wingdings' E9h at an em of 40 ([[probe:prtteng]], [[probe:prttrot]], known gaps): Windows' box is a column wider on the left, 33 to WinBox's 32, its corner at 4 across. Its advance agrees. GDI's shear is 13/40 there, the same lean the display's synthesis gives (`Surface.leanOf`), and drawing the outline through the engine's matrix instead changes no pixel, so the column is the scan converter's box or a rescue under the rotated `prep`'s scan control, not read out.
-- The glyph's bitmap and box under GDI's slant are drawn with the display's synthesis, not through the engine's matrix: the two shears part where `(57h * em) >> 8` and `em / 3` round apart, an em of 53 the first.
+- Slanted Wingdings' E9h ([[probe:prtteng]], [[probe:prttrot]], [[probe:prttslt]], known gaps): at an em of 40 Windows' box is a column wider on the left, 33 to WinBox's 32, its corner at 4 across -- the one pixel in that column the bottom of the arrowhead's left tip, a dropout rescued where WinBox clamps the rescue to its box; at 48 to 72 a row more at the top, or more. Its advance agrees. The scan converter's rule there, under the rotated `prep`'s scan control, is not read out.
+- Symbol slanted ([[probe:prttslt]], known gap): the corner's fraction across; its bitmaps agree.
+- A pixel of a few other slanted glyphs at 48 to 60 ([[probe:prttslt]]).
 - The scaler's matrix shifted down where an entry would overflow (seg36 `08bb`-`0912`, the shift at 9Ch) and the advance shifted back up (`0dda`): no em a probe asks reaches it.
 - A font GDI draws as outlines itself, which no font WinBox realizes is.

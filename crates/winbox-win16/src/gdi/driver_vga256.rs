@@ -17,6 +17,7 @@ use super::driver_bitmap::{
     offset_by, polyline_pixels, read_draw_mode, read_point, read_rect, read8, read16, read32,
     within, write8, write16,
 };
+use super::driver_hercules::{mono_scan, rop_bit};
 use super::system_exports::device_color_match_of;
 use crate::system::System;
 
@@ -860,8 +861,15 @@ fn mono_backward(
 const OS_SCANLINES: u16 = 4;
 const OS_POLYLINE: u16 = 18;
 
+/// `Output`'s styles that begin and end a run of scanlines (seg1
+/// `12f2`-`12fa`).
+const OS_BEGIN_SCANS: u16 = 0x50;
+const OS_END_SCANS: u16 = 0x51;
+
 /// `Output` (`SVGA256.DRV` seg1 `12e2`): a polyline (seg6 `010c`) and
-/// scanlines (seg8 `00c9`); any other style but 50h and 51h answers nought.
+/// scanlines (seg8 `00c9`); 50h answers 1 and 51h nought, drawing nothing
+/// (seg8 `01b2`, `0222`); any other style nought. Not followed, as in
+/// `driver-vga256.ts`: what the driver keeps between 50h and 51h.
 #[allow(clippy::too_many_arguments)]
 pub fn output(
     system: &mut System,
@@ -877,6 +885,14 @@ pub fn output(
     let dest = read_bitmap(system, dest_far);
     let mode = read_draw_mode(system, draw_mode);
     let bits = if dest.colour() { 8 } else { 1 };
+
+    if style == OS_BEGIN_SCANS {
+        return 1;
+    }
+
+    if style == OS_END_SCANS {
+        return 0;
+    }
 
     if style == OS_POLYLINE {
         let path: Vec<_> = (0..i32::from(count as i16))
@@ -919,7 +935,13 @@ pub fn output(
 
     if style == OS_SCANLINES {
         let (lines, y) = read_point(system, points, 0);
-        let ink = dest.of_physical(read32(system, pen, 0));
+        // The pen read only where there is no brush: **recorded** by
+        // `gdidmpx`, a brush and no pen.
+        let ink = if brush != 0 {
+            0
+        } else {
+            dest.of_physical(read32(system, pen, 0))
+        };
         let see_through =
             brush != 0 && mode.bk_mode == 1 && read16(system, brush, BRUSH_STYLE) == HATCHED;
 
@@ -1254,4 +1276,154 @@ pub fn device_bitmap_bits(
 /// bitmap nothing, and -1 (`0eae`-`0eb4`).
 pub fn dib_to_device() -> u32 {
     0xffff
+}
+
+/* Pixel, ScanLR and EnumObj --------------------------------------------- */
+
+/// A pixel or a scan off the bitmap (seg7 `00d1`, seg4 `01b8`).
+const OFF_PIXEL: u32 = 0x8000_0000;
+const OFF_SCAN: u16 = 0x8000;
+
+/// What `Pixel` answers for a pixel got: `FF00h` in DX (seg7 `01da`, `01e7`).
+const GOT: u32 = 0xff00_0000;
+
+/// `Pixel` (`SVGA256.DRV` seg7 `0048`) on a memory bitmap, as in
+/// `driver-vga256.ts`.
+pub fn pixel(
+    system: &mut System,
+    device: u32,
+    x: u16,
+    y: u16,
+    physical: u32,
+    draw_mode: u32,
+) -> u32 {
+    let bitmap = read_bitmap(system, device);
+
+    if x >= bitmap.width || y >= bitmap.height {
+        return OFF_PIXEL;
+    }
+
+    let bytes = bitmap.format == BYTE_A_PIXEL;
+    let byte_wise = bytes || bitmap.width_bytes & 1 != 0;
+    let row = bitmap.row(i32::from(y));
+    let at = if bytes {
+        i32::from(x)
+    } else {
+        i32::from(x >> 3)
+    };
+    let there = read8(system, row, at);
+
+    if draw_mode == 0 {
+        if byte_wise {
+            return GOT | u32::from(there);
+        }
+
+        return GOT
+            | if there & (0x80 >> (x & 7)) != 0 {
+                0xff
+            } else {
+                0
+            };
+    }
+
+    let rop2 = read16(system, draw_mode, 0);
+
+    if byte_wise {
+        let pen = if bytes { physical as u8 } else { 1 };
+        let value = (0..8).fold(0u8, |value, bit| {
+            value | rop_bit(rop2, (pen >> bit) & 1, (there >> bit) & 1) << bit
+        });
+
+        write8(system, row, at, value);
+        return 0;
+    }
+
+    let mask = 0x80u8 >> (x & 7);
+    let bit = rop_bit(rop2, physical as u8 & 1, u8::from(there & mask != 0));
+
+    write8(
+        system,
+        row,
+        at,
+        if bit != 0 {
+            there | mask
+        } else {
+            there & !mask
+        },
+    );
+    0
+}
+
+/// `ScanLR` (`SVGA256.DRV` seg4 `0154`) on a memory bitmap, as in
+/// `driver-vga256.ts`.
+pub fn scan_lr(system: &System, device: u32, x: u16, y: u16, physical: u32, style: u16) -> u16 {
+    let bitmap = read_bitmap(system, device);
+
+    if y >= bitmap.height || x >= bitmap.width {
+        return OFF_SCAN;
+    }
+
+    if bitmap.format != BYTE_A_PIXEL {
+        return mono_scan(system, device, x, y, (physical >> 8) & 1 != 0, style);
+    }
+
+    let row = bitmap.row(i32::from(y));
+    let colour = physical as u8;
+    let left = style & 2 != 0;
+    let equal = style & 1 != 0;
+    let count = if left {
+        x.wrapping_add(1)
+    } else {
+        bitmap.width_bytes.wrapping_sub(x).wrapping_sub(1)
+    };
+    let mut at = i32::from(x);
+
+    for _ in 0..count {
+        if (read8(system, row, at) == colour) == equal {
+            return at as u16;
+        }
+
+        at += if left { -1 } else { 1 };
+    }
+
+    0xffff
+}
+
+/// Where `SVGA256.DRV`'s `EnumObj` lays each object, up the stack from the
+/// procedure's entry (seg4 `0086`-`00c3`).
+pub const ENUMERATED_AT: u16 = 0x1c;
+
+/// The driver's twenty colours, red, green and blue a colour (its data
+/// segment at 22h).
+const STATIC_COLOURS: [[u8; 3]; 20] = [
+    [0x00, 0x00, 0x00],
+    [0x80, 0x00, 0x00],
+    [0x00, 0x80, 0x00],
+    [0x80, 0x80, 0x00],
+    [0x00, 0x00, 0x80],
+    [0x80, 0x00, 0x80],
+    [0x00, 0x80, 0x80],
+    [0xc0, 0xc0, 0xc0],
+    [0xc0, 0xdc, 0xc0],
+    [0xa6, 0xca, 0xf0],
+    [0xff, 0xfb, 0xf0],
+    [0xa0, 0xa0, 0xa4],
+    [0x80, 0x80, 0x80],
+    [0xff, 0x00, 0x00],
+    [0x00, 0xff, 0x00],
+    [0xff, 0xff, 0x00],
+    [0x00, 0x00, 0xff],
+    [0xff, 0x00, 0xff],
+    [0x00, 0xff, 0xff],
+    [0xff, 0xff, 0xff],
+];
+
+/// The colours `EnumObj` hands out, in its order (seg4 `00fa`-`0149`): the
+/// last seven of the twenty, then the first thirteen.
+pub fn enumerated_colours() -> Vec<u32> {
+    STATIC_COLOURS[13..]
+        .iter()
+        .chain(&STATIC_COLOURS[..13])
+        .map(|[red, green, blue]| u32::from(*red) | u32::from(*green) << 8 | u32::from(*blue) << 16)
+        .collect()
 }

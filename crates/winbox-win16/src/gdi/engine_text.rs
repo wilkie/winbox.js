@@ -807,6 +807,35 @@ pub struct EngineTextArgs {
     pub options: u16,
     /// The context itself, where GDI draws for it without the driver.
     pub dc: Option<usize>,
+    /// The stack pointer as GDI's drawing reaches its stack's measure (seg1
+    /// `62a5`), where it is known: `EngineExtTextOut`'s.
+    pub stack: Option<u16>,
+}
+
+/// The room GDI keeps on the stack below the string's (seg1 `62ac`).
+const STACK_KEPT: u16 = 0x400;
+
+/// The count cut to what the stack holds (seg1 `62a5`-`62c0`), as
+/// `stackCut`: the stack pointer less the task's stack limit at 0Ah of the
+/// stack's segment, as unsigned words; under 400h nothing is drawn (`None`);
+/// else that less 400h, shifted right two with its sign, the most
+/// characters, compared unsigned.
+pub fn stack_cut(system: &System, stack: u16, count: i16) -> Option<i16> {
+    let base = system.cpu.segments[winbox_cpu::SS].base;
+    let limit = system.cpu.bus.read16(base + 0x0a);
+    let room = stack.wrapping_sub(limit);
+
+    if room < STACK_KEPT {
+        return None;
+    }
+
+    let most = ((room - STACK_KEPT) as i16 >> 2) as u16;
+
+    Some(if most < count as u16 {
+        most as i16
+    } else {
+        count
+    })
 }
 
 /// The string drawn (seg1 `669a`, `6223`), as `drawEngineText`: the
@@ -865,6 +894,16 @@ pub async fn draw_engine_text(engine: &Engine, args: EngineTextArgs) -> Result<A
         return Ok(Answer::Dword(answer));
     }
 
+    let mut args = args;
+
+    if let Some(stack) = args.stack {
+        let Some(cut) = stack_cut(&engine.system(), stack, args.count) else {
+            return Ok(Answer::Dword(answer));
+        };
+
+        args.count = cut;
+    }
+
     let cache_font = ready_glyphs(engine, font, args.string, args.count).await?;
     let handle = read16(&engine.system(), font, FI_BLOCK);
 
@@ -886,6 +925,7 @@ pub async fn draw_engine_text(engine: &Engine, args: EngineTextArgs) -> Result<A
         cache_font,
         raster,
         turned && !outline,
+        turned || engine.system().printing.drivers.mgxwmf.contains(&dc),
         bold,
     )
     .await;
@@ -910,6 +950,7 @@ async fn draw_string(
     cache_font: u32,
     raster: u16,
     turned: bool,
+    advances_alone: bool,
     bold: i32,
 ) -> Result<(), Stop> {
     let file = cache_font & 0xffff_0000;
@@ -949,7 +990,7 @@ async fn draw_string(
                 file,
                 args.string,
                 count as u16,
-                turned,
+                advances_alone,
                 args.widths,
                 &mut justification,
                 bold,

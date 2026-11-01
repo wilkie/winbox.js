@@ -40,5 +40,5 @@ On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[pr
 
 ## Not yet done
 
-- A compressed DIB, which the driver reads through a routine of its own.
+- A compressed DIB, `BI_RLE4` or `BI_RLE8`, which WinBox answers nought: [[read out]] `VGA.DRV` hands it to its own export 501 (seg9 `12ec`, from `0d35`-`0d90`) with a rectangle from nought to the bitmap's width and height -- the DIB's for a get -- the start, the count, the DIB and its header; `SVGA256.DRV` to `15ac` and `1a38`. Those routines are not read out, and no probe hands one.
 - [[probe:gdidmdrw]]'s records on the 256-colour display of a DIB got of 1, 4 or 24 bits, and of one set of 24: it hands a null translation table, which Windows would fault on and DOSBox reads as its real-mode vectors (known gaps). [[probe:gdidmdib]] records the same paths with a table of its own.

@@ -94,6 +94,9 @@ pub struct Gdi {
     /// asked the physical font of, by the object's index
     /// (`physical_font.rs`).
     pub physical_fonts: Vec<(usize, u16)>,
+    /// GDI's `[063Eh]`, the `GDIINFO` of the context it last drew or
+    /// measured text for, kept as its `dpText` (`note_text_device`).
+    pub text_caps: Option<u16>,
 }
 
 /// What the display driver says of itself, beside the screen's size and
@@ -325,6 +328,24 @@ const COLORRES: i16 = 108;
 /// numbers are the display mode's, recorded from real Windows where that
 /// was possible; a printer's device context answers its own driver's
 /// (`printer.rs`).
+/// GDI's `[063Eh]` set to the context's device, as `noteTextDevice`:
+/// `ExtTextOut` -- and `TextOut`, which is it -- as it starts, but for a
+/// metafile's (`GDI.EXE` seg1 `31d5`-`31d8`); `GetTextExtent` as it
+/// measures with a font that is not one GDI's TrueType engine realized
+/// itself, the string not empty (`3cb4`, into `3ba3`, `3bd8`). Read by
+/// `DMExtTextOut` (seg13 `0037`). **Recorded** by `prttstk`.
+pub fn note_text_device(system: &mut System, hdc: u16) {
+    let caps = get_device_caps(system, hdc, TEXTCAPS);
+
+    system.gdi.text_caps = Some(caps);
+}
+
+/// The display driver's own `dpText`, the `GDIINFO` of the screen's
+/// context (seg13 `002e`-`0034`).
+pub fn display_text_caps(system: &System) -> u16 {
+    system.display.caps.text_caps as u16
+}
+
 pub fn get_device_caps(system: &System, hdc: u16, capability: i16) -> u16 {
     // A printer driver's from the drive: its own `GDIINFO`.
     if let Some(dc) = printer_driver::driver_dc_of(system, hdc) {

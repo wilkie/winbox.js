@@ -6,7 +6,7 @@ ordinal: 53
 summary: Makes a device context for a device by its driver's name: the screen for DISPLAY, WinBox's own printer for WBPRINT, and any other printer driver loaded from the drive and enabled as Windows' GDI enables it.
 versions:
   '3.1': partial
-probes: [pric, prdlg, printing]
+probes: [pric, prdlg, printing, prttstk]
 source: src/win16/gdi/CreateDC.ts
 topics: [printer-drivers]
 ---
@@ -19,7 +19,8 @@ topics: [printer-drivers]
 ## Nuances
 
 - [[read out]] A DC on WIN.INI's `NullPort` is refused; an IC is not ([[topic:printer-drivers]]).
-- [[read out]] The driver's name has `.drv` added before `LoadLibrary`: a name given with `.DRV` already is not found.
+- [[read out]] The driver's name has `.drv` added before `LoadLibrary` (seg1 `02a7`-`02d2`). [[measured]] [[probe:prttstk]]: a name given with `.DRV` already, `MGXWMF.DRV`, is found where its module, `MGXWMF`, is loaded; `KERNEL` answers `MGXWMF.DRV.drv` with it.
+- [[read out]] A context of a driver named `MGXWMF.DRV`, without case, is flagged 40h at 0Bh: GDI adds the name to its own atoms as it starts and compares the atom of the driver's name with it (seg1 `0242`-`024f`, seg2 `024e`-`0259`). [[fn:GDI.EngineExtTextOut]] gives such a context its widths as for a turned font ([[probe:prttstk]]).
 - [[read out]] A second context on a device the driver has enabled shares its `PDEVICE`, as `dpDCManage` lets; the PostScript driver's is 1, a device for every context.
 
 ## Inside Windows

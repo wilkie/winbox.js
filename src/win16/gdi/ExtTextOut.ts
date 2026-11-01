@@ -51,6 +51,9 @@ export function ExtTextOut(hdc, nXStart, nYStart, fuOptions, lpRect, lpszString,
     return FALSE;
   }
 
+  /* GDI's `[063Eh]`, the device text is drawn for (`textCapsOf`). */
+  this._textSurface = surface;
+
   /* A printer driver's from the drive draws it (`printer-output.ts`). */
   if (surface.driverDevice) {
     return import('./printer-output.js').then(({ driverExtTextOut, farOf }) =>

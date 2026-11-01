@@ -1685,6 +1685,7 @@ impl FontManager {
                     horizontal_res: or(request.log_pixels_x, 96),
                     vertical_res: or(request.log_pixels_y, 96),
                     bold_always: request.bold_always,
+                    lean: None,
                 },
             ),
         })

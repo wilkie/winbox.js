@@ -188,6 +188,4 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 - On the 256-colour display, a DIB got through the translation table and one of 24 bits set: [[probe:gdidmdrw]] hands a null table, which DOSBox reads as its real-mode vectors (five records, known gaps); [[probe:gdidmdib]] records the same paths with a table of its own and agrees.
 - The Hercules's drawing of a font of 2.0, which WinBox answers as it answers one of 3.0: no probe draws one.
 - A compressed DIB through `DMDibBits`, which the driver reads by a routine of its own.
-- `DMExtTextOut` taking off the display's emboldening and italics for the device of `[063Eh]` -- the `GDIINFO` of the context GDI is drawing text for, which GDI's `ExtTextOut` sets from the context's word 32h as it starts (seg1 `31d5`-`31d8`) ([[fn:GDI.DMExtTextOut]]) -- which WinBox does not keep.
 - The `DI` device `Brute` knows, a table at GDI's `[0159h]` that no code of Windows 3.1's GDI was found to set.
-- `ScanLR`, `Pixel` and `EnumObj` on the Hercules and the 256-colour display, which no probe calls there.

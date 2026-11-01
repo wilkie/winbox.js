@@ -6,7 +6,7 @@ ordinal: 208
 summary: A printer's driver's lines and shapes on a memory bitmap, handed to the display driver's Output -- which draws polylines and scanlines and leaves the rest to GDI.
 versions:
   '3.1': partial
-probes: [gdidmdrw]
+probes: [gdidmdrw, gdidmpx]
 records: [output]
 source: src/win16/gdi/driver-bitmap.ts
 topics: [gdi-internals, printer-drivers]
@@ -22,7 +22,7 @@ topics: [gdi-internals, printer-drivers]
 - [[measured]] The Super VGA's and the EGA's drivers give every record the VGA's.
 
 - [[measured]] On the Hercules a dashed line on a transparent background falls in its style otherwise than the VGA's: the place along the style goes by the moves between pixels, a diagonal more than a straight step.
-- [[measured]] On the 256-colour display the polyline and scanlines are the VGA's walk on a byte a pixel, the colour the index; scanlines answer 1, and any other style nought.
+- [[measured]] On the 256-colour display the polyline and scanlines are the VGA's walk on a byte a pixel, the colour the index; scanlines answer 1, and any other style nought. [[probe:gdidmpx]]: style 50h answers 1 and 51h nought, drawing nothing; scanlines between them, with a brush and no pen, are drawn in the brush.
 
 ## Inside Windows
 
@@ -34,7 +34,7 @@ topics: [gdi-internals, printer-drivers]
 
 [[read out]] `HERCULES.DRV` seg4: the style's mask from a table at `001a` -- `FF`, `E7`, `AA`, `E4`, `EA`, taken from bit 7 -- and a count from 26h (`016a`); each pixel (`0b41`) first turns the mask left a bit and adds 26h back where the count has fallen below nought, then is drawn where the mask's top bit is set; after it the move to the next pixel is taken off the count, 0Bh across, 10h down and 13h on the diagonal (`0257`-`026b`; the run routines from `0975` take a run's pixels off one move at a time and its end by what makes the diagonal up). The count and mask go on between segments. An opaque background draws the segment again from the same place with the gaps in the background colour (`03eb`-`041a`). The 40h and 48h at `0179` are the tables of run routines, not steps.
 
-[[read out]] `SVGA256.DRV` seg1 `12e2`: 12h to the polyline (seg6 `010c`), 4 to the scanlines (seg8 `00c9`), 50h and 51h to routines of their own, any other nought. The polyline steps its style 40h or 55h a pixel as the VGA's (seg6 `035c`-`039b`).
+[[read out]] `SVGA256.DRV` seg1 `12e2`: 12h to the polyline (seg6 `010c`), 4 to the scanlines (seg8 `00c9`), 50h and 51h to routines of their own, any other nought. 50h (seg8 `01b2`) sets the driver up for the device given (`01d5`) and sets its flag at 86h, answering 1; 51h (`0222`) clears the flag, answering nought. The polyline steps its style 40h or 55h a pixel as the VGA's (seg6 `035c`-`039b`).
 
 ## Callers
 
@@ -50,4 +50,4 @@ topics: [gdi-internals, printer-drivers]
 
 ## Not yet done
 
-- The 256-colour display's styles 50h and 51h, routines of its own (seg1 `12f2`-`1306`) no probe calls.
+- What the 256-colour driver keeps between styles 50h and 51h: scanlines between them do not set up their own device (seg8 `00e1`), but use what 50h set up for its (seg8 `01d5`); WinBox sets up each. [[probe:gdidmpx]] draws its scanlines between on the same device.

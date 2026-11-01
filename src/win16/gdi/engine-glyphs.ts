@@ -158,7 +158,17 @@ export function setContext(system: any, far: number, angle: number): number {
     return FAILED;
   }
 
-  system._engineContext = { key, answer: 0, font, turn: angle, matrix: engineMatrix(info, angle) };
+  const matrix = engineMatrix(info, angle);
+
+  /* GDI's slant leans the outline by its matrix's `m10` over `m11`, across
+   * pixels for each down (`6f5b`-`6f7a`, `6fa3`-`6fce`): 13/40 at an em of
+   * 40, 18/53 at 53, where the display's own synthesis leans by a third
+   * rounded down, 17/53 (`Surface.leanOf`). **Recorded** by `prttslt`. */
+  if (info.flags & 4 && !angle && matrix[3]) {
+    (font as any).engineLean = matrix[2] / matrix[3];
+  }
+
+  system._engineContext = { key, answer: 0, font, turn: angle, matrix };
   return 0;
 }
 
@@ -569,6 +579,14 @@ export function EngineGetCharWidth(
 }
 
 /**
+ * What `EngineExtTextOut`'s frames and `6223`'s take of the stack below the
+ * return address of the call: its own `enter 6` and two words (`669d`-`66a4`),
+ * the 20 words of arguments it pushes and the near call (`66f0`-`6728`),
+ * `6223`'s `enter 90h` and three words (`6222`-`6229`). CEh.
+ */
+export const ENGINE_TEXT_FRAMES = 2 + 6 + 4 + 20 * 2 + 2 + 2 + 0x90 + 6;
+
+/**
  * `EngineExtTextOut` (`GDI.EXE` seg1 `669a`): GDI drawing a string of a
  * TrueType font for a printer's driver onto the driver's device, or, for a
  * negative count, measuring it (`69fe`, into `6a65`): each character's
@@ -601,6 +619,9 @@ export function EngineExtTextOut(
 ) {
   const count = ((nCount & 0xffff) << 16) >> 16;
   const far = lpFontInfo >>> 0;
+  /* The stack pointer at the return address, less the frames GDI's drawing
+   * makes before it measures the stack (seg1 `62a5`). */
+  const stack = (this.machine.cpu.core.sp - ENGINE_TEXT_FRAMES) & 0xffff;
 
   if (!(far >>> 16)) {
     return 0;
@@ -622,6 +643,7 @@ export function EngineExtTextOut(
         widths: lpCharWidths >>> 0,
         opaque: lpOpaqueRect >>> 0,
         options: wOptions,
+        stack,
       })
     );
   }

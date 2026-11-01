@@ -1,0 +1,2619 @@
+{
+  "probe": "gdidmpx",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "display",
+      "args": "planes bits",
+      "result": "1 1"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 000000ff",
+      "result": "00000000 010000ff"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 00ffffff",
+      "result": "00ffffff 37ffffff"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 00000000",
+      "result": "00000000 20000000"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 0000ff00",
+      "result": "00000000 0200ff00"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 0000ffff",
+      "result": "00ffffff 1300ffff"
+    },
+    {
+      "function": "colorinfo",
+      "args": "colour 00ff0000",
+      "result": "00000000 04ff0000"
+    },
+    {
+      "function": "colorinfo",
+      "args": "mono 00ffffff",
+      "result": "00ffffff 37ffffff"
+    },
+    {
+      "function": "colorinfo",
+      "args": "mono 00000000",
+      "result": "00000000 20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 1,0 010000ff rop 1",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 1,1 37ffffff rop 1",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 2,0 010000ff rop 2",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 2,1 37ffffff rop 2",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 3,0 010000ff rop 3",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 3,1 37ffffff rop 3",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 4,0 010000ff rop 4",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 4,1 37ffffff rop 4",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 5,0 010000ff rop 5",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 5,1 37ffffff rop 5",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 6,0 010000ff rop 6",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 6,1 37ffffff rop 6",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 7,0 010000ff rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 7,1 37ffffff rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 8,0 010000ff rop 8",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 8,1 37ffffff rop 8",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 9,0 010000ff rop 9",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 9,1 37ffffff rop 9",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 10,0 010000ff rop 10",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 10,1 37ffffff rop 10",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 11,0 010000ff rop 11",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 11,1 37ffffff rop 11",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 12,0 010000ff rop 12",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 12,1 37ffffff rop 12",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 13,0 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 13,1 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 14,0 010000ff rop 14",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 14,1 37ffffff rop 14",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 15,0 010000ff rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 15,1 37ffffff rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 0,0 010000ff rop 16",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 0,1 37ffffff rop 16",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 2,2 1300ffff rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 2,2 04ff0000 rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 3,2 0200ff00 rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 3,2 010000ff rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 16,0 010000ff rop 13",
+      "result": "80000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 0,8 010000ff rop 13",
+      "result": "80000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set -1,0 010000ff rop 13",
+      "result": "80000000"
+    },
+    {
+      "function": "bits",
+      "args": "colour",
+      "result": "aaaa8787200000000000000000000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 1,0",
+      "result": "20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 13,0",
+      "result": "20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 2,2",
+      "result": "3fffffff"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 3,2",
+      "result": "20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 15,7",
+      "result": "20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour get 16,0",
+      "result": "80000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 1,1 37ffffff rop 1",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 14,1 20000000 rop 1",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 2,2 37ffffff rop 2",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 13,2 20000000 rop 2",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 3,3 37ffffff rop 3",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 12,3 20000000 rop 3",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 4,4 37ffffff rop 4",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 11,4 20000000 rop 4",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 5,5 37ffffff rop 5",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 10,5 20000000 rop 5",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 6,6 37ffffff rop 6",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 9,6 20000000 rop 6",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 7,7 37ffffff rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 8,7 20000000 rop 7",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 8,0 37ffffff rop 8",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 15,0 20000000 rop 8",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 9,1 37ffffff rop 9",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 14,1 20000000 rop 9",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 10,2 37ffffff rop 10",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 13,2 20000000 rop 10",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 11,3 37ffffff rop 11",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 12,3 20000000 rop 11",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 12,4 37ffffff rop 12",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 11,4 20000000 rop 12",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 13,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 10,5 20000000 rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 14,6 37ffffff rop 14",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 9,6 20000000 rop 14",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 15,7 37ffffff rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 8,7 20000000 rop 15",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 16,0 37ffffff rop 16",
+      "result": "80000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 15,0 20000000 rop 16",
+      "result": "00000000"
+    },
+    {
+      "function": "bits",
+      "args": "mono",
+      "result": "5a815a005a005a005a105a045a025a01"
+    },
+    {
+      "function": "pixel",
+      "args": "mono get 1,1",
+      "result": "3fffffff"
+    },
+    {
+      "function": "pixel",
+      "args": "mono get 6,1",
+      "result": "3fffffff"
+    },
+    {
+      "function": "pixel",
+      "args": "mono get 14,1",
+      "result": "20000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono get 16,1",
+      "result": "80000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 4,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 4,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 5,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 5,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 6,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 6,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 7,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 7,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 8,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 8,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 9,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 9,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 10,4 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 10,4 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 4,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 4,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 5,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 5,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 6,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 6,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 7,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 7,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 8,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 8,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 9,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 9,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 10,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 10,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 11,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 11,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 12,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 12,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 13,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 13,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 14,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 14,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "colour set 15,5 010000ff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "pixel",
+      "args": "mono set 15,5 37ffffff rop 13",
+      "result": "00000000"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,4 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,4 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,4 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,4 010000ff style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,4 010000ff style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,4 010000ff style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,4 010000ff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,4 010000ff style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,4 010000ff style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,4 010000ff style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,4 010000ff style 1",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,4 010000ff style 1",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,4 010000ff style 1",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,4 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,4 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,4 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,4 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,4 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,4 010000ff style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,4 010000ff style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,4 010000ff style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,4 010000ff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,4 010000ff style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,4 010000ff style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,4 010000ff style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,4 010000ff style 3",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,4 010000ff style 3",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,4 010000ff style 3",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,4 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,4 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,5 010000ff style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,5 010000ff style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,5 010000ff style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,5 010000ff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,5 010000ff style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,5 010000ff style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,5 010000ff style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,5 010000ff style 1",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,5 010000ff style 1",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,5 010000ff style 1",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,5 010000ff style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,5 010000ff style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,5 010000ff style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,5 010000ff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,5 010000ff style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,5 010000ff style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,5 010000ff style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,5 010000ff style 3",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,5 010000ff style 3",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,5 010000ff style 3",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,6 20000000 style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,6 20000000 style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,6 20000000 style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,6 20000000 style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,6 20000000 style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,6 20000000 style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,6 20000000 style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,6 20000000 style 1",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,6 20000000 style 1",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,6 20000000 style 1",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 0,6 20000000 style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 1,6 20000000 style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 3,6 20000000 style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 7,6 20000000 style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 8,6 20000000 style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 9,6 20000000 style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 12,6 20000000 style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 13,6 20000000 style 3",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 14,6 20000000 style 3",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 15,6 20000000 style 3",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour 16,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "colour -1,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,4 37ffffff style 0",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,4 37ffffff style 0",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,4 37ffffff style 0",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,4 37ffffff style 0",
+      "result": "11"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,4 37ffffff style 0",
+      "result": "11"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,4 37ffffff style 0",
+      "result": "11"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,4 37ffffff style 0",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,4 37ffffff style 0",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,4 37ffffff style 0",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,4 37ffffff style 0",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,4 37ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,4 37ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,4 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,4 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,4 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,4 37ffffff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,4 37ffffff style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,4 37ffffff style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,4 37ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,4 37ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,4 37ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,4 37ffffff style 1",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,4 37ffffff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,4 37ffffff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,4 37ffffff style 2",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,4 37ffffff style 2",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,4 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,4 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,4 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,4 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,4 37ffffff style 2",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,4 37ffffff style 2",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,4 37ffffff style 2",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,4 37ffffff style 2",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,4 37ffffff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,4 37ffffff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,4 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,4 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,4 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,4 37ffffff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,4 37ffffff style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,4 37ffffff style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,4 37ffffff style 3",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,4 37ffffff style 3",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,4 37ffffff style 3",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,4 37ffffff style 3",
+      "result": "10"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,4 37ffffff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,4 37ffffff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,5 37ffffff style 0",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,5 37ffffff style 0",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,5 37ffffff style 0",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,5 37ffffff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,5 37ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,5 37ffffff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,5 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,5 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,5 37ffffff style 1",
+      "result": "4"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,5 37ffffff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,5 37ffffff style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,5 37ffffff style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,5 37ffffff style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,5 37ffffff style 1",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,5 37ffffff style 1",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,5 37ffffff style 1",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,5 37ffffff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,5 37ffffff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,5 37ffffff style 2",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,5 37ffffff style 2",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,5 37ffffff style 2",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,5 37ffffff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,5 37ffffff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,5 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,5 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,5 37ffffff style 3",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,5 37ffffff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,5 37ffffff style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,5 37ffffff style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,5 37ffffff style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,5 37ffffff style 3",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,5 37ffffff style 3",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,5 37ffffff style 3",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,5 37ffffff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,5 37ffffff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,6 20000000 style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,6 20000000 style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,6 20000000 style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,6 20000000 style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,6 20000000 style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,6 20000000 style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,6 20000000 style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,6 20000000 style 1",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,6 20000000 style 1",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,6 20000000 style 1",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 0,6 20000000 style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 1,6 20000000 style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 3,6 20000000 style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 7,6 20000000 style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 8,6 20000000 style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 9,6 20000000 style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 12,6 20000000 style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 13,6 20000000 style 3",
+      "result": "13"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 14,6 20000000 style 3",
+      "result": "14"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 15,6 20000000 style 3",
+      "result": "15"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono 16,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "mono -1,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,5 010000ff style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,5 010000ff style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,5 010000ff style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,5 010000ff style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,5 010000ff style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,5 010000ff style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,5 010000ff style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,5 010000ff style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,5 010000ff style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,5 010000ff style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,5 010000ff style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,5 010000ff style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,5 010000ff style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,5 010000ff style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,5 010000ff style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,5 010000ff style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,5 010000ff style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,5 010000ff style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,5 010000ff style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,5 010000ff style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,6 20000000 style 0",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,6 20000000 style 0",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,6 20000000 style 1",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,6 20000000 style 1",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,6 20000000 style 1",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,6 20000000 style 1",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,6 20000000 style 1",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,6 20000000 style 1",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,6 20000000 style 1",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,6 20000000 style 1",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,6 20000000 style 2",
+      "result": "-1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,6 20000000 style 2",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 0,6 20000000 style 3",
+      "result": "0"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 1,6 20000000 style 3",
+      "result": "1"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 3,6 20000000 style 3",
+      "result": "3"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 7,6 20000000 style 3",
+      "result": "7"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 8,6 20000000 style 3",
+      "result": "8"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 9,6 20000000 style 3",
+      "result": "9"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 12,6 20000000 style 3",
+      "result": "12"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 13,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 14,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 15,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow 16,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "scanlr",
+      "args": "narrow -1,6 20000000 style 3",
+      "result": "-32768"
+    },
+    {
+      "function": "enumobj",
+      "args": "pens colour",
+      "result": "10 answer 110 first 0,0,0,00ffffff,1179700 second 0,0,0,00000000,1179700 last 4,0,0,00000000,1179700"
+    },
+    {
+      "function": "enumobj",
+      "args": "brushes colour",
+      "result": "137 answer 237 first 0,00ffffff,0,1179700 second 0,00c0ffff,0,1179700 last 2,00000000,0,1179700"
+    },
+    {
+      "function": "enumobj",
+      "args": "pens mono",
+      "result": "10 answer 110 first 0,0,0,00ffffff,1179700 second 0,0,0,00000000,1179700 last 4,0,0,00000000,1179700"
+    },
+    {
+      "function": "enumobj",
+      "args": "brushes mono",
+      "result": "137 answer 237 first 0,00ffffff,0,1179700 second 0,00c0ffff,0,1179700 last 2,00000000,0,1179700"
+    },
+    {
+      "function": "stopped",
+      "args": "pens",
+      "result": "3 answer 0 first 0,0,0,00ffffff,1179700 second 0,0,0,00000000,1179700 last 1,0,0,00ffffff,1179700"
+    },
+    {
+      "function": "stopped",
+      "args": "brushes",
+      "result": "3 answer 0 first 0,00ffffff,0,1179700 second 0,00c0ffff,0,1179700 last 0,0080ffff,0,1179700"
+    },
+    {
+      "function": "enumobj",
+      "args": "other",
+      "result": "0 answer 1 first  second  last "
+    }
+  ]
+}

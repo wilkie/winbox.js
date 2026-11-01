@@ -4,7 +4,9 @@ import {
   herculesColorInfo,
   herculesExtTextOut,
   herculesGetCharWidth,
+  herculesPixel,
   herculesRealizeObject,
+  herculesScanLR,
   isHercules,
 } from './driver-hercules.js';
 import * as vga256 from './driver-vga256.js';
@@ -13,7 +15,8 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DWORD, FARPTR, Struct } from '../types.js';
-import { LOGPEN, enumeratedObjects } from './EnumObjects.js';
+import { LOGBRUSH, LOGPEN, enumeratedObjects } from './EnumObjects.js';
+import { textCapsOf } from './GetDeviceCaps.js';
 import { devicePoint } from './mapping.js';
 import {
   MONO_WHITE,
@@ -109,6 +112,10 @@ function read8(system: any, far: number, at: number) {
 
 function write8(system: any, far: number, at: number, value: number) {
   core(system).write8((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff, value & 0xff);
+}
+
+function write16(system: any, far: number, at: number, value: number) {
+  core(system).write16((far >>> 16) & 0xffff, ((far & 0xffff) + at) & 0xffff, value & 0xffff);
 }
 
 function write32(system: any, far: number, value: number) {
@@ -341,6 +348,66 @@ async function enumObj(system: any, style: number, procedure: number, data: numb
   return answer;
 }
 
+/**
+ * `EnumObj` (`SVGA256.DRV` seg4 `0086`): pens of the five styles in each
+ * of the driver's twenty colours, last seven first (`00cc`-`00e3`,
+ * `00fa`), or a solid brush of each of the twenty (`00ea`), each handed to
+ * the procedure with the data, laid 1Ch up the stack from its entry; any
+ * other style answers 1. The answer is the procedure's last, nought where
+ * it answered nought. **Recorded** by `gdidmpx`.
+ */
+async function vga256EnumObj(system: any, style: number, procedure: number, data: number) {
+  const colours = vga256.enumeratedColours();
+  let objects: Struct[];
+
+  if (style === 1) {
+    objects = [0, 1, 2, 3, 4].flatMap((penStyle) =>
+      colours.map((colour) => {
+        const pen: any = new LOGPEN();
+
+        pen.lopnStyle = penStyle;
+        pen.lopnWidthX = 0;
+        pen.lopnWidthY = 0;
+        pen.lopnColor = colour;
+        return pen;
+      })
+    );
+  } else if (style === 2) {
+    objects = colours.map((colour) => {
+      const brush: any = new LOGBRUSH();
+
+      brush.lbStyle = 0;
+      brush.lbColor = colour;
+      brush.lbHatch = 0;
+      return brush;
+    });
+  } else {
+    return 1;
+  }
+
+  let answer = 0;
+
+  for (const object of objects) {
+    answer =
+      Number(
+        await system.scheduler.callProc(
+          procedure,
+          [
+            [[object, vga256.ENUMERATED_AT], FARPTR],
+            [data >>> 0, DWORD],
+          ],
+          system.scheduler.stackRegisters()
+        )
+      ) & 0xffff;
+
+    if (!answer) {
+      return 0;
+    }
+  }
+
+  return answer;
+}
+
 /** The display driver's routines `Brute` reaches, by their offset in its table. */
 const BIT_BLT = 0x00;
 const COLOR_INFO = 0x04;
@@ -377,7 +444,7 @@ async function brute(
   device: number,
   offset: number,
   routine: (() => number | Promise<number>) | null,
-  hercules: (() => number) | 'monochrome' | null = null,
+  hercules: (() => number | Promise<number>) | 'monochrome' | null = null,
   vga256: (() => number | Promise<number>) | null = null
 ) {
   if (read16(system, device, 0) !== 0) {
@@ -465,8 +532,13 @@ export function DMEnumObj(
   lpCallbackFunc: number,
   lpClientData: number
 ) {
-  return brute(this, lpDestDev, ENUM_OBJ, () =>
-    enumObj(this, wStyle & 0xffff, lpCallbackFunc, lpClientData)
+  return brute(
+    this,
+    lpDestDev,
+    ENUM_OBJ,
+    () => enumObj(this, wStyle & 0xffff, lpCallbackFunc, lpClientData),
+    () => enumObj(this, wStyle & 0xffff, lpCallbackFunc, lpClientData),
+    () => vga256EnumObj(this, wStyle & 0xffff, lpCallbackFunc, lpClientData)
   );
 }
 
@@ -511,7 +583,14 @@ export function DMPixel(
   dwPhysColor: number,
   lpDrawMode: number
 ) {
-  return brute(this, lpDestDev, PIXEL, () => pixel(this, lpDestDev, x, y, dwPhysColor, lpDrawMode));
+  return brute(
+    this,
+    lpDestDev,
+    PIXEL,
+    () => pixel(this, lpDestDev, x, y, dwPhysColor, lpDrawMode),
+    () => herculesPixel(this, lpDestDev, x, y, dwPhysColor >>> 0, lpDrawMode),
+    () => vga256.pixel(this, lpDestDev, x, y, dwPhysColor >>> 0, lpDrawMode)
+  );
 }
 
 export function DMRealizeObject(
@@ -540,20 +619,101 @@ export function DMScanLR(
   dwPhysColor: number,
   wStyle: number
 ) {
-  return brute(this, lpDestDev, SCAN_LR, () =>
-    scanBitmap(this, readBitmap(this, lpDestDev), x, y, dwPhysColor, wStyle)
+  return brute(
+    this,
+    lpDestDev,
+    SCAN_LR,
+    () => scanBitmap(this, readBitmap(this, lpDestDev), x, y, dwPhysColor, wStyle),
+    () => herculesScanLR(this, lpDestDev, x, y, dwPhysColor >>> 0, wStyle),
+    () => vga256.scanLR(this, lpDestDev, x, y, dwPhysColor >>> 0, wStyle)
   );
 }
+
+/** The `TEXTXFORM`'s weight, italic flag and accelerator (seg13 `0014`-`0027`). */
+const FT_WEIGHT = 0x08;
+const FT_ITALIC = 0x0a;
+const FT_ACCELERATOR = 0x0f;
+const TC_EA_DOUBLE = 0x0200;
+const TC_IA_ABLE = 0x0400;
 
 /**
  * `DMExtTextOut` (seg13 `0000`): where the text's `TEXTXFORM` asks for
  * emboldening or italics that the display can make and the device of
  * `[063Eh]` cannot (`TC_EA_DOUBLE` and `TC_IA_ABLE` of each `GDIINFO`'s
  * `dpText`), the request is taken off for the call, the weight made 400 or
- * the italic flag nought, and put back after; then the display driver's
- * `ExtTextOut` through `Brute`.
+ * the italic flag nought (`003b`-`0072`), and the weight, italic flag and
+ * accelerator put back after (`00b9`-`00d4`); then the display driver's
+ * `ExtTextOut` through `Brute`. `[063Eh]` is GDI's `GDIINFO` of the context
+ * it last drew text for (`textCapsOf`); before any, the display's.
+ * **Recorded** by `prttstk`: after text on a printer's context whose
+ * `dpText` is nought, `AW` drawn as asked for 700 and `TC_EA_DOUBLE` is the
+ * plain string; after text on the display's, emboldened.
  */
-export function DMExtTextOut(
+export async function DMExtTextOut(
+  this: any,
+  lpDestDev: number,
+  x: number,
+  y: number,
+  lpClipRect: number,
+  lpString: number,
+  count: number,
+  lpFontInfo: number,
+  lpDrawMode: number,
+  lpTextXForm: number,
+  lpCharWidths = 0,
+  lpOpaqueRect = 0,
+  wOptions = 0
+) {
+  const form = lpTextXForm >>> 0;
+  const accelerator = form >>> 16 ? read16(this, form, FT_ACCELERATOR) : 0;
+  const display = this.display?.textCaps ?? 0;
+  const text = textCapsOf(this);
+  const saved =
+    accelerator & (TC_EA_DOUBLE | TC_IA_ABLE)
+      ? [read16(this, form, FT_WEIGHT), read8(this, form, FT_ITALIC)]
+      : null;
+
+  if (saved) {
+    const off = (bit: number) => accelerator & bit && display & bit && !(text & bit);
+
+    if (off(TC_EA_DOUBLE)) {
+      write16(this, form, FT_WEIGHT, 400);
+      write16(this, form, FT_ACCELERATOR, read16(this, form, FT_ACCELERATOR) & ~TC_EA_DOUBLE);
+    }
+
+    if (off(TC_IA_ABLE)) {
+      write8(this, form, FT_ITALIC, 0);
+      write16(this, form, FT_ACCELERATOR, read16(this, form, FT_ACCELERATOR) & ~TC_IA_ABLE);
+    }
+  }
+
+  try {
+    return await displayExtTextOut.call(
+      this,
+      lpDestDev,
+      x,
+      y,
+      lpClipRect,
+      lpString,
+      count,
+      lpFontInfo,
+      lpDrawMode,
+      lpTextXForm,
+      lpCharWidths,
+      lpOpaqueRect,
+      wOptions
+    );
+  } finally {
+    if (saved) {
+      write16(this, form, FT_ACCELERATOR, accelerator);
+      write16(this, form, FT_WEIGHT, saved[0]);
+      write8(this, form, FT_ITALIC, saved[1]);
+    }
+  }
+}
+
+/** The display driver's `ExtTextOut` through `Brute` (seg13 `012a`, CH 34h). */
+function displayExtTextOut(
   this: any,
   lpDestDev: number,
   x: number,

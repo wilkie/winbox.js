@@ -6,7 +6,7 @@ ordinal: 314
 summary: GDI drawing a string of a TrueType font for a printer's driver -- through the font's own cache of glyphs, a raster font of 3.0 handed back to the driver's ExtTextOut -- or, given a negative count, measuring it.
 versions:
   '3.1': partial
-probes: [prtteng, prttxt, prttx2]
+probes: [prtteng, prttxt, prttx2, prttstk]
 records:
   [
     extent,
@@ -21,6 +21,7 @@ records:
     output,
     strblt,
     direct,
+    limited,
   ]
 source: src/win16/gdi/engine-text.ts
 topics: [printer-drivers]
@@ -38,6 +39,8 @@ topics: [printer-drivers]
 - [[measured]] A turned string never reaches the driver's `ExtTextOut`: GDI draws each glyph through the driver's `BitBlt`, raster operation E20746h, the glyph's bitmap the source, cut to the device -- Arial's `Ab` turned 90 degrees at 10,10 is one blit of the `A`, 17 by 10 at 15,0 from 0,5 of the glyph, the `b` falling above the device.
 - [[measured]] The driver draws GDI's font with [[fn:GDI.DMExtTextOut]] onto a band of its own; the band's bits are recorded.
 - [[measured]] [[probe:prttx2]]: a turned string on an opaque background is preceded by a polygon the driver's `Output` fills, style 20 (`OS_WINDPOLYGON`): `Ab` of Arial at an em of 24 turned 90 degrees at 30,40 is 30,40 30,11 57,11 57,40 -- 29 along the baseline, the string's extent, and 27 across, the cell -- and at 30 degrees 30,40 55,25 69,48 44,63. With `ETO_OPAQUE` and a rectangle, the rectangle is filled after it with `PATCOPY` (F00021h) through the driver's `BitBlt`, then the glyphs are blitted.
+- [[measured]] [[probe:prttstk]]: the string is cut to what the stack holds. With the task's stack limit, the word at 0Ah of the stack's segment, put a margin below the stack pointer as the driver calls, sixteen characters come to the driver as none at a margin of 4FBh to 4FEh, one at 4FFh, and one more for each 4 bytes after, all sixteen from 53Bh; under 4FBh nothing comes at all. The answer is the `PDEVICE` still.
+- [[measured]] A context made by `CreateDC` with the driver named `MGXWMF.DRV` -- in any case, `mgxwmf.drv` too -- has its string's widths the advances alone and its place not moved by the first A space: `jAWj` of Arial at an em of 24 at 10,10 comes as 6, 15, 23, 6 at 10,10, where the same driver named `MGXWMF` is given 7, 15, 22, 6 at 9,10.
 - [[measured]] For a driver without `RC_GDI20_OUTPUT` (its device "Plain"), the string comes to the driver's `StrBlt` a character at a time: `xAy` at 10,10 is three calls, at 10, 21 and 37, each of count 1, the font at 42h of the cache's segment and the clip the one given -- cut to the opaque rectangle for `ETO_CLIPPED`. An opaque background is the driver's `BitBlt` with `PATCOPY`: the text's box, 29 by 27 for `Ab`; given `ETO_OPAQUE` and a rectangle, the rectangle twice, before the characters. A turned string goes glyph by glyph through `BitBlt` as for any driver, after its polygon.
 
 ## Nuances
@@ -67,17 +70,18 @@ topics: [printer-drivers]
 
 [[read out]] A driver without `RC_GDI20_OUTPUT`, and a font GDI draws as an outline, are called through seg8 `00e4` instead of the driver's `ExtTextOut` -- the near procedure at `621f` rather than `6221` (`62e1`-`62f2`) -- for every call the flag byte plans. A call that is not the string's (its bits 78h not all set) fills: the opaque rectangle given where bit 80h is set, else the text's box, cut to the clip (`663e`), through the driver's `BitBlt` with `PATCOPY`, the context's brush a solid one of the background colour for it (`0065`-`00c8`). The string's call fills the opaque rectangle the same way where `ETO_OPAQUE` is among the options (`00fa`) -- a second time, where a call before it filled it -- cuts the clip to the rectangle for `ETO_CLIPPED`, drawing nothing where nothing is left (`0109`-`012a`), and hands the driver's `StrBlt` each character with a count of 1 (`016d`-`01c5`): the first place the place moved by the ascent at 8 of the `FONTINFO` turned -- across by its sine times `256 * H / V`, up by what the ascent's cosine leaves of it -- and each character at the widths before it (`01c7`, a running total written over them) carried along the baseline, through GDI's sines (`01e1`, `01f0`); the clip, the cache's font, GDI's copy of the `DRAWMODE` with the background transparent and the `TEXTXFORM` given. A font GDI draws as an outline goes to its own drawing at `042a` instead.
 
-[[read out]] The count is cut to what GDI's stack holds as it starts: the stack pointer less the task's stack limit at `[SS:000Ah]` -- nothing at all under 400h -- less 400h, a quarter of that the most characters (`62a5`-`62c0`). The string counts as turned -- its widths the advances alone -- for a turned font, and for a context flagged 40h at 0Bh (`62d0`), which `CreateDC` sets for a context of the display driver's own device (seg1 `0249`-`024f`, the driver against `[014Dh]`).
+[[read out]] The count is cut to what GDI's stack holds as it starts: the stack pointer less the task's stack limit at `[SS:000Ah]` -- nothing at all under 400h, the drawing answering nought and 8000h -- less 400h, shifted right two with its sign, the most characters, compared unsigned (`62a5`-`62c0`). From `EngineExtTextOut`'s return address to there the stack holds CEh bytes: its `enter 6` and two words (`669d`-`66a4`), the 20 words it pushes and the near call (`66f0`-`6728`), and `6223`'s `enter 90h` and three words. [[measured]] [[probe:prttstk]]'s margins, as the driver's code reads its stack pointer, are FBh more than the room GDI measures: 4FBh is 400h exactly, the CEh and 2Dh of the driver's own call.
+
+[[read out]] The string counts as turned -- its widths the advances alone, the first A space not taken (`6874` given the count negative, `6986`) -- for a turned font, and for a context flagged 40h at 0Bh (`62d0`). `CreateDC` sets the flag (seg1 `0242`-`024f`) where the atom of the driver's name (`0093`) is `[014Dh]`: the atom GDI adds for `MGXWMF.DRV` as it starts (seg2 `024e`-`0259`, through seg1 `210e`, `AddAtom` in GDI's own atom table, so without case), beside `[014Fh]`, `DISPLAY`'s. It is the only use of the flag in `EngineExtTextOut`; the name is Micrografx's metafile driver's. [[measured]] [[probe:prttstk]]: GDI finds the driver named `MGXWMF.DRV` by `LoadLibrary` of `MGXWMF.DRV.drv`, which `KERNEL` answers with the module `MGXWMF` already loaded.
 
 ## Implementation
 
-`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `src/win16/gdi/engine-text.ts` and `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). The turned string's opaque background and the driver's `StrBlt` path for a driver without `RC_GDI20_OUTPUT` are drawn as read out (`turnedGround`, `byStrBlt`). [[probe:prttxt]] and [[probe:prttx2]] agree in every record, in both engines.
+`src/win16/gdi/engine-glyphs.ts` and `crates/winbox-win16/src/gdi/engine_glyphs.rs`: the extent, with the `FONTINFO` given, which a driver hands on from its own `ExtTextOut`. `src/win16/gdi/engine-text.ts` and `crates/winbox-win16/src/gdi/engine_text.rs`: the drawing, the cache laid out from named constants as GDI lays it, its glyphs the rasterizer's ([[fn:GDI.EngineGetGlyphBmp]]'s). The turned string's opaque background and the driver's `StrBlt` path for a driver without `RC_GDI20_OUTPUT` are drawn as read out (`turnedGround`, `byStrBlt`). The count is cut as read out where the stack pointer is known, `EngineExtTextOut`'s (`stackCut`, `stack_cut`); a context of a driver named `MGXWMF.DRV` is flagged as `CreateDC` flags it. [[probe:prttxt]], [[probe:prttx2]] and [[probe:prttstk]] agree in every record, in both engines.
 
 ## Not yet done
 
 - The context's own realized font, where a driver gives another, for the extent.
 - A turned font's extent where the pixel is not square.
-- The count cut to what GDI's stack holds (`62a5`), which hangs on the depth of GDI's own frames below the program's, which WinBox's GDI does not have; no probe reaches it.
-- A context flagged 40h at 0Bh, a context of the display, given to `EngineExtTextOut`: its string counted as turned; no probe hands the engine one.
+- The count cut to what GDI's stack holds for GDI's own `ExtTextOut` of a turned engine font (`620e`), which hangs on the depth of GDI's own frames below the program's, which WinBox's GDI does not have.
 - A font GDI draws as an outline itself (seg8 `042a`), which no font WinBox realizes is.
 - The `DRAWMODE` handed on for no characters, which is what GDI's stack held there.
