@@ -1139,8 +1139,10 @@ export async function driverExtTextOut(
   /* A turned font the engine realized, where the device's `GDIINFO` word
    * 5Eh has no bit 2, GDI draws itself, as `EngineExtTextOut` would,
    * without the driver's `ExtTextOut` (seg1 `3a1a`-`3a86`, into `620e`).
-   * GDI asks too for the context's flag 4 at 0Bh, taken here as set for a
-   * font the driver realized. */
+   * GDI asks too for the context's flag 4 at 0Bh, which selecting a font
+   * sets for a device font -- the mapper's answer 539h, a font the driver's
+   * `RealizeObject` realized (seg3 `080b`, `13c1`) -- and clears for any
+   * other (seg1 `3ff9`-`400a`): every font this path is given is one. */
   const turnedEngineFont =
     (realized.info[0] & 3) === 3 &&
     realized.info[0x33] & 0x10 &&
