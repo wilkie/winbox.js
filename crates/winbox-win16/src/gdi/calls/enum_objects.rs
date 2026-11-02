@@ -15,12 +15,18 @@
 //!
 //! The colours are the display's own, as its bitmaps index them: sixteen,
 //! the EGA's with `404040`, or the Hercules's two.
+//!
+//! On the 256-colour display, its driver's `EnumObj` (`SVGA256.DRV` seg4
+//! `0086`): the five styles of pen in each of its twenty colours, the last
+//! seven first, and a solid brush of each, no hatched one. **Recorded** by
+//! `enumobj` there: 100 pens, 20 brushes.
 
 use winbox_cpu::{AX, DS, ES, SS};
 use winbox_raster::palette_for_display;
 
 use crate::call::{Answer, Args, Later};
 use crate::engine::{Engine, GuestArg, Register};
+use crate::gdi::driver_vga256::{enumerated_colours, is_vga256};
 use crate::gdi::text::enumerate::gdi_data_selector;
 use crate::system::System;
 
@@ -87,7 +93,12 @@ fn device_colours(system: &System) -> Vec<u32> {
 /// The pens and brushes, in the order they are handed over: `OBJ_PEN`'s
 /// and `OBJ_BRUSH`'s, and none for anything else.
 pub fn enumerated_objects(system: &System, kind: i16) -> (Vec<LogPenRecord>, Vec<LogBrushRecord>) {
-    let colours = device_colours(system);
+    let vga256 = is_vga256(system);
+    let colours = if vga256 {
+        enumerated_colours()
+    } else {
+        device_colours(system)
+    };
 
     match kind {
         OBJ_PEN => (
@@ -99,6 +110,17 @@ pub fn enumerated_objects(system: &System, kind: i16) -> (Vec<LogPenRecord>, Vec
                 })
                 .collect(),
             Vec::new(),
+        ),
+        OBJ_BRUSH if vga256 => (
+            Vec::new(),
+            colours
+                .iter()
+                .map(|&color| LogBrushRecord {
+                    style: 0,
+                    color,
+                    hatch: 0,
+                })
+                .collect(),
         ),
         OBJ_BRUSH => {
             let solids = LEVELS.iter().flat_map(|&red| {
