@@ -529,7 +529,7 @@ impl Engine {
 
         system.hide(list_index);
         system.control_window_mut(list_index).parent = None;
-        system.own();
+        system.windows_changed();
 
         let window = system.control_window(index);
         let (left, top, width) = (window.left, window.top, window.width);

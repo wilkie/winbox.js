@@ -1402,8 +1402,8 @@ fn explore() {
 
                 if let Some(window) = system.windows[at].as_ref() {
                     println!(
-                        "dump {at} clip={:?} client={:?} paint={} erase={} border={:?} edit={:?} combo={:?}",
-                        window.clip_rect,
+                        "dump {at} place={:?} client={:?} paint={} erase={} border={:?} edit={:?} combo={:?}",
+                        (window.left, window.top, window.width, window.height),
                         window.client,
                         window.needs_paint,
                         window.needs_erase,

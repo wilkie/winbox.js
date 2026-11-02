@@ -210,82 +210,6 @@ impl System {
         taken
     }
 
-    /// Which window each pixel of the screen shows, worked out again, and
-    /// each window's place cut to its ancestors' client areas.
-    pub fn own(&mut self) {
-        let (width, height) = (
-            i32::from(self.display.width),
-            i32::from(self.display.height),
-        );
-        let mut owners = vec![0u16; (width * height) as usize];
-
-        for &index in self.z_order.iter().rev() {
-            if !self.showing(index) {
-                continue;
-            }
-
-            let shown = self.shown(index);
-            let mut left = shown.left.max(0);
-            let mut top = shown.top.max(0);
-            let mut right = (shown.left + shown.width).min(width);
-            let mut bottom = (shown.top + shown.height).min(height);
-            let mut at = shown.parent;
-
-            while let Some(parent) = at {
-                let parent = self.shown(parent);
-
-                left = left.max(parent.left + parent.client.left);
-                top = top.max(parent.top + parent.client.top);
-                right = right.min(parent.left + parent.client.right);
-                bottom = bottom.min(parent.top + parent.client.bottom);
-                at = parent.parent;
-            }
-
-            let id = (index + 1) as u16;
-            // A pop-up menu's shadow leaves its two outer corners to what
-            // is beneath.
-            let corners: Vec<(usize, u16)> = if shown.popup.is_some() {
-                [
-                    (shown.left + shown.width - 1, shown.top),
-                    (shown.left, shown.top + shown.height - 1),
-                ]
-                .into_iter()
-                .filter(|&(x, y)| x >= 0 && y >= 0 && x < width && y < height)
-                .map(|(x, y)| {
-                    let at = (y * width + x) as usize;
-
-                    (at, owners[at])
-                })
-                .collect()
-            } else {
-                Vec::new()
-            };
-
-            for y in top..bottom {
-                if right > left {
-                    let row = (y * width) as usize;
-
-                    owners[row + left as usize..row + right as usize].fill(id);
-                }
-            }
-
-            for (at, beneath) in corners {
-                owners[at] = beneath;
-            }
-
-            self.windows[index]
-                .as_mut()
-                .expect("a window not destroyed")
-                .clip_rect = [left, top, right, bottom];
-        }
-
-        self.owners = std::rc::Rc::new(owners);
-
-        // USER's device context entries the change makes stale
-        // (`dc_entries`).
-        self.windows_changed();
-    }
-
     /// A window due its frame and a paint where `area` is, added to what it
     /// was due already, or all of it where all of it was.
     fn due_at(&mut self, index: usize, area: [i32; 4]) {
@@ -408,7 +332,7 @@ impl System {
             }
         }
 
-        self.own();
+        self.windows_changed();
 
         if let Some(was) = was.filter(|&was| was != index) {
             self.paint_frame(was);
@@ -604,7 +528,7 @@ impl System {
             && !self.shown(title).visible
         {
             self.shown_mut(title).visible = true;
-            self.own();
+            self.windows_changed();
             self.paint_frame(title);
         }
     }
@@ -665,7 +589,7 @@ impl System {
         }
 
         self.shown_mut(index).visible = true;
-        self.own();
+        self.windows_changed();
         self.paint_frame(index);
         self.title_shows(index);
 
@@ -718,7 +642,7 @@ impl System {
 
         self.z_order.splice(at..at, family);
         self.shown_mut(index).visible = true;
-        self.own();
+        self.windows_changed();
         self.due_whole(index);
         self.end_placing(None);
     }
@@ -746,7 +670,7 @@ impl System {
                     shown.visible = false;
                 }
                 self.set_active(other, false);
-                self.own();
+                self.windows_changed();
                 self.end_placing(Some(false));
             } else if !hide && self.shown(other).hidden_with_owner {
                 self.begin_placing(&[other]);
@@ -762,7 +686,7 @@ impl System {
                     shown.hidden_with_owner = false;
                     shown.visible = true;
                 }
-                self.own();
+                self.windows_changed();
                 self.due_whole(other);
                 self.end_placing(None);
             }
@@ -911,7 +835,7 @@ impl System {
                 self.set_active(index, false);
             }
 
-            self.own();
+            self.windows_changed();
             self.end_placing(Some(false));
         }
 
@@ -948,7 +872,7 @@ impl System {
         // Drawn as `SetWindowPos` draws its list (`end_placing`).
         self.begin_placing(&[]);
         self.bring_up(index, false);
-        self.own();
+        self.windows_changed();
         self.end_placing(Some(false));
 
         self.z_order != order
@@ -1607,7 +1531,7 @@ impl System {
     /// seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
     /// for none), its rectangles and what it is due moved, and then its own
     /// children the same way, by the same rectangle. Nothing is drawn or
-    /// sent; the screen's owners are worked out again after. The
+    /// sent; the windows' change is looked at after (`windows_changed`). The
     /// TypeScript engine's `Desktop.scrollChildren`.
     pub(crate) fn scroll_children_by(
         &mut self,
@@ -1616,7 +1540,7 @@ impl System {
         rect: Option<[i32; 4]>,
     ) -> Result<(), crate::call::Stop> {
         self.shift_children(parent, (dx, dy), rect)?;
-        self.own();
+        self.windows_changed();
         Ok(())
     }
 
@@ -1806,7 +1730,7 @@ impl System {
         });
 
         self.z_order.splice(at..at, family.iter().copied());
-        self.own();
+        self.windows_changed();
 
         for member in family {
             if self.shown(member).visible {
@@ -2397,7 +2321,7 @@ impl System {
         }
 
         if !show {
-            self.own();
+            self.windows_changed();
             return;
         }
 
@@ -2407,7 +2331,7 @@ impl System {
             self.shown_mut(title).visible = true;
         }
 
-        self.own();
+        self.windows_changed();
         self.paint_frame(index);
 
         if let Some(title) = title {

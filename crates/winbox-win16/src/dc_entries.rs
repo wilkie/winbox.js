@@ -92,8 +92,8 @@ pub struct Entries {
     pub state: Option<DcState>,
     /// Each `CS_CLASSDC` class's context, by the class's name.
     pub classes: HashMap<String, u16>,
-    /// The windows as they were when the screen's owners were last worked
-    /// out, by their index and handle.
+    /// The windows as they were when they were last looked at
+    /// (`windows_changed`), by their index and handle.
     seen: Option<HashMap<(usize, u16), Seen>>,
 }
 
@@ -920,9 +920,10 @@ impl System {
         }
     }
 
-    /// Which windows changed since the screen's owners were last worked
-    /// out, and the entries each change makes stale as USER's own callers
-    /// of seg1 `8aa0` would, as `dc-entries.ts`'s `windowsChanged` says.
+    /// Which windows changed since they were last looked at, and the
+    /// entries each change makes stale as USER's own callers of seg1 `8aa0`
+    /// would, as `dc-entries.ts`'s `windowsChanged` says: asked wherever
+    /// WinBox changes a window's place, order, showing or styles.
     pub fn windows_changed(&mut self) {
         if self.dc_entries.list.is_empty() {
             return;

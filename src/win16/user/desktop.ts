@@ -54,8 +54,8 @@ import { discardSaved, discardWithin, hasSaved, restoreUnder, saveUnder } from '
  * by the window itself, asked with `WM_PAINT`, for the rest. This is that
  * arrangement:
  *
- * * Which window each pixel shows is kept a pixel at a time, in `owners`, so
- *   clipping a window's drawing to what shows of it is one comparison.
+ * * What shows of a window is its visible region by USER's rule, worked out
+ *   from the windows as USER keeps them (`visible-region-rule.ts`).
  * * A window's client area is a view of the screen's pixels (see
  *   `DeviceBitmap.view`), so everything GDI draws into it lands on the screen
  *   where the window is, and nowhere it is covered.
@@ -469,9 +469,6 @@ export class Desktop {
   /** Set by `WM_CANCELMODE` to the menu's window: the open menu ends. */
   menuCancelled = false;
 
-  /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
-  readonly owners: Uint16Array;
-
   /**
    * The system whose windows these are, for USER's rule for a window's
    * visible region (`visible-region-rule.ts`): its classes and its lock.
@@ -491,16 +488,12 @@ export class Desktop {
   /** Draws and measures text in the System font. */
   readonly #text: any = Surface.memory();
 
-  /** The windows by their `id`, as `owners` holds them; kept by `#own`. */
-  #byId = new Map<number, DesktopWindow>();
-
   /** Draws and measures in the icon title's font. */
   readonly #title: any = Surface.memory();
 
   constructor(screen: DeviceBitmap, environment: DesktopEnvironment) {
     this.screen = screen;
     this.environment = environment;
-    this.owners = new Uint16Array(screen.width * screen.height);
     this.#text.font = environment.systemFont;
     this.#text.backMode = 1;
     this.#title.backMode = 1;
@@ -631,7 +624,7 @@ export class Desktop {
     window.savedBits = this.#saveBits(window);
     window.visible = true;
     this.windows.unshift(window);
-    this.#own();
+    this.#changed();
     this.paintPopup(window);
 
     return window;
@@ -762,7 +755,7 @@ export class Desktop {
     window.savedBits = this.#saveBits(window);
     window.visible = true;
     this.windows.unshift(window);
-    this.#own();
+    this.#changed();
 
     return window;
   }
@@ -820,12 +813,15 @@ export class Desktop {
     const y0 = Math.max(window.top, 0);
     const x1 = Math.min(window.left + window.width, this.screen.width);
     const y1 = Math.min(window.top + window.height, this.screen.height);
-    const shows = this.system ? regionByRule(this.system, window, DCX_WINDOW | DCX_USESTYLE) : null;
-
-    if (!shows) {
-      this.#eachCovered(window, (sx, sy) => points.push([sx, sy]));
-      return points;
-    }
+    const shows =
+      (this.system && regionByRule(this.system, window, DCX_WINDOW | DCX_USESTYLE)) ||
+      windowRegion(
+        ALONE,
+        this,
+        window,
+        window,
+        DCX_WINDOW | (window.style & WS_CLIPSIBLINGS ? DCX_CLIPSIBLINGS : 0)
+      );
 
     for (let sy = y0; sy < y1; sy++) {
       for (let sx = x0; sx < x1; sx++) {
@@ -865,25 +861,6 @@ export class Desktop {
         y - over.top,
         background.pattern
       );
-    }
-  }
-
-  /** Each pixel of a window's rectangle on the screen that something else shows at. */
-  #eachCovered(window: DesktopWindow, each: (sx: number, sy: number) => void) {
-    const stride = this.screen.width;
-    const x0 = Math.max(window.left, 0);
-    const y0 = Math.max(window.top, 0);
-    const x1 = Math.min(window.left + window.width, stride);
-    const y1 = Math.min(window.top + window.height, this.screen.height);
-
-    for (let sy = y0; sy < y1; sy++) {
-      for (let sx = x0; sx < x1; sx++) {
-        const owner = this.#byId.get(this.owners[sy * stride + sx]);
-
-        if (!owner || !this.#within(owner, window)) {
-          each(sx, sy);
-        }
-      }
     }
   }
 
@@ -1042,7 +1019,7 @@ export class Desktop {
     );
 
     this.windows.splice(first < 0 ? this.windows.indexOf(parent) : first, 0, ...family);
-    this.#own();
+    this.#changed();
 
     for (const member of family) {
       if (member.visible) {
@@ -1128,7 +1105,7 @@ export class Desktop {
       this.pendingActivation ??= { from: wasTop, click: false };
     }
 
-    this.#own();
+    this.#changed();
 
     if (was && was !== window) {
       this.paintFrame(was);
@@ -1139,7 +1116,7 @@ export class Desktop {
     if (!whole) {
       if (title && !title.visible) {
         title.visible = true;
-        this.#own();
+        this.#changed();
         this.paintFrame(title);
       }
 
@@ -1163,7 +1140,7 @@ export class Desktop {
     /* An icon's title shows with it. */
     if (title && !title.visible) {
       title.visible = true;
-      this.#own();
+      this.#changed();
       this.paintFrame(title);
     }
 
@@ -1453,7 +1430,7 @@ export class Desktop {
         window.active = false;
       }
 
-      this.#own();
+      this.#changed();
     }
 
     if (listed) {
@@ -1491,7 +1468,7 @@ export class Desktop {
     /* Drawn as `SetWindowPos` draws its list (`endPlacing`). */
     this.beginPlacing([]);
     this.#bringUp(window);
-    this.#own();
+    this.#changed();
     this.endPlacing(false);
 
     return this.windows.some((other, at) => other !== order[at]);
@@ -2366,7 +2343,7 @@ export class Desktop {
     }
 
     this.#list = null;
-    this.#own();
+    this.#changed();
 
     const system = this.system;
     const entries = list.entries;
@@ -2631,7 +2608,7 @@ export class Desktop {
    * seg2 `0a1d` moves them: each child whose rectangle meets `rect` (any,
    * for null), its rectangles and what it is due moved, and then its own
    * children the same way, by the same rectangle. Nothing is drawn or
-   * sent; the screen's owners are worked out again after.
+   * sent; the windows' change is looked at after (`#changed`).
    */
   scrollChildren(parent: DesktopWindow, dx: number, dy: number, rect: number[] | null) {
     const shift = (of: DesktopWindow) => {
@@ -2663,7 +2640,7 @@ export class Desktop {
     };
 
     shift(parent);
-    this.#own();
+    this.#changed();
   }
 
   /**
@@ -3543,59 +3520,12 @@ export class Desktop {
     return DeviceBitmap.view(this.screen, x0, y0, width, height, (x, y) => own.contains(x, y));
   }
 
-  /** Which window shows at each pixel, the topmost winning. */
-  #own() {
-    const stride = this.screen.width;
-
-    this.#byId = new Map(this.windows.map((window) => [window.id, window]));
-
-    this.owners.fill(0);
-
-    for (let at = this.windows.length - 1; at >= 0; at--) {
-      const window = this.windows[at];
-
-      if (!this.#showing(window)) {
-        continue;
-      }
-
-      /* The window, cut to each ancestor's client area. */
-      let [left, top, right, bottom] = [
-        Math.max(window.left, 0),
-        Math.max(window.top, 0),
-        Math.min(window.left + window.width, stride),
-        Math.min(window.top + window.height, this.screen.height),
-      ];
-
-      for (let parent = window.parent; parent; parent = parent.parent) {
-        left = Math.max(left, parent.left + parent.client.left);
-        top = Math.max(top, parent.top + parent.client.top);
-        right = Math.min(right, parent.left + parent.client.right);
-        bottom = Math.min(bottom, parent.top + parent.client.bottom);
-      }
-
-      (window as any).clipRect = [left, top, right, bottom];
-
-      /* A pop-up's shadow leaves its two outer corners to what is beneath. */
-      const corners = window.popup
-        ? [
-            [window.left + window.width - 1, window.top],
-            [window.left, window.top + window.height - 1],
-          ].filter(([cx, cy]) => cx >= 0 && cy >= 0 && cx < stride && cy < this.screen.height)
-        : [];
-      const beneath = corners.map(([cx, cy]) => this.owners[cy * stride + cx]);
-
-      for (let y = top; y < bottom; y++) {
-        if (right > left) {
-          this.owners.fill(window.id, y * stride + left, y * stride + right);
-        }
-      }
-
-      corners.forEach(([cx, cy], index) => {
-        this.owners[cy * stride + cx] = beneath[index];
-      });
-    }
-
-    /* USER's device context entries the change makes stale (`dc-entries.ts`). */
+  /**
+   * A window's place, order, showing or styles may have changed: USER's
+   * device context entries each change makes stale, found by looking at
+   * the windows again (`dc-entries.ts`'s `windowsChanged`).
+   */
+  #changed() {
     if (this.system) {
       windowsChanged(this.system, this);
     }
@@ -4784,12 +4714,12 @@ export class Desktop {
     }
 
     window.visible = true;
-    this.#own();
+    this.#changed();
     this.paintFrame(window);
 
     if (title && !title.visible) {
       title.visible = true;
-      this.#own();
+      this.#changed();
       this.paintFrame(title);
     }
 
@@ -4847,7 +4777,7 @@ export class Desktop {
         other.hiddenWithOwner = true;
         other.visible = false;
         other.active = false;
-        this.#own();
+        this.#changed();
         this.endPlacing(false);
       } else if (!hide && other.hiddenWithOwner) {
         this.beginPlacing([other]);
@@ -4855,7 +4785,7 @@ export class Desktop {
         this.#placedWhole(other);
         other.hiddenWithOwner = false;
         other.visible = true;
-        this.#own();
+        this.#changed();
         this.#dueWhole(other);
         this.endPlacing();
       }
@@ -4920,7 +4850,7 @@ export class Desktop {
         title.visible = true;
       }
 
-      this.#own();
+      this.#changed();
       this.paintFrame(window);
 
       if (title) {
@@ -4930,7 +4860,7 @@ export class Desktop {
       window.needsErase = true;
       window.needsPaint = true;
     } else {
-      this.#own();
+      this.#changed();
     }
   }
 
@@ -4948,7 +4878,7 @@ export class Desktop {
 
     this.windows.splice(this.front(window), 0, ...family);
     window.visible = true;
-    this.#own();
+    this.#changed();
     this.#dueWhole(window);
     this.endPlacing();
   }
@@ -4956,7 +4886,7 @@ export class Desktop {
   /** Takes a child from its parent to lie on the desktop where it is, as `SetParent` with none does. */
   detach(window: DesktopWindow) {
     window.parent = null;
-    this.#own();
+    this.#changed();
   }
 
   /** A list box's client area cleared in the window colour, as its erase does. */

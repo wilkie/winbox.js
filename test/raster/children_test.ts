@@ -44,9 +44,9 @@ import { chromeReady, displayEnvironment } from './chrome.js';
     expect(child.left - (parent.left + parent.client.left)).toBe(10);
     expect(child.top - (parent.top + parent.client.top)).toBe(5);
 
-    /* And its surface is a view of the screen where it now is: its border shows there. */
+    /* And it is what shows where it now is. */
     desktop.paintFrame(child);
-    expect(desktop.owners[child.top * desktop.screen.width + child.left]).toBe(child.id);
+    expect(desktop.windowAt(child.left, child.top)).toBe(child);
   });
 
   it('pass the mouse through a group box to what lies beneath it', () => {

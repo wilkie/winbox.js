@@ -310,9 +310,6 @@ pub struct System {
     pub gdi_data: Option<u32>,
     /// The accelerator tables loaded.
     pub accelerators: Vec<Vec<crate::accelerators::Accelerator>>,
-    /// Which window each pixel of the screen shows, its index plus one;
-    /// nought for the desktop.
-    pub owners: std::rc::Rc<Vec<u16>>,
     /// USER's device context entries (`dc_entries`).
     pub dc_entries: crate::dc_entries::Entries,
     /// A program's device context hook to be called, and the call to make
@@ -645,7 +642,6 @@ impl System {
             interrupt_handlers: Vec::new(),
             hooks: Vec::new(),
             next_hook: 0,
-            owners: std::rc::Rc::new(Vec::new()),
             dc_entries: crate::dc_entries::Entries::default(),
             hook_then: None,
             screen: None,

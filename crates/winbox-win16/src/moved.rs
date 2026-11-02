@@ -747,7 +747,7 @@ impl System {
 
         let list = self.placing.take().expect("a list being placed");
 
-        self.own();
+        self.windows_changed();
 
         let parent = list
             .entries

@@ -907,7 +907,7 @@ pub(crate) mod tests {
 
         system.windows[index].as_mut().unwrap().hwnd = hwnd;
         system.z_order.push(index);
-        system.own();
+        system.windows_changed();
         (system, index, hwnd)
     }
 

@@ -254,7 +254,7 @@ impl System {
         }
 
         self.z_order.insert(0, index);
-        self.own();
+        self.windows_changed();
         self.paint_popup(index);
         index
     }
@@ -789,16 +789,12 @@ mod tests {
 
             (shown.width, shown.height)
         };
-        let stride = screen.width();
-        let owner = |system: &crate::system::System, x: i32, y: i32| {
-            system.owners[(y * stride + x) as usize]
-        };
-
-        // On top, its shadow's outer corners left to the window beneath.
+        // On top, its shadow's outer corners its own, as its rectangle
+        // holds them (seg1 `71b9`).
         assert_eq!(system.z_order[0], popup);
-        assert_eq!(owner(&system, 60, 70), (popup + 1) as u16);
-        assert_eq!(owner(&system, 60 + width - 1, 70), (window + 1) as u16);
-        assert_eq!(owner(&system, 60, 70 + height - 1), (window + 1) as u16);
+        assert_eq!(system.window_at(60, 70), Some(popup));
+        assert_eq!(system.window_at(60 + width - 1, 70), Some(popup));
+        assert_eq!(system.window_at(60, 70 + height - 1), Some(popup));
 
         system.close_popup(popup);
 

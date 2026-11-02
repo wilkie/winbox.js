@@ -110,14 +110,16 @@ for (const display of Object.keys(DRIVES)) {
       /* Every pixel that changed is the covered window's own and still shows. */
       for (let at = 0; at < before.length; at++) {
         if (desktop.screen.indices[at] !== before[at]) {
-          expect(desktop.owners[at]).toBe(under.id);
+          const width = desktop.screen.width;
+
+          expect(desktop.windowAt(at % width, Math.trunc(at / width))).toBe(under);
         }
       }
 
       /* And one it covers is not touched: inside both, the top window's. */
       const x = 110;
       const y = 100;
-      expect(desktop.owners[y * desktop.screen.width + x]).toBe(over.id);
+      expect(desktop.windowAt(x, y)).toBe(over);
       expect(desktop.screen.indices[y * desktop.screen.width + x]).toBe(
         before[y * desktop.screen.width + x]
       );

@@ -134,9 +134,6 @@ pub struct Window {
     /// A paint's clip on the screen, and its shape, while it paints.
     pub paint_clip: Option<[i32; 4]>,
     pub paint_shape: Option<winbox_raster::ClipRegion>,
-    /// Where it shows, cut to each ancestor's client area, as the desktop
-    /// last worked it out.
-    pub clip_rect: [i32; 4],
     /// Whether its last erase was not done, which `BeginPaint` hands back.
     pub unerased: bool,
     /// The caption drawn active or not, as `WM_NCACTIVATE` last had it, or

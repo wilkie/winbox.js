@@ -255,7 +255,7 @@ impl System {
             ..Window::default()
         }));
         self.z_order.insert(0, index);
-        self.own();
+        self.windows_changed();
         self.switch.window = Some(index);
         self.nudge()?;
         Ok(index)
