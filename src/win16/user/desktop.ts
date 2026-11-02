@@ -25,6 +25,7 @@ import {
   DCX_CLIPSIBLINGS,
   DCX_USESTYLE,
   DCX_WINDOW,
+  lessChildren,
   regionByRule,
   regionFlags,
   windowRegion,
@@ -3237,15 +3238,27 @@ export class Desktop {
     }
   }
 
-  /** The desktop itself, where no window shows: its wallpaper or its brush. */
+  /**
+   * The desktop itself, where no window shows: its wallpaper or its brush,
+   * through the desktop window's own region by USER's rule -- the screen
+   * less the rectangles of the windows at the top that show, as its
+   * `WS_CLIPCHILDREN` takes them out (`USER.EXE` seg1 `162c`, `16f2`;
+   * `lessChildren`).
+   */
   paintBackground(left = 0, top = 0, right = this.screen.width, bottom = this.screen.height) {
+    const shows = lessChildren(
+      this,
+      null,
+      null,
+      ClipRegion.rect(0, 0, this.screen.width, this.screen.height)
+    );
     const desktop = DeviceBitmap.view(
       this.screen,
       0,
       0,
       this.screen.width,
       this.screen.height,
-      (x, y) => this.owners[y * this.screen.width + x] === 0
+      (x, y) => shows.contains(x, y)
     );
 
     this.#paintDesk(desktop, 0, 0, left, top, right, bottom);

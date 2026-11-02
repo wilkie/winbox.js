@@ -422,20 +422,24 @@ impl System {
     }
 
     /// The desktop itself, where no window shows, within a rectangle of
-    /// the screen.
+    /// the screen: through the desktop window's own region by USER's rule,
+    /// the screen less the rectangles of the windows at the top that show,
+    /// as its `WS_CLIPCHILDREN` takes them out (`USER.EXE` seg1 `162c`,
+    /// `16f2`; `less_top_windows`). The TypeScript engine's
+    /// `paintBackground`.
     pub fn paint_background_in(&mut self, area: [i32; 4]) {
         let screen = self.screen_bitmap();
-        let owners = std::rc::Rc::clone(&self.owners);
         let (width, height) = (screen.width(), screen.height());
+        let shows = std::rc::Rc::new(
+            self.less_top_windows(winbox_raster::ClipRegion::rect(0, 0, width, height)),
+        );
         let desktop = DeviceBitmap::view(
             &screen,
             0,
             0,
             width,
             height,
-            Some(std::rc::Rc::new(move |x, y| {
-                owners.get((y * width + x) as usize).copied().unwrap_or(0) == 0
-            })),
+            Some(std::rc::Rc::new(move |x, y| shows.contains(x, y))),
         );
 
         self.paint_desk(&desktop, (0, 0), area);
