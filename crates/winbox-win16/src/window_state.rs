@@ -2240,6 +2240,7 @@ impl Engine {
                         asked[1],
                         asked[2].max(0),
                         asked[3].max(0),
+                        flags,
                     )?;
 
                     let window = system.windows[index].as_ref().expect("a window");

@@ -39,7 +39,7 @@ import { chromeReady, displayEnvironment } from './chrome.js';
     );
 
     desktop.show(child);
-    desktop.place(parent, 100, 150, 200, 120);
+    desktop.place(parent, 100, 150, 200, 120, 0x0014);
 
     expect(child.left - (parent.left + parent.client.left)).toBe(10);
     expect(child.top - (parent.top + parent.client.top)).toBe(5);

@@ -225,7 +225,7 @@ export async function CreateWindow(
 
   if (dwExStyle & WS_EX_DLGMODALFRAME) {
     shown.modalFrame = true;
-    raster.place(shown, shown.left, shown.top, shown.width, shown.height);
+    raster.placeMade(shown, shown.left, shown.top, shown.width, shown.height);
   }
 
   /* A window at the top given a parent is owned, by the window at the top
@@ -262,7 +262,7 @@ export async function CreateWindow(
       shown.control.iconHandle = block;
       shown.control.text = '';
       shown.title = '';
-      raster.place(
+      raster.placeMade(
         shown,
         shown.left,
         shown.top,
@@ -392,7 +392,7 @@ export async function CreateWindow(
       atY !== (y << 16) >> 16 ||
       atX !== (x << 16) >> 16
     ) {
-      raster.place(
+      raster.placeMade(
         shown,
         atX + (parent ? parent.left + parent.client.left : 0),
         atY + (parent ? parent.top + parent.client.top : 0),
@@ -429,7 +429,7 @@ export async function CreateWindow(
     );
 
     if (width !== shown.width || height !== shown.height) {
-      raster.place(shown, shown.left, shown.top, width, height);
+      raster.placeMade(shown, shown.left, shown.top, width, height);
     }
   }
 

@@ -210,7 +210,17 @@ impl System {
             return Ok(());
         }
 
-        self.place_window(index, place.0, place.1, place.2, place.3)
+        // `SetMenu` changes the frame through `SetWindowPos` with
+        // `SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE |
+        // SWP_FRAMECHANGED` (`USER.EXE` seg9 `0014`-`0030`, seg13 `0abe`).
+        self.place_window(
+            index,
+            place.0,
+            place.1,
+            place.2,
+            place.3,
+            crate::moved::FRAME_IN_PLACE,
+        )
     }
 }
 

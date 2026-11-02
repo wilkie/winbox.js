@@ -21,6 +21,7 @@ import { type Desk } from './desk.js';
 import { layoutText, type TextOps } from './DrawText.js';
 import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
 import {
+  classOf,
   DCX_CLIPSIBLINGS,
   DCX_USESTYLE,
   DCX_WINDOW,
@@ -95,8 +96,18 @@ export type Insert =
 const SWP_NOSIZE = 0x0001;
 const SWP_NOMOVE = 0x0002;
 const SWP_NOZORDER = 0x0004;
+const SWP_NOACTIVATE = 0x0010;
+const SWP_FRAMECHANGED = 0x0020;
 const SWP_SHOWWINDOW = 0x0040;
 const SWP_HIDEWINDOW = 0x0080;
+const SWP_NOCOPYBITS = 0x0100;
+
+/** A frame changed where it is, as `USER.EXE` seg13 `0abe` asks `SetWindowPos` (`Desktop.place`). */
+export const FRAME_IN_PLACE =
+  SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED;
+
+/** What `MinMaximize` minimizes a window with: `SWP_FRAMECHANGED | SWP_NOCOPYBITS` (`USER.EXE` seg6 `1c59`). */
+const MINIMIZE_FLAGS = SWP_FRAMECHANGED | SWP_NOCOPYBITS;
 
 /** A window of a list `SetWindowPos` places (`Desktop.beginPlacing`), one of USER's entries. */
 interface Placing {
@@ -808,9 +819,7 @@ export class Desktop {
     const y0 = Math.max(window.top, 0);
     const x1 = Math.min(window.left + window.width, this.screen.width);
     const y1 = Math.min(window.top + window.height, this.screen.height);
-    const shows = this.system
-      ? regionByRule(this.system, window, DCX_WINDOW | DCX_USESTYLE)
-      : null;
+    const shows = this.system ? regionByRule(this.system, window, DCX_WINDOW | DCX_USESTYLE) : null;
 
     if (!shows) {
       this.#eachCovered(window, (sx, sy) => points.push([sx, sy]));
@@ -935,8 +944,11 @@ export class Desktop {
     window.menu = labels;
     window.menuGrayed = grayed;
 
+    /* `SetMenu` changes the frame through `SetWindowPos` with
+     * `SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE |
+     * SWP_FRAMECHANGED` (`USER.EXE` seg9 `0014`-`0030`, seg13 `0abe`). */
     if (had !== (labels !== undefined)) {
-      this.place(window, window.left, window.top, window.width, window.height);
+      this.place(window, window.left, window.top, window.width, window.height, FRAME_IN_PLACE);
     } else {
       this.paintFrame(window);
     }
@@ -1637,16 +1649,34 @@ export class Desktop {
   }
 
   /**
-   * Moves or sizes a window. Its client area is worked out again, and if it
-   * shows, what it covered and what it now covers are painted again.
+   * A window moved or sized as `SetWindowPos` places it, `flags` the `SWP_`
+   * flags its caller in Windows gives -- every caller does, through
+   * `SetWindowPos` (`USER.EXE` seg7 `02f4`) or `MoveWindow`, which is
+   * `SetWindowPos` with `SWP_NOZORDER | SWP_NOACTIVATE`, `SWP_NOREDRAW`
+   * besides without a repaint (seg7 `0000`-`0061`).
+   *
+   * Of a list being placed -- a window minimized, maximized or restored,
+   * as `MinMaximize` places it with one `SetWindowPos` (seg6 `1d56`-`1d81`)
+   * -- it is moved now and drawn as the list is drawn (`endPlacing`): its
+   * old region and its new, nothing of its bits copied, as `SWP_NOCOPYBITS`
+   * has it for an icon made or restored (`1c59`, `1cd9`).
+   *
+   * Otherwise it is one window's list: moved or sized, as `moveWithBits`
+   * places it, its bits copied unless `SWP_NOCOPYBITS`, `WM_NCCALCSIZE`'s
+   * keeping of its client area where a size or `SWP_FRAMECHANGED` is given
+   * (seg7 `0e8f`-`0ea1`); not moved nor sized, its frame changed in place
+   * with `SWP_FRAMECHANGED`, as `SetWindowPos` draws it (`frameChanged`),
+   * and nothing else. `SWP_NOREDRAW` draws as without it (`swpbits`). A
+   * window hidden is only moved.
    */
-  place(window: DesktopWindow, left: number, top: number, width: number, height: number) {
-    /* Of a list being placed -- a window minimized, maximized or restored,
-     * as `MinMaximize` places it with one `SetWindowPos` (`USER.EXE` seg6
-     * `1d56`-`1d81`) -- it is moved now and drawn as the list is drawn
-     * (`endPlacing`): its old region and its new, nothing of its bits
-     * copied, as `SWP_NOCOPYBITS` has it for an icon made or restored
-     * (`1c59`, `1cd9`). */
+  place(
+    window: DesktopWindow,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    flags: number
+  ) {
     if (this.#list) {
       const entry = this.#entryOf(window);
 
@@ -1655,29 +1685,47 @@ export class Desktop {
       return;
     }
 
-    const { was, family } = this.#relocate(window, left, top, width, height);
-
     if (!window.visible) {
+      this.#relocate(window, left, top, width, height);
       return;
     }
 
-    this.#own();
-
-    /* What the move uncovered, as Windows invalidates it: the old place less
-     * the new, where that is one rectangle; the old place otherwise. */
-    const uncovered = uncoveredBy(was, window);
-
-    if (uncovered) {
-      this.#expose(uncovered as DesktopWindow);
+    if (
+      left !== window.left ||
+      top !== window.top ||
+      width !== window.width ||
+      height !== window.height
+    ) {
+      this.moveWithBits(
+        window,
+        left,
+        top,
+        width,
+        height,
+        !(flags & SWP_NOCOPYBITS),
+        classOf(this.system ?? ALONE, window)?.style ?? 0,
+        null,
+        undefined,
+        !(flags & SWP_NOSIZE) || !!(flags & SWP_FRAMECHANGED)
+      );
+    } else if (flags & SWP_FRAMECHANGED) {
+      this.beginPlacing([window]);
+      this.placingFlags(window, flags);
+      this.frameChanged(window);
+      this.placingSkip(window);
+      this.endPlacing();
     }
+  }
 
-    this.#dueWhole(window);
-
-    for (const child of family) {
-      if (this.#showing(child)) {
-        this.#dueWhole(child);
-      }
-    }
+  /**
+   * A window being made moved or laid out again, nothing drawn: `CreateWindow`
+   * shows a window only once `WM_CREATE` is answered (`USER.EXE` seg8
+   * `0843`-`0861`), and what a class's own making does to its place and
+   * style before then -- a combo box's, a dialog's frame, an MDI client's
+   * scroll bars -- goes through no `SetWindowPos`.
+   */
+  placeMade(window: DesktopWindow, left: number, top: number, width: number, height: number) {
+    this.#relocate(window, left, top, width, height);
   }
 
   /**
@@ -2774,12 +2822,26 @@ export class Desktop {
       .sort((a, b) => b.row - a.row || a.x - b.x)
       .map(({ icon }) => icon);
 
+    /* One list, `BeginDeferWindowPos` and a `DeferWindowPos` for each icon
+     * and its title with `SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+     * SWP_NOCOPYBITS`, drawn by `EndDeferWindowPos` (seg4 `0408`-`04a9`). */
+    this.beginPlacing(icons);
+
     icons.forEach((icon, slot) => {
       const { left, top } = this.iconSlot(parent, slot);
 
       icon.iconPlace = null;
-      this.place(icon, left, top, icon.width, icon.height);
+      this.place(
+        icon,
+        left,
+        top,
+        icon.width,
+        icon.height,
+        SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOCOPYBITS
+      );
     });
+
+    this.endPlacing();
 
     return icons.length;
   }
@@ -2818,7 +2880,18 @@ export class Desktop {
 
     const now = originOf(parent);
 
-    this.place(window, now.x + x, now.y + y, window.width, window.height);
+    /* Put back at its place in the new parent's client area by
+     * `SetWindowPos` with `SWP_NOSIZE | SWP_NOZORDER` (seg14 `04b7`-`04c6`).
+     * Windows hides it first and shows it again after (`0437`, `04d1`):
+     * not followed. */
+    this.place(
+      window,
+      now.x + x,
+      now.y + y,
+      window.width,
+      window.height,
+      SWP_NOSIZE | SWP_NOZORDER
+    );
   }
 
   /** Hides a window without taking it away: as `destroy`, but it can be shown again. */
@@ -3754,6 +3827,10 @@ export class Desktop {
     window: DesktopWindow,
     to?: { left: number; top: number; width: number; height: number }
   ) {
+    /* Placed as `MinMaximize` places it: `SWP_FRAMECHANGED`, and
+     * `SWP_NOCOPYBITS` from an icon (`USER.EXE` seg6 `1cd9`, `1d39`). */
+    const flags = SWP_FRAMECHANGED | (window.state === 'minimized' ? SWP_NOCOPYBITS : 0);
+
     this.#keepIconPlace(window);
     this.#leaveIcon(window);
 
@@ -3771,7 +3848,7 @@ export class Desktop {
     /* Where `WM_GETMINMAXINFO` and `WM_WINDOWPOSCHANGING` left it, on the
      * screen (`minmax`). */
     if (to) {
-      this.place(window, to.left, to.top, to.width, to.height);
+      this.place(window, to.left, to.top, to.width, to.height, flags);
       return;
     }
 
@@ -3787,7 +3864,8 @@ export class Desktop {
         parent.left + parent.client.left - insets.left,
         parent.top + parent.client.top - insets.top,
         parent.clientWidth + insets.left + insets.right,
-        parent.clientHeight + insets.top + insets.bottom
+        parent.clientHeight + insets.top + insets.bottom,
+        flags
       );
       return;
     }
@@ -3801,14 +3879,14 @@ export class Desktop {
       const bx = this.environment.metric(SM_CXBORDER);
       const by = this.environment.metric(SM_CYBORDER);
 
-      this.place(window, -bx, -by, this.screen.width + 4 * bx, this.screen.height + 4 * by);
+      this.place(window, -bx, -by, this.screen.width + 4 * bx, this.screen.height + 4 * by, flags);
       return;
     }
 
     const cx = this.environment.metric(SM_CXFRAME);
     const cy = this.environment.metric(SM_CYFRAME);
 
-    this.place(window, -cx, -cy, this.screen.width + 2 * cx, this.screen.height + 2 * cy);
+    this.place(window, -cx, -cy, this.screen.width + 2 * cx, this.screen.height + 2 * cy, flags);
   }
 
   /**
@@ -3836,13 +3914,16 @@ export class Desktop {
       return;
     }
 
+    /* As `MinMaximize` places it (seg6 `1cd9`, `1d39`). */
+    const flags = SWP_FRAMECHANGED | (window.state === 'minimized' ? SWP_NOCOPYBITS : 0);
+
     this.#keepIconPlace(window);
     this.#leaveIcon(window);
     window.state = 'normal';
 
     const { left, top, width, height } = window.restoreRect;
 
-    this.place(window, left, top, width, height);
+    this.place(window, left, top, width, height, flags);
   }
 
   /**
@@ -3915,9 +3996,16 @@ export class Desktop {
 
     /* An icon moved goes back where it was moved to (`iconclk`). */
     if (window.iconPlace) {
-      this.place(window, window.iconPlace.left, window.iconPlace.top, cxIcon + 4, cyIcon + 4);
+      this.place(
+        window,
+        window.iconPlace.left,
+        window.iconPlace.top,
+        cxIcon + 4,
+        cyIcon + 4,
+        MINIMIZE_FLAGS
+      );
     } else {
-      this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4);
+      this.place(window, left + inset, top, cxIcon + 4, cyIcon + 4, MINIMIZE_FLAGS);
     }
 
     /* Its title made the first time, and kept after (`#leaveIcon`); put
@@ -3996,12 +4084,17 @@ export class Desktop {
 
     title.title = window.title;
     title.visible = window.visible;
+
+    /* `ShowIconTitle` places it with `SWP_NOACTIVATE` where it is not the
+     * window after its icon already, else nothing but the place
+     * (`USER.EXE` seg1 `6d75`-`6db6`). */
     this.place(
       title,
       window.left + (window.width >> 1) - (width >> 1) - 2 * border,
       window.top + window.height,
       width + 4 * border,
-      height
+      height,
+      SWP_NOACTIVATE
     );
   }
 
@@ -5380,31 +5473,6 @@ export class Desktop {
 
     bitmap.context.markRect(left, top, left + width, top + height);
   }
-}
-
-/** The part of a window's old place its new one leaves uncovered, when that is one rectangle; the old place otherwise; nothing when covered. */
-function uncoveredBy(was: DesktopWindow, now: DesktopWindow) {
-  const [l, t, r, b] = [was.left, was.top, was.left + was.width, was.top + was.height];
-  const [nl, nt, nr, nb] = [now.left, now.top, now.left + now.width, now.top + now.height];
-
-  if (nl <= l && nt <= t && nr >= r && nb >= b) {
-    return null;
-  }
-
-  const rect = (left: number, top: number, right: number, bottom: number) => ({
-    left,
-    top,
-    width: right - left,
-    height: bottom - top,
-  });
-
-  /* Shrunk, or moved, along one side only. */
-  if (nl <= l && nr >= r && nt <= t && nb < b && nb > t) return rect(l, nb, r, b);
-  if (nl <= l && nr >= r && nb >= b && nt > t && nt < b) return rect(l, t, r, nt);
-  if (nt <= t && nb >= b && nl <= l && nr < r && nr > l) return rect(nr, t, r, b);
-  if (nt <= t && nb >= b && nr >= r && nl > l && nl < r) return rect(l, t, nl, b);
-
-  return rect(l, t, r, b);
 }
 
 function overlaps(a: DesktopWindow, b: DesktopWindow) {

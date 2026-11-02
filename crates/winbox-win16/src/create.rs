@@ -590,7 +590,7 @@ impl Engine {
                     };
                     let (cx, cy) = (system.metric(SM_CXICON), system.metric(SM_CYICON));
 
-                    system.place_window(index, left, top, cx, cy)?;
+                    system.place_made(index, left, top, cx, cy)?;
                 }
 
                 system.windows[index]
@@ -739,7 +739,7 @@ impl Engine {
                     )
                 });
 
-            system.place_window(
+            system.place_made(
                 index,
                 i32::from(at_x) + origin.0,
                 i32::from(at_y) + origin.1,
@@ -776,7 +776,7 @@ impl Engine {
 
             if (width, height) != (place[2], place[3]) {
                 self.system()
-                    .place_window(index, place[0], place[1], width, height)?;
+                    .place_made(index, place[0], place[1], width, height)?;
             }
         }
 

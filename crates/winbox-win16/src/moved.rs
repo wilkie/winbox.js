@@ -62,8 +62,24 @@ const WS_EX_TOPMOST: u32 = 0x0000_0008;
 pub(crate) const SWP_NOSIZE: u16 = 0x0001;
 pub(crate) const SWP_NOMOVE: u16 = 0x0002;
 pub(crate) const SWP_NOZORDER: u16 = 0x0004;
+pub(crate) const SWP_NOREDRAW: u16 = 0x0008;
+pub(crate) const SWP_NOACTIVATE: u16 = 0x0010;
+pub(crate) const SWP_FRAMECHANGED: u16 = 0x0020;
 pub(crate) const SWP_SHOWWINDOW: u16 = 0x0040;
 pub(crate) const SWP_HIDEWINDOW: u16 = 0x0080;
+pub(crate) const SWP_NOCOPYBITS: u16 = 0x0100;
+
+/// A frame changed where it is, as `USER.EXE` seg13 `0abe` asks
+/// `SetWindowPos` (`place_window`).
+pub(crate) const FRAME_IN_PLACE: u16 =
+    SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED;
+
+/// `MoveWindow` without a repaint: `SetWindowPos` with these (`USER.EXE`
+/// seg7 `004c`-`0061`).
+pub(crate) const MOVE_WINDOW_QUIET: u16 = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW;
+
+/// What `MinMaximize` minimizes a window with (`USER.EXE` seg6 `1c59`).
+pub(crate) const MINIMIZE_FLAGS: u16 = SWP_FRAMECHANGED | SWP_NOCOPYBITS;
 const CS_VREDRAW: u16 = 0x0001;
 const CS_HREDRAW: u16 = 0x0002;
 

@@ -586,7 +586,7 @@ impl Engine {
                     let (left, top, width, height) =
                         (window.left, window.top, window.width, window.height);
 
-                    system.place_window(index, left, top, width, height)?;
+                    system.place_made(index, left, top, width, height)?;
                 }
 
                 Ok(0)

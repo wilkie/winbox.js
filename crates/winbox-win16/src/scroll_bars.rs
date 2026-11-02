@@ -730,7 +730,14 @@ impl Engine {
             let (left, top, width, height) = (window.left, window.top, window.width, window.height);
 
             window.style = style;
-            system.place_window(index, left, top, width, height)?;
+            system.place_window(
+                index,
+                left,
+                top,
+                width,
+                height,
+                SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED,
+            )?;
             erasing
         };
 

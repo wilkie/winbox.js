@@ -1013,7 +1013,7 @@ async function minimizedPlace(
     const [x, y, cx, cy] = [place.x, place.y, place.cx, place.cy].map(signed);
 
     if (x !== shown.left || y !== shown.top || cx !== shown.width || cy !== shown.height) {
-      desktop.place(shown, x, y, Math.max(cx, 0), Math.max(cy, 0));
+      desktop.place(shown, x, y, Math.max(cx, 0), Math.max(cy, 0), flags);
       place.cx = shown.width;
       place.cy = shown.height;
     }
@@ -1708,7 +1708,7 @@ export async function changeFrame(system: any, hwnd: number, window: RasterWindo
   const was = { ...shown.client };
 
   shown.style = style;
-  window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+  window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height, windowPos.flags);
   await send(User.WM_NCCALCSIZE, 0, 0);
 
   /* What of the client area stayed as it was, said so. */

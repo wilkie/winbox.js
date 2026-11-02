@@ -96,7 +96,17 @@ import { windowVersion } from '../module.js';
 
 const HWND_TOPMOST = 0xffff;
 const SWP_NOSIZE = 0x0001;
+const SWP_NOMOVE = 0x0002;
+const SWP_NOZORDER = 0x0004;
+const SWP_NOREDRAW = 0x0008;
 const SWP_NOACTIVATE = 0x0010;
+const SWP_FRAMECHANGED = 0x0020;
+
+/** `MoveWindow` without a repaint: `SetWindowPos` with these (`USER.EXE` seg7 `004c`-`0061`). */
+const MOVE_WINDOW_QUIET = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW;
+
+/** A frame changed where it is, as `USER.EXE` seg13 `0abe` asks `SetWindowPos`. */
+const FRAME_IN_PLACE = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED;
 const SW_SHOWNA = 8;
 
 /**
@@ -867,9 +877,11 @@ function listHost(system: any, window: RasterWindow): ListHost {
         visible = true;
       }
 
+      /* The style changed, and the frame through `SetWindowPos` (`USER.EXE`
+       * seg43 `00c0`-`0116`, seg13 `0abe`). */
       if (visible !== has) {
         shown.style = visible ? shown.style | 0x00200000 : shown.style & ~0x00200000;
-        desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+        desktop.place(shown, shown.left, shown.top, shown.width, shown.height, FRAME_IN_PLACE);
       }
 
       if (position !== null) {
@@ -910,13 +922,16 @@ function integralHeight(window: RasterWindow) {
     return;
   }
 
+  /* Sized by `SetWindowPos` with `SWP_NOMOVE | SWP_NOZORDER |
+   * SWP_NOACTIVATE` (`04af`-`04b1`). */
   if ((shown.height - 2 * border) % list.height) {
     window.desktop.place(
       shown,
       shown.left,
       shown.top,
       shown.width,
-      Math.trunc(shown.height / list.height) * list.height + 2 * border
+      Math.trunc(shown.height / list.height) * list.height + 2 * border,
+      SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE
     );
   }
 }
@@ -1325,7 +1340,7 @@ export async function initCombo(system: any, hwnd: number) {
   if (!ownerDraw) {
     shown.style |= CBS_HASSTRINGS;
   }
-  window.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+  window.desktop.placeMade(shown, shown.left, shown.top, shown.width, shown.height);
 
   const type = original & 3 || CBS_SIMPLE;
   const height = control.font
@@ -1429,14 +1444,14 @@ export async function initCombo(system: any, hwnd: number) {
   if (type === CBS_SIMPLE) {
     /* Always shown: moved to its place, a pixel short, and made whole rows. */
     combo.dropped = true;
-    list.desktop.place(list.window, shown.left + ll, shown.top + lt, lr - ll, lb - lt - 1);
+    list.desktop.placeMade(list.window, shown.left + ll, shown.top + lt, lr - ll, lb - lt - 1);
     integralHeight(list);
     return;
   }
 
   list.desktop.hide(list.window);
   list.desktop.detach(list.window);
-  window.desktop.place(shown, shown.left, shown.top, shown.width, fieldHeight);
+  window.desktop.placeMade(shown, shown.left, shown.top, shown.width, fieldHeight);
 }
 
 /** The selection's text, or nothing. */
@@ -1928,7 +1943,15 @@ async function comboSetFont(
     if (edit instanceof RasterWindow) {
       const [fl, ft, fr, fb] = parts.field;
 
-      edit.desktop.place(edit.window, shown.left + fl, shown.top + ft, fr - fl, fb - ft);
+      /* `MoveWindow` without a repaint (`USER.EXE` seg34 `051b`-`0534`). */
+      edit.desktop.place(
+        edit.window,
+        shown.left + fl,
+        shown.top + ft,
+        fr - fl,
+        fb - ft,
+        MOVE_WINDOW_QUIET
+      );
     }
   }
 
@@ -1944,14 +1967,35 @@ async function comboSetFont(
   if (list instanceof RasterWindow) {
     const [ll, lt, lr, lb] = parts.list;
 
-    list.desktop.place(list.window, shown.left + ll, shown.top + lt, lr - ll, lb - lt);
+    list.desktop.place(
+      list.window,
+      shown.left + ll,
+      shown.top + lt,
+      lr - ll,
+      lb - lt,
+      MOVE_WINDOW_QUIET
+    );
     integralHeight(list);
   }
 
   await closeUp(system, window, false, false);
 
+  /* Made as high as its field as the list is put away after a font
+   * (seg33 `0b8b`-`0bc7`): `SetWindowPos` with `SWP_NOMOVE | SWP_NOZORDER |
+   * SWP_NOACTIVATE`, `SWP_FRAMECHANGED` too for a program made before 3.10
+   * (the byte at 26h's bit 4, `0b97`-`0b9f`). */
   if (combo.type !== CBS_SIMPLE) {
-    window.desktop.place(shown, shown.left, shown.top, shown.width, fieldHeight);
+    window.desktop.place(
+      shown,
+      shown.left,
+      shown.top,
+      shown.width,
+      fieldHeight,
+      SWP_NOMOVE |
+        SWP_NOZORDER |
+        SWP_NOACTIVATE |
+        (windowVersion(system, window) >= 0x30a ? 0 : SWP_FRAMECHANGED)
+    );
   }
 
   if (redraw) {

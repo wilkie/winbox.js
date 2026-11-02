@@ -31,7 +31,7 @@ const CS_CLASSDC = 0x0040;
 const CS_PARENTDC = 0x0080;
 
 /** The class a window was made of, as `RegisterClass` kept it. */
-function classOf(system: any, window: DesktopWindow): any {
+export function classOf(system: any, window: DesktopWindow): any {
   const raster = window.hwnd ? system.handles.resolve(window.hwnd) : null;
   const name = raster instanceof RasterWindow ? raster.options?.windowClass : null;
 

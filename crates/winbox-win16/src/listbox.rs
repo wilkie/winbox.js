@@ -404,7 +404,16 @@ impl System {
 
             let (left, top, width, height) = (window.left, window.top, window.width, window.height);
 
-            self.place_window(index, left, top, width, height)?;
+            // The style changed, and the frame through `SetWindowPos`
+            // (`USER.EXE` seg43 `00c0`-`0116`, seg13 `0abe`).
+            self.place_window(
+                index,
+                left,
+                top,
+                width,
+                height,
+                crate::moved::FRAME_IN_PLACE,
+            )?;
         }
 
         if let Some(position) = position {
@@ -514,7 +523,18 @@ impl System {
         let (left, top, width, height) = (window.left, window.top, window.width, window.height);
 
         if (height - 2 * BORDER) % row != 0 {
-            self.place_window(index, left, top, width, height / row * row + 2 * BORDER)?;
+            // Sized by `SetWindowPos` with `SWP_NOMOVE | SWP_NOZORDER |
+            // SWP_NOACTIVATE` (seg38 `04af`-`04b1`).
+            self.place_window(
+                index,
+                left,
+                top,
+                width,
+                height / row * row + 2 * BORDER,
+                crate::moved::SWP_NOMOVE
+                    | crate::moved::SWP_NOZORDER
+                    | crate::moved::SWP_NOACTIVATE,
+            )?;
         }
 
         Ok(())

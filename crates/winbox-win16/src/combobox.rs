@@ -373,7 +373,7 @@ impl Engine {
 
             let (left, top, width, height) = (window.left, window.top, window.width, window.height);
 
-            system.place_window(index, left, top, width, height)?;
+            system.place_made(index, left, top, width, height)?;
 
             let height = system.control_font_height(index)?;
             let system_height = system.system_control_font()?.height;
@@ -522,7 +522,7 @@ impl Engine {
 
             let (left, top) = (place.0, place.1);
 
-            system.place_window(list_index, left + ll, top + lt, lr - ll, lb - lt - 1)?;
+            system.place_made(list_index, left + ll, top + lt, lr - ll, lb - lt - 1)?;
             system.integral_height(list_index)?;
             return Ok(());
         }
@@ -534,7 +534,7 @@ impl Engine {
         let window = system.control_window(index);
         let (left, top, width) = (window.left, window.top, window.width);
 
-        system.place_window(index, left, top, width, field_height)
+        system.place_made(index, left, top, width, field_height)
     }
 
     /// The field brought up to the selection: its text into the edit
@@ -1119,8 +1119,15 @@ impl Engine {
             let [fl, ft, fr, fb] = field;
             let (left, top, _, _) = place;
 
-            self.system()
-                .place_window(edit, left + fl, top + ft, fr - fl, fb - ft)?;
+            // `MoveWindow` without a repaint (`USER.EXE` seg34 `051b`-`0534`).
+            self.system().place_window(
+                edit,
+                left + fl,
+                top + ft,
+                fr - fl,
+                fb - ft,
+                crate::moved::MOVE_WINDOW_QUIET,
+            )?;
         }
 
         // The list moved to its place in the new layout, whatever the kind
@@ -1137,17 +1144,37 @@ impl Engine {
             let (left, top, _, _) = place;
             let mut system = self.system();
 
-            system.place_window(list_index, left + ll, top + lt, lr - ll, lb - lt)?;
+            system.place_window(
+                list_index,
+                left + ll,
+                top + lt,
+                lr - ll,
+                lb - lt,
+                crate::moved::MOVE_WINDOW_QUIET,
+            )?;
             system.integral_height(list_index)?;
         }
 
         self.close_up(index, false, false).await?;
 
+        // Made as high as its field as the list is put away after a font
+        // (seg33 `0b8b`-`0bc7`): `SetWindowPos` with `SWP_NOMOVE |
+        // SWP_NOZORDER | SWP_NOACTIVATE`, `SWP_FRAMECHANGED` too for a
+        // program made before 3.10 (the byte at 26h's bit 4,
+        // `0b97`-`0b9f`).
         if combo.kind != CBS_SIMPLE {
             let (left, top, width, height) = place;
+            let mut system = self.system();
+            let flags = crate::moved::SWP_NOMOVE
+                | crate::moved::SWP_NOZORDER
+                | crate::moved::SWP_NOACTIVATE
+                | if system.made_for_31(index) {
+                    0
+                } else {
+                    crate::moved::SWP_FRAMECHANGED
+                };
 
-            self.system()
-                .place_window(index, left, top, width, height)?;
+            system.place_window(index, left, top, width, height, flags)?;
         }
 
         if redraw != 0 {

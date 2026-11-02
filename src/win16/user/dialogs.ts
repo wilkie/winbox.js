@@ -404,7 +404,7 @@ export async function createDialog(
 
   if (modalFrame) {
     window.window.modalFrame = true;
-    desktop.place(
+    desktop.placeMade(
       window.window,
       window.window.left,
       window.window.top,

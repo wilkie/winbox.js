@@ -205,14 +205,37 @@ pub(super) fn arrange_iconic_windows(system: &mut System, args: &mut Args) -> Re
 
     let icons: Vec<usize> = icons.into_iter().map(|(icon, _, _)| icon).collect();
 
+    // One list, `BeginDeferWindowPos` and a `DeferWindowPos` for each icon
+    // and its title with `SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE |
+    // SWP_NOCOPYBITS`, drawn by `EndDeferWindowPos` (seg4 `0408`-`04a9`).
+    system.begin_placing(&icons);
+
     for (slot, &icon) in icons.iter().enumerate() {
         let (left, top) = system.icon_slot(parent, slot as i32);
         let window = system.windows[icon].as_mut().expect("a window");
         let (width, height) = (window.width, window.height);
 
         window.icon_place = None;
-        system.place_window(icon, left, top, width, height)?;
+
+        let placed = system.place_window(
+            icon,
+            left,
+            top,
+            width,
+            height,
+            crate::moved::SWP_NOSIZE
+                | crate::moved::SWP_NOZORDER
+                | crate::moved::SWP_NOACTIVATE
+                | crate::moved::SWP_NOCOPYBITS,
+        );
+
+        if let Err(stop) = placed {
+            system.end_placing(None);
+            return Err(stop);
+        }
     }
+
+    system.end_placing(None);
 
     Ok(Answer::Word(icons.len() as u16))
 }

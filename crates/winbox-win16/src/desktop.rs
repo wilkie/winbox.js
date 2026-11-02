@@ -1460,9 +1460,27 @@ impl System {
         }
     }
 
-    /// A window moved or sized: its client area worked out again, its
-    /// children moved as far as its client area did, and, if it shows,
-    /// what it uncovered and it due again.
+    /// A window moved or sized as `SetWindowPos` places it, `flags` the
+    /// `SWP_` flags its caller in Windows gives -- every caller does,
+    /// through `SetWindowPos` (`USER.EXE` seg7 `02f4`) or `MoveWindow`,
+    /// which is `SetWindowPos` with `SWP_NOZORDER | SWP_NOACTIVATE`,
+    /// `SWP_NOREDRAW` besides without a repaint (seg7 `0000`-`0061`).
+    ///
+    /// Of a list being placed -- a window minimized, maximized or
+    /// restored, as `MinMaximize` places it with one `SetWindowPos` (seg6
+    /// `1d56`-`1d81`) -- it is moved now and drawn as the list is drawn
+    /// (`end_placing`): its old region and its new, nothing of its bits
+    /// copied, as `SWP_NOCOPYBITS` has it for an icon made or restored
+    /// (`1c59`, `1cd9`).
+    ///
+    /// Otherwise it is one window's list: moved or sized, as
+    /// `move_with_bits` places it, its bits copied unless `SWP_NOCOPYBITS`,
+    /// `WM_NCCALCSIZE`'s keeping of its client area where a size or
+    /// `SWP_FRAMECHANGED` is given (seg7 `0e8f`-`0ea1`); not moved nor
+    /// sized, its frame changed in place with `SWP_FRAMECHANGED`, as
+    /// `SetWindowPos` draws it (`frame_changed`), and nothing else.
+    /// `SWP_NOREDRAW` draws as without it (`swpbits`). A window hidden is
+    /// only moved. The TypeScript engine's `place`.
     pub fn place_window(
         &mut self,
         index: usize,
@@ -1470,13 +1488,8 @@ impl System {
         top: i32,
         width: i32,
         height: i32,
+        flags: u16,
     ) -> Result<(), crate::call::Stop> {
-        // Of a list being placed -- a window minimized, maximized or
-        // restored, as `MinMaximize` places it with one `SetWindowPos`
-        // (`USER.EXE` seg6 `1d56`-`1d81`) -- it is moved now and drawn as the
-        // list is drawn (`end_placing`): its old region and its new, nothing
-        // of its bits copied, as `SWP_NOCOPYBITS` has it for an icon made or
-        // restored (`1c59`, `1cd9`). The TypeScript engine's `place`.
         if self.placing.is_some() {
             self.placing_entry(index);
             self.relocate(index, left, top, width, height)?;
@@ -1488,37 +1501,56 @@ impl System {
             return Ok(());
         }
 
-        let (was, family) = self.relocate(index, left, top, width, height)?;
-
         if !self.shown(index).visible {
+            self.relocate(index, left, top, width, height)?;
             return Ok(());
         }
 
-        self.own();
-
-        let now = {
+        let unchanged = {
             let shown = self.shown(index);
 
-            [
-                shown.left,
-                shown.top,
-                shown.left + shown.width,
-                shown.top + shown.height,
-            ]
+            [shown.left, shown.top, shown.width, shown.height] == [left, top, width, height]
         };
 
-        if let Some(uncovered) = uncovered_by(was, now) {
-            self.expose(uncovered);
+        if !unchanged {
+            self.move_with_bits(
+                index,
+                [left, top, width, height],
+                flags & crate::moved::SWP_NOCOPYBITS == 0,
+                None,
+                None,
+                flags & SWP_NOSIZE == 0 || flags & crate::moved::SWP_FRAMECHANGED != 0,
+                [0; 4],
+            )?;
+        } else if flags & crate::moved::SWP_FRAMECHANGED != 0 {
+            self.begin_placing(&[index]);
+            self.placing_flags(index, flags);
+
+            let changed = self.frame_changed(index);
+
+            self.placing_skip(index);
+            self.end_placing(None);
+            changed?;
         }
 
-        self.due_whole(index);
+        Ok(())
+    }
 
-        for child in family {
-            if self.showing(child) {
-                self.due_whole(child);
-            }
-        }
-
+    /// A window being made moved or laid out again, nothing drawn:
+    /// `CreateWindow` shows a window only once `WM_CREATE` is answered
+    /// (`USER.EXE` seg8 `0843`-`0861`), and what a class's own making does
+    /// to its place and style before then -- a combo box's, a dialog's
+    /// frame, an MDI client's scroll bars -- goes through no
+    /// `SetWindowPos`. The TypeScript engine's `placeMade`.
+    pub fn place_made(
+        &mut self,
+        index: usize,
+        left: i32,
+        top: i32,
+        width: i32,
+        height: i32,
+    ) -> Result<(), crate::call::Stop> {
+        self.relocate(index, left, top, width, height)?;
         Ok(())
     }
 
@@ -1955,6 +1987,10 @@ impl System {
             )
         };
 
+        // Placed as `MinMaximize` places it: `SWP_FRAMECHANGED`, and
+        // `SWP_NOCOPYBITS` from an icon (`USER.EXE` seg6 `1cd9`, `1d39`).
+        let flags = min_max_flags(placement);
+
         self.keep_icon_place(index);
         self.leave_icon(index);
 
@@ -1965,7 +2001,7 @@ impl System {
         self.shown_mut(index).placement = Placement::Maximized;
 
         if let Some([left, top, width, height]) = to {
-            return self.place_window(index, left, top, width, height);
+            return self.place_window(index, left, top, width, height, flags);
         }
 
         if let Some(parent) = parent {
@@ -1980,7 +2016,7 @@ impl System {
                 parent.client_height() + insets[1] + insets[3],
             );
 
-            return self.place_window(index, left, top, width, height);
+            return self.place_window(index, left, top, width, height, flags);
         }
 
         let (width, height) = (
@@ -1991,12 +2027,12 @@ impl System {
         if style & WS_THICKFRAME == 0 {
             let (bx, by) = (self.metric(SM_CXBORDER), self.metric(SM_CYBORDER));
 
-            return self.place_window(index, -bx, -by, width + 4 * bx, height + 4 * by);
+            return self.place_window(index, -bx, -by, width + 4 * bx, height + 4 * by, flags);
         }
 
         let (cx, cy) = (self.metric(SM_CXFRAME), self.metric(SM_CYFRAME));
 
-        self.place_window(index, -cx, -cy, width + 2 * cx, height + 2 * cy)
+        self.place_window(index, -cx, -cy, width + 2 * cx, height + 2 * cy, flags)
     }
 
     /// A minimized or maximized window no longer one, where it lies: an
@@ -2036,10 +2072,13 @@ impl System {
             return Ok(());
         };
 
+        // As `MinMaximize` places it (seg6 `1cd9`, `1d39`).
+        let flags = min_max_flags(placement);
+
         self.keep_icon_place(index);
         self.leave_icon(index);
         self.shown_mut(index).placement = Placement::Normal;
-        self.place_window(index, left, top, width, height)
+        self.place_window(index, left, top, width, height, flags)
     }
 
     /// An icon's title made for a window: a window of USER's, of its own
@@ -2249,12 +2288,16 @@ impl System {
             shown.visible = visible;
         }
 
+        // `ShowIconTitle` places it with `SWP_NOACTIVATE` where it is not
+        // the window after its icon already, else nothing but the place
+        // (`USER.EXE` seg1 `6d75`-`6db6`).
         self.place_window(
             title,
             left + (width >> 1) - (wide >> 1) - 2 * border,
             top + height,
             across,
             down,
+            crate::moved::SWP_NOACTIVATE,
         )
     }
 
@@ -2349,12 +2392,16 @@ impl System {
 
         let (left, top) = slot_at(slot);
 
-        match self.shown(index).icon_place {
-            Some((left, top)) => {
-                self.place_window(index, left, top, icon_wide + 4, icon_high + 4)?;
-            }
-            None => self.place_window(index, left + inset, top, icon_wide + 4, icon_high + 4)?,
-        }
+        let (left, top) = self.shown(index).icon_place.unwrap_or((left + inset, top));
+
+        self.place_window(
+            index,
+            left,
+            top,
+            icon_wide + 4,
+            icon_high + 4,
+            crate::moved::MINIMIZE_FLAGS,
+        )?;
 
         // Its title made the first time, and kept after (`leave_icon`);
         // put just before it, as `ShowIconTitle` puts it after the window
@@ -2458,24 +2505,14 @@ impl System {
 
 /// What a window's move uncovered, as Windows invalidates it: the old place
 /// less the new, where that is one rectangle; the old place otherwise.
-fn uncovered_by(was: [i32; 4], now: [i32; 4]) -> Option<[i32; 4]> {
-    let [l, t, r, b] = was;
-    let [nl, nt, nr, nb] = now;
-
-    if nl <= l && nt <= t && nr >= r && nb >= b {
-        return None;
-    }
-
-    // Shrunk, or moved, along one side only.
-    Some(if nl <= l && nr >= r && nt <= t && nb < b && nb > t {
-        [l, nb, r, b]
-    } else if nl <= l && nr >= r && nb >= b && nt > t && nt < b {
-        [l, t, r, nt]
-    } else if nt <= t && nb >= b && nl <= l && nr < r && nr > l {
-        [nr, t, r, b]
-    } else if nt <= t && nb >= b && nr >= r && nl > l && nl < r {
-        [l, t, nl, b]
-    } else {
-        was
-    })
+/// What `MinMaximize` maximizes or restores a window with:
+/// `SWP_FRAMECHANGED`, and `SWP_NOCOPYBITS` from an icon (`USER.EXE` seg6
+/// `1cd9`, `1d39`).
+fn min_max_flags(placement: Placement) -> u16 {
+    crate::moved::SWP_FRAMECHANGED
+        | if placement == Placement::Minimized {
+            crate::moved::SWP_NOCOPYBITS
+        } else {
+            0
+        }
 }

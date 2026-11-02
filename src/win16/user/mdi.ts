@@ -231,7 +231,7 @@ async function clientProc(system: any, hwnd: number, message: number, wParam: nu
        * the client's edges (`mdi-scroll.ts`). */
       if (shown && shown.style & (WS_VSCROLL | WS_HSCROLL)) {
         shown.style &= ~(WS_VSCROLL | WS_HSCROLL);
-        window!.desktop.place(shown, shown.left, shown.top, shown.width, shown.height);
+        window!.desktop.placeMade(shown, shown.left, shown.top, shown.width, shown.height);
       }
 
       return 0;

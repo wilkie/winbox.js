@@ -277,7 +277,18 @@ impl System {
 
         let now = origin_of(self, parent);
 
-        self.place_window(index, now.0 + x, now.1 + y, place.2, place.3)
+        // Put back at its place in the new parent's client area by
+        // `SetWindowPos` with `SWP_NOSIZE | SWP_NOZORDER` (seg14
+        // `04b7`-`04c6`). Windows hides it first and shows it again after
+        // (`0437`, `04d1`): not followed.
+        self.place_window(
+            index,
+            now.0 + x,
+            now.1 + y,
+            place.2,
+            place.3,
+            crate::moved::SWP_NOSIZE | crate::moved::SWP_NOZORDER,
+        )
     }
 }
 

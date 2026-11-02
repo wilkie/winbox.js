@@ -187,15 +187,18 @@ const WS_CHILD = 0x40000000;
     expect(mover.needsPaint).toBe(false);
   });
 
-  it('paints all of a window placed with a part of it due, not that part alone', () => {
+  it('takes the part of a window due with it as it places it, as `SetWindowPos` does', () => {
     const { desktop, mover } = make();
     const shown: DesktopWindow & any = mover;
 
     mover.needsPaint = true;
     shown.dirtyRect = [100, 100, 150, 150];
-    desktop.place(mover, 150, 120, 200, 100);
+    desktop.place(mover, 150, 120, 200, 100, 0x0014);
 
     expect(mover.needsPaint).toBe(true);
-    expect(shown.dirtyRect).toBeUndefined();
+    /* The part moved by as far as the window, the corner of its bits not due. */
+    expect(updateOf(mover).contains(150, 120)).toBe(true);
+    expect(updateOf(mover).contains(199, 169)).toBe(true);
+    expect(updateOf(mover).contains(340, 210)).toBe(false);
   });
 });

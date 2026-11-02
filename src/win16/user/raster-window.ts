@@ -1,5 +1,7 @@
 'use strict';
 
+/** `SWP_NOZORDER | SWP_NOACTIVATE`. */
+const MOVE_WINDOW = 0x0014;
 import { type Desktop, type DesktopWindow } from './desktop.js';
 
 /**
@@ -109,12 +111,14 @@ export class RasterWindow {
     this.desktop.destroy(this.window);
   }
 
+  /** Moved as `MoveWindow` with a repaint moves it: `SWP_NOZORDER | SWP_NOACTIVATE` (`USER.EXE` seg7 `004c`-`0061`). */
   move(x: number, y: number) {
-    this.desktop.place(this.window, x, y, this.window.width, this.window.height);
+    this.desktop.place(this.window, x, y, this.window.width, this.window.height, MOVE_WINDOW);
   }
 
+  /** Sized as `move` moves it. */
   resize(width: number, height: number) {
-    this.desktop.place(this.window, this.window.left, this.window.top, width, height);
+    this.desktop.place(this.window, this.window.left, this.window.top, width, height, MOVE_WINDOW);
   }
 
   /** Where CreateWindow puts a window it was given no place for. Not measured: the screen's middle. */
