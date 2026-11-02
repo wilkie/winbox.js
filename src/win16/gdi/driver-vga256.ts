@@ -6,6 +6,8 @@ import { ditheredIndex } from '../../raster/dither.js';
 import { combine } from '../../raster/raster-op.js';
 import { DeviceColorMatch } from './system-exports.js';
 import { monoScan, ropBit } from './driver-hercules.js';
+import { hugeRead8 } from '../huge.js';
+import { walkRle } from './rle-runs.js';
 import {
   STYLE_MASKS,
   entryOf,
@@ -1179,13 +1181,99 @@ export function getCharWidth(
 
 /* DeviceBitmapBits and DIBToDevice --------------------------------------- */
 
+/**
+ * A run-length encoded DIB's colour table as `SVGA256.DRV` takes it
+ * (seg9 `176f`-`179e`): `biClrUsed` words, or as many as its bits give, a
+ * palette's index the low byte of each; and whether it is other than the
+ * indices in order -- the sum of each low byte less its place and each
+ * high byte, as words, not nought (flag 8, which an eight-bit DIB needs
+ * to go through the table at all: `157c`, `159c`).
+ */
+export function rleTable(system: any, info: number) {
+  const used = read16(system, info, 0x20);
+  const count = used || (1 << (read8(system, info, 0x0e) & 0x1f)) & 0xffff;
+  const at = (info & 0xffff0000) | ((info + read16(system, info, 0)) & 0xffff);
+  const table: number[] = [];
+  let sum = 0;
+
+  for (let entry = 0; entry < count; entry++) {
+    const word = read16(system, at, entry * 2);
+
+    table.push(word & 0xff);
+    sum = (sum + ((word & 0xff00) | (((word & 0xff) - entry) & 0xff))) & 0xffff;
+  }
+
+  return { table, translated: sum !== 0 };
+}
+
+/**
+ * An index through `rleTable`'s table: four bits' always, eight bits' only
+ * where the table is not the indices in order, and the index as it is
+ * where it is (`SVGA256.DRV` `1861`, `18c2`; `19a7`, `19a5`; `19d3`,
+ * `1941`). An index past the table is taken as nought: the driver's table
+ * is 256 bytes of its stack, the rest left as they were.
+ */
+export function rleIndex(
+  rle: { table: number[]; translated: boolean },
+  eight: boolean,
+  index: number
+) {
+  return eight && !rle.translated ? index : (rle.table[index] ?? 0);
+}
+
+/**
+ * A run-length encoded DIB set into a memory bitmap by `SVGA256.DRV` seg9
+ * `15ac`, which `DeviceBitmapBits` hands it with no clipping rectangle
+ * (`0041`-`0051`): the DIB's own rectangle at the bitmap's corner instead
+ * (`17e3`-`17fc`). The first line is the DIB's height less one, whatever
+ * the start and the count (`1691`-`1697`); a line above the bitmap ends
+ * the walk (`walkRle`), and each index's byte goes at its column of its
+ * row, with no bound to the width (`1738`-`1763`, `19a7`). A compression
+ * past 2 (`169d`) or a monochrome bitmap (`16d9`) answers -1, a bitmap of
+ * neither format nought; else 1 (`166c`). **Recorded** by `gdidmrle`.
+ */
+function rleSet(system: any, bitmapFar: number, bits: number, info: number) {
+  const dest = readBitmap(system, bitmapFar);
+  const compression = read16(system, info, 0x10);
+
+  if (compression > 2) {
+    return 0xffff;
+  }
+
+  const bitsPixel = read8(system, bitmapFar, 9);
+
+  if (bitsPixel === 1) {
+    return 0xffff;
+  }
+
+  if (bitsPixel !== 8) {
+    return 0;
+  }
+
+  const rle = rleTable(system, info);
+  const eight = (compression & 3) === 1;
+
+  walkRle({
+    eight,
+    read: (at) => hugeRead8(core(system), bits, at),
+    odd: (at) => (((bits & 0xffff) + at) & 1) !== 0,
+    x: 0,
+    y: read16(system, info, 8) - 1,
+    top: 0,
+    plot: (x, y, index) => write8(system, rowOf(dest, y), x, rleIndex(rle, eight, index)),
+  });
+
+  return 1;
+}
+
 /** A DIB's formats the driver takes (seg9 `01c1`, `07eb`), each its routine's number. */
 const DIB_BITS = [1, 4, 8, 24];
 
 /**
  * `DeviceBitmapBits` (`SVGA256.DRV` seg9 `0000`) on a memory bitmap: scans
  * got as a DIB or set from one. A compressed DIB goes to the driver's own
- * run lengths (`15ac`, `1a38`), not followed here (answers nought). With
+ * run lengths (`15ac`, `1a38`), its set as `rleSet` and its get not
+ * followed here (answers nought). With
  * no buffer for the bits, a get answers the scans asked and sets
  * `biSizeImage` to their bytes (`0061`-`0090`); a set answers nought. A DIB
  * of another format, or of planes but one, answers nought (`01b9`).
@@ -1230,8 +1318,10 @@ export function deviceBitmapBits(
   const height = read16(system, info, 8);
   const bitCount = read16(system, info, 0x0e);
 
+  /* A compressed DIB to the routines of run lengths (`0034`-`005c`), whose
+   * get is not followed here. */
   if (read8(system, info, 0x10) & 3) {
-    return 0;
+    return get === 0 && bits ? rleSet(system, bitmapFar, bits, info) : 0;
   }
 
   if (!bits) {

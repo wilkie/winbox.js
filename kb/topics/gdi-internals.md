@@ -187,5 +187,5 @@ Status is what WinBox does after this pass: implemented, or a stub that logs and
 - `GDISeeGDIDo`'s 1, 2 and 3 on a local heap of GDI's, which WinBox's GDI segment does not hold (`ugaps:seegdiheap`).
 - On the 256-colour display, a DIB got through the translation table and one of 24 bits set: [[probe:gdidmdrw]] hands a null table, which DOSBox reads as its real-mode vectors (five records, known gaps); [[probe:gdidmdib]] records the same paths with a table of its own and agrees.
 - The Hercules's drawing of a font of 2.0, which WinBox answers as it answers one of 3.0: no probe draws one.
-- A compressed DIB through `DMDibBits`, which the driver reads by a routine of its own.
+- A compressed DIB got through `DMDibBits`, which the drivers encode as runs by routines of their own (`VGA.DRV` seg9 `15b2`, `SVGA256.DRV` `1a38`); one set on the Hercules. The set on the VGA's drivers and the 256-colour display's is done ([[fn:GDI.DMDibBits]]).
 - The `DI` device `Brute` knows, a table at GDI's `[0159h]` that no code of Windows 3.1's GDI was found to set.

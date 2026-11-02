@@ -5,6 +5,8 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { matchedIndex } from '../../raster/colour-match.js';
 import { ditheredIndex } from '../../raster/dither.js';
 import { combine } from '../../raster/raster-op.js';
+import { hugeRead8 } from '../huge.js';
+import { walkRle } from './rle-runs.js';
 
 /**
  * The VGA's own drawing on a memory bitmap of its format, as `VGA.DRV`
@@ -1316,7 +1318,8 @@ const DIB_BITS = [1, 4, 8, 24];
  * `DeviceBitmapBits` (`VGA.DRV` seg9 `0d1e`) on a memory bitmap: scans of
  * it got as a DIB or set from one, of 1, 4, 8 or 24 bits a pixel and
  * uncompressed; a compressed one is handed to the driver's own reading of
- * run lengths, not followed here (answers nought). The scans are counted
+ * run lengths, its set as `rleSet` and its get not followed here (answers
+ * nought). The scans are counted
  * from the DIB's bottom, as its header's height has them: from `start`, as
  * many as asked that the height leaves. Answers how many, nought for a
  * start at or past the height or another format.
@@ -1347,8 +1350,10 @@ export function deviceBitmapBits(
   const height = read32(system, info, 8);
   const bitCount = read16(system, info, 0x0e);
 
+  /* A compressed DIB to the routine of run lengths, export 501 (`0d35`),
+   * whose get is not followed here. */
   if (read8(system, info, 0x10)) {
-    return 0;
+    return get === 0 && bits && !isHercules(system) ? rleSet(system, dest, start, bits, info) : 0;
   }
 
   if (get !== 0 && get !== 1) {
@@ -1478,6 +1483,51 @@ export function deviceBitmapBits(
   }
 
   return count;
+}
+
+/**
+ * A run-length encoded DIB set into a memory bitmap by `VGA.DRV`'s export
+ * 501 (seg9 `12ec`, the set from `13ff`), which `DeviceBitmapBits` hands
+ * it with a rectangle from nought to the bitmap's width and height and
+ * the same rectangle to clip to (`0d42`-`0d90`): so nothing is clipped
+ * (`1325`-`134a`). The first line is the bitmap's row `height - 1 - start`
+ * (`13e6`-`13f6`) and the count is not read; the stream is walked to its
+ * end (`walkRle`), each pixel's bits put as the driver addresses them, a
+ * plane's row after another's with no bound to the width or the height
+ * (`1ad8`, `1a6a`, `19f6`). Each index's colour is its entry's in the
+ * table -- `biClrUsed` of them, 256 at most or where nought (`1449`-`148e`)
+ * -- matched to the VGA's (`2915`), or on a monochrome bitmap its flag of
+ * white (`1dd9`). Answers 1 (`15ac`). **Recorded** by `gdidmrle`.
+ */
+function rleSet(system: any, dest: DriverBitmap, start: number, bits: number, info: number) {
+  const colour = dest.format === FOUR_PLANES;
+  const used = read16(system, info, 0x20);
+  const count = used ? Math.min(used, 256) : 256;
+  const table = (info & 0xffff0000) | ((info + read16(system, info, 0)) & 0xffff);
+  const physical: number[] = [];
+
+  for (let entry = 0; entry < count; entry++) {
+    const index = matchedOf(
+      system,
+      read8(system, table, entry * 4 + 2) |
+        (read8(system, table, entry * 4 + 1) << 8) |
+        (read8(system, table, entry * 4) << 16)
+    );
+
+    physical.push(colour ? index : flagsOf(system, index) & MONO_WHITE ? 1 : 0);
+  }
+
+  walkRle({
+    eight: read8(system, info, 0x10) === 1,
+    read: (at) => hugeRead8(core(system), bits, at),
+    odd: (at) => (((bits & 0xffff) + at) & 1) !== 0,
+    x: 0,
+    y: dest.height - 1 - start,
+    top: null,
+    plot: (x, y, index) => putPixel(system, dest, x, y, physical[index] ?? 0),
+  });
+
+  return 1;
 }
 
 /**

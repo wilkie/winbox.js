@@ -10,6 +10,9 @@ import { DevicePalette } from '../../raster/device-palette.js';
 import { rasterOp } from '../../raster/raster-op.js';
 import { deviceBox, devicePoint, mapped } from './mapping.js';
 import { stretchDevice } from './StretchBlt.js';
+import { rleHeader, rleToDevice, setRleDIBits } from './rle-dib.js';
+import { GetDeviceCaps } from './GetDeviceCaps.js';
+import { Gdi } from '../gdi.js';
 
 const SRCCOPY = 0x00cc0020;
 
@@ -188,6 +191,33 @@ export function SetDIBitsToDevice(
     });
   }
 
+  /* A compressed DIB is the display driver's to walk (`rle-dib.ts`). */
+  if (rleHeader(this, lpbmi) && lpvBits) {
+    if (mapped(surface)) {
+      [xDest, yDest] = devicePoint(surface, xDest, yDest);
+    }
+
+    const walked = rleToDevice(this, surface, {
+      x: xDest,
+      y: yDest,
+      width: cx,
+      height: cy,
+      srcX: xSrc,
+      srcY: ySrc,
+      start: uStartScan & 0xffff,
+      count: cScanLines & 0xffff,
+      bits: lpvBits,
+      info: lpbmi,
+      usage: fuColorUse,
+    });
+
+    if (walked !== null) {
+      rectBounds(this, surface, xDest, yDest, xDest + cx, yDest + cy);
+
+      return walked;
+    }
+  }
+
   const dib = dibAt(this, surface, lpbmi, lpvBits, cScanLines, fuColorUse);
 
   if (!dib) {
@@ -288,7 +318,48 @@ export function StretchDIBits(
     });
   }
 
-  const dib = dibAt(this, surface, lpbmi, lpvBits);
+  /* Straight to the device, unstretched and copied, where it takes DIBs
+   * (`GDI.EXE` seg11 `1253`-`12c4`): `SetDIBitsToDevice` of the source
+   * rectangle at the destination, every scan line, its answer the answer.
+   * **Recorded** by `rledib`. */
+  {
+    const device = mapped(surface)
+      ? deviceBox(surface, xDest, yDest, cxDest, cyDest)
+      : { width: cxDest, height: cyDest };
+
+    if (
+      !surface.memoryContext &&
+      GetDeviceCaps.call(this, hdc, Gdi.RASTERCAPS) & RC_DIBTODEV &&
+      device.width === cxSrc &&
+      cxSrc !== 0 &&
+      device.height === cySrc &&
+      cySrc !== 0 &&
+      dwRop >>> 0 === SRCCOPY
+    ) {
+      return SetDIBitsToDevice.call(
+        this,
+        hdc,
+        xDest,
+        yDest,
+        cxSrc,
+        cySrc,
+        xSrc,
+        ySrc,
+        0,
+        dibHeight(this, lpbmi),
+        lpvBits,
+        lpbmi,
+        _fuColorUse
+      );
+    }
+  }
+
+  /* A compressed DIB set into a bitmap of its size by the display driver
+   * first (`12ca`-`12f9`), its pixels the stream leaves as the bitmap's
+   * memory had them -- nought here. */
+  let dib = rleHeader(this, lpbmi) ? rleBitmap(this, surface, lpbmi, lpvBits) : null;
+
+  dib ??= dibAt(this, surface, lpbmi, lpvBits);
 
   if (!dib) {
     return 0;
@@ -322,4 +393,40 @@ export function StretchDIBits(
   );
 
   return cySrc;
+}
+
+const RC_DIBTODEV = 0x0200;
+
+/** A DIB's height, whichever way its rows run. */
+function dibHeight(system: any, info: number) {
+  const core = system.machine.cpu.core;
+  const word = (at: number) => core.read16((info >>> 16) & 0xffff, ((info & 0xffff) + at) & 0xffff);
+
+  return word(0) === 12
+    ? Math.abs((word(6) << 16) >> 16)
+    : Math.abs(word(8) | (word(10) << 16) | 0);
+}
+
+/**
+ * A compressed DIB set into a bitmap of the destination's format and of
+ * its own size, as `SetDIBits` sets one (`setRleDIBits`); `null` where
+ * WinBox has no driver's routine for it.
+ */
+function rleBitmap(system: any, surface: any, info: number, bits: number) {
+  const header = rleHeader(system, info);
+
+  if (!header || !bits) {
+    return null;
+  }
+
+  const like = surface.bitmap instanceof DeviceBitmap ? surface.bitmap : null;
+  const depth = like ? like.depth : DevicePalette.depthOf(system.display);
+  const palette = like ? like.devicePalette : DevicePalette.forDisplay(system.display, depth);
+  const bitmap = new DeviceBitmap(header.width, header.height, depth, undefined, palette);
+
+  if (setRleDIBits(system, bitmap, 0, bits, info, 0) === null) {
+    return null;
+  }
+
+  return { bitmap, width: header.width, height: header.height };
 }

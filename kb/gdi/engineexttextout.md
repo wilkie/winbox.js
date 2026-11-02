@@ -82,6 +82,6 @@ topics: [printer-drivers]
 
 - The context's own realized font, where a driver gives another, for the extent.
 - A turned font's extent where the pixel is not square.
-- The count cut to what GDI's stack holds for GDI's own `ExtTextOut` of a turned engine font (`620e`), which hangs on the depth of GDI's own frames below the program's, which WinBox's GDI does not have.
+- The count cut to what GDI's stack holds for GDI's own `ExtTextOut` of a turned engine font (`620e`). [[read out]] From the program's call of `ExtTextOut` the frames come to 154h by the time `62a5` measures: the parameter checks leave the stack as they found it and jump to the body (seg1 `4f48`-`4f8f`), whose `enter 8Ah` and three words (`3162`-`3168`), the 20 words pushed for `620e` and its near call (`3a46`-`3a86`), and `6223`'s `enter 90h` and three words. Not done: no probe has measured it -- a program's own stack limit lowered at its call of `ExtTextOut`, as [[probe:prttstk]]'s driver lowers it -- and `TextOut`'s way into the body (seg1 `4f95`, `3884`), whose frames are its own, is not read out.
 - A font GDI draws as an outline itself (seg8 `042a`), which no font WinBox realizes is.
 - The `DRAWMODE` handed on for no characters, which is what GDI's stack held there.

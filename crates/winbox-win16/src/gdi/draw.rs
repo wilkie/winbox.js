@@ -1190,6 +1190,57 @@ fn dib_height(system: &System, info: u32) -> i64 {
     }
 }
 
+/// The depth and palette of what a device context draws on: its bitmap's,
+/// or the screen's own palette, as its pixels have it -- realized
+/// palettes' colours and all -- once it is made.
+fn dc_format(system: &System, dc: usize) -> Option<(u8, SharedPalette)> {
+    match system.gdi.dcs[dc].bitmap {
+        DcBitmap::Bitmap(object) => match &system.gdi.objects[object] {
+            GdiObject::Bitmap(bitmap) => Some((
+                bitmap.pixels.depth,
+                Rc::clone(&bitmap.pixels.device_palette),
+            )),
+            _ => None,
+        },
+        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => {
+            let display = system.display_kind();
+            let palette = system.screen.as_ref().map_or_else(
+                || palette_for_display(display, None),
+                |screen| Rc::clone(&screen.device_palette),
+            );
+
+            Some((display.depth(), palette))
+        }
+    }
+}
+
+/// A palette realized in a device context, as the match of a colour to
+/// its slot (`paldib`).
+fn realized_match(
+    system: &System,
+    dc: usize,
+    palette: &SharedPalette,
+) -> Option<impl Fn(u8, u8, u8) -> usize + use<>> {
+    realized_in(system, dc, palette).map(|(entries, slots)| {
+        move |red, green, blue| {
+            slots
+                .get(nearest_entry(&entries, red, green, blue))
+                .copied()
+                .unwrap_or(0)
+        }
+    })
+}
+
+/// The entries of the logical palette selected in a device context.
+fn selected_entries(system: &System, dc: usize) -> Option<Vec<[u8; 4]>> {
+    system.gdi.dcs[dc]
+        .palette
+        .and_then(|object| match &system.gdi.objects[object] {
+            GdiObject::Palette(logical) => logical.entries.clone(),
+            _ => None,
+        })
+}
+
 /// A DIB in the program's memory as a bitmap of the device context's
 /// kind, as a source: its width and the scan lines read.
 fn dib_source(
@@ -1200,46 +1251,15 @@ fn dib_source(
     rows: Option<i64>,
     usage: u16,
 ) -> Option<Sourced> {
-    let (depth, palette) = match system.gdi.dcs[dc].bitmap {
-        DcBitmap::Bitmap(object) => match &system.gdi.objects[object] {
-            GdiObject::Bitmap(bitmap) => (
-                bitmap.pixels.depth,
-                Rc::clone(&bitmap.pixels.device_palette),
-            ),
-            _ => return None,
-        },
-        // The screen's own palette, as its pixels have it -- realized
-        // palettes' colours and all -- once it is made.
-        DcBitmap::Screen | DcBitmap::Window(_) | DcBitmap::Whole(_) => {
-            let display = system.display_kind();
-            let palette = system.screen.as_ref().map_or_else(
-                || palette_for_display(display, None),
-                |screen| Rc::clone(&screen.device_palette),
-            );
-
-            (display.depth(), palette)
-        }
-    };
+    let (depth, palette) = dc_format(system, dc)?;
 
     if info == 0 || bits == 0 {
         return None;
     }
 
     let rows = rows.unwrap_or_else(|| dib_height(system, info));
-    let realized = realized_in(system, dc, &palette).map(|(entries, slots)| {
-        move |red, green, blue| {
-            slots
-                .get(nearest_entry(&entries, red, green, blue))
-                .copied()
-                .unwrap_or(0)
-        }
-    });
-    let entries = system.gdi.dcs[dc]
-        .palette
-        .and_then(|object| match &system.gdi.objects[object] {
-            GdiObject::Palette(logical) => logical.entries.clone(),
-            _ => None,
-        });
+    let realized = realized_match(system, dc, &palette);
+    let entries = selected_entries(system, dc);
     let (bitmap, lines) = super::dib::dib_drawn(
         system,
         info,
@@ -1300,6 +1320,31 @@ pub fn set_dibits_to_device(
 
     if system.gdi.dcs[dc].memory {
         return -1;
+    }
+
+    // A compressed DIB is the display driver's to walk (`rle_dib`).
+    if let (true, Some(header)) = (bits != 0, super::rle_dib::rle_header(system, info)) {
+        let (x_dest, y_dest) = match mapped(system, dc) {
+            Some(m) => device_point(&m, dest.0, dest.1),
+            None => dest,
+        };
+        let args = super::rle_dib::ToDevice {
+            x: x_dest,
+            y: y_dest,
+            width: cx,
+            height: cy,
+            src_x: x_src,
+            src_y: y_src,
+            start,
+            count: lines,
+            bits,
+        };
+
+        if let Some(answer) = rle_device(system, dc, header, info, usage, &args) {
+            rect_bounds(system, dc, [x_dest, y_dest, x_dest + cx, y_dest + cy]);
+
+            return answer;
+        }
     }
 
     let Some(dib) = dib_source(system, dc, info, bits, Some(i64::from(lines)), usage) else {
@@ -1381,6 +1426,7 @@ fn set_dibits_to_device_call(system: &mut System, args: &mut Args) -> Result<Ans
 /// * A negative destination width or height turns it over.
 /// * It answers the source rectangle's height.
 /// * Into a memory device context, unlike `SetDIBitsToDevice`, it draws.
+#[allow(clippy::too_many_arguments)]
 pub fn stretch_dibits(
     system: &mut System,
     hdc: u16,
@@ -1388,12 +1434,10 @@ pub fn stretch_dibits(
     source: [i32; 4],
     bits: u32,
     info: u32,
+    usage: u16,
     rop: u32,
 ) -> i16 {
     let Some(dc) = dc_of(system, hdc) else {
-        return 0;
-    };
-    let Some(dib) = dib_source(system, dc, info, bits, None, 0) else {
         return 0;
     };
     let [x, y, width, height] = dest;
@@ -1402,6 +1446,40 @@ pub fn stretch_dibits(
         None => (x, y, width, height),
     };
     let [sx, sy, swidth, sheight] = source;
+
+    // Straight to the device, unstretched and copied, where it takes DIBs
+    // (`GDI.EXE` seg11 `1253`-`12c4`): `SetDIBitsToDevice` of the source
+    // rectangle at the destination, every scan line, its answer the
+    // answer. **Recorded** by `rledib`.
+    if !system.gdi.dcs[dc].memory
+        && super::get_device_caps(system, hdc, RASTERCAPS) & RC_DIBTODEV != 0
+        && to.2 == swidth
+        && swidth != 0
+        && to.3 == sheight
+        && sheight != 0
+        && rop == SRCCOPY
+    {
+        return set_dibits_to_device(
+            system,
+            hdc,
+            (x, y),
+            (swidth, sheight),
+            (sx, sy),
+            0,
+            dib_height(system, info) as i32,
+            bits,
+            info,
+            usage,
+        );
+    }
+
+    // A compressed DIB set into a bitmap of its size by the display driver
+    // first (`12ca`-`12f9`), its pixels the stream leaves as the bitmap's
+    // memory had them -- nought here.
+    let rle = rle_bitmap(system, dc, info, bits);
+    let Some(dib) = rle.or_else(|| dib_source(system, dc, info, bits, None, 0)) else {
+        return 0;
+    };
 
     // The destination, taken into the bounds (`bounds`).
     rect_bounds(system, dc, [to.0, to.1, to.0 + to.2, to.1 + to.3]);
@@ -1424,12 +1502,68 @@ fn stretch_dibits_call(system: &mut System, args: &mut Args) -> Result<Answer, S
     let source = [(); 4].map(|()| i32::from(args.signed(system)));
     let bits = args.dword(system);
     let info = args.dword(system);
-    let _usage = args.word(system);
+    let usage = args.word(system);
     let rop = args.dword(system);
 
     Ok(Answer::Word(
-        stretch_dibits(system, hdc, dest, source, bits, info, rop) as u16,
+        stretch_dibits(system, hdc, dest, source, bits, info, usage, rop) as u16,
     ))
+}
+
+const RASTERCAPS: i16 = 38;
+const RC_DIBTODEV: u16 = 0x0200;
+
+/// `SetDIBitsToDevice` of a compressed DIB on a device context's canvas,
+/// its colours matched as `dib_source` matches them (`rle_dib`).
+fn rle_device(
+    system: &mut System,
+    dc: usize,
+    header: super::rle_dib::RleHeader,
+    info: u32,
+    usage: u16,
+    args: &super::rle_dib::ToDevice,
+) -> Option<i16> {
+    let (depth, _) = dc_format(system, dc)?;
+    let bitmap = canvas(system, dc)?;
+    let palette = Rc::clone(&bitmap.device_palette);
+    let realized = realized_match(system, dc, &palette);
+    let entries = selected_entries(system, dc);
+    let colours = super::rle_dib::colours_of(
+        system,
+        info,
+        usage,
+        depth,
+        palette,
+        entries.as_deref(),
+        realized
+            .as_ref()
+            .map(|matched| matched as &dyn Fn(u8, u8, u8) -> usize),
+    );
+
+    super::rle_dib::rle_to_device(system, header, &bitmap, &colours, args)
+}
+
+/// A compressed DIB set into a bitmap of the device context's format and
+/// of its own size, as `SetDIBits` sets one (`set_rle_dibits`); `None`
+/// where WinBox has no driver's routine for it.
+fn rle_bitmap(system: &System, dc: usize, info: u32, bits: u32) -> Option<Sourced> {
+    let header = super::rle_dib::rle_header(system, info)?;
+
+    if bits == 0 {
+        return None;
+    }
+
+    let (depth, palette) = dc_format(system, dc)?;
+    let bitmap = DeviceBitmap::new(header.width, header.height, depth, None, Some(palette));
+
+    super::rle_dib::set_rle_dibits(system, &bitmap, 0, bits, info)?;
+
+    Some(Sourced {
+        width: header.width,
+        height: header.height,
+        bitmap,
+        back: None,
+    })
 }
 
 #[cfg(test)]

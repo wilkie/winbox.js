@@ -2,6 +2,7 @@
 
 import { gdiDataSelector } from './gdi-data.js';
 import { DevicePalette } from '../../raster/device-palette.js';
+import { enumeratedColours, isVga256 } from './driver-vga256.js';
 import { Struct, DWORD, FARPTR, INT, LPARAM, UINT } from '../types.js';
 
 /**
@@ -22,6 +23,11 @@ import { Struct, DWORD, FARPTR, INT, LPARAM, UINT } from '../types.js';
  *
  * The colours are the display's own, as its bitmaps index them: sixteen, the
  * EGA's with `404040`, or the Hercules's two.
+ *
+ * On the 256-colour display, its driver's `EnumObj` (`SVGA256.DRV` seg4
+ * `0086`): the five styles of pen in each of its twenty colours, the last
+ * seven first, and a solid brush of each, no hatched one. **Recorded** by
+ * `enumobj` there: 100 pens, 20 brushes.
  */
 
 export class LOGPEN extends Struct {
@@ -58,7 +64,8 @@ function deviceColours(system: any) {
 
 /** The pens and brushes, in the order they are handed over. */
 export function enumeratedObjects(system: any, kind: number) {
-  const colours = deviceColours(system);
+  const vga256 = isVga256(system);
+  const colours = vga256 ? enumeratedColours() : deviceColours(system);
 
   if (kind === OBJ_PEN) {
     return [0, 1, 2, 3, 4].flatMap((style) =>
@@ -85,6 +92,10 @@ export function enumeratedObjects(system: any, kind: number) {
 
       return logical;
     };
+
+    if (vga256) {
+      return colours.map((colour) => brush(0, colour, 0));
+    }
 
     const solids = LEVELS.flatMap((red) =>
       LEVELS.flatMap((green) =>

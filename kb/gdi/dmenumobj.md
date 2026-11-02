@@ -40,7 +40,3 @@ In both engines as the VGA's driver has it, the objects `EnumObjects`'s, laid wh
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
 On the Hercules the VGA's routine, in the display's two colours; on the 256-colour display its own (`vga256EnumObj` in `driver-helpers.ts`, `enumeratedColours` in `driver-vga256.ts`, and the Rust twins). [[probe:gdidmpx]] agrees in both engines on all three displays.
-
-## Not yet done
-
-- GDI's own [[fn:GDI.EnumObjects]] on the 256-colour display, which goes to the same routine of its driver: WinBox hands the display's palette there, not the driver's twenty colours in its order; no probe calls it there.

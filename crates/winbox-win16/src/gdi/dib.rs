@@ -350,6 +350,12 @@ pub fn set_dibits(
     }
 
     let target = target.pixels.clone();
+
+    // A compressed DIB is the display driver's to walk (`rle_dib`).
+    if let Some(answer) = super::rle_dib::set_rle_dibits(system, &target, start, bits, info) {
+        return answer;
+    }
+
     let Some((source, found)) = dib_at(
         system,
         info,

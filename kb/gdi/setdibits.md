@@ -27,11 +27,24 @@ winbox.js agrees with all of these records. Both were stubs.
 - 24 bits answer 8, each pixel matched on its own: green (100, 200, 50) is bright green on the VGA, by its driver's rule, and olive on the 256-colour display, the nearest of the static colours with no palette selected.
 - 16 and 32 bits answer nought and set nothing. [[read out]] The display driver takes 1, 4, 8 and 24 bits and one plane, and answers nought for anything else (VGA.DRV seg9 `0059`-`0080`, SVGA256.DRV seg9 `0197`-`01be`); GDI hands the bits to its `DeviceBitmapBits` (`GDI.EXE` seg11 `091e`).
 
+## A compressed DIB
+
+[[probe:rledib]] sets run-length encoded DIBs, `BI_RLE8` and `BI_RLE4`, into a bitmap 16 by 8 of the screen's, filled first, on the VGA and the 256-colour display. [[measured]]
+
+- The runs, the absolute runs of odd lengths and their padding, the deltas and the ends of line set what the format says; what the stream leaves -- a line ended short, a delta's gap, the lines after the bitmap's end -- is left as it was. A run of four bits is its high digit and its low in turn from the run's first pixel. The answer is 1, whatever the scan lines.
+- On the VGA the first line is the bitmap's bottom row less the start, whatever the DIB's height and the count: a DIB four high goes at the bottom; from scan line 2, two rows up. On the 256-colour display it is the DIB's height less one, the start not read: a DIB four high goes at the top.
+- A run past the right edge: on the VGA its pixels go into the next plane's row of the same row, so the first pixels' colours are changed a plane up, and the last plane's into the row below's first plane; on the 256-colour display into the row below.
+- Lines past the top: on the 256-colour display they end it. [[read out]] On the VGA they go on up, before the bitmap's bits (`VGA.DRV` seg9 `1586`; [[probe:gdidmrle]] sees them written there), which a probe through GDI does not ask.
+- A monochrome bitmap: on the VGA each colour white where the driver takes it as white; the 256-colour driver refuses it and the answer is nought.
+
+[[read out]] GDI hands the DIB to the driver's `DeviceBitmapBits` as it is; the drivers' routines are [[fn:GDI.DMDibBits]]'s. `rle-dib.ts`, `rle_dib.rs`; [[probe:rledib]] agrees in both engines.
+
 ## With a printer's context
 
 [[read out]] With the context of a printer's driver that has no `RC_DI_BITMAP`, GDI sets the bits itself (`GDI.EXE` seg11 `094c`, seg12 `094f`). The scans become a monochrome bitmap of its own, each colour white where its blue, twice its red and five times its green come to 1020 or more. The driver's `BitBlt` copies it into the bitmap, through a memory context made compatible with the printer's. A compressed DIB answers 1. [[measured]] [[probe:prblt2]]. See [[topic:printer-drivers]].
 
 ## Nuances
 
-- Not recorded: `DIB_PAL_COLORS`, and a DIB taller or shorter than the bitmap.
+- Not recorded: `DIB_PAL_COLORS`, and an uncompressed DIB taller or shorter than the bitmap.
+- A compressed DIB on the Hercules is read as the format says, not as its driver reads it, which no probe has asked.
 - A DIB of 24 bits is taken by [[fn:GDI.CreateDIBitmap]], [[fn:GDI.SetDIBitsToDevice]] and [[fn:GDI.StretchDIBits]] the same way, each pixel matched; only `SetDIBits` is recorded at 24 bits.

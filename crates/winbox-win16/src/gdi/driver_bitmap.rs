@@ -16,6 +16,7 @@
 //! every record the VGA's) and the EGA.
 
 use super::driver_hercules::{hercules_dashes, hercules_white, is_hercules};
+use super::rle_runs::{RleWalk, huge_byte, odd_at, walk_rle};
 use winbox_raster::DevicePalette;
 use winbox_raster::colour_match::matched_index;
 use winbox_raster::dither::dithered_index;
@@ -1412,7 +1413,17 @@ pub fn device_bitmap_bits(
     let height = read32(system, info, 8) as i32;
     let bit_count = read16(system, info, 0x0e);
 
-    if read8(system, info, 0x10) != 0 || get > 1 || (get == 0 && bits == 0) {
+    // A compressed DIB to the routine of run lengths, export 501 (`0d35`),
+    // whose get is not followed here.
+    if read8(system, info, 0x10) != 0 {
+        return if get == 0 && bits != 0 && !is_hercules(system) {
+            rle_set(system, &dest, start, bits, info)
+        } else {
+            0
+        };
+    }
+
+    if get > 1 || (get == 0 && bits == 0) {
         return 0;
     }
 
@@ -1478,6 +1489,67 @@ pub fn device_bitmap_bits(
     }
 
     count as u32
+}
+
+/// A run-length encoded DIB set into a memory bitmap by `VGA.DRV`'s export
+/// 501 (seg9 `12ec`, the set from `13ff`), which `DeviceBitmapBits` hands
+/// it with a rectangle from nought to the bitmap's width and height and
+/// the same rectangle to clip to (`0d42`-`0d90`): so nothing is clipped
+/// (`1325`-`134a`). The first line is the bitmap's row
+/// `height - 1 - start` (`13e6`-`13f6`) and the count is not read; the
+/// stream is walked to its end (`walk_rle`), each pixel's bits put as the
+/// driver addresses them, a plane's row after another's with no bound to
+/// the width or the height (`1ad8`, `1a6a`, `19f6`). Each index's colour
+/// is its entry's in the table -- `biClrUsed` of them, 256 at most or
+/// where nought (`1449`-`148e`) -- matched to the VGA's (`2915`), or on a
+/// monochrome bitmap its flag of white (`1dd9`). Answers 1 (`15ac`).
+/// **Recorded** by `gdidmrle`.
+fn rle_set(system: &mut System, dest: &DriverBitmap, start: u16, bits: u32, info: u32) -> u32 {
+    let colour = dest.format == FOUR_PLANES;
+    let used = read16(system, info, 0x20);
+    let count = if used == 0 { 256 } else { used.min(256) };
+    let table = offset_by(info, i32::from(read16(system, info, 0)));
+    let physical: Vec<u8> = (0..i32::from(count))
+        .map(|entry| {
+            let index = matched_of(
+                system,
+                u32::from(read8(system, table, entry * 4 + 2))
+                    | u32::from(read8(system, table, entry * 4 + 1)) << 8
+                    | u32::from(read8(system, table, entry * 4)) << 16,
+            );
+
+            if colour {
+                index
+            } else {
+                u8::from(flags_of(system, index) & MONO_WHITE != 0)
+            }
+        })
+        .collect();
+    let walk = RleWalk {
+        eight: read8(system, info, 0x10) == 1,
+        x: 0,
+        y: i32::from(dest.height) - 1 - i32::from(start),
+        top: None,
+    };
+    let mut pixels = Vec::new();
+
+    walk_rle(
+        &walk,
+        &mut |at| huge_byte(system, bits, at),
+        &|at| odd_at(bits, at),
+        &mut |x, y, index| pixels.push((x, y, index)),
+    );
+
+    for (x, y, index) in pixels {
+        dest.put(
+            system,
+            x,
+            y,
+            physical.get(usize::from(index)).copied().unwrap_or(0),
+        );
+    }
+
+    1
 }
 
 /// A pixel of a bitmap written into a DIB's row (seg9 `0764`): its index,

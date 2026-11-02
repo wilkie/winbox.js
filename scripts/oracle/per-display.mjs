@@ -121,6 +121,10 @@ export const PER_DISPLAY = new Set([
   /* `DMPixel`, `DMScanLR`, `DMEnumObj` and `DMOutput`'s 50h and 51h on a
    * bitmap of the display's format, which each driver has its own of. */
   'gdidmpx',
+  /* Run-length encoded DIBs, which each display's driver reads by a
+   * routine of its own. */
+  'rledib',
+  'gdidmrle',
 ]);
 
 /**

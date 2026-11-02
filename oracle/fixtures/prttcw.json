@@ -1,0 +1,124 @@
+{
+  "probe": "prttcw",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "LoadLibrary",
+      "args": "C:\\WINDOWS\\MGXWMF.DRV",
+      "result": "1"
+    },
+    {
+      "function": "CreateDC",
+      "args": "MGXWMF",
+      "result": "1 1"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2 0",
+      "result": "widths=15,23 opaque=none"
+    },
+    {
+      "function": "direct",
+      "args": "MGXWMF 10,10 2",
+      "result": "pdevice"
+    },
+    {
+      "function": "emboldened",
+      "args": "display 700 0200 0",
+      "result": "0 set=310 sum=0E0B after=700,0,0200"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "printer 65 87",
+      "result": "1 sum=371 first=15"
+    },
+    {
+      "function": "emboldened",
+      "args": "printer 700 0200 0",
+      "result": "0 set=218 sum=C92F after=700,0,0200"
+    },
+    {
+      "function": "emboldened",
+      "args": "printer 700 0600 1",
+      "result": "0 set=218 sum=C92F after=700,1,0600"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 0 6",
+      "result": "widths=none opaque=some"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2 0",
+      "result": "widths=15,23 opaque=none"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "memory 65 87",
+      "result": "1 sum=212 first=8"
+    },
+    {
+      "function": "emboldened",
+      "args": "memory 700 0200 0",
+      "result": "0 set=310 sum=0E0B after=700,0,0200"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "one 65 65",
+      "result": "1 sum=15 first=15"
+    },
+    {
+      "function": "emboldened",
+      "args": "one 700 0200 0",
+      "result": "0 set=218 sum=C92F after=700,0,0200"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "reversed 87 65",
+      "result": "0 sum=0 first=0"
+    },
+    {
+      "function": "emboldened",
+      "args": "reversed 700 0200 0",
+      "result": "0 set=310 sum=0E0B after=700,0,0200"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "unrealized 65 87",
+      "result": "1 sum=466 first=20"
+    },
+    {
+      "function": "emboldened",
+      "args": "unrealized 700 0200 0",
+      "result": "0 set=218 sum=C92F after=700,0,0200"
+    },
+    {
+      "function": "drawn",
+      "args": "10,10 2 0",
+      "result": "widths=none opaque=none"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "memoryvar 65 87",
+      "result": "1 sum=167 first=7"
+    },
+    {
+      "function": "emboldened",
+      "args": "memoryvar 700 0200 0",
+      "result": "80000000 set=0 sum=C000 after=700,0,0200"
+    },
+    {
+      "function": "DeleteDC",
+      "args": "MGXWMF",
+      "result": "1"
+    }
+  ]
+}

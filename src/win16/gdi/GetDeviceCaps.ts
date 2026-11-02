@@ -124,8 +124,9 @@ export function GetDeviceCaps(hdc, iCapability) {
  * the context's device as it starts, but for a metafile's (`GDI.EXE` seg1
  * `31d5`-`31d8`); `GetTextExtent` as it measures with a font that is not
  * one GDI's TrueType engine realized itself, the string not empty (`3cb4`,
- * into `3ba3`, `3bd8`). Read by `DMExtTextOut` (seg13 `0037`); before any,
- * the display's. **Recorded** by `prttstk`.
+ * into `3ba3`, `3bd8`); `GetCharWidth` on a device of `RC_GDI20_OUTPUT`
+ * (seg3 `20c4`). Read by `DMExtTextOut` (seg13 `0037`); before any, the
+ * display's. **Recorded** by `prttstk` and `prttcw`.
  */
 export function textCapsOf(system: any) {
   const surface = system._textSurface;

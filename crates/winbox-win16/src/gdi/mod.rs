@@ -40,6 +40,8 @@ pub mod printer_stretch;
 pub mod printing;
 pub mod priority_queue;
 pub mod regions;
+pub mod rle_dib;
+pub mod rle_runs;
 pub mod shapes;
 pub mod spool_job;
 pub mod spooler;
@@ -332,12 +334,25 @@ const COLORRES: i16 = 108;
 /// `ExtTextOut` -- and `TextOut`, which is it -- as it starts, but for a
 /// metafile's (`GDI.EXE` seg1 `31d5`-`31d8`); `GetTextExtent` as it
 /// measures with a font that is not one GDI's TrueType engine realized
-/// itself, the string not empty (`3cb4`, into `3ba3`, `3bd8`). Read by
+/// itself, the string not empty (`3cb4`, into `3ba3`, `3bd8`);
+/// `GetCharWidth` through `note_char_width_device`. Read by
 /// `DMExtTextOut` (seg13 `0037`). **Recorded** by `prttstk`.
 pub fn note_text_device(system: &mut System, hdc: u16) {
     let caps = get_device_caps(system, hdc, TEXTCAPS);
 
     system.gdi.text_caps = Some(caps);
+}
+
+/// GDI's `[063Eh]` as `GetCharWidth` sets it: to the context's device
+/// where its `dpRaster` has `RC_GDI20_OUTPUT`, before the font is realized
+/// (`GDI.EXE` seg3 `20bd`-`20c4`); a range that runs backwards is refused
+/// before (`15dd`-`15e8`). **Recorded** by `prttcw`.
+pub fn note_char_width_device(system: &mut System, hdc: u16) {
+    const RC_GDI20_OUTPUT: u16 = 0x10;
+
+    if get_device_caps(system, hdc, RASTERCAPS) & RC_GDI20_OUTPUT != 0 {
+        note_text_device(system, hdc);
+    }
 }
 
 /// The display driver's own `dpText`, the `GDIINFO` of the screen's
