@@ -6031,6 +6031,7 @@ const RUN_WHOLE = new Set<string>([
   'emspast',
   'oleitem',
   'maxcopy',
+  'prttcw',
 ]);
 
 /**

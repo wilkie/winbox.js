@@ -593,6 +593,11 @@ fn get_char_width_call(system: &mut System, args: &mut Args) -> Result<Answer, S
     let first = args.word(system);
     let last = args.word(system);
     let far = args.dword(system);
+
+    if dc_of(system, hdc).is_some() && first <= last {
+        super::note_char_width_device(system, hdc);
+    }
+
     let Some(widths) = get_char_widths(system, hdc, first, last)? else {
         return Ok(Answer::Word(0));
     };

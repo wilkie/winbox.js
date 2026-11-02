@@ -3,6 +3,10 @@
 import { BitmapFont } from '../../raster/bitmap-font.js';
 import { LogicalFont } from '../../raster/logical-font.js';
 import { FALSE, TRUE } from '../consts.js';
+import { Gdi } from '../gdi.js';
+import { GetDeviceCaps } from './GetDeviceCaps.js';
+
+const RC_GDI20_OUTPUT = 0x0010;
 
 /**
  * The **GetCharWidth** function retrieves the widths of individual characters
@@ -32,6 +36,14 @@ export function GetCharWidth(hdc, wFirstChar, wLastChar, lpBuffer) {
 
   if (!surface || wLastChar < wFirstChar) {
     return FALSE;
+  }
+
+  /* GDI's `[063Eh]` (`textCapsOf`), set to the context's device where its
+   * `dpRaster` has `RC_GDI20_OUTPUT`, before the font is realized (`GDI.EXE`
+   * seg3 `20bd`-`20c4`); a range that runs backwards is refused before
+   * (`15dd`-`15e8`). **Recorded** by `prttcw`. */
+  if (GetDeviceCaps.call(this, hdc, Gdi.RASTERCAPS) & RC_GDI20_OUTPUT) {
+    this._textSurface = surface;
   }
 
   /* A printer's context asks its driver (`GDI.EXE` seg3 `2116`). */

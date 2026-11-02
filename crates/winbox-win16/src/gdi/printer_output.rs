@@ -1710,7 +1710,7 @@ pub async fn driver_char_width(
 /// `GetCharWidth` on a driver's context, asked of the driver.
 fn get_char_width_call(engine: &Engine, args: Args) -> Later<'_> {
     Box::pin(async move {
-        let Some(dc) = first(engine, &args).1 else {
+        let (hdc, Some(dc)) = first(engine, &args) else {
             return otherwise(engine, "GetCharWidth", args).await;
         };
         let (first_char, last_char, buffer) = {
@@ -1724,6 +1724,8 @@ fn get_char_width_call(engine: &Engine, args: Args) -> Later<'_> {
         if last_char < first_char {
             return Ok(Answer::Word(0));
         }
+
+        super::note_char_width_device(&mut engine.system(), hdc);
 
         Ok(Answer::Word(
             driver_char_width(engine, dc, first_char, last_char, buffer).await?,

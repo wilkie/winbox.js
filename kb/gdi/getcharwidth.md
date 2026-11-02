@@ -6,7 +6,7 @@ ordinal: 350
 summary: Returns the advance widths of a run of characters in the selected font.
 versions:
   '3.1': exact
-probes: [text, maxorder, lbtext]
+probes: [text, maxorder, lbtext, prttcw]
 ---
 
 ## Observed behaviour
@@ -18,8 +18,13 @@ probes: [text, maxorder, lbtext]
 ## Inside Windows
 
 - [[read out]] `GetCharWidth` (`GDI.EXE` seg3 `2098`) asks the display driver for the widths (`call far [bx+38h]`), or the TrueType engine for a TrueType font (`2662`). It then adds to each, for what the text transform asks that the device's `TEXTCAPS` cannot do: two for a double weight without `TC_EA_DOUBLE`, half the height less one for a slant without `TC_IA_ABLE` (`2148`-`218e`; for TrueType both bits are taken off the device's first). Mapped, each is turned into logical units (`2191`).
+- [[read out]] Before any of that, where the device's `dpRaster` has `RC_GDI20_OUTPUT` (10h, `20bd`), GDI's `[063Eh]` -- the `GDIINFO` of the context it last handled text for, which [[fn:GDI.DMExtTextOut]] reads -- is set to the context's (`20c4`); without it the answer is nought (`20c2`, `20db`). A last character before the first is refused by the parameter checks first (seg3 `15dd`-`15e8`), and nothing is set. [[measured]] [[probe:prttcw]].
 - [[read out]] `VGA.DRV`'s `GetCharWidth` (seg1 `17dc`) adds two to each width where the text transform's weight is 700 or more over a font lighter than that, where `__WINFLAGS` has `WF_PMODE` and not `WF_CPU286` (`17f6`-`1815`, `18af`): the smear's pixel and its overhang. The VGA's `TEXTCAPS`, 2204h, has `TC_EA_DOUBLE` and lacks `TC_IA_ABLE`, so on it the driver adds the bold and GDI the slant.
 
 ## Implementation
 
-`GetCharWidth.ts` and `get_char_widths` in `gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here.
+`GetCharWidth.ts` and `get_char_widths` in `gdi/text.rs` add the two for a strike the engines smear (`emboldens`) and the slant's half height less one for an italic strike, each width alike. A vector font's and an outline face's widths are as before; neither simulation of theirs is recorded here. `[063Eh]` set as read out (`_textSurface`; `note_char_width_device` in `gdi/mod.rs`), on a printer's driver's context too.
+
+## Not yet done
+
+- The nought answered on a device without `RC_GDI20_OUTPUT` (seg3 `20c2`): WinBox's own printer's `GDIINFO` (`printer.ts`) lacks the bit, which every display mode's has, and its widths are answered there; no probe hands a driver without it.
