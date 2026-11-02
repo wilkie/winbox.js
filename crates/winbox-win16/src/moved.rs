@@ -938,6 +938,18 @@ impl System {
 
                     due = Some(made);
                 }
+            } else if alive && self.keeps_own_bits(index) && old_shows && uncovered.kind() > 1 {
+                // USER's own menus and switch window put back the bits they
+                // kept by WinBox's own rule (`restore_bits`; `menuinv`): what
+                // shows of it now due, where it showed nothing; where they
+                // are spoiled, as any window.
+                due = if self.restore_bits(index) {
+                    now_shows.then(|| now.clone())
+                } else if now_shows {
+                    Some(old.union(&now))
+                } else {
+                    Some(old.clone())
+                };
             } else if old_shows || now_shows {
                 due = Some(if !old_shows {
                     now.clone()

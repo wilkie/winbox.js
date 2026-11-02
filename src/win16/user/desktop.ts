@@ -1403,9 +1403,10 @@ export class Desktop {
     const destroying = remove || !!(window as any).destroying;
     /* Hidden, it is drawn as `SetWindowPos` hides it (`endPlacing`): what
      * showed of it made due through its parent, the windows in it too, or
-     * the bits it saved put back. USER's own pop-up menus and switch window
-     * keep theirs by WinBox's own rule (`#restoreBits`). */
-    const listed = window.visible && !window.savedBits;
+     * the bits it saved put back -- USER's own pop-up menus, hidden with
+     * `ShowWindow(SW_HIDE)` (`USER.EXE` seg10 `0de1`-`0de4`, seg14 `0bf2`),
+     * and switch window keep theirs by WinBox's own rule (`#restoreBits`). */
+    const listed = window.visible;
 
     if (listed) {
       this.beginPlacing([window]);
@@ -1452,13 +1453,7 @@ export class Desktop {
         window.active = false;
       }
 
-      const before = this.owners.slice();
-
       this.#own();
-
-      if (!listed && !this.#restoreBits(window)) {
-        this.#exposeOwned(window, before);
-      }
     }
 
     if (listed) {
@@ -2517,6 +2512,18 @@ export class Desktop {
             }
           }
         }
+      } else if (window.savedBits && oldShows && uncovered.kind > 1) {
+        /* USER's own menus and switch window put back the bits they kept by
+         * WinBox's own rule (`#restoreBits`; `menuinv`): what shows of it
+         * now due, where it showed nothing; where they are spoiled, as any
+         * window. */
+        due = this.#restoreBits(window)
+          ? nowShows
+            ? now
+            : null
+          : nowShows
+            ? unite(old, now)
+            : old;
       } else if (oldShows || nowShows) {
         due = !oldShows ? now : !nowShows ? old : unite(old, now);
       }
@@ -5266,96 +5273,7 @@ export class Desktop {
     };
   }
 
-  /** Paints again what a window no longer covers. */
-  /**
-   * What a window hidden uncovered, and no more: the desktop where it showed,
-   * and each window that shows now where it or its children did, due its
-   * frame, an erase and a paint of the rectangle round that part -- a window
-   * that lay above it, nothing (`showseq`: a window hidden beneath a
-   * maximized one uncovers nothing). A window's parent is due the same
-   * part unless it leaves its children out of its painting. `before` is who
-   * showed where, as it was.
-   */
-  #exposeOwned(gone: DesktopWindow, before: Uint16Array) {
-    this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
-
-    const stride = this.screen.width;
-    const ids = new Set([
-      gone.id,
-      ...this.windows.filter((other) => this.#within(other, gone)).map((other) => other.id),
-    ]);
-    const areas = new Map<number, number[]>();
-    const [left, top, right, bottom] = [
-      Math.max(gone.left, 0),
-      Math.max(gone.top, 0),
-      Math.min(gone.left + gone.width, stride),
-      Math.min(gone.top + gone.height, this.screen.height),
-    ];
-
-    for (let y = top; y < bottom; y++) {
-      for (let x = left; x < right; x++) {
-        const at = y * stride + x;
-        const now = this.owners[at];
-
-        if (!now || !ids.has(before[at])) {
-          continue;
-        }
-
-        const area = areas.get(now);
-
-        if (area) {
-          area[0] = Math.min(area[0], x);
-          area[1] = Math.min(area[1], y);
-          area[2] = Math.max(area[2], x + 1);
-          area[3] = Math.max(area[3], y + 1);
-        } else {
-          areas.set(now, [x, y, x + 1, y + 1]);
-        }
-      }
-    }
-
-    const due = (window: DesktopWindow, area: number[]) => {
-      if (!paintsItself(window)) {
-        this.paintFrame(window);
-      } else {
-        (window as any).needsNcPaint = true;
-      }
-
-      const was = (window as any).dirtyRect;
-
-      (window as any).dirtyRect = !window.needsPaint
-        ? area
-        : was
-          ? [
-              Math.min(was[0], area[0]),
-              Math.min(was[1], area[1]),
-              Math.max(was[2], area[2]),
-              Math.max(was[3], area[3]),
-            ]
-          : undefined;
-      window.needsErase = true;
-      window.needsPaint = true;
-    };
-
-    for (const [id, area] of areas) {
-      const window = this.#byId.get(id);
-
-      if (!window) {
-        continue;
-      }
-
-      due(window, area);
-
-      for (
-        let child = window;
-        child.parent && !(child.parent.style & WS_CLIPCHILDREN);
-        child = child.parent
-      ) {
-        due(child.parent, area);
-      }
-    }
-  }
-
+  /** Paints again a rectangle of the screen: the desktop there, and each window it touches due there (`redrawArea`). */
   #expose(gone: DesktopWindow) {
     this.paintBackground(gone.left, gone.top, gone.left + gone.width, gone.top + gone.height);
 

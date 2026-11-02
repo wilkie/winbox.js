@@ -34,6 +34,7 @@ use winbox_raster::DeviceBitmap;
 use crate::frame::{Lettering, bytes_of};
 use crate::gdi::GdiObject;
 use crate::menu_bar::bar_layout;
+use crate::moved::{SWP_HIDEWINDOW, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER};
 use crate::painter::{Paint, PaintEnv, Painter};
 use crate::system::System;
 use crate::windows::Window;
@@ -274,18 +275,21 @@ impl System {
             .as_ref()
             .is_some_and(|window| window.visible);
 
+        // Hidden with `ShowWindow(SW_HIDE)` (seg10 `0de1`-`0de4`, seg14
+        // `0bf2`): drawn as `SetWindowPos` hides it (`end_placing`), what
+        // it covered put back where its bits still stand.
         if visible {
+            self.begin_placing(&[index]);
+            self.placing_flags(
+                index,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW,
+            );
+
             if let Some(window) = self.windows[index].as_mut() {
                 window.visible = false;
             }
 
-            let before = self.owners.clone();
-
-            self.own();
-
-            if !self.restore_bits(index) {
-                self.expose_owned(index, &before);
-            }
+            self.end_placing(Some(false));
         }
 
         if let Some(window) = self.windows[index].as_mut() {
@@ -302,11 +306,20 @@ impl System {
             return;
         }
 
-        self.z_order.retain(|&other| other != index);
-
         let visible = self.windows[index]
             .as_ref()
             .is_some_and(|window| window.visible);
+
+        // Hidden as `SetWindowPos` hides it (`end_placing`), as it goes.
+        if visible {
+            self.begin_placing(&[index]);
+            self.placing_flags(
+                index,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_HIDEWINDOW,
+            );
+        }
+
+        self.z_order.retain(|&other| other != index);
 
         if visible {
             if let Some(window) = self.windows[index].as_mut() {
@@ -315,24 +328,30 @@ impl System {
                 window.lit = None;
             }
 
-            let before = self.owners.clone();
-
-            self.own();
-
-            if !self.restore_bits(index) {
-                self.expose_owned(index, &before);
-            }
+            self.end_placing(Some(false));
         }
 
         self.lose_focus(index);
         self.windows[index] = None;
     }
 
+    /// Whether a window keeps the bits beneath it by WinBox's own rule:
+    /// USER's own menu or switch window (`restore_bits`).
+    pub(crate) fn keeps_own_bits(&self, index: usize) -> bool {
+        self.windows[index].as_ref().is_some_and(|window| {
+            window
+                .popup
+                .as_ref()
+                .is_some_and(|popup| popup.saved_bits.is_some())
+                || window.switch_bits.is_some()
+        })
+    }
+
     /// Puts back what a pop-up menu covered, if it still stands; whether it
     /// did. Thrown away when something under it is to be painted again
     /// there (`menuinv`): only a part of a window invalidated clear of the
     /// menu leaves them standing.
-    fn restore_bits(&mut self, index: usize) -> bool {
+    pub(crate) fn restore_bits(&mut self, index: usize) -> bool {
         let Some(window) = self.windows[index].as_mut() else {
             return false;
         };
