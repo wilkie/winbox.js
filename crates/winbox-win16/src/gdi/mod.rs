@@ -40,6 +40,8 @@ pub mod printer_stretch;
 pub mod printing;
 pub mod priority_queue;
 pub mod regions;
+pub mod rle_dib;
+pub mod rle_runs;
 pub mod shapes;
 pub mod spool_job;
 pub mod spooler;

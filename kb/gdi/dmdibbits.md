@@ -6,7 +6,7 @@ ordinal: 217
 summary: A memory bitmap's bits got or set as a DIB by the display driver's DeviceBitmapBits, its scans counted from the DIB's bottom.
 versions:
   '3.1': partial
-probes: [gdidmdrw, gdidmdib]
+probes: [gdidmdrw, gdidmdib, gdidmrle]
 records: [dibget, dibset]
 source: src/win16/gdi/driver-bitmap.ts
 topics: [gdi-internals, printer-drivers]
@@ -20,6 +20,8 @@ topics: [gdi-internals, printer-drivers]
 - [[measured]] Set: each pixel's colour matched to the display's, and on a monochrome bitmap white where that colour is.
 - [[measured]] The EGA's driver differs from the VGA's only by its ninth colour, 404040h.
 
+- [[measured]] [[probe:gdidmrle]], a run-length encoded DIB set into a bitmap 16 by 8 of the display's format and of one plane, 64 bytes either side seen too: the answer 1, the stream walked to its end of bitmap, nothing clipped. On the VGA the first line is the bitmap's bottom row less the start, a run past the right edge goes on into the next plane's row and the last row's last plane past the bits, and lines past the top before them; a compression of 3 is read as four bits. On the 256-colour display the first line is the DIB's height less one, a run past the right edge goes on into the next row, a line above the bitmap ends the walk, and a compression of 3, or a monochrome bitmap, answers -1. The colour table on the 256-colour display is words, a palette's index each; eight bits go through it only where it is not the indices in order.
+
 ## Inside Windows
 
 [[read out]] `GDI.EXE` seg13 `013b`: `mov cx,4811h`, CL the words `Brute` moves and CH the offset 48h of `DeviceBitmapBits` in the display driver's table, a jump to [[fn:GDI.Brute]] (seg13 `0171`).
@@ -28,17 +30,22 @@ topics: [gdi-internals, printer-drivers]
 
 [[read out]] `SVGA256.DRV` seg9 `0000`: a compressed DIB to routines of its own (`15ac`, `1a38`); no buffer for the bits answers the scans asked on a get, `biSizeImage` their bytes, and nought on a set; the scans the DIB's from its bottom, a row of the bitmap counted and laid out by the DIB's width and height (`00c9`). A set (`018c`) takes the colour table as words, a palette's index each: on a byte a pixel the low byte of each pixel's word, on a monochrome bitmap bit nought of the low byte for a DIB of a bit and of the high byte for the others; 24 bits matched by GDI's `DeviceColorMatch` (ordinal 449, found by `Enable`, seg3 `0050`-`006a`) with the translation table, red and blue swapped (`05ac`, `070a`). A get (`07b6`) goes through 256 bytes of the translation table (`0a1a`): a bit set where an index's byte is not nought, 4 bits its low four, 8 bits the index, 24 bits the table's first three bytes of four at the index; the colour table not written.
 
+[[read out]] `VGA.DRV` export 501 (seg9 `12ec`), the set from `13ff`: `DeviceBitmapBits` hands it the bitmap's rectangle and the same to clip to, so the clip flag (20h) is clear (`1325`-`134a`); the first line `Y + cy - 1 - start` (`13e6`-`13f6`), the count kept for the get only. A table of up to 256 colours, `biClrUsed` or 256 (`1449`-`1459`), each matched (`2915`) and for a monochrome bitmap its flag 10h made all or nothing (`1dd9`). Then a pair at a time (`14fe`): a run (`1556`), of four bits drawn in its high digit and then its low over every second pixel by a mask of AAh or 55h from the run's column (`1966`-`19e6`); nought and nought, the first column and a line up (`1586`); nought and 1, the end (`1592`, answering 1 at `15ac`); nought and 2, across and up by the next two bytes (`1573`); else that many pixels as they are (`151d`), of four bits by a digit's flag at `[bp-2Ch]` (`1d7e`, `1d66`), and a byte more where the next is at an odd offset (`154b`). Each pixel's byte the row's start, `y` by the planes' bytes, and the eighth of `x` (`1ad8`), each plane's row the width's bytes on (`1a6a`, `19f6`). Nothing ends the walk but the end's escape. The get (`15b2`) encodes the bitmap as runs and is not followed here.
+
+[[read out]] `SVGA256.DRV` seg9 `15ac`: a compression past 2 answers -1 (`169d`), a monochrome bitmap -1 (`16d9`), any other not of a byte a pixel nought. The table from `biClrUsed` words or as many as the bits give, the low byte of each, and flag 8 where the sum of each low byte less its place and each high byte is not nought (`176f`-`179e`): an eight-bit DIB goes through the table only with it (`157c`, `159c`). With no clipping rectangle -- `DeviceBitmapBits` hands none (`0041`-`0051`) -- the DIB's own rectangle at `X, Y` (`17e3`-`17fc`), its first line `Y` plus its height less one (`1691`-`1697`). The pairs as the VGA's (`15c0`-`1661`), an end of line or a delta up ending the walk at a line above the rectangle's top (`164a`-`1650`, `1626`-`1631`), the padding by the offset (`15f3`); each byte at the row's start and `x`, a row the width's bytes on (`1738`-`1763`, `1811`). The get (`1a38`) encodes and is not followed here.
+
 ## Callers
 
 [[read out]] None imports it (`kb/data/gdi-callers.json`).
 
 ## Implementation
 
-`driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out; a compressed DIB answers nought. [[probe:gdidmdrw]] agrees in both engines on the three.
+`driver-bitmap.ts` and `driver_bitmap.rs` on the VGA, the Super VGA and the EGA, as read out; a compressed DIB set as export 501 sets it (`rleSet`, `rle_set`, walking as `rle-runs.ts` and `rle_runs.rs` walk), and got answers nought. [[probe:gdidmdrw]] agrees in both engines on the three, and [[probe:gdidmrle]] on the VGA.
 
-On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts. [[probe:gdidmdib]], a translation table of its own, agrees in both engines: a get of 1, 4, 8 and 24 bits from both formats, and a set of 24 bits through `DeviceColorMatch`.
+On the 256-colour display its own (`driver-vga256.ts`, `driver_vga256.rs`), [[probe:gdidmdrw]] agreeing. A null translation table is read as noughts. [[probe:gdidmdib]], a translation table of its own, agrees in both engines: a get of 1, 4, 8 and 24 bits from both formats, and a set of 24 bits through `DeviceColorMatch`. A compressed DIB set by `15ac`'s walk (`rleSet`, `rle_set`), [[probe:gdidmrle]] agreeing in both engines.
 
 ## Not yet done
 
-- A compressed DIB, `BI_RLE4` or `BI_RLE8`, which WinBox answers nought: [[read out]] `VGA.DRV` hands it to its own export 501 (seg9 `12ec`, from `0d35`-`0d90`) with a rectangle from nought to the bitmap's width and height -- the DIB's for a get -- the start, the count, the DIB and its header; `SVGA256.DRV` to `15ac` and `1a38`. Those routines are not read out, and no probe hands one.
+- A compressed DIB got, `BI_RLE4` or `BI_RLE8`, which WinBox answers nought: the drivers encode the bitmap as runs (`VGA.DRV` seg9 `15b2`-`1852`, `SVGA256.DRV` `1a38`-`1c33`), not read out to the end, and no probe asks.
+- A compressed DIB set on the Hercules, which WinBox answers nought: its driver's routine is not read out.
 - [[probe:gdidmdrw]]'s records on the 256-colour display of a DIB got of 1, 4 or 24 bits, and of one set of 24: it hands a null translation table, which Windows would fault on and DOSBox reads as its real-mode vectors (known gaps). [[probe:gdidmdib]] records the same paths with a table of its own.

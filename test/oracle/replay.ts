@@ -5592,6 +5592,12 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `DeviceColorMatch` for one set of 24 (`SVGA256.DRV` seg9 `0a1a`, `05ac`):
    * Windows would fault there, and DOSBox, where the probe was recorded,
    * reads linear nought -- its real-mode vectors -- which WinBox has not. */
+  /* `rledib` stretches a compressed DIB through a bitmap GDI makes of the
+   * DIB's size (`GDI.EXE` seg11 `12ca`-`12f9`), whose pixels the stream
+   * leaves are as that bitmap's memory was before -- what GDI's heap held
+   * there. WinBox's bitmap starts nought. */
+  'rledib:leftover':
+    "the pixels a compressed DIB's stream leaves unset in GDI's own bitmap are what its memory held",
   'gdidmdrw-vga256:dibget':
     "the driver reads the probe's null translation table, which DOSBox reads as its real-mode vectors",
   'gdidmdrw-vga256:dibset':
@@ -6032,6 +6038,8 @@ const RUN_WHOLE = new Set<string>([
   'oleitem',
   'maxcopy',
   'prttcw',
+  'rledib',
+  'gdidmrle',
 ]);
 
 /**

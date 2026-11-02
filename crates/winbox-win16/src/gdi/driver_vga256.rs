@@ -18,6 +18,7 @@ use super::driver_bitmap::{
     within, write8, write16,
 };
 use super::driver_hercules::{mono_scan, rop_bit};
+use super::rle_runs::{RleWalk, huge_byte, odd_at, walk_rle};
 use super::system_exports::device_color_match_of;
 use crate::system::System;
 
@@ -1098,6 +1099,100 @@ pub fn get_char_width(system: &mut System, buffer: u32, first: u16, last: u16, f
 
 const DIB_BITS: [u16; 4] = [1, 4, 8, 24];
 
+/// A run-length encoded DIB's colour table as `SVGA256.DRV` takes it
+/// (seg9 `176f`-`179e`): `biClrUsed` words, or as many as its bits give, a
+/// palette's index the low byte of each; and whether it is other than the
+/// indices in order -- the sum of each low byte less its place and each
+/// high byte, as words, not nought (flag 8, which an eight-bit DIB needs to
+/// go through the table at all: `157c`, `159c`). `rleTable`.
+fn rle_table(system: &System, info: u32) -> (Vec<u8>, bool) {
+    let used = read16(system, info, 0x20);
+    let count = if used == 0 {
+        (1u32 << (read8(system, info, 0x0e) & 0x1f)) & 0xffff
+    } else {
+        u32::from(used)
+    };
+    let at = offset_by(info, i32::from(read16(system, info, 0)));
+    let mut table = Vec::new();
+    let mut sum = 0u16;
+
+    for entry in 0..count {
+        let word = read16(system, at, entry as i32 * 2);
+        let low = word as u8;
+
+        table.push(low);
+        sum = sum.wrapping_add((word & 0xff00) | u16::from(low.wrapping_sub(entry as u8)));
+    }
+
+    (table, sum != 0)
+}
+
+/// An index through `rle_table`'s table: four bits' always, eight bits'
+/// only where the table is not the indices in order, and the index as it
+/// is where it is (`SVGA256.DRV` `1861`, `18c2`; `19a7`, `19a5`; `19d3`,
+/// `1941`). An index past the table is taken as nought: the driver's table
+/// is 256 bytes of its stack, the rest left as they were. `rleIndex`.
+fn rle_index(table: &[u8], translated: bool, eight: bool, index: u8) -> u8 {
+    if eight && !translated {
+        index
+    } else {
+        table.get(usize::from(index)).copied().unwrap_or(0)
+    }
+}
+
+/// A run-length encoded DIB set into a memory bitmap by `SVGA256.DRV`
+/// seg9 `15ac`, which `DeviceBitmapBits` hands it with no clipping
+/// rectangle (`0041`-`0051`): the DIB's own rectangle at the bitmap's
+/// corner instead (`17e3`-`17fc`). The first line is the DIB's height less
+/// one, whatever the start and the count (`1691`-`1697`); a line above the
+/// bitmap ends the walk (`walk_rle`), and each index's byte goes at its
+/// column of its row, with no bound to the width (`1738`-`1763`, `19a7`).
+/// A compression past 2 (`169d`) or a monochrome bitmap (`16d9`) answers
+/// -1, a bitmap of neither format nought; else 1 (`166c`). **Recorded** by
+/// `gdidmrle`.
+fn rle_set(system: &mut System, bitmap_far: u32, bits: u32, info: u32) -> u32 {
+    let dest = read_bitmap(system, bitmap_far);
+    let compression = read16(system, info, 0x10);
+
+    if compression > 2 {
+        return 0xffff;
+    }
+
+    match read8(system, bitmap_far, 9) {
+        1 => return 0xffff,
+        8 => {}
+        _ => return 0,
+    }
+
+    let (table, translated) = rle_table(system, info);
+    let eight = compression & 3 == 1;
+    let walk = RleWalk {
+        eight,
+        x: 0,
+        y: i32::from(read16(system, info, 8)) - 1,
+        top: Some(0),
+    };
+    let mut pixels = Vec::new();
+
+    walk_rle(
+        &walk,
+        &mut |at| huge_byte(system, bits, at),
+        &|at| odd_at(bits, at),
+        &mut |x, y, index| pixels.push((x, y, index)),
+    );
+
+    for (x, y, index) in pixels {
+        write8(
+            system,
+            dest.row(y),
+            x,
+            rle_index(&table, translated, eight, index),
+        );
+    }
+
+    1
+}
+
 /// `DeviceBitmapBits` (`SVGA256.DRV` seg9 `0000`) on a memory bitmap.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 pub fn device_bitmap_bits(
@@ -1116,8 +1211,14 @@ pub fn device_bitmap_bits(
     let height = i32::from(read16(system, info, 8));
     let bit_count = read16(system, info, 0x0e);
 
+    // A compressed DIB to the routines of run lengths (`0034`-`005c`), whose
+    // get is not followed here.
     if read8(system, info, 0x10) & 3 != 0 {
-        return 0;
+        return if get == 0 && bits != 0 {
+            rle_set(system, bitmap_far, bits, info)
+        } else {
+            0
+        };
     }
 
     if bits == 0 {

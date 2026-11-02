@@ -8,6 +8,7 @@ import { FALSE, TRUE } from '../consts.js';
 import { INT, LPARAM } from '../types.js';
 import { clipOf } from './clipping.js';
 import { dibAt } from './dib-to-device.js';
+import { setRleDIBits } from './rle-dib.js';
 import { wideStroke } from './LineTo.js';
 import { fillRings, outlineSide } from './polygon-mode.js';
 import { devicePoint, mapped } from './mapping.js';
@@ -307,6 +308,13 @@ function setOwnDIBits(
 
   if (!(target instanceof DeviceBitmap) || !lpvBits || !lpbmi) {
     return 0;
+  }
+
+  /* A compressed DIB is the display driver's to walk (`rle-dib.ts`). */
+  const walked = setRleDIBits(this, target, uStartScan & 0xffff, lpvBits, lpbmi, 0);
+
+  if (walked !== null) {
+    return walked;
   }
 
   const found = dibAt(this, { bitmap: target }, lpbmi, lpvBits, cScanLines);

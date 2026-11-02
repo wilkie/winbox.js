@@ -1,0 +1,274 @@
+{
+  "probe": "rledib",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "answer",
+      "args": "basic8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "basic8",
+      "result": "8888888888888888/7777777777777777/6666666666666666/5555555555555555/4444444444444444/3333333333333333/2222222222222222/1111111111111111"
+    },
+    {
+      "function": "answer",
+      "args": "partial8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "partial8",
+      "result": "4444444444444444/4444444444444444/d444444444444444/4444444444444444/4444444444444444/444bbbb44cc44444/4444444444444444/aaaaa44444444444"
+    },
+    {
+      "function": "answer",
+      "args": "absolute8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "absolute8",
+      "result": "4444444444444444/4444444444444444/4444444444444444/4444444444444444/4444444444444444/eeeeeeeeeeeeeeee/4444444444444444/12345678999abcd4"
+    },
+    {
+      "function": "answer",
+      "args": "right8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "right8",
+      "result": "4444444444444444/4444444444444444/4444444444444444/5555555555555555/893333333333339a/9977cccccccccccc/3333222222222222/1111111111111111"
+    },
+    {
+      "function": "answer",
+      "args": "start8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "start8",
+      "result": "4444444444444444/4444444444444444/5555555555555555/3333333333333333/2222222222222222/1111111111111111/4444444444444444/4444444444444444"
+    },
+    {
+      "function": "answer",
+      "args": "small8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "small8",
+      "result": "4444444444444444/4444444444444444/4444444444444444/4444444444444444/5555555555555555/3333333333333333/2222222222222222/1111111111111111"
+    },
+    {
+      "function": "answer",
+      "args": "basic4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "basic4",
+      "result": "8888888888888888/7777777777777777/6666666666666666/5555555555555555/4444444444444444/3333333333333333/2222222222222222/1111111111111111"
+    },
+    {
+      "function": "answer",
+      "args": "nibbles4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "nibbles4",
+      "result": "4444444444444444/4444444444444444/4444444444444444/4444444444444444/444ef14444444444/12345678abcd4444/43a3a345b5b44444/9c9c9c9444444444"
+    },
+    {
+      "function": "answer",
+      "args": "right4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "right4",
+      "result": "4444444444444444/4444444444444444/4444444444444444/4444444444444444/4444444444444444/4444444444444444/9bd5555555555123/24249a9a9a9a9a9a"
+    },
+    {
+      "function": "answer",
+      "args": "mono8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "mono8",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/fffffffff00fffff/ffffffffffffffff/ffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "mono4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "mono4",
+      "result": "ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/ffffffffffffffff/fffff0ffffffffff/000000f0ff0fffff/f0f0f0f0f0ffffff/0000000fffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-partial8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-partial8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffdfffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/fffffbbbbffccfffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffaaaaafffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-right8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-right8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ff5555555555555555ffffffffffffff/ff333333333333339abcffffffffffff/ffccccccccccccccccccccffffffffff/ff2222222222222222ffffffffffffff/ff1111111111111111ffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-nibbles4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-nibbles4",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/fffffef1ffffffffffffffffffffffff/ff12345678abcdffffffffffffffffff/fff3a3a3f5b5bfffffffffffffffffff/ff9c9c9c9fffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-right4",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-right4",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ff5555555555555123456fffffffffff/ff9a9a9a9a9a9a9a9a9a9affffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-part8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-part8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ff66666666ffffffffffffffffffffff/ff55555555ffffffffffffffffffffff/ff44444444ffffffffffffffffffffff/ff33333333ffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-lines8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-lines8",
+      "result": "ff8888888888888888ffffffffffffff/ff7777777777777777ffffffffffffff/ff6666666666666666ffffffffffffff/ff5555555555555555ffffffffffffff/ff4444444444444444ffffffffffffff/ff3333333333333333ffffffffffffff/ff2222222222222222ffffffffffffff/ff1111111111111111ffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-edge8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-edge8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffff88888888/ffffffffffffffffffffffff77777777/ffffffffffffffffffffffff66666666/ffffffffffffffffffffffff55555555/ffffffffffffffffffffffff44444444/ffffffffffffffffffffffff33333333"
+    },
+    {
+      "function": "answer",
+      "args": "window-past8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-past8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffaaaaaaaaffffffffffffffffffffff/ff9999999999999999ffffffffffffff/ff8888888888888888ffffffffffffff/ff7777777777777777ffffffffffffff/ff6666666666666666ffffffffffffff/ff5555555555555555ffffffffffffff/ff4444444444444444ffffffffffffff/ff3333333333333333ffffffffffffff/ff2222222222222222ffffffffffffff/ff1111111111111111ffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "window-small8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "window-small8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ff5555555555555555ffffffffffffff/ff3333333333333333ffffffffffffff/ff2222222222222222ffffffffffffff/ff1111111111111111ffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-same8",
+      "result": "1"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-same8",
+      "result": "ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffdfffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/fffffbbbbffccfffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffaaaaafffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-grow4",
+      "result": "8"
+    },
+    {
+      "function": "leftover",
+      "args": "stretch-grow4",
+      "result": "0088ff887777dd110066ff4422662222/0088ff887777dd110066ff4422662222/00ffeedd0033772200ddff7755cc4444/00ffeedd0033772200ddff7755cc4444/00eeff4477ee772200ffff3344aa99dd/00eeff4477ee772200ffff3344aa99dd/00ffff55eeaa998800aaff00777777aa/00ffff55eeaa998800aaff00777777aa/00ffffeeff1100220066ff0000004466/00ffffeeff1100220066ff0000004466/1122334455667788aabbccdd117722aa/1122334455667788aabbccdd117722aa/0033aa33aa330055bb55bb330055aa11/0033aa33aa330055bb55bb330055aa11/99cc99cc99cc998800eeffcc22226622/99cc99cc99cc998800eeffcc22226622"
+    },
+    {
+      "function": "answer",
+      "args": "stretch-part8",
+      "result": "4"
+    },
+    {
+      "function": "rows",
+      "args": "stretch-part8",
+      "result": "ffffffffffffffffffffffffffffffff/f6666666666666666fffffffffffffff/f6666666666666666fffffffffffffff/f5555555555555555fffffffffffffff/f5555555555555555fffffffffffffff/f4444444444444444fffffffffffffff/f4444444444444444fffffffffffffff/f3333333333333333fffffffffffffff/f3333333333333333fffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff/ffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "answer",
+      "args": "memory-same8",
+      "result": "8"
+    },
+    {
+      "function": "leftover",
+      "args": "memory-same8",
+      "result": "44444444444444444444444444444444/44444444444444444444444444444444/44888888888888888844444444444444/44777777777777777744444444444444/44d66666666666666644444444444444/44555555555555555544444444444444/44444444444444444444444444444444/44333bbbb33cc3333344444444444444/44222222222222222244444444444444/44aaaaa1111111111144444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444"
+    },
+    {
+      "function": "answer",
+      "args": "memory-grow4",
+      "result": "8"
+    },
+    {
+      "function": "leftover",
+      "args": "memory-grow4",
+      "result": "88888888888888888888888888888888/88888888888888888888888888888888/77777777777777777777777777777777/77777777777777777777777777777777/dd666666666666666666666666666666/dd666666666666666666666666666666/55555555555555555555555555555555/55555555555555555555555555555555/444444eeff1144444444444444444444/444444eeff1144444444444444444444/1122334455667788aabbccdd33333333/1122334455667788aabbccdd33333333/2233aa33aa332255bb55bb2222222222/2233aa33aa332255bb55bb2222222222/99cc99cc99cc99111111111111111111/99cc99cc99cc99111111111111111111"
+    },
+    {
+      "function": "answer",
+      "args": "memory-right8",
+      "result": "8"
+    },
+    {
+      "function": "leftover",
+      "args": "memory-right8",
+      "result": "44444444444444444444444444444444/44444444444444444444444444444444/44888888888888888844444444444444/44777777777777777744444444444444/44d66666666666666644444444444444/44555555555555555544444444444444/44893333333333339a44444444444444/449977cccccccccccc44444444444444/44333322222222222244444444444444/44111111111111111144444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444/44444444444444444444444444444444"
+    }
+  ]
+}

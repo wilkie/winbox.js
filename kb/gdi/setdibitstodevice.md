@@ -6,7 +6,7 @@ ordinal: 443
 summary: Draws some of a device-independent bitmap's scan lines straight onto a device, at their place in a rectangle of it.
 versions:
   '3.1': partial
-probes: [dibdev, prblt, prblt2]
+probes: [dibdev, prblt, prblt2, rledib]
 source: src/win16/gdi/dib-to-device.ts
 topics: [painting, printer-drivers]
 ---
@@ -23,6 +23,17 @@ topics: [painting, printer-drivers]
 - [[measured]] Into a memory device context it draws nothing and answers -1, even into a bitmap of the display's own format. The VGA driver takes only the screen. [[fn:GDI.StretchDIBits]] draws into one.
 
 winbox.js agrees with all 36 records.
+
+## A compressed DIB
+
+[[probe:rledib]] draws run-length encoded DIBs on a pop-up window 32 by 16, on the VGA and the 256-colour display. [[measured]]
+
+- The DIB goes where an uncompressed one would, its bottom line at `yDest + ySrc + cy - 1`; what the stream leaves is left as it was, and the answer is 1.
+- Where the DIB's rectangle lies inside the destination's, nothing is clipped: a run past the DIB's right edge goes on to the right, lines past its top go on up. Where it does not, the destination's rectangle clips it.
+- From a scan line not nought, every line is drawn whatever the count. On the VGA the DIB moves up by the start, its rectangle as before, so its lines above the destination are drawn. On the 256-colour display it moves down by its height less the start and the count, and what falls below the destination is clipped.
+- On the 256-colour display a line past the top of the destination ends it.
+
+[[read out]] GDI hands the DIB to the driver's `SetDIBitsToDevice` with the destination's rectangle to clip to. `VGA.DRV` seg9 `0e2a` gives it to export 501 with the DIB's rectangle at GDI's place (`0e3d`-`0e7b`), which clips only where that rectangle does not lie inside the clip (`1325`-`134a`), its first line `start` up from its bottom (`13e6`). `SVGA256.DRV` seg9 `0dba` moves the place down by the DIB's height less the start and the count (`0dc4`-`0dd7`) and gives it to `15ac` (`0e5e`-`0e7c`), which clips likewise (`179f`-`17de`) and ends at a line above the clip (`164a`). `rle-dib.ts`, `rle_dib.rs`; [[probe:rledib]] agrees in both engines.
 
 ## Nuances
 
