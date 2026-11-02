@@ -162,22 +162,25 @@ pub(crate) struct Placing {
     /// whole window.
     pub(crate) dest: Option<[i32; 4]>,
     /// How far its bits come.
-    delta: (i32, i32),
+    pub(crate) delta: (i32, i32),
     /// Due all of itself already, by its caller.
     whole: bool,
-    /// Drawn by its caller already (`placing_skip`).
-    skip: bool,
     /// What it was asked (`placing_flags`), none for moved or sized.
     pub(crate) flags: Option<u16>,
+    /// Its frame changed, `SWP_FRAMECHANGED` (`frame_changed`): never
+    /// passed over.
+    pub(crate) framed: bool,
     /// More of the screen made due with it: an icon's title where it was
     /// and is.
     extra: Option<ClipRegion>,
 }
 
 /// Where a window is, to tell whether a list changed it: its place and
-/// size, whether it is shown, and the windows in front of it among its
-/// brothers.
-type PlaceKey = ([i32; 4], bool, Vec<usize>);
+/// size, its client area -- `SetWindowPos` clears `SWP_NOCLIENTSIZE` and
+/// `SWP_NOCLIENTMOVE`, of the flags it asks against 1807h, where the client
+/// area changed (seg7 `0d66`, `0fcf`, `0fe6`, `0a4f`) -- whether it is
+/// shown, and the windows in front of it among its brothers.
+type PlaceKey = ([i32; 4], [i32; 4], bool, Vec<usize>);
 
 /// The windows of a list being placed, and the screen as it was before
 /// (`System::begin_placing`).
@@ -621,8 +624,8 @@ impl System {
             dest: None,
             delta: (0, 0),
             whole: false,
-            skip: false,
             flags: None,
+            framed: false,
             extra: None,
         });
 
@@ -647,6 +650,12 @@ impl System {
 
         (
             [shown.left, shown.top, shown.width, shown.height],
+            [
+                shown.client.left,
+                shown.client.top,
+                shown.client.right,
+                shown.client.bottom,
+            ],
             shown.visible,
             front,
         )
@@ -677,14 +686,6 @@ impl System {
     pub(crate) fn placing_dest(&mut self, window: usize, dest: [i32; 4]) {
         if let Some(entry) = self.placing_entry(window) {
             entry.dest = Some(dest);
-        }
-    }
-
-    /// A window of the list drawn by its caller already: nothing more for
-    /// it here.
-    pub(crate) fn placing_skip(&mut self, window: usize) {
-        if let Some(entry) = self.placing_entry(window) {
-            entry.skip = true;
         }
     }
 
@@ -795,17 +796,18 @@ impl System {
         let screen = self.screen_bitmap();
         let mut copied_so_far: Option<ClipRegion> = None;
         let mut gathered: Option<ClipRegion> = None;
+        let mut source = list.screen.clone();
 
         for entry in &list.entries {
             // Nothing done to it -- not moved, sized, shown, hidden nor put
             // elsewhere among its brothers -- it is passed over (seg7
-            // `0a4f`-`0a96`: its flags against 1807h, or against 1803h where
-            // it lies where it was asked, `1184`, marked `SWP_NOREDRAW`;
-            // `05c7`).
+            // `0a4f`-`0a96`: its flags masked with 18E7h against 1807h -- so
+            // never with `SWP_FRAMECHANGED` -- or against 1803h where it lies
+            // where it was asked, `1184`, marked `SWP_NOREDRAW`; `05c7`).
             let index = entry.window;
             let alive = exists(self, index);
 
-            if entry.skip || (alive && entry.was_at == self.placing_key(index)) {
+            if alive && !entry.framed && entry.was_at == self.placing_key(index) {
                 continue;
             }
 
@@ -873,11 +875,15 @@ impl System {
                     .filter(|copied| copied.kind() > 1);
             }
 
-            // Blitted from the screen as it is (`0727`-`0768`).
+            // Blitted from the screen as it is (`0727`-`0768`): as it was
+            // when the list began, with what the windows before it copied --
+            // before anything is drawn for the list, as Windows draws only
+            // after (`WM_NCPAINT`, the activation): WinBox draws a frame
+            // made active at once.
             if let Some(copied) = &copied
                 && delta != (0, 0)
             {
-                let bits = screen.indices.borrow().clone();
+                let bits = source.clone();
 
                 for band in &copied.bands {
                     for y in band.top.max(0)..band.bottom.min(screen_height) {
@@ -886,7 +892,10 @@ impl System {
                                 let (fx, fy) = (x - delta.0, y - delta.1);
 
                                 if fx >= 0 && fy >= 0 && fx < screen_width && fy < screen_height {
-                                    screen.put(x, y, bits[(fy * screen_width + fx) as usize]);
+                                    let index = bits[(fy * screen_width + fx) as usize];
+
+                                    screen.put(x, y, index);
+                                    source[(y * screen_width + x) as usize] = index;
                                 }
                             }
                         }

@@ -1528,9 +1528,9 @@ impl System {
 
             let changed = self.frame_changed(index);
 
-            self.placing_skip(index);
             self.end_placing(None);
             changed?;
+            self.frame_due(index);
         }
 
         Ok(())

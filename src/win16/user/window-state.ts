@@ -2226,6 +2226,8 @@ export async function positionChanged(
     listDesktop?.placingFlags(move.window.window, move.flags);
   }
 
+  const framedInPlace: any[] = [];
+
   for (const move of moves) {
     const { window, left, top, width, height, flags } = move;
     const shown = window.window;
@@ -2308,10 +2310,10 @@ export async function positionChanged(
         shown.iconPlace = { left, top };
       }
     } else if (framed) {
-      /* Its frame changed in place is drawn as `frameChanged` has it
-       * (`swpframe`), not again with the list. */
+      /* Its frame changed in place: its entry given where its bits go, drawn
+       * with the list (`frameChanged`). */
       window.desktop.frameChanged(shown);
-      window.desktop.placingSkip(shown);
+      framedInPlace.push({ desktop: window.desktop, shown });
     } else if (flags & SWP_NOCOPYBITS) {
       /* Not moved nor sized, with `SWP_NOCOPYBITS`: its bits go where the
        * entry of the block says, not through its whole window (seg7
@@ -2428,6 +2430,11 @@ export async function positionChanged(
 
   /* All placed, the list is drawn (`USER.EXE` seg7 `0526`, `endPlacing`). */
   listDesktop?.endPlacing(allShown);
+
+  /* A frame changed in place is due as a region of it (`frameDue`). */
+  for (const { desktop, shown } of framedInPlace) {
+    desktop.frameDue(shown);
+  }
 
   /* Made active, then erased where it is due, and only then told it moved
    * (`swpbits`, `swporder`, `showseq`). A window made active that is not

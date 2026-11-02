@@ -124,10 +124,10 @@ interface Placing {
   dy: number;
   /** Due all of itself already, by its caller. */
   whole: boolean;
-  /** Drawn by its caller already (`placingSkip`). */
-  skip: boolean;
   /** What it was asked (`placingFlags`), null for moved or sized. */
   flags: number | null;
+  /** Its frame changed, `SWP_FRAMECHANGED` (`frameChanged`): never passed over. */
+  framed: boolean;
   /** More of the screen made due with it: an icon's title where it was and is. */
   extra: ClipRegion | null;
 }
@@ -1712,8 +1712,8 @@ export class Desktop {
       this.beginPlacing([window]);
       this.placingFlags(window, flags);
       this.frameChanged(window);
-      this.placingSkip(window);
       this.endPlacing();
+      this.frameDue(window);
     }
   }
 
@@ -1796,85 +1796,47 @@ export class Desktop {
 
   /**
    * A window's frame changed where it is: `SWP_FRAMECHANGED` with no move or
-   * size (`USER.EXE` seg7 `0e8f`-`0fe6`). Its client area is laid out again
-   * for its style; what of the old client area's bits fits is kept at the new
-   * one's top left, as `WM_NCCALCSIZE` answered with nought keeps it
-   * (`0f67`-`0f84`), and the rest is due an erase and a paint. Its whole
-   * frame is due, `WM_NCPAINT` given a region of it, and its erase is due
-   * though nothing of it may be (`swpframe`): the box of what is not kept,
-   * which the erase's clip and the paint are, a rectangle where only one side
-   * grew.
+   * size (`USER.EXE` seg7 `0e8f`-`0fe6`), a window of the list being placed.
+   * Its client area is laid out again for its style, and its entry of
+   * USER's block given where its bits go and how far they come: what of the
+   * old client area fits, at the new one's top left, as `WM_NCCALCSIZE`
+   * answered with nought keeps it (`0f67`-`0f84`) -- the new client area cut
+   * to the old moved there (`1010`). Drawn with the list (`endPlacing`):
+   * that much copied, and the rest of its old region and its new -- its
+   * frame, and what of the client area is not kept -- made due through its
+   * parent (`swpframe`).
    */
   frameChanged(window: DesktopWindow) {
-    const { left, top, width, height } = window;
-    const was = window.client;
-    const old = [left + was.left, top + was.top, left + was.right, top + was.bottom];
-    const across = Math.max(old[2] - old[0], 0);
-    const bits: number[] = [];
-
-    for (let y = old[1]; y < old[3]; y++) {
-      for (let x = old[0]; x < old[2]; x++) {
-        bits.push(this.screen.indexAt(x, y) ?? 0);
-      }
-    }
-
-    this.#relocate(window, left, top, width, height);
-
-    if (!this.#showing(window)) {
-      return;
-    }
-
-    this.#own();
-
-    const now = window.client;
-    const fresh = [left + now.left, top + now.top, left + now.right, top + now.bottom];
-    const kept = [
-      fresh[0],
-      fresh[1],
-      Math.min(fresh[2], fresh[0] + old[2] - old[0]),
-      Math.min(fresh[3], fresh[1] + old[3] - old[1]),
+    const clientOf = () => [
+      window.left + window.client.left,
+      window.top + window.client.top,
+      window.left + window.client.right,
+      window.top + window.client.bottom,
     ];
-    const view = this.#view(window, 0, 0, width, height, false);
+    const old = clientOf();
+    const entry = this.#entryOf(window);
 
-    for (let y = kept[1]; y < kept[3]; y++) {
-      for (let x = kept[0]; x < kept[2]; x++) {
-        view.put(x - left, y - top, bits[(y - fresh[1]) * across + (x - fresh[0])] ?? 0);
-      }
-    }
+    this.#relocate(window, window.left, window.top, window.width, window.height);
 
-    view.context.markRect(0, 0, width, height);
+    const now = clientOf();
+    const [dx, dy] = [now[0] - old[0], now[1] - old[1]];
 
-    const lost =
-      kept[2] >= fresh[2] && kept[3] >= fresh[3]
-        ? null
-        : kept[2] >= fresh[2]
-          ? [fresh[0], kept[3], fresh[2], fresh[3]]
-          : kept[3] >= fresh[3]
-            ? [kept[2], fresh[1], fresh[2], fresh[3]]
-            : fresh;
+    entry.dest = cut(now, [old[0] + dx, old[1] + dy, old[2] + dx, old[3] + dy]);
+    entry.dx = dx;
+    entry.dy = dy;
+    entry.framed = true;
+  }
+
+  /**
+   * Its whole frame due as a region of it, where its frame is due and not
+   * all of it, after the list that changed its frame or size was drawn
+   * (`swpframe`); due all over, `WM_NCPAINT` with 1 (seg7 `08de`-`08f0`;
+   * `swpunc`).
+   */
+  frameDue(window: DesktopWindow) {
     const shown: any = window;
 
-    shown.needsNcPaint = true;
-    shown.frameRegion = true;
-    window.needsErase = true;
-
-    if (lost) {
-      const before = shown.dirtyRect;
-
-      shown.dirtyRect = !window.needsPaint
-        ? lost
-        : before
-          ? [
-              Math.min(before[0], lost[0]),
-              Math.min(before[1], lost[1]),
-              Math.max(before[2], lost[2]),
-              Math.max(before[3], lost[3]),
-            ]
-          : undefined;
-      window.needsPaint = true;
-    } else if (!window.needsPaint) {
-      shown.dirtyRect = [fresh[0], fresh[1], fresh[0], fresh[1]];
-    }
+    shown.frameRegion = shown.needsNcPaint && !(window.needsPaint && !shown.dirtyRect);
   }
 
   /**
@@ -2281,8 +2243,10 @@ export class Desktop {
 
   /**
    * Where a window is, to tell whether the list changed it: its place and
-   * size, whether it is shown, and the windows in front of it among its
-   * brothers.
+   * size, its client area -- `SetWindowPos` clears `SWP_NOCLIENTSIZE` and
+   * `SWP_NOCLIENTMOVE`, of the flags it asks against 1807h, where the client
+   * area changed (seg7 `0d66`, `0fcf`, `0fe6`, `0a4f`) -- whether it is
+   * shown, and the windows in front of it among its brothers.
    */
   #placingKey(window: DesktopWindow) {
     const front = this.windows
@@ -2290,7 +2254,20 @@ export class Desktop {
       .filter((other) => other.parent === window.parent)
       .map((other) => other.id);
 
-    return [window.left, window.top, window.width, window.height, window.visible, ...front].join();
+    const { client } = window;
+
+    return [
+      window.left,
+      window.top,
+      window.width,
+      window.height,
+      client.left,
+      client.top,
+      client.right,
+      client.bottom,
+      window.visible,
+      ...front,
+    ].join();
   }
 
   /** A window's entry in the list, its region as it was taken as it is first named. */
@@ -2309,7 +2286,7 @@ export class Desktop {
         dy: 0,
         whole: false,
         flags: null,
-        skip: false,
+        framed: false,
         extra: null,
       };
       list.entries.push(entry);
@@ -2348,13 +2325,6 @@ export class Desktop {
   placingDest(window: DesktopWindow, dest: number[]) {
     if (this.#list) {
       this.#entryOf(window).dest = dest;
-    }
-  }
-
-  /** A window of the list drawn by its caller already: nothing more for it here. */
-  placingSkip(window: DesktopWindow) {
-    if (this.#list) {
-      this.#entryOf(window).skip = true;
     }
   }
 
@@ -2430,11 +2400,12 @@ export class Desktop {
     for (const entry of entries) {
       const { window, old, dx, dy } = entry;
 
-      /* Nothing done to it -- not moved, sized, shown, hidden nor put
-       * elsewhere among its brothers -- it is passed over (seg7
-       * `0a4f`-`0a96`: its flags against 1807h, or against 1803h where it
-       * lies where it was asked, `1184`, marked `SWP_NOREDRAW`; `05c7`). */
-      if (entry.skip || entry.wasAt === this.#placingKey(window)) {
+      /* Nothing done to it -- not moved, sized, shown, hidden, its frame
+       * changed nor put elsewhere among its brothers -- it is passed over
+       * (seg7 `0a4f`-`0a96`: its flags masked with 18E7h against 1807h, or
+       * against 1803h where it lies where it was asked, `1184`, marked
+       * `SWP_NOREDRAW`; `05c7`). */
+      if (!entry.framed && entry.wasAt === this.#placingKey(window)) {
         continue;
       }
       const now =
@@ -2494,9 +2465,13 @@ export class Desktop {
         }
       }
 
-      /* Blitted from the screen as it is (`0727`-`0768`). */
+      /* Blitted from the screen as it is (`0727`-`0768`): as it was when
+       * the list began, with what the windows before it copied -- before
+       * anything is drawn for the list, as Windows draws only after
+       * (`WM_NCPAINT`, the activation): WinBox draws a frame made active
+       * at once. */
       if (copied && (dx || dy)) {
-        const bits = this.screen.indices.slice();
+        const bits = list.screen.slice();
 
         for (const band of copied.bands) {
           for (let y = Math.max(band.top, 0); y < Math.min(band.bottom, this.screen.height); y++) {
@@ -2505,7 +2480,10 @@ export class Desktop {
                 const [fx, fy] = [x - dx, y - dy];
 
                 if (fx >= 0 && fy >= 0 && fx < stride && fy < this.screen.height) {
-                  this.screen.put(x, y, bits[fy * stride + fx]);
+                  const index = bits[fy * stride + fx];
+
+                  this.screen.put(x, y, index);
+                  list.screen[y * stride + x] = index;
                 }
               }
             }

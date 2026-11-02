@@ -165,111 +165,64 @@ impl System {
     }
 
     /// A window's frame changed where it is: `SWP_FRAMECHANGED` with no
-    /// move or size (`USER.EXE` seg7 `0e8f`-`0fe6`). Its client area is
-    /// laid out again for its style; what of the old client area's bits
-    /// fits is kept at the new one's top left, as `WM_NCCALCSIZE` answered
-    /// with nought keeps it (`0f67`-`0f84`), and the rest is due an erase
-    /// and a paint. Its whole frame is due, `WM_NCPAINT` given a region of
-    /// it, and its erase is due though nothing of it may be (`swpframe`):
-    /// the box of what is not kept, which the erase's clip and the paint
-    /// are, a rectangle where only one side grew.
+    /// move or size (`USER.EXE` seg7 `0e8f`-`0fe6`), a window of the list
+    /// being placed. Its client area is laid out again for its style, and
+    /// its entry of USER's block given where its bits go and how far they
+    /// come: what of the old client area fits, at the new one's top left,
+    /// as `WM_NCCALCSIZE` answered with nought keeps it (`0f67`-`0f84`) --
+    /// the new client area cut to the old moved there (`1010`). Drawn with
+    /// the list (`end_placing`): that much copied, and the rest of its old
+    /// region and its new -- its frame, and what of the client area is not
+    /// kept -- made due through its parent (`swpframe`). The TypeScript
+    /// engine's `frameChanged`.
     pub(crate) fn frame_changed(&mut self, index: usize) -> Result<(), Stop> {
-        let (left, top, width, height, was) = {
+        let client_of = |system: &Self| {
+            let window = system.windows[index].as_ref().expect("a window");
+
+            [
+                window.left + window.client.left,
+                window.top + window.client.top,
+                window.left + window.client.right,
+                window.top + window.client.bottom,
+            ]
+        };
+        let old = client_of(self);
+        let (left, top, width, height) = {
             let window = self.windows[index].as_ref().expect("a window");
 
-            (
-                window.left,
-                window.top,
-                window.width,
-                window.height,
-                window.client,
-            )
+            (window.left, window.top, window.width, window.height)
         };
-        let screen = self.screen_bitmap();
-        let old = [
-            left + was.left,
-            top + was.top,
-            left + was.right,
-            top + was.bottom,
-        ];
-        let bits: Vec<u8> = (old[1]..old[3])
-            .flat_map(|y| (old[0]..old[2]).map(move |x| (x, y)))
-            .map(|(x, y)| screen.index_at(x, y).unwrap_or(0))
-            .collect();
 
+        self.placing_entry(index);
         self.relocate(index, left, top, width, height)?;
 
-        if !self.showing(index) {
-            return Ok(());
-        }
-
-        self.own();
-
-        let now = self.windows[index].as_ref().expect("a window").client;
-        let new = [
-            left + now.left,
-            top + now.top,
-            left + now.right,
-            top + now.bottom,
-        ];
-        let kept = [
-            new[0],
-            new[1],
-            new[2].min(new[0] + old[2] - old[0]),
-            new[3].min(new[1] + old[3] - old[1]),
+        let now = client_of(self);
+        let delta = (now[0] - old[0], now[1] - old[1]);
+        let dest = [
+            now[0].max(old[0] + delta.0),
+            now[1].max(old[1] + delta.1),
+            now[2].min(old[2] + delta.0),
+            now[3].min(old[3] + delta.1),
         ];
 
-        if let Some(view) = self.window_part(index, 0, 0, width, height, false) {
-            let across = (old[2] - old[0]).max(0);
-
-            for y in kept[1]..kept[3] {
-                for x in kept[0]..kept[2] {
-                    let at = ((y - new[1]) * across + (x - new[0])) as usize;
-
-                    view.put(x - left, y - top, bits.get(at).copied().unwrap_or(0));
-                }
-            }
-
-            view.context.mark_rect(0, 0, width, height);
-        }
-
-        let lost = if kept[2] >= new[2] && kept[3] >= new[3] {
-            None
-        } else if kept[2] >= new[2] {
-            Some([new[0], kept[3], new[2], new[3]])
-        } else if kept[3] >= new[3] {
-            Some([kept[2], new[1], new[2], new[3]])
-        } else {
-            Some(new)
-        };
-        let area = lost.unwrap_or([new[0], new[1], new[0], new[1]]);
-        let dirty = self.dirty_box(area);
-        let window = self.windows[index].as_mut().expect("a window");
-
-        window.needs_nc_paint = true;
-        window.frame_region = true;
-        window.needs_erase = true;
-
-        if let Some(lost) = lost {
-            window.dirty = match (window.needs_paint, window.dirty) {
-                (false, _) => Some(dirty),
-                (true, None) => None,
-                (true, Some(before)) => Some(crate::windows::Dirty {
-                    area: [
-                        before.area[0].min(lost[0]),
-                        before.area[1].min(lost[1]),
-                        before.area[2].max(lost[2]),
-                        before.area[3].max(lost[3]),
-                    ],
-                    ..dirty
-                }),
-            };
-            window.needs_paint = true;
-        } else if !window.needs_paint {
-            window.dirty = Some(dirty);
+        if let Some(entry) = self.placing_entry(index) {
+            entry.dest = Some(dest);
+            entry.delta = delta;
+            entry.framed = true;
         }
 
         Ok(())
+    }
+
+    /// Its whole frame due as a region of it, where its frame is due and
+    /// not all of it, after the list that changed its frame or size was
+    /// drawn (`swpframe`); due all over, `WM_NCPAINT` with 1 (seg7
+    /// `08de`-`08f0`; `swpunc`). The TypeScript engine's `frameDue`.
+    pub(crate) fn frame_due(&mut self, index: usize) {
+        if let Some(window) = self.windows[index].as_mut() {
+            window.frame_region =
+                window.needs_nc_paint && !(window.needs_paint && window.dirty.is_none());
+        }
     }
 
     /// The active window at the top's handle, nought for none.
@@ -823,6 +776,8 @@ impl Engine {
             }
         }
 
+        let mut framed_in_place = Vec::new();
+
         for mut change in changes {
             let mut system = self.system();
             let [left, top, width, height] = change.place;
@@ -914,10 +869,10 @@ impl Engine {
 
                 system.lock_touched(Some(change.index), place, DCX_WINDOW);
             } else if framed {
-                // Its frame changed in place is drawn as `frame_changed` has
-                // it (`swpframe`), not again with the list.
+                // Its frame changed in place: its entry given where its bits
+                // go, drawn with the list (`frame_changed`).
                 system.frame_changed(change.index)?;
-                system.placing_skip(change.index);
+                framed_in_place.push(change.index);
             } else if change.flags & SWP_NOCOPYBITS != 0 {
                 // Not moved nor sized, with `SWP_NOCOPYBITS`: its bits go
                 // where the entry of the block says, not through its whole
@@ -1051,6 +1006,11 @@ impl Engine {
         // All placed, the list is drawn (`USER.EXE` seg7 `0526`,
         // `end_placing`).
         self.system().end_placing(Some(all_shown));
+
+        // A frame changed in place is due as a region of it (`frame_due`).
+        for index in framed_in_place {
+            self.system().frame_due(index);
+        }
 
         // Made active, then erased where it is due, and only then told it
         // moved (`swpbits`, `swporder`, `showseq`); brought to the front

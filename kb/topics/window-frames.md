@@ -117,7 +117,7 @@ winbox.js agrees with all 50 records in both engines. It had laid the client are
 
 ## Implementation
 
-`frameChanged` in `desktop.ts` and `frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and keep its bits; `positionChanging` and `positionChanged` in `window-state.ts` (`position_changing`, `position_changed`) send `WM_NCCALCSIZE` (`calcSize`, `calc_size`) and work out the client flags. `calcKept` (`calc_kept`) works out what of the old client area's bits an answer keeps, which `moveWithBits` (`move_with_bits`) keeps; `answerClient` (`answer_client`) keeps a procedure's own client area, which `#layout` (`layout`) lays out while the window keeps its size and style.
+`frameChanged` in `desktop.ts` and `frame_changed` in `crates/winbox-win16/src/position.rs` lay a window out again for a changed frame and give its entry of `SetWindowPos`'s list where its bits go, which the list copies and draws ([[topic:visible-regions]]); `positionChanging` and `positionChanged` in `window-state.ts` (`position_changing`, `position_changed`) send `WM_NCCALCSIZE` (`calcSize`, `calc_size`) and work out the client flags. `calcKept` (`calc_kept`) works out what of the old client area's bits an answer keeps, which `moveWithBits` (`move_with_bits`) keeps; `answerClient` (`answer_client`) keeps a procedure's own client area, which `#layout` (`layout`) lays out while the window keeps its size and style.
 
 `paintFrame` in `src/win16/user/frame.ts` paints a window's non-client area and returns the client rectangle. `test/raster/frame_test.ts` holds it to all 28 captures.
 
