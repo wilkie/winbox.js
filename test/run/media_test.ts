@@ -51,6 +51,13 @@ describe("what the page makes of what's dropped", () => {
     );
     expect((await classify('c.zip', zip({ 'ARIAL.FO_': 'x' }))).kind).toBe('media');
     expect((await classify('g.zip', zip({ 'SKI.EXE': 'x' }))).kind).toBe('programs');
+    expect(
+      (await classify('t.zip', zip({ 'SETUP.EXE': 'x', 'SETUP.INF': 'x', 'SIMTOWER.EX_': 'x' })))
+        .kind
+    ).toBe('programs');
+    expect(
+      (await classify('w1.zip', zip({ 'SETUP.EXE': 'x', 'SETUP.INF': 'x', 'GDI.EX_': 'x' }))).kind
+    ).toBe('media');
     expect((await classify('Disk01.img', new Uint8Array(16))).kind).toBe('media');
   });
 

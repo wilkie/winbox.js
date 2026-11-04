@@ -32,6 +32,14 @@ const isZip = (bytes: Uint8Array) =>
 
 const baseName = (path: string) => path.split('/').pop() ?? path;
 
+/**
+ * Files only Windows' own setup disks hold, compressed for them: its first
+ * disk's GDI and WIN.COM, its second's kernels and USER
+ * (`scripts/assets/known-media.json`). A program's setup has a `SETUP.EXE`
+ * and a `SETUP.INF` of its own; it has none of these.
+ */
+const WINDOWS_OWN = /^(GDI\.EX_|USER\.EX_|KRNL[23]86\.EX_|WIN\.CN_)$/i;
+
 /** Whether an archive's entry is of the media: an image, Setup's lists, or a file `COMPRESS`ed for a disk. */
 const ofMedia = (entry: ZipEntry) =>
   IMAGE.test(entry.path) || /^(OEM)?SETUP\.INF$|_$/i.test(baseName(entry.path));
@@ -68,13 +76,17 @@ export async function classify(name: string, bytes: Uint8Array): Promise<Dropped
     return { kind: 'installation', name, bytes, entries };
   }
 
-  /* A program's own installer, with no Setup's list of Windows' or disk's
-   * image beside it, is a program's, though its files may be `COMPRESS`ed
-   * for a disk as Windows' are (`CTL3D.DL_`). */
+  /* A program's own installer, with no disk's image, driver's list or file
+   * of Windows' own beside it, is a program's, though its files may be
+   * `COMPRESS`ed for a disk as Windows' are (`CTL3D.DL_`) and Microsoft's
+   * setup toolkit lists them in a `SETUP.INF` of its own (SimTower's). */
   if (
     installerOf(entries) &&
     !entries.some(
-      (entry) => IMAGE.test(entry.path) || /^(OEM)?SETUP\.INF$/i.test(baseName(entry.path))
+      (entry) =>
+        IMAGE.test(entry.path) ||
+        /^OEMSETUP\.INF$/i.test(baseName(entry.path)) ||
+        WINDOWS_OWN.test(baseName(entry.path))
     )
   ) {
     return { kind: 'programs', name, entries };
