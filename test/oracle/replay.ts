@@ -6040,6 +6040,7 @@ const RUN_WHOLE = new Set<string>([
   'prttcw',
   'rledib',
   'gdidmrle',
+  'rootattr',
 ]);
 
 /**

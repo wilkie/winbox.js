@@ -280,6 +280,37 @@ export async function fileAttributes(this: any, path: string, action: number, at
 
     return action === 0 ? found : attributes;
   }
+
+  /* Another drive's asked as DOSBox's C:, a folder of the host's, answers:
+   * the path made whole by `DOS_MakeName` -- `.` and `..` taken, a
+   * trailing backslash dropped, nothing left the root (`dos_files.cpp`
+   * 107-184) -- then the host's `stat` of it: 20h, 10h added for a folder
+   * (`localDrive::GetFileAttr`, `drive_local.cpp` 287-302). Not there,
+   * its folder or not, error 2 (`DOS_GetFileAttr`, 632-641). **Recorded**
+   * by `rootattr`. No name at all, file not found (60-65); no drive, path
+   * not found (75-78). As `dos.rs`. */
+  if (action === 0) {
+    if (path === '' || path[0] === ' ') {
+      throw ERROR_FILE_NOT_FOUND;
+    }
+
+    if (!fileSystem) {
+      throw ERROR_PATH_NOT_FOUND;
+    }
+
+    const whole = resolveDirectory(this, path);
+
+    const last = whole.parts.at(-1);
+    const folder = last ? await openDirectory(this, drive, whole.parts.slice(0, -1)) : null;
+    const entry = last ? await folder?.lookup(last) : true;
+
+    if (!entry) {
+      throw ERROR_FILE_NOT_FOUND;
+    }
+
+    return entry === true || entry.info.directory ? 0x30 : 0x20;
+  }
+
   const parent = await openDirectory(this, drive, parts);
   const entry = parent && name ? await parent.lookup(name) : null;
 

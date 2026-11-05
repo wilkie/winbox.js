@@ -334,6 +334,7 @@ pub const AGREEING: &[&str] = &[
     "prttcw",
     "gdidmrle-vga",
     "gdidmrle-vga256",
+    "rootattr",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

@@ -1208,6 +1208,40 @@ impl System {
             return Ok(());
         }
 
+        // Another drive's asked as DOSBox's C:, a folder of the host's,
+        // answers: the path made whole by `DOS_MakeName` -- `.` and `..`
+        // taken, a trailing backslash dropped, nothing left the root
+        // (`dos_files.cpp` 107-184) -- then the host's `stat` of it: 20h,
+        // 10h added for a folder (`localDrive::GetFileAttr`,
+        // `drive_local.cpp` 287-302). Not there, its folder or not, error 2
+        // (`DOS_GetFileAttr`, 632-641). **Recorded** by `rootattr`. No name
+        // at all, file not found (60-65); no drive, path not found (75-78).
+        if self.low(AX) == 0 {
+            if path.is_empty() || path.starts_with(' ') {
+                return Err(ERROR_FILE_NOT_FOUND);
+            }
+
+            if !self.files.is_directory(drive, &[]) {
+                return Err(ERROR_PATH_NOT_FOUND);
+            }
+
+            let (_, mut whole) = resolve_directory(&self.files, &path);
+            let folder = match whole.pop() {
+                None => true,
+                Some(last) => {
+                    self.files
+                        .lookup(drive, &whole, &last)
+                        .ok_or(ERROR_FILE_NOT_FOUND)?
+                        .attributes
+                        & 0x10
+                        != 0
+                }
+            };
+
+            self.cpu.regs[CX] = if folder { 0x30 } else { 0x20 };
+            return Ok(());
+        }
+
         if !self.files.is_directory(drive, &parts) {
             return Err(ERROR_PATH_NOT_FOUND);
         }

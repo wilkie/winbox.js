@@ -133,6 +133,15 @@ The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and wh
 - [[read out]] `DOS_Rename` (`dos_files.cpp` 263-296) answers error 11h for another drive, then 5 if the new name is there, then 2 if the old one is not. A rename the host refuses is error 2 as well. Nothing in it stops a folder moving.
 - [[measured]] Function 3Ah on a folder that holds anything answers 5. On a name that is not there, or a file's, it answers 3. `DOS_RemoveDir` (`dos_files.cpp` 235-261) tests for a folder first.
 
+### Attributes asked of a path
+
+Microsoft's setup toolkit (SimTower's `SETUP.EXE`) asks 4300h of a destination, `C:\SIMTOWER`, and, where it is not there yet, of its parent, `C:\`. A parent that does not answer as a folder makes the path "not valid". [[probe:rootattr]] asks 4300h of the root, of folders and of a file, written in each way.
+
+- [[measured]] Every folder answers 30h, the root as any other: `C:\`, `\`, `C:`, `C:.`, `C:\.`, `C:\..`, `C:\WINDOWS`, `C:\WINDOWS\`, `C:\WINDOWS\.`, `C:\WINDOWS\..` and `C:\WINDOWS\SYSTEM\..`. A file answers 20h, `C:\WINDOWS\WIN.INI` and `C:\WINDOWS\WIN.INI\` alike, and `C:\WINDOWS\WIN.INI\..` is the folder's 30h.
+- [[measured]] What is not there answers error 2, whether its folder is there or not: `C:\NOSUCH`, `C:\NOSUCH\`, `C:\NOSUCH\X` and `C:\WINDOWS\WIN.INI\X`.
+- [[read out]] `DOS_MakeName` makes the path whole before the drive sees it (`dos_files.cpp` 107-184): an empty part, as a trailing backslash leaves, is passed over; `.` is passed over; `..` takes the last part off; a path with no backslash first starts from the drive's current folder, as `C:` and `C:.` do. The root is the empty name. `localDrive::GetFileAttr` then answers the host's `stat` of it: 20h, the archive bit, with 10h added for a folder, and nothing of the host's own attributes (`drive_local.cpp` 287-302). Where `stat` fails, `DOS_GetFileAttr` answers error 2 whatever the reason (632-641).
+- [[read out]] 4301h changes nothing on any drive: `DOS_SetFileAttr` only asks the drive for the attributes (643-656).
+
 ### In each engine
 
 - Both engines list a folder as DOSBox does: `files.rs`'s `Files::list`, and `listed` in `src/dos/syscall/find.ts`. The TypeScript engine's drives are FAT volumes, whose folders hold their entries in the order they were made, with `.` and `..` on the disk. They are listed in DOSBox's order all the same, with `.` and `..` made as they are listed. Before, the TypeScript engine gave the FAT's order, and the Rust engine sorted by name, files and folders together, with no `.` or `..` in the root.
@@ -140,6 +149,7 @@ The oracle's C: is a folder of the host's that DOSBox mounts (`mount c`), and wh
 - A folder's stamp is DOS's clock's when an entry is made in it, deleted or renamed (`Files::changed`, `FileManager.changed`). The TypeScript engine writes it into the folder's entry. The Rust engine keeps it beside the drive, as it keeps attributes, because a host's folder takes the host's clock and not DOS's. A drive held in memory keeps it itself as well.
 - Function 40h with CX nought ends the file where it is and stamps it, as `_lwrite` with nought bytes did already.
 - 56h answers as DOSBox's does, and moves folders. Before, both engines refused to move a folder, with error 5, and answered 3 for a folder that is not there.
+- 4300h on a drive other than an image answers as DOSBox's C: does: the path made whole as `resolveDirectory` and `resolve_directory` make it, 30h for the root or a folder, 20h for a file, else error 2 (`fileAttributes` in `src/dos/syscall/files.ts`, `file_attributes` in `dos.rs`). This holds for the page's C:, whose layers look as one folder ([[format:layer]]). Before, both engines answered error 2 for the root and for a path ending in a backslash, the folder's own entry's 10h for a folder, the entry's attributes for a file, and error 3 where the folder was not there.
 
 ## Disk and CD images
 
@@ -256,6 +266,8 @@ The owner's decisions (2026-10-22):
 - B: under DOSBox is selectable with nothing mounted; a session here without B: has none, and answers 0 for it as DOSBox does -- but with two floppy images DOSBox's B: would answer 2. Unrecorded.
 - The stamps of the root's `.` and `..`, which are the host folder's and its parent's under DOSBox, and unmeasured. Both engines give the root's own stamp to both. The TypeScript engine's root stamp is held in memory, and the Rust engine's for a drive held in memory is not among its changes, so neither is kept from one visit to the next.
 - A search's attributes as DOSBox gives them: only a folder's bit or the archive bit, from the host (`drive_local.cpp` 255-266). The engines give each file's own.
+- 4301h on a drive other than an image: both engines still set the attributes a search gives, where DOSBox's `DOS_SetFileAttr` sets nothing (`dos_files.cpp` 643-656), and answer error 3 where the folder is not there. Where the file is not there, DOSBox's `localDrive::GetFileAttr` sets no error, so 4301h answers whatever error code DOS held before; unrecorded.
+- 4300h of a FAT image's root, which `fatDrive::GetFileAttr` looks for by a name `getEntryName` never sets for the root (`drive_fat.cpp` 397-416, 969-996); unrecorded.
 - Long names on the host, which DOSBox lists by short names it makes (`CreateShortName`) and sorts by them.
 
 ## In winbox.js

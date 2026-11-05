@@ -26222,6 +26222,22 @@
    "leftover": "the pixels a compressed DIB's stream leaves unset in GDI's own bitmap are what its memory held"
   }
  },
+ "rootattr": {
+  "probe": "rootattr",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "attr": {
+    "total": 18,
+    "agreed": 18,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "rotangle": {
   "probe": "rotangle",
   "display": "vga",
