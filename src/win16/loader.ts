@@ -21,6 +21,55 @@ export function relocationFlags(flags: number) {
 }
 
 /**
+ * The block of global memory KERNEL loads a segment into: its minimum
+ * allocation, 64K for none, and two bytes, and for the data segment the
+ * stack and the heap more (`KRNL386.EXE` seg1 `7678`-`76a7`), which the
+ * global heap rounds up to 32 bytes as it rounds any block's (**recorded**
+ * by `grround`), no more than a selector's 64K here.
+ *
+ * @param header - The module's NE header.
+ * @param segment - The segment, as `readSegments` reads it.
+ * @param number - Its number, from 1.
+ */
+export function segmentBlockSize(header: any, segment: any, number: number) {
+  const extra =
+    number === header.autoDataSegmentIndex
+      ? header.initialStackSize + header.initialLocalHeapSize
+      : 0;
+  const size = Math.min((segment.minAllocation || 0x10000) + 2 + extra, 0x10000);
+
+  return (size + 31) & ~31;
+}
+
+/**
+ * A segment's bytes as KERNEL leaves them in its block: the file's, and
+ * nought for the rest of the block. KERNEL reads the file's bytes into the
+ * block's start and fills from their end to the block's (`KRNL286.EXE`
+ * seg1 `71e1`-`720f` sizes the block, `72a6`-`7314` reads, `732d`-`7348`
+ * fills to `GlobalSize`; `KRNL386.EXE` seg1 `7968`-`7981`, `7a43`-`7aa5`,
+ * and `7ab6`-`7ae2` to the segment's limit). **Recorded** by `segtail`:
+ * past a library's segments' lengths, to their minimum allocation and two
+ * bytes, every byte is nought, though the memory had been a program's and
+ * blocks filled with A5h. Microsoft's setup toolkit relies on it:
+ * `MSCOMSTF.DLL`'s segment 32 ends in a `retf 8` whose last byte, past the
+ * file's FD0h bytes, is the nought of its minimum allocation of FD1h; a
+ * block that had held something there before returned with its stack
+ * moved, and SimTower's setup looked for its second file in the wrong
+ * folder. As `loader.rs`'s `place`.
+ */
+export function loadedSegment(view: DataView, size: number): DataView {
+  if (view.byteLength >= size) {
+    return view;
+  }
+
+  const bytes = new Uint8Array(size);
+
+  bytes.set(new Uint8Array(view.buffer, view.byteOffset, view.byteLength));
+
+  return new DataView(bytes.buffer);
+}
+
+/**
  * Represents the operating system executable loader.
  *
  * This represents the loaded executable in memory as a module. Relocations
@@ -80,6 +129,9 @@ export class Loader {
       if (segment.iterated) {
         view = Loader.expand(view);
       }
+
+      /* The rest of its block nought (`loadedSegment`). */
+      view = loadedSegment(view, segmentBlockSize(this._header, segment, i + 1));
 
       // Allocate a segment
       const segmentIndex = this._globalAllocator.find();

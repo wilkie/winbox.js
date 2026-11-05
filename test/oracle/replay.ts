@@ -6041,6 +6041,7 @@ const RUN_WHOLE = new Set<string>([
   'rledib',
   'gdidmrle',
   'rootattr',
+  'segtail',
 ]);
 
 /**

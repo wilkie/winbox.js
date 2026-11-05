@@ -9,6 +9,47 @@ use winbox_ne::{EntryPoint, Executable, Target};
 use crate::handles::{Kind, Object};
 use crate::system::System;
 
+/// The block of global memory KERNEL loads a segment into: its minimum
+/// allocation, 64K for none, and two bytes, and for the data segment the
+/// stack and the heap more (`KRNL386.EXE` seg1 `7678`-`76a7`), which the
+/// global heap rounds up to 32 bytes as it rounds any block's (**recorded**
+/// by `grround`), no more than a selector's 64K here. `number` counts from
+/// 1. As `loader.ts`'s `segmentBlockSize`.
+pub fn segment_block_size(executable: &Executable, number: usize) -> u32 {
+    let header = &executable.header;
+    let segment = &executable.segments[number - 1];
+    let extra = if number == usize::from(header.auto_data_segment) {
+        u32::from(header.initial_stack_size) + u32::from(header.initial_heap_size)
+    } else {
+        0
+    };
+    let minimum = match segment.min_allocation {
+        0 => 0x10000,
+        size => u32::from(size),
+    };
+
+    ((minimum + 2 + extra).min(0x10000) + 31) & !31
+}
+
+/// A segment's bytes as KERNEL leaves them in its block: the file's, and
+/// nought for the rest of the block. KERNEL reads the file's bytes into the
+/// block's start and fills from their end to the block's (`KRNL286.EXE`
+/// seg1 `71e1`-`720f` sizes the block, `72a6`-`7314` reads, `732d`-`7348`
+/// fills to `GlobalSize`; `KRNL386.EXE` seg1 `7968`-`7981`, `7a43`-`7aa5`,
+/// and `7ab6`-`7ae2` to the segment's limit). **Recorded** by `segtail`:
+/// past a library's segments' lengths, to their minimum allocation and two
+/// bytes, every byte is nought. Microsoft's setup toolkit relies on it:
+/// `MSCOMSTF.DLL`'s segment 32 ends in a `retf 8` whose last byte, past the
+/// file's `FD0h` bytes, is the nought of its minimum allocation of `FD1h`. As
+/// `loader.ts`'s `loadedSegment`.
+pub fn loaded_segment(mut bytes: Vec<u8>, size: u32) -> Vec<u8> {
+    if bytes.len() < size as usize {
+        bytes.resize(size as usize, 0);
+    }
+
+    bytes
+}
+
 /// A module loaded from its file: a program, or a library it needs.
 #[derive(Debug)]
 pub struct Module {
@@ -379,7 +420,10 @@ impl System {
         let mut segments = Vec::new();
 
         for index in 0..executable.segments.len() {
-            let bytes = executable.segment_bytes(index);
+            let bytes = loaded_segment(
+                executable.segment_bytes(index),
+                segment_block_size(&executable, index + 1),
+            );
             let at = self
                 .descriptors
                 .find(1, 1)
@@ -420,22 +464,9 @@ impl System {
     /// `locinfo`'s heap at the end of its data segment grows from there).
     /// As `win16.ts`.
     fn size_segments(&mut self, module: &Module) {
-        let header = &module.executable.header;
-
-        for (number, segment) in module.executable.segments.iter().enumerate() {
-            let extra = if number + 1 == usize::from(header.auto_data_segment) {
-                u32::from(header.initial_stack_size) + u32::from(header.initial_heap_size)
-            } else {
-                0
-            };
-            let minimum = match segment.min_allocation {
-                0 => 0x10000,
-                size => u32::from(size),
-            };
-            let size = (minimum + 2 + extra).min(0x10000);
-
+        for (number, &index) in module.segments.iter().enumerate() {
             self.global
-                .set_segment_size(module.segments[number], (size + 31) & !31);
+                .set_segment_size(index, segment_block_size(&module.executable, number + 1));
         }
     }
 

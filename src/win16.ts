@@ -14,7 +14,7 @@ import { Task } from './win16/task.js';
 // Subsystems
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
-import { Loader } from './win16/loader.js';
+import { Loader, segmentBlockSize } from './win16/loader.js';
 import { loadLibrariesFor, patchPrologues, releaseLibraries, streamOf } from './win16/library.js';
 import { Executable } from './executable.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
@@ -830,13 +830,10 @@ export class Win16 {
      * there). A Visual Basic program's start-up asks `GlobalHandle` for its
      * own data segment's, and ends when it has none. */
     loader.segments.forEach((segment: any, index: number) => {
-      const extra =
-        index + 1 === loader.ds
-          ? executable.neHeader.initialStackSize + executable.neHeader.initialLocalHeapSize
-          : 0;
-      const size = Math.min((segment.minAllocation || 0x10000) + 2 + extra, 0x10000);
-
-      this.allocator.setSegmentSize(loader.translate(index + 1), (size + 31) & ~31);
+      this.allocator.setSegmentSize(
+        loader.translate(index + 1),
+        segmentBlockSize(executable.neHeader, segment, index + 1)
+      );
     });
 
     // Register the module with the system

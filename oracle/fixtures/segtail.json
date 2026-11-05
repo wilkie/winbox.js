@@ -1,0 +1,44 @@
+{
+  "probe": "segtail",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dirty",
+      "args": "",
+      "result": "16"
+    },
+    {
+      "function": "child",
+      "args": "SEGTAILC.EXE",
+      "result": "started=1 ended=1"
+    },
+    {
+      "function": "segment",
+      "args": "1",
+      "result": "flags=0D70 length=0288 minimum=0288"
+    },
+    {
+      "function": "segment",
+      "args": "2",
+      "result": "flags=0C71 length=0052 minimum=0452"
+    },
+    {
+      "function": "code",
+      "args": "SegtailCode",
+      "result": "segment=1 nonzero=0 bytes=0000"
+    },
+    {
+      "function": "data",
+      "args": "tail",
+      "result": "nonzero=0 offset=0052"
+    }
+  ]
+}
