@@ -207,8 +207,8 @@ function keep(system: any): number {
  * Program Manager started as `WinExec` starts a program, with no file: WinBox's
  * code kept, its program loaded from the image, linked, `WinMain`'s address
  * written where the start-up calls it from (its stubs made), its module given
- * the kept module's handle, and the task run until it waits for a message. Its
- * instance. As `Engine::start_progman`.
+ * the kept module's handle, and the task run until it first gives the
+ * processor up. Its instance. As `Engine::start_progman`.
  */
 export async function startProgman(
   system: any,

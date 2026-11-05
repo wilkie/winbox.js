@@ -7407,6 +7407,29 @@
   },
   "gaps": {}
  },
+ "execpk": {
+  "probe": "execpk",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 21,
+  "functions": {
+   "count": {
+    "total": 9,
+    "agreed": 9,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "order": {
+    "total": 12,
+    "agreed": 12,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "exfuncs": {
   "probe": "exfuncs",
   "display": "vga",

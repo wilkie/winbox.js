@@ -114,7 +114,7 @@ impl Engine {
     /// WinBox's code kept (its stubs made), its program loaded from the
     /// image, linked, `WinMain`'s address written where the start-up calls
     /// it from, its module given the kept module's handle, and the task
-    /// run until it waits for a message. Its instance.
+    /// run until it first gives the processor up. Its instance.
     pub(crate) async fn start_progman(
         &self,
         command_line: &str,

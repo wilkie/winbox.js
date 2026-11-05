@@ -153,9 +153,6 @@ pub struct Slot {
     pub wait: Wait,
     /// The timer that ends its wait, where it waits for one.
     pub wait_timer: Option<TimerId>,
-    /// Whether it waits for a message, as `WinExec` waits for a program it
-    /// starts to (`winexec`).
-    pub waiting_for_message: bool,
     pub ended: bool,
     /// The code it gave DOS as it ended, where it ended with others left
     /// to run on; 255 where it faulted, as the TypeScript engine ends one.
@@ -294,7 +291,6 @@ impl System {
             program,
             wait: Wait::Running,
             wait_timer: None,
-            waiting_for_message: false,
             ended: false,
             exit_code: None,
             sent: VecDeque::new(),
@@ -372,7 +368,6 @@ impl System {
             program,
             wait: Wait::Running,
             wait_timer: None,
-            waiting_for_message: false,
             ended: false,
             exit_code: None,
             sent: VecDeque::new(),

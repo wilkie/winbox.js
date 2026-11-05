@@ -942,17 +942,7 @@ impl Engine {
                 Further::Wait(timeout) => timeout,
             };
 
-            let slot = self.system().current_slot();
-
-            if let Some(slot) = slot {
-                self.system().scheduler.slots[slot].waiting_for_message = true;
-            }
-
             self.wait_for_wake(timeout).await;
-
-            if let Some(slot) = slot {
-                self.system().scheduler.slots[slot].waiting_for_message = false;
-            }
 
             // What came due at interrupt time while it waited: called now,
             // with the processor back and nothing else under way.

@@ -17,9 +17,11 @@ import { startMmtask, wantedMmtask } from '../mmsystem/mmtask.js';
  *   its spaces kept. A name with no extension is given `.EXE`.
  * * The program is found as `OpenFile` finds it; not found, WinExec answers
  *   the DOS error, 2 for no file and 3 for no path, and 2 for no name.
- * * **The new program runs before WinExec answers**: through its `WinMain`,
- *   its window made and shown, and its first message taken, to the point it
- *   waits for a message with none waiting. WinExec answers its instance.
+ * * **The new program runs before WinExec answers**, to the first time it
+ *   gives the processor up: through its `WinMain`, its window made and
+ *   shown, and its first message taken, to where it waits for a message
+ *   with none waiting -- or to its first `PeekMessage` with nothing there
+ *   or `Yield` (`execpk`). WinExec answers its instance.
  * * A second start of a program that runs is another instance, given the
  *   first as its previous one; its `WinMain` has the way to show it asked.
  *
@@ -76,7 +78,7 @@ export function previousInstance(system: any, path: string) {
 
 /**
  * A program started from its file: loaded, linked and set going, and run
- * until it waits for a message; its instance.
+ * until it first gives the processor up; its instance.
  */
 export async function startProgram(
   system: any,
@@ -150,19 +152,14 @@ export async function startExecutable(
   system.run(task, { commandLine, show, previous, environment: inherited });
   loaded?.(system.handles.resolve(task));
 
-  /* The new program has the processor first; this one has it back when the
-   * new one waits for a message, answering what it sends meanwhile. */
+  /* The new program has the processor first: KERNEL gives it up once, by
+   * `Yield`, as the task is made (`KRNL386.EXE` seg2 `13a1`-`13a8`, seg1
+   * `7d21`), and this one has it back the first time the new one gives it
+   * up -- by `PeekMessage` or `Yield` as much as by waiting for a message
+   * -- or ends (**recorded** by `execpk`). */
   const scheduler = system.scheduler;
-  const me = scheduler.task;
-  const child = scheduler._tasks[task];
 
   await scheduler.yieldTurn();
-
-  while (child && !child.ended && !child.waitingForMessage) {
-    await scheduler.yieldTurn();
-  }
-
-  void me;
 
   /* The new program's instance: its data segment's handle (`instds`). */
   const loader = scheduler._tasks[task]?.loader;

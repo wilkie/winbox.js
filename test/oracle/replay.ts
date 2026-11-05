@@ -6042,6 +6042,7 @@ const RUN_WHOLE = new Set<string>([
   'gdidmrle',
   'rootattr',
   'segtail',
+  'execpk',
 ]);
 
 /**

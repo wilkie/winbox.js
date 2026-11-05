@@ -1,0 +1,119 @@
+{
+  "probe": "execpk",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "count",
+      "args": "tasks before",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "PeekMessage, WinExec returned",
+      "result": "P start|"
+    },
+    {
+      "function": "count",
+      "args": "PeekMessage, started and tasks",
+      "result": "1 2"
+    },
+    {
+      "function": "order",
+      "args": "PeekMessage, one Yield",
+      "result": "P 1|"
+    },
+    {
+      "function": "order",
+      "args": "PeekMessage, settled",
+      "result": "P 2|P 3|P 4|P end|"
+    },
+    {
+      "function": "count",
+      "args": "PeekMessage, tasks settled",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "Yield, WinExec returned",
+      "result": "Y start|"
+    },
+    {
+      "function": "count",
+      "args": "Yield, started and tasks",
+      "result": "1 2"
+    },
+    {
+      "function": "order",
+      "args": "Yield, one Yield",
+      "result": "Y 1|"
+    },
+    {
+      "function": "order",
+      "args": "Yield, settled",
+      "result": "Y 2|Y 3|Y 4|Y end|"
+    },
+    {
+      "function": "count",
+      "args": "Yield, tasks settled",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "PM_NOYIELD, WinExec returned",
+      "result": "N start|N 1|N 2|N 3|N 4|N end|"
+    },
+    {
+      "function": "count",
+      "args": "PM_NOYIELD, started and tasks",
+      "result": "1 1"
+    },
+    {
+      "function": "order",
+      "args": "PM_NOYIELD, one Yield",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "PM_NOYIELD, settled",
+      "result": "none"
+    },
+    {
+      "function": "count",
+      "args": "PM_NOYIELD, tasks settled",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "none, WinExec returned",
+      "result": "X start|X 1|X 2|X 3|X 4|X end|"
+    },
+    {
+      "function": "count",
+      "args": "none, started and tasks",
+      "result": "1 1"
+    },
+    {
+      "function": "order",
+      "args": "none, one Yield",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "none, settled",
+      "result": "none"
+    },
+    {
+      "function": "count",
+      "args": "none, tasks settled",
+      "result": "1"
+    }
+  ]
+}

@@ -1061,28 +1061,22 @@ export async function nextMessage(
      * (`USER.EXE` seg1 `7336`). */
     due = Math.min(due, playbackDue(system) ?? Infinity);
 
-    task.waitingForMessage = true;
+    if (system.scheduler.waitForWake) {
+      await system.scheduler.waitForWake(
+        due === Infinity ? undefined : due - clockOf(system).now()
+      );
+    } else {
+      const waits: Promise<unknown>[] = [task.arrival()];
 
-    try {
-      if (system.scheduler.waitForWake) {
-        await system.scheduler.waitForWake(
-          due === Infinity ? undefined : due - clockOf(system).now()
+      if (due !== Infinity) {
+        waits.push(
+          new Promise((resolve) =>
+            clockOf(system).after(due - clockOf(system).now(), () => resolve(null))
+          )
         );
-      } else {
-        const waits: Promise<unknown>[] = [task.arrival()];
-
-        if (due !== Infinity) {
-          waits.push(
-            new Promise((resolve) =>
-              clockOf(system).after(due - clockOf(system).now(), () => resolve(null))
-            )
-          );
-        }
-
-        await Promise.race(waits);
       }
-    } finally {
-      task.waitingForMessage = false;
+
+      await Promise.race(waits);
     }
 
     waited = true;

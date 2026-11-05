@@ -228,8 +228,9 @@ impl Engine {
     }
 
     /// A program started from its file: loaded, linked and set going, and
-    /// run until it waits for a message, this task answering what it sends
-    /// meanwhile; its instance, or the DOS error, and its task.
+    /// run until it first gives the processor up (`run_started`), this task
+    /// answering what it sends meanwhile; its instance, or the DOS error,
+    /// and its task.
     pub(crate) async fn start_program(
         &self,
         path: &str,
@@ -252,26 +253,14 @@ impl Engine {
         self.run_started(child).await
     }
 
-    /// A task just made run until it waits for a message: the new program
-    /// has the processor first, and this one has it back when the new one
-    /// waits for a message. Its instance, and its task.
+    /// A task just made run first: KERNEL gives the processor up once, by
+    /// `Yield`, as the task is made (`KRNL386.EXE` seg2 `13a1`-`13a8`, seg1
+    /// `7d21`), and this one has it back the first time the new one gives
+    /// it up -- by `PeekMessage` or `Yield` as much as by waiting for a
+    /// message -- or ends (recorded by `execpk`). Its instance, and its
+    /// task.
     pub(crate) async fn run_started(&self, child: usize) -> Result<(u16, u16), Stop> {
         self.yield_turn(None).await?;
-
-        loop {
-            let (ended, waiting) = {
-                let system = self.system();
-                let slot = &system.scheduler.slots[child];
-
-                (slot.ended, slot.waiting_for_message)
-            };
-
-            if ended || waiting {
-                break;
-            }
-
-            self.yield_turn(None).await?;
-        }
 
         // Its instance: its data segment's handle (`instds`).
         let system = self.system();
