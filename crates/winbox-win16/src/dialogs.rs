@@ -39,6 +39,7 @@ const DS_ABSALIGN: u32 = 0x01;
 const DS_MODALFRAME: u32 = 0x80;
 const DS_NOIDLEMSG: u32 = 0x100;
 const DS_SYSMODAL: u32 = 0x02;
+const WS_EX_TOPMOST: u32 = 0x0008;
 const HWND_TOPMOST: u16 = 0xffff;
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
@@ -687,7 +688,19 @@ impl Engine {
         let (left, top, width, height) = place;
         let hwnd = self
             .create_window(Creation {
-                ex_style: 0,
+                // `DS_SYSMODAL` made `WS_EX_TOPMOST` (`USER.EXE` seg24
+                // `05a6`-`05b4`, given to `CreateWindowEx` at `0605`), so in
+                // front of all as it is made. **Recorded** by `dlgfront`:
+                // SimTower's start dialog, run over its title picture, a
+                // modeless dialog system modal too, lies in front of it.
+                // `DS_MODALFRAME`'s `WS_EX_DLGMODALFRAME` (`058a`-`059c`) is
+                // not given here; the frame is drawn as the dialog is made,
+                // below.
+                ex_style: if style & DS_SYSMODAL != 0 {
+                    WS_EX_TOPMOST
+                } else {
+                    0
+                },
                 class: class_name,
                 class_far: 0,
                 name: WindowName::Own(template.caption.clone()),

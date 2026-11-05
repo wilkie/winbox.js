@@ -6043,6 +6043,7 @@ const RUN_WHOLE = new Set<string>([
   'rootattr',
   'segtail',
   'execpk',
+  'dlgfront',
 ]);
 
 /**
@@ -6164,6 +6165,7 @@ const VIRTUAL_CLOCK = new Set([
   'olesrv',
   'olenet',
   'oleitem',
+  'dlgfront',
 ]);
 
 /**

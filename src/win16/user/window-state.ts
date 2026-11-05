@@ -2381,6 +2381,13 @@ export async function positionChanged(
       ) {
         window.desktop.showInPlace(shown);
       } else {
+        /* Asked to be topmost, it is made so as it comes to the front
+         * (`dlgfront`: a dialog shown with `HWND_TOPMOST` and
+         * `SWP_SHOWWINDOW` in its `WM_INITDIALOG` lies first, topmost). */
+        if (move.insert.to === 'topmost' && !shown.topmost) {
+          reordered = window.desktop.reorder(shown, move.insert) || reordered;
+        }
+
         window.desktop.show(shown, true, allShown);
       }
     } else if (!shown.parent && shown.visible && !(flags & SWP_NOACTIVATE)) {
@@ -2559,7 +2566,12 @@ function liesWhereAsked(desktop: any, shown: any, to: Insert): boolean {
   }
 }
 
-/** The family brought up with a window told, each that moved among the windows. */
+/**
+ * The family brought up with a window told, each that moved among the
+ * windows, with the window it now lies after (`dlgfront`: the owner of a
+ * topmost dialog, brought up after the last topmost window, USER's own
+ * `#32771`, is told it went after that).
+ */
 async function tellFamily(system: any, members: any[], aboveBefore: Map<any, string>) {
   for (const member of members) {
     if (above(member.desktop ?? system.rasterDesktop, member) === aboveBefore.get(member)) {
@@ -2570,7 +2582,7 @@ async function tellFamily(system: any, members: any[], aboveBefore: Map<any, str
     const place: any = new WINDOWPOS();
 
     place.hwnd = member.hwnd;
-    place.hwndInsertAfter = 0;
+    place.hwndInsertAfter = lyingAfter(member.desktop ?? system.rasterDesktop, member);
     place.x = parent ? member.left - parent.left - parent.client.left : member.left;
     place.y = parent ? member.top - parent.top - parent.client.top : member.top;
     place.cx = member.width;

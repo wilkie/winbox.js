@@ -46,6 +46,7 @@ import { windowCreated } from './dc-entries.js';
  */
 /** A modal frame, as a dialog with `DS_MODALFRAME` has. */
 const WS_EX_DLGMODALFRAME = 0x0001;
+export const WS_EX_TOPMOST = 0x0008;
 
 /** A child that tells its parent nothing of its making or going, as a dialog's controls are made (`USER.EXE` seg24 `082d`). */
 export const WS_EX_NOPARENTNOTIFY = 0x0004;
@@ -226,6 +227,15 @@ export async function CreateWindow(
   if (dwExStyle & WS_EX_DLGMODALFRAME) {
     shown.modalFrame = true;
     raster.placeMade(shown, shown.left, shown.top, shown.width, shown.height);
+  }
+
+  /* Topmost, a window at the top is made in front of all, the topmost too,
+   * before it is told anything (`dlgfront`: a dialog with `DS_SYSMODAL`,
+   * made `WS_EX_TOPMOST`, lies first, hidden, in its `WM_INITDIALOG`). */
+  if (dwExStyle & WS_EX_TOPMOST && !shown.parent) {
+    shown.topmost = true;
+    raster.windows.splice(raster.windows.indexOf(shown), 1);
+    raster.windows.splice(raster.front(shown), 0, shown);
   }
 
   /* A window at the top given a parent is owned, by the window at the top

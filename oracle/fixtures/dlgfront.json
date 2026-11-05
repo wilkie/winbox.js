@@ -1,0 +1,604 @@
+{
+  "probe": "dlgfront",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "sim, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "sim, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "sim, title",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "sim, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "sim, init",
+      "result": "D*-,T*,F*-,M-;active=T;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "sim, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "sim, swp",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "sim, swp",
+      "result": "D:46@T,M:46@D,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "sim, show",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "sim, show",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "sim, loop",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "sim, loop",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "sim",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "sim, ended",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "sim, ended",
+      "result": "D:46@T,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simswp, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simswp, title",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simswp, init",
+      "result": "D*-,T*,F*-,M-;active=T;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "simswp, swp",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, swp",
+      "result": "D:46@T,M:46@D,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simswp, loop",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, loop",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "simswp",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "simswp, ended",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "simswp, ended",
+      "result": "D:46@T,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simtop, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simtop, title",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simtop, init",
+      "result": "D*-,T*,F*-,M-;active=T;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "simtop, swp",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, swp",
+      "result": "D:46@T,M:46@D,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "simtop, show",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, show",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "simtop, loop",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, loop",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "simtop",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "simtop, ended",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "simtop, ended",
+      "result": "D:46@T,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "loop, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "loop, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "loop, title",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "loop, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "loop, init",
+      "result": "D*-,T*,F*-,M-;active=T;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "loop, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "loop, loop",
+      "result": "D*,T*,F*-,M-;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "loop, loop",
+      "result": "D:46@T,M:46@D,D:46@T,M:46@D,D:46@T,D:47@T,"
+    },
+    {
+      "function": "answer",
+      "args": "loop",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "loop, ended",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "loop, ended",
+      "result": "D:46@T,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "plain, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "plain, title",
+      "result": "F*-,T,M-;active=T;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, title",
+      "result": "?:46@?,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "plain, init",
+      "result": "F*-,D-,T,M-;active=T;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "plain, swp",
+      "result": "D*,F*-,M-,T;active=D;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, swp",
+      "result": "D:46@T,M:46@D,D:47@T,M:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "plain, show",
+      "result": "D*,F*-,M-,T;active=D;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, show",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "plain, loop",
+      "result": "D*,F*-,M-,T;active=D;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, loop",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "plain",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "plain, ended",
+      "result": "F*-,M-,T;active=M;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plain, ended",
+      "result": "D:46@T,D:47@T,D:46@?,M:46@D,D:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "plainloop, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plainloop, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "plainloop, title",
+      "result": "F*-,T,M-;active=T;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plainloop, title",
+      "result": "?:46@?,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "plainloop, init",
+      "result": "F*-,D-,T,M-;active=T;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plainloop, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "plainloop, loop",
+      "result": "F*-,D,M-,T;active=D;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plainloop, loop",
+      "result": "D:46@?,M:46@D,M:47@D,D:46@T,D:47@T,"
+    },
+    {
+      "function": "answer",
+      "args": "plainloop",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "plainloop, ended",
+      "result": "F*-,M-,T;active=M;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "plainloop, ended",
+      "result": "D:46@T,D:47@T,D:46@?,M:46@D,"
+    },
+    {
+      "function": "order",
+      "args": "tsys, start",
+      "result": "F*-,M-;active=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "tsys, start",
+      "result": "F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "tsys, title",
+      "result": "T*,F*-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "tsys, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "tsys, init",
+      "result": "T*,F*-,D-,M-;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "tsys, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "tsys, loop",
+      "result": "T*,F*-,D,M-;active=D;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "tsys, loop",
+      "result": "D:46@?,M:46@D,D:46@T,D:47@T,"
+    },
+    {
+      "function": "answer",
+      "args": "tsys",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "tsys, ended",
+      "result": "T*,F*-,M-;active=M;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "tsys, ended",
+      "result": "D:46@T,D:47@T,D:46@?,M:46@D,"
+    },
+    {
+      "function": "order",
+      "args": "shown, start",
+      "result": "F*-,M;active=M;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "shown, start",
+      "result": "?:46@?,?:47@?,F:46@T,F:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "shown, title",
+      "result": "T*,F*-,M;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "shown, title",
+      "result": "?:46@T,?:46@T,?:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "shown, init",
+      "result": "D*-,T*,F*-,M;active=T;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "shown, init",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "shown, swp",
+      "result": "D*,T*,F*-,M;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "shown, swp",
+      "result": "D:46@T,M:46@D,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "shown, show",
+      "result": "D*,T*,F*-,M;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "shown, show",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "shown, loop",
+      "result": "D*,T*,F*-,M;active=D;sysmodal=D"
+    },
+    {
+      "function": "sent",
+      "args": "shown, loop",
+      "result": "none"
+    },
+    {
+      "function": "answer",
+      "args": "shown",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "shown, ended",
+      "result": "T*,F*-,M;active=T;sysmodal=T"
+    },
+    {
+      "function": "sent",
+      "args": "shown, ended",
+      "result": "D:46@T,D:47@T,"
+    },
+    {
+      "function": "order",
+      "args": "make, start",
+      "result": "A,M-;active=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, start",
+      "result": "?:46@?,?:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "make, visible",
+      "result": "B,A,M-;active=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, visible",
+      "result": "?:46@?,?:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "make, made",
+      "result": "C-,B,A,M-;active=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, made",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "make, show",
+      "result": "C,B,A,M-;active=C;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, show",
+      "result": "C:46@?,C:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "make, normal",
+      "result": "E,C,B,A,M-;active=E;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, normal",
+      "result": "E:46@?,E:47@?,"
+    },
+    {
+      "function": "order",
+      "args": "make, owned",
+      "result": "O,M-,E,C,B,A;active=O;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "make, owned",
+      "result": "?:46@?,M:46@?,?:47@?,M:47@?,"
+    }
+  ]
+}

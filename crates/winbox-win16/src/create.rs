@@ -502,6 +502,11 @@ impl Engine {
                 control_id: if child { made.menu } else { 0 },
                 parent_given: made.parent,
                 modal_frame: made.ex_style & WS_EX_DLGMODALFRAME != 0,
+                // Topmost, a window at the top is made in front of all, the
+                // topmost too, before it is told anything (`dlgfront`: a
+                // dialog with `DS_SYSMODAL`, made `WS_EX_TOPMOST`, lies
+                // first, hidden, in its `WM_INITDIALOG`).
+                topmost: !child && made.ex_style & WS_EX_TOPMOST != 0,
                 ..Window::default()
             };
 
@@ -529,7 +534,7 @@ impl Engine {
                     .iter()
                     .position(|&other| other == parent)
                     .unwrap_or(0),
-                None => system.front(false),
+                None => system.front(window(&system, index).topmost),
             };
 
             system.z_order.insert(at, index);
@@ -1230,31 +1235,11 @@ impl Engine {
         Ok(())
     }
 
-    /// `CreateWindowEx`'s window: as `CreateWindow` makes it, its extended
-    /// style kept, and one at the top with `WS_EX_TOPMOST` moved to the
-    /// front, kept above every window that is not.
+    /// `CreateWindowEx`'s window: as `CreateWindow` makes it, which makes
+    /// it as its extended style says: topmost, in front of all (`hidwnd`,
+    /// `dlgfront`), with a modal frame, and so on.
     pub async fn create_window_ex(&self, made: Creation) -> Result<u16, Stop> {
-        let ex_style = made.ex_style;
-        let hwnd = self.create_window(made).await?;
-        let mut system = self.system();
-
-        if let Some(Object::Window(index)) = system.handles.resolve(hwnd) {
-            let top = window(&system, index).parent.is_none();
-
-            if ex_style & WS_EX_TOPMOST != 0 && top {
-                if let Some(shown) = system.windows[index].as_mut() {
-                    shown.topmost = true;
-                }
-
-                system.z_order.retain(|&other| other != index);
-
-                let at = system.front(true);
-
-                system.z_order.insert(at, index);
-            }
-        }
-
-        Ok(hwnd)
+        self.create_window(made).await
     }
 }
 

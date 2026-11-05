@@ -477,10 +477,25 @@ impl System {
                     .copied()
                     .filter(|&member| self.within(member, head)),
             );
+        // Brought up by a topmost window, a window of its owner's family
+        // that is not topmost goes in front of the windows that are not,
+        // not among the topmost ones (`dlgfront`: SimTower's start dialog,
+        // made topmost, brings its hidden owner up after the last topmost
+        // window, told so where that moved it, and leaves it where it lay
+        // as the first of the others).
+        let topmost = self.shown(index).topmost;
+        let (apart, beneath): (Vec<usize>, Vec<usize>) =
+            beneath.partition(|&member| topmost && !self.shown(member).topmost);
         let at = self.front_of(index);
         let placed: Vec<usize> = owned_first.iter().copied().chain(beneath).collect();
 
         self.z_order.splice(at..at, placed);
+
+        if let Some(&first) = apart.first() {
+            let at = self.front_of(first);
+
+            self.z_order.splice(at..at, apart);
+        }
 
         family
     }

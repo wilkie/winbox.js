@@ -235,6 +235,25 @@ impl System {
         tops[..at].to_vec()
     }
 
+    /// The window at the top a window now lies after: none at the front.
+    pub(crate) fn lying_after(&self, shown: usize) -> u16 {
+        let at = self
+            .z_order
+            .iter()
+            .position(|&other| other == shown)
+            .unwrap_or(0);
+
+        self.z_order[..at]
+            .iter()
+            .copied()
+            .rfind(|&other| {
+                self.windows[other]
+                    .as_ref()
+                    .is_some_and(|window| window.parent.is_none())
+            })
+            .map_or(0, |other| self.hwnd_of(other))
+    }
+
     /// The window a window at the top goes after: the last of those it goes
     /// below.
     fn insert_after(&self, shown: usize) -> u16 {

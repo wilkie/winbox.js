@@ -159,6 +159,16 @@ A dialog box is a window made from a template. The template gives the dialog's s
 
   Both engines agree with all 349 records. Neither had followed `DS_SYSMODAL` at all.
 
+- [[read out]] **Topmost.** The dialog manager makes the dialog with [[fn:USER.CreateWindowEx]], its extended style `WS_EX_DLGMODALFRAME` for `DS_MODALFRAME` and `WS_EX_TOPMOST` for `DS_SYSMODAL` (seg24 `058a`-`05b4`, the call at `0605`), its style without `WS_VISIBLE` (`05d4`). So a system-modal dialog is topmost, in front of all, from the moment it is a window.
+- [[measured]] [[probe:dlgfront]] is SimTower's start: M, a window at the top made hidden; F, a pop-up made topmost hidden; T, a modeless dialog with `DS_SYSMODAL` and `WS_VISIBLE` and no owner, its title picture; then D, `DS_SYSMODAL`, run with [[fn:USER.DialogBoxIndirect]] and owned by M, which in `WM_INITDIALOG` shows itself with [[fn:USER.SetWindowPos]] (`HWND_TOPMOST`, `SWP_NOSIZE | SWP_SHOWWINDOW`) and [[fn:USER.ShowWindow]]:
+  - T, made, is topmost and first. In D's `WM_INITDIALOG`, D is topmost and hidden in front of T, and the system-modal window; no `WM_WINDOWPOSCHANGING` came for it.
+  - Shown, D is first and active, T behind it; M, asked to go after D, stays where it lay, the first of the windows that are not topmost, and is not told. The same with `HWND_TOP` for `HWND_TOPMOST`, without the `ShowWindow`, with M shown, and with nothing shown in `WM_INITDIALOG`, the loop showing D.
+  - Ended, T is first and the system-modal window again, and active.
+  - Neither dialog `DS_SYSMODAL`: T is not topmost; D shown with `HWND_TOPMOST` and `SWP_SHOWWINDOW` is topmost and first, and M, brought up with it, goes in front of T, after the last topmost window -- USER's own `#32771` -- and is told it went after that. Shown by the loop, D is not topmost, and goes after F.
+  - T `DS_SYSMODAL`, D not: D, shown by the loop, goes behind T and F, and is active; T stays the system-modal window.
+
+  Both engines made a system-modal dialog without `WS_EX_TOPMOST`: SimTower's title picture lay at the front and its start dialog, shown after, came up behind it, where only the keyboard found it. With the extended style given, both agree with all 118 records.
+
 - [[measured]] **An owner of another program's**: [[probe:sysdlg]] runs D owned by C, the other program's window, active. C is sent `WM_CANCELMODE`, `WM_KILLFOCUS` and `WM_ENABLE` with nought before `WM_INITDIALOG`; made active as its first control takes the focus, D is the program's, so `WM_ACTIVATEAPP` goes to every window at the top of both programs ([[topic:activation-and-focus]]). Ended, C is enabled and made active again, the same messages the other way, and C's `DefWindowProc` takes the focus from D.
 - [[read out]] The loop ends once the dialog has ended, and destroys it with [[fn:USER.DestroyWindow]] (`08b5`-`08b9`). A dialog destroyed without `EndDialog` ends the loop too, answering 0 (`089e`-`08ab`), and leaves its owner disabled. [[measured]] [[probe:enddlg]]: `DestroyWindow` in the dialog's procedure makes the next window that can be active active -- not the owner, which is disabled -- and `DialogBox` answers 0 with the owner still disabled.
 
@@ -219,4 +229,5 @@ Not yet done:
 - `SetSysModalWindow` and `ActivateWindow` refused for another task's system-modal window are read out; [[probe:sysdlg]]'s system-modal dialog is the program's own, and a send to the other program while its task is locked would wait for ever.
 - The word at `0DCh` of USER's data, which keeps a system-modal window from refusing another and from locking its task (seg1 `19e8`, seg24 `096d`), set and put back at seg5 `0319`-`0334`, is not followed; neither engine keeps it.
 - The dialog manager reads a control's text for its mnemonic with `WM_GETTEXT` (seg19 `010b`); both engines read the text the control keeps, which a control of a program's own class answering `WM_GETTEXT` itself would tell apart.
+- `DS_MODALFRAME`'s `WS_EX_DLGMODALFRAME` is not given to the window as it is made (seg24 `058a`-`059c`): both engines give the frame after, and [[fn:USER.GetWindowLong]] answers no extended style for such a dialog.
 - The TypeScript engine runs a window procedure another program's `SendMessage` reaches on the sender's stack, so a dialog procedure that sets its data segment from the stack -- one passed to `DialogBox` without [[fn:KERNEL.MakeProcInstance]] -- finds the wrong one there. [[probe:sysdlg]] passes its procedures through `MakeProcInstance`.

@@ -659,14 +659,17 @@ impl Engine {
     }
 
     /// The rest of a family brought to the front told, each that moved
-    /// among the windows since `before`.
+    /// among the windows since `before`, with the window it now lies after
+    /// (`dlgfront`: the owner of a topmost dialog, brought up after the
+    /// last topmost window, USER's own `#32771`, is told it went after
+    /// that).
     async fn tell_family(
         &self,
         members: &[usize],
         before: &std::collections::HashMap<usize, Vec<usize>>,
     ) -> Result<(), Stop> {
         for &member in members {
-            let (hwnd, place) = {
+            let (hwnd, after, place) = {
                 let system = self.system();
                 let Some(window) = system.windows[member].as_ref() else {
                     continue;
@@ -687,7 +690,11 @@ impl Engine {
                     None => (window.left, window.top),
                 };
 
-                (window.hwnd, [x, y, window.width, window.height])
+                (
+                    window.hwnd,
+                    system.lying_after(member),
+                    [x, y, window.width, window.height],
+                )
             };
 
             self.send_message(
@@ -696,7 +703,7 @@ impl Engine {
                 0,
                 &mut Param::Struct(window_pos(
                     hwnd,
-                    0,
+                    after,
                     place,
                     SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE,
                 )),
@@ -953,6 +960,19 @@ impl Engine {
                 {
                     system.show_in_place(change.index);
                 } else {
+                    // Asked to be topmost, it is made so as it comes to the
+                    // front (`dlgfront`: a dialog shown with `HWND_TOPMOST`
+                    // and `SWP_SHOWWINDOW` in its `WM_INITDIALOG` lies
+                    // first, topmost).
+                    if matches!(change.insert, Insert::Topmost)
+                        && !system.windows[change.index]
+                            .as_ref()
+                            .expect("a window")
+                            .topmost
+                    {
+                        reordered = system.reorder(change.index, change.insert) || reordered;
+                    }
+
                     system.show_placed(change.index, all_shown);
                 }
             } else if parent.is_none() && now && change.flags & SWP_NOACTIVATE == 0 {

@@ -1313,7 +1313,24 @@ export class Desktop {
 
       this.windows.splice(0, 0, ...ownedFirst);
     } else {
-      this.windows.splice(this.front(window), 0, ...ownedFirst, ...beneath);
+      /* Brought up by a topmost window, a window of its owner's family that
+       * is not topmost goes in front of the windows that are not, not among
+       * the topmost ones (`dlgfront`: SimTower's start dialog, made topmost,
+       * brings its hidden owner up after the last topmost window, told so
+       * where that moved it, and leaves it where it lay as the first of the
+       * others). */
+      const apart = window.topmost ? beneath.filter((member) => !member.topmost) : [];
+
+      this.windows.splice(
+        this.front(window),
+        0,
+        ...ownedFirst,
+        ...beneath.filter((member) => !apart.includes(member))
+      );
+
+      if (apart.length) {
+        this.windows.splice(this.front(apart[0]), 0, ...apart);
+      }
     }
 
     return family;

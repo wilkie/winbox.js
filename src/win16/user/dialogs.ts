@@ -8,7 +8,7 @@ import { MulDiv } from '../gdi/MulDiv.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { MSG, POINT, User, WNDCLASS } from '../user.js';
 
-import { CreateWindow, WS_EX_NOPARENTNOTIFY } from './CreateWindow.js';
+import { CreateWindow, WS_EX_NOPARENTNOTIFY, WS_EX_TOPMOST } from './CreateWindow.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { DestroyWindow } from './DestroyWindow.js';
 import { dispatchMessage } from './DispatchMessage.js';
@@ -377,7 +377,14 @@ export async function createDialog(
     hwndOwner,
     menu,
     hinst,
-    param
+    param,
+    /* `DS_SYSMODAL` made `WS_EX_TOPMOST` (`USER.EXE` seg24 `05a6`-`05b4`,
+     * given to `CreateWindowEx` at `0605`), so in front of all as it is
+     * made. **Recorded** by `dlgfront`: SimTower's start dialog, run over
+     * its title picture, a modeless dialog system modal too, lies in front
+     * of it. `DS_MODALFRAME`'s `WS_EX_DLGMODALFRAME` (`058a`-`059c`) is
+     * not given here; the frame is drawn as the dialog is made, below. */
+    style & DS_SYSMODAL ? WS_EX_TOPMOST : 0
   );
   const window = hwnd ? system.handles.resolve(hwnd) : null;
 
