@@ -8,7 +8,6 @@ import {
   displayKept,
   driveRows,
   engineView,
-  fileRows,
   freeName,
   installView,
   keptRows,
@@ -157,15 +156,6 @@ describe('the run page, as it is shown', () => {
       'No programs in what was dropped.'
     );
     expect(programRows(null, [], false).empty).toBeNull();
-  });
-
-  it("lists C:'s files but Windows' own, with the names they had", () => {
-    expect(
-      fileRows({
-        files: ['C:\\WINDOWS\\WIN.INI', 'C:\\GAMES\\LONGFI~1.TXT', 'C:\\GAMES\\SKI.EXE'],
-        renamed: [{ from: 'Long File Name.txt', to: 'C:\\GAMES\\LONGFI~1.TXT' }],
-      } as any)
-    ).toEqual(['C:\\GAMES\\LONGFI~1.TXT  (was Long File Name.txt)', 'C:\\GAMES\\SKI.EXE']);
   });
 
   it("offers each drive's actions as it is", () => {

@@ -5,9 +5,7 @@
  * and calls the page's actions.
  */
 
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
+import FolderOpenOutlined from '@mui/icons-material/FolderOpenOutlined';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -18,7 +16,6 @@ import NativeSelect from '@mui/material/NativeSelect';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import SvgIcon from '@mui/material/SvgIcon';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { type ReactNode, useRef, useState } from 'react';
@@ -376,37 +373,18 @@ export function ProgramsPanel({ view }: { view: PageView }) {
   );
 }
 
-export function FilesPanel({ view }: { view: PageView }) {
+/** Where the files of C: were listed: the way to the file browser, over every drive. */
+export function FilesPanel() {
   return (
-    <Accordion disableGutters variant="outlined" slotProps={{ heading: { component: 'h2' } }}>
-      <AccordionSummary
-        aria-controls="files-region"
-        id="files-summary"
-        expandIcon={
-          <SvgIcon aria-hidden="true">
-            <path d="M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z" />
-          </SvgIcon>
-        }
-      >
-        {/* The summary is the h2 (its heading slot); its words styled as the other panels' headings. */}
-        <Typography
-          variant="overline"
-          component="span"
-          color="text.secondary"
-          sx={{ lineHeight: 1.6, fontWeight: 600 }}
-        >
-          Files on C:
-        </Typography>
-      </AccordionSummary>
-      <AccordionDetails id="files-region">
-        <Rows id="files">
-          {view.files.map((file) => (
-            <ListItem key={file} disableGutters sx={{ py: 0 }}>
-              <Code>{file}</Code>
-            </ListItem>
-          ))}
-        </Rows>
-      </AccordionDetails>
-    </Accordion>
+    <Section id="files-section" title="Files">
+      <Note>
+        Every drive's folders and files, as DOS lists them: download a file, or run a program.
+      </Note>
+      <Box>
+        <Button id="browse" startIcon={<FolderOpenOutlined />} onClick={() => actions.browse()}>
+          Browse files…
+        </Button>
+      </Box>
+    </Section>
   );
 }

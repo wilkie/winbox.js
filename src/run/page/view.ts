@@ -263,15 +263,6 @@ export function programRows(
   };
 }
 
-/** The files on C: but Windows' own, those renamed with the name they had. */
-export function fileRows(plan: Pick<Plan, 'files' | 'renamed'> | null) {
-  const renamed = new Map((plan?.renamed ?? []).map((one) => [one.to, one.from]));
-
-  return (plan?.files ?? [])
-    .filter((file) => !file.startsWith('C:\\WINDOWS\\'))
-    .map((file) => (renamed.has(file) ? `${file}  (was ${renamed.get(file)})` : file));
-}
-
 /** A disk of a drive's set, as its drive's card lists it. */
 export interface DiskView {
   /** Its file's name, as it was dropped or chosen. */
@@ -667,7 +658,6 @@ export interface PageView {
   install: InstallView;
   programs: ProgramRow[];
   programsEmpty: string | null;
-  files: string[];
 }
 
 /** The note over the drives, with drives and without. */

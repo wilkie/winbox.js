@@ -12,6 +12,7 @@
 import AlbumOutlined from '@mui/icons-material/AlbumOutlined';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import EjectOutlined from '@mui/icons-material/EjectOutlined';
+import FolderOpenOutlined from '@mui/icons-material/FolderOpenOutlined';
 import ImageSearchOutlined from '@mui/icons-material/ImageSearchOutlined';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import RadioButtonChecked from '@mui/icons-material/RadioButtonChecked';
@@ -113,6 +114,19 @@ function Fact({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
   );
 }
 
+/** The way to a drive's files, in the file browser. */
+function Browse({ letter }: { letter: string }) {
+  return (
+    <Button
+      startIcon={<FolderOpenOutlined />}
+      aria-label={`Browse the files on ${letter}:`}
+      onClick={() => actions.browse(letter)}
+    >
+      Browse…
+    </Button>
+  );
+}
+
 /** C:, the hard disk: Windows, what is kept over it, and what programs wrote. */
 function HardDiskC({ c }: { c: CDriveView }) {
   return (
@@ -122,7 +136,7 @@ function HardDiskC({ c }: { c: CDriveView }) {
       letter="C:"
       kind="hard disk"
       label={c.label}
-      actions={null}
+      actions={<Browse letter="C" />}
     >
       <Fact>{c.windows}</Fact>
       <Fact>{c.programs}</Fact>
@@ -164,6 +178,7 @@ function Drive({ drive }: { drive: DriveRow }) {
       }}
       actions={
         <>
+          {!drive.ejected && <Browse letter={letter} />}
           {drive.next && (
             <>
               <NativeSelect
@@ -209,7 +224,7 @@ function Drive({ drive }: { drive: DriveRow }) {
               aria-label={`Save the image in ${letter}:`}
               onClick={() => actions.saveImage(letter)}
             >
-              Save image…
+              Save the image…
             </Button>
           )}
           {drive.add && (

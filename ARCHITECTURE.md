@@ -174,8 +174,12 @@ the screen itself is the engine's.
   it, the trace, keeping what programs write, `rebuild`), `accept.ts` (files
   dropped or chosen), `images.ts` (the drives of images and a kept program's
   images), `install.ts` (installers and the kept programs), `groups.ts` (a
-  kept program's Program Manager groups), and `actions.ts`, the surface the
-  components call, and `start(desktop)`.
+  kept program's Program Manager groups), `browse.ts` (the file browser's
+  reading of the drives, and the folder browsed, `browsing`), and
+  `actions.ts`, the surface the components call, and `start(desktop)`.
+- `screen.ts`, the screen's shape and size (`screenScale`, the choice);
+  `files.ts`, the drives' folders as DOS lists them: both tested from jest
+  (`page_screen_test.ts`, `page_files_test.ts`).
 - `observable.ts`, a value with listeners, read through
   `useSyncExternalStore` (`src/run/ui/use.ts`); `leave.ts`, the key that
   leaves the desktop.
@@ -184,8 +188,11 @@ the screen itself is the engine's.
 (`header.tsx`), the side (`panels.tsx`, `drives.tsx`, `kept.tsx`), the main
 content -- the desktop, `desktop.tsx` -- and the trace (`trace.tsx`); three
 columns from 1100px, one beneath another below. `confirm.tsx` asks before
-what cannot be undone. A launcher would be another set of components over the
-same state and actions. JSX is compiled by the bundler's own transform
+what cannot be undone; `files.tsx` is the file browser, rendered once and
+opened by `actions.browse(letter)`. A launcher would be another set of
+components over the same state and actions: it can open the browser on a
+drive (`browse`), fit the screen (`screenScale`) and show a drive's card's
+words (`driveRows`, `cDriveView`) as the side does. JSX is compiled by the bundler's own transform
 (`"jsx": "react-jsx"` in `tsconfig.json`, which Vite's transform reads): no
 plugin, nothing added to `vite.config.ts`.
 
@@ -204,6 +211,30 @@ a later visit -- kept with the program on C: from a handle on the file, a copy
 still to be chosen again. A drive's actions keep their names ("Disk in A:",
 "Next disk in A:", "Eject A:", "Save the image in A:", "Add images to A:",
 "Install from A:", "Remove A:"); Remove asks first, saying what is lost.
+
+**The file browser** (`ui/files.tsx`, `page/browse.ts`, `page/files.ts`). A
+modal dialog ("Files"; the whole screen on a narrow one), reached from the
+side's "Browse files…" (where "Files on C:" was) and each drive's card
+("Browse the files on A:"). A drive picker (C: and each drive of images), the
+folder's path as breadcrumbs, Up, Read again, and the folder as a grid: name,
+size and date as DOS's `DIR` shows them (8.3 names, upper case, `<DIR>`,
+`03-10-92  3:10a`), and a Changes column. C: is read from what the page has,
+the same on either engine: the plan's folders, files and stamps, then the
+engine's changes against it (`Engine.changes`), each marked "Kept" where it is
+the change put back as C: was made (`session.given`), "Changed" where written
+since; the folders on the way to a file the volume's own stamp, as both
+engines' drives make them. A drive of images is read from its disk's image as
+programs have written it (`Engine.diskImage`), with the page's readers
+(`volumeOf`), each entry "Changed" where the disk as it was put in has none of
+its name, size and stamp. Nothing is written to any drive. The grid follows
+the WAI-ARIA data grid pattern: one Tab stop, arrows from cell to cell, the
+column headers its first row (buttons that sort, folders always first,
+`aria-sort`), Home/End, Ctrl+Home/End, Page Up/Down; selection follows the
+focus, Enter opens a folder, Backspace and Alt+Up go up, onto the folder come
+from. Beneath it, for the row selected: Open, Download (its bytes as the drive
+holds them, by its 8.3 name) and, for an `.EXE`, Run (named as the Programs
+list's, `Run C:\APPS\NOTEPAD.EXE`; the browser closes). What is done is said
+in the dialog's own status line, the page's being hidden while it is open.
 
 **The desktop.** `desktop.tsx` renders an empty `<section id="desktop">` and
 hands it to `start`; the engine fills it (`makeScreen`, `screenNote`) and
@@ -272,13 +303,17 @@ red takes dark text on it, as white on it is under AA. With
   Escape is taken before the desktop has it (`page/leave.ts`).
 - A skip link, first, goes to the desktop.
 
-**Testing it.** `test/run/page_view_test.ts` (jest) holds the view's rules.
-`e2e/run.spec.ts` drives the page by its ids and by roles and names, and its
+**Testing it.** `test/run/page_view_test.ts`, `page_screen_test.ts` and
+`page_files_test.ts` (jest) hold the view's, the screen's and the files'
+rules. `e2e/run.spec.ts` drives the page by its ids and by roles and names --
+the files on a drive through the file browser (`browser`, `listed`) -- and its
 last describe, "the page, to a screen reader and the keyboard", runs axe
 (`@axe-core/playwright`, WCAG 2.1 A and AA) on the page fresh, with Windows,
-with a program kept and running, with the confirmation open and with an
-installer offered, each in both colour schemes, and tries the skip link and
-the way out of the desktop. The components are linted with
+with a floppy set and a disc in their drives, with the file browser open on
+C: and on the disc, with the screen on the whole screen, with a program kept
+and running, with the confirmation open and with an installer offered, each
+in both colour schemes, and tries the skip link and the way out of the
+desktop. The components are linted with
 `eslint-plugin-jsx-a11y` and `eslint-plugin-react-hooks`, each as it
 recommends.
 

@@ -11,6 +11,7 @@
 import { type Assets } from '../../assets/bundle.js';
 import { type AssetInput } from '../../assets/make.js';
 import { baseName, type Layer } from '../../layers/layer.js';
+import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet, imageKey, type Wanting } from '../drives.js';
 import { type Engine } from '../engines/engine.js';
@@ -26,7 +27,6 @@ import {
   driveRows,
   drivesNote,
   engineView,
-  fileRows,
   type Installing,
   installView,
   KEPT_NOTE,
@@ -112,6 +112,9 @@ export const session: {
   /** What programs wrote on C:, as it was last kept, against the installation dropped. */
   kept: Kept;
 
+  /** What was put back on C: as the machine was last made: the changes of before, which the file browser tells apart. */
+  given: Change[];
+
   /** The files too large to keep, as the last were told. */
   tooLarge: string[];
 
@@ -142,6 +145,7 @@ export const session: {
   built: null,
   plan: null,
   kept: { installation: null, changes: [] },
+  given: [],
   tooLarge: [],
   generation: 0,
   rebuilding: false,
@@ -329,6 +333,5 @@ export function publish() {
     install,
     programs: programs.rows,
     programsEmpty: programs.empty,
-    files: fileRows(plan),
   });
 }

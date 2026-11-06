@@ -10,6 +10,7 @@ import Box from '@mui/material/Box';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import Link from '@mui/material/Link';
 import { Desktop } from './desktop.js';
+import { FileBrowser } from './files.js';
 import { DrivesPanel } from './drives.js';
 import { Header } from './header.js';
 import { KeptPanel } from './kept.js';
@@ -91,13 +92,14 @@ export function App() {
               <KeptPanel view={view} />
               <InstallPanel view={view} />
               <ProgramsPanel view={view} />
-              <FilesPanel view={view} />
+              <FilesPanel />
             </>
           )}
         </Box>
         <Desktop />
         <Trace />
       </Box>
+      <FileBrowser />
     </>
   );
 }

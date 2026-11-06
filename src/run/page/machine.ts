@@ -336,6 +336,7 @@ export async function rebuild({ keeping = true } = {}) {
     /* What programs wrote to the disks of the machine made last kept,
      * for this one to be given. */
     current.carry();
+    session.given = setup.changes;
     await current.rebuild(setup);
   } catch (error: any) {
     console.error(error);

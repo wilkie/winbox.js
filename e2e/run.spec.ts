@@ -23,6 +23,63 @@ async function confirmed(page: Page, name: string, action: string) {
   await expect(dialog).toBeHidden();
 }
 
+/**
+ * The file browser, opened from the side's "Browse files…" on a folder of
+ * a drive, each folder on the way opened from the keyboard (its row's name
+ * clicked, and Enter): its grid, named by the folder, and the way to close
+ * it again.
+ */
+async function browser(page: Page, path: string) {
+  const [, letter, rest] = /^([A-Z]):\\(.*)$/.exec(path)!;
+  const dialog = page.getByRole('dialog', { name: 'Files' });
+
+  await page.getByRole('button', { name: 'Browse files…' }).click();
+  await expect(dialog).toBeVisible();
+
+  if (letter !== 'C') {
+    await dialog.getByRole('combobox', { name: 'Drive' }).selectOption(letter);
+  }
+
+  for (const [at, part] of rest.split('\\').filter(Boolean).entries()) {
+    const folder = `${letter}:\\${rest
+      .split('\\')
+      .slice(0, at + 1)
+      .join('\\')}`;
+
+    await dialog.getByRole('gridcell', { name: part, exact: true }).click();
+    await page.keyboard.press('Enter');
+    await expect(dialog.getByRole('grid', { name: `Files in ${folder}` })).toBeVisible();
+  }
+
+  const grid = dialog.getByRole('grid', { name: `Files in ${path}` });
+
+  await expect(grid).toBeVisible();
+
+  return {
+    dialog,
+    grid,
+    /** A row's name cell, by the name DOS lists it with. */
+    named: (name: string) => grid.getByRole('gridcell', { name, exact: true }),
+    async close() {
+      await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+      await expect(dialog).toBeHidden();
+    },
+  };
+}
+
+/**
+ * A file's place in the file browser checked: its folder opened, and its
+ * name listed there, or not.
+ */
+async function listed(page: Page, path: string, there = true) {
+  const at = path.lastIndexOf('\\');
+  const files = await browser(page, at > 2 ? path.slice(0, at) : path.slice(0, 3));
+  const name = files.named(path.slice(at + 1));
+
+  await expect(name).toHaveCount(there ? 1 : 0);
+  await files.close();
+}
+
 function archive(files: { path: string; data: Uint8Array }[]) {
   const u16 = (value: number) => [value & 0xff, (value >> 8) & 0xff];
   const u32 = (value: number) => [...u16(value & 0xffff), ...u16((value >>> 16) & 0xffff)];
@@ -436,7 +493,13 @@ for (const { engine, page: at } of ENGINES) {
 
       await expect(page.locator('#programs li')).toHaveCount(1);
       await expect(page.locator('#programs li code')).toHaveText('C:\\GAMES\\SKI.EXE');
-      await expect(page.locator('#files')).toContainText('C:\\GAMES\\LONGFI~1.TXT');
+      /* Listed in the file browser by its 8.3 name, and the name it was dropped with. */
+      const games = await browser(page, 'C:\\GAMES');
+      const renamed = games.grid.getByRole('gridcell', { name: /^LONGFI~1\.TXT/ });
+
+      await expect(renamed).toHaveText('LONGFI~1.TXT (was Long File Name.txt)');
+      await expect(games.named('SKI.EXE')).toBeVisible();
+      await games.close();
       expect(errors).toEqual([]);
     });
 
@@ -617,6 +680,101 @@ for (const { engine, page: at } of ENGINES) {
         timeout: 20000,
       });
       await expect(window).toHaveCount(0);
+    });
+
+    test("browses the drives' files: folders by the keyboard, sorted, downloaded and run", async ({
+      page,
+    }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await expect(page.locator('#programs')).toContainText('C:\\APPS\\NOTEPAD.EXE');
+      await page.locator('#picker').setInputFiles(probeImage('imgflop.img'));
+      await expect(page.locator('#status')).toHaveText('A: imgflop.img.');
+
+      /* C:'s root: its folders first, as DOS names them, their dates as DIR shows them. */
+      const root = await browser(page, 'C:\\');
+      const rows = root.grid.getByRole('row');
+
+      await expect(root.named('APPS')).toBeVisible();
+      await expect(root.named('WINDOWS')).toBeVisible();
+      await expect(rows.filter({ hasText: 'WINDOWS' })).toHaveText(
+        /^WINDOWS<DIR>\d\d-\d\d-\d\d\s+\d{1,2}:\d\d[ap]$/
+      );
+      await root.close();
+
+      /* C:\WINDOWS, from the keyboard: its files listed, sorted by size, and left again. */
+      const windows = await browser(page, 'C:\\WINDOWS');
+
+      await expect(windows.named('SYSTEM.INI')).toBeVisible();
+      await expect(windows.named('WIN.INI')).toBeVisible();
+      await expect(windows.named('SYSTEM')).toBeFocused();
+      await page.keyboard.press('ArrowDown');
+      await expect(windows.grid.getByRole('row', { selected: true })).toHaveCount(1);
+      await page.keyboard.press('ArrowUp');
+      await page.keyboard.press('Enter');
+
+      const system = windows.dialog.getByRole('grid', { name: 'Files in C:\\WINDOWS\\SYSTEM' });
+
+      await expect(system).toBeVisible();
+      await expect(system.getByRole('gridcell', { name: 'USER.EXE', exact: true })).toBeVisible();
+      await page.keyboard.press('Alt+ArrowUp');
+      await expect(windows.grid).toBeVisible();
+      /* Back on the folder it came up from. */
+      await expect(windows.named('SYSTEM')).toBeFocused();
+
+      const size = windows.grid.getByRole('columnheader', { name: 'Size' });
+
+      await size.getByRole('button').click();
+      await expect(size).toHaveAttribute('aria-sort', 'ascending');
+      await size.getByRole('button').click();
+      await expect(size).toHaveAttribute('aria-sort', 'descending');
+      await page.keyboard.press('Backspace');
+      await expect(windows.dialog.getByRole('grid', { name: 'Files in C:\\' })).toBeVisible();
+      await windows.close();
+
+      /* The floppy in A:, listed from its image. */
+      const floppy = await browser(page, 'A:\\');
+
+      await expect(floppy.named('README.TXT')).toBeVisible();
+      await floppy.close();
+
+      /* A file downloaded: its bytes as C: holds them. */
+      const apps = await browser(page, 'C:\\APPS');
+
+      await apps.named('NOTEPAD.EXE').click();
+
+      const saving = page.waitForEvent('download');
+
+      await apps.dialog.getByRole('button', { name: 'Download C:\\APPS\\NOTEPAD.EXE' }).click();
+
+      const download = await saving;
+
+      expect(download.suggestedFilename()).toBe('NOTEPAD.EXE');
+      expect(readFileSync((await download.path())!).equals(readFileSync(NOTEPAD))).toBe(true);
+      await expect(apps.dialog.getByRole('status')).toHaveText('C:\\APPS\\NOTEPAD.EXE downloaded.');
+
+      /* And run, as the Programs list runs it: the browser closed, its window made. */
+      await apps.dialog.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(apps.dialog).toBeHidden();
+      await expect(page.getByRole('group', { name: 'Notepad - (Untitled)' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+      expect(errors).toEqual([]);
     });
 
     test('stretches the screen to its column, a click landing on the same Windows pixel', async ({
@@ -2315,7 +2473,7 @@ for (const { engine, page: at } of ENGINES) {
         'The installer has ended. Keep what it installed, or discard it.',
         { timeout: 60000 }
       );
-      await expect(page.locator('#files')).toContainText('C:\\WBSETUP\\SETUP.EXE');
+      await listed(page, 'C:\\WBSETUP\\SETUP.EXE');
       await page.getByRole('button', { name: 'Keep', exact: true }).click();
       /* Its six, and PROGMAN.INI, which Program Manager, the installer's
        * shell, wrote as it started: the bundle's base has none. */
@@ -2327,8 +2485,8 @@ for (const { engine, page: at } of ENGINES) {
       await expect(kept).toHaveCount(1);
       await expect(page.getByRole('button', { name: 'Close instlay' })).toBeVisible();
       await expect(page.locator('#install-section')).toBeHidden();
-      await expect(page.locator('#files')).not.toContainText('WBSETUP');
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      await listed(page, 'C:\\WBSETUP', false);
+      await listed(page, 'C:\\INSTLAY\\README.TXT');
       /* PROGMAN.INI on C: as the kept program's stack plans it: the
        * bundle's base has none of its own. */
       expect(
@@ -2380,7 +2538,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(kept).toHaveCount(1);
       await page.getByRole('button', { name: 'Open instlay' }).click();
       await expect(page.locator('#status')).toHaveText('instlay is on C:.');
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\INSTLAYC.EXE');
+      await listed(page, 'C:\\INSTLAY\\INSTLAYC.EXE');
       await confirmed(page, 'Forget instlay', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
@@ -2583,6 +2741,25 @@ for (const { engine, page: at } of ENGINES) {
         'Disk 2, imgwrite.img',
       ]);
 
+      /* What it wrote marked in the file browser: on C:, and on the floppy as written. */
+      const oracle = await browser(page, 'C:\\ORACLE');
+
+      await expect(oracle.grid.getByRole('row').filter({ hasText: 'IMGFLOP.OUT' })).toContainText(
+        'Changed'
+      );
+      await expect(
+        oracle.grid.getByRole('row').filter({ hasText: 'IMGFLOP.EXE' })
+      ).not.toContainText('Changed');
+      await oracle.close();
+
+      const written = await browser(page, 'A:\\');
+
+      await expect(written.grid.getByRole('row').filter({ hasText: 'Changed' })).not.toHaveCount(0);
+      await expect(
+        written.grid.getByRole('row').filter({ hasText: 'README.TXT' })
+      ).not.toContainText('Changed');
+      await written.close();
+
       /* Saved as a new file, as written. */
       const saving = page.waitForEvent('download');
 
@@ -2754,7 +2931,7 @@ for (const { engine, page: at } of ENGINES) {
           'C:\\WINDOWS\\WIN.INI: Media=A:\\INSTALL\\INSTLAYC.EXE.'
       );
       await expect(page.getByRole('button', { name: 'Close instlay-disk1' })).toBeVisible();
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      await listed(page, 'C:\\INSTLAY\\README.TXT');
       expect(await page.evaluate(() => (globalThis as any).winbox.state.programs[0].media)).toEqual(
         []
       );
@@ -3051,6 +3228,36 @@ test.describe('the page, to a screen reader and the keyboard', () => {
     await expect(page.locator('#windows')).toContainText('the asset bundle');
     await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
     await accessible(page, 'Windows');
+
+    /* The drives: a set of two floppies at A:, and a disc at D:. */
+    await page
+      .locator('#picker')
+      .setInputFiles([
+        probeImage('imgwrite.img'),
+        probeImage('imgflop.img'),
+        probeImage('imgcd.iso'),
+      ]);
+    await expect(page.locator('#status')).toHaveText('A: Disk 1 of 2, imgflop.img. D: imgcd.iso.');
+    await accessible(page, 'drives with a floppy set and a disc');
+
+    /* The file browser, open on C:'s root, and on the disc. */
+    const files = await browser(page, 'C:\\');
+
+    await expect(files.named('WINDOWS')).toBeVisible();
+    await accessible(page, 'the file browser open');
+    await files.dialog.getByRole('combobox', { name: 'Drive' }).selectOption('D');
+    const disc = files.dialog.getByRole('grid', { name: 'Files in D:\\' });
+
+    await expect(disc.getByRole('gridcell', { name: 'README.TXT', exact: true })).toBeVisible();
+    await accessible(page, 'the file browser open on a disc');
+    await files.close();
+
+    /* The screen on the whole window, as where the browser refuses the whole screen. */
+    await page.getByRole('button', { name: 'Full screen' }).click();
+    await expect(page.getByRole('button', { name: 'Leave full screen' })).toBeVisible();
+    await accessible(page, 'the screen on the whole screen');
+    await page.getByRole('button', { name: 'Leave full screen' }).click();
+    await expect(page.getByRole('button', { name: 'Full screen' })).toBeVisible();
 
     /* A program kept, and run: the kept programs listed, the screen drawn. */
     await page.locator('#picker').setInputFiles({
