@@ -15,7 +15,8 @@ function siblings(window: RasterWindow) {
   const desktop = window.desktop;
 
   return desktop.windows.filter(
-    (other: any) => other.parent === window.window.parent && other.hwnd && !other.titleOf
+    (other: any) =>
+      other.parent === window.window.parent && other.hwnd && !other.titleOf && !other.unlinked
   );
 }
 
@@ -52,6 +53,13 @@ export function GetWindow(hwnd, fuRel) {
 
   if (fuRel === GW_OWNER) {
     return window.window.owner?.hwnd ?? 0;
+  }
+
+  /* Not yet among its brothers -- in its `WM_GETMINMAXINFO` and
+   * `WM_NCCREATE` (`USER.EXE` seg8 `07bb`) -- the window after it is none:
+   * its link is nought (`zcreate`). */
+  if ((window.window as any).unlinked && fuRel === GW_HWNDNEXT) {
+    return 0;
   }
 
   const list = siblings(window);
@@ -108,7 +116,9 @@ export function GetClassName(hwnd, lpClassName, cchClassName) {
 export function GetTopWindow(this: any, hwnd: number) {
   if (!(hwnd & 0xffff)) {
     const desktop = this.rasterDesktop;
-    const top = desktop?.windows.find((other: any) => !other.parent && other.hwnd && !other.titleOf);
+    const top = desktop?.windows.find(
+      (other: any) => !other.parent && other.hwnd && !other.titleOf
+    );
 
     return top?.hwnd ?? 0;
   }

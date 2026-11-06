@@ -1,0 +1,84 @@
+{
+  "probe": "zminim",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "minimize, start",
+      "result": "#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, start",
+      "result": "A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, b minimize",
+      "result": "#32771*-,A,#32772,B_;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, b minimize",
+      "result": "B:8,B:46@#32768/170,B:47@#32768/130,B:86/0,B:6/0,A:86/1,A:6/1,A:7,B:46@#32772/13,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, b restore",
+      "result": "#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, b restore",
+      "result": "B:46@#32772/120,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32772/120,B:6/1,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, a showminnoactive",
+      "result": "#32771*-,B,#32772,A_;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, a showminnoactive",
+      "result": "A:46@#32768/170,A:47@#32768/130,A:46@#32772/13,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, a shownoactivate",
+      "result": "#32771*-,A,B;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, a shownoactivate",
+      "result": "A:46@#32772/130,A:47@#32772/130,B:86/0,B:6/0,A:86/1,A:6/1,B:8,A:7,A:8,A:7,A:6/1,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, a showminimized",
+      "result": "#32771*-,#32772,A_,B;active=A;focus=0"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, a showminimized",
+      "result": "A:8,A:46@#32772/160,A:47@#32772/124,"
+    },
+    {
+      "function": "order",
+      "args": "minimize, a shownormal",
+      "result": "#32771*-,A,B;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "minimize, a shownormal",
+      "result": "A:46@#32772/120,A:47@#32772/124,A:7,A:6/1,"
+    }
+  ]
+}

@@ -339,6 +339,9 @@ pub(crate) struct Move {
     /// The family it brings to the front with it, itself among them, top
     /// first; itself alone otherwise.
     family: Vec<usize>,
+    /// A window at the top put elsewhere: its list as USER makes it
+    /// (`z_order.rs`).
+    plan: Option<crate::z_order::ZPlan>,
     /// `WM_NCCALCSIZE`'s rectangles as the window procedure left them, and
     /// its answer, where it was sent.
     calc: Option<([[i32; 4]; 3], u16)>,
@@ -461,6 +464,7 @@ impl Engine {
         [x, y, cx, cy]: [i32; 4],
         mut flags: u16,
     ) -> Result<Option<Move>, Stop> {
+        let asked_after = after;
         let (after, insert) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
@@ -486,42 +490,73 @@ impl Engine {
             }
         };
 
-        // A window at the top brought to the front brings the family it
-        // heads, as `ShowWindow` does: each asked in turn from the top down,
-        // the rest neither sized, moved nor made active (`alttab`: a pop-up
-        // and its owner, whichever of them is brought up).
-        let family = {
+        // A window at the top put elsewhere: the window it goes after, the
+        // windows of its owner's family it brings and those made topmost or
+        // not with it, as USER lists them (`z_order.rs`; `zorder`,
+        // `alttab`). An icon's title, hidden or not, comes before the window
+        // whose title it is (`minact`).
+        let mut plan = {
             let system = self.system();
             let top = system.windows[index]
                 .as_ref()
                 .is_some_and(|window| window.parent.is_none());
 
-            if top && flags & SWP_NOZORDER == 0 && matches!(insert, Insert::Top | Insert::Topmost) {
-                system.family_of(index)
-            } else {
-                vec![index]
-            }
+            (top && flags & SWP_NOZORDER == 0)
+                .then(|| system.plan_z_order(index, asked_after, flags))
         };
-        let at = family
-            .iter()
-            .position(|&member| member == index)
-            .unwrap_or(0);
 
-        self.ask_family(&family[..at], after).await?;
+        if plan
+            .as_ref()
+            .and_then(|plan| plan.entry(index))
+            .is_some_and(|entry| entry.stays)
+        {
+            flags |= SWP_NOZORDER;
+        }
 
-        // After the last of its family asked before it: an icon's title,
-        // hidden or not, before the window whose title it is (`USER.EXE`
-        // seg7 `16da`-`16ed`; `minact`: restored to the top, B goes after
-        // its title).
-        let named = match at.checked_sub(1) {
-            Some(before) => self.system().hwnd_of(family[before]),
-            None => after,
-        };
+        let family: Vec<usize> = plan.as_ref().map_or_else(
+            || vec![index],
+            |plan| plan.entries.iter().map(|entry| entry.member).collect(),
+        );
+        let named = plan
+            .as_ref()
+            .and_then(|plan| plan.entry(index))
+            .map_or(after, |entry| entry.after);
         let mut structure = Param::Struct(window_pos(hwnd, named, [x, y, cx, cy], flags));
 
-        self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
-            .await?;
-        self.ask_family(&family[at + 1..], hwnd).await?;
+        // Each asked in the list's order, the family neither sized, moved
+        // nor made active, each to go after the one before it (seg7
+        // `0ce9`-`0d35`).
+        let asked_list: Vec<(usize, u16)> = plan.as_ref().map_or_else(
+            || vec![(index, named)],
+            |plan| {
+                plan.entries
+                    .iter()
+                    .map(|entry| (entry.member, entry.after))
+                    .collect()
+            },
+        );
+
+        for (member, member_after) in asked_list {
+            if member == index {
+                self.send_message(hwnd, WM_WINDOWPOSCHANGING, 0, &mut structure)
+                    .await?;
+            } else {
+                let member_hwnd = self.system().hwnd_of(member);
+
+                self.send_message(
+                    member_hwnd,
+                    WM_WINDOWPOSCHANGING,
+                    0,
+                    &mut Param::Struct(window_pos(
+                        member_hwnd,
+                        member_after,
+                        [0; 4],
+                        crate::z_order::FAMILY_FLAGS,
+                    )),
+                )
+                .await?;
+            }
+        }
 
         let (asked, x, y, cx, cy, flags) = match &structure {
             Param::Struct(bytes) => {
@@ -548,11 +583,20 @@ impl Engine {
             (cx, cy)
         };
         // Put elsewhere by the window procedure, it goes where it was put.
+        let own = plan.as_mut().and_then(|plan| plan.entry_mut(index));
         let insert = if flags & SWP_NOZORDER != 0 {
+            if let Some(own) = own {
+                own.stays = true;
+            }
+
             Insert::Stay
         } else if asked == named {
             insert
         } else {
+            if let Some(own) = own {
+                own.after = asked;
+            }
+
             self.system()
                 .insert_for(index, asked, false)
                 .map_or(Insert::Stay, |(_, insert)| insert)
@@ -624,35 +668,64 @@ impl Engine {
             place,
             flags,
             family,
+            plan,
             calc,
             slot: None,
         }))
     }
 
-    /// The rest of a family brought to the front asked, neither sized,
-    /// moved nor made active.
-    /// Each asked to go after the one asked before it, the first after
-    /// `first` (`sysdlg`: a dialog made topmost, its owner's other pop-up
-    /// after it and its owner after that).
-    async fn ask_family(&self, members: &[usize], first: u16) -> Result<(), Stop> {
-        let mut after = first;
+    /// Part of a move's family told: those of its list linked, each with
+    /// the window it went after (seg7 `03f8`) -- one left where it lay is
+    /// told nothing; else those that moved (`tell_family`).
+    async fn tell_part(
+        &self,
+        change: &Move,
+        part: impl std::slice::SliceIndex<[usize], Output = [usize]>
+        + std::slice::SliceIndex<[crate::z_order::ZEntry], Output = [crate::z_order::ZEntry]>
+        + Clone,
+        before: &std::collections::HashMap<usize, Vec<usize>>,
+    ) -> Result<(), Stop> {
+        let Some(plan) = change.plan.as_ref() else {
+            return self.tell_family(&change.family[part], before).await;
+        };
 
-        for &member in members {
-            let hwnd = self.system().hwnd_of(member);
+        for entry in &plan.entries[part] {
+            if !entry.linked {
+                continue;
+            }
+
+            let (hwnd, place, visible) = {
+                let system = self.system();
+                let Some(window) = system.windows[entry.member].as_ref() else {
+                    continue;
+                };
+
+                (
+                    window.hwnd,
+                    [window.left, window.top, window.width, window.height],
+                    window.visible,
+                )
+            };
 
             self.send_message(
                 hwnd,
-                WM_WINDOWPOSCHANGING,
+                WM_WINDOWPOSCHANGED,
                 0,
                 &mut Param::Struct(window_pos(
                     hwnd,
-                    after,
-                    [0; 4],
-                    SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE,
+                    entry.after,
+                    place,
+                    // A hidden one with `SWP_NOREDRAW` too (seg7
+                    // `0dfc`-`0e05`; `sysdlg`: 1Bh).
+                    SWP_NOSIZE
+                        | SWP_NOMOVE
+                        | SWP_NOACTIVATE
+                        | SWP_NOCLIENTSIZE
+                        | SWP_NOCLIENTMOVE
+                        | if visible { 0 } else { SWP_NOREDRAW },
                 )),
             )
             .await?;
-            after = hwnd;
         }
 
         Ok(())
@@ -736,6 +809,22 @@ impl Engine {
         // they do, the next asked to go somewhere is looked at as well
         // (`USER.EXE` seg7 `0e09`-`0e38`).
         let mut in_place_so_far = true;
+        let mut changes = changes;
+
+        // A list with windows at the top put elsewhere: the run looked at
+        // for all of them before anything moves (`z_order.rs`,
+        // `z_stay_run`).
+        if changes.iter().any(|change| change.plan.is_some()) {
+            let system = self.system();
+
+            for change in &mut changes {
+                if let Some(plan) = change.plan.as_mut() {
+                    in_place_so_far = system.z_stay_run(plan, in_place_so_far);
+                } else if change.flags & SWP_NOZORDER == 0 {
+                    in_place_so_far = false;
+                }
+            }
+        }
         // Whether every window placed was shown, and is of a program made
         // before 3.10 -- USER's bit 4 of the byte at 26h clear
         // (`made_for_31`): what they uncovered is then made due in their
@@ -914,24 +1003,42 @@ impl Engine {
                 .as_ref()
                 .expect("a window")
                 .visible;
-            let lay = change.flags & SWP_NOZORDER == 0
+            let planned = change.plan.is_some();
+            let lay = !planned
+                && change.flags & SWP_NOZORDER == 0
                 && system.lies_where_asked(change.index, change.insert);
+            let mut reordered;
 
-            // Put where it was asked to go among its brothers (`mousemsg`,
-            // `swporder`); a window shown comes to the front as it shows,
-            // and one hidden stays where it is.
-            let mut reordered = change.flags & SWP_HIDEWINDOW == 0
-                && (now || change.flags & SWP_SHOWWINDOW == 0)
-                && system.reorder(change.index, change.insert);
+            if let Some(plan) = change.plan.as_mut() {
+                // Each of the list linked where it is to go, the window and
+                // its family, hidden or shown (seg7 `0a4f`-`0b71`); shown or
+                // made active, it stays there (`z_planned`).
+                let placed_only = !moved
+                    && !resized
+                    && !framed
+                    && (change.flags & SWP_SHOWWINDOW == 0 || visible)
+                    && (change.flags & SWP_HIDEWINDOW == 0 || !visible);
 
-            // Brought to the top, the windows it owns come up above it and
-            // the window that owns it beneath, the family it was asked with
-            // (`alttab`). Not made active, it is brought up so all the same:
-            // a press on a disabled owner puts it on top with
-            // `SWP_NOACTIVATE`, and the pop-up it owns comes with it
-            // (`USER.EXE` seg1 `59a4`; `curerr`).
-            if change.family.len() > 1 && change.flags & SWP_HIDEWINDOW == 0 && now {
-                reordered = system.bring_family_up(change.index) || reordered;
+                system.z_place(plan, change.index, placed_only);
+                reordered = plan.entry(change.index).is_some_and(|entry| entry.linked);
+                system.z_planned = true;
+            } else {
+                // Put where it was asked to go among its brothers
+                // (`mousemsg`, `swporder`); a window shown comes to the front
+                // as it shows, and one hidden stays where it is.
+                reordered = change.flags & SWP_HIDEWINDOW == 0
+                    && (now || change.flags & SWP_SHOWWINDOW == 0)
+                    && system.reorder(change.index, change.insert);
+
+                // Brought to the top, the windows it owns come up above it
+                // and the window that owns it beneath, the family it was
+                // asked with (`alttab`). Not made active, it is brought up so
+                // all the same: a press on a disabled owner puts it on top
+                // with `SWP_NOACTIVATE`, and the pop-up it owns comes with it
+                // (`USER.EXE` seg1 `59a4`; `curerr`).
+                if change.family.len() > 1 && change.flags & SWP_HIDEWINDOW == 0 && now {
+                    reordered = system.bring_family_up(change.index) || reordered;
+                }
             }
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {
@@ -949,7 +1056,10 @@ impl Engine {
                 // (`USER.EXE` seg7 `0cda`-`0ce6`, `0260`-`026f`). It goes
                 // where it was asked among the others, or stays where it
                 // lay with `SWP_NOZORDER` (`swpshow`).
-                reordered = system.reorder(change.index, change.insert) || reordered;
+                if !planned {
+                    reordered = system.reorder(change.index, change.insert) || reordered;
+                }
+
                 system.show_in_place(change.index);
             } else if change.flags & SWP_SHOWWINDOW != 0 && !now {
                 // Shown where it lies, with `SWP_NOZORDER` and
@@ -964,7 +1074,8 @@ impl Engine {
                     // front (`dlgfront`: a dialog shown with `HWND_TOPMOST`
                     // and `SWP_SHOWWINDOW` in its `WM_INITDIALOG` lies
                     // first, topmost).
-                    if matches!(change.insert, Insert::Topmost)
+                    if !planned
+                        && matches!(change.insert, Insert::Topmost)
                         && !system.windows[change.index]
                             .as_ref()
                             .expect("a window")
@@ -987,10 +1098,16 @@ impl Engine {
                 .visible
                 != visible;
 
+            system.z_planned = false;
+
             // Already where it was asked to go, it is told so with
             // `SWP_NOZORDER` (seg7 `0e09`-`0e38`, `1184`; `swpshow`: a
             // window shown after the window it already lay after).
-            if change.flags & SWP_NOZORDER == 0 && in_place_so_far {
+            if let Some(plan) = change.plan.as_ref() {
+                if plan.entry(change.index).is_some_and(|entry| entry.stays) {
+                    change.flags |= SWP_NOZORDER;
+                }
+            } else if change.flags & SWP_NOZORDER == 0 && in_place_so_far {
                 in_place_so_far = lay;
 
                 if lay {
@@ -1016,6 +1133,7 @@ impl Engine {
 
             placed.push((
                 change,
+                visible,
                 moved,
                 resized,
                 showing || reordered || framed,
@@ -1053,17 +1171,17 @@ impl Engine {
             }
         }
 
-        for (change, moved, sized, changed, client) in placed {
+        for (change, visible, moved, sized, changed, client) in placed {
             let at = change
                 .family
                 .iter()
                 .position(|&member| member == change.index)
                 .unwrap_or(0);
 
-            self.tell_family(&change.family[..at], &before).await?;
+            self.tell_part(&change, ..at, &before).await?;
 
             if !moved && !sized && !changed {
-                self.tell_family(&change.family[at + 1..], &before).await?;
+                self.tell_part(&change, at + 1.., &before).await?;
                 continue;
             }
 
@@ -1083,7 +1201,19 @@ impl Engine {
 
                 [x, y, window.width, window.height]
             };
-            let flags = change.flags
+            // Shown already, `SWP_SHOWWINDOW` taken off; hidden,
+            // `SWP_HIDEWINDOW`, and `SWP_NOREDRAW` added where it is not
+            // shown now (`USER.EXE` seg7 `0de3`-`0e05`; `zcreate`:
+            // `SW_SHOWNA` of a window that shows told 1813h, a hidden window
+            // put at the bottom 181Bh).
+            let shown_flags = if visible {
+                change.flags & !SWP_SHOWWINDOW
+            } else if change.flags & SWP_SHOWWINDOW != 0 {
+                change.flags & !SWP_HIDEWINDOW
+            } else {
+                change.flags & !SWP_HIDEWINDOW | SWP_NOREDRAW
+            };
+            let flags = shown_flags
                 | if moved { 0 } else { SWP_NOMOVE }
                 | if sized { 0 } else { SWP_NOSIZE }
                 | client;
@@ -1092,10 +1222,19 @@ impl Engine {
                 change.hwnd,
                 WM_WINDOWPOSCHANGED,
                 0,
-                &mut Param::Struct(window_pos(change.hwnd, change.after, place, flags)),
+                &mut Param::Struct(window_pos(
+                    change.hwnd,
+                    change
+                        .plan
+                        .as_ref()
+                        .and_then(|plan| plan.entry(change.index))
+                        .map_or(change.after, |entry| entry.after),
+                    place,
+                    flags,
+                )),
             )
             .await?;
-            self.tell_family(&change.family[at + 1..], &before).await?;
+            self.tell_part(&change, at + 1.., &before).await?;
         }
 
         self.system().nudge()?;

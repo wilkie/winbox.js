@@ -1,0 +1,284 @@
+{
+  "probe": "zcreate",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "made, t",
+      "result": "#32771*-,T;active=T;focus=T"
+    },
+    {
+      "function": "sent",
+      "args": "made, t",
+      "result": "T:81/0,-,0,T:1/#42,#32771,0,T:18/1,T:46@#32771/43,T:86/1,T:6/1,T:7,T:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "made, t topmost",
+      "result": "T*,#32771*-;active=T;focus=T"
+    },
+    {
+      "function": "sent",
+      "args": "made, t topmost",
+      "result": "T:46@T/13,T:47@T/1813,"
+    },
+    {
+      "function": "order",
+      "args": "made, a",
+      "result": "T*,#32771*-,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "made, a",
+      "result": "A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,T:86/0,T:6/0,A:46@#32771/3,A:86/1,A:6/1,T:8,A:7,A:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "made, h hidden",
+      "result": "T*,#32771*-,H-,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "made, h hidden",
+      "result": "H:81/0,-,0,H:1/A,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "made, o topmost",
+      "result": "O*,T*,#32771*-,H-,A;active=O;focus=O"
+    },
+    {
+      "function": "sent",
+      "args": "made, o topmost",
+      "result": "O:81/0,-,1,O:1/T,0,1,O:18/1,O:46@T/43,A:86/0,A:6/0,O:86/1,O:6/1,A:8,O:7,O:47@T/1847,"
+    },
+    {
+      "function": "order",
+      "args": "made, b topmost hidden",
+      "result": "B*-,O*,T*,#32771*-,H-,A;active=O;focus=O"
+    },
+    {
+      "function": "sent",
+      "args": "made, b topmost hidden",
+      "result": "B:81/0,-,1,B:1/O,0,1,"
+    },
+    {
+      "function": "order",
+      "args": "made, p owned by t",
+      "result": "P*,T*,B*-,O*,#32771*-,H-,A;active=P;focus=P"
+    },
+    {
+      "function": "sent",
+      "args": "made, p owned by t",
+      "result": "P:81/0,-,1,P:1/B,0,1,P:18/1,P:46@T/43,T:46@P/13,O:86/0,O:6/0,P:86/1,P:6/1,O:8,P:7,P:47@T/1847,T:47@P/1813,"
+    },
+    {
+      "function": "order",
+      "args": "made, q owned by t hidden",
+      "result": "Q*-,P*,T*,B*-,O*,#32771*-,H-,A;active=P;focus=P"
+    },
+    {
+      "function": "sent",
+      "args": "made, q owned by t hidden",
+      "result": "Q:81/0,-,1,Q:1/P,0,1,"
+    },
+    {
+      "function": "order",
+      "args": "made, c owned by a",
+      "result": "Q*-,P*,T*,B*-,O*,#32771*-,C,A,H-;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "made, c owned by a",
+      "result": "C:81/0,-,0,C:1/H,#32771,0,C:18/1,C:46@#32771/43,A:46@C/13,P:86/0,P:6/0,C:46@#32771/3,A:46@C/13,C:86/1,C:6/1,P:8,C:7,C:47@#32771/1847,A:47@C/1813,"
+    },
+    {
+      "function": "order",
+      "args": "made, k child of a",
+      "result": "Q*-,P*,T*,B*-,O*,#32771*-,C,A,H-;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "made, k child of a",
+      "result": "K:81/0,-,0,K:1/0,0,0,K:18/1,K:46@T/57,K:47@T/1857,"
+    },
+    {
+      "function": "order",
+      "args": "made, b shown",
+      "result": "B*,Q*-,P*,T*,O*,#32771*-,C,A,H-;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "made, b shown",
+      "result": "B:18/1,B:46@T/43,C:86/0,C:6/0,B:86/1,B:6/1,C:8,B:7,B:47@T/1843,"
+    },
+    {
+      "function": "order",
+      "args": "made, h shown",
+      "result": "B*,Q*-,P*,T*,O*,#32771*-,H,C,A;active=H;focus=H"
+    },
+    {
+      "function": "sent",
+      "args": "made, h shown",
+      "result": "H:18/1,H:46@#32771/43,B:86/0,B:6/0,H:46@#32771/3,H:86/1,H:6/1,B:8,H:7,H:47@#32771/1843,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, a",
+      "result": "#32771*-,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, a",
+      "result": "A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, shownoactivate",
+      "result": "#32771*-,M,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, shownoactivate",
+      "result": "M:81/0,-,0,M:1/A,#32771,0,M:18/1,M:46@T/57,M:47@T/1857,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, showna",
+      "result": "#32771*-,M,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, showna",
+      "result": "M:46@T/97,M:47@T/1897,M:81/0,-,0,M:1/A,#32771,0,M:18/1,M:46@#32771/53,M:47@#32771/1857,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, hide",
+      "result": "#32771*-,M-,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, hide",
+      "result": "M:46@T/97,M:47@T/1897,M:81/0,-,0,M:1/A,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, twelve",
+      "result": "#32771*-,M-,A;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, twelve",
+      "result": "M:81/0,-,0,M:1/A,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "cwdefault, show",
+      "result": "#32771*-,M,A;active=M;focus=M"
+    },
+    {
+      "function": "sent",
+      "args": "cwdefault, show",
+      "result": "M:81/0,-,0,M:1/A,#32771,0,M:18/1,M:46@#32771/43,A:86/0,A:6/0,M:86/1,M:6/1,A:8,M:7,M:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "show, start",
+      "result": "#32771*-,C,B,A;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, start",
+      "result": "A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,C:81/0,-,0,C:1/B,#32771,0,C:18/1,C:46@#32771/43,B:86/0,B:6/0,C:86/1,C:6/1,B:8,C:7,C:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "show, a showna",
+      "result": "#32771*-,A,C,B;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, a showna",
+      "result": "A:18/1,A:46@#32771/53,A:47@#32771/1813,"
+    },
+    {
+      "function": "order",
+      "args": "show, b show",
+      "result": "#32771*-,A,C,B;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, b show",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "show, b shownormal",
+      "result": "#32771*-,A,C,B;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, b shownormal",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "show, a shownoactivate",
+      "result": "#32771*-,A,C,B;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, a shownoactivate",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "show, h bottom",
+      "result": "#32771*-,A,C,B,H-;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, h bottom",
+      "result": "H:81/0,-,0,H:1/A,#32771,0,H:46@M/13,H:47@M/181b,"
+    },
+    {
+      "function": "order",
+      "args": "show, h shownoactivate",
+      "result": "#32771*-,A,C,B,H;active=C;focus=C"
+    },
+    {
+      "function": "sent",
+      "args": "show, h shownoactivate",
+      "result": "H:18/1,H:46@T/57,H:47@T/1857,"
+    },
+    {
+      "function": "order",
+      "args": "show, c hide",
+      "result": "#32771*-,B,C-,A,H;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "show, c hide",
+      "result": "C:18/0,C:46@#32771/83,C:47@#32771/1883,C:86/0,C:6/0,B:46@#32771/3,B:47@#32771/1803,B:86/1,B:6/1,C:8,B:7,"
+    },
+    {
+      "function": "order",
+      "args": "show, c showna",
+      "result": "#32771*-,C,B,A,H;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "show, c showna",
+      "result": "C:18/1,C:46@#32771/53,C:47@#32771/1853,"
+    }
+  ]
+}

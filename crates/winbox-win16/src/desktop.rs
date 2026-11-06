@@ -419,6 +419,20 @@ impl System {
                 }
             }
         }
+        // Placed already where `SetWindowPos` linked it (`z_order.rs`).
+        if self.z_planned {
+            return self
+                .z_order
+                .iter()
+                .copied()
+                .filter(|&other| {
+                    self.within(other, index)
+                        || self.owned_within(other, index)
+                        || Some(other) == title
+                })
+                .collect();
+        }
+
         let family = self.take_out(|system, other| {
             system.within(other, index) || system.owned_within(other, index) || Some(other) == title
         });
@@ -891,6 +905,12 @@ impl System {
         self.end_placing(Some(false));
 
         self.z_order != order
+    }
+
+    /// The window a window at the top hidden while active makes active
+    /// (seg14 `0dbc`, seg1 `38e4` with 3).
+    pub fn next_active_after_hide(&self, index: usize) -> Option<usize> {
+        self.next_active(index, false)
     }
 
     /// The window a window at the top destroyed makes active (seg8

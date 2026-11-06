@@ -5229,14 +5229,14 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
-  /* `swpshow` shows hidden pop-ups with `SetWindowPos`, which agree, then
-   * minimizes and restores a window by `WM_SYSCOMMAND`. Which window is
-   * active, and the order of the windows, agree at every step (`state`,
-   * `zorder`), and so do the minimizing and the restoring; a window made
-   * visible behind a topmost one is not asked again between the halves of
-   * its activation (`kb/topics/creating-and-showing.md`). 11 records. */
-  'swpshow:msg':
-    'a window made visible behind a topmost window is not asked again as it is activated, 11 records',
+  /* `zminim`: minimized and restored by `ShowWindow`, the icon's title
+   * (`#32772`) is not among the windows `GetWindow` walks, and
+   * `SW_SHOWMINIMIZED` and `SW_SHOWNORMAL` of a window made an icon with
+   * `SW_SHOWMINNOACTIVE` and restored are told nothing
+   * (`kb/topics/z-order.md`). */
+  'zminim:order': "an icon's title is not among the windows GetWindow walks",
+  'zminim:sent':
+    'SW_SHOWMINIMIZED and SW_SHOWNORMAL of a window minimized and restored before tell it nothing',
 
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
@@ -6044,6 +6044,10 @@ const RUN_WHOLE = new Set<string>([
   'segtail',
   'execpk',
   'dlgfront',
+  'zorder',
+  'zcreate',
+  'zactive',
+  'zminim',
 ]);
 
 /**

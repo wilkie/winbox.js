@@ -16,6 +16,7 @@ import { eraseDue, syncPaintFrom } from './erase.js';
 import { type Insert } from './desktop.js';
 import { GetSysModalWindow } from './userwin.js';
 import { GetWindowTask } from './window-queries.js';
+import { type ZEntry, placePlan, planZOrder, stayRun } from './z-order.js';
 
 /** The commands `ShowWindow` minimizes or maximizes with, whatever the window is (`USER.EXE` seg14 `0c39`). */
 const MINMAX_COMMANDS = new Set([2, 3, 6, 7]);
@@ -159,6 +160,83 @@ export async function showRaster(
     (shown as any).owesSize = false;
 
     return FALSE;
+  }
+
+  /* Shown already and neither minimized nor maximized, `SW_SHOW`,
+   * `SW_SHOWNORMAL`, `SW_SHOWNOACTIVATE` and `SW_RESTORE` do nothing at all
+   * (`USER.EXE` seg14 `0c6d`-`0c73`, `0c95`-`0c9b`; `zcreate`: no message,
+   * nothing moved, nothing made active). */
+  if (
+    was &&
+    !minMax &&
+    (show === User.SW_SHOW ||
+      show === User.SW_SHOWNORMAL ||
+      show === SW_SHOWNOACTIVATE ||
+      show === User.SW_RESTORE)
+  ) {
+    return TRUE;
+  }
+
+  /* `SW_SHOWNA` of a window at the top that shows: `SetWindowPos` after
+   * `HWND_TOP`, `SWP_SHOWWINDOW` and `SWP_NOACTIVATE` where a window is
+   * active, so brought to the front (seg14 `0ca5`-`0cb1`; `zcreate`: 53h,
+   * told 1813h). */
+  if (was && !child && show === SW_SHOWNA) {
+    /* Told it shows, though it did: `ShowWindow` compares 1 with the style's
+     * 10h (`0cb5`-`0ce1`). */
+    if (told) {
+      await send(User.WM_SHOWWINDOW, 1, 0);
+      await send(WM_SETVISIBLE, 1, 0);
+    }
+
+    await positionRaster(
+      system,
+      hwnd,
+      window,
+      0,
+      0,
+      0,
+      0,
+      0,
+      SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW | (desktop.activeTop ? SWP_NOACTIVATE : 0)
+    );
+    return TRUE;
+  }
+
+  /* The active window at the top hidden: `SetWindowPos` after `HWND_TOP`
+   * with 83h, neither `SWP_NOZORDER` nor `SWP_NOACTIVATE` (seg14
+   * `0c56`-`0c61`), so put at the front as it hides; then another made
+   * active (`0dbc`-`0dc5`, seg1 `38e4` with 3), brought up as
+   * `ActivateWindow` brings it; the focus after (`0dd4`). **Recorded** by
+   * `zcreate`. */
+  if (hiding && was && !child && told && desktop.activeTop === shown) {
+    await send(User.WM_SHOWWINDOW, 0, 0);
+    await send(WM_SETVISIBLE, 0, 0);
+    await positionRaster(
+      system,
+      hwnd,
+      window,
+      0,
+      0,
+      0,
+      0,
+      0,
+      SWP_NOSIZE | SWP_NOMOVE | SWP_HIDEWINDOW
+    );
+
+    const next = system.handles.resolve(hwnd) ? desktop.nextActiveAfterHide(shown) : null;
+
+    /* Only what the hiding uncovered of it is due, not all of it. */
+    if (next) {
+      await activateWindow(system, next, false, false);
+    }
+
+    if (desktop.focus === shown) {
+      await focusNothing(system);
+    }
+
+    system.rasterInput?.nudge();
+    return TRUE;
   }
 
   /* A window shown or hidden is told so twice, then asked, as `SetWindowPos`
@@ -522,12 +600,23 @@ export async function showRaster(
    * the front between them if it was not there yet with the windows it
    * brings, asked again, not told after (`showseq`). */
   const atFrontAlready = above(desktop, shown) === aboveBefore.get(shown);
+  /* `ActivateWindow` brings it up again where the first window at the top
+   * that shows is another -- a topmost one in front of it (seg1
+   * `3674`-`3697`; `zcreate`, `swpshow`: a window made visible behind a
+   * topmost window is asked again, 3, and not told). */
+  const behindAnother =
+    shown.state !== 'minimized' &&
+    !child &&
+    (desktop.windows.find((other: any) => !other.parent && other.visible) ?? shown) !== shown;
 
   await deliverActivation(
     system,
     /* Only a window with others of its family to bring along: an icon made
      * active from the bottom alone is not asked again (`showmin`). */
-    changes && !hiding && !(flags & SWP_NOACTIVATE) && !atFrontAlready && family.length > 1
+    changes &&
+      !hiding &&
+      !(flags & SWP_NOACTIVATE) &&
+      ((!atFrontAlready && family.length > 1) || behindAnother)
       ? () => ask(SWP_NOSIZE | SWP_NOMOVE)
       : undefined
   );
@@ -1192,110 +1281,38 @@ export async function activateWindow(
   }
 
   const first = desktop.windows.find((other: any) => !other.parent && other.visible) ?? null;
-  /* Listed as `SetWindowPos` lists the family it brings up (`familyOf`;
-   * seg1 `3697`, seg7 `1836`), and each one's place before looked at
-   * among all the windows at the top, the icons' titles too: an owner
-   * whose title, kept hidden, it goes after lies after it already, and is
-   * not told (`enddlg`: O, minimized and restored before, made active
-   * again with its dialog). */
-  const family = first !== top ? familyOf(desktop, top) : [];
-  const orderBefore = desktop.windows.filter((other: any) => !other.parent);
-  /* The system-modal window goes to the very front, before the topmost
-   * windows too, and is asked to go after none. **Recorded** by `sysdlg`:
-   * a system-modal dialog made active as it is made is asked so, and once
-   * made topmost and shown is the first window that shows, so that made
-   * active again it is not brought up; a dialog not system modal is asked
-   * to go after USER's topmost `#32771`. */
-  const sysModalFront = !!sysModal && top.hwnd === sysModal;
+  /* Made active where it lies; then, between the two windows' messages,
+   * brought to the top as `BringWindowToTop` brings it -- `SetWindowPos`
+   * after `HWND_TOP` with `SWP_NOSIZE | SWP_NOMOVE`, its family listed,
+   * asked, placed and told as any (seg1 `3674`-`3697`, seg7 `1836`,
+   * `0077`; `zactive`, `enddlg`, `sysdlg`) -- where the first window at
+   * the top that shows is not it. */
+  desktop.zPlanned = true;
 
-  if (first === top) {
-    desktop.activateInPlace(top, whole);
-  } else if (top.visible && !whole) {
-    desktop.show(top, false);
-  } else {
-    desktop.activate(top, sysModalFront);
+  try {
+    if (first === top) {
+      desktop.activateInPlace(top, whole);
+    } else if (top.visible && !whole) {
+      desktop.show(top, false);
+    } else {
+      desktop.activate(top);
+    }
+  } finally {
+    desktop.zPlanned = false;
   }
 
   if (forFocus && desktop.pendingActivation) {
     desktop.pendingActivation.forFocus = true;
   }
 
-  /* **Recorded** by `sysdlg`: the first asked goes after the window it now
-   * lies after -- the last topmost, USER's own hidden `#32771` -- and the
-   * rest each after the one before, in the order they now lie; a window
-   * made active hidden is not told, nor, for the system-modal window, any
-   * of them (`enddlg`: an owner minimized is told). Each window
-   * told goes after the window it was asked to, and one hidden is told
-   * `SWP_NOREDRAW` as well (seg7 `0df5`-`0e05`). */
-  const shownBefore = top.visible;
-
   await deliverActivation(
     system,
-    family.length
+    first !== top
       ? async () => {
-          let after = sysModalFront ? 0 : lyingAfter(desktop, family[0]);
-          const asked = new Map<any, number>();
+          const raster = top.hwnd ? system.handles.resolve(top.hwnd) : null;
 
-          for (const member of family) {
-            const place: any = new WINDOWPOS();
-
-            place.hwnd = member.hwnd;
-            place.hwndInsertAfter = after;
-            place.flags =
-              member === top ? SWP_NOSIZE | SWP_NOMOVE : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-            asked.set(member, after);
-            await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
-            after = member.hwnd ?? 0;
-          }
-
-          /* Each moved in turn after the window it was asked to go after, and
-           * told only where it did not lie there already -- one coming after
-           * a window of its family moved before it lies there by then
-           * (`sysdlg`: an owner made active as its dialog ends, the dialog
-           * moved behind USER's `#32771`, its other pop-up and it lie after
-           * it already, and only the dialog is told). */
-          const order = orderBefore.slice();
-          const moved = new Set<any>();
-
-          for (const member of family) {
-            const wanted = asked.get(member) ?? 0;
-            const at = order.indexOf(member);
-            const lies = at > 0 ? (order[at - 1].hwnd ?? 0) : 0;
-
-            if (at < 0 || lies === wanted) {
-              continue;
-            }
-
-            moved.add(member);
-            order.splice(at, 1);
-            order.splice(
-              wanted ? order.findIndex((other: any) => other.hwnd === wanted) + 1 : 0,
-              0,
-              member
-            );
-          }
-
-          for (const member of family) {
-            if (sysModalFront || (member === top && !shownBefore) || !moved.has(member)) {
-              continue;
-            }
-
-            const place: any = new WINDOWPOS();
-
-            place.hwnd = member.hwnd;
-            place.hwndInsertAfter = asked.get(member) ?? 0;
-            place.x = member.left;
-            place.y = member.top;
-            place.cx = member.width;
-            place.cy = member.height;
-            place.flags =
-              (member === top
-                ? SWP_NOSIZE | SWP_NOMOVE
-                : SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE) |
-              (member.visible ? 0 : SWP_NOREDRAW) |
-              SWP_NOCLIENTSIZE |
-              SWP_NOCLIENTMOVE;
-            await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
+          if (raster instanceof RasterWindow) {
+            await positionRaster(system, top.hwnd, raster, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
           }
         }
       : undefined
@@ -1951,6 +1968,8 @@ export async function positionChanging(
 
   hwndInsertAfter &= 0xffff;
 
+  const askedAfter = hwndInsertAfter;
+
   if (!(flags & SWP_NOZORDER)) {
     const found = window.desktop.insertFor(shown, hwndInsertAfter, activated);
 
@@ -1966,59 +1985,50 @@ export async function positionChanging(
     }
   }
 
+  /* A window at the top put elsewhere: the window it goes after, the
+   * windows of its owner's family it brings and those made topmost or not
+   * with it, as USER lists them (`z-order.ts`; `zorder`, `alttab`). An
+   * icon's title, hidden or not, comes before the window whose title it is
+   * (`minact`). */
+  const plan =
+    !parent && !(flags & SWP_NOZORDER)
+      ? planZOrder(window.desktop, shown, askedAfter, flags, !!system._inSysErrorBox)
+      : null;
+  const own = plan?.entries.find((entry) => entry.member === shown) ?? null;
+
+  if (own?.stays) {
+    flags |= SWP_NOZORDER;
+  }
+
   const windowPos: any = new WINDOWPOS();
 
   windowPos.hwnd = hwnd;
-  windowPos.hwndInsertAfter = hwndInsertAfter;
+  windowPos.hwndInsertAfter = own ? own.after : hwndInsertAfter;
   windowPos.x = x;
   windowPos.y = y;
   windowPos.cx = cx;
   windowPos.cy = cy;
   windowPos.flags = flags;
 
-  /* A window at the top brought to the front brings the family it heads, as
-   * `ShowWindow` does: each asked in turn from the top down, the rest
-   * neither sized, moved nor made active (`alttab`: a pop-up and its owner,
-   * whichever of them is brought up). */
-  const family =
-    !parent && !(flags & SWP_NOZORDER) && (insert.to === 'top' || insert.to === 'topmost')
-      ? familyOf(window.desktop, shown)
-      : [shown];
-  const at = family.indexOf(shown);
-  /* Each asked to go after the one asked before it (`sysdlg`: a dialog made
-   * topmost, its owner's other pop-up after it and its owner after that). */
-  const askFamily = async (members: any[], first: number) => {
-    let after = first;
-
-    for (const member of members) {
-      const place: any = new WINDOWPOS();
-
-      place.hwnd = member.hwnd;
-      place.hwndInsertAfter = after;
-      place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
-      await sendTo(system, member, User.WM_WINDOWPOSCHANGING, 0, [place]);
-      after = member.hwnd ?? 0;
-    }
-  };
-
-  await askFamily(family.slice(0, at), hwndInsertAfter);
-
-  /* After the last of its family asked before it: an icon's title, hidden
-   * or not, before the window whose title it is (`USER.EXE` seg7
-   * `16da`-`16ed`; `minact`: restored to the top, B goes after its title). */
-  if (at > 0) {
-    windowPos.hwndInsertAfter = family[at - 1].hwnd ?? 0;
-  }
-
+  const family = plan ? plan.entries.map((entry) => entry.member) : [shown];
   const named = windowPos.hwndInsertAfter;
 
-  if (windowClass) {
-    await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [
-      windowPos,
-    ]);
-  }
+  /* Each asked in the list's order, the family neither sized, moved nor
+   * made active, each to go after the one before it (seg7 `0ce9`-`0d35`). */
+  for (const entry of plan?.entries ?? [{ member: shown, after: 0 }]) {
+    if (entry.member !== shown) {
+      const place: any = new WINDOWPOS();
 
-  await askFamily(family.slice(at + 1), hwnd);
+      place.hwnd = entry.member.hwnd;
+      place.hwndInsertAfter = entry.after;
+      place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE;
+      await sendTo(system, entry.member, User.WM_WINDOWPOSCHANGING, 0, [place]);
+    } else if (windowClass) {
+      await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [
+        windowPos,
+      ]);
+    }
+  }
 
   /* As the window procedure left the structure: it may move the window
    * elsewhere, or keep it where it is (documented). Towers of the corpus
@@ -2044,8 +2054,16 @@ export async function positionChanging(
 
   if (flags & SWP_NOZORDER) {
     insert = { to: 'stay' };
+
+    if (own) {
+      own.stays = true;
+    }
   } else if (asked !== named) {
     insert = window.desktop.insertFor(shown, asked, false)?.[1] ?? { to: 'stay' };
+
+    if (own) {
+      own.after = asked;
+    }
   }
 
   const left = flags & SWP_NOMOVE ? shown.left : x + offset.x;
@@ -2070,7 +2088,7 @@ export async function positionChanging(
         ])
       : null;
 
-  return { hwnd, window, windowPos, insert, left, top, width, height, flags, calc, family };
+  return { hwnd, window, windowPos, insert, left, top, width, height, flags, calc, family, plan };
 }
 
 /** A rectangle of `NCCALCSIZE_PARAMS`, each side the signed word it is. */
@@ -2166,6 +2184,7 @@ export async function positionChanged(
 ) {
   const placed: {
     move: (typeof moves)[number];
+    visible: boolean;
     moved: boolean;
     sized: boolean;
     showing: boolean;
@@ -2197,6 +2216,18 @@ export async function positionChanged(
    * do, the next asked to go somewhere is looked at as well (`USER.EXE`
    * seg7 `0e09`-`0e38`). */
   let inPlaceSoFar = true;
+
+  /* A list with windows at the top put elsewhere: the run looked at for
+   * all of them before anything moves (`z-order.ts`, `stayRun`). */
+  if (moves.some((move) => move.plan)) {
+    for (const move of moves) {
+      if (move.plan) {
+        inPlaceSoFar = stayRun(move.window.desktop, move.plan, inPlaceSoFar);
+      } else if (!(move.flags & SWP_NOZORDER)) {
+        inPlaceSoFar = false;
+      }
+    }
+  }
 
   /* Whether every window placed was shown, and is of a program made before
    * 3.10 -- USER's bit 4 of the byte at 26h clear (`madeFor31`): what they
@@ -2333,23 +2364,42 @@ export async function positionChanged(
         (shown as any).needsNcPaint && !(shown.needsPaint && !(shown as any).dirtyRect);
     }
 
-    const lay = !(flags & SWP_NOZORDER) && liesWhereAsked(window.desktop, shown, move.insert);
+    const plan = move.plan ?? null;
+    const lay =
+      !plan && !(flags & SWP_NOZORDER) && liesWhereAsked(window.desktop, shown, move.insert);
+    let reordered: boolean;
 
-    /* Put where it was asked to go among its brothers (`mousemsg`,
-     * `swporder`); a window shown comes to the front as it shows, and one
-     * hidden stays where it is. */
-    let reordered =
-      !(flags & SWP_HIDEWINDOW) &&
-      !(flags & SWP_SHOWWINDOW && !shown.visible) &&
-      window.desktop.reorder(shown, move.insert);
+    if (plan) {
+      /* Each of the list linked where it is to go, the window and its
+       * family, hidden or shown (seg7 `0a4f`-`0b71`); shown or made active,
+       * it stays there (`zPlanned`). */
+      const placedOnly =
+        !moved &&
+        !sized &&
+        !framed &&
+        !(flags & SWP_SHOWWINDOW && !visible) &&
+        !(flags & SWP_HIDEWINDOW && visible);
 
-    /* Brought to the top, the windows it owns come up above it and the
-     * window that owns it beneath, the family it was asked with
-     * (`alttab`). Not made active, it is brought up so all the same: a press
-     * on a disabled owner puts it on top with `SWP_NOACTIVATE`, and the
-     * pop-up it owns comes with it (`USER.EXE` seg1 `59a4`; `curerr`). */
-    if (move.family.length > 1 && !(flags & SWP_HIDEWINDOW) && shown.visible) {
-      reordered = window.desktop.bringFamilyUp(shown) || reordered;
+      placePlan(window.desktop, plan, shown, placedOnly);
+      reordered = !!plan.entries.find((entry) => entry.member === shown)?.linked;
+      window.desktop.zPlanned = true;
+    } else {
+      /* Put where it was asked to go among its brothers (`mousemsg`,
+       * `swporder`); a window shown comes to the front as it shows, and one
+       * hidden stays where it is. */
+      reordered =
+        !(flags & SWP_HIDEWINDOW) &&
+        !(flags & SWP_SHOWWINDOW && !shown.visible) &&
+        window.desktop.reorder(shown, move.insert);
+
+      /* Brought to the top, the windows it owns come up above it and the
+       * window that owns it beneath, the family it was asked with
+       * (`alttab`). Not made active, it is brought up so all the same: a
+       * press on a disabled owner puts it on top with `SWP_NOACTIVATE`, and
+       * the pop-up it owns comes with it (`USER.EXE` seg1 `59a4`; `curerr`). */
+      if (move.family.length > 1 && !(flags & SWP_HIDEWINDOW) && shown.visible) {
+        reordered = window.desktop.bringFamilyUp(shown) || reordered;
+      }
     }
 
     if (flags & SWP_HIDEWINDOW && shown.visible) {
@@ -2367,7 +2417,10 @@ export async function positionChanged(
        * window of its list without `SWP_NOACTIVATE` (`USER.EXE` seg7
        * `0cda`-`0ce6`, `0260`-`026f`). It goes where it was asked among the
        * others, or stays where it lay with `SWP_NOZORDER` (`swpshow`). */
-      reordered = window.desktop.reorder(shown, move.insert) || reordered;
+      if (!plan) {
+        reordered = window.desktop.reorder(shown, move.insert) || reordered;
+      }
+
       window.desktop.showInPlace(shown);
     } else if (flags & SWP_SHOWWINDOW && !shown.visible) {
       /* Shown where it lies, with `SWP_NOZORDER` and `SWP_NOACTIVATE`, as
@@ -2384,7 +2437,7 @@ export async function positionChanged(
         /* Asked to be topmost, it is made so as it comes to the front
          * (`dlgfront`: a dialog shown with `HWND_TOPMOST` and
          * `SWP_SHOWWINDOW` in its `WM_INITDIALOG` lies first, topmost). */
-        if (move.insert.to === 'topmost' && !shown.topmost) {
+        if (!plan && move.insert.to === 'topmost' && !shown.topmost) {
           reordered = window.desktop.reorder(shown, move.insert) || reordered;
         }
 
@@ -2411,7 +2464,11 @@ export async function positionChanged(
      * it already lay after). */
     let inPlace = 0;
 
-    if (!(flags & SWP_NOZORDER) && inPlaceSoFar) {
+    window.desktop.zPlanned = false;
+
+    if (plan) {
+      inPlace = plan.entries.find((entry) => entry.member === shown)?.stays ? SWP_NOZORDER : 0;
+    } else if (!(flags & SWP_NOZORDER) && inPlaceSoFar) {
       inPlaceSoFar = lay;
       inPlace = lay ? SWP_NOZORDER : 0;
     }
@@ -2428,6 +2485,7 @@ export async function positionChanged(
 
     placed.push({
       move,
+      visible,
       moved,
       sized,
       showing: shown.visible !== visible || reordered || framed,
@@ -2493,14 +2551,20 @@ export async function positionChanged(
 
   /* Told only when something changed: a window deferred to where it
    * already was is sent `WM_WINDOWPOSCHANGING` and no more (`defer`). */
-  for (const { move, moved, sized, showing, client } of placed) {
+  for (const { move, visible, moved, sized, showing, client } of placed) {
     const own = move.window.window;
     const at = move.family.indexOf(own);
+    /* The family linked told, each with the window it went after (seg7
+     * `03f8`): one left where it lay is told nothing. */
+    const tell = (from: number, to?: number) =>
+      move.plan
+        ? tellLinked(system, move.plan.entries.slice(from, to))
+        : tellFamily(system, move.family.slice(from, to), aboveBefore);
 
-    await tellFamily(system, move.family.slice(0, at), aboveBefore);
+    await tell(0, at);
 
     if (!moved && !sized && !showing) {
-      await tellFamily(system, move.family.slice(at + 1), aboveBefore);
+      await tell(at + 1);
       continue;
     }
 
@@ -2514,16 +2578,26 @@ export async function positionChanged(
     const windowPos: any = new WINDOWPOS();
 
     windowPos.hwnd = hwnd;
-    windowPos.hwndInsertAfter = move.windowPos.hwndInsertAfter;
+    windowPos.hwndInsertAfter =
+      move.plan?.entries.find((entry) => entry.member === shown)?.after ??
+      move.windowPos.hwndInsertAfter;
     windowPos.x = parent ? shown.left - parent.left - parent.client.left : shown.left;
     windowPos.y = parent ? shown.top - parent.top - parent.client.top : shown.top;
     windowPos.cx = shown.width;
     windowPos.cy = shown.height;
+    /* Shown already, `SWP_SHOWWINDOW` taken off; hidden, `SWP_HIDEWINDOW`,
+     * and `SWP_NOREDRAW` added where it is not shown now (`USER.EXE` seg7
+     * `0de3`-`0e05`; `zcreate`: `SW_SHOWNA` of a window that shows told
+     * 1813h, a hidden window put at the bottom 181Bh). */
+    const shownFlags = visible
+      ? flags & ~SWP_SHOWWINDOW
+      : (flags & ~SWP_HIDEWINDOW) | (flags & SWP_SHOWWINDOW ? 0 : SWP_NOREDRAW);
+
     windowPos.flags =
-      (flags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE) | client) & 0xffff;
+      (shownFlags | (moved ? 0 : SWP_NOMOVE) | (sized ? 0 : SWP_NOSIZE) | client) & 0xffff;
 
     await system.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGED, 0, [windowPos]);
-    await tellFamily(system, move.family.slice(at + 1), aboveBefore);
+    await tell(at + 1);
   }
 
   system.rasterInput?.nudge();
@@ -2588,6 +2662,34 @@ async function tellFamily(system: any, members: any[], aboveBefore: Map<any, str
     place.cx = member.width;
     place.cy = member.height;
     place.flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOCLIENTSIZE | SWP_NOCLIENTMOVE;
+    await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
+  }
+}
+
+/** The family of a list linked told so, each with the window it went after (seg7 `03f8`). */
+async function tellLinked(system: any, entries: ZEntry[]) {
+  for (const { member, after, linked } of entries) {
+    if (!linked) {
+      continue;
+    }
+
+    const place: any = new WINDOWPOS();
+
+    place.hwnd = member.hwnd;
+    place.hwndInsertAfter = after;
+    place.x = member.left;
+    place.y = member.top;
+    place.cx = member.width;
+    place.cy = member.height;
+    /* A hidden one with `SWP_NOREDRAW` too (seg7 `0dfc`-`0e05`; `sysdlg`:
+     * 1Bh). */
+    place.flags =
+      SWP_NOSIZE |
+      SWP_NOMOVE |
+      SWP_NOACTIVATE |
+      SWP_NOCLIENTSIZE |
+      SWP_NOCLIENTMOVE |
+      (member.visible ? 0 : SWP_NOREDRAW);
     await sendTo(system, member, User.WM_WINDOWPOSCHANGED, 0, [place]);
   }
 }

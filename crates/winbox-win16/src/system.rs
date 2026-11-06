@@ -225,6 +225,9 @@ pub struct System {
     pub windows: Vec<Option<crate::windows::Window>>,
     /// The windows' order, front to back.
     pub z_order: Vec<usize>,
+    /// Set while `SetWindowPos` has placed a list as `z_order.rs` works it
+    /// out: a window shown or made active then stays where it was linked.
+    pub z_planned: bool,
     /// The next step of the cascade a default window is placed in.
     pub cascade_step: i32,
     /// The window with the keyboard's focus.
@@ -605,6 +608,7 @@ impl System {
             menus: Vec::new(),
             windows: Vec::new(),
             z_order: Vec::new(),
+            z_planned: false,
             cascade_step: 0,
             user_windows_made: false,
             menu_window: 0,

@@ -45,7 +45,7 @@ import { windowCreated } from './dc-entries.js';
  *                       the function is successful. Otherwise, it is NULL.
  */
 /** A modal frame, as a dialog with `DS_MODALFRAME` has. */
-const WS_EX_DLGMODALFRAME = 0x0001;
+export const WS_EX_DLGMODALFRAME = 0x0001;
 export const WS_EX_TOPMOST = 0x0008;
 
 /** A child that tells its parent nothing of its making or going, as a dialog's controls are made (`USER.EXE` seg24 `082d`). */
@@ -229,17 +229,9 @@ export async function CreateWindow(
     raster.placeMade(shown, shown.left, shown.top, shown.width, shown.height);
   }
 
-  /* Topmost, a window at the top is made in front of all, the topmost too,
-   * before it is told anything (`dlgfront`: a dialog with `DS_SYSMODAL`,
-   * made `WS_EX_TOPMOST`, lies first, hidden, in its `WM_INITDIALOG`). */
-  if (dwExStyle & WS_EX_TOPMOST && !shown.parent) {
-    shown.topmost = true;
-    raster.windows.splice(raster.windows.indexOf(shown), 1);
-    raster.windows.splice(raster.front(shown), 0, shown);
-  }
-
   /* A window at the top given a parent is owned, by the window at the top
-   * the parent is in (`owners`). */
+   * the parent is in (`owners`; `USER.EXE` seg8 `067b`-`0698`, seg2
+   * `0ab8`). */
   if (!child && parentWindow instanceof RasterWindow) {
     let top = parentWindow.window;
 
@@ -249,6 +241,22 @@ export async function CreateWindow(
 
     shown.owner = top;
   }
+
+  /* Topmost with `WS_EX_TOPMOST`, or owned by a topmost window (seg8
+   * `069a`-`06a6`); linked once `WM_NCCREATE` is answered (`07bb`), a
+   * topmost window first, any other after the last topmost window
+   * (`0757`-`07af`, seg7 `02c9`): `zcreate`, `dlgfront`. Not among its
+   * brothers before (`unlinked`). */
+  if (!shown.parent) {
+    if (dwExStyle & WS_EX_TOPMOST || shown.owner?.topmost) {
+      shown.topmost = true;
+      shown.exStyle = (shown.exStyle | WS_EX_TOPMOST) >>> 0;
+    }
+
+    raster.linkMade(shown);
+  }
+
+  (shown as any).unlinked = true;
 
   if (control) {
     systemClass(this, className);
@@ -449,6 +457,8 @@ export async function CreateWindow(
    * the next window made (`showsq2`). */
   const accepted = await send(User.WM_NCCREATE, 0, [createstruct]);
 
+  (shown as any).unlinked = false;
+
   if (((accepted ?? 0) & 0xffff) === 0) {
     await send(User.WM_NCDESTROY, 0, 0);
 
@@ -561,9 +571,17 @@ export async function CreateWindow(
    * place is shown as its `y` says -- `SW_HIDE`, nought, not at all
    * (`showseq`). */
   if (dwStyle & User.WS_VISIBLE) {
-    const command = !(dwStyle & (User.WS_CHILD | WS_POPUP)) && unset(x) ? y & 0xffff : User.SW_SHOW;
+    let command = !(dwStyle & (User.WS_CHILD | WS_POPUP)) && unset(x) ? y & 0xffff : User.SW_SHOW;
 
-    if (command !== User.SW_HIDE) {
+    /* As `ShowWindow` takes it (seg14 `0c0e`-`0c2f`): a word with a high
+     * byte, from -128 to -1 `SW_SHOWMINNOACTIVE`, else `SW_SHOW`; past
+     * `SW_SHOWNA` and below 100h, nothing (`zcreate`: 12 leaves it
+     * hidden). */
+    if (command & 0xff00) {
+      command = command >= 0xff80 ? User.SW_SHOWMINNOACTIVE : User.SW_SHOW;
+    }
+
+    if (command !== User.SW_HIDE && command <= User.SW_SHOWNA) {
       await showRaster(this, hWnd, dialog, command, true, true);
     }
   }

@@ -164,6 +164,9 @@ pub struct Window {
     /// its icon's title, which USER makes once (`window_state.rs`,
     /// `title_made`).
     pub title_asked: bool,
+    /// Not yet among its brothers: made, and in its `WM_GETMINMAXINFO` and
+    /// `WM_NCCREATE` (`USER.EXE` seg8 `07bb`; `zcreate`).
+    pub unlinked: bool,
     /// Minimized while it was maximized: restored, it is maximized again
     /// (`MinMaximize`).
     pub maximized_before: bool,

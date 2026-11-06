@@ -141,7 +141,10 @@ impl System {
             .copied()
             .filter(|&other| {
                 self.windows[other].as_ref().is_some_and(|other| {
-                    other.parent == parent && other.hwnd != 0 && other.title_of.is_none()
+                    other.parent == parent
+                        && other.hwnd != 0
+                        && other.title_of.is_none()
+                        && !other.unlinked
                 })
             })
             .collect()
@@ -332,6 +335,9 @@ fn related(system: &System, hwnd: u16, relation: u16) -> u16 {
             .window(index)
             .owner
             .map_or(0, |owner| system.window(owner).hwnd),
+        // Not yet among its brothers, the window after it is none: its link
+        // is nought (`USER.EXE` seg8 `07bb`; `zcreate`).
+        GW_HWNDNEXT if system.window(index).unlinked => 0,
         GW_HWNDFIRST | GW_HWNDLAST | GW_HWNDNEXT | GW_HWNDPREV => {
             let list = system.siblings(index);
             let at = list.iter().position(|&other| other == index);

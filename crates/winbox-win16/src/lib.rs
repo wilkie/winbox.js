@@ -154,6 +154,7 @@ pub mod window_vis;
 pub mod windows;
 pub mod wing;
 pub mod wnet;
+mod z_order;
 
 pub use call::{Answer, Call, Stop};
 pub use engine::{Engine, EngineRun, Pace, Register, Step};

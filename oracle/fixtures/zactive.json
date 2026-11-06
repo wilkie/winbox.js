@@ -1,0 +1,384 @@
+{
+  "probe": "zactive",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "destroy, start",
+      "result": "#32771*-!,P,A,B;active=P;focus=P;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,P:46@#32771/43,A:46@P/13,B:86/0,B:6/0,P:86/1,P:6/1,B:8,P:7,P:47@#32771/1847,A:47@P/1813,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, p destroyed",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, p destroyed",
+      "result": "P:46@T/97,P:47@T/1897,P:86/0,P:6/0,A:86/1,A:6/1,P:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, o",
+      "result": "#32771*-!,O,A,B;active=O;focus=O;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, o",
+      "result": "O:46@#32771/43,A:46@O/13,A:86/0,A:6/0,O:86/1,O:6/1,A:8,O:7,O:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, b active",
+      "result": "#32771*-!,B,O,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, b active",
+      "result": "O:86/0,O:6/0,B:46@#32771/3,B:47@#32771/1803,B:86/1,B:6/1,O:8,B:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, o active",
+      "result": "#32771*-!,O,A,B;active=O;focus=O;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, o active",
+      "result": "B:86/0,B:6/0,O:46@#32771/3,A:46@O/13,O:47@#32771/1803,A:47@O/1813,O:86/1,O:6/1,B:8,O:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, o destroyed",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, o destroyed",
+      "result": "O:46@T/97,O:47@T/1897,O:86/0,O:6/0,B:46@#32771/3,B:47@#32771/1803,B:86/1,B:6/1,O:8,B:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, a active",
+      "result": "#32771*-!,A,C,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, a active",
+      "result": "C:46@#32771/43,B:86/0,B:6/0,C:86/1,C:6/1,B:8,C:7,C:47@#32771/1847,C:86/0,C:6/0,A:46@#32771/3,A:47@#32771/1803,A:86/1,A:6/1,C:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, c active",
+      "result": "#32771*-!,C,A,B;active=C;focus=C;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, c active",
+      "result": "A:86/0,A:6/0,C:46@#32771/3,C:47@#32771/1803,C:86/1,C:6/1,A:8,C:7,"
+    },
+    {
+      "function": "order",
+      "args": "destroy, c destroyed",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "destroy, c destroyed",
+      "result": "C:46@T/97,C:47@T/1897,C:86/0,C:6/0,A:86/1,A:6/1,C:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "disabled, start",
+      "result": "#32771*-!,P,A,B;active=P;focus=P;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "disabled, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,P:46@#32771/43,A:46@P/13,B:86/0,B:6/0,P:86/1,P:6/1,B:8,P:7,P:47@#32771/1847,A:47@P/1813,"
+    },
+    {
+      "function": "order",
+      "args": "disabled, a disabled",
+      "result": "#32771*-!,P,A!,B;active=P;focus=P;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "disabled, a disabled",
+      "result": "A:1f,A:a/0,"
+    },
+    {
+      "function": "order",
+      "args": "disabled, p destroyed",
+      "result": "#32771*-!,B,A!;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "disabled, p destroyed",
+      "result": "P:46@T/97,P:47@T/1897,P:86/0,P:6/0,B:46@#32771/3,B:47@#32771/1803,B:86/1,B:6/1,P:8,B:7,"
+    },
+    {
+      "function": "order",
+      "args": "disabled, a enabled",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "disabled, a enabled",
+      "result": "A:a/1,"
+    },
+    {
+      "function": "order",
+      "args": "enable, start",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "enable, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "enable, b disabled",
+      "result": "#32771*-!,B!,A;active=B;focus=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "enable, b disabled",
+      "result": "B:1f,B:8,B:a/0,"
+    },
+    {
+      "function": "order",
+      "args": "enable, a active",
+      "result": "#32771*-!,A,B!;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "enable, a active",
+      "result": "B:86/0,B:6/0,A:46@#32771/3,A:47@#32771/1803,A:86/1,A:6/1,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "enable, b enabled",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "enable, b enabled",
+      "result": "B:a/1,"
+    },
+    {
+      "function": "order",
+      "args": "hide, start",
+      "result": "#32771*-!,C,P,A,B;active=C;focus=C;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "hide, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,P:46@#32771/43,A:46@P/13,B:86/0,B:6/0,P:86/1,P:6/1,B:8,P:7,P:47@#32771/1847,A:47@P/1813,C:46@#32771/43,P:86/0,P:6/0,C:86/1,C:6/1,P:8,C:7,C:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "hide, c hidden",
+      "result": "#32771*-!,C-,P,A,B;active=P;focus=P;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "hide, c hidden",
+      "result": "C:46@#32771/83,C:47@#32771/1887,C:86/0,C:6/0,P:86/1,P:6/1,C:8,P:7,"
+    },
+    {
+      "function": "order",
+      "args": "hide, p active",
+      "result": "#32771*-!,C-,P,A,B;active=P;focus=P;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "hide, p active",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "hide, p hidden",
+      "result": "#32771*-!,P-,A,C-,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "hide, p hidden",
+      "result": "P:46@#32771/83,A:46@P/13,P:47@#32771/1883,A:47@P/1813,P:86/0,P:6/0,A:86/1,A:6/1,P:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "dialog, start",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "dialog, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,B:86/0,B:6/0,A:46@#32771/3,A:47@#32771/1803,A:86/1,A:6/1,B:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "dialog, init",
+      "result": "#32771*-!,D-,A!,B;active=A;focus=0;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "dialog, init",
+      "result": "A:1f,A:8,A:a/0,"
+    },
+    {
+      "function": "order",
+      "args": "dialog, up",
+      "result": "#32771*-!,D,A!,B;active=D;focus=D;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "dialog, up",
+      "result": "A:86/0,A:6/0,D:46@#32771/3,A:46@D/13,D:86/1,D:6/1,D:7,D:46@T/57,D:47@T/1857,"
+    },
+    {
+      "function": "order",
+      "args": "dialog, ended",
+      "result": "#32771*-!,D-,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "dialog, ended",
+      "result": "A:a/1,D:46@T/97,D:47@T/1897,D:86/0,D:6/0,A:86/1,A:6/1,D:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "dialog, after",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "dialog, after",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "taskmodal, start",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "taskmodal, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "taskmodal, up",
+      "result": "#32771*-!,#32770,B!,A!;active=#32770;focus=Button;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "taskmodal, up",
+      "result": "B:1f,B:8,B:a/0,A:1f,A:a/0,B:86/0,B:6/0,"
+    },
+    {
+      "function": "order",
+      "args": "taskmodal, after",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "taskmodal, after",
+      "result": "B:a/1,A:a/1,B:86/1,B:6/1,B:7,"
+    },
+    {
+      "function": "answer",
+      "args": "taskmodal",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "sysmodal, start",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "sysmodal, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "sysmodal, up",
+      "result": "#32770*,#32771*-!,A!,B;active=#32770;focus=Button;sysmodal=#32770"
+    },
+    {
+      "function": "sent",
+      "args": "sysmodal, up",
+      "result": "A:1f,A:a/0,B:86/0,B:6/0,A:46@#32770/13,A:47@#32771/1813,B:8,A:46@#32770/13,"
+    },
+    {
+      "function": "order",
+      "args": "sysmodal, after",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "sysmodal, after",
+      "result": "A:a/1,A:86/1,A:6/1,A:7,"
+    },
+    {
+      "function": "answer",
+      "args": "sysmodal",
+      "result": "1"
+    },
+    {
+      "function": "order",
+      "args": "setsys, start",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "setsys, start",
+      "result": "A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,B:46@#32771/43,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "setsys, a sysmodal",
+      "result": "#32771*-!,B,A;active=B;focus=B;sysmodal=A"
+    },
+    {
+      "function": "sent",
+      "args": "setsys, a sysmodal",
+      "result": "none"
+    },
+    {
+      "function": "order",
+      "args": "setsys, a active",
+      "result": "#32771*-!,A,B;active=A;focus=A;sysmodal=A"
+    },
+    {
+      "function": "sent",
+      "args": "setsys, a active",
+      "result": "B:86/0,B:6/0,A:46@#32771/3,A:47@#32771/1803,A:86/1,A:6/1,B:8,A:7,"
+    },
+    {
+      "function": "order",
+      "args": "setsys, a destroyed",
+      "result": "#32771*-!,B;active=B;focus=B;sysmodal=0"
+    },
+    {
+      "function": "sent",
+      "args": "setsys, a destroyed",
+      "result": "A:46@T/97,A:47@T/1897,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,"
+    }
+  ]
+}

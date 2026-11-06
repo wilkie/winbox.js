@@ -42,6 +42,7 @@ import {
 import { windowDestroyed, windowsChanged } from './dc-entries.js';
 import { anyKept, harvestAll } from './lock-window-update.js';
 import { discardSaved, discardWithin, hasSaved, restoreUnder, saveUnder } from './save-bits.js';
+import { lastTopmost } from './z-order.js';
 
 /**
  * The screen as USER keeps it: one bitmap of the display's pixels, and the
@@ -1257,6 +1258,11 @@ export class Desktop {
       }
     }
 
+    /* Placed already where `SetWindowPos` linked it (`z-order.ts`). */
+    if (this.zPlanned) {
+      return family;
+    }
+
     for (const member of family) {
       this.windows.splice(this.windows.indexOf(member), 1);
     }
@@ -1492,6 +1498,11 @@ export class Desktop {
   }
 
   /** The window a window at the top destroyed makes active (seg8 `0b95`-`0bb7`). */
+  /** The window a window at the top hidden while active makes active (seg14 `0dbc`, seg1 `38e4` with 3). */
+  nextActiveAfterHide(window: DesktopWindow) {
+    return this.#nextActive(window, false);
+  }
+
   nextActiveOf(window: DesktopWindow) {
     return this.#nextActive(window, true);
   }
@@ -1927,6 +1938,44 @@ export class Desktop {
 
     return [after, { to: 'stay' }];
   }
+
+  /**
+   * A window at the top, its children with it, linked after the window
+   * named among the windows at the top: `HWND_TOP` (0) first, `HWND_BOTTOM`
+   * (1) last (`USER.EXE` seg2 `0972`, `093f`; `z-order.ts`).
+   */
+  linkAfter(window: DesktopWindow, after: number) {
+    const family = this.#takeOut(window);
+    const other =
+      after > 1 ? this.windows.find((one) => !one.parent && one.hwnd === after) : undefined;
+    const at = after === 1 ? this.windows.length : other ? this.windows.indexOf(other) + 1 : 0;
+
+    this.windows.splice(at, 0, ...family);
+  }
+
+  /**
+   * A window at the top made linked among the others as `CreateWindow`
+   * links it: a topmost window first, any other after the last topmost
+   * window (`USER.EXE` seg8 `0757`-`07af`; `lastTopmost`).
+   */
+  linkMade(window: DesktopWindow) {
+    this.windows.splice(this.windows.indexOf(window), 1);
+
+    const last = window.topmost ? null : lastTopmost(this);
+
+    this.windows.splice(last ? this.windows.indexOf(last) + 1 : 0, 0, window);
+  }
+
+  /** A window made topmost if it was not, or not if it was, as it is linked (seg7 `0b67`-`0b71`). */
+  flipTopmost(window: DesktopWindow) {
+    this.#setTopmost(window, !window.topmost);
+  }
+
+  /**
+   * Set while `SetWindowPos` has placed a list as `z-order.ts` works it
+   * out: a window shown or made active then stays where it was linked.
+   */
+  zPlanned = false;
 
   /** A window made topmost or not, its extended style with it, as `GetWindowLong` reads it (`swporder`). */
   #setTopmost(window: DesktopWindow, topmost: boolean) {

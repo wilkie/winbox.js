@@ -221,39 +221,6 @@ impl System {
         Ok(client)
     }
 
-    /// Where a window at the top goes in the order: at the front of its
-    /// kind, the topmost first.
-    fn front(&self, topmost: bool) -> usize {
-        if topmost {
-            return 0;
-        }
-
-        // After the last topmost window and its children, whatever lies
-        // among them, as `front_of` (`sysdlg`).
-        let top_of = |mut other: usize| {
-            while let Some(parent) = self.windows[other]
-                .as_ref()
-                .and_then(|window| window.parent)
-            {
-                other = parent;
-            }
-
-            other
-        };
-        let mut at = 0;
-
-        for (place, &other) in self.z_order.iter().enumerate() {
-            if self.windows[top_of(other)]
-                .as_ref()
-                .is_some_and(|window| window.topmost)
-            {
-                at = place + 1;
-            }
-        }
-
-        at
-    }
-
     /// The `MINMAXINFO` a window is asked with: its reserved point, the
     /// size and place it is maximized to, and its tracking sizes.
     pub(crate) fn min_max_info(&self, style: u32) -> Vec<u8> {
@@ -502,18 +469,16 @@ impl Engine {
                 control_id: if child { made.menu } else { 0 },
                 parent_given: made.parent,
                 modal_frame: made.ex_style & WS_EX_DLGMODALFRAME != 0,
-                // Topmost, a window at the top is made in front of all, the
-                // topmost too, before it is told anything (`dlgfront`: a
-                // dialog with `DS_SYSMODAL`, made `WS_EX_TOPMOST`, lies
-                // first, hidden, in its `WM_INITDIALOG`).
                 topmost: !child && made.ex_style & WS_EX_TOPMOST != 0,
+                unlinked: true,
                 ..Window::default()
             };
 
             shown.client = system.client_of(&shown)?;
 
             // A window at the top given a parent is owned, by the window at
-            // the top the parent is in (`owners`).
+            // the top the parent is in (`owners`; `USER.EXE` seg8
+            // `067b`-`0698`, seg2 `0ab8`).
             if !child && let Some(mut top) = parent {
                 while let Some(above) = window(&system, top).parent {
                     top = above;
@@ -522,19 +487,39 @@ impl Engine {
                 shown.owner = Some(top);
             }
 
+            // Topmost with `WS_EX_TOPMOST`, or owned by a topmost window
+            // (seg8 `069a`-`06a6`): `zcreate`, `dlgfront`.
+            if !child
+                && shown
+                    .owner
+                    .is_some_and(|owner| window(&system, owner).topmost)
+            {
+                shown.topmost = true;
+                shown.ex_style |= WS_EX_TOPMOST;
+            }
+
             let index = system.windows.len();
 
             system.windows.push(Some(shown));
 
             // Above its parent, below its older siblings; a window at the
-            // top at the front of its kind.
+            // top linked as `CreateWindow` links it, a topmost window first,
+            // any other after the last topmost window (seg8 `0757`-`07af`,
+            // seg7 `02c9`).
             let at = match parent.filter(|_| child) {
                 Some(parent) => system
                     .z_order
                     .iter()
                     .position(|&other| other == parent)
                     .unwrap_or(0),
-                None => system.front(window(&system, index).topmost),
+                None if window(&system, index).topmost => 0,
+                None => system.z_last_topmost().map_or(0, |last| {
+                    system
+                        .z_order
+                        .iter()
+                        .position(|&other| other == last)
+                        .map_or(0, |at| at + 1)
+                }),
             };
 
             system.z_order.insert(at, index);
@@ -788,6 +773,10 @@ impl Engine {
         let mut create = Param::Struct(create_struct);
         let accepted = self.send_message(hwnd, WM_NCCREATE, 0, &mut create).await?;
 
+        if let Some(made) = self.system().windows[index].as_mut() {
+            made.unlinked = false;
+        }
+
         // Answered nought, the window is not made: sent `WM_NCDESTROY` and
         // nothing more; its handle free for the next (`showsq2`).
         if accepted as u16 == 0 {
@@ -943,13 +932,22 @@ impl Engine {
         // for its place is shown as its `y` says -- `SW_HIDE`, nought, not
         // at all (`showseq`).
         if made.style & WS_VISIBLE != 0 {
-            let command = if made.style & (WS_CHILD | WS_POPUP) == 0 && unset(i32::from(made.x)) {
+            let mut command = if made.style & (WS_CHILD | WS_POPUP) == 0 && unset(i32::from(made.x))
+            {
                 made.y as u16
             } else {
                 SW_SHOW
             };
 
-            if command != crate::window_state::SW_HIDE {
+            // As `ShowWindow` takes it (seg14 `0c0e`-`0c2f`): a word with a
+            // high byte, from -128 to -1 `SW_SHOWMINNOACTIVE`, else
+            // `SW_SHOW`; past `SW_SHOWNA` and below 100h, nothing
+            // (`zcreate`: 12 leaves it hidden).
+            if command & 0xff00 != 0 {
+                command = if command >= 0xff80 { 7 } else { SW_SHOW };
+            }
+
+            if command != crate::window_state::SW_HIDE && command <= 8 {
                 self.show_raster(hwnd, index, command, true, true).await?;
             }
         }
