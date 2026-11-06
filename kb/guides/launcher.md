@@ -35,12 +35,12 @@ Today the page runs a single machine, and choosing a kept program rebuilds it on
 
 Two items from two installs are two stacks, so two different C: drives. Windows 3.1 has one file system, which every task shares. It also has one module table, so a second program that loads `WAVEMIX.DLL` is given the copy the first loaded. And it has one `WIN.INI` and one `SYSTEM.INI`. So there are two ways to run both at once.
 
-### A. A machine for each stack (recommended)
+### A. A machine for each stack (the owner's choice)
 
 Each running stack gets a machine of its own: its own Windows, its own C:, its own screen. A second item from the same install runs on the machine already running that stack, so its programs share a Windows and can talk to one another (DDE, the clipboard, OLE), as they would under Windows.
 
 - **Fidelity.** Each machine is a whole, consistent Windows, exactly as the probes and the corpus run it, so nothing new is invented inside the engine.
-- **On the page.** Each machine is an engine instance of its own: a wasm instance, or the TypeScript engine, with a canvas of its own. Each machine's screen is a panel the person can switch between or put side by side. Later it may become a floating window, one for each top-level window of a machine's, which is [[guide:seamless-windows]] brought to the page.
+- **On the page.** Each machine is an engine instance of its own: a wasm instance, or the TypeScript engine, with a canvas of its own. Each machine's screen is a tab of its own, and the person switches between them. Later it may become a floating window, one for each top-level window of a machine's, which is [[guide:seamless-windows]] brought to the page.
 - **Natively.** Each machine is a process of its own (`winbox-native --program … --seamless`), started by the launcher. Seamless mode already shows each top-level window as a host window, so programs from different machines mix on the host's desktop as host programs do.
 - **What it gives up.** Programs on different machines cannot talk to each other through Windows. The host's clipboard can be bridged later, in each machine, as host programs share it: CF_TEXT and CF_BITMAP at first. That bridge is WinBox's own and sits outside Windows' behaviour, and would be documented as such.
 - **Cost.** Each machine's memory: a few tens of megabytes for each wasm instance. And each machine's CPU: on the page, every machine shares the page's one thread until machines move into Web Workers, which the engines' interfaces allow but nothing does yet.
@@ -85,7 +85,7 @@ These are the page's own requirements:
 The native front end has the same model, with these differences:
 
 - **Library.** The kept programs live in a folder, a library: each stack's layers materialised as folders (`--layer-from`, as P6 made them), its user layer, its images' paths, and a record of each kept program, laid out as the page's `KeptProgram` is. The library's place follows each host's convention: `%APPDATA%\WinBox` on Windows, `$XDG_DATA_HOME/winbox` on Linux, `~/Library/Application Support/WinBox` on macOS.
-- **Launcher.** The launcher is a small window of the native front end's own, with the menu, and `winbox-native --launcher` opens it. Later its groups may also be written into the host's own start menu, as Windows shortcuts or Linux `.desktop` files. Each entry would run `winbox-native --launch <program> <item>`. That is an option to decide, not a requirement.
+- **Launcher.** The launcher is a small window of the native front end's own, with the menu, and `winbox-native --launcher` opens it. Its groups stay in that window; they are not written into the host's start menu (the owner's decision). `winbox-native --launch <program> <item>` runs an item without the window.
 - **Running an item.** Each item runs as its own process (design A). The launcher only starts processes and reads the library, so it holds no machine of its own.
 - **Installing.** The launcher runs `--install`, as now, and adds the install to the library as `--keep` does.
 
@@ -94,18 +94,20 @@ The native front end has the same model, with these differences:
 1. **A stack's groups in one place.** The groups of every kept program and their items, as one list each front end reads (TypeScript: from the page's store; Rust: from the library). Unit tests on caribb's and SimTower's group files, as the corpus keeps them.
 2. **An item run as Program Manager runs it.** Read it out of `PROGMAN.EXE`: the command line split into program and arguments, the working directory, the show state, the minimized flag, and what it does when the program is not found. Record it with a probe that runs items of a group made for it, in both engines.
 3. **The page's launcher menu.** It runs a single machine, as now: choosing an item rebuilds on its stack and runs it.
-4. **Several machines on the page** (design A): an engine instance and a screen panel for each machine, Close and keep on each, and the trace panel following the machine in focus.
+4. **Several machines on the page** (design A): an engine instance and a tab for each machine, Close and keep on each, and the trace panel following the machine in focus.
 5. **The native library and launcher window,** with `--launcher` and `--launch`.
 6. **Host folders as drives,** natively first (DOSBox's `localDrive`, measured), then the page's directory handle.
-7. **Later:** the shared clipboard between machines, entries in the host's start menu, machines in Web Workers, and floating windows on the page.
+7. **Later:** the shared clipboard between machines, machines in Web Workers, and floating windows on the page.
 
-## Decisions for the owner
+## The owner's decisions
 
-- **A or B.** Is design A, a machine for each stack, the model? A second item from the same install would join that install's running machine.
-- **The page's machines.** Should several machines on the page show as panels the person switches between (tabs), side by side, or both?
-- **The host's start menu.** Should the native launcher write its groups into the host's start menu, or keep them only in its own window?
-- **Shared folders.** Should a shared folder be read-only by default on both front ends?
-- **The installs' PROGMAN.INI.** The question from 2026-10-23 is still open: should each layer keep its own PROGMAN.INI, or should there be one base copy? The launcher reads each layer's PROGMAN.INI either way.
+Decided on 2026-11-06:
+
+- **A machine for each install.** Design A is the model: each install runs on an emulated Windows of its own, and a second item from the same install joins the machine already running it.
+- **Tabs on the page.** Machines running at once are tabs, and the person switches between them.
+- **The native launcher keeps its groups to itself.** They are shown in the launcher's own window and never written into the host's start menu.
+- **Shared folders are read-only by default,** on both front ends. Writing is granted by the person for each folder.
+- **Each install keeps its own `PROGMAN.INI`** in its layers. There is no base copy shared between installs.
 
 ## Not yet done
 
