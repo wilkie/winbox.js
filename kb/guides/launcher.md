@@ -89,6 +89,15 @@ The native front end has the same model, with these differences:
 - **Running an item.** Each item runs as its own process (design A). The launcher only starts processes and reads the library, so it holds no machine of its own.
 - **Installing.** The launcher runs `--install`, as now, and adds the install to the library as `--keep` does.
 
+## Write and Help of WinBox's own
+
+The asset bundle has no `WRITE.EXE` or `WINHELP.EXE`, so an install's "Read Me" (a `.WRI`) and "Help" (a `.HLP`) items cannot run, and neither can a program's own Help menu, which calls [[fn:USER.WinHelp]]. WinBox could have programs of its own for both, under its own names, as its other stand-ins are. Each is a project of its own, after the launcher:
+
+- **Help.** A program calls [[fn:USER.WinHelp]], and USER passes the request to the Windows Help window, starting `WINHELP.EXE` if it is not running. WinBox's Help would answer as that window does, which is to be read out of `USER.EXE` and `WINHELP.EXE` and recorded first. It would show the `.HLP` file: its topics, its contents, its links and pop-ups, and searching by keyword. The `.HLP` format would be a new page under kb/formats/, read out of `WINHELP.EXE` and checked against real help files.
+- **Write.** It would at least open a `.WRI` file and show it as Write lays it out, with its fonts, its paragraphs and its pictures. The `.WRI` format would also be a new kb/formats/ page.
+- **How each is built.** Each could be a Win16 program written in C with the probe toolchain. It would then run unchanged on both engines, with no twin to keep, and be held to the oracle like any program. Or it could be an engine task, as the PROGMAN stand-in is, written once in each engine. The first is the lighter of the two to keep.
+- **The launcher.** Once they exist, items that need them are no longer disabled. Until then, the launcher's reason says what is missing.
+
 ## The order of the work
 
 1. **A stack's groups in one place.** The groups of every kept program and their items, as one list each front end reads (TypeScript: from the page's store; Rust: from the library). Unit tests on caribb's and SimTower's group files, as the corpus keeps them.
@@ -97,7 +106,7 @@ The native front end has the same model, with these differences:
 4. **Several machines on the page** (design A): an engine instance and a tab for each machine, Close and keep on each, and the trace panel following the machine in focus.
 5. **The native library and launcher window,** with `--launcher` and `--launch`.
 6. **Host folders as drives,** natively first (DOSBox's `localDrive`, measured), then the page's directory handle.
-7. **Later:** the shared clipboard between machines, machines in Web Workers, and floating windows on the page.
+7. **Later:** WinBox's own Write and Help, the shared clipboard between machines, machines in Web Workers, and floating windows on the page.
 
 ## The owner's decisions
 
