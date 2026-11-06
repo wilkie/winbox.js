@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { STAMP } from '../../src/assets/compose.js';
 import { installedLayer } from '../../src/layers/install.js';
 import { programGroups } from '../../src/layers/groups.js';
+import { launchGroups } from '../../src/layers/launch.js';
 import { baseName, flattenStack } from '../../src/layers/layer.js';
 import { DevicePalette } from '../../src/raster/device-palette.js';
 import { decodeIcon, iconEntries, pickIcon } from '../../src/raster/icon.js';
@@ -156,5 +157,40 @@ const STEPS = [
     ]);
     expect([...drawn.and]).toEqual([...own.and]);
     expect([...drawn.xor]).toEqual([...own.xor]);
+
+    /* And as the launcher lists it (`launch.ts`), as the Rust engine's
+     * `install_caribb.rs` has it too: the item run as File Open runs it,
+     * the game found in its own directory. */
+    const owned = new Set(installed.layer.manifest.entries.map((entry) => entry.path));
+    const folders = new Set(
+      [...files.keys()].flatMap((path) => {
+        const parts = path.split('\\');
+
+        return parts.slice(1).map((_, at) => parts.slice(0, at + 1).join('\\'));
+      })
+    );
+    const launched = launchGroups([
+      {
+        name: 'Caribbean Treasure',
+        read: (path) => files.get(path),
+        kind: (path) => (files.has(path) ? 'file' : folders.has(path) ? 'folder' : null),
+        own: (path) => owned.has(path),
+        exes: [],
+      },
+    ]);
+
+    expect(
+      launched.map((one) => [
+        one.name,
+        one.winbox,
+        one.items.map((each) => [each.name, each.run.program, each.run.directory, each.run.show]),
+      ])
+    ).toEqual([
+      [
+        'Games',
+        false,
+        [['Caribbean Treasure', 'C:\\WINDOWS\\GAMES\\CARRIB.EXE', 'C:\\WINDOWS\\GAMES', 1]],
+      ],
+    ]);
   }, 900_000);
 });

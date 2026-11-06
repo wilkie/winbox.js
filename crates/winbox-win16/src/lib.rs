@@ -73,6 +73,7 @@ pub mod key_input;
 pub mod keyboard;
 pub mod keyboard_tables;
 pub mod language_driver;
+pub mod launch;
 pub mod layers;
 pub mod linker;
 pub mod listbox;

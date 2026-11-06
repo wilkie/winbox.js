@@ -18,6 +18,7 @@ use std::path::PathBuf;
 use winbox_machine::MemoryDrive;
 use winbox_win16::assets::STAMP;
 use winbox_win16::groups::{program_files, program_groups};
+use winbox_win16::launch::{FlatFiles, KeptStack, launch_groups};
 use winbox_win16::layers::{Layer, Made, base_name, flatten, install_into_layer};
 use winbox_win16::survey::Survey;
 
@@ -194,5 +195,50 @@ fn assert_group(layer: &Layer) {
             "c:\\windows\\games\\carrib.exe".to_string(),
             "c:\\windows\\games".to_string()
         ]]
+    );
+
+    // And as the launcher lists it (`launch.rs`), as `caribb_test.ts` has
+    // it too: the item run as File Open runs it, the game found in its own
+    // directory.
+    let own = layer
+        .manifest
+        .entries
+        .iter()
+        .map(|entry| entry.path().to_string());
+    let files = FlatFiles::new(&flat, own);
+    let launched = launch_groups(&[KeptStack {
+        name: b"Caribbean Treasure".to_vec(),
+        files: &files,
+        exes: Vec::new(),
+        path: Vec::new(),
+    }]);
+
+    assert_eq!(
+        launched
+            .iter()
+            .map(|one| (
+                text(&one.name),
+                one.winbox,
+                one.items
+                    .iter()
+                    .map(|item| (
+                        text(&item.name),
+                        item.run.program.as_deref().map(text),
+                        text(&item.run.directory),
+                        item.run.show
+                    ))
+                    .collect::<Vec<_>>()
+            ))
+            .collect::<Vec<_>>(),
+        [(
+            "Games".to_string(),
+            false,
+            vec![(
+                "Caribbean Treasure".to_string(),
+                Some("C:\\WINDOWS\\GAMES\\CARRIB.EXE".to_string()),
+                "C:\\WINDOWS\\GAMES".to_string(),
+                1
+            )]
+        )]
     );
 }

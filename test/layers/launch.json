@@ -1,0 +1,411 @@
+{
+ "about": "The launcher's list as both engines make it (src/layers/launch.ts, crates/winbox-win16/src/launch.rs; test/layers/launch_test.ts, crates/winbox-win16/tests/launch.rs). Synthetic stacks: files in hexadecimal, a group made by Program Manager's own operations. Written by the TypeScript test with LAUNCH_UPDATE=1.",
+ "stacks": [
+  {
+   "name": "Games",
+   "files": {
+    "WINDOWS\\WIN.INI": "5b77696e646f77735d0d0a50726f6772616d733d636f6d2065786520626174207069660d0a0d0a5b457874656e73696f6e735d0d0a7772693d77726974652e657865205e2e7772690d0a7478743d6e6f74657061642e657865205e2e7478740d0a686c703d77696e68656c702e657865205e2e686c700d0a",
+    "WINDOWS\\NOTEPAD.EXE": "4d5a",
+    "WINDOWS\\SOL.EXE": "4d5a",
+    "WINDOWS\\SYSTEM\\USER.EXE": "4d5a",
+    "WINDOWS\\PROGMAN.INI": "5b53657474696e67735d0d0a4f726465723d203220310d0a5b47726f7570735d0d0a47726f7570313d433a5c57494e444f57535c4d41494e2e4752500d0a47726f7570323d433a5c57494e444f57535c47414d45532e4752500d0a47726f7570333d433a5c57494e444f57535c42524f4b454e2e4752500d0a",
+    "WINDOWS\\GAMES.GRP": "504d434313d3d80500000000000000000000000000003c0008000800010100000d004200b5002901a50115028302e1024d03c0033404a10417057c0547616d6573001500000000000c001000100089009500a5005a005f00770047616d6500433a5c47414d45535c47414d452e455845202f6661737400433a5c47414d45535c47414d452e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006000000000000c0010001000fd0009011901cd00d500e90052656164204d6500433a5c47414d45535c524541444d452e57524900433a5c47414d45535c524541444d452e57524900000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000ab00000000000c0010001000790185019501410146016d0148656c7000433a5c47414d45535c57494e48454c502e45584520433a5c47414d45535c47414d452e484c500057494e48454c502e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000f600000000000c0010001000e901f5010502bd01c301d6014e6f74657300433a5c47414d45535c4e4f5445532e54585400433a5c47414d45535c4e4f5445532e54585400000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000004101000000000c00100010005702630273022d0233024502536d616c6c00633a5c67616d65735c47414d452e45584500433a5c47414d45535c47414d452e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000008c01000000000c0010001000b502c102d1029b02a502ad02536f6c69746169726500534f4c2e45584500534f4c2e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000d701000000000c001000100021032d033d03f902fd020f034f646400433a5c47414d45535c444154412e5a515800433a5c47414d45535c444154412e5a515800000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000002202000000000c00100010009403a003b00365036c0380034d616e75616c00433a5c47414d45535c4d414e55414c2e444f4300433a5c47414d45535c4d414e55414c2e444f4300000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000006d02000000000c0010001000080414042404d803e203f603456c7365776865726500433a5c4e4f57484552455c47414d452e45584500433a5c47414d45535c47414d452e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e000000b802000000000c00100010007504810491044c0451046304476f6e6500433a5c47414d45535c474f4e452e45584500433a5c47414d45535c474f4e452e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000303000000000c0010001000eb04f7040705b904c104d6044e6f207061746800433a5c4e4f464f4c4445525c47414d452e45584500433a5c4e4f464f4c4445525c47414d452e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000004e03000000000c001000100050055c056c052f0536054305466c6f70707900413a5c53455455502e45584500413a5c53455455502e45584500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000009903000000000c0010001000ac05b805c80594059905a7054261726500433a5c47414d45535c47414d450047414d4500000000000800080002000101ff00ff00c300c300c300c300ff00ff0000007e0042005a005a0042007e0000000080ffff0a00504d4343018100001000433a5c47414d45535c00018101001000433a5c47414d45535c00018103001000433a5c47414d45535c000281040008004703038104000600018104001000433a5c47414d45535c00018106001000433a5c47414d45535c00018107001000433a5c47414d45535c00018108001000433a5c47414d45535c00018109001000433a5c47414d45535c0001810a001300433a5c4e4f464f4c4445525c0001810b000a00413a5c00ffffffff0000",
+    "WINDOWS\\BROKEN.GRP": "504d4343206e6f7420612067726f7570",
+    "WINDOWS\\REG.DAT": "53484343332e3130200000002000000036000000d00100004f0000002500340000002700000000000100000000000000280000000000000003000000000000000400000000000000050000000000000006000000000000002d00000000000000080000000000000009000000000000000a000000000000002f000000000000000c000000000000000d000000000000000e000000000000000f000000000000002c00000000000000110000000000000026000000000000001300000000000000140000000000000015000000000000002a000000000000001700000000000000180000000000000019000000000000001a000000000000001b000000000000001c000000000000001d000000000000001e000000000000003100000000000000200000000000000021000000000000002200000000000000230000000000000024000000000000002500000000000000120001000800020000002b00260000000200010004000c000000000028002a00160002000700120029002e002a002c001000010008001b000700010005002500000030002d0000003300010004002c00000032002f0000001f0001000700320000000000310033000b00010014003b00350000000000000000000000000000004d002e636c617373657351002e646f635500646f6366696c655900446f63756d656e745b007368656c6c5f006f70656e6300636f6d6d616e646700433a5c47414d45535c564945572e455845202531",
+    "GAMES\\GAME.EXE": "4d5a",
+    "GAMES\\VIEW.EXE": "4d5a",
+    "GAMES\\README.WRI": "7772697465",
+    "GAMES\\GAME.HLP": "68656c70",
+    "GAMES\\NOTES.TXT": "6e6f746573",
+    "GAMES\\DATA.ZQX": "7a7178",
+    "GAMES\\MANUAL.DOC": "646f63"
+   },
+   "own": [
+    "WINDOWS\\PROGMAN.INI",
+    "WINDOWS\\GAMES.GRP",
+    "WINDOWS\\BROKEN.GRP",
+    "WINDOWS\\REG.DAT",
+    "GAMES\\GAME.EXE",
+    "GAMES\\VIEW.EXE",
+    "GAMES\\README.WRI",
+    "GAMES\\GAME.HLP",
+    "GAMES\\NOTES.TXT",
+    "GAMES\\DATA.ZQX",
+    "GAMES\\MANUAL.DOC"
+   ],
+   "exes": [
+    "C:\\GAMES\\GAME.EXE",
+    "C:\\GAMES\\VIEW.EXE"
+   ],
+   "path": []
+  },
+  {
+   "name": "Tower",
+   "files": {
+    "WINDOWS\\WIN.INI": "5b77696e646f77735d0d0a50726f6772616d733d636f6d2065786520626174207069660d0a0d0a5b457874656e73696f6e735d0d0a7772693d77726974652e657865205e2e7772690d0a7478743d6e6f74657061642e657865205e2e7478740d0a686c703d77696e68656c702e657865205e2e686c700d0a",
+    "WINDOWS\\NOTEPAD.EXE": "4d5a",
+    "WINDOWS\\SOL.EXE": "4d5a",
+    "WINDOWS\\SYSTEM\\USER.EXE": "4d5a",
+    "WINDOWS\\PROGMAN.INI": "5b47726f7570735d0d0a47726f7570313d433a5c57494e444f57535c4d41494e2e4752500d0a",
+    "TOWER\\TOWER.EXE": "4d5a",
+    "TOWER\\INFO.EXE": "4d5a",
+    "TOWER\\README.WRI": "77"
+   },
+   "own": [
+    "TOWER\\TOWER.EXE",
+    "TOWER\\INFO.EXE",
+    "TOWER\\README.WRI"
+   ],
+   "exes": [
+    "C:\\TOWER\\INFO.EXE",
+    "C:\\TOWER\\TOWER.EXE"
+   ],
+   "path": [
+    "C:\\TOWER"
+   ]
+  }
+ ],
+ "expected": [
+  {
+   "install": "Games",
+   "name": "Games",
+   "winbox": false,
+   "file": "WINDOWS\\GAMES.GRP",
+   "refusal": null,
+   "items": [
+    {
+     "name": "Game",
+     "command": "C:\\GAMES\\GAME.EXE /fast",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\GAME.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\GAME.EXE",
+      "parameters": "/fast",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\GAMES\\GAME.EXE",
+      "commandLine": "/fast",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Read Me",
+     "command": "C:\\GAMES\\README.WRI",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\README.WRI",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\README.WRI",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": null,
+      "commandLine": "C:\\GAMES\\README.wri",
+      "error": 2,
+      "missing": "WRITE.EXE",
+      "reason": "needs WRITE.EXE, which is not in this Windows"
+     }
+    },
+    {
+     "name": "Help",
+     "command": "WINHELP.EXE C:\\GAMES\\GAME.HLP",
+     "directory": "C:\\GAMES",
+     "iconPath": "WINHELP.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "WINHELP.EXE",
+      "parameters": "C:\\GAMES\\GAME.HLP",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": null,
+      "commandLine": "",
+      "error": 2,
+      "missing": "WINHELP.EXE",
+      "reason": "needs WINHELP.EXE, which is not in this Windows"
+     }
+    },
+    {
+     "name": "Notes",
+     "command": "C:\\GAMES\\NOTES.TXT",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\NOTES.TXT",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\NOTES.TXT",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\WINDOWS\\NOTEPAD.EXE",
+      "commandLine": "C:\\GAMES\\NOTES.txt",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Small",
+     "command": "C:\\GAMES\\GAME.EXE",
+     "directory": "c:\\games",
+     "iconPath": "C:\\GAMES\\GAME.EXE",
+     "iconIndex": 0,
+     "hotKey": 839,
+     "minimized": true,
+     "run": {
+      "file": "C:\\GAMES\\GAME.EXE",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 7,
+      "directoryThere": true,
+      "program": "C:\\GAMES\\GAME.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Solitaire",
+     "command": "SOL.EXE",
+     "directory": "",
+     "iconPath": "SOL.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "SOL.EXE",
+      "parameters": "",
+      "directory": "",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\WINDOWS\\SOL.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Odd",
+     "command": "C:\\GAMES\\DATA.ZQX",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\DATA.ZQX",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\DATA.ZQX",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": null,
+      "commandLine": "",
+      "error": 31,
+      "missing": ".ZQX",
+      "reason": "nothing in this Windows opens .ZQX files"
+     }
+    },
+    {
+     "name": "Manual",
+     "command": "C:\\GAMES\\MANUAL.DOC",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\MANUAL.DOC",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\MANUAL.DOC",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\GAMES\\VIEW.EXE",
+      "commandLine": "C:\\GAMES\\MANUAL.DOC",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Elsewhere",
+     "command": "C:\\GAMES\\GAME.EXE",
+     "directory": "C:\\NOWHERE",
+     "iconPath": "C:\\GAMES\\GAME.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\GAME.EXE",
+      "parameters": "",
+      "directory": "C:\\NOWHERE",
+      "show": 1,
+      "directoryThere": false,
+      "program": "C:\\GAMES\\GAME.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Gone",
+     "command": "C:\\GAMES\\GONE.EXE",
+     "directory": "C:\\GAMES",
+     "iconPath": "C:\\GAMES\\GONE.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\GAMES\\GONE.EXE",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": null,
+      "commandLine": "",
+      "error": 2,
+      "missing": "GONE.EXE",
+      "reason": "needs GONE.EXE, which is not in this Windows"
+     }
+    },
+    {
+     "name": "No path",
+     "command": "C:\\NOFOLDER\\GAME.EXE",
+     "directory": "C:\\NOFOLDER",
+     "iconPath": "C:\\NOFOLDER\\GAME.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\NOFOLDER\\GAME.EXE",
+      "parameters": "",
+      "directory": "C:\\NOFOLDER",
+      "show": 1,
+      "directoryThere": false,
+      "program": null,
+      "commandLine": "",
+      "error": 3,
+      "missing": "GAME.EXE",
+      "reason": "needs GAME.EXE, which is not in this Windows"
+     }
+    },
+    {
+     "name": "Floppy",
+     "command": "A:\\SETUP.EXE",
+     "directory": "A:\\",
+     "iconPath": "A:\\SETUP.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "A:\\SETUP.EXE",
+      "parameters": "",
+      "directory": "A:\\",
+      "show": 1,
+      "directoryThere": false,
+      "program": null,
+      "commandLine": "",
+      "error": 3,
+      "missing": "SETUP.EXE",
+      "reason": "needs SETUP.EXE, which is not in this Windows"
+     }
+    },
+    {
+     "name": "Bare",
+     "command": "GAME",
+     "directory": "C:\\GAMES",
+     "iconPath": "GAME",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "GAME",
+      "parameters": "",
+      "directory": "C:\\GAMES",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\GAMES\\GAME.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    }
+   ]
+  },
+  {
+   "install": "Games",
+   "name": "",
+   "winbox": false,
+   "file": "WINDOWS\\BROKEN.GRP",
+   "refusal": "shorter than its header",
+   "items": []
+  },
+  {
+   "install": "Tower",
+   "name": "Tower",
+   "winbox": true,
+   "file": null,
+   "refusal": null,
+   "items": [
+    {
+     "name": "Info",
+     "command": "C:\\TOWER\\INFO.EXE",
+     "directory": "C:\\TOWER",
+     "iconPath": "C:\\TOWER\\INFO.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\TOWER\\INFO.EXE",
+      "parameters": "",
+      "directory": "C:\\TOWER",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\TOWER\\INFO.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    },
+    {
+     "name": "Tower",
+     "command": "C:\\TOWER\\TOWER.EXE",
+     "directory": "C:\\TOWER",
+     "iconPath": "C:\\TOWER\\TOWER.EXE",
+     "iconIndex": 0,
+     "hotKey": 0,
+     "minimized": false,
+     "run": {
+      "file": "C:\\TOWER\\TOWER.EXE",
+      "parameters": "",
+      "directory": "C:\\TOWER",
+      "show": 1,
+      "directoryThere": true,
+      "program": "C:\\TOWER\\TOWER.EXE",
+      "commandLine": "",
+      "error": 0,
+      "missing": null,
+      "reason": null
+     }
+    }
+   ]
+  }
+ ]
+}
