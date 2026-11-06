@@ -3,118 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title>Run Windows 3.1 programs</title>
   </head>
   <body>
-    <header class="bar">
-      <h1>Run Windows 3.1 programs</h1>
-      <p id="engine" class="engine"></p>
-      <p id="status" role="status" aria-live="polite">Loading…</p>
-    </header>
-
-    <main class="layout">
-      <aside class="side" aria-label="Programs and files">
-        <label id="drop" class="drop">
-          <input id="picker" type="file" multiple />
-          <strong>Drop zip archives here</strong>
-          <span
-            >or choose them: programs, and your Windows 3.1 -- its setup disks' images, or an
-            installed copy. Disk and CD images (.img, .iso, .cue with its .bin) beside Windows
-            become drives. Nothing leaves this browser.</span
-          >
-        </label>
-
-        <section>
-          <h2>Windows</h2>
-          <p id="windows"></p>
-          <button id="forget" type="button" hidden>Forget it</button>
-        </section>
-
-        <section>
-          <h2>Changes kept</h2>
-          <p id="changes"></p>
-          <ul id="changed" class="files"></ul>
-          <button id="forget-changes" type="button" hidden>Forget changes</button>
-        </section>
-
-        <section>
-          <h2><label for="display">Display</label></h2>
-          <select id="display"></select>
-        </section>
-
-        <section>
-          <h2>Machine</h2>
-          <label><input id="coprocessor" type="checkbox" checked /> Math coprocessor</label>
-          <p>Without one, programs' floating-point instructions are emulated, as WIN87EM does.</p>
-          <div id="sound-option" hidden>
-            <label><input id="sound" type="checkbox" /> Sound</label>
-            <p>WinBox's own sound card, from the next program run. MIDI is not played yet.</p>
-          </div>
-        </section>
-
-        <section id="drives-section" aria-labelledby="drives-heading">
-          <h2 id="drives-heading">Drives</h2>
-          <p id="drives-note"></p>
-          <ul id="drives" class="programs drives" aria-label="Drives of images"></ul>
-          <ul id="needed" class="programs drives" aria-label="Images to choose again" hidden></ul>
-          <p class="actions">
-            <button id="choose-images" type="button">Add images…</button>
-            <input
-              id="image-picker"
-              type="file"
-              multiple
-              accept=".img,.ima,.dsk,.vfd,.iso,.bin,.cue"
-              hidden
-            />
-          </p>
-          <label
-            ><input id="keep-images" type="checkbox" /> Keep copies of a kept program's images in
-            this browser</label
-          >
-        </section>
-
-        <section id="kept-section" hidden>
-          <h2>Kept programs</h2>
-          <p id="kept-note"></p>
-          <ul id="kept-programs" class="programs"></ul>
-        </section>
-
-        <section id="install-section" hidden>
-          <h2>Install</h2>
-          <p id="install-note"></p>
-          <p id="install-target" hidden>
-            <label for="install-into">Install</label>
-            <select id="install-into"></select>
-          </p>
-          <p class="actions">
-            <button id="install" type="button">Install</button>
-            <button id="keep-as-program" type="button">Keep as a program</button>
-            <button id="install-keep" type="button" hidden>Keep</button>
-            <button id="install-discard" type="button" hidden>Discard</button>
-          </p>
-        </section>
-
-        <section>
-          <h2>Programs</h2>
-          <ul id="programs" class="programs"></ul>
-        </section>
-
-        <details>
-          <summary>Files on C:</summary>
-          <ul id="files" class="files"></ul>
-        </details>
-      </aside>
-
-      <section id="desktop" class="desktop" aria-label="Desktop"></section>
-
-      <aside class="trace" aria-label="API trace">
-        <h2>Functions called</h2>
-        <ul id="counts" class="counts"></ul>
-        <h2>Most recent calls</h2>
-        <pre id="recent"></pre>
-      </aside>
-    </main>
-
-    <script type="module" src="/src/run/main.ts"></script>
+    <!-- The page is rendered by src/run/main.tsx (React and MUI); see ARCHITECTURE.md, "The run page". -->
+    <div id="root"></div>
+    <noscript>This page runs Windows 3.1 programs in the browser, and needs JavaScript.</noscript>
+    <script type="module" src="/src/run/main.tsx"></script>
   </body>
 </html>

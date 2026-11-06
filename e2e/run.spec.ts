@@ -8,6 +8,20 @@ import { test, expect, type Page } from '@playwright/test';
  * stored rather than compressed, and handed to the page's file picker, which is
  * what a drop reaches too. */
 
+/**
+ * What cannot be undone -- forgetting what the browser keeps, discarding
+ * what an installer wrote -- is asked again in a dialog: the button
+ * clicked, and its dialog's action chosen.
+ */
+async function confirmed(page: Page, name: string, action: string) {
+  await page.getByRole('button', { name }).click();
+
+  const dialog = page.getByRole('dialog', { name: /\?$/ });
+
+  await dialog.getByRole('button', { name: action, exact: true }).click();
+  await expect(dialog).toBeHidden();
+}
+
 function archive(files: { path: string; data: Uint8Array }[]) {
   const u16 = (value: number) => [value & 0xff, (value >> 8) & 0xff];
   const u32 = (value: number) => [...u16(value & 0xffff), ...u16((value >>> 16) & 0xffff)];
@@ -1925,7 +1939,7 @@ for (const { engine, page: at } of ENGINES) {
       expect(await drive()).toEqual({ ORACLE: 'folder', 'ORACLE\\STRINGS.OUT': written });
 
       /* Forgotten, and the drive as the plan has it. */
-      await page.getByRole('button', { name: 'Forget changes' }).click();
+      await confirmed(page, 'Forget changes', 'Forget changes');
       await expect(page.locator('#status')).toHaveText('Forgot what programs wrote.');
       await expect(changed).toHaveCount(0);
       expect(await drive()).toEqual({});
@@ -2013,7 +2027,7 @@ for (const { engine, page: at } of ENGINES) {
       });
       await expect(page.locator('#windows')).toContainText('the asset bundle');
 
-      await page.getByRole('button', { name: 'Forget it' }).click();
+      await confirmed(page, 'Forget it', 'Forget Windows');
       await expect(page.locator('#status')).toHaveText(
         'Forgot the asset bundle, the programs kept on it, and what programs wrote.'
       );
@@ -2058,7 +2072,7 @@ for (const { engine, page: at } of ENGINES) {
       await page.locator('#display').selectOption('vga');
       await expect(changed.filter({ hasText: out })).toHaveCount(1);
 
-      await page.getByRole('button', { name: 'Forget it' }).click();
+      await confirmed(page, 'Forget it', 'Forget Windows');
       await expect(page.locator('#windows')).toContainText('No Windows.');
       await expect(changed).toHaveCount(0);
     });
@@ -2139,13 +2153,13 @@ for (const { engine, page: at } of ENGINES) {
       await expect(changed.filter({ hasText: out })).toHaveCount(1);
 
       /* Forgotten, with what it wrote; the blob the other has stays. */
-      await page.getByRole('button', { name: 'Forget oracle' }).click();
+      await confirmed(page, 'Forget oracle', 'Forget program');
       await expect(page.locator('#status')).toHaveText('Forgot oracle, and what it wrote.');
       await expect(kept).toHaveCount(1);
       await expect(changed).toHaveCount(0);
       expect(await counts()).toEqual({ programs: 1, layers: 1, blobs: 1 });
 
-      await page.getByRole('button', { name: 'Forget other' }).click();
+      await confirmed(page, 'Forget other', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
 
@@ -2258,7 +2272,7 @@ for (const { engine, page: at } of ENGINES) {
         'The installer has ended. Keep what it installed, or discard it.',
         { timeout: 60000 }
       );
-      await page.getByRole('button', { name: 'Discard' }).click();
+      await confirmed(page, 'Discard', 'Discard');
       await expect(page.locator('#status')).toHaveText('Discarded what the installer wrote.');
       expect((await counts()).programs).toBe(1);
 
@@ -2271,7 +2285,7 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Open instlay' }).click();
       await expect(page.locator('#status')).toHaveText('instlay is on C:.');
       await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\INSTLAYC.EXE');
-      await page.getByRole('button', { name: 'Forget instlay' }).click();
+      await confirmed(page, 'Forget instlay', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
       expect(errors).toEqual([]);
@@ -2377,7 +2391,7 @@ for (const { engine, page: at } of ENGINES) {
         timeout: 30000,
       });
       await shown();
-      await page.getByRole('button', { name: 'Forget ddeinst' }).click();
+      await confirmed(page, 'Forget ddeinst', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);
     });
@@ -2630,7 +2644,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
         timeout: 30000,
       });
-      await page.getByRole('button', { name: 'Forget instlay-disk1' }).click();
+      await confirmed(page, 'Forget instlay-disk1', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);
     });
@@ -2713,7 +2727,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
 
       /* Forgotten, with what is kept of its disc. */
-      await page.getByRole('button', { name: 'Forget cdgame' }).click();
+      await confirmed(page, 'Forget cdgame', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ images: 0, copies: 0 });
       expect(errors).toEqual([]);
@@ -2796,7 +2810,7 @@ for (const { engine, page: at } of ENGINES) {
         { timeout: 30000 }
       );
 
-      await page.getByRole('button', { name: 'Forget cdgame' }).click();
+      await confirmed(page, 'Forget cdgame', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(errors).toEqual([]);
     });
