@@ -6088,6 +6088,7 @@ const RUN_WHOLE = new Set<string>([
   'zhidmin',
   'taskend',
   'hooks',
+  'pmitem',
 ]);
 
 /**

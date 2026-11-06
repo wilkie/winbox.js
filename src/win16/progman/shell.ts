@@ -44,7 +44,7 @@ const ERRORS = [
 ];
 
 /** A string kept in its data, up to its nought. */
-function dataString(pm: Pm, offset: number, size: number): string {
+export function dataString(pm: Pm, offset: number, size: number): string {
   const bytes = pm.readFar(pm.at(offset), size);
   const end = bytes.indexOf(0);
 
@@ -78,9 +78,10 @@ export async function currentDirectory(pm: Pm): Promise<string> {
 /**
  * seg5 `0bdc`: a path's drive made current where it names one (DOS 0Eh, its
  * letter less `A`, seg5 `0b74`), and the rest, where there is any, made its
- * current directory (DOS 3Bh).
+ * current directory (DOS 3Bh). Nought, or DOS's error where 3Bh fails
+ * (`0c0e`-`0c12`).
  */
-async function changeTo(pm: Pm, path: string) {
+export async function changeTo(pm: Pm, path: string) {
   let rest = path;
 
   if (path[1] === ':') {
@@ -89,8 +90,14 @@ async function changeTo(pm: Pm, path: string) {
   }
 
   if (rest) {
-    await dosPath(pm, 0x3b00, rest);
+    const { carry, ax } = await dosPath(pm, 0x3b00, rest);
+
+    if (carry) {
+      return ax;
+    }
   }
+
+  return 0;
 }
 
 /**
@@ -100,7 +107,7 @@ async function changeTo(pm: Pm, path: string) {
  * cursor as it was after. Nought where it started, else the error, as
  * `ERRORS` makes it.
  */
-async function execute(pm: Pm, given: string, directory: string, minimized: boolean) {
+export async function execute(pm: Pm, given: string, directory: string, minimized: boolean) {
   pm.sd16(D_STARTED_WINDOW, 0);
 
   const wait = await pm.user('LoadCursor', [W(0), D(0x7f02)]);

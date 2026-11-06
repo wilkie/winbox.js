@@ -37,7 +37,7 @@ const ERRORS: [u16; 32] = [
 ];
 
 /// A string kept in its data, up to its nought.
-fn data_string(pm: &Pm<'_>, offset: u16, size: usize) -> Vec<u8> {
+pub(super) fn data_string(pm: &Pm<'_>, offset: u16, size: usize) -> Vec<u8> {
     let bytes = pm.e.system().read_far(pm.at(offset), size);
     let end = bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len());
 
@@ -72,8 +72,9 @@ pub(super) async fn current_directory(pm: &Pm<'_>) -> R<Vec<u8>> {
 
 /// seg5 `0bdc`: a path's drive made current where it names one (DOS 0Eh,
 /// its letter less `A`, seg5 `0b74`), and the rest, where there is any,
-/// made its current directory (DOS 3Bh).
-async fn change_to(pm: &Pm<'_>, path: &[u8]) -> R<()> {
+/// made its current directory (DOS 3Bh). Nought, or DOS's error where 3Bh
+/// fails (`0c0e`-`0c12`).
+pub(super) async fn change_to(pm: &Pm<'_>, path: &[u8]) -> R<u16> {
     let mut rest = path;
 
     if path.get(1) == Some(&b':') {
@@ -84,10 +85,14 @@ async fn change_to(pm: &Pm<'_>, path: &[u8]) -> R<()> {
     }
 
     if !rest.is_empty() {
-        super::main::dos_path(pm, 0x3b00, rest).await?;
+        let (carry, ax) = super::main::dos_path(pm, 0x3b00, rest).await?;
+
+        if carry {
+            return Ok(ax);
+        }
     }
 
-    Ok(())
+    Ok(0)
 }
 
 /// seg5 `01b3`: a command started -- the hourglass shown, its first word
@@ -95,7 +100,12 @@ async fn change_to(pm: &Pm<'_>, path: &[u8]) -> R<()> {
 /// from the frame with the directory given, minimized (7) or shown
 /// normally (1); the cursor as it was after. Nought where it started, else
 /// the error, as `ERRORS` makes it.
-async fn execute(pm: &Pm<'_>, command: &[u8], directory: &[u8], minimized: bool) -> R<u16> {
+pub(super) async fn execute(
+    pm: &Pm<'_>,
+    command: &[u8],
+    directory: &[u8],
+    minimized: bool,
+) -> R<u16> {
     pm.sd16(D_STARTED_WINDOW, 0);
 
     let wait = pm.user("LoadCursor", &[Arg::W(0), Arg::D(0x7f02)]).await?;
@@ -252,5 +262,6 @@ pub(super) async fn start_programs(pm: &Pm<'_>, command_line: &[u8]) -> R<()> {
     set_data_string(pm, D_DIRECTORY, &directory);
     // A command line not started is told in a box (`0e6b`-`0eb9`): not yet.
     execute(pm, file_part(command_line), &directory, false).await?;
-    change_to(pm, &data_string(pm, D_WINDOWS, 0x81)).await
+    change_to(pm, &data_string(pm, D_WINDOWS, 0x81)).await?;
+    Ok(())
 }

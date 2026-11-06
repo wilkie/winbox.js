@@ -86,6 +86,7 @@ const WM_DESTROY: u16 = 0x02;
 const WM_SIZE: u16 = 0x05;
 pub(super) const WM_CLOSE: u16 = 0x10;
 const WM_ENDSESSION: u16 = 0x16;
+const WM_COMMAND: u16 = 0x111;
 const WM_SYSCOMMAND: u16 = 0x112;
 /// A second instance's, and a program's it started (seg2 `2762`).
 const WM_ACTIVATE_FIRST: u16 = 0x464;
@@ -987,6 +988,14 @@ async fn frame_message(pm: &Pm<'_>, hwnd: u16, message: u16, wparam: u16, lparam
             Ok(0)
         }
         WM_CLOSE => close(pm, hwnd, message, wparam, lparam).await,
+        // `28d3`: its commands (seg5 `05cc`), `DefFrameProc` taking the rest.
+        WM_COMMAND => {
+            if super::run::command(pm, wparam).await? {
+                Ok(0)
+            } else {
+                default(pm, hwnd, message, wparam, lparam).await
+            }
+        }
         // `2353`: the settings saved where Windows ends, `SaveSettings` is
         // on and `NoClose` is not -- not yet (`save`).
         WM_ENDSESSION => {

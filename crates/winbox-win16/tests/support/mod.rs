@@ -350,6 +350,7 @@ pub const AGREEING: &[&str] = &[
     "zhidmin",
     "taskend",
     "hooks",
+    "pmitem",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

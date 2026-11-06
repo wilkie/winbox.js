@@ -401,17 +401,17 @@ enum Field<'a> {
 /// them from the stored command and its directory tag, its icon's path and
 /// index, and its hot key and minimized tags as seg4 `0c5a` reads them --
 /// none 0, a record of six bytes 1, of seven its byte, of eight its word.
-struct Described {
-    name: Vec<u8>,
-    command: Vec<u8>,
-    directory: Vec<u8>,
-    icon_path: Vec<u8>,
-    icon_index: u16,
-    hot_key: u16,
-    minimized: u16,
+pub(super) struct Described {
+    pub name: Vec<u8>,
+    pub command: Vec<u8>,
+    pub directory: Vec<u8>,
+    pub icon_path: Vec<u8>,
+    pub icon_index: u16,
+    pub hot_key: u16,
+    pub minimized: u16,
 }
 
-fn describe(block: &GroupFile, slot: u16) -> Described {
+pub(super) fn describe(block: &GroupFile, slot: u16) -> Described {
     let data = &block.data;
     let def = block.def(slot);
     let word = |at: usize| u16::from_le_bytes([data[at], data[at + 1]]);

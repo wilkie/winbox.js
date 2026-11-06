@@ -8,6 +8,7 @@ import { WINMAIN_SLOT, image } from './image.js';
 import { Progman } from './index.js';
 import { dde, isDde } from './dde.js';
 import { forget, groups, load, save } from './loaded.js';
+import { command } from './run.js';
 import { startUpKeys } from '../../layers/groups.js';
 import { D_STARTED_IN, D_WINDOWS, currentDirectory, startPrograms } from './shell.js';
 
@@ -83,6 +84,7 @@ const WM_DESTROY = 0x02;
 const WM_SIZE = 0x05;
 export const WM_CLOSE = 0x10;
 const WM_ENDSESSION = 0x16;
+const WM_COMMAND = 0x111;
 const WM_SYSCOMMAND = 0x112;
 /** A second instance's, and a program's it started (seg2 `2762`). */
 const WM_ACTIVATE_FIRST = 0x464;
@@ -977,6 +979,13 @@ async function frameMessage(
       return 0;
     case WM_CLOSE:
       return close(pm, hwnd, message, wParam, lParam);
+    case WM_COMMAND:
+      /* `28d3`: its commands (seg5 `05cc`), `DefFrameProc` taking the rest. */
+      if (await command(pm, wParam)) {
+        return 0;
+      }
+
+      return defaultProc(pm, hwnd, message, wParam, lParam);
     case WM_ENDSESSION:
       /* `2353`: the settings saved where Windows ends, `SaveSettings` is on
        * and `NoClose` is not (`save`). */

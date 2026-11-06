@@ -26,6 +26,7 @@ mod items;
 mod loaded;
 pub(crate) mod main;
 mod parse;
+mod run;
 mod shell;
 mod window;
 

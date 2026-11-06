@@ -34,6 +34,7 @@ const PROBE_NAMES = [
   'pmbare-ega',
   'pmfiles',
   'pmgroups',
+  'pmitem',
 ];
 /** As `replay.ts`'s `VIRTUAL_CLOCK`: these run on the instructions' clock. */
 const VIRTUAL = new Set(['progdde', 'pmraw', 'pmsyntax', 'pmbare', 'pmfiles', 'pmgroups']);

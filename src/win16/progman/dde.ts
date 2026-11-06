@@ -325,7 +325,7 @@ async function field(pm: Pm, data: number, size: number, value: Field, endOfLine
  * index, and its hot key and minimized tags as seg4 `0c5a` reads them -- none
  * 0, a record of six bytes 1, of seven its byte, of eight its word.
  */
-function describe(block: GroupFile, slot: number) {
+export function describe(block: GroupFile, slot: number) {
   const data = block.data;
   const def = block.def(slot);
   const word = (at: number) => data[at] | (data[at + 1] << 8);

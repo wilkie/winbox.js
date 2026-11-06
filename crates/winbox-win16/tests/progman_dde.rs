@@ -27,6 +27,7 @@ const PROBES: &[&str] = &[
     "pmbare-ega",
     "pmfiles",
     "pmgroups",
+    "pmitem",
 ];
 
 /// A `windows` record with each window's visibility, its first digit of
