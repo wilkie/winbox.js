@@ -150,6 +150,92 @@ window, a memory device context, the screen -- draws into a `DeviceBitmap` of
 palette indices, one byte a pixel, and the screen is shown on its canvas by a
 `Presenter` once a frame, only the rectangle written since the last one. See the oracle's README, "Comparing what gets drawn".
 
+## The run page
+
+`run.html`, served by `pnpm dev`, runs programs in the browser on either
+engine. It is not part of the library bundle: `pnpm build` (`src/shim.ts` to
+`dist/winbox.js`) reaches nothing under `src/run/page/` or `src/run/ui/`, and
+holds no React or MUI. Everything around the Windows screen is React and MUI;
+the screen itself is the engine's.
+
+**State and actions** (`src/run/page/`, plain TypeScript, no React):
+
+- `state.ts` holds what has been dropped and kept, the drives, the install
+  under way and the settings the controls hold (`state`), what the actions
+  share beside it (`session`: the engine, the plan, what was kept), and three
+  values the components read: `pageView` (everything but the trace and the
+  status line), `traceView` and `statusLine`. `publish()` makes `pageView`
+  afresh from the state; every action calls it where the page's old
+  `render` functions were called.
+- `view.ts` makes each panel's rows and words from the state, changing
+  nothing (`windowsText`, `driveRows`, `installView`, `keptRows`, ...): what
+  `test/run/page_view_test.ts` tests from jest.
+- The actions, by concern: `machine.ts` (the engine chosen, the `Page` given
+  it, the trace, keeping what programs write, `rebuild`), `accept.ts` (files
+  dropped or chosen), `images.ts` (the drives of images and a kept program's
+  images), `install.ts` (installers and the kept programs), `groups.ts` (a
+  kept program's Program Manager groups), and `actions.ts`, the surface the
+  components call, and `start(desktop)`.
+- `observable.ts`, a value with listeners, read through
+  `useSyncExternalStore` (`src/run/ui/use.ts`); `leave.ts`, the key that
+  leaves the desktop.
+
+**Components** (`src/run/ui/`, `.tsx`): `app.tsx` lays out the banner
+(`header.tsx`), the side (`panels.tsx`, `drives.tsx`, `kept.tsx`), the main
+content -- the desktop, `desktop.tsx` -- and the trace (`trace.tsx`); three
+columns from 1100px, one beneath another below. `confirm.tsx` asks before
+what cannot be undone. A launcher would be another set of components over the
+same state and actions. JSX is compiled by the bundler's own transform
+(`"jsx": "react-jsx"` in `tsconfig.json`, which Vite's transform reads): no
+plugin, nothing added to `vite.config.ts`.
+
+**The desktop.** `desktop.tsx` renders an empty `<section id="desktop">` and
+hands it to `start`; the engine fills it (`makeScreen`, `screenNote`) and
+React never renders into it, so the canvas, its host and the ARIA mirror
+(`aria-mirror.ts`) are the engine's alone. Its CSS (the canvas drawn crisp,
+`max-width: 100%`, the mirror read and not seen) is the section's `sx`.
+
+**Theme** (`ui/theme.ts`): MUI's own, light and dark following
+`prefers-color-scheme` (a CSS-variables theme, `colorSchemeSelector:
+'media'`), the system font, a focus outline on every control. MUI's dark error
+red takes dark text on it, as white on it is under AA. With
+`prefers-reduced-motion`, transitions and ripples are cut to nothing
+(`app.tsx`).
+
+**Accessibility rules**, which a change to the page keeps:
+
+- Landmarks: the banner, two named asides ("Programs and files", "API
+  trace") and `main`, the desktop; one `h1`, the panels' headings `h2`.
+- Every control is a native control or MUI's (a `button`, a checkbox in a
+  `label`, a native `select`: the platform's own list, typed into and read as
+  every select is, and what the browser tests choose from with
+  `selectOption`), and every one is named; buttons whose words are short
+  ("Eject") are named in full ("Eject A:").
+- Nothing only by mouse: the drop has "Choose files…", and each drive's row,
+  which images are dropped on, has "Add…".
+- The status line (`#status`) is a live region, polite, assertive for an
+  error; its words are written into it as each line is told, so a line told
+  twice is announced twice.
+- Forgetting Windows, a kept program or what programs wrote, and discarding
+  what an installer wrote, ask first in a modal dialog, Cancel focused.
+- The desktop (role `application`, "Windows desktop") gives every key to
+  Windows. **Meta+Escape** (the Windows logo key, Command on a Mac, with
+  Esc) leaves it, to the line beneath it, which says so and describes the
+  desktop (`aria-describedby`). Windows 3.1's keyboard has no Meta key and
+  neither engine gives it a virtual key, so Windows sees nothing of it; the
+  Escape is taken before the desktop has it (`page/leave.ts`).
+- A skip link, first, goes to the desktop.
+
+**Testing it.** `test/run/page_view_test.ts` (jest) holds the view's rules.
+`e2e/run.spec.ts` drives the page by its ids and by roles and names, and its
+last describe, "the page, to a screen reader and the keyboard", runs axe
+(`@axe-core/playwright`, WCAG 2.1 A and AA) on the page fresh, with Windows,
+with a program kept and running, with the confirmation open and with an
+installer offered, each in both colour schemes, and tries the skip link and
+the way out of the desktop. The components are linted with
+`eslint-plugin-jsx-a11y` and `eslint-plugin-react-hooks`, each as it
+recommends.
+
 ## Known gaps
 
 Found while formalizing the boundary; recorded here rather than fixed silently.
