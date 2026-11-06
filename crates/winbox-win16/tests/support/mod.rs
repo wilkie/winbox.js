@@ -342,6 +342,7 @@ pub const AGREEING: &[&str] = &[
     "zcreate",
     "zactive",
     "swpshow",
+    "profnul",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

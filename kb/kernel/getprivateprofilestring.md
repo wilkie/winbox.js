@@ -25,6 +25,7 @@ topics: [profile-files]
 - [[measured]] A truncated list is cut to the buffer less two: `[Second]` in 6 bytes gives `onl` and its null, count 4.
 - [[inferred]] The second byte held back is for the list's closing null; the record shows only the bytes the count covers.
 - [[measured]] A value written since the last flush reads back as written, not as the file would parse it: see [[fn:KERNEL.WritePrivateProfileString]]. What loading the file does to what it holds is under [[topic:profile-files]].
+- [[read out]] A read cuts the value's trailing spaces in the buffer KERNEL holds, writing the byte that ended the value, a return, over the first of them (`KRNL386.EXE` seg1 `6569`-`656c`, `6864`); a write after it writes them back so ([[topic:profile-files]]). A value ends at the first byte at or below `0Dh`, a tab among them. The default is measured the same way, in the caller's string; winbox.js does not yet cut it there.
 - [[read out]] [[measured]] A read leaves the file held as well. The file is not read again while its date and time are those KERNEL opened it with, so a change written to it by DOS within the same two seconds is not seen; another private file's name lets it go ([[probe:profhold]], [[topic:profile-files]]).
 - Not yet measured: a file that does not exist, an unterminated quote, the list form on a section with duplicate names.
 

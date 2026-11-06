@@ -1,13 +1,13 @@
 //! Initialisation files, read and written as Windows 3.1 does, as
-//! winbox.js's `Profile` has it from the `profile` probe: the file kept in
-//! memory as bytes, edited in place and written back whole.
+//! winbox.js's `Profile` has it from the `profile` and `profnul` probes: the
+//! file kept in memory as bytes, edited in place and written back whole.
 //!
-//! A line ends at a carriage return, the byte after it taken as the line
-//! feed unseen. Loaded, each line loses its leading whitespace, and an
-//! entry's line the whitespace about its `=`; a value's trailing whitespace
-//! has a return written over its first byte, the rest left as a short line
-//! of its own. A lookup is without regard to case; a value in matching
-//! quotes loses them.
+//! A line runs to a line feed, as KERNEL steps through the buffer; its text
+//! is what comes before its first carriage return. Loaded, each line loses
+//! its leading whitespace, and an entry's line the whitespace about its
+//! `=`; a value's trailing blanks stay, until a read of it writes the byte
+//! that ended it over the first of them. A lookup is without regard to
+//! case; a value in matching quotes loses them.
 
 /// One line: its bytes, and the bytes that end it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -93,40 +93,69 @@ impl Profile {
             .collect()
     }
 
-    /// A buffer cut into lines at each carriage return, the byte after the
-    /// return part of the line's ending.
+    /// A buffer cut into lines, each running to and taking in a line feed,
+    /// as KERNEL steps from line to line; the text of each is what comes
+    /// before its first carriage return, the rest its ending (`profile.ts`'s
+    /// `split`).
     fn split(text: &[u8]) -> Vec<Line> {
         let mut lines = Vec::new();
         let mut at = 0;
 
         while at < text.len() {
-            let Some(cr) = text[at..]
+            let next = text[at..]
+                .iter()
+                .position(|&byte| byte == b'\n')
+                .map_or(text.len(), |lf| at + lf + 1);
+            let whole = &text[at..next];
+
+            // Its text to its first return, or to its line feed.
+            let cut = whole
                 .iter()
                 .position(|&byte| byte == b'\r')
-                .map(|cr| at + cr)
-            else {
-                lines.push(Line {
-                    text: text[at..].to_vec(),
-                    end: Vec::new(),
-                });
-                break;
-            };
+                .unwrap_or(whole.len() - usize::from(whole.last() == Some(&b'\n')));
 
             lines.push(Line {
-                text: text[at..cr].to_vec(),
-                end: text[cr..(cr + 2).min(text.len())].to_vec(),
+                text: whole[..cut].to_vec(),
+                end: whole[cut..].to_vec(),
             });
-            at = cr + 2;
+
+            at = next;
         }
 
         lines
     }
 
-    /// What loading a file does to it: the whitespace at the start of
-    /// every line dropped, and a line with an `=` compacted -- a comment's
-    /// and a section's too, under Windows in protected mode (`KRNL386.EXE`
-    /// seg1 `6b77`-`6c89`, `WF_PMODE` at `6b92`), as `profile.ts`'s
-    /// `normalise`.
+    /// KERNEL's measure of a string it is given or holds (`KRNL386.EXE`
+    /// seg1 `6864`): to the first byte at or below `0Dh`, back over the
+    /// spaces before it; where there are any, the byte that ended it written
+    /// over the first. The string so measured, and the string as that left
+    /// it.
+    pub fn measure(text: &[u8]) -> (Vec<u8>, Vec<u8>) {
+        let stop = text
+            .iter()
+            .position(|&byte| byte <= 0x0d)
+            .unwrap_or(text.len());
+        let mut cut = stop;
+
+        while cut > 0 && text[cut - 1] == b' ' {
+            cut -= 1;
+        }
+
+        let mut after = text.to_vec();
+
+        if cut < stop {
+            after[cut] = text.get(stop).copied().unwrap_or(0);
+        }
+
+        (text[..cut].to_vec(), after)
+    }
+
+    /// What loading a file does to it (`KRNL386.EXE` seg1 `6b77`-`6c89`):
+    /// the whitespace at the start of every line dropped, and on a line
+    /// with an `=` the blanks before and after it; the rest copied as it
+    /// was, a value's trailing blanks with it (`profnul`) -- a comment's and
+    /// a section's line compacted too, under Windows in protected mode
+    /// (`WF_PMODE` at `6b92`), as `profile.ts`'s `normalise`.
     fn normalise(text: &[u8]) -> Vec<u8> {
         let mut out = Vec::new();
 
@@ -134,27 +163,10 @@ impl Profile {
             let mut line = trim_start_blanks(&raw).to_vec();
 
             if let Some(at) = line.iter().position(|&byte| byte == b'=') {
-                let name = trim_end_blanks(&line[..at]).to_vec();
-                let rest = trim_start_blanks(&line[at + 1..]).to_vec();
-                let mut compact = name;
+                let mut compact = trim_end_blanks(&line[..at]).to_vec();
 
                 compact.push(b'=');
-
-                // A comment's trailing blanks kept, no return over the
-                // first (`widget-windows.json`); a section's line so too.
-                if line.starts_with(b";") || line.starts_with(b"[") {
-                    compact.extend_from_slice(&rest);
-                } else {
-                    let kept = trim_end_blanks(&rest).to_vec();
-
-                    compact.extend_from_slice(&kept);
-
-                    if kept.len() < rest.len() {
-                        compact.push(b'\r');
-                        compact.extend_from_slice(&rest[kept.len() + 1..]);
-                    }
-                }
-
+                compact.extend_from_slice(trim_start_blanks(&line[at + 1..]));
                 line = compact;
             }
 
@@ -174,15 +186,17 @@ impl Profile {
         Some(trim(&rest[..close]))
     }
 
-    /// A line's entry and value: the first `=` divides them; a line that
-    /// begins with `;` is a comment.
+    /// A line's entry and value: the first `=` divides them, the value
+    /// measured as KERNEL reads it (`measure`); a line that begins with `;`
+    /// is a comment.
     fn entry_of(line: &[u8]) -> Option<Found<'_>> {
         if line.starts_with(b";") || line.starts_with(b"[") {
             return None;
         }
 
         let at = line.iter().position(|&byte| byte == b'=')?;
-        let raw = &line[at + 1..];
+        let rest = &line[at + 1..];
+        let raw = &rest[..Self::measure(rest).0.len()];
 
         Some(Found {
             entry: &line[..at],
@@ -245,8 +259,195 @@ impl Profile {
         names
     }
 
+    /// Where a line starts in the buffer.
+    fn offset_of(&self, index: usize) -> usize {
+        self.lines[..index]
+            .iter()
+            .map(|line| line.text.len() + line.end.len())
+            .sum()
+    }
+
+    /// The buffer as KERNEL holds it, the file and the return, line feed and
+    /// nought it adds as it loads one (`KRNL386.EXE` seg1 `6ca8`-`6cdf`),
+    /// edited; the file is what is left less those three, as KERNEL writes
+    /// `[0Ah]` less three (`70ef`-`710a`), as `profile.ts`'s `edit`.
+    fn edit(&mut self, edit: impl FnOnce(Vec<u8>) -> Vec<u8>) {
+        let mut buffer = self.text();
+
+        buffer.extend_from_slice(b"\r\n\0");
+
+        let buffer = edit(buffer);
+
+        self.lines = Self::split(&buffer[..buffer.len().saturating_sub(3)]);
+    }
+
+    /// An entry's line taken out (`KRNL386.EXE` seg1 `722c`): from its start
+    /// to after the next line feed, KERNEL's own after a last line with
+    /// none (`profnul`'s `open entry`).
+    fn remove_line(&mut self, index: usize) {
+        let start = self.offset_of(index);
+
+        self.edit(|mut buffer| {
+            let lf = buffer[start..]
+                .iter()
+                .position(|&byte| byte == b'\n')
+                .map_or(buffer.len(), |lf| start + lf + 1);
+
+            buffer.drain(start..lf);
+            buffer
+        });
+    }
+
+    fn heading(&self, section: &[u8]) -> Option<usize> {
+        self.lines.iter().position(|line| {
+            Self::section_of(&line.text).is_some_and(|opened| same(opened, section))
+        })
+    }
+
+    /// Whether the file has a section, as `WritePrivateProfileString` looks
+    /// for one (`KRNL386.EXE` seg1 `66ac`).
+    pub fn has_section(&self, section: &[u8]) -> bool {
+        self.heading(section).is_some()
+    }
+
+    /// The first section of the name removed, as `WritePrivateProfileString`
+    /// with no entry removes it (`KRNL386.EXE` seg1 `703f`, `71cb`-`7229`):
+    /// from the heading's last `[` every line to the next that starts with
+    /// `[`, or to the file's end, but a line that starts with `;` kept,
+    /// moved up to where the heading was; as `profile.ts`'s `removeSection`.
+    pub fn remove_section(&mut self, section: &[u8]) {
+        let Some(index) = self.heading(section) else {
+            return;
+        };
+        let line = &self.lines[index];
+        let after = self.offset_of(index) + line.text.len() + line.end.len();
+
+        self.edit(|buffer| {
+            let to = buffer[..after]
+                .iter()
+                .rposition(|&byte| byte == b'[')
+                .unwrap_or(0);
+            let line_end = |from: usize| {
+                buffer[from..]
+                    .iter()
+                    .position(|&byte| byte == b'\n')
+                    .map_or(buffer.len(), |lf| from + lf + 1)
+            };
+            let mut read = to + 1;
+            let mut kept = Vec::new();
+
+            loop {
+                match buffer.get(read).copied() {
+                    Some(b';') => {
+                        let end = line_end(read);
+
+                        kept.extend_from_slice(&buffer[read..end]);
+                        read = end;
+                    }
+                    Some(b'[') => break,
+                    Some(0) | None => {
+                        // At the nought, back before KERNEL's return and line
+                        // feed (`71f7`).
+                        read = read.saturating_sub(2);
+                        break;
+                    }
+                    Some(_) => read = line_end(read),
+                }
+            }
+
+            let mut out = buffer[..to].to_vec();
+
+            out.extend_from_slice(&kept);
+            out.extend_from_slice(&buffer[read..]);
+            out
+        });
+    }
+
+    /// Whether an entry's value is the caller's string, as KERNEL compares
+    /// them before it writes (`KRNL386.EXE` seg1 `7150`): byte for byte,
+    /// from after the `=` to the buffer's first return.
+    pub fn holds(&self, section: &[u8], entry: &[u8], given: &[u8]) -> bool {
+        let mut within = false;
+
+        for line in &self.lines {
+            if let Some(opened) = Self::section_of(&line.text) {
+                within = same(opened, section);
+                continue;
+            }
+
+            if within
+                && let Some(found) = Self::entry_of(&line.text)
+                && same(found.entry, entry)
+            {
+                if !line.end.starts_with(b"\r") && !line.end.is_empty() {
+                    return false;
+                }
+
+                return line.text[found.entry.len() + 1..] == *given;
+            }
+        }
+
+        false
+    }
+
+    /// A value read as `GetPrivateProfileString` reads it, which cuts its
+    /// trailing spaces in the buffer (`KRNL386.EXE` seg1 `6569`-`656c`,
+    /// `6864`): the byte that ended it written over the first of them, as
+    /// `profile.ts`'s `read`.
+    pub fn read(&mut self, section: &[u8], entry: &[u8]) -> Option<Vec<u8>> {
+        let mut within = false;
+
+        for index in 0..self.lines.len() {
+            let line = &self.lines[index];
+
+            if let Some(opened) = Self::section_of(&line.text) {
+                within = same(opened, section);
+                continue;
+            }
+
+            let Some(found) = (if within {
+                Self::entry_of(&line.text)
+            } else {
+                None
+            }) else {
+                continue;
+            };
+
+            if !same(found.entry, entry) {
+                continue;
+            }
+
+            let value = found.value.to_vec();
+            let start = found.entry.len() + 1;
+            let ends = line.end.contains(&b'\n');
+            let mut whole = [&line.text[..], &line.end[..]].concat();
+
+            if !ends {
+                whole.push(b'\r');
+            }
+
+            let (_, after) = Self::measure(&whole[start..]);
+            let mut changed = whole[..start].to_vec();
+
+            changed.extend_from_slice(&after);
+
+            if changed != whole {
+                if !ends {
+                    changed.pop();
+                }
+
+                self.lines.splice(index..=index, Self::split(&changed));
+            }
+
+            return Some(value);
+        }
+
+        None
+    }
+
     /// An entry set, the section or the entry added where the file lacks
-    /// it; `None` removes the entry, never its section. A replaced entry
+    /// it; `None` removes the entry's line (`remove_line`), never its
+    /// section. A replaced entry
     /// keeps its name as the file spells it; a new one goes after its
     /// section's last entry; a new section after the file's last complete
     /// line, after a blank one.
@@ -277,18 +478,26 @@ impl Profile {
                 && same(&name, entry)
             {
                 match value {
-                    None => {
-                        lines.remove(at);
-                    }
+                    None => self.remove_line(at),
                     Some(value) => {
+                        // The value from after the `=`, a return and a line
+                        // feed over the old ending's first two bytes
+                        // (`KRNL386.EXE` seg1 `6e06`-`6e1a`, `72b5`), as
+                        // `profile.ts`'s `set`.
+                        let end = &lines[at].end;
+                        let ending = if end.len() >= 2 {
+                            [b"\r\n", &end[2..]].concat()
+                        } else if end.is_empty() {
+                            Vec::new()
+                        } else {
+                            b"\r\n".to_vec()
+                        };
                         let mut text = name;
 
                         text.push(b'=');
                         text.extend_from_slice(value);
-                        lines[at] = Line {
-                            text,
-                            end: b"\r\n".to_vec(),
-                        };
+                        text.extend_from_slice(&ending);
+                        lines.splice(at..=at, Self::split(&text));
                     }
                 }
 
@@ -360,13 +569,16 @@ mod tests {
 
     #[test]
     fn normalises_as_windows_loads_a_file() {
-        let profile = Profile::new(b"  [S]\r\n ends  =  both ends  \r\n");
+        let mut profile = Profile::new(b"  [S]\r\n ends  =  both ends  \r\none=x \r\n");
 
-        assert_eq!(profile.text(), b"[S]\r\nends=both ends\r \r\n");
+        assert_eq!(profile.text(), b"[S]\r\nends=both ends  \r\none=x \r\n");
         assert_eq!(
             profile.get(b"s", b"ENDS", true),
             Some(b"both ends".to_vec())
         );
+        assert_eq!(profile.read(b"s", b"ENDS"), Some(b"both ends".to_vec()));
+        assert_eq!(profile.read(b"s", b"one"), Some(b"x".to_vec()));
+        assert_eq!(profile.text(), b"[S]\r\nends=both ends\r \r\none=x\r\r\n");
     }
 
     #[test]
@@ -383,5 +595,31 @@ mod tests {
         assert_eq!(profile.get(b"C", b"w", false), Some(b"\"4\"".to_vec()));
         profile.set(b"B", b"y", None);
         assert_eq!(profile.entries(b"b"), Vec::<Vec<u8>>::new());
+    }
+
+    #[test]
+    fn removes_sections_and_entries_as_kernel_does() {
+        let base: &[u8] =
+            b"[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n";
+        let mut profile = Profile::new(base);
+
+        profile.remove_section(b"gONE");
+        assert_eq!(
+            profile.text(),
+            b"[First]\r\na=1\r\n\r\n; kept comment\r\n[Last]\r\nz=3\r\n"
+        );
+
+        let mut profile = Profile::new(base);
+
+        profile.remove_section(b"Last");
+        assert_eq!(
+            profile.text(),
+            b"[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n"
+        );
+
+        let mut profile = Profile::new(b"[A]\r\na=1\r\n[B]\r\nb=2");
+
+        profile.set(b"B", b"b", None);
+        assert_eq!(profile.text(), b"[A]\r\na=1\r\n[B]");
     }
 }

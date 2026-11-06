@@ -251,9 +251,29 @@ const SUBJECT_PROFILE = [
  * running this up to its point. Mirrors `profile.c` as `SUBJECT_PROFILE` does.
  */
 type ProfileStep =
-  ['write', string, string, string | null] | ['flush'] | ['windows'] | ['at', string];
+  | ['write', string, string, string | null]
+  | ['read', string, string]
+  | ['flush']
+  | ['windows']
+  | ['at', string];
 
 const PROFILE_SCRIPT: ProfileStep[] = [
+  /* The values read before the first write: a read cuts a value's trailing
+   * spaces in the buffer, and the writes write the buffer back. */
+  ['read', 'Plain', 'entry'],
+  ['read', 'Plain', 'spaced'],
+  ['read', 'Plain', 'quoted'],
+  ['read', 'Plain', 'single'],
+  ['read', 'Plain', 'empty'],
+  ['read', 'Plain', 'semicolon'],
+  ['read', 'Plain', 'equals'],
+  ['read', 'Spacing', 'after'],
+  ['read', 'Spacing', 'before'],
+  ['read', 'Spacing', 'around'],
+  ['read', 'Spacing', 'tabbed'],
+  ['read', 'Spacing', 'ends'],
+  ['read', 'Odd', 'indented'],
+  ['read', 'Odd', 'one'],
   ['at', 'before any write'],
   ['write', 'Plain', 'added', 'new value'],
   ['at', 'after added'],
@@ -1989,6 +2009,18 @@ export class Context {
         }
       } else if (step[0] === 'flush') {
         await WritePrivateProfileString.call(this, null, null, null, this.lpcstr('PROBE.INI'));
+      } else if (step[0] === 'read') {
+        const buffer = this.place('', 130);
+
+        await GetPrivateProfileString.call(
+          this,
+          this.lpcstr(step[1]),
+          this.lpcstr(step[2]),
+          this.lpcstr('<default>'),
+          buffer.far,
+          128,
+          this.lpcstr('PROBE.INI')
+        );
       } else if (step[0] === 'windows') {
         const buffer = this.place('', 130);
 
@@ -6048,6 +6080,7 @@ const RUN_WHOLE = new Set<string>([
   'zcreate',
   'zactive',
   'zminim',
+  'profnul',
 ]);
 
 /**

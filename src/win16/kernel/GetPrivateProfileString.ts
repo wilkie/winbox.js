@@ -96,7 +96,9 @@ export async function GetPrivateProfileString(
     return copyOutList(this, lpszReturnBuffer, names, cbReturnBuffer);
   }
 
-  const found = profile.get(String(lpszSection), String(lpszEntry));
+  /* Read as KERNEL reads it, which cuts the value's trailing spaces in the
+   * buffer it holds (`Profile.read`). */
+  const found = profile.read(String(lpszSection), String(lpszEntry));
 
   /* The default is copied verbatim when the entry is missing, and a null
    * default is documented as not allowed -- but a program that passes one

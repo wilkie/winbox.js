@@ -1,0 +1,302 @@
+{
+  "probe": "profnul",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "write",
+      "args": "section,\"Gone\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "section",
+      "result": "[First]\r\na=1\r\n\r\n; kept comment\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "last,\"Last\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "last",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "first,\"First\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "first",
+      "result": "[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "value given,\"Gone\",\"NULL\",\"v\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "value given",
+      "result": "[First]\r\na=1\r\n\r\n; kept comment\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "missing,\"Absent\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "missing",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "recased,\"gONE\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "recased",
+      "result": "[First]\r\na=1\r\n\r\n; kept comment\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "open end,\"B\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "open end",
+      "result": "[A]\r\na=1\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "twice,\"D\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "file",
+      "args": "twice",
+      "result": "[E]\r\ne=1\r\n[D]\r\nb=2\r\n",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "read",
+      "args": "twice,\"D\",\"b\"",
+      "result": "1,\"2\"",
+      "section": "a NULL entry"
+    },
+    {
+      "function": "write",
+      "args": "entry,\"Gone\",\"y\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL value"
+    },
+    {
+      "function": "file",
+      "args": "entry",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL value"
+    },
+    {
+      "function": "write",
+      "args": "entry x,\"Gone\",\"x\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL value"
+    },
+    {
+      "function": "file",
+      "args": "entry x",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL value"
+    },
+    {
+      "function": "write",
+      "args": "missing entry,\"First\",\"k\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL value"
+    },
+    {
+      "function": "file",
+      "args": "missing entry",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL value"
+    },
+    {
+      "function": "write",
+      "args": "missing section,\"Absent\",\"k\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL value"
+    },
+    {
+      "function": "file",
+      "args": "missing section",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "a NULL value"
+    },
+    {
+      "function": "write",
+      "args": "open entry,\"B\",\"b\",\"NULL\"",
+      "result": "1",
+      "section": "a NULL value"
+    },
+    {
+      "function": "file",
+      "args": "open entry",
+      "result": "[A]\r\na=1\r\n[B]",
+      "section": "a NULL value"
+    },
+    {
+      "function": "write",
+      "args": "empty value,\"First\",\"a\",\"\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty value",
+      "result": "[First]\r\na=\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "write",
+      "args": "empty new value,\"First\",\"k\",\"\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty new value",
+      "result": "[First]\r\na=1\r\nk=\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "write",
+      "args": "empty entry,\"First\",\"\",\"v\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty entry",
+      "result": "[First]\r\na=1\r\n=v\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "read",
+      "args": "empty entry,\"First\",\"\"",
+      "result": "1,\"v\"",
+      "section": "empty strings"
+    },
+    {
+      "function": "write",
+      "args": "empty section,\"\",\"k\",\"v\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty section",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=two  \r\n\r\n[Last]\r\nz=3\r\n\r\n[]\r\nk=v\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "write",
+      "args": "empty section null,\"\",\"NULL\",\"NULL\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty section null",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "write",
+      "args": "empty entry null,\"First\",\"\",\"NULL\"",
+      "result": "1",
+      "section": "empty strings"
+    },
+    {
+      "function": "file",
+      "args": "empty entry null",
+      "result": "[First]\r\na=1\r\n\r\n[Gone]\r\nx=1\r\n; kept comment\r\ny=  two  \r\n\r\n[Last]\r\nz=3\r\n",
+      "section": "empty strings"
+    },
+    {
+      "function": "WriteProfileString",
+      "args": "\"ProbeNul\",NULL,NULL",
+      "result": "1",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WIN.INI",
+      "args": "missing,holds",
+      "result": "no",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WIN.INI",
+      "args": "missing,length",
+      "result": "same",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WriteProfileString",
+      "args": "\"ProbeNul\",\"k\",\"v\"",
+      "result": "1",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WIN.INI",
+      "args": "written,holds",
+      "result": "yes",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WriteProfileString",
+      "args": "\"ProbeNul\",NULL,NULL again",
+      "result": "1",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WIN.INI",
+      "args": "deleted,holds",
+      "result": "no",
+      "section": "WIN.INI"
+    },
+    {
+      "function": "WM_WININICHANGE",
+      "args": "count",
+      "result": "0",
+      "section": "WIN.INI"
+    }
+  ]
+}

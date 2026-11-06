@@ -6,7 +6,7 @@ ordinal: 129
 summary: Sets, adds or removes one entry of a named INI file, creating the section when it is missing.
 versions:
   '3.1': exact
-probes: [profile, profnew, profhold, pmshell]
+probes: [profile, profnew, profhold, pmshell, profnul]
 source: src/win16/kernel/WritePrivateProfileString.ts
 topics: [profile-files]
 ---
@@ -16,6 +16,7 @@ topics: [profile-files]
 - [[measured]] All 13 of its records in [[probe:profile]] agree with Windows: 6 writes read back, 6 that record the caller's string, and the flush — and the eight snapshots of the file's bytes after its writes, byte for byte. Each write returned 1 and was read back through [[fn:KERNEL.GetPrivateProfileString]].
 - [[measured]] A new entry in an existing section (`added`), a replaced entry (`entry`) and an entry in a new section (`[Fresh] first`) each read back as written.
 - [[measured]] A NULL value removes the entry: reading `added` back afterwards gives the default.
+- [[measured]] [[probe:profnul]]'s 48 records agree with both engines. A NULL entry removes the section that is there, its entries, blank lines and heading, whatever the value; a section that is not there, with a NULL entry or a NULL value, is left alone, nothing written, and the answer is 1. So is an entry not there with a NULL value. Comments within a removed section stay. See [[topic:profile-files]] for where exactly, read out of `KRNL386.EXE` seg1 `6cec`-`7088`.
 - [[measured]] After all five writes, `[Plain]` lists the same 13 names in the same order as before them, so the replaced `entry` and `spaced` stayed in place and the removed `added` left nothing behind.
 
 ## Nuances
@@ -27,8 +28,9 @@ topics: [profile-files]
 - [[measured]] `WritePrivateProfileString(NULL, NULL, NULL, file)` flushes, and returns 0.
 - [[measured]] A file that does not exist is made, and the write returns 1. A name with no path is made in the Windows directory, not where the program runs; a name with a path is made where it says ([[probe:profnew]]).
 - [[read out]] [[measured]] The file reaches the disk at the next DOS call any program makes, not during the call, and the buffer stays held after it. The file is loaded again — and a value's leading spaces trimmed — only when a later profile call finds the file's stamp changed since KERNEL opened it, which DOS's two-second clock decides, or when another private file is named ([[probe:profhold]], [[topic:profile-files]]).
-- Not yet measured: a NULL entry.
+- [[measured]] An empty string is a string, not NULL: `a=`, `=v` and `[]` are written. No `WM_WININICHANGE` is sent ([[probe:profnul]]).
+- Not yet measured: a NULL section with an entry. [[read out]] Parameter validation lets a NULL string by (`KRNL386.EXE` seg1 `0908`), and the section is then read through it (`66ac`).
 
 ## Implementation
 
-winbox.js cuts the caller's trailing spaces in place, edits the loaded buffer through `Profile.set` in `src/win16/profile.ts`, writes it back whole at once, and holds it (`writeProfile` in `src/win16/kernel/profiles.ts`) with the file's stamp from before the write, as KERNEL's write-out keeps it, until KERNEL would let it go.
+winbox.js follows KERNEL's choice of what to do, measures the strings it writes as KERNEL does (`Profile.measure`), cutting the caller's in place, edits the loaded buffer through `Profile.set`, `removeLine` and `removeSection` in `src/win16/profile.ts`, writes it back whole at once, and holds it (`writeProfile` in `src/win16/kernel/profiles.ts`) with the file's stamp from before the write, as KERNEL's write-out keeps it, until KERNEL would let it go.

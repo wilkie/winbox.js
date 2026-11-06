@@ -1,5 +1,6 @@
 'use strict';
 
+import { Profile } from '../profile.js';
 import { readProfile, releaseProfile, writeProfile } from './profiles.js';
 /**
  * The **WritePrivateProfileString** function copies a character string into the
@@ -76,47 +77,82 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
     return 0;
   }
 
-  /* Windows trims the trailing spaces off the caller's own string, in place,
-   * by writing a zero over the first of them -- recorded by the `profile`
-   * probe's "in place" records. Only spaces: a trailing tab stays in the
-   * caller's string, though it does not reach the file.
-   */
-  let value = lpszString === null ? null : String(lpszString);
-
-  if (value !== null) {
-    const kept = value.replace(/ +$/, '');
-
-    if (kept.length < value.length && lpszString.segment !== undefined) {
-      this.machine.cpu.core.write8(lpszString.segment, lpszString.offset + kept.length, 0);
-    }
-
-    value = kept.replace(/[ \t]+$/, '');
-  }
-
+  const section = String(lpszSection);
   const profile = await readProfile(this, lpszFilename);
 
-  /* A null entry deletes the whole section, and a null value deletes just the
-   * entry. This is how a program clears settings it no longer wants, and it is
-   * the only way a section ever shrinks.
-   */
-  if (lpszEntry === null) {
-    for (const name of profile.entries(String(lpszSection))) {
-      profile.set(String(lpszSection), name, null);
+  /* **Read out** (`KRNL386.EXE` seg1 `6d5a`-`6e1f`): the section is looked
+   * for first. Where it is missing, a NULL entry or value leaves the file
+   * as it is and answers 1 (`707c`): SimTower's setup's
+   * `WriteProfileString("WinG", NULL, NULL)` writes nothing to a `WIN.INI`
+   * with no `[WinG]` (`profnul`). Where it is there, a NULL entry removes
+   * it, whatever the value (`6d97`, `703f`). An entry not there with a NULL
+   * value leaves the file as it is (`6db6`); one there has its line
+   * removed (`6deb`, `704b`). An empty string is a string. */
+  if (!profile.hasSection(section)) {
+    if (lpszEntry === null || lpszString === null) {
+      return 1;
     }
-  } else {
-    /* A value the same as the buffer's, byte for byte, is left as it is:
-     * nothing changes and nothing is written, and the answer is 1
-     * (`KRNL386.EXE` seg1 `6df2`-`6e03`, `7150`, `707c`; `pmshell`: Program
-     * Manager's `display.drv=` unchanged leaves `Order=`'s leading space in
-     * the file). */
-    if (value !== null && profile.get(String(lpszSection), String(lpszEntry), false) === value) {
+  } else if (lpszEntry === null) {
+    profile.removeSection(section);
+    this.debug('WritePrivateProfileString', section, null);
+
+    return (await writeProfile(this, lpszFilename, profile)) ? 1 : 0;
+  }
+
+  const entry = String(lpszEntry);
+  const present = profile.get(section, entry, false) !== null;
+
+  if (lpszString === null) {
+    if (!present) {
       return 1;
     }
 
-    profile.set(String(lpszSection), String(lpszEntry), value);
+    profile.set(section, entry, null);
+    this.debug('WritePrivateProfileString', section, entry, null);
+
+    return (await writeProfile(this, lpszFilename, profile)) ? 1 : 0;
   }
 
-  this.debug('WritePrivateProfileString', String(lpszSection), String(lpszEntry));
+  /* A value the same as the buffer's, byte for byte, is left as it is:
+   * nothing changes and nothing is written, and the answer is 1
+   * (`KRNL386.EXE` seg1 `6df2`-`6e03`, `7150`, `707c`; `pmshell`: Program
+   * Manager's `display.drv=` unchanged leaves `Order=`'s leading space in
+   * the file). The caller's string is compared as it was given. */
+  if (present && profile.holds(section, entry, String(lpszString))) {
+    return 1;
+  }
+
+  /* Each string written is measured as KERNEL measures it (`6e25`-`6e85`,
+   * `6890`, `6864`): to its first byte at or below `0Dh`, back over its
+   * trailing spaces, the byte that ended it written over the first of
+   * them, in the caller's string -- the section's where it is new, the
+   * entry's where it is new, and the value's always. So a value's trailing
+   * spaces are cut off in place, by a null over the first of them, and a
+   * trailing tab stays in the caller's string but not in the file
+   * (`profile`'s in-place records). */
+  const measured = (given) => {
+    const text = String(given);
+    const { value, after } = Profile.measure(text);
+
+    if (after !== text && given.segment !== undefined) {
+      this.machine.cpu.core.write8(
+        given.segment,
+        given.offset + value.length,
+        after.charCodeAt(value.length)
+      );
+    }
+
+    return value;
+  };
+
+  const newSection = !profile.hasSection(section);
+  const sectionWritten = newSection ? measured(lpszSection) : section;
+  const entryWritten = !present ? measured(lpszEntry) : entry;
+  const value = measured(lpszString);
+
+  profile.set(sectionWritten, entryWritten, value);
+
+  this.debug('WritePrivateProfileString', section, entry);
 
   const ok = await writeProfile(this, lpszFilename, profile);
 

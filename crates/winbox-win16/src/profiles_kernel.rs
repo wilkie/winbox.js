@@ -161,6 +161,18 @@ impl System {
         });
     }
 
+    /// The buffer KERNEL holds for a file changed where it is, as a read
+    /// changes it, with nothing written.
+    fn update_held_profile(&mut self, name: &[u8], profile: Profile) {
+        let path = path_of(name).to_ascii_uppercase();
+
+        if let Some(held) = self.profile_slot(is_windows(name))
+            && held.path == path
+        {
+            held.profile = profile;
+        }
+    }
+
     /// The buffer a file has let go, as a flush does: the next read is of
     /// the disk.
     fn release_profile(&mut self, name: &[u8]) {
@@ -346,9 +358,16 @@ fn get_string(
 
         return Answer::Word(system.copy_out_list(buffer, &names, size) as u16);
     };
-    let value = profile
-        .get(&section, &entry, true)
-        .unwrap_or_else(|| default.unwrap_or_default());
+    // Read as KERNEL reads it, which cuts the value's trailing spaces in
+    // the buffer it holds (`Profile::read`).
+    let mut held = profile;
+    let found = held.read(&section, &entry);
+
+    if found.is_some() {
+        system.update_held_profile(file, held);
+    }
+
+    let value = found.unwrap_or_else(|| default.unwrap_or_default());
 
     Answer::Word(system.copy_out(buffer, &value, size) as u16)
 }
@@ -367,10 +386,18 @@ fn get_int(
     Answer::Word(to_integer(value.as_deref(), default))
 }
 
-/// An entry written; a null value removes it, a null entry the section's
-/// entries; all three null lets the file held go. The caller's string has
-/// its trailing spaces cut, in place, as Windows does.
+/// An entry written, as `profile.ts`'s `WritePrivateProfileString`: all
+/// three null lets the file held go. The section looked for first
+/// (`KRNL386.EXE` seg1 `6d5a`-`6e1f`): missing, a null entry or value leaves
+/// the file and answers 1 (`707c`, `profnul`); there, a null entry removes
+/// it whatever the value (`6d97`, `703f`). An entry not there with a null
+/// value leaves the file (`6db6`); one there loses its line (`6deb`,
+/// `704b`). A value the buffer holds already is left (`7150`). Each string
+/// written is measured as KERNEL measures it (`6e25`-`6e85`, `6864`), the
+/// caller's own cut in place.
 fn write_string(system: &mut System, section: u32, entry: u32, string: u32, file: &[u8]) -> Answer {
+    let section_far = section;
+    let entry_far = entry;
     let section = lpcstr(system, section);
     let entry = lpcstr(system, entry);
     let value = lpcstr(system, string);
@@ -380,52 +407,63 @@ fn write_string(system: &mut System, section: u32, entry: u32, string: u32, file
         return Answer::Word(0);
     }
 
-    let value = value.map(|value| {
-        let kept = value
-            .iter()
-            .rposition(|&byte| byte != b' ')
-            .map_or(0, |at| at + 1);
-
-        if kept < value.len() && string >> 16 != 0 {
-            let at = (string & 0xffff_0000) | (string.wrapping_add(kept as u32) & 0xffff);
-
-            system.write_far(at, &[0]);
-        }
-
-        let value = &value[..kept];
-        let end = value
-            .iter()
-            .rposition(|&byte| byte != b' ' && byte != b'\t')
-            .map_or(0, |at| at + 1);
-
-        value[..end].to_vec()
-    });
     let mut profile = system.read_profile(file);
-    let section = named(section.as_ref());
+    let section_name = named(section.as_ref());
+    let has_section = profile.has_section(&section_name);
 
-    match entry {
-        None => {
-            for name in profile.entries(&section) {
-                profile.set(&section, &name, None);
-            }
+    if !has_section {
+        if entry.is_none() || value.is_none() {
+            return Answer::Word(1);
         }
-        Some(entry) => {
-            // A value the same as the buffer's, byte for byte, is left as it
-            // is: nothing changes and nothing is written, and the answer is
-            // 1 (`KRNL386.EXE` seg1 `6df2`-`6e03`, `7150`, `707c`;
-            // `pmshell`: Program Manager's `display.drv=` unchanged leaves
-            // `Order=`'s leading space in the file).
-            if value.is_some() && profile.get(&section, &entry, false) == value {
-                return Answer::Word(1);
-            }
+    } else if entry.is_none() {
+        profile.remove_section(&section_name);
 
-            profile.set(&section, &entry, value.as_deref());
-        }
+        return Answer::Word(u16::from(system.write_profile(file, &profile)));
     }
 
-    let written = system.write_profile(file, &profile);
+    let entry_name = named(entry.as_ref());
+    let present = profile.get(&section_name, &entry_name, false).is_some();
 
-    Answer::Word(u16::from(written))
+    let Some(value) = value else {
+        if !present {
+            return Answer::Word(1);
+        }
+
+        profile.set(&section_name, &entry_name, None);
+
+        return Answer::Word(u16::from(system.write_profile(file, &profile)));
+    };
+
+    if present && profile.holds(&section_name, &entry_name, &value) {
+        return Answer::Word(1);
+    }
+
+    let mut measured = |far: u32, text: &[u8]| {
+        let (kept, after) = Profile::measure(text);
+
+        if after != text && far >> 16 != 0 {
+            let at = (far & 0xffff_0000) | (far.wrapping_add(kept.len() as u32) & 0xffff);
+
+            system.write_far(at, &after[kept.len()..=kept.len()]);
+        }
+
+        kept
+    };
+    let section_written = if has_section {
+        section_name.clone()
+    } else {
+        measured(section_far, &section_name)
+    };
+    let entry_written = if present {
+        entry_name.clone()
+    } else {
+        measured(entry_far, &entry_name)
+    };
+    let value = measured(string, &value);
+
+    profile.set(&section_written, &entry_written, Some(&value));
+
+    Answer::Word(u16::from(system.write_profile(file, &profile)))
 }
 
 /// An entry of `WIN.INI` as a number, as `GetProfileInt` reads it, for
