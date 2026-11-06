@@ -127,7 +127,7 @@ export function instance(system: any): number {
 
   if (loader instanceof Loader) {
     const handle = system._modules.handleFromPath((loader as any).path);
-    const library = handle ? system.handles.resolve(handle) : null;
+    const library = handle ? system.handles.resolveModule(handle) : null;
 
     if (library?.instance) {
       return library.instance;

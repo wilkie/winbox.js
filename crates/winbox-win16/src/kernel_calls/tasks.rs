@@ -338,7 +338,7 @@ pub fn is_shared_selector(system: &mut System, args: &mut Args) -> Result<Answer
         return Ok(Answer::Word(0));
     }
 
-    Ok(Answer::Word(match system.handles.resolve(module) {
+    Ok(Answer::Word(match system.handles.resolve_module(module) {
         Some(Object::Library(index) | Object::Task(index)) => {
             u16::from(system.modules[index].is_library())
         }

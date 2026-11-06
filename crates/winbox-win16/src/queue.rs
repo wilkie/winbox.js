@@ -1361,7 +1361,7 @@ pub fn post_app_message(system: &mut System, args: &mut Args) -> Result<Answer, 
     let wparam = args.word(system);
     let lparam = args.dword(system);
 
-    if task == 0 || !matches!(system.handles.resolve(task), Some(Object::Task(_))) {
+    if task == 0 || !matches!(system.handles.resolve_module(task), Some(Object::Task(_))) {
         return Ok(Answer::Word(0));
     }
 

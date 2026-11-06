@@ -58,7 +58,7 @@ fn found(system: &System, name: &str) -> Option<(String, Vec<u8>)> {
 
 /// The file a module's handle names: a library's.
 fn file_of_handle(system: &System, handle: u16) -> Option<String> {
-    match system.handles.resolve(handle)? {
+    match system.handles.resolve_module(handle)? {
         Object::Library(module) => Some(system.modules[module].path.clone()),
         _ => None,
     }

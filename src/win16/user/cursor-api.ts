@@ -82,7 +82,7 @@ export async function LoadCursor(this: any, hinst: number, lpszCursor: any) {
    * (`icon-handlers.ts`): drawn from the block as the display shows it
    * (`blockCursorImage`). WinBox's Program Manager's are `PROGMAN.EXE`'s,
    * as its icons are. */
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
   const executable = isProgman(this, module) ? await progmanExecutable(this) : module?.executable;
 
   return loadFromModule(this, hinst, executable, lpszCursor, RT_CURSOR);

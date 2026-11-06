@@ -85,12 +85,27 @@ const GDI_HIGHEST: u16 = 0x3ffe;
 #[derive(Debug, Clone, Copy)]
 struct Entry {
     object: Object,
+    /// An instance's or a module's handle, made from a selector
+    /// (`alias_at`), which one of GDI's may share.
+    alias: bool,
 }
 
 /// The handles given out.
 #[derive(Debug, Clone)]
 pub struct Handles {
     given: HashMap<u16, Entry>,
+    /// GDI's handles: its objects' and its device contexts', each a
+    /// moveable local handle in GDI's own heap (**read out**: `GDI.EXE`
+    /// seg1 `0b7c`-`0b9f` makes a pen by `0eef`-`0f31`, which asks
+    /// `LocalAlloc(LMEM_MOVEABLE, ...)` of GDI's data segment,
+    /// `1f43`-`1f4e`, and answers the local handle). Numbers within GDI's
+    /// data segment, apart from KERNEL's selectors and the instances and
+    /// modules' handles made from them, kept in `given` with USER's and
+    /// WinBox's others. A number may be both an instance and one of GDI's
+    /// objects: KERNEL's functions take it for the instance
+    /// (`resolve_module`), the others for the object (`resolve`). As
+    /// `HandleManager._gdi`.
+    gdi: HashMap<u16, Entry>,
     /// Each object's own handle, not an alias's.
     lookup: HashMap<Object, u16>,
     gdi_free: Vec<u16>,
@@ -103,6 +118,7 @@ impl Default for Handles {
     fn default() -> Self {
         Self {
             given: HashMap::new(),
+            gdi: HashMap::new(),
             lookup: HashMap::new(),
             gdi_free: Vec::new(),
             gdi_next: GDI_START,
@@ -116,19 +132,58 @@ impl Handles {
         Self::default()
     }
 
+    /// Whether an object's handle is GDI's: an object or a device context.
+    fn in_gdi(object: Object) -> bool {
+        matches!(object, Object::Gdi(_) | Object::Dc(_))
+    }
+
+    /// The table an object's handle is in.
+    fn table_for(&mut self, object: Object) -> &mut HashMap<u16, Entry> {
+        if Self::in_gdi(object) {
+            &mut self.gdi
+        } else {
+            &mut self.given
+        }
+    }
+
+    /// Whether a number is taken, for a handle given in GDI's set (`gdi`)
+    /// or in the rest: GDI's own, or any of the rest's but an instance's or
+    /// a module's, made from a selector (`alias_at`); the rest's own, or
+    /// any of GDI's. So the two sets share no number but where an instance
+    /// or a module's handle is one of GDI's, as Windows' can be. As
+    /// `HandleManager.taken`.
+    fn taken(&self, handle: u16, gdi: bool) -> bool {
+        let other = self.given.get(&handle);
+
+        if gdi {
+            self.gdi.contains_key(&handle) || other.is_some_and(|entry| !entry.alias)
+        } else {
+            other.is_some() || self.gdi.contains_key(&handle)
+        }
+    }
+
     /// A new handle for an object, from its kind's range.
     pub fn allocate(&mut self, kind: Kind, object: Object) -> Option<u16> {
         let handle = match kind {
             Kind::Gdi => self.gdi_handle(),
-            Kind::Dc => self.find(HDC + 1, 0xffe, Some(2)),
-            Kind::Window => self.find(ATOM + 1, 0xffe, Some(0)),
-            Kind::File => self.find(HFILE + 1, 0xffe, None),
-            Kind::Instance => self.find(HINSTANCE + 1, 0xffe, Some(2)),
-            Kind::Module => self.find(HMODULE + 1, 0xffe, None),
-            Kind::Atom => self.find(ATOM + 1, 0xffe, None),
+            Kind::Dc => self.find(HDC + 1, 0xffe, Some(2), true),
+            Kind::Window => self.find(ATOM + 1, 0xffe, Some(0), false),
+            Kind::File => self.find(HFILE + 1, 0xffe, None, false),
+            Kind::Instance => self.find(HINSTANCE + 1, 0xffe, Some(2), false),
+            Kind::Module => self.find(HMODULE + 1, 0xffe, None, false),
+            Kind::Atom => self.find(ATOM + 1, 0xffe, None, false),
         }?;
+        let entry = Entry {
+            object,
+            alias: false,
+        };
 
-        self.given.insert(handle, Entry { object });
+        if matches!(kind, Kind::Gdi | Kind::Dc) {
+            self.gdi.insert(handle, entry);
+        } else {
+            self.given.insert(handle, entry);
+        }
+
         self.lookup.insert(object, handle);
         Some(handle)
     }
@@ -136,24 +191,62 @@ impl Handles {
     /// A handle at a number of the caller's choosing, given whether or not
     /// it was, and what `lookup` answers for its object: a stock object's.
     pub fn assign(&mut self, handle: u16, object: Object) {
-        self.given.insert(handle, Entry { object });
+        self.table_for(object).insert(
+            handle,
+            Entry {
+                object,
+                alias: false,
+            },
+        );
         self.lookup.insert(object, handle);
     }
 
     /// A second handle for an object, among the modules': a library's
     /// module, beside its instance.
     pub fn alias(&mut self, object: Object) -> Option<u16> {
-        let handle = self.find(HMODULE + 1, 0xffe, None)?;
+        let handle = self.find(HMODULE + 1, 0xffe, None, false)?;
 
-        self.given.insert(handle, Entry { object });
+        self.given.insert(
+            handle,
+            Entry {
+                object,
+                alias: false,
+            },
+        );
         Some(handle)
     }
 
     /// A handle at a number of the caller's choosing, if it is free: a
-    /// program's instance, its data segment's handle, beside its task.
+    /// program's instance, its data segment's handle, beside its task; a
+    /// module's handle; a resource's.
     pub fn alias_at(&mut self, handle: u16, object: Object) -> u16 {
-        self.given.entry(handle).or_insert(Entry { object });
+        let alias = matches!(
+            object,
+            Object::Task(_) | Object::Library(_) | Object::Kept(_)
+        );
+
+        self.table_for(object)
+            .entry(handle)
+            .or_insert(Entry { object, alias });
         handle
+    }
+
+    /// The table a handle is found in: the rest's, where it is one of
+    /// theirs that is not an instance's or a module's; else GDI's; else
+    /// the rest's. Asked for an instance or a module (`module`), the
+    /// rest's first. As `HandleManager.tableOf`.
+    fn table_of(&self, handle: u16, module: bool) -> Option<&HashMap<u16, Entry>> {
+        let other = self.given.get(&handle);
+
+        if other.is_some_and(|entry| module || !entry.alias) {
+            return Some(&self.given);
+        }
+
+        if self.gdi.contains_key(&handle) {
+            Some(&self.gdi)
+        } else {
+            other.map(|_| &self.given)
+        }
     }
 
     /// A handle registered under a name, without regard to case.
@@ -168,15 +261,29 @@ impl Handles {
         self.names.get(&name.to_ascii_uppercase()).copied()
     }
 
-    /// The object a handle stands for.
+    /// The object a handle stands for: one of the rest's, else one of
+    /// GDI's -- a number both an instance's and one of GDI's objects' is
+    /// the object's, as GDI and USER take it (`table_of`).
     pub fn resolve(&self, handle: u16) -> Option<Object> {
-        self.given.get(&handle).map(|entry| entry.object)
+        self.table_of(handle, false)?
+            .get(&handle)
+            .map(|entry| entry.object)
+    }
+
+    /// The object a handle given as an instance or a module stands for, as
+    /// KERNEL takes it: the instance's or the module's where the number is
+    /// both one of theirs and one of GDI's objects'.
+    pub fn resolve_module(&self, handle: u16) -> Option<Object> {
+        self.table_of(handle, true)?
+            .get(&handle)
+            .map(|entry| entry.object)
     }
 
     /// Every handle given out and what it stands for, in no order.
     pub fn objects(&self) -> impl Iterator<Item = (u16, Object)> + '_ {
         self.given
             .iter()
+            .chain(&self.gdi)
             .map(|(&handle, entry)| (handle, entry.object))
     }
 
@@ -185,11 +292,28 @@ impl Handles {
         self.lookup.get(&object).copied()
     }
 
-    /// A handle let go: GDI's given out again first, but a stock object's.
+    /// A handle let go, found as `resolve` finds it: GDI's given out again
+    /// first, but a stock object's.
     pub fn free(&mut self, handle: u16) -> Option<Object> {
-        let entry = self.given.remove(&handle)?;
+        self.release(handle, false)
+    }
 
-        if handle & 3 == 2
+    /// An instance's or a module's handle let go, found as
+    /// `resolve_module` finds it.
+    pub fn free_module(&mut self, handle: u16) -> Option<Object> {
+        self.release(handle, true)
+    }
+
+    fn release(&mut self, handle: u16, module: bool) -> Option<Object> {
+        let gdi = std::ptr::eq(self.table_of(handle, module)?, &raw const self.gdi);
+        let entry = if gdi {
+            self.gdi.remove(&handle)
+        } else {
+            self.given.remove(&handle)
+        }?;
+
+        if gdi
+            && handle & 3 == 2
             && (GDI_LOWEST..=GDI_HIGHEST).contains(&handle)
             && !(STOCK_FIRST..=STOCK_LAST).contains(&handle)
         {
@@ -206,8 +330,8 @@ impl Handles {
     }
 
     /// A free handle from `start`, within `length`, with `residue` its low
-    /// two bits where given.
-    fn find(&self, start: u16, length: u16, residue: Option<u16>) -> Option<u16> {
+    /// two bits where given; in GDI's set where `gdi` (`taken`).
+    fn find(&self, start: u16, length: u16, residue: Option<u16>, gdi: bool) -> Option<u16> {
         let (mut at, step) = (u32::from(start), if residue.is_some() { 4 } else { 1 });
         let end = u32::from(start) + u32::from(length);
 
@@ -219,7 +343,7 @@ impl Handles {
             }
         }
 
-        while at <= end && self.given.contains_key(&(at as u16)) {
+        while at <= end && self.taken(at as u16, gdi) {
             at += step;
         }
 
@@ -230,7 +354,7 @@ impl Handles {
     /// from `C6Ah` past the stock objects', then above where it started.
     fn gdi_handle(&mut self) -> Option<u16> {
         while let Some(handle) = self.gdi_free.pop() {
-            if !self.given.contains_key(&handle) {
+            if !self.taken(handle, true) {
                 return Some(handle);
             }
         }
@@ -238,7 +362,7 @@ impl Handles {
         let mut handle = self.gdi_next;
 
         while handle >= GDI_LOWEST {
-            if !(STOCK_FIRST..=STOCK_LAST).contains(&handle) && !self.given.contains_key(&handle) {
+            if !(STOCK_FIRST..=STOCK_LAST).contains(&handle) && !self.taken(handle, true) {
                 self.gdi_next = handle - 4;
                 return Some(handle);
             }
@@ -248,7 +372,7 @@ impl Handles {
 
         (GDI_START + 4..=GDI_HIGHEST)
             .step_by(4)
-            .find(|handle| !self.given.contains_key(handle))
+            .find(|&handle| !self.taken(handle, true))
     }
 }
 
@@ -279,5 +403,22 @@ mod tests {
         assert_eq!(handles.allocate(Kind::Gdi, Object::Kept(1)), Some(0xc66));
         handles.free(0xc6a);
         assert_eq!(handles.allocate(Kind::Gdi, Object::Kept(2)), Some(0xc6a));
+    }
+
+    /// An instance's handle, made from a selector, and one of GDI's objects
+    /// may have one number: GDI's numbers pass over WinBox's own numbers,
+    /// not an instance's, and each is found by those that take it so.
+    #[test]
+    fn keeps_gdi_apart_from_instances() {
+        let mut handles = Handles::new();
+
+        handles.alias_at(0xc6a, Object::Task(0));
+        handles.alias_at(0xc66, Object::Cursor(0));
+        assert_eq!(handles.allocate(Kind::Gdi, Object::Gdi(0)), Some(0xc6a));
+        assert_eq!(handles.allocate(Kind::Gdi, Object::Gdi(1)), Some(0xc62));
+        assert_eq!(handles.resolve(0xc6a), Some(Object::Gdi(0)));
+        assert_eq!(handles.resolve_module(0xc6a), Some(Object::Task(0)));
+        assert_eq!(handles.free_module(0xc6a), Some(Object::Task(0)));
+        assert_eq!(handles.resolve_module(0xc6a), Some(Object::Gdi(0)));
     }
 }

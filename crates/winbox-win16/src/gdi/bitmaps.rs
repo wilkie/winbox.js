@@ -542,7 +542,7 @@ pub fn load_bitmap(system: &mut System, instance: u16, name: Option<&MenuName>) 
     // driver's `GetDriverResourceID` first, as `LoadBitmap(NULL, ...)`'s
     // does (`USER.EXE` seg12 `02dc`-`031f`; `Display::resource_id`).
     if let (MenuName::Number(id), Some(Object::Kept(kept))) =
-        (&name, system.handles.resolve(instance))
+        (&name, system.handles.resolve_module(instance))
         && system.kept[kept].module.name == "DISPLAY"
     {
         name = MenuName::Number(system.display.resource_number(*id));

@@ -25,10 +25,43 @@ export class HandleManager {
   _gdiFree: number[] = [];
   _gdiNext = GDI_START;
 
+  /**
+   * GDI's handles: its objects' and its device contexts', each a moveable
+   * local handle in GDI's own heap (**read out**: `GDI.EXE` seg1
+   * `0b7c`-`0b9f` makes a pen by `0eef`-`0f31`, which asks
+   * `LocalAlloc(LMEM_MOVEABLE, ...)` of GDI's data segment, `1f43`-`1f4e`,
+   * and answers the local handle). They are numbers within GDI's data
+   * segment, apart from KERNEL's selectors and the instances and modules'
+   * handles made from them, which are numbered in `_handles` with USER's and
+   * WinBox's others. A number may be both an instance and one of GDI's
+   * objects: KERNEL's functions take it for the instance (`resolveModule`),
+   * the others for the object (`resolve`).
+   */
+  _gdi: any;
+
   constructor() {
     this._handles = {};
+    this._gdi = {};
     this._names = {};
     this._lookup = new Map();
+  }
+
+  /** Whether an object's handle is GDI's: an object or a device context. */
+  inGdi(item) {
+    return this.isGDIObject(item) || item instanceof Surface;
+  }
+
+  /**
+   * Whether a number is taken, for a handle given in GDI's set (`gdi`) or
+   * in the rest: GDI's own, or any of the rest's but an instance's or a
+   * module's, made from a selector (`aliasAt`); the rest's own, or any of
+   * GDI's. So the two sets share no number but where an instance or a
+   * module's handle is one of GDI's, as Windows' can be.
+   */
+  taken(handle, gdi = false) {
+    const other = this._handles[handle];
+
+    return gdi ? !!this._gdi[handle] || (!!other && !other.alias) : !!other || !!this._gdi[handle];
   }
 
   /**
@@ -46,7 +79,7 @@ export class HandleManager {
       handle = this.gdiHandle();
     } else if (item instanceof Surface) {
       // Allocates an HDC
-      handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe, 2);
+      handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe, 2, true);
     } else if (
       item instanceof RasterWindow ||
       item instanceof DesktopHandle ||
@@ -95,6 +128,16 @@ export class HandleManager {
     return this._lookup.get(item);
   }
 
+  /** Every handle's entry, GDI's and the rest's. */
+  entries(): any[] {
+    return [...Object.values(this._handles), ...Object.values(this._gdi)];
+  }
+
+  /** The table an object's handle is in. */
+  tableFor(item) {
+    return this.inGdi(item) ? this._gdi : this._handles;
+  }
+
   /**
    * A handle of GDI's for an object that is in its local heap on Windows: a
    * pen, a brush, a font, a region, a bitmap, a palette, or a memory device
@@ -113,7 +156,7 @@ export class HandleManager {
     while (this._gdiFree.length) {
       const handle = this._gdiFree.pop()!;
 
-      if (!this._handles[handle]) {
+      if (!this.taken(handle, true)) {
         return handle;
       }
     }
@@ -123,14 +166,14 @@ export class HandleManager {
         continue;
       }
 
-      if (!this._handles[handle]) {
+      if (!this.taken(handle, true)) {
         this._gdiNext = handle - 4;
         return handle;
       }
     }
 
     for (let handle = GDI_START + 4; handle <= GDI_HIGHEST; handle += 4) {
-      if (!this._handles[handle]) {
+      if (!this.taken(handle, true)) {
         return handle;
       }
     }
@@ -182,15 +225,20 @@ export class HandleManager {
    * its data segment's handle, beside its task.
    */
   aliasAt(handle, item) {
-    if (!this._handles[handle]) {
-      this._handles[handle] = { instance: item };
+    const table = this.tableFor(item);
+
+    if (!table[handle]) {
+      table[handle] = { instance: item, alias: table === this._handles };
     }
 
     return handle;
   }
 
-  /** A free handle from `start`, within `length`, and with `residue` for its low two bits if given. */
-  find(start, length, residue?: number) {
+  /**
+   * A free handle from `start`, within `length`, and with `residue` for its
+   * low two bits if given; in GDI's set where `gdi` (`taken`).
+   */
+  find(start, length, residue?: number, gdi = false) {
     const end = start + length;
     const step = residue === undefined ? 1 : 4;
 
@@ -203,7 +251,7 @@ export class HandleManager {
     }
 
     // Scans handles for a free handle
-    while (this._handles[start] && start <= end) {
+    while (this.taken(start, gdi) && start <= end) {
       start += step;
     }
 
@@ -215,20 +263,50 @@ export class HandleManager {
   }
 
   assign(handle, item) {
-    this._handles[handle] = {
+    this.tableFor(item)[handle] = {
       instance: item,
     };
     this._lookup.set(item, handle);
   }
 
+  /** A handle let go, found as `resolve` finds it. */
   free(handle) {
-    const item = this._handles[handle];
+    const table = this.tableOf(handle, false);
 
-    delete this._handles[handle];
+    return table ? this.release(table, handle) : undefined;
+  }
+
+  /** An instance's or a module's handle let go, found as `resolveModule` finds it. */
+  freeModule(handle) {
+    const table = this.tableOf(handle, true);
+
+    return table ? this.release(table, handle) : undefined;
+  }
+
+  /**
+   * The table a handle is found in: the rest's, where it is one of theirs
+   * that is not an instance's or a module's; else GDI's; else the rest's.
+   * Asked for an instance or a module (`module`), the rest's first.
+   */
+  private tableOf(handle, module: boolean) {
+    const other = this._handles[handle];
+
+    if (other && (module || !other.alias)) {
+      return this._handles;
+    }
+
+    return this._gdi[handle] ? this._gdi : other ? this._handles : null;
+  }
+
+  private release(table: any, handle) {
+    const item = table[handle];
+
+    delete table[handle];
 
     /* One of GDI's, given out again first (`gdinum`); a stock object's is
      * its own. */
     if (
+      table === this._gdi &&
       (handle & 3) === 2 &&
       handle >= GDI_LOWEST &&
       handle <= GDI_HIGHEST &&
@@ -258,8 +336,22 @@ export class HandleManager {
     return this.resolve(handle);
   }
 
+  /**
+   * What a handle stands for: one of the rest's, else one of GDI's -- a
+   * number both an instance's and one of GDI's objects' is the object's,
+   * as GDI and USER take it (`tableOf`).
+   */
   resolve(handle) {
-    return (this._handles[handle] || {}).instance;
+    return this.tableOf(handle, false)?.[handle]?.instance;
+  }
+
+  /**
+   * What a handle given as an instance or a module stands for, as KERNEL
+   * takes it: the instance's or the module's where the number is both one
+   * of theirs and one of GDI's objects'.
+   */
+  resolveModule(handle) {
+    return this.tableOf(handle, true)?.[handle]?.instance;
   }
 
   isGDI(handle) {

@@ -53,7 +53,7 @@ impl System {
     /// The data segment an instance handle stands for: a program's or a
     /// library's; nought for none.
     pub(crate) fn instance_selector(&self, instance: u16) -> u16 {
-        let module = match self.handles.resolve(instance) {
+        let module = match self.handles.resolve_module(instance) {
             Some(Object::Task(program)) => Some(program),
             Some(Object::Library(module)) => Some(module),
             _ => None,

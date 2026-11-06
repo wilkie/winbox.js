@@ -66,7 +66,7 @@ export function parseAccelerators(data: Uint8Array) {
 }
 
 export async function LoadAccelerators(this: any, hinst: number, lpszTableName: any) {
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
   const data = await resourceBytes(
     module?.executable,
     Executable.RESOURCES.Accelerator,

@@ -377,46 +377,18 @@ export class GlobalAllocator {
   /**
    * A descriptor for one selector: the one given back last that is free
    * still, else the first free from `start`. Its index, or -1; not yet
-   * marked given. One `avoid` refuses is passed over and stays where it
-   * was in the list: WinBox numbers a module's instance and its handle in
-   * the one set of numbers its other handles have, GDI's among them, where
-   * Windows' are apart (`Win16.load`, `library.ts`).
+   * marked given.
    */
-  take(start = 1, avoid?: (index: number) => boolean) {
-    const passed: number[] = [];
-    let found = -1;
-
+  take(start = 1) {
     while (this.#freed.length) {
       const index = this.#freed.pop()!;
 
-      if (this._usedMap[index]) {
-        continue;
-      }
-
-      if (avoid?.(index)) {
-        passed.push(index);
-        continue;
-      }
-
-      found = index;
-      break;
-    }
-
-    while (passed.length) {
-      this.#freed.push(passed.pop()!);
-    }
-
-    if (found >= 0) {
-      return found;
-    }
-
-    for (let index = this.find(start); index >= 0; index = this.find(index + 1)) {
-      if (!avoid?.(index)) {
+      if (!this._usedMap[index]) {
         return index;
       }
     }
 
-    return -1;
+    return this.find(start);
   }
 
   /** A descriptor given back: emptied, and the next `take` answers it. */

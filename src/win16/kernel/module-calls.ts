@@ -66,7 +66,7 @@ export function IsSharedSelector(this: any, hSelector: number) {
     return 0;
   }
 
-  const item = this.handles.resolve(module);
+  const item = this.handles.resolveModule(module);
   const loader = item?.loader ?? (item?.executable ? item : null);
 
   if (loader?.executable?.neHeader) {

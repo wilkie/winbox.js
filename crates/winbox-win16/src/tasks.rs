@@ -485,7 +485,7 @@ impl System {
 
         if let Some(own) = own
             && !matches!(
-                self.handles.resolve(self.modules[program].handle),
+                self.handles.resolve_module(self.modules[program].handle),
                 Some(Object::Kept(_))
             )
         {
@@ -518,12 +518,13 @@ impl System {
         // Manager's, the module it keeps (`progman`).
         let last = self.running_instances(program) == 0;
         let handle = self.modules[program].handle;
-        let database =
-            (last && handle != 0 && matches!(self.handles.resolve(handle), Some(Object::Task(_))))
-                .then(|| winbox_machine::index_for(handle));
+        let database = (last
+            && handle != 0
+            && matches!(self.handles.resolve_module(handle), Some(Object::Task(_))))
+        .then(|| winbox_machine::index_for(handle));
 
         // WinBox's Program Manager's code and data are the kept module's.
-        let kept = matches!(self.handles.resolve(handle), Some(Object::Kept(_)));
+        let kept = matches!(self.handles.resolve_module(handle), Some(Object::Kept(_)));
 
         if let Some(own) = own.filter(|_| !kept) {
             if !held {
@@ -531,7 +532,7 @@ impl System {
             }
 
             if database.is_some() {
-                self.handles.free(handle);
+                self.handles.free_module(handle);
             }
 
             for index in [own.prefix, own.second, own.database] {

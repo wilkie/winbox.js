@@ -36,7 +36,7 @@ import { Executable } from '../../executable.js';
  */
 export async function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
   // Resolve the handle
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
 
   // Fail out if the handle is not found
   if (!module) {

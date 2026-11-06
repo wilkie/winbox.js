@@ -1317,7 +1317,7 @@ pub fn mci_get_error_string(system: &mut System, args: &mut Args) -> Result<Answ
     };
     let text = if id != 0 && module != 0 {
         // The module's file; none for a handle that is no module's now.
-        let path = match system.handles.resolve(module) {
+        let path = match system.handles.resolve_module(module) {
             Some(Object::Kept(kept)) => system.kept[kept].module.path.to_string(),
             Some(Object::Library(library)) => system.modules[library].path.clone(),
             _ => String::new(),

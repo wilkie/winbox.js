@@ -143,7 +143,7 @@ export async function callHandler(
  * after; nought for a type the module has none of.
  */
 export function SetResourceHandler(this: any, hInstance: number, lpszType: any, lpfn: number) {
-  const executable = this.handles.resolve(hInstance & 0xffff)?.executable;
+  const executable = this.handles.resolveModule(hInstance & 0xffff)?.executable;
   const type = (executable?.resources ?? []).find((each: any) => matches(each, lpszType));
 
   if (!type) {

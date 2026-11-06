@@ -188,7 +188,7 @@ fn set_word(system: &mut System, library: u16, at: u16, value: u16) {
 
 /// The library's data segment, as a far pointer's selector.
 fn data_of(system: &System, library: u16) -> Option<u32> {
-    let Some(Object::Library(module)) = system.handles.resolve(library) else {
+    let Some(Object::Library(module)) = system.handles.resolve_module(library) else {
         return None;
     };
     let data = system.modules[module].data()?;

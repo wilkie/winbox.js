@@ -99,7 +99,10 @@ pub fn callback_ok(system: &mut System, callback: u32, kind: u16) -> bool {
                 && crate::window_queries::is_window(system, &mut Args::repeat(low))
                     == Ok(Answer::Word(1))
         }
-        2 => callback >> 16 == 0 && matches!(system.handles.resolve(low), Some(Object::Task(_))),
+        2 => {
+            callback >> 16 == 0
+                && matches!(system.handles.resolve_module(low), Some(Object::Task(_)))
+        }
         3 => code_flags(system, (callback >> 16) as u16).is_some_and(|flags| flags & 0x1011 == 0),
         _ => false,
     }

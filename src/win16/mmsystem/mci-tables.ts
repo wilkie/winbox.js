@@ -79,7 +79,7 @@ export type Source = { own: string } | { handle: number };
 
 /** A module's handle as a source: one of WinBox's own named, if it is. */
 export function sourceOf(system: any, handle: number): Source {
-  const item = handle ? system.handles.resolve(handle) : null;
+  const item = handle ? system.handles.resolveModule(handle) : null;
 
   if (item && !item.loader && Array.isArray(item.exports) && item.name) {
     return { own: String(item.name).toUpperCase() };

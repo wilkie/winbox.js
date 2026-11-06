@@ -100,7 +100,7 @@ pub fn post_callback(
     match flags & 7 {
         1 => u16::from(system.post_message(low, message, device, first)),
         2 => {
-            if low == 0 || !matches!(system.handles.resolve(low), Some(Object::Task(_))) {
+            if low == 0 || !matches!(system.handles.resolve_module(low), Some(Object::Task(_))) {
                 return 0;
             }
 

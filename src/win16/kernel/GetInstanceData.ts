@@ -20,7 +20,7 @@ import { segmentSelector } from '../selectors.js';
  * @returns {Types.INT} The count, or nought.
  */
 export function GetInstanceData(this: any, hInstance: number, pData: number, cbData: number) {
-  const loader = this.handles.resolve(hInstance & 0xffff)?.loader;
+  const loader = this.handles.resolveModule(hInstance & 0xffff)?.loader;
   const index = loader?.translate?.(loader.ds);
 
   if (!index) {

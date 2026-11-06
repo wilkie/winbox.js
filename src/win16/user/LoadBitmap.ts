@@ -105,7 +105,7 @@ export async function LoadBitmap(hinst, lpszBitmap) {
     return this.handles.allocate(copy);
   }
 
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
 
   /* Asked of the display driver's own instance, a number goes through the
    * driver's `GetDriverResourceID` first, as `LoadBitmap(NULL, ...)`'s does

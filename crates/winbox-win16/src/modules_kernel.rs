@@ -100,7 +100,7 @@ pub fn get_module_usage(system: &mut System, args: &mut Args) -> Result<Answer, 
 
 /// A module's count, as `GetModuleUsage` answers it.
 pub(crate) fn module_usage(system: &System, handle: u16) -> u16 {
-    match system.handles.resolve(handle) {
+    match system.handles.resolve_module(handle) {
         Some(Object::Library(module)) => system.modules[module].usage as u16,
         // One of WinBox's own with no file: counted as its file would be.
         Some(Object::Kept(kept))
@@ -410,7 +410,7 @@ pub(crate) fn proc_numbered(system: &mut System, handle: u16, ordinal: u16) -> u
 }
 
 fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
-    let module = match system.handles.resolve(handle) {
+    let module = match system.handles.resolve_module(handle) {
         Some(Object::Task(program)) => Some(program),
         Some(Object::Library(module)) => Some(module),
         Some(Object::Kept(kept)) => return kept_proc(system, kept, name),
@@ -479,7 +479,7 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
 pub fn make_proc_instance(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     let procedure = args.dword(system);
     let instance = args.word(system);
-    let Some(Object::Task(program)) = system.handles.resolve(instance) else {
+    let Some(Object::Task(program)) = system.handles.resolve_module(instance) else {
         return Ok(Answer::Dword(procedure));
     };
     let module = &system.modules[program];
@@ -744,7 +744,7 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
     let own = {
         let mut system = engine.system();
 
-        match system.handles.resolve(handle) {
+        match system.handles.resolve_module(handle) {
             Some(Object::Kept(kept))
                 if crate::own_modules::own_with_file(system.kept[kept].module.name) =>
             {
@@ -760,7 +760,7 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
 
     let (wep, brought) = {
         let mut system = engine.system();
-        let Some(Object::Library(library)) = system.handles.resolve(handle) else {
+        let Some(Object::Library(library)) = system.handles.resolve_module(handle) else {
             return Ok(());
         };
         let module = &mut system.modules[library];
@@ -800,7 +800,7 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
     let_go(engine, brought).await?;
 
     let mut system = engine.system();
-    let Some(Object::Library(library)) = system.handles.resolve(handle) else {
+    let Some(Object::Library(library)) = system.handles.resolve_module(handle) else {
         return Ok(());
     };
 
@@ -883,8 +883,8 @@ impl System {
 
         module.name.clear();
         module.path.clear();
-        self.handles.free(instance);
-        self.handles.free(handle);
+        self.handles.free_module(instance);
+        self.handles.free_module(handle);
     }
 }
 

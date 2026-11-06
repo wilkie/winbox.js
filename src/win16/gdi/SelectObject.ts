@@ -231,7 +231,7 @@ function releaseScaled(system: any, surface: any, previous: any) {
     return;
   }
 
-  const held = (Object.values(system.handles._handles) as any[]).some(
+  const held = (system.handles.entries() as any[]).some(
     (each) => each?.instance !== surface && each?.instance?.font === previous
   );
 

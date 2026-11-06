@@ -547,7 +547,7 @@ pub(crate) fn module_handle_named(system: &System, text: &str) -> u16 {
 /// by `modnum`), but a program's task is its instance here. As
 /// `GetModuleHandle.ts`.
 fn module_by_number(system: &System, number: u16) -> u16 {
-    match system.handles.resolve(number) {
+    match system.handles.resolve_module(number) {
         // A task's own handle -- not its instance's, nor its module's --
         // names no module (**recorded** by `modnum`).
         Some(Object::Task(module))

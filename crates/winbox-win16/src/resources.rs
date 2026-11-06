@@ -80,7 +80,7 @@ impl System {
     /// installation -- the display driver's, which Control Panel's Color
     /// finds its "Windows Default" scheme in (`MAIN.CPL` seg6 `2922`).
     fn resources_of(&mut self, instance: u16) -> Option<Owner> {
-        match self.handles.resolve(instance)? {
+        match self.handles.resolve_module(instance)? {
             // WinBox's Program Manager, made in memory with no resources:
             // `PROGMAN.EXE`'s, as the asset bundle's store has them, where
             // it keeps its module (`progman`; `kb/topics/asset-bundle.md`).

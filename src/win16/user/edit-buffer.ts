@@ -46,7 +46,7 @@ export interface EditBuffer {
 
 /** The data segment an instance handle stands for: a program's or a library's. */
 export function instanceSelector(system: any, hinst: number) {
-  const owner = system.handles.resolve(hinst);
+  const owner = system.handles.resolveModule(hinst);
   const loader = owner?.loader;
 
   if (!loader?.ds) {

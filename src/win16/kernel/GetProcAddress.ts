@@ -4,7 +4,7 @@ import { CONSTANT_SEGMENT } from './constants.js';
 import { segmentSelector } from '../selectors.js';
 
 export function GetProcAddress(hinst, lpszProcName) {
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
 
   /* A library loaded from its file: its own name tables and entry points. */
   if (module?.loader && typeof module.loader.ordinalOf === 'function') {

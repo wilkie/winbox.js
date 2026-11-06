@@ -52,7 +52,7 @@ export async function LoadIcon(hinst, lpszIcon) {
     return handles.get(id);
   }
 
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
   /* WinBox's Program Manager's are `PROGMAN.EXE`'s, from the store
    * (`progman/stored.ts`). */
   const executable = isProgman(this, module) ? await progmanExecutable(this) : module?.executable;

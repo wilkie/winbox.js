@@ -64,7 +64,7 @@ async function found(
  */
 function named(system: any, lpszFilename: any): { file: string } | { handle: string } | null {
   if (typeof lpszFilename === 'number') {
-    const library = lpszFilename ? system.handles.resolve(lpszFilename) : null;
+    const library = lpszFilename ? system.handles.resolveModule(lpszFilename) : null;
     const path = library?.loader?.executable?.path ?? library?.executable?.path;
 
     return path ? { handle: String(path) } : null;
@@ -167,7 +167,7 @@ function orphanOutlines(system: any, gone: any[]) {
     return;
   }
 
-  for (const entry of Object.values(system.handles._handles) as any[]) {
+  for (const entry of system.handles.entries()) {
     const item = entry?.instance;
 
     for (const font of [item, item?.font]) {

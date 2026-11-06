@@ -248,10 +248,7 @@ impl System {
             + usize::from(executable.header.entry_table_offset)
             + usize::from(executable.header.entry_table_length);
         let bytes = executable.bytes()[start..end.min(executable.bytes().len())].to_vec();
-        let handles = &self.handles;
-        let index = self
-            .descriptors
-            .take_avoiding(1, |index| numbered(handles, index))?;
+        let index = self.descriptors.take(1)?;
 
         self.descriptors
             .map(&mut self.cpu.bus, index, &bytes, false);
@@ -534,13 +531,10 @@ impl System {
                 executable.segment_bytes(index),
                 segment_block_size(&executable, index + 1),
             );
-            // A selector as KERNEL gives one, the one freed last first; the
-            // data segment's not one whose handle another handle has.
-            let data = index + 1 == usize::from(executable.header.auto_data_segment);
-            let handles = &self.handles;
+            // A selector as KERNEL gives one, the one freed last first.
             let at = self
                 .descriptors
-                .take_avoiding(1, |index| data && numbered(handles, index))
+                .take(1)
                 .expect("a descriptor for a segment");
 
             self.descriptors.map(
@@ -664,15 +658,4 @@ impl System {
             }
         }
     }
-}
-
-/// Whether the selector a module's database would be, or its data segment's
-/// handle one below, is a number another of WinBox's handles has: a
-/// module's database is its handle, and its data segment's handle its
-/// instance, in the one set of numbers GDI's objects and the rest are given
-/// from, so such a descriptor is passed over for them. As `Win16.numbered`.
-fn numbered(handles: &crate::handles::Handles, index: usize) -> bool {
-    let selector = segment_selector(index);
-
-    handles.resolve(selector).is_some() || handles.resolve(selector.wrapping_sub(1)).is_some()
 }

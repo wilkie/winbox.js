@@ -78,7 +78,7 @@ pub(crate) fn global_blocks(system: &mut System) -> Vec<GlobalBlock> {
     // Each loaded module's segments, by the module its name finds last.
     for module in &chain {
         let Some(Object::Library(index) | Object::Task(index)) =
-            system.handles.resolve(module.handle)
+            system.handles.resolve_module(module.handle)
         else {
             continue;
         };
@@ -108,7 +108,7 @@ pub(crate) fn global_blocks(system: &mut System) -> Vec<GlobalBlock> {
 
     // A module winbox.js keeps: its data segment.
     for module in &chain {
-        if let Some(Object::Kept(kept)) = system.handles.resolve(module.handle) {
+        if let Some(Object::Kept(kept)) = system.handles.resolve_module(module.handle) {
             let data = system.kept[kept].data;
 
             blocks.push(system.toolhelp_block(data, module.handle, GT_DGROUP, 0, DGROUP));

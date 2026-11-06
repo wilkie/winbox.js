@@ -727,7 +727,7 @@ impl System {
     /// program's, a library's, or a kept module's, as the installation has
     /// it -- `USER.EXE`'s strings, as Windows reads them.
     pub fn executable_of(&mut self, handle: u16) -> Option<std::rc::Rc<winbox_ne::Executable>> {
-        match self.handles.resolve(handle)? {
+        match self.handles.resolve_module(handle)? {
             Object::Task(program) => Some(self.modules[program].executable.clone()),
             Object::Library(module) => Some(self.modules[module].executable.clone()),
             Object::Kept(kept) => self.kept_file(kept),
@@ -747,7 +747,7 @@ impl System {
     /// base answers its file's on the installation (`kept_version`). None
     /// for any other.
     pub fn expected_windows_version(&mut self, handle: u16) -> Option<u16> {
-        if let Some(Object::Kept(kept)) = self.handles.resolve(handle)
+        if let Some(Object::Kept(kept)) = self.handles.resolve_module(handle)
             && self.kept[kept].module.name == "KERNEL"
         {
             return Some(0x30a);
@@ -757,7 +757,7 @@ impl System {
             return Some(executable.header.expected_windows_version);
         }
 
-        match self.handles.resolve(handle)? {
+        match self.handles.resolve_module(handle)? {
             Object::Kept(kept) => kept_version(self.kept[kept].module.name),
             _ => None,
         }
@@ -823,7 +823,7 @@ impl System {
     /// a library's; for the task, nought or any other, the task's
     /// program's.
     pub fn path_of(&self, handle: u16) -> String {
-        match self.handles.resolve(handle) {
+        match self.handles.resolve_module(handle) {
             Some(Object::Kept(kept)) => self.kept_path(kept),
             Some(Object::Library(module)) => self.modules[module].path.clone(),
             // Another task's instance: its own program's, as KERNEL finds

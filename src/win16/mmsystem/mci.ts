@@ -851,7 +851,7 @@ export async function mciGetErrorString(
   let text: string | null;
 
   if (id && device?.module) {
-    text = await moduleString(this, this.handles.resolve(device.module)?.path ?? '', number);
+    text = await moduleString(this, this.handles.resolveModule(device.module)?.path ?? '', number);
   } else {
     text = await mmsystemString(this, id ? 0x116 : number);
   }

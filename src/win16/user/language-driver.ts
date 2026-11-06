@@ -101,7 +101,7 @@ export async function setLanguageDriver(system: any, name: string | null) {
   let path: string | null = null;
 
   if (before) {
-    const item = system.handles.resolve(before.module);
+    const item = system.handles.resolveModule(before.module);
 
     path = String(item?.loader?.path ?? item?.path ?? '');
     system._languageDriver = undefined;

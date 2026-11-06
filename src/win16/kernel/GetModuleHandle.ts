@@ -27,7 +27,7 @@ export function GetModuleHandle(this: any, lpszModule: any) {
    * task's handle finds nothing (**recorded** by `modnum`), but a program's
    * task is its instance here. */
   if (typeof lpszModule === 'number') {
-    const item = this.handles.resolve(lpszModule);
+    const item = this.handles.resolveModule(lpszModule);
 
     /* A task's own handle -- not its instance's, nor its module's -- names
      * no module (**recorded** by `modnum`). */

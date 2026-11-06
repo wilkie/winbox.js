@@ -106,7 +106,7 @@ function resourceHandle(handles: any, executable: any, wanted: object): number {
  * @return {Types.HANDLE} A handle identifying the resource, or NULL.
  */
 export function FindResource(hinst, lpszName, lpszType) {
-  const task = this.handles.resolve(hinst);
+  const task = this.handles.resolveModule(hinst);
 
   if (!task || !task.executable) {
     return NULL;

@@ -15,7 +15,7 @@ export class Module {}
  * for any other. As the Rust engine's `System::expected_windows_version`.
  */
 export function expectedWindowsVersion(system: any, handle: number): number | undefined {
-  const module = system.handles.resolve(handle);
+  const module = system.handles.resolveModule(handle);
 
   return (
     module?.executable?.neHeader?.expectedWindowsVersion ??
@@ -69,7 +69,7 @@ export const KEPT_VERSIONS: Record<string, number> = {
  * `System::module_flag_2000`.
  */
 export function moduleFlag2000(system: any, handle: number): number {
-  const module = system.handles.resolve(handle);
+  const module = system.handles.resolveModule(handle);
   const others = module?.executable?.neHeader?.OS2Flags ?? module?.fileOtherFlags ?? 0;
 
   return others & 0x02 ? 0x2000 : 0;

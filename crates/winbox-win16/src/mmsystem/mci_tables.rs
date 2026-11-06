@@ -102,7 +102,7 @@ pub enum Name {
 
 /// A module's handle as a source: one of WinBox's own named, if it is.
 pub fn source_of(system: &System, handle: u16) -> Source {
-    match system.handles.resolve(handle) {
+    match system.handles.resolve_module(handle) {
         Some(Object::Kept(kept)) => Source::Own(system.kept[kept].module.name),
         _ => Source::Handle(handle),
     }

@@ -324,7 +324,7 @@ async function loadFound(
     const database = system.moduleDatabase(executable);
     const library = new Library(executable, new Loader(executable, system._globalAllocator));
 
-    await library.loader.parse((index: number) => system.numbered(index));
+    await library.loader.parse();
 
     /* `COMMDLG.DLL` loaded afresh: its data as the file has it, which
      * WinBox's print dialogs keep beside it (`commdlg/`). */
@@ -511,7 +511,7 @@ export async function loadLibrary(system: any, file: string, beside: string | nu
       : system._modules.handleFromPath(found.path);
 
   if (known) {
-    const already = system.handles.resolve(known);
+    const already = system.handles.resolveModule(known);
 
     if (already instanceof Library) {
       already.usage++;
@@ -657,7 +657,7 @@ export function mayBeCalledBack(task: any) {
 function libraryNamed(system: any, name: string): Library | null {
   const loader = system._modules.fromName(name);
   const handle = loader instanceof Loader ? system._modules.handleFromPath(loader.path) : null;
-  const library = handle ? system.handles.resolve(handle) : null;
+  const library = handle ? system.handles.resolveModule(handle) : null;
 
   return library instanceof Library ? library : null;
 }
@@ -673,7 +673,7 @@ function libraryNamed(system: any, name: string): Library | null {
  * memory is not given back.
  */
 export async function freeLibrary(system: any, handle: number) {
-  const library = system.handles.resolve(handle);
+  const library = system.handles.resolveModule(handle);
 
   /* One of WinBox's own with no file, by its instance or its module's
    * handle: counted down as its file would be. */
@@ -714,8 +714,8 @@ export async function freeLibrary(system: any, handle: number) {
 
   system._modules.unregister(library.loader);
   freeModuleSegments(system, library.loader, library.module >> 3);
-  system.handles.free(library.instance);
-  system.handles.free(library.module);
+  system.handles.freeModule(library.instance);
+  system.handles.freeModule(library.module);
   ownFreed(system, library.loader?.name);
 }
 
@@ -802,8 +802,8 @@ export function releaseLibraries(system: any, libraries: Held[]) {
     releaseLibraries(system, [...brought].reverse());
     system._modules.unregister(library.loader);
     freeModuleSegments(system, library.loader, library.module >> 3);
-    system.handles.free(library.instance);
-    system.handles.free(library.module);
+    system.handles.freeModule(library.instance);
+    system.handles.freeModule(library.module);
     ownFreed(system, library.loader?.name);
   }
 }

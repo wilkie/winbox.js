@@ -263,51 +263,16 @@ impl Descriptors {
     }
 
     /// A descriptor for one selector: the one given back last that is free
-    /// still, else the first free from `start`. Not yet marked given.
+    /// still, else the first free from `start`. Not yet marked given. As
+    /// `GlobalAllocator.take`.
     pub fn take(&mut self, start: usize) -> Option<usize> {
-        self.take_avoiding(start, |_| false)
-    }
-
-    /// A descriptor for one selector as `take` gives one, but one `avoid`
-    /// refuses passed over and left where it was in the list: WinBox numbers
-    /// a module's instance and its handle in the one set of numbers its
-    /// other handles have, GDI's among them, where Windows' are apart
-    /// (`System::numbered`). As `GlobalAllocator.take`.
-    pub fn take_avoiding(&mut self, start: usize, avoid: impl Fn(usize) -> bool) -> Option<usize> {
-        let mut passed = Vec::new();
-        let mut found = None;
-
         while let Some(index) = self.freed.pop() {
-            if self.used(index) {
-                continue;
+            if !self.used(index) {
+                return Some(index);
             }
-
-            if avoid(index) {
-                passed.push(index);
-                continue;
-            }
-
-            found = Some(index);
-            break;
         }
 
-        while let Some(index) = passed.pop() {
-            self.freed.push(index);
-        }
-
-        found.or_else(|| {
-            let mut from = start;
-
-            while let Some(index) = self.find(from, 1) {
-                if !avoid(index) {
-                    return Some(index);
-                }
-
-                from = index + 1;
-            }
-
-            None
-        })
+        self.find(start, 1)
     }
 
     /// A descriptor given back: emptied, and the next `take` answers it.

@@ -14,7 +14,7 @@
  * @returns {Types.INT} How many bytes were copied, the null not counted.
  */
 export function GetModuleFilename(hinst, lpszFilename, cbFileName) {
-  const item = hinst ? this.handles.resolve(hinst) : null;
+  const item = hinst ? this.handles.resolveModule(hinst) : null;
   const task = this.handles.resolve(this.scheduler.active);
   const filename = String(
     item?.executable?.path ?? item?.loader?.path ?? item?.path ?? task.executable.path

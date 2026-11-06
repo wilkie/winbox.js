@@ -665,7 +665,7 @@ export class Win16 {
      * more, and its handle is let go -- but WinBox's Program Manager's, the
      * module it keeps (`progman/`). As `exit_task`. */
     const last = module !== undefined && !previousInstance(this, path);
-    const database = last && !kept && this.handles.resolve(module)?.executable ? module >> 3 : -1;
+    const database = last && !kept && this.handles.resolveModule(module)?.executable ? module >> 3 : -1;
 
     if (own && !kept) {
       if (!held) {
@@ -673,7 +673,7 @@ export class Win16 {
       }
 
       if (database > 0) {
-        this.handles.free(module);
+        this.handles.freeModule(module);
       }
 
       this._globalAllocator.give(own.prefix);
@@ -899,7 +899,7 @@ export class Win16 {
     // A loader parses the executable data for information useful for
     // link/loading the task.
     const loader = new Loader(executable, this._globalAllocator);
-    await loader.parse((index) => this.numbered(index));
+    await loader.parse();
 
     /* Its exported functions made to take their data segment from AX, as
      * KERNEL patches a program's; see `library.ts`. */
@@ -970,7 +970,7 @@ export class Win16 {
    * index. A library's too (`library.ts`).
    */
   #moduleDatabase(executable) {
-    const index = this._globalAllocator.take(1, (each) => this.numbered(each));
+    const index = this._globalAllocator.take();
     const start = executable.headerOffset;
     const end = start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
     const bytes = new Uint8Array(executable._view.buffer.slice(start, end));
@@ -982,20 +982,6 @@ export class Win16 {
 
   moduleDatabase(executable) {
     return this.#moduleDatabase(executable);
-  }
-
-  /**
-   * Whether a descriptor's selector, or its handle one below, is a number
-   * another of WinBox's handles has: a module's database is its handle,
-   * and its data segment's handle its instance, in the one set of numbers
-   * GDI's objects and the rest are given from, so such a descriptor is
-   * passed over for them (`GlobalAllocator.take`). Windows numbers GDI's
-   * apart.
-   */
-  numbered(index: number) {
-    const selector = segmentSelector(index);
-
-    return !!this.handles._handles[selector] || !!this.handles._handles[selector - 1];
   }
 
   requirementsFor(handle) {

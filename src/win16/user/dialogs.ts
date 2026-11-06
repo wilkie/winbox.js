@@ -532,7 +532,7 @@ async function updateDialog(system: any, hwnd: number) {
 
 /** A template by name or number from a module's resources. */
 export async function resourceTemplate(system: any, hinst: number, name: any) {
-  const module = system.handles.resolve(hinst);
+  const module = system.handles.resolveModule(hinst);
   const bytes = await resourceBytes(module?.executable, Executable.RESOURCES.Dialog, name);
 
   return bytes ? parseDialogTemplate((at) => bytes[at] ?? 0) : null;

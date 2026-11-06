@@ -41,7 +41,7 @@ export async function FreeLibrary(this: any, hinst: number) {
  * @returns {Types.INT} The count.
  */
 export function GetModuleUsage(this: any, hinst: number) {
-  const item = this.handles.resolve(hinst);
+  const item = this.handles.resolveModule(hinst);
 
   if (item instanceof Library) {
     return item.usage;

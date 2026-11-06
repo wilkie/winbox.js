@@ -756,7 +756,7 @@ pub fn get_instance_data(system: &mut System, args: &mut Args) -> Result<Answer,
     let instance = args.word(system);
     let offset = args.word(system);
     let count = args.word(system);
-    let data = match system.handles.resolve(instance) {
+    let data = match system.handles.resolve_module(instance) {
         Some(crate::handles::Object::Task(module) | crate::handles::Object::Library(module)) => {
             system.modules[module].data()
         }

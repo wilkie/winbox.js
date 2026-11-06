@@ -77,7 +77,8 @@ pub fn get_code_info(system: &mut System, args: &mut Args) -> Result<Answer, Sto
     let Some(block) = segment_of(system, proc) else {
         return Ok(Answer::Word(0));
     };
-    let Some(Object::Library(module) | Object::Task(module)) = system.handles.resolve(block.owner)
+    let Some(Object::Library(module) | Object::Task(module)) =
+        system.handles.resolve_module(block.owner)
     else {
         return Ok(Answer::Word(0));
     };

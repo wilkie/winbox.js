@@ -34,7 +34,7 @@ import { MenuData, separated } from './menu-data.js';
  */
 export async function LoadMenu(hinst, lpszMenuName) {
   // Resolve the handle
-  const module = this.handles.resolve(hinst);
+  const module = this.handles.resolveModule(hinst);
 
   // Fail out if the handle is not found
   if (!module) {

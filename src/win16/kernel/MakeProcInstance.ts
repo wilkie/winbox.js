@@ -22,7 +22,7 @@ import { segmentSelector } from '../selectors.js';
  * @returns {Types.FARPROC} The thunk, or the procedure itself.
  */
 export function MakeProcInstance(this: any, lpProc: number, hinst: number) {
-  const task = this.handles.resolve(hinst & 0xffff);
+  const task = this.handles.resolveModule(hinst & 0xffff);
   const loader = task?.loader;
 
   if (!loader?.ds || !task?.executable || task.executable.neHeader.flags & 0x8000) {

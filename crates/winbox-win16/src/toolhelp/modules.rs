@@ -43,7 +43,7 @@ pub(crate) fn module_chain(system: &System) -> Vec<ChainModule> {
             continue;
         }
 
-        let (name, path) = match system.handles.resolve(handle) {
+        let (name, path) = match system.handles.resolve_module(handle) {
             Some(Object::Kept(kept)) => (
                 system.kept[kept].module.name.to_ascii_uppercase(),
                 system.kept[kept].module.path.to_string(),
