@@ -8,6 +8,12 @@ import { freeLibrary, Library, loadLibrary, ownUsage, wantsFile } from '../libra
  * below 32. See `loadLibrary` in `library.ts`.
  */
 export async function LoadLibrary(this: any, lpszLibFileName: any) {
+  /* Noted on the task: a library it loaded may keep a procedure of its
+   * after it ends (`Win16.exitTask`). */
+  if (this.scheduler?.task) {
+    this.scheduler.task.loadedLibrary = true;
+  }
+
   const beside =
     String(this.scheduler?.task?.executable?.path ?? '').replace(/\\[^\\]*$/, '') || null;
 

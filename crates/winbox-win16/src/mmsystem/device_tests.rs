@@ -25,6 +25,13 @@ pub(crate) const CALLBACK_WINDOW: u32 = 0x1_0000;
 pub(crate) const CALLBACK_TASK: u32 = 0x2_0000;
 pub(crate) const CALLBACK_FUNCTION: u32 = 0x3_0000;
 
+/// Where a test program's code and data are put: after its module's
+/// database, its task's database, its prefix, its second selector and its
+/// queue (`load_program`) -- the first three in descriptors 1 to 3, below
+/// the modules WinBox keeps, the rest after them.
+pub(crate) const PROGRAM_CODE: usize = 44;
+pub(crate) const PROGRAM_DATA: usize = 45;
+
 /// A program of two segments, as `first_call.rs` makes one: code, fixed,
 /// that far-calls `InitTask` and halts, with room past it for a callback;
 /// and 16 bytes of data.
@@ -81,7 +88,7 @@ fn program() -> Vec<u8> {
 
 /// Where the callback is.
 pub(crate) fn function() -> u32 {
-    u32::from(segment_selector(1)) << 16 | 0x10
+    u32::from(segment_selector(PROGRAM_CODE)) << 16 | 0x10
 }
 
 /// A device's open, as the driver was given it.
@@ -876,7 +883,7 @@ fn a_midi_device_calls_a_function_back() {
     assert_eq!(read_dword(&engine, opened.user), 0xc0de_0000);
     // The callback was called with the handle, MM_MOM_OPEN, the program's
     // doubleword and the parameters, last pushed first.
-    let program_data = u32::from(segment_selector(2)) << 16;
+    let program_data = u32::from(segment_selector(PROGRAM_DATA)) << 16;
     let called = engine.system().read_far(program_data, 16);
     let word_at = |at: usize| u16::from_le_bytes([called[at], called[at + 1]]);
 
@@ -960,7 +967,10 @@ fn driver_callback_answers_by_kind() {
     assert_eq!(callback(0x4321, 2), 0);
     assert_eq!(posted(&engine), vec![(0x3bd, 0x1006, 2)]);
     // Its data segment is no code.
-    assert_eq!(callback(u32::from(segment_selector(2)) << 16, 3), 0);
+    assert_eq!(
+        callback(u32::from(segment_selector(PROGRAM_DATA)) << 16, 3),
+        0
+    );
     assert_eq!(callback(function(), 3 | 8), 1);
 }
 

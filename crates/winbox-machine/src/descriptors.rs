@@ -70,10 +70,16 @@ pub fn first_megabyte_selector(paragraph: u16) -> Option<u16> {
         .map(|&(_, index)| segment_selector(index))
 }
 
-/// The descriptors given out, by index.
+/// The descriptors given out, by index, and those given back, the last on
+/// top: KERNEL keeps one list of free selectors for every block, a
+/// module's segments and its own blocks among them -- a selector freed goes
+/// to its head (**read out**, `KRNL386.EXE` seg1 `2009`-`2044`), and one
+/// asked for alone is the head taken (`1e33`-`1e54`); **recorded** by
+/// `greuse` and `segfree`. As `GlobalAllocator`.
 #[derive(Debug, Clone)]
 pub struct Descriptors {
     used: Vec<bool>,
+    freed: Vec<usize>,
 }
 
 impl Default for Descriptors {
@@ -105,13 +111,17 @@ impl Descriptors {
             used[index] = true;
         }
 
-        Self { used }
+        Self {
+            used,
+            freed: Vec::new(),
+        }
     }
 
     /// The tables made empty, but for the BIOS's data area -- 64 KiB of
     /// data from 400h of the first megabyte, writable at a program's
     /// privilege -- and the first megabyte's selectors.
     pub fn reset(&mut self, memory: &mut Memory) {
+        self.freed.clear();
         memory.zero(LDT_BASE, 8 * SELECTORS);
         memory.zero(GDT_BASE, 8 * GDT_ENTRIES as usize);
 
@@ -250,6 +260,73 @@ impl Descriptors {
     pub fn release(&mut self, memory: &mut Memory, index: usize) {
         self.unmap(memory, index);
         self.used[index] = false;
+    }
+
+    /// A descriptor for one selector: the one given back last that is free
+    /// still, else the first free from `start`. Not yet marked given.
+    pub fn take(&mut self, start: usize) -> Option<usize> {
+        self.take_avoiding(start, |_| false)
+    }
+
+    /// A descriptor for one selector as `take` gives one, but one `avoid`
+    /// refuses passed over and left where it was in the list: WinBox numbers
+    /// a module's instance and its handle in the one set of numbers its
+    /// other handles have, GDI's among them, where Windows' are apart
+    /// (`System::numbered`). As `GlobalAllocator.take`.
+    pub fn take_avoiding(&mut self, start: usize, avoid: impl Fn(usize) -> bool) -> Option<usize> {
+        let mut passed = Vec::new();
+        let mut found = None;
+
+        while let Some(index) = self.freed.pop() {
+            if self.used(index) {
+                continue;
+            }
+
+            if avoid(index) {
+                passed.push(index);
+                continue;
+            }
+
+            found = Some(index);
+            break;
+        }
+
+        while let Some(index) = passed.pop() {
+            self.freed.push(index);
+        }
+
+        found.or_else(|| {
+            let mut from = start;
+
+            while let Some(index) = self.find(from, 1) {
+                if !avoid(index) {
+                    return Some(index);
+                }
+
+                from = index + 1;
+            }
+
+            None
+        })
+    }
+
+    /// A descriptor given back: emptied, and the next `take` answers it.
+    pub fn give(&mut self, memory: &mut Memory, index: usize) {
+        self.release(memory, index);
+        self.freed.push(index);
+    }
+
+    /// A descriptor taken for a block of Windows' own that WinBox keeps
+    /// nothing in -- a task's database, its second selector, its message
+    /// queue (`load_program`) -- so that the selectors around it are given
+    /// as Windows gives them: data, at nought, not yet accessed.
+    pub fn reserve(&mut self, memory: &mut Memory, start: usize) -> Option<usize> {
+        let index = self.take(start)?;
+
+        self.used[index] = true;
+        memory.zero(entry(index), 8);
+        memory.write8(entry(index) + 5, 0xf2);
+        Some(index)
     }
 
     /// A second descriptor for a segment's memory, code or data as asked:

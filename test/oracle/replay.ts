@@ -5234,6 +5234,15 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `segfree` names each selector by the one before it with the same
+   * descriptor. A task's handle is its task database's selector in Windows
+   * and a number of WinBox's own here, so three records that name it
+   * differ: the first run's database freed (`p1`), the second run's handle
+   * (`c2.task`), and its database freed (`b1`). WinBox takes a descriptor
+   * for the database in its place, so every other selector around it is
+   * given as Windows gives it (`Win16.load`). */
+  'segfree:between': "a task's handle is not its task database's selector: 1 of 8 records",
+  'segfree:child': "a task's handle is not its task database's selector: 2 of 26 records",
   /* `popmax`'s pop-up made `WS_CAPTION | WS_MINIMIZE`: `CreateWindow`
    * minimizes it as it does an overlapped one (`USER.EXE` seg8 `0843`-`0861`
    * asks nothing of the kind of window), and its first `WM_SIZE` is the whole
@@ -6081,6 +6090,7 @@ const RUN_WHOLE = new Set<string>([
   'zactive',
   'zminim',
   'profnul',
+  'segfree',
 ]);
 
 /**

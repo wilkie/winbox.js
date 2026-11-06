@@ -87,6 +87,16 @@ export class GlobalAllocator {
   declare _cpu: any;
   declare _memory: any;
   declare _usedMap: any;
+
+  /**
+   * The descriptors given back, the last on top. KERNEL keeps one list of
+   * free selectors for every block, a module's segments and its own blocks
+   * among them: a selector freed goes to its head (**read out**,
+   * `KRNL386.EXE` seg1 `2009`-`2044`), and one asked for alone is the head
+   * taken (`1e33`-`1e54`). **Recorded** by `greuse` and `segfree`.
+   */
+  #freed: number[] = [];
+
   constructor(cpu, memory) {
     this._memory = memory;
     this._cpu = cpu;
@@ -104,6 +114,7 @@ export class GlobalAllocator {
      * sees, so this is not an implementation detail we get to choose. See
      * selectors.ts, and oracle/fixtures/handles.json for the recording.
      */
+    this.#freed = [];
     this._cpu.core.ldtBase = LDT_BASE;
     this._cpu.core.ldtLimit = 8 * SELECTORS - 1;
     this._memory.zero(LDT_BASE, 8 * SELECTORS);
@@ -361,6 +372,84 @@ export class GlobalAllocator {
   release(segment) {
     this.unmap(segment);
     this._usedMap[segment] = false;
+  }
+
+  /**
+   * A descriptor for one selector: the one given back last that is free
+   * still, else the first free from `start`. Its index, or -1; not yet
+   * marked given. One `avoid` refuses is passed over and stays where it
+   * was in the list: WinBox numbers a module's instance and its handle in
+   * the one set of numbers its other handles have, GDI's among them, where
+   * Windows' are apart (`Win16.load`, `library.ts`).
+   */
+  take(start = 1, avoid?: (index: number) => boolean) {
+    const passed: number[] = [];
+    let found = -1;
+
+    while (this.#freed.length) {
+      const index = this.#freed.pop()!;
+
+      if (this._usedMap[index]) {
+        continue;
+      }
+
+      if (avoid?.(index)) {
+        passed.push(index);
+        continue;
+      }
+
+      found = index;
+      break;
+    }
+
+    while (passed.length) {
+      this.#freed.push(passed.pop()!);
+    }
+
+    if (found >= 0) {
+      return found;
+    }
+
+    for (let index = this.find(start); index >= 0; index = this.find(index + 1)) {
+      if (!avoid?.(index)) {
+        return index;
+      }
+    }
+
+    return -1;
+  }
+
+  /** A descriptor given back: emptied, and the next `take` answers it. */
+  give(segment) {
+    this.release(segment);
+    this.#freed.push(segment);
+  }
+
+  /**
+   * A descriptor taken for a block of Windows' own that WinBox keeps
+   * nothing in -- a task's database, its second selector, its message
+   * queue (`Win16.load`) -- so that the selectors around it are given as
+   * Windows gives them: data, at nought, not yet accessed. Its index, or -1.
+   */
+  reserve(start = 1) {
+    const index = this.take(start);
+
+    if (index < 0) {
+      return -1;
+    }
+
+    this._usedMap[index] = true;
+    this.#forget(index);
+
+    const base = this._cpu.core.ldtBase + 8 * index;
+
+    for (let at = 0; at < 8; at++) {
+      this._memory.write8(base + at, 0);
+    }
+
+    this._memory.write8(base + 5, 0xf2);
+
+    return index;
   }
 
   /**

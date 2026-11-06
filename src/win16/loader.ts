@@ -119,7 +119,11 @@ export class Loader {
     this._segmentMap = {};
   }
 
-  async parse() {
+  /**
+   * `avoid`, where given, refuses a descriptor for the data segment: its
+   * instance's number is another handle's (`GlobalAllocator.take`).
+   */
+  async parse(avoid?: (index: number) => boolean) {
     await this.parseHeaders();
 
     for (let i = 0; i < this.segments.length; i++) {
@@ -133,8 +137,9 @@ export class Loader {
       /* The rest of its block nought (`loadedSegment`). */
       view = loadedSegment(view, segmentBlockSize(this._header, segment, i + 1));
 
-      // Allocate a segment
-      const segmentIndex = this._globalAllocator.find();
+      /* A selector as KERNEL gives one, the one freed last first
+       * (`GlobalAllocator.take`). */
+      const segmentIndex = this._globalAllocator.take(1, i + 1 === this._DS ? avoid : undefined);
 
       // Retain knowledge about where the executable segment was loaded
       this._segmentMap[i + 1] = segmentIndex;

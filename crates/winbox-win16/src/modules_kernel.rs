@@ -554,6 +554,18 @@ pub fn load_library(engine: &Engine, mut args: Args) -> Later<'_> {
 /// KERNEL looks (`search.rs`), the task's program's directory fourth
 /// (`search`). Its entry point runs at once.
 pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
+    // Noted on the task: a library it loaded may keep a procedure of its
+    // after it ends (`exit_slot`). As `LoadLibrary.ts`.
+    {
+        let mut system = engine.system();
+
+        if let Some(program) = system.task.as_ref().map(|task| task.program)
+            && let Some(own) = system.modules[program].own.as_mut()
+        {
+            own.loaded = true;
+        }
+    }
+
     let slash = [text.rfind('\\'), text.rfind('/'), text.rfind(':')]
         .into_iter()
         .flatten()
@@ -780,27 +792,20 @@ pub(crate) async fn free_library_handle(engine: &Engine, handle: u16) -> Result<
         engine.call_guest(wep, &[0], &[]).await?;
     }
 
-    {
-        let mut system = engine.system();
-        let Some(Object::Library(library)) = system.handles.resolve(handle) else {
-            return Ok(());
-        };
-        let (instance, module_handle) = (
-            system.modules[library].instance,
-            system.modules[library].handle,
-        );
+    // The libraries it brought first, the last loaded first, each deleted
+    // in its turn, then itself (`KRNL386.EXE` seg2 `0a84`-`0ad1`, `0c30`).
+    let mut brought = brought;
 
-        crate::own_modules::freed(&mut system, library);
+    brought.reverse();
+    let_go(engine, brought).await?;
 
-        // Its name, and its file, found no more: freed by its instance or
-        // its module's handle, both go.
-        system.modules[library].name.clear();
-        system.modules[library].path.clear();
-        system.handles.free(instance);
-        system.handles.free(module_handle);
-    }
+    let mut system = engine.system();
+    let Some(Object::Library(library)) = system.handles.resolve(handle) else {
+        return Ok(());
+    };
 
-    let_go(engine, brought).await
+    system.delete_library(library);
+    Ok(())
 }
 
 /// The modules a library held, let go as `FreeLibrary` lets one go.
@@ -854,19 +859,32 @@ impl System {
                 continue;
             }
 
-            let (instance, handle) = (module.instance, module.handle);
-            let brought = std::mem::take(&mut module.brought);
+            let mut brought = std::mem::take(&mut module.brought);
 
-            crate::own_modules::freed(self, library);
-
-            let module = &mut self.modules[library];
-
-            module.name.clear();
-            module.path.clear();
-            self.handles.free(instance);
-            self.handles.free(handle);
+            brought.reverse();
             self.release_libraries(&brought);
+            self.delete_library(library);
         }
+    }
+
+    /// A library at nought deleted as KERNEL deletes a module (`0c30`): its
+    /// segments and its database given back (`free_module_segments`), and
+    /// its name, its file, its instance and its handle found no more.
+    pub(crate) fn delete_library(&mut self, library: usize) {
+        let (instance, handle) = (self.modules[library].instance, self.modules[library].handle);
+
+        crate::own_modules::freed(self, library);
+
+        let database = (handle != 0).then(|| index_for(handle));
+
+        self.free_module_segments(library, database, true);
+
+        let module = &mut self.modules[library];
+
+        module.name.clear();
+        module.path.clear();
+        self.handles.free(instance);
+        self.handles.free(handle);
     }
 }
 

@@ -71,6 +71,25 @@ pub struct Module {
     /// same library. Nought for a program.
     pub instance: u16,
     pub handle: u16,
+    /// A program's task's own selectors, given back as it ends
+    /// (`exit_slot`).
+    pub own: Option<Own>,
+}
+
+/// The selectors KERNEL gives a program's task besides its segments, in the
+/// order it gives them (`load_program`): its module's database where the
+/// module is new, the task's database, its program segment prefix, a
+/// second selector and USER's message queue; and its environment, as it
+/// starts. As `win16.ts`'s `own`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Own {
+    pub database: usize,
+    pub prefix: usize,
+    pub second: usize,
+    pub queue: usize,
+    pub environment: Option<usize>,
+    /// Whether the task called `LoadLibrary` (`exit_slot`).
+    pub loaded: bool,
 }
 
 impl Module {
@@ -170,10 +189,28 @@ impl System {
     pub fn load_program(&mut self, executable: Executable, path: &str) -> (usize, Vec<usize>, u16) {
         let file = path.rsplit('\\').next().unwrap_or(path);
         let name = file.split('.').next().unwrap_or(file).to_ascii_uppercase();
+        let shared = self
+            .modules
+            .iter()
+            .find(|module| !module.is_library() && module.handle != 0 && module.path == path)
+            .map(|module| module.handle);
+
+        // Its module's database first, where the module is new; then the
+        // task's own: its database, its program segment prefix, a second
+        // selector and USER's message queue; then its segments -- the order
+        // Windows gives them selectors in (**recorded** by `segfree`). WinBox
+        // keeps nothing in the task's database, the second selector or the
+        // queue (`Descriptors::reserve`). As `Win16.load`.
+        let database = match shared {
+            Some(_) => None,
+            None => self.module_database(&executable),
+        };
+        let own = self.own_selectors();
         let program = self.place(executable, &name, path);
         let mut order = Vec::new();
         let beside = path.rsplit_once('\\').map(|(folder, _)| folder.to_string());
 
+        self.modules[program].own = own;
         self.load_libraries_for(program, beside.as_deref(), &mut order);
 
         // Its module's handle, as `GetModuleHandle` finds it by its name and
@@ -183,37 +220,12 @@ impl System {
         // the file's header from its `NE` to the end of its entry table,
         // which a program reads through it (`solodata`). From descriptors of
         // their own, where no block reaches; let go with its last instance
-        // (`exit_task`). As `Win16.load`.
-        let shared = self
-            .modules
-            .iter()
-            .find(|module| {
-                !module.is_library()
-                    && module.handle != 0
-                    && module.path == self.modules[program].path
-            })
-            .map(|module| module.handle);
-
+        // (`exit_task`). As `Win16.load`. Made first, above.
         self.modules[program].handle = shared.unwrap_or_else(|| {
-            let executable = std::rc::Rc::clone(&self.modules[program].executable);
-            let start = executable.header_offset as usize;
-            let end = start
-                + usize::from(executable.header.entry_table_offset)
-                + usize::from(executable.header.entry_table_length);
-            let bytes = executable.bytes()[start..end.min(executable.bytes().len())].to_vec();
-            let Some(index) = self.descriptors.find(winbox_machine::MODULE_DATABASES, 1) else {
-                return 0;
-            };
-
-            self.descriptors
-                .map(&mut self.cpu.bus, index, &bytes, false);
-            self.descriptors.set_limit(
-                &mut self.cpu.bus,
-                index,
-                (bytes.len() as u32).saturating_sub(1),
-            );
-            self.handles
-                .alias_at(segment_selector(index), Object::Task(program))
+            database.map_or(0, |index| {
+                self.handles
+                    .alias_at(segment_selector(index), Object::Task(program))
+            })
         });
 
         // Its local heap is made as it calls `InitTask`, at the end of its
@@ -224,6 +236,97 @@ impl System {
             .unwrap_or(0);
 
         (program, order, handle)
+    }
+
+    /// A module's database: a descriptor as KERNEL gives one, the one freed
+    /// last first, from those above any block where none was freed,
+    /// holding the file's header from its `NE` to the end of its entry
+    /// table. A program's and a library's alike. As `moduleDatabase`.
+    pub(crate) fn module_database(&mut self, executable: &Executable) -> Option<usize> {
+        let start = executable.header_offset as usize;
+        let end = start
+            + usize::from(executable.header.entry_table_offset)
+            + usize::from(executable.header.entry_table_length);
+        let bytes = executable.bytes()[start..end.min(executable.bytes().len())].to_vec();
+        let handles = &self.handles;
+        let index = self
+            .descriptors
+            .take_avoiding(1, |index| numbered(handles, index))?;
+
+        self.descriptors
+            .map(&mut self.cpu.bus, index, &bytes, false);
+        self.descriptors.set_limit(
+            &mut self.cpu.bus,
+            index,
+            (bytes.len() as u32).saturating_sub(1),
+        );
+        Some(index)
+    }
+
+    /// A task's own selectors but its environment's, as `load_program`
+    /// gives them: its database, its prefix -- 256 bytes of nought -- a
+    /// second selector and its queue.
+    fn own_selectors(&mut self) -> Option<Own> {
+        let database = self.descriptors.reserve(&mut self.cpu.bus, 1)?;
+        let prefix = self.descriptors.take(1)?;
+
+        self.descriptors
+            .map(&mut self.cpu.bus, prefix, &[0; 256], false);
+
+        let second = self.descriptors.reserve(&mut self.cpu.bus, 1)?;
+        let queue = self.descriptors.reserve(&mut self.cpu.bus, 1)?;
+
+        Some(Own {
+            database,
+            prefix,
+            second,
+            queue,
+            environment: None,
+            loaded: false,
+        })
+    }
+
+    /// A module's segments given back as KERNEL deletes it (**read out**,
+    /// `KRNL386.EXE` seg2 `0c30`): its data segment first (`0c88`-`0c98`,
+    /// seg1 `4fa2`), then every block it owns by `GlobalFreeAll` (`0ce0`,
+    /// seg1 `0e39`), in the heap's order -- its database, below its
+    /// segments, then its other segments, here in their order. Each on top
+    /// of the free list (**recorded** by `segfree`). Only the data segment
+    /// where `whole` is false: another instance runs on, and the code is
+    /// the module's (`0d12`). As `freeModuleSegments`.
+    pub(crate) fn free_module_segments(
+        &mut self,
+        module: usize,
+        database: Option<usize>,
+        whole: bool,
+    ) {
+        let data = self.modules[module].data();
+
+        if let Some(data) = data {
+            self.free_segment(data);
+        }
+
+        if let Some(database) = database {
+            self.descriptors.give(&mut self.cpu.bus, database);
+        }
+
+        if !whole {
+            return;
+        }
+
+        for index in self.modules[module].segments.clone() {
+            if Some(index) != data {
+                self.free_segment(index);
+            }
+        }
+    }
+
+    /// A module's segment freed: its size and heap forgotten, its selector
+    /// given back (`Allocator.freeSegment`).
+    fn free_segment(&mut self, index: usize) {
+        self.global.forget_segment(index);
+        self.forget_heaps(index, 1);
+        self.descriptors.give(&mut self.cpu.bus, index);
     }
 
     /// The libraries a module imports that are to come from their files,
@@ -297,7 +400,7 @@ impl System {
 
     /// The modules a module imports from, by name, in the order its
     /// relocations name them.
-    fn import_names(executable: &Executable) -> Vec<String> {
+    pub(crate) fn import_names(executable: &Executable) -> Vec<String> {
         let mut names: Vec<String> = Vec::new();
 
         for segment in &executable.segments {
@@ -346,6 +449,10 @@ impl System {
         beside: Option<&str>,
         order: &mut Vec<usize>,
     ) -> usize {
+        // Its database before its segments, as KERNEL loads a module and
+        // like a program's: a descriptor of its own, the module's handle
+        // (**recorded** by `segfree`). As `loadFound`.
+        let database = self.module_database(&executable);
         let library = self.place(executable, name, path);
 
         // `COMMDLG.DLL` loaded afresh: its data as the file has it, which
@@ -354,9 +461,12 @@ impl System {
             crate::commdlg::print_loaded(self);
         }
 
-        // The module's handle from the modules' range, as the TypeScript
-        // engine numbers it; the instance its data segment's handle.
-        self.modules[library].handle = self.handles.alias(Object::Library(library)).unwrap_or(0);
+        // The module's handle its database's selector; the instance its
+        // data segment's handle.
+        self.modules[library].handle = database.map_or(0, |index| {
+            self.handles
+                .alias_at(segment_selector(index), Object::Library(library))
+        });
         self.modules[library].instance = self.library_instance(library);
 
         let header = &self.modules[library].executable.header;
@@ -424,9 +534,13 @@ impl System {
                 executable.segment_bytes(index),
                 segment_block_size(&executable, index + 1),
             );
+            // A selector as KERNEL gives one, the one freed last first; the
+            // data segment's not one whose handle another handle has.
+            let data = index + 1 == usize::from(executable.header.auto_data_segment);
+            let handles = &self.handles;
             let at = self
                 .descriptors
-                .find(1, 1)
+                .take_avoiding(1, |index| data && numbered(handles, index))
                 .expect("a descriptor for a segment");
 
             self.descriptors.map(
@@ -448,6 +562,7 @@ impl System {
             brought: Vec::new(),
             instance: 0,
             handle: 0,
+            own: None,
         };
 
         self.patch_prologues(&module);
@@ -549,4 +664,15 @@ impl System {
             }
         }
     }
+}
+
+/// Whether the selector a module's database would be, or its data segment's
+/// handle one below, is a number another of WinBox's handles has: a
+/// module's database is its handle, and its data segment's handle its
+/// instance, in the one set of numbers GDI's objects and the rest are given
+/// from, so such a descriptor is passed over for them. As `Win16.numbered`.
+fn numbered(handles: &crate::handles::Handles, index: usize) -> bool {
+    let selector = segment_selector(index);
+
+    handles.resolve(selector).is_some() || handles.resolve(selector.wrapping_sub(1)).is_some()
 }

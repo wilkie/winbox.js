@@ -260,20 +260,25 @@ impl Engine {
     /// message -- or ends (recorded by `execpk`). Its instance, and its
     /// task.
     pub(crate) async fn run_started(&self, child: usize) -> Result<(u16, u16), Stop> {
+        // Its instance: its data segment's handle (`instds`), as the task
+        // was made -- a program that has ended by the time this has the
+        // processor back has given its segments back (`exit_slot`).
+        let (instance, task) = {
+            let system = self.system();
+            let program = system.scheduler.slots[child].program;
+            let task = system.scheduler.slots[child].handle;
+
+            (
+                system.modules[program]
+                    .data()
+                    .map_or(task, |data| segment_selector(data) - 1),
+                task,
+            )
+        };
+
         self.yield_turn(None).await?;
 
-        // Its instance: its data segment's handle (`instds`).
-        let system = self.system();
-        let program = system.scheduler.slots[child].program;
-
-        let task = system.scheduler.slots[child].handle;
-
-        Ok((
-            system.modules[program]
-                .data()
-                .map_or(task, |data| segment_selector(data) - 1),
-            task,
-        ))
+        Ok((instance, task))
     }
 }
 
@@ -417,6 +422,20 @@ impl System {
         self.exit_slot(slot, code);
     }
 
+    /// Whether a hook a program put in reaches one of the descriptors given:
+    /// its procedure in one of them, or a thunk `MakeProcInstance` made for
+    /// one (`through_thunk`). As `hookedInto`.
+    fn hooked_into(&self, indices: &[usize]) -> bool {
+        self.hooks.iter().flat_map(|(_, chain)| chain).any(|hook| {
+            let crate::hooks::HookProc::Far(far) = hook.proc else {
+                return false;
+            };
+            let far = crate::kernel_calls::code::through_thunk(self, far);
+
+            indices.contains(&((far >> 19) as usize))
+        })
+    }
+
     /// A task ended by its handle, as `exit_task` ends the running one --
     /// TOOLHELP's `TerminateApp` ends another so -- with `code`.
     pub(crate) fn end_task_of(&mut self, handle: u16, code: u8) {
@@ -449,37 +468,103 @@ impl System {
             task.queue.quit_code = None;
         }
 
-        // The libraries its program brought, let go with it.
+        // Its selectors given back as KERNEL ends a task (**read out**,
+        // `KRNL386.EXE` seg1 `18b3`-`1a1f`): USER's message queue as USER is
+        // told the task ends (`194d`); the libraries its program brought, the
+        // last first, as its module is freed (`19c3`, seg2 `0a84`-`0ad1`;
+        // `search`); its data segment, its module's database where this was
+        // its last instance, and its other segments
+        // (`free_module_segments`); its program segment prefix
+        // (`19fc`-`1a01`); then its second selector, the one its database
+        // keeps at B0h, by `FreeSelector` (`1a20`), and its database
+        // (`1a31`). Each on top of the free list (`segfree`). Its
+        // environment is DPMI's DOS memory, not from KERNEL's list: let go,
+        // not given back. As `exitTask`.
         let program = self.scheduler.slots[slot].program;
-        let brought = std::mem::take(&mut self.modules[program].brought);
+        let own = self.modules[program].own.take();
 
+        if let Some(own) = own
+            && !matches!(
+                self.handles.resolve(self.modules[program].handle),
+                Some(Object::Kept(_))
+            )
+        {
+            self.descriptors.give(&mut self.cpu.bus, own.queue);
+        }
+
+        let mut brought = std::mem::take(&mut self.modules[program].brought);
+
+        brought.reverse();
         self.release_libraries(&brought);
         self.end_task(slot);
 
-        // Its module gone with its last instance: `GetModuleHandle` finds
-        // it no more, and its handle is let go -- but WinBox's Program
-        // Manager's, the module it keeps (`progman`). As `exitTask`.
-        if self.running_instances(program) == 0 {
+        // What may call into it after it ends keeps its code and data,
+        // where Windows would free them: a hook it put in and left, as
+        // Program Manager's filter -- WinBox calls every task's hooks for
+        // every task and takes none off as a task ends; or a library besides
+        // KERNEL's, USER's and GDI's it imported or loaded, which may keep a
+        // procedure of its -- WinBox takes its windows off without the
+        // messages Windows sends them, so DDEML's and OLESVR's windows and
+        // tables for it live on (`olepbr`). As `exitTask`.
+        let held = own.is_some_and(|own| own.loaded)
+            || Self::import_names(&self.modules[program].executable)
+                .iter()
+                .any(|name| !KEEPING_NONE.contains(&name.as_str()))
+            || self.hooked_into(&self.modules[program].segments);
+
+        // Its module gone with its last instance: deleted, as KERNEL deletes
+        // one -- its segments and its database given back, and its name, its
+        // file and its handle found no more -- but WinBox's Program
+        // Manager's, the module it keeps (`progman`).
+        let last = self.running_instances(program) == 0;
+        let handle = self.modules[program].handle;
+        let database =
+            (last && handle != 0 && matches!(self.handles.resolve(handle), Some(Object::Task(_))))
+                .then(|| winbox_machine::index_for(handle));
+
+        // WinBox's Program Manager's code and data are the kept module's.
+        let kept = matches!(self.handles.resolve(handle), Some(Object::Kept(_)));
+
+        if let Some(own) = own.filter(|_| !kept) {
+            if !held {
+                self.free_module_segments(program, database, last);
+            }
+
+            if database.is_some() {
+                self.handles.free(handle);
+            }
+
+            for index in [own.prefix, own.second, own.database] {
+                self.descriptors.give(&mut self.cpu.bus, index);
+            }
+
+            if let Some(environment) = own.environment {
+                self.descriptors.release(&mut self.cpu.bus, environment);
+            }
+        }
+
+        if last {
             let path = self.modules[program].path.clone();
-            let mut handles = Vec::new();
 
             for module in &mut self.modules {
                 if !module.is_library() && module.path.eq_ignore_ascii_case(&path) {
-                    handles.push(module.handle);
                     module.handle = 0;
-                }
-            }
 
-            for handle in handles {
-                if handle != 0 && matches!(self.handles.resolve(handle), Some(Object::Task(_))) {
-                    self.handles.free(handle);
-                    self.descriptors
-                        .release(&mut self.cpu.bus, winbox_machine::index_for(handle));
+                    if !kept {
+                        module.name.clear();
+                        module.path.clear();
+                    }
                 }
             }
         }
     }
 }
+
+/// The modules a program may import with none of them keeping a procedure
+/// of its past its end, as WinBox keeps them. As `library.ts`'s.
+const KEEPING_NONE: [&str; 8] = [
+    "KERNEL", "USER", "GDI", "KEYBOARD", "SOUND", "SYSTEM", "WIN87EM", "SHELL",
+];
 
 /// A program started by its command line: its name, a space, and what it
 /// is given, its spaces kept; a name with no extension given `.EXE`; found

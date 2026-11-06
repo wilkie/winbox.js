@@ -30,7 +30,6 @@ pub struct Block {
 #[derive(Debug, Clone, Default)]
 pub struct GlobalHeap {
     blocks: HashMap<usize, Block>,
-    freed: Vec<usize>,
     /// The sizes of segments modules were loaded into, as `GlobalSize`
     /// answers them: KERNEL's allocation for each, not the file's bytes.
     segment_sizes: HashMap<usize, u32>,
@@ -126,11 +125,10 @@ impl GlobalHeap {
         let size = block_size(size);
         let selectors = selectors_for(size);
         let index = if selectors == 1 {
-            self.reused(descriptors)
+            descriptors.take(FIRST_SELECTOR)
         } else {
-            None
-        };
-        let index = index.or_else(|| descriptors.find(FIRST_SELECTOR, selectors))?;
+            descriptors.find(FIRST_SELECTOR, selectors)
+        }?;
 
         self.blocks.insert(
             index,
@@ -155,17 +153,6 @@ impl GlobalHeap {
 
         self.set_limits(memory, descriptors, index);
         Some(index)
-    }
-
-    /// The selector freed last that is free still.
-    fn reused(&mut self, descriptors: &Descriptors) -> Option<usize> {
-        while let Some(index) = self.freed.pop() {
-            if !descriptors.used(index) {
-                return Some(index);
-            }
-        }
-
-        None
     }
 
     /// A block's selectors' limits: the first reaches the whole block, its
@@ -199,8 +186,7 @@ impl GlobalHeap {
             self.held -= u64::from(block.size);
 
             for tile in 0..block.selectors {
-                descriptors.release(memory, index + tile);
-                self.freed.push(index + tile);
+                descriptors.give(memory, index + tile);
             }
         }
 
@@ -257,6 +243,12 @@ impl GlobalHeap {
     /// The size of a segment a module was loaded into.
     pub fn set_segment_size(&mut self, index: usize, size: u32) {
         self.segment_sizes.insert(index, size);
+    }
+
+    /// A segment a module was loaded into, freed with its module: its size
+    /// forgotten.
+    pub fn forget_segment(&mut self, index: usize) {
+        self.segment_sizes.remove(&index);
     }
 
     pub fn flags_of(&self, index: usize) -> u16 {

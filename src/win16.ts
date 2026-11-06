@@ -1,7 +1,6 @@
 'use strict';
 
 // File System
-import { MODULE_DATABASES } from './win16/global-allocator.js';
 import { taskMade, taskRan } from './win16/kernel/task-order.js';
 import { CALL_INSTRUCTIONS } from './emulator/clock.js';
 import { UNRECORDED, callInstructions } from './win16/call-costs.js';
@@ -15,7 +14,14 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader, segmentBlockSize } from './win16/loader.js';
-import { loadLibrariesFor, patchPrologues, releaseLibraries, streamOf } from './win16/library.js';
+import {
+  freeModuleSegments,
+  loadLibrariesFor,
+  mayBeCalledBack,
+  patchPrologues,
+  releaseLibraries,
+  streamOf,
+} from './win16/library.js';
 import { Executable } from './executable.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { sentMessageHook } from './win16/user/hooks.js';
@@ -615,10 +621,42 @@ export class Win16 {
       }
     }
 
-    /* The libraries its program brought, let go with it (`search`). */
-    releaseLibraries(this, task.brought ?? []);
+    /* Its selectors given back as KERNEL ends a task (**read out**,
+     * `KRNL386.EXE` seg1 `18b3`-`1a1f`): USER's message queue as USER is
+     * told the task ends (`194d`); the libraries its program brought, the
+     * last first, as its module is freed (`19c3`, seg2 `0a84`-`0ad1`;
+     * `search`); its data segment, its module's database where this was its
+     * last instance, and its other segments (`freeModuleSegments`); its
+     * program segment prefix (`19fc`-`1a01`); then its second selector, the
+     * one its database keeps at B0h, by `FreeSelector` (`1a20`), and its
+     * database (`1a31`). Each on top of the free list, so a program run
+     * again is given them last first (`segfree`). Its environment is DPMI's
+     * DOS memory, not from KERNEL's list: let go, not given back. */
+    const own = (task as any).own;
+    const path = task.executable?.path;
+    const module = typeof path === 'string' ? this._modules._handles[path] : undefined;
+    const kept = module !== undefined && module === (this as any)._progmanKept;
+
+    if (own && !kept) {
+      this._globalAllocator.give(own.queue);
+    }
+
+    releaseLibraries(this, [...(task.brought ?? [])].reverse());
     task.brought = [];
     task.end();
+
+    /* What may call into it after it ends keeps its code and data, where
+     * Windows would free them. A hook it put in and left -- a filter of its
+     * own messages, as Program Manager's -- is called still: WinBox calls
+     * every task's hooks for every task, and takes none off as a task ends,
+     * where Windows does both (`hookedInto`). A library besides KERNEL's,
+     * USER's and GDI's it imported or loaded may keep a procedure of its:
+     * WinBox takes its windows off without the messages Windows sends them,
+     * so DDEML's and OLESVR's windows and tables for it live on
+     * (`mayBeCalledBack`; `olepbr`, Paintbrush with WinBox's OLESVR). */
+    const held =
+      !!task.loader &&
+      (mayBeCalledBack(task) || hookedInto(this, Object.values(task.loader._segmentMap ?? {})));
 
     /* The processor to the next task waiting for it, if any. */
     this.scheduler.ended(handle);
@@ -626,13 +664,34 @@ export class Win16 {
     /* Its module gone with its last instance: `GetModuleHandle` finds it no
      * more, and its handle is let go -- but WinBox's Program Manager's, the
      * module it keeps (`progman/`). As `exit_task`. */
-    const path = task.executable?.path;
-    const module = typeof path === 'string' ? this._modules._handles[path] : undefined;
+    const last = module !== undefined && !previousInstance(this, path);
+    const database = last && !kept && this.handles.resolve(module)?.executable ? module >> 3 : -1;
 
-    if (module !== undefined && !previousInstance(this, path)) {
-      if (module !== (this as any)._progmanKept && this.handles.resolve(module)?.executable) {
+    if (own && !kept) {
+      if (!held) {
+        freeModuleSegments(this, task.loader, database, last);
+      }
+
+      if (database > 0) {
         this.handles.free(module);
-        this._globalAllocator.release(module >> 3);
+      }
+
+      this._globalAllocator.give(own.prefix);
+      this._globalAllocator.give(own.second);
+      this._globalAllocator.give(own.database);
+
+      if (task.environmentSegment) {
+        this._globalAllocator.release(task.environmentSegment);
+      }
+
+      (task as any).own = null;
+    }
+
+    if (last) {
+      /* Deleted, as KERNEL deletes a module: its name and its file found no
+       * more -- but WinBox's Program Manager's, the module it keeps. */
+      if (!kept) {
+        this._modules.unregister(task.loader);
       }
 
       this._modules._handles[path] = undefined;
@@ -812,10 +871,35 @@ export class Win16 {
    * @return {HINSTANCE} The handle to the loaded task.
    */
   async load(executable) {
+    /* Its module's database first, where the module is new (see below); then
+     * the task's own: its database, its program segment prefix, a second
+     * selector, and USER's message queue; then its segments. That is the
+     * order Windows gives them selectors in, **recorded** by `segfree`: a
+     * program run again after its first run ended takes the selectors the
+     * first freed last first, its module's the first task database's, its
+     * task database the second selector's, its prefix the prefix's, its
+     * code segment the data segment's, its data segment the queue's. WinBox
+     * keeps nothing in the task database, the second selector or the queue
+     * (`GlobalAllocator.reserve`); a task's handle is not its database's
+     * selector here. */
+    const path = String(executable.path ?? '');
+    const database =
+      this._modules._handles[path] === undefined ? this.#moduleDatabase(executable) : -1;
+    const own = {
+      database: this._globalAllocator.reserve(),
+      prefix: this._globalAllocator.take(),
+      second: -1,
+      queue: -1,
+    };
+
+    this._globalAllocator.map(own.prefix, new DataView(new ArrayBuffer(256)));
+    own.second = this._globalAllocator.reserve();
+    own.queue = this._globalAllocator.reserve();
+
     // A loader parses the executable data for information useful for
     // link/loading the task.
     const loader = new Loader(executable, this._globalAllocator);
-    await loader.parse();
+    await loader.parse((index) => this.numbered(index));
 
     /* Its exported functions made to take their data segment from AX, as
      * KERNEL patches a program's; see `library.ts`. */
@@ -842,6 +926,9 @@ export class Win16 {
     // The task encapsulates a running program and its address space.
     const task = new Task(executable, loader);
 
+    (task as any).own = own;
+    task.programSegment = own.prefix;
+
     /* The keyboard's and the mouse's input is USER's system queue, one for
      * every task, which each looks at in turn (`system-queue.ts`). */
     task._input = systemQueue(this);
@@ -863,20 +950,10 @@ export class Win16 {
      * bits 3, as Windows' are (`modhand`). A program reads its module's
      * header through it (`solodata`): the block holds the file's, from its
      * `NE` to the end of its entry table, as KERNEL loads it, though KERNEL
-     * lays its tables out in memory a little otherwise. From descriptors of
-     * their own, where no block reaches; let go with its last instance
-     * (`exitTask`). */
-    const path = String(executable.path ?? '');
-
-    if (this._modules._handles[path] === undefined) {
-      const index = this._globalAllocator.find(MODULE_DATABASES);
-      const start = executable.headerOffset;
-      const end =
-        start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
-      const bytes = new Uint8Array(executable._view.buffer.slice(start, end));
-
-      this._globalAllocator.map(index, new DataView(bytes.buffer), { limit: bytes.length - 1 });
-      this._modules._handles[path] = this.handles.aliasAt(segmentSelector(index), task);
+     * lays its tables out in memory a little otherwise. Made first, above;
+     * let go with its last instance (`exitTask`). */
+    if (database >= 0) {
+      this._modules._handles[path] = this.handles.aliasAt(segmentSelector(database), task);
     }
 
     /* Its local heap is made as it calls `InitTask`, at the end of its data
@@ -884,6 +961,41 @@ export class Win16 {
 
     const handle = this.handles.allocate(task);
     return handle;
+  }
+
+  /**
+   * A module's database: a descriptor as KERNEL gives one, the one freed
+   * last first, from those above any block where none was freed, holding
+   * the file's header from its `NE` to the end of its entry table. Its
+   * index. A library's too (`library.ts`).
+   */
+  #moduleDatabase(executable) {
+    const index = this._globalAllocator.take(1, (each) => this.numbered(each));
+    const start = executable.headerOffset;
+    const end = start + executable.neHeader.entryTableOffset + executable.neHeader.entryTableLength;
+    const bytes = new Uint8Array(executable._view.buffer.slice(start, end));
+
+    this._globalAllocator.map(index, new DataView(bytes.buffer), { limit: bytes.length - 1 });
+
+    return index;
+  }
+
+  moduleDatabase(executable) {
+    return this.#moduleDatabase(executable);
+  }
+
+  /**
+   * Whether a descriptor's selector, or its handle one below, is a number
+   * another of WinBox's handles has: a module's database is its handle,
+   * and its data segment's handle its instance, in the one set of numbers
+   * GDI's objects and the rest are given from, so such a descriptor is
+   * passed over for them (`GlobalAllocator.take`). Windows numbers GDI's
+   * apart.
+   */
+  numbered(index: number) {
+    const selector = segmentSelector(index);
+
+    return !!this.handles._handles[selector] || !!this.handles._handles[selector - 1];
   }
 
   requirementsFor(handle) {
@@ -969,13 +1081,14 @@ export class Win16 {
        */
       this._machine.idtSegment = segmentSelector(idtSegment);
     }
-    // We need to allocate a program segment to contain the command line
-    // arguments and environment.
-    const programSegment = this._globalAllocator.find();
+    /* Its program segment prefix, given its selector as the task was
+     * loaded (`load`). */
+    let programSegment = task.programSegment;
 
-    // Allocate 256 bytes for the program segment prefix
-    const programSegmentBytes = new Uint8Array(256);
-    this._globalAllocator.map(programSegment, new DataView(programSegmentBytes.buffer));
+    if (programSegment === undefined || programSegment === null) {
+      programSegment = this._globalAllocator.take();
+      this._globalAllocator.map(programSegment, new DataView(new ArrayBuffer(256)));
+    }
 
     /* The task's environment; see `task-environment.ts`. */
     const environmentSegment = this._globalAllocator.find();
@@ -1560,3 +1673,40 @@ function dataTop(dataSegment: any) {
 }
 
 export default Win16;
+
+/**
+ * Whether a hook a program put in reaches one of the descriptors given: its
+ * procedure in one of them, or a thunk `MakeProcInstance` made for one --
+ * `mov ax, ds`, then `jmp far` to it (`kernel/MakeProcInstance.ts`).
+ */
+function hookedInto(system: any, indices: number[]) {
+  const wanted = new Set(indices);
+  const core = system.machine.cpu.core;
+
+  for (const chain of (system._hooks ?? new Map()).values()) {
+    for (const hook of chain) {
+      if (typeof hook.proc !== 'number') {
+        continue;
+      }
+
+      let far = hook.proc >>> 0;
+
+      try {
+        const segment = far >>> 16;
+        const offset = far & 0xffff;
+
+        if (core.read8(segment, offset) === 0xb8 && core.read8(segment, offset + 3) === 0xea) {
+          far = (core.read16(segment, offset + 4) | (core.read16(segment, offset + 6) << 16)) >>> 0;
+        }
+      } catch {
+        continue;
+      }
+
+      if (wanted.has(far >>> 19)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}

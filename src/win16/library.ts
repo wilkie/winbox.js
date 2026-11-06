@@ -317,9 +317,14 @@ async function loadFound(
 
     await executable.parse();
 
+    /* Its database before its segments, as KERNEL loads a module, and like
+     * a program's: a descriptor of its own, the module's handle
+     * (`Win16.moduleDatabase`). **Recorded** by `segfree`: a library freed
+     * gives its database's selector back with its segments'. */
+    const database = system.moduleDatabase(executable);
     const library = new Library(executable, new Loader(executable, system._globalAllocator));
 
-    await library.loader.parse();
+    await library.loader.parse((index: number) => system.numbered(index));
 
     /* `COMMDLG.DLL` loaded afresh: its data as the file has it, which
      * WinBox's print dialogs keep beside it (`commdlg/`). */
@@ -327,7 +332,7 @@ async function loadFound(
       printLoaded(system);
     }
 
-    library.module = system.handles.alias(library);
+    library.module = system.handles.aliasAt(segmentSelector(database), library);
 
     /* The data segment KERNEL allocates: its minimum allocation (64K for
      * none) and two bytes, its stack and its heap (`KRNL386.EXE` seg1
@@ -628,6 +633,27 @@ function keptModule(system: any, file: string) {
 }
 
 /** The library loaded from its file under a module name, if there is one. */
+/**
+ * The modules a program may import with none of them keeping a procedure of
+ * its past its end: KERNEL, USER, GDI and the drivers and SHELL beside them,
+ * as WinBox keeps them.
+ */
+const KEEPING_NONE = ['KERNEL', 'USER', 'GDI', 'KEYBOARD', 'SOUND', 'SYSTEM', 'WIN87EM', 'SHELL'];
+
+/**
+ * Whether a task imported or loaded a library besides those
+ * (`KEEPING_NONE`): such a library may keep one of its procedures -- a
+ * server's, a callback -- and call it after the task ends, as DDEML's or
+ * OLESVR's own windows and tables live on, where Windows' end of a task
+ * would have them told (`Win16.exitTask`).
+ */
+export function mayBeCalledBack(task: any) {
+  return (
+    !!task.loadedLibrary ||
+    [...importNames(task.loader)].some((name) => !KEEPING_NONE.includes(name))
+  );
+}
+
 function libraryNamed(system: any, name: string): Library | null {
   const loader = system._modules.fromName(name);
   const handle = loader instanceof Loader ? system._modules.handleFromPath(loader.path) : null;
@@ -680,13 +706,54 @@ export async function freeLibrary(system: any, handle: number) {
     ]);
   }
 
+  /* The libraries it brought first, the last loaded first, each deleted in
+   * its turn, then itself (`KRNL386.EXE` seg2 `0a84`-`0ad1`, `0c30`). */
+  for (const other of [...library.brought].reverse()) {
+    await letGo(system, other);
+  }
+
   system._modules.unregister(library.loader);
+  freeModuleSegments(system, library.loader, library.module >> 3);
   system.handles.free(library.instance);
   system.handles.free(library.module);
   ownFreed(system, library.loader?.name);
+}
 
-  for (const other of library.brought) {
-    await letGo(system, other);
+/**
+ * A module's selectors given back as KERNEL deletes it (**read out**,
+ * `KRNL386.EXE` seg2 `0c30`): its data segment first (`0c88`-`0c98`, seg1
+ * `4fa2`), then every block it owns by `GlobalFreeAll` (`0ce0`, seg1
+ * `0e39`), in the heap's order -- its database, below its segments, then
+ * its other segments, here in their order. Each goes on top of the free
+ * list, so the last of them is the first given again. **Recorded** by
+ * `segfree`: after `FreeLibrary`, blocks are given the library's code
+ * segment's selector, then its database's, then its data segment's.
+ * `database` is nought or less where the database stays or is not a
+ * descriptor. Where another instance of the program runs on, only the
+ * data segment goes, `whole` false: the code is the module's (`0d12`).
+ */
+export function freeModuleSegments(system: any, loader: any, database = -1, whole = true) {
+  const map: Record<string, number> = loader?._segmentMap ?? {};
+  const data = loader?.ds ? map[loader.ds] : undefined;
+
+  if (data !== undefined) {
+    system.allocator.freeSegment(data);
+  }
+
+  if (database > 0) {
+    system._globalAllocator.give(database);
+  }
+
+  if (!whole) {
+    return;
+  }
+
+  for (const number of Object.keys(map)
+    .map(Number)
+    .sort((a, b) => a - b)) {
+    if (number !== loader.ds) {
+      system.allocator.freeSegment(map[number]);
+    }
   }
 }
 
@@ -732,11 +799,12 @@ export function releaseLibraries(system: any, libraries: Held[]) {
     const brought = library.brought;
 
     library.brought = [];
+    releaseLibraries(system, [...brought].reverse());
     system._modules.unregister(library.loader);
+    freeModuleSegments(system, library.loader, library.module >> 3);
     system.handles.free(library.instance);
     system.handles.free(library.module);
     ownFreed(system, library.loader?.name);
-    releaseLibraries(system, brought);
   }
 }
 

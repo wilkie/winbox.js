@@ -109,12 +109,23 @@ impl System {
                 .map(&mut self.cpu.bus, IDT_SEGMENT, &[0; 4096], false);
         }
 
-        let program_segment = self.descriptors.find(1, 1).expect("a descriptor");
+        // Its program segment prefix, given its selector as the task was
+        // loaded (`load_program`).
+        let program_segment = if let Some(own) = self.modules[program].own {
+            own.prefix
+        } else {
+            let index = self.descriptors.take(1).expect("a descriptor");
 
-        self.descriptors
-            .map(&mut self.cpu.bus, program_segment, &[0; 256], false);
+            self.descriptors
+                .map(&mut self.cpu.bus, index, &[0; 256], false);
+            index
+        };
 
         let environment = self.descriptors.find(1, 1).expect("a descriptor");
+
+        if let Some(own) = self.modules[program].own.as_mut() {
+            own.environment = Some(environment);
+        }
         let bytes = strings.unwrap_or_else(|| task_environment("C:\\WINDOWS"));
         let mut segment = vec![0; 256.max((bytes.len() + 15) & !15)];
 

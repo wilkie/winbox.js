@@ -159,12 +159,15 @@ export async function startExecutable(
    * -- or ends (**recorded** by `execpk`). */
   const scheduler = system.scheduler;
 
+  /* The new program's instance: its data segment's handle (`instds`), as
+   * the task was made -- a program that has ended by the time this has the
+   * processor back has given its segments back (`exitTask`). */
+  const loader = scheduler._tasks[task]?.loader;
+  const instance = loader ? segmentSelector(loader.translate(loader.ds)) - 1 : task;
+
   await scheduler.yieldTurn();
 
-  /* The new program's instance: its data segment's handle (`instds`). */
-  const loader = scheduler._tasks[task]?.loader;
-
-  return loader ? segmentSelector(loader.translate(loader.ds)) - 1 : task;
+  return instance;
 }
 
 /**

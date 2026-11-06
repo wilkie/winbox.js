@@ -31,7 +31,7 @@ fn run(setup: Setup) -> (Stop, Vec<[String; 3]>, bool) {
             let engine = winbox_win16::Engine::new(system);
             let stop = engine.run(2_000_000_000, 300.0);
             let microsoft = engine.system().modules.iter().any(|module| {
-                module.name == "PROGMAN"
+                module.executable.module_name() == Some("PROGMAN")
                     && module.executable.description() != Some("WinBox Program Manager")
             });
 

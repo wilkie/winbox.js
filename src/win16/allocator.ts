@@ -91,11 +91,10 @@ export class Allocator {
      * freed one's selector, and three freed come back last first. A block's
      * bytes are its own once given (`grealloc`, `lzero`), whatever the
      * selector held before. */
-    let nextSelector = selectorCount === 1 ? this.#reused() : -1;
-
-    if (nextSelector < 0) {
-      nextSelector = this.globalAllocator.find(FIRST_SELECTOR, selectorCount);
-    }
+    const nextSelector =
+      selectorCount === 1
+        ? this.globalAllocator.take(FIRST_SELECTOR)
+        : this.globalAllocator.find(FIRST_SELECTOR, selectorCount);
 
     if (nextSelector < 0) {
       return null;
@@ -124,22 +123,6 @@ export class Allocator {
     this.#setLimits(nextSelector);
 
     return nextSelector;
-  }
-
-  /** Selectors freed, the last on top. */
-  #freed: number[] = [];
-
-  /** The selector freed last that is free still, or -1. */
-  #reused() {
-    while (this.#freed.length) {
-      const selector = this.#freed.pop()!;
-
-      if (!this.globalAllocator._usedMap[selector]) {
-        return selector;
-      }
-    }
-
-    return -1;
   }
 
   /**
@@ -177,8 +160,7 @@ export class Allocator {
        * given the selector finds it (`lheapseg`: a heap made in a block
        * found the last one's, and `LocalInit` refused it). */
       for (let tile = 0; tile < object.selectors; tile++) {
-        this.globalAllocator.release(handle + tile);
-        this.#freed.push(handle + tile);
+        this.globalAllocator.give(handle + tile);
         delete this._heaps[handle + tile];
         this._memory.unmapHandler(handle + tile);
       }
@@ -188,6 +170,18 @@ export class Allocator {
     }
 
     return true;
+  }
+
+  /**
+   * A segment a module was loaded into, freed as its module goes
+   * (`freeModuleSegments`): its size, its heap and its handler forgotten,
+   * and its selector given back to be given again, last first.
+   */
+  freeSegment(index) {
+    delete (this as any)._segmentSizes?.[index];
+    delete this._heaps[index];
+    this._memory.unmapHandler(index);
+    this.globalAllocator.give(index);
   }
 
   sizeOf(handle) {

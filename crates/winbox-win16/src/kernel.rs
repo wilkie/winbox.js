@@ -501,11 +501,9 @@ pub(crate) fn module_handle_named(system: &System, text: &str) -> u16 {
     let dotted = wanted.contains('.');
 
     // A module loaded from its file is found before one kept of its name. A
-    // program's whose last instance has ended is gone, its handle nought
-    // (`exit_task`): another of the same name loaded since is found before
-    // it (`search`: the probe asks for its other program's module while that
-    // program waits in a `WinExec` of its own), and only where there is none
-    // is the gone one's nought the answer.
+    // program's whose last instance has ended is deleted, its name and its
+    // file found no more (`exit_slot`), and a library's at nought so
+    // (`delete_library`).
     let named = |module: &crate::loader::Module| {
         if dotted {
             file_of(&module.path) == wanted
@@ -513,11 +511,7 @@ pub(crate) fn module_handle_named(system: &System, text: &str) -> u16 {
             module.name.eq_ignore_ascii_case(&wanted)
         }
     };
-    let loaded = system
-        .modules
-        .iter()
-        .position(|module| named(module) && (module.is_library() || module.handle != 0))
-        .or_else(|| system.modules.iter().position(named));
+    let loaded = system.modules.iter().position(named);
 
     if let Some(module) = loaded {
         return system.modules[module].handle;

@@ -6,7 +6,7 @@
 #![allow(clippy::unnecessary_wraps)]
 
 mod catch_throw;
-mod code;
+pub(crate) mod code;
 pub mod file_cdr;
 mod internals;
 pub(crate) mod more;

@@ -18,7 +18,7 @@ fn word(system: &System, far: u32) -> u16 {
 
 /// A procedure's address, through a `MakeProcInstance` thunk to the
 /// procedure it jumps to (`KRNL386.EXE` seg1 `4865`-`4883`).
-fn through_thunk(system: &System, far: u32) -> u32 {
+pub(crate) fn through_thunk(system: &System, far: u32) -> u32 {
     let selector = (far >> 16) as u16;
     let at = |delta: u16| (far & 0xffff_0000) | u32::from((far as u16).wrapping_add(delta));
 

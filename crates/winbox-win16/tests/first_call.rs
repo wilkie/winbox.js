@@ -72,6 +72,10 @@ fn runs_a_program_to_its_first_call() {
     system.link(index);
     system.start(index, libraries, "").unwrap();
 
+    let (code, data) = (
+        system.modules[index].segments[0],
+        system.modules[index].segments[1],
+    );
     let (ran, exit) = system.cpu.run(100);
 
     assert_eq!((ran, exit), (1, Exit::Unimplemented(0xcd)));
@@ -86,17 +90,22 @@ fn runs_a_program_to_its_first_call() {
         kept.module.export(cpu.ip / STEP - 1).unwrap().name,
         "InitTask"
     );
-    // Programs' segments from descriptor 1, its data the second.
-    assert_eq!(cpu.segments[DS].selector, segment_selector(2));
-    assert_eq!(cpu.segments[SS].selector, segment_selector(2));
+    // Its segments given after its module's database, its task's database,
+    // its prefix, its second selector and its queue (`load_program`).
+    assert!(code > 1 && data > code);
+    assert_eq!(cpu.segments[DS].selector, segment_selector(data));
+    assert_eq!(cpu.segments[SS].selector, segment_selector(data));
     // The stack above the data's 16 bytes, the return address on it.
     assert_eq!(cpu.regs[SP], 0x410 - 4);
-    assert_eq!(cpu.bus.read16((2 << 16) + 0x40c), 5);
-    assert_eq!(cpu.bus.read16((2 << 16) + 0x40e), segment_selector(1));
+    assert_eq!(cpu.bus.read16(((data as u32) << 16) + 0x40c), 5);
+    assert_eq!(
+        cpu.bus.read16(((data as u32) << 16) + 0x40e),
+        segment_selector(code)
+    );
     assert_eq!((cpu.regs[BX], cpu.regs[CX]), (0x400, 0x100));
     // No local heap yet: `InitTask` makes it, of the size in CX
     // (`KRNL386.EXE` seg2 `26b2`).
-    assert!(!system.heaps.contains_key(&2));
+    assert!(!system.heaps.contains_key(&data));
 }
 
 /// Where the TypeScript engine has them, from descriptor 4: each handle 32
@@ -123,15 +132,17 @@ fn calls_a_procedure_of_the_program() {
     system.link(index);
     system.start(index, libraries, "").unwrap();
 
-    // MOV AX, 1234h; MOV DX, 5678h; RETF 4 -- at 1:10h.
+    let code = system.modules[index].segments[0];
+
+    // MOV AX, 1234h; MOV DX, 5678h; RETF 4 -- at its code's 10h.
     system.cpu.bus.write(
-        (1 << 16) + 0x10,
+        ((code as u32) << 16) + 0x10,
         &[0xb8, 0x34, 0x12, 0xba, 0x78, 0x56, 0xca, 0x04, 0x00],
     );
 
     let sp = system.cpu.regs[SP];
     let engine = winbox_win16::Engine::new(system);
-    let answer = engine.call(u32::from(segment_selector(1)) << 16 | 0x10, &[1, 2], &[]);
+    let answer = engine.call(u32::from(segment_selector(code)) << 16 | 0x10, &[1, 2], &[]);
     let system = engine.into_system();
 
     assert_eq!(answer, Ok(0x5678_1234));
@@ -157,8 +168,9 @@ fn applies_a_relocation_additive_whatever_its_kind() {
 
     system.link(index);
 
-    let added = system.cpu.bus.read16(1 << 16);
-    let fixed = system.cpu.bus.read16((1 << 16) + 2);
+    let code = (system.modules[index].segments[0] as u32) << 16;
+    let added = system.cpu.bus.read16(code);
+    let fixed = system.cpu.bus.read16(code + 2);
 
     assert_eq!((added, fixed), (5, 0x3dcd));
 }
