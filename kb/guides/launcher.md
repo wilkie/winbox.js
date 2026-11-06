@@ -95,7 +95,7 @@ The asset bundle has no `WRITE.EXE` or `WINHELP.EXE`, so an install's "Read Me" 
 
 - **Help.** A program calls [[fn:USER.WinHelp]], and USER passes the request to the Windows Help window, starting `WINHELP.EXE` if it is not running. WinBox's Help would answer as that window does, which is to be read out of `USER.EXE` and `WINHELP.EXE` and recorded first. It would show the `.HLP` file: its topics, its contents, its links and pop-ups, and searching by keyword. The `.HLP` format would be a new page under kb/formats/, read out of `WINHELP.EXE` and checked against real help files.
 - **Write.** It would at least open a `.WRI` file and show it as Write lays it out, with its fonts, its paragraphs and its pictures. The `.WRI` format would also be a new kb/formats/ page.
-- **How each is built.** Each could be a Win16 program written in C with the probe toolchain. It would then run unchanged on both engines, with no twin to keep, and be held to the oracle like any program. Or it could be an engine task, as the PROGMAN stand-in is, written once in each engine. The first is the lighter of the two to keep.
+- **How each is built** (the owner's decision, 2026-11-06). Each is a Win16 program written in C with the probe toolchain. It runs unchanged on both engines, with no twin to keep, and is held to the oracle like any program. It is not an engine task, as the PROGMAN stand-in is.
 - **The launcher.** Once they exist, items that need them are no longer disabled. Until then, the launcher's reason says what is missing.
 
 ## The order of the work
