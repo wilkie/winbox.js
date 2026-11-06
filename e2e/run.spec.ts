@@ -619,6 +619,101 @@ for (const { engine, page: at } of ENGINES) {
       await expect(window).toHaveCount(0);
     });
 
+    test('stretches the screen to its column, a click landing on the same Windows pixel', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+
+      const window = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+      const file = window.getByRole('menuitem', { name: 'File', exact: true });
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const scale = page.getByRole('combobox', { name: 'Screen size' });
+
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+
+      /* The canvas's box and its place's room: its own pixels 640 by 480 whatever its size. */
+      const measure = () =>
+        screen.evaluate((canvas: HTMLCanvasElement) => {
+          const box = canvas.getBoundingClientRect();
+          const place = canvas.closest('#desktop')!;
+
+          return {
+            pixels: [canvas.width, canvas.height],
+            width: box.width,
+            height: box.height,
+            room: [place.clientWidth, place.clientHeight],
+          };
+        });
+      /* Fitted: 4:3, and as wide or as tall as its room. */
+      const fitted = async () => {
+        const box = await measure();
+
+        expect(box.pixels).toEqual([640, 480]);
+        expect(Math.abs(box.width / box.height - 4 / 3)).toBeLessThan(0.01);
+        expect(
+          Math.min(Math.abs(box.width - box.room[0]), Math.abs(box.height - box.room[1]))
+        ).toBeLessThan(2);
+        return box;
+      };
+      /* File, on Notepad's menu bar at (24,32) of the screen (`usedef`'s corner window),
+       * pressed and released where the canvas is drawn now: its menu opens, then closed. */
+      const openFile = async () => {
+        const box = (await screen.boundingBox())!;
+
+        /* Further apart than a double click's time, which Windows would take two clicks for. */
+        await page.waitForTimeout(600);
+
+        await screen.click({
+          position: { x: (24 * box.width) / 640, y: (32 * box.height) / 480 },
+        });
+        await expect(file).toHaveAttribute('aria-expanded', 'true');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Escape');
+        await expect(file).toHaveAttribute('aria-expanded', 'false');
+      };
+
+      /* Wide: three columns, the screen larger than its pixels. */
+      await expect(scale).toHaveValue('fit');
+      await expect.poll(async () => (await measure()).width).toBeGreaterThan(800);
+      await fitted();
+      await openFile();
+
+      /* Narrow: one column, the screen as wide as the page. */
+      await page.setViewportSize({ width: 900, height: 1100 });
+      await expect.poll(async () => (await measure()).width).toBeLessThan(900);
+
+      const narrow = await fitted();
+
+      expect(narrow.width).toBeGreaterThan(800);
+      await openFile();
+
+      /* Whole pixels: one device pixel each in this room, the bands around it
+       * on every side, which move nothing. */
+      await scale.selectOption('whole');
+      await expect.poll(async () => (await measure()).width).toBe(640);
+      expect((await measure()).height).toBe(480);
+      await openFile();
+
+      /* Remembered in this browser. */
+      await page.reload();
+      await expect(scale).toHaveValue('whole');
+    });
+
     test('moves Notepad dragged by its caption, drawn where it was let go', async ({ page }) => {
       test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
 

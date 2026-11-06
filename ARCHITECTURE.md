@@ -192,8 +192,34 @@ plugin, nothing added to `vite.config.ts`.
 **The desktop.** `desktop.tsx` renders an empty `<section id="desktop">` and
 hands it to `start`; the engine fills it (`makeScreen`, `screenNote`) and
 React never renders into it, so the canvas, its host and the ARIA mirror
-(`aria-mirror.ts`) are the engine's alone. Its CSS (the canvas drawn crisp,
-`max-width: 100%`, the mirror read and not seen) is the section's `sx`.
+(`aria-mirror.ts`) are the engine's alone. Its CSS (the canvas centred and
+unbordered, the mirror read and not seen) is the section's `sx`.
+
+**The screen's size** (`page/screen.ts`, `screenBox`, `displayAspect`). The
+canvas holds the display's own pixels; the page draws it larger or smaller
+with CSS. The section is as wide as its column and as tall as the display's
+shape makes it, up to the window's height less the page's chrome; a
+`ResizeObserver` on it, and an observer of the canvas's `width` and `height`
+(the Rust engine sizes its canvas afresh), set the canvas's CSS size within it,
+centred, the bands beside it black -- never per frame. Each display is shown as
+a 4:3 monitor of its day showed it, DOSBox's way (`vga_draw.cpp`): 640x480 and
+larger 4:3, square pixels; EGA 640x350 and CGA 640x200 stretched to 4:3, pixels
+1.37 and 2.4 times as tall as wide; Hercules 720x348 at DOSBox's 1.5, a 1.38:1
+picture. "Fit" fills the room at any scale; "Whole pixels" draws each pixel a
+whole number of device pixels across and down, as near the display's shape as
+whole numbers come (an EGA 1x1, then 2x3, then 3x4), and fits where even 1x1
+is too large; "Actual size" one CSS pixel to the pixel, as before, shrunk where
+it must be. Pixels are hard-edged (`image-rendering: pixelated`) where they are
+whole, or two device pixels or more each way; smoothed under that, where hard
+edges make one stroke of a letter twice as thick as the next (and, shrunk, drop
+lines). The choice is remembered in `localStorage` (`winbox.screenScale`,
+every access in `try`). The canvas has no border nor padding, so its box is its
+pixels, and `attachInput` maps the mouse through `getBoundingClientRect` at any
+size, the bands moving nothing. "Full screen" puts the screen, its toolbar and
+the line beneath on the whole screen (the Fullscreen API, Escape locked to the
+page with the Keyboard Lock API where the browser has it, so Esc is held to
+leave), or on the whole window where the browser refuses; Meta+Escape leaves
+either.
 
 **Theme** (`ui/theme.ts`): MUI's own, light and dark following
 `prefers-color-scheme` (a CSS-variables theme, `colorSchemeSelector:

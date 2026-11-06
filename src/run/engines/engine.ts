@@ -167,7 +167,7 @@ export interface Screen {
 
 /**
  * The screen put in the desktop: a canvas its size, drawn as large as the
- * page allows (`run.css`), and around it what holds the keyboard and what a
+ * page sizes it (`../ui/desktop.tsx`), and around it what holds the keyboard and what a
  * screen reader reads in place of the pixels: the mirror of USER's windows.
  */
 export function makeScreen(desktop: HTMLElement, width: number, height: number): Screen {
