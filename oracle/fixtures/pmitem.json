@@ -1,0 +1,309 @@
+{
+  "probe": "pmitem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "DdeInitialize",
+      "args": "clientonly",
+      "result": "0"
+    },
+    {
+      "function": "WinExec",
+      "args": "PROGMAN.EXE",
+      "result": "1"
+    },
+    {
+      "function": "DdeConnect",
+      "args": "PROGMAN,PROGMAN",
+      "result": "conv"
+    },
+    {
+      "function": "execute",
+      "args": "[CreateGroup(PM Item)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\PMITEMC.EXE one two,Args)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "args",
+      "result": "args=one two|cwd=C:\\WINDOWS|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "args",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\PMITEMC.EXE dir,Dir,,,,,C:\\ORACLE\\PMDIR)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "directory",
+      "result": "args=dir|cwd=C:\\ORACLE\\PMDIR|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "directory",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(c:\\windows\\pmitemc.exe Low Case,Low,,,,,c:\\oracle\\pmdir)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "lower",
+      "result": "args=Low Case|cwd=C:\\ORACLE\\PMDIR|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "lower",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(PMITEMC.EXE bare,Bare)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "bare",
+      "result": "args=bare|cwd=C:\\WINDOWS|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "bare",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\PMITEMC.EXE min,Min,,,,,,,1)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "minimized",
+      "result": "args=min|cwd=C:\\WINDOWS|show=7|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "minimized",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\ORACLE\\PMITEM.PMI,Doc)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "child",
+      "args": "document",
+      "result": "args=C:\\ORACLE\\PMITEM.pmi|cwd=C:\\ORACLE|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "box",
+      "args": "document",
+      "result": "none"
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\NOSUCH.EXE gone,Missing)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "box",
+      "args": "missing",
+      "result": "Application Execution Error"
+    },
+    {
+      "function": "box",
+      "args": "missing",
+      "result": "2 Button OK"
+    },
+    {
+      "function": "box",
+      "args": "missing",
+      "result": "-1 Static "
+    },
+    {
+      "function": "box",
+      "args": "missing",
+      "result": "-1 Static Cannot find file C:\\WINDOWS\\NOSUCH.EXE (or one of its components). Check to ensure the path and filename are correct and that all required libraries are available."
+    },
+    {
+      "function": "pressed",
+      "args": "missing",
+      "result": "OK 2"
+    },
+    {
+      "function": "closed",
+      "args": "missing",
+      "result": "yes"
+    },
+    {
+      "function": "after",
+      "args": "missing",
+      "result": ""
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\ORACLE\\PMITEM.ZQX,Lonely)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "box",
+      "args": "unassociated",
+      "result": "Application Execution Error"
+    },
+    {
+      "function": "box",
+      "args": "unassociated",
+      "result": "2 Button OK"
+    },
+    {
+      "function": "box",
+      "args": "unassociated",
+      "result": "-1 Static "
+    },
+    {
+      "function": "box",
+      "args": "unassociated",
+      "result": "-1 Static No application is associated with the specified file. Create an association by using File Manager."
+    },
+    {
+      "function": "pressed",
+      "args": "unassociated",
+      "result": "OK 2"
+    },
+    {
+      "function": "closed",
+      "args": "unassociated",
+      "result": "yes"
+    },
+    {
+      "function": "after",
+      "args": "unassociated",
+      "result": ""
+    },
+    {
+      "function": "execute",
+      "args": "[AddItem(C:\\WINDOWS\\PMITEMC.EXE bad,Bad,,,,,C:\\NOSUCH)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory",
+      "result": "Invalid Path"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory",
+      "result": "1 Button OK"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory",
+      "result": "2 Button Cancel"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory",
+      "result": "-1 Static "
+    },
+    {
+      "function": "box",
+      "args": "bad-directory",
+      "result": "-1 Static The working directory is invalid."
+    },
+    {
+      "function": "pressed",
+      "args": "bad-directory",
+      "result": "Cancel 2"
+    },
+    {
+      "function": "closed",
+      "args": "bad-directory",
+      "result": "yes"
+    },
+    {
+      "function": "after",
+      "args": "bad-directory",
+      "result": ""
+    },
+    {
+      "function": "box",
+      "args": "bad-directory-ok",
+      "result": "Invalid Path"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory-ok",
+      "result": "1 Button OK"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory-ok",
+      "result": "2 Button Cancel"
+    },
+    {
+      "function": "box",
+      "args": "bad-directory-ok",
+      "result": "-1 Static "
+    },
+    {
+      "function": "box",
+      "args": "bad-directory-ok",
+      "result": "-1 Static The working directory is invalid."
+    },
+    {
+      "function": "pressed",
+      "args": "bad-directory-ok",
+      "result": "OK 1"
+    },
+    {
+      "function": "closed",
+      "args": "bad-directory-ok",
+      "result": "yes"
+    },
+    {
+      "function": "child",
+      "args": "bad-directory-ok",
+      "result": "args=bad|cwd=C:\\WINDOWS|show=1|path=C:\\WINDOWS\\PMITEMC.EXE"
+    },
+    {
+      "function": "after",
+      "args": "bad-directory-ok",
+      "result": ""
+    },
+    {
+      "function": "execute",
+      "args": "[DeleteGroup(PM Item)]",
+      "result": "1,0,8000"
+    },
+    {
+      "function": "execute",
+      "args": "[ExitProgman(0)]",
+      "result": "0,4005,aaaa"
+    },
+    {
+      "function": "FindWindow",
+      "args": "Progman",
+      "result": "gone"
+    }
+  ]
+}

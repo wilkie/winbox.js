@@ -1028,7 +1028,15 @@ impl Engine {
                 break;
             }
 
-            if let Some(message) = self.take_message_from(false, None).await? {
+            let mut taken = self.take_message_from(false, None).await?;
+
+            // Nothing: the other tasks run first, as USER's own
+            // `PeekMessage` lets them (`dialog_look_after_yield`).
+            if taken.is_none() {
+                taken = self.dialog_look_after_yield().await?;
+            }
+
+            if let Some(message) = taken {
                 // The loop takes it with USER's own `PeekMessage` (seg25
                 // `07c7`, the function `PeekMessage` goes on to past its
                 // checks, seg1 `a76c`), which notes its time and place for

@@ -19,9 +19,9 @@ import { DestroyWindow } from './DestroyWindow.js';
 import { dispatchMessage } from './DispatchMessage.js';
 import { SendMessage } from './SendMessage.js';
 import { parseDialogTemplate, type DialogTemplate } from './dialog-template.js';
-import { nextMessage, SENT_ANSWERED } from './queue.js';
+import { nextMessage, SENT_ANSWERED, timerDueNow } from './queue.js';
 import { noteTaken } from './queries.js';
-import { askCbt, callMsgFilter, HCBT_SETFOCUS, MSGF_DIALOGBOX } from './hooks.js';
+import { askCbt, callMsgFilter, HCBT_SETFOCUS, lookFlags, MSGF_DIALOGBOX } from './hooks.js';
 import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 import { CTLCOLOR_DLG, defaultControlColour } from './ctlcolor.js';
@@ -610,6 +610,40 @@ async function dialogBox(
  * * The dialog destroyed without `EndDialog` ends the loop with 0, and the
  *   owner is left disabled (`089e`-`08ab`; `enddlg`).
  */
+/**
+ * A dialog's loop finding nothing: its look is USER's own `PeekMessage` with
+ * `PM_REMOVE` alone (`USER.EXE` seg25 `07bf`-`07c7`, seg1 `2440`), so the
+ * other tasks run -- unless the task has locked itself, as a system-modal
+ * dialog does once it shows (seg1 `245b`-`2462`) -- and after them only a
+ * timer due, or a message sent and answered meanwhile, sends it back to look
+ * (`254b`-`2573`), as `PeekMessage` does. **Recorded** by `pmitem`: Program
+ * Manager's system-modal box, made as its loop first finds nothing, is found
+ * by another program before it shows. As `dialog_look_after_yield`.
+ */
+async function lookAfterYield(system: any) {
+  if (lookFlags(system, 1) & 2) {
+    return null;
+  }
+
+  const back = system.scheduler.yieldNow ? system.scheduler.yieldNow() : true;
+
+  if (back === true && !system.scheduler.task?.sent?.length && !timerDueNow(system, null)) {
+    return null;
+  }
+
+  if (back !== true) {
+    await back;
+  }
+
+  const task = system.scheduler.task;
+
+  if (task?.sent?.length) {
+    await system.scheduler.takeSent?.(task);
+  }
+
+  return timerDueNow(system, null) ? nextMessage(system, { wait: false }) : null;
+}
+
 async function runModal(
   system: any,
   hwnd: number,
@@ -649,7 +683,13 @@ async function runModal(
       break;
     }
 
-    const msg = await nextMessage(system, { wait: false });
+    let msg = await nextMessage(system, { wait: false });
+
+    /* Nothing: the other tasks run first, as USER's own `PeekMessage` lets
+     * them (`lookAfterYield`). */
+    if (!msg) {
+      msg = await lookAfterYield(system);
+    }
 
     if (msg) {
       /* The loop takes it with USER's own `PeekMessage` (seg25 `07c7`, the

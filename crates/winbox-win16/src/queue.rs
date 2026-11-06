@@ -795,6 +795,29 @@ impl Engine {
         Ok(self.system().due_timer(false, filter).is_some())
     }
 
+    /// A dialog's loop finding nothing: its look is USER's own `PeekMessage`
+    /// with `PM_REMOVE` alone (`USER.EXE` seg25 `07bf`-`07c7`, seg1 `2440`),
+    /// so the other tasks run -- unless the task has locked itself, as a
+    /// system-modal dialog does once it shows (seg1 `245b`-`2462`) -- and
+    /// after them only a timer due, or a message sent and answered meanwhile,
+    /// sends it back to look (`254b`-`2573`), as `PeekMessage` does.
+    /// **Recorded** by `pmitem`: Program Manager's system-modal box, made
+    /// as its loop first finds nothing, is found by another program before
+    /// it shows.
+    pub(crate) async fn dialog_look_after_yield(&self) -> Result<Option<Message>, Stop> {
+        if self.system().look_flags(PM_REMOVE) & PM_NOYIELD != 0 {
+            return Ok(None);
+        }
+
+        self.yield_turn(None).await?;
+
+        if self.after_yield(Filter::default()).await? {
+            return self.take_message_from(false, None).await;
+        }
+
+        Ok(None)
+    }
+
     pub(crate) async fn next_message(
         &self,
         remove: bool,
