@@ -27,6 +27,8 @@
     "allowJs": true,
     "checkJs": false,
 
+    "jsx": "react-jsx",
+
     "types": ["jest", "node", "vite/client"]
   },
   "include": ["src", "test", "e2e", "*.config.ts", "*.config.js"],

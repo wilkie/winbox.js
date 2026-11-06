@@ -2,6 +2,8 @@ import js from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
 
 export default tseslint.config(
   {
@@ -48,6 +50,21 @@ export default tseslint.config(
     files: ['src/emulator/**/*.ts'],
     rules: {
       'no-fallthrough': 'off',
+    },
+  },
+
+  {
+    /* The run page's components (React and MUI, `src/run/ui/`): the rules
+     * of hooks, and the accessibility rules for JSX, as each recommends. */
+    files: ['src/**/*.tsx'],
+    ...jsxA11y.flatConfigs.recommended,
+    plugins: {
+      ...jsxA11y.flatConfigs.recommended.plugins,
+      ...reactHooks.configs.flat.recommended.plugins,
+    },
+    rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
+      ...reactHooks.configs.flat.recommended.rules,
     },
   },
 
