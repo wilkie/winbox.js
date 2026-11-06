@@ -20,6 +20,7 @@ probes:
     sebhook,
     dlgcode,
     sysdlg,
+    taskend,
   ]
 ---
 
@@ -151,6 +152,20 @@ The journal record and playback hooks, `WH_JOURNALRECORD` and `WH_JOURNALPLAYBAC
 
 Both engines agree with all fourteen records. Before, the hooks were kept and never called.
 
+## A task's hooks, and its end
+
+[[read out]] `SetWindowsHook` puts a message filter in for the task calling it, and any other kind in for every task, its module the one its procedure is in (`USER.EXE` seg1 `7d28`-`7d72`; `7cd4`-`7cf7`: the module whose segment it is, through the thunk, else the one `GetExePtr` finds). `SetWindowsHookEx` puts one in for the task it is given, or for every task with none, with the module of the instance it is given; it refuses an instance that is no module's (`7d9e`-`7db2`), and a task with no queue (`7dd2`-`7ddb`, `7cfa`). [[fn:USER.UnhookWindowsHook]] looks for the procedure in the chain as the task calling calls it (`7f1d`-`7f4e`).
+
+As a task ends, USER takes out every hook kept with its queue (seg1 `0be4`, `7f51`-`7f9e`), and, where it was its module's last instance, every hook for every task whose module it is (`0c31`, `1088`-`10a6`). A library's go as KERNEL deletes it, telling USER with signal 80h (`KRNL386.EXE` seg2 `0c61`-`0c7c`; `USER.EXE` seg1 `0a4d`-`0a54`). See [[topic:several-programs]] for the rest of a task's end.
+
+[[measured]] [[probe:taskend]] runs a program that puts in five hooks whose procedures are in a library the probe keeps loaded: message hooks for its own task (0), for every task with its instance (1), with `SetWindowsHook` (2), and for every task with the library's instance (3); and a message filter with `SetWindowsHook` (4). The probe puts in a message hook for the program's task (6). Each counts its calls in the task watched, and passes on.
+
+- A message the probe looks at calls 3, 2 and 1, in that order, and not 0 or 6; `CallMsgFilter` in the probe calls no filter of the program's.
+- A message the program takes calls 6, 0, 3, 2, 1: the hooks kept with its queue, the newest first, then those for every task.
+- After the program ends, a message the probe looks at calls 3 and 2: the hook put in with the program's instance went with it, and the two whose module is the library's stay. `UnhookWindowsHook` and `UnhookWindowsHookEx` then take those out, answering 1.
+
+Both engines agree with all 20 records. Before, every hook was everyone's, and none was taken out as a task ended: Program Manager's message filter was called by the next program's loops after Program Manager ended ([[probe:progdde]]). In the corpus, Widget Workshop's install runs with Program Manager as the shell, whose message filter was called for every message the installer's dialog boxes took, 29 instructions each; it no longer is, and the run, its calls the same up to its polls of `PeekMessage`, makes 5,398,010 calls where it made 5,397,899, its screens as they were.
+
 ## Not yet followed
 
 - The faults: a hook refusing `HCBT_CREATEWND`, and any hook called with a debugging hook in, end the program in Windows ([[probe:cbteat]], [[probe:dbghook]]). winbox.js takes the window apart and goes on, and never calls a debugging hook.
@@ -158,8 +173,7 @@ Both engines agree with all fourteen records. Before, the hooks were kept and ne
 - `HCBT_MINMAX` for a window made with `WS_MINIMIZE` or `WS_MAXIMIZE` (seg8 `0861`), and `HCBT_SETFOCUS` for USER's other moves of the focus through `SetFocus`, as for a window hidden (seg14 `0dd4`): only a window minimized with the focus in it is followed.
 - `DefWindowProc`'s system commands ignored while something has the capture, the window is disabled, or a window is system-modal (seg1 `037c`-`03db`): winbox.js asks the hooks and carries the command out.
 - The shell hook's code 3, `HSHELL_ACTIVATESHELLWINDOW`, which USER is not yet seen to send.
-- A hook for one task, as `SetWindowsHookEx` can ask for. Every hook here is everyone's, called whichever task USER is working for.
 
 ## In winbox.js
 
-`src/win16/user/hooks.ts` keeps each kind's chain, newest first, and calls the filters, the system's first, for the loops in `dialogs.ts`, `menu-loop.ts`, `scroll-track.ts` and `switch-loop.ts`. `askCbt` and `askCbtCreate` ask the computer-based training hooks for `CreateWindow.ts`, `DestroyWindow.ts`, `SetFocus.ts`, `dialogs.ts`, `window-state.ts`, `mouse-scan.ts`, `track-loop.ts` and `DefWindowProc.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`, with `ask_cbt`, `ask_cbt_with` and `ask_cbt_create`.
+`src/win16/user/hooks.ts` keeps each kind's chain, newest first, each hook with the task it is for and its module, a chain called as the running task calls it (`chainFor`), and takes a task's and a module's out (`unhookTask`, `unhookModule`); it calls the filters, the system's first, for the loops in `dialogs.ts`, `menu-loop.ts`, `scroll-track.ts` and `switch-loop.ts`. `askCbt` and `askCbtCreate` ask the computer-based training hooks for `CreateWindow.ts`, `DestroyWindow.ts`, `SetFocus.ts`, `dialogs.ts`, `window-state.ts`, `mouse-scan.ts`, `track-loop.ts` and `DefWindowProc.ts`. The scheduler's `callWndProc` calls `sentMessageHook` before every window procedure it runs for a message sent, and `DispatchMessage` goes round it. `callHooksWith` lays a structure of USER's on the stack for a hook; `system-queue.ts` calls the input hooks with it. The Rust engine has the same in `crates/winbox-win16/src/hooks.rs` and `system_queue.rs`, with `ask_cbt`, `ask_cbt_with` and `ask_cbt_create`.

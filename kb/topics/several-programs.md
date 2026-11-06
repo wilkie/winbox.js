@@ -2,7 +2,7 @@
 kind: topic
 name: Several programs at once
 summary: How Windows 3.1 runs several programs on one processor — when a task gives it up and takes it back, how a program starts another with WinExec and how far the other runs before WinExec answers, and what the new program is given — recorded by a probe that starts a program of its own twice.
-probes: [winexec, tasks2, loadenv, curdir, execpk]
+probes: [winexec, tasks2, loadenv, curdir, execpk, taskend]
 ---
 
 Windows 3.1 runs its programs one at a time, each until it gives the processor up. A task does that only where it waits: for a message, in `GetMessage`, `PeekMessage`, `WaitMessage` or a dialog box's loop; in `Yield`; or for another task to answer a message it sent. The next task waiting for the processor then has it, with its registers as it left them.
@@ -49,6 +49,27 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 - [[read out]] **The task sent to runs next, and the sender after it.** USER puts the message in the window's task's queue and hands that task the processor with [[fn:KERNEL.DirectedYield]] (`USER.EXE` seg1 `3b3e`). The answer is handed back the same way, the sender's task named (seg1 `3c8f`). So no third task runs between a message sent and its answer.
   winbox.js had put the task sent to in line behind every task already waiting. Clock and Notepads started together each showed its window while another's activation was still waiting for its answers. Each Notepad's `WM_ACTIVATE` came once another window was active, and its `SetFocus` made it active again ([[topic:activation-and-focus]]). The windows took the activation from one another round and round, each time deeper on every task's stack, until Clock's stack ran over its brushes and it painted with its own data segment's handle.
 
+## A program's end
+
+[[read out]] As a task ends, KERNEL tells USER through the signal procedure it keeps in the task's database, signal 20h with the task's queue and instance (`KRNL386.EXE` seg1 `1938`-`194d`), before it frees anything of the task's. USER's answer (`USER.EXE` seg1 `09bc`-`09fb`, then `0b71`-`0e75`) is, in order:
+
+- The hooks kept with the task's queue taken out (`0be4`; [[topic:hooks]]).
+- Every window of the task's queue, at any depth, given USER's own procedure for its class: the class's, for one of USER's classes -- a dialog's dialog procedure cleared too -- else `DefWindowProc` (`0c03`, `0ec1`-`0fb1`; the classes' procedures at `0fcc`, the dialog class the seventh, seg3 `1547`-`1590`). So none of the program's procedures is called as its windows go, nor a library's whose window the program made.
+- Its windows destroyed (`0c0b`, `103c`-`1069`): the desktop's windows walked in their order, each window of another task's looked under first, and from the first again after each one destroyed. [[fn:USER.DestroyWindow]] then sees USER's word at E4h, the queue ending: a child tells its parent nothing (seg8 `0ac6`-`0acb`), a window at the top is hidden with 2097h (`0b0d`-`0b20`), and where no window is active none is made active (`0ba8`-`0bb2`). A window another task made and the ending one's window owns is not destroyed: `DestroyWindow` destroys the windows of its own queue it owns, and leaves another's owned by none (`0912`-`0949`).
+- Where the task was its module's last instance (`0c29`-`0c31`, `1088`-`10be`): the module's hooks for every task taken out; another task's window whose procedure is in the module, of a program made for Windows 3.0 or later, given USER's for its class (`10ac`-`10b5`); and the module's classes unregistered (`10b8`, `0b07`-`0b39`). A library deleted is told so too, with signal 80h (`KRNL386.EXE` seg2 `0c4c`-`0c81`; `USER.EXE` seg1 `0a4d`-`0a54`).
+
+Nothing is sent `WM_CLOSE` or `WM_QUERYENDSESSION`.
+
+[[measured]] [[probe:taskend]] runs a program, `TASKENDC.EXE`, which makes `w1`, an overlapped window of its own class; in it a button, `w1a`, and a window of its class, `w1b`; `w2`, a popup `w1` owns; `w3`, a window of a class it registered for every task with a library's procedure; and `w4`, a child of the probe's window `p`. The probe makes `w5`, a popup of its own that `w1` owns. The program ends on a message without destroying anything, while the probe's computer-based training, window procedure and shell hooks note what they are called with for the named windows:
+
+- `HCBT_DESTROYWND` for `w3`, `w2`, `w1`, then `w4`: the desktop's order, and `p` looked under for `w4`.
+- Each window at the top is sent `WM_WINDOWPOSCHANGING` and `WM_WINDOWPOSCHANGED`, then `WM_DESTROY`, its children's `WM_DESTROY`, their `WM_NCDESTROY` and its own. `w4`, a child, is sent `WM_SHOWWINDOW` and `WM_SETVISIBLE` as it is hidden, and `p` its `WM_SYNCPAINT` and `WM_ERASEBKGND`, but no `WM_PARENTNOTIFY`.
+- The shell hooks are told of `w3` and `w1`, the windows at the top with no owner.
+- The program's own window procedure, and the library's, are called with none of it.
+- `w5` is left; every other window is gone, and so is the class `TEGLOBAL`.
+
+All 20 records agree in both engines.
+
 ## In winbox.js
 
 `Scheduler` in `src/win16/scheduler.ts` keeps one task's state in the processor at a time:
@@ -63,8 +84,11 @@ Windows 3.1 runs its programs one at a time, each until it gives the processor u
 
 Until November 2026 both engines went on giving the processor up until the new program waited for a message or ended. A program that polls never waits: Microsoft's setup toolkit, SimTower's `SETUP.EXE`, copies its engine out, starts it, and loops on `PeekMessage` until it ends. Started so by WinBox's Program Manager as the shell of an install run, it held Program Manager in its `ShellExecute` for the whole install, never in its message loop, so the toolkit's `WM_DDE_EXECUTE`, posted to Program Manager's frame, was never taken, and the toolkit waited for its acknowledgement for ever ([[topic:program-manager-dde]]).
 
+USER's part of a program's end is `appExit` in `src/win16/user/app-exit.ts`, called before KERNEL's (`Win16.exitTask`) where the program ends itself -- `INT 21h` function 4Ch, `FatalAppExit`, a fault, or `TerminateApp` of itself -- and `app_exit.rs` in the Rust engine, which the engine calls as a call of its own before the `INT 21h` (`app_exit_pending`). A task another ends with `TerminateApp` loses its hooks and its module's classes without messages, and its windows are taken off as before (`appExitWithoutMessages`). Before, neither engine told USER: a task's windows were taken off without messages, its hooks were kept, and a hook or a library's window could call into the program after its end, so its segments were kept.
+
 Not followed:
 
+- the parts of USER's end of a task this does not do: its timers, its DCs' cache, its sent messages, the clipboard and the active window (`USER.EXE` seg1 `0b9a`-`0ba5`, `0baa`-`0bd9`, `0bde`, `0bfa`, `0c12`-`0e6c`), and GDI's (`GDI.460`, `0e4b`);
 - a DOS program;
 
 [[fn:SHELL.ShellExecute]] starts what it finds through `WinExec` ([[topic:programs-and-their-files]]).
