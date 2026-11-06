@@ -40,7 +40,14 @@ export interface ZEntry {
 /** A window's list, and the windows made topmost or not with it. */
 export interface ZPlan {
   entries: ZEntry[];
+  /**
+   * The windows to be made topmost or not as they are placed: those marked
+   * now, and those left marked by an earlier call that marked them and did
+   * not place them (`markedBefore`).
+   */
   flip: Set<any>;
+  /** The windows this call marks afresh, each marked or not (seg7 `13be`). */
+  marked: Set<any>;
 }
 
 /** The windows at the top, the front first (the desktop's list of children). */
@@ -192,26 +199,60 @@ function resolve(desktop: any, window: any, after: number, flags: number) {
  */
 function flipped(desktop: any, window: any, change: number) {
   const flip = new Set<any>();
+  const marked = new Set<any>();
 
-  if (!change) {
-    return flip;
+  if (change) {
+    const want = change === 1;
+    const mark = (at: any) => {
+      marked.add(at);
+
+      if (!!at.topmost !== want) {
+        flip.add(at);
+      }
+
+      for (const owned of ownedBy(desktop, at)) {
+        if (owned !== at && !marked.has(owned)) {
+          mark(owned);
+        }
+      }
+    };
+
+    mark(change === 2 ? headOf(window) : window);
   }
 
-  const want = change === 1;
-  const mark = (at: any) => {
-    if (!!at.topmost !== want) {
-      flip.add(at);
+  /* Each marked afresh (`13c6` takes the mark off first); any other keeps
+   * the mark an earlier call left it, where `SWP_NOOWNERZORDER` left it out
+   * of that call's list (`zmark`). */
+  for (const other of siblings(desktop)) {
+    if (!marked.has(other) && markedBefore(other)) {
+      flip.add(other);
     }
+  }
 
-    for (const owned of ownedBy(desktop, at)) {
-      if (owned !== at && !flip.has(owned)) {
-        mark(owned);
-      }
-    }
-  };
+  return { flip, marked };
+}
 
-  mark(change === 2 ? headOf(window) : window);
-  return flip;
+/**
+ * Whether a window was left marked to be made topmost or not as it is
+ * next placed: its byte at 26h, bit 20h (seg7 `13de`), taken off as it is
+ * placed (`0b67`-`0b71`). **Recorded** by `zmark`.
+ */
+export function markedBefore(window: any) {
+  return !!window.topmostDue;
+}
+
+/**
+ * A window placed by a `SetWindowPos` that did more than leave it where it
+ * lies -- moved, sized, shown or hidden with `SWP_NOZORDER` -- made topmost
+ * or not where it was left marked so (seg7 `0a4f`-`0a60`, `0b46`-`0b71`):
+ * `zmark`'s Q, marked by its owner made topmost alone, is made topmost as
+ * it is moved, and not as it is asked for nothing.
+ */
+export function placedMarked(desktop: any, window: any, flags: number) {
+  if (markedBefore(window) && ((flags | 0x1800) & 0x18e7) !== 0x1807) {
+    window.topmostDue = false;
+    desktop.flipTopmost(window);
+  }
 }
 
 /**
@@ -272,10 +313,11 @@ export function planZOrder(
   errorBox: boolean
 ): ZPlan {
   const { after, change } = resolve(desktop, window, asked & 0xffff, flags);
-  const flip = flipped(desktop, window, change);
+  const { flip, marked } = flipped(desktop, window, change);
   const alone = (stays = !!(flags & SWP_NOZORDER)): ZPlan => ({
     entries: [{ member: window, after, flags, stays, linked: false }],
     flip,
+    marked,
   });
 
   /* Nothing brought: not put elsewhere, `SWP_NOOWNERZORDER`, or a window
@@ -342,6 +384,7 @@ export function planZOrder(
       linked: false,
     })),
     flip,
+    marked,
   };
 }
 
@@ -416,6 +459,11 @@ export function stayRun(desktop: any, plan: ZPlan, unbroken: boolean) {
  * after, and made topmost or not as marked.
  */
 export function placePlan(desktop: any, plan: ZPlan, window: any, placedOnly: boolean) {
+  /* The marks this call made, kept on windows it does not place. */
+  for (const marked of plan.marked) {
+    marked.topmostDue = plan.flip.has(marked);
+  }
+
   for (const entry of plan.entries) {
     if (entry.stays) {
       continue;
@@ -436,6 +484,7 @@ export function placePlan(desktop: any, plan: ZPlan, window: any, placedOnly: bo
     entry.linked = true;
 
     if (plan.flip.has(entry.member)) {
+      entry.member.topmostDue = false;
       desktop.flipTopmost(entry.member);
     }
   }

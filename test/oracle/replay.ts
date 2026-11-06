@@ -5229,15 +5229,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'diskfree:segment': 'DOS function 1Ch is not answered',
   'diskfree:media': 'DOS function 1Ch is not answered',
 
-  /* `zminim`: minimized and restored by `ShowWindow`, the icon's title
-   * (`#32772`) is not among the windows `GetWindow` walks, and
-   * `SW_SHOWMINIMIZED` and `SW_SHOWNORMAL` of a window made an icon with
-   * `SW_SHOWMINNOACTIVE` and restored are told nothing
-   * (`kb/topics/z-order.md`). */
-  'zminim:order': "an icon's title is not among the windows GetWindow walks",
-  'zminim:sent':
-    'SW_SHOWMINIMIZED and SW_SHOWNORMAL of a window minimized and restored before tell it nothing',
-
   /* GlobalReAlloc growing a block past one allocated after it moves it in
    * Windows, its selector the same; winbox.js gives each selector a 64 KiB
    * place of its own and grows a block where it is. And FS, which no 16-bit
@@ -6048,6 +6039,9 @@ const RUN_WHOLE = new Set<string>([
   'zcreate',
   'zactive',
   'zminim',
+  'zcbtins',
+  'zmark',
+  'mbseb',
 ]);
 
 /**
@@ -6068,6 +6062,7 @@ export const BOX_KEYS: Record<string, string[][]> = {
   openfile: [['Enter'], ['Enter']],
   sebhook: [['Enter']],
   undefdl: [['Enter']],
+  mbseb: [['Enter'], ['Enter'], ['Enter'], ['Enter'], ['Enter'], ['Enter'], ['Escape']],
 };
 
 /**

@@ -1966,6 +1966,69 @@ export class Desktop {
     this.windows.splice(last ? this.windows.indexOf(last) + 1 : 0, 0, window);
   }
 
+  /**
+   * A window at the top made, linked as `CreateWindow` links it after the
+   * window the `WH_CBT` hook's `CBT_CREATEWND` names (`USER.EXE` seg8
+   * `0480`, `0757`-`07af`), linked already as for `HWND_TOP` (nought,
+   * `linkMade`), which it is then left as: `HWND_BOTTOM` last, topmost as it
+   * was; `HWND_TOPMOST` first, made topmost; `HWND_NOTOPMOST` after the last
+   * topmost window, made not; after a window, topmost where that one is --
+   * but where it is the last topmost and this one is not, not -- and not
+   * after one that is not. The last topmost window is looked for with this
+   * one out of the list, as USER has it there. **Recorded** by `zcbtins`.
+   */
+  linkMadeAfter(window: DesktopWindow, after: number) {
+    const lastTop = () => {
+      let last = null;
+
+      for (const other of this.windows.filter(
+        (one) => !one.parent && (!one.titleOf || (one.titleOf as any).titleAsked)
+      )) {
+        if (other === window) {
+          continue;
+        }
+
+        if (!other.topmost) {
+          break;
+        }
+
+        last = other;
+      }
+
+      return last;
+    };
+
+    after &= 0xffff;
+
+    if (after === 0) {
+      return;
+    }
+
+    if (after === 0xffff) {
+      this.#setTopmost(window, true);
+      this.linkAfter(window, 0);
+      return;
+    }
+
+    if (after === 0xfffe) {
+      this.#setTopmost(window, false);
+      this.linkAfter(window, lastTop()?.hwnd ?? 0);
+      return;
+    }
+
+    if (after !== 1) {
+      const other = this.windows.find((one) => !one.parent && one.hwnd === after);
+
+      if (!other || other === window) {
+        return;
+      }
+
+      this.#setTopmost(window, other.topmost && (window.topmost || lastTop() !== other));
+    }
+
+    this.linkAfter(window, after);
+  }
+
   /** A window made topmost if it was not, or not if it was, as it is linked (seg7 `0b67`-`0b71`). */
   flipTopmost(window: DesktopWindow) {
     this.#setTopmost(window, !window.topmost);

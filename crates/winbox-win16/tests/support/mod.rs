@@ -342,6 +342,10 @@ pub const AGREEING: &[&str] = &[
     "zcreate",
     "zactive",
     "swpshow",
+    "zminim",
+    "zcbtins",
+    "zmark",
+    "mbseb",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -619,10 +623,23 @@ pub const BOX_KEYS: &[(&str, &[&[Step]])] = &[
     ),
     ("sebhook", &[&[Step::Key(VK_RETURN)]]),
     ("undefdl", &[&[Step::Key(VK_RETURN)]]),
+    (
+        "mbseb",
+        &[
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_RETURN)],
+            &[Step::Key(VK_ESCAPE)],
+        ],
+    ),
 ];
 
 pub const VK_TAB: u16 = 0x09;
 pub const VK_RETURN: u16 = 0x0d;
+pub const VK_ESCAPE: u16 = 0x1b;
 
 // A hand at the box, as the survey has one.
 pub use winbox_win16::survey::{Step, hand};

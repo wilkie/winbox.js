@@ -150,6 +150,31 @@ impl System {
             .collect()
     }
 
+    /// A window's brothers as `GetWindow` walks them, front to back: at the
+    /// top, an icon's title once made (`USER.EXE` seg1 `6ab8`) is a window
+    /// like any other, linked just in front of its icon (`zminim`).
+    fn walked(&self, index: usize) -> Vec<usize> {
+        let parent = self.window(index).parent;
+
+        self.z_order
+            .iter()
+            .copied()
+            .filter(|&other| {
+                self.windows[other].as_ref().is_some_and(|other| {
+                    other.parent == parent
+                        && other.hwnd != 0
+                        && !other.unlinked
+                        && other.title_of.is_none_or(|icon| {
+                            parent.is_none()
+                                && self.windows[icon]
+                                    .as_ref()
+                                    .is_some_and(|icon| icon.title_asked)
+                        })
+                })
+            })
+            .collect()
+    }
+
     /// A window's first child, front to back.
     fn first_child(&self, index: usize) -> u16 {
         self.z_order
@@ -331,15 +356,18 @@ fn related(system: &System, hwnd: u16, relation: u16) -> u16 {
 
     match relation {
         GW_CHILD => system.first_child(index),
+        // An icon's title is made with its icon as its parent, so owned by
+        // it (`USER.EXE` seg1 `6b20`).
         GW_OWNER => system
             .window(index)
             .owner
+            .or(system.window(index).title_of)
             .map_or(0, |owner| system.window(owner).hwnd),
         // Not yet among its brothers, the window after it is none: its link
         // is nought (`USER.EXE` seg8 `07bb`; `zcreate`).
         GW_HWNDNEXT if system.window(index).unlinked => 0,
         GW_HWNDFIRST | GW_HWNDLAST | GW_HWNDNEXT | GW_HWNDPREV => {
-            let list = system.siblings(index);
+            let list = system.walked(index);
             let at = list.iter().position(|&other| other == index);
             let pick = match relation {
                 GW_HWNDFIRST => list.first().copied(),
@@ -355,11 +383,24 @@ fn related(system: &System, hwnd: u16, relation: u16) -> u16 {
 }
 
 fn top_window(system: &System, hwnd: u16) -> u16 {
+    // An icon's title, once made, among them (`walked`).
     if hwnd == 0 {
         return system
-            .top_level()
-            .first()
-            .map_or(0, |&index| system.window(index).hwnd);
+            .z_order
+            .iter()
+            .copied()
+            .find(|&index| {
+                system.windows[index].as_ref().is_some_and(|window| {
+                    window.parent.is_none()
+                        && window.hwnd != 0
+                        && window.title_of.is_none_or(|icon| {
+                            system.windows[icon]
+                                .as_ref()
+                                .is_some_and(|icon| icon.title_asked)
+                        })
+                })
+            })
+            .map_or(0, |index| system.window(index).hwnd);
     }
 
     related(system, hwnd, GW_CHILD)

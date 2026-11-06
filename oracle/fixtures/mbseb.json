@@ -1,0 +1,189 @@
+{
+  "probe": "mbseb",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "state",
+      "args": "ok, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "ok",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "ok",
+      "result": "1"
+    },
+    {
+      "function": "sent",
+      "args": "ok",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "ok, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "yesno hand, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "yesno hand",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "yesno hand",
+      "result": "6"
+    },
+    {
+      "function": "sent",
+      "args": "yesno hand",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "yesno hand, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "yesnocancel 2, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "yesnocancel 2",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "yesnocancel 2",
+      "result": "7"
+    },
+    {
+      "function": "sent",
+      "args": "yesnocancel 2",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "yesnocancel 2, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "abort 3, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "abort 3",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "abort 3",
+      "result": "5"
+    },
+    {
+      "function": "sent",
+      "args": "abort 3",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "abort 3, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "retry 3, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "retry 3",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "retry 3",
+      "result": "4"
+    },
+    {
+      "function": "sent",
+      "args": "retry 3",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "retry 3, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "okcancel 2, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "okcancel 2",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "okcancel 2",
+      "result": "2"
+    },
+    {
+      "function": "sent",
+      "args": "okcancel 2",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "okcancel 2, after",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "state",
+      "args": "okcancel esc, before",
+      "result": "W;active=W;focus=W;modal=0"
+    },
+    {
+      "function": "box",
+      "args": "okcancel esc",
+      "result": "up"
+    },
+    {
+      "function": "answer",
+      "args": "okcancel esc",
+      "result": "2"
+    },
+    {
+      "function": "sent",
+      "args": "okcancel esc",
+      "result": "none"
+    },
+    {
+      "function": "state",
+      "args": "okcancel esc, after",
+      "result": "W;active=W;focus=W;modal=0"
+    }
+  ]
+}

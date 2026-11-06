@@ -42,7 +42,13 @@ pub(crate) struct ZEntry {
 #[derive(Clone, Debug, Default)]
 pub(crate) struct ZPlan {
     pub entries: Vec<ZEntry>,
+    /// The windows to be made topmost or not as they are placed: those
+    /// marked now, and those left marked by an earlier call that marked
+    /// them and did not place them (`topmost_due`).
     pub flip: Vec<usize>,
+    /// The windows this call marks afresh, each marked or not (seg7
+    /// `13be`).
+    pub marked: Vec<usize>,
 }
 
 impl ZPlan {
@@ -229,7 +235,7 @@ impl System {
     /// made topmost, it and the windows owned under it; made not, the
     /// window at the end of its owners and every window owned under that
     /// (seg7 `137c`-`13a5`, `13be`). Those already so are left.
-    fn z_flipped(&self, index: usize, change: u8) -> Vec<usize> {
+    fn z_flipped(&self, index: usize, change: u8) -> (Vec<usize>, Vec<usize>) {
         fn mark(
             system: &System,
             at: usize,
@@ -253,6 +259,7 @@ impl System {
         }
 
         let mut flip = Vec::new();
+        let mut marked = Vec::new();
 
         if change != 0 {
             let from = if change == 2 {
@@ -261,10 +268,46 @@ impl System {
                 index
             };
 
-            mark(self, from, change == 1, &mut flip, &mut Vec::new());
+            mark(self, from, change == 1, &mut flip, &mut marked);
         }
 
-        flip
+        // Each marked afresh (`13c6` takes the mark off first); any other
+        // keeps the mark an earlier call left it, where
+        // `SWP_NOOWNERZORDER` left it out of that call's list (`zmark`).
+        for other in self.z_siblings() {
+            if !marked.contains(&other) && self.shown(other).topmost_due {
+                flip.push(other);
+            }
+        }
+
+        (flip, marked)
+    }
+
+    /// A window placed by a `SetWindowPos` that did more than leave it
+    /// where it lies -- moved, sized, shown or hidden with `SWP_NOZORDER`
+    /// -- made topmost or not where it was left marked so (seg7
+    /// `0a4f`-`0a60`, `0b46`-`0b71`): `zmark`'s Q, marked by its owner made
+    /// topmost alone, is made topmost as it is moved, and not as it is
+    /// asked for nothing. The TypeScript engine's `placedMarked`.
+    pub(crate) fn z_placed_marked(&mut self, index: usize, flags: u16) {
+        if self.shown(index).topmost_due && (flags | 0x1800) & 0x18e7 != 0x1807 {
+            self.z_flip_topmost(index);
+        }
+    }
+
+    /// A window made topmost if it was not, or not if it was, as it is
+    /// linked (seg7 `0b67`-`0b71`), its mark taken off.
+    fn z_flip_topmost(&mut self, index: usize) {
+        let shown = self.shown_mut(index);
+
+        shown.topmost_due = false;
+        shown.topmost = !shown.topmost;
+
+        if shown.topmost {
+            shown.ex_style |= WS_EX_TOPMOST;
+        } else {
+            shown.ex_style &= !WS_EX_TOPMOST;
+        }
     }
 
     /// The family listed from `node`: each window it owns, front to back,
@@ -335,7 +378,7 @@ impl System {
     /// one before, and the windows made topmost or not with it.
     pub(crate) fn plan_z_order(&self, index: usize, asked: u16, flags: u16) -> ZPlan {
         let (after, change) = self.z_resolve(index, asked, flags);
-        let flip = self.z_flipped(index, change);
+        let (flip, marked) = self.z_flipped(index, change);
         let alone = |stays: bool| ZPlan {
             entries: vec![ZEntry {
                 member: index,
@@ -344,6 +387,7 @@ impl System {
                 linked: false,
             }],
             flip: flip.clone(),
+            marked: marked.clone(),
         };
 
         // Nothing brought: not put elsewhere, `SWP_NOOWNERZORDER`, or a
@@ -423,6 +467,7 @@ impl System {
                 })
                 .collect(),
             flip,
+            marked,
         }
     }
 
@@ -500,6 +545,11 @@ impl System {
     /// lies where it is asked is left there; any other is linked after the
     /// window it is to go after, and made topmost or not as marked.
     pub(crate) fn z_place(&mut self, plan: &mut ZPlan, window: usize, placed_only: bool) {
+        // The marks this call made, kept on windows it does not place.
+        for &marked in &plan.marked {
+            self.shown_mut(marked).topmost_due = plan.flip.contains(&marked);
+        }
+
         for at in 0..plan.entries.len() {
             let mut entry = plan.entries[at].clone();
 
@@ -520,19 +570,81 @@ impl System {
             entry.linked = true;
 
             if plan.flip.contains(&entry.member) {
-                let shown = self.shown_mut(entry.member);
-
-                shown.topmost = !shown.topmost;
-
-                if shown.topmost {
-                    shown.ex_style |= WS_EX_TOPMOST;
-                } else {
-                    shown.ex_style &= !WS_EX_TOPMOST;
-                }
+                self.z_flip_topmost(entry.member);
             }
 
             plan.entries[at] = entry;
         }
+    }
+
+    /// A window at the top made, linked as `CreateWindow` links it after
+    /// the window the `WH_CBT` hook's `CBT_CREATEWND` names (`USER.EXE`
+    /// seg8 `0480`, `0757`-`07af`), linked already as for `HWND_TOP`
+    /// (nought), which it is then left as: `HWND_BOTTOM` last, topmost as it
+    /// was; `HWND_TOPMOST` first, made topmost; `HWND_NOTOPMOST` after the
+    /// last topmost window, made not; after a window, topmost where that
+    /// one is -- but where it is the last topmost and this one is not, not
+    /// -- and not after one that is not. The last topmost window is looked
+    /// for with this one out of the list, as USER has it there. **Recorded**
+    /// by `zcbtins`. The TypeScript engine's `Desktop.linkMadeAfter`.
+    pub(crate) fn z_link_made_after(&mut self, index: usize, after: u16) {
+        let set = |system: &mut System, topmost: bool| {
+            let shown = system.shown_mut(index);
+
+            shown.topmost = topmost;
+
+            if topmost {
+                shown.ex_style |= WS_EX_TOPMOST;
+            } else {
+                shown.ex_style &= !WS_EX_TOPMOST;
+            }
+        };
+        let last_topmost = |system: &System| {
+            let mut last = None;
+
+            for other in system.z_siblings() {
+                if other == index {
+                    continue;
+                }
+
+                if !system.shown(other).topmost {
+                    break;
+                }
+
+                last = Some(other);
+            }
+
+            last
+        };
+
+        match after {
+            0 => return,
+            1 => {}
+            0xffff => {
+                set(self, true);
+                self.z_link_after(index, 0);
+                return;
+            }
+            0xfffe => {
+                set(self, false);
+
+                let last = last_topmost(self).map_or(0, |last| self.shown(last).hwnd);
+
+                self.z_link_after(index, last);
+                return;
+            }
+            _ => {
+                let Some(other) = self.z_named(after).filter(|&other| other != index) else {
+                    return;
+                };
+                let topmost = self.shown(other).topmost
+                    && (self.shown(index).topmost || last_topmost(self) != Some(other));
+
+                set(self, topmost);
+            }
+        }
+
+        self.z_link_after(index, after);
     }
 
     /// A window at the top, its children with it, linked after the window
