@@ -35,6 +35,9 @@ use crate::gdi::calls::mul_div;
 use crate::gdi::dc::{create_compatible_dc, delete_dc};
 use crate::gdi::text::get_text_extent;
 use crate::shell::{Text, text_argument};
+use crate::sys_error_box::{
+    SEB_ABORT, SEB_CANCEL, SEB_DEFBUTTON, SEB_IGNORE, SEB_NO, SEB_OK, SEB_RETRY, SEB_YES,
+};
 use crate::system::System;
 use crate::user_misc::user_string;
 
@@ -72,6 +75,18 @@ const TITLE_ERROR: u16 = 78;
 const MB_OK: u16 = 0;
 const MB_SYSTEMMODAL: u16 = 0x1000;
 const MB_TASKMODAL: u16 = 0x2000;
+
+/// Each style's buttons in the system error box, as USER's tables have
+/// them (`USER.EXE` data 1FEh, 204h, 20Ah, 21Eh): the `SEB_` button and the
+/// answer it gives, `IDOK` 1 to `IDNO` 7.
+const SEB_SETS: [&[(u16, u16)]; 6] = [
+    &[(SEB_OK, 1)],
+    &[(SEB_OK, 1), (SEB_CANCEL, 2)],
+    &[(SEB_ABORT, 3), (SEB_RETRY, 4), (SEB_IGNORE, 5)],
+    &[(SEB_YES, 6), (SEB_NO, 7), (SEB_CANCEL, 2)],
+    &[(SEB_YES, 6), (SEB_NO, 7)],
+    &[(SEB_RETRY, 4), (SEB_CANCEL, 2)],
+];
 const WS_DISABLED: u32 = 0x0800_0000;
 
 const SM_CXSCREEN: i16 = 0;
@@ -507,6 +522,25 @@ impl Engine {
         title: Option<Vec<u8>>,
         style: u16,
     ) -> Result<u16, Stop> {
+        // System modal, not task modal, with no icon or the hand: USER's
+        // system error box, not a dialog (`USER.EXE` seg1 `9bd2`-`9bfb`).
+        if style & 0x3000 == MB_SYSTEMMODAL && matches!(style & 0xf0, 0 | 0x10) {
+            let caption = title.unwrap_or_else(|| string(TITLE_ERROR));
+            let mut default_button = usize::from((style >> 8) & 0x0f);
+            let set = SEB_SETS
+                .get(usize::from(style & 0x0f))
+                .copied()
+                .unwrap_or(&[]);
+
+            if default_button >= set.len() {
+                default_button = 0;
+            }
+
+            return self
+                .system_error_box(&text.unwrap_or_default(), &caption, set, default_button)
+                .await;
+        }
+
         let (built, cursor) = {
             let mut system = self.system();
             let mut built =
@@ -545,6 +579,57 @@ impl Engine {
         } else {
             answer as u16
         })
+    }
+
+    /// A system-modal message box with no icon, or the hand, as USER
+    /// shows it (`USER.EXE` seg1 `9a86`-`9b8e`): no dialog and no window,
+    /// but the system error box (`sys_error_box.rs`), in whose loop no
+    /// program runs. USER yields while another is up (`9a8e`-`9a98`) --
+    /// which, with no program running under one, no call here meets -- and
+    /// holds its word at E0h for the box's time (`9a9a`, `9b7e`). One
+    /// button goes in the middle place, two in the outer places, three in
+    /// all three, in the style's order; the default button, where the style
+    /// names one it has, with `SEB_DEFBUTTON` (`9b46`-`9b55`). It answers
+    /// the place's `ID` value. **Recorded** by `mbseb`. The TypeScript
+    /// engine's `systemErrorBox`.
+    async fn system_error_box(
+        &self,
+        text: &[u8],
+        caption: &[u8],
+        set: &[(u16, u16)],
+        default_button: usize,
+    ) -> Result<u16, Stop> {
+        let mut places = [(0u16, 0u16); 3];
+
+        for (index, &(button, answer)) in set.iter().enumerate() {
+            let place = match set.len() {
+                1 => 1,
+                2 => index * 2,
+                _ => index,
+            };
+            let default = if index == default_button {
+                SEB_DEFBUTTON
+            } else {
+                0
+            };
+
+            places[place] = (button | default, answer);
+        }
+
+        self.system().user_calls.in_sys_error_box = true;
+
+        let chosen = self
+            .sys_error_box(text, caption, places.map(|(button, _)| button))
+            .await;
+
+        self.system().user_calls.in_sys_error_box = false;
+
+        let chosen = chosen?;
+
+        Ok(usize::from(chosen)
+            .checked_sub(1)
+            .and_then(|at| places.get(at))
+            .map_or(0, |&(_, answer)| answer))
     }
 
     async fn run_message_box(&self, built: &Built, owner: u16, param: u32) -> Result<i16, Stop> {

@@ -10,13 +10,21 @@ const GW_HWNDPREV = 3;
 const GW_OWNER = 4;
 const GW_CHILD = 5;
 
-/** A window's siblings, itself among them, in the order they lie, the top first. */
+/**
+ * A window's siblings, itself among them, in the order they lie, the top
+ * first. An icon's title, once made (`USER.EXE` seg1 `6ab8`), is a window
+ * at the top like any other, linked just in front of its icon: `GetWindow`
+ * walks find it (`zminim`).
+ */
 function siblings(window: RasterWindow) {
   const desktop = window.desktop;
 
   return desktop.windows.filter(
     (other: any) =>
-      other.parent === window.window.parent && other.hwnd && !other.titleOf && !other.unlinked
+      other.parent === window.window.parent &&
+      other.hwnd &&
+      (!other.titleOf || (!other.parent && other.titleOf.titleAsked)) &&
+      !other.unlinked
   );
 }
 
@@ -51,8 +59,10 @@ export function GetWindow(hwnd, fuRel) {
     return child?.hwnd ?? 0;
   }
 
+  /* An icon's title is made with its icon as its parent, so owned by it
+   * (`USER.EXE` seg1 `6b20`). */
   if (fuRel === GW_OWNER) {
-    return window.window.owner?.hwnd ?? 0;
+    return (window.window.owner ?? window.window.titleOf)?.hwnd ?? 0;
   }
 
   /* Not yet among its brothers -- in its `WM_GETMINMAXINFO` and
@@ -117,7 +127,7 @@ export function GetTopWindow(this: any, hwnd: number) {
   if (!(hwnd & 0xffff)) {
     const desktop = this.rasterDesktop;
     const top = desktop?.windows.find(
-      (other: any) => !other.parent && other.hwnd && !other.titleOf
+      (other: any) => !other.parent && other.hwnd && (!other.titleOf || other.titleOf.titleAsked)
     );
 
     return top?.hwnd ?? 0;

@@ -692,7 +692,7 @@ impl Engine {
         // **recorded** by `cbteat` through the screen). winbox.js, which has
         // no USER code to fault in, takes the window apart with no message,
         // and `CreateWindow` answers nought as USER means it to (`039d`).
-        let (answer, left, _) = self.ask_cbt_create(hwnd, &raw).await?;
+        let (answer, left, hook_after) = self.ask_cbt_create(hwnd, &raw).await?;
 
         if answer & 0xffff != 0 {
             let mut guard = self.system();
@@ -775,6 +775,13 @@ impl Engine {
 
         if let Some(made) = self.system().windows[index].as_mut() {
             made.unlinked = false;
+        }
+
+        // Linked after the window the hook named, a window at the top
+        // (`USER.EXE` seg8 `0751`-`07bb`; `zcbtins`): a child last always
+        // (`04ed`).
+        if !child && self.system().windows[index].is_some() {
+            self.system().z_link_made_after(index, hook_after);
         }
 
         // Answered nought, the window is not made: sent `WM_NCDESTROY` and
@@ -924,7 +931,7 @@ impl Engine {
         // One made minimized, likewise, to its place among the icons at
         // the bottom, hidden (`showmin`).
         if made.style & WS_MINIMIZE != 0 && overlapped {
-            self.minimize_to_bottom(hwnd, index, false).await?;
+            self.minimize_to_bottom(hwnd, index, false, false).await?;
         }
 
         // A window made visible shows at once, a top-level one active, as

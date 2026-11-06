@@ -370,6 +370,8 @@ export async function CreateWindow(
    * winbox.js, which has no USER code to fault in, takes the window apart
    * with no message, and `CreateWindow` answers nought as USER means it to
    * (`039d`). */
+  let hookAfter = 0;
+
   if (hasHooks(this, WH_CBT)) {
     const words = (value: number, count: number) =>
       Array.from({ length: count * 2 }, (_, index) => (value >>> (index * 8)) & 0xff);
@@ -387,6 +389,8 @@ export async function CreateWindow(
       ...words(createstruct.lpszClass >>> 0, 2),
       ...words(dwExStyle >>> 0, 2),
     ]);
+
+    hookAfter = told.after & 0xffff;
 
     if (told.answer & 0xffff) {
       if (dialog._nameBlock) {
@@ -458,6 +462,12 @@ export async function CreateWindow(
   const accepted = await send(User.WM_NCCREATE, 0, [createstruct]);
 
   (shown as any).unlinked = false;
+
+  /* Linked after the window the hook named, a window at the top (`USER.EXE`
+   * seg8 `0751`-`07bb`; `zcbtins`): a child last always (`04ed`). */
+  if (!shown.parent && hookAfter) {
+    raster.linkMadeAfter(shown, hookAfter);
+  }
 
   if (((accepted ?? 0) & 0xffff) === 0) {
     await send(User.WM_NCDESTROY, 0, 0);

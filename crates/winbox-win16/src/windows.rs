@@ -164,6 +164,9 @@ pub struct Window {
     /// its icon's title, which USER makes once (`window_state.rs`,
     /// `title_made`).
     pub title_asked: bool,
+    /// Left marked to be made topmost or not as it is next placed: its byte
+    /// at 26h, bit 20h (`USER.EXE` seg7 `13de`, `0b67`-`0b71`; `zmark`).
+    pub topmost_due: bool,
     /// Not yet among its brothers: made, and in its `WM_GETMINMAXINFO` and
     /// `WM_NCCREATE` (`USER.EXE` seg8 `07bb`; `zcreate`).
     pub unlinked: bool,

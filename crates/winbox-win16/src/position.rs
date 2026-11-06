@@ -1039,6 +1039,12 @@ impl Engine {
                 if change.family.len() > 1 && change.flags & SWP_HIDEWINDOW == 0 && now {
                     reordered = system.bring_family_up(change.index) || reordered;
                 }
+
+                // Left marked to be made topmost or not, made so now
+                // (`zmark`).
+                if system.shown(change.index).parent.is_none() {
+                    system.z_placed_marked(change.index, change.flags);
+                }
             }
 
             if change.flags & SWP_HIDEWINDOW != 0 && now {

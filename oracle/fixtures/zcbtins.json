@@ -1,0 +1,314 @@
+{
+  "probe": "zcbtins",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "none, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "none, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "none, made",
+      "result": "H*,T*,#32771*-,C-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "none, made",
+      "result": "hook@T,C:81/0,-,0,C:1/B,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "top, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "top, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "top, made",
+      "result": "H*,T*,#32771*-,C-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "top, made",
+      "result": "hook@T,C:81/0,-,0,C:1/B,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "bottom, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "bottom, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "bottom, made",
+      "result": "H*,T*,#32771*-,B,A,C-;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "bottom, made",
+      "result": "hook@T,C:81/0,-,0,C:1/0,#32768,0,"
+    },
+    {
+      "function": "order",
+      "args": "topmost, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "topmost, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "topmost, made",
+      "result": "C*-,H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "topmost, made",
+      "result": "hook@T,C:81/0,-,0,C:1/H,0,1,"
+    },
+    {
+      "function": "order",
+      "args": "notopmost, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "notopmost, made",
+      "result": "H*,T*,#32771*-,C-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "notopmost, made",
+      "result": "hook@T,C:81/0,-,0,C:1/B,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "after a, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after a, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "after a, made",
+      "result": "H*,T*,#32771*-,B,A,C-;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after a, made",
+      "result": "hook@T,C:81/0,-,0,C:1/#42,A,0,"
+    },
+    {
+      "function": "order",
+      "args": "after t, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after t, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "after t, made",
+      "result": "H*,T*,C*-,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after t, made",
+      "result": "hook@T,C:81/0,-,0,C:1/#32771,T,1,"
+    },
+    {
+      "function": "order",
+      "args": "after last, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after last, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "after last, made",
+      "result": "H*,T*,#32771*-,C-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "after last, made",
+      "result": "hook@T,C:81/0,-,0,C:1/B,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "ex none, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex none, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex none, made",
+      "result": "C*-,H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex none, made",
+      "result": "hook@T,C:81/0,-,1,C:1/H,0,1,"
+    },
+    {
+      "function": "order",
+      "args": "ex top, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex top, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex top, made",
+      "result": "C*-,H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex top, made",
+      "result": "hook@T,C:81/0,-,1,C:1/H,0,1,"
+    },
+    {
+      "function": "order",
+      "args": "ex bottom, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex bottom, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex bottom, made",
+      "result": "H*,T*,#32771*-,B,A,C*-;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex bottom, made",
+      "result": "hook@T,C:81/0,-,1,C:1/0,#32768,1,"
+    },
+    {
+      "function": "order",
+      "args": "ex notopmost, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex notopmost, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex notopmost, made",
+      "result": "H*,T*,#32771*-,C-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex notopmost, made",
+      "result": "hook@T,C:81/0,-,1,C:1/B,#32771,0,"
+    },
+    {
+      "function": "order",
+      "args": "ex after a, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after a, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex after a, made",
+      "result": "H*,T*,#32771*-,B,A,C-;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after a, made",
+      "result": "hook@T,C:81/0,-,1,C:1/#42,A,0,"
+    },
+    {
+      "function": "order",
+      "args": "ex after t, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after t, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex after t, made",
+      "result": "H*,T*,C*-,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after t, made",
+      "result": "hook@T,C:81/0,-,1,C:1/#32771,T,1,"
+    },
+    {
+      "function": "order",
+      "args": "ex after last, start",
+      "result": "H*,T*,#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after last, start",
+      "result": "T:81/0,-,1,T:1/#32771,0,1,T:18/1,T:46@T/43,T:86/1,T:6/1,T:7,T:47@T/1847,H:81/0,-,1,H:1/T,0,1,H:18/1,H:46@T/43,T:86/0,T:6/0,H:86/1,H:6/1,T:8,H:7,H:47@T/1847,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,H:86/0,H:6/0,A:46@#32771/3,A:86/1,A:6/1,H:8,A:7,A:47@#32771/1847,B:81/0,-,0,B:1/A,#32771,0,B:18/1,B:46@#32771/43,A:86/0,A:6/0,B:46@#32771/3,B:86/1,B:6/1,A:8,B:7,B:47@#32771/1847,"
+    },
+    {
+      "function": "order",
+      "args": "ex after last, made",
+      "result": "H*,T*,#32771*-,C*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "ex after last, made",
+      "result": "hook@T,C:81/0,-,1,C:1/B,#32771,1,"
+    }
+  ]
+}

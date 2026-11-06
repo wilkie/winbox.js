@@ -12,6 +12,17 @@ import { DrawText } from './DrawText.js';
 import { GetDlgItem } from './GetDlgItem.js';
 import { EnableWindow, GetWindowTask } from './window-queries.js';
 import { RasterWindow } from './raster-window.js';
+import {
+  SEB_ABORT,
+  SEB_CANCEL,
+  SEB_DEFBUTTON,
+  SEB_IGNORE,
+  SEB_NO,
+  SEB_OK,
+  SEB_RETRY,
+  SEB_YES,
+  sysErrorBox,
+} from './sys-error-box.js';
 
 /**
  * The message box, on the raster desktop: a dialog USER builds and runs
@@ -82,6 +93,86 @@ const CAPTIONS = [84, 85, 89, 90, 87, 86, 88, 114];
 /** The default title, when none is given. */
 const TITLE_ERROR = 78;
 
+/**
+ * Each style's buttons in the system error box, as USER's tables have them
+ * (`USER.EXE` data 1FEh, 204h, 20Ah, 21Eh): the `SEB_` button and the
+ * answer it gives, `IDOK` 1 to `IDNO` 7. Made when asked for: this module
+ * and `sys-error-box.ts` load each other.
+ */
+const sebSets = (): [number, number][][] => [
+  [[SEB_OK, 1]],
+  [
+    [SEB_OK, 1],
+    [SEB_CANCEL, 2],
+  ],
+  [
+    [SEB_ABORT, 3],
+    [SEB_RETRY, 4],
+    [SEB_IGNORE, 5],
+  ],
+  [
+    [SEB_YES, 6],
+    [SEB_NO, 7],
+    [SEB_CANCEL, 2],
+  ],
+  [
+    [SEB_YES, 6],
+    [SEB_NO, 7],
+  ],
+  [
+    [SEB_RETRY, 4],
+    [SEB_CANCEL, 2],
+  ],
+];
+
+/**
+ * A system-modal message box with no icon, or the hand, as USER shows it
+ * (`USER.EXE` seg1 `9a86`-`9b8e`): no dialog and no window, but the system
+ * error box (`SysErrorBox`, `sys-error-box.ts`), in whose loop no program
+ * runs. USER yields while another is up (`9a8e`-`9a98`) -- which, with no
+ * program running under one, no call here meets -- and holds its word at
+ * E0h for the box's time (`9a9a`, `9b7e`). One button goes in the
+ * middle place, two in the outer places, three in all three, in the
+ * style's order; the default button, where the style names one it has,
+ * with `SEB_DEFBUTTON` (`9b46`-`9b55`). It answers the place's `ID` value.
+ * **Recorded** by `mbseb`.
+ */
+async function systemErrorBox(
+  system: any,
+  text: string,
+  caption: string,
+  type: number,
+  defaultButton: number
+) {
+  const set = sebSets()[type] ?? [];
+  const places: [number, number][] = [
+    [0, 0],
+    [0, 0],
+    [0, 0],
+  ];
+
+  set.forEach(([button, answer], index) => {
+    const place = set.length === 1 ? 1 : set.length === 2 ? index * 2 : index;
+
+    places[place] = [button | (index === defaultButton ? SEB_DEFBUTTON : 0), answer];
+  });
+
+  system._inSysErrorBox = true;
+
+  try {
+    const chosen = await sysErrorBox(
+      system,
+      text,
+      caption,
+      places.map(([button]) => button)
+    );
+
+    return places[chosen - 1]?.[1] ?? 0;
+  } finally {
+    system._inSysErrorBox = false;
+  }
+}
+
 const ICONS: Record<number, number> = { 0x10: 0x7f01, 0x20: 0x7f02, 0x30: 0x7f03, 0x40: 0x7f04 };
 
 const MB_OK = 0;
@@ -123,6 +214,12 @@ export async function messageBox(
   const icon = ICONS[style & 0xf0] ?? 0;
   const caption = title === null || title === undefined ? string(TITLE_ERROR) : String(title);
   const message = text === null || text === undefined ? null : String(text);
+
+  /* System modal, not task modal, with no icon or the hand: USER's system
+   * error box, not a dialog (`USER.EXE` seg1 `9bd2`-`9bfb`). */
+  if ((style & 0x3000) === MB_SYSTEMMODAL && ((style & 0xf0) === 0 || (style & 0xf0) === 0x10)) {
+    return systemErrorBox(system, message ?? '', caption, type, defaultButton);
+  }
 
   const cxS = metric(SM_CXSIZE);
   const cyS = metric(SM_CYSIZE);
