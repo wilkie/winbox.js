@@ -35,11 +35,13 @@ probes: [msgbox]
 
 ## System-modal boxes
 
-- [[read out]] `MB_SYSTEMMODAL` with no icon, or with the hand, is not a dialog at all. USER draws it itself through `SysErrorBox` (seg1 `9a86`), which is not read out here. With any other icon it is a dialog, `DS_SYSMODAL`, with a one-pixel border and no modal frame.
+- [[read out]] `MB_SYSTEMMODAL` -- and not `MB_TASKMODAL` -- with no icon, or with the hand, is not a dialog at all (`USER.EXE` seg1 `9bd2`-`9bfb`). USER shows its system error box, `SysErrorBox` ([[topic:application-errors]]), drawn straight on the screen with no window, in a loop of its own in which no program runs (seg1 `9a86`-`9b8e`). With any other icon it is a dialog, `DS_SYSMODAL`, with a one-pixel border and no modal frame.
+- [[read out]] **Its buttons** come from three tables in USER's data, by the style: how many (1FEh: 1, 2, 3, 3, 2, 2), where its run starts (204h), and for each button the `SEB_` button (20Ah) and the answer it gives (21Eh): OK `IDOK`; OK, Cancel; Abort, Retry, Ignore; Yes, No, Cancel; Yes, No; Retry, Cancel. One button goes in the box's middle place, two in its outer places, three in all three (`9acc`-`9b45`). The default button the style names, where it has one -- else the first, as for the dialog (`9bbd`-`9bcc`) -- is given `SEB_DEFBUTTON` (`9b46`-`9b55`). The place chosen, 1 to 3, is turned back into its button's answer (`9b84`-`9b87`). With no caption it is USER's own, "Error" (`9b9d`-`9baa`).
+- [[read out]] USER yields while another system error box is up -- its word at E0h set -- and sets the word itself for the box's time (`9a8e`-`9a9a`, `9b7e`).
+- [[measured]] [[probe:mbseb]]: Enter answers `IDOK` for OK; `IDYES` for Yes and No with the hand; `IDNO` for Yes, No, Cancel with `MB_DEFBUTTON2`; `IDIGNORE` for Abort, Retry, Ignore with `MB_DEFBUTTON3`; `IDRETRY` for Retry, Cancel with `MB_DEFBUTTON3`, which it does not have, the box captioned "Error" for its caption of `NULL`; `IDCANCEL` for OK, Cancel with `MB_DEFBUTTON2`; Escape `IDCANCEL` for OK, Cancel. The owner is sent nothing while the box is up, and stays the active window with the focus; no window comes or goes, and `GetSysModalWindow` answers nought before and after. Both engines had shown a dialog.
 
 ## Not followed
 
-- `SysErrorBox`, and `MB_SYSTEMMODAL` with no icon or the hand, which winbox.js shows as an ordinary box.
 - `MB_TASKMODAL` with no owner, and Close taken out of the system menu.
 
 ## Why it mattered
@@ -48,4 +50,4 @@ Message boxes were drawn only on winbox.js's old DOM desktop. On the raster desk
 
 ## In winbox.js
 
-`src/win16/user/message-box.ts` builds the box and runs it with `dialogBoxTemplate` in `src/win16/user/dialogs.ts`. USER's strings, the buttons' words and the default title among them, are winbox.js's own, in `src/win16/user/strings.ts`, since no Windows file is shipped. They match `USER.EXE`'s string table, which `scripts/oracle/strings-table.mjs` makes them from.
+`src/win16/user/message-box.ts` builds the box and runs it with `dialogBoxTemplate` in `src/win16/user/dialogs.ts`; a system-modal box with no icon or the hand goes to `sysErrorBox` in `src/win16/user/sys-error-box.ts` (`systemErrorBox`; in Rust `user_calls/message_box.rs` and `sys_error_box.rs`). USER's strings, the buttons' words and the default title among them, are winbox.js's own, in `src/win16/user/strings.ts`, since no Windows file is shipped. They match `USER.EXE`'s string table, which `scripts/oracle/strings-table.mjs` makes them from.

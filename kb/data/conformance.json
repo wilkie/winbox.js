@@ -14964,6 +14964,43 @@
   },
   "gaps": {}
  },
+ "mbseb": {
+  "probe": "mbseb",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 35,
+  "functions": {
+   "answer": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "box": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "state": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "mcidevs": {
   "probe": "mcidevs",
   "display": "vga",
@@ -32412,6 +32449,29 @@
   },
   "gaps": {}
  },
+ "zcbtins": {
+  "probe": "zcbtins",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 60,
+  "functions": {
+   "order": {
+    "total": 30,
+    "agreed": 30,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 30,
+    "agreed": 30,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "zcreate": {
   "probe": "zcreate",
   "display": "vga",
@@ -32435,6 +32495,52 @@
   },
   "gaps": {}
  },
+ "zhidmin": {
+  "probe": "zhidmin",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "order": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "zmark": {
+  "probe": "zmark",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 58,
+  "functions": {
+   "order": {
+    "total": 29,
+    "agreed": 29,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 29,
+    "agreed": 29,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "zminim": {
   "probe": "zminim",
   "display": "vga",
@@ -32443,23 +32549,20 @@
   "functions": {
    "order": {
     "total": 7,
-    "agreed": 3,
-    "disagreed": 4,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "sent": {
     "total": 7,
-    "agreed": 5,
-    "disagreed": 2,
+    "agreed": 7,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    }
   },
-  "gaps": {
-   "order": "an icon's title is not among the windows GetWindow walks",
-   "sent": "SW_SHOWMINIMIZED and SW_SHOWNORMAL of a window minimized and restored before tell it nothing"
-  }
+  "gaps": {}
  },
  "zorder": {
   "probe": "zorder",
