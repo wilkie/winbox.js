@@ -10,6 +10,7 @@ import { type DialogItem, type DialogTemplate } from './dialog-template.js';
 import { dialogBoxTemplate, EndDialog, setFocus, systemBaseUnits } from './dialogs.js';
 import { DrawText } from './DrawText.js';
 import { GetDlgItem } from './GetDlgItem.js';
+import { EnableWindow, GetWindowTask } from './window-queries.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -38,10 +39,13 @@ import { RasterWindow } from './raster-window.js';
  *   menu. The owner is disabled while the box is up.
  *
  * Not followed: `MB_SYSTEMMODAL` with no icon or the hand, which USER shows
- * with `SysErrorBox` instead, not read out; the system menu's Close taken
- * away; and `MB_TASKMODAL` with no owner, which disables the task's other
- * windows.
+ * with `SysErrorBox` instead (seg1 `9bd2`-`9bfb`); the system menu's Close
+ * taken away.
  */
+
+/** `MessageBox`'s task-modal style. */
+const MB_TASKMODAL = 0x2000;
+const WS_DISABLED = 0x08000000;
 
 /** Each set's buttons, as USER's tables give them (DS `1FE`, `204`, `21E`, `20A`). */
 const SETS: { id: number; caption: number }[][] = [
@@ -93,7 +97,13 @@ const SM_CYICON = 12;
 const SM_CXSIZE = 30;
 const SM_CYSIZE = 31;
 
-export async function messageBox(system: any, hwndParent: number, text: any, title: any, style: number) {
+export async function messageBox(
+  system: any,
+  hwndParent: number,
+  text: any,
+  title: any,
+  style: number
+) {
   const desktop = system.rasterDesktop;
   const environment = desktop.environment;
   const string = (id: number) => environment.userStrings?.get(id) ?? '';
@@ -127,7 +137,8 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
 
   /* Measured in the System font, as the desktop's own DC has it. */
   const hdc = CreateCompatibleDC.call(system, 0);
-  const extent = (s: string) => (s.length ? GetTextExtent.call(system, hdc, s, s.length) & 0xffff : 0);
+  const extent = (s: string) =>
+    s.length ? GetTextExtent.call(system, hdc, s, s.length) & 0xffff : 0;
 
   /* The buttons' width (seg3 `23be`): the caption with the most characters,
    * the first of equals, measured without its `&`. */
@@ -183,8 +194,27 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
   const across = (pixels: number) => MulDiv(pixels, 4, cxCh);
   const down = (pixels: number) => MulDiv(pixels, 8, cyCh);
   const items: DialogItem[] = [];
-  const item = (x: number, y: number, cx: number, cy: number, id: number, itemStyle: number, className: string, itemText: string) =>
-    items.push({ x, y, cx, cy, id, style: itemStyle >>> 0, className, text: itemText, data: new Uint8Array(0) });
+  const item = (
+    x: number,
+    y: number,
+    cx: number,
+    cy: number,
+    id: number,
+    itemStyle: number,
+    className: string,
+    itemText: string
+  ) =>
+    items.push({
+      x,
+      y,
+      cx,
+      cy,
+      id,
+      style: itemStyle >>> 0,
+      className,
+      text: itemText,
+      data: new Uint8Array(0),
+    });
 
   buttons.forEach((button, index) =>
     item(
@@ -205,7 +235,16 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
 
   if (message !== null) {
     /* A left-aligned static is one unit wider and taller (seg42 `03ff`). */
-    item(across(textX), down(textY), across(textW) + 1, down(textH) + 1, 0xffff, 0x50020080, 'STATIC', message);
+    item(
+      across(textX),
+      down(textY),
+      across(textW) + 1,
+      down(textH) + 1,
+      0xffff,
+      0x50020080,
+      'STATIC',
+      message
+    );
   }
 
   const systemModal = (style & 0x3000) === MB_SYSTEMMODAL;
@@ -222,10 +261,36 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
     items,
   };
 
+  /* `MB_TASKMODAL` with no owner: the windows at the top of the box's task,
+   * enabled, disabled as the box starts and enabled again before it ends,
+   * front to back (`USER.EXE` seg42 `0134`-`0145`, `0000`-`006d`, `01c8`,
+   * `0073`-`00ad`; **recorded** by `zactive`). */
+  const taskModal = !hwndParent && (style & 0x3000) === MB_TASKMODAL;
+  let disabled: number[] = [];
+
   /* The box's procedure (seg42 `0101`). */
   const proc = async (hwnd: number, msg: number, wParam: number) => {
     if (msg === User.WM_INITDIALOG) {
       const window = system.handles.resolve(hwnd);
+
+      if (taskModal) {
+        const task = GetWindowTask.call(system, hwnd);
+
+        disabled = desktop.windows
+          .filter(
+            (other: any) =>
+              !other.parent &&
+              other.hwnd &&
+              other.hwnd !== hwnd &&
+              !(other.style & WS_DISABLED) &&
+              GetWindowTask.call(system, other.hwnd) === task
+          )
+          .map((other: any) => other.hwnd);
+
+        for (const each of disabled) {
+          await EnableWindow.call(system, each, 0);
+        }
+      }
       const children =
         window instanceof RasterWindow
           ? desktop.windows.filter((other: any) => other.parent === window.window)
@@ -259,6 +324,12 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
       }
 
       if (id >= 1 && id <= 7) {
+        for (const each of disabled.splice(0)) {
+          if (system.handles.resolve(each)) {
+            await EnableWindow.call(system, each, 1);
+          }
+        }
+
         await EndDialog.call(system, hwnd, id);
         return 1;
       }
@@ -274,7 +345,14 @@ export async function messageBox(system: any, hwndParent: number, text: any, tit
   let answer: number;
 
   try {
-    answer = await dialogBoxTemplate(system, 0, template, hwndParent, proc, ((hwndParent << 16) | style) >>> 0);
+    answer = await dialogBoxTemplate(
+      system,
+      0,
+      template,
+      hwndParent,
+      proc,
+      ((hwndParent << 16) | style) >>> 0
+    );
   } finally {
     system._messageBoxes = Math.max(0, system._messageBoxes - 1);
 

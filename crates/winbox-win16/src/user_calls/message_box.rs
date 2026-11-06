@@ -71,6 +71,8 @@ const TITLE_ERROR: u16 = 78;
 
 const MB_OK: u16 = 0;
 const MB_SYSTEMMODAL: u16 = 0x1000;
+const MB_TASKMODAL: u16 = 0x2000;
+const WS_DISABLED: u32 = 0x0800_0000;
 
 const SM_CXSCREEN: i16 = 0;
 const SM_CYSCREEN: i16 = 1;
@@ -96,6 +98,8 @@ const IDC_ARROW: u16 = 0x7f00;
 pub struct BoxProc {
     kind: u16,
     default_button: usize,
+    /// `MB_TASKMODAL` with no owner (seg42 `0134`-`0145`).
+    task_modal: bool,
 }
 
 impl BoxProc {
@@ -112,6 +116,45 @@ impl BoxProc {
     ) -> Result<u32, Stop> {
         match message {
             WM_INITDIALOG => {
+                // `MB_TASKMODAL` with no owner: the windows at the top of the
+                // box's task, enabled, disabled as the box starts and enabled
+                // again before it ends, front to back (`USER.EXE` seg42
+                // `0134`-`0145`, `0000`-`006d`, `01c8`, `0073`-`00ad`;
+                // **recorded** by `zactive`).
+                if self.task_modal {
+                    let disabled: Vec<u16> = {
+                        let system = engine.system();
+                        let task = system
+                            .window_named(hwnd)
+                            .and_then(|index| system.windows[index].as_ref())
+                            .map_or(0, |window| window.task);
+
+                        system
+                            .z_order
+                            .iter()
+                            .filter_map(|&other| system.windows[other].as_ref())
+                            .filter(|window| {
+                                window.parent.is_none()
+                                    && window.hwnd != 0
+                                    && window.hwnd != hwnd
+                                    && window.style & WS_DISABLED == 0
+                                    && window.task == task
+                            })
+                            .map(|window| window.hwnd)
+                            .collect()
+                    };
+
+                    for &each in &disabled {
+                        engine.enable_window(each, false).await?;
+                    }
+
+                    engine
+                        .system()
+                        .user_calls
+                        .task_modal_disabled
+                        .insert(hwnd, disabled);
+                }
+
                 let focus = {
                     let system = engine.system();
 
@@ -151,6 +194,19 @@ impl BoxProc {
                 }
 
                 if (1..=7).contains(&id) {
+                    let disabled = engine
+                        .system()
+                        .user_calls
+                        .task_modal_disabled
+                        .remove(&hwnd)
+                        .unwrap_or_default();
+
+                    for each in disabled {
+                        if engine.system().window_named(each).is_some() {
+                            engine.enable_window(each, true).await?;
+                        }
+                    }
+
                     engine.end_dialog(hwnd, id as i16).await?;
                     return Ok(1);
                 }
@@ -434,6 +490,7 @@ impl System {
             proc: BoxProc {
                 kind,
                 default_button,
+                task_modal: false,
             },
         })
     }
@@ -452,7 +509,10 @@ impl Engine {
     ) -> Result<u16, Stop> {
         let (built, cursor) = {
             let mut system = self.system();
-            let built = system.message_box_template(text.as_deref(), title.as_deref(), style)?;
+            let mut built =
+                system.message_box_template(text.as_deref(), title.as_deref(), style)?;
+
+            built.proc.task_modal = owner == 0 && style & 0x3000 == MB_TASKMODAL;
             let arrow = crate::icons::standard_cursor_handle(&mut system, IDC_ARROW);
             let cursor = crate::icons::set_cursor(&mut system, &mut Args::repeat(arrow))?;
 

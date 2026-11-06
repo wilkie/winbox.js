@@ -52,6 +52,9 @@ pub struct UserCalls {
     pub in_sys_error_box: bool,
     /// How many message boxes are open.
     pub message_boxes: u16,
+    /// The windows a task-modal message box with no owner disabled, by the
+    /// box's handle (`message_box`).
+    pub task_modal_disabled: HashMap<u16, Vec<u16>>,
 }
 
 pub fn implementation(name: &str) -> Option<Implementation> {

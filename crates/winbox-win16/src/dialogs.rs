@@ -40,6 +40,7 @@ const DS_MODALFRAME: u32 = 0x80;
 const DS_NOIDLEMSG: u32 = 0x100;
 const DS_SYSMODAL: u32 = 0x02;
 const WS_EX_TOPMOST: u32 = 0x0008;
+const WS_EX_DLGMODALFRAME: u32 = 0x0001;
 const HWND_TOPMOST: u16 = 0xffff;
 const SWP_NOSIZE: u16 = 0x0001;
 const SWP_NOMOVE: u16 = 0x0002;
@@ -693,14 +694,13 @@ impl Engine {
                 // front of all as it is made. **Recorded** by `dlgfront`:
                 // SimTower's start dialog, run over its title picture, a
                 // modeless dialog system modal too, lies in front of it.
-                // `DS_MODALFRAME`'s `WS_EX_DLGMODALFRAME` (`058a`-`059c`) is
-                // not given here; the frame is drawn as the dialog is made,
-                // below.
+                // And `DS_MODALFRAME`'s `WS_EX_DLGMODALFRAME`
+                // (`058a`-`059c`), which `GetWindowLong` answers.
                 ex_style: if style & DS_SYSMODAL != 0 {
                     WS_EX_TOPMOST
                 } else {
                     0
-                },
+                } | if modal_frame { WS_EX_DLGMODALFRAME } else { 0 },
                 class: class_name,
                 class_far: 0,
                 name: WindowName::Own(template.caption.clone()),
