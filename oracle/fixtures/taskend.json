@@ -1,0 +1,114 @@
+{
+  "probe": "taskend",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "child",
+      "args": "",
+      "result": "started=1 ready=1"
+    },
+    {
+      "function": "SetWindowsHookEx",
+      "args": "for the child's task",
+      "result": "1"
+    },
+    {
+      "function": "hooks",
+      "args": "probe",
+      "result": "0,1,1,1,0,0 321"
+    },
+    {
+      "function": "filter",
+      "args": "probe",
+      "result": "0"
+    },
+    {
+      "function": "hooks",
+      "args": "child",
+      "result": "1,1,1,1,0,1 60321"
+    },
+    {
+      "function": "ended",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "cbt",
+      "args": "",
+      "result": "4:w3 4:w2 4:w1 4:w4 "
+    },
+    {
+      "function": "sent",
+      "args": "",
+      "result": "w3:46 w3:47 w3:2 w3:82 w2:46 w2:47 w2:2 w2:82 w1:46 w1:47 w1:2 w1a:2 w1b:2 w1a:82 w1b:82 w1:82 w4:18 w4:9 w4:46 p:88 p:14 w4:47 w4:2 w4:82 "
+    },
+    {
+      "function": "shell",
+      "args": "",
+      "result": "2:w3 2:w1 "
+    },
+    {
+      "function": "log",
+      "args": "",
+      "result": "c:w1:401 p:p:88 p:p:14 "
+    },
+    {
+      "function": "after",
+      "args": "w1",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w1a",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w1b",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w2",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w3",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w4",
+      "result": "0"
+    },
+    {
+      "function": "after",
+      "args": "w5",
+      "result": "1"
+    },
+    {
+      "function": "class",
+      "args": "TEGLOBAL",
+      "result": "0"
+    },
+    {
+      "function": "hooks",
+      "args": "after",
+      "result": "0,0,1,1,0,0 32"
+    },
+    {
+      "function": "unhook",
+      "args": "left",
+      "result": "1,1"
+    }
+  ]
+}
