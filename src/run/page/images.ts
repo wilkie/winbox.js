@@ -26,7 +26,17 @@ import {
   rememberImage,
   rememberProgram,
 } from '../store.js';
-import { drivePrograms, handles, programNow, publish, session, state, status } from './state.js';
+import {
+  copies,
+  drivePrograms,
+  driveVolumes,
+  handles,
+  programNow,
+  publish,
+  session,
+  state,
+  status,
+} from './state.js';
 import { type Needed, stillWanted } from './view.js';
 
 /** An image read from a file dropped or chosen: its disk, kind and handle. */
@@ -119,15 +129,18 @@ function setDrives(sets: DriveSet[]) {
 async function readPrograms(set: DriveSet) {
   if (set.ejected) {
     drivePrograms.delete(set.letter);
+    driveVolumes.delete(set.letter);
     return;
   }
 
   try {
     const volume = await volumeOf(set.kind, set.disks[set.current]);
 
+    driveVolumes.set(set.letter, volume.label ?? null);
     drivePrograms.set(set.letter, await programsOn(volume, set.letter));
   } catch {
     drivePrograms.delete(set.letter);
+    driveVolumes.delete(set.letter);
   }
 }
 
@@ -271,6 +284,7 @@ export async function removeDrive(set: DriveSet) {
   session.made?.unmount(set.letter);
   setDrives(state.drives.filter((one) => one !== set));
   drivePrograms.delete(set.letter);
+  driveVolumes.delete(set.letter);
 
   if (state.driveOffer?.letter === set.letter) {
     state.driveOffer = null;
@@ -436,6 +450,7 @@ export async function mountMedia(program: KeptProgram) {
     const kept = await recallImage(medium.key);
 
     if (kept?.bytes) {
+      copies.add(medium.key);
       return {
         name: kept.name,
         size: kept.size,

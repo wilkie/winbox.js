@@ -12,13 +12,14 @@ import { type Assets } from '../../assets/bundle.js';
 import { type AssetInput } from '../../assets/make.js';
 import { baseName, type Layer } from '../../layers/layer.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
-import { type DriveSet, type Wanting } from '../drives.js';
+import { type DriveSet, imageKey, type Wanting } from '../drives.js';
 import { type Engine } from '../engines/engine.js';
 import { installerOf } from '../media.js';
 import { assetsIdentity, type Kept, type KeptProgram, programIdentity } from '../store.js';
 import { keptGroups } from './groups.js';
 import { Observable } from './observable.js';
 import {
+  cDriveView,
   changesView,
   displayName,
   type DriveOffer,
@@ -30,6 +31,7 @@ import {
   installView,
   KEPT_NOTE,
   keptRows,
+  keptText,
   type Needed,
   neededRows,
   type PageView,
@@ -170,6 +172,12 @@ export const handles = new Map<string, unknown>();
 /** The Windows programs on each drive's disk, by its letter, as the page read them (`programsOn`). */
 export const drivePrograms = new Map<string, Program[]>();
 
+/** Each drive's volume label, by its letter, as the page read its disk: a disc's; null for none. */
+export const driveVolumes = new Map<string, string | null>();
+
+/** The keys of the images had on this visit from a copy kept in this browser (`mountMedia`). */
+export const copies = new Set<string>();
+
 /** The base C: is now: its name as a stack names it, or null with no Windows. */
 export function baseNow() {
   return state.windows && state.installation
@@ -289,11 +297,29 @@ export function publish() {
     sound: state.sound,
     keepImages: state.keepImages,
     drivesNote: drivesNote(state.drives.length > 0),
+    c: cDriveView(
+      state.windows,
+      state.assets,
+      state.display,
+      chosen,
+      chosen ? 0 : state.archives.length,
+      session.kept.changes.length
+    ),
     drives: driveRows(
       state.drives,
       (letter) => drivePrograms.get(letter) ?? [],
       base,
-      Boolean(state.installing)
+      Boolean(state.installing),
+      {
+        written: (letter, disk) => session.made?.diskChanged(letter, disk) ?? false,
+        volume: (letter) => driveVolumes.get(letter) ?? null,
+        kept: (disk) => {
+          const key = imageKey(disk.name, disk.size, disk.modified);
+
+          return chosen ? keptText(handles.has(key), state.keepImages || copies.has(key)) : null;
+        },
+        program: chosen?.name ?? null,
+      }
     ),
     needed: neededRows(state.needed, session.wanting),
     kept: keptRows(state.programs, chosen, base, state.display, (program) =>

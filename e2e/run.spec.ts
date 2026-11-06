@@ -2523,14 +2523,24 @@ for (const { engine, page: at } of ENGINES) {
           probeImage('imgcd.iso'),
         ]);
 
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
 
       await expect(page.locator('#status')).toHaveText(
         'A: Disk 1 of 2, imgflop.img. D: imgcd.iso.'
       );
       await expect(drives).toHaveCount(2);
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
-      await expect(drives.nth(1).locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(1)).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
+      /* Each a card: what it is and what is in it, in words. */
+      await expect(drives.nth(0)).toContainText('Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, in the drive',
+        'Disk 2, imgwrite.img',
+      ]);
+      await expect(drives.nth(0)).toContainText('Writes go to a copy: the image is never changed.');
+      await expect(drives.nth(1)).toContainText('imgcd.iso');
+      await expect(drives.nth(1)).toContainText('Volume WINBOXCD.202');
+      await expect(drives.nth(1)).toContainText('Read-only');
       await expect(page.getByRole('button', { name: 'Eject D:' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save the image in D:' })).toHaveCount(0);
 
@@ -2568,6 +2578,10 @@ for (const { engine, page: at } of ENGINES) {
       expect(await page.evaluate(() => (globalThis as any).winbox.engine.diskChanged('A', 0))).toBe(
         true
       );
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, in the drive, written to',
+        'Disk 2, imgwrite.img',
+      ]);
 
       /* Saved as a new file, as written. */
       const saving = page.waitForEvent('download');
@@ -2587,12 +2601,22 @@ for (const { engine, page: at } of ENGINES) {
       /* Swapped, emptied and picked; the disk written put back as it was
        * written. */
       await page.getByRole('button', { name: 'Next disk in A:' }).click();
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 2 of 2, imgwrite.img');
+      await expect(drives.nth(0)).toHaveAccessibleName(
+        'A: floppy drive, Disk 2 of 2, imgwrite.img'
+      );
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, written to',
+        'Disk 2, imgwrite.img, in the drive',
+      ]);
       await page.getByRole('button', { name: 'Eject A:' }).click();
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Empty (2 disks)');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Empty (2 disks)');
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, written to',
+        'Disk 2, imgwrite.img',
+      ]);
       await expect(page.getByRole('button', { name: 'Eject A:' })).toHaveCount(0);
       await page.getByRole('combobox', { name: 'Disk in A:' }).selectOption('0');
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Disk 1 of 2, imgflop.img');
       expect(
         await page.evaluate(() =>
           Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
@@ -2619,7 +2643,7 @@ for (const { engine, page: at } of ENGINES) {
       /* A disc dropped on D:'s row goes in its set, and in the drive. */
       await page.evaluate(async (data) => {
         const transfer = new DataTransfer();
-        const row = [...document.querySelectorAll('#drives li')].find((li) =>
+        const row = [...document.querySelectorAll('#drives > li')].find((li) =>
           li.textContent?.startsWith('D:')
         )!;
 
@@ -2630,11 +2654,11 @@ for (const { engine, page: at } of ENGINES) {
           new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true })
         );
       }, probeImage('imgcd.iso').buffer.toString('base64'));
-      await expect(drives.nth(1).locator('code')).toHaveText('D: Disc 2 of 2, imgcd-2.iso');
+      await expect(drives.nth(1)).toHaveAccessibleName('D: CD-ROM drive, Disc 2 of 2, imgcd-2.iso');
       await expect(page.locator('#status')).toHaveText('D: Disc 2 of 2, imgcd-2.iso.');
 
       /* Taken away. */
-      await page.getByRole('button', { name: 'Remove D:' }).click();
+      await confirmed(page, 'Remove D:', 'Remove');
       await expect(drives).toHaveCount(1);
       expect(errors).toEqual([]);
     });
@@ -2757,7 +2781,7 @@ for (const { engine, page: at } of ENGINES) {
       page.on('pageerror', (error) => errors.push(error.message));
 
       const counts = () => page.evaluate(() => (globalThis as any).winbox.imageCounts());
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
 
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
@@ -2801,7 +2825,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#needed li code')).toHaveText('D: imgcd.iso (386 KB) for cdgame');
       await page.getByLabel('Choose imgcd.iso again').setInputFiles(probeImage('imgcd.iso'));
       await expect(page.locator('#status')).toHaveText('Every image is had.');
-      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
       await expect(page.locator('#needed')).toBeHidden();
 
       await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
@@ -2820,7 +2844,7 @@ for (const { engine, page: at } of ENGINES) {
       });
       await page.getByRole('button', { name: 'Open cdgame' }).click();
       await expect(page.locator('#status')).toHaveText('cdgame is on C:.');
-      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
 
       /* Forgotten, with what is kept of its disc. */
       await confirmed(page, 'Forget cdgame', 'Forget program');
@@ -2840,7 +2864,7 @@ for (const { engine, page: at } of ENGINES) {
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
 
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
       const files = [probeImage('imgcd.bin'), probeImage('imgtrk audio.wav')];
 
       await page.goto(at);
@@ -2866,7 +2890,7 @@ for (const { engine, page: at } of ENGINES) {
       /* Given them, it is a disc. */
       await page.locator('#picker').setInputFiles(files);
       await expect(page.locator('#status')).toHaveText('D: imgtrk.cue.');
-      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgtrk.cue');
       await expect(page.locator('#needed')).toBeHidden();
 
       /* A program kept with it remembers the sheet and its files. */
@@ -2898,7 +2922,7 @@ for (const { engine, page: at } of ENGINES) {
       );
       await page.locator('#picker').setInputFiles([probeImage('imgtrk.cue'), ...files]);
       await expect(page.locator('#status')).toHaveText('Every image is had.');
-      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgtrk.cue');
 
       await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
       await expect(page.locator('#status')).toHaveText(

@@ -74,7 +74,12 @@ const page: Page = {
   call: trace,
   /* What a program wrote kept as it ends; an installer's, once its task
    * has ended, kept only as the user says (`keepInstalled`). */
-  ended: () => (state.installing ? installerEnded() : keep()),
+  ended: () => {
+    /* What it wrote to the drives' disks shown. */
+    publish();
+
+    return state.installing ? installerEnded() : keep();
+  },
 };
 
 /** Where `pnpm build:web` writes the Rust engine's module, as `pnpm dev` serves it. */

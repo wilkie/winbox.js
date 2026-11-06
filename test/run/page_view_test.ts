@@ -3,6 +3,7 @@ import { type Program } from '../../src/run/drive.js';
 import { leavesDesktop } from '../../src/run/page/leave.js';
 import { Observable } from '../../src/run/page/observable.js';
 import {
+  cDriveView,
   changesView,
   displayKept,
   driveRows,
@@ -11,6 +12,7 @@ import {
   freeName,
   installView,
   keptRows,
+  keptText,
   neededRows,
   offeredDisplays,
   programRows,
@@ -197,7 +199,22 @@ describe('the run page, as it is shown', () => {
 
     expect(a).toMatchObject({
       text: 'A: Disk 2 of 2, two.img',
-      label: 'A: floppy, Disk 2 of 2, two.img',
+      label: 'A: floppy drive, Disk 2 of 2, two.img',
+      kindText: 'floppy drive',
+      state: 'Disk 2 of 2, two.img',
+      readOnly: false,
+      volume: null,
+      set: [
+        { name: 'one.img', inserted: false, written: false, kept: null, text: 'Disk 1, one.img' },
+        {
+          name: 'two.img',
+          inserted: true,
+          written: false,
+          kept: null,
+          text: 'Disk 2, two.img, in the drive',
+        },
+      ],
+      kept: 'Not kept: for this visit only.',
       disks: ['1: one.img', '2: two.img'],
       next: true,
       insert: false,
@@ -208,18 +225,89 @@ describe('the run page, as it is shown', () => {
     expect(a.installer?.path).toBe('A:\\SETUP.EXE');
     expect(d).toMatchObject({
       kind: 'CD-ROM',
+      label: 'D: CD-ROM drive, Empty',
+      readOnly: true,
+      set: [{ name: 'cd.iso', inserted: false, written: false, text: 'cd.iso' }],
+      removing: 'D: and its disc are let go of. To have it again, choose or drop its images again.',
       next: false,
       insert: true,
       eject: false,
       save: false,
     });
     expect(e).toMatchObject({ kind: 'hard disk', eject: false, save: true, add: false });
+    expect(e.label).toBe('E: hard disk, hd.img');
+    expect(a.removing).toBe(
+      'A: and its disks are let go of, and what programs wrote to its disks this visit is ' +
+        'discarded. Save the image first to keep it.'
+    );
 
     /* No installer offered while one runs, or with no Windows. */
     expect(driveRows([floppies], () => [exe('A:\\SETUP.EXE')], 'b', true)[0].installer).toBeNull();
     expect(
       driveRows([floppies], () => [exe('A:\\SETUP.EXE')], null, false)[0].installer
     ).toBeNull();
+  });
+
+  it('says which disk is in a drive, which were written to, and how each is kept', () => {
+    const floppies: DriveSet = {
+      letter: 'A',
+      kind: 'floppy',
+      disks: [disk('one.img'), { ...disk('two.img'), written: true }],
+      current: 0,
+      ejected: false,
+    };
+    const disc: DriveSet = {
+      letter: 'D',
+      kind: 'iso',
+      disks: [disk('cd.iso')],
+      current: 0,
+      ejected: false,
+    };
+    const [a, d] = driveRows([floppies, disc], () => [], 'b', false, {
+      written: (letter, at) => letter === 'A' && at === 0,
+      volume: (letter) => (letter === 'D' ? 'WINBOXCD' : 'NOLABEL'),
+      kept: (one) => (one.name === 'cd.iso' ? keptText(true, false) : keptText(false, false)),
+      program: 'cdgame',
+    });
+
+    expect(a.set.map((one) => one.text)).toEqual([
+      'Disk 1, one.img, in the drive, written to',
+      'Disk 2, two.img, written to',
+    ]);
+    expect(a.volume).toBeNull();
+    expect(a.kept).toBe('Kept with cdgame: chosen again next visit.');
+    expect(a.removing).toMatch(/ cdgame is no longer run with it\.$/);
+    /* A disc is never written to, whatever is asked. */
+    expect(d.set[0]).toMatchObject({
+      inserted: true,
+      written: false,
+      text: 'cd.iso, in the drive',
+    });
+    expect(d.volume).toBe('WINBOXCD');
+    expect(d.kept).toBe(
+      'Kept with cdgame: opened again from its file next visit, the browser asking leave.'
+    );
+    expect(keptText(false, true)).toBe('a copy kept in this browser');
+  });
+
+  it('says what C: holds: Windows, the program kept or the archives dropped, and the changes kept', () => {
+    expect(cDriveView(null, null, 'vga', null, 0, 0)).toEqual({
+      windows: 'No Windows yet',
+      programs: 'No program kept on it',
+      changes: 'Nothing programs wrote kept yet',
+      label: 'C: hard disk, No Windows yet',
+    });
+    expect(cDriveView(null, {}, 'ega', program('ski', { layers: ['a', 'b'] }), 0, 1)).toEqual({
+      windows: 'Windows 3.1 from your setup disks (EGA, 640x350, 16 colours)',
+      programs: 'ski, kept: 2 layers over Windows',
+      changes: '1 change programs wrote, kept in this browser',
+      label: 'C: hard disk, Windows 3.1 from your setup disks (EGA, 640x350, 16 colours)',
+    });
+    expect(cDriveView({ name: 'win31.zip' }, null, 'vga', null, 2, 3)).toMatchObject({
+      windows: 'Windows 3.1 from win31.zip',
+      programs: '2 archives dropped over Windows',
+      changes: '3 changes programs wrote, kept in this browser',
+    });
   });
 
   it("asks again for the images a kept program wants, and for a cue sheet's files", () => {

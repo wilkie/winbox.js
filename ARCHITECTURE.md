@@ -189,6 +189,22 @@ same state and actions. JSX is compiled by the bundler's own transform
 (`"jsx": "react-jsx"` in `tsconfig.json`, which Vite's transform reads): no
 plugin, nothing added to `vite.config.ts`.
 
+**The drives** (`ui/drives.tsx`, `driveRows` and `cDriveView` in `view.ts`).
+Each drive is a card (MUI `Card`, an icon from `@mui/icons-material` and its
+kind in words): C:, the hard disk (Windows -- the installation's name or the
+setup disks' and the display -- the kept program and its layers, or the
+archives dropped, and the changes kept); each drive of images in `#drives`,
+one `li` each, named `A: floppy drive, Disk 1 of 2, one.img`: what is in it,
+a disc's volume label (`driveVolumes`, read with the page's own readers as its
+programs are), read-only for a disc and "writes go to a copy" for a disk, its
+set listed with the disk in the drive and those written to (the engine's
+`diskChanged`, or `Disk.written` once carried), and how its images are had on
+a later visit -- kept with the program on C: from a handle on the file, a copy
+(`copies`, or "Keep copies"), or chosen again -- or not kept; and the images
+still to be chosen again. A drive's actions keep their names ("Disk in A:",
+"Next disk in A:", "Eject A:", "Save the image in A:", "Add images to A:",
+"Install from A:", "Remove A:"); Remove asks first, saying what is lost.
+
 **The desktop.** `desktop.tsx` renders an empty `<section id="desktop">` and
 hands it to `start`; the engine fills it (`makeScreen`, `screenNote`) and
 React never renders into it, so the canvas, its host and the ARIA mirror
@@ -237,13 +253,17 @@ red takes dark text on it, as white on it is under AA. With
   every select is, and what the browser tests choose from with
   `selectOption`), and every one is named; buttons whose words are short
   ("Eject") are named in full ("Eject A:").
-- Nothing only by mouse: the drop has "Choose files…", and each drive's row,
+- Nothing only by mouse: the drop has "Choose files…", and each drive's card,
   which images are dropped on, has "Add…".
+- Nothing by an icon or a colour alone: each drive's kind is said beside its
+  icon ("A: floppy drive"), each disk's state in its words ("in the drive",
+  "written to") beside its mark.
 - The status line (`#status`) is a live region, polite, assertive for an
   error; its words are written into it as each line is told, so a line told
   twice is announced twice.
-- Forgetting Windows, a kept program or what programs wrote, and discarding
-  what an installer wrote, ask first in a modal dialog, Cancel focused.
+- Forgetting Windows, a kept program or what programs wrote, discarding
+  what an installer wrote, and removing a drive (what programs wrote to its
+  disks this visit is lost), ask first in a modal dialog, Cancel focused.
 - The desktop (role `application`, "Windows desktop") gives every key to
   Windows. **Meta+Escape** (the Windows logo key, Command on a Mac, with
   Esc) leaves it, to the line beneath it, which says so and describes the
