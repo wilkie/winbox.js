@@ -554,18 +554,6 @@ pub fn load_library(engine: &Engine, mut args: Args) -> Later<'_> {
 /// KERNEL looks (`search.rs`), the task's program's directory fourth
 /// (`search`). Its entry point runs at once.
 pub(crate) async fn load_library_named(engine: &Engine, text: &str) -> Result<u16, Stop> {
-    // Noted on the task: a library it loaded may keep a procedure of its
-    // after it ends (`exit_slot`). As `LoadLibrary.ts`.
-    {
-        let mut system = engine.system();
-
-        if let Some(program) = system.task.as_ref().map(|task| task.program)
-            && let Some(own) = system.modules[program].own.as_mut()
-        {
-            own.loaded = true;
-        }
-    }
-
     let slash = [text.rfind('\\'), text.rfind('/'), text.rfind(':')]
         .into_iter()
         .flatten()
@@ -867,12 +855,15 @@ impl System {
         }
     }
 
-    /// A library at nought deleted as KERNEL deletes a module (`0c30`): its
+    /// A library at nought deleted as KERNEL deletes a module (`0c30`): USER
+    /// told (`module_gone`), its
     /// segments and its database given back (`free_module_segments`), and
     /// its name, its file, its instance and its handle found no more.
     pub(crate) fn delete_library(&mut self, library: usize) {
         let (instance, handle) = (self.modules[library].instance, self.modules[library].handle);
 
+        // USER told, as KERNEL deletes it (`app_exit.rs`).
+        self.module_gone(handle);
         crate::own_modules::freed(self, library);
 
         let database = (handle != 0).then(|| index_for(handle));

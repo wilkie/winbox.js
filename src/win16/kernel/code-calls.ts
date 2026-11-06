@@ -6,6 +6,7 @@ import { moduleChain } from '../toolhelp/modules.js';
 import { taskRecord } from './task-order.js';
 import { GetModuleHandle } from './GetModuleHandle.js';
 import { GetProcAddress } from './GetProcAddress.js';
+import { GetExePtr } from './module-calls.js';
 
 /** `GT_CODE` and `GT_DGROUP`: a block that is a module's segment. */
 const GT_DGROUP = 1;
@@ -53,6 +54,22 @@ function segmentOf(system: any, lpProc: number) {
   }
 
   return blocks.find((each) => each.index && each.index === indexFor(selector)) ?? null;
+}
+
+/**
+ * The module a procedure is in, as USER finds a hook's (`USER.EXE` seg1
+ * `7cd4`-`7cf7`): the module whose segment it is, through a thunk, as
+ * `GetCodeInfo` finds it; else the module `GetExePtr` finds for its
+ * selector; else nought.
+ */
+export function moduleOfProc(system: any, lpProc: number) {
+  const block = segmentOf(system, lpProc);
+
+  if (block?.owner) {
+    return block.owner & 0xffff;
+  }
+
+  return GetExePtr.call(system, (lpProc >>> 16) & 0xffff) & 0xffff;
 }
 
 /**

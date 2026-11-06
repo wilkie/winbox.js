@@ -67,6 +67,16 @@ export async function WinExec(this: any, lpszCmdLine: string | null, fuCmdShow: 
  * The instance of the program at `path` already running, if any, which a
  * second start of it is given as its previous one; else 0.
  */
+/** Whether a task of the program at a path is running, but the one given. */
+export function previousInstanceBut(system: any, path: string, task: number) {
+  return Object.entries(system.scheduler._tasks ?? {}).some(
+    ([handle, each]: [string, any]) =>
+      (Number(handle) & 0xffff) !== (task & 0xffff) &&
+      !each.ended &&
+      String(each.executable?.path ?? '').toUpperCase() === path.toUpperCase()
+  );
+}
+
 export function previousInstance(system: any, path: string) {
   const found = Object.entries(system.scheduler._tasks ?? {}).find(
     ([, task]: [string, any]) =>

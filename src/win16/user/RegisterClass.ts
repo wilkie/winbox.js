@@ -1,6 +1,7 @@
 'use strict';
 
 import { LoadMenu } from './LoadMenu.js';
+import { GetExePtr } from '../kernel/module-calls.js';
 
 /**
  * The **RegisterClass** function registers a window class for subsequent use
@@ -44,6 +45,10 @@ export async function RegisterClass(lpwc) {
 
   // Create an ATOM for the class
   lpwc._menuHandle = menuHandle;
+
+  /* The module it is of, which unregisters it as its last instance ends
+   * (`USER.EXE` seg1 `0b07`-`0b39`, the class's word at 14h; `app-exit.ts`). */
+  lpwc._module = GetExePtr.call(this, lpwc.hInstance & 0xffff) & 0xffff;
   const handle = this.handles.allocate(lpwc);
   if (handle) {
     // Register a name for the ATOM

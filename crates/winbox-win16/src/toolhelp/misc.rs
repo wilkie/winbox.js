@@ -101,6 +101,17 @@ pub fn terminate_app(engine: &Engine, mut args: Args) -> Later<'_> {
                 .await?;
         }
 
+        // USER told, where the task is the one running (`app_exit.rs`).
+        let running = {
+            let system = engine.system();
+
+            system.live_task(task) && system.current_task() == Some(task)
+        };
+
+        if running {
+            engine.app_exit(task).await?;
+        }
+
         end_task(&mut engine.system(), task)
     })
 }

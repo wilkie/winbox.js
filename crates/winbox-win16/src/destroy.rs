@@ -11,7 +11,7 @@ pub const WM_DESTROY: u16 = 0x0002;
 
 impl System {
     /// The window a handle names, if it is one not destroyed.
-    fn window_index(&self, hwnd: u16) -> Option<usize> {
+    pub(crate) fn window_index(&self, hwnd: u16) -> Option<usize> {
         match self.handles.resolve(hwnd) {
             Some(Object::Window(index)) if self.windows[index].is_some() => Some(index),
             _ => None,
@@ -26,6 +26,20 @@ impl System {
             .filter(|window| pick(window))
             .map(|window| window.hwnd)
             .collect()
+    }
+
+    /// The task USER is ending, nought for none, and whether a window is
+    /// of it.
+    fn exiting_of(&self, index: usize) -> (u16, bool) {
+        let exiting = self.exiting;
+
+        (
+            exiting,
+            exiting != 0
+                && self.windows[index]
+                    .as_ref()
+                    .is_some_and(|window| window.task == exiting),
+        )
     }
 
     /// A window gone that has the focus: nothing has it. USER takes the
@@ -162,14 +176,20 @@ impl Engine {
         }
 
         // The windows it owns first, then it (documented; `owners`).
-        for owned in owned {
-            Box::pin(self.destroy_window(owned)).await?;
-        }
+        self.destroy_owned(index, owned).await?;
+
+        // A task ending (`app_exit.rs`), USER's [0E4h] its queue: a child
+        // of its tells no parent (`USER.EXE` seg8 `0ac6`-`0acb`); a window
+        // of its at the top is hidden with 2097h (`0b0d`-`0b20`), and makes
+        // no window active where none is (`0ba8`-`0bb2`). **Recorded** by
+        // `taskend`.
+        let (exiting, ending) = self.system().exiting_of(index);
 
         let (tree, freed, parent) = {
             let system = self.system();
             let parent = system.windows[index]
                 .as_ref()
+                .filter(|_| exiting == 0)
                 .filter(|window| window.ex_style & crate::create::WS_EX_NOPARENTNOTIFY == 0)
                 .and_then(|window| window.parent)
                 .and_then(|parent| system.windows[parent].as_ref())
@@ -191,8 +211,10 @@ impl Engine {
 
         // Off the screen first, which makes another window the active one,
         // with its messages -- to this window too -- before `WM_DESTROY`:
-        // its owner, for a window destroyed (`actnext`). Hidden as
-        // `SetWindowPos` hides it, not told with `WM_SHOWWINDOW` (`showseq`).
+        // its owner, for a window destroyed (`actnext`). A child hidden as
+        // `ShowWindow` hides it (`USER.EXE` seg8 `0afd`-`0b06`), told with
+        // `WM_SHOWWINDOW` and `WM_SETVISIBLE` (seg14 `0cb5`-`0ce1`;
+        // **recorded** by `taskend`).
         let (visible, top) = {
             let system = self.system();
             let window = system.windows[index].as_ref().expect("a window");
@@ -204,7 +226,7 @@ impl Engine {
         };
 
         if top {
-            self.take_off_top(hwnd, index, visible).await?;
+            self.take_off_top(hwnd, index, visible, ending).await?;
         } else {
             self.system().windows[index]
                 .as_mut()
@@ -212,7 +234,7 @@ impl Engine {
                 .destroying = true;
 
             if visible {
-                self.show_raster(hwnd, index, crate::window_state::SW_HIDE, false, false)
+                self.show_raster(hwnd, index, crate::window_state::SW_HIDE, true, false)
                     .await?;
             } else {
                 self.erase_due().await?;
@@ -257,6 +279,33 @@ impl Engine {
         Ok(true)
     }
 
+    /// The windows a window owns, as it is destroyed: those of its own
+    /// task destroyed, as `DestroyOwnedWindows` destroys them; one of
+    /// another task's owned by none after (`USER.EXE` seg8 `0912`-`0949`;
+    /// **recorded** by `taskend`). As `DestroyWindow.ts`.
+    async fn destroy_owned(&self, index: usize, owned: Vec<u16>) -> Result<(), Stop> {
+        for owned in owned {
+            {
+                let mut system = self.system();
+                let task = system.windows[index]
+                    .as_ref()
+                    .map_or(0, |window| window.task);
+
+                if let Some(other) = system.window_index(owned)
+                    && let Some(window) = system.windows[other].as_mut()
+                    && window.task != task
+                {
+                    window.owner = None;
+                    continue;
+                }
+            }
+
+            Box::pin(self.destroy_window(owned)).await?;
+        }
+
+        Ok(())
+    }
+
     /// A window at the top taken off the screen as it is destroyed: hidden
     /// with `SetWindowPos`, 97h, which makes no other window active
     /// (`USER.EXE` seg8 `0b0d`-`0b33`); then, where it was the active
@@ -268,11 +317,19 @@ impl Engine {
     /// asked and told 97h first, then the window made active is brought to
     /// the front, asked and told 3; a dialog with no owner, ended, leaves no
     /// window active, and its destruction makes the window active before it
-    /// active. Not followed: a task's windows destroyed as it ends
-    /// (`[0E4h]`), whose flags are 2097h and which makes none active.
-    async fn take_off_top(&self, hwnd: u16, index: usize, visible: bool) -> Result<(), Stop> {
+    /// active. A task's window destroyed as it ends (`[0E4h]`, `ending`)
+    /// is hidden with 2097h, and makes none active where none is.
+    async fn take_off_top(
+        &self,
+        hwnd: u16,
+        index: usize,
+        visible: bool,
+        ending: bool,
+    ) -> Result<(), Stop> {
         if visible {
-            self.position_raster(hwnd, index, 0, 0, 0, 0, 0, 0x97)
+            let flags = if ending { 0x2097 } else { 0x97 };
+
+            self.position_raster(hwnd, index, 0, 0, 0, 0, 0, flags)
                 .await?;
         }
 
@@ -285,7 +342,7 @@ impl Engine {
 
             let active = system.active_top();
 
-            if active == Some(index) || active.is_none() {
+            if active == Some(index) || (active.is_none() && !ending) {
                 let next = system.next_active_of(index);
 
                 if next.is_none() && active == Some(index) {

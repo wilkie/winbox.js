@@ -422,20 +422,6 @@ impl System {
         self.exit_slot(slot, code);
     }
 
-    /// Whether a hook a program put in reaches one of the descriptors given:
-    /// its procedure in one of them, or a thunk `MakeProcInstance` made for
-    /// one (`through_thunk`). As `hookedInto`.
-    fn hooked_into(&self, indices: &[usize]) -> bool {
-        self.hooks.iter().flat_map(|(_, chain)| chain).any(|hook| {
-            let crate::hooks::HookProc::Far(far) = hook.proc else {
-                return false;
-            };
-            let far = crate::kernel_calls::code::through_thunk(self, far);
-
-            indices.contains(&((far >> 19) as usize))
-        })
-    }
-
     /// A task ended by its handle, as `exit_task` ends the running one --
     /// TOOLHELP's `TerminateApp` ends another so -- with `code`.
     pub(crate) fn end_task_of(&mut self, handle: u16, code: u8) {
@@ -449,6 +435,22 @@ impl System {
 
         self.scheduler.slots[slot].exit_code = Some(code);
         let handle = self.scheduler.slots[slot].handle;
+
+        // USER has been told first, where the task ends itself, and its
+        // hooks and windows have gone with their messages (`app_exit.rs`).
+        // What is left goes here without messages: a task another ends,
+        // its hooks taken out and its windows taken off as USER would take
+        // them. As `exitTask`.
+        {
+            let program = self.scheduler.slots[slot].program;
+            let module = if self.running_instances(program) <= 1 {
+                self.modules[program].handle
+            } else {
+                0
+            };
+
+            self.app_exit_without_messages(handle, module);
+        }
         let left: Vec<usize> = self
             .z_order
             .iter()
@@ -498,20 +500,6 @@ impl System {
         self.release_libraries(&brought);
         self.end_task(slot);
 
-        // What may call into it after it ends keeps its code and data,
-        // where Windows would free them: a hook it put in and left, as
-        // Program Manager's filter -- WinBox calls every task's hooks for
-        // every task and takes none off as a task ends; or a library besides
-        // KERNEL's, USER's and GDI's it imported or loaded, which may keep a
-        // procedure of its -- WinBox takes its windows off without the
-        // messages Windows sends them, so DDEML's and OLESVR's windows and
-        // tables for it live on (`olepbr`). As `exitTask`.
-        let held = own.is_some_and(|own| own.loaded)
-            || Self::import_names(&self.modules[program].executable)
-                .iter()
-                .any(|name| !KEEPING_NONE.contains(&name.as_str()))
-            || self.hooked_into(&self.modules[program].segments);
-
         // Its module gone with its last instance: deleted, as KERNEL deletes
         // one -- its segments and its database given back, and its name, its
         // file and its handle found no more -- but WinBox's Program
@@ -527,9 +515,7 @@ impl System {
         let kept = matches!(self.handles.resolve_module(handle), Some(Object::Kept(_)));
 
         if let Some(own) = own.filter(|_| !kept) {
-            if !held {
-                self.free_module_segments(program, database, last);
-            }
+            self.free_module_segments(program, database, last);
 
             if database.is_some() {
                 self.handles.free_module(handle);
@@ -558,14 +544,10 @@ impl System {
                 }
             }
         }
+
+        self.app_exited.retain(|&task| task != handle);
     }
 }
-
-/// The modules a program may import with none of them keeping a procedure
-/// of its past its end, as WinBox keeps them. As `library.ts`'s.
-const KEEPING_NONE: [&str; 8] = [
-    "KERNEL", "USER", "GDI", "KEYBOARD", "SOUND", "SYSTEM", "WIN87EM", "SHELL",
-];
 
 /// A program started by its command line: its name, a space, and what it
 /// is given, its spaces kept; a name with no extension given `.EXE`; found
@@ -790,7 +772,7 @@ impl System {
     /// A finished task's window taken away (`exitTask`): its timers
     /// stopped, off the desktop -- a window at the top still shown as it
     /// goes, so what it covered is uncovered -- and its handle free.
-    fn forget_window(&mut self, index: usize) {
+    pub(crate) fn forget_window(&mut self, index: usize) {
         let Some(hwnd) = self.windows[index].as_ref().map(|window| window.hwnd) else {
             return;
         };

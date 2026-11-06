@@ -221,6 +221,12 @@ impl System {
             return Some(Event::Call(pending));
         }
 
+        // USER told the task ends, as KERNEL tells it before ending it
+        // (`KRNL386.EXE` seg1 `1938`-`194d`; `app_exit.rs`).
+        if let Some(pending) = self.app_exit_pending() {
+            return Some(Event::Call(pending));
+        }
+
         let done = self.dos_interrupt();
 
         self.instructions += 1;

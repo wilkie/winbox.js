@@ -1,5 +1,7 @@
 'use strict';
 
+import { moduleGone } from './user/app-exit.js';
+
 import { Executable } from '../executable.js';
 import { CommDlg } from './commdlg/index.js';
 import {
@@ -633,27 +635,6 @@ function keptModule(system: any, file: string) {
 }
 
 /** The library loaded from its file under a module name, if there is one. */
-/**
- * The modules a program may import with none of them keeping a procedure of
- * its past its end: KERNEL, USER, GDI and the drivers and SHELL beside them,
- * as WinBox keeps them.
- */
-const KEEPING_NONE = ['KERNEL', 'USER', 'GDI', 'KEYBOARD', 'SOUND', 'SYSTEM', 'WIN87EM', 'SHELL'];
-
-/**
- * Whether a task imported or loaded a library besides those
- * (`KEEPING_NONE`): such a library may keep one of its procedures -- a
- * server's, a callback -- and call it after the task ends, as DDEML's or
- * OLESVR's own windows and tables live on, where Windows' end of a task
- * would have them told (`Win16.exitTask`).
- */
-export function mayBeCalledBack(task: any) {
-  return (
-    !!task.loadedLibrary ||
-    [...importNames(task.loader)].some((name) => !KEEPING_NONE.includes(name))
-  );
-}
-
 function libraryNamed(system: any, name: string): Library | null {
   const loader = system._modules.fromName(name);
   const handle = loader instanceof Loader ? system._modules.handleFromPath(loader.path) : null;
@@ -712,6 +693,8 @@ export async function freeLibrary(system: any, handle: number) {
     await letGo(system, other);
   }
 
+  /* USER told, as KERNEL deletes it (`app-exit.ts`). */
+  moduleGone(system, library.module);
   system._modules.unregister(library.loader);
   freeModuleSegments(system, library.loader, library.module >> 3);
   system.handles.freeModule(library.instance);
@@ -800,6 +783,7 @@ export function releaseLibraries(system: any, libraries: Held[]) {
 
     library.brought = [];
     releaseLibraries(system, [...brought].reverse());
+    moduleGone(system, library.module);
     system._modules.unregister(library.loader);
     freeModuleSegments(system, library.loader, library.module >> 3);
     system.handles.freeModule(library.instance);

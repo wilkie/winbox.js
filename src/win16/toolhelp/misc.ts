@@ -5,6 +5,7 @@ import { tickCount } from '../user/GetTickCount.js';
 import { liveTask } from '../kernel/task-order.js';
 import { structure } from './structures.js';
 import { SEB_CLOSE, SEB_DEFBUTTON, sysErrorBox } from '../user/sys-error-box.js';
+import { appExit } from '../user/app-exit.js';
 import { CLOSING } from '../kernel/FatalAppExit.js';
 
 /** `TIMERINFO`'s size. */
@@ -113,6 +114,11 @@ export async function TerminateApp(this: any, hTask: number, wFlags: number) {
   }
 
   if (liveTask(this, handle)) {
+    /* USER told, where the task is the one running (`app-exit.ts`). */
+    if (handle === (this.scheduler.active ?? 0)) {
+      await appExit(this, handle);
+    }
+
     this.exitTask(0xff, handle);
   }
 }

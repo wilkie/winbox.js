@@ -749,6 +749,11 @@ async fn ended_in_box(engine: &Engine, text: &[u8]) -> Result<Answer, Stop> {
         )
         .await?;
 
+    // USER told, as the task ends (`app_exit.rs`).
+    let task = engine.system().task_handle;
+
+    engine.app_exit(task).await?;
+
     let mut system = engine.system();
 
     system.exit_code = Some(0xff);

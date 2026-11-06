@@ -344,7 +344,7 @@ const GW_HWNDPREV: u16 = 3;
 const GW_OWNER: u16 = 4;
 const GW_CHILD: u16 = 5;
 
-fn related(system: &System, hwnd: u16, relation: u16) -> u16 {
+pub(crate) fn related(system: &System, hwnd: u16, relation: u16) -> u16 {
     // The desktop's first child is the top window of the screen.
     if relation == GW_CHILD && matches!(system.named(hwnd), Named::Desktop) {
         return top_window(system, 0);

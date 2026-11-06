@@ -315,8 +315,18 @@ export class HandleManager {
       this._gdiFree.push(handle);
     }
 
-    if (item && item.name) {
+    /* Its name, where it is what the name finds, given to another of the
+     * same name still registered -- a class of the same name another
+     * module registered, which WinBox finds by its name alone, where
+     * Windows finds a program's own class by its module too. */
+    if (item && item.name && this._names[item.name] === handle) {
       delete this._names[item.name];
+
+      for (const [other, entry] of Object.entries(this._handles) as [string, any][]) {
+        if (entry?.name === item.name) {
+          this._names[item.name] = Number(other);
+        }
+      }
     }
 
     if (item && this._lookup.has(item)) {

@@ -58,6 +58,17 @@ fn segment_of(system: &mut System, proc: u32) -> Option<GlobalBlock> {
         .find(|block| block.index != 0 && block.index == index)
 }
 
+/// The module a procedure is in, as USER finds a hook's (`USER.EXE` seg1
+/// `7cd4`-`7cf7`): the module whose segment it is, through a thunk, as
+/// `GetCodeInfo` finds it; else the module `GetExePtr` finds for its
+/// selector; else nought. As `code-calls.ts`'s `moduleOfProc`.
+pub(crate) fn module_of_proc(system: &mut System, proc: u32) -> u16 {
+    match segment_of(system, proc) {
+        Some(block) if block.owner != 0 => block.owner,
+        _ => crate::kernel_calls::tasks::exe_ptr(system, (proc >> 16) as u16),
+    }
+}
+
 /// The handle of a procedure's code segment in AX, its selector in DX
 /// (seg1 `48fa`-`4924`). **Recorded** by `ktask2`.
 pub fn get_code_handle(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {

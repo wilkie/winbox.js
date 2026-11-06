@@ -159,8 +159,17 @@ impl System {
     pub fn register_class(&mut self, class: WindowClass) -> u16 {
         let name = class.name.clone();
         let index = self.classes.len();
+        // The module it is of, which unregisters it as its last instance
+        // ends (`USER.EXE` seg1 `0b07`-`0b39`, the class's word at 14h;
+        // `app_exit.rs`).
+        let module = if class.instance == 0 {
+            0
+        } else {
+            crate::kernel_calls::tasks::exe_ptr(self, class.instance)
+        };
 
         self.classes.push(class);
+        self.class_modules.push(module);
 
         let handle = self
             .handles
@@ -172,6 +181,39 @@ impl System {
         }
 
         handle
+    }
+
+    /// A class's handle let go. Its name, where it was what the name
+    /// found, given to another class of the same name still registered --
+    /// one another module registered, which WinBox finds by its name
+    /// alone, where Windows finds a program's own class by its module too.
+    /// As `HandleManager`'s `release`.
+    pub(crate) fn free_class(&mut self, handle: u16) {
+        let name = match self.handles.resolve(handle) {
+            Some(Object::Class(index)) => self.classes[index].name.clone(),
+            _ => String::new(),
+        };
+
+        self.handles.free(handle);
+
+        if name.is_empty() || self.handles.retrieve(&name).is_some() {
+            return;
+        }
+
+        let other = self
+            .handles
+            .objects()
+            .filter_map(|(other, object)| match object {
+                Object::Class(index) if self.classes[index].name.eq_ignore_ascii_case(&name) => {
+                    Some(other)
+                }
+                _ => None,
+            })
+            .max();
+
+        if let Some(other) = other {
+            self.handles.register(other, &name);
+        }
     }
 
     /// The class registered under a name.
@@ -367,7 +409,7 @@ pub fn unregister_class(system: &mut System, args: &mut Args) -> Result<Answer, 
         return Ok(Answer::Word(0));
     }
 
-    system.handles.free(handle);
+    system.free_class(handle);
     Ok(Answer::Word(1))
 }
 

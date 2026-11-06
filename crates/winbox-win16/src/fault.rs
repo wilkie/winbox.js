@@ -204,6 +204,11 @@ impl Engine {
             .await?;
         }
 
+        // USER told, as the task ends (`app_exit.rs`).
+        let task = self.system().task_handle;
+
+        self.app_exit(task).await?;
+
         // Ended as at INT 21h function 4Ch: with others left, they run on;
         // with none, and Windows staying up, it waits for the next.
         let mut system = self.system();

@@ -5,6 +5,7 @@ import { GlobalFree } from './GlobalFree.js';
 import { globalPointer } from './GlobalLock.js';
 import { FARPTR, UINT } from '../types.js';
 import { exitApplication, ownsAny } from '../mmsystem/mmio.js';
+import { appExit } from '../user/app-exit.js';
 
 /**
  * `FileCdr`: the one procedure KERNEL tells when a file changes, which File
@@ -147,6 +148,13 @@ export async function dosCall(system: any) {
    * `DRV_EXITAPPLICATION` lets them go first (`mmio.ts`). */
   if (((core.ax >> 8) & 0xff) === 0x4c && ownsAny(system, system.scheduler?.active ?? 0)) {
     await exitApplication(system, system.scheduler.active);
+  }
+
+  /* USER told the task ends, as KERNEL tells it before ending it
+   * (`KRNL386.EXE` seg1 `1938`-`194d`): its hooks and windows let go with
+   * their messages (`app-exit.ts`). */
+  if (((core.ax >> 8) & 0xff) === 0x4c && system.scheduler?.active) {
+    await appExit(system, system.scheduler.active);
   }
 
   const ax = core.ax;

@@ -102,10 +102,20 @@ export async function DestroyWindow(hwnd) {
     forgetHotKey(this, hwnd);
   }
 
-  /* The windows it owns first, then it (documented; `owners`). */
+  /* The windows it owns first, then it (documented; `owners`): those of
+   * its own task, as `DestroyOwnedWindows` destroys them; one of another
+   * task's is owned by none after (`USER.EXE` seg8 `0912`-`0949`; **recorded**
+   * by `taskend`). */
   for (const owned of desktop.windows.filter(
     (other: any) => other.owner === window && other.hwnd
   )) {
+    const other = this.handles.resolve(owned.hwnd);
+
+    if ((other?.data?.hInstance ?? 0) !== (dialog.data?.hInstance ?? 0)) {
+      owned.owner = null;
+      continue;
+    }
+
     await DestroyWindow.call(this, owned.hwnd);
   }
 
@@ -121,9 +131,16 @@ export async function DestroyWindow(hwnd) {
 
   gather(window);
 
+  /* A task ending (`app-exit.ts`), USER's [0E4h] its queue: a child of
+   * its tells no parent (`USER.EXE` seg8 `0ac6`-`0acb`); a window of its
+   * at the top is hidden with 2097h (`0b0d`-`0b20`), and makes no window
+   * active where none is (`0ba8`-`0bb2`). **Recorded** by `taskend`. */
+  const exiting = this._exiting ?? 0;
+  const ending = !!exiting && (dialog.data?.hInstance ?? 0) === exiting;
+
   /* A child tells its parent it is going, unless it was made
    * `WS_EX_NOPARENTNOTIFY`, as a dialog's controls are. */
-  if (window.parent?.hwnd && !(window.exStyle & WS_EX_NOPARENTNOTIFY)) {
+  if (!exiting && window.parent?.hwnd && !(window.exStyle & WS_EX_NOPARENTNOTIFY)) {
     await send(window.parent.hwnd, User.WM_PARENTNOTIFY, User.WM_DESTROY, hwnd & 0xffff);
   }
 
@@ -134,9 +151,10 @@ export async function DestroyWindow(hwnd) {
     (window as any).destroying = true;
 
     if (window.visible) {
-      /* Hidden as `ShowWindow` hides a child (`USER.EXE` seg8 `0afd`), not
-       * told with `WM_SHOWWINDOW` (`showseq`). */
-      await showRaster(this, hwnd, dialog, User.SW_HIDE, false);
+      /* Hidden as `ShowWindow` hides a child (`USER.EXE` seg8 `0afd`-`0b06`),
+       * told with `WM_SHOWWINDOW` and `WM_SETVISIBLE` (seg14 `0cb5`-`0ce1`;
+       * **recorded** by `taskend`). */
+      await showRaster(this, hwnd, dialog, User.SW_HIDE);
     } else {
       desktop.hide(window);
       await eraseDue(this);
@@ -153,15 +171,14 @@ export async function DestroyWindow(hwnd) {
      * told 97h first, then the window made active is brought to the front,
      * asked and told 3; a dialog with no owner, ended, leaves no window
      * active, and its destruction makes the window active before it active.
-     * Not followed: a task's windows destroyed as it ends (`[0E4h]`), whose
-     * flags are 2097h and which makes none active. */
+     * A task's windows destroyed as it ends (`[0E4h]`): see above. */
     if (window.visible) {
-      await SetWindowPos.call(this, hwnd, 0, 0, 0, 0, 0, 0x97);
+      await SetWindowPos.call(this, hwnd, 0, 0, 0, 0, 0, ending ? 0x2097 : 0x97);
     }
 
     (window as any).destroying = true;
 
-    if (desktop.activeTop === window || !desktop.activeTop) {
+    if (desktop.activeTop === window || (!desktop.activeTop && !ending)) {
       const next = desktop.nextActiveOf(window);
 
       if (next) {

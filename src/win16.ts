@@ -17,7 +17,6 @@ import { Loader, segmentBlockSize } from './win16/loader.js';
 import {
   freeModuleSegments,
   loadLibrariesFor,
-  mayBeCalledBack,
   patchPrologues,
   releaseLibraries,
   streamOf,
@@ -76,7 +75,8 @@ import { ToolHelp } from './win16/toolhelp.js';
 import { Timer } from './win16/timer.js';
 import { MciSeq, MciWave } from './win16/mmsystem/mci-drivers.js';
 import { dosCall } from './win16/kernel/FileCdr.js';
-import { previousInstance } from './win16/kernel/WinExec.js';
+import { previousInstance, previousInstanceBut } from './win16/kernel/WinExec.js';
+import { appExitWithoutMessages } from './win16/user/app-exit.js';
 import { floatingInterrupt } from './win16/win87em/emulator.js';
 import { taskEnvironment } from './win16/task-environment.js';
 import { Shell } from './win16/shell.js';
@@ -593,9 +593,10 @@ export class Win16 {
    * are taken off the screen with their timers, and the page is told through
    * `options.onExit`.
    *
-   * Its windows go without messages to it. Windows 3.1 destroys a finished
-   * task's windows as it ends it; whether their procedures are called then is
-   * not recorded, and here there is no program left to call.
+   * USER has been told first, where the task ends itself, and its hooks
+   * and windows have gone with their messages (`app-exit.ts`). What is left
+   * goes here without messages: a task another ends, its hooks taken out
+   * and its windows taken off as USER would take them.
    */
   exitTask(code: number, handle = this.scheduler.active) {
     const task = this.handles.resolve(handle);
@@ -605,6 +606,13 @@ export class Win16 {
     }
 
     task.quitCode = null;
+
+    {
+      const path = String(task.executable?.path ?? '');
+      const module = this._modules._handles[path];
+
+      appExitWithoutMessages(this, handle, previousInstanceBut(this, path, handle) ? 0 : module);
+    }
 
     const desktop = (this._options as any).raster ? this.rasterDesktop : null;
 
@@ -645,19 +653,6 @@ export class Win16 {
     task.brought = [];
     task.end();
 
-    /* What may call into it after it ends keeps its code and data, where
-     * Windows would free them. A hook it put in and left -- a filter of its
-     * own messages, as Program Manager's -- is called still: WinBox calls
-     * every task's hooks for every task, and takes none off as a task ends,
-     * where Windows does both (`hookedInto`). A library besides KERNEL's,
-     * USER's and GDI's it imported or loaded may keep a procedure of its:
-     * WinBox takes its windows off without the messages Windows sends them,
-     * so DDEML's and OLESVR's windows and tables for it live on
-     * (`mayBeCalledBack`; `olepbr`, Paintbrush with WinBox's OLESVR). */
-    const held =
-      !!task.loader &&
-      (mayBeCalledBack(task) || hookedInto(this, Object.values(task.loader._segmentMap ?? {})));
-
     /* The processor to the next task waiting for it, if any. */
     this.scheduler.ended(handle);
 
@@ -668,9 +663,7 @@ export class Win16 {
     const database = last && !kept && this.handles.resolveModule(module)?.executable ? module >> 3 : -1;
 
     if (own && !kept) {
-      if (!held) {
-        freeModuleSegments(this, task.loader, database, last);
-      }
+      freeModuleSegments(this, task.loader, database, last);
 
       if (database > 0) {
         this.handles.freeModule(module);
@@ -696,6 +689,8 @@ export class Win16 {
 
       this._modules._handles[path] = undefined;
     }
+
+    (this as any)._appExited?.delete(handle & 0xffff);
     (this._options as any).onExit?.(handle, code);
   }
 
@@ -1659,40 +1654,3 @@ function dataTop(dataSegment: any) {
 }
 
 export default Win16;
-
-/**
- * Whether a hook a program put in reaches one of the descriptors given: its
- * procedure in one of them, or a thunk `MakeProcInstance` made for one --
- * `mov ax, ds`, then `jmp far` to it (`kernel/MakeProcInstance.ts`).
- */
-function hookedInto(system: any, indices: number[]) {
-  const wanted = new Set(indices);
-  const core = system.machine.cpu.core;
-
-  for (const chain of (system._hooks ?? new Map()).values()) {
-    for (const hook of chain) {
-      if (typeof hook.proc !== 'number') {
-        continue;
-      }
-
-      let far = hook.proc >>> 0;
-
-      try {
-        const segment = far >>> 16;
-        const offset = far & 0xffff;
-
-        if (core.read8(segment, offset) === 0xb8 && core.read8(segment, offset + 3) === 0xea) {
-          far = (core.read16(segment, offset + 4) | (core.read16(segment, offset + 6) << 16)) >>> 0;
-        }
-      } catch {
-        continue;
-      }
-
-      if (wanted.has(far >>> 19)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}

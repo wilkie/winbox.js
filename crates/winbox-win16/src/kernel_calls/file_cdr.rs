@@ -227,6 +227,13 @@ pub(crate) fn dos3_call(engine: &Engine, _: Args) -> Later<'_> {
             crate::mmsystem::mmio::exit_application(engine, task).await?;
         }
 
+        // USER told the task ends, as `INT 21h`'s are (`app_exit.rs`).
+        if engine.system().app_exit_pending().is_some() {
+            let task = engine.system().task_handle;
+
+            engine.app_exit(task).await?;
+        }
+
         engine.system().dos_call()?;
         engine.tell_file_changes().await?;
         Ok(Answer::Nothing)

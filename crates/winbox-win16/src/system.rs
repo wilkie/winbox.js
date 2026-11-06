@@ -215,6 +215,13 @@ pub struct System {
     /// The window classes registered, by index; the atoms `GetClassInfo`
     /// answers, by name.
     pub classes: Vec<crate::classes::WindowClass>,
+    /// The module each class is of, by its index: its instance's, as
+    /// `RegisterClass` found it; nought for USER's own.
+    pub class_modules: Vec<u16>,
+    /// The task USER is ending, its [0E4h] (`app_exit.rs`); nought for none.
+    pub exiting: u16,
+    /// The tasks USER has been told end (`app_exit.rs`).
+    pub app_exited: Vec<u16>,
     pub class_atoms: HashMap<String, u16>,
     /// The segment of USER's procedures' thunks, and the procedures in it.
     pub proc_segment: Option<usize>,
@@ -602,6 +609,9 @@ impl System {
             gdi: crate::gdi::Gdi::default(),
             driver: None,
             classes: Vec::new(),
+            class_modules: Vec::new(),
+            exiting: 0,
+            app_exited: Vec::new(),
             class_atoms: HashMap::new(),
             proc_segment: None,
             proc_tokens: Vec::new(),

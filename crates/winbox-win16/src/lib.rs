@@ -3,6 +3,7 @@
 
 pub mod accelerators;
 pub mod accessible_tree;
+pub mod app_exit;
 pub mod assets;
 pub mod atoms;
 pub mod audio;

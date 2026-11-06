@@ -5,6 +5,9 @@ import { globalPointer } from '../kernel/GlobalLock.js';
 import { INT, LPARAM, WPARAM } from '../types.js';
 import { segmentSelector } from '../selectors.js';
 import { GetSysModalWindow } from './userwin.js';
+import { moduleOfProc } from '../kernel/code-calls.js';
+import { GetExePtr } from '../kernel/module-calls.js';
+import { liveTask } from '../kernel/task-order.js';
 
 /**
  * Hooks: procedures a program puts in USER's way, called with a code, a
@@ -40,7 +43,7 @@ import { GetSysModalWindow } from './userwin.js';
  * `LPARAM`, low word first, its `WPARAM`, the message, the window. What the
  * hook leaves in the first four is what the window procedure is given. A
  * hook sees what its task sends other tasks' windows and the desktop, too.
- * Which task a hook is for is not followed: each is called.
+ * Which task a hook is for is followed: see below.
  *
  * The message hooks, `WH_GETMESSAGE`, are called with each message
  * `GetMessage` or `PeekMessage` hands over, taken or only looked at, once it
@@ -57,6 +60,25 @@ import { GetSysModalWindow } from './userwin.js';
  * on through, and never called: in Windows the first hook called after one
  * is put in calls it for ever, and faults (`dbghook`). Not followed:
  * `HSHELL_ACTIVATESHELLWINDOW`.
+ *
+ * A hook is for one task or for every task (**read out**, `USER.EXE` seg1
+ * `7d28`-`7e79`, **recorded** by `taskend`). `SetWindowsHook` puts a
+ * message filter in for the task calling, and any other kind in for every
+ * task (`7d50`-`7d56`); `SetWindowsHookEx` for the task it is given, or
+ * every task with none, refusing a kind outside -1 to 10 (`7d8f`-`7d9c`),
+ * an instance that is no module's (`7d9e`-`7db2`), a kind no task may have
+ * for itself (`7db7`-`7dc4`), and a task with no queue (`7dd2`-`7ddb`).
+ * Each keeps the module its procedure is in -- the instance's for
+ * `SetWindowsHookEx`, the procedure's own for `SetWindowsHook` (`7cd4`).
+ * A task's hooks are kept with its queue, the others in USER's own lists,
+ * each newest first (`7e19`-`7e35`), and a chain is called from the
+ * running task's own hooks, then on to every task's (`7ca2`-`7cba`,
+ * `7cbb`-`7cd3`): a task's hooks are not called for another task. As a
+ * task ends its own hooks are taken out, and with its module's last
+ * instance the module's hooks for every task (seg1 `0be4`, `108c`-`10a6`;
+ * `7f51`-`7f9e`); a library's go as the library is deleted (seg1
+ * `0a4d`-`0a54`, `KRNL386.EXE` seg2 `0c61`-`0c7c`): `unhookTask`,
+ * `unhookModule`.
  */
 
 export const WH_MSGFILTER = -1;
@@ -84,6 +106,10 @@ interface Hook {
   kind: number;
   proc: any;
   handle: number;
+  /** The task it is for, or nought for every task. */
+  task: number;
+  /** The module its procedure is in, or nought. */
+  module: number;
 }
 
 /** The hooks of each kind, newest first. */
@@ -91,11 +117,29 @@ function chains(system: any): Map<number, Hook[]> {
   return (system._hooks ??= new Map());
 }
 
-function install(system: any, kind: number, proc: any) {
+/** The task running, whose own hooks are called before every task's. */
+function running(system: any) {
+  return (system.scheduler?.active ?? 0) & 0xffff;
+}
+
+/**
+ * A chain as it is called in a task: that task's own hooks, newest first,
+ * then those for every task, newest first (`USER.EXE` seg1 `7ca2`-`7cd3`).
+ */
+function chainFor(system: any, kind: number, task = running(system)) {
+  const chain = chains(system).get(kind) ?? [];
+
+  return [
+    ...chain.filter((hook) => hook.task && hook.task === task),
+    ...chain.filter((hook) => !hook.task),
+  ];
+}
+
+function install(system: any, kind: number, proc: any, task = 0, module = 0) {
   const chain = chains(system).get(kind) ?? [];
   const handle = (system._nextHook = (system._nextHook ?? 0) + 1);
 
-  chain.unshift({ kind, proc, handle });
+  chain.unshift({ kind, proc, handle, task: task & 0xffff, module: module & 0xffff });
   chains(system).set(kind, chain);
 
   /* A journal hook put in makes the mouse move where it is (`USER.EXE` seg1
@@ -125,7 +169,12 @@ function callHook(system: any, hook: Hook, code: number, wParam: number, lParam:
   );
 }
 
-/** Calls the hook after the one with this handle, or answers nought for none. */
+/**
+ * Calls the hook after the one with this handle, or answers nought for
+ * none: the next of its task's, then on to every task's for a task's own
+ * hook; the next of every task's for one of theirs (`USER.EXE` seg1
+ * `7cbb`-`7cd3`).
+ */
 async function callAfter(
   system: any,
   handle: number,
@@ -133,11 +182,12 @@ async function callAfter(
   wParam: number,
   lParam: number
 ) {
-  for (const chain of chains(system).values()) {
-    const at = chain.findIndex((hook) => hook.handle === handle);
+  for (const [kind, chain] of chains(system)) {
+    const hook = chain.find((each) => each.handle === handle);
 
-    if (at >= 0) {
-      const next = chain[at + 1];
+    if (hook) {
+      const order = chainFor(system, kind, hook.task);
+      const next = order[order.indexOf(hook) + 1];
 
       return next ? await callHook(system, next, code, wParam, lParam) : 0;
     }
@@ -159,14 +209,14 @@ export async function callHooks(
   wParam: number,
   lParam: number
 ) {
-  const first = chains(system).get(kind)?.[0];
+  const first = chainFor(system, kind)[0];
 
   return first ? await callHook(system, first, code, wParam, lParam) : 0;
 }
 
-/** Whether any hook of a kind is in. */
+/** Whether any hook of a kind is in that the running task calls. */
 export function hasHooks(system: any, kind: number) {
-  return (chains(system).get(kind)?.length ?? 0) > 0;
+  return chainFor(system, kind).length > 0;
 }
 
 /**
@@ -306,7 +356,17 @@ function hookGone(system: any, kind: number) {
  * @returns {Types.DWORD} What to hand `DefHookProc`: this hook's handle.
  */
 export function SetWindowsHook(this: any, idHook: number, lpfn: any) {
-  return install(this, (idHook << 16) >> 16, lpfn);
+  const kind = (idHook << 16) >> 16;
+
+  /* The message filter for the task calling, any other for every task;
+   * the module the procedure's (`USER.EXE` seg1 `7d3b`-`7d5f`). */
+  return install(
+    this,
+    kind,
+    lpfn,
+    kind === WH_MSGFILTER ? running(this) : 0,
+    typeof lpfn === 'number' ? moduleOfProc(this, lpfn) : 0
+  );
 }
 
 /**
@@ -323,19 +383,64 @@ export function SetWindowsHookEx(
   this: any,
   idHook: number,
   lpfn: any,
-  _hInstance: number,
+  hInstance: number,
   hTask: number
 ) {
   const kind = (idHook << 16) >> 16;
+  const task = hTask & 0xffff;
 
-  /* A kind no task may have for itself -- the journal hooks and the system
-   * message filters -- asked for one task is refused (`USER.EXE` seg1
-   * `7db7`-`7dc4`, the kinds' flags at `7c96`; **recorded** by `sysfilt`). */
-  if (hTask && SYSTEM_ONLY.has(kind)) {
+  /* A kind outside -1 to 10 is refused, and so is an instance that is no
+   * module's (`USER.EXE` seg1 `7d8f`-`7db2`). */
+  if (kind < WH_MSGFILTER || kind > WH_SHELL) {
     return 0;
   }
 
-  return install(this, kind, lpfn);
+  const module = GetExePtr.call(this, hInstance & 0xffff) & 0xffff;
+
+  if (!module) {
+    return 0;
+  }
+
+  /* A kind no task may have for itself -- the journal hooks and the system
+   * message filters -- asked for one task is refused (`USER.EXE` seg1
+   * `7db7`-`7dc4`, the kinds' flags at `7c96`; **recorded** by `sysfilt`),
+   * and so is a task with no queue (`7dd2`-`7ddb`, `7cfa`). */
+  if (task && (SYSTEM_ONLY.has(kind) || !liveTask(this, task))) {
+    return 0;
+  }
+
+  return install(this, kind, lpfn, task, module);
+}
+
+/** Takes the hooks out that a test says go, as USER takes them out (`7e7c`). */
+function unhookWhere(system: any, gone: (hook: Hook) => boolean) {
+  for (const [kind, chain] of chains(system)) {
+    const left = chain.filter((hook) => !gone(hook));
+
+    if (left.length !== chain.length) {
+      chains(system).set(kind, left);
+      hookGone(system, kind);
+    }
+  }
+}
+
+/**
+ * A task's own hooks taken out as it ends (`USER.EXE` seg1 `0be4`,
+ * `7f51`-`7f9e` with its queue): **recorded** by `taskend`.
+ */
+export function unhookTask(system: any, task: number) {
+  unhookWhere(system, (hook) => !!hook.task && hook.task === (task & 0xffff));
+}
+
+/**
+ * A module's hooks for every task taken out, as its last instance ends or
+ * the library is deleted (`USER.EXE` seg1 `108c`-`10a6`, `7f51`-`7f9e`
+ * with its module): **recorded** by `taskend`.
+ */
+export function unhookModule(system: any, module: number) {
+  if (module) {
+    unhookWhere(system, (hook) => !hook.task && hook.module === (module & 0xffff));
+  }
 }
 
 /** The kinds of hook that are everyone's or none (`USER.EXE` seg1 `7c96`, bit 0 clear). */
@@ -350,15 +455,19 @@ const SYSTEM_ONLY = new Set([0, 1, WH_SYSMSGFILTER]);
  * @returns {Types.BOOL} Whether there was one.
  */
 export function UnhookWindowsHook(this: any, idHook: number, lpfn: any) {
-  const chain = chains(this).get((idHook << 16) >> 16) ?? [];
-  const at = chain.findIndex((hook) => hook.proc === lpfn);
+  const kind = (idHook << 16) >> 16;
+  const chain = chains(this).get(kind) ?? [];
 
-  if (at < 0) {
+  /* Looked for in the chain as the task calling calls it (`USER.EXE` seg1
+   * `7f26`-`7f49`). */
+  const hook = chainFor(this, kind).find((each) => each.proc === lpfn);
+
+  if (!hook) {
     return 0;
   }
 
-  chain.splice(at, 1);
-  hookGone(this, (idHook << 16) >> 16);
+  chain.splice(chain.indexOf(hook), 1);
+  hookGone(this, kind);
 
   return 1;
 }
@@ -527,7 +636,7 @@ export async function sentMessageHook(
   wParam: number,
   lParam: any
 ) {
-  if (!chains(system).get(WH_CALLWNDPROC)?.length) {
+  if (!hasHooks(system, WH_CALLWNDPROC)) {
     return { message, wParam, lParam };
   }
 

@@ -1,6 +1,7 @@
 'use strict';
 
 import { segmentSelector } from '../selectors.js';
+import { appExit } from '../user/app-exit.js';
 import { GetProfileInt } from './GetProfileInt.js';
 import { instructionLength } from './instruction-length.js';
 import { sysErrorBox, SEB_CLOSE, SEB_DEFBUTTON, SEB_IGNORE } from '../user/sys-error-box.js';
@@ -87,6 +88,7 @@ export async function applicationFault(system: any, vector: number): Promise<boo
     await sysErrorBox(system, text, 'Application Error', [0, SEB_CLOSE | SEB_DEFBUTTON, 0]);
   }
 
+  await appExit(system, system.scheduler.active);
   system.exitTask(0xff);
 
   return false;

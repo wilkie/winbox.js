@@ -88,8 +88,6 @@ pub struct Own {
     pub second: usize,
     pub queue: usize,
     pub environment: Option<usize>,
-    /// Whether the task called `LoadLibrary` (`exit_slot`).
-    pub loaded: bool,
 }
 
 impl Module {
@@ -279,7 +277,6 @@ impl System {
             second,
             queue,
             environment: None,
-            loaded: false,
         })
     }
 

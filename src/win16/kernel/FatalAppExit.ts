@@ -1,6 +1,7 @@
 'use strict';
 
 import { SEB_CLOSE, SEB_DEFBUTTON, sysErrorBox } from '../user/sys-error-box.js';
+import { appExit } from '../user/app-exit.js';
 
 /** KERNEL's text for a message of none (data `084c`). */
 export const CLOSING = 'Closing current application.';
@@ -47,6 +48,7 @@ export async function FatalAppExit(this: any, fuAction: number, lpszMessageText:
       : String(lpszMessageText);
 
   await sysErrorBox(this, text, 'Application Error', [0, SEB_CLOSE | SEB_DEFBUTTON, 0]);
+  await appExit(this, this.scheduler.active);
   this.exitTask(0xff);
   void fuAction;
 }
