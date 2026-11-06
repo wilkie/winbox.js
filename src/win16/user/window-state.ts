@@ -132,10 +132,12 @@ export async function showRaster(
     }
   }
 
-  /* A window at the top that shows restored from its icon, as `MinMaximize`
-   * does it (`USER.EXE` seg6 `1ca6`-`1d81`, `1e2c`-`1e4b`): one
-   * `SetWindowPos`, its activation inside (`restoreFromIcon`). */
-  if (fromIcon && was && !child) {
+  /* A window at the top restored from its icon, as `MinMaximize` does it
+   * (`USER.EXE` seg6 `1ca6`-`1d81`, `1e2c`-`1e4b`): one `SetWindowPos`, its
+   * activation inside (`restoreFromIcon`) -- an icon not yet shown too, made
+   * `WS_MINIMIZE` and hidden, with `SWP_SHOWWINDOW` and no `WM_SHOWWINDOW`
+   * (`1d43`-`1d52`; `zhidmin`). */
+  if (fromIcon && !child) {
     await restoreFromIcon(
       system,
       hwnd,
@@ -145,7 +147,8 @@ export async function showRaster(
     );
     system.rasterInput?.nudge();
 
-    return TRUE;
+    /* Whether it showed before, as `ShowWindow` answers. */
+    return was ? TRUE : FALSE;
   }
 
   /* A hidden window minimized and not made active is not told it shows: it
@@ -841,6 +844,17 @@ async function restoreFromIcon(
 ) {
   const desktop = window.desktop;
   const shown = window.window;
+
+  /* Its title hidden, `ShowIconTitle` with nought -- which makes it first
+   * where the icon never had one, an icon made hidden (seg1 `6e3f`-`6e4e`,
+   * `6e9b`): the hooks asked, and the title listed before the icon as it
+   * comes up (`zhidmin`: B goes after `#32772`). */
+  await titleMade(system, hwnd, window);
+
+  if (!system.handles.resolve(hwnd)) {
+    return;
+  }
+
   const rect = desktop.leaveToNormal(shown);
   const origin = originOf(shown);
 
@@ -857,7 +871,10 @@ async function restoreFromIcon(
     rect.top - origin.y,
     rect.width,
     rect.height,
-    SWP_NOCOPYBITS | SWP_FRAMECHANGED | (quiet ? SWP_NOACTIVATE : 0)
+    SWP_NOCOPYBITS |
+      SWP_FRAMECHANGED |
+      (quiet ? SWP_NOACTIVATE : 0) |
+      (shown.visible ? 0 : SWP_SHOWWINDOW)
   );
 
   if (!system.handles.resolve(hwnd)) {

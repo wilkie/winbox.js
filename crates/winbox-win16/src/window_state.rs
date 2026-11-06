@@ -935,6 +935,17 @@ impl Engine {
     /// `WA_ACTIVE` and nought (`1e3a`-`1e4b`). The TypeScript engine's
     /// `restoreFromIcon`.
     async fn restore_from_icon(&self, hwnd: u16, index: usize, quiet: bool) -> Result<(), Stop> {
+        // Its title hidden, `ShowIconTitle` with nought -- which makes it
+        // first where the icon never had one, an icon made hidden (seg1
+        // `6e3f`-`6e4e`, `6e9b`): the hooks asked, and the title listed
+        // before the icon as it comes up (`zhidmin`: B goes after `#32772`).
+        self.title_made(hwnd, index).await?;
+
+        if self.gone(index) {
+            return Ok(());
+        }
+
+        let hidden = !self.system().shown(index).visible;
         let (rect, origin) = {
             let mut system = self.system();
             let rect = system.leave_to_normal(index)?;
@@ -953,7 +964,10 @@ impl Engine {
             (top - origin.1) as i16,
             width as i16,
             height as i16,
-            SWP_NOCOPYBITS | SWP_FRAMECHANGED | if quiet { SWP_NOACTIVATE } else { 0 },
+            SWP_NOCOPYBITS
+                | SWP_FRAMECHANGED
+                | if quiet { SWP_NOACTIVATE } else { 0 }
+                | if hidden { SWP_SHOWWINDOW } else { 0 },
         )
         .await?;
 
@@ -1093,16 +1107,19 @@ impl Engine {
             }
         }
 
-        // A window at the top that shows restored from its icon, as
-        // `MinMaximize` does it (`USER.EXE` seg6 `1ca6`-`1d81`,
-        // `1e2c`-`1e4b`): one `SetWindowPos`, its activation inside
-        // (`restore_from_icon`).
-        if from_icon && was && !child {
+        // A window at the top restored from its icon, as `MinMaximize` does
+        // it (`USER.EXE` seg6 `1ca6`-`1d81`, `1e2c`-`1e4b`): one
+        // `SetWindowPos`, its activation inside (`restore_from_icon`) -- an
+        // icon not yet shown too, made `WS_MINIMIZE` and hidden, with
+        // `SWP_SHOWWINDOW` and no `WM_SHOWWINDOW` (`1d43`-`1d52`;
+        // `zhidmin`).
+        if from_icon && !child {
             let quiet = restoring_quietly && self.system().active_top().is_some();
 
             self.restore_from_icon(hwnd, index, quiet).await?;
             self.system().nudge()?;
-            return Ok(true);
+            // Whether it showed before, as `ShowWindow` answers.
+            return Ok(was);
         }
 
         // A hidden window minimized and not made active is not told it

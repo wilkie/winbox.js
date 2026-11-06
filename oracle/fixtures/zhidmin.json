@@ -1,0 +1,54 @@
+{
+  "probe": "zhidmin",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "order",
+      "args": "shownormal, start",
+      "result": "#32771*-,A,B-_;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "shownormal, start",
+      "result": "Z:24,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,A:5/0/5d0098,A:3/0/3f0030,Z:24,B:81/0,-,0,B:1/A,#32771,0,B:46@#32768/130,B:24,B:47@#32768/138,B:3/0/1980015,B:5/1/240024,"
+    },
+    {
+      "function": "order",
+      "args": "shownormal, b shownormal",
+      "result": "#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "shownormal, b shownormal",
+      "result": "B:13,B:46@#32772/160,B:24,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32772/160,B:3/0/530048,B:5/0/5d0098,B:6/1,"
+    },
+    {
+      "function": "order",
+      "args": "restore, start",
+      "result": "#32771*-,A,B-_;active=A;focus=A"
+    },
+    {
+      "function": "sent",
+      "args": "restore, start",
+      "result": "Z:24,A:81/0,-,0,A:1/#42,#32771,0,A:18/1,A:46@#32771/43,A:86/1,A:6/1,A:7,A:47@#32771/1847,A:5/0/5d0098,A:3/0/3f0030,Z:24,B:81/0,-,0,B:1/A,#32771,0,B:46@#32768/130,B:24,B:47@#32768/138,B:3/0/1980015,B:5/1/240024,"
+    },
+    {
+      "function": "order",
+      "args": "restore, b restore",
+      "result": "#32771*-,B,A;active=B;focus=B"
+    },
+    {
+      "function": "sent",
+      "args": "restore, b restore",
+      "result": "B:13,B:46@#32772/160,B:24,A:86/0,A:6/0,B:86/1,B:6/1,A:8,B:7,B:47@#32772/160,B:3/0/530048,B:5/0/5d0098,B:6/1,"
+    }
+  ]
+}

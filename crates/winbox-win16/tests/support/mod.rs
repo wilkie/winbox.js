@@ -346,6 +346,7 @@ pub const AGREEING: &[&str] = &[
     "zcbtins",
     "zmark",
     "mbseb",
+    "zhidmin",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
