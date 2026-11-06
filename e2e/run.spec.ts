@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import AxeBuilder from '@axe-core/playwright';
 import { test, expect, type Page } from '@playwright/test';
 
 /* The page for running Windows programs: archives in, programs listed, a
@@ -2879,4 +2880,132 @@ test('runs on the TypeScript engine where the Rust engine has not been built', a
   await expect(page.locator('#status')).toHaveText('Ready.');
   await expect(page.locator('#engine')).toContainText('the Rust engine is not built');
   await expect(page.getByRole('link', { name: 'Use the Rust engine' })).toBeVisible();
+});
+
+/* ---- accessibility ---- */
+
+/* The WCAG 2.1 A and AA rules axe checks, in each colour scheme: nothing of
+ * the page breaks one. Nothing is excluded: the Windows screen's canvas is an
+ * image named "The Windows screen", its host an application named "Windows
+ * desktop", and the mirror beside it USER's windows as groups, buttons and
+ * menus, which axe checks with the rest. With less motion asked for, as
+ * the page then has its colours change at once, not over a transition that
+ * axe would read halfway. */
+async function accessible(page: Page, state: string) {
+  for (const colorScheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+
+    const { violations } = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    expect(
+      violations.map((one) => ({
+        state,
+        colorScheme,
+        id: one.id,
+        nodes: one.nodes.map((node) => node.target.join(' ')),
+      }))
+    ).toEqual([]);
+  }
+}
+
+test.describe('the page, to a screen reader and the keyboard', () => {
+  test('breaks no WCAG 2.1 A or AA rule, fresh and with Windows, programs and an installer', async ({
+    page,
+  }) => {
+    test.skip(
+      !existsSync(BUNDLE) || !existsSync(STRINGS) || !existsSync(INSTLAY) || !existsSync(INSTLAYC),
+      'the asset bundle, or the strings or instlay probe, has not been made here'
+    );
+    test.slow(true, 'the TypeScript engine makes its machine slowly');
+
+    await page.goto('/run.html?engine=ts');
+    await expect(page.locator('#status')).toHaveText('Ready.');
+    await accessible(page, 'fresh');
+
+    await page.locator('#picker').setInputFiles({
+      name: 'winbox-assets.zip',
+      mimeType: 'application/zip',
+      buffer: readFileSync(BUNDLE),
+    });
+    await expect(page.locator('#windows')).toContainText('the asset bundle');
+    await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
+    await accessible(page, 'Windows');
+
+    /* A program kept, and run: the kept programs listed, the screen drawn. */
+    await page.locator('#picker').setInputFiles({
+      name: 'oracle.zip',
+      mimeType: 'application/zip',
+      buffer: archive([{ path: 'STRINGS.EXE', data: new Uint8Array(readFileSync(STRINGS)) }]),
+    });
+    await expect(page.locator('#kept-section')).toBeVisible();
+    await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
+    await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 20000 });
+    await accessible(page, 'a program kept and run');
+
+    /* What it asks before forgetting. */
+    await page.getByRole('button', { name: 'Forget oracle' }).click();
+    await expect(page.getByRole('dialog', { name: 'Forget oracle?' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeFocused();
+    await accessible(page, 'asked before forgetting');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Forget oracle' })).toBeFocused();
+
+    /* An archive with an installer: the install section. */
+    await page.locator('#picker').setInputFiles({
+      name: 'instlay.zip',
+      mimeType: 'application/zip',
+      buffer: archive([
+        { path: 'SETUP.EXE', data: new Uint8Array(readFileSync(INSTLAY)) },
+        { path: 'INSTLAYC.EXE', data: new Uint8Array(readFileSync(INSTLAYC)) },
+      ]),
+    });
+    await expect(page.locator('#install-section')).toBeVisible();
+    await accessible(page, 'an installer offered');
+  });
+
+  test('lets the keyboard leave the Windows desktop with Meta and Escape', async ({ page }) => {
+    test.skip(!existsSync(BUNDLE), 'the asset bundle has not been made here');
+
+    await page.goto('/run.html?engine=ts');
+    await expect(page.locator('#status')).toHaveText('Ready.');
+    await page.locator('#picker').setInputFiles({
+      name: 'winbox-assets.zip',
+      mimeType: 'application/zip',
+      buffer: readFileSync(BUNDLE),
+    });
+
+    const desktop = page.getByRole('application', { name: 'Windows desktop' });
+
+    await expect(desktop).toBeVisible();
+    await expect(desktop).toHaveAccessibleDescription(/To leave it, press Esc/);
+    await desktop.focus();
+
+    /* Tab and Escape are Windows' while the desktop has the keyboard. */
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Escape');
+    await expect(desktop).toBeFocused();
+
+    await page.keyboard.press('Meta+Escape');
+    await expect(page.locator('#desktop-keys')).toBeFocused();
+
+    /* From there the keyboard goes on through the page: the trace, next. */
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('region', { name: 'Functions called' })).toBeFocused();
+  });
+
+  test('skips to the Windows desktop from the top of the page', async ({ page }) => {
+    await page.goto('/run.html?engine=ts');
+    await expect(page.locator('#status')).toHaveText('Ready.');
+    await page.keyboard.press('Tab');
+
+    const skip = page.getByRole('link', { name: 'Skip to the Windows desktop' });
+
+    await expect(skip).toBeFocused();
+    await expect(skip).toBeInViewport();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#main')).toBeFocused();
+  });
 });
