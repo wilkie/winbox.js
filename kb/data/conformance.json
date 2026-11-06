@@ -29154,8 +29154,8 @@
   "functions": {
    "msg": {
     "total": 140,
-    "agreed": 129,
-    "disagreed": 11,
+    "agreed": 140,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -29174,9 +29174,7 @@
     "unsupported": 0
    }
   },
-  "gaps": {
-   "msg": "a window made visible behind a topmost window is not asked again as it is activated, 11 records"
-  }
+  "gaps": {}
  },
  "swpunc": {
   "probe": "swpunc",
@@ -32377,6 +32375,108 @@
    "place": {
     "total": 5,
     "agreed": 5,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "zactive": {
+  "probe": "zactive",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 74,
+  "functions": {
+   "answer": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "order": {
+    "total": 36,
+    "agreed": 36,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 36,
+    "agreed": 36,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "zcreate": {
+  "probe": "zcreate",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 54,
+  "functions": {
+   "order": {
+    "total": 27,
+    "agreed": 27,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 27,
+    "agreed": 27,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "zminim": {
+  "probe": "zminim",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 14,
+  "functions": {
+   "order": {
+    "total": 7,
+    "agreed": 3,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 7,
+    "agreed": 5,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "order": "an icon's title is not among the windows GetWindow walks",
+   "sent": "SW_SHOWMINIMIZED and SW_SHOWNORMAL of a window minimized and restored before tell it nothing"
+  }
+ },
+ "zorder": {
+  "probe": "zorder",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 84,
+  "functions": {
+   "order": {
+    "total": 42,
+    "agreed": 42,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "sent": {
+    "total": 42,
+    "agreed": 42,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
