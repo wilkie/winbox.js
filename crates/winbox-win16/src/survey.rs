@@ -198,6 +198,7 @@ impl Survey {
     /// marks and the made-up input set, USER's boxes answered.
     pub fn prepare(&self, system: &mut System) -> Prepared {
         system.log = Some(Vec::new());
+        system.log_from = 0;
         system.calls_until = self.calls;
 
         if let Some(marks) = &self.marks {

@@ -646,6 +646,7 @@ impl Session {
             };
 
             system.log = Some(Vec::new());
+            system.log_from = 0;
 
             if let Some((command_line, directory, show)) = item {
                 // A group's item: given its command line and show command,
@@ -714,6 +715,7 @@ impl Session {
         }
 
         system.log = Some(Vec::new());
+        system.log_from = 0;
         winbox_win16::progman::start_shell(&mut system, path)
             .map_err(|exit| format!("Program Manager's registers: {exit:?}"))?;
         drop(system);
@@ -882,18 +884,24 @@ impl Session {
     /// each, as the trace prints them, each once it is answered: one that
     /// waits -- for a message, say -- is taken when it returns, and those
     /// made meanwhile, by its task or another, are taken before it. Once
-    /// the run is over, every call is taken.
+    /// the run is over, every call is taken. Each taken is let go from the
+    /// log (`System::forget_calls`), up to the first still waiting, so
+    /// that a long run keeps only what the page has not yet read.
     pub fn take_calls(&mut self, counts: bool) -> String {
-        let system = self.engine.system();
+        let mut system = self.engine.system();
+        let from = system.log_from;
         let Some(log) = system.log.as_deref() else {
             return String::new();
         };
+        let end = from + log.len();
         let over = self.stop.is_some();
         let mut out = String::new();
         let waited = std::mem::take(&mut self.unanswered);
 
-        for at in waited.into_iter().chain(self.read..log.len()) {
-            let call = &log[at];
+        for at in waited.into_iter().chain(self.read.max(from)..end) {
+            let Some(call) = at.checked_sub(from).and_then(|index| log.get(index)) else {
+                continue;
+            };
 
             if call.answered || over {
                 out.push_str(&survey::call_line(call, counts));
@@ -903,7 +911,8 @@ impl Session {
             }
         }
 
-        self.read = log.len();
+        self.read = end;
+        system.forget_calls(self.unanswered.iter().copied().min().unwrap_or(end));
         out
     }
 

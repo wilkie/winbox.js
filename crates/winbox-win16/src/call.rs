@@ -278,7 +278,7 @@ impl System {
         self.take_call_marks();
 
         if let (Some(until), Some(log)) = (self.calls_until, self.log.as_ref())
-            && log.len() >= until
+            && self.log_from + log.len() >= until
         {
             return Err(Stop::Time);
         }
@@ -348,6 +348,7 @@ impl System {
         // another's answer comes after it, as the TypeScript engine tells
         // its watcher.
         let instructions = self.instructions;
+        let from = self.log_from;
         let logged = self.log.as_mut().map(|log| {
             log.push(Call {
                 module: module.name,
@@ -359,7 +360,7 @@ impl System {
                 instructions,
                 answered: false,
             });
-            log.len() - 1
+            from + log.len() - 1
         });
 
         // Past the `INT 80h`, to the `RETF`.
@@ -374,8 +375,8 @@ impl System {
         }
 
         if metafile.is_some() || kept {
-            if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
-                log[at].answered = true;
+            if let Some(call) = self.logged_mut(logged) {
+                call.answered = true;
             }
 
             return Ok(None);
@@ -417,6 +418,29 @@ impl System {
         }
     }
 
+    /// A logged call by its place (`log_from`), where it is still kept.
+    fn logged_mut(&mut self, logged: Option<usize>) -> Option<&mut Call> {
+        let at = logged?.checked_sub(self.log_from)?;
+
+        self.log.as_mut()?.get_mut(at)
+    }
+
+    /// The calls before `before` let go from the log's front, as a host
+    /// that has read them asks (the page's trace, which reads each once):
+    /// a run as long as a person plays makes millions of calls, which the
+    /// log would otherwise keep to its end. A call's place stays what it
+    /// was (`log_from`); one let go of is answered into nothing.
+    pub fn forget_calls(&mut self, before: usize) {
+        let from = self.log_from;
+
+        if let Some(log) = self.log.as_mut() {
+            let gone = before.saturating_sub(from).min(log.len());
+
+            log.drain(..gone);
+            self.log_from = from + gone;
+        }
+    }
+
     /// A call's answer put in the log and in AX and DX.
     pub(crate) fn finish_call(
         &mut self,
@@ -432,11 +456,11 @@ impl System {
             self.refresh_thhook();
         }
 
-        if let (Some(at), Some(log)) = (logged, self.log.as_mut()) {
-            log[at].answered = true;
+        if let Some(call) = self.logged_mut(logged) {
+            call.answered = true;
 
-            if !log[at].stub {
-                log[at].result = answer.as_ref().ok().and_then(|answer| answer.value());
+            if !call.stub {
+                call.result = answer.as_ref().ok().and_then(|answer| answer.value());
             }
         }
 

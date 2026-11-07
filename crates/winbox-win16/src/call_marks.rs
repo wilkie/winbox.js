@@ -107,7 +107,9 @@ impl System {
     /// The calls made so far, as the log has them: where nothing is
     /// logged, as many as any mark asks.
     fn calls_made(&self) -> usize {
-        self.log.as_ref().map_or(usize::MAX, Vec::len)
+        self.log
+            .as_ref()
+            .map_or(usize::MAX, |log| self.log_from + log.len())
     }
 
     /// Palette indices of the screen's as a host shows them now, the cursor

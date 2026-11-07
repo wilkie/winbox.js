@@ -142,6 +142,10 @@ pub struct System {
     /// The calls made, each as it is made, its answer when it comes; kept
     /// where this is not `None`.
     pub log: Option<Vec<Call>>,
+    /// How many calls have been let go from the log's front
+    /// (`forget_calls`): a call's place is counted from the first ever
+    /// logged, its index in `log` that less this.
+    pub log_from: usize,
     /// How many calls the run is to make, where it is to stop as the
     /// program makes the next: the corpus comparison runs as far as the
     /// TypeScript engine's run went.
@@ -561,6 +565,7 @@ impl System {
             exit_code: None,
             instructions: 0,
             log: None,
+            log_from: 0,
             calls_until: None,
             call_watch: None,
             call_marks: crate::call_marks::CallMarks::default(),
