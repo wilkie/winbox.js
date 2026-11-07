@@ -691,7 +691,11 @@ export class FAT16 extends FileSystem {
    * Returns a directory listing for the given path.
    */
   async list(path) {
-    const info = await this.open(path);
+    /* A folder's path of one empty name is the root, as DOS's file
+     * manager parses `C:\` and `C:` (`parse`), and as the Rust engine's
+     * drive lists it: a program in the root imports a library beside it,
+     * which KERNEL looks for in `C:` + `\` (`rootlib`). */
+    const info = await this.open(path.filter((part: string) => part !== ''));
     // TODO: errors for invalid/unknown path
     return await info.list();
   }
