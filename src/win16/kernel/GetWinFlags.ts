@@ -1,6 +1,7 @@
 'use strict';
 
 import { Kernel } from '../kernel.js';
+import type { WindowsMode } from '../../emulator/machine.js';
 
 /**
  * The **GetWinFlags** function retrieves the current system and memory
@@ -30,18 +31,23 @@ import { Kernel } from '../kernel.js';
  *                        memory configuration.
  */
 export function GetWinFlags(this: any) {
-  return winFlags(this?.machine?.coprocessor !== false);
+  return winFlags(this?.machine?.coprocessor !== false, this?.machine?.mode ?? 'standard');
 }
 
 /**
  * The flags, as `GetWinFlags` answers them and KERNEL exports them as
- * `__WINFLAGS`. **Recorded** by `winflags`: 419h, the Windows the
- * recordings are made on -- protected mode, standard mode, a 486, and a
- * coprocessor, which DOSBox provides. The coprocessor's bit follows the
- * machine's.
+ * `__WINFLAGS`. **Recorded** by `winflags`: 419h in standard mode, the
+ * Windows the recordings are made on -- protected mode, standard mode, a
+ * 486, and a coprocessor, which DOSBox provides; and C29h in 386 enhanced
+ * mode (`enhanced/winflags`, `enhanced/dpmiver`) -- protected mode,
+ * enhanced mode, a 486, a coprocessor and paging. KERNEL sets
+ * `WF_PMODE|WF_ENHANCED` or `WF_PMODE|WF_STANDARD` by what INT 2Fh 1600h
+ * answers as it starts (`KRNL386.EXE` seg1 `aa76`-`aa90`). The
+ * coprocessor's bit follows the machine's.
  */
-export function winFlags(coprocessor: boolean) {
-  return (
-    Kernel.WF_PMODE | Kernel.WF_STANDARD | Kernel.WF_CPU486 | (coprocessor ? Kernel.WF_80x87 : 0)
-  );
+export function winFlags(coprocessor: boolean, mode: WindowsMode = 'standard') {
+  const modeFlags =
+    mode === 'enhanced' ? Kernel.WF_ENHANCED | Kernel.WF_PAGING : Kernel.WF_STANDARD;
+
+  return Kernel.WF_PMODE | modeFlags | Kernel.WF_CPU486 | (coprocessor ? Kernel.WF_80x87 : 0);
 }

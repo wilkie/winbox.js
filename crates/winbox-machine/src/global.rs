@@ -77,6 +77,48 @@ pub const LARGEST: u32 = 0x00e3_4000;
 /// `GlobalCompact(0)` there: the largest block less 64 KiB.
 pub const COMPACT: u32 = 0x00e2_4000;
 
+/// How much memory the machine has to give, as a program first asks: the
+/// three figures of [`MOST`]'s model, which differ by the mode Windows runs
+/// in.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Figures {
+    /// `GetFreeSpace(0)`.
+    pub free: u32,
+    /// The largest block there is.
+    pub largest: u32,
+    /// `GlobalCompact(0)`'s figure, before `3fde` makes it no more than
+    /// [`MOST`].
+    pub compact: u32,
+}
+
+impl Figures {
+    /// Standard mode's: [`FREE`], [`LARGEST`] and [`COMPACT`].
+    pub const STANDARD: Self = Self {
+        free: FREE,
+        largest: LARGEST,
+        compact: COMPACT,
+    };
+
+    /// 386 enhanced mode's, where WIN386 gives KERNEL virtual memory, its
+    /// swap file's pages with the machine's. **Recorded** by `galimit` in
+    /// enhanced mode (`enhanced/galimit`): `GetFreeSpace(0)` 38F5C60h;
+    /// `GlobalCompact(0)` `FF0000h` and the largest block `FF0000h`, the limit
+    /// itself, where standard mode's machine runs out first. What lies
+    /// past the limit is not seen through these calls; the largest free
+    /// block DPMI 0500h names, 3868000h (`enhmode`), stands for it
+    /// (inferred), `GlobalCompact`'s 64 KiB less as in standard mode. The
+    /// 1000h more the first block of `FE0000h` moveable costs, and keeps, is
+    /// KERNEL growing its descriptor table, which it does in enhanced mode
+    /// alone as its free selectors fall under 100h (`KRNL386.EXE` seg1
+    /// `1ed4`-`1f0d`), and is not followed: WinBox's selectors are not
+    /// KERNEL's. As `memory-model.ts`'s.
+    pub const ENHANCED: Self = Self {
+        free: 0x038f_5c60,
+        largest: 0x0386_8000,
+        compact: 0x0386_8000 - 0x0001_0000,
+    };
+}
+
 /// Whether a size passes `0c7c`: rounded up to 16 bytes without carrying
 /// past 32 bits, no more than [`MOST`].
 pub fn within_limit(size: u32) -> bool {
@@ -206,20 +248,21 @@ impl GlobalHeap {
             .map_or(0, |baseline| self.held as i64 - baseline as i64)
     }
 
-    /// `GetFreeSpace`'s answer.
-    pub fn free_space(&self) -> u32 {
-        (i64::from(FREE) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
+    /// `GetFreeSpace`'s answer, on a machine with `figures`.
+    pub fn free_space(&self, figures: Figures) -> u32 {
+        (i64::from(figures.free) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
     }
 
-    /// The largest block that can be given.
-    pub fn largest_block(&self) -> u32 {
-        (i64::from(LARGEST) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
+    /// The largest block that can be given, on a machine with `figures`.
+    pub fn largest_block(&self, figures: Figures) -> u32 {
+        (i64::from(figures.largest) - self.taken()).clamp(0, i64::from(u32::MAX)) as u32
     }
 
-    /// `GlobalCompact`'s answer, which goes through `3fde` and so is never
-    /// more than [`MOST`] (`KRNL386.EXE` seg1 `1105`-`111d`).
-    pub fn compact_answer(&self) -> u32 {
-        (i64::from(COMPACT) - self.taken()).clamp(0, i64::from(MOST)) as u32
+    /// `GlobalCompact`'s answer, on a machine with `figures`, which goes
+    /// through `3fde` and so is never more than [`MOST`] (`KRNL386.EXE`
+    /// seg1 `1105`-`111d`).
+    pub fn compact_answer(&self, figures: Figures) -> u32 {
+        (i64::from(figures.compact) - self.taken()).clamp(0, i64::from(MOST)) as u32
     }
 
     pub fn block(&self, index: usize) -> Option<&Block> {
@@ -434,18 +477,27 @@ mod tests {
             .unwrap();
 
         heap.settle();
-        assert_eq!(heap.free_space(), FREE);
+        assert_eq!(heap.free_space(Figures::STANDARD), FREE);
 
         let block = heap
             .allocate(&mut memory, &mut descriptors, 0x0010_0001, 2)
             .unwrap();
 
-        assert_eq!(heap.free_space(), FREE - 0x0010_1000);
-        assert_eq!(heap.largest_block(), LARGEST - 0x0010_1000);
-        assert_eq!(heap.compact_answer(), COMPACT - 0x0010_1000);
+        assert_eq!(heap.free_space(Figures::STANDARD), FREE - 0x0010_1000);
+        assert_eq!(heap.largest_block(Figures::STANDARD), LARGEST - 0x0010_1000);
+        assert_eq!(
+            heap.compact_answer(Figures::STANDARD),
+            COMPACT - 0x0010_1000
+        );
+        // In enhanced mode, the limit: `GlobalCompact` no more than it.
+        assert_eq!(heap.compact_answer(Figures::ENHANCED), MOST);
+        assert_eq!(
+            heap.free_space(Figures::ENHANCED),
+            0x038f_5c60 - 0x0010_1000
+        );
         heap.free(&mut memory, &mut descriptors, block);
         heap.free(&mut memory, &mut descriptors, before);
-        assert_eq!(heap.free_space(), FREE + 0x100);
+        assert_eq!(heap.free_space(Figures::STANDARD), FREE + 0x100);
     }
 
     #[test]

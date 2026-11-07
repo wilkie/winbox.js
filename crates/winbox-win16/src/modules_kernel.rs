@@ -454,7 +454,7 @@ fn kept_proc(system: &mut System, kept: usize, name: &Name) -> u32 {
     }
 
     if module.name == "KERNEL"
-        && let Some(constant) = kernel_constant(ordinal, system.coprocessor)
+        && let Some(constant) = kernel_constant(ordinal, system.win_flags())
     {
         return u32::from(crate::linker::CONSTANT_SEGMENT) << 16 | u32::from(constant);
     }

@@ -22,6 +22,16 @@ const SLICE: u64 = 500;
 const DPMI_VERSION: u16 = 0x005a;
 /// DOSX's flags for 0400h: bit 0, a 32-bit host, clear.
 const DPMI_FLAGS: u16 = 0x000a;
+/// What 386 enhanced mode's host, WIN386, answers in BX for 0400h: bit 0
+/// a 32-bit host and bit 2 virtual memory. **Recorded** by `dpmiver` in
+/// enhanced mode (`enhanced/dpmiver`). As `dpmi.ts`.
+const DPMI_FLAGS_ENHANCED: u16 = 0x0005;
+/// INT 2Fh 1600h's AX in 386 enhanced mode: AL 3, AH 0Ah, Windows 3.10
+/// (`dpmiver`). As `dos.ts`.
+const WINDOWS_VERSION: u16 = 0x0a03;
+/// INT 2Fh 1683h's BX in 386 enhanced mode: the system virtual machine's
+/// number (`enhmode`). As `dos.ts`.
+const SYSTEM_VIRTUAL_MACHINE: u16 = 1;
 /// The processor 0400h names in CL: an i486.
 const DPMI_PROCESSOR: u16 = 4;
 /// The interrupt controllers' bases 0400h gives in DH and DL.
@@ -289,8 +299,21 @@ impl System {
     ///   BX `ADADh`.
     /// * 150Ch, MSCDEX's version: BX 0217h, 2.23.
     ///
+    /// And Windows' own, as the DPMI host answers them to a Windows
+    /// program, **recorded** by `dpmiver` and `enhmode` in both modes:
+    ///
+    /// * 1600h, the enhanced-mode check: AX 0A03h, Windows 3.10, in 386
+    ///   enhanced mode, which KERNEL reads as it starts (`KRNL386.EXE` seg1
+    ///   `aa76`-`aa90`, AL 3); left as it was in standard mode.
+    /// * 1683h, the current virtual machine: AX 1600h and BX 1, the system
+    ///   virtual machine, in enhanced mode; left in standard mode.
+    /// * 1686h, the processor's mode: AX nought, protected mode, in both.
+    ///
+    /// 1684h, a device's entry point, is left, ES:DI as it was: WinBox has
+    /// none of WIN386's devices. 160Ah is not answered in either mode.
+    ///
     /// Any other function changes nothing: no other resident program is
-    /// here to answer.
+    /// here to answer. As `dos.ts`'s `multiplexInterrupt`.
     fn multiplex_interrupt(&mut self) {
         use winbox_cpu::{AX, BX, CX};
 
@@ -326,6 +349,12 @@ impl System {
                 self.cpu.regs[BX] = 0xadad;
             }
             0x150c => self.cpu.regs[BX] = 0x0217,
+            0x1600 if self.mode == crate::Mode::Enhanced => self.cpu.regs[AX] = WINDOWS_VERSION,
+            0x1683 if self.mode == crate::Mode::Enhanced => {
+                self.cpu.regs[AX] = 0x1600;
+                self.cpu.regs[BX] = SYSTEM_VIRTUAL_MACHINE;
+            }
+            0x1686 => self.cpu.regs[AX] = 0,
             _ => {}
         }
     }
@@ -363,7 +392,10 @@ impl System {
         // 0400h, Get Version, as DOSX answers it (`DPMI_VERSION`); CH left.
         if function == 0x0400 {
             self.cpu.regs[winbox_cpu::AX] = DPMI_VERSION;
-            self.cpu.regs[winbox_cpu::BX] = DPMI_FLAGS;
+            self.cpu.regs[winbox_cpu::BX] = match self.mode {
+                crate::Mode::Standard => DPMI_FLAGS,
+                crate::Mode::Enhanced => DPMI_FLAGS_ENHANCED,
+            };
             self.cpu.regs[winbox_cpu::CX] = self.cpu.regs[winbox_cpu::CX] & 0xff00 | DPMI_PROCESSOR;
             self.cpu.regs[winbox_cpu::DX] = DPMI_PIC_BASES;
             self.cpu.flags &= !1;

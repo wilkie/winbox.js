@@ -15,7 +15,7 @@ import { exportedConstant } from '../../src/win16/linker.js';
 import { PROBES, imageFor, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
 import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
-import { Machine } from '../../src/emulator/machine.js';
+import { Machine, type WindowsMode } from '../../src/emulator/machine.js';
 import { FontManager } from '../../src/win16/font-manager.js';
 import { HandleManager } from '../../src/win16/handle-manager.js';
 import { Surface } from '../../src/raster/surface.js';
@@ -757,7 +757,9 @@ export interface Fixture {
   probe: string;
   /** The display driver it was recorded against, for probes that depend on one. */
   display?: string;
-  source: { windows: string };
+  source: { windows: string; mode?: WindowsMode };
+  /** The mode Windows ran in as it was recorded: standard, unless it was made in `enhanced/`. */
+  mode?: WindowsMode;
   records: { function: string; args: string; result: string; section?: string }[];
   /** The fixture's file name without `.json`, which is unique where probe and display may not be. */
   file: string;
@@ -849,8 +851,8 @@ export class Context {
   /** Time does not pass in a replay: on its clock every timer is due when asked. See `queue.ts`. */
   virtualClock = true;
 
-  constructor(display = 'vga') {
-    this.machine = new Machine();
+  constructor(display = 'vga', mode: WindowsMode = 'standard') {
+    this.machine = new Machine({ mode });
     this.next = 0x100;
 
     /* Which driver we are answering as. A capability fixture is meaningless
@@ -3083,8 +3085,8 @@ const ADAPTERS: Record<
     }
 
     return name === 'GetWinFlags'
-      ? (GetWinFlags() >>> 0).toString(16).padStart(8, '0')
-      : (exportedConstant('KERNEL', 178) ?? 0).toString(16).padStart(4, '0');
+      ? (GetWinFlags.call(context) >>> 0).toString(16).padStart(8, '0')
+      : (exportedConstant('KERNEL', 178, context.machine) ?? 0).toString(16).padStart(4, '0');
   },
 
   /** `spooljob`: the bytes `GetSpoolJob`'s option 14h wrote. */
@@ -5647,6 +5649,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * others differ by a pixel. */
   'prttslt:EngineGetGlyphBmp': "the corner and box of a glyph GDI's engine slants",
   'prttslt:row': "a pixel or a column of a glyph GDI's engine slants",
+  /* `enhmode` calls DPMI's functions with harmless arguments, in both modes
+   * (`kb/guides/enhanced-mode.md`, "The DPMI host"): WinBox answers 000Bh,
+   * 000Ch and 0400h, and leaves the rest as they came, where DOSX and
+   * WIN386 answer, refuse or do nothing each as they do -- phase 3. */
+  'enhmode:dpmi': "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
+  'enhmode:free': "DPMI 0500h's figures, which are phase 3's",
+  /* Its `kernel` records: a code and a data segment's limits, which are
+   * the segments' sizes under Windows and FFFFh in WinBox; and
+   * `GetFreeSpace`, which tells every program what `galimit` was told
+   * (`kb/topics/global-and-local-memory.md`, "How much there is"). */
+  'enhmode:kernel': "a segment's limit, and GetFreeSpace less the program's own segments",
+  /* In enhanced mode, INT 2Fh 1684h gives an entry point for ten of WIN386's
+   * devices; WinBox has none of them yet, and answers none for each. */
+  'enhanced/enhmode:vxd': "WIN386's devices' entry points, which WinBox has none of",
 };
 
 /**
@@ -6091,6 +6107,7 @@ const RUN_WHOLE = new Set<string>([
   'pmitem',
   'rootlib',
   'dpmiver',
+  'enhmode',
 ]);
 
 /**
@@ -6257,8 +6274,13 @@ const wholeRuns = new Map<string, Promise<Map<string, string[]> | null>>();
  * in order; null when it cannot run here. `btnclick` writes `step(radio,4,up)`
  * twice, the click and the release after the double click.
  */
-function wholeRun(probe: string, display = 'vga', ini: string | null = null) {
-  const key = `${display === 'vga' ? probe : `${probe}-${display}`}${ini ? `+${ini}` : ''}`;
+function wholeRun(
+  probe: string,
+  display = 'vga',
+  ini: string | null = null,
+  mode: WindowsMode = 'standard'
+) {
+  const key = `${mode === 'enhanced' ? 'enhanced/' : ''}${display === 'vga' ? probe : `${probe}-${display}`}${ini ? `+${ini}` : ''}`;
 
   if (!wholeRuns.has(key)) {
     wholeRuns.set(
@@ -6276,6 +6298,7 @@ function wholeRun(probe: string, display = 'vga', ini: string | null = null) {
           display,
           virtual: VIRTUAL_CLOCK.has(probe),
           iniPreset: ini,
+          mode,
         });
         const written = new Map<string, string[]>();
 
@@ -6306,7 +6329,8 @@ export async function replayRecord(
   display = 'vga',
   probe = '',
   occurrence = 0,
-  ini: string | null = null
+  ini: string | null = null,
+  mode: WindowsMode = 'standard'
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
@@ -6331,9 +6355,9 @@ export async function replayRecord(
      * vga256`, a probe recorded only there. */
     const written =
       display === 'vga' || display === 'vgaprint'
-        ? await wholeRun(probe, 'vga', ini)
+        ? await wholeRun(probe, 'vga', ini, mode)
         : display === 'vga256' || ON_THEIR_DISPLAYS.has(probe)
-          ? await wholeRun(probe, display)
+          ? await wholeRun(probe, display, null, mode)
           : null;
 
     if (!written) {
@@ -6357,7 +6381,7 @@ export async function replayRecord(
   let actual: string;
 
   try {
-    const context = new Context(display);
+    const context = new Context(display, mode);
 
     context.probe = probe;
     actual = await adapter(context, parseArgs(record.args));
@@ -6413,7 +6437,8 @@ export async function replayFixture(fixture: Fixture) {
         fixture.display ?? 'vga',
         fixture.probe,
         occurrence,
-        (fixture as any).source?.ini ?? null
+        (fixture as any).source?.ini ?? null,
+        fixture.mode ?? 'standard'
       )
     );
   }
@@ -6447,21 +6472,65 @@ export async function replayFixture(fixture: Fixture) {
   return { replayed, summary };
 }
 
+/**
+ * The recordings made in 386 enhanced mode (`oracle/fixtures/enhanced/`,
+ * `record.mjs --mode enhanced`) that are replayed, each on a machine in
+ * that mode, by the name of its file there: those whose answers follow the
+ * mode as far as the engines have followed it (`kb/guides/enhanced-mode.md`,
+ * phases 1 and 2). The rest wait for the phase that makes them agree:
+ * `kconst` and `galimit` agree but for the order of the first megabyte's
+ * selectors and the 1000h KERNEL's descriptor table grows by, which would
+ * count against the knowledge base's pages measured in standard mode, until
+ * the knowledge base tells the two modes' records apart. Each
+ * is held to its records as a standard-mode fixture is -- `RUN_WHOLE` by its
+ * probe's name, and `KNOWN_GAPS` by `enhanced/<probe>:<function>` before
+ * `<probe>:<function>`. As the Rust engine's `AGREEING`, which names them
+ * `enhanced/<name>`.
+ */
+export const ENHANCED = new Set(['winflags', 'dpmiver', 'about', 'enhmode', 'freemem']);
+
+/**
+ * The known gap of a fixture's function, where it has one: by the fixture's
+ * mode, its probe and display, its probe, or the function alone.
+ */
+export function gapOf(fixture: Pick<Fixture, 'probe' | 'display' | 'mode'>, name: string) {
+  const prefix = fixture.mode === 'enhanced' ? 'enhanced/' : '';
+
+  return (
+    (prefix ? KNOWN_GAPS[`${prefix}${fixture.probe}:${name}`] : undefined) ??
+    KNOWN_GAPS[`${fixture.probe}-${fixture.display}:${name}`] ??
+    KNOWN_GAPS[`${fixture.probe}:${name}`] ??
+    KNOWN_GAPS[name]
+  );
+}
+
 /** Every fixture the recorder has produced. */
 export function loadFixtures(): Fixture[] {
   if (!existsSync(FIXTURES)) {
     return [];
   }
 
-  /* Only the top level. `fabricated/` holds recordings made against fonts
-   * nobody has, which exist to answer a question about the interpreter and
-   * would be nonsense to compare against the fonts we do have.
+  /* The top level, and the recordings in 386 enhanced mode `ENHANCED`
+   * names. `fabricated/` holds recordings made against fonts nobody has,
+   * which exist to answer a question about the interpreter and would be
+   * nonsense to compare against the fonts we do have.
    */
-  return readdirSync(FIXTURES)
+  const standard = readdirSync(FIXTURES)
     .filter((name) => name.endsWith('.json'))
     .sort()
     .map((name) => ({
       ...JSON.parse(readFileSync(join(FIXTURES, name), 'utf8')),
       file: name.replace(/\.json$/, ''),
+      mode: 'standard' as const,
     }));
+  const enhanced = [...ENHANCED]
+    .sort()
+    .filter((name) => existsSync(join(FIXTURES, 'enhanced', `${name}.json`)))
+    .map((name) => ({
+      ...JSON.parse(readFileSync(join(FIXTURES, 'enhanced', `${name}.json`), 'utf8')),
+      file: `enhanced/${name}`,
+      mode: 'enhanced' as const,
+    }));
+
+  return [...standard, ...enhanced];
 }

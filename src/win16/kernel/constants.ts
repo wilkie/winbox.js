@@ -2,6 +2,16 @@
 
 import { firstMegabyteSelector } from '../global-allocator.js';
 import { winFlags } from './GetWinFlags.js';
+import type { WindowsMode } from '../../emulator/machine.js';
+
+/** What of the machine a constant may depend on: `__WINFLAGS`, its coprocessor and mode. */
+export interface ConstantMachine {
+  coprocessor: boolean;
+  mode: WindowsMode;
+}
+
+/** A machine as the recordings' is by default: a coprocessor, standard mode. */
+export const DEFAULT_MACHINE: ConstantMachine = { coprocessor: true, mode: 'standard' };
 
 /**
  * An export that is a number rather than a function: an entry of segment
@@ -11,7 +21,7 @@ import { winFlags } from './GetWinFlags.js';
  * one of these in place of the function that answers a call.
  */
 export class ExportedConstant {
-  constructor(readonly value: (coprocessor: boolean) => number) {}
+  constructor(readonly value: (machine: ConstantMachine) => number) {}
 }
 
 /** The segment KERNEL answers a constant in, with the number below it. */
@@ -34,7 +44,7 @@ export const KERNEL_CONSTANTS: Record<number, ExportedConstant> = {
   114: new ExportedConstant(() => 8),
   173: selector(0xf000),
   174: selector(0xa000),
-  178: new ExportedConstant((coprocessor) => winFlags(coprocessor) & 0xffff),
+  178: new ExportedConstant(({ coprocessor, mode }) => winFlags(coprocessor, mode) & 0xffff),
   179: selector(0xd000),
   181: selector(0xb000),
   182: selector(0xb800),

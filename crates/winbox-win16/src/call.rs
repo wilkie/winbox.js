@@ -650,7 +650,7 @@ mod tests {
                         })
                         && !(kept.name == "KERNEL"
                             && u16::try_from(*ordinal).is_ok_and(|ordinal| {
-                                crate::linker::kernel_constant(ordinal, true).is_some()
+                                crate::linker::kernel_constant(ordinal, 0).is_some()
                             }))
                 })
                 .map(|(_, export)| export.name)

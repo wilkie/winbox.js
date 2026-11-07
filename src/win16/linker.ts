@@ -2,7 +2,14 @@
 
 import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
-import { CONSTANT_SEGMENT, ExportedConstant, KERNEL_CONSTANTS } from './kernel/constants.js';
+import {
+  CONSTANT_SEGMENT,
+  type ConstantMachine,
+  DEFAULT_MACHINE,
+  ExportedConstant,
+  KERNEL_CONSTANTS,
+} from './kernel/constants.js';
+import type { WindowsMode } from '../emulator/machine.js';
 import { redirect } from './own-modules.js';
 import { UNDEF_DYNLINK_ORDINAL } from './kernel/internals.js';
 
@@ -44,8 +51,12 @@ const OS_FIXUPS: Record<number, { without: [number, number]; with: [number, numb
 };
 
 /** A number a module exports rather than a function, by its ordinal: undefined for none. */
-export function exportedConstant(module: string, ordinal: number, coprocessor = true) {
-  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.value(coprocessor);
+export function exportedConstant(
+  module: string,
+  ordinal: number,
+  machine: ConstantMachine = DEFAULT_MACHINE
+) {
+  return CONSTANTS[String(module).toUpperCase()]?.[ordinal]?.value(machine);
 }
 
 /**
@@ -83,11 +94,14 @@ export class Linker {
   declare _exports: Map<string, any[]>;
   /** Whether the machine has a coprocessor: what `__WINFLAGS` says, and which OS fixups apply. */
   declare coprocessor: boolean;
+  /** The mode Windows runs in: what `__WINFLAGS` says of it. */
+  declare mode: WindowsMode;
 
-  constructor(memory, modules, options: { coprocessor?: boolean } = {}) {
+  constructor(memory, modules, options: { coprocessor?: boolean; mode?: WindowsMode } = {}) {
     this._memory = memory;
     this._modules = modules;
     this.coprocessor = options.coprocessor ?? true;
+    this.mode = options.mode ?? 'standard';
   }
 
   get memory() {
@@ -158,7 +172,7 @@ export class Linker {
              * number at an offset, FFFFh at a selector, both for a far
              * pointer, and the number's low byte added at a byte, always
              * where it is (seg1 `74b9`). */
-            const value = constant.value(this.coprocessor) & 0xffff;
+            const value = constant.value(this) & 0xffff;
 
             if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
               this.writeRelocation16(relocation, segmentIndex, value);

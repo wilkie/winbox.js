@@ -10,7 +10,7 @@ import { FAT16 } from '../../src/file-systems/fat16.js';
 import { FATImage } from '../../src/file-systems/fat-image.js';
 import { ISO9660 } from '../../src/file-systems/iso9660.js';
 import { Executable } from '../../src/executable.js';
-import { Machine } from '../../src/emulator/machine.js';
+import { Machine, type WindowsMode } from '../../src/emulator/machine.js';
 import { FAITHFUL_INSTRUCTIONS_PER_MS } from '../../src/emulator/clock.js';
 import { Win16 } from '../../src/win16.js';
 import { startShell } from '../../src/win16/progman/main.js';
@@ -407,6 +407,9 @@ export async function runProbe(
      * the corpus on its CD-ROM, `{ letter: 'D', path, kind: 'iso' }`, as
      * the recorder mounts the corpus entry's `mounts` with `imgmount`. */
     mounts = [] as { letter: string; path: string; kind: 'floppy' | 'iso' | 'hdd' }[],
+    /* The mode Windows runs in: standard, as the recordings are made unless
+     * they are in `oracle/fixtures/enhanced/`. */
+    mode = 'standard' as WindowsMode,
   } = {}
 ) {
   /* On a virtual clock, time is the instructions run (`clock.ts`), from a
@@ -416,6 +419,7 @@ export async function runProbe(
   const machine = new Machine(
     virtual
       ? {
+          mode,
           clock: {
             virtual: true,
             epoch: new Date(1992, 3, 6, 9, 0, 0).getTime(),
@@ -428,7 +432,7 @@ export async function runProbe(
             measuredCalls: faithful || process.env.WINBOX_CLOCK_CALLS === 'measured',
           },
         }
-      : {}
+      : { mode }
   );
   const clock = machine.clock;
   const calls: any[] = [];

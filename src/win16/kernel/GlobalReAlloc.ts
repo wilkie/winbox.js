@@ -4,7 +4,7 @@ import { handleFor, indexFor, selectorFor } from '../selectors.js';
 import { NULL } from '../consts.js';
 import { isMoveable, locksOf } from './locks.js';
 import { blockSize } from '../allocator.js';
-import { largestBlock, withinLimit } from './memory-model.js';
+import { largestBlock, MOST_MOVED_SELECTORS, withinLimit } from './memory-model.js';
 
 /**
  * The **GlobalReAlloc** function changes the size or attributes of a global
@@ -65,7 +65,10 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
 
   /* More than FF0000h is never given (`0c7c`), and a block grown needs room:
    * all of its new size where it moves to more selectors, what it grows by
-   * where it stays. See `memory-model.ts`; recorded by `galimit`. */
+   * where it stays. See `memory-model.ts`; recorded by `galimit`. One that
+   * moves takes its selectors from `20a8`, which gives no more than FEh
+   * (`40f9`): **recorded** by `galimit` in enhanced mode, where there is
+   * room for it, FE0000h given and FF0000h refused. */
   if (!withinLimit(cbNewSize)) {
     return NULL;
   }
@@ -78,6 +81,10 @@ export function GlobalReAlloc(hglb, cbNewSize, fuAlloc) {
       const moves = Math.max(1, Math.ceil(size / 0x10000)) > object.selectors;
 
       if ((moves ? size : size - object.size) > largestBlock(this)) {
+        return NULL;
+      }
+
+      if (moves && Math.ceil(size / 0x10000) > MOST_MOVED_SELECTORS) {
         return NULL;
       }
     }

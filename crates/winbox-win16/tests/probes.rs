@@ -127,14 +127,26 @@ fn survey() {
     let mut ahead = Vec::new();
     let mut stops = std::collections::BTreeMap::<String, Vec<String>>::new();
 
-    for entry in std::fs::read_dir(root().join("oracle/fixtures"))
-        .unwrap()
-        .flatten()
-    {
-        let file = entry.file_name().to_string_lossy().into_owned();
-        let Some(name) = file.strip_suffix(".json") else {
+    // The recordings at the top level, standard mode's, and those made in
+    // 386 enhanced mode, by their folder's name (`support::ENHANCED`).
+    let mut names = Vec::new();
+
+    for folder in ["", support::ENHANCED] {
+        let Ok(entries) = std::fs::read_dir(root().join("oracle/fixtures").join(folder)) else {
             continue;
         };
+
+        for entry in entries.flatten() {
+            let file = entry.file_name().to_string_lossy().into_owned();
+
+            if let Some(name) = file.strip_suffix(".json") {
+                names.push(format!("{folder}{name}"));
+            }
+        }
+    }
+
+    for name in &names {
+        let name = name.as_str();
         let Some(recorded) = recorded(name) else {
             continue;
         };

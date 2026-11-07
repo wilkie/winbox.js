@@ -47,7 +47,10 @@ export function GetProcAddress(hinst, lpszProcName) {
 
   /* A number rather than a function -- `__WINFLAGS`, `__AHINCR` -- is its
    * own value, with FFFFh above it (`KRNL386.EXE` seg1 `502c`; `kconst`). */
-  const constant = exportedConstant(module.name, ordinal, this.machine?.coprocessor !== false);
+  const constant = exportedConstant(module.name, ordinal, {
+    coprocessor: this.machine?.coprocessor !== false,
+    mode: this.machine?.mode ?? 'standard',
+  });
 
   if (constant !== undefined) {
     return ((CONSTANT_SEGMENT << 16) | (constant & 0xffff)) >>> 0;

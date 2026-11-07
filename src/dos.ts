@@ -5,6 +5,12 @@ import { SyscallManager } from './dos/syscall-manager.js';
 import { DPMI } from './dos/dpmi.js';
 import { isCompactDisc } from './dos/syscall/ioctl.js';
 
+/** INT 2Fh 1600h's AX in 386 enhanced mode: AL 3, AH 0Ah, Windows 3.10 (`dpmiver`). */
+export const WINDOWS_VERSION = 0x0a03;
+
+/** INT 2Fh 1683h's BX in 386 enhanced mode: the system virtual machine's number (`enhmode`). */
+export const SYSTEM_VIRTUAL_MACHINE = 1;
+
 /**
  * This represents the DOS 16-bit Operating System emulation.
  */
@@ -74,6 +80,19 @@ export class DOS {
    *   ADADh.
    * * 150Ch, MSCDEX's version: BX 0217h, 2.23.
    *
+   * And Windows' own, as the DPMI host answers them to a Windows program,
+   * **recorded** by `dpmiver` and `enhmode` in both modes:
+   *
+   * * 1600h, the enhanced-mode check: AX 0A03h, Windows 3.10, in 386
+   *   enhanced mode, which KERNEL reads as it starts (`KRNL386.EXE` seg1
+   *   `aa76`-`aa90`, AL 3); left as it was in standard mode.
+   * * 1683h, the current virtual machine: AX 1600h and BX 1, the system
+   *   virtual machine, in enhanced mode; left in standard mode.
+   * * 1686h, the processor's mode: AX nought, protected mode, in both.
+   *
+   * 1684h, a device's entry point, is left, ES:DI as it was: WinBox has
+   * none of WIN386's devices. 160Ah is not answered in either mode.
+   *
    * Any other function changes nothing: no other resident program is here
    * to answer.
    */
@@ -102,6 +121,13 @@ export class DOS {
       core.bx = 0xadad;
     } else if (core.ax === 0x150c) {
       core.bx = 0x0217;
+    } else if (core.ax === 0x1600 && this._machine.mode === 'enhanced') {
+      core.ax = WINDOWS_VERSION;
+    } else if (core.ax === 0x1683 && this._machine.mode === 'enhanced') {
+      core.ax = 0x1600;
+      core.bx = SYSTEM_VIRTUAL_MACHINE;
+    } else if (core.ax === 0x1686) {
+      core.ax = 0;
     }
 
     return true;

@@ -16,6 +16,14 @@ import { I386 } from '../emulator/core/i386.js';
  */
 export const DPMI_VERSION = 0x005a;
 export const DPMI_FLAGS = 0x000a;
+
+/**
+ * What 386 enhanced mode's host, WIN386, answers in BX for 0400h: 0005h,
+ * bit 0 a 32-bit host and bit 2 virtual memory, where DOSX answers 000Ah;
+ * AX, CL and DX as DOSX's, CH left. **Recorded** by `dpmiver` in
+ * enhanced mode (`enhanced/dpmiver`).
+ */
+export const DPMI_FLAGS_ENHANCED = 0x0005;
 export const DPMI_PROCESSOR = 4;
 export const DPMI_PIC_BASES = 0x0870;
 
@@ -153,7 +161,7 @@ export class DPMI {
 
     if (core.ax === 0x0400) {
       core.ax = DPMI_VERSION;
-      core.bx = DPMI_FLAGS;
+      core.bx = this._machine.mode === 'enhanced' ? DPMI_FLAGS_ENHANCED : DPMI_FLAGS;
       core.cl = DPMI_PROCESSOR;
       core.dx = DPMI_PIC_BASES;
       core.flags.carry = false;

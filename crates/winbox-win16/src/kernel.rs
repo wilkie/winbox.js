@@ -632,12 +632,41 @@ fn lstrlen(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     Ok(Answer::Word(system.read_string(string).len() as u16))
 }
 
-/// Standard mode, a 486, and the coprocessor's bit as the machine has one:
-/// `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87`.
+/// `GetWinFlags`: `System::win_flags`.
 pub(crate) fn get_win_flags(system: &mut System, _: &mut Args) -> Result<Answer, Stop> {
-    let coprocessor = if system.coprocessor { 0x0400 } else { 0 };
+    Ok(Answer::Dword(u32::from(system.win_flags())))
+}
 
-    Ok(Answer::Dword(0x0001 | 0x0010 | 0x0008 | coprocessor))
+impl System {
+    /// The flags, as `GetWinFlags` answers them and KERNEL exports them as
+    /// `__WINFLAGS`. **Recorded** by `winflags`: 419h in standard mode --
+    /// `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87` -- and C29h in
+    /// 386 enhanced mode (`enhanced/winflags`, `enhanced/dpmiver`) --
+    /// `WF_PMODE`, `WF_ENHANCED`, `WF_CPU486`, `WF_80x87`, `WF_PAGING`.
+    /// KERNEL sets `WF_PMODE|WF_ENHANCED` or `WF_PMODE|WF_STANDARD` by what
+    /// INT 2Fh 1600h answers as it starts (`KRNL386.EXE` seg1
+    /// `aa76`-`aa90`). The coprocessor's bit follows the machine's. As
+    /// `GetWinFlags.ts`'s `winFlags`.
+    #[must_use]
+    pub fn win_flags(&self) -> u16 {
+        let mode = match self.mode {
+            crate::Mode::Standard => 0x0010,
+            crate::Mode::Enhanced => 0x0020 | 0x0800,
+        };
+        let coprocessor = if self.coprocessor { 0x0400 } else { 0 };
+
+        0x0001 | mode | 0x0008 | coprocessor
+    }
+
+    /// How much memory the machine has to give, by its mode
+    /// (`winbox_machine::Figures`).
+    #[must_use]
+    pub fn memory_figures(&self) -> winbox_machine::Figures {
+        match self.mode {
+            crate::Mode::Standard => winbox_machine::Figures::STANDARD,
+            crate::Mode::Enhanced => winbox_machine::Figures::ENHANCED,
+        }
+    }
 }
 
 /// A directory's path copied where it fits with its nought: its length;

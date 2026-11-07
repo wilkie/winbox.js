@@ -49,12 +49,12 @@ fn os_fixup(kind: u16, coprocessor: bool) -> Option<(u16, u16)> {
 /// answers; and the selectors KERNEL makes for the first megabyte's fixed
 /// places, the file's paragraphs (`kconst`; `first_megabyte_selector`).
 /// As `kernel/constants.ts`'s.
-pub(crate) fn kernel_constant(ordinal: u16, coprocessor: bool) -> Option<u16> {
+pub(crate) fn kernel_constant(ordinal: u16, win_flags: u16) -> Option<u16> {
     let paragraph = match ordinal {
         113 => return Some(3),
         114 => return Some(8),
-        // WF_PMODE, WF_STANDARD, WF_CPU486, and WF_80x87 with a coprocessor.
-        178 => return Some(0x0001 | 0x0010 | 0x0008 | if coprocessor { 0x0400 } else { 0 }),
+        // `GetWinFlags`' answer (`System::win_flags`).
+        178 => return Some(win_flags),
         173 | 194 => 0xf000,
         174 => 0xa000,
         179 => 0xd000,
@@ -214,7 +214,7 @@ impl System {
         };
 
         if module.name.eq_ignore_ascii_case("KERNEL")
-            && let Some(number) = kernel_constant(ordinal, self.coprocessor)
+            && let Some(number) = kernel_constant(ordinal, self.win_flags())
         {
             return Some(Value::Number(number));
         }

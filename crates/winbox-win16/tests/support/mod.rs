@@ -353,6 +353,10 @@ pub const AGREEING: &[&str] = &[
     "pmitem",
     "rootlib",
     "dpmiver",
+    // Recorded in 386 enhanced mode, run on a machine in it (`ENHANCED`).
+    "enhanced/winflags",
+    "enhanced/dpmiver",
+    "enhanced/about",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -393,6 +397,29 @@ fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
 
 pub fn root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+}
+
+/// The folder of the recordings made in 386 enhanced mode, before a
+/// fixture's name: `enhanced/dpmiver` is `dpmiver` recorded in that mode
+/// (`record.mjs --mode enhanced`), replayed on a machine in it. As
+/// `replay.ts`'s `ENHANCED`.
+pub const ENHANCED: &str = "enhanced/";
+
+/// The mode a fixture was recorded in, by its name, and its name without
+/// the mode's folder.
+pub fn mode_of(name: &str) -> (winbox_win16::Mode, &str) {
+    name.strip_prefix(ENHANCED)
+        .map_or((winbox_win16::Mode::Standard, name), |bare| {
+            (winbox_win16::Mode::Enhanced, bare)
+        })
+}
+
+/// A system made in a mode.
+fn system_in(mode: winbox_win16::Mode) -> System {
+    let mut system = System::new();
+
+    system.mode = mode;
+    system
 }
 
 /// A probe's records as Windows wrote them: function, arguments, result.
@@ -659,6 +686,7 @@ pub fn run(name: &str) -> Option<(Stop, Vec<[String; 3]>)> {
 
 /// The hand at USER's boxes a whole run of the probe has (`BOX_KEYS`).
 pub fn box_hand(name: &str) -> BoxHand {
+    let (_, name) = mode_of(name);
     let probe = name.rsplit_once('-').map_or(name, |(probe, _)| probe);
     let boxes = BOX_KEYS
         .iter()
@@ -868,7 +896,7 @@ impl Setup {
         // run with that setup current (`midimap`).
         let midimap = midimap_of(name);
         let ini = ini_of(name);
-        let (probe, display) = match (name.rsplit_once('-'), &midimap) {
+        let (probe, display) = match (mode_of(name).1.rsplit_once('-'), &midimap) {
             (Some((probe, _)), _) if ini.is_some() => (probe, fixture_display(name)),
             (Some((probe, _)), Some(_)) => (probe, SOUND.to_string()),
             (Some((probe, display)), None)
@@ -876,7 +904,7 @@ impl Setup {
             {
                 (probe, display.to_string())
             }
-            _ => (name, fixture_display(name)),
+            _ => (mode_of(name).1, fixture_display(name)),
         };
         // One recorded on the installation with a sound card is run on the
         // VGA's with winbox.js's own sound driver installed.
@@ -885,7 +913,7 @@ impl Setup {
         let upper = probe.to_ascii_uppercase();
         let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
 
-        let mut system = System::new();
+        let mut system = system_in(mode_of(name).0);
 
         // The installation with a sound card is recorded at a fixed 3,000
         // cycles a millisecond, the survey's clock's rate: its calls are
@@ -1053,8 +1081,11 @@ pub fn run_setup<T>(
 ) -> (Stop, Vec<[String; 3]>, T) {
     // A drive of the run's own: tests running at once may run one probe.
     let run = RUNS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-    let drive =
-        std::env::temp_dir().join(format!("winbox-probe-{name}-{}-{run}", std::process::id()));
+    let drive = std::env::temp_dir().join(format!(
+        "winbox-probe-{}-{}-{run}",
+        name.replace('/', "-"),
+        std::process::id()
+    ));
 
     std::fs::create_dir_all(drive.join("C").join("ORACLE")).unwrap();
     name_the_shell(&mut setup.placed, &setup.beneath, &setup.shell);

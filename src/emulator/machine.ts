@@ -9,6 +9,17 @@ import { Clock } from './clock.js';
 import { Ports } from './cmos.js';
 
 /**
+ * The mode Windows runs in: standard mode, DOSX's, as every recording but
+ * those in `oracle/fixtures/enhanced/` was made; or 386 enhanced mode,
+ * WIN386's (`kb/guides/enhanced-mode.md`). KERNEL learns which as it
+ * starts and answers by it (`KRNL386.EXE` seg1 `aa76`-`aa90`).
+ */
+export type WindowsMode = 'standard' | 'enhanced';
+
+/** The modes, by the names the page, the native front end and the replays give them. */
+export const WINDOWS_MODES: readonly WindowsMode[] = ['standard', 'enhanced'];
+
+/**
  * This class represents the virtual machine.
  *
  * It manages instances to both the memory and CPU and other devices.
@@ -29,6 +40,12 @@ export class Machine {
   declare coprocessor: boolean;
 
   /**
+   * The mode Windows runs in: standard, as the recordings are made unless
+   * they say otherwise, and as the machine is by default; or enhanced.
+   */
+  declare mode: WindowsMode;
+
+  /**
    * The machine's time, which DOS and Windows read: the host's, or, virtual,
    * the instructions run at a fixed rate from a date given (see `clock.ts`).
    */
@@ -44,11 +61,13 @@ export class Machine {
   constructor(
     options: {
       coprocessor?: boolean;
+      mode?: WindowsMode;
       clock?: { virtual?: boolean; epoch?: number; rate?: number; measuredCalls?: boolean };
       core?: WebAssembly.Module | null;
     } = {}
   ) {
     this.coprocessor = options.coprocessor ?? true;
+    this.mode = options.mode ?? 'standard';
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
 

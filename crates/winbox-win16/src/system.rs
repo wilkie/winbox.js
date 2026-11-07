@@ -99,6 +99,42 @@ pub struct Descriptor {
 /// (`sys_error_box.rs`).
 pub type ModalInput = (u16, u16, i16, i16, u32);
 
+/// The mode Windows runs in: standard mode, DOSX's, as every recording but
+/// those in `oracle/fixtures/enhanced/` was made; or 386 enhanced mode,
+/// WIN386's (`kb/guides/enhanced-mode.md`). KERNEL learns which as it
+/// starts and answers by it (`KRNL386.EXE` seg1 `aa76`-`aa90`). As the
+/// TypeScript engine's `WindowsMode`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Mode {
+    /// Standard mode, `win /s`.
+    #[default]
+    Standard,
+    /// 386 enhanced mode, `win /3`.
+    Enhanced,
+}
+
+impl Mode {
+    /// The mode by the name the page, the native front end and the
+    /// replays give it: `standard` or `enhanced`.
+    #[must_use]
+    pub fn named(name: &str) -> Option<Self> {
+        match name {
+            "standard" => Some(Self::Standard),
+            "enhanced" => Some(Self::Enhanced),
+            _ => None,
+        }
+    }
+
+    /// The mode's name, as `named` reads it.
+    #[must_use]
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Standard => "standard",
+            Self::Enhanced => "enhanced",
+        }
+    }
+}
+
 /// The machine and what Windows keeps on it.
 #[derive(Debug)]
 // Each yes or no is one of Windows' own, kept as it keeps it.
@@ -115,6 +151,9 @@ pub struct System {
     /// Whether the machine has a coprocessor: what `__WINFLAGS` says, and
     /// which OS fixups apply.
     pub coprocessor: bool,
+    /// The mode Windows runs in: standard unless the machine is made in
+    /// enhanced mode.
+    pub mode: Mode,
     /// DOS's files.
     pub files: Files,
     /// The task running, once a program has started.
@@ -557,6 +596,7 @@ impl System {
             kept: Vec::new(),
             modules: Vec::new(),
             coprocessor: true,
+            mode: Mode::Standard,
             files: Files::new(),
             task: None,
             ended: false,

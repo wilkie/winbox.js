@@ -183,7 +183,9 @@ pub(crate) fn bad_string(system: &System, pointer: u32, most: u16) -> bool {
 pub fn get_free_space(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.word(system);
     system.global.settle();
-    Ok(Answer::Dword(system.global.free_space()))
+    Ok(Answer::Dword(
+        system.global.free_space(system.memory_figures()),
+    ))
 }
 
 /// The largest block there could be, as `GlobalCompact` answers it:
@@ -192,7 +194,9 @@ pub fn get_free_space(system: &mut System, args: &mut Args) -> Result<Answer, St
 pub fn global_compact(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     args.dword(system);
     system.global.settle();
-    Ok(Answer::Dword(system.global.compact_answer()))
+    Ok(Answer::Dword(
+        system.global.compact_answer(system.memory_figures()),
+    ))
 }
 
 /// How many handles a local heap makes room for at a time, by its data

@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { SHARDS, shareDirectory } from './conformance-shares.js';
-import { KNOWN_GAPS, loadFixtures, prepareFonts, replayFixture, type Outcome } from './replay.js';
+import { gapOf, loadFixtures, prepareFonts, replayFixture, type Outcome } from './replay.js';
 
 export { SHARDS };
 
@@ -121,10 +121,7 @@ function reportOf(fixture: any, replayed: { function: string; outcome: Outcome }
   const gaps: Record<string, string> = {};
 
   for (const name of Object.keys(functions)) {
-    const gap =
-      KNOWN_GAPS[`${fixture.probe}-${fixture.display}:${name}`] ??
-      KNOWN_GAPS[`${fixture.probe}:${name}`] ??
-      KNOWN_GAPS[name];
+    const gap = gapOf(fixture, name);
 
     if (gap) {
       gaps[name] = gap;
@@ -187,7 +184,11 @@ export function conformanceShard(shard: number) {
     });
 
     for (const fixture of fixtures) {
-      describe(`${fixture.probe} against ${fixture.source.windows}`, () => {
+      /* A recording in 386 enhanced mode is named with its folder, as its
+       * file is. */
+      const named = fixture.mode === 'enhanced' ? `enhanced/${fixture.probe}` : fixture.probe;
+
+      describe(`${named} against ${fixture.source.windows}`, () => {
         /* The replay runs once the fonts are loaded rather than while tests are
          * being collected, because GDI cannot be asked anything about text
          * without them and loading them is asynchronous.
@@ -218,7 +219,7 @@ export function conformanceShard(shard: number) {
             });
 
           console.log(
-            `\n${fixture.probe}: ${summary.agreed}/${summary.total} records agree (${rate}%)\n` +
+            `\n${named}: ${summary.agreed}/${summary.total} records agree (${rate}%)\n` +
               `${lines.join('\n')}\n`
           );
 
@@ -234,10 +235,7 @@ export function conformanceShard(shard: number) {
            * and for one display of a probe recorded on several --
            * `maxwidth-ega:metrics` -- so that agreeing on the other still counts
            * too. */
-          const gap =
-            KNOWN_GAPS[`${fixture.probe}-${fixture.display}:${name}`] ??
-            KNOWN_GAPS[`${fixture.probe}:${name}`] ??
-            KNOWN_GAPS[name];
+          const gap = gapOf(fixture, name);
 
           if (gap) {
             it.failing(`${name} matches Windows`, function () {

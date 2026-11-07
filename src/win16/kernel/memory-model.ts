@@ -28,10 +28,26 @@
  * `GlobalDosAlloc`, `GetFreeSpace` or `GlobalCompact`, stands for what
  * Windows held then; every byte held beyond it is taken from all three
  * figures, every byte given back returns to them.
+ *
+ * In 386 enhanced mode the same machine has more: WIN386 gives KERNEL
+ * virtual memory, its swap file's pages with the machine's. **Recorded** by
+ * `galimit` in enhanced mode (`enhanced/galimit`): `GetFreeSpace(0)`
+ * 38F5C60h; `GlobalCompact(0)` FF0000h and the largest block FF0000h, the
+ * limit itself, where standard mode's machine runs out first. What lies
+ * past the limit is not seen through these calls; the largest free block
+ * DPMI 0500h names, 3868000h (`enhmode`), stands for it (inferred),
+ * `GlobalCompact`'s 64 KiB less as in standard mode. The 1000h more the
+ * first block of FE0000h moveable costs, and keeps, is KERNEL growing its
+ * descriptor table, which it does in enhanced mode alone as its free
+ * selectors fall under 100h (`KRNL386.EXE` seg1 `1ed4`-`1f0d`), and is not
+ * followed: WinBox's selectors are not KERNEL's.
  */
 
 /** The largest size `0c7c` and `4025` let through: 16 MiB less 64 KiB. */
 export const MOST = 0xff0000;
+
+/** The most selectors `20a8` gives a block `GlobalReAlloc` moves (`40f9`). */
+export const MOST_MOVED_SELECTORS = 0xfe;
 
 /** `GetFreeSpace(0)` on the oracle's machine as a program starts (`galimit`). */
 export const FREE = 0xebb4e0;
@@ -41,6 +57,22 @@ export const LARGEST = 0xe34000;
 
 /** `GlobalCompact(0)` there: the largest block less 64 KiB (`galimit`). */
 export const COMPACT = 0xe24000;
+
+/** `GetFreeSpace(0)` on the same machine in 386 enhanced mode (`enhanced/galimit`). */
+export const FREE_ENHANCED = 0x38f5c60;
+
+/** The largest free block there, as DPMI 0500h names it (`enhanced/enhmode`). */
+export const LARGEST_ENHANCED = 0x3868000;
+
+/** `GlobalCompact(0)`'s figure there, before `3fde`: the largest block less 64 KiB. */
+export const COMPACT_ENHANCED = LARGEST_ENHANCED - 0x10000;
+
+/** The three figures for the machine's mode. */
+function figures(system: any) {
+  return system?.machine?.mode === 'enhanced'
+    ? { free: FREE_ENHANCED, largest: LARGEST_ENHANCED, compact: COMPACT_ENHANCED }
+    : { free: FREE, largest: LARGEST, compact: COMPACT };
+}
 
 /**
  * Whether a size passes `0c7c`: rounded up to 16 bytes without carrying past
@@ -66,12 +98,12 @@ function taken(system: any) {
 
 /** `GetFreeSpace`'s answer. */
 export function freeSpace(system: any) {
-  return Math.max(0, FREE - taken(system));
+  return Math.max(0, figures(system).free - taken(system));
 }
 
 /** The largest block that can be given. */
 export function largestBlock(system: any) {
-  return Math.max(0, LARGEST - taken(system));
+  return Math.max(0, figures(system).largest - taken(system));
 }
 
 /**
@@ -79,7 +111,7 @@ export function largestBlock(system: any) {
  * than FF0000h (`KRNL386.EXE` seg1 `1105`-`111d`).
  */
 export function compactAnswer(system: any) {
-  return Math.min(MOST, Math.max(0, COMPACT - taken(system)));
+  return Math.min(MOST, Math.max(0, figures(system).compact - taken(system)));
 }
 
 /**

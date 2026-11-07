@@ -16,6 +16,9 @@ const GMEM_MOVEABLE: u16 = 0x0002;
 const GMEM_ZEROINIT: u16 = 0x0040;
 const GMEM_MODIFY: u16 = 0x0080;
 const GMEM_DISCARDABLE: u16 = 0x0100;
+/// The most selectors `20a8` gives a block `GlobalReAlloc` moves
+/// (`KRNL386.EXE` seg1 `40f9`). As `memory-model.ts`'s.
+const MOST_MOVED_SELECTORS: usize = 0xfe;
 
 /// A selector of a handle: the same descriptor, at a program's privilege.
 fn selector_for(handle: u16) -> u16 {
@@ -139,7 +142,9 @@ pub(crate) fn global_alloc_handle(system: &mut System, flags: u16, size: u32) ->
 /// (`KRNL386.EXE` seg1 `0c7c`, `4025`, `379e`; `galimit`, as OLECLI's
 /// `68000000h` bytes are). See `winbox_machine::GlobalHeap`'s model.
 pub(crate) fn allocate(system: &mut System, size: u32, flags: u16) -> Option<usize> {
-    if !within_limit(size) || block_size(size) > system.global.largest_block() {
+    if !within_limit(size)
+        || block_size(size) > system.global.largest_block(system.memory_figures())
+    {
         return None;
     }
 
@@ -369,7 +374,15 @@ pub(crate) fn reallocate(system: &mut System, handle: u16, size: u32, flags: u16
             new.saturating_sub(block.size)
         };
 
-        if needed > system.global.largest_block() {
+        if needed > system.global.largest_block(system.memory_figures()) {
+            return 0;
+        }
+
+        // One that moves takes its selectors from `20a8`, which gives no
+        // more than FEh (`40f9`): **recorded** by `galimit` in enhanced
+        // mode, where there is room for it, FE0000h given and FF0000h
+        // refused. As `GlobalReAlloc.ts`.
+        if moves && (new as usize).div_ceil(0x10000) > MOST_MOVED_SELECTORS {
             return 0;
         }
     }

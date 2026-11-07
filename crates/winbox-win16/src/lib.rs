@@ -162,4 +162,4 @@ pub use call::{Answer, Call, Stop};
 pub use engine::{Engine, EngineRun, Pace, Register, Step};
 pub use loader::Module;
 pub use modules::{Export, Kept};
-pub use system::System;
+pub use system::{Mode, System};

@@ -264,7 +264,10 @@ export class Win16 {
     machine.interrupts.on(13, () => this.applicationFault(13));
 
     // Create a Linker
-    this._linker = new Linker(this._memory, this._modules, { coprocessor: machine.coprocessor });
+    this._linker = new Linker(this._memory, this._modules, {
+      coprocessor: machine.coprocessor,
+      mode: machine.mode,
+    });
 
     // And the system memory allocator
     this._allocator = new Allocator(this.machine.memory, this._globalAllocator);
