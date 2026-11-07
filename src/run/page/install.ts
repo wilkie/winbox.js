@@ -14,6 +14,7 @@ import {
   forgetProgram,
   type KeptProgram,
   keepProgram,
+  modeOfProgram,
   programChangesKey,
   programIdentity,
   recallChangesAt,
@@ -236,6 +237,7 @@ export async function keepInstalled() {
         name: freeName(state.programs, installing.name),
         base,
         display: machine.display,
+        mode: machine.mode,
         layers: [id],
         exes,
         orders: {},
@@ -375,7 +377,11 @@ export async function open(name: string) {
     return null;
   }
 
-  const machine = addMachine({ program: name, display: program.display });
+  const machine = addMachine({
+    program: name,
+    display: program.display,
+    mode: modeOfProgram(program),
+  });
 
   select(machine);
 

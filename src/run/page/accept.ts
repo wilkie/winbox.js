@@ -415,6 +415,7 @@ export async function takeProgram(machine: Machine, archive: Archive) {
     name,
     base,
     display,
+    mode: machine.mode,
     layers: [id],
     exes: made.programs,
     orders: { [id]: made.order },

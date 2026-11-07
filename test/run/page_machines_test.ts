@@ -36,6 +36,7 @@ function machine(id: number, more: Partial<Machine> = {}): Machine {
     id,
     program: null,
     display: 'vga',
+    mode: 'standard',
     coprocessor: true,
     sound: false,
     installing: null,

@@ -9,6 +9,7 @@
  */
 
 import { readZip } from '../../zip.js';
+import { type WindowsMode } from '../../emulator/machine.js';
 import { type Program } from '../drive.js';
 import {
   forgetAllChanges,
@@ -124,6 +125,22 @@ export const actions = {
     return remake(machine, () => {
       machine.display = display;
       return () => (machine.display = was);
+    });
+  },
+
+  /**
+   * The mode chosen for the machine shown, standard or 386 enhanced: made
+   * afresh in it, as for a display. A kept program runs in its install's
+   * mode, so a machine in another runs the base; an install made on it
+   * keeps the mode it ran in (`kb/guides/enhanced-mode.md`).
+   */
+  setMode(mode: WindowsMode) {
+    const machine = current();
+    const was = machine.mode;
+
+    return remake(machine, () => {
+      machine.mode = mode;
+      return () => (machine.mode = was);
     });
   },
 

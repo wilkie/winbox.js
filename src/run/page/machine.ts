@@ -17,6 +17,7 @@ import { composedDisplays } from '../../assets/compose.js';
 import { type Change, sameChanges } from '../changes.js';
 import { planDrive, type Program, type Stack } from '../drive.js';
 import { type Engine, type Page } from '../engines/engine.js';
+import { type WindowsMode } from '../../emulator/machine.js';
 import { TypeScriptEngine } from '../engines/ts.js';
 import { recallChanges, recallLayers, rememberChanges } from '../store.js';
 import {
@@ -141,11 +142,13 @@ let made = 0;
 export function addMachine({
   program = null,
   display = current()?.display ?? FIRST_DISPLAY,
+  mode = current()?.mode ?? 'standard',
   coprocessor = current()?.coprocessor ?? true,
   sound = current()?.sound ?? false,
 }: {
   program?: string | null;
   display?: string;
+  mode?: WindowsMode;
   coprocessor?: boolean;
   sound?: boolean;
 } = {}) {
@@ -161,6 +164,7 @@ export function addMachine({
     id,
     program,
     display: displayKept(state.displays, display),
+    mode,
     coprocessor,
     sound,
     installing: null,
@@ -250,7 +254,11 @@ export async function closeMachine(machine: Machine, { keeping = true } = {}) {
     return;
   }
 
-  const fresh = addMachine({ display: machine.display, coprocessor: machine.coprocessor });
+  const fresh = addMachine({
+    display: machine.display,
+    mode: machine.mode,
+    coprocessor: machine.coprocessor,
+  });
 
   select(fresh);
   await rebuild(fresh, { keeping: false });
@@ -475,6 +483,7 @@ export async function rebuild(machine: Machine, { keeping = true } = {}) {
     windows: state.windows,
     assets,
     display,
+    mode: machine.mode,
     coprocessor: machine.coprocessor,
     changes: installing ? [] : machine.kept.changes,
     drives: machine.drives,

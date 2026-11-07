@@ -884,3 +884,23 @@ fn an_installers_group_is_listed_under_the_program_kept() {
         .is_empty()
     );
 }
+
+/// A program's record keeps the mode Windows ran in as it was installed
+/// (`kb/guides/enhanced-mode.md`); a record kept before the modes were, with
+/// none, is standard mode's.
+#[test]
+fn a_programs_record_keeps_its_mode() {
+    let older = r#"{"name":"OLD","base":"base:x:vga","display":"vga","layers":[],"exes":[]}"#;
+    let program: Program = serde_json::from_str(older).unwrap();
+
+    assert_eq!(program.mode, "standard");
+
+    let mut enhanced = program.clone();
+
+    enhanced.mode = winbox_win16::Mode::Enhanced.name().to_string();
+
+    let text = serde_json::to_string(&enhanced).unwrap();
+
+    assert!(text.contains(r#""mode":"enhanced""#));
+    assert_eq!(serde_json::from_str::<Program>(&text).unwrap(), enhanced);
+}

@@ -151,6 +151,7 @@ const FAULTC = join(process.cwd(), 'oracle', 'build', 'probes', 'FAULTC.EXE');
 
 /* The `instlay` probe's installer and the program it installs, shipped as a
  * program's installer is: SETUP.EXE and its files. */
+const WINFLAGS = join(process.cwd(), 'oracle', 'build', 'probes', 'WINFLAGS.EXE');
 const INSTLAY = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAY.EXE');
 const INSTLAYC = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAYC.EXE');
 
@@ -2716,6 +2717,106 @@ for (const { engine, page: at } of ENGINES) {
       await confirmed(page, 'Forget instlay', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
+      expect(errors).toEqual([]);
+    });
+
+    test('keeps the mode a program was installed in, and opens it in that mode again', async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(INSTLAY) || !existsSync(WINFLAGS),
+        'the asset bundle, or the instlay and winflags probes, have not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      const kept = page.locator('#kept-programs li');
+      const mode = page.locator('#mode');
+      /* What `winflags` wrote: `GetWinFlags` and `__WINFLAGS`, as it
+       * recorded them in each mode (`oracle/fixtures/enhanced/winflags.json`). */
+      const flags = () =>
+        page.evaluate(async () => {
+          const changes = await (globalThis as any).winbox.engine.changes();
+          const file = (changes ?? []).find(
+            (change: any) => change.path === 'ORACLE\\WINFLAGS.OUT'
+          );
+
+          return file ? new TextDecoder('latin1').decode(file.data) : '';
+        });
+      const run = async () => {
+        await page.getByRole('button', { name: 'Run C:\\ORACLE\\WINFLAGS.EXE' }).click();
+        await expect(page.locator('#status')).toHaveText(
+          'The program has ended, with exit code 0.',
+          { timeout: 30000 }
+        );
+      };
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+      await expect(mode).toHaveValue('standard');
+
+      /* Installed in 386 enhanced mode, chosen with the machine. */
+      await mode.selectOption('enhanced');
+      await page.locator('#picker').setInputFiles({
+        name: 'instlay.zip',
+        mimeType: 'application/zip',
+        buffer: archive([
+          { path: 'SETUP.EXE', data: new Uint8Array(readFileSync(INSTLAY)) },
+          { path: 'INSTLAYC.EXE', data: new Uint8Array(readFileSync(INSTLAYC)) },
+        ]),
+      });
+      await page.getByRole('button', { name: 'Install', exact: true }).click();
+      await expect(page.locator('#status')).toHaveText(
+        'The installer has ended. Keep what it installed, or discard it.',
+        { timeout: 60000 }
+      );
+      await page.getByRole('button', { name: 'Keep', exact: true }).click();
+      await expect(page.locator('#status')).toContainText('Installed instlay,');
+      await expect(mode).toHaveValue('enhanced');
+
+      /* A program kept on the machine in that mode, which says so. */
+      await page.locator('#picker').setInputFiles({
+        name: 'oracle.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'WINFLAGS.EXE', data: new Uint8Array(readFileSync(WINFLAGS)) }]),
+      });
+      await expect(kept).toHaveCount(2);
+      await run();
+      expect(await flags()).toBe('flags\tGetWinFlags\t00000c29\r\nflags\t__WINFLAGS\t0c29\r\n');
+
+      /* The next visit's machine is in standard mode, the kept programs
+       * named with theirs; each opens in its own again. */
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+      await expect(mode).toHaveValue('standard');
+      await expect(page.locator('#kept-programs')).toContainText('instlay (386 enhanced mode)');
+      await expect(page.locator('#kept-programs')).toContainText('oracle (386 enhanced mode)');
+      await page.getByRole('button', { name: 'Open instlay' }).click();
+      await expect(page.locator('#status')).toHaveText('instlay is on C:.');
+      await expect(mode).toHaveValue('enhanced');
+      await listed(page, 'C:\\INSTLAY\\INSTLAYC.EXE');
+
+      await page.getByRole('button', { name: 'Open oracle' }).click();
+      await expect(page.locator('#status')).toHaveText('oracle is on C:.');
+      await expect(mode).toHaveValue('enhanced');
+      await run();
+      expect(await flags()).toContain('00000c29');
+
+      /* In standard mode the machine's C: is the base alone: the program
+       * is bound to its mode, as to its display. */
+      await mode.selectOption('standard');
+      await expect(page.getByRole('button', { name: 'Run C:\\ORACLE\\WINFLAGS.EXE' })).toHaveCount(
+        0
+      );
       expect(errors).toEqual([]);
     });
 

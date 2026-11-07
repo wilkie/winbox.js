@@ -81,7 +81,16 @@ export class TypeScriptEngine implements Engine {
     );
   };
 
-  async rebuild({ plan, windows, assets, display, coprocessor, changes: kept, drives }: Setup) {
+  async rebuild({
+    plan,
+    windows,
+    assets,
+    display,
+    coprocessor,
+    mode,
+    changes: kept,
+    drives,
+  }: Setup) {
     const page = this.#page;
 
     this.#end();
@@ -89,7 +98,7 @@ export class TypeScriptEngine implements Engine {
     const running = { on: true };
 
     this.#running = running;
-    const machine = new Machine({ coprocessor });
+    const machine = new Machine({ coprocessor, mode });
     const drive = await fillDrive(machine, plan);
 
     /* The drive marked as planned, and what programs wrote before put back

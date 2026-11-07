@@ -49,6 +49,12 @@ pub struct Program {
     /// `folder:<layer id of the installation's folder>`.
     pub base: String,
     pub display: String,
+    /// The mode Windows ran in as it was installed, and runs in as it is
+    /// run, `standard` or `enhanced` (`kb/guides/enhanced-mode.md`, the
+    /// owner's decision of 2026-11-07): standard where a record has none,
+    /// as every program kept before the modes were.
+    #[serde(default = "standard_mode")]
+    pub mode: String,
     /// Its layers' ids, the lowest first.
     pub layers: Vec<String>,
     /// Its programs, as C: names them: `C:\GAMES\SKI.EXE`.
@@ -65,6 +71,11 @@ pub struct Program {
     /// before had none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub media: Vec<Medium>,
+}
+
+/// The mode of a program whose record names none.
+fn standard_mode() -> String {
+    winbox_win16::Mode::Standard.name().to_string()
 }
 
 /// An image a program is run with, as the page's `KeptProgram` is to keep
@@ -90,6 +101,7 @@ impl Program {
             name: name.to_string(),
             base: base.name().to_string(),
             display: base.display.clone(),
+            mode: standard_mode(),
             layers: Vec::new(),
             exes: Vec::new(),
             orders: BTreeMap::new(),

@@ -230,6 +230,12 @@ impl Session {
         self.engine.system().stays_up = true;
     }
 
+    /// The mode Windows runs in, before a program has started: standard
+    /// unless set (`kb/guides/enhanced-mode.md`, phase 1).
+    pub fn set_mode(&mut self, mode: winbox_win16::Mode) {
+        self.engine.system().mode = mode;
+    }
+
     /// A drive, made empty where there is none yet: A: and B: removable,
     /// as floppies are.
     pub fn drive(&mut self, letter: char) -> &mut MemoryDrive {
@@ -938,6 +944,7 @@ impl Session {
             .ok_or_else(|| format!("no display {}", asked.display))?;
 
         system.coprocessor = self.made.1;
+        system.mode = self.engine.system().mode;
         // The virtual clock never reads the host's time; what reads it is
         // given the page's, as no other can be read here.
         system.clock.set_host(self.made.2);

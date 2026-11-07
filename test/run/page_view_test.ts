@@ -12,6 +12,7 @@ import {
   installView,
   keptRows,
   keptText,
+  MODES,
   LAUNCHER_EMPTY,
   launcherView,
   type MachineFacts,
@@ -160,6 +161,34 @@ describe('the run page, as it is shown', () => {
         ),
       ],
     ]);
+  });
+
+  it("names a kept program with its install's mode where the machine shown is in another", () => {
+    const standard = program('standard');
+    const older = program('older');
+    const enhanced = program('enhanced', { mode: 'enhanced' });
+    const labels = (mode: 'standard' | 'enhanced') =>
+      keptRows(
+        [standard, older, enhanced],
+        () => null,
+        (display) => `base:abc:${display}`,
+        ['vga'],
+        'vga',
+        () => null,
+        mode
+      ).map((row) => [row.label, row.mode]);
+
+    expect(labels('standard')).toEqual([
+      ['standard', 'standard'],
+      ['older', 'standard'],
+      ['enhanced (386 enhanced mode)', 'enhanced'],
+    ]);
+    expect(labels('enhanced')).toEqual([
+      ['standard (Standard mode)', 'standard'],
+      ['older (Standard mode)', 'standard'],
+      ['enhanced', 'enhanced'],
+    ]);
+    expect(MODES.map((mode) => mode.value)).toEqual(['standard', 'enhanced']);
   });
 
   it('names each machine by its install, and its tab with its display where two share a name', () => {

@@ -20,7 +20,8 @@ import {
   setText,
   type Wanting,
 } from '../drives.js';
-import { type KeptProgram, type Medium } from '../store.js';
+import { type KeptProgram, type Medium, modeOfProgram } from '../store.js';
+import { type WindowsMode } from '../../emulator/machine.js';
 import { type Icon } from '../../layers/groups.js';
 import { type KeptGroup, type KeptGroups } from './groups.js';
 import { DISPLAY_MODES } from '../../win16/display-modes.js';
@@ -197,16 +198,33 @@ export interface KeptRow {
   /** The display it was made on, as it is shown. */
   display: string;
 
+  /** The mode Windows ran in as it was installed, which it runs in. */
+  mode: WindowsMode;
+
   /** Its own Program Manager groups, those its install made, once read; none while being read. */
   groups: KeptGroup[] | null;
 }
+
+/**
+ * The modes a machine is made in, as the Machine panel offers them: Windows
+ * started as `win /s` or as `win /3` (`kb/guides/enhanced-mode.md`).
+ */
+export const MODES: { value: WindowsMode; text: string }[] = [
+  { value: 'standard', text: 'Standard mode' },
+  { value: 'enhanced', text: '386 enhanced mode' },
+];
+
+/** A mode as it is shown. */
+export const modeName = (mode: WindowsMode) =>
+  MODES.find((one) => one.value === mode)?.text ?? mode;
 
 /**
  * The programs kept, each with the way to its machine and to forget it:
  * Open makes it a machine of its own, on the display it was made on, as
  * the launcher does; Show, where one runs it in a tab behind, shows that
  * tab; the one shown has its tab's Close. Each is named with the display
- * it was made on where that is not the display of the machine shown.
+ * it was made on where that is not the display of the machine shown, and
+ * with its mode where that is not the machine shown's.
  */
 export function keptRows(
   programs: KeptProgram[],
@@ -214,7 +232,8 @@ export function keptRows(
   baseOf: (display: string) => string | null,
   displays: string[],
   display: string,
-  groupsOf: (program: KeptProgram) => KeptGroups | null
+  groupsOf: (program: KeptProgram) => KeptGroups | null,
+  mode: WindowsMode = 'standard'
 ): KeptRow[] {
   return programs.map((program) => {
     const based = program.base === baseOf(program.display);
@@ -222,10 +241,14 @@ export function keptRows(
     const here = based && offered;
     const machine = running(program.name);
     const shownDisplay = displayName(program.display);
+    const facts = [
+      ...(program.display === display ? [] : [shownDisplay]),
+      ...(modeOfProgram(program) === mode ? [] : [modeName(modeOfProgram(program))]),
+    ];
 
     return {
       name: program.name,
-      label: program.display === display ? program.name : `${program.name} (${shownDisplay})`,
+      label: facts.length ? `${program.name} (${facts.join(', ')})` : program.name,
       here,
       shown: machine === 'shown',
       running: machine !== null,
@@ -239,6 +262,7 @@ export function keptRows(
               ? `${program.name} was made on a Windows that is not here`
               : `${program.name} was made on the ${shownDisplay}, which this Windows does not offer`,
       display: program.display,
+      mode: modeOfProgram(program),
       groups: groupsOf(program)?.groups.filter((group) => !group.winbox) ?? null,
     };
   });
@@ -838,6 +862,10 @@ export interface PageView {
   changes: ChangesView;
   displays: { value: string; text: string }[];
   display: string;
+
+  /** The modes offered, and the machine shown's. */
+  modes: { value: WindowsMode; text: string }[];
+  mode: WindowsMode;
   coprocessor: boolean;
   sound: boolean;
   keepImages: boolean;

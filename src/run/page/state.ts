@@ -16,12 +16,14 @@ import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet, imageKey, type Wanting } from '../drives.js';
 import { type Engine } from '../engines/engine.js';
+import { type WindowsMode } from '../../emulator/machine.js';
 import { installerOf } from '../media.js';
 import {
   assetsIdentity,
   changesKey,
   type Kept,
   type KeptProgram,
+  modeOfProgram,
   programIdentity,
 } from '../store.js';
 import { keptGroups } from './groups.js';
@@ -38,6 +40,7 @@ import {
   installView,
   KEPT_NOTE,
   keptRows,
+  MODES,
   launcherView,
   keptText,
   type MachineFacts,
@@ -127,8 +130,9 @@ export interface Machine {
   /** The kept program whose stack it runs, while the Windows and the display it was made on are; else the base alone. */
   program: string | null;
 
-  /** Its display, coprocessor and sound card. */
+  /** Its display, the mode Windows runs in, its coprocessor and sound card. */
   display: string;
+  mode: WindowsMode;
   coprocessor: boolean;
   sound: boolean;
 
@@ -240,7 +244,10 @@ export function baseNow(display = current()?.display ?? FIRST_DISPLAY) {
 export function programOf(machine: Machine | undefined = current()) {
   const program = machine && state.programs.find((one) => one.name === machine.program);
 
-  return program && program.base === baseNow(machine.display) && program.display === machine.display
+  return program &&
+    program.base === baseNow(machine.display) &&
+    program.display === machine.display &&
+    modeOfProgram(program) === machine.mode
     ? program
     : null;
 }
@@ -299,7 +306,10 @@ export function programsHere(machine: Machine = current()) {
   const base = baseNow(machine.display);
 
   return state.programs.filter(
-    (program) => program.base === base && program.display === machine.display
+    (program) =>
+      program.base === base &&
+      program.display === machine.display &&
+      modeOfProgram(program) === machine.mode
   );
 }
 
@@ -403,6 +413,8 @@ export function publish() {
     changes: changesView(machine.kept.changes, machine.tooLarge),
     displays: state.displays.map((name) => ({ value: name, text: displayName(name) })),
     display: machine.display,
+    modes: MODES,
+    mode: machine.mode,
     coprocessor: machine.coprocessor,
     sound: machine.sound,
     keepImages: state.keepImages,
@@ -442,7 +454,8 @@ export function publish() {
       (display) => baseNow(display),
       state.displays,
       machine.display,
-      groupsOf
+      groupsOf,
+      machine.mode
     ),
     keptNote: KEPT_NOTE,
     launcher: launcherView(state.programs, groupsOf, state.displays),

@@ -373,6 +373,17 @@ impl Machine {
         Ok(Self { session })
     }
 
+    /// The mode Windows runs in, `standard` or `enhanced`, set before a
+    /// program has started; false, and nothing changed, for another name.
+    pub fn set_mode(&mut self, mode: &str) -> bool {
+        let Some(mode) = winbox_win16::Mode::named(mode) else {
+            return false;
+        };
+
+        self.session.set_mode(mode);
+        true
+    }
+
     /// A file put on a drive, made where there is none yet: its DOS path
     /// there, its bytes, and when it was last written, in seconds since
     /// 1970. False where a folder is in the way.

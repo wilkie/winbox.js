@@ -13,6 +13,7 @@ import { type Assets } from '../../assets/bundle.js';
 import { type Change } from '../changes.js';
 import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet } from '../drives.js';
+import { type WindowsMode } from '../../emulator/machine.js';
 
 /** What the page gives an engine. */
 export interface Page {
@@ -70,6 +71,13 @@ export interface Setup {
   /** The display, as `DISPLAY_MODES` names it. */
   display: string;
   coprocessor: boolean;
+
+  /**
+   * The mode Windows runs in: standard, or 386 enhanced mode
+   * (`kb/guides/enhanced-mode.md`); a kept program's is its install's.
+   * Standard where not given.
+   */
+  mode?: WindowsMode;
 
   /**
    * What programs wrote on C: before, kept by the page (`changes.ts`), put

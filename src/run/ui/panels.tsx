@@ -242,6 +242,25 @@ export function DisplayPanel({ view }: { view: PageView }) {
 export function MachinePanel({ view }: { view: PageView }) {
   return (
     <Section title="Machine">
+      <Box>
+        <label htmlFor="mode">Mode</label>{' '}
+        <NativeSelect
+          value={view.mode}
+          onChange={(event) => actions.setMode(event.target.value as PageView['mode'])}
+          input={<OutlinedInput size="small" />}
+          inputProps={{ id: 'mode', 'aria-describedby': 'mode-note' }}
+        >
+          {view.modes.map((mode) => (
+            <option key={mode.value} value={mode.value}>
+              {mode.text}
+            </option>
+          ))}
+        </NativeSelect>
+      </Box>
+      <Note id="mode-note">
+        The mode Windows runs in, as <Code>win /s</Code> or <Code>win /3</Code> starts it. A program
+        installed keeps the mode it was installed in.
+      </Note>
       <FormControlLabel
         control={
           <Checkbox

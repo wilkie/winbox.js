@@ -69,6 +69,12 @@
 //! standard error; `--sound-dump` keeps what the speakers are handed, as a
 //! WAV file, and implies `--sound`.
 //!
+//! `--mode standard|enhanced` is the mode Windows runs in, standard by
+//! default (`kb/guides/enhanced-mode.md`): what `GetWinFlags`, INT 2Fh
+//! 1600h and DPMI's version say, and how much memory there is. A program
+//! kept keeps the mode it was installed in, and runs in it; another is
+//! refused, as another display is.
+//!
 //! `--mount [L:]IMAGE[,IMAGE...]` mounts disk and disc images beside C:
 //! (`mounts.rs`), never writing them: a set of floppies or discs for one
 //! letter is swapped by `a next`, `a 2`, `a eject` on standard input or
@@ -145,6 +151,9 @@ struct Options {
     assets: Option<PathBuf>,
     /// The display mode; a kept program's own where none is given.
     display: Option<String>,
+    /// The mode Windows runs in, `--mode standard|enhanced`; a kept
+    /// program's own where none is given, else standard.
+    windows_mode: Option<winbox_win16::Mode>,
     /// What an installer left kept without asking.
     keep: bool,
     shot: Option<PathBuf>,
@@ -170,10 +179,10 @@ struct Options {
     write_back: Option<PathBuf>,
 }
 
-const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
-winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [and a run's switches]
-winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--keep] [and a run's switches]
-winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE]
+const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--mode standard|enhanced] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
+winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [and a run's switches]
+winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [--keep] [and a run's switches]
+winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced]
 winbox-native --list";
 
 fn usage() -> ! {
@@ -199,6 +208,7 @@ fn options() -> Options {
         windows: None,
         assets: None,
         display: None,
+        windows_mode: None,
         keep: false,
         shot: None,
         shot_seconds: 5,
@@ -276,6 +286,14 @@ fn options() -> Options {
             "--seamless-log" => options.seamless_log = arguments.next().map(PathBuf::from),
             "--script" => options.script = arguments.next().map(PathBuf::from),
             "--display" => options.display = arguments.next(),
+            "--mode" => {
+                let name = arguments.next().unwrap_or_else(|| usage());
+
+                options.windows_mode =
+                    Some(winbox_win16::Mode::named(&name).unwrap_or_else(|| {
+                        refuse(&format!("--mode {name}: standard or enhanced"))
+                    }));
+            }
             "--mount" => {
                 let spec = arguments.next().unwrap_or_else(|| usage());
 
@@ -705,6 +723,34 @@ fn kept_display(program: Option<&programs::Program>, given: Option<&String>) -> 
     }
 }
 
+/// The mode Windows runs in for a kept program: its own, refused where
+/// another is given, as its display is; a new program's the one given,
+/// else standard mode.
+fn kept_mode(
+    program: Option<&programs::Program>,
+    given: Option<winbox_win16::Mode>,
+) -> winbox_win16::Mode {
+    let own = program.map(|program| {
+        winbox_win16::Mode::named(&program.mode).unwrap_or_else(|| {
+            refuse(&format!(
+                "{} was kept in a mode this build does not know, {}",
+                program.name, program.mode
+            ))
+        })
+    });
+
+    match (program, own, given) {
+        (Some(program), Some(own), Some(given)) if given != own => refuse(&format!(
+            "{} was installed in {} mode, and runs in it: run it with --mode {}",
+            program.name,
+            own.name(),
+            own.name()
+        )),
+        (_, Some(own), _) => own,
+        (_, None, given) => given.unwrap_or_default(),
+    }
+}
+
 /// `--layer-from`: a layer of the user's own files, or an exchange zip,
 /// put on a program's stack, the program made where it is not kept.
 fn layer_from(options: &Options, from: &Path, name: &str) {
@@ -717,7 +763,11 @@ fn layer_from(options: &Options, from: &Path, name: &str) {
         &display,
         None,
     );
+    let windows_mode = kept_mode(kept.as_ref(), options.windows_mode);
     let mut program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
+
+    program.mode = windows_mode.name().to_string();
+
     let stack = store
         .stack(&base, &program)
         .unwrap_or_else(|error| refuse(&error));
@@ -853,6 +903,7 @@ fn program_drive(
     let display = kept_display(Some(&program), options.display.as_ref());
 
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+    system.mode = kept_mode(Some(&program), options.windows_mode);
 
     let base = kept_base(
         options.assets.as_deref(),
@@ -914,6 +965,9 @@ fn install_drive(
     let display = kept_display(kept.as_ref(), options.display.as_ref());
 
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
+    // The installer runs in the program's mode, a new program's the one
+    // given, and the program keeps it (`kept_mode`).
+    system.mode = kept_mode(kept.as_ref(), options.windows_mode);
 
     let base = kept_base(
         options.assets.as_deref(),
@@ -921,7 +975,9 @@ fn install_drive(
         &display,
         Some(system),
     );
-    let program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
+    let mut program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
+
+    program.mode = system.mode.name().to_string();
     let stack = store
         .stack(&base, &program)
         .unwrap_or_else(|error| refuse(&error));
@@ -1336,6 +1392,9 @@ fn file_drive(
     system: &mut System,
 ) -> (HostDrive, String, Option<PathBuf>) {
     let display = options.display.clone().unwrap_or_else(|| "vga".to_string());
+
+    system.mode = options.windows_mode.unwrap_or_default();
+
     let name = file.file_name().map_or(String::new(), |name| {
         name.to_string_lossy().to_ascii_uppercase()
     });

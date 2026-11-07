@@ -55,6 +55,7 @@ interface WasmMachine {
   add_file(drive: string, dosPath: string, bytes: Uint8Array, mtimeSecs: number): boolean;
   add_folder(drive: string, dosPath: string, mtimeSecs: number): boolean;
   add_module(name: string, bytes: Uint8Array): void;
+  set_mode(mode: string): boolean;
   remove(drive: string, dosPath: string): boolean;
   mark_planned(): void;
   changes(drive: string): WasmChange[];
@@ -659,9 +660,12 @@ export class RustEngine implements Engine {
    * asset bundle's modules put in the store behind C:, where there is one.
    */
   #make() {
-    const { plan, assets, display, coprocessor, changes } = this.#setup!;
+    const { plan, assets, display, coprocessor, mode, changes } = this.#setup!;
     const wasm = this.#wasm!;
     const machine = enter(wasm, () => new wasm.Machine(display, coprocessor));
+
+    /* The mode Windows runs in, before anything has started. */
+    machine.set_mode(mode ?? 'standard');
 
     machine.add_drive('C');
 

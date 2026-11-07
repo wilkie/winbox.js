@@ -2,6 +2,7 @@
 
 import { type Layer, type LayerManifest } from '../layers/layer.js';
 import { type Change } from './changes.js';
+import { type WindowsMode } from '../emulator/machine.js';
 
 /**
  * Where the demo page keeps a person's Windows between visits, and what their
@@ -72,9 +73,9 @@ export const programChangesKey = (name: string) => `${DRIVE}:program:${name}`;
 /**
  * A program kept in this browser (`kb/formats/layer.md`): its stack -- the
  * base it was made on and its layers, the lowest first, each kept in the
- * `layers` store, its files' bytes in `blobs` -- and the display it is
- * bound to. What it writes as it runs is its user layer, kept in `changes`
- * under `programChangesKey`.
+ * `layers` store, its files' bytes in `blobs` -- and the display and the
+ * mode it is bound to. What it writes as it runs is its user layer, kept in
+ * `changes` under `programChangesKey`.
  */
 export interface KeptProgram {
   /** Its name: its archive's, without `.zip`. */
@@ -83,6 +84,14 @@ export interface KeptProgram {
   /** The base it was made on: `base:<assets id>:<display>`, or `install:<sha256 of the archive>`. */
   base: string;
   display: string;
+
+  /**
+   * The mode Windows ran in as it was installed, and runs in as it is
+   * opened (`kb/guides/enhanced-mode.md`, the owner's decision of
+   * 2026-11-07): standard where a record has none, as every program kept
+   * before the modes were.
+   */
+  mode?: WindowsMode;
 
   /** Its layers' ids, the lowest first. */
   layers: string[];
@@ -105,6 +114,10 @@ export interface KeptProgram {
    */
   media?: Medium[];
 }
+
+/** The mode a kept program runs in: its install's, standard where its record has none. */
+export const modeOfProgram = (program: Pick<KeptProgram, 'mode'>): WindowsMode =>
+  program.mode ?? 'standard';
 
 /** An image a kept program is run with. */
 export interface Medium {
