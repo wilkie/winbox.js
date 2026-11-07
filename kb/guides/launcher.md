@@ -27,7 +27,7 @@ An item runs on its install's stack:
 1. **The C: drive.** C: is the base the install was made on, then the install's layers, then the program's user layer, which holds what it writes as it runs ([[format:layer]]).
 2. **Images.** The install's kept images are mounted at the letters they were pinned to. Those it cannot find are asked for again, as choosing a kept program does today (`choose`, `src/run/page/install.ts`).
 3. **Display.** The display the install is bound to is used. That binding is the owner's decision of 2026-10-21.
-4. **Command line, working directory and show state.** These come from the item. This is what Program Manager does when an item is opened, and it is the question "running group items (args/dir/show)" left open on 2026-10-23. Program Manager's run of an item is to be read out of `PROGMAN.EXE` (seg:off) before it is built, as everything is.
+4. **Command line, working directory and show state.** These come from the item, as Program Manager's File Open takes them ([[topic:program-manager-dde]], "Running an item"; [[probe:pmitem]]). The command's first word is the file and the rest its parameters, given to `ShellExecute` with the working directory made upper case, the Windows directory where the item has none, and `SW_SHOWMINNOACTIVE` for an item marked minimized, else `SW_SHOWNORMAL`. A document is opened by the program its association names. A working directory that is not there is asked about, and the program runs in the Windows directory if the person goes on.
 
 Today the page runs a single machine, and choosing a kept program rebuilds it on that program's stack (`rebuild`, `src/run/page/machine.ts`). Choosing an item can begin as exactly that, plus the item's command line. Running items from two different installs at once needs the decision in the next section.
 
@@ -100,8 +100,8 @@ The asset bundle has no `WRITE.EXE` or `WINHELP.EXE`, so an install's "Read Me" 
 
 ## The order of the work
 
-1. **A stack's groups in one place.** The groups of every kept program and their items, as one list each front end reads (TypeScript: from the page's store; Rust: from the library). Unit tests on caribb's and SimTower's group files, as the corpus keeps them.
-2. **An item run as Program Manager runs it.** Read it out of `PROGMAN.EXE`: the command line split into program and arguments, the working directory, the show state, the minimized flag, and what it does when the program is not found. Record it with a probe that runs items of a group made for it, in both engines.
+1. **A stack's groups in one place** (done, 2026-11-06). `launchGroups` in `src/layers/launch.ts` and its twin `launch_groups` in `crates/winbox-win16/src/launch.rs` list every kept program's groups, in Program Manager's start-up order. Each install's groups come from the `PROGMAN.INI` its own layers keep. A program kept loose gets WinBox's own group of its `.EXE` files, marked as WinBox's. Each item has its name, command line, working directory, icon, hot key and minimized flag. Each item also says what running it does: the program found as Program Manager and SHELL find it, or why there is none, such as "needs WRITE.EXE, which is not in this Windows" or "nothing in this Windows opens .ZQX files". The two engines are held to one file, `test/layers/launch.json`, made from built-up group files, a `WIN.INI` and a registration database. Caribbean Treasure's install is tested in both engines (`caribb_test.ts`, `install_caribb.rs`), and SimTower kept loose from the corpus's files in TypeScript. The page and the native library are yet to call them.
+2. **An item run as Program Manager runs it** (done, 2026-11-06). It was read out of `PROGMAN.EXE` (seg5 `05cc`, `067d`, `03e7`, `01b3`; seg1 `00ec`), recorded by [[probe:pmitem]], and followed by WinBox's own Program Manager in both engines. That probe agrees whole with WinBox's Program Manager and with Microsoft's ([[topic:program-manager-dde]], "Running an item").
 3. **The page's launcher menu.** It runs a single machine, as now: choosing an item rebuilds on its stack and runs it.
 4. **Several machines on the page** (design A): an engine instance and a tab for each machine, Close and keep on each, and the trace panel following the machine in focus.
 5. **The native library and launcher window,** with `--launcher` and `--launch`.
@@ -120,4 +120,8 @@ Decided on 2026-11-06:
 
 ## Not yet done
 
-All of it. The page's three improvements are being built (2026-11-06). Program Manager's running of an item has not been read out.
+Steps 3 to 7. The page's three improvements are being built (2026-11-06).
+
+- Running an item on the page or natively needs a run that takes a command line, a working directory and a show state: `run()` and `System::launch` take a program's path alone.
+- The launcher's list assumes what a stack seen from outside a machine cannot know. No environment variable is put into a command (`DoEnvironmentSubst`). `PATH` is what the caller passes. Only drive C: is there, so an item on an image's drive is listed as not found.
+- SimTower's install, whose "Read Me" and "Help" need `WRITE.EXE` and `WINHELP.EXE`, is not in the repository, so no test holds its group. Its loose files are tested in TypeScript only.

@@ -1,7 +1,7 @@
 ---
 kind: topic
 name: Program Manager's DDE interface
-summary: The DDE server installers drive in Windows 3.1's Program Manager — how it starts and ends and what it writes then, the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, and what it writes to its group files and PROGMAN.INI.
+summary: The DDE server installers drive in Windows 3.1's Program Manager — how it starts and ends and what it writes then, the conversations it offers, the execute strings it reads (CreateGroup, AddItem, ReplaceItem, DeleteItem, ShowGroup, DeleteGroup, ExitProgman, Reload) with their exact syntax, defaults and failures, the text it answers for "Groups" and for a group, what it writes to its group files and PROGMAN.INI, and how it runs a group's item.
 probes:
   [
     progdde,
@@ -16,6 +16,7 @@ probes:
     pmshell,
     pmstart,
     execpk,
+    pmitem,
   ]
 ---
 
@@ -234,6 +235,34 @@ Everything read out here is `PROGMAN.EXE`. Its DDE code is segment 7; its data s
 
 [[probe:pmbare]] sends them so, on a drive with no group files. The CreateGroup was answered 8000h; the ReplaceItem refused, `DMLERR_NOTPROCESSED`, the new group having no such item; the AddItem answered 8000h, a separate execute, so the failure stops nothing. The item came at 21, 0, where there was room, its command and directory in the installer's lower case, its directory tag `c:\windows\games\`, and, with no program there in the probe, icon index 6. `GAMES.GRP` was 806 bytes, and `Order=` became ` 1 2`. A stand-in answers the ReplaceItem 0 and still takes the AddItem, placing it where there is room, as after any ReplaceItem.
 
+## Running an item
+
+[[read out]] How Program Manager runs a group's item: what File Open, Enter and a double-click do, the item's command and directory, and the boxes it shows when the program is not found.
+
+- **Its paths to it.** File Open is `WM_COMMAND` 102 to the frame, which its frame procedure passes to seg5 `05cc` with the rest of its menu's commands (seg2 `28d3`). Enter is that command's accelerator (the menu says `&Open\tEnter`). A double-click on an item, `WM_LBUTTONDBLCLK` in a group's window, posts the frame `WM_COMMAND` 102, or 106 (Properties) with Alt held (seg2 `1b2c`-`1b71`). Each first asks the MDI client for its active child (`WM_MDIGETACTIVE`) and keeps the command's help context, the command and 1388h, at DS:154h (`05d9`-`05fd`).
+- **Which item.** File Open runs the current group's first item in memory, `[13Ch]`'s `[6]`: the one last selected, or the one an `AddItem` has just put first (`067d`-`06a1`). With no current group it does nothing. A current group that is an icon is restored instead, `WM_SYSCOMMAND` with `SC_RESTORE` (`03b9`, `06a4`-`06b5`). The StartUp group's items go the same way (seg4 `1c36`), and an item's hot key (seg2 `0ef0`).
+- **The item started** (seg5 `03e7`-`05c9`):
+  1. The Windows directory is made current (`03f5`).
+  2. The command and working directory are read from the group's block, as `commandOf` reads them (seg4 `2967`; [[format:grp]]). With no directory tag, the command is the stored one and the working directory its path.
+  3. For File Open, Shift held starts it minimized. Otherwise the item's own minimized tag, `8103h`, does (`0415`-`0450`). Its hot key, tag `8102h`, is kept at DS:12Ah, and the item at DS:140h, for the window the program makes (`0456`-`0470`).
+  4. `DoEnvironmentSubst` is called on the command (100h bytes) and on the directory (80h) (`0473`-`048a`).
+  5. The directory current is kept (`0497`, seg5 `0b93`). The working directory is made upper case and OEM (`AnsiUpper`, `AnsiToOem`), and is tried: its drive by `GetDriveType`, neither nought nor 1 (seg6 `009c`), then made current (seg5 `0bdc`). If either fails, a box asks "The working directory is invalid." (caption "Invalid Path", strings 34h and 8Eh, `MB_OKCANCEL | MB_ICONEXCLAMATION | MB_DEFBUTTON2`). Cancel ends it there; OK goes on (`04b4`-`04f5`).
+  6. The directory kept is made current again, and the working directory is made ANSI again (`04f8`-`050b`).
+  7. The command is started by seg5 `01b3`. The leading spaces are passed over. The first word is the file, ended with a nought at the space, and the rest is the parameters. `ShellExecute` is called from the frame with no verb, the working directory, and `SW_SHOWMINNOACTIVE` (7) for a minimized item or `SW_SHOWNORMAL` (1) (`0226`-`025b`). An item is never started by `WinExec`. `ShellExecute` finds a document's program from its association, as it does for any caller ([[topic:programs-and-their-files]]).
+  8. `ShellExecute`'s answer is kept in the item, at `[4]` (`0530`-`0536`). An answer below 32 is made a string by the table at seg5 `0309`: 2 is 3Fh, "Cannot find file %s (or one of its components)...", 3 is 35h, "The path %s is invalid.", and 31 is 41h, "No application is associated with the specified file...". The box is caption 3Ch, "Application Execution Error", with the command's file in its `%s`, `MB_SYSTEMMODAL | MB_ICONEXCLAMATION`. For a StartUp item the file is quoted and followed by string 91h, "' specified in the startup group" (`0539`-`05a5`).
+  9. The directory kept is made current again (`05aa`).
+- **Its boxes** (seg1 `00ec`): no box is shown while a DDE execute runs, `[22h]`, set by seg7 `0338`; the call answers 1. The caption and text are its own strings. The text is formatted by `wsprintf` with the value given, or it is "Unexpected DOS error: %d." for a number below 20h. The owner is `GetLastActivePopup` of the frame.
+- [[measured]] [[probe:pmitem]] makes a group by DDE, then for each kind of item an `[AddItem]`, then File Open by posting the frame `WM_COMMAND` 102. Its second program records its command line, current directory, show command and file:
+  - `C:\WINDOWS\PMITEMC.EXE one two` was given `one two` in `C:\WINDOWS`, its own directory, shown with 1.
+  - With the directory `C:\ORACLE\PMDIR` it ran there. The same in lower case, `c:\oracle\pmdir`, ran in `C:\ORACLE\PMDIR`, its arguments' case kept.
+  - `PMITEMC.EXE bare`, with no path, ran in `C:\WINDOWS`, found there.
+  - The item marked minimized was shown with 7.
+  - `C:\ORACLE\PMITEM.PMI`, a document whose extension `WIN.INI`'s `[extensions]` gives the program as `PMITEMC.EXE ^.pmi`, gave it `C:\ORACLE\PMITEM.pmi` in `C:\ORACLE`.
+  - `C:\WINDOWS\NOSUCH.EXE gone` showed "Application Execution Error", OK alone (its identifier 2), and "Cannot find file C:\WINDOWS\NOSUCH.EXE (or one of its components)...", the file without its arguments.
+  - A document of an extension with no association showed the same caption and "No application is associated with the specified file. Create an association by using File Manager."
+  - A working directory not there, `C:\NOSUCH`, asked "The working directory is invalid." with OK and Cancel. Cancel started nothing. Opened again and answered OK, the program ran in `C:\WINDOWS`: `ShellExecute` given a directory that is not there changes nothing.
+- [[read out]] **Why a program can see the box.** Program Manager's box is a system-modal dialog. `DialogBox`'s loop takes its messages with USER's own `PeekMessage` with `PM_REMOVE` alone (`USER.EXE` seg25 `07bf`-`07c7`, seg1 `2440`). So the first time it finds nothing, the other tasks run, before the box shows and its task is locked ([[topic:dialog-boxes]]). [[probe:pmitem]] finds the box then. Both engines had not let the other tasks run there, so the probe never ran again.
+
 ## In winbox.js
 
 Program Manager is Microsoft's program, run from the installation, and both engines run [[probe:progdde]] whole, its `SYSTEM.INI` naming the probe as the shell, as the recorder has it. What Program Manager asks of the engines underneath, and what had to be followed for it:
@@ -276,6 +305,7 @@ Each command does what `PROGMAN.EXE`'s handler does, through the same calls (`co
 
 - **Groups** (seg4): `LoadGroup` (`1d4d`) -- its number the lowest the list from `[13Ah]` has not (`1d21`), its window made with the group in its word, its file read and checked (`018a`, `1c95`), its title, its placement where `nCmdShow` is not nought, its icons made again for another display (`17ae`), its items (`1735`), linked after `[13Eh]` and made current, `CalcChildScroll`; `CreateGroup` (`210e`) -- forty groups' windows refusing it, the file named from the name (`0ea5`, `0d92`) or a given path's spaces made `_` and `.GRP` added (`2044`), a file there loaded unless a group has it (`20be`), else a new block written by `OpenFile`'s `OF_PARSE`, `_lcreat` and `_lwrite`, loaded, renamed (`248b`) and `PROGMAN.INI`'s groups written (`2662`); unloading (`1f9a`), with its `[13Eh]` left as it was; `DeleteGroup` (`23af`), the file deleted by DOS 41h and its key written away; `ShowGroup`'s `ShowWindow`; `Reload` of every group (seg7 `09b3`) or of one (`0a22`).
 - **Items**: `AddItem`'s defaults (seg5 `00ed`, seg6 `0398`, `FindExecutable`), the 666 rule (seg7 `05f8`) and a `ReplaceItem`'s place; `CreateNewItem` (seg4 `105d`) -- the icon by `ExtractAssociatedIcon`, `LockResource` and `DumpIcon`, the block's own operations ([[format:grp]]), the item put in memory and placed (`0f09`, seg2 `1325`: where there is room, its title measured by `DrawText` in the icons' title font), and the file written by `WriteGroup` (`04a5`), its block let go where any of it fails; `DeleteItem` and `ReplaceItem` (seg4 `15a8`); and each group window's scroll bars fitted to its items (seg2 `0b04`).
+- **Running an item**, as read out above (`run.rs`, `run.ts`): the frame's `WM_COMMAND` asks for the MDI client's active child and keeps the help context, and File Open runs the current group's first item by seg5 `03e7`, through the same calls -- `DoEnvironmentSubst`, `AnsiUpper`, `AnsiToOem`, `GetDriveType`, DOS 3Bh, `ShellExecute` -- with its two boxes, their strings kept by their numbers in `PROGMAN.EXE`'s string table; the other menu commands go to `DefFrameProc` as before. [[measured]] [[probe:pmitem]] agrees whole, 59 of 59, with WinBox's Program Manager in both engines, and with Microsoft's run in both.
 - **Saving** (seg4 `2845`): `Window=`, the profile's groups, and each group's place and items' into its file (`2518`), for `[ExitProgman(1)]`, `WM_CLOSE` and `WM_ENDSESSION`.
 - **Its group windows' procedure** (seg2 `19b2`): `WM_CREATE` keeping the group and taking the focus, `WM_SIZE` fitting the scroll bars, `WM_CLOSE` minimizing, `WM_SYSCOMMAND`'s restore and maximize, `WM_MDIACTIVATE` keeping the current group (`1d43`); the rest `DefMDIChildProc`'s.
 - **Its icons**: the stand-in is made with no resources, so `PROGMAN.EXE`'s icons -- icon 2 and 6, which `ExtractAssociatedIcon` gives an item whose program is not found, and icon 9 and the rest, which a DOS program's item names by `PROGMAN.EXE` -- come from the asset bundle's store, by the owner's decision of 2026-10-22: `LoadIcon` of its instance reads the store's `PROGMAN.EXE`, and `ExtractIcon` of `PROGMAN.EXE`, `\WINDOWS\PROGMAN.EXE` or `C:\WINDOWS\PROGMAN.EXE` while it runs and no such file is on C: (`resources.rs`, `shell/programs.rs`; `progman/stored.ts`). The bundle carries it, its code taken out ([[topic:asset-bundle]]); a harness run with `PROGMAN.EXE` taken off the installation, which has no store, is given the bundle's (`bundle_store`, `bundleStore`).
@@ -312,9 +342,10 @@ Of WinBox's own Program Manager, beyond starting, ending, its DDE and what its c
 - What only a shown group window is sent -- painting, the mouse, keys, files dropped -- and the gathering of what to paint while a group is made (`[65Ch]`).
 - The file's time kept to read a changed file again (seg4 `01f1`-`0263`, 465h, 466h): its blocks are never discarded. An item whose icon `ExtractAssociatedIcon` cannot give, which the file reads at nought and WinBox's does not make. The hourglass while it saves; its icons 2 and 7 and accelerators at start-up; the parser's list past 100h bytes.
 - As the shell: the StartUp group (seg3 `00a6`, seg4 `1b69`); `WM_CLOSE` asking to end Windows (it does nothing yet); the box for a program its start-up could not start (seg1 `00ec`, strings 90h and 92h); and `MinOnRun`'s minimizing of the frame, which is never shown.
-- The class `pmhotkey`; its `WH_MSGFILTER` hook; its menus' commands, `WM_INITMENU`, `WM_MENUSELECT`, `WM_WININICHANGE` and `ShellHelp`; and 464h and `OTHERWINDOWCREATED` for a program one of its items or its start-up started ([12Ch], seg5 `0349`-`0386`).
+- The class `pmhotkey`; its `WH_MSGFILTER` hook; its menus' commands but File Open, `WM_INITMENU`, `WM_MENUSELECT`, `WM_WININICHANGE` and `ShellHelp`; and 464h and `OTHERWINDOWCREATED` for a program one of its items or its start-up started ([12Ch], seg5 `0349`-`0386`): the item's hot key kept at DS:12Ah is never given to the program's window, and the instance `ShellExecute` answered is not kept in the item (`[4]`).
+- Of running an item: an item's hot key and the StartUp group's items (seg2 `0ef0`, seg4 `1c36`), which run as File Open does; Shift held with File Open, read out and not measured; a double-click and Enter, which only a shown group window gets.
 
 In install runs and on the page:
 
-- An installer that cannot be started leaves the run waiting on the shell, told nothing; a probe that records Program Manager as the shell starting a command line, and `ShellExecute` given a directory that is not there.
-- Running a group's item from the page's list of a kept program's groups or the native build's `--list`: it needs a command line's arguments, a working directory and a show state, where `run()` and `System::launch` take a program's path alone ([[format:layer]], "Its groups").
+- An installer that cannot be started leaves the run waiting on the shell, told nothing; a probe that records Program Manager as the shell starting a command line.
+- Running a group's item from the page or the native build: the launcher's list says what each item runs and why one cannot (`src/layers/launch.ts`, `crates/winbox-win16/src/launch.rs`; [[guide:launcher]]), but `run()` and `System::launch` still take a program's path alone, with no arguments, working directory or show state.
