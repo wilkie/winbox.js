@@ -28,10 +28,10 @@ import {
 } from '../store.js';
 import {
   copies,
-  drivePrograms,
-  driveVolumes,
   handles,
-  programNow,
+  type Machine,
+  machineOf,
+  programOf,
   publish,
   session,
   state,
@@ -116,17 +116,19 @@ export async function takeCues(read: Read[]) {
  * the engine holds the same array (`Setup.drives`) for the machine it makes
  * afresh once Windows has ended.
  */
-function setDrives(sets: DriveSet[]) {
+function setDrives(machine: Machine, sets: DriveSet[]) {
   const sorted = [...sets].sort((one, other) => one.letter.localeCompare(other.letter));
 
-  state.drives.splice(0, state.drives.length, ...sorted);
+  machine.drives.splice(0, machine.drives.length, ...sorted);
 }
 
 /**
  * The programs on a drive's disk read again: none where it is empty. An
  * installer on it is offered (`driveRows`).
  */
-async function readPrograms(set: DriveSet) {
+async function readPrograms(machine: Machine, set: DriveSet) {
+  const { drivePrograms, driveVolumes } = machine;
+
   if (set.ejected) {
     drivePrograms.delete(set.letter);
     driveVolumes.delete(set.letter);
@@ -151,7 +153,11 @@ async function readPrograms(set: DriveSet) {
  * letter asked for -- a kept program's, pinned. Mounted on the machine as
  * it is, so a program running sees them at once. What could not be, said.
  */
-export async function mountTaken(taken: Taken[], letters: Record<string, string> = {}) {
+export async function mountTaken(
+  machine: Machine,
+  taken: Taken[],
+  letters: Record<string, string> = {}
+) {
   const groups: { kind: ImageKind; disks: Disk[]; letter?: string }[] = [];
 
   for (const kind of ['floppy', 'iso'] as const) {
@@ -166,9 +172,9 @@ export async function mountTaken(taken: Taken[], letters: Record<string, string>
     groups.push({ kind: 'hdd', disks: [one.disk], letter: letters[keyOf(one.disk)] });
   }
 
-  const given = assignLetters(groups, state.drives);
+  const given = assignLetters(groups, machine.drives);
   const said: string[] = [];
-  const current = session.made;
+  const current = machine.made;
 
   for (const [at, group] of groups.entries()) {
     const letter = given[at];
@@ -193,12 +199,12 @@ export async function mountTaken(taken: Taken[], letters: Record<string, string>
       continue;
     }
 
-    setDrives([...state.drives, set]);
-    await readPrograms(set);
+    setDrives(machine, [...machine.drives, set]);
+    await readPrograms(machine, set);
     said.push(`${letter}: ${setText(set)}.`);
   }
 
-  await mediaChanged();
+  await mediaChanged(machine);
   publish();
   return said;
 }
@@ -207,11 +213,11 @@ export async function mountTaken(taken: Taken[], letters: Record<string, string>
  * Images dropped on a drive's row put in its set, after its disks, in
  * the order of their names; the first of them put in the drive.
  */
-export async function addToDrive(letter: string, taken: Taken[]) {
-  const set = state.drives.find((one) => one.letter === letter);
+export async function addToDrive(machine: Machine, letter: string, taken: Taken[]) {
+  const set = machine.drives.find((one) => one.letter === letter);
 
   if (!set) {
-    return mountTaken(taken);
+    return mountTaken(machine, taken);
   }
 
   if (taken.some((one) => one.kind !== set.kind) || set.kind === 'hdd') {
@@ -227,7 +233,7 @@ export async function addToDrive(letter: string, taken: Taken[]) {
   for (const disk of orderSet(taken.map((one) => one.disk))) {
     set.disks.push(disk);
 
-    const refused = await session.made?.addDisk(set, set.disks.length - 1);
+    const refused = await machine.made?.addDisk(set, set.disks.length - 1);
 
     if (refused) {
       set.disks.pop();
@@ -236,19 +242,19 @@ export async function addToDrive(letter: string, taken: Taken[]) {
     }
   }
 
-  await mediaChanged();
-  return [await insertDisk(letter, first)];
+  await mediaChanged(machine);
+  return [await insertDisk(machine, letter, first)];
 }
 
 /** A drive's disk, from nought, put in it; what is said of it. */
-export async function insertDisk(letter: string, disk: number) {
-  const set = state.drives.find((one) => one.letter === letter);
+export async function insertDisk(machine: Machine, letter: string, disk: number) {
+  const set = machine.drives.find((one) => one.letter === letter);
 
   if (!set || disk >= set.disks.length) {
     return `${letter}: has no disk ${disk + 1}.`;
   }
 
-  const refused = session.made?.insert(letter, disk) ?? null;
+  const refused = machine.made?.insert(letter, disk) ?? null;
 
   if (refused) {
     return `${refused}.`;
@@ -256,41 +262,44 @@ export async function insertDisk(letter: string, disk: number) {
 
   set.current = disk;
   set.ejected = false;
-  await readPrograms(set);
+  await readPrograms(machine, set);
   publish();
   return `${letter}: ${setText(set)}.`;
 }
 
 /** A drive's next disk put in, the first after the last; the one after the disk taken out where it is empty. */
-export const nextDisk = (set: DriveSet) =>
-  insertDisk(set.letter, (set.current + 1) % set.disks.length);
+export const nextDisk = (machine: Machine, set: DriveSet) =>
+  insertDisk(machine, set.letter, (set.current + 1) % set.disks.length);
 
 /** A drive's disk taken out, the drive left empty. */
-export async function ejectDisk(set: DriveSet) {
-  const refused = session.made?.eject(set.letter) ?? null;
+export async function ejectDisk(machine: Machine, set: DriveSet) {
+  const refused = machine.made?.eject(set.letter) ?? null;
 
   if (refused) {
     return `${refused}.`;
   }
 
   set.ejected = true;
-  await readPrograms(set);
+  await readPrograms(machine, set);
   publish();
   return `${set.letter}: ${setText(set)}.`;
 }
 
 /** A drive's images let go of, and the drive with them. */
-export async function removeDrive(set: DriveSet) {
-  session.made?.unmount(set.letter);
-  setDrives(state.drives.filter((one) => one !== set));
-  drivePrograms.delete(set.letter);
-  driveVolumes.delete(set.letter);
+export async function removeDrive(machine: Machine, set: DriveSet) {
+  machine.made?.unmount(set.letter);
+  setDrives(
+    machine,
+    machine.drives.filter((one) => one !== set)
+  );
+  machine.drivePrograms.delete(set.letter);
+  machine.driveVolumes.delete(set.letter);
 
-  if (state.driveOffer?.letter === set.letter) {
-    state.driveOffer = null;
+  if (machine.driveOffer?.letter === set.letter) {
+    machine.driveOffer = null;
   }
 
-  await mediaChanged();
+  await mediaChanged(machine);
   publish();
   return `${set.letter}: is no more.`;
 }
@@ -300,9 +309,9 @@ export async function removeDrive(set: DriveSet) {
  * the browser downloads (the owner's decision 1): the image dropped is
  * never written, and is not offered to be written over.
  */
-export function saveImage(set: DriveSet) {
+export function saveImage(machine: Machine, set: DriveSet) {
   const disk = set.disks[set.current];
-  const bytes = session.made?.diskImage(set.letter, set.current) ?? null;
+  const bytes = machine.made?.diskImage(set.letter, set.current) ?? null;
 
   if (!bytes) {
     return `${set.letter}: has nothing to save.`;
@@ -319,17 +328,17 @@ export function saveImage(set: DriveSet) {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-  const changed = session.made?.diskChanged(set.letter, set.current) || disk.written;
+  const changed = machine.made?.diskChanged(set.letter, set.current) || disk.written;
 
   return `${set.letter}: saved as ${name}${changed ? ', as programs wrote it' : ', as it was'}.`;
 }
 
 /** An installer on a drive offered to install, as an archive's is. */
-export function offerDrive(set: DriveSet, installer: Program) {
+export function offerDrive(machine: Machine, set: DriveSet, installer: Program) {
   const name = set.disks[0].name.replace(/\.[^.]*$/, '');
 
   state.offer = null;
-  state.driveOffer = { letter: set.letter, installer, name };
+  machine.driveOffer = { letter: set.letter, installer, name };
   publish();
   return `${set.letter}: holds an installer, ${installer.path}: install it.`;
 }
@@ -338,8 +347,8 @@ export function offerDrive(set: DriveSet, installer: Program) {
  * The images in the drives, as a kept program remembers them: each set's
  * in order, its letter pinned; but the drive `except`.
  */
-export function mediaNow(except?: string): Medium[] {
-  return state.drives
+export function mediaNow(machine: Machine, except?: string): Medium[] {
+  return machine.drives
     .filter((set) => set.letter !== except)
     .flatMap((set) =>
       set.disks.map((disk) => ({
@@ -362,10 +371,10 @@ const trackOf = (disk: Disk) => ({ name: disk.name, size: disk.size, key: keyOf(
  * else (the owner's decision 2: no copy of a read-only image unless asked
  * for).
  */
-export async function rememberImages(program: KeptProgram) {
+export async function rememberImages(machine: Machine, program: KeptProgram) {
   const copy = state.keepImages;
 
-  const disks = state.drives.flatMap((set) => set.disks);
+  const disks = machine.drives.flatMap((set) => set.disks);
   const files = [...disks, ...disks.flatMap((disk) => disk.tracks ?? [])];
 
   for (const medium of (program.media ?? []).flatMap((one) => [one, ...(one.tracks ?? [])])) {
@@ -393,16 +402,16 @@ export async function rememberImages(program: KeptProgram) {
  * The drives changed -- a set added or let go -- while a kept program is
  * open: it is run with them from now on, and remembers them.
  */
-export async function mediaChanged() {
-  const program = programNow();
+export async function mediaChanged(machine: Machine) {
+  const program = programOf(machine);
 
-  if (!program || state.installing) {
+  if (!program || machine.installing) {
     return;
   }
 
   /* Those it is run with and not had yet, still asked for, are kept. */
   const media = [
-    ...mediaNow(),
+    ...mediaNow(machine),
     ...state.needed
       .filter((one) => one.program === program.name && !one.disk)
       .map(({ letter, kind, name, size, key, tracks }) => ({
@@ -423,9 +432,13 @@ export async function mediaChanged() {
 
   try {
     await rememberProgram(program);
-    await rememberImages(program);
+    await rememberImages(machine, program);
   } catch (error: any) {
-    status(`${program.name}'s images could not be kept: ${error?.message ?? error}`, 'error');
+    status(
+      `${program.name}'s images could not be kept: ${error?.message ?? error}`,
+      'error',
+      machine
+    );
   }
 }
 
@@ -435,12 +448,12 @@ export async function mediaChanged() {
  * read it, or its copy. One not had is asked for by its name (`needed`);
  * a set is mounted once every one of its images is had.
  */
-export async function mountMedia(program: KeptProgram) {
+export async function mountMedia(machine: Machine, program: KeptProgram) {
   state.needed = state.needed.filter((one) => one.program !== program.name);
 
   const media = (program.media ?? []).filter(
     (medium) =>
-      !state.drives.some(
+      !machine.drives.some(
         (set) =>
           set.letter === medium.letter && set.disks.some((disk) => keyOf(disk) === medium.key)
       )
@@ -519,23 +532,28 @@ async function fromHandle(handle: any, medium: Medium): Promise<Disk | null> {
   }
 }
 
-/** The sets whose images are all had mounted, at the letters kept; the rest still asked for. */
+/**
+ * The sets whose images are all had mounted, at the letters kept, on the
+ * machine running the program that asked for them; the rest still asked
+ * for, and those of a program no machine runs.
+ */
 export async function mountNeeded() {
   const letters = [...new Set(state.needed.map((one) => `${one.program}\n${one.letter}`))];
 
   for (const both of letters) {
     const [program, letter] = both.split('\n');
     const wanted = state.needed.filter((one) => one.program === program && one.letter === letter);
+    const machine = machineOf(program);
 
-    if (wanted.some((one) => !one.disk)) {
+    if (wanted.some((one) => !one.disk) || !machine) {
       continue;
     }
 
     state.needed = state.needed.filter((one) => !wanted.includes(one));
 
     /* Whatever is at its letter now makes way for it. */
-    for (const set of state.drives.filter((one) => one.letter === letter)) {
-      await removeDrive(set);
+    for (const set of machine.drives.filter((one) => one.letter === letter)) {
+      await removeDrive(machine, set);
     }
 
     const set: DriveSet = {
@@ -545,15 +563,15 @@ export async function mountNeeded() {
       current: 0,
       ejected: false,
     };
-    const refused = await session.made?.mount(set);
+    const refused = await machine.made?.mount(set);
 
     if (refused) {
-      status(`${refused}.`, 'error');
+      status(`${refused}.`, 'error', machine);
       continue;
     }
 
-    setDrives([...state.drives, set]);
-    await readPrograms(set);
+    setDrives(machine, [...machine.drives, set]);
+    await readPrograms(machine, set);
   }
 
   publish();

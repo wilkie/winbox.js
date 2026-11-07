@@ -9,7 +9,8 @@
  *
  * Which folder is being browsed is published (`browsing`), for whichever
  * component shows it -- the side's "Browse files…", a drive's card, a
- * launcher's -- to open it.
+ * launcher's -- to open it. It browses the drives of the machine shown as
+ * it was opened, the dialog over the page while it is open.
  */
 
 import { type Program } from '../drive.js';
@@ -26,7 +27,7 @@ import {
   pathText,
   volumeEntries,
 } from './files.js';
-import { drivePrograms, session, state, status, statusLine } from './state.js';
+import { current, type Machine, status, statusLine } from './state.js';
 
 /** The folder the file browser shows: its drive's letter and its names; null while it is closed. */
 export interface Browsing {
@@ -39,9 +40,16 @@ export interface Browsing {
 
 export const browsing = new Observable<Browsing | null>(null);
 
+/** The machine whose drives are browsed: the one shown as the browser was opened. */
+let browsed: Machine | null = null;
+
+/** The machine browsed, or the one shown. */
+const machineBrowsed = () => (browsed && !browsed.closed ? browsed : current());
+
 /** The file browser opened on a drive's folder, its root by default: what it read before read afresh. */
 export function browse(letter = 'C', parts: string[] = []) {
   forget();
+  browsed = current();
   browsing.set({
     letter: letter.toUpperCase(),
     parts,
@@ -64,7 +72,7 @@ export interface DriveChoice {
 export function drivesToBrowse(): DriveChoice[] {
   return [
     { letter: 'C', text: 'C: hard disk' },
-    ...state.drives.map((set) => ({
+    ...(machineBrowsed()?.drives ?? []).map((set) => ({
       letter: set.letter,
       text: `${set.letter}: ${set.kind === 'iso' ? 'CD-ROM drive' : set.kind === 'hdd' ? 'hard disk' : 'floppy drive'}`,
     })),
@@ -86,17 +94,18 @@ export function forget() {
 }
 
 async function treeNow() {
-  const plan = session.plan;
+  const machine = machineBrowsed();
+  const plan = machine?.plan;
 
   if (!plan) {
     return null;
   }
 
   if (!tree) {
-    const told = await session.made?.changes().catch(() => null);
+    const told = await machine.made?.changes().catch(() => null);
 
     /* No machine to ask: what was kept is what is put back on it. */
-    tree = driveTree(plan, told ?? session.given, session.given);
+    tree = driveTree(plan, told ?? machine.given, machine.given);
   }
 
   return tree;
@@ -107,10 +116,11 @@ async function volumesOf(set: DriveSet) {
   let had = volumes.get(set.letter);
 
   if (!had) {
+    const made = machineBrowsed().made;
     const disk = set.disks[set.current];
     const written =
-      set.kind !== 'iso' && session.made?.diskChanged(set.letter, set.current)
-        ? session.made.diskImage(set.letter, set.current)
+      set.kind !== 'iso' && made?.diskChanged(set.letter, set.current)
+        ? made.diskImage(set.letter, set.current)
         : null;
 
     had = {
@@ -161,7 +171,7 @@ export async function listFolder(letter: string, parts: string[]): Promise<Listi
         : none(`${pathText(letter, parts)} is not there.`);
     }
 
-    const set = state.drives.find((one) => one.letter === letter);
+    const set = machineBrowsed().drives.find((one) => one.letter === letter);
 
     if (!set) {
       return none(`There is no ${letter}: drive.`);
@@ -195,7 +205,7 @@ export async function fileBytes(letter: string, parts: string[]): Promise<Uint8A
     return (root && nodeAt(root, parts)?.data) ?? null;
   }
 
-  const set = state.drives.find((one) => one.letter === letter);
+  const set = machineBrowsed().drives.find((one) => one.letter === letter);
 
   if (!set || set.ejected) {
     return null;
@@ -237,9 +247,11 @@ export async function downloadFile(letter: string, parts: string[]) {
  */
 export async function programAt(letter: string, parts: string[]): Promise<Program> {
   const path = pathText(letter, parts);
-  const listed = [...(session.plan?.programs ?? []), ...(drivePrograms.get(letter) ?? [])].find(
-    (program) => program.path === path
-  );
+  const machine = machineBrowsed();
+  const listed = [
+    ...(machine.plan?.programs ?? []),
+    ...(machine.drivePrograms.get(letter) ?? []),
+  ].find((program) => program.path === path);
 
   if (listed) {
     return listed;
@@ -259,7 +271,7 @@ export async function runFile(letter: string, parts: string[]) {
     return;
   }
 
-  await run(program);
+  await run(machineBrowsed(), program);
 }
 
 /** Whether a name is a program's: an `.EXE`. */

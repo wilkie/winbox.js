@@ -160,18 +160,26 @@ the screen itself is the engine's.
 
 **State and actions** (`src/run/page/`, plain TypeScript, no React):
 
-- `state.ts` holds what has been dropped and kept, the drives, the install
-  under way and the settings the controls hold (`state`), what the actions
-  share beside it (`session`: the engine, the plan, what was kept), and three
-  values the components read: `pageView` (everything but the trace and the
-  status line), `traceView` and `statusLine`. `publish()` makes `pageView`
-  afresh from the state; every action calls it where the page's old
-  `render` functions were called.
+- `state.ts` holds what has been dropped and kept and the page's settings
+  (`state`), what the actions share beside it (`session`), the machines
+  (`machines`, each a `Machine`: a tab, on an engine instance of its own,
+  with its stack -- the kept program it runs, or the base -- its display,
+  coprocessor and sound card, its drives of images, the install under way on
+  it, its plan, what it kept, its trace and its own screen's element; the
+  one shown, `current()`), and three values the components read: `pageView`
+  (everything but the trace and the status line, the side speaking for the
+  machine shown, and the tabs), `traceView` (the machine shown's) and
+  `statusLine` (the page's one; a line from a machine behind is named with
+  it). `publish()` makes `pageView` afresh; every action calls it where the
+  page's old `render` functions were called. No two machines run one stack
+  (`runningOn`): each keeps what it writes by its stack.
 - `view.ts` makes each panel's rows and words from the state, changing
   nothing (`windowsText`, `driveRows`, `installView`, `keptRows`, ...): what
   `test/run/page_view_test.ts` tests from jest.
-- The actions, by concern: `machine.ts` (the engine chosen, the `Page` given
-  it, the trace, keeping what programs write, `rebuild`), `accept.ts` (files
+- The actions, by concern: `machine.ts` (the engine chosen, a machine made
+  with the `Page` its engine is given, shown and closed -- `addMachine`,
+  `select`, `closeMachine` -- its trace, keeping what its programs write,
+  `rebuild`), each taking the machine it acts on, `accept.ts` (files
   dropped or chosen), `images.ts` (the drives of images and a kept program's
   images), `install.ts` (installers and the kept programs), `groups.ts` (each
   kept program's groups, `launchGroups` over its stack, each item's icon
@@ -246,9 +254,16 @@ list's, `Run C:\APPS\NOTEPAD.EXE`; the browser closes). What is done is said
 in the dialog's own status line, the page's being hidden while it is open.
 
 **The desktop.** `desktop.tsx` renders an empty `<section id="desktop">` and
-hands it to `start`; the engine fills it (`makeScreen`, `screenNote`) and
-React never renders into it, so the canvas, its host and the ARIA mirror
-(`aria-mirror.ts`) are the engine's alone. Its CSS (the canvas centred and
+hands it to `start`; each machine puts an element of its own in it, which
+its engine fills (`makeScreen`, `screenNote`), the shown machine's alone not
+`hidden`. React never renders into it, so the canvas, its host and the ARIA
+mirror (`aria-mirror.ts`) are the engines' alone. Above it, the machines'
+tabs (the WAI-ARIA tabs pattern: a tablist "Machines", a tab for each named
+by its install, the arrows among them, the selection following; the section
+the tab panel), and beside the tablist, outside it, the Close of the
+machine shown (`Close pmitem`), which keeps what it wrote first and so
+asks nothing; Delete on a tab closes it too. Machines behind keep running,
+not heard (`Engine.heard`); an engine closed is ended (`Engine.dispose`). Its CSS (the canvas centred and
 unbordered, the mirror read and not seen) is the section's `sx`.
 
 **The screen's size** (`page/screen.ts`, `screenBox`, `displayAspect`). The
@@ -314,9 +329,9 @@ red takes dark text on it, as white on it is under AA. With
   Escape is taken before the desktop has it (`page/leave.ts`).
 - A skip link, first, goes to the desktop.
 
-**Testing it.** `test/run/page_view_test.ts`, `page_screen_test.ts` and
-`page_files_test.ts` (jest) hold the view's, the screen's and the files'
-rules. `e2e/run.spec.ts` drives the page by its ids and by roles and names --
+**Testing it.** `test/run/page_view_test.ts`, `page_screen_test.ts`,
+`page_files_test.ts` and `page_machines_test.ts` (jest) hold the view's,
+the screen's, the files' and the machines' rules. `e2e/run.spec.ts` drives the page by its ids and by roles and names --
 the files on a drive through the file browser (`browser`, `listed`) -- and its
 last describe, "the page, to a screen reader and the keyboard", runs axe
 (`@axe-core/playwright`, WCAG 2.1 A and AA) on the page fresh, with Windows,
@@ -325,7 +340,9 @@ C: and on the disc, with the screen on the whole screen, with a program kept
 and running, with the launcher's menu open, a group's items open and an item
 that cannot run focused, with the confirmation open and with an installer
 offered, each in both colour schemes, and tries the skip link and the way out
-of the desktop. The launcher's own test runs `pmitem`'s child from a kept
+of the desktop. Two installs on two machines, each a tab, are run on both
+engines (`keepPmitem`, `keepStrings`), with axe on the two tabs. The
+launcher's own test runs `pmitem`'s child from a kept
 group (`keepPmitem`) on both engines, by the keyboard and the mouse, each
 line it writes held to the probe's records. The components are linted with
 `eslint-plugin-jsx-a11y` and `eslint-plugin-react-hooks`, each as it

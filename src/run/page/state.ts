@@ -1,9 +1,10 @@
 /**
- * The run page's state: what has been dropped, what is kept, the drives,
- * the install under way, and the settings the page's controls hold -- and
+ * The run page's state: what has been dropped, what is kept, the machines
+ * -- each a Windows of its own, a tab of the page, with its drives and the
+ * install under way on it -- and the settings the page's controls hold; and
  * what it shows of them, published for the components (`publish`).
  *
- * The page's actions (`machine.ts`, `accept.ts`, `drives.ts`, `install.ts`,
+ * The page's actions (`machine.ts`, `accept.ts`, `images.ts`, `install.ts`,
  * `actions.ts`) change this and publish; the components (`../ui/`) read what
  * is published and call the actions. No React here, nor any rendering.
  */
@@ -16,7 +17,13 @@ import { type Archive, type Plan, type Program } from '../drive.js';
 import { type DriveSet, imageKey, type Wanting } from '../drives.js';
 import { type Engine } from '../engines/engine.js';
 import { installerOf } from '../media.js';
-import { assetsIdentity, type Kept, type KeptProgram, programIdentity } from '../store.js';
+import {
+  assetsIdentity,
+  changesKey,
+  type Kept,
+  type KeptProgram,
+  programIdentity,
+} from '../store.js';
 import { keptGroups } from './groups.js';
 import { Observable } from './observable.js';
 import {
@@ -33,10 +40,13 @@ import {
   keptRows,
   launcherView,
   keptText,
+  type MachineFacts,
+  machineName,
   type Needed,
   neededRows,
   type PageView,
   programRows,
+  tabsView,
   traceRows,
   type TraceRow,
   windowsText,
@@ -47,7 +57,7 @@ import {
  * installation, with what tells it apart (`identify`), or an asset bundle --
  * and the media dropped since the page was opened, which media dropped
  * after are added to: the Super VGA driver's files after the disks. With
- * them, what the page's controls hold.
+ * them, what the page's controls hold that is the page's, not a machine's.
  */
 export const state: {
   archives: Archive[];
@@ -56,18 +66,11 @@ export const state: {
   assets: Assets | null;
   media: AssetInput[];
   programs: KeptProgram[];
-  program: string | null;
   offer: Archive | null;
-  driveOffer: DriveOffer | null;
-  installing: Installing | null;
-  drives: DriveSet[];
   needed: Needed[];
 
-  /** The displays offered (`offerDisplays`), and the one chosen. */
+  /** The displays offered (`offerDisplays`). */
   displays: string[];
-  display: string;
-  coprocessor: boolean;
-  sound: boolean;
 
   /** Whether copies of a kept program's images are kept, not only handles on them. */
   keepImages: boolean;
@@ -81,28 +84,68 @@ export const state: {
   assets: null,
   media: [],
   programs: [],
-  program: null,
   offer: null,
-  driveOffer: null,
-  installing: null,
-  drives: [],
   needed: [],
   displays: [],
-  display: 'vga',
-  coprocessor: true,
-  sound: false,
   keepImages: false,
   installInto: '',
 };
 
-/** What the page's actions share beside the state: the machine, and what was kept of it. */
+/** What the page's actions share beside the state and the machines. */
 export const session: {
-  /** The engine, once it is made. */
-  made: Engine | null;
-
   /** Which engine runs the programs, and whether the Rust engine was wanted but not there. */
   rust: boolean;
   unbuilt: boolean;
+
+  /**
+   * Cue sheets dropped or chosen whose files are not all had yet, asked for
+   * by name and taken from the files dropped or chosen next.
+   */
+  wanting: Wanting[];
+
+  /** Where the machines' screens go: the components' desktop, once it is there. */
+  desktop: HTMLElement | null;
+} = {
+  rust: false,
+  unbuilt: false,
+  wanting: [],
+  desktop: null,
+};
+
+/**
+ * A machine (`kb/guides/launcher.md`, design A): a Windows of its own, on
+ * an engine instance of its own, its own C: -- a kept program's stack, or
+ * the base with what was dropped loose -- its own drives of images, its
+ * screen, its trace, and its keeping of what its programs write. Each is a
+ * tab of the page; the side's panels and the trace speak for the one
+ * shown (`current`).
+ */
+export interface Machine {
+  /** Its number, which its tab and screen are named by. */
+  readonly id: number;
+
+  /** The kept program whose stack it runs, while the Windows and the display it was made on are; else the base alone. */
+  program: string | null;
+
+  /** Its display, coprocessor and sound card. */
+  display: string;
+  coprocessor: boolean;
+  sound: boolean;
+
+  /** The install under way on it. */
+  installing: Installing | null;
+
+  /** An installer on one of its drives offered to install. */
+  driveOffer: DriveOffer | null;
+
+  /** Its drives of images, by their letters, and what the page read of each disk in them. */
+  readonly drives: DriveSet[];
+  readonly drivePrograms: Map<string, Program[]>;
+  readonly driveVolumes: Map<string, string | null>;
+
+  /** The engine, as it is being made, and once it is. */
+  engine: Promise<Engine>;
+  made: Engine | null;
 
   /** What the machine as last made was told against, and so what its changes are kept against. */
   built: string | null;
@@ -131,37 +174,41 @@ export const session: {
   /** The keeping under way, which another waits for rather than racing it. */
   keeping: Promise<void> | null;
 
-  /**
-   * Cue sheets dropped or chosen whose files are not all had yet, asked for
-   * by name and taken from the files dropped or chosen next.
-   */
-  wanting: Wanting[];
+  /** Whether it has been closed: its engine ended, nothing more kept of it. */
+  closed: boolean;
 
-  /** Where the engine puts the screen: the components' desktop, once it is there. */
-  desktop: HTMLElement | null;
-} = {
-  made: null,
-  rust: false,
-  unbuilt: false,
-  built: null,
-  plan: null,
-  kept: { installation: null, changes: [] },
-  given: [],
-  tooLarge: [],
-  generation: 0,
-  rebuilding: false,
-  keeping: null,
-  wanting: [],
-  desktop: null,
-};
+  /** Where its engine puts its screen: an element of its own in the desktop, hidden while another is shown. */
+  readonly desktop: HTMLElement;
+
+  /** Its trace: the functions called and how often, and the most recent calls; and the frame asked for to show them. */
+  readonly counts: Map<string, { count: number; stub: boolean }>;
+  readonly recent: string[];
+  traceFrame: number;
+}
+
+/** The machines, in the order of their tabs. */
+export const machines: Machine[] = [];
+
+/** The machine shown: whose tab is selected, and whom the side's panels and the trace speak for. */
+let shown: Machine | null = null;
+
+/** The machine shown; the first where none is chosen. */
+export function current(): Machine {
+  return shown && !shown.closed ? shown : machines[0];
+}
+
+/** The machine shown chosen, without publishing. */
+export function show(machine: Machine | null) {
+  shown = machine;
+}
 
 /**
  * The programs kept in this browser, each a stack of its own
  * (`kb/formats/layer.md`): the base and its layers, the lowest first.
  * What was dropped as an archive is laid at `C:\<NAME>` as before, and
- * kept as a layer. `state.program` is the one chosen, whose stack C: is
- * while the Windows and the display it was made on are; else C: is the
- * base alone, with the archives dropped loose on it -- the "loose
+ * kept as a layer. A machine's `program` is the one it runs, whose stack
+ * C: is while the Windows and the display it was made on are; else C: is
+ * the base alone, with the archives dropped loose on it -- the "loose
  * programs" stack, whose changes are kept as they were before programs
  * were kept. Each kept program's layers, read back once.
  */
@@ -174,59 +221,99 @@ export const stacks = new Map<string, Layer[]>();
  */
 export const handles = new Map<string, unknown>();
 
-/** The Windows programs on each drive's disk, by its letter, as the page read them (`programsOn`). */
-export const drivePrograms = new Map<string, Program[]>();
-
-/** Each drive's volume label, by its letter, as the page read its disk: a disc's; null for none. */
-export const driveVolumes = new Map<string, string | null>();
-
 /** The keys of the images had on this visit from a copy kept in this browser (`mountMedia`). */
 export const copies = new Set<string>();
 
-/** The base C: is now: its name as a stack names it, or null with no Windows. */
-export function baseNow() {
+/** The display a machine is made on where nothing says otherwise. */
+export const FIRST_DISPLAY = 'vga';
+
+/** The base C: is on a display: its name as a stack names it, or null with no Windows. */
+export function baseNow(display = current()?.display ?? FIRST_DISPLAY) {
   return state.windows && state.installation
     ? `install:${state.installation}`
     : state.assets
-      ? baseName(state.assets.id, state.display)
+      ? baseName(state.assets.id, display)
       : null;
 }
 
-/** The program chosen, where it was made on the base and display C: is now. */
-export function programNow() {
-  const program = state.programs.find((one) => one.name === state.program);
+/** The program a machine runs, where it was made on the base and display the machine is on. */
+export function programOf(machine: Machine | undefined = current()) {
+  const program = machine && state.programs.find((one) => one.name === machine.program);
 
-  return program && program.base === baseNow() && program.display === state.display
+  return program && program.base === baseNow(machine.display) && program.display === machine.display
     ? program
     : null;
 }
 
+/** The program the machine shown runs. */
+export const programNow = () => programOf(current());
+
 /**
- * What the changes programs write are told against: the program chosen's
- * stack (`programIdentity`); else the installation, or the asset bundle
- * and the display, whose base differs with the display (`assetsIdentity`);
- * null with neither.
+ * What the changes a machine's programs write are told against: its
+ * program's stack (`programIdentity`); else the installation, or the asset
+ * bundle and the display, whose base differs with the display
+ * (`assetsIdentity`); null with neither.
  */
-export function identityNow() {
-  const program = programNow();
+export function identityOf(machine: Machine) {
+  const program = programOf(machine);
 
   if (program) {
     return programIdentity(program.name, program.base, program.display, program.layers);
   }
 
   return !state.windows && state.assets
-    ? assetsIdentity(state.assets.id, state.display)
+    ? assetsIdentity(state.assets.id, machine.display)
     : state.installation;
 }
 
-/** The kept programs an installer may install into: those of the base and display C: is now. */
-export function programsHere() {
-  const base = baseNow();
+/** What the machine shown's changes are told against. */
+export const identityNow = () => identityOf(current());
 
-  return state.programs.filter(
-    (program) => program.base === base && program.display === state.display
+/**
+ * The machine, but `but`, already running the stack `identity` names,
+ * where one does: no two machines keep what they write in the one place
+ * (`changesKey`), as each would put its own over the other's.
+ */
+export function runningOn(identity: string | null, but: Machine | null = null) {
+  const key = changesKey(identity);
+
+  return (
+    machines.find(
+      (machine) =>
+        machine !== but &&
+        !machine.closed &&
+        !machine.installing &&
+        changesKey(identityOf(machine)) === key
+    ) ?? null
   );
 }
+
+/** The machine running a kept program, where one does. */
+export const machineOf = (name: string) =>
+  machines.find(
+    (machine) => !machine.closed && !machine.installing && programOf(machine)?.name === name
+  ) ?? null;
+
+/** The kept programs an installer on a machine may install into: those of the base and display it is on. */
+export function programsHere(machine: Machine = current()) {
+  const base = baseNow(machine.display);
+
+  return state.programs.filter(
+    (program) => program.base === base && program.display === machine.display
+  );
+}
+
+/** A machine's facts, as its tab names it (`machineName`). */
+export const factsOf = (machine: Machine): MachineFacts => ({
+  id: machine.id,
+  program: programOf(machine)?.name ?? null,
+  installing: machine.installing?.name ?? null,
+  display: machine.display,
+  windows: Boolean(baseNow(machine.display)),
+});
+
+/** A machine's name, as its tab shows it. */
+export const nameOf = (machine: Machine) => machineName(factsOf(machine));
 
 /* ---- what is published ---- */
 
@@ -239,23 +326,33 @@ export interface StatusLine {
 
 export const statusLine = new Observable<StatusLine>({ message: 'Loading…', kind: 'info', seq: 0 });
 
-/** The status line told: each line its own, the same words again among them. */
-export function status(message: string, kind: 'info' | 'error' = 'info') {
-  statusLine.set({ message, kind, seq: statusLine.get().seq + 1 });
+/**
+ * The status line told: each line its own, the same words again among
+ * them. The page has one status line; a line a machine not shown tells
+ * is named with its machine's name, for it to be told apart from the
+ * machine shown's.
+ */
+export function status(message: string, kind: 'info' | 'error' = 'info', from?: Machine) {
+  const named =
+    from && from !== current() && !from.closed ? `${nameOf(from)}: ${message}` : message;
+
+  statusLine.set({ message: named, kind, seq: statusLine.get().seq + 1 });
 }
 
-/** The trace: the functions called and how often, and the most recent calls. */
-export const counts = new Map<string, { count: number; stub: boolean }>();
-export const recent: string[] = [];
-
+/** The trace of the machine shown: the functions called and how often, and the most recent calls. */
 export const traceView = new Observable<{ rows: TraceRow[]; recent: string }>({
   rows: [],
   recent: '',
 });
 
-/** The trace published as it stands. */
+/** The trace of the machine shown published as it stands. */
 export function publishTrace() {
-  traceView.set({ rows: traceRows(counts), recent: recent.join('\n') });
+  const machine = current();
+
+  traceView.set({
+    rows: machine ? traceRows(machine.counts) : [],
+    recent: machine ? machine.recent.join('\n') : '',
+  });
 }
 
 /** What the page shows, as it was last published. */
@@ -263,20 +360,27 @@ export const pageView = new Observable<PageView | null>(null);
 
 /**
  * What the page shows made afresh from the state and published, as each of
- * the page's old `render` functions drew it. The program to install into is
- * kept where it is still offered, as the select kept its value.
+ * the page's old `render` functions drew it, the side's panels speaking for
+ * the machine shown. The program to install into is kept where it is still
+ * offered, as the select kept its value.
  */
 export function publish() {
-  const base = baseNow();
+  const machine = current();
+
+  if (!machine) {
+    return;
+  }
+
+  const base = baseNow(machine.display);
   const groupsOf = (program: KeptProgram) => keptGroups(program, state, publish);
-  const chosen = programNow();
-  const { plan } = session;
+  const chosen = programOf(machine);
+  const { plan } = machine;
   const install = installView(
     state.offer,
     state.offer ? installerOf(state.offer.entries) : null,
-    state.driveOffer,
-    state.installing,
-    programsHere(),
+    machine.driveOffer,
+    machine.installing,
+    programsHere(machine),
     state.programs,
     state.installInto
   );
@@ -287,7 +391,7 @@ export function publish() {
 
   const programs = programRows(
     plan,
-    state.drives.flatMap((set) => drivePrograms.get(set.letter) ?? []),
+    machine.drives.flatMap((set) => machine.drivePrograms.get(set.letter) ?? []),
     Boolean(state.archives.length || chosen)
   );
 
@@ -296,29 +400,29 @@ export function publish() {
     soundOffered: session.rust,
     windows: windowsText(state.windows, state.assets, plan),
     forgettable: Boolean(state.windows || state.assets),
-    changes: changesView(session.kept.changes, session.tooLarge),
+    changes: changesView(machine.kept.changes, machine.tooLarge),
     displays: state.displays.map((name) => ({ value: name, text: displayName(name) })),
-    display: state.display,
-    coprocessor: state.coprocessor,
-    sound: state.sound,
+    display: machine.display,
+    coprocessor: machine.coprocessor,
+    sound: machine.sound,
     keepImages: state.keepImages,
-    drivesNote: drivesNote(state.drives.length > 0),
+    drivesNote: drivesNote(machine.drives.length > 0),
     c: cDriveView(
       state.windows,
       state.assets,
-      state.display,
+      machine.display,
       chosen,
       chosen ? 0 : state.archives.length,
-      session.kept.changes.length
+      machine.kept.changes.length
     ),
     drives: driveRows(
-      state.drives,
-      (letter) => drivePrograms.get(letter) ?? [],
+      machine.drives,
+      (letter) => machine.drivePrograms.get(letter) ?? [],
       base,
-      Boolean(state.installing),
+      Boolean(machine.installing),
       {
-        written: (letter, disk) => session.made?.diskChanged(letter, disk) ?? false,
-        volume: (letter) => driveVolumes.get(letter) ?? null,
+        written: (letter, disk) => machine.made?.diskChanged(letter, disk) ?? false,
+        volume: (letter) => machine.driveVolumes.get(letter) ?? null,
         kept: (disk) => {
           const key = imageKey(disk.name, disk.size, disk.modified);
 
@@ -328,11 +432,23 @@ export function publish() {
       }
     ),
     needed: neededRows(state.needed, session.wanting),
-    kept: keptRows(state.programs, chosen, base, state.display, groupsOf),
+    kept: keptRows(
+      state.programs,
+      (name) => {
+        const running = machineOf(name);
+
+        return running === machine ? 'shown' : running ? 'behind' : null;
+      },
+      (display) => baseNow(display),
+      state.displays,
+      machine.display,
+      groupsOf
+    ),
     keptNote: KEPT_NOTE,
     launcher: launcherView(state.programs, groupsOf, state.displays),
     install,
     programs: programs.rows,
     programsEmpty: programs.empty,
+    tabs: tabsView(machines.filter((one) => !one.closed).map(factsOf), machine.id),
   });
 }

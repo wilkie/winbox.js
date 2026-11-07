@@ -59,6 +59,14 @@ export class TypeScriptEngine implements Engine {
    */
   session: { machine: any; win16: any; drive: Drive; changes: Fat16Changes } | null = null;
 
+  /**
+   * Whether the machine last made still runs: once it is made afresh, or
+   * the engine is ended (`dispose`), its scheduler is given no more frames
+   * and its mirror no more updates, so that it stops rather than running
+   * on unseen beside the next.
+   */
+  #running: { on: boolean } = { on: false };
+
   constructor(page: Page) {
     this.#page = page;
   }
@@ -75,6 +83,12 @@ export class TypeScriptEngine implements Engine {
 
   async rebuild({ plan, windows, assets, display, coprocessor, changes: kept, drives }: Setup) {
     const page = this.#page;
+
+    this.#end();
+
+    const running = { on: true };
+
+    this.#running = running;
     const machine = new Machine({ coprocessor });
     const drive = await fillDrive(machine, plan);
 
@@ -99,8 +113,18 @@ export class TypeScriptEngine implements Engine {
 
     screenNote(page.desktop);
 
+    /* Its scheduler's frames, each entering it first (`Win16.enter`), and
+     * none once it no longer runs. */
+    const nextFrame = (callback: () => void) =>
+      requestAnimationFrame(() => {
+        if (running.on) {
+          win16.enter();
+          callback();
+        }
+      });
     const win16: any = new Win16(new DOS(machine), machine, {
       display,
+      nextFrame,
       onCall: this.#trace,
       onExit: (_handle: number, code: number) => {
         page.status(`The program has ended, with exit code ${code}.`);
@@ -123,8 +147,18 @@ export class TypeScriptEngine implements Engine {
       const shown = makeScreen(page.desktop, screen.width, screen.height);
 
       new Presenter(screen, shown.canvas, win16.display);
-      attachInput(shown, win16.rasterInput);
-      keepMirror(new AriaMirror(shown.mirror, shown.host), win16.rasterDesktop);
+      /* The mouse and keyboard, the machine entered for each. */
+      attachInput(shown, {
+        pointer: (kind, at) => {
+          win16.enter();
+          win16.rasterInput.pointer(kind, at);
+        },
+        key: (kind, at) => {
+          win16.enter();
+          win16.rasterInput.key(kind, at);
+        },
+      });
+      keepMirror(new AriaMirror(shown.mirror, shown.host), win16.rasterDesktop, running);
     }
 
     this.session = { machine, win16, drive, changes };
@@ -134,6 +168,18 @@ export class TypeScriptEngine implements Engine {
     for (const set of drives) {
       await this.mount(set);
     }
+  }
+
+  /** The machine last made stopped: given no more frames, its mirror no more updates. */
+  #end() {
+    this.#running.on = false;
+    this.session?.win16.scheduler.stop();
+  }
+
+  dispose() {
+    this.#end();
+    this.session = null;
+    this.#sets.clear();
   }
 
   idle() {
@@ -254,6 +300,7 @@ export class TypeScriptEngine implements Engine {
 
     const page = this.#page;
 
+    session.win16.enter();
     page.status(`Running ${program.path}…`);
 
     try {
@@ -318,8 +365,12 @@ function folderOf(path: string) {
  * the tree is cheap for a screen of windows, and the mirror touches nothing
  * when it has not changed.
  */
-function keepMirror(mirror: AriaMirror, desktop: any) {
+function keepMirror(mirror: AriaMirror, desktop: any, running: { on: boolean }) {
   const frame = () => {
+    if (!running.on) {
+      return;
+    }
+
     mirror.update(accessibleTree(desktop));
     requestAnimationFrame(frame);
   };

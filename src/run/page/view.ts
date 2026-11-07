@@ -181,13 +181,17 @@ export interface KeptRow {
   /** Its name, with the display it was made on where that is not the display now. */
   label: string;
 
-  /** Whether it was made on the base and display C: is now, and so may be opened. */
+  /** Whether it was made on the Windows dropped, on a display it offers, and so may be opened. */
   here: boolean;
 
-  /** Whether it is the program on C: now. */
+  /** Whether its machine is the one shown, whose tab has its Close. */
   shown: boolean;
 
-  /** What its Open or Close button says to a screen reader. */
+  /** Whether a machine runs it, shown or in a tab behind. */
+  running: boolean;
+
+  /** What its button says -- Open, or Show where its machine is in a tab behind -- and to a screen reader. */
+  openText: string;
   openLabel: string;
 
   /** The display it was made on, as it is shown. */
@@ -198,35 +202,112 @@ export interface KeptRow {
 }
 
 /**
- * The programs kept, each with the way to put its stack on C: and to
- * forget it: those made on another display offered on that display.
+ * The programs kept, each with the way to its machine and to forget it:
+ * Open makes it a machine of its own, on the display it was made on, as
+ * the launcher does; Show, where one runs it in a tab behind, shows that
+ * tab; the one shown has its tab's Close. Each is named with the display
+ * it was made on where that is not the display of the machine shown.
  */
 export function keptRows(
   programs: KeptProgram[],
-  chosen: KeptProgram | null,
-  base: string | null,
+  running: (name: string) => 'shown' | 'behind' | null,
+  baseOf: (display: string) => string | null,
+  displays: string[],
   display: string,
   groupsOf: (program: KeptProgram) => KeptGroups | null
 ): KeptRow[] {
   return programs.map((program) => {
-    const here = program.base === base && program.display === display;
-    const shown = program === chosen;
+    const based = program.base === baseOf(program.display);
+    const offered = displays.includes(program.display);
+    const here = based && offered;
+    const machine = running(program.name);
     const shownDisplay = displayName(program.display);
 
     return {
       name: program.name,
-      label: here ? program.name : `${program.name} (${shownDisplay})`,
+      label: program.display === display ? program.name : `${program.name} (${shownDisplay})`,
       here,
-      shown,
-      openLabel: shown
-        ? `Close ${program.name}`
-        : here
-          ? `Open ${program.name}`
-          : `${program.name} was made on the ${shownDisplay}, and is opened there`,
+      shown: machine === 'shown',
+      running: machine !== null,
+      openText: machine === 'behind' ? 'Show' : 'Open',
+      openLabel:
+        machine === 'behind'
+          ? `Show ${program.name}`
+          : here
+            ? `Open ${program.name}`
+            : !based
+              ? `${program.name} was made on a Windows that is not here`
+              : `${program.name} was made on the ${shownDisplay}, which this Windows does not offer`,
       display: program.display,
       groups: groupsOf(program)?.groups.filter((group) => !group.winbox) ?? null,
     };
   });
+}
+
+/** What a machine's tab is named by. */
+export interface MachineFacts {
+  id: number;
+
+  /** The kept program it runs; none for the base alone. */
+  program: string | null;
+
+  /** The program an installer on it installs; none where none runs. */
+  installing: string | null;
+  display: string;
+
+  /** Whether it has Windows: an installation, or the asset bundle's base for its display. */
+  windows: boolean;
+}
+
+/**
+ * A machine's name, as its tab shows it and its Close says: its install's
+ * -- the kept program it runs -- or, with none, `Windows` for the base
+ * alone and what is dropped loose on it, `No Windows` without one; an
+ * installer's `Installing` and its program's name.
+ */
+export function machineName(facts: MachineFacts) {
+  return facts.installing
+    ? `Installing ${facts.installing}`
+    : (facts.program ?? (facts.windows ? 'Windows' : 'No Windows'));
+}
+
+/** A machine's tab. */
+export interface TabView {
+  id: number;
+
+  /** Its name, with its display where another tab has the same name. */
+  name: string;
+  selected: boolean;
+}
+
+/** The machines' tabs, in their order, the one shown selected. */
+export function tabsView(machines: MachineFacts[], shown: number): TabView[] {
+  const names = machines.map(machineName);
+
+  return machines.map((facts, at) => ({
+    id: facts.id,
+    name:
+      names.filter((name) => name === names[at]).length > 1
+        ? `${names[at]} (${displayName(facts.display)})`
+        : names[at],
+    selected: facts.id === shown,
+  }));
+}
+
+/**
+ * The machine shown once one is closed: the same where another was
+ * closed; else the tab after it, or before it where it was the last; none
+ * where it was the only one.
+ */
+export function shownAfterClosing(ids: number[], closed: number, shown: number): number | null {
+  if (closed !== shown && ids.includes(shown)) {
+    return shown;
+  }
+
+  const at = ids.indexOf(closed);
+  const rest = ids.filter((id) => id !== closed);
+
+  return rest.length ? rest[Math.min(Math.max(at, 0), rest.length - 1)] : null;
 }
 
 /** An item as the launcher's menu shows it (`kb/guides/launcher.md`). */
@@ -770,6 +851,9 @@ export interface PageView {
   install: InstallView;
   programs: ProgramRow[];
   programsEmpty: string | null;
+
+  /** The machines' tabs, the one the rest speaks for selected. */
+  tabs: TabView[];
 }
 
 /** The note over the drives, with drives and without. */

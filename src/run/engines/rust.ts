@@ -235,6 +235,18 @@ let compiled: Promise<WebAssembly.Module> | null = null;
 /** How many instances have been made, which tells the glue's imports apart. */
 let instances = 0;
 
+/**
+ * Instances whose machines were closed, kept for the next machine made.
+ * The glue an instance was made with is a module of the page's, which a
+ * page never lets go of, and it holds its instance's memory: an instance
+ * let go of would keep its memory to the page's end. So one an engine is
+ * done with (`dispose`) is given to the next engine made instead, its
+ * machine freed and a machine made afresh on it, as a machine is made
+ * afresh on the same instance when the page rebuilds it. A lost one
+ * (`Lost`) is never given again.
+ */
+const spare: Wasm[] = [];
+
 /** What the module's last panic said, which its trap does not. */
 let panicked: string | null = null;
 
@@ -265,6 +277,12 @@ function compile() {
  * apart by its query; each is given the module compiled once.
  */
 async function instantiate(): Promise<Wasm> {
+  const kept = spare.pop();
+
+  if (kept) {
+    return kept;
+  }
+
   const module = await compile();
   const glue = await import(/* @vite-ignore */ `${GLUE}?instance=${++instances}`);
   const exports = await glue.default({ module_or_path: module });
@@ -322,6 +340,29 @@ export class RustEngine implements Engine {
   /** Whether a machine made afresh has a sound card, WinBox's own, given with its first program. */
   sound = false;
 
+  /** Whether what its sound card plays is heard, its machine being the one shown; else let go of. */
+  #heard = true;
+
+  get heard() {
+    return this.#heard;
+  }
+
+  set heard(heard: boolean) {
+    this.#heard = heard;
+
+    if (!heard) {
+      this.#speaker.stop();
+    } else if (this.sound && this.#speaker.context) {
+      this.#speaker.wake();
+    }
+  }
+
+  /** Whether the engine is ended (`dispose`): nothing more is made or run on it. */
+  #disposed = false;
+
+  /** What it listens for on the page, to wake the speaker. */
+  readonly #wake: () => void;
+
   /** Where the card's sound is heard. */
   readonly #speaker = new Speaker(() => new AudioContext());
 
@@ -336,14 +377,36 @@ export class RustEngine implements Engine {
     this.#page = page;
 
     /* A browser lets sound begin on a click or a key, and not before. */
-    const wake = () => {
-      if (this.sound) {
+    this.#wake = () => {
+      if (this.sound && this.#heard) {
         this.#speaker.wake();
       }
     };
 
-    addEventListener('pointerdown', wake, true);
-    addEventListener('keydown', wake, true);
+    addEventListener('pointerdown', this.#wake, true);
+    addEventListener('keydown', this.#wake, true);
+  }
+
+  /**
+   * The engine ended: its run stopped and its machine freed, what it
+   * listened for no longer listened for, its sound's context closed, and
+   * its instance kept for the next engine made (`spare`).
+   */
+  dispose() {
+    this.#disposed = true;
+    this.#halt();
+    removeEventListener('pointerdown', this.#wake, true);
+    removeEventListener('keydown', this.#wake, true);
+    this.#speaker.close();
+    this.#canvas = null;
+    this.#image = null;
+    this.#mirror = null;
+
+    if (this.#wasm && !this.#wasm.lost && !this.#wasm.calling) {
+      spare.push(this.#wasm);
+    }
+
+    this.#wasm = null;
   }
 
   get session() {
@@ -352,6 +415,8 @@ export class RustEngine implements Engine {
       setup: this.#setup,
       running: this.#running,
       speaker: this.#speaker,
+      /* Its instance's memory, in bytes: what a machine costs the page. */
+      memory: this.#wasm?.memory.buffer.byteLength ?? 0,
     };
   }
 
@@ -359,6 +424,13 @@ export class RustEngine implements Engine {
     this.#halt();
     this.#setup = setup;
     await this.#fresh();
+
+    /* Ended while its instance was being made: the instance given back. */
+    if (this.#disposed) {
+      this.dispose();
+      return;
+    }
+
     this.#machine = this.#make();
     this.#started = false;
     this.#over = false;
@@ -375,7 +447,7 @@ export class RustEngine implements Engine {
   async run(program: Program, options: { install?: boolean; item?: ItemStart } = {}) {
     const page = this.#page;
 
-    if (!this.#setup || !this.#wasm) {
+    if (!this.#setup || !this.#wasm || this.#disposed) {
       return;
     }
 
@@ -405,7 +477,7 @@ export class RustEngine implements Engine {
        * it; and the speaker woken, the Run button's press being a click. */
       const sound = this.sound && this.#machine.install_sound();
 
-      if (this.sound) {
+      if (this.sound && this.#heard) {
         this.#speaker.wake();
       }
 
@@ -755,7 +827,16 @@ export class RustEngine implements Engine {
         this.#page.ended();
       }
 
-      this.#speaker.play(machine.take_sound());
+      /* Heard where its machine is the one shown; else let go of. */
+      const sound = machine.take_sound();
+
+      if (this.#heard) {
+        this.#speaker.play(sound);
+      } else {
+        for (const event of sound) {
+          event.free?.();
+        }
+      }
 
       switch (state) {
         case BUSY:
@@ -895,7 +976,10 @@ export class RustEngine implements Engine {
     panicked = null;
     this.#page.status(`${program.path} stopped: ${why}`, 'error');
 
-    if (lost) {
+    if (lost && this.#disposed) {
+      this.#wasm = null;
+      this.#halt();
+    } else if (lost) {
       this.#wasm = null;
       this.#halt();
       this.rebuild(this.#setup!).catch((again) =>

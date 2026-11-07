@@ -40,8 +40,19 @@ import {
   takeCues,
   type Taken,
 } from './images.js';
-import { hold, offerDisplays, rebuild } from './machine.js';
-import { baseNow, handles, publish, session, stacks, state, status } from './state.js';
+import { closeMachine, hold, offerDisplays, rebuild } from './machine.js';
+import {
+  baseNow,
+  current,
+  handles,
+  type Machine,
+  machineOf,
+  machines,
+  publish,
+  stacks,
+  state,
+  status,
+} from './state.js';
 import { installerName } from './view.js';
 
 /**
@@ -49,13 +60,13 @@ import { installerName } from './view.js';
  * remembered; why it could not be kept, where it could not. What programs
  * wrote against another Windows goes with it.
  */
-async function takeAssets(name: string, bytes: Uint8Array) {
+async function takeAssets(machine: Machine, name: string, bytes: Uint8Array) {
   const assets = await Assets.fromZip(bytes);
   const same = !state.windows && state.assets?.id === assets.id;
 
   if (!same) {
     await Promise.all([forgetAllChanges(), forgetPrograms()]);
-    session.kept = { installation: null, changes: [] };
+    machine.kept = { installation: null, changes: [] };
   }
 
   state.windows = null;
@@ -133,6 +144,9 @@ export async function accept(
     return;
   }
 
+  /* The machine shown as they came: what they are, they are for it. */
+  const machine = current();
+
   status(`Reading ${files.map((file) => file.name).join(', ')}…`);
 
   const handleOf = (file: File) =>
@@ -189,7 +203,7 @@ export async function accept(
   /* A floppy is the maker's where there is no Windows to run it beside,
    * or it is one of Windows' own disks; a disc or a hard disk never is. */
   const windowsHere =
-    Boolean(baseNow()) ||
+    Boolean(baseNow(machine.display)) ||
     classified.some((one) => one.kind === 'bundle' || one.kind === 'installation');
   const asDrives: Taken[] = [];
   const asMedia: Taken[] = [];
@@ -219,8 +233,8 @@ export async function accept(
       ...paired,
       ...(asDrives.length
         ? into
-          ? await addToDrive(into, asDrives)
-          : await mountTaken(asDrives)
+          ? await addToDrive(machine, into, asDrives)
+          : await mountTaken(machine, asDrives)
         : []),
     ];
 
@@ -228,7 +242,7 @@ export async function accept(
 
     if (filled) {
       await mountNeeded();
-      await mediaChanged();
+      await mediaChanged(machine);
       said.push(
         state.needed.some((one) => !one.disk) ? 'More images are asked for.' : 'Every image is had.'
       );
@@ -238,8 +252,14 @@ export async function accept(
     return;
   }
 
+  /* A Windows dropped: the other machines, on the Windows it replaces,
+   * closed, what they wrote kept first; this one made afresh on it. */
+  if (classified.some((one) => one.kind === 'bundle' || one.kind === 'installation')) {
+    await closeOthers(machine);
+  }
+
   /* What the machine wrote kept, against the Windows it ran. */
-  await hold();
+  await hold(machine);
 
   let note: string | null = null;
   let offered: string | null = null;
@@ -256,7 +276,7 @@ export async function accept(
 
       switch (dropped.kind) {
         case 'bundle':
-          note = await takeAssets(file.name, bytes);
+          note = await takeAssets(machine, file.name, bytes);
           break;
         case 'installation': {
           const installation = await identify({ name: file.name, bytes });
@@ -264,7 +284,7 @@ export async function accept(
           /* What programs wrote on another installation is not put on this one. */
           if (installation !== state.installation) {
             await Promise.all([forgetAllChanges(), forgetPrograms()]);
-            session.kept = { installation: null, changes: [] };
+            machine.kept = { installation: null, changes: [] };
           }
 
           state.windows = { name: file.name, entries: dropped.entries };
@@ -289,7 +309,7 @@ export async function accept(
       try {
         const made = await bundleFrom(media);
 
-        note = await takeAssets('winbox-assets.zip', made.zip);
+        note = await takeAssets(machine, 'winbox-assets.zip', made.zip);
       } catch (error) {
         /* Floppies taken for Windows' disks for want of Windows, and not
          * Windows' disks after all: drives, once there is Windows. */
@@ -308,15 +328,15 @@ export async function accept(
      * last of them chosen. One with an installer is offered to install, or
      * to keep as it is: the last of those, where there is Windows. */
     for (const archive of archives) {
-      if (installerOf(archive.entries) && baseNow()) {
+      if (installerOf(archive.entries) && baseNow(machine.display)) {
         state.offer = archive;
-        state.driveOffer = null;
-        state.installing = null;
+        machine.driveOffer = null;
+        machine.installing = null;
         offered = offerText(archive);
         continue;
       }
 
-      note = (await takeProgram(archive)) ?? note;
+      note = (await takeProgram(machine, archive)) ?? note;
     }
 
     if (asDrives.length || paired.length) {
@@ -324,8 +344,8 @@ export async function accept(
         ...paired,
         ...(asDrives.length
           ? into
-            ? await addToDrive(into, asDrives)
-            : await mountTaken(asDrives)
+            ? await addToDrive(machine, into, asDrives)
+            : await mountTaken(machine, asDrives)
           : []),
       ];
 
@@ -337,13 +357,13 @@ export async function accept(
     }
   } catch (error: any) {
     status(`Could not read that: ${error?.message ?? error}`, 'error');
-    session.rebuilding = false;
+    machine.rebuilding = false;
     return;
   }
 
   offerDisplays();
 
-  if (await rebuild({ keeping: false })) {
+  if (await rebuild(machine, { keeping: false })) {
     status(note ?? offered ?? 'Ready.', note ? 'error' : 'info');
   }
 }
@@ -355,20 +375,28 @@ export async function accept(
  * keep it over, or it cannot be kept, it is put on C: loose, as before,
  * until the page is left; why, where it could not be kept.
  */
-export async function takeProgram(archive: Archive) {
+export async function takeProgram(machine: Machine, archive: Archive) {
   const loose = () => {
     state.archives = [...state.archives.filter((one) => one.name !== archive.name), archive];
-    state.program = null;
+    machine.program = null;
   };
-  const base = baseNow();
+  const display = machine.display;
+  const base = baseNow(display);
 
   if (!base) {
     loose();
     return null;
   }
 
-  const display = state.display;
   const name = archive.name.replace(/\.zip$/i, '');
+
+  /* Kept again over a program of the name another machine runs: that
+   * machine closed, what it wrote kept first, this one to run it. */
+  const other = machineOf(name);
+
+  if (other && other !== machine) {
+    await closeMachine(other);
+  }
   let made;
 
   try {
@@ -391,7 +419,7 @@ export async function takeProgram(archive: Archive) {
     exes: made.programs,
     orders: { [id]: made.order },
     kept: Date.now(),
-    media: mediaNow(),
+    media: mediaNow(machine),
   };
 
   /* What a program of this name wrote on a stack since changed: put on
@@ -412,7 +440,7 @@ export async function takeProgram(archive: Archive) {
 
   try {
     await keepProgram(program, [made.layer]);
-    await rememberImages(program);
+    await rememberImages(machine, program);
   } catch (error: any) {
     loose();
     return `${archive.name} could not be kept in this browser, and is on C: until the page is left: ${error?.message ?? error}`;
@@ -421,20 +449,30 @@ export async function takeProgram(archive: Archive) {
   stacks.set(name, [made.layer]);
   state.programs = [...state.programs.filter((one) => one.name !== name), program];
   state.archives = state.archives.filter((one) => one.name !== archive.name);
-  state.program = name;
+  machine.program = name;
   return null;
+}
+
+/** Every machine but one closed, what each wrote kept first: a Windows dropped replaces theirs. */
+export async function closeOthers(machine: Machine) {
+  for (const other of machines.filter((one) => one !== machine)) {
+    await closeMachine(other);
+  }
 }
 
 /** Every program kept forgotten, with what they wrote: they were made on a Windows now gone. */
 export async function forgetPrograms() {
   await forgetAllPrograms();
   state.programs = [];
-  state.program = null;
   state.offer = null;
-  state.driveOffer = null;
-  state.installing = null;
   state.needed = [];
   stacks.clear();
+
+  for (const machine of machines) {
+    machine.program = null;
+    machine.driveOffer = null;
+    machine.installing = null;
+  }
 }
 
 /**

@@ -119,13 +119,16 @@ export function KeptPanel({ view }: { view: PageView }) {
           <Row key={row.name}>
             <Code>{row.label}</Code>
             <Actions>
-              <Button
-                disabled={!row.here}
-                aria-label={row.openLabel}
-                onClick={() => actions.open(row.shown ? null : row.name)}
-              >
-                {row.shown ? 'Close' : 'Open'}
-              </Button>
+              {/* Shown, its machine's tab has its Close. */}
+              {!row.shown && (
+                <Button
+                  disabled={!row.here}
+                  aria-label={row.openLabel}
+                  onClick={() => actions.open(row.name)}
+                >
+                  {row.openText}
+                </Button>
+              )}
               <Button
                 color="error"
                 aria-label={`Forget ${row.name}`}

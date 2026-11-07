@@ -2,7 +2,10 @@
  * What the run page's controls do: the actions its components call, each
  * changing the state (`state.ts`) through the modules beside this one and
  * publishing what is to be shown; and the page started, once its desktop is
- * there for the engine's screen.
+ * there for the machines' screens. The side's controls act on the machine
+ * shown -- its display, its drives, the install on it, what it runs --
+ * taken as the action begins, so that a tab chosen meanwhile changes
+ * nothing of it.
  */
 
 import { readZip } from '../../zip.js';
@@ -26,28 +29,54 @@ import { browse } from './browse.js';
 import { ejectDisk, insertDisk, nextDisk, offerDrive, removeDrive, saveImage } from './images.js';
 import { rememberImages } from './images.js';
 import {
-  choose,
   discardInstall,
   forgetKept,
   install,
   keepAsProgram,
   keepInstalled,
+  open,
+  remake,
 } from './install.js';
 import { launch } from './launcher.js';
-import { engine, EVERY, hold, keep, keepAll, offerDisplays, rebuild, run } from './machine.js';
-import { identityNow, programNow, publish, session, state, status } from './state.js';
+import {
+  addMachine,
+  closeMachine,
+  EVERY,
+  hold,
+  keepAll,
+  keepEvery,
+  offerDisplays,
+  rebuild,
+  run,
+  select,
+} from './machine.js';
+import {
+  current,
+  identityOf,
+  type Machine,
+  machines,
+  programOf,
+  publish,
+  session,
+  state,
+  status,
+} from './state.js';
 
-/** A drive's set by its letter. */
-const driveAt = (letter: string) => state.drives.find((one) => one.letter === letter);
-
-/** What a drive's action says, said on the status line. */
-async function said(letter: string, act: (set: (typeof state.drives)[number]) => unknown) {
-  const set = driveAt(letter);
+/** What a drive's action says, said on the status line: on the machine shown, its drive by its letter. */
+async function said(
+  letter: string,
+  act: (machine: Machine, set: Machine['drives'][number]) => unknown
+) {
+  const machine = current();
+  const set = machine.drives.find((one) => one.letter === letter);
 
   if (set) {
-    status(String(await act(set)));
+    status(String(await act(machine, set)));
   }
 }
+
+/** A machine by its number. */
+const machineAt = (id: number) => machines.find((one) => one.id === id && !one.closed);
 
 export const actions = {
   /** Files dropped on the page's drop, or on a drive's row (`letter`). */
@@ -63,18 +92,47 @@ export const actions = {
   imagesChosen: (files: File[], into: string | null = null) =>
     accept(files, { drives: true, into }),
 
-  /** The display chosen: the machine made afresh on it. An installer runs on the display it was started on. */
+  /** A machine's tab chosen: its screen shown, and the side and the trace speaking for it. */
+  select(id: number) {
+    const machine = machineAt(id);
+
+    if (machine && machine !== current()) {
+      select(machine);
+    }
+  },
+
+  /**
+   * A machine's tab closed: what its programs wrote kept first, then the
+   * machine ended (`closeMachine`). Nothing is lost, so nothing is asked.
+   */
+  async close(id: number) {
+    const machine = machineAt(id);
+
+    if (machine) {
+      await closeMachine(machine);
+    }
+  },
+
+  /**
+   * The display chosen for the machine shown: made afresh on it. An
+   * installer runs on the display it was started on, and is let go of.
+   */
   setDisplay(display: string) {
-    state.display = display;
-    state.installing = null;
-    publish();
-    rebuild();
+    const machine = current();
+    const was = machine.display;
+
+    return remake(machine, () => {
+      machine.display = display;
+      return () => (machine.display = was);
+    });
   },
 
   setCoprocessor(on: boolean) {
-    state.coprocessor = on;
+    const machine = current();
+
+    machine.coprocessor = on;
     publish();
-    rebuild();
+    rebuild(machine);
   },
 
   /* Only the Rust engine has a sound card to give a machine. Windows reads
@@ -83,21 +141,25 @@ export const actions = {
    * coprocessor are: changed, the machine is made afresh, and its first
    * program starts Windows with the card or without it. */
   async setSound(on: boolean) {
-    state.sound = on;
+    const machine = current();
+
+    machine.sound = on;
     publish();
-    (await engine).sound = on;
-    rebuild();
+    (await machine.engine).sound = on;
+    rebuild(machine);
   },
 
   /** Copies of a kept program's images kept, where asked for. */
   setKeepImages(on: boolean) {
+    const machine = current();
+
     state.keepImages = on;
     publish();
 
-    const program = programNow();
+    const program = programOf(machine);
 
     if (program) {
-      rememberImages(program);
+      rememberImages(machine, program);
     }
   },
 
@@ -106,33 +168,44 @@ export const actions = {
     publish();
   },
 
-  run: (program: Program) => run(program),
+  run: (program: Program) => run(current(), program),
 
-  /** A group's item chosen in the launcher's menu, run on its install's stack as Program Manager runs it. */
+  /** A group's item chosen in the launcher's menu, run on its install's machine as Program Manager runs it. */
   launch: (install: string, group: number, item: number) => launch(install, group, item),
 
-  /** The file browser opened on a drive's folder: its root, C:'s by default. */
+  /** The file browser opened on a drive's folder of the machine shown: its root, C:'s by default. */
   browse: (letter = 'C', parts: string[] = []) => browse(letter, parts),
   install: () => install(),
   keepAsProgram: () => keepAsProgram(),
   keepInstalled: () => keepInstalled(),
   discardInstall: () => discardInstall(),
 
-  /** A kept program put on C:, or taken off it (`null`). */
-  open: (name: string | null) => choose(name),
+  /** A kept program opened: the machine running it shown, or a machine of its own made. */
+  open: (name: string) => open(name),
   forgetProgram: (name: string) => forgetKept(name),
 
-  insertDisk: (letter: string, disk: number) => said(letter, () => insertDisk(letter, disk)),
+  insertDisk: (letter: string, disk: number) =>
+    said(letter, (machine) => insertDisk(machine, letter, disk)),
   nextDisk: (letter: string) => said(letter, nextDisk),
   ejectDisk: (letter: string) => said(letter, ejectDisk),
   saveImage: (letter: string) => said(letter, saveImage),
   removeDrive: (letter: string) => said(letter, removeDrive),
   installFromDrive: (letter: string, installer: Program) =>
-    said(letter, (set) => offerDrive(set, installer)),
+    said(letter, (machine, set) => offerDrive(machine, set, installer)),
 
-  /** What programs wrote was written on the installation, or the bundle's base, and goes with it. */
+  /**
+   * What programs wrote was written on the installation, or the bundle's
+   * base, and goes with it: every machine but the one shown closed, what
+   * they wrote not kept, and that one made afresh with no Windows.
+   */
   async forgetWindows() {
-    await hold({ keeping: false });
+    const machine = current();
+
+    for (const other of machines.filter((one) => one !== machine)) {
+      await closeMachine(other, { keeping: false });
+    }
+
+    await hold(machine, { keeping: false });
 
     const what = state.windows ? 'the Windows installation' : 'the asset bundle';
     const had = state.programs.length;
@@ -142,12 +215,12 @@ export const actions = {
     state.installation = null;
     state.assets = null;
     state.media = [];
-    session.kept = { installation: null, changes: [] };
-    session.tooLarge = [];
+    machine.kept = { installation: null, changes: [] };
+    machine.tooLarge = [];
     await Promise.all([forgetWindowsKept(), forgetAssets(), forgetAllChanges()]);
     offerDisplays();
 
-    if (await rebuild({ keeping: false })) {
+    if (await rebuild(machine, { keeping: false })) {
       status(
         had
           ? `Forgot ${what}, the programs kept on it, and what programs wrote.`
@@ -156,23 +229,26 @@ export const actions = {
     }
   },
 
+  /** What the machine shown's programs wrote forgotten. */
   async forgetChanges() {
-    await hold({ keeping: false });
+    const machine = current();
 
-    const identity = identityNow();
+    await hold(machine, { keeping: false });
 
-    session.kept = { installation: identity, changes: [] };
-    session.tooLarge = [];
+    const identity = identityOf(machine);
+
+    machine.kept = { installation: identity, changes: [] };
+    machine.tooLarge = [];
     await forgetChangesKept(identity);
 
-    if (await rebuild({ keeping: false })) {
+    if (await rebuild(machine, { keeping: false })) {
       status('Forgot what programs wrote.');
     }
   },
 
-  /** The other engine's page, once what the machine wrote is kept. */
+  /** The other engine's page, once what every machine wrote is kept. */
   async switchEngine(href: string) {
-    await keepAll();
+    await Promise.all(machines.map((machine) => keepAll(machine)));
     location.assign(href);
   },
 };
@@ -182,12 +258,20 @@ export type Actions = typeof actions;
 let started = false;
 
 /**
- * The page started, its screen to go in `desktop`: what was remembered in
- * this browser read back and the machine made from it, and what programs
- * write kept while the page is shown, and as it is hidden or left. Once.
+ * The page started, its machines' screens to go in `desktop`: what was
+ * remembered in this browser read back and a machine made from it, on the
+ * base, and what every machine's programs write kept while the page is
+ * shown, and as it is hidden or left. Once.
  */
 export function start(desktop: HTMLElement) {
   session.desktop = desktop;
+
+  /* The machines' screens, where the desktop is rendered again. */
+  for (const machine of machines) {
+    if (machine.desktop.parentElement !== desktop) {
+      desktop.append(machine.desktop);
+    }
+  }
 
   if (started) {
     return;
@@ -195,21 +279,23 @@ export function start(desktop: HTMLElement) {
 
   started = true;
   offerDisplays();
-  state.display = 'vga';
-  publish();
+
+  const first = addMachine();
+
+  select(first);
 
   /* Kept while the page is shown, and as it is hidden or left. */
   setInterval(() => {
     if (document.visibilityState === 'visible') {
-      keep();
+      keepEvery();
     }
   }, EVERY);
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
-      keep();
+      keepEvery();
     }
   });
-  addEventListener('pagehide', () => keep());
+  addEventListener('pagehide', () => keepEvery());
 
   Promise.all([recallWindows(), recallAssets(), recallPrograms()]).then(
     async ([remembered, bundle, programs]) => {
@@ -231,11 +317,11 @@ export function start(desktop: HTMLElement) {
       offerDisplays();
 
       /* What was kept is put back only on what it was written on. */
-      const identity = identityNow();
+      const identity = identityOf(first);
 
-      session.kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
+      first.kept = (await recallChanges(identity)) ?? { installation: identity, changes: [] };
 
-      if (await rebuild({ keeping: false })) {
+      if (await rebuild(first, { keeping: false })) {
         status(
           note ??
             (remembered
@@ -249,27 +335,33 @@ export function start(desktop: HTMLElement) {
     }
   );
 
-  /* Handy for prodding the machine from the browser console. */
+  /* Handy for prodding the machines from the browser console: the
+   * machine shown's, as `engine`, `plan`, `session` and `kept`. */
   Object.assign(globalThis as Record<string, unknown>, {
     winbox: {
       state,
+      machines,
+      get machine() {
+        return current();
+      },
       get plan() {
-        return session.plan;
+        return current()?.plan;
       },
       get engine() {
-        return session.made;
+        return current()?.made;
       },
       get session() {
-        return session.made?.session;
+        return current()?.made?.session;
       },
       get kept() {
-        return session.kept;
+        return current()?.kept;
       },
       keptCounts,
       imageCounts,
-      keep: keepAll,
+      keep: () => keepAll(current()),
+      keepEvery,
       accept,
-      run,
+      run: (program: Program) => run(current(), program),
     },
   });
 }

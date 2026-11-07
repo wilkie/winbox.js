@@ -253,7 +253,7 @@ async function keepPmitem(page: Page) {
     const { GroupFile, storeCommand } = await import('/src/layers/groups.ts' as string);
     const { layerFromChanges } = await import('/src/layers/layer.ts' as string);
     const { keepProgram } = await import('/src/run/store.ts' as string);
-    const { baseNow, state } = await import('/src/run/page/state.ts' as string);
+    const { baseNow, current } = await import('/src/run/page/state.ts' as string);
     const winbox = (globalThis as any).winbox;
     const ini = winbox.plan.placements.find(
       (placement: any) => placement.parts.join('\\') === 'WINDOWS\\WIN.INI'
@@ -326,7 +326,7 @@ async function keepPmitem(page: Page) {
       {
         name: 'pmitem',
         base: baseNow(),
-        display: state.display,
+        display: current().display,
         layers: [layer.manifest.id],
         exes: ['C:\\WINDOWS\\PMITEMC.EXE'],
         orders: {},
@@ -336,6 +336,73 @@ async function keepPmitem(page: Page) {
       [layer]
     );
   }, readFileSync(PMITEMC).toString('base64'));
+}
+
+/**
+ * Another program kept as an install would keep it, `strings`: a layer
+ * over the asset bundle's base with STRINGS.EXE at C:\ORACLE, which
+ * writes C:\ORACLE\STRINGS.OUT, and its group, "Strings", made by
+ * Program Manager's own operations (`GroupFile`), with the one item, and
+ * PROGMAN.INI naming it. Kept in the store; read once the page is opened
+ * again.
+ */
+async function keepStrings(page: Page) {
+  await page.evaluate(async (probe: string) => {
+    const bytes = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0) & 0xff);
+    const { GroupFile, storeCommand } = await import('/src/layers/groups.ts' as string);
+    const { layerFromChanges } = await import('/src/layers/layer.ts' as string);
+    const { keepProgram } = await import('/src/run/store.ts' as string);
+    const { baseNow, current } = await import('/src/run/page/state.ts' as string);
+    const file = GroupFile.create('Strings', { cx: 8, cy: 8, bitsPixel: 1, planes: 1 });
+    const { stored, programDirectory } = storeCommand('C:\\ORACLE\\STRINGS.EXE', null);
+    const made = file.addItem({
+      name: 'Strings',
+      stored,
+      programDirectory,
+      iconPath: 'C:\\ORACLE\\STRINGS.EXE',
+      iconIndex: 0,
+      header: Uint8Array.from([0, 0, 0, 0, 8, 0, 8, 0, 2, 0, 1, 1]),
+      and: new Uint8Array(16),
+      xor: new Uint8Array(16),
+      x: 21,
+      y: 0,
+      hotKey: 0,
+      minimized: false,
+    });
+
+    if ('error' in made) {
+      throw new Error(made.error);
+    }
+
+    const modified = Date.UTC(1992, 2, 10) / 1000;
+    const layer = await layerFromChanges(
+      [
+        { kind: 'file', path: 'ORACLE\\STRINGS.EXE', data: bytes(atob(probe)), modified },
+        { kind: 'file', path: 'WINDOWS\\STRINGS.GRP', data: file.bytes(), modified },
+        {
+          kind: 'file',
+          path: 'WINDOWS\\PROGMAN.INI',
+          data: bytes('[Groups]\r\nGroup1=C:\\WINDOWS\\STRINGS.GRP\r\n'),
+          modified,
+        },
+      ],
+      { over: [baseNow()], made: { by: 'WinBox test' } }
+    );
+
+    await keepProgram(
+      {
+        name: 'strings',
+        base: baseNow(),
+        display: current().display,
+        layers: [layer.manifest.id],
+        exes: ['C:\\ORACLE\\STRINGS.EXE'],
+        orders: {},
+        kept: Date.now(),
+        media: [],
+      },
+      [layer]
+    );
+  }, readFileSync(STRINGS).toString('base64'));
 }
 
 /* The `sndplay` probe, which asks for the sound Windows starts with, the
@@ -2503,11 +2570,13 @@ for (const { engine, page: at } of ENGINES) {
       await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
       await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 20000 });
 
-      /* Bound to the display it was made on: on another, C: is the base
-       * alone, and the program is opened on its own. */
+      /* Bound to the display it was made on: on another, the machine's C:
+       * is the base alone, and the program is opened on a machine of its
+       * own, on its display, named with it. */
       await page.locator('#display').selectOption('ega');
       await expect(changed).toHaveCount(0);
-      await expect(page.getByRole('button', { name: /^oracle was made on/ })).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Open oracle' })).toBeEnabled();
+      await expect(page.locator('#kept-programs')).toContainText('oracle (VGA');
       await page.locator('#display').selectOption('vga');
       await expect(changed.filter({ hasText: out })).toHaveCount(1);
 
@@ -2895,6 +2964,150 @@ for (const { engine, page: at } of ENGINES) {
       await expect(
         page.getByRole('list', { name: "pmitem's Program Manager groups" })
       ).toContainText('PMItem');
+      expect(errors).toEqual([]);
+    });
+
+    test('runs two installs on two machines, each in a tab of its own', async ({ page }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(PMITEMC) || !existsSync(STRINGS),
+        'the asset bundle, or the pmitem or strings probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+      await keepPmitem(page);
+      await keepStrings(page);
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+
+      const tablist = page.getByRole('tablist', { name: 'Machines' });
+      const tabs = tablist.getByRole('tab');
+      const launcher = page.getByRole('button', { name: 'Programs', exact: true });
+      const choose = async (group: string, name: string) => {
+        await launcher.click();
+        await page.getByRole('menuitem', { name: group, exact: true }).click();
+        await page
+          .getByRole('menu', { name: group })
+          .getByRole('menuitem', { name, exact: true })
+          .click();
+        await expect(page.getByRole('menu', { name: 'Programs' })).toBeHidden();
+      };
+      /* A file on the C: of the machine shown, as its engine tells it. */
+      const written = (path: string) =>
+        page.evaluate(async (path) => {
+          const changes = await (globalThis as any).winbox.engine.changes();
+          const file = (changes ?? []).find((change: any) => change.path === path);
+
+          return file ? new TextDecoder('latin1').decode(file.data) : '';
+        }, path);
+      const recorded = (name: string) =>
+        JSON.parse(readFileSync(PMITEM, 'utf8')).records.find(
+          (record: any) => record.function === 'child' && record.args === name
+        ).result as string;
+
+      /* The page's machine on the base, its tab the only one. */
+      await expect(tabs).toHaveText(['Windows']);
+      await expect(tabs.first()).toHaveAttribute('aria-selected', 'true');
+      await expect(page.getByRole('tabpanel', { name: 'Windows' })).toBeVisible();
+
+      /* pmitem's item: a machine of its own, in a tab after, shown. */
+      await choose('PMItem', 'Args');
+      await expect(tabs).toHaveText(['Windows', 'pmitem']);
+      await expect(tablist.getByRole('tab', { name: 'pmitem' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      await expect
+        .poll(() => written('ORACLE\\PMITEM.TXT'), { timeout: 30000 })
+        .toBe(`${recorded('args')}\r\n`);
+      await expect(page.locator('#counts')).toContainText('KERNEL._lopen');
+
+      /* A floppy's image dropped while pmitem's machine is shown: its drive. */
+      await page.locator('#picker').setInputFiles(probeImage('imgflop.img'));
+      await expect(page.locator('#drives > li')).toHaveCount(1);
+
+      /* strings' item: another machine, another tab, its own C: and trace. */
+      await choose('Strings', 'Strings');
+      await expect(tabs).toHaveText(['Windows', 'pmitem', 'strings']);
+      await expect(tablist.getByRole('tab', { name: 'strings' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      await expect.poll(() => written('ORACLE\\STRINGS.OUT'), { timeout: 30000 }).not.toBe('');
+      await expect(page.locator('#counts')).toContainText('USER.AnsiUpper');
+      await expect(page.locator('#counts')).not.toContainText('KERNEL._lopen');
+      await expect(page.locator('#drives-note')).toContainText('No drives but C:.');
+      await listed(page, 'C:\\ORACLE\\STRINGS.OUT');
+      await listed(page, 'C:\\ORACLE\\PMITEM.TXT', false);
+      /* One screen shown, the others' hidden. */
+      await expect(page.getByRole('application', { name: 'Windows desktop' })).toHaveCount(1);
+      await accessible(page, 'two machines running, the second shown');
+
+      /* Back to pmitem's, by the keyboard: its drives, its trace, its C:. */
+      await tablist.getByRole('tab', { name: 'strings' }).focus();
+      await page.keyboard.press('ArrowLeft');
+      await expect(tablist.getByRole('tab', { name: 'pmitem' })).toBeFocused();
+      await expect(tablist.getByRole('tab', { name: 'pmitem' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      await expect(page.locator('#drives > li')).toHaveCount(1);
+      await expect(page.locator('#counts')).toContainText('KERNEL._lopen');
+      await expect(page.locator('#counts')).not.toContainText('USER.AnsiUpper');
+      await listed(page, 'C:\\ORACLE\\PMITEM.TXT');
+      await listed(page, 'C:\\ORACLE\\STRINGS.OUT', false);
+
+      /* Another of pmitem's items, from the strings tab: it joins pmitem's machine. */
+      await tablist.getByRole('tab', { name: 'strings' }).click();
+      await choose('PMItem', 'Dir');
+      await expect(tabs).toHaveText(['Windows', 'pmitem', 'strings']);
+      await expect(tablist.getByRole('tab', { name: 'pmitem' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      await expect
+        .poll(() => written('ORACLE\\PMITEM.TXT'), { timeout: 30000 })
+        .toBe(`${recorded('args')}\r\n${recorded('directory')}\r\n`);
+
+      /* strings' tab closed: what it wrote kept first, its tab gone. */
+      await tablist.getByRole('tab', { name: 'strings' }).click();
+      await page.getByRole('button', { name: 'Close strings' }).click();
+      await expect(tabs).toHaveText(['Windows', 'pmitem']);
+      await expect(page.getByRole('button', { name: 'Open strings' })).toBeEnabled();
+
+      /* Opened again, what it wrote is on its C:. */
+      await page.getByRole('button', { name: 'Open strings' }).click();
+      await expect(page.locator('#status')).toHaveText('strings is on C:.');
+      await expect(tabs).toHaveText(['Windows', 'pmitem', 'strings']);
+      await listed(page, 'C:\\ORACLE\\STRINGS.OUT');
+
+      /* A tab behind is shown from Kept programs. */
+      await page.getByRole('button', { name: 'Show pmitem' }).click();
+      await expect(tablist.getByRole('tab', { name: 'pmitem' })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+
+      /* Delete on a tab closes its machine too; the last closed leaves the base's. */
+      await tablist.getByRole('tab', { name: 'strings' }).focus();
+      await page.keyboard.press('Delete');
+      await expect(tabs).toHaveText(['Windows', 'pmitem']);
+      await page.getByRole('button', { name: 'Close pmitem' }).click();
+      await expect(tabs).toHaveText(['Windows']);
+      await page.getByRole('button', { name: 'Close Windows' }).click();
+      await expect(tabs).toHaveText(['Windows']);
+      await expect(page.getByRole('tabpanel', { name: 'Windows' })).toBeVisible();
       expect(errors).toEqual([]);
     });
 

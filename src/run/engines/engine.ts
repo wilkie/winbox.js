@@ -157,6 +157,20 @@ export interface Engine {
    */
   sound?: boolean;
 
+  /**
+   * Whether what the machine's sound card plays is heard: the page's
+   * machine shown alone is, as only its screen is seen; what the others
+   * play is let go of as it is made. Their programs run on.
+   */
+  heard?: boolean;
+
+  /**
+   * The machine ended, as its tab is closed: nothing more run, its screen
+   * let go of, what it listened for on the page no longer listened for,
+   * and what it held given back for the next machine to use.
+   */
+  dispose(): void;
+
   /** What there is to prod from the browser's console. */
   readonly session: unknown;
 }

@@ -371,6 +371,21 @@ export class Speaker {
     this.#node?.port.postMessage({ stop: true });
   }
 
+  /**
+   * The speaker let go of, as its machine is closed: what is queued let go,
+   * and its context closed, a browser holding only so many at once.
+   */
+  close() {
+    this.stop();
+
+    const context = this.#context as (ContextLike & { close?: () => Promise<void> }) | null;
+
+    this.#context = null;
+    this.#node = null;
+    this.#ready = null;
+    context?.close?.().catch(() => {});
+  }
+
   #queue(lane: Lane, at: number, rate: number, channels: Float32Array[]) {
     const node = this.#node;
     const context = this.#context;

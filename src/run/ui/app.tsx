@@ -96,7 +96,7 @@ export function App() {
             </>
           )}
         </Box>
-        <Desktop />
+        <Desktop tabs={view?.tabs ?? []} />
         <Trace />
       </Box>
       <FileBrowser />

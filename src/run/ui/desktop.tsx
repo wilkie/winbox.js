@@ -19,8 +19,19 @@
  * Beneath it, the way out for the keyboard (`../page/leave.ts`): Meta and
  * Escape take the focus to that line, from where Tab goes on through the
  * page -- and leave the whole screen, where it is shown on it.
+ *
+ * Each machine (`kb/guides/launcher.md`, design A) is a tab: the WAI-ARIA
+ * tabs pattern, a tablist of a tab for each machine named by its install,
+ * the arrows moving among them and the selection following, and the
+ * desktop the tab panel, holding every machine's screen, each its own
+ * element, the shown one's alone not hidden. Beside the tabs, the Close
+ * of the machine shown, named with it ("Close pmitem"), outside the
+ * tablist, which holds tabs alone; Delete on a tab closes its machine, as
+ * the pattern offers. Closing keeps what the machine wrote first, so it
+ * asks nothing. The screen's size, chosen once, is every machine's.
  */
 
+import CloseIcon from '@mui/icons-material/Close';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import Box from '@mui/material/Box';
@@ -28,9 +39,11 @@ import Button from '@mui/material/Button';
 import NativeSelect from '@mui/material/NativeSelect';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { start } from '../page/actions.js';
+import { actions, start } from '../page/actions.js';
 import { LEAVE_TEXT, leavesDesktop } from '../page/leave.js';
 import {
   chooseScale,
@@ -40,10 +53,14 @@ import {
   screenBox,
   screenScale,
 } from '../page/screen.js';
+import { type TabView } from '../page/view.js';
 
-/** The canvas sized to its place, as the scale chosen has it. */
+/** The shown machine's screen, among every machine's in the desktop. */
+const SHOWN = '.machine-screen:not([hidden])';
+
+/** The canvas of the machine shown sized to its place, as the scale chosen has it. */
 function fit(place: HTMLElement, scale: ScreenScale) {
-  const canvas = place.querySelector<HTMLCanvasElement>('canvas.screen');
+  const canvas = place.querySelector<HTMLCanvasElement>(`${SHOWN} canvas.screen`);
 
   if (!canvas || !canvas.width || !canvas.height) {
     return;
@@ -72,7 +89,70 @@ function fit(place: HTMLElement, scale: ScreenScale) {
 const fullscreenOffered = () =>
   typeof document !== 'undefined' && Boolean(document.fullscreenEnabled);
 
-export function Desktop() {
+/** A machine's tab's id, which its panel is labelled by. */
+const tabId = (id: number) => `machine-tab-${id}`;
+
+/** The machines' tabs, and the Close of the one shown beside them. */
+function MachineTabs({ tabs }: { tabs: TabView[] }) {
+  const shown = tabs.find((tab) => tab.selected);
+
+  if (!tabs.length) {
+    return null;
+  }
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 1,
+        borderBottom: 1,
+        borderColor: 'divider',
+        minWidth: 0,
+      }}
+    >
+      <Tabs
+        value={shown?.id ?? false}
+        onChange={(_, id: number) => actions.select(id)}
+        aria-label="Machines"
+        variant="scrollable"
+        scrollButtons="auto"
+        selectionFollowsFocus
+        sx={{ flex: '1 1 auto', minWidth: 0, minHeight: 40 }}
+      >
+        {tabs.map((tab) => (
+          <Tab
+            key={tab.id}
+            id={tabId(tab.id)}
+            value={tab.id}
+            label={tab.name}
+            aria-controls="desktop"
+            onKeyDown={(event) => {
+              if (event.key === 'Delete') {
+                event.preventDefault();
+                actions.close(tab.id);
+              }
+            }}
+            sx={{ minHeight: 40, textTransform: 'none' }}
+          />
+        ))}
+      </Tabs>
+      {shown && (
+        <Button
+          startIcon={<CloseIcon />}
+          aria-label={`Close ${shown.name}`}
+          title={`Close ${shown.name}: what it wrote is kept first`}
+          onClick={() => actions.close(shown.id)}
+          sx={{ flex: 'none' }}
+        >
+          Close
+        </Button>
+      )}
+    </Box>
+  );
+}
+
+export function Desktop({ tabs }: { tabs: TabView[] }) {
   const frame = useRef<HTMLDivElement>(null);
   const place = useRef<HTMLElement>(null);
   const way = useRef<HTMLParagraphElement>(null);
@@ -103,14 +183,33 @@ export function Desktop() {
       }
     };
 
-    /* The host, each time the engine makes it, told where the way out is said,
-     * and its canvas sized; and sized again whenever the engine sizes the canvas afresh. */
+    /* Each machine's host, each time its engine makes it, told where the way
+     * out is said; the shown machine's canvas sized, as it is made, as another
+     * machine is shown, and whenever the engine sizes the canvas afresh. */
+    const described = () =>
+      desktop
+        .querySelectorAll('.screen-host')
+        .forEach((host) => host.setAttribute('aria-describedby', 'desktop-keys'));
     const resized = new MutationObserver(() => fit(desktop, screenScale.get()));
-    const made = new MutationObserver(() => {
-      desktop.querySelector('.screen-host')?.setAttribute('aria-describedby', 'desktop-keys');
+    const made = new MutationObserver((records) => {
+      /* A screen made, or a machine's added or shown: not its mirror's changes. */
+      const screens = records.some(
+        (record) =>
+          record.type === 'attributes' ||
+          [...record.addedNodes].some(
+            (node) =>
+              node instanceof Element && node.matches('.machine-screen, .screen-host, .screen-note')
+          )
+      );
+
+      if (!screens) {
+        return;
+      }
+
+      described();
       resized.disconnect();
 
-      const canvas = desktop.querySelector('canvas.screen');
+      const canvas = desktop.querySelector(`${SHOWN} canvas.screen`);
 
       if (canvas) {
         resized.observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
@@ -121,10 +220,15 @@ export function Desktop() {
     const room = new ResizeObserver(() => fit(desktop, screenScale.get()));
 
     desktop.addEventListener('keydown', leave, true);
-    made.observe(desktop, { childList: true });
+    made.observe(desktop, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['hidden'],
+    });
     room.observe(desktop);
     start(desktop);
-    desktop.querySelector('.screen-host')?.setAttribute('aria-describedby', 'desktop-keys');
+    described();
 
     return () => {
       desktop.removeEventListener('keydown', leave, true);
@@ -150,8 +254,10 @@ export function Desktop() {
     return () => document.removeEventListener('fullscreenchange', changed);
   }, []);
 
+  const shownTab = tabs.find((tab) => tab.selected);
+
   const enterFull = async () => {
-    const host = place.current?.querySelector<HTMLElement>('.screen-host');
+    const host = place.current?.querySelector<HTMLElement>(`${SHOWN} .screen-host`);
 
     if (fullscreenOffered()) {
       try {
@@ -231,10 +337,13 @@ export function Desktop() {
             </Button>
           )}
         </Stack>
+        <MachineTabs tabs={tabs} />
         <Box
           component="section"
           id="desktop"
-          aria-label="Desktop"
+          {...(shownTab
+            ? { role: 'tabpanel', 'aria-labelledby': tabId(shownTab.id) }
+            : { 'aria-label': 'Desktop' })}
           ref={place}
           sx={{
             position: 'relative',
@@ -243,7 +352,7 @@ export function Desktop() {
             borderColor: 'divider',
             borderRadius: 1,
             overflow: 'hidden',
-            '&:has(.screen)': full
+            [`&:has(${SHOWN} .screen)`]: full
               ? { minHeight: 0, flex: '1 1 auto', bgcolor: '#000' }
               : {
                   minHeight: 0,

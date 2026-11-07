@@ -34,12 +34,21 @@ import { Icon } from './kept.js';
 /** What Program Manager's box says of a working directory that is not there (strings 34h, 8Eh). */
 const INVALID_PATH = { title: 'Invalid Path', text: 'The working directory is invalid.' };
 
-/** A disabled entry legible, its reason read as easily as any other. */
+/**
+ * A disabled entry: not MUI's dimming of the whole entry, which would take
+ * its reason below AA's contrast, but its name and icon greyed as a
+ * disabled control's are (the theme's `text.disabled`, and the icon faded
+ * and without colour), and its reason in the secondary text's colour, AA
+ * on the menu's paper in both schemes.
+ */
 const legible = {
   '&.Mui-disabled': { opacity: 1 },
   whiteSpace: 'normal',
   maxWidth: '24rem',
 } as const;
+
+/** An icon greyed, as a disabled entry's. */
+const greyed = { filter: 'grayscale(1)', opacity: 0.45 } as const;
 
 function ItemEntry({ item, choose }: { item: LauncherItem; choose: (item: LauncherItem) => void }) {
   return (
@@ -49,7 +58,9 @@ function ItemEntry({ item, choose }: { item: LauncherItem; choose: (item: Launch
       onClick={() => choose(item)}
       sx={legible}
     >
-      <ListItemIcon sx={{ minWidth: 0, width: 32, height: 32, mr: 1.5 }}>
+      <ListItemIcon
+        sx={{ minWidth: 0, width: 32, height: 32, mr: 1.5, ...(item.reason ? greyed : {}) }}
+      >
         <Icon item={item} display={item.display} />
       </ListItemIcon>
       {/* Named by what it shows: its name, and why it cannot run -- a space
@@ -57,7 +68,10 @@ function ItemEntry({ item, choose }: { item: LauncherItem; choose: (item: Launch
       <ListItemText
         primary={item.reason ? `${item.name} ` : item.name}
         secondary={item.reason ? `Cannot run: ${item.reason}.` : null}
-        slotProps={{ primary: { color: item.reason ? 'text.secondary' : undefined } }}
+        slotProps={{
+          primary: { color: item.reason ? 'text.disabled' : undefined },
+          secondary: { color: 'text.secondary' },
+        }}
       />
     </MenuItem>
   );

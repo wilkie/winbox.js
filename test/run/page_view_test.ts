@@ -14,9 +14,13 @@ import {
   keptText,
   LAUNCHER_EMPTY,
   launcherView,
+  type MachineFacts,
+  machineName,
   neededRows,
   offeredDisplays,
   programRows,
+  shownAfterClosing,
+  tabsView,
   traceRows,
   windowsText,
   type Needed,
@@ -123,20 +127,79 @@ describe('the run page, as it is shown', () => {
     expect(changesView([], []).forgettable).toBe(false);
   });
 
-  it('offers a kept program on the display it was made on, and closes the one open', () => {
+  it('opens a kept program on a machine of its own, on the display it was made on', () => {
     const here = program('here');
-    const there = program('there', { display: 'ega' });
-    const rows = keptRows([here, there], here, 'base:abc:vga', 'vga', () => null);
+    const there = program('there', { display: 'ega', base: 'base:abc:ega' });
+    const behind = program('behind');
+    const gone = program('gone', { base: 'base:other:vga' });
+    const unoffered = program('unoffered', { display: 'hercules', base: 'base:abc:hercules' });
+    const rows = keptRows(
+      [here, there, behind, gone, unoffered],
+      (name) => (name === 'here' ? 'shown' : name === 'behind' ? 'behind' : null),
+      (display) => `base:abc:${display}`,
+      ['vga', 'ega'],
+      'vga',
+      () => null
+    );
 
-    expect(rows.map((row) => [row.label, row.here, row.shown, row.openLabel])).toEqual([
-      ['here', true, true, 'Close here'],
+    expect(
+      rows.map((row) => [row.label, row.here, row.shown, row.running, row.openText, row.openLabel])
+    ).toEqual([
+      ['here', true, true, true, 'Open', 'Open here'],
+      [expect.stringMatching(/^there \(EGA/), true, false, false, 'Open', 'Open there'],
+      ['behind', true, false, true, 'Show', 'Show behind'],
+      ['gone', false, false, false, 'Open', 'gone was made on a Windows that is not here'],
       [
-        expect.stringMatching(/^there \(EGA/),
+        expect.stringMatching(/^unoffered \(Hercules/),
         false,
         false,
-        expect.stringMatching(/^there was made on the EGA.*, and is opened there$/),
+        false,
+        'Open',
+        expect.stringMatching(
+          /^unoffered was made on the Hercules.*, which this Windows does not offer$/
+        ),
       ],
     ]);
+  });
+
+  it('names each machine by its install, and its tab with its display where two share a name', () => {
+    const facts = (id: number, more: Partial<MachineFacts> = {}): MachineFacts => ({
+      id,
+      program: null,
+      installing: null,
+      display: 'vga',
+      windows: true,
+      ...more,
+    });
+
+    expect(machineName(facts(1, { program: 'pmitem' }))).toBe('pmitem');
+    expect(machineName(facts(1))).toBe('Windows');
+    expect(machineName(facts(1, { windows: false }))).toBe('No Windows');
+    expect(machineName(facts(1, { program: 'pmitem', installing: 'pmitem' }))).toBe(
+      'Installing pmitem'
+    );
+
+    const tabs = tabsView(
+      [facts(1), facts(2, { program: 'clock' }), facts(3, { display: 'ega' })],
+      2
+    );
+
+    expect(tabs.map((tab) => [tab.id, tab.name, tab.selected])).toEqual([
+      [1, expect.stringMatching(/^Windows \(VGA/), false],
+      [2, 'clock', true],
+      [3, expect.stringMatching(/^Windows \(EGA/), false],
+    ]);
+  });
+
+  it('shows the tab beside one closed, or keeps the one shown', () => {
+    /* Another closed: the one shown stays. */
+    expect(shownAfterClosing([1, 2, 3], 1, 2)).toBe(2);
+    /* The one shown closed: the one after it, or before it where it was last. */
+    expect(shownAfterClosing([1, 2, 3], 2, 2)).toBe(3);
+    expect(shownAfterClosing([1, 2, 3], 3, 3)).toBe(2);
+    expect(shownAfterClosing([1, 2, 3], 1, 1)).toBe(2);
+    /* The only one: none. */
+    expect(shownAfterClosing([4], 4, 4)).toBe(null);
   });
 
   it("lists every kept program's groups in the launcher, apart, and says why an item cannot run", () => {
