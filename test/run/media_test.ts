@@ -7,7 +7,7 @@ import { Assets } from '../../src/assets/bundle.js';
 import { writeStoredZip } from '../../src/assets/zip.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { fillDrive, planDrive } from '../../src/run/drive.js';
-import { classify, makeFromMedia, orderMedia } from '../../src/run/media.js';
+import { classify, installerOf, makeFromMedia, orderMedia } from '../../src/run/media.js';
 import { assetsIdentity, changesKey } from '../../src/run/store.js';
 import { bundle, bundleDrive } from '../win16/run-probe.js';
 
@@ -59,6 +59,15 @@ describe("what the page makes of what's dropped", () => {
       (await classify('w1.zip', zip({ 'SETUP.EXE': 'x', 'SETUP.INF': 'x', 'GDI.EX_': 'x' }))).kind
     ).toBe('media');
     expect((await classify('Disk01.img', new Uint8Array(16))).kind).toBe('media');
+  });
+
+  it("takes an archive's shallowest installer, SETUP.EXE before INSTALL.EXE of one depth", () => {
+    const entries = (paths: string[]) => paths.map((path) => ({ path }) as any);
+
+    expect(installerOf(entries(['INSTALL.EXE', 'SETUP.EXE', 'README.TXT']))).toBe('SETUP.EXE');
+    expect(installerOf(entries(['DISK1/SETUP.EXE', 'INSTALL.EXE']))).toBe('INSTALL.EXE');
+    expect(installerOf(entries(['A/INSTALL.EXE', 'B/INSTALL.EXE']))).toBe('A/INSTALL.EXE');
+    expect(installerOf(entries(['GAME.EXE']))).toBeNull();
   });
 
   it("gives the maker the disks' images first, as the script does", () => {

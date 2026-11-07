@@ -30,6 +30,7 @@ probes:
     lzero,,
     locinfo,
     grround,
+    dpmiver,
   ]
 ---
 
@@ -204,6 +205,14 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 - [[measured]] 000Bh of selector 0FFFh, which the program never had, answers with the carry clear and AX unchanged.
 - winbox.js answers both functions from its descriptor tables. A DPMI call used to leave the program stopped where it made it: the interrupt's handler never said to go on.
 
+## DPMI's version
+
+Function 0400h of `INT 31h` asks the DPMI host its version and what it is. A program built with WATCOM's Win386 extender asks it before it runs its 32-bit code, and refuses to run on a host that is not 32-bit: Sierra's Setup 3.4, through its `SMACKE16.DLL` (seg1 `0099`-`00c8`), keeps AH, AL, BX, CL, DH and DL, and with BX's bit 0 clear says "Not running on a 386 DPMI implementation" in a box captioned "WATCOM Win386" and loads no further. It calls [[fn:KERNEL.GetWinFlags]] first and keeps its answer, but does not test it there.
+
+- [[measured]] [[probe:dpmiver]] sets BX, CX and DX to `5A5Ah` and asks 0400h under standard mode: AX `005Ah`, version 0.90; BX `000Ah`, bit 0 clear, a 16-bit host; CL 4, the processor, CH left `5Ah`; DX `0870h`, the interrupt controllers' bases; the carry clear. `GetWinFlags` answers `0419h` (`WF_PMODE`, `WF_CPU486`, `WF_STANDARD`, `WF_80x87`), and `INT 2Fh` function 1600h, the enhanced-mode check, leaves AX `1600h`.
+- [[read out]] Standard mode's host is `DOSX.EXE`. Its answer is at 6A83h in its file (6883h in its image): AX `5Ah`, BX `0Ah` and DX `0870h` constants, CL the processor type DOSX kept at its data `0134h` as it started. winbox.js answers the same, the processor the i486 its `GetWinFlags` names. Before, it left every register as it was, and a Win386 program read version 4.0 and BX's bit 0 from whatever the program left there.
+- So a WATCOM Win386 program does not run under Windows 3.1 in standard mode, nor under winbox.js: it wants enhanced mode's 32-bit host.
+
 ## The BIOS's data
 
 [[documented]] Windows keeps selector 40h for the BIOS's data area, at 400h, and KERNEL exports it as `__0040H`. [[measured]] A C runtime's start-up reads the clock with `INT 1Ah` and, when AL says a day has turned, clears the BIOS's own flag through selector 40h: Hearts, Cribbage and Solitaire programs of the corpus do. It is in winbox.js's global descriptor table, which holds nothing else.
@@ -258,6 +267,7 @@ What USER does as it is told -- the task's hooks taken out, its windows given US
 
 ## Not yet measured
 
+- A 32-bit DPMI host, as Windows' enhanced mode gives: WATCOM Win386 programs and libraries (see "DPMI's version" above) want one, and neither standard mode nor winbox.js has one. Whether winbox.js offers enhanced mode is the owner's decision. Nothing of enhanced mode's DPMI answers is recorded.
 - A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
 - The blocks a task owns, freed by `GlobalFreeAll` as it ends (`KRNL386.EXE` seg1 `1990`): WinBox does not yet free them. Nor does it free a module's resources with it, or put the selectors of `AllocSelector`, `FreeSelector` and the aliases on KERNEL's list of free selectors; they are found afresh, lowest first.
 - The heap's order `GlobalFreeAll` frees a module's segments in: WinBox frees them by their number, the data segment first, after the database.

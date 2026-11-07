@@ -4,6 +4,21 @@ import { setDescriptor } from './dpmi/setDescriptor.js';
 import { I286 } from '../emulator/core/i286.js';
 import { I386 } from '../emulator/core/i386.js';
 
+/**
+ * What Windows 3.1's standard-mode DPMI host, DOSX, answers for function
+ * 0400h, Get Version (`DOSX.EXE` at 6A83h in its file, 6883h in its image):
+ * AX the version, 0.90; BX its flags, 0Ah, bit 0 clear -- a 16-bit host,
+ * which a WATCOM Win386 program takes for "Not running on a 386 DPMI
+ * implementation"; CL the processor, kept by DOSX as it starts (data
+ * `0134h`), 4 for the i486 `GetWinFlags` names (`WF_CPU486`); DX the
+ * interrupt controllers' bases, 08h and 70h, a constant. CH is left as it
+ * was. **Recorded** by `dpmiver`.
+ */
+export const DPMI_VERSION = 0x005a;
+export const DPMI_FLAGS = 0x000a;
+export const DPMI_PROCESSOR = 4;
+export const DPMI_PIC_BASES = 0x0870;
+
 export class DPMI {
   declare _dos: any;
   declare _exports: any;
@@ -121,6 +136,8 @@ export class DPMI {
       // 0x0702: Mark Page as Demand Paging Candidate
       // 0x0703: Discard Page Contents
 
+      // 0x0400: Get Version, answered in `invoke` (`DPMI_VERSION`)
+
       // Debug Support Services
 
       // 0x0b00: Set Debug Watchpoint
@@ -132,6 +149,16 @@ export class DPMI {
 
   invoke() {
     // A DOS/bios call
+    const core = this._machine.cpu.core;
+
+    if (core.ax === 0x0400) {
+      core.ax = DPMI_VERSION;
+      core.bx = DPMI_FLAGS;
+      core.cl = DPMI_PROCESSOR;
+      core.dx = DPMI_PIC_BASES;
+      core.flags.carry = false;
+      return;
+    }
 
     const handler = this._exports[this._machine.cpu.core.ax];
 

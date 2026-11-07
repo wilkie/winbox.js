@@ -204,6 +204,23 @@ describe("The page's drives of images", () => {
     expect(installerOn(programs)?.path).toBe('A:\\INSTALL\\SETUP.EXE');
     expect(installerOn(programs.filter((one) => !/SETUP/.test(one.path)))).toBeNull();
 
+    /* Of one depth, SETUP.EXE before INSTALL.EXE whatever the disk's order (a disc's, sorted by name). */
+    const listed = (path: string, kind: 'windows' | 'dos' = 'windows') => ({
+      path,
+      parts: path.slice(3).split('\\'),
+      kind,
+    });
+
+    expect(installerOn([listed('D:\\INSTALL.EXE'), listed('D:\\SETUP.EXE')])?.path).toBe(
+      'D:\\SETUP.EXE'
+    );
+    expect(installerOn([listed('D:\\INSTALL.EXE'), listed('D:\\SETUP.EXE', 'dos')])?.path).toBe(
+      'D:\\INSTALL.EXE'
+    );
+    expect(installerOn([listed('D:\\DISK1\\SETUP.EXE'), listed('D:\\INSTALL.EXE')])?.path).toBe(
+      'D:\\INSTALL.EXE'
+    );
+
     /* The disc's, read where it is. */
     expect(await programsOn(await volumeOf('iso', disk('imgcd.iso')), 'D')).toEqual([]);
   });
