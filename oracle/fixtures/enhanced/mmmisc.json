@@ -1,0 +1,490 @@
+{
+  "probe": "mmmisc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "version",
+      "args": "",
+      "result": "101"
+    },
+    {
+      "function": "wep",
+      "args": "",
+      "result": "1"
+    },
+    {
+      "function": "debugstr",
+      "args": "",
+      "result": "returned"
+    },
+    {
+      "function": "stack",
+      "args": "enter",
+      "result": "cf=1,ss=same,sp=0,top=581"
+    },
+    {
+      "function": "stack",
+      "args": "leave",
+      "result": "cf=0,ss=same,sp=0"
+    },
+    {
+      "function": "notify",
+      "args": "answer",
+      "result": "nonzero"
+    },
+    {
+      "function": "notify",
+      "args": "message",
+      "result": "3b9,1,7"
+    },
+    {
+      "function": "notify",
+      "args": "badwindow",
+      "result": "0"
+    },
+    {
+      "function": "task",
+      "args": "current",
+      "result": "self"
+    },
+    {
+      "function": "task",
+      "args": "signal",
+      "result": "nonzero"
+    },
+    {
+      "function": "task",
+      "args": "signalled",
+      "result": "400,none,0,0"
+    },
+    {
+      "function": "task",
+      "args": "signal-bad",
+      "result": "0"
+    },
+    {
+      "function": "task",
+      "args": "yield",
+      "result": "returned"
+    },
+    {
+      "function": "task",
+      "args": "dispatched",
+      "result": "3,4"
+    },
+    {
+      "function": "task",
+      "args": "block",
+      "result": "3a0"
+    },
+    {
+      "function": "task",
+      "args": "block-dispatched",
+      "result": "1"
+    },
+    {
+      "function": "task",
+      "args": "block-left",
+      "result": "401,7,8"
+    },
+    {
+      "function": "task",
+      "args": "block-again",
+      "result": "400"
+    },
+    {
+      "function": "drv",
+      "args": "open",
+      "result": "handle"
+    },
+    {
+      "function": "drv",
+      "args": "module",
+      "result": "TIMER.DRV"
+    },
+    {
+      "function": "drv",
+      "args": "send",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,1",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "def,2",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "def,3",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,4",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,5",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "def,6",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "def,7",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,8",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,9",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "def,10",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "def,11",
+      "result": "0"
+    },
+    {
+      "function": "drv",
+      "args": "close",
+      "result": "1"
+    },
+    {
+      "function": "drv",
+      "args": "close-again",
+      "result": "0"
+    },
+    {
+      "function": "joy",
+      "args": "count",
+      "result": "0"
+    },
+    {
+      "function": "joy",
+      "args": "caps,0",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "pos,0",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "getthreshold,0",
+      "result": "6,1234"
+    },
+    {
+      "function": "joy",
+      "args": "setthreshold,0",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "release,0",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture,0",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture-null,0",
+      "result": "165"
+    },
+    {
+      "function": "joy",
+      "args": "calibration,0",
+      "result": "6,1,2,3,4,5,6"
+    },
+    {
+      "function": "joy",
+      "args": "caps,1",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "pos,1",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "getthreshold,1",
+      "result": "6,1234"
+    },
+    {
+      "function": "joy",
+      "args": "setthreshold,1",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "release,1",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture,1",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture-null,1",
+      "result": "165"
+    },
+    {
+      "function": "joy",
+      "args": "calibration,1",
+      "result": "6,1,2,3,4,5,6"
+    },
+    {
+      "function": "joy",
+      "args": "caps,2",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "pos,2",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "getthreshold,2",
+      "result": "6,1234"
+    },
+    {
+      "function": "joy",
+      "args": "setthreshold,2",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "release,2",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture,2",
+      "result": "6"
+    },
+    {
+      "function": "joy",
+      "args": "capture-null,2",
+      "result": "165"
+    },
+    {
+      "function": "joy",
+      "args": "calibration,2",
+      "result": "6,1,2,3,4,5,6"
+    },
+    {
+      "function": "mci",
+      "args": "creator-0",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-none",
+      "result": "null,beef,other,nocode"
+    },
+    {
+      "function": "mci",
+      "args": "driveryield-none",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "open",
+      "result": "0,1"
+    },
+    {
+      "function": "mci",
+      "args": "creator",
+      "result": "self"
+    },
+    {
+      "function": "mci",
+      "args": "creator-next",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-opened",
+      "result": "other,3,0,code"
+    },
+    {
+      "function": "mci",
+      "args": "yield-null-data",
+      "result": "proc"
+    },
+    {
+      "function": "mci",
+      "args": "driveryield-default",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "setyield",
+      "result": "1"
+    },
+    {
+      "function": "mci",
+      "args": "yield-set",
+      "result": "ours,5678,other,code"
+    },
+    {
+      "function": "yieldproc",
+      "args": "",
+      "result": "1,12345678"
+    },
+    {
+      "function": "mci",
+      "args": "driveryield-ours",
+      "result": "85,1,id,12345678"
+    },
+    {
+      "function": "mci",
+      "args": "setyield-null",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-after-null",
+      "result": "ours,5678,other,code"
+    },
+    {
+      "function": "mci",
+      "args": "setyield-0",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "setyield-next",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "break",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-break",
+      "result": "other,1b,window,code"
+    },
+    {
+      "function": "mci",
+      "args": "break-data",
+      "result": "key,window"
+    },
+    {
+      "function": "mci",
+      "args": "break-off",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-break-off",
+      "result": "other,1b,window,code"
+    },
+    {
+      "function": "mci",
+      "args": "break-nowindow",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-break-nowindow",
+      "result": "other,71,0,code"
+    },
+    {
+      "function": "mci",
+      "args": "fromelement",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "fromelement-null",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "execute",
+      "result": "1"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "nosuch|OK||The specified device is not open or is not recognized by MCI."
+    },
+    {
+      "function": "mci",
+      "args": "execute-unknown",
+      "result": "0"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "|OK||The specified command requires an alias, file, driver, or device name. Please supply one."
+    },
+    {
+      "function": "mci",
+      "args": "execute-word",
+      "result": "0"
+    },
+    {
+      "function": "box",
+      "args": "",
+      "result": "waveaudio|OK||The MCI device you are using does not support the specified command."
+    },
+    {
+      "function": "mci",
+      "args": "execute-spaces",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "close",
+      "result": "0"
+    },
+    {
+      "function": "mci",
+      "args": "yield-closed",
+      "result": "null,beef,other,nocode"
+    },
+    {
+      "function": "mci",
+      "args": "creator-closed",
+      "result": "0"
+    }
+  ]
+}

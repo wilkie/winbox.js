@@ -1,0 +1,545 @@
+{
+  "probe": "enhmode",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "windows",
+      "args": "160Ah",
+      "result": "ax=160a bx=5a5a cx=5a5a"
+    },
+    {
+      "function": "windows",
+      "args": "1683h",
+      "result": "ax=1600 bx=0001"
+    },
+    {
+      "function": "windows",
+      "args": "1686h",
+      "result": "ax=0000"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0001 VMM",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0003 VPICD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0004 VDMAD",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0005 VTD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0006 V86MMGR",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0007 PageSwap",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0008 Parity",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0009 Reboot",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 000a VDD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 000b VSD",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 000c VMD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 000d VKD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 000e VCD",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0010 BlockDev",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0011 VMCPD",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0012 EBIOS",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0013 BIOSXlat",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0015 DOSMGR",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0017 SHELL",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0018 VMPoll",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 001b VFD",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0021 PageFile",
+      "result": "entry"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0026 VPOWERD",
+      "result": "none"
+    },
+    {
+      "function": "vxd",
+      "args": "1684h 0442 VTDAPI",
+      "result": "entry"
+    },
+    {
+      "function": "dpmi",
+      "args": "0000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0003h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0003h increment",
+      "result": "0008"
+    },
+    {
+      "function": "dpmi",
+      "args": "0006h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0008h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0009h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Bh",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Ch",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0001h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0002h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Ah",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Ah free",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Dh",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Dh free",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0004h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0005h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0100h",
+      "result": "cf=1 ax=0008"
+    },
+    {
+      "function": "dpmi",
+      "args": "0200h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0201h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0202h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0203h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0204h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0205h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0300h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0300h dos",
+      "result": "al=05"
+    },
+    {
+      "function": "dpmi",
+      "args": "0303h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0304h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0305h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0305h size",
+      "result": "0024"
+    },
+    {
+      "function": "dpmi",
+      "args": "0306h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0500h",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0500h 0",
+      "result": "03868000"
+    },
+    {
+      "function": "free",
+      "args": "0500h 1",
+      "result": "00003868"
+    },
+    {
+      "function": "free",
+      "args": "0500h 2",
+      "result": "00000e7f"
+    },
+    {
+      "function": "free",
+      "args": "0500h 3",
+      "result": "000039fc"
+    },
+    {
+      "function": "free",
+      "args": "0500h 4",
+      "result": "00000e86"
+    },
+    {
+      "function": "free",
+      "args": "0500h 5",
+      "result": "00000d80"
+    },
+    {
+      "function": "free",
+      "args": "0500h 6",
+      "result": "00000f6d"
+    },
+    {
+      "function": "free",
+      "args": "0500h 7",
+      "result": "00003869"
+    },
+    {
+      "function": "free",
+      "args": "0500h 8",
+      "result": "000039fc"
+    },
+    {
+      "function": "free",
+      "args": "0500h 9",
+      "result": "ffffffff"
+    },
+    {
+      "function": "free",
+      "args": "0500h 10",
+      "result": "ffffffff"
+    },
+    {
+      "function": "free",
+      "args": "0500h 11",
+      "result": "ffffffff"
+    },
+    {
+      "function": "dpmi",
+      "args": "0501h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0600h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0601h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0702h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0703h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0502h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0602h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0603h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0604h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0604h size",
+      "result": "00001000"
+    },
+    {
+      "function": "dpmi",
+      "args": "0800h",
+      "result": "cf=1 ax=0800"
+    },
+    {
+      "function": "dpmi",
+      "args": "0902h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0902h state",
+      "result": "al=01"
+    },
+    {
+      "function": "dpmi",
+      "args": "0900h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0901h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "0A00h",
+      "result": "cf=1 ax=0a00"
+    },
+    {
+      "function": "dpmi",
+      "args": "0B02h",
+      "result": "cf=1 ax=0b02"
+    },
+    {
+      "function": "kernel",
+      "args": "__AHINCR",
+      "result": "0008"
+    },
+    {
+      "function": "kernel",
+      "args": "__AHSHIFT",
+      "result": "0003"
+    },
+    {
+      "function": "kernel",
+      "args": "privilege",
+      "result": "3"
+    },
+    {
+      "function": "kernel",
+      "args": "code",
+      "result": "valid=1 rights=fb00 limit-is-ffff=0"
+    },
+    {
+      "function": "kernel",
+      "args": "data",
+      "result": "valid=1 rights=f300 limit-is-ffff=0"
+    },
+    {
+      "function": "kernel",
+      "args": "GetFreeSpace",
+      "result": "58324"
+    },
+    {
+      "function": "kernel",
+      "args": "GlobalAlloc 1",
+      "result": "given"
+    },
+    {
+      "function": "kernel",
+      "args": "GlobalAlloc 4",
+      "result": "given"
+    },
+    {
+      "function": "kernel",
+      "args": "GlobalAlloc 8",
+      "result": "given"
+    },
+    {
+      "function": "kernel",
+      "args": "GlobalAlloc 15",
+      "result": "given"
+    },
+    {
+      "function": "kernel",
+      "args": "file",
+      "result": "C:\\WINDOWS\\SYSTEM\\KRNL386.EXE"
+    },
+    {
+      "function": "dpmi",
+      "args": "0503h",
+      "result": "calling"
+    },
+    {
+      "function": "dpmi",
+      "args": "0503h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dpmi",
+      "args": "000Eh",
+      "result": "cf=1 ax=000e"
+    },
+    {
+      "function": "dpmi",
+      "args": "0210h",
+      "result": "cf=1 ax=0210"
+    },
+    {
+      "function": "dpmi",
+      "args": "0401h",
+      "result": "cf=1 ax=0401"
+    },
+    {
+      "function": "dpmi",
+      "args": "0504h",
+      "result": "cf=1 ax=0504"
+    },
+    {
+      "function": "dpmi",
+      "args": "0E00h",
+      "result": "cf=0"
+    }
+  ]
+}

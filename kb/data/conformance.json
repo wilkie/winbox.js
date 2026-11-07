@@ -6938,6 +6938,50 @@
   },
   "gaps": {}
  },
+ "enhmode": {
+  "probe": "enhmode",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 99,
+  "functions": {
+   "dpmi": {
+    "total": 49,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 49
+   },
+   "free": {
+    "total": 12,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 12
+   },
+   "kernel": {
+    "total": 11,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 11
+   },
+   "vxd": {
+    "total": 24,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 24
+   },
+   "windows": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   }
+  },
+  "gaps": {}
+ },
  "enumfam-ega": {
   "probe": "enumfam",
   "display": "ega",

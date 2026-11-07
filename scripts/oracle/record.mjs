@@ -13,9 +13,9 @@
  * stops and DOS comes back to the script that launched it. The whole run is
  * unattended from `win` to a file on disk.
  *
- * Standard mode (`win /s`) rather than 386 enhanced: enhanced mode wants
- * virtual-8086 machinery that DOSBox does not reliably provide, and nothing
- * being probed depends on which mode Windows booted in.
+ * Standard mode (`win /s`), the mode both engines run in. `--mode enhanced`
+ * starts 386 enhanced mode (`win /3`) instead, which DOSBox runs with the
+ * same settings, and keeps its recordings apart (`MODES`).
  *
  *   node scripts/oracle/record.mjs
  *   node scripts/oracle/record.mjs strings      # just one
@@ -23,6 +23,8 @@
  *   node scripts/oracle/record.mjs fault --shoot posted:5  # and take the screen
  *   node scripts/oracle/record.mjs launch --corpus simtower --cycles 20000 ...
  *                                   # DOSBox at a fixed rate, not as fast as it can
+ *   node scripts/oracle/record.mjs dpmiver --mode enhanced
+ *                                   # in 386 enhanced mode, as enhanced/dpmiver.json
  *
  * Writes oracle/fixtures/<probe>.json, which is committed.
  */
@@ -69,6 +71,18 @@ const TIMEOUT_SECONDS = 300;
  * gets done -- SimTower's game clock -- is recorded at a rate that can be
  * named. */
 let CYCLES = 'max';
+
+/* `--mode <mode>`: the mode Windows is started in, `win /s` or `win /3`,
+ * DOSBox's settings the same for both. Standard mode is the oracle's own,
+ * every recording but those made with `--mode`; a recording in another mode
+ * is kept apart from them, as `oracle/fixtures/<mode>/<fixture>.json`, which
+ * no replay reads (`loadFixtures` takes the top level alone), and says its
+ * mode in its source (`kb/guides/enhanced-mode.md`). */
+export const MODES = {
+  standard: { switch: '/s', host: 'dosbox, standard mode' },
+  enhanced: { switch: '/3', host: 'dosbox, 386 enhanced mode' },
+};
+let MODE = 'standard';
 
 function log(...args) {
   console.log(...args);
@@ -625,7 +639,7 @@ async function runProbe(probe, display, shoot = null, capture = null, corpus = n
       /* A program of the corpus started as an install is (`install` in its
        * entry): as Windows started as `WIN SETUP.EXE` runs one, Program
        * Manager the shell, given the program as its command line. */
-      corpus?.install ? `win /s ${corpus.run}` : 'win /s',
+      corpus?.install ? `win ${MODES[MODE].switch} ${corpus.run}` : `win ${MODES[MODE].switch}`,
       'exit',
       '',
     ].join('\n')
@@ -699,7 +713,8 @@ async function provenance(display) {
   return {
     windows: distribution?.label ?? 'unknown',
     sha256: distribution?.sha256 ?? null,
-    host: 'dosbox, standard mode',
+    host: MODES[MODE].host,
+    ...(MODE === 'standard' ? {} : { mode: MODE }),
 
     /* Which driver was installed. Even a probe that looks display-independent
      * was recorded on one, and saying so costs nothing.
@@ -1051,6 +1066,20 @@ async function main() {
    * source. */
   const iniAt = args.indexOf('--ini');
   const ini = iniAt === -1 ? null : args[iniAt + 1];
+  const modeAt = args.indexOf('--mode');
+
+  if (modeAt !== -1) {
+    MODE = args[modeAt + 1];
+
+    if (!MODES[MODE]) {
+      throw new Error(`no mode ${MODE}; try ${Object.keys(MODES).join(', ')}`);
+    }
+
+    /* Their records and captures have no place of a mode's own yet. */
+    if (MODE !== 'standard' && (corpus || capture)) {
+      throw new Error('--mode is for probes; not with --corpus or --capture');
+    }
+  }
 
   if (cyclesAt !== -1) {
     CYCLES = `fixed ${Number(args[cyclesAt + 1])}`;
@@ -1190,6 +1219,11 @@ async function main() {
       fixture = `fabricated/${name}-${fabrication}${suffix}`;
 
       await mkdir(join(FIXTURES, 'fabricated'), { recursive: true });
+    }
+
+    if (MODE !== 'standard') {
+      fixture = `${MODE}/${fixture}`;
+      await mkdir(dirname(join(FIXTURES, fixture)), { recursive: true });
     }
 
     await writeFile(

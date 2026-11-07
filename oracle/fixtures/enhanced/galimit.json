@@ -1,0 +1,480 @@
+{
+  "probe": "galimit",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "free",
+      "args": "start",
+      "result": "38f5c60"
+    },
+    {
+      "function": "free",
+      "args": "compact",
+      "result": "ff0000"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 0",
+      "result": "0 0 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 0",
+      "result": "0 0 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 0",
+      "result": "0 0 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 1",
+      "result": "20 20 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 1",
+      "result": "20 20 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 1",
+      "result": "20 20 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable ffff",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed ffff",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare ffff",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 10000",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 10000",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 10000",
+      "result": "10000 10000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 100000",
+      "result": "100000 100000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 100000",
+      "result": "100000 100000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 100000",
+      "result": "100000 100000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 100001",
+      "result": "101000 101000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 100001",
+      "result": "101000 101000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 100001",
+      "result": "101000 101000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable fe0000",
+      "result": "fe0000 fe1000 1000"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed fe0000",
+      "result": "fe0000 fe0000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare fe0000",
+      "result": "fe0000 fe0000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable ff0000",
+      "result": "ff0000 ff0000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed ff0000",
+      "result": "ff0000 ff0000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare ff0000",
+      "result": "ff0000 ff0000 back"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable ff0001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed ff0001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare ff0001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable ffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed ffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare ffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 1000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 1000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 1000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 1000001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 1000001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 1000001",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable 68000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed 68000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare 68000000",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "moveable ffffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "fixed ffffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "ddeshare ffffffff",
+      "result": "0 same"
+    },
+    {
+      "function": "alloc",
+      "args": "olecli 68000000",
+      "result": "0 same"
+    },
+    {
+      "function": "largest",
+      "args": "compact-before",
+      "result": "ff0000"
+    },
+    {
+      "function": "largest",
+      "args": "free-before",
+      "result": "38f4c60"
+    },
+    {
+      "function": "largest",
+      "args": "granted",
+      "result": "ff0000"
+    },
+    {
+      "function": "largest",
+      "args": "size",
+      "result": "ff0000"
+    },
+    {
+      "function": "largest",
+      "args": "1000-more",
+      "result": "refused"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 0",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 0",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 1",
+      "result": "same 20"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 1",
+      "result": "same 20"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable ffff",
+      "result": "same 10000"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed ffff",
+      "result": "same 10000"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 10000",
+      "result": "same 10000"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 10000",
+      "result": "same 10000"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 100000",
+      "result": "other 100000"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 100000",
+      "result": "other 100000"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 100001",
+      "result": "other 101000"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 100001",
+      "result": "other 101000"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable fe0000",
+      "result": "other fe0000"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed fe0000",
+      "result": "other fe0000"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable ff0000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed ff0000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable ff0001",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed ff0001",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable ffffff",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed ffffff",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 1000000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 1000000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 1000001",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 1000001",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable 68000000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed 68000000",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "moveable ffffffff",
+      "result": "0 40"
+    },
+    {
+      "function": "realloc",
+      "args": "fixed ffffffff",
+      "result": "0 40"
+    },
+    {
+      "function": "dosalloc",
+      "args": "0",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "1",
+      "result": "20"
+    },
+    {
+      "function": "dosalloc",
+      "args": "ffff",
+      "result": "10000"
+    },
+    {
+      "function": "dosalloc",
+      "args": "10000",
+      "result": "10000"
+    },
+    {
+      "function": "dosalloc",
+      "args": "100000",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "100001",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "fe0000",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "ff0000",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "ff0001",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "ffffff",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "1000000",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "1000001",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "68000000",
+      "result": "0"
+    },
+    {
+      "function": "dosalloc",
+      "args": "ffffffff",
+      "result": "0"
+    },
+    {
+      "function": "free",
+      "args": "end",
+      "result": "38f4c60"
+    }
+  ]
+}

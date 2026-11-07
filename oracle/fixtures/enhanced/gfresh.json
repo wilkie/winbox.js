@@ -1,0 +1,30 @@
+{
+  "probe": "gfresh",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "fresh",
+      "args": "0,1000",
+      "result": "zero=985,other=3111,first=0"
+    },
+    {
+      "function": "fresh",
+      "args": "1,2100",
+      "result": "zero=5936,other=2512,first=4"
+    },
+    {
+      "function": "fresh",
+      "args": "2,2100",
+      "result": "zero=1033,other=7415,first=32"
+    }
+  ]
+}

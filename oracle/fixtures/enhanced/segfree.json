@@ -1,0 +1,321 @@
+{
+  "probe": "segfree",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "fixed",
+      "args": "f1",
+      "result": "new",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "f2",
+      "result": "new",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "f3",
+      "result": "new",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "f4",
+      "result": "new",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "g1",
+      "result": "f3",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "g2",
+      "result": "f4",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "fixed",
+      "args": "g3",
+      "result": "f2",
+      "section": "fixed blocks freed and allocated again"
+    },
+    {
+      "function": "library",
+      "args": "lib.code",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "lib.instance",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "lib.module",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "loaded after",
+      "result": "0",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a1",
+      "result": "lib.code",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a2",
+      "result": "lib.module",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a3",
+      "result": "lib.instance",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a4",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a5",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "library",
+      "args": "a6",
+      "result": "new",
+      "section": "a library loaded and freed"
+    },
+    {
+      "function": "child",
+      "args": "c1",
+      "result": "started=1 ended=1",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.cs",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.ds",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.instance",
+      "result": "c1.ds",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.module",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.task",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.pdb",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c1.env",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p1",
+      "result": "c1.task",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p2",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p3",
+      "result": "c1.pdb",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p4",
+      "result": "c1.module",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p5",
+      "result": "c1.cs",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p6",
+      "result": "c1.instance",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p7",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "between",
+      "args": "p8",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2",
+      "result": "started=1 ended=1",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.cs",
+      "result": "p6",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.ds",
+      "result": "p7",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.instance",
+      "result": "c2.ds",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.module",
+      "result": "p1",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.task",
+      "result": "p2",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.pdb",
+      "result": "p3",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "c2.env",
+      "result": "c1.env",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b1",
+      "result": "c2.task",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b2",
+      "result": "p4",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b3",
+      "result": "c2.pdb",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b4",
+      "result": "c2.module",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b5",
+      "result": "c2.cs",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b6",
+      "result": "c2.instance",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b7",
+      "result": "p5",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b8",
+      "result": "p8",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b9",
+      "result": "new",
+      "section": "a program run twice"
+    },
+    {
+      "function": "child",
+      "args": "b10",
+      "result": "new",
+      "section": "a program run twice"
+    }
+  ]
+}

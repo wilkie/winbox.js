@@ -1,0 +1,170 @@
+{
+  "probe": "sysdrv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "module",
+      "args": "SYSTEM",
+      "result": "found"
+    },
+    {
+      "function": "inquire",
+      "args": "0,0",
+      "result": "0000d68d"
+    },
+    {
+      "function": "inquire",
+      "args": "0,7",
+      "result": "0000d68d"
+    },
+    {
+      "function": "inquire",
+      "args": "1,0",
+      "result": "00000002"
+    },
+    {
+      "function": "inquire",
+      "args": "1,1",
+      "result": "00010000"
+    },
+    {
+      "function": "inquire",
+      "args": "1,2",
+      "result": "00000003"
+    },
+    {
+      "function": "inquire",
+      "args": "1,3",
+      "result": "00000000"
+    },
+    {
+      "function": "inquire",
+      "args": "1,25",
+      "result": "00000003"
+    },
+    {
+      "function": "inquire",
+      "args": "2,0",
+      "result": "00000000"
+    },
+    {
+      "function": "inquire",
+      "args": "2,1",
+      "result": "00000000"
+    },
+    {
+      "function": "inquire",
+      "args": "3,0",
+      "result": "00000000"
+    },
+    {
+      "function": "inquire",
+      "args": "100,0",
+      "result": "00000000"
+    },
+    {
+      "function": "msec",
+      "args": "between GetTickCounts",
+      "result": "yes"
+    },
+    {
+      "function": "x87",
+      "args": "Get80x87SaveSize",
+      "result": "94"
+    },
+    {
+      "function": "x87",
+      "args": "Save80x87State words",
+      "result": "7f030030ff0f"
+    },
+    {
+      "function": "x87",
+      "args": "Save80x87State st0 st1",
+      "result": "00c06821a2da0fc900400000000000000080ff3f"
+    },
+    {
+      "function": "x87",
+      "args": "Restore80x87State",
+      "result": "314159,100000"
+    },
+    {
+      "function": "misc",
+      "args": "A20_Proc 0",
+      "result": "2"
+    },
+    {
+      "function": "misc",
+      "args": "A20_Proc 1",
+      "result": "2"
+    },
+    {
+      "function": "misc",
+      "args": "WEP",
+      "result": "1"
+    },
+    {
+      "function": "timer",
+      "args": "CreateSystemTimer 110",
+      "result": "0030"
+    },
+    {
+      "function": "timer",
+      "args": "called",
+      "result": "called,ax=handle"
+    },
+    {
+      "function": "timer",
+      "args": "KillSystemTimer",
+      "result": "0000"
+    },
+    {
+      "function": "timer",
+      "args": "KillSystemTimer again",
+      "result": "0030"
+    },
+    {
+      "function": "timer",
+      "args": "KillSystemTimer 1234",
+      "result": "1234"
+    },
+    {
+      "function": "timer",
+      "args": "KillSystemTimer 0",
+      "result": "0000"
+    },
+    {
+      "function": "timer",
+      "args": "CreateSystemTimer 0",
+      "result": "0030"
+    },
+    {
+      "function": "timer",
+      "args": "called 0",
+      "result": "called"
+    },
+    {
+      "function": "timer",
+      "args": "KillSystemTimer 0 rate",
+      "result": "0000"
+    },
+    {
+      "function": "timer",
+      "args": "all",
+      "result": "0030,0038,0040,0048,0050,then 0000"
+    },
+    {
+      "function": "timer",
+      "args": "after all",
+      "result": "0030"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "probe": "kintrnl",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "noop",
+      "args": "WriteOutProfiles",
+      "result": "ax=kernel-data,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "FlushCachedFileHandle 0",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "FlushCachedFileHandle module",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "DiagOutput",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "BUNNY_351",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "ValidateFreeSpaces",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "ReplaceInst",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "A20Proc",
+      "result": "ax=1234,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "SwapRecording 0",
+      "result": "ax=0,dx=167,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "SwapRecording 2",
+      "result": "ax=2,dx=167,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "SwapRecording 3",
+      "result": "ax=3,dx=167,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "SwapRecording 1234",
+      "result": "ax=1234,dx=167,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "RegisterPtrace",
+      "result": "ax=given,dx=5678,left=0"
+    },
+    {
+      "function": "noop",
+      "args": "RegisterPtrace 0",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "gp",
+      "args": "code",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "gp",
+      "args": "data",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "gp",
+      "args": "null",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "head before",
+      "result": "0"
+    },
+    {
+      "function": "winoldap",
+      "args": "add A",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "A's link",
+      "result": "eeeeeeee"
+    },
+    {
+      "function": "winoldap",
+      "args": "head after A",
+      "result": "0"
+    },
+    {
+      "function": "winoldap",
+      "args": "add B",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "B's link",
+      "result": "eeeeeeee"
+    },
+    {
+      "function": "winoldap",
+      "args": "head after B",
+      "result": "0"
+    },
+    {
+      "function": "winoldap",
+      "args": "take A",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "B's link after",
+      "result": "eeeeeeee"
+    },
+    {
+      "function": "winoldap",
+      "args": "head after taking A",
+      "result": "0"
+    },
+    {
+      "function": "winoldap",
+      "args": "take A again",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "take B with 100h",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "head after 100h",
+      "result": "0"
+    },
+    {
+      "function": "winoldap",
+      "args": "take B",
+      "result": "ax=0,dx=5678,left=0"
+    },
+    {
+      "function": "winoldap",
+      "args": "head last",
+      "result": "0"
+    },
+    {
+      "function": "inittask1",
+      "args": "set",
+      "result": "ax=given,dx=5678,left=0"
+    },
+    {
+      "function": "inittask1",
+      "args": "second instance",
+      "result": "exec=inst,calls=0"
+    },
+    {
+      "function": "inittask1",
+      "args": "flag 08h",
+      "result": "exec=inst,calls=0,istask=no,own=no"
+    },
+    {
+      "function": "inittask1",
+      "args": "nought",
+      "result": "ax=0,dx=5678,left=0"
+    }
+  ]
+}
