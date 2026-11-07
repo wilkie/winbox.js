@@ -173,8 +173,10 @@ the screen itself is the engine's.
 - The actions, by concern: `machine.ts` (the engine chosen, the `Page` given
   it, the trace, keeping what programs write, `rebuild`), `accept.ts` (files
   dropped or chosen), `images.ts` (the drives of images and a kept program's
-  images), `install.ts` (installers and the kept programs), `groups.ts` (a
-  kept program's Program Manager groups), `browse.ts` (the file browser's
+  images), `install.ts` (installers and the kept programs), `groups.ts` (each
+  kept program's groups, `launchGroups` over its stack, each item's icon
+  with it), `launcher.ts` (a group's item run, as Program Manager runs it),
+  `browse.ts` (the file browser's
   reading of the drives, and the folder browsed, `browsing`), and
   `actions.ts`, the surface the components call, and `start(desktop)`.
 - `screen.ts`, the screen's shape and size (`screenScale`, the choice);
@@ -189,10 +191,17 @@ the screen itself is the engine's.
 content -- the desktop, `desktop.tsx` -- and the trace (`trace.tsx`); three
 columns from 1100px, one beneath another below. `confirm.tsx` asks before
 what cannot be undone; `files.tsx` is the file browser, rendered once and
-opened by `actions.browse(letter)`. A launcher would be another set of
-components over the same state and actions: it can open the browser on a
-drive (`browse`), fit the screen (`screenScale`) and show a drive's card's
-words (`driveRows`, `cDriveView`) as the side does. JSX is compiled by the bundler's own transform
+opened by `actions.browse(letter)`. `launcher.tsx` is the launcher
+(`kb/guides/launcher.md`): the banner's **Programs** menu button, beside the
+heading, opening a menu of every kept program's groups (`launcherView`),
+each a submenu of its items -- icon and name; one that cannot run disabled
+but reachable, its reason in its words -- each run by `actions.launch`.
+Where an item's working directory is not there it first asks, with
+`confirm.tsx`, Program Manager's own question ("Invalid Path", "The working
+directory is invalid."), OK not shown as destructive. It is added beside
+Kept programs and the Programs list, which stay. The engines take an item's
+command line, current directory and show command (`Engine.run`'s `item`:
+`Win16.run`'s, `Session::start_item`). JSX is compiled by the bundler's own transform
 (`"jsx": "react-jsx"` in `tsconfig.json`, which Vite's transform reads): no
 plugin, nothing added to `vite.config.ts`.
 
@@ -288,7 +297,9 @@ red takes dark text on it, as white on it is under AA. With
   which images are dropped on, has "Add…".
 - Nothing by an icon or a colour alone: each drive's kind is said beside its
   icon ("A: floppy drive"), each disk's state in its words ("in the drive",
-  "written to") beside its mark.
+  "written to") beside its mark; a launcher item that cannot run says why
+  ("Cannot run: needs WRITE.EXE, which is not in this Windows."), in its
+  name as on the screen, not by its dimming.
 - The status line (`#status`) is a live region, polite, assertive for an
   error; its words are written into it as each line is told, so a line told
   twice is announced twice.
@@ -311,9 +322,12 @@ last describe, "the page, to a screen reader and the keyboard", runs axe
 (`@axe-core/playwright`, WCAG 2.1 A and AA) on the page fresh, with Windows,
 with a floppy set and a disc in their drives, with the file browser open on
 C: and on the disc, with the screen on the whole screen, with a program kept
-and running, with the confirmation open and with an installer offered, each
-in both colour schemes, and tries the skip link and the way out of the
-desktop. The components are linted with
+and running, with the launcher's menu open, a group's items open and an item
+that cannot run focused, with the confirmation open and with an installer
+offered, each in both colour schemes, and tries the skip link and the way out
+of the desktop. The launcher's own test runs `pmitem`'s child from a kept
+group (`keepPmitem`) on both engines, by the keyboard and the mouse, each
+line it writes held to the probe's records. The components are linted with
 `eslint-plugin-jsx-a11y` and `eslint-plugin-react-hooks`, each as it
 recommends.
 

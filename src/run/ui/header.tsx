@@ -1,6 +1,9 @@
 /**
- * The page's banner: its one first-level heading, the engine running with
- * the way to the other, and the status line.
+ * The page's banner: its one first-level heading, the launcher's menu
+ * button beside it (`launcher.tsx`) -- in the banner, so that it is in the
+ * same place, the first control after the skip link, at every width and
+ * whatever the side shows, as a host's own start menu is -- the engine
+ * running with the way to the other, and the status line.
  *
  * The status line is a live region: polite for what the page tells, and
  * assertive for an error. Its words are written into it as each line is
@@ -16,6 +19,7 @@ import Typography from '@mui/material/Typography';
 import { useLayoutEffect, useRef } from 'react';
 import { actions } from '../page/actions.js';
 import { type PageView } from '../page/view.js';
+import { Launcher } from './launcher.js';
 import { useStatusLine } from './use.js';
 
 function StatusLine() {
@@ -78,6 +82,7 @@ export function Header({ view }: { view: PageView | null }) {
         <Typography variant="h6" component="h1">
           Run Windows 3.1 programs
         </Typography>
+        <Launcher launcher={view?.launcher ?? null} />
         <Typography id="engine" variant="body2" color="text.secondary">
           {engine && (
             <>

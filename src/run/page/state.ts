@@ -31,6 +31,7 @@ import {
   installView,
   KEPT_NOTE,
   keptRows,
+  launcherView,
   keptText,
   type Needed,
   neededRows,
@@ -267,6 +268,7 @@ export const pageView = new Observable<PageView | null>(null);
  */
 export function publish() {
   const base = baseNow();
+  const groupsOf = (program: KeptProgram) => keptGroups(program, state, publish);
   const chosen = programNow();
   const { plan } = session;
   const install = installView(
@@ -326,10 +328,9 @@ export function publish() {
       }
     ),
     needed: neededRows(state.needed, session.wanting),
-    kept: keptRows(state.programs, chosen, base, state.display, (program) =>
-      keptGroups(program, publish)
-    ),
+    kept: keptRows(state.programs, chosen, base, state.display, groupsOf),
     keptNote: KEPT_NOTE,
+    launcher: launcherView(state.programs, groupsOf, state.displays),
     install,
     programs: programs.rows,
     programsEmpty: programs.empty,

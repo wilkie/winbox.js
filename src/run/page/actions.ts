@@ -33,6 +33,7 @@ import {
   keepAsProgram,
   keepInstalled,
 } from './install.js';
+import { launch } from './launcher.js';
 import { engine, EVERY, hold, keep, keepAll, offerDisplays, rebuild, run } from './machine.js';
 import { identityNow, programNow, publish, session, state, status } from './state.js';
 
@@ -106,6 +107,9 @@ export const actions = {
   },
 
   run: (program: Program) => run(program),
+
+  /** A group's item chosen in the launcher's menu, run on its install's stack as Program Manager runs it. */
+  launch: (install: string, group: number, item: number) => launch(install, group, item),
 
   /** The file browser opened on a drive's folder: its root, C:'s by default. */
   browse: (letter = 'C', parts: string[] = []) => browse(letter, parts),

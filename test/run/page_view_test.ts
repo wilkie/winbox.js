@@ -12,6 +12,8 @@ import {
   installView,
   keptRows,
   keptText,
+  LAUNCHER_EMPTY,
+  launcherView,
   neededRows,
   offeredDisplays,
   programRows,
@@ -19,6 +21,7 @@ import {
   windowsText,
   type Needed,
 } from '../../src/run/page/view.js';
+import { type KeptGroups } from '../../src/run/page/groups.js';
 import { type KeptProgram } from '../../src/run/store.js';
 
 /**
@@ -134,6 +137,83 @@ describe('the run page, as it is shown', () => {
         expect.stringMatching(/^there was made on the EGA.*, and is opened there$/),
       ],
     ]);
+  });
+
+  it("lists every kept program's groups in the launcher, apart, and says why an item cannot run", () => {
+    expect(launcherView([], () => null, ['vga'])).toEqual({ groups: [], empty: LAUNCHER_EMPTY });
+
+    const run = (reason: string | null) => ({ reason, directoryThere: true }) as any;
+    const item = (name: string, reason: string | null = null) =>
+      ({
+        name,
+        command: `C:\\${name}.EXE`,
+        directory: 'C:\\',
+        icon: null,
+        run: run(reason),
+      }) as any;
+    const group = (name: string, items: any[], more: object = {}) =>
+      ({
+        name,
+        install: '',
+        winbox: false,
+        file: `WINDOWS\\${name}.GRP`,
+        refusal: null,
+        items,
+        ...more,
+      }) as any;
+    const groups: Record<string, KeptGroups | null> = {
+      maxis: {
+        based: true,
+        groups: [
+          group('Maxis', [
+            item('SimTower'),
+            item('Read Me', 'needs WRITE.EXE, which is not in this Windows'),
+          ]),
+          group('Accessories', [item('Notes')]),
+        ],
+      },
+      games: {
+        based: true,
+        groups: [
+          group('Accessories', [item('Clock')]),
+          group('Broken', [], { refusal: 'its checksum is wrong' }),
+        ],
+      },
+      other: { based: false, groups: [group('Other', [item('Other')])] },
+      ega: { based: true, groups: [group('Ega', [item('Ega')])] },
+      reading: null,
+    };
+    const view = launcherView(
+      [
+        program('maxis'),
+        program('games'),
+        program('other'),
+        program('ega', { display: 'ega' }),
+        program('reading'),
+      ],
+      (one) => groups[one.name],
+      ['vga']
+    );
+
+    expect(view.empty).toBeNull();
+    expect(view.groups.map((one) => [one.label, one.install, one.note])).toEqual([
+      ['Maxis', 'maxis', null],
+      ['Accessories (maxis)', 'maxis', null],
+      ['Accessories (games)', 'games', null],
+      ['Broken', 'games', 'Program Manager would not load it: its checksum is wrong'],
+      ['Other', 'other', null],
+      ['Ega', 'ega', null],
+      ['reading', 'reading', 'Being read…'],
+    ]);
+    expect(view.groups[0].items.map((one) => [one.name, one.reason, one.group, one.item])).toEqual([
+      ['SimTower', null, 0, 0],
+      ['Read Me', 'needs WRITE.EXE, which is not in this Windows', 0, 1],
+    ]);
+    expect(view.groups[2].items[0]).toMatchObject({ install: 'games', group: 0, item: 0 });
+    expect(view.groups[4].items[0].reason).toBe('other was made on a Windows that is not here');
+    expect(view.groups[5].items[0].reason).toMatch(
+      /^ega was made on the EGA.*, which this Windows does not offer$/
+    );
   });
 
   it('runs Windows programs, not DOS ones, and says why there are none', () => {

@@ -9,18 +9,16 @@
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useEffect, useMemo, useRef } from 'react';
-import { type StackGroup } from '../../layers/groups.js';
 import { actions } from '../page/actions.js';
+import { type KeptGroup, type KeptItem } from '../page/groups.js';
 import { type KeptRow, type PageView } from '../page/view.js';
 import { iconPixels } from '../group-icon.js';
 import { useConfirm } from './confirm.js';
 import { Actions, Code, Row, Rows } from './panels.js';
 import { Note, Section } from './section.js';
 
-type Item = NonNullable<StackGroup['group']>['items'][number];
-
 /** An item's icon, drawn once from its bits; nothing where it has none. */
-function Icon({ item, display }: { item: Item; display: string }) {
+export function Icon({ item, display }: { item: Pick<KeptItem, 'icon'>; display: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const icon = item.icon;
   const pixels = useMemo(() => (icon ? iconPixels(icon, display) : null), [icon, display]);
@@ -43,24 +41,22 @@ function Icon({ item, display }: { item: Item; display: string }) {
   ) : null;
 }
 
-function Groups({ row, groups }: { row: KeptRow; groups: StackGroup[] }) {
+function Groups({ row, groups }: { row: KeptRow; groups: KeptGroup[] }) {
   return (
     <Box
       component="ul"
       aria-label={`${row.name}'s Program Manager groups`}
       sx={{ listStyle: 'none', m: 0, p: 0, flexBasis: '100%' }}
     >
-      {groups.map((stacked) => {
-        const group = stacked.group;
-
+      {groups.map((group) => {
         return (
-          <Box component="li" key={stacked.path} sx={{ pl: 2, py: 0.25 }}>
+          <Box component="li" key={group.file} sx={{ pl: 2, py: 0.25 }}>
             <Box component="span" sx={{ fontWeight: 600 }}>
-              {group?.name ?? stacked.path}
+              {group.refusal ? group.file : group.name}
             </Box>
-            {!group ? (
+            {group.refusal ? (
               <Box component="span" sx={{ color: 'text.secondary' }}>
-                {` would not load, as Program Manager would refuse it: ${stacked.refusal}`}
+                {` would not load, as Program Manager would refuse it: ${group.refusal}`}
               </Box>
             ) : (
               <Box

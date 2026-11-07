@@ -19,6 +19,9 @@ export interface Asking {
   title: string;
   text: string;
   action: string;
+
+  /** Whether the action loses something (red, the default), or only goes on. */
+  destructive?: boolean;
 }
 
 type Ask = (asking: Asking) => Promise<boolean>;
@@ -64,7 +67,11 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
           <Button ref={cancel} onClick={() => answer(false)}>
             Cancel
           </Button>
-          <Button color="error" variant="contained" onClick={() => answer(true)}>
+          <Button
+            color={asked?.destructive === false ? 'primary' : 'error'}
+            variant="contained"
+            onClick={() => answer(true)}
+          >
             {asked?.action}
           </Button>
         </DialogActions>

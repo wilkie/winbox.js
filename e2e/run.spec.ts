@@ -158,6 +158,12 @@ const INSTLAYC = join(process.cwd(), 'oracle', 'build', 'probes', 'INSTLAYC.EXE'
  * Manager over DDE. */
 const DDEINST = join(process.cwd(), 'oracle', 'build', 'probes', 'DDEINST.EXE');
 
+/* The `pmitem` probe's child, which writes the command line, current
+ * directory and show command it was given to C:\ORACLE\PMITEM.TXT; and
+ * what it wrote under Windows, Program Manager starting it. */
+const PMITEMC = join(process.cwd(), 'oracle', 'build', 'probes', 'PMITEMC.EXE');
+const PMITEM = join(process.cwd(), 'oracle', 'fixtures', 'pmitem.json');
+
 /* The probes that read a floppy's image at A: and a CD-ROM's at D:, as
  * DOSBox mounted them for the oracle (`imgflop.mounts`, `imgcd.mounts`), and
  * the committed images they read. */
@@ -231,6 +237,105 @@ function installation() {
         data: new Uint8Array(readFileSync(join(system, name))),
       })),
   ];
+}
+
+/**
+ * A program kept as an install would keep it, `pmitem`: a layer over the
+ * asset bundle's base with PMITEMC.EXE in the Windows directory, its group
+ * file made by Program Manager's own operations (`GroupFile`) with the
+ * probe's items, PROGMAN.INI naming it, and WIN.INI's [extensions] giving
+ * .PMI to it, as the probe set it. Kept in the store; read once the page
+ * is opened again.
+ */
+async function keepPmitem(page: Page) {
+  await page.evaluate(async (child: string) => {
+    const bytes = (text: string) => Uint8Array.from(text, (c) => c.charCodeAt(0) & 0xff);
+    const { GroupFile, storeCommand } = await import('/src/layers/groups.ts' as string);
+    const { layerFromChanges } = await import('/src/layers/layer.ts' as string);
+    const { keepProgram } = await import('/src/run/store.ts' as string);
+    const { baseNow, state } = await import('/src/run/page/state.ts' as string);
+    const winbox = (globalThis as any).winbox;
+    const ini = winbox.plan.placements.find(
+      (placement: any) => placement.parts.join('\\') === 'WINDOWS\\WIN.INI'
+    );
+    const text = String.fromCharCode(...ini.data);
+    const extensions = /^\[extensions\]\r?\n/im.exec(text);
+    const winIni = extensions
+      ? text.slice(0, extensions.index + extensions[0].length) +
+        'pmi=PMITEMC.EXE ^.pmi\r\n' +
+        text.slice(extensions.index + extensions[0].length)
+      : `${text}\r\n[extensions]\r\npmi=PMITEMC.EXE ^.pmi\r\n`;
+    const file = GroupFile.create('PMItem', { cx: 8, cy: 8, bitsPixel: 1, planes: 1 });
+    const icon = {
+      header: Uint8Array.from([0, 0, 0, 0, 8, 0, 8, 0, 2, 0, 1, 1]),
+      and: Uint8Array.from([255, 0, 255, 0, 195, 0, 195, 0, 195, 0, 195, 0, 255, 0, 255, 0]),
+      xor: Uint8Array.from([0, 0, 126, 0, 66, 0, 90, 0, 90, 0, 66, 0, 126, 0, 0, 0]),
+    };
+    const items: [string, string, string | null, boolean?][] = [
+      ['Args', 'C:\\WINDOWS\\PMITEMC.EXE one two', null],
+      ['Dir', 'C:\\WINDOWS\\PMITEMC.EXE dir', 'C:\\ORACLE\\PMDIR'],
+      ['Low', 'c:\\windows\\pmitemc.exe Low Case', 'c:\\oracle\\pmdir'],
+      ['Bare', 'PMITEMC.EXE bare', null],
+      ['Min', 'C:\\WINDOWS\\PMITEMC.EXE min', null, true],
+      ['Doc', 'C:\\ORACLE\\PMITEM.PMI', null],
+      ['Missing', 'C:\\WINDOWS\\NOSUCH.EXE gone', null],
+      ['Lonely', 'C:\\ORACLE\\PMITEM.ZQX', null],
+      ['Bad', 'C:\\WINDOWS\\PMITEMC.EXE bad', 'C:\\NOSUCH'],
+    ];
+
+    for (const [at, [name, command, directory, minimized]] of items.entries()) {
+      const { stored, programDirectory } = storeCommand(command, directory);
+      const made = file.addItem({
+        name,
+        stored,
+        programDirectory,
+        iconPath: command.split(' ')[0],
+        iconIndex: 0,
+        ...icon,
+        x: 21 + 75 * (at % 6),
+        y: 64 * Math.floor(at / 6),
+        hotKey: 0,
+        minimized: Boolean(minimized),
+      });
+
+      if ('error' in made) {
+        throw new Error(`${name}: ${made.error}`);
+      }
+    }
+
+    const modified = Date.UTC(1992, 2, 10) / 1000;
+    const layer = await layerFromChanges(
+      [
+        { kind: 'folder', path: 'ORACLE\\PMDIR', modified },
+        { kind: 'file', path: 'ORACLE\\PMITEM.PMI', data: bytes('pmi'), modified },
+        { kind: 'file', path: 'ORACLE\\PMITEM.ZQX', data: bytes('zqx'), modified },
+        { kind: 'file', path: 'WINDOWS\\PMITEMC.EXE', data: bytes(atob(child)), modified },
+        { kind: 'file', path: 'WINDOWS\\PMITEM.GRP', data: file.bytes(), modified },
+        {
+          kind: 'file',
+          path: 'WINDOWS\\PROGMAN.INI',
+          data: bytes('[Groups]\r\nGroup1=C:\\WINDOWS\\PMITEM.GRP\r\n'),
+          modified,
+        },
+        { kind: 'file', path: 'WINDOWS\\WIN.INI', data: bytes(winIni), modified },
+      ],
+      { over: [baseNow()], made: { by: 'WinBox test' } }
+    );
+
+    await keepProgram(
+      {
+        name: 'pmitem',
+        base: baseNow(),
+        display: state.display,
+        layers: [layer.manifest.id],
+        exes: ['C:\\WINDOWS\\PMITEMC.EXE'],
+        orders: {},
+        kept: Date.now(),
+        media: [],
+      },
+      [layer]
+    );
+  }, readFileSync(PMITEMC).toString('base64'));
 }
 
 /* The `sndplay` probe, which asks for the sound Windows starts with, the
@@ -2650,6 +2755,149 @@ for (const { engine, page: at } of ENGINES) {
       expect(errors).toEqual([]);
     });
 
+    test("runs a kept group's items from the launcher as Program Manager runs them", async ({
+      page,
+    }) => {
+      test.skip(
+        !existsSync(BUNDLE) || !existsSync(PMITEMC),
+        'the asset bundle, or the pmitem probe, has not been made here'
+      );
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+
+      /* With nothing kept, the menu says how to keep a program. */
+      const launcher = page.getByRole('button', { name: 'Programs', exact: true });
+
+      await launcher.click();
+      await expect(page.getByRole('menu', { name: 'Programs' })).toContainText(
+        'No programs are kept yet.'
+      );
+      await page.keyboard.press('Escape');
+      await expect(launcher).toBeFocused();
+
+      await page.locator('#picker').setInputFiles({
+        name: 'winbox-assets.zip',
+        mimeType: 'application/zip',
+        buffer: readFileSync(BUNDLE),
+      });
+      await expect(page.locator('#windows')).toContainText('the asset bundle');
+
+      await keepPmitem(page);
+      await page.reload();
+      await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+        timeout: 30000,
+      });
+
+      const log = () =>
+        page.evaluate(async () => {
+          const changes = await (globalThis as any).winbox.engine.changes();
+          const file = (changes ?? []).find((change: any) => change.path === 'ORACLE\\PMITEM.TXT');
+
+          return file ? new TextDecoder('latin1').decode(file.data) : '';
+        });
+      const recorded = (name: string) =>
+        JSON.parse(readFileSync(PMITEM, 'utf8')).records.find(
+          (record: any) => record.function === 'child' && record.args === name
+        ).result as string;
+      const menu = page.getByRole('menu', { name: 'Programs' });
+      const items = page.getByRole('menu', { name: 'PMItem' });
+      const lines: string[] = [];
+
+      /* By the keyboard: the button, Enter, the group focused, Right into
+       * its items, the first focused; Left back, Escape out. */
+      await launcher.focus();
+      await page.keyboard.press('Enter');
+      await expect(menu).toBeVisible();
+      await expect(page.getByRole('menuitem', { name: 'PMItem' })).toBeFocused();
+      await expect(page.getByRole('menuitem', { name: 'PMItem' })).toHaveAttribute(
+        'aria-haspopup',
+        'menu'
+      );
+      await page.keyboard.press('ArrowRight');
+      await expect(items).toBeVisible();
+      await expect(items.getByRole('menuitem')).toHaveCount(9);
+      await expect(items.getByRole('menuitem', { name: 'Args' })).toBeFocused();
+      await page.keyboard.press('ArrowLeft');
+      await expect(items).toBeHidden();
+      await expect(page.getByRole('menuitem', { name: 'PMItem' })).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await expect(items.getByRole('menuitem', { name: 'Args' })).toBeFocused();
+
+      /* Those that cannot run are there, disabled, saying why; the arrows
+       * reach them. */
+      const missing = items.getByRole('menuitem', { name: 'Missing' });
+      const lonely = items.getByRole('menuitem', { name: 'Lonely' });
+
+      await expect(missing).toHaveAttribute('aria-disabled', 'true');
+      await expect(missing).toHaveAccessibleName(
+        'Missing Cannot run: needs NOSUCH.EXE, which is not in this Windows.'
+      );
+      await expect(lonely).toHaveAttribute('aria-disabled', 'true');
+      await expect(lonely).toHaveAccessibleName(
+        'Lonely Cannot run: nothing in this Windows opens .ZQX files.'
+      );
+      await page.keyboard.press('End');
+      await page.keyboard.press('ArrowUp');
+      await page.keyboard.press('ArrowUp');
+      await expect(missing).toBeFocused();
+      await page.keyboard.press('Home');
+
+      /* Args, chosen with Enter: its install made C:, and the item run. */
+      await page.keyboard.press('Enter');
+      await expect(menu).toBeHidden();
+      lines.push(recorded('args'));
+      await expect.poll(log, { timeout: 30000 }).toBe(lines.map((line) => `${line}\r\n`).join(''));
+      await expect(page.locator('#kept-programs')).toContainText('pmitem');
+
+      /* Each other kind of item, chosen with the mouse, beside the first on
+       * the same machine: what each was given is what Windows gave it. */
+      const choose = async (name: string) => {
+        await launcher.click();
+        await page.getByRole('menuitem', { name: 'PMItem' }).click();
+        await items.getByRole('menuitem', { name, exact: true }).click();
+        await expect(menu).toBeHidden();
+      };
+
+      for (const [name, record] of [
+        ['Dir', 'directory'],
+        ['Low', 'lower'],
+        ['Bare', 'bare'],
+        ['Min', 'minimized'],
+        ['Doc', 'document'],
+      ]) {
+        await choose(name);
+        lines.push(recorded(record));
+        await expect
+          .poll(log, { timeout: 30000 })
+          .toBe(lines.map((line) => `${line}\r\n`).join(''));
+      }
+
+      /* A working directory that is not there: asked as Program Manager
+       * asks, Cancel starting nothing, OK the program in the Windows
+       * directory. */
+      const invalid = page.getByRole('dialog', { name: 'Invalid Path' });
+
+      await choose('Bad');
+      await expect(invalid).toContainText('The working directory is invalid.');
+      await expect(invalid.getByRole('button', { name: 'Cancel' })).toBeFocused();
+      await invalid.getByRole('button', { name: 'Cancel' }).click();
+      await expect(invalid).toBeHidden();
+      await choose('Bad');
+      await invalid.getByRole('button', { name: 'OK', exact: true }).click();
+      lines.push(recorded('bad-directory-ok'));
+      await expect.poll(log, { timeout: 30000 }).toBe(lines.map((line) => `${line}\r\n`).join(''));
+
+      /* The kept programs panel shows the group as before. */
+      await expect(
+        page.getByRole('list', { name: "pmitem's Program Manager groups" })
+      ).toContainText('PMItem');
+      expect(errors).toEqual([]);
+    });
+
     /* The mounted-images tests share their start: Windows with the two probe
      * programs installed, and the images dropped beside it -- two floppies
      * together one set at A:, in the order of their names, a disc the first
@@ -3211,8 +3459,12 @@ test.describe('the page, to a screen reader and the keyboard', () => {
     page,
   }) => {
     test.skip(
-      !existsSync(BUNDLE) || !existsSync(STRINGS) || !existsSync(INSTLAY) || !existsSync(INSTLAYC),
-      'the asset bundle, or the strings or instlay probe, has not been made here'
+      !existsSync(BUNDLE) ||
+        !existsSync(STRINGS) ||
+        !existsSync(INSTLAY) ||
+        !existsSync(INSTLAYC) ||
+        !existsSync(PMITEMC),
+      'the asset bundle, or the strings, instlay or pmitem probe, has not been made here'
     );
     test.slow(true, 'the TypeScript engine makes its machine slowly');
 
@@ -3269,6 +3521,34 @@ test.describe('the page, to a screen reader and the keyboard', () => {
     await page.getByRole('button', { name: 'Run C:\\ORACLE\\STRINGS.EXE' }).click();
     await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 20000 });
     await accessible(page, 'a program kept and run');
+
+    /* The launcher: its menu open, a group's items open, and one of them
+     * that cannot run focused, saying why. */
+    await keepPmitem(page);
+    await page.reload();
+    await expect(page.locator('#status')).toHaveText('Remembered the asset bundle.', {
+      timeout: 30000,
+    });
+    await page.getByRole('button', { name: 'Programs', exact: true }).click();
+    /* The loose program's group first, as it was kept first; then pmitem's. */
+    await expect(page.getByRole('menuitem', { name: 'oracle' })).toBeFocused();
+    await accessible(page, 'the launcher open');
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('menuitem', { name: 'PMItem' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+
+    const missing = page
+      .getByRole('menu', { name: 'PMItem' })
+      .getByRole('menuitem', { name: 'Missing' });
+
+    await expect(page.getByRole('menu', { name: 'PMItem' })).toBeVisible();
+    await accessible(page, "the launcher open on a group's items");
+    await missing.focus();
+    await expect(missing).toHaveAttribute('aria-disabled', 'true');
+    await accessible(page, 'the launcher on an item that cannot run');
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toBeHidden();
 
     /* What it asks before forgetting. */
     await page.getByRole('button', { name: 'Forget oracle' }).click();

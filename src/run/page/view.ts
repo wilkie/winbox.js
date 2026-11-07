@@ -21,7 +21,8 @@ import {
   type Wanting,
 } from '../drives.js';
 import { type KeptProgram, type Medium } from '../store.js';
-import { type StackGroup } from '../../layers/groups.js';
+import { type Icon } from '../../layers/groups.js';
+import { type KeptGroup, type KeptGroups } from './groups.js';
 import { DISPLAY_MODES } from '../../win16/display-modes.js';
 
 /**
@@ -192,8 +193,8 @@ export interface KeptRow {
   /** The display it was made on, as it is shown. */
   display: string;
 
-  /** Its own Program Manager groups, once read; none while being read. */
-  groups: StackGroup[] | null;
+  /** Its own Program Manager groups, those its install made, once read; none while being read. */
+  groups: KeptGroup[] | null;
 }
 
 /**
@@ -205,7 +206,7 @@ export function keptRows(
   chosen: KeptProgram | null,
   base: string | null,
   display: string,
-  groupsOf: (program: KeptProgram) => StackGroup[] | null
+  groupsOf: (program: KeptProgram) => KeptGroups | null
 ): KeptRow[] {
   return programs.map((program) => {
     const here = program.base === base && program.display === display;
@@ -223,9 +224,119 @@ export function keptRows(
           ? `Open ${program.name}`
           : `${program.name} was made on the ${shownDisplay}, and is opened there`,
       display: program.display,
-      groups: groupsOf(program),
+      groups: groupsOf(program)?.groups.filter((group) => !group.winbox) ?? null,
     };
   });
+}
+
+/** An item as the launcher's menu shows it (`kb/guides/launcher.md`). */
+export interface LauncherItem {
+  name: string;
+  icon: Icon | null;
+
+  /** The display its icon is drawn for: its program's. */
+  display: string;
+
+  /** Its command and working directory, as the item has them. */
+  command: string;
+  directory: string;
+
+  /** Why it cannot be run, in words; null where it can. */
+  reason: string | null;
+
+  /** Whether its working directory is there: where not, Program Manager asks before going on. */
+  directoryThere: boolean;
+
+  /** Where it is: its program, and its group's and its own places in the launcher's list. */
+  install: string;
+  group: number;
+  item: number;
+}
+
+/** A group as the launcher's menu shows it: an entry of the menu, opening to its items. */
+export interface LauncherGroup {
+  /** Its name, with its install's where another install has a group of the same name. */
+  label: string;
+  install: string;
+
+  /** Why it has no items to show: being read, or a group file Program Manager would not load. */
+  note: string | null;
+  items: LauncherItem[];
+}
+
+/** The launcher's menu: every kept program's groups, or what to do where none is kept. */
+export interface LauncherView {
+  groups: LauncherGroup[];
+  empty: string | null;
+}
+
+/** What the launcher's menu says with no program kept. */
+export const LAUNCHER_EMPTY =
+  'No programs are kept yet. Drop a program, or install one, and its groups are listed here.';
+
+/**
+ * The launcher's menu (`kb/guides/launcher.md`): each kept program's
+ * groups in the order they were kept -- its install's, or WinBox's own of
+ * a program kept loose -- each labelled with its install's name where two
+ * installs have a group of the same name, never merged. An item that
+ * cannot run says why: what its run needs and does not find (`itemRun`),
+ * or that its program was made on a Windows, or a display, that is not
+ * here.
+ */
+export function launcherView(
+  programs: KeptProgram[],
+  groupsOf: (program: KeptProgram) => KeptGroups | null,
+  displays: string[]
+): LauncherView {
+  if (!programs.length) {
+    return { groups: [], empty: LAUNCHER_EMPTY };
+  }
+
+  const read = programs.map((program) => ({ program, kept: groupsOf(program) }));
+  const names = new Map<string, Set<string>>();
+
+  for (const { program, kept } of read) {
+    for (const group of kept?.groups ?? []) {
+      names.set(group.name, (names.get(group.name) ?? new Set()).add(program.name));
+    }
+  }
+
+  const groups = read.flatMap(({ program, kept }): LauncherGroup[] => {
+    if (!kept) {
+      return [{ label: program.name, install: program.name, note: 'Being read…', items: [] }];
+    }
+
+    const unrunnable = !kept.based
+      ? `${program.name} was made on a Windows that is not here`
+      : !displays.includes(program.display)
+        ? `${program.name} was made on the ${displayName(program.display)}, which this Windows does not offer`
+        : null;
+
+    return kept.groups.map((group, at) => ({
+      label:
+        (names.get(group.name)?.size ?? 0) > 1 ? `${group.name} (${program.name})` : group.name,
+      install: program.name,
+      note: group.refusal
+        ? `Program Manager would not load it: ${group.refusal}`
+        : group.items.length
+          ? null
+          : 'No items',
+      items: group.items.map((item, index) => ({
+        name: item.name,
+        icon: item.icon,
+        display: program.display,
+        command: item.command,
+        directory: item.directory,
+        reason: unrunnable ?? item.run.reason,
+        directoryThere: item.run.directoryThere,
+        install: program.name,
+        group: at,
+        item: index,
+      })),
+    }));
+  });
+
+  return { groups, empty: null };
 }
 
 /** A program offered to run. */
@@ -655,6 +766,7 @@ export interface PageView {
   needed: NeededRow[];
   kept: KeptRow[];
   keptNote: string;
+  launcher: LauncherView;
   install: InstallView;
   programs: ProgramRow[];
   programsEmpty: string | null;

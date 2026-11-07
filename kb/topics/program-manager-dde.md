@@ -348,4 +348,4 @@ Of WinBox's own Program Manager, beyond starting, ending, its DDE and what its c
 In install runs and on the page:
 
 - An installer that cannot be started leaves the run waiting on the shell, told nothing; a probe that records Program Manager as the shell starting a command line.
-- Running a group's item from the page or the native build: the launcher's list says what each item runs and why one cannot (`src/layers/launch.ts`, `crates/winbox-win16/src/launch.rs`; [[guide:launcher]]), but `run()` and `System::launch` still take a program's path alone, with no arguments, working directory or show state.
+- Running a group's item from the native build. The page's launcher runs one with the command line, working directory and show state File Open gives it, and a browser test holds what [[probe:pmitem]]'s child is given to its records on both engines ([[guide:launcher]], step 3). The native build has no `--launch` yet.
