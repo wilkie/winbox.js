@@ -23,6 +23,63 @@ async function confirmed(page: Page, name: string, action: string) {
   await expect(dialog).toBeHidden();
 }
 
+/**
+ * The file browser, opened from the side's "Browse files…" on a folder of
+ * a drive, each folder on the way opened from the keyboard (its row's name
+ * clicked, and Enter): its grid, named by the folder, and the way to close
+ * it again.
+ */
+async function browser(page: Page, path: string) {
+  const [, letter, rest] = /^([A-Z]):\\(.*)$/.exec(path)!;
+  const dialog = page.getByRole('dialog', { name: 'Files' });
+
+  await page.getByRole('button', { name: 'Browse files…' }).click();
+  await expect(dialog).toBeVisible();
+
+  if (letter !== 'C') {
+    await dialog.getByRole('combobox', { name: 'Drive' }).selectOption(letter);
+  }
+
+  for (const [at, part] of rest.split('\\').filter(Boolean).entries()) {
+    const folder = `${letter}:\\${rest
+      .split('\\')
+      .slice(0, at + 1)
+      .join('\\')}`;
+
+    await dialog.getByRole('gridcell', { name: part, exact: true }).click();
+    await page.keyboard.press('Enter');
+    await expect(dialog.getByRole('grid', { name: `Files in ${folder}` })).toBeVisible();
+  }
+
+  const grid = dialog.getByRole('grid', { name: `Files in ${path}` });
+
+  await expect(grid).toBeVisible();
+
+  return {
+    dialog,
+    grid,
+    /** A row's name cell, by the name DOS lists it with. */
+    named: (name: string) => grid.getByRole('gridcell', { name, exact: true }),
+    async close() {
+      await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+      await expect(dialog).toBeHidden();
+    },
+  };
+}
+
+/**
+ * A file's place in the file browser checked: its folder opened, and its
+ * name listed there, or not.
+ */
+async function listed(page: Page, path: string, there = true) {
+  const at = path.lastIndexOf('\\');
+  const files = await browser(page, at > 2 ? path.slice(0, at) : path.slice(0, 3));
+  const name = files.named(path.slice(at + 1));
+
+  await expect(name).toHaveCount(there ? 1 : 0);
+  await files.close();
+}
+
 function archive(files: { path: string; data: Uint8Array }[]) {
   const u16 = (value: number) => [value & 0xff, (value >> 8) & 0xff];
   const u32 = (value: number) => [...u16(value & 0xffff), ...u16((value >>> 16) & 0xffff)];
@@ -436,7 +493,13 @@ for (const { engine, page: at } of ENGINES) {
 
       await expect(page.locator('#programs li')).toHaveCount(1);
       await expect(page.locator('#programs li code')).toHaveText('C:\\GAMES\\SKI.EXE');
-      await expect(page.locator('#files')).toContainText('C:\\GAMES\\LONGFI~1.TXT');
+      /* Listed in the file browser by its 8.3 name, and the name it was dropped with. */
+      const games = await browser(page, 'C:\\GAMES');
+      const renamed = games.grid.getByRole('gridcell', { name: /^LONGFI~1\.TXT/ });
+
+      await expect(renamed).toHaveText('LONGFI~1.TXT (was Long File Name.txt)');
+      await expect(games.named('SKI.EXE')).toBeVisible();
+      await games.close();
       expect(errors).toEqual([]);
     });
 
@@ -617,6 +680,196 @@ for (const { engine, page: at } of ENGINES) {
         timeout: 20000,
       });
       await expect(window).toHaveCount(0);
+    });
+
+    test("browses the drives' files: folders by the keyboard, sorted, downloaded and run", async ({
+      page,
+    }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await expect(page.locator('#programs')).toContainText('C:\\APPS\\NOTEPAD.EXE');
+      await page.locator('#picker').setInputFiles(probeImage('imgflop.img'));
+      await expect(page.locator('#status')).toHaveText('A: imgflop.img.');
+
+      /* C:'s root: its folders first, as DOS names them, their dates as DIR shows them. */
+      const root = await browser(page, 'C:\\');
+      const rows = root.grid.getByRole('row');
+
+      await expect(root.named('APPS')).toBeVisible();
+      await expect(root.named('WINDOWS')).toBeVisible();
+      await expect(rows.filter({ hasText: 'WINDOWS' })).toHaveText(
+        /^WINDOWS<DIR>\d\d-\d\d-\d\d\s+\d{1,2}:\d\d[ap]$/
+      );
+      await root.close();
+
+      /* C:\WINDOWS, from the keyboard: its files listed, sorted by size, and left again. */
+      const windows = await browser(page, 'C:\\WINDOWS');
+
+      await expect(windows.named('SYSTEM.INI')).toBeVisible();
+      await expect(windows.named('WIN.INI')).toBeVisible();
+      await expect(windows.named('SYSTEM')).toBeFocused();
+      await page.keyboard.press('ArrowDown');
+      await expect(windows.grid.getByRole('row', { selected: true })).toHaveCount(1);
+      await page.keyboard.press('ArrowUp');
+      await page.keyboard.press('Enter');
+
+      const system = windows.dialog.getByRole('grid', { name: 'Files in C:\\WINDOWS\\SYSTEM' });
+
+      await expect(system).toBeVisible();
+      await expect(system.getByRole('gridcell', { name: 'USER.EXE', exact: true })).toBeVisible();
+      await page.keyboard.press('Alt+ArrowUp');
+      await expect(windows.grid).toBeVisible();
+      /* Back on the folder it came up from. */
+      await expect(windows.named('SYSTEM')).toBeFocused();
+
+      const size = windows.grid.getByRole('columnheader', { name: 'Size' });
+
+      await size.getByRole('button').click();
+      await expect(size).toHaveAttribute('aria-sort', 'ascending');
+      await size.getByRole('button').click();
+      await expect(size).toHaveAttribute('aria-sort', 'descending');
+      await page.keyboard.press('Backspace');
+      await expect(windows.dialog.getByRole('grid', { name: 'Files in C:\\' })).toBeVisible();
+      await windows.close();
+
+      /* The floppy in A:, listed from its image. */
+      const floppy = await browser(page, 'A:\\');
+
+      await expect(floppy.named('README.TXT')).toBeVisible();
+      await floppy.close();
+
+      /* A file downloaded: its bytes as C: holds them. */
+      const apps = await browser(page, 'C:\\APPS');
+
+      await apps.named('NOTEPAD.EXE').click();
+
+      const saving = page.waitForEvent('download');
+
+      await apps.dialog.getByRole('button', { name: 'Download C:\\APPS\\NOTEPAD.EXE' }).click();
+
+      const download = await saving;
+
+      expect(download.suggestedFilename()).toBe('NOTEPAD.EXE');
+      expect(readFileSync((await download.path())!).equals(readFileSync(NOTEPAD))).toBe(true);
+      await expect(apps.dialog.getByRole('status')).toHaveText('C:\\APPS\\NOTEPAD.EXE downloaded.');
+
+      /* And run, as the Programs list runs it: the browser closed, its window made. */
+      await apps.dialog.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+      await expect(apps.dialog).toBeHidden();
+      await expect(page.getByRole('group', { name: 'Notepad - (Untitled)' })).toHaveCount(1, {
+        timeout: 20000,
+      });
+      expect(errors).toEqual([]);
+    });
+
+    test('stretches the screen to its column, a click landing on the same Windows pixel', async ({
+      page,
+    }) => {
+      test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+      await page.setViewportSize({ width: 1600, height: 1000 });
+      await page.goto(at);
+      await expect(page.locator('#status')).toHaveText('Ready.');
+      await page.locator('#picker').setInputFiles({
+        name: 'win31.zip',
+        mimeType: 'application/zip',
+        buffer: archive(installation()),
+      });
+      await page.locator('#picker').setInputFiles({
+        name: 'apps.zip',
+        mimeType: 'application/zip',
+        buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+      });
+      await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+
+      const window = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+      const file = window.getByRole('menuitem', { name: 'File', exact: true });
+      const screen = page.getByRole('img', { name: 'The Windows screen' });
+      const scale = page.getByRole('combobox', { name: 'Screen size' });
+
+      await expect(window).toHaveCount(1, { timeout: 20000 });
+
+      /* The canvas's box and its place's room: its own pixels 640 by 480 whatever its size. */
+      const measure = () =>
+        screen.evaluate((canvas: HTMLCanvasElement) => {
+          const box = canvas.getBoundingClientRect();
+          const place = canvas.closest('#desktop')!;
+
+          return {
+            pixels: [canvas.width, canvas.height],
+            width: box.width,
+            height: box.height,
+            room: [place.clientWidth, place.clientHeight],
+          };
+        });
+      /* Fitted: 4:3, and as wide or as tall as its room. */
+      const fitted = async () => {
+        const box = await measure();
+
+        expect(box.pixels).toEqual([640, 480]);
+        expect(Math.abs(box.width / box.height - 4 / 3)).toBeLessThan(0.01);
+        expect(
+          Math.min(Math.abs(box.width - box.room[0]), Math.abs(box.height - box.room[1]))
+        ).toBeLessThan(2);
+        return box;
+      };
+      /* File, on Notepad's menu bar at (24,32) of the screen (`usedef`'s corner window),
+       * pressed and released where the canvas is drawn now: its menu opens, then closed. */
+      const openFile = async () => {
+        const box = (await screen.boundingBox())!;
+
+        /* Further apart than a double click's time, which Windows would take two clicks for. */
+        await page.waitForTimeout(600);
+
+        await screen.click({
+          position: { x: (24 * box.width) / 640, y: (32 * box.height) / 480 },
+        });
+        await expect(file).toHaveAttribute('aria-expanded', 'true');
+        await page.keyboard.press('Escape');
+        await page.keyboard.press('Escape');
+        await expect(file).toHaveAttribute('aria-expanded', 'false');
+      };
+
+      /* Wide: three columns, the screen larger than its pixels. */
+      await expect(scale).toHaveValue('fit');
+      await expect.poll(async () => (await measure()).width).toBeGreaterThan(800);
+      await fitted();
+      await openFile();
+
+      /* Narrow: one column, the screen as wide as the page. */
+      await page.setViewportSize({ width: 900, height: 1100 });
+      await expect.poll(async () => (await measure()).width).toBeLessThan(900);
+
+      const narrow = await fitted();
+
+      expect(narrow.width).toBeGreaterThan(800);
+      await openFile();
+
+      /* Whole pixels: one device pixel each in this room, the bands around it
+       * on every side, which move nothing. */
+      await scale.selectOption('whole');
+      await expect.poll(async () => (await measure()).width).toBe(640);
+      expect((await measure()).height).toBe(480);
+      await openFile();
+
+      /* Remembered in this browser. */
+      await page.reload();
+      await expect(scale).toHaveValue('whole');
     });
 
     test('moves Notepad dragged by its caption, drawn where it was let go', async ({ page }) => {
@@ -2220,7 +2473,7 @@ for (const { engine, page: at } of ENGINES) {
         'The installer has ended. Keep what it installed, or discard it.',
         { timeout: 60000 }
       );
-      await expect(page.locator('#files')).toContainText('C:\\WBSETUP\\SETUP.EXE');
+      await listed(page, 'C:\\WBSETUP\\SETUP.EXE');
       await page.getByRole('button', { name: 'Keep', exact: true }).click();
       /* Its six, and PROGMAN.INI, which Program Manager, the installer's
        * shell, wrote as it started: the bundle's base has none. */
@@ -2232,8 +2485,8 @@ for (const { engine, page: at } of ENGINES) {
       await expect(kept).toHaveCount(1);
       await expect(page.getByRole('button', { name: 'Close instlay' })).toBeVisible();
       await expect(page.locator('#install-section')).toBeHidden();
-      await expect(page.locator('#files')).not.toContainText('WBSETUP');
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      await listed(page, 'C:\\WBSETUP', false);
+      await listed(page, 'C:\\INSTLAY\\README.TXT');
       /* PROGMAN.INI on C: as the kept program's stack plans it: the
        * bundle's base has none of its own. */
       expect(
@@ -2285,7 +2538,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(kept).toHaveCount(1);
       await page.getByRole('button', { name: 'Open instlay' }).click();
       await expect(page.locator('#status')).toHaveText('instlay is on C:.');
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\INSTLAYC.EXE');
+      await listed(page, 'C:\\INSTLAY\\INSTLAYC.EXE');
       await confirmed(page, 'Forget instlay', 'Forget program');
       await expect(page.locator('#kept-section')).toBeHidden();
       expect(await counts()).toEqual({ programs: 0, layers: 0, blobs: 0 });
@@ -2428,14 +2681,24 @@ for (const { engine, page: at } of ENGINES) {
           probeImage('imgcd.iso'),
         ]);
 
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
 
       await expect(page.locator('#status')).toHaveText(
         'A: Disk 1 of 2, imgflop.img. D: imgcd.iso.'
       );
       await expect(drives).toHaveCount(2);
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
-      await expect(drives.nth(1).locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(1)).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
+      /* Each a card: what it is and what is in it, in words. */
+      await expect(drives.nth(0)).toContainText('Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, in the drive',
+        'Disk 2, imgwrite.img',
+      ]);
+      await expect(drives.nth(0)).toContainText('Writes go to a copy: the image is never changed.');
+      await expect(drives.nth(1)).toContainText('imgcd.iso');
+      await expect(drives.nth(1)).toContainText('Volume WINBOXCD.202');
+      await expect(drives.nth(1)).toContainText('Read-only');
       await expect(page.getByRole('button', { name: 'Eject D:' })).toBeVisible();
       await expect(page.getByRole('button', { name: 'Save the image in D:' })).toHaveCount(0);
 
@@ -2473,6 +2736,29 @@ for (const { engine, page: at } of ENGINES) {
       expect(await page.evaluate(() => (globalThis as any).winbox.engine.diskChanged('A', 0))).toBe(
         true
       );
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, in the drive, written to',
+        'Disk 2, imgwrite.img',
+      ]);
+
+      /* What it wrote marked in the file browser: on C:, and on the floppy as written. */
+      const oracle = await browser(page, 'C:\\ORACLE');
+
+      await expect(oracle.grid.getByRole('row').filter({ hasText: 'IMGFLOP.OUT' })).toContainText(
+        'Changed'
+      );
+      await expect(
+        oracle.grid.getByRole('row').filter({ hasText: 'IMGFLOP.EXE' })
+      ).not.toContainText('Changed');
+      await oracle.close();
+
+      const written = await browser(page, 'A:\\');
+
+      await expect(written.grid.getByRole('row').filter({ hasText: 'Changed' })).not.toHaveCount(0);
+      await expect(
+        written.grid.getByRole('row').filter({ hasText: 'README.TXT' })
+      ).not.toContainText('Changed');
+      await written.close();
 
       /* Saved as a new file, as written. */
       const saving = page.waitForEvent('download');
@@ -2492,12 +2778,22 @@ for (const { engine, page: at } of ENGINES) {
       /* Swapped, emptied and picked; the disk written put back as it was
        * written. */
       await page.getByRole('button', { name: 'Next disk in A:' }).click();
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 2 of 2, imgwrite.img');
+      await expect(drives.nth(0)).toHaveAccessibleName(
+        'A: floppy drive, Disk 2 of 2, imgwrite.img'
+      );
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, written to',
+        'Disk 2, imgwrite.img, in the drive',
+      ]);
       await page.getByRole('button', { name: 'Eject A:' }).click();
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Empty (2 disks)');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Empty (2 disks)');
+      await expect(drives.nth(0).getByRole('listitem')).toHaveText([
+        'Disk 1, imgflop.img, written to',
+        'Disk 2, imgwrite.img',
+      ]);
       await expect(page.getByRole('button', { name: 'Eject A:' })).toHaveCount(0);
       await page.getByRole('combobox', { name: 'Disk in A:' }).selectOption('0');
-      await expect(drives.nth(0).locator('code')).toHaveText('A: Disk 1 of 2, imgflop.img');
+      await expect(drives.nth(0)).toHaveAccessibleName('A: floppy drive, Disk 1 of 2, imgflop.img');
       expect(
         await page.evaluate(() =>
           Array.from((globalThis as any).winbox.engine.diskImage('A', 0) as Uint8Array)
@@ -2524,7 +2820,7 @@ for (const { engine, page: at } of ENGINES) {
       /* A disc dropped on D:'s row goes in its set, and in the drive. */
       await page.evaluate(async (data) => {
         const transfer = new DataTransfer();
-        const row = [...document.querySelectorAll('#drives li')].find((li) =>
+        const row = [...document.querySelectorAll('#drives > li')].find((li) =>
           li.textContent?.startsWith('D:')
         )!;
 
@@ -2535,11 +2831,11 @@ for (const { engine, page: at } of ENGINES) {
           new DragEvent('drop', { dataTransfer: transfer, bubbles: true, cancelable: true })
         );
       }, probeImage('imgcd.iso').buffer.toString('base64'));
-      await expect(drives.nth(1).locator('code')).toHaveText('D: Disc 2 of 2, imgcd-2.iso');
+      await expect(drives.nth(1)).toHaveAccessibleName('D: CD-ROM drive, Disc 2 of 2, imgcd-2.iso');
       await expect(page.locator('#status')).toHaveText('D: Disc 2 of 2, imgcd-2.iso.');
 
       /* Taken away. */
-      await page.getByRole('button', { name: 'Remove D:' }).click();
+      await confirmed(page, 'Remove D:', 'Remove');
       await expect(drives).toHaveCount(1);
       expect(errors).toEqual([]);
     });
@@ -2635,7 +2931,7 @@ for (const { engine, page: at } of ENGINES) {
           'C:\\WINDOWS\\WIN.INI: Media=A:\\INSTALL\\INSTLAYC.EXE.'
       );
       await expect(page.getByRole('button', { name: 'Close instlay-disk1' })).toBeVisible();
-      await expect(page.locator('#files')).toContainText('C:\\INSTLAY\\README.TXT');
+      await listed(page, 'C:\\INSTLAY\\README.TXT');
       expect(await page.evaluate(() => (globalThis as any).winbox.state.programs[0].media)).toEqual(
         []
       );
@@ -2662,7 +2958,7 @@ for (const { engine, page: at } of ENGINES) {
       page.on('pageerror', (error) => errors.push(error.message));
 
       const counts = () => page.evaluate(() => (globalThis as any).winbox.imageCounts());
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
 
       await page.goto(at);
       await expect(page.locator('#status')).toHaveText('Ready.');
@@ -2706,7 +3002,7 @@ for (const { engine, page: at } of ENGINES) {
       await expect(page.locator('#needed li code')).toHaveText('D: imgcd.iso (386 KB) for cdgame');
       await page.getByLabel('Choose imgcd.iso again').setInputFiles(probeImage('imgcd.iso'));
       await expect(page.locator('#status')).toHaveText('Every image is had.');
-      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
       await expect(page.locator('#needed')).toBeHidden();
 
       await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
@@ -2725,7 +3021,7 @@ for (const { engine, page: at } of ENGINES) {
       });
       await page.getByRole('button', { name: 'Open cdgame' }).click();
       await expect(page.locator('#status')).toHaveText('cdgame is on C:.');
-      await expect(drives.locator('code')).toHaveText('D: imgcd.iso');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgcd.iso');
 
       /* Forgotten, with what is kept of its disc. */
       await confirmed(page, 'Forget cdgame', 'Forget program');
@@ -2745,7 +3041,7 @@ for (const { engine, page: at } of ENGINES) {
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
 
-      const drives = page.locator('#drives li');
+      const drives = page.locator('#drives > li');
       const files = [probeImage('imgcd.bin'), probeImage('imgtrk audio.wav')];
 
       await page.goto(at);
@@ -2771,7 +3067,7 @@ for (const { engine, page: at } of ENGINES) {
       /* Given them, it is a disc. */
       await page.locator('#picker').setInputFiles(files);
       await expect(page.locator('#status')).toHaveText('D: imgtrk.cue.');
-      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgtrk.cue');
       await expect(page.locator('#needed')).toBeHidden();
 
       /* A program kept with it remembers the sheet and its files. */
@@ -2803,7 +3099,7 @@ for (const { engine, page: at } of ENGINES) {
       );
       await page.locator('#picker').setInputFiles([probeImage('imgtrk.cue'), ...files]);
       await expect(page.locator('#status')).toHaveText('Every image is had.');
-      await expect(drives.locator('code')).toHaveText('D: imgtrk.cue');
+      await expect(drives).toHaveAccessibleName('D: CD-ROM drive, imgtrk.cue');
 
       await page.getByRole('button', { name: 'Run C:\\CDGAME\\IMGCD.EXE' }).click();
       await expect(page.locator('#status')).toHaveText(
@@ -2932,6 +3228,36 @@ test.describe('the page, to a screen reader and the keyboard', () => {
     await expect(page.locator('#windows')).toContainText('the asset bundle');
     await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
     await accessible(page, 'Windows');
+
+    /* The drives: a set of two floppies at A:, and a disc at D:. */
+    await page
+      .locator('#picker')
+      .setInputFiles([
+        probeImage('imgwrite.img'),
+        probeImage('imgflop.img'),
+        probeImage('imgcd.iso'),
+      ]);
+    await expect(page.locator('#status')).toHaveText('A: Disk 1 of 2, imgflop.img. D: imgcd.iso.');
+    await accessible(page, 'drives with a floppy set and a disc');
+
+    /* The file browser, open on C:'s root, and on the disc. */
+    const files = await browser(page, 'C:\\');
+
+    await expect(files.named('WINDOWS')).toBeVisible();
+    await accessible(page, 'the file browser open');
+    await files.dialog.getByRole('combobox', { name: 'Drive' }).selectOption('D');
+    const disc = files.dialog.getByRole('grid', { name: 'Files in D:\\' });
+
+    await expect(disc.getByRole('gridcell', { name: 'README.TXT', exact: true })).toBeVisible();
+    await accessible(page, 'the file browser open on a disc');
+    await files.close();
+
+    /* The screen on the whole window, as where the browser refuses the whole screen. */
+    await page.getByRole('button', { name: 'Full screen' }).click();
+    await expect(page.getByRole('button', { name: 'Leave full screen' })).toBeVisible();
+    await accessible(page, 'the screen on the whole screen');
+    await page.getByRole('button', { name: 'Leave full screen' }).click();
+    await expect(page.getByRole('button', { name: 'Full screen' })).toBeVisible();
 
     /* A program kept, and run: the kept programs listed, the screen drawn. */
     await page.locator('#picker').setInputFiles({

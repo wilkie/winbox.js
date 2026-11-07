@@ -22,6 +22,7 @@ import {
 } from '../store.js';
 import { Assets } from '../../assets/bundle.js';
 import { accept, chooseImages, dropped, forgetPrograms } from './accept.js';
+import { browse } from './browse.js';
 import { ejectDisk, insertDisk, nextDisk, offerDrive, removeDrive, saveImage } from './images.js';
 import { rememberImages } from './images.js';
 import {
@@ -105,6 +106,9 @@ export const actions = {
   },
 
   run: (program: Program) => run(program),
+
+  /** The file browser opened on a drive's folder: its root, C:'s by default. */
+  browse: (letter = 'C', parts: string[] = []) => browse(letter, parts),
   install: () => install(),
   keepAsProgram: () => keepAsProgram(),
   keepInstalled: () => keepInstalled(),

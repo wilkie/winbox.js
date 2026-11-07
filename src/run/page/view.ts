@@ -263,28 +263,52 @@ export function programRows(
   };
 }
 
-/** The files on C: but Windows' own, those renamed with the name they had. */
-export function fileRows(plan: Pick<Plan, 'files' | 'renamed'> | null) {
-  const renamed = new Map((plan?.renamed ?? []).map((one) => [one.to, one.from]));
+/** A disk of a drive's set, as its drive's card lists it. */
+export interface DiskView {
+  /** Its file's name, as it was dropped or chosen. */
+  name: string;
 
-  return (plan?.files ?? [])
-    .filter((file) => !file.startsWith('C:\\WINDOWS\\'))
-    .map((file) => (renamed.has(file) ? `${file}  (was ${renamed.get(file)})` : file));
+  /** Whether it is the disk in the drive. */
+  inserted: boolean;
+
+  /** Whether programs have written to it: what they wrote is in its overlay, the file never written. */
+  written: boolean;
+
+  /** How it is had again on a later visit, where a kept program is run with it; null where none is. */
+  kept: string | null;
+
+  /** What the list shows of it, and a screen reader is told: `Disk 1, one.img, in the drive, written to`. */
+  text: string;
 }
 
-/** A drive of images as its row shows it, with what may be done with it. */
+/** A drive of images as its card shows it, with what may be done with it. */
 export interface DriveRow {
   letter: string;
 
-  /** What is in it, as its label says: `A: Disk 1 of 2, one.img`. */
+  /** What is in it, with its letter: `A: Disk 1 of 2, one.img`. */
   text: string;
   kind: 'floppy' | 'CD-ROM' | 'hard disk';
 
-  /** What a screen reader is told of the row. */
+  /** What it is, as its card's heading says after its letter: `floppy drive`. */
+  kindText: string;
+
+  /** What a screen reader is told of the card: `A: floppy drive, Disk 1 of 2, one.img`. */
   label: string;
+
+  /** What is in it, without its letter: `Disk 1 of 2, one.img`, or `Empty (2 disks)`. */
+  state: string;
+
+  /** A disc's volume label, where the page read one; null for any other, or a disc without. */
+  volume: string | null;
+
+  /** Whether programs may not write to it: a disc. */
+  readOnly: boolean;
 
   /** Its disks, to choose among where there are several. */
   disks: string[];
+
+  /** Its disks as the card lists them. */
+  set: DiskView[];
   current: number;
   ejected: boolean;
 
@@ -299,25 +323,91 @@ export interface DriveRow {
 
   /** An installer on it, offered to install; none where it is not offered. */
   installer: Program | null;
+
+  /** How its images are had on a later visit: with the kept program on C:, or not at all. */
+  kept: string;
+
+  /** What its Remove asks first: what is lost. */
+  removing: string;
+}
+
+/** What the page knows of each drive beside its set: what the engine and the browser say. */
+export interface DriveFacts {
+  /** Whether programs have written to a disk of a drive's set (`Engine.diskChanged`, `Disk.written`). */
+  written(letter: string, disk: number): boolean;
+
+  /** A drive's volume label, as the page read its disk. */
+  volume(letter: string): string | null;
+
+  /** How a disk is had again on a later visit; null where no kept program is run with it. */
+  kept(disk: Disk): string | null;
+
+  /** The kept program on C:, which is run with the drives; null for none. */
+  program: string | null;
+}
+
+/** What the page knows of no drive: nothing written, no label, nothing kept. */
+const NO_FACTS: DriveFacts = {
+  written: () => false,
+  volume: () => null,
+  kept: () => null,
+  program: null,
+};
+
+/** How a kept program's image is had again: from a handle on its file, from a copy, or chosen again. */
+export function keptText(handle: boolean, copy: boolean) {
+  return handle
+    ? 'opened again from its file next visit, the browser asking leave'
+    : copy
+      ? 'a copy kept in this browser'
+      : 'chosen again next visit';
 }
 
 export function driveRows(
   drives: DriveSet[],
   programsOf: (letter: string) => Program[],
   base: string | null,
-  installing: boolean
+  installing: boolean,
+  facts: DriveFacts = NO_FACTS
 ): DriveRow[] {
   return drives.map((set) => {
     const kind = set.kind === 'iso' ? 'CD-ROM' : set.kind === 'hdd' ? 'hard disk' : 'floppy';
+    const kindText =
+      set.kind === 'iso' ? 'CD-ROM drive' : set.kind === 'hdd' ? 'hard disk' : 'floppy drive';
     const installer = installerOn(programsOf(set.letter));
     const several = set.disks.length > 1;
+    const state = setText(set);
+    const noun = set.kind === 'iso' ? 'Disc' : 'Disk';
+    const view = set.disks.map((disk, at): DiskView => {
+      const inserted = !set.ejected && at === set.current;
+      const written = set.kind !== 'iso' && (disk.written || facts.written(set.letter, at));
+
+      return {
+        name: disk.name,
+        inserted,
+        written,
+        kept: facts.kept(disk),
+        text: [
+          several ? `${noun} ${at + 1}, ${disk.name}` : disk.name,
+          ...(inserted ? ['in the drive'] : []),
+          ...(written ? ['written to'] : []),
+        ].join(', '),
+      };
+    });
+    const what = set.kind === 'iso' ? 'its disc' : several ? 'its disks' : 'its disk';
+    const ways = [...new Set(view.map((disk) => disk.kept).filter(Boolean))];
 
     return {
       letter: set.letter,
-      text: `${set.letter}: ${setText(set)}`,
+      text: `${set.letter}: ${state}`,
       kind,
-      label: `${set.letter}: ${kind}, ${setText(set)}`,
+      kindText,
+      label: `${set.letter}: ${kindText}, ${state}`,
+      state,
+      volume: set.kind === 'iso' ? facts.volume(set.letter) : null,
+      readOnly: set.kind === 'iso',
       disks: set.disks.map((disk, at) => `${at + 1}: ${disk.name}`),
+      set: view,
       current: set.current,
       ejected: set.ejected,
       next: several,
@@ -326,8 +416,63 @@ export function driveRows(
       save: set.kind !== 'iso' && !set.ejected,
       add: set.kind !== 'hdd',
       installer: installer && base && !installing ? installer : null,
+      kept:
+        facts.program && ways.length
+          ? `Kept with ${facts.program}: ${ways.join('; ')}.`
+          : 'Not kept: for this visit only.',
+      removing:
+        (set.kind === 'iso'
+          ? `${set.letter}: and ${what} are let go of. To have it again, choose or drop its images again.`
+          : `${set.letter}: and ${what} are let go of, and what programs wrote to ${what} this visit is discarded. Save the image first to keep it.`) +
+        (facts.program ? ` ${facts.program} is no longer run with it.` : ''),
     };
   });
+}
+
+/** C:, the hard disk every program is on, as its card shows it. */
+export interface CDriveView {
+  /** What Windows on it is: `Windows 3.1 from your setup disks (VGA, 640x480, 16 colours)`. */
+  windows: string;
+
+  /** What is over Windows: the kept program on it and its layers, or the archives dropped loose. */
+  programs: string;
+
+  /** What programs wrote on it, kept in this browser. */
+  changes: string;
+
+  /** What a screen reader is told of it. */
+  label: string;
+}
+
+export function cDriveView(
+  windows: Pick<Archive, 'name'> | null,
+  assets: object | null,
+  display: string,
+  chosen: Pick<KeptProgram, 'name' | 'layers'> | null,
+  loose: number,
+  changes: number
+): CDriveView {
+  const count = (number: number, one: string) => `${number} ${one}${number === 1 ? '' : 's'}`;
+  const windowsLine = windows
+    ? `Windows 3.1 from ${windows.name}`
+    : assets
+      ? `Windows 3.1 from your setup disks (${displayName(display)})`
+      : 'No Windows yet';
+  const programs = chosen
+    ? `${chosen.name}, kept: ${count(chosen.layers.length, 'layer')} over Windows`
+    : loose
+      ? `${count(loose, 'archive')} dropped over Windows`
+      : 'No program kept on it';
+  const changesLine = changes
+    ? `${count(changes, 'change')} programs wrote, kept in this browser`
+    : 'Nothing programs wrote kept yet';
+
+  return {
+    windows: windowsLine,
+    programs,
+    changes: changesLine,
+    label: `C: hard disk, ${windowsLine}`,
+  };
 }
 
 /** A file asked for again, or a cue sheet's file still wanted. */
@@ -505,6 +650,7 @@ export interface PageView {
   sound: boolean;
   keepImages: boolean;
   drivesNote: string;
+  c: CDriveView;
   drives: DriveRow[];
   needed: NeededRow[];
   kept: KeptRow[];
@@ -512,7 +658,6 @@ export interface PageView {
   install: InstallView;
   programs: ProgramRow[];
   programsEmpty: string | null;
-  files: string[];
 }
 
 /** The note over the drives, with drives and without. */

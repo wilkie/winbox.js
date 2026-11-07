@@ -74,7 +74,12 @@ const page: Page = {
   call: trace,
   /* What a program wrote kept as it ends; an installer's, once its task
    * has ended, kept only as the user says (`keepInstalled`). */
-  ended: () => (state.installing ? installerEnded() : keep()),
+  ended: () => {
+    /* What it wrote to the drives' disks shown. */
+    publish();
+
+    return state.installing ? installerEnded() : keep();
+  },
 };
 
 /** Where `pnpm build:web` writes the Rust engine's module, as `pnpm dev` serves it. */
@@ -331,6 +336,7 @@ export async function rebuild({ keeping = true } = {}) {
     /* What programs wrote to the disks of the machine made last kept,
      * for this one to be given. */
     current.carry();
+    session.given = setup.changes;
     await current.rebuild(setup);
   } catch (error: any) {
     console.error(error);
