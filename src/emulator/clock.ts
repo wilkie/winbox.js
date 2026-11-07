@@ -69,6 +69,12 @@ export class Clock {
   #pending: Pending[] = [];
   #holding = 0;
 
+  /**
+   * Told before a timer of the host's own time calls back: the machine
+   * entered, its code to run from a turn of the host's (`Win16.enter`).
+   */
+  onEnter: (() => void) | null = null;
+
   constructor({
     virtual = false,
     epoch,
@@ -107,7 +113,13 @@ export class Clock {
   /** Calls `fn` once `ms` milliseconds have passed; answers what `cancel` takes. */
   after(ms: number, fn: () => void): any {
     if (!this.virtual) {
-      return setTimeout(fn, Math.max(0, ms));
+      return setTimeout(
+        () => {
+          this.onEnter?.();
+          fn();
+        },
+        Math.max(0, ms)
+      );
     }
 
     const entry = { due: this.now() + Math.max(0, ms), fn };

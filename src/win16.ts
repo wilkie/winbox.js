@@ -185,9 +185,17 @@ export class Win16 {
 
     /* A line and a bold smear are the display driver's to draw, and the drivers
      * do not agree -- see `BitmapContext.driver`. Everything that rasterises
-     * reads it from there, so the choice of display has to reach it.
+     * reads it from there, so the choice of display has to reach it: here,
+     * and again each time this machine runs (`enter`), where a page runs
+     * several machines, each on its own display.
      */
-    BitmapContext.driver = this._display;
+    this.enter();
+
+    /* A timer of the host's clock runs this machine's code from a turn of
+     * the host's own: entered first, as a frame of its scheduler is. */
+    if (machine?.clock) {
+      machine.clock.onEnter = () => this.enter();
+    }
 
     // Retain the machine instance
     this._machine = machine;
@@ -660,7 +668,8 @@ export class Win16 {
      * more, and its handle is let go -- but WinBox's Program Manager's, the
      * module it keeps (`progman/`). As `exit_task`. */
     const last = module !== undefined && !previousInstance(this, path);
-    const database = last && !kept && this.handles.resolveModule(module)?.executable ? module >> 3 : -1;
+    const database =
+      last && !kept && this.handles.resolveModule(module)?.executable ? module >> 3 : -1;
 
     if (own && !kept) {
       freeModuleSegments(this, task.loader, database, last);
@@ -724,6 +733,20 @@ export class Win16 {
 
   get display() {
     return this._display;
+  }
+
+  /**
+   * This machine about to run code, from a turn of the host's: its display
+   * made the one everything that rasterises reads (`BitmapContext.driver`).
+   * One machine runs at a time, and what a turn of the host's starts --
+   * its promises' continuations among it -- runs to its end before another
+   * turn begins; so a machine entered at each turn that runs its code (a
+   * scheduler's frame, a timer of its clock, its mouse and keyboard, a
+   * program started on it) draws with its own display's rules, beside
+   * another machine on another display (`src/run/page/machine.ts`).
+   */
+  enter() {
+    BitmapContext.driver = this._display;
   }
 
   /**

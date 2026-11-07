@@ -733,7 +733,7 @@ export class Scheduler {
   }
 
   run() {
-    if (this._running) {
+    if (this._running || this._stopped) {
       return;
     }
 
@@ -752,7 +752,14 @@ export class Scheduler {
 
   /** Steps until nothing asks for another; see `run`. */
   drive() {
+    if (this._stopped) {
+      return;
+    }
+
     this._stepping = true;
+
+    /* Its machine entered: its display's rules for what it draws (`Win16.enter`). */
+    this._modules?.system?.enter?.();
 
     try {
       do {
@@ -771,6 +778,19 @@ export class Scheduler {
   /** Whether a step is under way, and whether another was asked for in it. */
   declare _stepping: boolean;
   declare _again: boolean;
+
+  /**
+   * Whether the machine is ended, as a page's machine is as its tab is
+   * closed (`src/run/engines/ts.ts`): no task runs again, whatever wakes
+   * it -- a timer of the host's clock, a message -- as the processor is
+   * never stepped. The Rust engine's machine is freed instead.
+   */
+  declare _stopped: boolean;
+
+  /** The machine ended: nothing of it runs again. */
+  stop() {
+    this._stopped = true;
+  }
 
   step() {
     try {
