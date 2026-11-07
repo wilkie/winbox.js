@@ -44,16 +44,25 @@ const WINDOWS_OWN = /^(GDI\.EX_|USER\.EX_|KRNL[23]86\.EX_|WIN\.CN_)$/i;
 const ofMedia = (entry: ZipEntry) =>
   IMAGE.test(entry.path) || /^(OEM)?SETUP\.INF$|_$/i.test(baseName(entry.path));
 
+/** Of two installers at one depth, `SETUP.EXE` comes first (0), `INSTALL.EXE` after (1). */
+export const setupFirst = (name: string) => (/^SETUP\.EXE$/i.test(name) ? 0 : 1);
+
 /**
  * A program's installer in its archive, `SETUP.EXE` or `INSTALL.EXE`, the
- * shallowest, the first of its depth in the archive's order: its path in
- * the archive; none where there is none.
+ * shallowest; of one depth `SETUP.EXE` before `INSTALL.EXE`, then the first
+ * in the archive's order (the page's choice, as `installerOn`'s): its path
+ * in the archive; none where there is none.
  */
 export function installerOf(entries: ZipEntry[]) {
   const found = entries
     .filter((entry) => /^(SETUP|INSTALL)\.EXE$/i.test(baseName(entry.path)))
     .map((entry, at) => ({ path: entry.path, depth: entry.path.split('/').length, at }))
-    .sort((one, other) => one.depth - other.depth || one.at - other.at);
+    .sort(
+      (one, other) =>
+        one.depth - other.depth ||
+        setupFirst(baseName(one.path)) - setupFirst(baseName(other.path)) ||
+        one.at - other.at
+    );
 
   return found[0]?.path ?? null;
 }

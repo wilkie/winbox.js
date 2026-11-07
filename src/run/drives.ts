@@ -19,6 +19,7 @@ import { readFat12 } from '../file-systems/fat12.js';
 import { CdImage } from '../file-systems/cue.js';
 import { ISO9660 } from '../file-systems/iso9660.js';
 import { type Program } from './drive.js';
+import { setupFirst } from './media.js';
 
 /** What an image is, as DOSBox's `imgmount -t` and a kept program's media name it. */
 export type ImageKind = 'floppy' | 'hdd' | 'iso';
@@ -449,9 +450,13 @@ export async function programsOn(volume: any, letter: string): Promise<Program[]
 }
 
 /**
+/**
  * A program's installer on a drive: `SETUP.EXE` or `INSTALL.EXE`, the
- * shallowest, the first of its depth in the disk's order, a Windows
- * program; none where there is none.
+ * shallowest, a Windows program; of one depth `SETUP.EXE` before
+ * `INSTALL.EXE`, then the first in the disk's order; none where there is
+ * none. The page's choice, not Windows': a disc with both (Lode Runner: The
+ * Legend Returns, whose `INSTALL.EXE` is the setup's helper and whose
+ * readme says to run `SETUP`) is installed by its `SETUP.EXE`.
  */
 export function installerOn(programs: Program[]) {
   return (
@@ -462,7 +467,10 @@ export function installerOn(programs: Program[]) {
       )
       .map((program, at) => ({ program, at }))
       .sort(
-        (one, other) => one.program.parts.length - other.program.parts.length || one.at - other.at
+        (one, other) =>
+          one.program.parts.length - other.program.parts.length ||
+          setupFirst(one.program.parts.at(-1)!) - setupFirst(other.program.parts.at(-1)!) ||
+          one.at - other.at
       )[0]?.program ?? null
   );
 }
