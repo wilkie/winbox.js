@@ -25,6 +25,7 @@ import { EmptyDrive } from '../../file-systems/empty-drive.js';
 import {
   attachInput,
   type Engine,
+  type ItemStart,
   makeScreen,
   type Page,
   screenNote,
@@ -244,7 +245,7 @@ export class TypeScriptEngine implements Engine {
     }
   }
 
-  async run(program: Program, options: { install?: boolean } = {}) {
+  async run(program: Program, options: { install?: boolean; item?: ItemStart } = {}) {
     const session = this.session;
 
     if (!session) {
@@ -285,7 +286,18 @@ export class TypeScriptEngine implements Engine {
       const previous = previousInstance(session.win16, program.path);
       const handle = await session.win16.load(executable);
       session.win16.link(handle);
-      session.win16.run(handle, { previous, directory: folderOf(program.path) });
+
+      /* A group's item: its command line and show command, in the
+       * directory made current for it, as `Session::start_item` gives
+       * them in the Rust engine. */
+      const item = options.item;
+
+      session.win16.run(
+        handle,
+        item
+          ? { previous, commandLine: item.commandLine, show: item.show, directory: item.directory }
+          : { previous, directory: folderOf(program.path) }
+      );
 
       page.status(`${program.path} is running.`);
     } catch (error: any) {

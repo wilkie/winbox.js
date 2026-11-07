@@ -32,6 +32,18 @@ export interface Page {
   ended(): void;
 }
 
+/** What a group's item gives the program it starts (`Engine.run`). */
+export interface ItemStart {
+  /** Its parameters: what follows the program's name on the command line `WinExec` is given. */
+  commandLine: string;
+
+  /** Its current directory, as DOS names it: `C:\ORACLE\PMDIR`. */
+  directory: string;
+
+  /** `nCmdShow`: 1 shown normally, 7 minimized. */
+  show: number;
+}
+
 /** How the machine is to be made. */
 export interface Setup {
   plan: Plan;
@@ -79,8 +91,15 @@ export interface Engine {
    * Manager the shell, started first and given it as its command line,
    * starting it and answering what it asks over DDE -- WinBox's own where
    * the drive has no `PROGMAN.EXE` (`kb/topics/program-manager-dde.md`).
+   *
+   * A group's item (`item`) is given what `WinExec` gives `LoadModule` --
+   * its command line and show command -- and its current directory, the
+   * one `ShellExecute` made current as it started it, as the launcher
+   * worked them out from the item (`itemRun`, `kb/guides/launcher.md`).
+   * Without one, a program is given no arguments, shown normally, in its
+   * own folder.
    */
-  run(program: Program, options?: { install?: boolean }): Promise<void>;
+  run(program: Program, options?: { install?: boolean; item?: ItemStart }): Promise<void>;
 
   /**
    * What differs on C: from the drive as planned, as it stands: what

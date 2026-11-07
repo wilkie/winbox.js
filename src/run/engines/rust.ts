@@ -33,6 +33,7 @@ import {
   attachInput,
   type Engine,
   type Input,
+  type ItemStart,
   makeScreen,
   type Page,
   screenNote,
@@ -59,6 +60,13 @@ interface WasmMachine {
   changes(drive: string): WasmChange[];
   /** Why the program could not be started; nothing where it was. */
   start(path: string): string | undefined;
+  /** A group's item started, with its command line, current directory and show command; why not, as `start`. */
+  start_item(
+    path: string,
+    commandLine: string,
+    directory: string,
+    show: number
+  ): string | undefined;
   /** An installer run, Program Manager the shell starting it; why not, where it could not be. */
   install(path: string): string | undefined;
   take_exits(): Uint8Array;
@@ -364,7 +372,7 @@ export class RustEngine implements Engine {
     }
   }
 
-  async run(program: Program, options: { install?: boolean } = {}) {
+  async run(program: Program, options: { install?: boolean; item?: ItemStart } = {}) {
     const page = this.#page;
 
     if (!this.#setup || !this.#wasm) {
@@ -378,7 +386,7 @@ export class RustEngine implements Engine {
        * Windows is up: started beside those running, or, every one having
        * ended, on the same machine. The run takes it up at its next step. */
       if (this.#started && !this.#over && this.#machine) {
-        this.#launch(program);
+        this.#launch(program, options.item);
         return;
       }
 
@@ -409,7 +417,7 @@ export class RustEngine implements Engine {
 
       const refused = options.install
         ? this.#machine.install(program.path)
-        : this.#machine.start(program.path);
+        : this.#start(program, options.item);
 
       if (refused !== undefined) {
         throw new Error(refused);
@@ -543,8 +551,17 @@ export class RustEngine implements Engine {
    * told, as on the TypeScript engine, and the others run on; a call that
    * throws has lost the instance (`Lost`), which stops them all.
    */
-  #launch(program: Program) {
-    const refused = this.#machine!.start(program.path);
+  /** A program started on the machine; a group's item with what it is given (`Session::start_item`). */
+  #start(program: Program, item?: ItemStart) {
+    const machine = this.#machine!;
+
+    return item
+      ? machine.start_item(program.path, item.commandLine, item.directory, item.show)
+      : machine.start(program.path);
+  }
+
+  #launch(program: Program, item?: ItemStart) {
+    const refused = this.#start(program, item);
 
     if (refused !== undefined) {
       this.#page.status(`${program.path} stopped: ${refused}`, 'error');

@@ -380,24 +380,50 @@ impl System {
     /// Where no program has started yet (`Launch::First`), or this one could
     /// not be.
     pub fn launch(&mut self, path: &str) -> Result<u16, Launch> {
+        self.launch_item(path, "", None, crate::task::SW_SHOWNORMAL)
+    }
+
+    /// A program started beside those running as a group's item is started
+    /// (`kb/guides/launcher.md`, "Running an item"): as `launch` starts one,
+    /// but given what `WinExec` gives `LoadModule` -- its command line and
+    /// its show command -- and, for its current directory, the one
+    /// `ShellExecute` made current as it was started (`directory`, its
+    /// drive's letter first); its own folder where none is given. The
+    /// TypeScript engine's twin is `Win16.run`'s `commandLine`, `show` and
+    /// `directory`. Its task's handle.
+    ///
+    /// # Errors
+    ///
+    /// As `launch`.
+    pub fn launch_item(
+        &mut self,
+        path: &str,
+        command_line: &str,
+        directory: Option<&str>,
+        show: u16,
+    ) -> Result<u16, Launch> {
         if self.scheduler.slots.is_empty() {
             return Err(Launch::First);
         }
 
         let slot = self
-            .add_program(path, "", crate::task::SW_SHOWNORMAL, None, false)
+            .add_program(path, command_line, show, None, false)
             .map_err(Launch::Stopped)?
             .map_err(Launch::Dos)?;
+        let folder = match directory {
+            Some(directory) => Some(directory.to_string()),
+            None => path.rsplit_once('\\').map(|(folder, _)| {
+                if folder.len() > 2 {
+                    folder.to_string()
+                } else {
+                    format!("{folder}\\")
+                }
+            }),
+        };
 
-        if let Some((folder, _)) = path.rsplit_once('\\')
+        if let Some(folder) = folder
             && let Some(saved) = self.scheduler.slots[slot].saved.as_mut()
         {
-            let folder = if folder.len() > 2 {
-                folder.to_string()
-            } else {
-                format!("{folder}\\")
-            };
-
             saved.directory = (
                 folder.chars().next().unwrap_or('C').to_ascii_uppercase(),
                 folder,

@@ -595,8 +595,33 @@ impl Session {
     /// from now on (`step`). The drives are mounted as they are now. Once
     /// a program has started, another is started beside it (`launch`).
     pub fn start(&mut self, path: &str) -> Result<(), String> {
+        self.start_program(path, None)
+    }
+
+    /// The program at `path` started as a group's item starts it
+    /// (`kb/guides/launcher.md`, "Running an item"), as `start` starts one
+    /// but given what `WinExec` gives `LoadModule` -- `command_line` and
+    /// `show` -- with `directory` its current directory, the one
+    /// `ShellExecute` made current as it started it. The page works out
+    /// all four from the item as `itemRun` does (`src/layers/launch.ts`,
+    /// `launch.rs`); the TypeScript engine's twin is `Win16.run`'s
+    /// `commandLine`, `show` and `directory`. Beside those running, once a
+    /// program has started (`System::launch_item`).
+    pub fn start_item(
+        &mut self,
+        path: &str,
+        command_line: &str,
+        directory: &str,
+        show: u16,
+    ) -> Result<(), String> {
+        self.start_program(path, Some((command_line, directory, show)))
+    }
+
+    /// `start`, and `start_item` with its item's command line, directory
+    /// and show command.
+    fn start_program(&mut self, path: &str, item: Option<(&str, &str, u16)>) -> Result<(), String> {
         if self.run.is_some() {
-            return self.launch(path).map(|_| ());
+            return self.launch_with(path, item).map(|_| ());
         }
 
         let (letter, _) = split_path(path).ok_or_else(|| format!("no drive in {path}"))?;
@@ -622,7 +647,21 @@ impl Session {
 
             system.log = Some(Vec::new());
 
-            if letter == 'C' {
+            if let Some((command_line, directory, show)) = item {
+                // A group's item: given its command line and show command,
+                // in the directory made current for it.
+                let (program, libraries) = system.load(executable, path);
+
+                system.link(program);
+                system
+                    .start_with(program, libraries, command_line, show, 0, None)
+                    .map_err(|exit| format!("the program's registers: {exit:?}"))?;
+
+                if let Some(drive) = directory.chars().next().filter(|_| directory.len() > 1) {
+                    system.files.drive = drive.to_ascii_uppercase();
+                    system.files.set_path(directory);
+                }
+            } else if letter == 'C' {
                 survey::start(&mut system, executable, path)
                     .map_err(|exit| format!("the program's registers: {exit:?}"))?;
             } else {
@@ -689,6 +728,12 @@ impl Session {
     /// one -- and taken up by the run as the next step begins. The run
     /// goes on until every task has ended. Its task's handle.
     pub fn launch(&mut self, path: &str) -> Result<u16, String> {
+        self.launch_with(path, None)
+    }
+
+    /// `launch`, and a group's item's command line, directory and show
+    /// command where given (`start_item`).
+    fn launch_with(&mut self, path: &str, item: Option<(&str, &str, u16)>) -> Result<u16, String> {
         if self.run.is_none() {
             return Err("no program has started".to_string());
         }
@@ -697,16 +742,21 @@ impl Session {
             return Err("the run is over".to_string());
         }
 
-        self.engine
-            .system()
-            .launch(path)
-            .map_err(|launch| match launch {
-                Launch::First => "no program has started".to_string(),
-                Launch::Dos(2) => format!("no file {path}"),
-                Launch::Dos(11) => format!("{path} is not a New Executable"),
-                Launch::Dos(error) => format!("DOS error {error}"),
-                Launch::Stopped(stop) => format!("the program's registers: {stop:?}"),
-            })
+        let mut system = self.engine.system();
+        let launched = match item {
+            Some((command_line, directory, show)) => {
+                system.launch_item(path, command_line, Some(directory), show)
+            }
+            None => system.launch(path),
+        };
+
+        launched.map_err(|launch| match launch {
+            Launch::First => "no program has started".to_string(),
+            Launch::Dos(2) => format!("no file {path}"),
+            Launch::Dos(11) => format!("{path} is not a New Executable"),
+            Launch::Dos(error) => format!("DOS error {error}"),
+            Launch::Stopped(stop) => format!("the program's registers: {stop:?}"),
+        })
     }
 
     /// The codes the tasks gave DOS as they ended, each told once, since

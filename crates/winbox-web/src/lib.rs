@@ -493,6 +493,22 @@ impl Machine {
         self.session.start(path).err()
     }
 
+    /// The program at a DOS path started as a group's item starts it, with
+    /// the command line, current directory and show command the launcher
+    /// worked out for it (`Session::start_item`); beside those running once
+    /// one has started. Nothing where it started; else why not, as `start`.
+    pub fn start_item(
+        &mut self,
+        path: &str,
+        command_line: &str,
+        directory: &str,
+        show: u16,
+    ) -> Option<String> {
+        self.session
+            .start_item(path, command_line, directory, show)
+            .err()
+    }
+
     /// An installer at a DOS path run as the first program, as Windows
     /// started as `WIN SETUP.EXE` runs one: Program Manager the shell,
     /// starting it; stepped as `start`'s run is, and waiting (3) once the
