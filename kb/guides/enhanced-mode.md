@@ -13,7 +13,7 @@ The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE 
 [[measured]] DOSBox 0.74-3 runs Windows 3.1 in 386 enhanced mode with the settings the recorder already gives it. Only the command line changes: `win /3` for `win /s`.
 
 - **The settings.** `machine=svga_s3` (the VGA installation's), `memsize=16`, `core=auto`, `cycles=max`, and the installation's `SYSTEM.INI` as Setup wrote it. Its `[386Enh]` section names `display=*vddvga`, `keyboard=*vkd`, `mouse=*vmd`, `network=*dosnet,*vnetbios`, `ebios=*ebios`, the timer API device `device=vtdapi.386`, 22 more `device=` lines (`*vpicd`, `*vtd`, `*reboot`, `*vdmad`, `*vsd`, `*v86mmgr`, `*pageswap`, `*dosmgr`, `*vmpoll`, `*wshell`, `*BLOCKDEV`, `*PAGEFILE`, `*vfd`, `*parity`, `*biosxlat`, `*vcd`, `*vmcpd`, `*combuff`, `*cdpscsi` and the rest), `PagingFile=C:\WINDOWS\WIN386.SWP` and `MaxPagingFileSize=61440`. Setup copied `WIN386.EXE`, `WINOA386.MOD`, `VGA.3GR` and `VTDAPI.386` with the rest, so nothing has to be installed.
-- **The settings that do not matter.** `dpmiver` recorded the same three answers under each of: `core=normal`, `dynamic` and `simple`; `cputype=386` and `pentium_slow`; `memsize=2`, `4`, `32` and `63`; `cycles=fixed 3000` and `fixed 80000`; and five runs more of the defaults. `cputype=386_prefetch` did not start Windows. Even `cputype=386` leaves the processor a 486 to Windows: CL 4 and `WF_CPU486`.
+- **The settings that do not matter.** [[probe:dpmiver]] recorded the same three answers under each of: `core=normal`, `dynamic` and `simple`; `cputype=386` and `pentium_slow`; `memsize=2`, `4`, `32` and `63`; `cycles=fixed 3000` and `fixed 80000`; and five runs more of the defaults. `cputype=386_prefetch` did not start Windows. Even `cputype=386` leaves the processor a 486 to Windows: CL 4 and `WF_CPU486`.
 - **How long it takes.** A small probe takes about two seconds from DOSBox's start to its fixture, as in standard mode.
 - **The recorder.** `record.mjs --mode enhanced` starts `win /3`. The fixture's source says `host: "dosbox, 386 enhanced mode"` and `mode: "enhanced"`. Standard mode stays the default, and every recording made without `--mode` is made as before.
 
@@ -49,17 +49,17 @@ The two modes run the same KERNEL, USER, GDI and drivers. What a program can tel
 
 ### Windows' own answers
 
-| Question                                                         | Standard mode                                               | 386 enhanced mode                                                                                                                                                                                            | Evidence                                         |
-| ---------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| `GetWinFlags`                                                    | `0419h`: `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87` | `0C29h`: `WF_PMODE`, `WF_ENHANCED`, `WF_CPU486`, `WF_80x87`, `WF_PAGING`                                                                                                                                     | [[measured]] [[probe:winflags]], `dpmiver`       |
-| INT 2Fh 1600h                                                    | AX left `1600h`                                             | AX `0A03h`: Windows 3.10                                                                                                                                                                                     | [[measured]] `dpmiver`                           |
-| INT 2Fh 160Ah                                                    | AX, BX, CX left                                             | AX, BX, CX left: not answered to a Windows program in either mode                                                                                                                                            | [[measured]] [[probe:enhmode]]                   |
-| INT 2Fh 1683h, the virtual machine                               | AX and BX left                                              | AX `1600h`, BX 1: the system virtual machine                                                                                                                                                                 | [[measured]] [[probe:enhmode]]                   |
-| INT 2Fh 1686h                                                    | AX 0: protected mode                                        | AX 0                                                                                                                                                                                                         | [[measured]] [[probe:enhmode]]                   |
-| INT 2Fh 1684h, a device's entry point                            | none for any device                                         | an entry point for VPICD, VTD, Reboot, VDD, VMD, VKD, VCD, SHELL, PageFile and VTDAPI; none for VMM, VDMAD, V86MMGR, PageSwap, Parity, VSD, BlockDev, VMCPD, EBIOS, BIOSXlat, DOSMGR, VMPoll, VFD or VPOWERD | [[measured]] [[probe:enhmode]], 24 devices asked |
-| KERNEL's file                                                    | `KRNL386.EXE`                                               | `KRNL386.EXE`                                                                                                                                                                                                | [[measured]] [[probe:enhmode]]                   |
-| The selector increment, `__AHINCR` and `__AHSHIFT`               | 8, 3                                                        | 8, 3                                                                                                                                                                                                         | [[measured]] [[probe:enhmode]]                   |
-| A program's privilege level, its code's and data's access rights | ring 3, `FBh` and `F3h`                                     | the same                                                                                                                                                                                                     | [[measured]] [[probe:enhmode]]                   |
+| Question                                                         | Standard mode                                               | 386 enhanced mode                                                                                                                                                                                            | Evidence                                           |
+| ---------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `GetWinFlags`                                                    | `0419h`: `WF_PMODE`, `WF_STANDARD`, `WF_CPU486`, `WF_80x87` | `0C29h`: `WF_PMODE`, `WF_ENHANCED`, `WF_CPU486`, `WF_80x87`, `WF_PAGING`                                                                                                                                     | [[measured]] [[probe:winflags]], [[probe:dpmiver]] |
+| INT 2Fh 1600h                                                    | AX left `1600h`                                             | AX `0A03h`: Windows 3.10                                                                                                                                                                                     | [[measured]] [[probe:dpmiver]]                     |
+| INT 2Fh 160Ah                                                    | AX, BX, CX left                                             | AX, BX, CX left: not answered to a Windows program in either mode                                                                                                                                            | [[measured]] [[probe:enhmode]]                     |
+| INT 2Fh 1683h, the virtual machine                               | AX and BX left                                              | AX `1600h`, BX 1: the system virtual machine                                                                                                                                                                 | [[measured]] [[probe:enhmode]]                     |
+| INT 2Fh 1686h                                                    | AX 0: protected mode                                        | AX 0                                                                                                                                                                                                         | [[measured]] [[probe:enhmode]]                     |
+| INT 2Fh 1684h, a device's entry point                            | none for any device                                         | an entry point for VPICD, VTD, Reboot, VDD, VMD, VKD, VCD, SHELL, PageFile and VTDAPI; none for VMM, VDMAD, V86MMGR, PageSwap, Parity, VSD, BlockDev, VMCPD, EBIOS, BIOSXlat, DOSMGR, VMPoll, VFD or VPOWERD | [[measured]] [[probe:enhmode]], 24 devices asked   |
+| KERNEL's file                                                    | `KRNL386.EXE`                                               | `KRNL386.EXE`                                                                                                                                                                                                | [[measured]] [[probe:enhmode]]                     |
+| The selector increment, `__AHINCR` and `__AHSHIFT`               | 8, 3                                                        | 8, 3                                                                                                                                                                                                         | [[measured]] [[probe:enhmode]]                     |
+| A program's privilege level, its code's and data's access rights | ring 3, `FBh` and `F3h`                                     | the same                                                                                                                                                                                                     | [[measured]] [[probe:enhmode]]                     |
 
 ### KERNEL
 
@@ -91,7 +91,7 @@ The DPMI host is DOSX in standard mode and WIN386's virtual machine manager in e
 
 - **The same in both:** 0000h-000Ah, 000Dh, 0100h (refused, AX 8, in both: KERNEL holds conventional memory), 0200h-0205h, 0300h (DOS's version, 5, through a real-mode INT 21h), 0303h, 0304h, 0400h's AX and DX, 0500h's carry, 0501h, 0502h, 0600h-0604h, 0702h, 0703h, 0900h-0902h (interrupts on, AL 1), and 0B02h of a watchpoint never set (carry, AX left).
 - **Different:**
-  - 0400h: BX `000Ah` (bit 1, real-mode reflection; bit 3) against `0005h` (bit 0, a 32-bit host; bit 2, virtual memory) (`dpmiver`).
+  - 0400h: BX `000Ah` (bit 1, real-mode reflection; bit 3) against `0005h` (bit 0, a 32-bit host; bit 2, virtual memory) ([[probe:dpmiver]]).
   - 0305h and 0306h: refused against answered; enhanced mode's state buffer is 24h bytes.
   - 000Dh's descriptor freed with 0001h: refused, AX 1, in standard mode.
   - 0800h at A0000h: carry clear in standard mode, refused in enhanced, where memory under a megabyte cannot be mapped.
@@ -126,7 +126,7 @@ Under Windows 3.1, a 32-bit program is a 16-bit program that brings a 32-bit run
 
 ## What WinBox has to build
 
-WinBox answers as standard mode does today, and as only part of standard mode. Its DPMI answers 000Bh and 000Ch and, once the `dpmiver` work lands, 0400h; every other INT 31h function leaves the registers as they were. `GetWinFlags` is `0419h` and INT 2Fh 1600h leaves AX. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
+WinBox answers as standard mode does today, and as only part of standard mode. Its DPMI answers 000Bh, 000Ch and 0400h ([[probe:dpmiver]]); every other INT 31h function leaves the registers as they were. `GetWinFlags` is `0419h` and INT 2Fh 1600h leaves AX. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
 
 ### Phase 0: the oracle (done, 2026-11-07)
 
@@ -143,7 +143,7 @@ WinBox answers as standard mode does today, and as only part of standard mode. I
 
 `GetWinFlags` and `__WINFLAGS`; INT 2Fh 1600h, 1683h and 1686h; 1684h for the devices WinBox will have, and none for the rest; DPMI 0400h's BX; KERNEL's choice of WinOldAp; `GetFreeSpace`, `GlobalCompact` and `GlobalAlloc`'s limit, with enhanced mode's numbers from [[probe:enhmode]] and `galimit` recorded in enhanced mode, kept as standard mode's are ([[topic:global-and-local-memory]], "How much there is"). Then the modules' branches above, one at a time, each read further and recorded before it is followed: TIMER's VTDAPI path, USER's SHELL device, MMSYSTEM's stacks and COMM's ports.
 
-- **Measured by:** `dpmiver`, [[probe:winflags]] and [[probe:enhmode]] in both modes, then the sweep's other differing probes one by one: [[probe:freemem]] and [[probe:galimit]] for memory, [[probe:mmtime]] and [[probe:sysdrv]] for TIMER, [[probe:kintrnl]] for WinOldAp's hooks, [[probe:selalias]] for `AllocSelector`. Where only selector numbers and stack offsets differ, WinBox follows them only if a program is found to depend on them.
+- **Measured by:** [[probe:dpmiver]], [[probe:winflags]] and [[probe:enhmode]] in both modes, then the sweep's other differing probes one by one: [[probe:freemem]] and [[probe:galimit]] for memory, [[probe:mmtime]] and [[probe:sysdrv]] for TIMER, [[probe:kintrnl]] for WinOldAp's hooks, [[probe:selalias]] for `AllocSelector`. Where only selector numbers and stack offsets differ, WinBox follows them only if a program is found to depend on them.
 
 ### Phase 3: the DPMI host's functions
 
@@ -181,13 +181,15 @@ What a Windows program sees as it starts one is the edge of a DOS session, and t
 - The corpus runs in standard mode, as now. A program of the corpus is surveyed in enhanced mode as well once phase 2 is merged, with its reports in a folder of their own, as `corpus/reports/windows` keeps the oracle's. The two modes' runs are not compared with each other: each is compared with its own recording.
 - The kb says which mode a measurement is from wherever the two differ. Where a page says only "measured", it means standard mode.
 
-## Decisions for the owner
+## The owner's decisions
 
-1. **Where enhanced-mode recordings are kept.** This page keeps them as `oracle/fixtures/enhanced/<fixture>.json`, which no replay reads until phase 1. The alternative is a suffix at the top level (`<probe>-enhanced`), as displays have, which every replay would read at once.
-2. **The sweep's identical recordings.** Only the 23 that differ or are cited are committed (1.1 MB). The other 406 take 16 MB more. They can be committed as phase 1's baseline, so that every probe is replayed in enhanced mode from the start, or be recorded again when phase 1 needs them, which takes the oracle about an hour.
-3. **A machine's mode on the page and natively.** Choose it with the display, per install, and keep it with the install, as this page proposes. Or give one mode to the whole page.
-4. **DPMI in standard mode too (phase 3).** Answer DOSX's refusals and no-ops as DOSX does, including its 0503h that never returns, or answer only what WIN386 answers and keep standard mode's DPMI a subset of that.
-5. **DOS sessions out of scope,** as recommended, or planned later as a project of their own.
+Decided on 2026-11-07:
+
+1. **Where enhanced-mode recordings are kept.** In `oracle/fixtures/enhanced/<fixture>.json`, which no replay reads until phase 1.
+2. **The sweep's identical recordings are recorded again when phase 1 needs them.** Only the 23 that differ or are cited are committed now (1.1 MB). The other 406 (16 MB) are not; the oracle records them again in about an hour.
+3. **A machine's mode is chosen per install.** It is kept with the install, as its display is ([[guide:launcher]]), so one install's machine can run enhanced while another's runs standard.
+4. **Standard mode's DPMI is DOSX's, exactly** (phase 3). It answers DOSX's refusals and no-ops as DOSX does, including the 0503h that never returns. It is not a subset of WIN386's host.
+5. **DOS sessions are out of scope.**
 
 ## Not yet done
 
@@ -198,4 +200,3 @@ Phases 1 to 4.
 - INT 2Fh 160Ah is not answered to a protected-mode program in either mode. Whether it is answered in real mode was not recorded.
 - The Win386 probe's source is committed, but it is built by hand until phase 4's build support is added. Its standard-mode run, which stops at the supervisor's box, is a screen, not a fixture.
 - `cputype=386_prefetch` did not start Windows in enhanced mode. Why is not known; no recording needs it.
-- The probe `dpmiver` (DPMI's version, `GetWinFlags`, INT 2Fh 1600h) is on the branch that answers 0400h as DOSX does; its enhanced-mode recording is committed here, and this page names it without a link until that branch is merged.
