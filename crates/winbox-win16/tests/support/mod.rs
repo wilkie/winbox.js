@@ -351,6 +351,8 @@ pub const AGREEING: &[&str] = &[
     "taskend",
     "hooks",
     "pmitem",
+    "rootlib",
+    "dpmiver",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

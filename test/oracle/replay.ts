@@ -6089,6 +6089,8 @@ const RUN_WHOLE = new Set<string>([
   'taskend',
   'hooks',
   'pmitem',
+  'rootlib',
+  'dpmiver',
 ]);
 
 /**

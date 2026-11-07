@@ -11,6 +11,22 @@ use crate::system::System;
 /// How many instructions the processor runs between looks at the clock.
 const SLICE: u64 = 500;
 
+/// What Windows 3.1's standard-mode DPMI host, DOSX, answers for INT 31h
+/// function 0400h, Get Version (`DOSX.EXE` at 6A83h in its file, 6883h in
+/// its image): AX the version, 0.90; BX its flags, 0Ah, bit 0 clear -- a
+/// 16-bit host, which a WATCOM Win386 program takes for "Not running on a
+/// 386 DPMI implementation"; CL the processor DOSX kept as it started (data
+/// `0134h`), 4 for the i486 `GetWinFlags` names; DX the interrupt
+/// controllers' bases, 08h and 70h, a constant. **Recorded** by `dpmiver`.
+/// As `dpmi.ts`.
+const DPMI_VERSION: u16 = 0x005a;
+/// DOSX's flags for 0400h: bit 0, a 32-bit host, clear.
+const DPMI_FLAGS: u16 = 0x000a;
+/// The processor 0400h names in CL: an i486.
+const DPMI_PROCESSOR: u16 = 4;
+/// The interrupt controllers' bases 0400h gives in DH and DL.
+const DPMI_PIC_BASES: u16 = 0x0870;
+
 /// What stopped a run.
 pub(crate) enum Event {
     /// A call whose answer takes its time.
@@ -314,7 +330,8 @@ impl System {
         }
     }
 
-    /// INT 31h, DPMI, as far as winbox.js answers it: 000Bh copies a
+    /// INT 31h, DPMI, as far as winbox.js answers it: 0400h gives the
+    /// version as DOSX does (`DPMI_VERSION`); 000Bh copies a
     /// descriptor of the local table, the selector in BX, to the eight bytes
     /// at ES:EDI, and 000Ch copies them back into it -- each with the carry
     /// clear, whatever the selector, as `dpmidesc` records of one no table
@@ -342,6 +359,16 @@ impl System {
 
     fn dpmi_interrupt(&mut self) {
         let function = self.cpu.regs[winbox_cpu::AX];
+
+        // 0400h, Get Version, as DOSX answers it (`DPMI_VERSION`); CH left.
+        if function == 0x0400 {
+            self.cpu.regs[winbox_cpu::AX] = DPMI_VERSION;
+            self.cpu.regs[winbox_cpu::BX] = DPMI_FLAGS;
+            self.cpu.regs[winbox_cpu::CX] = self.cpu.regs[winbox_cpu::CX] & 0xff00 | DPMI_PROCESSOR;
+            self.cpu.regs[winbox_cpu::DX] = DPMI_PIC_BASES;
+            self.cpu.flags &= !1;
+            return;
+        }
 
         if function != 0x000b && function != 0x000c {
             return;
