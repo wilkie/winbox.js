@@ -177,6 +177,16 @@ describe('32-bit operands', () => {
 
     expect(core.ip).toEqual(3);
   });
+
+  it("tests a byte with F6h's byte immediate, the prefix changing nothing", function () {
+    /* test byte [di], 80h under 66h and 67h, as the Win386 supervisor's
+     * 32-bit code has it (`kb/topics/win386.md`): a byte, whatever the
+     * operand size. */
+    const core = run([0x66, 0xf6, 0x05, 0x80], 0x100, (core) => core.write8(core.ds, 0x100, 0x80));
+
+    expect(core.flags.zero).toEqual(false);
+    expect(core.ip).toEqual(4);
+  });
 });
 
 describe('a size prefix given again', () => {

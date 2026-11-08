@@ -91,10 +91,12 @@ impl Bus for VecBus {
 pub struct Segment {
     pub selector: u16,
     pub base: u32,
-    /// One past the last offset that may be reached.
-    pub past_limit: u32,
+    /// One past the last offset that may be reached: up to `1_0000_0000h`,
+    /// for a segment of 4 GiB.
+    pub past_limit: u64,
     /// The descriptor's D bit: for a code segment, 32-bit operands and
-    /// addresses unless a prefix says otherwise.
+    /// addresses unless a prefix says otherwise; for the stack segment, its
+    /// B bit, a 32-bit stack, ESP for SP.
     pub big: bool,
 }
 
@@ -335,6 +337,27 @@ impl<B: Bus> Cpu<B> {
         Ok(Some((access, granularity, limit)))
     }
 
+    /// The descriptor `LAR` (`rights`) or `LSL` may look at through a
+    /// selector: its access byte, granularity byte and limit in bytes;
+    /// `None` where the instruction clears the zero flag. Besides code and
+    /// data, LAR takes the LDT, TSSs and gates, LSL the LDT and TSSs.
+    pub(crate) fn look_at(
+        &self,
+        selector: u16,
+        rights: bool,
+    ) -> Result<Option<(u8, u8, u32)>, Exit> {
+        let systems: &[u8] = if rights {
+            &[1, 2, 3, 4, 5, 9, 0xb, 0xc]
+        } else {
+            &[1, 2, 3, 9, 0xb]
+        };
+
+        Ok(self.peek(selector)?.filter(|&(access, _, _)| {
+            (access & 0x10 != 0 || systems.contains(&(access & 0x0f)))
+                && Self::visible(access, selector)
+        }))
+    }
+
     /// What `LAR` answers of a selector: its access byte in the high byte,
     /// or `None` where `LAR` would clear the zero flag. For the host, which
     /// checks a handle as `LAR` does (USER's checks of a DDE message's
@@ -402,8 +425,9 @@ impl<B: Bus> Cpu<B> {
     /// -- is given no room, so that any access stops the run and the host
     /// faults. Where the host would fault at the load itself, past a table's
     /// end or, `checked`, a descriptor unfit for the register, the load is
-    /// the host's ([`Exit::Host`]); so is a stack segment of 32-bit default
-    /// size, which this core does not run. A code segment's is its `big`.
+    /// the host's ([`Exit::Host`]). A code segment's D bit is its `big`, and
+    /// so is a stack segment's B bit: a 32-bit stack, run as the 80386 runs
+    /// one (`stack32`).
     fn descriptor(&self, index: usize, selector: u16, checked: bool) -> Result<Segment, Exit> {
         if !self.protected {
             return Ok(Segment {
@@ -473,17 +497,13 @@ impl<B: Bus> Cpu<B> {
             }
         }
 
-        if stack && granularity & 0x40 != 0 {
-            return Err(Exit::Host);
-        }
-
         let grows_down = access & 0x1c == 0x14;
 
         Ok(Segment {
             selector,
             base,
             past_limit: if present && !grows_down {
-                limit.wrapping_add(1)
+                u64::from(limit) + 1
             } else {
                 0
             },
@@ -495,14 +515,23 @@ impl<B: Bus> Cpu<B> {
     /// its 64 KiB, as the JavaScript core's `translateAddress` wraps it; a
     /// 32-bit one does not, and an access that runs past the limit faults.
     fn linear(&self, segment: usize, offset: u32, size: u32) -> Result<u32, Exit> {
-        let cached = self.segments[segment];
-        let offset = if self.address32 {
-            offset
-        } else {
-            offset & 0xffff
-        };
+        self.linear_sized(segment, offset, size, self.address32)
+    }
 
-        if u64::from(offset) + u64::from(size) > u64::from(cached.past_limit) {
+    /// Where an access is, by linear address, its offset 32-bit (`wide`)
+    /// or 16-bit whatever the instruction's address size: the stack's own
+    /// accesses, by the stack segment's B bit (`stack32`).
+    fn linear_sized(
+        &self,
+        segment: usize,
+        offset: u32,
+        size: u32,
+        wide: bool,
+    ) -> Result<u32, Exit> {
+        let cached = self.segments[segment];
+        let offset = if wide { offset } else { offset & 0xffff };
+
+        if u64::from(offset) + u64::from(size) > cached.past_limit {
             return Err(self.limit_fault(segment));
         }
 
@@ -624,20 +653,100 @@ impl<B: Bus> Cpu<B> {
         }
     }
 
-    /// A double word pushed on the 16-bit stack: SP alone moves, wrapping.
-    fn push32(&mut self, value: u32) -> Result<(), Exit> {
-        let sp = self.regs[SP].wrapping_sub(4);
+    /// Whether the stack is 32-bit: the B bit of the stack segment's
+    /// descriptor, in protected mode. The 80386 then takes ESP for every
+    /// push and pop, call and return, interrupt and `IRET`, `ENTER` and
+    /// `LEAVE`, and the offsets of the stack's own accesses are 32-bit,
+    /// whatever the instruction's operand and address sizes; on a 16-bit
+    /// stack SP alone moves, wrapping within 64 KiB, and ESP's high word is
+    /// left as it was (Intel's *80386 Programmer's Reference Manual*, 17.2.2
+    /// and the instructions' `StackAddrSize`).
+    pub(crate) fn stack32(&self) -> bool {
+        self.segments[SS].big
+    }
 
-        self.write32(SS, u32::from(sp), value)?;
-        self.regs[SP] = sp;
+    /// The stack pointer: ESP on a 32-bit stack, else SP.
+    pub(crate) fn stack_top(&self) -> u32 {
+        if self.stack32() {
+            self.reg32(SP)
+        } else {
+            u32::from(self.regs[SP])
+        }
+    }
+
+    /// `top` moved by `by` bytes, as the stack pointer moves: in 32 bits on
+    /// a 32-bit stack, else wrapping within 16.
+    pub(crate) fn stack_step(&self, top: u32, by: u32) -> u32 {
+        let at = top.wrapping_add(by);
+
+        if self.stack32() { at } else { at & 0xffff }
+    }
+
+    /// The stack pointer made `top`: ESP whole on a 32-bit stack, else SP
+    /// alone.
+    pub(crate) fn set_stack_top(&mut self, top: u32) {
+        if self.stack32() {
+            self.set_reg32(SP, top);
+        } else {
+            self.regs[SP] = top as u16;
+        }
+    }
+
+    pub(crate) fn stack_read16(&self, offset: u32) -> Result<u16, Exit> {
+        self.bus
+            .read16(self.linear_sized(SS, offset, 2, self.stack32())?)
+            .ok_or(Exit::Host)
+    }
+
+    pub(crate) fn stack_read32(&self, offset: u32) -> Result<u32, Exit> {
+        let at = self.linear_sized(SS, offset, 4, self.stack32())?;
+        let low = self.bus.read16(at).ok_or(Exit::Host)?;
+        let high = self.bus.read16(at.wrapping_add(2)).ok_or(Exit::Host)?;
+
+        Ok(u32::from(low) | (u32::from(high) << 16))
+    }
+
+    pub(crate) fn stack_write16(&mut self, offset: u32, value: u16) -> Result<(), Exit> {
+        let at = self.linear_sized(SS, offset, 2, self.stack32())?;
+
+        self.writable(at, 2)?;
+        self.bus.write16(at, value).ok_or(Exit::Host)
+    }
+
+    pub(crate) fn stack_write32(&mut self, offset: u32, value: u32) -> Result<(), Exit> {
+        let at = self.linear_sized(SS, offset, 4, self.stack32())?;
+
+        self.writable(at, 4)?;
+        self.bus.write16(at, value as u16).ok_or(Exit::Host)?;
+        self.bus
+            .write16(at.wrapping_add(2), (value >> 16) as u16)
+            .ok_or(Exit::Host)
+    }
+
+    /// A double word pushed: on a 16-bit stack SP alone moves, wrapping.
+    fn push32(&mut self, value: u32) -> Result<(), Exit> {
+        let top = self.stack_step(self.stack_top(), 4u32.wrapping_neg());
+
+        self.stack_write32(top, value)?;
+        self.set_stack_top(top);
         Ok(())
     }
 
     fn pop32(&mut self) -> Result<u32, Exit> {
-        let sp = self.regs[SP];
-        let value = self.read32(SS, u32::from(sp))?;
+        let top = self.stack_top();
+        let value = self.stack_read32(top)?;
 
-        self.regs[SP] = sp.wrapping_add(4);
+        self.set_stack_top(self.stack_step(top, 4));
+        Ok(value)
+    }
+
+    /// A word popped and the stack moved by `by` bytes past it: a selector
+    /// under the operand prefix is a word read and a double word taken.
+    pub(crate) fn pop_moving(&mut self, by: u32) -> Result<u16, Exit> {
+        let top = self.stack_top();
+        let value = self.stack_read16(top)?;
+
+        self.set_stack_top(self.stack_step(top, by));
         Ok(value)
     }
 
@@ -1157,19 +1266,15 @@ impl<B: Bus> Cpu<B> {
     }
 
     fn push(&mut self, value: u16) -> Result<(), Exit> {
-        let sp = self.regs[SP].wrapping_sub(2);
+        let top = self.stack_step(self.stack_top(), 2u32.wrapping_neg());
 
-        self.write16(SS, u32::from(sp), value)?;
-        self.regs[SP] = sp;
+        self.stack_write16(top, value)?;
+        self.set_stack_top(top);
         Ok(())
     }
 
     fn pop(&mut self) -> Result<u16, Exit> {
-        let sp = self.regs[SP];
-        let value = self.read16(SS, u32::from(sp))?;
-
-        self.regs[SP] = sp.wrapping_add(2);
-        Ok(value)
+        self.pop_moving(2)
     }
 
     /// A rotate or shift of a value of `bits` bits by a count, by its kind
@@ -1426,10 +1531,11 @@ impl<B: Bus> Cpu<B> {
             }
             0xa1 | 0xa9 => {
                 let index = if opcode == 0xa1 { FS } else { GS };
-                let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+                let top = self.stack_top();
+                let selector = self.stack_read16(top)?;
                 let segment = self.descriptor(index, selector, false)?;
 
-                self.regs[SP] = self.regs[SP].wrapping_add(2);
+                self.set_stack_top(self.stack_step(top, 2));
                 self.set_segment(index, segment);
             }
             0x80..=0x8f => {
@@ -1492,19 +1598,11 @@ impl<B: Bus> Cpu<B> {
             // limit in bytes, ZF set; for a selector that cannot be looked
             // at, ZF clear and the register as it was. Besides code and data,
             // LAR takes the LDT, TSSs and gates, LSL the LDT and TSSs. Of a
-            // double word the JavaScript core has no form.
+            // double word, `two_byte_wide`.
             0x02 | 0x03 => {
                 let (reg, place) = self.modrm()?;
                 let selector = self.get16(place)?;
-                let systems: &[u8] = if opcode == 0x02 {
-                    &[1, 2, 3, 4, 5, 9, 0xb, 0xc]
-                } else {
-                    &[1, 2, 3, 9, 0xb]
-                };
-                let found = self.peek(selector)?.filter(|&(access, _, _)| {
-                    (access & 0x10 != 0 || systems.contains(&(access & 0x0f)))
-                        && Self::visible(access, selector)
-                });
+                let found = self.look_at(selector, opcode == 0x02)?;
 
                 self.set_zero(found.is_some());
 
@@ -2134,10 +2232,13 @@ impl<B: Bus> Cpu<B> {
             // POP ES, SS and DS.
             0x07 | 0x17 | 0x1f => {
                 let index = usize::from(opcode >> 3);
-                let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+                let top = self.stack_top();
+                let selector = self.stack_read16(top)?;
                 let segment = self.descriptor(index, selector, false)?;
 
-                self.regs[SP] = self.regs[SP].wrapping_add(2);
+                // The stack moved by the old stack segment's B bit, before
+                // POP SS loads the new one.
+                self.set_stack_top(self.stack_step(top, 2));
                 self.set_segment(index, segment);
             }
             0x06 | 0x0e | 0x16 | 0x1e => {
@@ -2370,7 +2471,7 @@ impl<B: Bus> Cpu<B> {
                 let release = if opcode == 0xc2 { self.fetch16()? } else { 0 };
 
                 self.ip = self.pop()?;
-                self.regs[SP] = self.regs[SP].wrapping_add(release);
+                self.set_stack_top(self.stack_step(self.stack_top(), u32::from(release)));
             }
             // LES and LDS: a far pointer, from memory only, the selector
             // after it within the segment's 64K under 16-bit addressing and
@@ -2414,28 +2515,32 @@ impl<B: Bus> Cpu<B> {
             // POPF, as the JavaScript core's 386 loads FLAGS at privilege
             // nought (`load_flags`).
             0x9d => {
-                let value = self.read16(SS, u32::from(self.regs[SP]))?;
+                let value = self.pop()?;
 
-                self.regs[SP] = self.regs[SP].wrapping_add(2);
                 self.load_flags(value);
             }
             0x8f => self.pop_to_memory(2)?,
+            // LEAVE: ESP from EBP on a 32-bit stack, SP from BP on a 16-bit.
             0xc9 => {
-                let frame = self.regs[BP];
-                let value = self.read16(SS, u32::from(frame))?;
+                let frame = if self.stack32() {
+                    self.reg32(BP)
+                } else {
+                    u32::from(self.regs[BP])
+                };
+                let value = self.stack_read16(frame)?;
 
-                self.regs[SP] = frame.wrapping_add(2);
+                self.set_stack_top(self.stack_step(frame, 2));
                 self.regs[BP] = value;
             }
             // RET far, and RET far releasing a count of bytes.
             0xca | 0xcb => {
                 let release = if opcode == 0xca { self.fetch16()? } else { 0 };
-                let sp = self.regs[SP];
-                let offset = self.read16(SS, u32::from(sp))?;
-                let selector = self.read16(SS, u32::from(sp.wrapping_add(2)))?;
+                let top = self.stack_top();
+                let offset = self.stack_read16(top)?;
+                let selector = self.stack_read16(self.stack_step(top, 2))?;
                 let segment = self.descriptor(CS, selector, false)?;
 
-                self.regs[SP] = sp.wrapping_add(4).wrapping_add(release);
+                self.set_stack_top(self.stack_step(top, 4 + u32::from(release)));
                 self.ip = offset;
                 self.set_segment(CS, segment);
             }
@@ -3163,6 +3268,109 @@ mod tests {
         assert_eq!(cpu.reg32(AX), 0x1234_5678);
         assert_eq!((cpu.segments[CS].selector, cpu.regs[SP]), (0x17, 0xfffe));
         assert!(!cpu.segments[CS].big);
+    }
+
+    /// A protected-mode machine running 16-bit `code` at 000Fh:0000 (base
+    /// 10000h) on a stack of 000Fh's... 0017h: base 20000h, limit 1FFFFh,
+    /// its B bit `big`; ESP `esp`.
+    fn on_stack(code: &[u8], big: bool, esp: u32) -> Cpu<VecBus> {
+        let mut cpu = machine(code);
+
+        cpu.bus.0[0x3_8008..0x3_8010].copy_from_slice(&[0xff, 0xff, 0, 0, 1, 0xfa, 0, 0]);
+        cpu.bus.0[0x3_8010..0x3_8018].copy_from_slice(&[
+            0xff,
+            0xff,
+            0,
+            0,
+            2,
+            0xf2,
+            if big { 0x41 } else { 0x01 },
+            0,
+        ]);
+        cpu.protected = true;
+        cpu.ldt_base = 0x3_8000;
+        cpu.ldt_limit = 0x17;
+        cpu.load_segment(CS, 0x0f).unwrap();
+        cpu.load_segment(SS, 0x17).unwrap();
+        cpu.set_reg32(SP, esp);
+        cpu
+    }
+
+    /// mov ax, 1234h; push ax; call 0008h; hlt; at 0008h: enter 4, 0;
+    /// leave; ret.
+    const STACK_ROUND: [u8; 14] = [
+        0xb8, 0x34, 0x12, 0x50, 0xe8, 0x01, 0x00, 0xf4, 0xc8, 0x04, 0x00, 0x00, 0xc9, 0xc3,
+    ];
+
+    #[test]
+    fn a_32_bit_stack_moves_esp_whole() {
+        // ESP 10000h: the push takes it to FFFEh, the B bit's 32 bits.
+        let mut cpu = on_stack(&STACK_ROUND, true, 0x1_0000);
+
+        assert_eq!(cpu.run(100), (6, Exit::Halt));
+        assert_eq!(cpu.reg32(SP), 0xfffe);
+        assert_eq!(cpu.bus.0[0x2_fffe..0x3_0000], [0x34, 0x12]);
+        // ENTER's frame at FFFAh, EBP's high word nought with it.
+        assert_eq!(cpu.reg32(BP) & 0xffff_0000, 0);
+
+        // Above 64 KiB: the word pushed at 1FFEEh, beyond SP's reach, and
+        // a frame of double words (66h ENTER and LEAVE) in EBP whole. A
+        // frame of words there would take BP alone, and LEAVE would take
+        // ESP from EBP's 16 bits, as the 80386 does.
+        let code = [
+            0xb8, 0x34, 0x12, 0x50, 0xe8, 0x01, 0x00, 0xf4, 0x66, 0xc8, 0x04, 0x00, 0x00, 0x66,
+            0xc9, 0xc3,
+        ];
+        let mut cpu = on_stack(&code, true, 0x1_fff0);
+
+        assert_eq!(cpu.run(100), (6, Exit::Halt));
+        assert_eq!(cpu.reg32(SP), 0x1_ffee);
+        assert_eq!(cpu.reg32(BP), 0);
+        assert_eq!(cpu.bus.0[0x3_ffee..0x3_fff0], [0x34, 0x12]);
+        // EBP pushed at 1FFE8h, ENTER's frame.
+        assert_eq!(cpu.bus.0[0x3_ffe8..0x3_ffec], [0, 0, 0, 0]);
+    }
+
+    #[test]
+    fn loads_rights_and_limits_of_double_words() {
+        // mov bx, 0017h; lar eax, bx; lsl ecx, bx; hlt, under 66h: the
+        // descriptor's second double word masked with 00FFFF00h -- the
+        // granularity byte whole -- and the limit whole (`w386env`).
+        let code = [
+            0xbb, 0x17, 0x00, 0x66, 0x0f, 0x02, 0xc3, 0x66, 0x0f, 0x03, 0xcb, 0xf4,
+        ];
+        let mut cpu = on_stack(&code, true, 0x1_0000);
+
+        assert_eq!(cpu.run(100), (3, Exit::Halt));
+        assert_eq!(cpu.reg32(AX), 0x0041_f200);
+        assert_eq!(cpu.reg32(CX), 0x0001_ffff);
+        assert_eq!(cpu.flags & ZF, ZF);
+    }
+
+    #[test]
+    fn a_16_bit_stack_moves_sp_alone() {
+        // ESP 10000h without the B bit: SP wraps to FFFEh, the high word
+        // stays.
+        let mut cpu = on_stack(&STACK_ROUND, false, 0x1_0000);
+
+        assert_eq!(cpu.run(100), (6, Exit::Halt));
+        assert_eq!(cpu.reg32(SP), 0x1_fffe);
+        assert_eq!(cpu.bus.0[0x2_fffe..0x3_0000], [0x34, 0x12]);
+    }
+
+    #[test]
+    fn a_32_bit_stack_takes_iret_and_far_returns_through_esp() {
+        // pushf; push cs; push 0006h; iret -- to 0006h: push cs; push
+        // 000Dh; retf -- to the hlt at 000Dh.
+        let code = [
+            0x9c, 0x0e, 0x68, 0x06, 0x00, 0xcf, 0x0e, 0x68, 0x0d, 0x00, 0xcb, 0xf4, 0xf4, 0xf4,
+        ];
+        let mut cpu = on_stack(&code, true, 0x1_0002);
+
+        assert_eq!(cpu.run(100), (7, Exit::Halt));
+        assert_eq!((cpu.ip, cpu.reg32(SP)), (0x0d, 0x1_0002));
+        // The far return's CS, pushed last at 10000h, past SP's reach.
+        assert_eq!(cpu.bus.0[0x3_0000..0x3_0002], [0x0f, 0x00]);
     }
 
     #[test]

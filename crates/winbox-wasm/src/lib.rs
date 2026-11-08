@@ -265,7 +265,7 @@ pub extern "C" fn run(budget: u32) -> u32 {
         *into = Segment {
             selector: from.selector as u16,
             base: from.base,
-            past_limit: from.past_limit,
+            past_limit: u64::from(from.past_limit),
             big: from.attributes & 1 != 0,
         };
     }
@@ -333,7 +333,8 @@ pub extern "C" fn run(budget: u32) -> u32 {
     for (into, from) in state.segments.iter_mut().zip(cpu.segments) {
         into.selector = u32::from(from.selector);
         into.base = from.base;
-        into.past_limit = from.past_limit;
+        // A segment of 4 GiB is 0, as the JavaScript side writes it: no room.
+        into.past_limit = from.past_limit as u32;
         into.attributes = u32::from(from.big);
     }
 

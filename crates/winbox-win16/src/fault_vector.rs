@@ -115,7 +115,7 @@ impl System {
         let offset = u32::from(self.cpu.ip) + u32::from(at);
         let offset = if segment.big { offset } else { offset & 0xffff };
 
-        (offset < segment.past_limit).then(|| {
+        (u64::from(offset) < segment.past_limit).then(|| {
             winbox_machine::Memory::read8(&self.cpu.bus, segment.base.wrapping_add(offset))
         })
     }
@@ -133,7 +133,7 @@ impl System {
     fn word_at(&self, segment: usize, offset: u32) -> Option<u16> {
         let cached = self.cpu.segments[segment];
 
-        (u64::from(offset) + 2 <= u64::from(cached.past_limit)).then(|| {
+        (u64::from(offset) + 2 <= cached.past_limit).then(|| {
             let at = cached.base.wrapping_add(offset);
 
             u16::from(winbox_machine::Memory::read8(&self.cpu.bus, at))
@@ -300,7 +300,7 @@ impl System {
         for access in accesses {
             let cached = self.cpu.segments[access.segment];
 
-            if u64::from(access.offset) + u64::from(access.size) <= u64::from(cached.past_limit) {
+            if u64::from(access.offset) + u64::from(access.size) <= cached.past_limit {
                 continue;
             }
 

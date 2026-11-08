@@ -309,6 +309,14 @@ export class I286 implements CpuCore16 {
   }
 
   /**
+   * The stack moved on by `bytes` past what a return popped, as `RET` and
+   * `RET far` with a count release them: SP, wrapping within 64 KiB.
+   */
+  releaseStack(bytes) {
+    this.sp = this.sp + bytes;
+  }
+
+  /**
    * Retrieves the current privilege level.
    *
    * This is the first two bits of the current code segment (CS) value.
@@ -981,7 +989,10 @@ export class I286 implements CpuCore16 {
       this.raiseSegmentFault(segment, offset, size);
     }
 
-    return descriptor.base + offset;
+    /* The linear address wraps at 4 GiB, as the 386's does: a segment of
+     * 4 GiB reaches below its base with an offset past it (a Win386
+     * program's flat segments, `kb/topics/win386.md`). */
+    return (descriptor.base + offset) >>> 0;
   }
 
   /**
@@ -2918,7 +2929,7 @@ export class I286 implements CpuCore16 {
       case 0xc2: // RET dw
         this.debug('ret    dw   ', this.ax);
         this.ip = this.pop16();
-        this.sp = this.sp + instruction.immediate;
+        this.releaseStack(instruction.immediate);
         break;
 
       case 0xc3: // RET
@@ -3004,7 +3015,7 @@ export class I286 implements CpuCore16 {
         this.debug('retf   dw   ', 'ax=', this.ax);
         this.ip = this.pop16();
         this.cs = this.pop16();
-        this.sp = this.sp + instruction.immediate;
+        this.releaseStack(instruction.immediate);
         break;
 
       case 0xcb: // RET far
@@ -3544,8 +3555,11 @@ export class I286 implements CpuCore16 {
       case 0x103: {
         // LSL rw,ew
         /* A segment's access rights (LAR) -- its access byte in bits 8 to 15,
-         * and with a 32-bit operand the granularity byte's top four bits in
-         * 20 to 23 -- or its limit in bytes (LSL), with the zero flag set; for
+         * and with a 32-bit operand the granularity byte whole in 16 to 23,
+         * its flags and the limit's top four bits, as the descriptor's second
+         * double word masked with 00FFFF00h (the `w386env` probe in enhanced
+         * mode: `00CFFBh` of the Win386 supervisor's code selector) -- or
+         * its limit in bytes (LSL), with the zero flag set; for
          * a selector that cannot be looked at, the zero flag clear and the
          * register as it was. Besides code and data, LAR takes the LDT, TSSs
          * and gates, LSL the LDT and TSSs. */
@@ -3566,7 +3580,7 @@ export class I286 implements CpuCore16 {
           const value =
             instruction.subOpcode === 0x02
               ? ((descriptor.flags & 0xff) << 8) |
-                (wide ? ((descriptor.granularity ?? 0) & 0xf0) << 16 : 0)
+                (wide ? ((descriptor.granularity ?? 0) & 0xff) << 16 : 0)
               : descriptor.limit;
 
           if (wide) {

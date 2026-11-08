@@ -3,8 +3,8 @@
 //! table for the double-word forms, and before it `executeWide` and the
 //! forms it reads first (`RETD`, `LEAVE`, `POP` to memory, `BOUND`).
 //!
-//! On a 16-bit stack, the only one this core runs: SP alone moves, and
-//! wraps within 64 KiB.
+//! On a 16-bit stack SP alone moves, and wraps within 64 KiB; on a 32-bit
+//! one, ESP (`Cpu::stack32`).
 
 use crate::{AX, Alu, BP, Bus, CF, CS, Cpu, DS, DX, ES, Exit, FS, GS, Place, SP, SS};
 
@@ -81,7 +81,9 @@ impl<B: Bus> Cpu<B> {
                     let value = self.pop32()?;
 
                     if index == SP {
-                        self.high[SP] = (value >> 16) as u16;
+                        if !self.stack32() {
+                            self.high[SP] = (value >> 16) as u16;
+                        }
                     } else {
                         self.set_reg32(index, value);
                     }
@@ -267,10 +269,10 @@ impl<B: Bus> Cpu<B> {
                     0
                 };
                 let far = opcode >= 0xca;
-                let top = self.regs[SP];
-                let eip = self.read32(SS, u32::from(top))?;
+                let top = self.stack_top();
+                let eip = self.stack_read32(top)?;
                 let selector = if far {
-                    self.read32(SS, u32::from(top.wrapping_add(4)))? as u16
+                    self.stack_read32(self.stack_step(top, 4))? as u16
                 } else {
                     0
                 };
@@ -285,9 +287,9 @@ impl<B: Bus> Cpu<B> {
                     None
                 };
 
-                self.regs[SP] = top
-                    .wrapping_add(if far { 8 } else { 4 })
-                    .wrapping_add(release);
+                self.set_stack_top(
+                    self.stack_step(top, if far { 8 } else { 4 } + u32::from(release)),
+                );
                 self.ip = eip as u16;
 
                 if let Some(segment) = segment {
@@ -322,10 +324,14 @@ impl<B: Bus> Cpu<B> {
             // LEAVE: EBP's double word from the frame, read before the stack
             // moves.
             0xc9 => {
-                let frame = self.regs[BP];
-                let saved = self.read32(SS, u32::from(frame))?;
+                let frame = if self.stack32() {
+                    self.reg32(BP)
+                } else {
+                    u32::from(self.regs[BP])
+                };
+                let saved = self.stack_read32(frame)?;
 
-                self.regs[SP] = frame.wrapping_add(4);
+                self.set_stack_top(self.stack_step(frame, 4));
                 self.set_reg32(BP, saved);
             }
             0xcf => self.iret(true)?,
@@ -486,6 +492,30 @@ impl<B: Bus> Cpu<B> {
         let second = self.fetch8()?;
 
         match second {
+            // LAR and LSL of a double word: the descriptor's second double
+            // word masked with 00FFFF00h -- the access byte, then the
+            // granularity byte whole, its flags and the limit's top four
+            // bits (the `w386env` probe in enhanced mode) -- or the limit
+            // in bytes, whole.
+            0x02 | 0x03 => {
+                let (reg, place) = self.modrm()?;
+                let selector = self.get16(place)?;
+
+                match self.look_at(selector, second == 0x02)? {
+                    Some((access, granularity, limit)) => {
+                        self.set_zero(true);
+                        self.set_reg32(
+                            reg,
+                            if second == 0x02 {
+                                u32::from(access) << 8 | u32::from(granularity) << 16
+                            } else {
+                                limit
+                            },
+                        );
+                    }
+                    None => self.set_zero(false),
+                }
+            }
             0xaf => {
                 let (reg, place) = self.modrm()?;
                 let value = self.get32(place)?;
@@ -587,10 +617,11 @@ impl<B: Bus> Cpu<B> {
     /// A segment register popped under the operand-size prefix: its word
     /// read, the stack moved by the double word, loaded unchecked.
     fn pop_selector32(&mut self, index: usize) -> Result<(), Exit> {
-        let selector = self.read16(SS, u32::from(self.regs[SP]))?;
+        let top = self.stack_top();
+        let selector = self.stack_read16(top)?;
         let segment = self.descriptor(index, selector, false)?;
 
-        self.regs[SP] = self.regs[SP].wrapping_add(4);
+        self.set_stack_top(self.stack_step(top, 4));
         self.set_segment(index, segment);
         Ok(())
     }

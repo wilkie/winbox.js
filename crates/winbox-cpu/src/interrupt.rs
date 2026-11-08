@@ -73,13 +73,13 @@ impl<B: Bus> Cpu<B> {
         let sp = self.regs[SP];
 
         for at in 1..=3u16 {
-            let place = self.linear(SS, u32::from(sp.wrapping_sub(2 * at)), 2)?;
+            let place = self.linear_sized(SS, u32::from(sp.wrapping_sub(2 * at)), 2, false)?;
 
             self.writable(place, 2)?;
         }
 
         for (at, word) in (1..=3u16).zip(words) {
-            self.write16(SS, u32::from(sp.wrapping_sub(2 * at)), word)?;
+            self.stack_write16(u32::from(sp.wrapping_sub(2 * at)), word)?;
         }
 
         self.regs[SP] = sp.wrapping_sub(6);
@@ -118,17 +118,18 @@ impl<B: Bus> Cpu<B> {
     /// popped, each read before any is taken, CS loaded unchecked and FLAGS
     /// as `loadFlags` loads them. `IRETD` reads double words, of which CS
     /// and FLAGS are their low words, and an EIP past 64 KiB is a general
-    /// protection fault with the stack as it was.
+    /// protection fault with the stack as it was. Through ESP on a 32-bit
+    /// stack.
     pub(crate) fn iret(&mut self, wide: bool) -> Result<(), Exit> {
-        let top = self.regs[SP];
-        let step: u16 = if wide { 4 } else { 2 };
-        let read = |cpu: &Self, at: u16| -> Result<u32, Exit> {
-            let offset = u32::from(top.wrapping_add(at * step));
+        let top = self.stack_top();
+        let step: u32 = if wide { 4 } else { 2 };
+        let read = |cpu: &Self, at: u32| -> Result<u32, Exit> {
+            let offset = cpu.stack_step(top, at * step);
 
             if wide {
-                cpu.read32(SS, offset)
+                cpu.stack_read32(offset)
             } else {
-                cpu.read16(SS, offset).map(u32::from)
+                cpu.stack_read16(offset).map(u32::from)
             }
         };
         let ip = read(self, 0)?;
@@ -141,7 +142,7 @@ impl<B: Bus> Cpu<B> {
 
         let segment = self.descriptor(CS, selector, false)?;
 
-        self.regs[SP] = top.wrapping_add(3 * step);
+        self.set_stack_top(self.stack_step(top, 3 * step));
         self.ip = ip as u16;
         self.set_segment(CS, segment);
         self.load_flags(flags);
@@ -181,24 +182,29 @@ impl<B: Bus> Cpu<B> {
     /// the JavaScript core's `executeEnter` has it: the frame pointer pushed
     /// -- the whole of EBP for double words -- the enclosing frames'
     /// pointers copied, every one read before anything is pushed, the new
-    /// frame's pointer, and room for the locals.
+    /// frame's pointer, and room for the locals. On a 32-bit stack EBP and
+    /// ESP are the frame's and the stack's pointers, whatever the size.
     pub(crate) fn enter(&mut self, size: u16) -> Result<(), Exit> {
         let locals = self.fetch16()?;
         let level = self.fetch8()? & 0x1f;
-        let base = self.regs[BP];
+        let base = if self.stack32() {
+            self.reg32(BP)
+        } else {
+            u32::from(self.regs[BP])
+        };
         let mut displays = [0u32; 32];
 
         for display in 1..level {
-            let at = u32::from(base.wrapping_sub(u16::from(display) * size));
+            let at = self.stack_step(base, (u32::from(display) * u32::from(size)).wrapping_neg());
 
             displays[usize::from(display)] = if size == 4 {
-                self.read32(SS, at)?
+                self.stack_read32(at)?
             } else {
-                u32::from(self.read16(SS, at)?)
+                u32::from(self.stack_read16(at)?)
             };
         }
 
-        let mut top = self.regs[SP];
+        let mut top = self.stack_top();
         let saved = if size == 4 {
             self.reg32(BP)
         } else {
@@ -214,27 +220,27 @@ impl<B: Bus> Cpu<B> {
         }
 
         if level > 0 {
-            self.push_below(&mut top, size, u32::from(frame))?;
+            self.push_below(&mut top, size, frame)?;
         }
 
         if size == 4 {
-            self.set_reg32(BP, u32::from(frame));
+            self.set_reg32(BP, frame);
         } else {
-            self.regs[BP] = frame;
+            self.regs[BP] = frame as u16;
         }
 
-        self.regs[SP] = top.wrapping_sub(locals);
+        self.set_stack_top(self.stack_step(top, u32::from(locals).wrapping_neg()));
         Ok(())
     }
 
     /// A word or double word pushed below `top`, which moves; SP does not.
-    fn push_below(&mut self, top: &mut u16, size: u16, value: u32) -> Result<(), Exit> {
-        *top = top.wrapping_sub(size);
+    fn push_below(&mut self, top: &mut u32, size: u16, value: u32) -> Result<(), Exit> {
+        *top = self.stack_step(*top, u32::from(size).wrapping_neg());
 
         if size == 4 {
-            self.write32(SS, u32::from(*top), value)
+            self.stack_write32(*top, value)
         } else {
-            self.write16(SS, u32::from(*top), value as u16)
+            self.stack_write16(*top, value as u16)
         }
     }
 
@@ -250,13 +256,13 @@ impl<B: Bus> Cpu<B> {
             return self.fault(6);
         }
 
-        let sp = self.regs[SP];
+        let top = self.stack_top();
         let value = if size == 4 {
-            self.read32(SS, u32::from(sp))?
+            self.stack_read32(top)?
         } else {
-            u32::from(self.read16(SS, u32::from(sp))?)
+            u32::from(self.stack_read16(top)?)
         };
-        let after = sp.wrapping_add(size);
+        let after = self.stack_step(top, u32::from(size));
         let place = match place {
             Place::Memory(segment, offset) if self.esp_based => {
                 Place::Memory(segment, offset.wrapping_add(u32::from(size)))
@@ -272,11 +278,11 @@ impl<B: Bus> Cpu<B> {
         };
 
         if let Place::Register(_) = place {
-            self.regs[SP] = after;
+            self.set_stack_top(after);
             write(self)
         } else {
             write(self)?;
-            self.regs[SP] = after;
+            self.set_stack_top(after);
             Ok(())
         }
     }

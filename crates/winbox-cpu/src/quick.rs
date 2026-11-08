@@ -165,7 +165,9 @@ impl<B: Bus> Cpu<B> {
     pub(crate) fn quick_call(&mut self, start: u32, retired: u64) -> Result<(), Exit> {
         let host = Err(Exit::Unimplemented(0xcd));
 
-        if !self.quick.enabled || self.quick.logged >= LOGGED {
+        // A call from a 32-bit stack, whose arguments are not at SP, is the
+        // host's.
+        if !self.quick.enabled || self.quick.logged >= LOGGED || self.stack32() {
             return host;
         }
 

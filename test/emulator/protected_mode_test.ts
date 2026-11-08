@@ -45,7 +45,7 @@ function writeDescriptor(memory: any, index: number, d: Descriptor) {
   memory.write8(at + 4, (d.base >>> 16) & 0xff);
 
   // Present, descriptor privilege level, a code/data segment, read/write.
-  memory.write8(at + 5, d.access ?? ((present ? 0x80 : 0) | (dpl << 5) | 0x12));
+  memory.write8(at + 5, d.access ?? (present ? 0x80 : 0) | (dpl << 5) | 0x12);
 
   memory.write8(at + 6, (d.granular ? 0x80 : 0) | (d.big ? 0x40 : 0) | ((d.limit >>> 16) & 0x0f));
   memory.write8(at + 7, (d.base >>> 24) & 0xff);
@@ -421,7 +421,9 @@ describe('protected mode', () => {
     });
 
     it('finds a read-only data segment readable, not writable', function () {
-      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, access: 0x90 } });
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0xff, access: 0x90 },
+      });
 
       expect(run(machine, core, VERR, 0x18)).toBe(true);
       expect(run(machine, core, VERW, 0x18)).toBe(false);
@@ -439,7 +441,9 @@ describe('protected mode', () => {
     });
 
     it('does not check whether the segment is present', function () {
-      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, present: false } });
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0xff, present: false },
+      });
 
       expect(run(machine, core, VERR, 0x18)).toBe(true);
     });
@@ -482,7 +486,9 @@ describe('protected mode', () => {
     });
 
     it('loads the access byte into the high byte with LAR', function () {
-      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0xff, access: 0xf2 } });
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0xff, access: 0xf2 },
+      });
 
       expect(run(machine, core, LAR, 0x18 | 3)).toBe(true);
       expect(core.bx).toBe(0xf200);
@@ -499,6 +505,92 @@ describe('protected mode', () => {
       expect(run(machine, core, LAR, 0x20)).toBe(true);
       expect(run(machine, core, LSL, 0x20)).toBe(false);
       expect(run(machine, core, VERR, 0x18)).toBe(false);
+    });
+  });
+
+  describe('a 32-bit stack, its B bit', () => {
+    /* As the Rust core's tests have them (`crates/winbox-cpu/src/lib.rs`,
+     * `a_32_bit_stack_moves_esp_whole`): 16-bit code at 08h, a stack at
+     * 18h of base 40000h and limit 1FFFFh, its B bit `big`. The 80386 takes
+     * ESP for the stack's own accesses on a 32-bit stack, whatever the
+     * instruction's sizes; on a 16-bit one SP alone. */
+    function onStack(code: number[], big: boolean, esp: number) {
+      const { machine, core } = protectedMachine({
+        3: { base: 0x40000, limit: 0x1ffff, big },
+      });
+
+      code.forEach((byte, index) => machine.memory.write8(0x20000 + index, byte));
+      core.cs = CODE_SELECTOR;
+      core.ip = 0;
+      core.ss = 0x18;
+      core.esp = esp;
+
+      return { machine, core };
+    }
+
+    /** Steps `count` instructions. */
+    function steps(machine: any, count: number) {
+      for (let step = 0; step < count; step++) {
+        machine.cpu.step();
+      }
+    }
+
+    // mov ax, 1234h; push ax; call 0008h; hlt; at 0008h: enter 4, 0; leave; ret
+    const ROUND = [
+      0xb8, 0x34, 0x12, 0x50, 0xe8, 0x01, 0x00, 0xf4, 0xc8, 0x04, 0x00, 0x00, 0xc9, 0xc3,
+    ];
+
+    it('moves ESP whole on a 32-bit stack', function () {
+      const { machine, core } = onStack(ROUND, true, 0x10000);
+
+      steps(machine, 6);
+
+      expect(core.ip).toEqual(7);
+      expect(core.esp >>> 0).toEqual(0xfffe);
+      expect(machine.memory.read16(0x4fffe)).toEqual(0x1234);
+    });
+
+    it('reaches past 64 KiB through ESP, with a frame of double words', function () {
+      const { machine, core } = onStack(
+        [
+          0xb8, 0x34, 0x12, 0x50, 0xe8, 0x01, 0x00, 0xf4, 0x66, 0xc8, 0x04, 0x00, 0x00, 0x66, 0xc9,
+          0xc3,
+        ],
+        true,
+        0x1fff0
+      );
+
+      steps(machine, 6);
+
+      expect(core.ip).toEqual(7);
+      expect(core.esp >>> 0).toEqual(0x1ffee);
+      expect(core.ebp >>> 0).toEqual(0);
+      expect(machine.memory.read16(0x5ffee)).toEqual(0x1234);
+    });
+
+    it('moves SP alone on a 16-bit stack', function () {
+      const { machine, core } = onStack(ROUND, false, 0x10000);
+
+      steps(machine, 6);
+
+      expect(core.ip).toEqual(7);
+      expect(core.esp >>> 0).toEqual(0x1fffe);
+      expect(machine.memory.read16(0x4fffe)).toEqual(0x1234);
+    });
+
+    it('takes IRET and a far return through ESP', function () {
+      // pushf; push cs; push 0006h; iret -- push cs; push 000Dh; retf -- hlt
+      const { machine, core } = onStack(
+        [0x9c, 0x0e, 0x68, 0x06, 0x00, 0xcf, 0x0e, 0x68, 0x0d, 0x00, 0xcb, 0xf4, 0xf4, 0xf4],
+        true,
+        0x10002
+      );
+
+      steps(machine, 7);
+
+      expect(core.ip).toEqual(0x0d);
+      expect(core.esp >>> 0).toEqual(0x10002);
+      expect(machine.memory.read16(0x50000)).toEqual(CODE_SELECTOR);
     });
   });
 });

@@ -20,6 +20,8 @@ const SIZELESS = new Set([
   0x86, 0x88, 0x8a, 0x9b, 0x9e, 0x9f, 0xa0, 0xa2, 0xa8, 0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6,
   0xb7, 0xc0, 0xc6, 0xd0, 0xd2, 0xd4, 0xd5, 0xd6, 0xd7, 0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe6, 0xeb,
   0xec, 0xee, 0xf5, 0xf6, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe,
+  /* TEST eb,db, F6h /0, as decoded. */
+  0x2f6,
 ]);
 
 /**
@@ -565,8 +567,82 @@ export class I386 extends I286 implements CpuCore {
       return;
     }
 
-    this.esp -= 4;
-    this.write32(this.ss, this.esp, value);
+    const top = (this.esp - 4) >>> 0;
+
+    this.stackWrite32(top, value);
+    this.esp = top;
+  }
+
+  /**
+   * A word pushed: on a 32-bit stack through ESP, which moves whole (Intel's
+   * 80386 manual, the instructions' "StackAddrSize"); else as the 286.
+   */
+  push16(value) {
+    if (!this.stackIs32()) {
+      super.push16(value);
+      return;
+    }
+
+    const top = (this.esp - 2) >>> 0;
+
+    this._memory.write16(this.stackAddress(top, 2), value);
+    this.esp = top;
+  }
+
+  /** A word popped: on a 32-bit stack through ESP; else as the 286. */
+  pop16() {
+    if (!this.stackIs32()) {
+      return super.pop16();
+    }
+
+    const value = this._memory.read16(this.stackAddress(this.esp >>> 0, 2));
+
+    this.esp = (this.esp + 2) >>> 0;
+    return value;
+  }
+
+  /** The stack moved on past what a return popped: ESP on a 32-bit stack. */
+  releaseStack(bytes) {
+    if (!this.stackIs32()) {
+      super.releaseStack(bytes);
+      return;
+    }
+
+    this.esp = (this.esp + bytes) >>> 0;
+  }
+
+  /**
+   * Where an access the stack makes itself is -- a push or pop, a call or
+   * return, an interrupt's frame, `ENTER`'s and `LEAVE`'s -- by linear
+   * address. Its offset is 32-bit on a 32-bit stack and 16-bit on a 16-bit
+   * one, whatever the instruction's address size; past the limit, the
+   * segment's fault.
+   */
+  stackAddress(offset: number, size: number) {
+    const descriptor = this._translationCache[this.ss] ?? this.retrieveDescriptor(this.ss);
+    const at = this.stackIs32() ? offset >>> 0 : offset & 0xffff;
+
+    if (at < descriptor.lowLimit || at + size > descriptor.pastLimit) {
+      this.raiseSegmentFault(this.ss, at, size);
+    }
+
+    return (descriptor.base + at) >>> 0;
+  }
+
+  stackRead16(offset: number) {
+    return this._memory.read16(this.stackAddress(offset, 2));
+  }
+
+  stackRead32(offset: number) {
+    return this._memory.read32(this.stackAddress(offset, 4));
+  }
+
+  stackWrite16(offset: number, value: number) {
+    this._memory.write16(this.stackAddress(offset, 2), value);
+  }
+
+  stackWrite32(offset: number, value: number) {
+    this._memory.write32(this.stackAddress(offset, 4), value);
   }
 
   /** Whether the stack segment is 32-bit: its descriptor's B bit, in protected mode. */
@@ -589,8 +665,8 @@ export class I386 extends I286 implements CpuCore {
       return value;
     }
 
-    const ret = this.read32(this.ss, this.esp);
-    this.esp = this.esp + 4;
+    const ret = this.stackRead32(this.esp >>> 0);
+    this.esp = (this.esp + 4) >>> 0;
     return ret;
   }
 
@@ -606,9 +682,9 @@ export class I386 extends I286 implements CpuCore {
       return selector;
     }
 
-    const selector = this.read16(this.ss, this.esp);
+    const selector = this.stackRead16(this.esp >>> 0);
 
-    this.esp = this.esp + 4;
+    this.esp = (this.esp + 4) >>> 0;
     return selector;
   }
 
@@ -1855,9 +1931,9 @@ export class I386 extends I286 implements CpuCore {
         const wide32 = this.stackIs32();
         const top = wide32 ? this.esp >>> 0 : this.sp;
         const at = (step: number) => (wide32 ? (top + step) >>> 0 : (top + step) & 0xffff);
-        const eip = this.read32(this.ss, at(0)) >>> 0;
-        const selector = this.read32(this.ss, at(4)) & 0xffff;
-        const flags = this.read32(this.ss, at(8)) & 0xffff;
+        const eip = this.stackRead32(at(0)) >>> 0;
+        const selector = this.stackRead32(at(4)) & 0xffff;
+        const flags = this.stackRead32(at(8)) & 0xffff;
 
         if (eip > 0xffff) {
           this.raiseInterrupt(instruction, 13, 0);
@@ -1898,7 +1974,7 @@ export class I386 extends I286 implements CpuCore {
     for (let display = 1; display < level; display++) {
       const at = wide32 ? (base - display * size) >>> 0 : (base - display * size) & 0xffff;
 
-      displays.push(size === 4 ? this.read32(this.ss, at) >>> 0 : this.read16(this.ss, at));
+      displays.push(size === 4 ? this.stackRead32(at) >>> 0 : this.stackRead16(at));
     }
 
     /* Pushed through a stack pointer of its own, committed at the end:
@@ -1909,9 +1985,9 @@ export class I386 extends I286 implements CpuCore {
       top = wide32 ? (top - size) >>> 0 : (top - size) & 0xffff;
 
       if (size === 4) {
-        this.write32(this.ss, top, value);
+        this.stackWrite32(top, value);
       } else {
-        this.write16(this.ss, top, value);
+        this.stackWrite16(top, value);
       }
     };
 
@@ -1955,7 +2031,7 @@ export class I386 extends I286 implements CpuCore {
      * faults leaves the stack as it was. */
     const wide32 = this.stackIs32();
     const top = wide32 ? this.esp >>> 0 : this.sp;
-    const value = size === 4 ? this.read32(this.ss, top) >>> 0 : this.read16(this.ss, top);
+    const value = size === 4 ? this.stackRead32(top) >>> 0 : this.stackRead16(top);
     const after = wide32 ? (top + size) >>> 0 : (top + size) & 0xffff;
 
     if (instruction.espBased) {
@@ -2152,8 +2228,8 @@ export class I386 extends I286 implements CpuCore {
       const wide32 = this.stackIs32();
       const frame = wide32 ? this.ebp >>> 0 : this.bp;
       const saved = instruction.operandOverride
-        ? this.read32(this.ss, frame) >>> 0
-        : this.read16(this.ss, frame);
+        ? this.stackRead32(frame) >>> 0
+        : this.stackRead16(frame);
       const size = instruction.operandOverride ? 4 : 2;
 
       if (wide32) {
@@ -2180,8 +2256,8 @@ export class I386 extends I286 implements CpuCore {
       const top = wide32 ? this.esp >>> 0 : this.sp;
       const at = (step: number) => (wide32 ? (top + step) >>> 0 : (top + step) & 0xffff);
       const far = opcode === 0xca || opcode === 0xcb;
-      const eip = this.read32(this.ss, at(0)) >>> 0;
-      const selector = far ? this.read32(this.ss, at(4)) & 0xffff : 0;
+      const eip = this.stackRead32(at(0)) >>> 0;
+      const selector = far ? this.stackRead32(at(4)) & 0xffff : 0;
 
       if (eip > 0xffff) {
         this.raiseInterrupt(instruction, 13, 0);
@@ -2834,7 +2910,7 @@ export class I386 extends I286 implements CpuCore {
         case 0xc2: // RET dw
           this.ip = this.pop16();
           this.pop16();
-          this.sp = this.sp + instruction.immediate;
+          this.releaseStack(instruction.immediate);
           break;
 
         case 0xc3: // RET
@@ -2866,7 +2942,7 @@ export class I386 extends I286 implements CpuCore {
           this.pop16();
           this.cs = this.pop16();
           this.pop16();
-          this.sp = this.sp + instruction.immediate;
+          this.releaseStack(instruction.immediate);
           break;
 
         case 0xcb: // RET far
@@ -3070,6 +3146,12 @@ export class I386 extends I286 implements CpuCore {
               }
               break;
           }
+          break;
+
+        case 0x102: // LAR rd,ew
+        case 0x103: // LSL rd,ew
+          /* The 286's, which writes the double word under the prefix. */
+          super.execute(instruction);
           break;
 
         case 0x1af: // IMUL rw,mw
