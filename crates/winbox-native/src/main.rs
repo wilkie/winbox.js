@@ -47,19 +47,26 @@
 //! base from run to run, in the cache folder's `winbox/drives/<sha256 of
 //! its path>.removed` (`HostDrive::keeping_removed`).
 //!
-//! `--program NAME` runs a program kept: drive C: is its base, its layers
-//! over it, each materialised once into `winbox/layer-<stack id>`, and its
-//! user's layer, `winbox/users/NAME/C`, on top, what it deletes beneath kept
-//! in `removed` beside it; the `.EXE` named, else the program's only one.
-//! Its display is its own; another is refused, as is another base.
+//! Programs are kept in the library (`library.rs`): the host's folder for
+//! WinBox's data, or `--library DIR`. `--program NAME` runs a program kept:
+//! drive C: is its base, its layers over it, each materialised once into
+//! the library's `layer-<stack id>`, and its user's layer, `users/NAME/C`,
+//! on top, what it deletes beneath kept in `removed` beside it; the `.EXE`
+//! named, else the program's only one. Its display is its own; another is
+//! refused, as is another base. Its base is `--assets` or `--windows`, else
+//! where the library last read it from (`bases.json`).
 //! `--install NAME MEDIA` runs an installer -- `SETUP.EXE`, or the one
 //! named, in the media, a folder or a zip archive, put at `C:\WBSETUP` --
 //! over the program's stack (none yet: the base) beneath an empty top in
-//! `winbox/staging`; as the run ends, `--keep` or the console keeps what
+//! the library's `staging`; as the run ends, `--keep` or the console keeps what
 //! it left, all of the media's path dropped, as a layer of the program, made in
 //! turn over its layers. `--layer-from` puts a layer of the user's own
 //! files, laid out as C: has them, or a layer's exchange zip, on a
-//! program's stack. `--shot` saves the screen as it shows five seconds in,
+//! program's stack. `--launch NAME ITEM [--group GROUP]` runs an item of
+//! a kept program's Program Manager groups on its stack, given what
+//! Program Manager's File Open gives it; `--launcher` opens a window of
+//! the library's groups, each item chosen run so in a process of its own
+//! (`launcher.rs`; `kb/guides/launcher.md`). `--shot` saves the screen as it shows five seconds in,
 //! a binary PPM, or `--shot-seconds` in. `--sound` installs winbox.js's
 //! own sound card driver, writing `C:\WINDOWS\SYSTEM.INI` with it named in
 //! `[drivers]` onto the drive, and the MIDI Mapper's setups in
@@ -98,6 +105,8 @@ use std::time::{Duration, Instant};
 mod console;
 mod host_os;
 mod input;
+mod launcher;
+mod library;
 mod mounts;
 mod programs;
 mod script;
@@ -138,9 +147,17 @@ enum Mode {
     LayerFrom { from: PathBuf, name: String },
     /// `--list`: the programs kept, and each one's Program Manager groups.
     List,
+    /// `--launch NAME ITEM [--group GROUP]`: a kept program's group's item
+    /// run on its stack, as Program Manager's File Open runs it.
+    Launch { name: String, item: String },
+    /// `--launcher`: the library's groups and items in a window of the
+    /// front end's own, each item chosen run as `--launch` in a process
+    /// of its own.
+    Launcher,
 }
 
 /// What the command line asks for.
+#[allow(clippy::struct_excessive_bools)]
 struct Options {
     mode: Mode,
     drive: Option<PathBuf>,
@@ -177,13 +194,23 @@ struct Options {
     mounts: Vec<mounts::Request>,
     /// Where each image written to is saved, a new file, as the run ends.
     write_back: Option<PathBuf>,
+    /// The library's folder, where not the host's (`library.rs`).
+    library: Option<PathBuf>,
+    /// `--launch`'s item's group, where several have an item of its name.
+    group: Option<String>,
+    /// `--launch`: an item whose working directory is not there run in the
+    /// Windows directory without asking, as OK in Program Manager's box.
+    directory_anyway: bool,
 }
 
 const USAGE: &str = r"winbox-native PROGRAM.EXE [--drive DIR] [--windows DIR | --assets FILE.zip|DIR] [--display MODE] [--mode standard|enhanced] [--resolution WxH] [--scale N] [--path C:\PROGRAM.EXE] [--shot FILE] [--sound [--sound-dump FILE.wav]] [--seamless [--seamless-shots DIR] [--seamless-log FILE] [--script FILE]] [--mount [L:]IMAGE[,IMAGE...]]... [--write-back DIR]
 winbox-native --program NAME [C:\PATH.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [and a run's switches]
 winbox-native --install NAME MEDIA|A: [SETUP.EXE] (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced] [--keep] [and a run's switches]
 winbox-native --layer-from DIR|LAYER.zip NAME (--windows DIR | --assets FILE.zip|DIR) [--display MODE] [--mode standard|enhanced]
-winbox-native --list";
+winbox-native --list
+winbox-native --launch NAME ITEM [--group GROUP] [--directory-anyway] [and a run's switches]
+winbox-native --launcher [--seamless]
+each with [--library DIR]: where programs are kept, else the host's own folder for WinBox's data";
 
 fn usage() -> ! {
     eprintln!("{USAGE}");
@@ -222,6 +249,9 @@ fn options() -> Options {
         script: None,
         mounts: Vec::new(),
         write_back: None,
+        library: None,
+        group: None,
+        directory_anyway: false,
     };
 
     while let Some(argument) = arguments.next() {
@@ -256,6 +286,16 @@ fn options() -> Options {
                 });
             }
             "--list" => mode = Some(Mode::List),
+            "--launch" => {
+                let name = operand().unwrap_or_else(|| usage());
+                let item = operand().unwrap_or_else(|| usage());
+
+                mode = Some(Mode::Launch { name, item });
+            }
+            "--launcher" => mode = Some(Mode::Launcher),
+            "--library" => options.library = arguments.next().map(PathBuf::from),
+            "--group" => options.group = arguments.next(),
+            "--directory-anyway" => options.directory_anyway = true,
             "--keep" => options.keep = true,
             "--drive" => options.drive = arguments.next().map(PathBuf::from),
             "--path" => options.path = arguments.next(),
@@ -320,14 +360,10 @@ fn options() -> Options {
         (None, None) => usage(),
     };
 
-    if !matches!(mode, Mode::File(_) | Mode::List) {
-        if options.drive.is_some() || options.path.is_some() {
-            refuse("--drive and --path are for a program's file: a kept program's C: is its stack");
-        }
-
-        if options.windows.is_none() && options.assets.is_none() {
-            refuse("a kept program's layers lie over a base: give --assets or --windows");
-        }
+    if !matches!(mode, Mode::File(_) | Mode::List)
+        && (options.drive.is_some() || options.path.is_some())
+    {
+        refuse("--drive and --path are for a program's file: a kept program's C: is its stack");
     }
 
     Options { mode, ..options }
@@ -611,20 +647,6 @@ fn cache_folder() -> PathBuf {
     cache.unwrap_or_else(std::env::temp_dir).join("winbox")
 }
 
-/// The asset bundle at `path` read, where it serves the display.
-fn open_assets(path: &Path, display: &str) -> Result<winbox_win16::assets::Assets, String> {
-    let assets = winbox_win16::assets::Assets::open(path)?;
-
-    if !assets.displays.iter().any(|served| served == display) {
-        return Err(format!(
-            "it serves the displays {}, not {display}",
-            assets.displays.join(", ")
-        ));
-    }
-
-    Ok(assets)
-}
-
 /// The cache folder, made where it is not there.
 fn made_cache() -> PathBuf {
     let cache = cache_folder();
@@ -683,31 +705,51 @@ fn install_sound_on(c: &mut HostDrive) {
     }
 }
 
+/// The library (`library.rs`): its folder's store of programs.
+fn library_store(options: &Options) -> programs::Store {
+    programs::Store::new(library::folder(options.library.as_deref()))
+}
+
+/// Where a kept program's base is read from: `--assets` or `--windows`,
+/// else where the library last read the program's base from; refused
+/// where neither is.
+fn base_source(
+    options: &Options,
+    store: &programs::Store,
+    program: Option<&programs::Program>,
+) -> library::Source {
+    match (&options.assets, &options.windows) {
+        (Some(assets), _) => library::Source::Assets(assets.clone()),
+        (None, Some(windows)) => library::Source::Windows(windows.clone()),
+        (None, None) => program
+            .and_then(|program| library::bases(store).remove(&program.base))
+            .unwrap_or_else(|| {
+                refuse("a kept program's layers lie over a base: give --assets or --windows")
+            }),
+    }
+}
+
 /// The base a kept program's stack is put on: the asset bundle's for the
-/// display, its store given to the system, or the installation's folder.
+/// display, its store given to the system, or the installation's folder;
+/// where it was read from remembered in the library.
 fn kept_base(
-    assets: Option<&Path>,
-    windows: Option<&Path>,
+    store: &programs::Store,
+    source: &library::Source,
     display: &str,
     system: Option<&mut System>,
 ) -> programs::Base {
-    let base = match (assets, windows) {
-        (Some(assets), _) => {
-            let assets = open_assets(assets, display)
-                .unwrap_or_else(|error| refuse(&format!("the asset bundle: {error}")));
-            let base = programs::Base::of_assets(&assets, display, &made_cache());
+    let (base, assets) = library::open_base(source, display, &made_cache())
+        .unwrap_or_else(|error| refuse(&format!("the base: {error}")));
 
-            if let Some(system) = system {
-                system.assets = Some(Rc::new(assets));
-            }
+    if let (Some(system), Some(assets)) = (system, assets) {
+        system.assets = Some(Rc::new(assets));
+    }
 
-            base
-        }
-        (None, Some(windows)) => programs::Base::of_folder(windows, display),
-        (None, None) => unreachable!("refused with the options"),
-    };
+    if let Err(error) = library::remember_base(store, base.name(), source) {
+        eprintln!("where its base was read from is not remembered: {error}");
+    }
 
-    base.unwrap_or_else(|error| refuse(&format!("the base: {error}")))
+    base
 }
 
 /// The display a kept program runs on: its own, refused where another is
@@ -754,15 +796,11 @@ fn kept_mode(
 /// `--layer-from`: a layer of the user's own files, or an exchange zip,
 /// put on a program's stack, the program made where it is not kept.
 fn layer_from(options: &Options, from: &Path, name: &str) {
-    let store = programs::Store::new(made_cache());
+    let store = library_store(options);
     let kept = store.program(name).unwrap_or_else(|error| refuse(&error));
     let display = kept_display(kept.as_ref(), options.display.as_ref());
-    let base = kept_base(
-        options.assets.as_deref(),
-        options.windows.as_deref(),
-        &display,
-        None,
-    );
+    let source = base_source(options, &store, kept.as_ref());
+    let base = kept_base(&store, &source, &display, None);
     let windows_mode = kept_mode(kept.as_ref(), options.windows_mode);
     let mut program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
 
@@ -871,16 +909,25 @@ impl Installing {
     }
 }
 
+/// What of a kept program is run: an `.EXE` of it (`--program`), or an
+/// item of its groups (`--launch`).
+enum Chosen<'a> {
+    Exe(Option<&'a String>),
+    Item(&'a str),
+}
+
 /// Drive C: of a kept program: its user's layer over its stack. Where its
 /// layers have changed since that was made, the console is asked whether
-/// to put it on the new stack, else it is set aside.
+/// to put it on the new stack, else it is set aside. With the program run:
+/// the `.EXE` named, else its only one; or an item's, with what it is
+/// started with (`library::start_of`).
 fn program_drive(
     options: &Options,
     name: &str,
-    exe: Option<&String>,
+    chosen: &Chosen<'_>,
     system: &mut System,
-) -> (HostDrive, String, programs::Program) {
-    let store = programs::Store::new(made_cache());
+) -> (HostDrive, String, programs::Program, Option<library::Start>) {
+    let store = library_store(options);
     let program = store
         .program(name)
         .unwrap_or_else(|error| refuse(&error))
@@ -891,8 +938,13 @@ fn program_drive(
                 .map(|program| format!("{} ({})", program.name, program.display))
                 .collect();
 
+            if let Some(earlier) = library::earlier(&store, &cache_folder()) {
+                eprintln!("{earlier}");
+            }
+
             refuse(&format!(
-                "no program {name} is kept: --install or --layer-from keeps one; kept: {}",
+                "no program {name} is kept in {}: --install or --layer-from keeps one; kept: {}",
+                store.root.display(),
                 if kept.is_empty() {
                     "none".to_string()
                 } else {
@@ -905,18 +957,50 @@ fn program_drive(
     system.display = winbox_win16::display::mode(&display).expect("a display mode winbox.js knows");
     system.mode = kept_mode(Some(&program), options.windows_mode);
 
-    let base = kept_base(
-        options.assets.as_deref(),
-        options.windows.as_deref(),
-        &display,
-        Some(system),
-    );
+    let source = base_source(options, &store, Some(&program));
+    let base = kept_base(&store, &source, &display, Some(system));
     let stack = store
         .stack(&base, &program)
         .unwrap_or_else(|error| refuse(&error));
     let lowers = store
         .lowers(&base, &stack)
         .unwrap_or_else(|error| refuse(&error));
+    // An item's start, worked out on the stack as the launcher lists it;
+    // refused, with why, where it cannot run.
+    let start = match chosen {
+        Chosen::Exe(_) => None,
+        Chosen::Item(item) => {
+            let mut reader = library::Reader::new(&store, made_cache(), None);
+
+            reader.modes = MODES;
+            reader.known(&program, base.clone());
+
+            let groups = reader
+                .groups(&program)
+                .unwrap_or_else(|error| refuse(&error));
+            let item = library::find(&groups, item, options.group.as_deref())
+                .unwrap_or_else(|error| refuse(&error));
+            let start = library::start_of(item).unwrap_or_else(|error| refuse(&error));
+
+            // Program Manager's box, "Invalid Path", Cancel its default
+            // (`kb/topics/program-manager-dde.md`, "Running an item").
+            if start.directory_missing
+                && !options.directory_anyway
+                && !ask(
+                    &format!(
+                        "Invalid Path: The working directory is invalid. OK runs {} in {}",
+                        item.name(),
+                        start.directory
+                    ),
+                    false,
+                )
+            {
+                refuse("not run");
+            }
+
+            Some(start)
+        }
+    };
 
     if let programs::UserLayer::Other(_) = store.user_layer(&program)
         && !ask(
@@ -940,15 +1024,20 @@ fn program_drive(
         install_sound_on(&mut c);
     }
 
-    let path = match (exe, program.exes.as_slice()) {
-        (Some(exe), _) => exe.clone(),
-        (None, [only]) => only.clone(),
-        (None, []) => refuse(&format!("{name} has no program: name one, C:\\PATH.EXE")),
-        (None, exes) => refuse(&format!("{name} has programs {}: name one", exes.join(" "))),
+    let path = match (chosen, &start, program.exes.as_slice()) {
+        (_, Some(start), _) => start.path.clone(),
+        (Chosen::Exe(Some(exe)), ..) => (*exe).clone(),
+        (_, _, [only]) => only.clone(),
+        (_, _, []) => refuse(&format!("{name} has no program: name one, C:\\PATH.EXE")),
+        (_, _, exes) => refuse(&format!("{name} has programs {}: name one", exes.join(" "))),
     };
 
-    (c, path, program)
+    (c, path, program, start)
 }
+
+/// Whether the build runs a program kept for a mode other than standard
+/// (`--mode`): it does, each in the mode its record keeps (`kept_mode`).
+const MODES: bool = true;
 
 /// Drive C: of an installer's run: an empty top over its media, laid at
 /// `C:\<NAME>`, over the program's stack -- a program not kept yet, the
@@ -960,7 +1049,7 @@ fn install_drive(
     setup: Option<&String>,
     system: &mut System,
 ) -> (HostDrive, String, Installing) {
-    let store = programs::Store::new(made_cache());
+    let store = library_store(options);
     let kept = store.program(name).unwrap_or_else(|error| refuse(&error));
     let display = kept_display(kept.as_ref(), options.display.as_ref());
 
@@ -969,12 +1058,8 @@ fn install_drive(
     // given, and the program keeps it (`kept_mode`).
     system.mode = kept_mode(kept.as_ref(), options.windows_mode);
 
-    let base = kept_base(
-        options.assets.as_deref(),
-        options.windows.as_deref(),
-        &display,
-        Some(system),
-    );
+    let source = base_source(options, &store, kept.as_ref());
+    let base = kept_base(&store, &source, &display, Some(system));
     let mut program = kept.unwrap_or_else(|| programs::Program::new(name, &base));
 
     program.mode = system.mode.name().to_string();
@@ -1087,7 +1172,18 @@ fn main() {
     }
 
     if let Mode::List = options.mode {
-        print!("{}", programs::listing(&programs::Store::new(made_cache())));
+        let store = library_store(&options);
+
+        if let Some(earlier) = library::earlier(&store, &cache_folder()) {
+            eprintln!("{earlier}");
+        }
+
+        print!("{}", programs::listing(&store));
+        return;
+    }
+
+    if let Mode::Launcher = options.mode {
+        launcher::run(&options);
         return;
     }
 
@@ -1095,6 +1191,7 @@ fn main() {
     let mut made = None;
     let mut installing = None;
     let mut kept = None;
+    let mut start = None;
     let (c, path) = match &options.mode {
         Mode::File(file) => {
             let (c, path, root) = file_drive(&options, file, &mut system);
@@ -1103,9 +1200,18 @@ fn main() {
             (c, path)
         }
         Mode::Program { name, exe } => {
-            let (c, path, program) = program_drive(&options, name, exe.as_ref(), &mut system);
+            let (c, path, program, _) =
+                program_drive(&options, name, &Chosen::Exe(exe.as_ref()), &mut system);
 
             kept = Some(program);
+            (c, path)
+        }
+        Mode::Launch { name, item } => {
+            let (c, path, program, item) =
+                program_drive(&options, name, &Chosen::Item(item), &mut system);
+
+            kept = Some(program);
+            start = item;
             (c, path)
         }
         Mode::Install { name, media, setup } => {
@@ -1115,7 +1221,7 @@ fn main() {
             installing = Some(install);
             (c, path)
         }
-        Mode::LayerFrom { .. } | Mode::List => unreachable!("made above"),
+        Mode::LayerFrom { .. } | Mode::List | Mode::Launcher => unreachable!("made above"),
     };
     let mut mounts = mount_images(&options, kept.as_mut(), installing.as_mut());
 
@@ -1126,6 +1232,8 @@ fn main() {
     // where its stack has it; an installer on a drive of images there.
     let bytes = match &options.mode {
         Mode::File(file) => std::fs::read(file).expect("the program's file"),
+        // An item's program is read as it is started (`start_item`).
+        Mode::Launch { .. } => Vec::new(),
         _ => path
             .rsplit_once('\\')
             .and_then(|(folder, name)| system.files.read_from(folder, name))
@@ -1140,7 +1248,8 @@ fn main() {
                 |(_, bytes)| bytes,
             ),
     };
-    let executable = Executable::parse(bytes).expect("a New Executable");
+    let executable =
+        (!bytes.is_empty()).then(|| Executable::parse(bytes).expect("a New Executable"));
     let Options {
         keep,
         shot,
@@ -1186,7 +1295,13 @@ fn main() {
     // its timers come due as the host's clock passes them.
     system.clock = Clock::real();
 
-    if installing.is_some() {
+    if let Some(start) = &start {
+        // A group's item, given what Program Manager's File Open gives it,
+        // in the directory made current for it.
+        if let Err(error) = library::start_item(&mut system, start) {
+            refuse(&error);
+        }
+    } else if installing.is_some() {
         // An installer is run as Windows started as `WIN SETUP.EXE` runs
         // it: Program Manager the shell, first, given it as its command
         // line, starting it in its own folder -- an installer on a drive of
@@ -1196,7 +1311,7 @@ fn main() {
         drop(executable);
         winbox_win16::progman::start_shell(&mut system, &path)
             .expect("Program Manager's registers");
-    } else {
+    } else if let Some(executable) = executable {
         let (program, libraries) = system.load(executable, &path);
 
         system.link(program);
@@ -1211,6 +1326,7 @@ fn main() {
     // is started so by Program Manager itself.
     if let Some((folder, _)) = path.rsplit_once('\\')
         && installing.is_none()
+        && start.is_none()
     {
         let letter = folder.chars().next().map(|c| c.to_ascii_uppercase());
 
@@ -1332,7 +1448,7 @@ fn mount_images(
     if given && let Some(program) = kept {
         program.media = mounts.media();
 
-        if let Err(error) = programs::Store::new(made_cache()).put_program(program) {
+        if let Err(error) = library_store(options).put_program(program) {
             eprintln!("its images not remembered: {error}");
         }
     }
@@ -1410,7 +1526,7 @@ fn file_drive(
     // installation is, and its modules the store behind it.
     let windows = match &options.assets {
         Some(assets) => {
-            let assets = open_assets(assets, &display)
+            let assets = library::open_assets(assets, &display)
                 .unwrap_or_else(|error| refuse(&format!("the asset bundle: {error}")));
             let base = assets
                 .base_in(&made_cache(), &display)
