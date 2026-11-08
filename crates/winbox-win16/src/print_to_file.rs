@@ -390,5 +390,31 @@ mod tests {
         assert_eq!(template.caption, "Print To File");
         assert_eq!(template.items.len(), 4);
         assert!(template.items.iter().any(|item| item.id == ID_NAME));
+        // As `test/win16/user_shell_dialogs_test.ts`: its items in order.
+        assert_eq!(
+            template
+                .items
+                .iter()
+                .map(|item| item.id)
+                .collect::<Vec<_>>(),
+            [101, 10, 1, 2]
+        );
+    }
+
+    /// Laid out from named constants, it is `USER.EXE`'s dialog 10 byte for
+    /// byte, where the oracle's installation is here.
+    #[test]
+    fn the_template_is_in_user_exes_dialog_10() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../oracle/build/drive-c/WINDOWS/SYSTEM/USER.EXE");
+        let Ok(file) = std::fs::read(path) else {
+            return;
+        };
+        let template = build_template();
+
+        assert!(
+            file.windows(template.len())
+                .any(|window| window == template.as_slice())
+        );
     }
 }

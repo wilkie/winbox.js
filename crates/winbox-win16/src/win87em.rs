@@ -308,3 +308,52 @@ pub fn restore(system: &mut System, args: &mut Args) -> Result<Answer, Stop> {
     restore_unit(system, far)?;
     Ok(Answer::Word(0))
 }
+
+#[cfg(test)]
+mod tests {
+    use winbox_cpu::{AX, BX, DX, X87};
+
+    use super::fpmath;
+    use crate::call::Args;
+    use crate::system::System;
+
+    /// A machine whose task has started, its unit made (`task.rs`).
+    fn machine(coprocessor: bool) -> System {
+        let mut system = System::new();
+
+        system.coprocessor = coprocessor;
+        system.cpu.fpu = Some(X87::default());
+        system
+    }
+
+    /// `__FPMATH` called with BX and AX: AX and DX after.
+    fn call(system: &mut System, bx: u16, ax: u16) -> (u16, u16) {
+        system.cpu.regs[BX] = bx;
+        system.cpu.regs[AX] = ax;
+        fpmath(system, &mut Args::repeat(0)).unwrap();
+        (system.cpu.regs[AX], system.cpu.regs[DX])
+    }
+
+    /// As `test/win16/win87em_test.ts`: the program's control word 1332h,
+    /// the unit's 1330h, the invalid and denormal exceptions left unmasked
+    /// (`WIN87EM.DLL` seg1 `b3`).
+    #[test]
+    fn fpmath_starts_with_the_control_word_1332h_the_unit_1330h() {
+        let mut system = machine(false);
+
+        call(&mut system, 0, 0);
+        assert_eq!(call(&mut system, 5, 0).0, 0x1332);
+        assert_eq!(system.cpu.fpu.as_ref().unwrap().control, 0x1330);
+    }
+
+    #[test]
+    fn fpmath_says_whether_there_is_a_coprocessor() {
+        assert_eq!(call(&mut machine(true), 11, 0).0, 1);
+        assert_eq!(call(&mut machine(false), 11, 0).0, 0);
+    }
+
+    #[test]
+    fn fpmath_answers_ffffh_past_its_last_function() {
+        assert_eq!(call(&mut machine(false), 13, 0), (0xffff, 0xffff));
+    }
+}

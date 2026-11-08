@@ -1666,3 +1666,28 @@ impl Searches {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use winbox_cpu::{AX, CX, DX};
+    use winbox_machine::days_from_civil;
+
+    use crate::system::System;
+
+    /// INT 21h function 2Ah gives the whole year in CX, the month counted
+    /// from 1 in DH, the day in DL and the day of the week in AL, Sunday
+    /// nought. As `test/dos/date_test.ts`: 25 September 2026, a Friday.
+    #[test]
+    fn gives_the_year_the_month_from_1_the_day_and_the_weekday() {
+        let mut system = System::new();
+
+        system.epoch_ms = days_from_civil(2026, 9, 25) * 86_400_000 + 12 * 3_600_000;
+        system.cpu.regs[AX] = 0x2a00;
+        system.dos_call().unwrap();
+
+        assert_eq!(system.cpu.regs[CX], 2026);
+        assert_eq!(system.cpu.regs[DX], 0x0919);
+        assert_eq!(system.cpu.regs[AX] & 0xff, 5);
+        assert_eq!(system.date(), [2026, 9, 25, 12, 0, 0, 5]);
+    }
+}

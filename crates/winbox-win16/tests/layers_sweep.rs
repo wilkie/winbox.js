@@ -179,7 +179,7 @@ fn the_file_probes_see_one_folder() {
     }
 
     let names: Vec<String> = [
-        "dirorder", "filecdr", "openfile", "profile", "loadpath", "verinst",
+        "dirorder", "filecdr", "openfile", "profile", "loadpath", "verinst", "diskfree", "profnew",
     ]
     .iter()
     .filter(|name| recorded(name).is_some())

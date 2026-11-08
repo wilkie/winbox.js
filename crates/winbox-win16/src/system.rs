@@ -1158,3 +1158,19 @@ impl System {
         index
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// The TypeScript engine's `test/emulator/clock_test.ts`, "gives the
+    /// date from the epoch": the clock starts at 6 April 1992, 9:00, and
+    /// 61 seconds of instructions on it read 9:01:01.
+    #[test]
+    fn gives_the_date_from_the_epoch() {
+        let mut system = System::new();
+
+        system.instructions = 3000 * 61_000;
+        assert_eq!(system.date()[3..6], [9, 1, 1]);
+    }
+}

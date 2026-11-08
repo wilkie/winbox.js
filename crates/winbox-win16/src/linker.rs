@@ -295,3 +295,75 @@ impl System {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use winbox_ne::{Relocation, Target};
+
+    use crate::system::System;
+
+    /// A relocation at `offset`, additive or a chain, of a word.
+    fn relocation(offset: u16, additive: bool) -> Relocation {
+        Relocation {
+            address_type: super::OFFSET,
+            offset,
+            additive,
+            target: Target::Ordinal(0),
+        }
+    }
+
+    /// A block of global memory: its segment's index.
+    fn segment(system: &mut System, size: u32) -> usize {
+        system
+            .global
+            .allocate(&mut system.cpu.bus, &mut system.descriptors, size, 0x42)
+            .expect("a block")
+    }
+
+    /// A chain of fixups: each site holds the offset of the next, the last
+    /// `FFFFh`. The Towers from `HANOI.EXE` of the corpus links 1152 sites in
+    /// one. As `test/win16/relocation_chain_test.ts`.
+    #[test]
+    fn a_relocation_chain_is_followed_to_its_end_however_long_it_is() {
+        let mut system = System::new();
+        let at = segment(&mut system, 0x2000);
+        let base = (at as u32) << 16;
+        let sites: u32 = 1500;
+
+        for site in 0..sites {
+            let next = if site == sites - 1 {
+                0xffff
+            } else {
+                (site + 1) * 4
+            };
+
+            system.cpu.bus.write16(base + site * 4, next as u16);
+        }
+
+        system.write16(at, &relocation(0, false), 0x1234);
+
+        let left: Vec<u32> = (0..sites)
+            .filter(|&site| system.cpu.bus.read16(base + site * 4) != 0x1234)
+            .collect();
+
+        assert_eq!(left, Vec::<u32>::new());
+    }
+
+    /// A relocation record's ADDITIVE flag (4) adds, whatever its kind:
+    /// Catz's `CATZ.WAD` imports `CATZDLL`'s variables by ordinal so (flags
+    /// 5) -- `mov [es:0x2],dx`, the selector's half of a far pointer that
+    /// `CATZDLL` keeps at 66h in its segment. As
+    /// `test/win16/relocation_flags_test.ts`; `winbox-ne` reads the flag
+    /// (`reads_a_relocations_additive_flag_whatever_its_type`).
+    #[test]
+    fn an_additive_relocation_adds_an_imported_variable_to_the_field_the_code_names() {
+        let mut system = System::new();
+        let at = segment(&mut system, 0x2000);
+        let site = ((at as u32) << 16) + 0x13c5;
+
+        system.cpu.bus.write16(site, 0x0002);
+        system.write16(at, &relocation(0x13c5, true), 0x66);
+
+        assert_eq!(system.cpu.bus.read16(site), 0x68);
+    }
+}
