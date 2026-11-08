@@ -275,6 +275,15 @@ impl Descriptors {
         self.find(start, 1)
     }
 
+    /// A descriptor marked given or free, its bytes left as they are: the
+    /// DPMI host's, which writes them itself (`dpmi.rs`). As
+    /// `GlobalAllocator.claim`.
+    pub fn claim(&mut self, index: usize, given: bool) {
+        if let Some(used) = self.used.get_mut(index) {
+            *used = given;
+        }
+    }
+
     /// A descriptor given back: emptied, and the next `take` answers it.
     pub fn give(&mut self, memory: &mut Memory, index: usize) {
         self.release(memory, index);

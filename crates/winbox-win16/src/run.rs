@@ -11,32 +11,12 @@ use crate::system::System;
 /// How many instructions the processor runs between looks at the clock.
 const SLICE: u64 = 500;
 
-/// What Windows 3.1's standard-mode DPMI host, DOSX, answers for INT 31h
-/// function 0400h, Get Version (`DOSX.EXE` at 6A83h in its file, 6883h in
-/// its image): AX the version, 0.90; BX its flags, 0Ah, bit 0 clear -- a
-/// 16-bit host, which a WATCOM Win386 program takes for "Not running on a
-/// 386 DPMI implementation"; CL the processor DOSX kept as it started (data
-/// `0134h`), 4 for the i486 `GetWinFlags` names; DX the interrupt
-/// controllers' bases, 08h and 70h, a constant. **Recorded** by `dpmiver`.
-/// As `dpmi.ts`.
-const DPMI_VERSION: u16 = 0x005a;
-/// DOSX's flags for 0400h: bit 0, a 32-bit host, clear.
-const DPMI_FLAGS: u16 = 0x000a;
-/// What 386 enhanced mode's host, WIN386, answers in BX for 0400h: bit 0
-/// a 32-bit host and bit 2 virtual memory. **Recorded** by `dpmiver` in
-/// enhanced mode (`enhanced/dpmiver`). As `dpmi.ts`.
-const DPMI_FLAGS_ENHANCED: u16 = 0x0005;
 /// INT 2Fh 1600h's AX in 386 enhanced mode: AL 3, AH 0Ah, Windows 3.10
 /// (`dpmiver`). As `dos.ts`.
 const WINDOWS_VERSION: u16 = 0x0a03;
 /// INT 2Fh 1683h's BX in 386 enhanced mode: the system virtual machine's
 /// number (`enhmode`). As `dos.ts`.
 const SYSTEM_VIRTUAL_MACHINE: u16 = 1;
-/// The processor 0400h names in CL: an i486.
-const DPMI_PROCESSOR: u16 = 4;
-/// The interrupt controllers' bases 0400h gives in DH and DL.
-const DPMI_PIC_BASES: u16 = 0x0870;
-
 /// What stopped a run.
 pub(crate) enum Event {
     /// A call whose answer takes its time.
@@ -117,6 +97,19 @@ impl System {
                     let at = self.cpu.segments[CS].base + u32::from(self.cpu.ip);
                     let vector = self.cpu.bus.read8(at + 1);
 
+                    // A program's own handler for the vector, set through
+                    // the DPMI host (`dpmi.rs`), called before WinBox's.
+                    if self.dpmi.claims(vector) {
+                        self.cpu.ip += 2;
+
+                        if self.dpmi_vector(vector) {
+                            self.instructions += 1;
+                            continue;
+                        }
+
+                        self.cpu.ip -= 2;
+                    }
+
                     match vector {
                         0x80 => {
                             self.instructions += 1;
@@ -135,15 +128,30 @@ impl System {
                             self.instructions += 1;
                             return Event::Returned;
                         }
+                        // From the DPMI host's own code, a real-mode INT 21h a
+                        // program asked for through INT 31h 0300h: DOS alone,
+                        // without KERNEL in front of it, as on Windows.
+                        0x21 if self.at_real_call() => {
+                            let done = self.dos_interrupt();
+
+                            self.instructions += 1;
+
+                            if let Err(stop) = done {
+                                return Event::Stop(stop);
+                            }
+                        }
                         0x21 => {
                             if let Some(event) = self.dos_event() {
                                 return event;
                             }
                         }
                         0x31 => {
-                            self.dpmi_interrupt();
                             self.cpu.ip += 2;
                             self.instructions += 1;
+
+                            if let Some(event) = self.dpmi_interrupt() {
+                                return event;
+                            }
                         }
                         0x1a => {
                             self.clock_interrupt();
@@ -192,8 +200,10 @@ impl System {
 
                         self.cpu.bus.answer(at, byte);
                     }
+                    _ if self.dpmi_fault(Exit::Host) => {}
                     _ => return self.processor_stop(Exit::Host),
                 },
+                other if self.dpmi_fault(other) => {}
                 other => return self.processor_stop(other),
             }
         }
@@ -359,14 +369,6 @@ impl System {
         }
     }
 
-    /// INT 31h, DPMI, as far as winbox.js answers it: 0400h gives the
-    /// version as DOSX does (`DPMI_VERSION`); 000Bh copies a
-    /// descriptor of the local table, the selector in BX, to the eight bytes
-    /// at ES:EDI, and 000Ch copies them back into it -- each with the carry
-    /// clear, whatever the selector, as `dpmidesc` records of one no table
-    /// holds. A descriptor set takes effect at once for a segment register
-    /// that holds its selector, as the TypeScript engine's processor forgets
-    /// what it kept of it. Any other function changes nothing.
     /// `INT 25h` and `26h`, a volume's sectors read or written by number,
     /// as File Manager reads a drive's boot sector to tell a RAM drive
     /// (`WINFILE.EXE` seg6 `09e3`). These drives are files, not sectors:
@@ -386,50 +388,21 @@ impl System {
         self.cpu.ip += 2;
     }
 
-    fn dpmi_interrupt(&mut self) {
-        let function = self.cpu.regs[winbox_cpu::AX];
+    /// A fault given to a program's exception handler for it, set through
+    /// the DPMI host (`dpmi.rs`): true where one was.
+    fn dpmi_fault(&mut self, exit: Exit) -> bool {
+        let found = match exit {
+            Exit::Fault(vector) if vector != 12 && vector != 13 => Some((vector, 0)),
+            Exit::Fault(_) | Exit::Host => self.fault_with_code(exit),
+            _ => None,
+        };
 
-        // 0400h, Get Version, as DOSX answers it (`DPMI_VERSION`); CH left.
-        if function == 0x0400 {
-            self.cpu.regs[winbox_cpu::AX] = DPMI_VERSION;
-            self.cpu.regs[winbox_cpu::BX] = match self.mode {
-                crate::Mode::Standard => DPMI_FLAGS,
-                crate::Mode::Enhanced => DPMI_FLAGS_ENHANCED,
-            };
-            self.cpu.regs[winbox_cpu::CX] = self.cpu.regs[winbox_cpu::CX] & 0xff00 | DPMI_PROCESSOR;
-            self.cpu.regs[winbox_cpu::DX] = DPMI_PIC_BASES;
-            self.cpu.flags &= !1;
-            return;
-        }
-
-        if function != 0x000b && function != 0x000c {
-            return;
-        }
-
-        let selector = self.cpu.regs[winbox_cpu::BX];
-        let offset = u32::from(self.cpu.high[winbox_cpu::DI]) << 16
-            | u32::from(self.cpu.regs[winbox_cpu::DI]);
-        let address = self.cpu.segments[winbox_cpu::ES].base.wrapping_add(offset);
-        let entry = self.cpu.ldt_base + u32::from(selector >> 3) * 8;
-
-        if function == 0x000b {
-            let bytes = self.cpu.bus.read(entry, 8);
-
-            self.cpu.bus.write(address, &bytes);
-        } else {
-            let bytes = self.cpu.bus.read(address, 8);
-
-            self.cpu.bus.write(entry, &bytes);
-
-            for index in 0..6 {
-                let held = self.cpu.segments[index].selector;
-
-                if held & !7 == selector & !7 && held & 4 != 0 {
-                    let _ = self.cpu.load_segment(index, held);
-                }
+        match found {
+            Some((vector, code)) if self.dpmi.handles_exception(vector) => {
+                self.dpmi_exception(vector, code);
+                true
             }
+            _ => false,
         }
-
-        self.cpu.flags &= !1;
     }
 }

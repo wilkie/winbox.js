@@ -21,6 +21,8 @@ export class DOS {
 
   /** Told when a program ends by INT 21h function 4Ch, with its return code. */
   onExit?: (code: number) => void;
+  /** The Windows the DOS serves, where there is one: the DPMI host reaches its selectors. */
+  win16?: any;
   declare _memory: any;
   declare _syscalls: any;
   /**
@@ -47,6 +49,11 @@ export class DOS {
     machine.interrupts.on(0x1a, this.clockInvoke.bind(this));
     machine.interrupts.on(0x21, this.syscallInvoke.bind(this));
     machine.interrupts.on(0x31, this.dpmiInvoke.bind(this));
+
+    /* A program's own handlers for exceptions and vectors, set through the
+     * DPMI host (`dpmi.ts`), called before the machine's. */
+    machine.interrupts.intercept = (index) => this._dpmi.intercept(index);
+    machine.interrupts.claims = (index) => this._dpmi.claims(index);
 
     /* The multiplex interrupt, where resident programs answer whether they
      * are installed: MSCDEX's calls as DOSBox's own answers them
@@ -295,7 +302,11 @@ export class DOS {
    * Invokes a DOS Protected Mode Interface system call.
    */
   dpmiInvoke() {
-    this._dpmi.invoke();
-    return true;
+    return this._dpmi.invoke();
+  }
+
+  /** The DPMI host, its state and what ended Windows where it did. */
+  get dpmi() {
+    return this._dpmi;
   }
 }

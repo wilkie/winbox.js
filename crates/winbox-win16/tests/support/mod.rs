@@ -353,10 +353,16 @@ pub const AGREEING: &[&str] = &[
     "pmitem",
     "rootlib",
     "dpmiver",
+    "dpmigrw",
+    "dpminul",
+    "dpmiout",
     // Recorded in 386 enhanced mode, run on a machine in it (`ENHANCED`).
     "enhanced/winflags",
     "enhanced/dpmiver",
     "enhanced/about",
+    "enhanced/dpmigrw",
+    "enhanced/dpminul",
+    "enhanced/dpmiout",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript

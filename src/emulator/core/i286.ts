@@ -98,6 +98,12 @@ export class I286 implements CpuCore16 {
    *   instruction after it.
    */
   raiseInterrupt(instruction, index, code = null, restartable = true) {
+    /* A fault, with its error code, or an interrupt an instruction raises:
+     * the DPMI host gives a fault to a program's exception handler. */
+    this._cpu.interruptFault = restartable
+      ? { code: code ?? 0, cs: instruction?.startCs, ip: instruction?.startIp }
+      : null;
+
     if (this._cpu.claimsInterrupt === undefined || this._cpu.claimsInterrupt(index)) {
       // The host wants this one. Leave the machine exactly as it stands.
       this._cpu.interrupt = index;

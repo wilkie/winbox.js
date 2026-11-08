@@ -368,6 +368,20 @@ export class GlobalAllocator {
     return index;
   }
 
+  /** Whether a descriptor is given out. */
+  used(segment: number) {
+    return !!this._usedMap[segment];
+  }
+
+  /**
+   * A descriptor marked given or free, its bytes left as they are: the
+   * DPMI host's, which writes them itself (`dpmi.ts`).
+   */
+  claim(segment: number, given = true) {
+    this._usedMap[segment] = given;
+    this.#forget(segment);
+  }
+
   /** A descriptor given up: emptied, and free to be found again. */
   release(segment) {
     this.unmap(segment);

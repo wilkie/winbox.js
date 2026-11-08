@@ -154,6 +154,9 @@ pub struct System {
     /// The mode Windows runs in: standard unless the machine is made in
     /// enhanced mode.
     pub mode: Mode,
+    /// The DPMI host's own state: the handlers, callbacks, blocks and
+    /// watchpoints a program set through INT 31h (`dpmi.rs`).
+    pub dpmi: crate::dpmi::Host,
     /// DOS's files.
     pub files: Files,
     /// The task running, once a program has started.
@@ -597,6 +600,7 @@ impl System {
             modules: Vec::new(),
             coprocessor: true,
             mode: Mode::Standard,
+            dpmi: crate::dpmi::Host::default(),
             files: Files::new(),
             task: None,
             ended: false,

@@ -14,6 +14,8 @@ export class CPU implements CpuCoreHost {
   declare _cycleCount: any;
   declare _instruction: any;
   declare _interrupt: any;
+  /** The error code of the fault latched in `interrupt`, or null for an instruction's interrupt. */
+  interruptFault: { code: number; cs?: number; ip?: number } | null = null;
   declare _interruptHandlers: any;
   declare _memory: any;
 

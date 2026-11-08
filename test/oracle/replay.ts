@@ -5649,12 +5649,14 @@ export const KNOWN_GAPS: Record<string, string> = {
    * others differ by a pixel. */
   'prttslt:EngineGetGlyphBmp': "the corner and box of a glyph GDI's engine slants",
   'prttslt:row': "a pixel or a column of a glyph GDI's engine slants",
-  /* `enhmode` calls DPMI's functions with harmless arguments, in both modes
-   * (`kb/guides/enhanced-mode.md`, "The DPMI host"): WinBox answers 000Bh,
-   * 000Ch and 0400h, and leaves the rest as they came, where DOSX and
-   * WIN386 answer, refuse or do nothing each as they do -- phase 3. */
-  'enhmode:dpmi': "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
-  'enhmode:free': "DPMI 0500h's figures, which are phase 3's",
+  /* `enhmode` calls DPMI's functions with harmless arguments, in both modes,
+   * and WinBox answers each as DOSX or WIN386 does (`kb/topics/
+   * dpmi-functions.md`) but for three things that are not DPMI's: 000Dh of
+   * one of the table's first sixteen descriptors, which WinBox gives to
+   * blocks; DOS's version, through 0300h, 6.00 in WinBox and 5.00 beneath
+   * Windows on DOSBox; and the interrupt flag 0902h reads, which WinBox's
+   * processor keeps clear for a task and Windows' set. */
+  'enhmode:dpmi': "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
   /* Its `kernel` records: a code and a data segment's limits, which are
    * the segments' sizes under Windows and FFFFh in WinBox; and
    * `GetFreeSpace`, which tells every program what `galimit` was told
@@ -5663,6 +5665,23 @@ export const KNOWN_GAPS: Record<string, string> = {
   /* In enhanced mode, INT 2Fh 1684h gives an entry point for ten of WIN386's
    * devices; WinBox has none of them yet, and answers none for each. */
   'enhanced/enhmode:vxd': "WIN386's devices' entry points, which WinBox has none of",
+  /* The DPMI host's probes (`kb/topics/dpmi-functions.md`, "Not yet
+   * done"): what lies outside DPMI -- DOS's version, 6.00 in WinBox and
+   * 5.00 beneath Windows on DOSBox; the interrupt flag, which WinBox's
+   * processor keeps clear for a task and Windows' set -- and where the
+   * hosts keep what WinBox keeps in its own places. */
+  'dpmildt:specific': "000Dh's sixteen descriptors, which WinBox gives to blocks",
+  'enhanced/dpmildt:table':
+    "the highest selector 000Bh answers: WinBox's first megabyte's at its table's top",
+  'dpmimem:block': "where DOSX's arena puts a block, and WIN386's handles",
+  'dpmimem:interrupts': "the interrupt flag, which WinBox's processor keeps clear for a task",
+  'enhanced/dpmimem:page': 'where WIN386 maps a physical address',
+  'dpmirm:dos': "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+  'dpmirm:stack': "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+  'enhanced/dpmirm:vector': "the real-mode vectors' values, DOS's and the BIOS's",
+  'dpmiexc:divide': "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+  'dpmiexc:protection': "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+  'dpmiexc:vector': "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox",
 };
 
 /**
@@ -6108,6 +6127,14 @@ const RUN_WHOLE = new Set<string>([
   'rootlib',
   'dpmiver',
   'enhmode',
+  'dpmildt',
+  'dpmimem',
+  'dpmirm',
+  'dpmiexc',
+  'dpmigro',
+  'dpmigrw',
+  'dpminul',
+  'dpmiout',
 ]);
 
 /**
@@ -6487,7 +6514,21 @@ export async function replayFixture(fixture: Fixture) {
  * `<probe>:<function>`. As the Rust engine's `AGREEING`, which names them
  * `enhanced/<name>`.
  */
-export const ENHANCED = new Set(['winflags', 'dpmiver', 'about', 'enhmode', 'freemem']);
+export const ENHANCED = new Set([
+  'winflags',
+  'dpmiver',
+  'about',
+  'enhmode',
+  'freemem',
+  'dpmildt',
+  'dpmimem',
+  'dpmirm',
+  'dpmiexc',
+  'dpmigro',
+  'dpmigrw',
+  'dpminul',
+  'dpmiout',
+]);
 
 /**
  * The known gap of a fixture's function, where it has one: by the fixture's

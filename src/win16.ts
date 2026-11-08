@@ -164,6 +164,9 @@ export class Win16 {
     // A program that ends through DOS ends its task.
     dos.onExit = (code) => this.exitTask(code);
 
+    /* The DPMI host reaches KERNEL's selectors and the scheduler (`dpmi.ts`). */
+    dos.win16 = this;
+
     /* Called for every API call a program makes, when anything is listening.
      * See the dispatcher in `syscallInvoke`.
      */
@@ -1595,6 +1598,22 @@ export class Win16 {
   dosInvoke() {
     if (!this.scheduler?.task) {
       return this.dos.syscallInvoke();
+    }
+
+    /* From the DPMI host's own code, a real-mode INT 21h a program asked
+     * for through INT 31h 0300h: DOS alone, without KERNEL in front of it,
+     * as on Windows (`dpmi.ts`). */
+    const core = this.machine.cpu.core;
+
+    if (this.dos.dpmi.isRealCall(core.cs, (core.ip - 2) & 0xffff)) {
+      this.scheduler.task.pushContext(1);
+      this.scheduler.task.halt();
+      this.scheduler.interpretReturnValue(
+        this.dos.syscallInvoke(),
+        undefined,
+        this.scheduler.active
+      );
+      return false;
     }
 
     this.scheduler.task.pushContext(1);

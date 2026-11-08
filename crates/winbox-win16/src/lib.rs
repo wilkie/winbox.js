@@ -38,6 +38,7 @@ pub mod dialogs;
 pub mod display;
 pub mod dlgdir;
 mod dos;
+pub mod dpmi;
 pub mod drag_object;
 pub mod draw_text;
 pub mod drivers;

@@ -5879,6 +5879,314 @@
   },
   "gaps": {}
  },
+ "dpmiexc": {
+  "probe": "dpmiexc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 34,
+  "functions": {
+   "divide": {
+    "total": 7,
+    "agreed": 6,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "exception": {
+    "total": 13,
+    "agreed": 13,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "protection": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 8,
+    "agreed": 7,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+   "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
+  }
+ },
+ "dpmigro": {
+  "probe": "dpmigro",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "grow": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "tick": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dpmigrw": {
+  "probe": "dpmigrw",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2,
+  "functions": {
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "grow": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dpmildt": {
+  "probe": "dpmildt",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 96,
+  "functions": {
+   "alias": {
+    "total": 10,
+    "agreed": 10,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "alloc": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "base": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "limit": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rights": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "specific": {
+    "total": 7,
+    "agreed": 2,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "table": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "specific": "000Dh's sixteen descriptors, which WinBox gives to blocks"
+  }
+ },
+ "dpmimem": {
+  "probe": "dpmimem",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 88,
+  "functions": {
+   "block": {
+    "total": 24,
+    "agreed": 20,
+    "disagreed": 4,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dos": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "interrupts": {
+    "total": 19,
+    "agreed": 8,
+    "disagreed": 11,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "page": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "watch": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "block": "where DOSX's arena puts a block, and WIN386's handles",
+   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+  }
+ },
+ "dpminul": {
+  "probe": "dpminul",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1,
+  "functions": {
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dpmiout": {
+  "probe": "dpmiout",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1,
+  "functions": {
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dpmirm": {
+  "probe": "dpmirm",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 79,
+  "functions": {
+   "bios": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "callback": {
+    "total": 35,
+    "agreed": 35,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dos": {
+    "total": 17,
+    "agreed": 16,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stack": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "dos": "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+   "stack": "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox"
+  }
+ },
  "dpmiver": {
   "probe": "dpmiver",
   "display": "vga",
@@ -6998,6 +7306,338 @@
   },
   "gaps": {}
  },
+ "enhanced/dpmiexc": {
+  "probe": "dpmiexc",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 36,
+  "functions": {
+   "divide": {
+    "total": 7,
+    "agreed": 6,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "exception": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "protection": {
+    "total": 6,
+    "agreed": 5,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 8,
+    "agreed": 7,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "divide": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+   "protection": "the faulting code's interrupt flag, which WinBox's processor keeps clear",
+   "vector": "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox"
+  }
+ },
+ "enhanced/dpmigro": {
+  "probe": "dpmigro",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 24,
+  "functions": {
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "grow": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "tick": {
+    "total": 15,
+    "agreed": 15,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/dpmigrw": {
+  "probe": "dpmigrw",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 18,
+  "functions": {
+   "calling": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "grow": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "outside": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/dpmildt": {
+  "probe": "dpmildt",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 97,
+  "functions": {
+   "alias": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "alloc": {
+    "total": 11,
+    "agreed": 11,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "base": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 6,
+    "agreed": 6,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "limit": {
+    "total": 14,
+    "agreed": 14,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "rights": {
+    "total": 22,
+    "agreed": 22,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "segment": {
+    "total": 8,
+    "agreed": 8,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "set": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "specific": {
+    "total": 7,
+    "agreed": 2,
+    "disagreed": 5,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "table": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "table": "the highest selector 000Bh answers: WinBox's first megabyte's at its table's top",
+   "specific": "000Dh's sixteen descriptors, which WinBox gives to blocks"
+  }
+ },
+ "enhanced/dpmimem": {
+  "probe": "dpmimem",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 89,
+  "functions": {
+   "block": {
+    "total": 25,
+    "agreed": 24,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "calling": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dos": {
+    "total": 7,
+    "agreed": 7,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "interrupts": {
+    "total": 19,
+    "agreed": 7,
+    "disagreed": 12,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "page": {
+    "total": 14,
+    "agreed": 13,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "watch": {
+    "total": 23,
+    "agreed": 23,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "block": "where DOSX's arena puts a block, and WIN386's handles",
+   "page": "where WIN386 maps a physical address",
+   "interrupts": "the interrupt flag, which WinBox's processor keeps clear for a task"
+  }
+ },
+ "enhanced/dpminul": {
+  "probe": "dpminul",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "calling": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nought": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/dpmiout": {
+  "probe": "dpmiout",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "calling": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "outside": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/dpmirm": {
+  "probe": "dpmirm",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 104,
+  "functions": {
+   "bios": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "callback": {
+    "total": 60,
+    "agreed": 60,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "dos": {
+    "total": 17,
+    "agreed": 16,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "stack": {
+    "total": 3,
+    "agreed": 2,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vector": {
+    "total": 22,
+    "agreed": 21,
+    "disagreed": 1,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "dos": "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+   "stack": "DOS's version, 6.00 in WinBox and 5.00 beneath Windows on DOSBox",
+   "vector": "the real-mode vectors' values, DOS's and the BIOS's"
+  }
+ },
  "enhanced/dpmiver": {
   "probe": "dpmiver",
   "display": "vga",
@@ -7036,15 +7676,15 @@
   "functions": {
    "dpmi": {
     "total": 56,
-    "agreed": 43,
-    "disagreed": 13,
+    "agreed": 52,
+    "disagreed": 4,
     "unimplemented": 0,
     "unsupported": 0
    },
    "free": {
     "total": 12,
-    "agreed": 3,
-    "disagreed": 9,
+    "agreed": 12,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7072,8 +7712,7 @@
   },
   "gaps": {
    "vxd": "WIN386's devices' entry points, which WinBox has none of",
-   "dpmi": "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
-   "free": "DPMI 0500h's figures, which are phase 3's",
+   "dpmi": "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
    "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
   }
  },
@@ -7131,15 +7770,15 @@
   "functions": {
    "dpmi": {
     "total": 49,
-    "agreed": 39,
-    "disagreed": 10,
+    "agreed": 45,
+    "disagreed": 4,
     "unimplemented": 0,
     "unsupported": 0
    },
    "free": {
     "total": 12,
-    "agreed": 8,
-    "disagreed": 4,
+    "agreed": 12,
+    "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
@@ -7166,8 +7805,7 @@
    }
   },
   "gaps": {
-   "dpmi": "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
-   "free": "DPMI 0500h's figures, which are phase 3's",
+   "dpmi": "000Dh's descriptors, DOS's version and the interrupt flag, not DPMI's",
    "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
   }
  },

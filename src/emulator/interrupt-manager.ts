@@ -6,6 +6,16 @@
  */
 export class InterruptManager {
   declare _interrupts: any;
+
+  /**
+   * Where a program's own handler for a vector is called before the
+   * machine's: the DPMI host's, for the handlers a program sets (INT 31h
+   * 0203h and 0205h). It answers true where it took the interrupt, and
+   * claims the vectors it would.
+   */
+  intercept: ((index: number) => boolean | undefined) | null = null;
+  claims: ((index: number) => boolean) | null = null;
+
   constructor() {
     this._interrupts = {};
   }
@@ -18,7 +28,7 @@ export class InterruptManager {
    * Whether a callback is registered for the given interrupt.
    */
   has(index) {
-    return this._interrupts[index] !== undefined;
+    return this._interrupts[index] !== undefined || !!this.claims?.(index);
   }
 
   off(index) {
@@ -26,6 +36,12 @@ export class InterruptManager {
   }
 
   dispatch(index, data = null) {
+    const taken = this.intercept?.(index);
+
+    if (taken !== undefined) {
+      return taken;
+    }
+
     if (this._interrupts[index]) {
       return this._interrupts[index](data);
     }

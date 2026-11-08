@@ -75,6 +75,24 @@ impl System {
 
         match exit {
             Exit::Fault(_) => self.access_fault(&decoded),
+            Exit::Host => self.load_fault(&decoded).map(|(vector, _)| vector),
+            _ => None,
+        }
+    }
+
+    /// The fault, as `fault_vector`, and its error code, as the JavaScript
+    /// core raises it: a selector's, its low two bits cleared, where a load
+    /// faults on what it loads; nought for the null selector into SS and
+    /// for an access outside a segment.
+    pub(crate) fn fault_with_code(&self, exit: Exit) -> Option<(u8, u16)> {
+        if !self.cpu.protected {
+            return None;
+        }
+
+        let decoded = self.decode()?;
+
+        match exit {
+            Exit::Fault(_) => self.access_fault(&decoded).map(|vector| (vector, 0)),
             Exit::Host => self.load_fault(&decoded),
             _ => None,
         }
@@ -572,7 +590,7 @@ impl System {
 
     /// The fault a segment load the Rust core left to its host raises:
     /// past its table's end, any load; the part's checks, `MOV` alone.
-    fn load_fault(&self, decoded: &Decoded) -> Option<u8> {
+    fn load_fault(&self, decoded: &Decoded) -> Option<(u8, u16)> {
         let word: u32 = if decoded.operand32 { 4 } else { 2 };
         let sp = u32::from(self.cpu.regs[SP]);
         // The selector after the offset, its address wrapping in 64 KiB
@@ -648,12 +666,14 @@ impl System {
         };
         let stack = register == SS;
 
-        if selector & 0xfffc == 0 {
-            return (checked && stack).then_some(13);
+        let code = selector & 0xfffc;
+
+        if code == 0 {
+            return (checked && stack).then_some((13, 0));
         }
 
         let Some((access, _)) = self.table_entry(selector) else {
-            return Some(13);
+            return Some((13, code));
         };
 
         if !checked {
@@ -670,9 +690,9 @@ impl System {
         };
 
         if unfit {
-            Some(13)
+            Some((13, code))
         } else if access & 0x80 == 0 {
-            Some(if stack { 12 } else { 11 })
+            Some((if stack { 12 } else { 11 }, code))
         } else {
             None
         }
