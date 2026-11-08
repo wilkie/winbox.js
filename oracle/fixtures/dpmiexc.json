@@ -1,0 +1,184 @@
+{
+  "probe": "dpmiexc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "exception",
+      "args": "0202h 00h",
+      "result": "cf=0"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 00h handler",
+      "result": "code"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 06h",
+      "result": "cf=0"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 06h handler",
+      "result": "code"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 0dh",
+      "result": "cf=0"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 0dh handler",
+      "result": "code"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 0eh",
+      "result": "cf=0"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 0eh handler",
+      "result": "code"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 10h",
+      "result": "cf=0"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 10h handler",
+      "result": "code"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 11h",
+      "result": "cf=1 ax=0202"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 1fh",
+      "result": "cf=1 ax=0202"
+    },
+    {
+      "function": "exception",
+      "args": "0202h 20h",
+      "result": "cf=1 ax=0202"
+    },
+    {
+      "function": "divide",
+      "args": "0202h",
+      "result": "cf=0"
+    },
+    {
+      "function": "divide",
+      "args": "0203h",
+      "result": "cf=0"
+    },
+    {
+      "function": "divide",
+      "args": "went on",
+      "result": "yes"
+    },
+    {
+      "function": "divide",
+      "args": "ax",
+      "result": "0001"
+    },
+    {
+      "function": "divide",
+      "args": "seen",
+      "result": "calls=1 code=0000 at-fault=1 if=1 caller-stack=1"
+    },
+    {
+      "function": "divide",
+      "args": "handler",
+      "result": "own-stack-caller's=0 return-rpl=0"
+    },
+    {
+      "function": "divide",
+      "args": "0203h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "protection",
+      "args": "0202h",
+      "result": "cf=0"
+    },
+    {
+      "function": "protection",
+      "args": "0203h",
+      "result": "cf=0"
+    },
+    {
+      "function": "protection",
+      "args": "went on",
+      "result": "yes"
+    },
+    {
+      "function": "protection",
+      "args": "seen",
+      "result": "calls=1 code=fff4 at-fault=1 if=1 caller-stack=1"
+    },
+    {
+      "function": "protection",
+      "args": "handler",
+      "result": "own-stack-caller's=0 return-rpl=0"
+    },
+    {
+      "function": "protection",
+      "args": "0203h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0204h 21h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0204h 61h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0205h 61h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "INT 61h calls",
+      "result": "1"
+    },
+    {
+      "function": "vector",
+      "args": "0205h 61h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0205h 21h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0205h 21h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "INT 21h 30h chained",
+      "result": "calls=1 al=05"
+    }
+  ]
+}

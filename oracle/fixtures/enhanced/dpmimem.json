@@ -1,0 +1,460 @@
+{
+  "probe": "dpmimem",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dos",
+      "args": "0100h 1",
+      "result": "cf=1 ax=0008"
+    },
+    {
+      "function": "dos",
+      "args": "0100h 1 bx",
+      "result": "bx=0000"
+    },
+    {
+      "function": "dos",
+      "args": "0100h FFFFh",
+      "result": "cf=1 ax=0008"
+    },
+    {
+      "function": "dos",
+      "args": "0100h FFFFh bx",
+      "result": "bx=0000"
+    },
+    {
+      "function": "dos",
+      "args": "0102h",
+      "result": "cf=1 ax=0007"
+    },
+    {
+      "function": "dos",
+      "args": "0102h bx",
+      "result": "bx=0002"
+    },
+    {
+      "function": "dos",
+      "args": "0101h data",
+      "result": "cf=1 ax=0101"
+    },
+    {
+      "function": "block",
+      "args": "0501h 1000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0501h 1000h handle",
+      "result": "si=di:0 low=04"
+    },
+    {
+      "function": "block",
+      "args": "0501h 1000h base",
+      "result": "000"
+    },
+    {
+      "function": "block",
+      "args": "0501h 1000h selector",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0501h 1000h selector base",
+      "result": "refused"
+    },
+    {
+      "function": "page",
+      "args": "0600h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0601h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0702h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0703h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0700h",
+      "result": "cf=1 ax=0700"
+    },
+    {
+      "function": "page",
+      "args": "0701h",
+      "result": "cf=1 ax=0701"
+    },
+    {
+      "function": "block",
+      "args": "0501h 18000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0501h 18000h handle",
+      "result": "si=di:0 low=00"
+    },
+    {
+      "function": "block",
+      "args": "0501h 18000h base",
+      "result": "000"
+    },
+    {
+      "function": "block",
+      "args": "0501h 18000h selector",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0501h 18000h selector base",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0502h 18000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0501h nought",
+      "result": "cf=1 ax=0501"
+    },
+    {
+      "function": "block",
+      "args": "0501h 7FFFFFFFh",
+      "result": "cf=1 ax=0501"
+    },
+    {
+      "function": "block",
+      "args": "0502h 1000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0502h 1000h twice",
+      "result": "cf=1 ax=0502"
+    },
+    {
+      "function": "page",
+      "args": "0602h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0603h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0604h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0604h size",
+      "result": "bx=0000 cx=1000"
+    },
+    {
+      "function": "page",
+      "args": "0800h F0000h",
+      "result": "cf=1 ax=0800"
+    },
+    {
+      "function": "page",
+      "args": "0800h F0000h address",
+      "result": "as given"
+    },
+    {
+      "function": "page",
+      "args": "0800h FE000000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "page",
+      "args": "0800h FE000000h address",
+      "result": "another"
+    },
+    {
+      "function": "interrupts",
+      "args": "before if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h al",
+      "result": "01"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0900h",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0900h al",
+      "result": "01"
+    },
+    {
+      "function": "interrupts",
+      "args": "0900h if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0900h",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0900h al",
+      "result": "01"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0900h if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0901h",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0901h al",
+      "result": "01"
+    },
+    {
+      "function": "interrupts",
+      "args": "0901h if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0901h",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0901h al",
+      "result": "01"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after 0901h if",
+      "result": "1"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after cli",
+      "result": "cf=0"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after cli al",
+      "result": "00"
+    },
+    {
+      "function": "interrupts",
+      "args": "0902h after cli if",
+      "result": "1"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h word written",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h handle",
+      "result": "0000"
+    },
+    {
+      "function": "watch",
+      "args": "0B02h",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B02h state",
+      "result": "ax=0000"
+    },
+    {
+      "function": "watch",
+      "args": "0B03h",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h twice",
+      "result": "cf=1 ax=0b01"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h three bytes",
+      "result": "cf=1 ax=0b00"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h kind 3",
+      "result": "cf=1 ax=0b00"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 0",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 0 handle",
+      "result": "0000"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 1",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 1 handle",
+      "result": "0001"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 2",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 2 handle",
+      "result": "0002"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 3",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 3 handle",
+      "result": "0003"
+    },
+    {
+      "function": "watch",
+      "args": "0B00h 4",
+      "result": "cf=1 ax=0b00"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h 0",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h 1",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h 2",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B01h 3",
+      "result": "cf=0"
+    },
+    {
+      "function": "watch",
+      "args": "0B02h never",
+      "result": "cf=1 ax=0b02"
+    },
+    {
+      "function": "calling",
+      "args": "0503h 800h",
+      "result": "yes"
+    },
+    {
+      "function": "block",
+      "args": "0501h last",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0501h last handle",
+      "result": "si=di:0 low=00"
+    },
+    {
+      "function": "block",
+      "args": "0501h last base",
+      "result": "000"
+    },
+    {
+      "function": "block",
+      "args": "0501h last selector",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0501h last selector base",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0503h 800h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0503h 800h base",
+      "result": "the same"
+    },
+    {
+      "function": "block",
+      "args": "0503h 800h handle",
+      "result": "si=di:0 same:1"
+    },
+    {
+      "function": "block",
+      "args": "0503h 800h selector",
+      "result": "refused"
+    },
+    {
+      "function": "block",
+      "args": "0502h last",
+      "result": "cf=0"
+    }
+  ]
+}

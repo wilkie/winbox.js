@@ -1,0 +1,500 @@
+{
+  "probe": "dpmildt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "alloc",
+      "args": "0000h one",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h low bits",
+      "result": "7"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h bytes",
+      "result": "00 00 00 00 00 f2 00 00"
+    },
+    {
+      "function": "base",
+      "args": "0007h 00012340h",
+      "result": "cf=0"
+    },
+    {
+      "function": "base",
+      "args": "0007h bytes",
+      "result": "00 00 40 23 01 f2 00 00"
+    },
+    {
+      "function": "base",
+      "args": "0006h",
+      "result": "cf=0"
+    },
+    {
+      "function": "base",
+      "args": "0006h value",
+      "result": "00012340"
+    },
+    {
+      "function": "base",
+      "args": "0007h FEDCBA98h",
+      "result": "cf=0"
+    },
+    {
+      "function": "base",
+      "args": "0007h high bytes",
+      "result": "00 00 98 ba dc f2 00 fe"
+    },
+    {
+      "function": "base",
+      "args": "0007h 00012340h again",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h FFFFh",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h FFFFh",
+      "result": "ff ff 40 23 01 f2 00 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0FFFFFh",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0FFFFFh",
+      "result": "ff ff 40 23 01 f2 0f 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 100FFFh",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 100FFFh",
+      "result": "00 01 40 23 01 f2 80 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 123456h",
+      "result": "cf=1 ax=0008"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 123456h",
+      "result": "00 01 40 23 01 f2 80 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h FFFFFFFFh",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h FFFFFFFFh",
+      "result": "ff ff 40 23 01 f2 8f 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0",
+      "result": "00 00 40 23 01 f2 00 00"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0FFFh",
+      "result": "cf=0"
+    },
+    {
+      "function": "limit",
+      "args": "0008h 0FFFh",
+      "result": "ff 0f 40 23 01 f2 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F2h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F2h",
+      "result": "ff 0f 40 23 01 f2 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00FAh",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00FAh",
+      "result": "ff 0f 40 23 01 fa 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 40F2h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 40F2h",
+      "result": "ff 0f 40 23 01 f2 40 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 80F2h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 80F2h",
+      "result": "ff 0f 40 23 01 f2 80 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 10F2h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 10F2h",
+      "result": "ff 0f 40 23 01 f2 10 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0092h",
+      "result": "cf=1 ax=0009"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0092h",
+      "result": "ff 0f 40 23 01 f2 10 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0072h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0072h",
+      "result": "ff 0f 40 23 01 72 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00E2h",
+      "result": "cf=1 ax=0009"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00E2h",
+      "result": "ff 0f 40 23 01 72 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0082h",
+      "result": "cf=1 ax=0009"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 0082h",
+      "result": "ff 0f 40 23 01 72 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F0h",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F0h",
+      "result": "ff 0f 40 23 01 f0 00 00"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F2h again",
+      "result": "cf=0"
+    },
+    {
+      "function": "rights",
+      "args": "0009h 00F2h again",
+      "result": "ff 0f 40 23 01 f2 00 00"
+    },
+    {
+      "function": "set",
+      "args": "000Ch data",
+      "result": "cf=0"
+    },
+    {
+      "function": "set",
+      "args": "000Ch data bytes",
+      "result": "34 12 9a 78 56 f3 40 00"
+    },
+    {
+      "function": "set",
+      "args": "000Ch system",
+      "result": "cf=1 ax=000c"
+    },
+    {
+      "function": "set",
+      "args": "000Ch system bytes",
+      "result": "34 12 9a 78 56 f3 40 00"
+    },
+    {
+      "function": "set",
+      "args": "000Ch ring 0",
+      "result": "cf=1 ax=000c"
+    },
+    {
+      "function": "set",
+      "args": "000Ch ring 0 bytes",
+      "result": "34 12 9a 78 56 f3 40 00"
+    },
+    {
+      "function": "set",
+      "args": "0009h F2h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "table",
+      "args": "000Bh global",
+      "result": "cf=1 ax=000b"
+    },
+    {
+      "function": "table",
+      "args": "000Bh nought",
+      "result": "cf=1 ax=000b"
+    },
+    {
+      "function": "table",
+      "args": "000Bh highest",
+      "result": "186f"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of it",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of it bytes",
+      "result": "34 12 9a 78 56 f2 00 00"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of it free",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of code",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of code bytes",
+      "result": "access=f2 flags=00"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of code free",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of nought",
+      "result": "cf=1 ax=000a"
+    },
+    {
+      "function": "alias",
+      "args": "0009h F8h",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of execute-only",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "000Ah of execute-only free",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "0009h F2h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h lar",
+      "result": "refused"
+    },
+    {
+      "function": "free",
+      "args": "0001h bytes",
+      "result": "cf=1 ax=000b"
+    },
+    {
+      "function": "free",
+      "args": "0001h twice",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h global",
+      "result": "cf=1 ax=0001"
+    },
+    {
+      "function": "free",
+      "args": "0001h nought",
+      "result": "cf=1 ax=0001"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h after free",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h after free given",
+      "result": "the one freed"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h three",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h three third",
+      "result": "00 00 00 00 00 f2 00 00"
+    },
+    {
+      "function": "alloc",
+      "args": "0001h first",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0001h second",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0001h third",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0001h again",
+      "result": "cf=0"
+    },
+    {
+      "function": "specific",
+      "args": "000Dh 0027h",
+      "result": "cf=0"
+    },
+    {
+      "function": "specific",
+      "args": "000Dh 0027h bytes",
+      "result": "00 00 00 00 00 f2 00 00"
+    },
+    {
+      "function": "specific",
+      "args": "000Dh 0027h twice",
+      "result": "cf=1 ax=000d"
+    },
+    {
+      "function": "specific",
+      "args": "0001h 0027h",
+      "result": "cf=0"
+    },
+    {
+      "function": "specific",
+      "args": "0001h 0027h lar",
+      "result": "refused"
+    },
+    {
+      "function": "specific",
+      "args": "000Dh 0087h",
+      "result": "cf=1 ax=000d"
+    },
+    {
+      "function": "specific",
+      "args": "000Dh 0020h",
+      "result": "cf=1 ax=000d"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h",
+      "result": "cf=0"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h twice",
+      "result": "cf=0"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h twice given",
+      "result": "the same"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h bytes",
+      "result": "access=f2 flags=00 limit=ffff base=400"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h table",
+      "result": "local"
+    },
+    {
+      "function": "segment",
+      "args": "0002h 0040h kernel's",
+      "result": "the same"
+    },
+    {
+      "function": "segment",
+      "args": "0002h B800h",
+      "result": "cf=0"
+    },
+    {
+      "function": "segment",
+      "args": "0002h B800h bytes",
+      "result": "access=f2 flags=00 limit=ffff base=b8000"
+    },
+    {
+      "function": "base",
+      "args": "0006h nought",
+      "result": "cf=1 ax=0006"
+    }
+  ]
+}

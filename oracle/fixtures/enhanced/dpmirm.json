@@ -1,0 +1,535 @@
+{
+  "probe": "dpmirm",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dos",
+      "args": "GlobalDosAlloc",
+      "result": "given"
+    },
+    {
+      "function": "dos",
+      "args": "30h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "30h version",
+      "result": "al=05 ah=00"
+    },
+    {
+      "function": "stack",
+      "args": "30h ss:sp after",
+      "result": "ss=0000 sp=0000"
+    },
+    {
+      "function": "dos",
+      "args": "19h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "19h drive",
+      "result": "al=02"
+    },
+    {
+      "function": "dos",
+      "args": "47h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "47h result",
+      "result": "cf=0 ax=0100"
+    },
+    {
+      "function": "dos",
+      "args": "47h folder",
+      "result": "WINDOWS"
+    },
+    {
+      "function": "dos",
+      "args": "3D00h",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "3D00h handle",
+      "result": "given"
+    },
+    {
+      "function": "dos",
+      "args": "3Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "3Fh result",
+      "result": "cf=0 ax=0010"
+    },
+    {
+      "function": "dos",
+      "args": "3Fh bytes",
+      "result": "[windows]\r\nspool"
+    },
+    {
+      "function": "dos",
+      "args": "3Eh",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "3Eh result",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "3D00h missing",
+      "result": "cf=0"
+    },
+    {
+      "function": "dos",
+      "args": "3D00h missing result",
+      "result": "cf=1 ax=0002"
+    },
+    {
+      "function": "bios",
+      "args": "12h",
+      "result": "cf=0"
+    },
+    {
+      "function": "bios",
+      "args": "12h size",
+      "result": "ax=0280"
+    },
+    {
+      "function": "stack",
+      "args": "30h one word",
+      "result": "cf=0"
+    },
+    {
+      "function": "stack",
+      "args": "30h one word version",
+      "result": "al=05"
+    },
+    {
+      "function": "callback",
+      "args": "0303h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0303h address",
+      "result": "dx=0ab7 cx=ff06"
+    },
+    {
+      "function": "callback",
+      "args": "0301h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0301h result",
+      "result": "ax=4321 bx=5678 cx=0009"
+    },
+    {
+      "function": "callback",
+      "args": "0301h seen",
+      "result": "calls=1 es:di=1 ax=1234 bx=5678 ss:sp-nought=0 if=0"
+    },
+    {
+      "function": "callback",
+      "args": "0302h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0302h result",
+      "result": "ax=4321 bx=6789 cx=0009"
+    },
+    {
+      "function": "callback",
+      "args": "0302h seen",
+      "result": "calls=2 ax=2345 bx=6789"
+    },
+    {
+      "function": "callback",
+      "args": "0200h 60h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0201h 60h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0300h 60h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0300h 60h result",
+      "result": "ax=4321 cx=0009"
+    },
+    {
+      "function": "callback",
+      "args": "0300h 60h seen",
+      "result": "calls=3 ax=3456"
+    },
+    {
+      "function": "callback",
+      "args": "0201h 60h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h twice",
+      "result": "cf=1 ax=0304"
+    },
+    {
+      "function": "callback",
+      "args": "0304h nought",
+      "result": "cf=1 ax=0304"
+    },
+    {
+      "function": "callback",
+      "args": "0303h until refused",
+      "result": "40 ax=0303"
+    },
+    {
+      "function": "callback",
+      "args": "0303h last",
+      "result": "dx=0847"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each",
+      "result": "cf=0"
+    },
+    {
+      "function": "callback",
+      "args": "0304h each freed",
+      "result": "40"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 60h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0201h 60h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 60h again",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 60h value",
+      "result": "1234:5678"
+    },
+    {
+      "function": "vector",
+      "args": "0201h 60h back",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 08h-0Fh",
+      "result": "cf=0"
+    },
+    {
+      "function": "vector",
+      "args": "0200h 50h-57h as 08h-0Fh",
+      "result": "4 of 8"
+    }
+  ]
+}
