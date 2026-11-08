@@ -1,17 +1,18 @@
 //! Programs kept as layers of drive C:, on the host's disk
-//! (`kb/formats/layer.md`, "On the native build's disk"): what the page
-//! keeps in `IndexedDB`, kept in the cache folder, `winbox`, in the page's
+//! (`kb/formats/library.md`, `kb/formats/layer.md`): what the page keeps in
+//! `IndexedDB`, kept in the library's folder (`library.rs`), in the page's
 //! own format.
 //!
 //! ```text
-//! winbox/blobs/<sha256>                a file's bytes, kept once
-//! winbox/layers/<id>.json              a layer's manifest, as its zip has it
-//! winbox/programs/<name>.json          a program: its base, display, layers, EXEs
-//! winbox/layer-<stack id>/             a layer materialised for its stack
-//! winbox/users/<name>/C/               what the program wrote: the top of C:
-//! winbox/users/<name>/removed          what it deleted beneath, one a line
-//! winbox/users/<name>/identity         the stack its writes were made on
-//! winbox/staging/<name>-<pid>/         an installer's run: media/ and C/
+//! blobs/<sha256>                a file's bytes, kept once
+//! layers/<id>.json              a layer's manifest, as its zip has it
+//! programs/<name>.json          a program: its base, display, layers, EXEs, mode
+//! layer-<stack id>/             a layer materialised for its stack
+//! users/<name>/C/               what the program wrote: the top of C:
+//! users/<name>/removed          what it deleted beneath, one a line
+//! users/<name>/identity         the stack its writes were made on
+//! staging/<name>-<pid>/         an installer's run: media/ and C/
+//! bases.json                    where each base was read from (`library.rs`)
 //! ```
 //!
 //! A program's C: is its base (the asset bundle's for its display, or an
@@ -65,6 +66,15 @@ pub struct Program {
     /// before had none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub media: Vec<Medium>,
+    /// The mode of Windows it is run in, `standard` or `enhanced`: the
+    /// native library's record carries it (`kb/formats/library.md`); a
+    /// record without one, kept before, is standard.
+    #[serde(default = "standard_mode")]
+    pub mode: String,
+}
+
+fn standard_mode() -> String {
+    crate::library::STANDARD.to_string()
 }
 
 /// An image a program is run with, as the page's `KeptProgram` is to keep
@@ -95,6 +105,7 @@ impl Program {
             orders: BTreeMap::new(),
             kept: 0,
             media: Vec::new(),
+            mode: standard_mode(),
         }
     }
 
@@ -586,7 +597,7 @@ impl Staging {
     }
 }
 
-/// Where programs and their layers are kept: the cache folder's `winbox`.
+/// Where programs and their layers are kept: the library's folder.
 #[derive(Debug, Clone)]
 pub struct Store {
     pub root: PathBuf,
