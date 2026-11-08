@@ -11,7 +11,7 @@ export function GetProcAddress(hinst, lpszProcName) {
     const loader = module.loader;
     const ordinal =
       lpszProcName instanceof String || typeof lpszProcName == 'string'
-        ? loader.ordinalOf(String(lpszProcName))
+        ? (loader.ordinalFound?.(String(lpszProcName)) ?? loader.ordinalOf(String(lpszProcName)))
         : lpszProcName & 0xffff;
     /* An export of `COMMDLG`'s, `VER`'s or `LZEXPAND`'s WinBox answers: its
      * stub (`own-modules.ts`). */

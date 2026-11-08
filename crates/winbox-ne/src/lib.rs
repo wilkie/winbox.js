@@ -362,6 +362,24 @@ impl Executable {
             .map_or(0, |entry| entry.ordinal)
     }
 
+    /// The ordinal `GetProcAddress` finds a name at, as KERNEL searches:
+    /// the name upper-cased, each character, and compared with each table's
+    /// names as the module keeps them, the resident ones then the
+    /// nonresident (`KRNL386.EXE` seg2 `0706`-`073c` copies it, seg1
+    /// `50ca`-`50fc` compares). A name the linker kept in mixed case --
+    /// a WATCOM Win386 library's `Win386LibEntry` -- is not found so
+    /// (the `w386lib` probe); nought for none.
+    pub fn ordinal_found(&self, name: &str) -> u16 {
+        let wanted = name.to_ascii_uppercase();
+
+        self.resident_names
+            .iter()
+            .skip(1)
+            .chain(self.nonresident_names.iter().skip(1))
+            .find(|entry| entry.name == wanted)
+            .map_or(0, |entry| entry.ordinal)
+    }
+
     /// A segment's image: its bytes in the file, iterated records spelled
     /// out; empty for a segment with none.
     pub fn segment_bytes(&self, index: usize) -> Vec<u8> {

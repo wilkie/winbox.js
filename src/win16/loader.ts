@@ -657,6 +657,24 @@ export class Loader {
   }
 
   /**
+   * The ordinal `GetProcAddress` finds a name at, as KERNEL searches: the
+   * name upper-cased, each character, and compared with each table's names
+   * as the module keeps them, the resident ones then the nonresident
+   * (`KRNL386.EXE` seg2 `0706`-`073c` copies it, seg1 `50ca`-`50fc`
+   * compares). A name the linker kept in mixed case -- a WATCOM Win386
+   * library's `Win386LibEntry` -- is not found so (the `w386lib` probe).
+   * 0 for none.
+   */
+  ordinalFound(name: string) {
+    const wanted = String(name).toUpperCase();
+    const entry = [...this._residentEntries.slice(1), ...this._nonResidentEntries.slice(1)].find(
+      (one) => String(one.name) === wanted
+    );
+
+    return entry?.index ?? 0;
+  }
+
+  /**
    * Returns information about where the requested data exists in memory.
    *
    * The segment and offset are returned for the given ordinal.

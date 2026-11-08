@@ -285,7 +285,15 @@ pub(crate) fn exe_ptr(system: &mut System, handle: u16) -> u16 {
 
     let chain = module_chain(system);
 
-    if handle & 1 != 0 && chain.iter().any(|module| module.handle == handle) {
+    // A module's own handle, odd, its database's (`4e7f`-`4e8d`): any
+    // module's, of the chain or loaded from a file. Two programs' modules
+    // may have one name -- Lode Runner's `SETUP.EXE` and `_SETUP.EXE` are
+    // both `SETUP` -- and the chain, found by names, holds one of them; the
+    // TypeScript engine keeps only the last of a name.
+    if handle & 1 != 0
+        && (chain.iter().any(|module| module.handle == handle)
+            || system.modules.iter().any(|module| module.handle == handle))
+    {
         return handle;
     }
 

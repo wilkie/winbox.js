@@ -421,7 +421,7 @@ fn proc_address(system: &mut System, handle: u16, name: &Name) -> u32 {
     };
     let module = &system.modules[index];
     let ordinal = match name {
-        Name::Text(text) => module.executable.ordinal_of(text),
+        Name::Text(text) => module.executable.ordinal_found(text),
         Name::Number(number) => *number,
         Name::Null => 0,
     };

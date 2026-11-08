@@ -19,12 +19,42 @@ export function matches(entry, wanted) {
   }
 
   const name = String(wanted);
+  const number = numbered(name);
+
+  if (number !== 0) {
+    return entry.id === number;
+  }
 
   // Names are compared without regard to case, as the resource compiler did.
   return (
     String(entry.name ?? entry.id).toUpperCase() === name.toUpperCase() ||
     String(entry.id).toUpperCase() === name.toUpperCase()
   );
+}
+
+/**
+ * The number a name asked for makes, as KERNEL reads one: `#` and digits is
+ * the number they make, to the first that is not a digit, in a word
+ * (`KRNL386.EXE` seg3 `0ac0`-`0af6`); nought for one that makes nought, or
+ * any other, which is then a name. Lode Runner's setup asks `SETUPL.DLL`'s
+ * bitmap `#164` so.
+ */
+export function numbered(name: string) {
+  let number = 0;
+
+  if (!name.startsWith('#')) {
+    return 0;
+  }
+
+  for (const char of name.slice(1)) {
+    if (char < '0' || char > '9') {
+      break;
+    }
+
+    number = (number * 10 + (char.charCodeAt(0) - 0x30)) & 0xffff;
+  }
+
+  return number;
 }
 
 /** Each module's resources' handles, by entry: made once, for all of them. */

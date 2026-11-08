@@ -32,13 +32,36 @@ fn wanted(system: &System, far: u32) -> Option<Wanted> {
     match (far >> 16, far & 0xffff) {
         (0, 0) => None,
         (0, number) => Some(Wanted::Number(number as u16)),
-        _ => Some(Wanted::Name(
+        _ => Some(named(
             system
                 .read_string(far)
                 .iter()
                 .map(|&byte| char::from(byte))
                 .collect(),
         )),
+    }
+}
+
+/// A name asked for, as KERNEL reads one: `#` and digits is the number
+/// they make, to the first that is not a digit, in a word (`KRNL386.EXE`
+/// seg3 `0ac0`-`0af6`); one that makes nought, or any other, a name.
+/// Lode Runner's setup asks `SETUPL.DLL`'s bitmap `#164` so.
+fn named(text: String) -> Wanted {
+    let number = text.strip_prefix('#').map_or(0, |digits| {
+        digits
+            .bytes()
+            .take_while(u8::is_ascii_digit)
+            .fold(0u16, |number, digit| {
+                number
+                    .wrapping_mul(10)
+                    .wrapping_add(u16::from(digit - b'0'))
+            })
+    });
+
+    if number == 0 {
+        Wanted::Name(text)
+    } else {
+        Wanted::Number(number)
     }
 }
 
@@ -234,7 +257,7 @@ pub(crate) fn find_typed(
 ) -> u16 {
     let name = match name {
         Ok(number) => Wanted::Number(*number),
-        Err(text) => Wanted::Name(text.clone()),
+        Err(text) => named(text.clone()),
     };
 
     find_in(system, instance, &name, &Wanted::Number(kind))
@@ -876,4 +899,28 @@ pub fn direct_res_alloc(system: &mut System, args: &mut Args) -> Result<Answer, 
         };
 
     Ok(Answer::Word(system.allocate_owned(u32::from(size), flags)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Wanted, named};
+
+    fn number_of(text: &str) -> Option<u16> {
+        match named(text.to_string()) {
+            Wanted::Number(number) => Some(number),
+            Wanted::Name(_) => None,
+        }
+    }
+
+    /// `#` and digits is their number, to the first that is not a digit,
+    /// in a word (`KRNL386.EXE` seg3 `0ac0`-`0af6`); nought, a name.
+    #[test]
+    fn a_name_of_hash_and_digits_is_a_number() {
+        assert_eq!(number_of("#164"), Some(164));
+        assert_eq!(number_of("#12x"), Some(12));
+        assert_eq!(number_of("#65537"), Some(1));
+        assert_eq!(number_of("#0"), None);
+        assert_eq!(number_of("#"), None);
+        assert_eq!(number_of("SIERRAD"), None);
+    }
 }
