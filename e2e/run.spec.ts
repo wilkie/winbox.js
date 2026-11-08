@@ -2746,8 +2746,9 @@ for (const { engine, page: at } of ENGINES) {
         });
       const run = async () => {
         await page.getByRole('button', { name: 'Run C:\\ORACLE\\WINFLAGS.EXE' }).click();
+        /* The probe ends by asking Windows to end the session. */
         await expect(page.locator('#status')).toHaveText(
-          'The program has ended, with exit code 0.',
+          'The program asked Windows to end the session, and has finished.',
           { timeout: 30000 }
         );
       };
