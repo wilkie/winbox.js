@@ -363,6 +363,10 @@ pub const AGREEING: &[&str] = &[
     "enhanced/dpmigrw",
     "enhanced/dpminul",
     "enhanced/dpmiout",
+    // WATCOM's Win386 supervisor and its 32-bit programs (`win386.md`).
+    "enhanced/w386ver",
+    "enhanced/w386dpmi",
+    "enhanced/w386lib",
 ];
 
 /// The files a probe that prints finds on its drive, as the TypeScript
@@ -399,6 +403,20 @@ fn printers(probe: &str, beneath: &Beneath) -> Vec<(String, Vec<u8>)> {
     }
 
     placed
+}
+
+/// The folder a probe was built into -- the Win386 probes' own
+/// (`build-probes.mjs`, `buildWin386`), or the rest's -- and its program's
+/// bytes; `None` where it is not built.
+fn built_in(upper: &str) -> Option<(PathBuf, Vec<u8>)> {
+    ["oracle/build/win386", "oracle/build/probes"]
+        .into_iter()
+        .map(|folder| root().join(folder))
+        .find_map(|folder| {
+            let bytes = std::fs::read(folder.join(format!("{upper}.EXE"))).ok()?;
+
+            Some((folder, bytes))
+        })
 }
 
 pub fn root() -> PathBuf {
@@ -917,7 +935,7 @@ impl Setup {
         let sound = display == SOUND;
         let display = if sound { "vga".to_string() } else { display };
         let upper = probe.to_ascii_uppercase();
-        let bytes = std::fs::read(root().join(format!("oracle/build/probes/{upper}.EXE"))).ok()?;
+        let (built, bytes) = built_in(&upper)?;
 
         let mut system = system_in(mode_of(name).0);
 
@@ -940,7 +958,7 @@ impl Setup {
         // And what it brings, where the recorder puts it: beside Windows
         // (`build-probes.mjs`) -- its library, and the program it starts.
         for brought in [format!("{upper}D.DLL"), format!("{upper}C.EXE")] {
-            if let Ok(bytes) = std::fs::read(root().join("oracle/build/probes").join(&brought)) {
+            if let Ok(bytes) = std::fs::read(built.join(&brought)) {
                 placed.push((format!("WINDOWS\\{brought}"), bytes));
             }
         }

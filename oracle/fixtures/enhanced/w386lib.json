@@ -1,0 +1,70 @@
+{
+  "probe": "w386lib",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "load",
+      "args": "LoadLibrary",
+      "result": "given"
+    },
+    {
+      "function": "load",
+      "args": "DLL1",
+      "result": "found"
+    },
+    {
+      "function": "load",
+      "args": "DLL2",
+      "result": "found"
+    },
+    {
+      "function": "load",
+      "args": "DLL3",
+      "result": "found"
+    },
+    {
+      "function": "load",
+      "args": "DLL129",
+      "result": "none"
+    },
+    {
+      "function": "load",
+      "args": "Win386LibEntry",
+      "result": "none"
+    },
+    {
+      "function": "load",
+      "args": "WIN386LIBENTRY",
+      "result": "none"
+    },
+    {
+      "function": "call",
+      "args": "DLL1 100000, -3, 7",
+      "result": "100004"
+    },
+    {
+      "function": "call",
+      "args": "ordinal 130 70000, 5, -2, 1",
+      "result": "70003"
+    },
+    {
+      "function": "call",
+      "args": "DLL3 GetWinFlags",
+      "result": "0c29"
+    },
+    {
+      "function": "free",
+      "args": "GetModuleHandle after",
+      "result": "gone"
+    }
+  ]
+}

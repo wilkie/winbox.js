@@ -1,0 +1,75 @@
+{
+  "probe": "w386env",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "segment",
+      "args": "cs",
+      "result": "low 7, rights 00cffb, limit ffffffff"
+    },
+    {
+      "function": "segment",
+      "args": "ds",
+      "result": "low 7, rights 00cff3, limit ffffffff"
+    },
+    {
+      "function": "segment",
+      "args": "ss",
+      "result": "low 7, rights 00cff3, limit ffffffff"
+    },
+    {
+      "function": "segment",
+      "args": "es",
+      "result": "low 7, rights 00cff3, limit ffffffff"
+    },
+    {
+      "function": "segment",
+      "args": "fs",
+      "result": "low 0, LAR refused"
+    },
+    {
+      "function": "supervisor",
+      "args": "gs",
+      "result": "low 7, rights 0000f3, limit 00004e5f"
+    },
+    {
+      "function": "segment",
+      "args": "same",
+      "result": "ss is not, es is, fs is not, gs is not"
+    },
+    {
+      "function": "stack",
+      "args": "esp",
+      "result": "00001fb4"
+    },
+    {
+      "function": "stack",
+      "args": "push moves esp by",
+      "result": "4"
+    },
+    {
+      "function": "alias",
+      "args": "AllocAlias16",
+      "result": "given"
+    },
+    {
+      "function": "segment",
+      "args": "alias",
+      "result": "low 7, rights 0000f3, limit 0000ffff"
+    },
+    {
+      "function": "alias",
+      "args": "MapAliasToFlat",
+      "result": "ff"
+    }
+  ]
+}

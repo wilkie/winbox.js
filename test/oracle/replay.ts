@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { Disk } from '../../src/emulator/disk.js';
 import { GetWinFlags } from '../../src/win16/kernel/GetWinFlags.js';
 import { exportedConstant } from '../../src/win16/linker.js';
-import { PROBES, imageFor, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
+import { builtIn, imageFor, outputOf, recordsFrom, runProbe } from '../win16/run-probe.js';
 import { File } from '../../src/file-system.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Machine, type WindowsMode } from '../../src/emulator/machine.js';
@@ -994,15 +994,7 @@ export class Context {
     /* And the probe's own program, as the oracle built it, for the calls that
      * read a module's file: a file as the kernel's calls expect one. */
     const binaries = new Map<string, Uint8Array>();
-    const program = join(
-      __dirname,
-      '..',
-      '..',
-      'oracle',
-      'build',
-      'probes',
-      `${this.probe.toUpperCase()}.EXE`
-    );
+    const program = join(builtIn(this.probe ?? ''), `${this.probe?.toUpperCase()}.EXE`);
 
     if (this.probe && existsSync(program)) {
       binaries.set(`${this.probe.toLowerCase()}.exe`, new Uint8Array(readFileSync(program)));
@@ -5682,6 +5674,10 @@ export const KNOWN_GAPS: Record<string, string> = {
   'dpmiexc:divide': "the faulting code's interrupt flag, which WinBox's processor keeps clear",
   'dpmiexc:protection': "the faulting code's interrupt flag, which WinBox's processor keeps clear",
   'dpmiexc:vector': "DOS's version through INT 21h, 6.00 in WinBox and 5.00 on DOSBox",
+  /* The Win386 supervisor's own data segment is the program's 16-bit one,
+   * whose limit Windows makes its size and WinBox 64 KiB
+   * (`kb/topics/global-and-local-memory.md`, "Not yet done"). */
+  'enhanced/w386env:supervisor': "a program's data segment's limit, its size in Windows",
 };
 
 /**
@@ -6135,6 +6131,12 @@ const RUN_WHOLE = new Set<string>([
   'dpmigrw',
   'dpminul',
   'dpmiout',
+  /* WATCOM's Win386 supervisor and the 32-bit programs it starts, in 386
+   * enhanced mode alone (`kb/topics/win386.md`). */
+  'w386ver',
+  'w386env',
+  'w386dpmi',
+  'w386lib',
 ]);
 
 /**
@@ -6315,7 +6317,7 @@ function wholeRun(
       (async () => {
         if (
           !existsSync(imageFor(display)) ||
-          !existsSync(join(PROBES, `${probe.toUpperCase()}.EXE`))
+          !existsSync(join(builtIn(probe), `${probe.toUpperCase()}.EXE`))
         ) {
           return null;
         }
@@ -6528,6 +6530,10 @@ export const ENHANCED = new Set([
   'dpmigrw',
   'dpminul',
   'dpmiout',
+  'w386ver',
+  'w386env',
+  'w386dpmi',
+  'w386lib',
 ]);
 
 /**

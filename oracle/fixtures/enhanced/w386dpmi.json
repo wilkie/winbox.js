@@ -1,0 +1,235 @@
+{
+  "probe": "w386dpmi",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, 386 enhanced mode",
+    "mode": "enhanced",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "alloc",
+      "args": "0501h 00016000h",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0501h block",
+      "result": "offset in page 000, handle given"
+    },
+    {
+      "function": "alloc",
+      "args": "0003h",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0003h increment",
+      "result": "0008"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h one",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h one low bits",
+      "result": "7"
+    },
+    {
+      "function": "code",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "code",
+      "args": "0009h c0fbh",
+      "result": "cf=0"
+    },
+    {
+      "function": "code",
+      "args": "0008h ffffffffh",
+      "result": "cf=0"
+    },
+    {
+      "function": "code",
+      "args": "bytes",
+      "result": "limit ffff, access fb, flags cf"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h two",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h two low bits",
+      "result": "7"
+    },
+    {
+      "function": "data",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "0009h c0f3h",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "0008h ffffffffh",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "bytes",
+      "result": "limit ffff, access f3, flags cf"
+    },
+    {
+      "function": "data",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "0009h c0f3h",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "0008h ffffffffh",
+      "result": "cf=0"
+    },
+    {
+      "function": "data",
+      "args": "bytes",
+      "result": "limit ffff, access f3, flags cf"
+    },
+    {
+      "function": "flat",
+      "args": "000Bh limit 4 GiB",
+      "result": "yes"
+    },
+    {
+      "function": "flat",
+      "args": "0006h",
+      "result": "cf=0"
+    },
+    {
+      "function": "flat",
+      "args": "0006h base",
+      "result": "the base set"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h fifty",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h fifty low bits",
+      "result": "7"
+    },
+    {
+      "function": "alias",
+      "args": "0009h 00F3h first",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "0008h 0000FFFFh first",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "first bytes",
+      "result": "limit ffff, access f3, flags 00"
+    },
+    {
+      "function": "alias",
+      "args": "0009h 00F3h second",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "0008h 0000FFFFh second",
+      "result": "cf=0"
+    },
+    {
+      "function": "alias",
+      "args": "second bytes",
+      "result": "limit ffff, access f3, flags 00"
+    },
+    {
+      "function": "alias",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "alloc",
+      "args": "0000h one more",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0007h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0009h 00f3h",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "0008h 0000ffffh",
+      "result": "cf=0"
+    },
+    {
+      "function": "block",
+      "args": "bytes",
+      "result": "limit ffff, access f3, flags 00"
+    },
+    {
+      "function": "use",
+      "args": "flat 5000h through the alias",
+      "result": "5a"
+    },
+    {
+      "function": "free",
+      "args": "0001h one more",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h first alias",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h second data",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h data",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0001h code",
+      "result": "cf=0"
+    },
+    {
+      "function": "free",
+      "args": "0502h block",
+      "result": "cf=0"
+    }
+  ]
+}
