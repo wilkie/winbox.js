@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { Disk } from '../../src/emulator/disk.js';
+import { Disk } from '../../src/file-systems/disk.js';
 import { FAT16 } from '../../src/file-systems/fat16.js';
 import { FATImage, volumeStart } from '../../src/file-systems/fat-image.js';
 

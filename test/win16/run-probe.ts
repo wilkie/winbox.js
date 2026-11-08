@@ -24,6 +24,9 @@ import { Assets } from '../../src/assets/bundle.js';
 import { STAMP } from '../../src/assets/compose.js';
 import { fat16Drive } from '../../src/run/changes.js';
 import { layeredBase } from '../layers/split.js';
+import { bundle, bundleDrive } from '../assets/built.js';
+
+export { ASSETS, bundle, bundleDrive } from '../assets/built.js';
 
 /**
  * A probe run whole: its program loaded, linked and run on our processor,
@@ -72,26 +75,6 @@ export function imageFor(display: string) {
     : join(__dirname, '..', '..', 'oracle', 'build', `win31-${display}.img`);
 }
 
-/** The asset bundle `pnpm assets` unpacks, as `bundle()` reads it. */
-export const ASSETS = join(__dirname, '..', '..', 'oracle', 'build', 'assets');
-
-let bundleRead: Assets | null | undefined;
-
-/** The asset bundle in `oracle/build/assets`, read once; null where it is not made. */
-export function bundle(): Assets | null {
-  if (bundleRead === undefined) {
-    bundleRead = existsSync(ASSETS)
-      ? Assets.fromFiles((path) => {
-          const at = join(ASSETS, path);
-
-          return existsSync(at) ? new Uint8Array(readFileSync(at)) : undefined;
-        })
-      : null;
-  }
-
-  return bundleRead;
-}
-
 /**
  * What drive C: has beneath it: the oracle's installation of Windows for the
  * display, as the probe was recorded on; or, `WINBOX_BASE=assets`, the base
@@ -106,33 +89,6 @@ export function chosenBase(): Base {
   const base = process.env.WINBOX_BASE;
 
   return base === 'assets' || base === 'layers' ? base : 'installed';
-}
-
-/**
- * The asset bundle's base for a display put on the machine's first disk, a
- * FAT16 volume made in memory as the page makes its drive (`fillDrive`): its
- * folders, and each file last written when the base says.
- */
-export async function bundleDrive(machine: any, assets: Assets, display: string) {
-  const composed = assets.compose(display);
-  const fileSystem: any = new FAT16(machine.disks[0]);
-
-  await fileSystem.format();
-
-  for (const directory of composed.directories) {
-    await fileSystem.open(directory.split('/'), true);
-  }
-
-  for (const { path, data, modified } of composed.files) {
-    await fileSystem.map(
-      path.split('/'),
-      new DataView(data.buffer, data.byteOffset, data.byteLength),
-      /* Its archive bit set, as the page places it (`fillDrive`). */
-      { modified, archive: true }
-    );
-  }
-
-  return fileSystem;
 }
 
 /**

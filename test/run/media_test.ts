@@ -5,11 +5,10 @@ import { join } from 'node:path';
 
 import { Assets } from '../../src/assets/bundle.js';
 import { writeStoredZip } from '../../src/assets/zip.js';
-import { Machine } from '../../src/emulator/machine.js';
 import { fillDrive, planDrive } from '../../src/run/drive.js';
 import { classify, installerOf, makeFromMedia, orderMedia } from '../../src/run/media.js';
 import { assetsIdentity, changesKey } from '../../src/run/store.js';
-import { bundle, bundleDrive } from '../win16/run-probe.js';
+import { bareDisks, bundle, bundleDrive } from '../assets/built.js';
 
 /**
  * What the page makes of what is dropped on it, and the asset bundle's base
@@ -149,8 +148,8 @@ const haveMedia = existsSync(join(CACHE, 'floppies'));
       }
 
       const assets: Assets = made!;
-      const page: any = new Machine();
-      const harness: any = new Machine();
+      const page = bareDisks();
+      const harness = bareDisks();
 
       await fillDrive(page, planDrive([], null, assets.compose(display)));
       await bundleDrive(harness, assets, display);
