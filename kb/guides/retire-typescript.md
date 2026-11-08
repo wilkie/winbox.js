@@ -4,7 +4,7 @@ name: Retiring the TypeScript engine
 summary: A plan for taking the TypeScript engine out of WinBox and keeping the Rust engine as the one implementation — what uses the TypeScript engine today, which checks the Rust engine has to take over first so that no coverage is lost, which generated files become source, the phases in an order that keeps every gate meaningful, and the questions left for the owner.
 ---
 
-This page is a plan. Nothing on it is built yet. It follows the model of [[guide:enhanced-mode]].
+This page is a plan, in part built: phase 1b, the unit tests' audit and ports, is done (2026-11-08, [[guide:retire-typescript-tests]]); the rest is not. It follows the model of [[guide:enhanced-mode]].
 
 On 2026-11-08 the owner decided to retire the TypeScript engine. Its current form is kept on the local branch `typescript-engine`, made at `9b221155` (develop's tip that day). From then on develop has one implementation, the Rust engine. The oracle's recordings stay the ground truth: `oracle/fixtures`, recorded under DOSBox. Keeping two engines twinned, with every fix made in both and the corpus compared between them, has stopped being worth what it costs.
 
@@ -199,6 +199,7 @@ Each phase is a branch of its own, merged when its gates pass. Until phase 4, bo
 - **Touches:** `crates/winbox-win16/tests/conformance.rs` (new), `tests/support/mod.rs` (`KNOWN_GAPS`, `UNBUILT`; `AGREEING` goes once the new test passes), `tests/probes.rs` (the survey against Rust's own report), `Cargo.toml` (`libtest-mimic`); `examples/corpus.rs` (`--write`); `crates/winbox-cpu/tests/conformance.rs` and two baseline files; Rust writers for `caribb-layer.json`, `widget-layer.json`, `widget-windows.json` and `accessible-trees/`; Rust ports of the unit cases the audit above names.
 - **Proved by:** the new trial passes on every fixture or names its gap. The two `conformance.json` files compare as above. `examples/corpus --write` into a scratch folder gives the same `.json`, `.calls.txt` and `.png` files as the TypeScript survey for all 38 programs (today's "whole runs alike: 38 of 38" says the calls already agree). The CPU vectors meet their baselines. Every gate as before.
 - **Size:** about 1,500 lines of Rust added, most of it the replay and its gap list. The ports depend on the audit; their count is part of this phase's report.
+- **Phase 1b, the unit tests: done** (2026-11-08). Every TypeScript test file that reaches the engine was read and given a disposition, and the cases no Rust test held were ported: [[guide:retire-typescript-tests]] has the table. The page's tests in `test/file-systems`, `test/layers`, `test/assets` and `test/run` no longer reach the engine, bar the `WindowsMode` type (phase 3). `dump-exports.mjs` reads `kept.rs`. The ports found five places where the Rust engine is behind the TypeScript tests; each is kept as an ignored Rust test (below, Not yet done).
 
 ### Phase 2: generators and the knowledge base
 
@@ -248,6 +249,11 @@ The owner decided on 2026-11-08 to retire the TypeScript engine. Its last form i
 
 All of it. The first step is phase 1's replay: the 69 `KNOWN_GAPS` entries moved across, and `AGREEING` widened by the 327 fixtures already whole.
 
-- The audit of the TypeScript unit tests (the processor's, DOS's, the rasterizer's and the Win16 modules') is not done. Each file still has to be matched to a Rust test or a probe, or ported.
+- The unit tests' audit is done ([[guide:retire-typescript-tests]]). What its ports found is open, each a Rust test kept as `#[ignore = "finding: …"]` with its evidence, none fixed in phase 1b:
+  - an expand-down segment read above its limit stops the Rust engine, where the 80386 reads (Intel 386 manual; `crates/winbox-cpu/tests/units.rs`);
+  - an expand-down segment read below its limit stops it, where the 80386 raises #GP(13) (`crates/winbox-win16/src/fault_vector.rs`);
+  - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`);
+  - WIN87EM's emulator is not in the Rust engine, so a program with the coprocessor switched off stops at its first floating-point interrupt (`tests/win87em.rs`);
+  - the task's environment has no DOS host variables before `windir`, as [[probe:environ]] records (`tests/task_environment.rs`).
 - The Rust replay's run time with parallel trials is not measured.
 - Whether `examples/corpus --write` reproduces the TypeScript survey's reports byte for byte (the `.calls.txt` text and the PNG encoding) is not measured. Only the calls and the pixels are compared today.
