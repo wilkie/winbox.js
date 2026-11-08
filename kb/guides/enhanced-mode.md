@@ -4,7 +4,7 @@ name: 386 enhanced mode
 summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and both engines run today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
 ---
 
-This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, and the first of phase 2's answers are built (2026-11-07); the rest is not. It follows the model of [[guide:launcher]].
+This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07); the rest is not. It follows the model of [[guide:launcher]].
 
 The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
 
@@ -85,7 +85,8 @@ The DPMI host is DOSX in standard mode and WIN386's virtual machine manager in e
 - **Answered:** 0000h-0003h, 0006h-000Dh, 0100h-0102h, 0200h-0205h, 0300h-0304h, 0400h, 0500h-0503h, 0900h-0902h and 0B00h-0B03h.
 - **Carry clear, nothing done:** 0004h and 0005h (0.9's undocumented lock and unlock of a selector), 0600h-0603h (locking: nothing pages), 0702h and 0703h, and 0800h. With no paging, a physical address is already the linear one, so 0800h gives BX:CX back as it came. 0604h answers a page of 1000h bytes.
 - **Refused, AX nought and the carry set:** 0305h, 0306h, 0700h, 0701h and 0A00h.
-- **Anything else** is not in the table. The dispatcher then takes its handler from the word at 2B89h of its own segment. That word lies inside the refusing handler's first instruction, not at a table entry, so the call goes to code that is not a handler ([[inferred]]). [[measured]] DOSX never returns from DPMI 1.0's 000Eh.
+- **Anything else** is not in the table. The dispatcher then takes its handler from the word at 2B89h of its own segment. That word lies inside the refusing handler's first instruction, 0012h, which is DOSX's own start-up code ([[read out]]). [[measured]] DOSX never returns from DPMI 1.0's 000Eh: under DOSBox the emulator itself stops ([[probe:dpmiout]]).
+- **What ends Windows.** 0503h faults inside DOSX whatever the block, and so do 0502h and 0101h given nought: Windows goes back to DOS with "Standard Mode: Fault in MS-DOS Extender." ([[read out]] and [[measured]], [[topic:dpmi-functions]], "Windows ends").
 
 [[measured]] [[probe:enhmode]] calls each function with harmless arguments, in both modes:
 
@@ -96,7 +97,7 @@ The DPMI host is DOSX in standard mode and WIN386's virtual machine manager in e
   - 000Dh's descriptor freed with 0001h: refused, AX 1, in standard mode.
   - 0800h at A0000h: carry clear in standard mode, refused in enhanced, where memory under a megabyte cannot be mapped.
   - 0A00h "MS-DOS": AX nought in standard mode, AX left in enhanced.
-  - 0503h, a page made two: standard mode never returns from it, as the probe's last record shows. Enhanced mode answers it.
+  - 0503h, a page made two: standard mode never returns from it, as the probe's last record shows: DOSX faults and Windows ends ([[topic:dpmi-functions]]). Enhanced mode answers it.
   - DPMI 1.0's 000Eh, 0210h, 0401h and 0504h: carry set and AX left in enhanced mode. 0E00h, the coprocessor's state, is answered.
 - **What 0500h says** (in pages of 4K, with DOSBox's 16 MB): standard mode has a largest block of `E347E0h` bytes, E34h free pages and no paging file, and its other fields `FFFFFFFFh`. Enhanced mode has a largest block of `3868000h` bytes (about 56 MB), F6Dh physical pages and 39FCh pages of paging file: WIN386's temporary swap file.
 
@@ -126,7 +127,7 @@ Under Windows 3.1, a 32-bit program is a 16-bit program that brings a 32-bit run
 
 ## What WinBox has to build
 
-Before phase 1, WinBox answered as standard mode does, and as only part of standard mode. Its DPMI answers 000Bh, 000Ch and 0400h ([[probe:dpmiver]]); every other INT 31h function leaves the registers as they were. A machine in standard mode still answers so. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
+Before phase 1, WinBox answered as standard mode does, and as only part of standard mode. Its DPMI answered 000Bh, 000Ch and 0400h ([[probe:dpmiver]]), and every other INT 31h function left the registers as they were, until phase 3. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
 
 ### Phase 0: the oracle (done, 2026-11-07)
 
@@ -140,7 +141,7 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 - **The replay.** A recording in `oracle/fixtures/enhanced/` is replayed on a machine in enhanced mode, under its folder's name: `enhanced/<name>` in `kb/data/conformance.json`, in the conformance suite's test names, in `KNOWN_GAPS` (`enhanced/<probe>:<function>` before `<probe>:<function>`) and in the Rust engine's `AGREEING`. The Rust survey reads every one of the 23. The TypeScript replay reads those `ENHANCED` names (`test/oracle/replay.ts`): every fixture it loads is held to agreement or a known gap, so the rest wait for the phase that makes them agree.
 - **Measured:** nothing a standard-mode machine answers changed but INT 2Fh 1686h (below); the corpus is unchanged.
 
-**Registered.** `enhanced/winflags`, `enhanced/dpmiver` and `enhanced/about` agree whole in both engines. `enhanced/freemem` agrees but for `GetFreeSpace`, as in standard mode (the program's own segments). [[probe:enhmode]] is run whole in both modes: in standard mode 82 of its 99 records agree, in enhanced 71 of 106, in both engines; what is left is DPMI's other functions and 0500h's figures (phase 3), the segments' limits and `GetFreeSpace` as above, and in enhanced mode WIN386's devices. [[probe:galimit]] in enhanced mode agrees but for three records (KERNEL's descriptor table growing, [[topic:global-and-local-memory]], "How much there is"), and `kconst` but for the order of the first megabyte's selectors. Those two are not registered in the TypeScript replay yet: the knowledge base's pages hold every fixture of a probe to their "exact", and those pages were measured in standard mode.
+**Registered.** `enhanced/winflags`, `enhanced/dpmiver` and `enhanced/about` agree whole in both engines. `enhanced/freemem` agrees but for `GetFreeSpace`, as in standard mode (the program's own segments). [[probe:enhmode]] is run whole in both modes: in standard mode 92 of its 99 records agree, in enhanced 89 of 106, in both engines; what is left is 000Dh's descriptors, DOS's version and the interrupt flag (phase 3, below), the segments' limits and `GetFreeSpace` as above, and in enhanced mode WIN386's devices. [[probe:galimit]] in enhanced mode agrees but for three records (KERNEL's descriptor table growing, [[topic:global-and-local-memory]], "How much there is"), and `kconst` but for the order of the first megabyte's selectors. Those two are not registered in the TypeScript replay yet: the knowledge base's pages hold every fixture of a probe to their "exact", and those pages were measured in standard mode.
 
 ### Phase 2: the answers that follow the mode
 
@@ -156,12 +157,13 @@ Before phase 1, WinBox answered as standard mode does, and as only part of stand
 - `GetFreeSpace`, `GlobalCompact` and `GlobalAlloc`'s room: enhanced mode's figures (`Figures::ENHANCED`, `memory-model.ts`), and `GlobalReAlloc`'s FEh selectors for a block that moves ([[topic:global-and-local-memory]], "How much there is").
 - KERNEL's choice of WinOldAp has nothing to follow: WinBox loads neither, as it runs no DOS session.
 
-### Phase 3: the DPMI host's functions
+### Phase 3: the DPMI host's functions (done, 2026-11-07)
 
-DPMI 0.9's functions, each as its mode's host answers it: DOSX's table in standard mode, with its refusals and its no-ops, and WIN386's answers in enhanced. Most of them are the same in both, so this phase serves standard mode as much as enhanced. Today's programs reach DPMI through KERNEL, which WinBox is, so few call INT 31h themselves. SimTower's 000Bh and 000Ch are the exception, and the Win386 supervisor is the next.
+DPMI 0.9's functions, each as its mode's host answers it: DOSX's table in standard mode, with its refusals, its no-ops and the faults that end Windows, and WIN386's answers in enhanced. Most of them are the same in both, so this phase serves standard mode as much as enhanced. Today's programs reach DPMI through KERNEL, which WinBox is, so few call INT 31h themselves. SimTower's 000Bh and 000Ch are the exception, and the Win386 supervisor is the next.
 
-- **Measured by:** [[probe:enhmode]] whole in both modes, and probes of its own for the functions it calls harmlessly: real-mode calls (0300h-0302h) into what WinBox's DOS answers, callbacks (0303h), exception handlers (0202h, 0203h).
-- [[inferred]] WinBox's memory is not paged. Locking, page attributes and the paging file's size are answered as WIN386 answers them, without a pager behind them, as WinBox's other machine figures are.
+- **Built,** in both engines, by the machine's mode (`src/dos/dpmi.ts`, `crates/winbox-win16/src/dpmi.rs`): every function of DOSX's table as its handler does it, read out, and every function WIN386 was recorded answering, as recorded ([[topic:dpmi-functions]]). Descriptors come from the list KERNEL's come from. A program's exception handlers and protected-mode vectors are called by the processor's faults and `INT`s before WinBox's own, on the host's stack, returning to stubs of the host's code; a call into real mode reaches a callback of the program's or an interrupt WinBox's DOS or BIOS answers. Where DOSX faults, the session ends.
+- **Measured by:** [[probe:enhmode]] whole in both modes, and [[probe:dpmildt]], [[probe:dpmimem]], [[probe:dpmirm]], [[probe:dpmiexc]], [[probe:dpmigro]], [[probe:dpmigrw]], [[probe:dpminul]] and [[probe:dpmiout]], each recorded in both modes and replayed whole in both engines. The last four agree whole; the rest but for what the topic's "Not yet done" names. The corpus is unchanged: SimTower's 000Bh and 000Ch are answered as before.
+- [[inferred]] WinBox's memory is not paged. Locking, page attributes and the paging file's size are answered as the hosts answer them, without a pager behind them, as WinBox's other machine figures are.
 
 ### Phase 4: 32-bit programs (Win386 first)
 
@@ -204,7 +206,7 @@ Decided on 2026-11-07:
 
 ## Not yet done
 
-Phase 2 after its first answers, and phases 3 and 4.
+Phase 2 after its first answers, and phase 4. What phase 3 leaves is in [[topic:dpmi-functions]], "Not yet done": real-mode code of a program's, the interrupt flag and DOS's version (which are not DPMI's), 000Dh's descriptors, and where the hosts keep blocks.
 
 - Phase 2's other differing probes: [[probe:kintrnl]]'s WinOldAp hooks (nought and no list in enhanced mode), [[probe:selalias]]'s `AllocSelector(0)`, [[probe:mmtime]], [[probe:sysdrv]] and [[probe:thtask]]'s TIMER, USER's SHELL device, COMM's ports. Each is read further and recorded before it is followed.
 - KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed by the TypeScript engine once the knowledge base tells the modes' records apart.
@@ -212,7 +214,7 @@ Phase 2 after its first answers, and phases 3 and 4.
 - The corpus is not yet surveyed in enhanced mode.
 
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
-- WIN386's own INT 31h dispatcher is not read out: what it answers is what [[probe:enhmode]] measured. Why DOSX's 0503h does not return is not read out either: its handler (`DOSX.EXE` image 6844h) takes SI and BX from the caller's frame (`[bp+1Ch]`, `[bp+22h]`) and was not followed further.
+- WIN386's own INT 31h dispatcher is not read out: what it answers is what the probes measured ([[topic:dpmi-functions]]).
 - INT 2Fh 160Ah is not answered to a protected-mode program in either mode. Whether it is answered in real mode was not recorded.
 - The Win386 probe's source is committed, but it is built by hand until phase 4's build support is added. Its standard-mode run, which stops at the supervisor's box, is a screen, not a fixture.
 - `cputype=386_prefetch` did not start Windows in enhanced mode. Why is not known; no recording needs it.

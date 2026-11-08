@@ -207,6 +207,7 @@ A program can read and write a selector's descriptor itself, through the DPMI ho
 - [[measured]] Function 000Ch takes eight bytes back, carry clear. With byte 6 or'd with `40h` and the base moved on `10h`, 000Bh reads the D bit back, and `GetSelectorBase` has moved by `10h`.
 - [[measured]] 000Bh of selector 0FFFh, which the program never had, answers with the carry clear and AX unchanged.
 - winbox.js answers both functions from its descriptor tables. A DPMI call used to leave the program stopped where it made it: the interrupt's handler never said to go on.
+- Every other function of the DPMI host, as DOSX answers it in standard mode and WIN386 in enhanced mode, is in [[topic:dpmi-functions]].
 
 ## DPMI's version
 
@@ -215,7 +216,7 @@ Function 0400h of `INT 31h` asks the DPMI host its version and what it is. A pro
 - [[measured]] [[probe:dpmiver]] sets BX, CX and DX to `5A5Ah` and asks 0400h under standard mode: AX `005Ah`, version 0.90; BX `000Ah`, bit 0 clear, a 16-bit host; CL 4, the processor, CH left `5Ah`; DX `0870h`, the interrupt controllers' bases; the carry clear. `GetWinFlags` answers `0419h` (`WF_PMODE`, `WF_CPU486`, `WF_STANDARD`, `WF_80x87`), and `INT 2Fh` function 1600h, the enhanced-mode check, leaves AX `1600h`.
 - [[read out]] Standard mode's host is `DOSX.EXE`. Its answer is at 6A83h in its file (6883h in its image): AX `5Ah`, BX `0Ah` and DX `0870h` constants, CL the processor type DOSX kept at its data `0134h` as it started. winbox.js answers the same, the processor the i486 its `GetWinFlags` names. Before, it left every register as it was, and a Win386 program read version 4.0 and BX's bit 0 from whatever the program left there.
 - So a WATCOM Win386 program does not run under Windows 3.1 in standard mode, nor under winbox.js: it wants enhanced mode's 32-bit host.
-- [[measured]] [[probe:dpmiver]] in 386 enhanced mode: BX `0005h`, bit 0 a 32-bit host and bit 2 virtual memory; AX, CL and DX as standard mode's. `GetWinFlags` answers `0C29h`, and INT 2Fh 1600h AX `0A03h`. A WinBox machine made in enhanced mode answers all three so, in both engines ([[guide:enhanced-mode]]). Its other DPMI functions, and what the supervisor needs beyond the version, are the guide's phases 3 and 4.
+- [[measured]] [[probe:dpmiver]] in 386 enhanced mode: BX `0005h`, bit 0 a 32-bit host and bit 2 virtual memory; AX, CL and DX as standard mode's. `GetWinFlags` answers `0C29h`, and INT 2Fh 1600h AX `0A03h`. A WinBox machine made in enhanced mode answers all three so, in both engines ([[guide:enhanced-mode]]). Its other DPMI functions are WIN386's as recorded ([[topic:dpmi-functions]]); what the supervisor needs beyond them is the guide's phase 4.
 
 ## The BIOS's data
 
@@ -271,7 +272,7 @@ What USER does as it is told -- the task's hooks taken out, its windows given US
 
 ## Not yet measured
 
-- A 32-bit DPMI host, as Windows' enhanced mode gives: WATCOM Win386 programs and libraries (see "DPMI's version" above) want one. A WinBox machine in enhanced mode says it is one, but answers no more of DPMI than standard mode's does ([[guide:enhanced-mode]], phases 3 and 4).
+- A 32-bit DPMI host, as Windows' enhanced mode gives: WATCOM Win386 programs and libraries (see "DPMI's version" above) want one. A WinBox machine in enhanced mode says it is one and answers DPMI's functions as WIN386 does ([[topic:dpmi-functions]]), but not yet what a 32-bit client needs ([[guide:enhanced-mode]], phase 4).
 - A program's data segment's limit. Windows gives the `dpmidesc` probe's the segment's size, 2F9Fh; winbox.js gives it the whole 64 KiB.
 - The blocks a task owns, freed by `GlobalFreeAll` as it ends (`KRNL386.EXE` seg1 `1990`): WinBox does not yet free them. Nor does it free a module's resources with it, or put the selectors of `AllocSelector`, `FreeSelector` and the aliases on KERNEL's list of free selectors; they are found afresh, lowest first.
 - The heap's order `GlobalFreeAll` frees a module's segments in: WinBox frees them by their number, the data segment first, after the database.
