@@ -14,7 +14,7 @@ topics: [exported-constants]
 ## Observed behaviour
 
 - [[read out]] `KRNL386.EXE`'s entry table holds 1 at this ordinal, in segment FEh, a constant. KERNEL puts the flags there as it starts.
-- [[measured]] [[probe:kconst]] and [[probe:winflags]]: 419h, as [[fn:KERNEL.GetWinFlags]] answers. [[fn:KERNEL.GetProcAddress]] answers FFFF0419h.
+- [[measured]] [[probe:kconst]] and [[probe:winflags]]: 419h, as [[fn:KERNEL.GetWinFlags]] answers. [[fn:KERNEL.GetProcAddress]] answers FFFF0419h. In 386 enhanced mode, C29h and FFFF0C29h ([[guide:enhanced-mode]]); a WinBox machine made in that mode links and answers C29h.
 
 ## Nuances
 

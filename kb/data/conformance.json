@@ -6968,6 +6968,161 @@
   },
   "gaps": {}
  },
+ "enhanced/about": {
+  "probe": "about",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 9,
+  "functions": {
+   "about": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "answer": {
+    "total": 4,
+    "agreed": 4,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "resources": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/dpmiver": {
+  "probe": "dpmiver",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 3,
+  "functions": {
+   "flags": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mode": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "version": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/enhmode": {
+  "probe": "enhmode",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 106,
+  "functions": {
+   "dpmi": {
+    "total": 56,
+    "agreed": 43,
+    "disagreed": 13,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 12,
+    "agreed": 3,
+    "disagreed": 9,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "kernel": {
+    "total": 11,
+    "agreed": 8,
+    "disagreed": 3,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "vxd": {
+    "total": 24,
+    "agreed": 14,
+    "disagreed": 10,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "windows": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "vxd": "WIN386's devices' entry points, which WinBox has none of",
+   "dpmi": "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
+   "free": "DPMI 0500h's figures, which are phase 3's",
+   "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
+  }
+ },
+ "enhanced/freemem": {
+  "probe": "freemem",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 7,
+  "functions": {
+   "delta": {
+    "total": 3,
+    "agreed": 3,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "free": {
+    "total": 3,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 3
+   },
+   "order": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "enhanced/winflags": {
+  "probe": "winflags",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2,
+  "functions": {
+   "flags": {
+    "total": 2,
+    "agreed": 2,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "enhmode": {
   "probe": "enhmode",
   "display": "vga",
@@ -6976,41 +7131,45 @@
   "functions": {
    "dpmi": {
     "total": 49,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 39,
+    "disagreed": 10,
     "unimplemented": 0,
-    "unsupported": 49
+    "unsupported": 0
    },
    "free": {
     "total": 12,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 8,
+    "disagreed": 4,
     "unimplemented": 0,
-    "unsupported": 12
+    "unsupported": 0
    },
    "kernel": {
     "total": 11,
-    "agreed": 0,
-    "disagreed": 0,
+    "agreed": 8,
+    "disagreed": 3,
     "unimplemented": 0,
-    "unsupported": 11
+    "unsupported": 0
    },
    "vxd": {
     "total": 24,
-    "agreed": 0,
+    "agreed": 24,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 24
+    "unsupported": 0
    },
    "windows": {
     "total": 3,
-    "agreed": 0,
+    "agreed": 3,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 3
+    "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "dpmi": "DPMI's functions but 000Bh, 000Ch and 0400h, which are phase 3's",
+   "free": "DPMI 0500h's figures, which are phase 3's",
+   "kernel": "a segment's limit, and GetFreeSpace less the program's own segments"
+  }
  },
  "enumfam-ega": {
   "probe": "enumfam",

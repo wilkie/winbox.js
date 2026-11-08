@@ -15,6 +15,7 @@ topics: [global-and-local-memory]
 
 - [[measured]] [[probe:freemem]]: `GlobalCompact(0)` and `GlobalCompact(-1)` both answer 14,480K, a little less than [[fn:KERNEL.GetFreeSpace]]'s 15,086K.
 - [[measured]] [[probe:galimit]]: E24000h, and the largest block [[fn:KERNEL.GlobalAlloc]] then grants is E34000h, 10000h more.
+- [[measured]] In 386 enhanced mode, [[probe:galimit]] and [[probe:freemem]]: FF0000h, the most it answers, where the machine has more than that free ([[guide:enhanced-mode]]).
 
 ## Nuances
 

@@ -22,7 +22,8 @@ topics: [global-and-local-memory]
 ## Nuances
 
 - [[inferred]] In protected mode nothing has to move for these sizes: the descriptor's limit can change while its base stays put, which is consistent with what was recorded.
-- Not yet measured: `GMEM_MODIFY` and the other flags, a discardable block discarded by a size of nought, and the largest size a block can be grown to (`20a8` takes no more than FEh selectors, but the oracle's machine has too little memory to reach it).
+- [[measured]] In 386 enhanced mode, where there is room, [[probe:galimit]]'s blocks of 40h bytes grown to FE0000h move and are given it; FF0000h answers `NULL`. A block that moves takes its selectors from `20a8`, which takes no more than FEh (`KRNL386.EXE` seg1 `40f9`), and FF0000h needs FFh. WinBox refuses it so in both modes; in standard mode the room runs out first.
+- Not yet measured: `GMEM_MODIFY` and the other flags, and a discardable block discarded by a size of nought.
 - [[read out]] `KRNL386.EXE` seg1 `40f9`: a block asked for nought bytes, to be discarded, is not discarded while its lock count is not 0 (`4129`), and `NULL` is answered. Only a discardable block's locks are counted by [[fn:KERNEL.GlobalLock]], and a wired block's by [[fn:KERNEL.GlobalWire]]. Nor is it discarded without `GMEM_MOVEABLE` among the flags (`413f`), or where its descriptor does not mark it discardable (`2da9`). winbox.js does the same.
 
 ## Inside Windows

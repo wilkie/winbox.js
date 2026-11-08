@@ -4,7 +4,7 @@ name: 386 enhanced mode
 summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and both engines run today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
 ---
 
-This page is a design. Nothing on it is built in either engine. What is built is the oracle's side: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. It follows the model of [[guide:launcher]].
+This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, and the first of phase 2's answers are built (2026-11-07); the rest is not. It follows the model of [[guide:launcher]].
 
 The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
 
@@ -126,24 +126,35 @@ Under Windows 3.1, a 32-bit program is a 16-bit program that brings a 32-bit run
 
 ## What WinBox has to build
 
-WinBox answers as standard mode does today, and as only part of standard mode. Its DPMI answers 000Bh, 000Ch and 0400h ([[probe:dpmiver]]); every other INT 31h function leaves the registers as they were. `GetWinFlags` is `0419h` and INT 2Fh 1600h leaves AX. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
+Before phase 1, WinBox answered as standard mode does, and as only part of standard mode. Its DPMI answers 000Bh, 000Ch and 0400h ([[probe:dpmiver]]); every other INT 31h function leaves the registers as they were. A machine in standard mode still answers so. Each phase below is a branch of its own, merged when its gates pass, and measured against recordings in its mode.
 
 ### Phase 0: the oracle (done, 2026-11-07)
 
 `record.mjs --mode enhanced`, the fixtures under `oracle/fixtures/enhanced/`, [[probe:enhmode]] recorded in both modes, and the sweep of every plain VGA probe above. Nothing in either engine changed.
 
-### Phase 1: a machine's mode
+### Phase 1: a machine's mode (done, 2026-11-07)
 
-- **The switch.** A machine is made in standard or in enhanced mode, standard by default. In the TypeScript engine it is an option of the machine, and in the Rust engine a field of `System`'s configuration. Natively it is `--mode enhanced`, and on the page it is a choice made with the display.
-- **Kept with the install.** The mode is bound to an install as its display is (the owner's decision of 2026-10-21, [[guide:launcher]], "Running an item"): an install made in enhanced mode runs in enhanced mode. A launcher item runs on its install's machine in that mode, and two installs in different modes are two machines.
-- **The replay.** `loadFixtures` and the Rust survey read `oracle/fixtures/enhanced/` as well, each fixture replayed on a machine in its mode. `conformance.json` counts them under `enhanced/<name>`, and the AGREEING, RUN_WHOLE and KNOWN_GAPS lists take the same names. Nothing standard mode answers changes, so every existing record still agrees.
-- **Measured by:** the existing whole runs, now replayed in enhanced mode, behind until phase 2. This phase is the harness, not the answers.
+- **The switch.** A machine is made in standard or in enhanced mode, standard by default. In the TypeScript engine it is the machine's option `mode`, `'standard'` or `'enhanced'` (`WindowsMode`, `src/emulator/machine.ts`); in the Rust engine `System`'s field `mode`, a `Mode` (`crates/winbox-win16/src/system.rs`). The page's Rust engine sets it with `Machine.set_mode` (`Session::set_mode`) before anything has started.
+- **On the page.** The Machine panel has a Mode, "Standard mode" or "386 enhanced mode", for the machine shown; choosing one makes the machine afresh, as a display does (`setMode`, `src/run/page/actions.ts`). A kept program records the mode it was installed or kept in, `KeptProgram.mode` (`src/run/store.ts`); a record with none, as every one kept before, is standard mode's, and the store's version is unchanged. A kept program runs only on a machine of its base, display and mode (`programOf`): opened, or chosen in the launcher, it is made a machine in its mode; in the other mode, the machine's C: is the base alone, and the kept program is listed with its mode, `instlay (386 enhanced mode)`.
+- **Natively.** `--mode standard|enhanced`. A program kept by `--install` or `--layer-from` records the mode it was made in, `mode` in its record (`crates/winbox-native/src/programs.rs`, the page's field), standard where a record has none; `--program` runs it in that mode, and refuses another, as it refuses another display. A launcher or a library that runs a kept program passes nothing more than `--program NAME`: the record's mode is used. To install in enhanced mode, it passes `--mode enhanced` with `--install`.
+- **The replay.** A recording in `oracle/fixtures/enhanced/` is replayed on a machine in enhanced mode, under its folder's name: `enhanced/<name>` in `kb/data/conformance.json`, in the conformance suite's test names, in `KNOWN_GAPS` (`enhanced/<probe>:<function>` before `<probe>:<function>`) and in the Rust engine's `AGREEING`. The Rust survey reads every one of the 23. The TypeScript replay reads those `ENHANCED` names (`test/oracle/replay.ts`): every fixture it loads is held to agreement or a known gap, so the rest wait for the phase that makes them agree.
+- **Measured:** nothing a standard-mode machine answers changed but INT 2Fh 1686h (below); the corpus is unchanged.
+
+**Registered.** `enhanced/winflags`, `enhanced/dpmiver` and `enhanced/about` agree whole in both engines. `enhanced/freemem` agrees but for `GetFreeSpace`, as in standard mode (the program's own segments). [[probe:enhmode]] is run whole in both modes: in standard mode 82 of its 99 records agree, in enhanced 71 of 106, in both engines; what is left is DPMI's other functions and 0500h's figures (phase 3), the segments' limits and `GetFreeSpace` as above, and in enhanced mode WIN386's devices. [[probe:galimit]] in enhanced mode agrees but for three records (KERNEL's descriptor table growing, [[topic:global-and-local-memory]], "How much there is"), and `kconst` but for the order of the first megabyte's selectors. Those two are not registered in the TypeScript replay yet: the knowledge base's pages hold every fixture of a probe to their "exact", and those pages were measured in standard mode.
 
 ### Phase 2: the answers that follow the mode
 
 `GetWinFlags` and `__WINFLAGS`; INT 2Fh 1600h, 1683h and 1686h; 1684h for the devices WinBox will have, and none for the rest; DPMI 0400h's BX; KERNEL's choice of WinOldAp; `GetFreeSpace`, `GlobalCompact` and `GlobalAlloc`'s limit, with enhanced mode's numbers from [[probe:enhmode]] and `galimit` recorded in enhanced mode, kept as standard mode's are ([[topic:global-and-local-memory]], "How much there is"). Then the modules' branches above, one at a time, each read further and recorded before it is followed: TIMER's VTDAPI path, USER's SHELL device, MMSYSTEM's stacks and COMM's ports.
 
 - **Measured by:** [[probe:dpmiver]], [[probe:winflags]] and [[probe:enhmode]] in both modes, then the sweep's other differing probes one by one: [[probe:freemem]] and [[probe:galimit]] for memory, [[probe:mmtime]] and [[probe:sysdrv]] for TIMER, [[probe:kintrnl]] for WinOldAp's hooks, [[probe:selalias]] for `AllocSelector`. Where only selector numbers and stack offsets differ, WinBox follows them only if a program is found to depend on them.
+
+**The first answers (done, 2026-11-07),** in both engines, by the machine's mode:
+
+- `GetWinFlags` and `__WINFLAGS`: `0C29h` in enhanced mode, `WF_ENHANCED|WF_PAGING` for `WF_STANDARD`, the coprocessor's bit still the machine's (`winFlags`, `System::win_flags`). What reads them follows: the About box's mode line ([[probe:about]]), and MMSYSTEM's stacks, whose read-out branches on `WF_ENHANCED` already ([[topic:multimedia-services]]).
+- INT 2Fh: 1600h AX `0A03h` and 1683h AX `1600h`, BX 1, in enhanced mode, left in standard mode; 1686h AX nought in both modes, as [[probe:enhmode]] recorded in both (before, WinBox left it); 1684h none for every device, as WinBox has none of WIN386's; 160Ah left (`multiplexInterrupt`, `multiplex_interrupt`).
+- DPMI 0400h: BX `0005h` in enhanced mode, `000Ah` in standard.
+- `GetFreeSpace`, `GlobalCompact` and `GlobalAlloc`'s room: enhanced mode's figures (`Figures::ENHANCED`, `memory-model.ts`), and `GlobalReAlloc`'s FEh selectors for a block that moves ([[topic:global-and-local-memory]], "How much there is").
+- KERNEL's choice of WinOldAp has nothing to follow: WinBox loads neither, as it runs no DOS session.
 
 ### Phase 3: the DPMI host's functions
 
@@ -193,7 +204,12 @@ Decided on 2026-11-07:
 
 ## Not yet done
 
-Phases 1 to 4.
+Phase 2 after its first answers, and phases 3 and 4.
+
+- Phase 2's other differing probes: [[probe:kintrnl]]'s WinOldAp hooks (nought and no list in enhanced mode), [[probe:selalias]]'s `AllocSelector(0)`, [[probe:mmtime]], [[probe:sysdrv]] and [[probe:thtask]]'s TIMER, USER's SHELL device, COMM's ports. Each is read further and recorded before it is followed.
+- KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed by the TypeScript engine once the knowledge base tells the modes' records apart.
+- The largest block and `GlobalCompact`'s figure in enhanced mode before their limit are taken from DPMI 0500h's largest block ([[inferred]]); no call shows them below FF0000h.
+- The corpus is not yet surveyed in enhanced mode.
 
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
 - WIN386's own INT 31h dispatcher is not read out: what it answers is what [[probe:enhmode]] measured. Why DOSX's 0503h does not return is not read out either: its handler (`DOSX.EXE` image 6844h) takes SI and BX from the caller's frame (`[bp+1Ch]`, `[bp+22h]`) and was not followed further.

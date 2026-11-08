@@ -14,6 +14,7 @@ topics: [global-and-local-memory]
 ## Observed behaviour
 
 - [[measured]] [[probe:galimit]], under DOSBox in standard mode: EBB4E0h as the probe starts. A block held makes it less by the block's size as given, 20h for one byte, 101000h for 100001h, and once the block is freed it answers as before. A request [[fn:KERNEL.GlobalAlloc]] refuses leaves it as it was. At the probe's end, everything freed, it answers EBB4E0h again.
+- [[measured]] In 386 enhanced mode, [[probe:galimit]] is told 38F5C60h as it starts, about 56 MB on the same 16 MB machine: WIN386 gives KERNEL virtual memory, its swap file's pages with the machine's. [[probe:freemem]] is told 58,328K, and [[probe:enhmode]] 58,324K. A WinBox machine made in enhanced mode starts from 38F5C60h ([[topic:global-and-local-memory]], "How much there is").
 - [[measured]] [[probe:freemem]]: 15,086K, against [[probe:galimit]]'s 15,085K. `freemem`'s code and data segments are 3A0h and 80h bytes smaller, 420h together, which is the difference: EBB4E0h and 420h is 15,086K and a quarter.
 
 ## Nuances
