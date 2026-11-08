@@ -4,7 +4,7 @@ name: 386 enhanced mode
 summary: A design for a second, separately measured mode of WinBox — Windows 3.1's 386 enhanced mode beside the standard mode the oracle and both engines run today — what a program can see of the difference, how the oracle records it, what WinBox has to build in phases, and the decisions still open.
 ---
 
-This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07); the rest is not. It follows the model of [[guide:launcher]].
+This page is a design, in part built. The oracle's side is built: the recorder starts Windows in either mode, and what enhanced mode answers is recorded beside what standard mode answers. Phase 1, a machine's mode in both engines and both front ends, the first of phase 2's answers and phase 3, the DPMI host's functions, are built (2026-11-07), and phase 4's Win386 programs and libraries (2026-11-08); the rest is not. It follows the model of [[guide:launcher]].
 
 The oracle's Windows and both engines run in standard mode (`win /s`): DOSX.EXE is the DPMI host and KRNL386.EXE the kernel. Some programs refuse to run there. Lode Runner: The Legend Returns' setup loads Sierra's `SMACKE16.DLL`, a WATCOM Win386 library. The Win386 supervisor asks DPMI's version (INT 31h function 0400h) and, unless BX's bit 0 says a 32-bit host, shows "Not running on a 386 DPMI implementation" and loads nothing. Real Windows 3.1 in standard mode refuses it the same way, on the owner's disc. Widget Workshop's `WIDGET.EXE` is a Win32 program and needs Win32s, which needs enhanced mode ([[topic:win32s]], [[topic:cd-rom]]). On 2026-11-07 the owner decided to plan 386 enhanced mode as a second mode, measured on its own, with this page first.
 
@@ -111,7 +111,7 @@ The DPMI host is DOSX in standard mode and WIN386's virtual machine manager in e
 Under Windows 3.1, a 32-bit program is a 16-bit program that brings a 32-bit runtime of its own: WATCOM's Win386 supervisor, or Win32s.
 
 - [[measured]] **A Win386 program in each mode.** The probe `oracle/probes/win386/w386ver.c` is built with Open Watcom's 386 compiler and bound to the Win386 supervisor (`wcc386 -bt=windows`, `wlink system win386`, `wbind`). In enhanced mode it runs: its pointers are 4 bytes, it sees `GetWinFlags` `0C29h`, and the C library gives it a block of 2 MB. In standard mode it shows the box "Open Watcom Win386", "Not running on a 386 DPMI implementation", and stops there. That is the box Lode Runner's setup shows.
-- [[inferred]] The supervisor needs, beyond 0400h's bit 0, what a 32-bit program asks of its host: code and data selectors of 32-bit default size with limits past 64K, memory from 0501h, and a 32-bit stack. The rest is to be measured from the supervisor's own calls (phase 4).
+- [[read out]] and [[measured]] The supervisor needs, beyond 0400h's bit 0, memory from 0501h, code and data selectors of 32-bit default size with limits of 4 GiB, a 32-bit stack, and fifty 16-bit aliases: [[topic:win386]], with [[probe:w386env]], [[probe:w386dpmi]] and [[probe:w386lib]].
 
 ### The other modules
 
@@ -167,16 +167,15 @@ DPMI 0.9's functions, each as its mode's host answers it: DOSX's table in standa
 
 ### Phase 4: 32-bit programs (Win386 first)
 
-What the Win386 supervisor and the programs it runs need, measured one call at a time with the Win386 probe:
+What the Win386 supervisor and the programs it runs need, measured one call at a time with the Win386 probes ([[topic:win386]]):
 
-1. **Build support.** `build-probes.mjs` builds `oracle/probes/win386/*.c` with `wcc386` and binds each with `wbind`. `fetch-toolchain.mjs` extracts `binw/win386.ext`, `binw/w386dll.ext` and `lib386/` with the rest, all in the Open Watcom 2.0 package it already fetches.
-2. **The supervisor's calls.** Trace the supervisor's INT 31h calls under the oracle's enhanced mode: each probe records what it asks and is answered, before WinBox answers any.
-3. **The processor.**
-   - 32-bit code segments (the D bit) run in both cores today, as SimTower's row copier needs ([[topic:global-and-local-memory]], "Descriptors through DPMI").
-   - A 32-bit stack segment (the B bit) runs in the TypeScript core (`stackIs32`, `src/emulator/core/i386.ts`). The Rust core leaves such a stack to its host (`descriptor`, `crates/winbox-cpu/src/lib.rs`), and natively that load is a fault. The Rust core needs it, held to the hardware vectors as the rest is.
-   - Limits past 64K with the granularity bit run in both cores.
-4. **A library as well as a program.** `SMACKE16.DLL` is a Win386 library (`w386dll.ext`). Lode Runner's setup is the corpus case, on the owner's disc, which is not committed.
+1. **Build support (done, 2026-11-08).** `build-probes.mjs` builds `oracle/probes/win386/*.c` with `wcc386`, links them `system win386` and binds each with `wbind`, a library `<name>.dll.c` with `wbind -d` (`buildWin386`), into `oracle/build/win386/`; a source defining `PROBE_WIN16` is a 16-bit program. `fetch-toolchain.mjs` extracts `binw/win386.ext`, `binw/w386dll.ext` and `lib386/` with the rest, from the Open Watcom 2.0 package it already fetches. `record.mjs` reads that folder only with `--mode enhanced`, and refuses a Win386 probe named without it: a plain run never meets the supervisor's box.
+2. **The supervisor's calls (done).** Read out from the bound supervisor and made again one at a time by [[probe:w386dpmi]]; what it leaves the 32-bit code recorded by [[probe:w386env]]. WIN386 answers every one; both engines answer as it does, with phase 3's host.
+3. **The processor (done).** A 32-bit stack (the B bit) in the Rust core, which left it to its host, and in the TypeScript core, which took ESP only in 32-bit code; segments of 4 GiB in the Rust core; `LAR` and `LSL` of a double word and `TEST` of a byte under the operand prefix in the TypeScript core; a linear address wrapping at 4 GiB. Held to the hardware vectors, all 941 of the 80386's files and the 80286's, as before, in both cores.
+4. **A library as well as a program (done).** [[probe:w386lib]] loads a Win386 library of its own and calls its 32-bit code. Lode Runner's setup, on the owner's disc, now loads `SMACKE16.DLL` and draws Sierra Setup's main menu in both engines; on the way, `GetProcAddress` compares a name as KERNEL does, `FindResource` reads `#164` as a number, and the Rust engine's `GetExePtr` takes a module's own handle where two modules share a name ([[topic:win386]]).
 5. **Win32s** after that, a project of its own ([[topic:win32s]]): `W32SYS.DLL` refuses anything but enhanced mode with virtual memory.
+
+**Registered.** `enhanced/w386ver`, `enhanced/w386dpmi` and `enhanced/w386lib` agree whole in both engines; `enhanced/w386env` but for its GS's limit, a program's data segment's ([[topic:global-and-local-memory]], "Not yet done").
 
 ### Out of scope: DOS sessions
 
@@ -206,7 +205,7 @@ Decided on 2026-11-07:
 
 ## Not yet done
 
-Phase 2 after its first answers, and phase 4. What phase 3 leaves is in [[topic:dpmi-functions]], "Not yet done": real-mode code of a program's, the interrupt flag and DOS's version (which are not DPMI's), 000Dh's descriptors, and where the hosts keep blocks.
+Phase 2 after its first answers, and phase 4's Win32s; what phase 4's Win386 leaves is in [[topic:win386]], "Not yet done". What phase 3 leaves is in [[topic:dpmi-functions]], "Not yet done": real-mode code of a program's, the interrupt flag and DOS's version (which are not DPMI's), 000Dh's descriptors, and where the hosts keep blocks.
 
 - Phase 2's other differing probes: [[probe:kintrnl]]'s WinOldAp hooks (nought and no list in enhanced mode), [[probe:selalias]]'s `AllocSelector(0)`, [[probe:mmtime]], [[probe:sysdrv]] and [[probe:thtask]]'s TIMER, USER's SHELL device, COMM's ports. Each is read further and recorded before it is followed.
 - KERNEL's descriptor table growing in enhanced mode (seg1 `1ed4`-`1f0d`), the 1000h [[probe:galimit]] shows, and the first megabyte's selectors in enhanced mode's order ([[probe:kconst]]). Both wait on WinBox's selectors being KERNEL's, or on a program that depends on them; `enhanced/galimit` and `enhanced/kconst` are replayed by the TypeScript engine once the knowledge base tells the modes' records apart.
@@ -216,5 +215,5 @@ Phase 2 after its first answers, and phase 4. What phase 3 leaves is in [[topic:
 - What KERNEL does with a DOS program in each mode (`KRNL386.EXE` seg2 `0506`-`0529`), and the routine it calls without paging (seg1 `b4eb`), are not read further. Nor are GDI's `FinalGDIInit`, TOOLHELP's or COMM's branches.
 - WIN386's own INT 31h dispatcher is not read out: what it answers is what the probes measured ([[topic:dpmi-functions]]).
 - INT 2Fh 160Ah is not answered to a protected-mode program in either mode. Whether it is answered in real mode was not recorded.
-- The Win386 probe's source is committed, but it is built by hand until phase 4's build support is added. Its standard-mode run, which stops at the supervisor's box, is a screen, not a fixture.
+- A Win386 probe's standard-mode run, which stops at the supervisor's box, is a screen, not a fixture.
 - `cputype=386_prefetch` did not start Windows in enhanced mode. Why is not known; no recording needs it.
