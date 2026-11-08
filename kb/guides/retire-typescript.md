@@ -224,7 +224,17 @@ Each phase is a branch of its own, merged when its gates pass. Until phase 4, bo
 - **Proved by:** `npx jest test/kb`, `pnpm kb`, and the gates as rewritten, run once on develop.
 - **Size:** about 1,000 lines of prose, and the kb sweep, a mechanical job for a sweep agent.
 
-## Open questions for the owner
+## The owner's decisions
+
+The owner decided on 2026-11-08 to retire the TypeScript engine. Its last form is the branch `typescript-engine` (9b221155). The answers to the questions below, given the same day:
+
+- **Gates (question 1):** the Rust replay is a release-profile gate, run in parallel, in place of the full jest run. `cargo test --workspace` keeps a quick sample.
+- **Records neither engine holds (question 2):** they become named Rust gaps, each with its reason. The 16 enhanced fixtures stay out of `conformance.json` until the knowledge base tells the two modes apart.
+- **Library, hybrid and benchmarks (questions 3 and 4):** retired. `pnpm build` becomes the page's build, `cargo doc` replaces `typedoc`, `crates/winbox-wasm` and `bench/` are deleted, and a `winbox-cpu` bench measures CPU speed.
+- **Signatures (question 7):** frozen into `kb/data/signatures.json` before phase 4. Summaries come from Rust doc comments.
+- **Questions 5 and 6:** the recommendations stand. The page says the engine is not built, and `pnpm dev` builds it first. The owner pushes and tags the branch.
+
+## Open questions for the owner (answered above)
 
 1. **The replay's place among the gates.** [[measured]] The survey runs every fixture serially, in release, in about seven minutes on a quiet machine (the 2026-11-05 gate log: 420 seconds). The jest shards ran in parallel inside the 618-second jest run. Should the Rust replay be part of plain `cargo test --workspace`, in debug and so much slower, or a release-profile gate like the survey is? Recommendation: a release gate, `cargo test --release -p winbox-win16 --test conformance`, run in parallel trials, and in the merge gates in place of the full jest run. `cargo test --workspace` keeps a quick sample of fixtures.
 2. **The records neither engine holds today.** Parity costs no Rust gaps: the Rust engine agrees wherever the TypeScript engine does. But a replay that holds every fixture also meets two groups that no test checks now. One is 13,281 records in 18 fixtures that the TypeScript replay passes as "no adapter" and the Rust engine gets wrong (`stack`, `scalemem`, the Ad Lib probes and the rest above). The other is the 16 enhanced recordings outside `ENHANCED`. The TypeScript replay left the second group out because the knowledge base's evidence check would count enhanced-mode records against pages measured in standard mode. Recommendation: hold both groups in the Rust replay, each function as a named gap with its reason. Leave the 16 enhanced fixtures out of `conformance.json`, as now, until the knowledge base tells the two modes' records apart.
