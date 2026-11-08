@@ -11,20 +11,12 @@
  * * `run malloc 2MB`: whether the C library gives a block of 2 MB, its last
  *   byte written.
  *
- * Not built by `build-probes.mjs`, which builds 16-bit programs only (the
- * folder is not read). Built by hand with Open Watcom 2.0's `binl64/wcc386`,
- * `binl64/wlink`, `binl64/wbind`, `binw/win386.ext` and `lib386/win`, from
- * the package `fetch-toolchain.mjs` fetches, WATCOM pointed at them and
- * INCLUDE at `h` and `h/win`, with `probe.h` beside this file:
- *
- *   wcc386 -bt=windows -q -w4 -fo=w386ver.obj w386ver.c
- *   wlink system win386 file w386ver.obj name w386ver.rex option quiet
- *   wbind w386ver -n -q
- *
- * then `w386ver.exe` copied to `oracle/build/probes/W386VER.EXE` and
- * recorded with `record.mjs w386ver --mode enhanced`, and taken out of
- * `oracle/build/probes` again: a recording of every probe in standard mode
- * would stop at the supervisor's box.
+ * Built by `build-probes.mjs` (`buildWin386`, with Open Watcom's
+ * `wcc386 -bt=windows`, `wlink system win386` and `wbind -n`, the
+ * supervisor `binw/win386.ext`) into `oracle/build/win386`, and recorded
+ * with `record.mjs w386ver --mode enhanced`: `record.mjs` reads that folder
+ * in enhanced mode alone, as a recording in standard mode would stop at the
+ * supervisor's box (`kb/topics/win386.md`).
  */
 
 #include <stdio.h>

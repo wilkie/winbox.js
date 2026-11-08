@@ -12,10 +12,16 @@
  *   node scripts/oracle/build-probes.mjs strings     # just one
  *
  * Needs the toolchain from fetch-toolchain.mjs. Writes oracle/build/probes/.
+ *
+ * And the Win386 probes, `oracle/probes/win386/*.c`: 32-bit programs built
+ * with `wcc386`, linked `system win386` and bound to WATCOM's Win386
+ * supervisor with `wbind` (`buildWin386`), into oracle/build/win386/. They
+ * run in 386 enhanced mode only: `record.mjs` records them with
+ * `--mode enhanced` alone.
  */
 
 import { spawn } from 'node:child_process';
-import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,6 +29,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const WATCOM = join(ROOT, 'oracle', '.cache', 'watcom');
 const PROBES = join(ROOT, 'oracle', 'probes');
 const BUILD = join(ROOT, 'oracle', 'build', 'probes');
+
+/* The Win386 probes' sources, and where they are built: a folder of their
+ * own, which a recording in standard mode never reads (`record.mjs`). */
+const WIN386 = join(PROBES, 'win386');
+const BUILD_WIN386 = join(ROOT, 'oracle', 'build', 'win386');
 
 function log(...args) {
   console.log(...args);
@@ -349,6 +360,80 @@ async function build(name) {
   return { name, executable, ...(await describe(executable)) };
 }
 
+/**
+ * Compiles, links and binds one Win386 probe, `oracle/probes/win386/<name>.c`,
+ * as the WATCOM Win386 guide does it: `wcc386 -bt=windows`, `wlink system
+ * win386` to a 32-bit `.rex`, and `wbind`, which puts the supervisor
+ * (`binw/win386.ext`) in front of it as an NE program whose 16-bit code
+ * starts the 32-bit. Its library, `<name>.dll.c`, the same way as
+ * `<NAME>D.DLL`, built `-bd` and bound `-d` to the library's supervisor
+ * (`binw/w386dll.ext`), as Sierra's `SMACKE16.DLL` is. A program that
+ * defines `PROBE_WIN16` is a 16-bit program, built as the other probes are,
+ * that loads such a library.
+ */
+async function buildWin386(name) {
+  const source = join(WIN386, `${name}.c`);
+  const text = await readFile(source, 'latin1');
+  const executable = join(BUILD_WIN386, `${name.toUpperCase()}.EXE`);
+
+  /* `wbind` names what it binds after its input, in lower case: built
+   * lower, then named as the other probes are. */
+  const compile386 = (input, object, library) =>
+    run(
+      'wcc386',
+      ['-bt=windows', ...(library ? ['-bd'] : []), '-q', '-w4', `-fo=${object}`, input],
+      BUILD_WIN386
+    );
+  const link386 = async (object, base, library) => {
+    await run(
+      'wlink',
+      ['system', 'win386', 'option', 'quiet', 'name', `${base}.rex`, 'file', object],
+      BUILD_WIN386
+    );
+    await run('wbind', [base, ...(library ? ['-d'] : []), '-n', '-q'], BUILD_WIN386);
+    await rm(join(BUILD_WIN386, `${base}.rex`), { force: true });
+    await rm(join(BUILD_WIN386, object), { force: true });
+  };
+
+  if (text.includes('#define PROBE_WIN16')) {
+    await run(
+      'wcc',
+      ['-bt=windows', '-ml', '-zW', '-q', '-w4', `-fo=${name}.o`, source],
+      BUILD_WIN386
+    );
+    await run(
+      'wlink',
+      ['system', 'windows', 'option', 'quiet', 'name', basename(executable), 'file', `${name}.o`],
+      BUILD_WIN386
+    );
+    await rm(join(BUILD_WIN386, `${name}.o`), { force: true });
+  } else {
+    await compile386(source, `${name}.obj`, false);
+    await link386(`${name}.obj`, name, false);
+    await rename(join(BUILD_WIN386, `${name}.exe`), executable);
+  }
+
+  const librarySource = join(WIN386, `${name}.dll.c`);
+
+  if (await stat(librarySource).catch(() => null)) {
+    await compile386(librarySource, `${name}d.obj`, true);
+    await link386(`${name}d.obj`, `${name}d`, true);
+    await rename(
+      join(BUILD_WIN386, `${name}d.dll`),
+      join(BUILD_WIN386, `${name.toUpperCase()}D.DLL`)
+    );
+  }
+
+  /* The compilers leave their warnings in a file of the source's name. */
+  for (const entry of await readdir(BUILD_WIN386)) {
+    if (entry.endsWith('.err')) {
+      await rm(join(BUILD_WIN386, entry), { force: true });
+    }
+  }
+
+  return { name, executable, ...(await describe(executable)) };
+}
+
 async function main() {
   const wanted = process.argv.slice(2).filter((argument) => !argument.startsWith('-'));
 
@@ -364,7 +449,13 @@ async function main() {
     .filter((name) => wanted.length === 0 || wanted.includes(name))
     .sort();
 
-  if (sources.length === 0) {
+  const win386 = (await readdir(WIN386).catch(() => []))
+    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
+    .map((entry) => entry.slice(0, -2))
+    .filter((name) => wanted.length === 0 || wanted.includes(name))
+    .sort();
+
+  if (sources.length === 0 && win386.length === 0) {
     throw new Error(
       wanted.length ? `no probe named ${wanted.join(', ')}` : `no probes in ${PROBES}`
     );
@@ -379,7 +470,16 @@ async function main() {
     log(`  ${name}`);
   }
 
-  log(`\n${built.length} probes in ${BUILD}`);
+  if (win386.length > 0) {
+    await mkdir(BUILD_WIN386, { recursive: true });
+  }
+
+  for (const name of win386) {
+    built.push(await buildWin386(name));
+    log(`  win386/${name}`);
+  }
+
+  log(`\n${built.length} probes in ${BUILD}${win386.length > 0 ? ` and ${BUILD_WIN386}` : ''}`);
 
   for (const probe of built) {
     log(

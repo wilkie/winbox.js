@@ -25,6 +25,7 @@ import {
   checkEvidence,
   type Fabrication,
   type Probe,
+  probeSource,
   readFabrications,
   readProbes,
   readReport,
@@ -804,7 +805,7 @@ const DISPLAY_NAME: Record<string, string> = {
 };
 
 function renderProbe(probe: Probe, fabrications: Fabrication[]) {
-  const source = readFileSync(join(ROOT, 'oracle', 'probes', `${probe.name}.c`), 'latin1');
+  const source = readFileSync(join(ROOT, probeSource(probe.name)), 'latin1');
   const fixtureUrl = (file: string) => `${SOURCE_URL}/oracle/fixtures/${file}.json`;
 
   const recordings = probe.fixtures.length
@@ -892,7 +893,7 @@ npx jest test/raster test/oracle</code></pre>`
     ],
     `<h1><code>${escape(probe.name)}</code></h1>
 <dl class="facts">
-<dt>Source</dt><dd><a href="${SOURCE_URL}/oracle/probes/${escape(probe.name)}.c"><code>oracle/probes/${escape(probe.name)}.c</code></a>, in full below</dd>
+<dt>Source</dt><dd><a href="${SOURCE_URL}/${escape(probeSource(probe.name))}"><code>${escape(probeSource(probe.name))}</code></a>, in full below</dd>
 <dt>Records</dt><dd>${probe.records ? `${probe.agreed} of ${probe.records} agree (${percent(probe.agreed, probe.records)})` : 'none replayed'}</dd>
 <dt>Cited by</dt><dd>${
       citing.length

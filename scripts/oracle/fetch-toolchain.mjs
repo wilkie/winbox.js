@@ -46,9 +46,22 @@ const RELEASES = 'https://api.github.com/repos/open-watcom/open-watcom-v2/releas
  * What a Win16 build actually reads.
  *
  * `binl64` is the Linux-hosted toolchain, `h` and `h/win` the C and Windows
- * headers, `lib286` the 16-bit libraries and import stubs.
+ * headers, `lib286` the 16-bit libraries and import stubs. And for the
+ * oracle's Win386 probes (`oracle/probes/win386`, `build-probes.mjs`): the
+ * 32-bit libraries, `lib386` with `lib386/win`, and the two supervisors
+ * `wbind` binds into a program and into a library, `binw/win386.ext` and
+ * `binw/w386dll.ext`.
  */
-const NEEDED = ['binl64/*', 'h/*', 'lib286/*'];
+const NEEDED = ['binl64/*', 'h/*', 'lib286/*', 'lib386/*', 'binw/win386.ext', 'binw/w386dll.ext'];
+
+/** A file of each of `NEEDED`: a cache missing one is extracted again. */
+const MARKERS = [
+  'binl64/wcc',
+  'lib286/win/windows.lib',
+  'lib386/win/win386.lib',
+  'binw/win386.ext',
+  'binw/w386dll.ext',
+];
 
 function log(...args) {
   console.log(...args);
@@ -136,8 +149,12 @@ async function main() {
   const stamp = join(WATCOM, '.tag');
 
   const already = await readFile(stamp, 'utf8').catch(() => null);
+  /* A cache made before a piece was added to `NEEDED` lacks it. */
+  const whole = (
+    await Promise.all(MARKERS.map((marker) => stat(join(WATCOM, marker)).catch(() => null)))
+  ).every(Boolean);
 
-  if (already?.trim() === tag) {
+  if (already?.trim() === tag && whole) {
     log(`Cached: ${WATCOM} (${tag})`);
   } else {
     if (!(await stat(installer).catch(() => null))) {

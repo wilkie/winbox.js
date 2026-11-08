@@ -2,7 +2,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 
-import { checkEvidence, readProbes, readReport } from '../../scripts/kb/evidence.js';
+import { checkEvidence, probeSource, readProbes, readReport } from '../../scripts/kb/evidence.js';
 import { collectExports } from '../../scripts/kb/exports.js';
 import { fontsSections, headingSlug, render } from '../../scripts/kb/markup.js';
 import { parsePage } from '../../scripts/kb/frontmatter.js';
@@ -207,7 +207,7 @@ describe('the knowledge base', () => {
       expect(Object.keys(report).length).toBeGreaterThan(0);
 
       for (const fixture of Object.values(report)) {
-        expect(existsSync(`oracle/probes/${fixture.probe}.c`)).toBe(true);
+        expect(existsSync(probeSource(fixture.probe))).toBe(true);
       }
     });
 

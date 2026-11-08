@@ -20,6 +20,17 @@ import { type ModulePage } from './pages.js';
 
 const ROOT = process.cwd();
 
+/**
+ * Where a probe's source is, from the repository's root: `oracle/probes/`,
+ * or for a WATCOM Win386 probe `oracle/probes/win386/`
+ * (`build-probes.mjs`, `buildWin386`).
+ */
+export function probeSource(name: string) {
+  const win386 = `oracle/probes/win386/${name}.c`;
+
+  return existsSync(join(ROOT, win386)) ? win386 : `oracle/probes/${name}.c`;
+}
+
 export interface FunctionCounts {
   total: number;
   agreed: number;
@@ -138,11 +149,14 @@ function describe(source: string) {
 export function readProbes(report: Report): Probe[] {
   const directory = join(ROOT, 'oracle', 'probes');
 
-  return readdirSync(directory)
+  return [
+    ...readdirSync(directory),
+    ...readdirSync(join(directory, 'win386')).map((file) => `win386/${file}`),
+  ]
     .filter((file) => file.endsWith('.c'))
-    .sort()
+    .sort((a, b) => (a.replace(/^win386\//, '') < b.replace(/^win386\//, '') ? -1 : 1))
     .map((file) => {
-      const name = file.replace(/\.c$/, '');
+      const name = file.replace(/\.c$/, '').replace(/^win386\//, '');
       const fixtures = Object.entries(report).filter(([, fixture]) => fixture.probe === name);
       const sum = (key: keyof FunctionCounts) =>
         fixtures.reduce(

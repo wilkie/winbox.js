@@ -4,7 +4,8 @@
 //!
 //! `cargo run -p winbox-win16 --example trace -- PROGRAM.EXE [--drive DIR]
 //! [--path C:\PROGRAM.EXE] [--budget INSTRUCTIONS] [--seconds SECONDS]
-//! [--display vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640]`
+//! [--display vga|ega|hercules|svga|vga256|8514|8514s|xga256|xga256s|xga640]
+//! [--mode standard|enhanced]`
 //!
 //! `--drive` is the host directory that is drive C:, else one made for the
 //! run, and removed after it, with a copy of the program's folder where
@@ -120,6 +121,7 @@ struct Options {
     marks: Option<PathBuf>,
     mounts: Vec<(char, PathBuf)>,
     shell: bool,
+    mode: winbox_win16::Mode,
     survey: Survey,
 }
 
@@ -169,6 +171,7 @@ fn options() -> Options {
         marks: None,
         mounts: Vec::new(),
         shell: false,
+        mode: winbox_win16::Mode::Standard,
         survey: Survey::default(),
     };
     let survey = &mut options.survey;
@@ -181,6 +184,12 @@ fn options() -> Options {
             "--assets" => options.assets = arguments.next().map(PathBuf::from),
             "--oracle-drives" => options.oracle_drives = true,
             "--shell" => options.shell = true,
+            "--mode" => {
+                options.mode = arguments
+                    .next()
+                    .and_then(|name| winbox_win16::Mode::named(&name))
+                    .expect("--mode standard or enhanced");
+            }
             "--screen" => options.screen = arguments.next().map(PathBuf::from),
             "--calls" => survey.calls = arguments.next().and_then(|n| n.parse().ok()),
             "--marks" => options.marks = arguments.next().map(PathBuf::from),
@@ -239,6 +248,7 @@ fn main() {
         marks,
         mounts,
         shell,
+        mode,
         mut survey,
     } = options();
     // A program on a drive of images is read from there, with no file of
@@ -265,6 +275,8 @@ fn main() {
     survey.counts = std::env::var_os("WINBOX_TRACE_INSTRUCTIONS").is_some();
 
     let mut system = survey.system().expect("a display mode winbox.js knows");
+
+    system.mode = mode;
     // Drive C:, the directory given, else one made for the run, with the
     // program's own folder where its path puts it, for its libraries.
     // The folders made for the run, removed after it.

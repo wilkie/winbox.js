@@ -54,6 +54,14 @@ const KEYSYMS: Record<string, string> = {
 /** Where the oracle builds the probes. */
 export const PROBES = join(__dirname, '..', '..', 'oracle', 'build', 'probes');
 
+/** Where it builds the Win386 probes, apart (`build-probes.mjs`, `buildWin386`). */
+export const WIN386 = join(__dirname, '..', '..', 'oracle', 'build', 'win386');
+
+/** The folder a probe was built into: the Win386 probes' own, or the rest's. */
+export function builtIn(probe: string) {
+  return existsSync(join(WIN386, `${probe.toUpperCase()}.EXE`)) ? WIN386 : PROBES;
+}
+
 /** The installed Windows the probes were recorded against. */
 export const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
 
@@ -579,7 +587,7 @@ export async function runProbe(
 
   /* And the library a probe brings, where the recorder puts it: beside
    * Windows. See `build-probes.mjs`. */
-  const library = join(PROBES, `${name.toUpperCase()}D.DLL`);
+  const library = join(builtIn(name), `${name.toUpperCase()}D.DLL`);
 
   if (installation && brought && existsSync(library)) {
     await fileSystem.map(
@@ -614,7 +622,7 @@ export async function runProbe(
   /* The probe itself on the drive, where it runs from, as the Rust engine's
    * runs put it (`tests/support`): a probe that reads its own file finds
    * it (`verinfo`, `verinst`). */
-  const ownFile = join(PROBES, `${name.toUpperCase()}.EXE`);
+  const ownFile = join(builtIn(name), `${name.toUpperCase()}.EXE`);
 
   if (installation && own && !program && existsSync(ownFile)) {
     await fileSystem.map(
@@ -632,7 +640,7 @@ export async function runProbe(
   }
 
   /* And the program it starts. */
-  const child = join(PROBES, `${name.toUpperCase()}C.EXE`);
+  const child = join(builtIn(name), `${name.toUpperCase()}C.EXE`);
 
   if (installation && brought && existsSync(child)) {
     await fileSystem.map(
@@ -842,7 +850,7 @@ export async function runProbe(
       : new Executable(
           upper,
           `C:\\${upper}.EXE`,
-          new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
+          new MemoryFile(new Uint8Array(readFileSync(join(builtIn(name), `${upper}.EXE`))))
         );
 
   await executable.parse();

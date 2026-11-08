@@ -43,6 +43,12 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'oracle', '.cache');
 const BUILD = join(ROOT, 'oracle', 'build');
 const PROBES = join(BUILD, 'probes');
+/* The Win386 probes, built apart (`build-probes.mjs`, `buildWin386`): read
+ * only in 386 enhanced mode. In standard mode the Win386 supervisor shows
+ * "Not running on a 386 DPMI implementation" and waits for its box, so a
+ * plain run of every probe never sees them, and one named is refused. */
+const WIN386 = join(BUILD, 'win386');
+const WIN386_SOURCES = join(ROOT, 'oracle', 'probes', 'win386');
 const SCRATCH = join(BUILD, 'record-c');
 const FIXTURES = join(ROOT, 'oracle', 'fixtures');
 
@@ -1116,12 +1122,33 @@ async function main() {
     throw new Error(`nothing installed for ${display}; run scripts/oracle/install-windows.mjs`);
   }
 
-  const executables = (await readdir(PROBES).catch(() => []))
+  const win386 = (await readdir(WIN386_SOURCES).catch(() => []))
+    .filter((entry) => entry.endsWith('.c') && !entry.endsWith('.dll.c'))
+    .map((entry) => entry.slice(0, -2));
+
+  if (MODE !== 'enhanced' && wanted.some((name) => win386.includes(name))) {
+    throw new Error(
+      `${wanted.filter((name) => win386.includes(name)).join(', ')}: a Win386 probe, ` +
+        "recorded with --mode enhanced only (in standard mode it stops at the supervisor's box)"
+    );
+  }
+
+  const executables = [
+    ...(await readdir(PROBES).catch(() => [])).map((entry) => join(PROBES, entry)),
+    ...(MODE === 'enhanced' ? await readdir(WIN386).catch(() => []) : []).map((entry) =>
+      join(WIN386, entry)
+    ),
+  ]
     .filter((entry) => entry.endsWith('.EXE'))
+    /* A program of the Win386 folder's own library or child is not a probe. */
+    .filter(
+      (entry) =>
+        !(dirname(entry) === WIN386 && !win386.includes(basename(entry, '.EXE').toLowerCase()))
+    )
     .filter(
       (entry) => wanted.length === 0 || wanted.includes(basename(entry, '.EXE').toLowerCase())
     )
-    .sort();
+    .sort((a, b) => (basename(a) < basename(b) ? -1 : basename(a) > basename(b) ? 1 : 0));
 
   if (executables.length === 0) {
     throw new Error('no probes built; run scripts/oracle/build-probes.mjs first');
@@ -1160,15 +1187,7 @@ async function main() {
       ...capture,
       into: join(BUILD, 'captures', capture.dosbox ? `${name}-traced` : name),
     };
-    const recorded = await record(
-      name,
-      join(PROBES, executable),
-      display,
-      fabrication,
-      shoot,
-      corpus,
-      caught
-    );
+    const recorded = await record(name, executable, display, fabrication, shoot, corpus, caught);
     /* A program started as an install is answers what it changed of the
      * drive, with no records. */
     const records = Array.isArray(recorded) ? recorded : recorded.records;

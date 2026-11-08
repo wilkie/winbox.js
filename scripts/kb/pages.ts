@@ -19,6 +19,7 @@ import { join, relative } from 'node:path';
 
 import { type ExportEntry, type ModuleEntry } from './exports.js';
 import { type FrontMatter, parsePage, type Status, type Version, VERSIONS } from './frontmatter.js';
+import { probeSource } from './evidence.js';
 import { fontsSections, type Targets } from './markup.js';
 
 const ROOT = process.cwd();
@@ -251,7 +252,7 @@ export function assemble(survey: Survey, tables: ModuleEntry[], pages: Page[]): 
     const { front, file } = page;
 
     for (const probe of front.probes) {
-      if (!existsSync(join(ROOT, 'oracle', 'probes', `${probe}.c`))) {
+      if (!existsSync(join(ROOT, probeSource(probe)))) {
         errors.push(`${file}: no probe oracle/probes/${probe}.c`);
       }
     }
