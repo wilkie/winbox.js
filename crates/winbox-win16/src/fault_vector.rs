@@ -1,12 +1,13 @@
-//! Which fault a 386 raises for an instruction the Rust core left to its
-//! host.
+//! Which fault to raise for an instruction the Rust core left to its host.
+//! The rules are those of the retired TypeScript engine's JavaScript core
+//! (archived on the branch `typescript-engine`, 2026-11-08), which the
+//! 80386's hardware test vectors held; they are not read out of a 386 here.
 //!
 //! The Rust core runs what it can check by a segment's upper limit alone:
 //! an access through the null selector, a segment not present or one that
 //! expands down is given no room, and stops the run as `Fault(13)`; a
 //! segment load the part checks, or one past the end of its table, stops it
-//! as `Host`. The fault the part raises for the instruction is then named
-//! here:
+//! as `Host`. The fault for the instruction is then named here:
 //!
 //! * An access through the null selector, `#GP` (13); through a segment not
 //!   present, `#NP` (11); past the limit of one that is, through the stack
@@ -18,10 +19,10 @@
 //!   anything but writable data, `#GP`; a segment not present, `#NP`, and
 //!   for SS `#SS`. `POP`, `LES` and the rest load without those checks.
 //!
-//! The core does not run the instruction on, so it is read
+//! The core does not run the instruction itself, so it is read
 //! here -- its prefixes, its operands' addresses, what it
 //! pushes and pops -- to find the access that ran outside its segment, or
-//! the selector it loads, and names the fault the part would
+//! the selector it loads, and names the fault those rules
 //! raise. Where that cannot be told -- a segment that expands down, which
 //! is checked the other way and may not fault on at all,
 //! two accesses that would raise different faults, or a stop for another
@@ -63,7 +64,7 @@ struct Decoded {
 }
 
 impl System {
-    /// The fault the processor raises for the
+    /// The fault, by the rules above, for the
     /// instruction at CS:IP, where the Rust core stopped with `exit`.
     pub(crate) fn fault_vector(&self, exit: Exit) -> Option<u8> {
         if !self.cpu.protected {
@@ -79,8 +80,8 @@ impl System {
         }
     }
 
-    /// The fault, as `fault_vector`, and its error code, as the processor
-    /// raises it: a selector's, its low two bits cleared, where a load
+    /// The fault, as `fault_vector`, and its error code, as those rules
+    /// raise it: a selector's, its low two bits cleared, where a load
     /// faults on what it loads; nought for the null selector into SS and
     /// for an access outside a segment.
     pub(crate) fn fault_with_code(&self, exit: Exit) -> Option<(u8, u16)> {
