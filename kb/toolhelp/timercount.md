@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thtask]
 records: [timer]
-source: src/win16/toolhelp/misc.ts
+source: crates/winbox-win16/src/toolhelp/misc.rs
 topics: [tool-helper]
 ---
 

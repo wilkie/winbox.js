@@ -7,7 +7,7 @@ summary: The EnumWindows procedure DDEML connects with: it sends WM_DDE_INITIATE
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

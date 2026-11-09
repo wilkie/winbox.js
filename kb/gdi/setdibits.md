@@ -7,7 +7,7 @@ summary: Sets some or all of a bitmap's scan lines from a device-independent bit
 versions:
   '3.1': exact
 probes: [gdidraw, deskdeep, prblt2]
-source: src/win16/gdi/gdi-draw.ts
+source: crates/winbox-win16/src/gdi/printer_stretch.rs
 topics: [palettes, printer-drivers]
 ---
 

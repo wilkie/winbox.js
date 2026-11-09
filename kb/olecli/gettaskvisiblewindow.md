@@ -7,7 +7,7 @@ summary: "`EnumTaskWindows`' procedure finding a task's visible window: it writt
 versions:
   '3.1': exact
 probes: [olenet]
-source: src/win16/olecli/network.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

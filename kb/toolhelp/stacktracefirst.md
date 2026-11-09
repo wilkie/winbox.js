@@ -4,7 +4,7 @@ module: TOOLHELP
 name: StackTraceFirst
 ordinal: 66
 summary: The first frame of a task's stack, from where its switch left it.
-source: src/win16/toolhelp/stack.ts
+source: crates/winbox-win16/src/toolhelp/stack.rs
 topics: [tool-helper]
 ---
 

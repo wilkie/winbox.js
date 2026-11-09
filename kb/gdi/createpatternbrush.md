@@ -7,7 +7,7 @@ summary: Makes a brush that paints a bitmap's top-left eight by eight pixels ove
 versions:
   '3.1': exact
 probes: [patbrush, patmono, gdidraw]
-source: src/win16/gdi/CreatePatternBrush.ts
+source: crates/winbox-win16/src/gdi/brushes.rs
 topics: [brush-dithering, accessories]
 ---
 

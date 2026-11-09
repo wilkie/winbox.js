@@ -7,7 +7,7 @@ summary: Opens a print job for a printer driver's output — straight to a file 
 versions:
   '3.1': partial
 probes: [prspool, prlpt, prdoc]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers, printing]
 ---
 

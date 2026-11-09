@@ -7,7 +7,7 @@ summary: "An object renamed: its old name's atom deleted, the new one's added."
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

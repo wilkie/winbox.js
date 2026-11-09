@@ -7,7 +7,7 @@ summary: Makes a copy of a region a device context's visible region, in the scre
 versions:
   '3.1': partial
 probes: [visfam]
-source: src/win16/gdi/visible-region.ts
+source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
 

@@ -7,7 +7,7 @@ summary: Reads one entry of a named INI file as an unsigned number, returning a 
 versions:
   '3.1': exact
 probes: [profile]
-source: src/win16/kernel/GetPrivateProfileInt.ts
+source: crates/winbox-win16/src/profiles_kernel.rs
 topics: [profile-files]
 ---
 

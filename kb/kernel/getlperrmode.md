@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kmore]
 records: [errmode]
-source: src/win16/kernel/more-calls.ts
+source: crates/winbox-win16/src/kernel_calls/more.rs
 topics: [kernel-queries]
 ---
 

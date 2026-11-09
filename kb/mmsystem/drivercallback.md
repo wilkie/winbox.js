@@ -6,7 +6,7 @@ ordinal: 31
 summary: How a driver calls a program back: a window or a task posted, or a function called.
 versions:
   '3.1': unrecorded
-source: src/win16/mmsystem/callback.ts
+source: crates/winbox-win16/src/mmsystem/callback.rs
 topics: [sound-devices]
 ---
 

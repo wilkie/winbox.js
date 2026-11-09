@@ -7,7 +7,7 @@ summary: Abandons a print job — its file closed and deleted, unwritten — wit
 versions:
   '3.1': partial
 probes: [prspool, prabort]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers, printing]
 ---
 

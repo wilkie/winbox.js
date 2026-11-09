@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask2]
 records: [small]
-source: src/win16/kernel/code-calls.ts
+source: crates/winbox-win16/src/kernel_calls/code.rs
 topics: [kernel-queries]
 ---
 

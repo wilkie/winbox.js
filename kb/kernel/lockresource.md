@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [reshand]
 records: [load, own]
-source: src/win16/kernel/LockResource.ts
+source: crates/winbox-win16/src/resources.rs
 topics: [kernel-queries]
 ---
 

@@ -6,7 +6,7 @@ ordinal: 154
 summary: Names the procedure KERNEL calls before it discards one of the task's notifying blocks to make room; answers nothing.
 versions:
   '3.1': unrecorded
-source: src/win16/kernel/misc.ts
+source: crates/winbox-win16/src/modules_kernel.rs
 topics: [global-and-local-memory]
 ---
 

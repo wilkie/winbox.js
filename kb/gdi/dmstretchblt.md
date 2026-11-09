@@ -6,7 +6,7 @@ ordinal: 216
 summary: A stretch on a memory bitmap handed to the display driver's StretchBlt, which the VGA has not got.
 versions:
   '3.1': unrecorded
-source: src/win16/gdi/driver-helpers.ts
+source: crates/winbox-win16/src/gdi/driver_helpers.rs
 topics: [gdi-internals, printer-drivers]
 ---
 

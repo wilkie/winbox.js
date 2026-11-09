@@ -7,7 +7,7 @@ summary: "The Draw of another class's data's table: drawn."
 versions:
   '3.1': exact
 probes: [olemem]
-source: src/win16/olecli/draw.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

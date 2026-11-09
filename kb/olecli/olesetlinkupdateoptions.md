@@ -7,7 +7,7 @@ summary: "A link's update option set. A static object refuses."
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

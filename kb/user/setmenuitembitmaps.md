@@ -7,7 +7,7 @@ summary: Gives a menu item bitmaps of its own for checked and unchecked, drawn w
 versions:
   '3.1': exact
 probes: [menubmp, userwin]
-source: src/win16/user/menus.ts
+source: crates/winbox-win16/src/menu_api.rs
 topics: [menus, window-calls]
 ---
 

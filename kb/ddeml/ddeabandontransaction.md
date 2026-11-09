@@ -7,7 +7,7 @@ summary: Forgets an asynchronous transaction, or all of a conversation's or an i
 versions:
   '3.1': exact
 probes: [ddexact]
-source: src/win16/ddeml/xact.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions]
 ---
 

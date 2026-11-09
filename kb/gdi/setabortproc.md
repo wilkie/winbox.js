@@ -7,7 +7,7 @@ summary: Gives a printer's device context the procedure GDI asks whether to go o
 versions:
   '3.1': exact
 probes: [printing, prspool, prabort]
-source: src/win16/gdi/printing.ts
+source: crates/winbox-win16/src/gdi/printing.rs
 topics: [printing, printer-drivers]
 ---
 

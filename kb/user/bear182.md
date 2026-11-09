@@ -7,7 +7,7 @@ summary: KillTimer for a system timer.
 versions:
   '3.1': exact
 probes: [systimer]
-source: src/win16/user/SetTimer.ts
+source: crates/winbox-win16/src/queue.rs
 topics: [user-internals]
 ---
 

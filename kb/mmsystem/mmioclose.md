@@ -7,7 +7,7 @@ summary: Writes out a file's buffer, tells its I/O procedure, and frees the file
 versions:
   '3.1': exact
 probes: [mmio, mmioext]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

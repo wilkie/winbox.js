@@ -7,7 +7,7 @@ summary: Copies a bitmap's bits into a buffer, in rows padded to 16-bit words, a
 versions:
   '3.1': exact
 probes: [bitbits, glyphs, lines, polyfill]
-source: src/win16/gdi/GetBitmapBits.ts
+source: crates/winbox-win16/src/gdi/bitmaps.rs
 ---
 
 ## Observed behaviour

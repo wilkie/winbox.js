@@ -7,7 +7,7 @@ summary: "An object drawn into a device context, within the bounds given; into a
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olemem, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

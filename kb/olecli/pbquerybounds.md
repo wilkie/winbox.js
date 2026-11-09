@@ -7,7 +7,7 @@ summary: "Paintbrush's `QueryBounds`: its bitmap's size at its pixels to a metre
 versions:
   '3.1': exact
 probes: [olehnd, oleemb, olepbd]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

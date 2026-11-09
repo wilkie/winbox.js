@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [findres, reshand]
 records: [load, loads, own]
-source: src/win16/kernel/LoadResource.ts
+source: crates/winbox-win16/src/resources.rs
 topics: [kernel-queries]
 ---
 

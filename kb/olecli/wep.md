@@ -6,7 +6,7 @@ ordinal: 1
 summary: "OLECLI's exit procedure, called as the library is freed: 1."
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/index.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

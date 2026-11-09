@@ -9,7 +9,7 @@ versions:
 probes: [loadalt]
 records: [bitmap]
 topics: [common-dialogs, file-dialogs]
-source: src/win16/commdlg/pictures.ts
+source: crates/winbox-win16/src/commdlg/pictures.rs
 ---
 
 ## Observed behaviour

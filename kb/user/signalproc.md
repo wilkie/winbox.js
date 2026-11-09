@@ -6,7 +6,7 @@ ordinal: 314
 summary: KERNEL's notices to USER: a task's end, a module loaded or freed; a loaded module's icon and cursor resource handlers set.
 probes: [iconhand, userproc]
 records: [signal, handler]
-source: src/win16/user/icon-handlers.ts
+source: crates/winbox-win16/src/icon_handlers.rs
 topics: [user-internals]
 ---
 

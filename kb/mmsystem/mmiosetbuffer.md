@@ -7,7 +7,7 @@ summary: Gives a file a buffer of the program's, one of MMSYSTEM's, or none.
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

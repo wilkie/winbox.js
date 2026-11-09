@@ -9,7 +9,7 @@ versions:
 probes: [kbdrv]
 records: [type]
 topics: [keyboard-driver]
-source: src/win16/keyboard/driver.ts
+source: crates/winbox-win16/src/keyboard.rs
 ---
 
 ## Observed behaviour

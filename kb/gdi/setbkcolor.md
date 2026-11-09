@@ -7,7 +7,7 @@ summary: Sets a device context's background colour, and answers the one before e
 versions:
   '3.1': exact
 probes: [bkcolor, prdraw]
-source: src/win16/gdi/SetBkColor.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [standard-controls]
 ---
 

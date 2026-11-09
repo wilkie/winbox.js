@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [shlhook]
 topics: [hooks]
-source: src/win16/shell/shell-hook.ts
+source: crates/winbox-win16/src/shell/shell_hook.rs
 ---
 
 ## Observed behaviour

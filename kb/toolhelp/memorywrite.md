@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thtask]
 records: [memory]
-source: src/win16/toolhelp/memory.ts
+source: crates/winbox-win16/src/toolhelp/memory.rs
 topics: [tool-helper]
 ---
 

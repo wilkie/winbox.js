@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmmisc]
 records: [task]
-source: src/win16/mmsystem/tasks.ts
+source: crates/winbox-win16/src/mmsystem/tasks.rs
 topics: [multimedia-services]
 ---
 

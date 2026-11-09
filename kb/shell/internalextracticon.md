@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [iextract]
 records: [extract]
-source: src/win16/shell/programs.ts
+source: crates/winbox-win16/src/shell/programs.rs
 topics: [user-internals]
 ---
 

@@ -7,7 +7,7 @@ summary: The dialog procedure of DDEML's TermDialog, which DdeUninitialize shows
 versions:
   '3.1': exact
 probes: [ddeterm]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

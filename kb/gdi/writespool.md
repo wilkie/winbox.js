@@ -7,7 +7,7 @@ summary: Adds a printer driver's bytes to a print job, writing the job's buffer 
 versions:
   '3.1': partial
 probes: [prspool, prlpt, prabort]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers, printing]
 ---
 

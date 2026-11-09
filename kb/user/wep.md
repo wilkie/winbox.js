@@ -6,7 +6,7 @@ ordinal: 8
 summary: USER's exit procedure: 1.
 versions:
   '3.1': unrecorded
-source: src/win16/user.ts
+source: crates/winbox-win16/src/user.rs
 ---
 
 ## Inside Windows

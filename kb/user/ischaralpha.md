@@ -7,7 +7,7 @@ summary: Whether a character is a letter of the Windows character set, accented 
 versions:
   '3.1': exact
 probes: [queries, langdrv]
-source: src/win16/user/queries.ts
+source: crates/winbox-win16/src/language_driver.rs
 topics: [small-queries]
 ---
 

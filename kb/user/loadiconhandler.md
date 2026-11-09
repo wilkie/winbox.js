@@ -4,7 +4,7 @@ module: USER
 name: LoadIconHandler
 ordinal: 456
 summary: Makes a block holding an icon resource USER's icon, in place: SHELL's ExtractIcon and WinHelp hand it the resources they read.
-source: src/win16/user/icon-handlers.ts
+source: crates/winbox-win16/src/icon_handlers.rs
 topics: [user-internals]
 ---
 

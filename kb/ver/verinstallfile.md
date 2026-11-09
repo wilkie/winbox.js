@@ -7,7 +7,7 @@ summary: A file installed — copied, expanded, into a temporary file beside whe
 versions:
   '3.1': exact
 probes: [verinst]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

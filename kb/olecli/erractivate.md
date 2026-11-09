@@ -7,7 +7,7 @@ summary: "The Activate of a static object's table: it refuses, answering `OLE_ER
 versions:
   '3.1': exact
 probes: [olemem]
-source: src/win16/olecli/methods.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -69,23 +69,23 @@ summary: One sentence on what the call is for.
 versions:
   '3.1': exact
 probes: [smearglf]
-source: src/win16/gdi/GetGlyphOutline.ts
+source: crates/winbox-win16/src/gdi/text/glyphs.rs
 topics: [turned-text]
 ---
 ```
 
-| Field      | Required                                            | Meaning                                                                                 |
-| ---------- | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `kind`     | yes                                                 | `function`, `structure`, `message`, `constants`, `format`, `topic` or `guide`           |
-| `name`     | yes                                                 | The exported name, or the structure's, message's or topic's                             |
-| `module`   | for `function`, `structure`, `message`, `constants` | The module as Windows names it: `GDI`, `KERNEL`                                         |
-| `ordinal`  | for `function`                                      | Must match the export table                                                             |
-| `summary`  | no                                                  | One or two sentences, shown under the title                                             |
-| `versions` | no                                                  | A status for each of `"3.0"`, `"3.1"`, `"3.11"`; a version left out is not yet surveyed |
-| `probes`   | no                                                  | Probes in `oracle/probes/` that record the behaviour                                    |
-| `records`  | no                                                  | Which of those probes' recorded functions back the page; all of them, without it        |
-| `source`   | no                                                  | The implementation, where it is not `src/win16/<module>/<Name>.ts`                      |
-| `topics`   | no                                                  | Topic pages the function belongs to                                                     |
+| Field      | Required                                            | Meaning                                                                                         |
+| ---------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `kind`     | yes                                                 | `function`, `structure`, `message`, `constants`, `format`, `topic` or `guide`                   |
+| `name`     | yes                                                 | The exported name, or the structure's, message's or topic's                                     |
+| `module`   | for `function`, `structure`, `message`, `constants` | The module as Windows names it: `GDI`, `KERNEL`                                                 |
+| `ordinal`  | for `function`                                      | Must match the export table                                                                     |
+| `summary`  | no                                                  | One or two sentences, shown under the title                                                     |
+| `versions` | no                                                  | A status for each of `"3.0"`, `"3.1"`, `"3.11"`; a version left out is not yet surveyed         |
+| `probes`   | no                                                  | Probes in `oracle/probes/` that record the behaviour                                            |
+| `records`  | no                                                  | Which of those probes' recorded functions back the page; all of them, without it                |
+| `source`   | no                                                  | The implementation, where it is not the Rust file of the export's arm (`scripts/kb/rustdoc.ts`) |
+| `topics`   | no                                                  | Topic pages the function belongs to                                                             |
 
 A status is one of:
 

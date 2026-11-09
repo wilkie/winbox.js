@@ -7,7 +7,7 @@ summary: GDI's TrueType fonts handed to a printer driver's own walk of its fonts
 versions:
   '3.1': partial
 probes: [pric]
-source: src/win16/gdi/engine-font.ts
+source: crates/winbox-win16/src/gdi/engine_font.rs
 topics: [printer-drivers]
 ---
 

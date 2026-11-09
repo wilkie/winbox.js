@@ -7,7 +7,7 @@ summary: Counts a discardable global block's lock down and answers the count lef
 versions:
   '3.1': exact
 probes: [glocks, glock]
-source: src/win16/kernel/GlobalUnlock.ts
+source: crates/winbox-win16/src/memory.rs
 topics: [global-and-local-memory]
 ---
 

@@ -7,7 +7,7 @@ summary: Starts a page of a print job; for a job straight to its port it only no
 versions:
   '3.1': partial
 probes: [prspool, prlpt]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers]
 ---
 

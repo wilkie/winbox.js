@@ -7,7 +7,7 @@ summary: COMMDLG's Save As box — the Open box under another caption, with Save
 versions:
   '3.1': partial
 probes: [ofnerr]
-source: src/win16/commdlg/file-dialogs.ts
+source: crates/winbox-win16/src/commdlg/file_dialogs.rs
 topics: [common-dialogs, file-dialogs]
 ---
 

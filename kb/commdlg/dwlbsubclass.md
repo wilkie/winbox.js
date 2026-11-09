@@ -7,7 +7,7 @@ summary: The file dialogs' subclass of the folders' list — as the list loses t
 versions:
   '3.1': unrecorded
 topics: [common-dialogs, file-dialogs]
-source: src/win16/commdlg/file-init.ts
+source: crates/winbox-win16/src/commdlg/file_init.rs
 ---
 
 ## Observed behaviour

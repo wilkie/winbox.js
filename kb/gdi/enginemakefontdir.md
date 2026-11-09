@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [prtteng]
 records: [EngineMakeFontDir]
-source: src/win16/gdi/engine-glyphs.ts
+source: crates/winbox-win16/src/gdi/engine_glyphs.rs
 topics: [font-resources]
 ---
 

@@ -7,7 +7,7 @@ summary: Copies a data handle's bytes, from an offset, into the caller's buffer,
 versions:
   '3.1': exact
 probes: [ddexact]
-source: src/win16/ddeml/data.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions]
 ---
 

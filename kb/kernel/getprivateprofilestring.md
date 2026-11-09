@@ -7,7 +7,7 @@ summary: Looks up one entry of a named INI file and copies its value — or, wit
 versions:
   '3.1': exact
 probes: [profile, profhold]
-source: src/win16/kernel/GetPrivateProfileString.ts
+source: crates/winbox-win16/src/profiles_kernel.rs
 topics: [profile-files]
 ---
 

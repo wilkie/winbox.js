@@ -7,7 +7,7 @@ summary: "The first message a blocked server's clients sent handled; whether mor
 versions:
   '3.1': exact
 probes: [olesrv]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

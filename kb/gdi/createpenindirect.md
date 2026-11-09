@@ -7,7 +7,7 @@ summary: Makes a pen from a LOGPEN; with CreatePen, what each pen style draws.
 versions:
   '3.1': exact
 probes: [penind]
-source: src/win16/gdi/CreatePen.ts
+source: crates/winbox-win16/src/gdi/objects.rs
 topics: [line-drawing, gdi-objects]
 ---
 

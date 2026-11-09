@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [tasks2, loadenv, mmtaskc]
 records: [load]
-source: src/win16/kernel/WinExec.ts
+source: crates/winbox-win16/src/tasks.rs
 topics: [kernel-queries]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [wplace]
 records: [place]
-source: src/win16/user/placement.ts
+source: crates/winbox-win16/src/window_state.rs
 ---
 
 ## Observed behaviour

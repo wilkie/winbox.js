@@ -7,7 +7,7 @@ summary: Whether the message a window procedure is handling was sent to it by an
 versions:
   '3.1': partial
 probes: [queries, bcast]
-source: src/win16/user/queries.ts
+source: crates/winbox-win16/src/user_misc.rs
 topics: [several-programs, small-queries]
 ---
 

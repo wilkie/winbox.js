@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thheap]
 records: [gmodule]
-source: src/win16/toolhelp/global.ts
+source: crates/winbox-win16/src/toolhelp/global.rs
 topics: [tool-helper]
 ---
 

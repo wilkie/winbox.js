@@ -7,7 +7,7 @@ summary: Opens a new handle on the file a resource is in, with the pointer at th
 versions:
   '3.1': exact
 probes: [accres]
-source: src/win16/kernel/AccessResource.ts
+source: crates/winbox-win16/src/resources.rs
 ---
 
 ## Observed behaviour

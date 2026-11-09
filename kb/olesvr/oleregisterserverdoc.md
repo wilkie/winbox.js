@@ -7,7 +7,7 @@ summary: "A document the server opened itself registered: a window of `DocWndCla
 versions:
   '3.1': exact
 probes: [olesrv]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: COMMDLG's exit procedure, which KERNEL calls as the library is let go â
 versions:
   '3.1': unrecorded
 topics: [common-dialogs, dynamic-link-libraries]
-source: src/win16/commdlg/index.ts
+source: crates/winbox-win16/src/commdlg/mod.rs
 ---
 
 ## Observed behaviour

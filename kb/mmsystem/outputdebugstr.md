@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmmisc]
 records: [debugstr]
-source: src/win16/mmsystem.ts
+source: crates/winbox-win16/src/mmsystem/mod.rs
 topics: [multimedia-services]
 ---
 

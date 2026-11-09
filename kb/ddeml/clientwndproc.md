@@ -7,7 +7,7 @@ summary: The window procedure of DDEML's client conversations, class DMGClientCl
 versions:
   '3.1': exact
 probes: [ddemgmt, ddelist]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

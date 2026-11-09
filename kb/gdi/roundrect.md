@@ -7,7 +7,7 @@ summary: Draws a rectangle with rounded corners, each a quarter of an ellipse of
 versions:
   '3.1': exact
 probes: [curves, inframe, drawgaps, prdraw]
-source: src/win16/gdi/RoundRect.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [ellipses, polygon-fill]
 ---
 

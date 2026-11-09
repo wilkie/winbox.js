@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [strfunc]
 records: [seeuser]
-source: src/win16/user/internals.ts
+source: crates/winbox-win16/src/user_internals.rs
 topics: [user-internals]
 ---
 

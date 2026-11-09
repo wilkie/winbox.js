@@ -7,7 +7,7 @@ summary: Answers the window at a point of the screen by USER's hit test, asking 
 versions:
   '3.1': exact
 probes: [winpoint, iconkid, wfpwalk, uwleft]
-source: src/win16/user/window-from-point.ts
+source: crates/winbox-win16/src/window_misc.rs
 topics: [mouse-input, standard-controls]
 ---
 

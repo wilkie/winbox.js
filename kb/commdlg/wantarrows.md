@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [choosclr]
 topics: [common-dialogs, choose-color]
-source: src/win16/commdlg/choose-color.ts
+source: crates/winbox-win16/src/commdlg/choose_color.rs
 ---
 
 ## Observed behaviour

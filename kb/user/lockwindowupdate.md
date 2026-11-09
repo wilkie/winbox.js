@@ -7,7 +7,7 @@ summary: Keeps one window and those in it from drawing on the screen until it is
 versions:
   '3.1': partial
 probes: [lockupd, vislock]
-source: src/win16/user/lock-window-update.ts
+source: crates/winbox-win16/src/user_calls/lock_update.rs
 topics: [painting, visible-regions]
 ---
 

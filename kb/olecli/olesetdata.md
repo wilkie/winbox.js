@@ -7,7 +7,7 @@ summary: "An object given data in a format. A static object's method answers `OL
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olemem, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

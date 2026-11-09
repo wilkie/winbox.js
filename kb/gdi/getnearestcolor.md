@@ -7,7 +7,7 @@ summary: Returns the colour a device draws a given colour as, when it is drawn a
 versions:
   '3.1': exact
 probes: [dither, nearest2, penmatch]
-source: src/win16/gdi/GetNearestColor.ts
+source: crates/winbox-win16/src/gdi/mod.rs
 ---
 
 ## Observed behaviour

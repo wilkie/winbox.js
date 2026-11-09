@@ -7,7 +7,7 @@ summary: DDEML's exit procedure, called as the library is freed. It answers 1 an
 versions:
   '3.1': partial
 probes: [ddewep]
-source: src/win16/ddeml/exports.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

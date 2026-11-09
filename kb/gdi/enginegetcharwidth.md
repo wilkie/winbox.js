@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [prtteng, prtt]
 records: [EngineGetCharWidth, charwidth, extent]
-source: src/win16/gdi/engine-glyphs.ts
+source: crates/winbox-win16/src/gdi/engine_glyphs.rs
 topics: [printer-drivers, truetype-queries]
 ---
 

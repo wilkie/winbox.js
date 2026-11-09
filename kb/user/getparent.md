@@ -7,7 +7,7 @@ summary: A child's parent, or a pop-up's owner — but nought for an overlapped 
 versions:
   '3.1': exact
 probes: [ownerpos, owners]
-source: src/win16/user/window-queries.ts
+source: crates/winbox-win16/src/window_queries.rs
 topics: [enumerating-windows]
 ---
 

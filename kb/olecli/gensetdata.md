@@ -7,7 +7,7 @@ summary: "The SetData of another class's data's table: its data replaced, in its
 versions:
   '3.1': partial
 probes: [olemem]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kgaps]
 records: [master]
-source: src/win16/kernel/thhook.ts
+source: crates/winbox-win16/src/kernel_calls/thhook.rs
 topics: [kernel-internals, tool-helper]
 ---
 

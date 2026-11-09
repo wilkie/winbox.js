@@ -7,7 +7,7 @@ summary: Makes a device-dependent bitmap of a given size and depth, optionally f
 versions:
   '3.1': exact
 probes: [bitbits, patmono]
-source: src/win16/gdi/CreateBitmap.ts
+source: crates/winbox-win16/src/gdi/bitmaps.rs
 ---
 
 ## Observed behaviour

@@ -7,7 +7,7 @@ summary: Copies a null-terminated string, terminator included, into a buffer the
 versions:
   '3.1': exact
 probes: [strings]
-source: src/win16/kernel/lstrcpy.ts
+source: crates/winbox-win16/src/kernel.rs
 ---
 
 ## Observed behaviour

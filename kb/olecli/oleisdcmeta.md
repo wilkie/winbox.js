@@ -7,7 +7,7 @@ summary: "Whether a device context is a metafile's: its technology `DT_METAFILE`
 versions:
   '3.1': exact
 probes: [olestat]
-source: src/win16/olecli/draw.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

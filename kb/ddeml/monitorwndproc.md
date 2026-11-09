@@ -7,7 +7,7 @@ summary: The window procedure of a monitor instance's window, class DMGMonitorCl
 versions:
   '3.1': exact
 probes: [ddemgmt, ddemon]
-source: src/win16/ddeml/monitor.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thswch]
 records: [set, child]
-source: src/win16/user/userwin.ts
+source: crates/winbox-win16/src/queue.rs
 ---
 
 ## Observed behaviour

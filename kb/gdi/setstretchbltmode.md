@@ -7,7 +7,7 @@ summary: Sets how StretchBlt shrinks into a device context, and answers the mode
 versions:
   '3.1': exact
 probes: [stretch]
-source: src/win16/gdi/StretchBlt.ts
+source: crates/winbox-win16/src/gdi/dc.rs
 ---
 
 ## Observed behaviour

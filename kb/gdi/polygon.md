@@ -7,7 +7,7 @@ summary: Fills a closed shape given as a list of points with the selected brush,
 versions:
   '3.1': exact
 probes: [polyfill, fillext, metafile, prdraw]
-source: src/win16/gdi/Polygon.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [polygon-fill, line-drawing, display-drivers]
 ---
 

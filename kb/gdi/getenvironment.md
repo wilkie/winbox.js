@@ -7,7 +7,7 @@ summary: Copies the environment GDI keeps for a printer's port — the DEVMODE a
 versions:
   '3.1': exact
 probes: [prdlg]
-source: src/win16/gdi/environment.ts
+source: crates/winbox-win16/src/gdi/environment.rs
 topics: [printer-drivers]
 ---
 

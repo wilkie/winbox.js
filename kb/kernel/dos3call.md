@@ -4,7 +4,7 @@ module: KERNEL
 name: DOS3Call
 ordinal: 102
 summary: A DOS call by a far call instead of INT 21h — the registers go to KERNEL's own INT 21h routine as they are, and come back as it leaves them.
-source: src/win16/kernel/Dos3Call.ts
+source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 topics: [kernel-internals, dos-handles]
 ---
 

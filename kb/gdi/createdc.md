@@ -7,7 +7,7 @@ summary: Makes a device context for a device by its driver's name: the screen fo
 versions:
   '3.1': partial
 probes: [pric, prdlg, printing, prttstk]
-source: src/win16/gdi/CreateDC.ts
+source: crates/winbox-win16/src/gdi/printer_driver.rs
 topics: [printer-drivers]
 ---
 

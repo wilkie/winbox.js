@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [chrome]
 records: [syscolor]
-source: src/win16/user/GetSysColor.ts
+source: crates/winbox-win16/src/user.rs
 topics: [display-drivers, display-driver-resources]
 ---
 

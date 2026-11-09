@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmmisc]
 records: [stack]
-source: src/win16/mmsystem/stacks.ts
+source: crates/winbox-win16/src/mmsystem/stacks.rs
 topics: [multimedia-services]
 ---
 

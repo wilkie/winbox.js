@@ -7,7 +7,7 @@ summary: Calls a program's procedure with each point of a line but its last, ste
 versions:
   '3.1': exact
 probes: [gdidraw]
-source: src/win16/gdi/gdi-draw.ts
+source: crates/winbox-win16/src/gdi/shapes.rs
 topics: [line-drawing]
 ---
 

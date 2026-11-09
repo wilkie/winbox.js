@@ -7,7 +7,7 @@ summary: A metafile on disk by its file's name — a handle of kind 2 naming the
 versions:
   '3.1': exact
 probes: [diskmeta]
-source: src/win16/gdi/metafile.ts
+source: crates/winbox-win16/src/gdi/metafile.rs
 topics: [metafiles]
 ---
 

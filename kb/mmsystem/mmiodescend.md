@@ -7,7 +7,7 @@ summary: Finds a RIFF chunk and reads its header.
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

@@ -4,7 +4,7 @@ module: KERNEL
 name: GetTaskQueueDS
 ordinal: 118
 summary: DS made the running task's queue, AX and DX left as they were.
-source: src/win16/kernel/task-calls.ts
+source: crates/winbox-win16/src/kernel_calls/tasks.rs
 topics: [kernel-queries]
 ---
 

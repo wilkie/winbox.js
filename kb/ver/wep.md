@@ -6,7 +6,7 @@ ordinal: 1
 summary: VER's exit procedure, which KERNEL calls as the library is let go — it answers 1 and does nothing else.
 versions:
   '3.1': unrecorded
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

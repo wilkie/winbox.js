@@ -6,7 +6,7 @@ ordinal: 400
 summary: USER's last step as Windows starts: its own drawing context and bitmap made, and GDI's FinalGDIInit called.
 versions:
   '3.1': unrecorded
-source: src/win16/user/internals.ts
+source: crates/winbox-win16/src/user_internals.rs
 topics: [user-internals]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 records: [usage]
 probes: [modnum]
-source: src/win16/kernel/LoadLibrary.ts
+source: crates/winbox-win16/src/modules_kernel.rs
 topics: [dynamic-link-libraries]
 ---
 

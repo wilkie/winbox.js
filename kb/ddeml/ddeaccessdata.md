@@ -7,7 +7,7 @@ summary: Locks a data handle's block and answers a far pointer to its data, past
 versions:
   '3.1': exact
 probes: [ddexact]
-source: src/win16/ddeml/data.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions]
 ---
 

@@ -4,7 +4,7 @@ module: KERNEL
 name: OldYield
 ordinal: 117
 summary: The processor given up as KERNEL gives it up itself, with no look at USER's queue; FFFFh.
-source: src/win16/kernel/WinExec.ts
+source: crates/winbox-win16/src/tasks.rs
 topics: [kernel-queries]
 ---
 

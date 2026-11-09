@@ -9,7 +9,7 @@ versions:
 probes: [replym]
 records: [child, insend, own]
 topics: [several-programs]
-source: src/win16/user/reply-message.ts
+source: crates/winbox-win16/src/reply_message.rs
 ---
 
 ## Observed behaviour

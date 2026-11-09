@@ -7,7 +7,7 @@ summary: Locks the running task, so the scheduler switches to no other, or lets 
 versions:
   '3.1': exact
 probes: [lockinp]
-source: src/win16/kernel/tasks.ts
+source: crates/winbox-win16/src/lock_input.rs
 topics: [system-queue]
 ---
 

@@ -7,7 +7,7 @@ summary: Moves a device context's visible region, and answers the kind drawing i
 versions:
   '3.1': partial
 probes: [visfam]
-source: src/win16/gdi/visible-region.ts
+source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
 

@@ -7,7 +7,7 @@ summary: "The palette an embedded object's server is to use. A static object ref
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

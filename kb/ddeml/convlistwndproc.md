@@ -7,7 +7,7 @@ summary: The window procedure of class DMGHoldingClass: a conversation list, and
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kbenable]
 records: [kb]
-source: src/win16/keyboard/driver.ts
+source: crates/winbox-win16/src/keyboard.rs
 topics: [keyboard-driver]
 ---
 

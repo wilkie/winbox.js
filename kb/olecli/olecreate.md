@@ -7,7 +7,7 @@ summary: "An embedded object made by its class's server."
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

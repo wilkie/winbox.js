@@ -7,7 +7,7 @@ summary: Opens, makes, deletes, looks for or parses a file as its flags say, ans
 versions:
   '3.1': exact
 probes: [openfile, search, mmio, devinfo]
-source: src/win16/kernel/OpenFile.ts
+source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 ---
 
 ## Observed behaviour

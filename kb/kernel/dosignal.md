@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [kgaps]
 records: [dosignal, dosignalds]
-source: src/win16/kernel/signals.ts
+source: crates/winbox-win16/src/kernel_calls/signals.rs
 topics: [kernel-internals, keyboard-driver]
 ---
 

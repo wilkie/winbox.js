@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ddexact, progdde, ddefail, ddenest]
 records: [xact, request, transaction, execute]
-source: src/win16/ddeml/xact.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions, program-manager-dde]
 ---
 

@@ -7,7 +7,7 @@ summary: The keyboard driver's way into USER, open to a program too — a key pr
 versions:
   '3.1': exact
 probes: [altchild, sysq, jrnlrec]
-source: src/win16/user/keybd-event.ts
+source: crates/winbox-win16/src/user.rs
 topics: [keyboard-input, menus, system-queue]
 ---
 

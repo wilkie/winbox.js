@@ -6,7 +6,7 @@ ordinal: 218
 summary: A DIB stretched onto a memory bitmap by the display driver's StretchDIBits, which the VGA has not got.
 versions:
   '3.1': unrecorded
-source: src/win16/gdi/driver-helpers.ts
+source: crates/winbox-win16/src/gdi/driver_helpers.rs
 topics: [gdi-internals, printer-drivers]
 ---
 

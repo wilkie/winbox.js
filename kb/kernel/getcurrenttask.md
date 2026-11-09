@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask]
 records: [task]
-source: src/win16/kernel/tasks.ts
+source: crates/winbox-win16/src/kernel_calls/tasks.rs
 topics: [kernel-queries]
 ---
 

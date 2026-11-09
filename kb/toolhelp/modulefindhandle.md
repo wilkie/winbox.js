@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thtask]
 records: [module]
-source: src/win16/toolhelp/modules.ts
+source: crates/winbox-win16/src/toolhelp/modules.rs
 topics: [tool-helper]
 ---
 

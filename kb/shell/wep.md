@@ -6,7 +6,7 @@ ordinal: 8
 summary: SHELL's exit procedure: the registration database written out, and 1.
 versions:
   '3.1': unrecorded
-source: src/win16/shell.ts
+source: crates/winbox-win16/src/shell.rs
 ---
 
 ## Inside Windows

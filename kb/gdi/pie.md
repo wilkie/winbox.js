@@ -7,7 +7,7 @@ summary: Draws the wedge of an ellipse between two radials, filled with the brus
 versions:
   '3.1': exact
 probes: [wedges, widepoly, inframe, prdraw]
-source: src/win16/gdi/wedges.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [ellipses, polygon-fill]
 ---
 

@@ -6,7 +6,7 @@ ordinal: 12
 summary: An export of the C library's, named in LZEXPAND's resident names -- it answers nought.
 versions:
   '3.1': unrecorded
-source: src/win16/lzexpand/index.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

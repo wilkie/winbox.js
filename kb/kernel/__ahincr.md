@@ -7,7 +7,7 @@ summary: The number 8, what a huge pointer's selector goes up by at each 64 KiB.
 versions:
   '3.1': exact
 probes: [kconst]
-source: src/win16/kernel/constants.ts
+source: crates/winbox-win16/src/linker.rs
 topics: [exported-constants]
 ---
 

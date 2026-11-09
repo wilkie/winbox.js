@@ -7,7 +7,7 @@ summary: Adds a font file â€” a raster or vector .FON, or a TrueType .FOT stub â
 versions:
   '3.1': exact
 probes: [fontres, fontver, fontboot]
-source: src/win16/gdi/AddFontResource.ts
+source: crates/winbox-win16/src/gdi/text/added.rs
 topics: [font-resources, font-enumeration]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [gdispool]
 records: [call, file]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [gdi-internals, printing]
 ---
 

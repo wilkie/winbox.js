@@ -9,7 +9,7 @@ versions:
 probes: [sysdrv]
 records: [inquire]
 topics: [system-driver, drives-and-disks]
-source: src/win16/system-driver.ts
+source: crates/winbox-win16/src/system_driver.rs
 ---
 
 ## Observed behaviour

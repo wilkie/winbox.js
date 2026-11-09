@@ -6,7 +6,7 @@ ordinal: 33
 summary: 'An embedded object made by its server from a template file.'
 versions:
   '3.1': partial
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 probes: [olehnd, oledde, olepbd, olepbr]
 topics: [ole]
 ---

@@ -7,7 +7,7 @@ summary: A device context for a window's client area or the screen, one of USER'
 versions:
   '3.1': exact
 probes: [reldc, dcreuse, dcentry]
-source: src/win16/user/GetDC.ts
+source: crates/winbox-win16/src/get_dc.rs
 topics: [standard-controls]
 ---
 

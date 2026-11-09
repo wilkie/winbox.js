@@ -7,7 +7,7 @@ summary: "The CopyToClipboard of another class's data's table: a copy put on the
 versions:
   '3.1': exact
 probes: [olemem]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

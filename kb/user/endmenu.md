@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [endmenu]
 topics: [menus]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Observed behaviour

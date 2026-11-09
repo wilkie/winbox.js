@@ -7,7 +7,7 @@ summary: LZCopy by another name -- a file copied into another, expanded.
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/index.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

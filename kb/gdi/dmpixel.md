@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [gdidm, gdidmpx]
 records: [pixel, bits, notbitmap]
-source: src/win16/gdi/driver-helpers.ts
+source: crates/winbox-win16/src/gdi/driver_helpers.rs
 topics: [gdi-internals, printer-drivers]
 ---
 

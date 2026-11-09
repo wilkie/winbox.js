@@ -7,7 +7,7 @@ summary: "A client's document let go, once it has no objects."
 versions:
   '3.1': exact
 probes: [olestat]
-source: src/win16/olecli/docs.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

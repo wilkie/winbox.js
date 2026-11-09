@@ -7,7 +7,7 @@ summary: GDI's TrueType engine realizing a font for a printer's driver — with 
 versions:
   '3.1': partial
 probes: [prdlg, pric, prtteng]
-source: src/win16/gdi/engine-font.ts
+source: crates/winbox-win16/src/gdi/engine_font.rs
 topics: [printer-drivers]
 ---
 

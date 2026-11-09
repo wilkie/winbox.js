@@ -6,7 +6,7 @@ ordinal: 303
 summary: The text of a general or MIDI error: the same as midiOutGetErrorText.
 versions:
   '3.1': unrecorded
-source: src/win16/mmsystem/midi.ts
+source: crates/winbox-win16/src/mmsystem/midi.rs
 topics: [sound-devices]
 ---
 

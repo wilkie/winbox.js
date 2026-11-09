@@ -9,7 +9,7 @@ versions:
 probes: [snddrv]
 records: [beep]
 topics: [sound-devices]
-source: src/win16/sound.ts
+source: crates/winbox-win16/src/sound.rs
 ---
 
 ## Observed behaviour

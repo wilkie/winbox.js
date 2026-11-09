@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [reshand, iconhand]
 records: [set, load, own]
-source: src/win16/kernel/resource-handlers.ts
+source: crates/winbox-win16/src/resources.rs
 topics: [kernel-queries]
 ---
 

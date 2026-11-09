@@ -7,7 +7,7 @@ summary: The number 3, how far to shift a count of 64 KiB pieces to step a huge 
 versions:
   '3.1': exact
 probes: [kconst]
-source: src/win16/kernel/constants.ts
+source: crates/winbox-win16/src/linker.rs
 topics: [exported-constants]
 ---
 

@@ -7,7 +7,7 @@ summary: Ends a DDEML instance -- its names unregistered, its conversations ende
 versions:
   '3.1': exact
 probes: [ddemgmt, pmatom, ddeterm]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

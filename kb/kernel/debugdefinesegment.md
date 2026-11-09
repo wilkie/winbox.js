@@ -6,7 +6,7 @@ ordinal: 314
 summary: Tells a debugger where a segment of a module was loaded. The export points at a near routine, so only KERNEL itself can call it; WinBox answers a call with nothing done.
 versions:
   '3.1': unrecorded
-source: src/win16/kernel/retail.ts
+source: crates/winbox-win16/src/kernel_calls/retail.rs
 topics: [kernel-internals]
 ---
 

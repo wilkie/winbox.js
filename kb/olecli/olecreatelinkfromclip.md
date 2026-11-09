@@ -6,7 +6,7 @@ ordinal: 11
 summary: 'A linked object made from what is on the clipboard.'
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 probes: [oledde, olepbd, olepbr]
 topics: [ole]
 ---

@@ -7,7 +7,7 @@ summary: Locks the input to one window and runs no other program until it is let
 versions:
   '3.1': exact
 probes: [lockinp]
-source: src/win16/user/lock-input.ts
+source: crates/winbox-win16/src/lock_input.rs
 topics: [system-queue]
 ---
 

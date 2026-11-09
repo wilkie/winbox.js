@@ -7,7 +7,7 @@ summary: The BIOS's keyboard interrupt handler the driver found as it was enable
 versions:
   '3.1': unrecorded
 topics: [keyboard-driver]
-source: src/win16/keyboard/driver.ts
+source: crates/winbox-win16/src/keyboard.rs
 ---
 
 ## Inside Windows

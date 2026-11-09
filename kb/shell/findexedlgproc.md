@@ -7,7 +7,7 @@ summary: The procedure of SHELL's box for finding a program, which ShellExecute 
 versions:
   '3.1': exact
 probes: [findexe]
-source: src/win16/shell/find-program.ts
+source: crates/winbox-win16/src/shell/find_program.rs
 topics: [user-internals]
 ---
 

@@ -7,7 +7,7 @@ summary: Windows left at once, nothing asked.
 versions:
   '3.1': unrecorded
 topics: [several-programs]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Inside Windows

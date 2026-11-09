@@ -7,7 +7,7 @@ summary: Compares two string handles as numbers, -1, 0 or 1: the same string is 
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange, atoms]
 ---
 

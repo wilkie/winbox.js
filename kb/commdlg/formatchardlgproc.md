@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [chfont, chfont2]
 topics: [common-dialogs, choose-font]
-source: src/win16/commdlg/choose-font.ts
+source: crates/winbox-win16/src/commdlg/choose_font.rs
 ---
 
 ## Observed behaviour

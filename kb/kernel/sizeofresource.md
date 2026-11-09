@@ -7,7 +7,7 @@ summary: Answers a resource's size as its module's resource table gives it, roun
 versions:
   '3.1': exact
 probes: [accres]
-source: src/win16/kernel/AccessResource.ts
+source: crates/winbox-win16/src/resources.rs
 ---
 
 ## Observed behaviour

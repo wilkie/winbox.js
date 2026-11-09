@@ -7,7 +7,7 @@ summary: Brings a window to the top and makes it active, as the Task List and th
 versions:
   '3.1': exact
 probes: [tasklist, hotkey]
-source: src/win16/user/task-list.ts
+source: crates/winbox-win16/src/task_list.rs
 topics: [task-list]
 ---
 

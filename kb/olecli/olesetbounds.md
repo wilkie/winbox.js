@@ -7,7 +7,7 @@ summary: "An embedded object's bounds given its server. A static object's method
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olemem, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

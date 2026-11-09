@@ -7,7 +7,7 @@ summary: "An embedded or linked object's `Release and Delete` method, which its 
 versions:
   '3.1': partial
 probes: [oledde, olepbd]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

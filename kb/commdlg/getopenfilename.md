@@ -7,7 +7,7 @@ summary: COMMDLG's Open box — the name, the files, the folders, the types and 
 versions:
   '3.1': partial
 probes: [ofnopen, ofnerr]
-source: src/win16/commdlg/file-dialogs.ts
+source: crates/winbox-win16/src/commdlg/file_dialogs.rs
 topics: [common-dialogs, file-dialogs]
 ---
 

@@ -7,7 +7,7 @@ summary: The mouse driver's way into USER, open to a program too — a move, a p
 versions:
   '3.1': exact
 probes: [iconclk, mousemsg, spiidle]
-source: src/win16/user/mouse-event.ts
+source: crates/winbox-win16/src/raster_input.rs
 topics: [mouse-input, window-states, hit-testing]
 ---
 

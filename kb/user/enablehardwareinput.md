@@ -7,7 +7,7 @@ summary: Switches the keyboard's and the mouse's input on or off, answering whet
 versions:
   '3.1': exact
 probes: [lockinp]
-source: src/win16/user/lock-input.ts
+source: crates/winbox-win16/src/lock_input.rs
 topics: [system-queue]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask]
 records: [selector]
-source: src/win16/kernel/selector-aliases.ts
+source: crates/winbox-win16/src/modules_kernel.rs
 topics: [kernel-queries]
 ---
 

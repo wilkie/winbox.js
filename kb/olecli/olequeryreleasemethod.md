@@ -7,7 +7,7 @@ summary: 'Which asynchronous operation an object last did. A static object refus
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: The icon for an item Program Manager shows — the file's own, else the
 versions:
   '3.1': exact
 probes: [associco]
-source: src/win16/shell/programs.ts
+source: crates/winbox-win16/src/shell/programs.rs
 ---
 
 ## Observed behaviour

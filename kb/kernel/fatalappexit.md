@@ -4,7 +4,7 @@ module: KERNEL
 name: FatalAppExit
 ordinal: 137
 summary: USER's system error box, Application Error and the text given, with Close; then the task ended with code FFh.
-source: src/win16/kernel/FatalAppExit.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-queries]
 ---
 

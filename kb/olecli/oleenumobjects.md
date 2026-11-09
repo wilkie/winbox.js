@@ -7,7 +7,7 @@ summary: "A document's objects, one after another, NULL after the last."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/docs.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

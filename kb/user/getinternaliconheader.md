@@ -9,7 +9,7 @@ versions:
 probes: [usermore]
 records: [iconheader]
 topics: [cursor]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Observed behaviour

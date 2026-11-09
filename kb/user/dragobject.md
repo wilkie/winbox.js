@@ -7,7 +7,7 @@ summary: Drags an object over windows that may take it, asking each under the cu
 versions:
   '3.1': exact
 probes: [dragobj]
-source: src/win16/user/drag-object.ts
+source: crates/winbox-win16/src/drag_object.rs
 topics: [user-internals, mouse-input]
 ---
 

@@ -7,7 +7,7 @@ summary: "The ChangeData of a picture's table: its data made again from a handle
 versions:
   '3.1': partial
 probes: [olemem, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

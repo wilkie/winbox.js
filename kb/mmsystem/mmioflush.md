@@ -7,7 +7,7 @@ summary: Writes out a file's buffer, and with MMIO_EMPTYBUF empties it.
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

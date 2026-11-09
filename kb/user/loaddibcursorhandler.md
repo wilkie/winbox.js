@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [iconhand]
 records: [handler, load, lock, bytes, loadcursor]
-source: src/win16/user/icon-handlers.ts
+source: crates/winbox-win16/src/icon_handlers.rs
 topics: [user-internals]
 ---
 

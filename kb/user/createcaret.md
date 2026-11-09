@@ -7,7 +7,7 @@ summary: Makes the system's one caret for a window, a rectangle of the given siz
 versions:
   '3.1': exact
 probes: [editctl, dialogs]
-source: src/win16/user/caret.ts
+source: crates/winbox-win16/src/caret.rs
 topics: [edit-controls]
 ---
 

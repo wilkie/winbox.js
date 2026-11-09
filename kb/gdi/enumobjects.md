@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [enumobj]
 topics: [palettes]
-source: src/win16/gdi/EnumObjects.ts
+source: crates/winbox-win16/src/gdi/calls/enum_objects.rs
 ---
 
 ## Observed behaviour

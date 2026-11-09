@@ -7,7 +7,7 @@ summary: Gives the screen and the input up to a full-screen DOS program: the cur
 versions:
   '3.1': exact
 probes: [oemlayer]
-source: src/win16/user/internals.ts
+source: crates/winbox-win16/src/user_internals.rs
 topics: [user-internals]
 ---
 

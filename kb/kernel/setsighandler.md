@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kgaps]
 records: [sig]
-source: src/win16/kernel/signals.ts
+source: crates/winbox-win16/src/kernel_calls/signals.rs
 topics: [kernel-internals, keyboard-driver]
 ---
 

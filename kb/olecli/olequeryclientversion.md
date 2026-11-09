@@ -7,7 +7,7 @@ summary: "The library's version: 1001h."
 versions:
   '3.1': exact
 probes: [olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

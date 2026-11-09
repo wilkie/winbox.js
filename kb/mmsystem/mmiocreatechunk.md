@@ -7,7 +7,7 @@ summary: Writes a RIFF chunk's header where the file is.
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

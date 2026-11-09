@@ -7,7 +7,7 @@ summary: The flags GetWinFlags answers, as a number a program reads rather than 
 versions:
   '3.1': exact
 probes: [kconst, winflags]
-source: src/win16/kernel/constants.ts
+source: crates/winbox-win16/src/linker.rs
 topics: [exported-constants]
 ---
 

@@ -7,7 +7,7 @@ summary: USER's Print To File box: asks for the name of a file for a printer's o
 versions:
   '3.1': exact
 probes: [filport]
-source: src/win16/user/print-to-file.ts
+source: crates/winbox-win16/src/print_to_file.rs
 topics: [user-internals, printing]
 ---
 

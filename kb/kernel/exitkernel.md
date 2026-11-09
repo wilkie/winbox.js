@@ -6,7 +6,7 @@ ordinal: 2
 summary: The end of a Windows session, which USER's ExitWindows calls last — the drivers turned off, the profiles written, DOS given back, and either a return to DOS or a restart.
 versions:
   '3.1': unrecorded
-source: src/win16/kernel/internals.ts
+source: crates/winbox-win16/src/kernel_calls/internals.rs
 topics: [kernel-internals]
 ---
 

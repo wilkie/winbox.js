@@ -22,7 +22,7 @@ probes:
     swplst31,
     savebit,
   ]
-source: src/win16/user/window-state.ts
+source: crates/winbox-win16/src/position.rs
 topics: [painting, visible-regions]
 ---
 

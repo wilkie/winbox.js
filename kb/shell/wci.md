@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ugaps]
 records: [wci]
-source: src/win16/shell/internal-procs.ts
+source: crates/winbox-win16/src/shell/internal_procs.rs
 topics: [user-internals]
 ---
 

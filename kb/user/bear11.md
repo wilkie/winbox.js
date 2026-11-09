@@ -7,7 +7,7 @@ summary: SetTimer for a system timer: one that comes as WM_SYSTIMER and that Kil
 versions:
   '3.1': exact
 probes: [systimer]
-source: src/win16/user/SetTimer.ts
+source: crates/winbox-win16/src/queue.rs
 topics: [user-internals]
 ---
 

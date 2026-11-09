@@ -7,7 +7,7 @@ summary: Tells DDEML that a server's item has changed, so that every advise link
 versions:
   '3.1': exact
 probes: [ddexact]
-source: src/win16/ddeml/xact.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions]
 ---
 

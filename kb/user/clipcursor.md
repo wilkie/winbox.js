@@ -7,7 +7,7 @@ summary: Keeps the cursor inside a rectangle, which takes the screen's place eve
 versions:
   '3.1': exact
 probes: [cursclip, userwin]
-source: src/win16/user/userwin.ts
+source: crates/winbox-win16/src/cursor_pos.rs
 topics: [window-calls]
 ---
 

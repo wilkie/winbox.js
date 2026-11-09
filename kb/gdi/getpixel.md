@@ -7,7 +7,7 @@ summary: Returns the colour of one pixel of a device context as a COLORREF.
 versions:
   '3.1': exact
 probes: [bitblt, dither, selrgn]
-source: src/win16/gdi/GetPixel.ts
+source: crates/winbox-win16/src/gdi/draw.rs
 ---
 
 ## Observed behaviour

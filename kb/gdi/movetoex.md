@@ -7,7 +7,7 @@ summary: MoveTo answering in a POINT; with the other Ex forms of the mapping and
 versions:
   '3.1': exact
 probes: [brushind, exfuncs]
-source: src/win16/gdi/MoveTo.ts
+source: crates/winbox-win16/src/gdi/dc.rs
 topics: [mapping-modes, line-drawing]
 ---
 

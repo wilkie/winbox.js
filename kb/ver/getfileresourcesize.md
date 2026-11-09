@@ -7,7 +7,7 @@ summary: A resource's length in a file, and its place there given back, found by
 versions:
   '3.1': exact
 probes: [verinfo]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

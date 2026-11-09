@@ -7,7 +7,7 @@ summary: Holds back an instance's or a conversation's callbacks, lets one throug
 versions:
   '3.1': exact
 probes: [ddemgmt, ddefail]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

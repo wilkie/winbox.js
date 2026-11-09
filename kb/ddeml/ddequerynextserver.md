@@ -7,7 +7,7 @@ summary: The conversations of a list one by one, in the order of its window's ch
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

@@ -7,7 +7,7 @@ summary: A driver's message for the user about a print job; a job straight to it
 versions:
   '3.1': partial
 probes: [prspool]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers]
 ---
 

@@ -7,7 +7,7 @@ summary: Loads a library, or finds one already loaded by its module's name — t
 versions:
   '3.1': exact
 probes: [loadname, freelib, loadpath, search]
-source: src/win16/library.ts
+source: crates/winbox-win16/src/modules_kernel.rs
 topics: [dynamic-link-libraries, finding-files]
 ---
 

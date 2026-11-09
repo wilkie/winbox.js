@@ -7,7 +7,7 @@ summary: Draws a rectangle of a device-independent bitmap stretched into a recta
 versions:
   '3.1': partial
 probes: [dibdev, prdraw, prblt2, rledib]
-source: src/win16/gdi/dib-to-device.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [painting]
 ---
 

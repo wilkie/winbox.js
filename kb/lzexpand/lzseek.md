@@ -7,7 +7,7 @@ summary: An LZ handle's place in the expanded file set -- from its start, its pl
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/lz.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmnodev]
 records: [id]
-source: src/win16/mmsystem/auxiliary.ts
+source: crates/winbox-win16/src/mmsystem/auxiliary.rs
 topics: [sound-devices]
 ---
 

@@ -7,7 +7,7 @@ summary: "The GetLinkUpdateOptions of a static object's table: it refuses, answe
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/methods.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

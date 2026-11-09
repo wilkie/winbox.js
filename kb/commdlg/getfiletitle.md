@@ -7,7 +7,7 @@ summary: A file name's last part, without its drive or folders, as COMMDLG's own
 versions:
   '3.1': exact
 probes: [ftitle]
-source: src/win16/commdlg/parse-file.ts
+source: crates/winbox-win16/src/commdlg/parse.rs
 topics: [common-dialogs, file-dialogs]
 ---
 

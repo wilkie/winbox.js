@@ -4,7 +4,7 @@ module: KERNEL
 name: AllocCStoDSAlias
 ordinal: 170
 summary: A data selector for a code segment's memory, so that code can be written through it — the twin of the declared AllocDStoCSAlias, which no SDK header declares.
-source: src/win16/kernel/selector-aliases.ts
+source: crates/winbox-win16/src/modules_kernel.rs
 topics: [kernel-internals]
 ---
 

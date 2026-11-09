@@ -6,7 +6,7 @@ ordinal: 461
 summary: Meant to give a GDI object to another owner; in Windows 3.1 it does nothing at all.
 versions:
   '3.1': unrecorded
-source: src/win16/gdi/SetObjectOwner.ts
+source: crates/winbox-win16/src/gdi/objects.rs
 ---
 
 ## Observed behaviour

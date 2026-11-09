@@ -6,7 +6,7 @@ ordinal: 416
 summary: Sets a waveform output device's volume: its driver's message, by its number.
 versions:
   '3.1': unrecorded
-source: src/win16/mmsystem/wave.ts
+source: crates/winbox-win16/src/mmsystem/wave.rs
 topics: [sound-devices]
 ---
 

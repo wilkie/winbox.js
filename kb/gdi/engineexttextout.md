@@ -23,7 +23,7 @@ records:
     direct,
     limited,
   ]
-source: src/win16/gdi/engine-text.ts
+source: crates/winbox-win16/src/gdi/engine_glyphs.rs
 topics: [printer-drivers]
 ---
 

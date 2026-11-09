@@ -7,7 +7,7 @@ summary: The timer's interrupt given back: no system timer runs until it is hook
 versions:
   '3.1': unrecorded
 topics: [system-driver]
-source: src/win16/system-driver.ts
+source: crates/winbox-win16/src/system_driver.rs
 ---
 
 ## Inside Windows

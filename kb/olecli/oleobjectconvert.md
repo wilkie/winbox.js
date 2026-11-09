@@ -7,7 +7,7 @@ summary: 'An object made over in another protocol. A static object refuses.'
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olemem, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

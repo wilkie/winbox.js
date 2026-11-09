@@ -7,7 +7,7 @@ summary: "A client's document reverted to its saved state: nothing to tell a sta
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/docs.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

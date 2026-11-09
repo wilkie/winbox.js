@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [prtteng, prtt, prttrot, prttslt]
 records: [EngineGetGlyphBmp, line, size]
-source: src/win16/gdi/engine-glyphs.ts
+source: crates/winbox-win16/src/gdi/engine_glyphs.rs
 topics: [printer-drivers]
 ---
 

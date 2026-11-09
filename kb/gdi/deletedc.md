@@ -7,7 +7,7 @@ summary: Deletes a device context; the last on a printer's device has the driver
 versions:
   '3.1': partial
 probes: [pric, prdlg, prdrv, dchkdel]
-source: src/win16/gdi/DeleteDC.ts
+source: crates/winbox-win16/src/gdi/printer_driver.rs
 topics: [printer-drivers]
 ---
 

@@ -7,7 +7,7 @@ summary: Makes an information context for a device: as CreateDC, for asking abou
 versions:
   '3.1': partial
 probes: [pric, prdlg]
-source: src/win16/gdi/CreateDC.ts
+source: crates/winbox-win16/src/gdi/printer_driver.rs
 topics: [printer-drivers]
 ---
 

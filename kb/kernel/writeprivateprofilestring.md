@@ -7,7 +7,7 @@ summary: Sets, adds or removes one entry of a named INI file, creating the secti
 versions:
   '3.1': exact
 probes: [profile, profnew, profhold, pmshell, profnul]
-source: src/win16/kernel/WritePrivateProfileString.ts
+source: crates/winbox-win16/src/profiles_kernel.rs
 topics: [profile-files]
 ---
 

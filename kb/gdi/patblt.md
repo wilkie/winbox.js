@@ -7,7 +7,7 @@ summary: Fills a rectangle of a device context with the selected brush, or with 
 versions:
   '3.1': exact
 probes: [bitbits, dither, drawgaps, patrops, patmono]
-source: src/win16/gdi/PatBlt.ts
+source: crates/winbox-win16/src/gdi/printer_blits.rs
 ---
 
 ## Observed behaviour

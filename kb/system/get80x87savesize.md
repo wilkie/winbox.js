@@ -9,7 +9,7 @@ versions:
 probes: [sysdrv]
 records: [x87]
 topics: [system-driver, floating-point]
-source: src/win16/system-driver.ts
+source: crates/winbox-win16/src/system_driver.rs
 ---
 
 ## Observed behaviour

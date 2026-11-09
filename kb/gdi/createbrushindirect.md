@@ -7,7 +7,7 @@ summary: Makes a brush of any style from a LOGBRUSH, and keeps the LOGBRUSH as i
 versions:
   '3.1': exact
 probes: [brushind]
-source: src/win16/gdi/CreateBrushIndirect.ts
+source: crates/winbox-win16/src/gdi/objects.rs
 topics: [brush-dithering, gdi-objects]
 ---
 

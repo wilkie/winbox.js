@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thheap]
 records: [linfo]
-source: src/win16/toolhelp/local.ts
+source: crates/winbox-win16/src/toolhelp/local.rs
 topics: [tool-helper]
 ---
 

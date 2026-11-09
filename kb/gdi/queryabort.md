@@ -7,7 +7,7 @@ summary: Asks a device context's abort procedure whether to go on printing — 1
 versions:
   '3.1': exact
 probes: [prspool]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printing]
 ---
 

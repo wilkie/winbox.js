@@ -7,7 +7,7 @@ summary: Puts a procedure in place of the local heap's notify procedure, and ans
 versions:
   '3.1': partial
 probes: [locinfo]
-source: src/win16/kernel/LocalNotify.ts
+source: crates/winbox-win16/src/memory.rs
 topics: [global-and-local-memory]
 ---
 

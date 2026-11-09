@@ -4,7 +4,7 @@ module: KERNEL
 name: InitTask
 ordinal: 91
 summary: A program's first call, from its start-up code. It answers the registers WinMain is made from and fills the reserved words at the start of the data segment. No SDK header declares it, but every program calls it.
-source: src/win16/kernel/InitTask.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-internals, task-startup]
 ---
 

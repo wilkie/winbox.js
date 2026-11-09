@@ -7,7 +7,7 @@ summary: Draws several polygons filled together under the fill mode — on Windo
 versions:
   '3.1': exact
 probes: [gdidraw]
-source: src/win16/gdi/gdi-draw.ts
+source: crates/winbox-win16/src/gdi/shapes.rs
 ---
 
 ## Observed behaviour

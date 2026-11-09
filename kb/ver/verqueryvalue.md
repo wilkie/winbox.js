@@ -7,7 +7,7 @@ summary: A value in a version block found by its path — each part looked for a
 versions:
   '3.1': exact
 probes: [verinfo]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

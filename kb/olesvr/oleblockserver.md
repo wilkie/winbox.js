@@ -7,7 +7,7 @@ summary: "A server's clients' messages queued, not handled, until it unblocks."
 versions:
   '3.1': exact
 probes: [olesrv]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: 'A server registered for its class: a hidden window of `SrvrWndClass` m
 versions:
   '3.1': partial
 probes: [olesrv]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

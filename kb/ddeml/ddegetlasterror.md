@@ -7,7 +7,7 @@ summary: The last DMLERR_ code an instance's calls set, cleared as it is read.
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

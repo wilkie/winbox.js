@@ -7,7 +7,7 @@ summary: "The Release of a bitmap's table: its data and its block let go: `Relea
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

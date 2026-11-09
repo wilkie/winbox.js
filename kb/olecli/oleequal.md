@@ -7,7 +7,7 @@ summary: "Whether two objects' data are the same: `OLE_OK` or `OLE_ERROR_NOT_EQU
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olemem, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

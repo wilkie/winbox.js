@@ -7,7 +7,7 @@ summary: Reads one value from WIN.INI into a caller's buffer, falling back to a 
 versions:
   '3.1': exact
 probes: [profile]
-source: src/win16/kernel/GetProfileString.ts
+source: crates/winbox-win16/src/profiles_kernel.rs
 topics: [profile-files]
 ---
 

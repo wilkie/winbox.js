@@ -7,7 +7,7 @@ summary: The timer's interrupt hooked, so the system timers run: USER's as Windo
 versions:
   '3.1': unrecorded
 topics: [system-driver]
-source: src/win16/system-driver.ts
+source: crates/winbox-win16/src/system_driver.rs
 ---
 
 ## Inside Windows

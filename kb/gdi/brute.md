@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [gdidm, ugaps]
 records: [notbitmap, brute]
-source: src/win16/gdi/driver-helpers.ts
+source: crates/winbox-win16/src/gdi/driver_helpers.rs
 topics: [gdi-internals, printer-drivers]
 ---
 

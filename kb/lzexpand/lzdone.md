@@ -7,7 +7,7 @@ summary: The buffers LZStart made let go with the count's last.
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/lz.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

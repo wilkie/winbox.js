@@ -7,7 +7,7 @@ summary: "The library's version: 1001h."
 versions:
   '3.1': exact
 probes: [olesrv]
-source: src/win16/olesvr/core.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

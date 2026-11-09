@@ -7,7 +7,7 @@ summary: Whether a task runs a DOS program in a window under WinOldAp; undocumen
 versions:
   '3.1': exact
 probes: [tasklist]
-source: src/win16/kernel/tasks.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [task-list]
 ---
 

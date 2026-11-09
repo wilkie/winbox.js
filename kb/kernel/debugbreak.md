@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kbreak]
 records: [break]
-source: src/win16/kernel/retail.ts
+source: crates/winbox-win16/src/kernel_calls/retail.rs
 topics: [kernel-queries]
 ---
 

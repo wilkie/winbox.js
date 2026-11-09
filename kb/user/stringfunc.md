@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [strfunc]
 records: [stringfunc]
-source: src/win16/user/string-func.ts
+source: crates/winbox-win16/src/language_driver.rs
 topics: [user-internals]
 ---
 

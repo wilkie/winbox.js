@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask2]
 records: [dos]
-source: src/win16/kernel/Dos3Call.ts
+source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 topics: [kernel-queries]
 ---
 

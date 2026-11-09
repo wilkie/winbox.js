@@ -7,7 +7,7 @@ summary: DDEML's WH_GETMESSAGE hook, put in with the first monitor: each DDE mes
 versions:
   '3.1': exact
 probes: [ddemon]
-source: src/win16/ddeml/monitor.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

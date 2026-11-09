@@ -7,7 +7,7 @@ summary: Draws an ellipse inside a rectangle, its outline in the selected pen an
 versions:
   '3.1': exact
 probes: [curves, inframe, drawgaps, prdraw]
-source: src/win16/gdi/Ellipse.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [ellipses, polygon-fill, non-square-pixels]
 ---
 

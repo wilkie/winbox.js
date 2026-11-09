@@ -7,7 +7,7 @@ summary: "The CopyFromLink of a static object's table: it refuses, answering `OL
 versions:
   '3.1': exact
 probes: [olemem]
-source: src/win16/olecli/methods.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

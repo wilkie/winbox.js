@@ -7,7 +7,7 @@ summary: "The Clone of a bitmap's table: copied into another object."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: Leaves a RIFF chunk: its pad byte and its size written where it was wri
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

@@ -7,7 +7,7 @@ summary: Ends a conversation, from either side: the other side is called back XT
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

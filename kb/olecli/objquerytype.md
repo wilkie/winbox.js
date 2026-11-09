@@ -7,7 +7,7 @@ summary: "The QueryType every kind's table shares: a static object's type, 3."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/objects.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: Deletes a pen, brush, font, bitmap, region or palette and answers 1 —
 versions:
   '3.1': exact
 probes: [stockdel, gdinum, prdrv]
-source: src/win16/gdi/DeleteObject.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [gdi-objects, printer-drivers]
 ---
 

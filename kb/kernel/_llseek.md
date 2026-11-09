@@ -7,7 +7,7 @@ summary: A file's place moved from its start, its place or its end, and answered
 versions:
   '3.1': partial
 probes: [lzfiles]
-source: src/win16/kernel/_llseek.ts
+source: crates/winbox-win16/src/files_kernel.rs
 topics: [dos-handles, compressed-files]
 ---
 

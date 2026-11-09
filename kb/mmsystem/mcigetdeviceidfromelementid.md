@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [mmmisc]
 records: [mci]
-source: src/win16/mmsystem/mci.ts
+source: crates/winbox-win16/src/mmsystem/mci.rs
 topics: [sound-devices]
 ---
 

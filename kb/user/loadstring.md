@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [loadstr]
 records: [sized, missing]
-source: src/win16/user/LoadString.ts
+source: crates/winbox-win16/src/user.rs
 ---
 
 ## Observed behaviour

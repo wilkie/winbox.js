@@ -7,7 +7,7 @@ summary: "The procedure `OLESVR.DLL` hands `EnumProps` for an item's window as t
 versions:
   '3.1': partial
 probes: [oleitem]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

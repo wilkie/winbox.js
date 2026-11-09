@@ -7,7 +7,7 @@ summary: Ends a page of a printed document — the escape NEWFRAME's answer on a
 versions:
   '3.1': exact
 probes: [printing, prdoc, prabort, prband]
-source: src/win16/gdi/printing.ts
+source: crates/winbox-win16/src/gdi/printing.rs
 topics: [printing, printer-drivers]
 ---
 

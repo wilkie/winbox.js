@@ -9,7 +9,7 @@ versions:
 probes: [intpos]
 records: [get]
 topics: [window-states]
-source: src/win16/user/placement.ts
+source: crates/winbox-win16/src/window_state.rs
 ---
 
 ## Observed behaviour

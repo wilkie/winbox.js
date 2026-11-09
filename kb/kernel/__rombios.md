@@ -7,7 +7,7 @@ summary: A selector for the ROM BIOS at F0000h: the same selector as `__F000H`. 
 versions:
   '3.1': exact
 probes: [kconst]
-source: src/win16/kernel/constants.ts
+source: crates/winbox-win16/src/linker.rs
 topics: [exported-constants]
 ---
 

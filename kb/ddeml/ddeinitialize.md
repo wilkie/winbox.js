@@ -7,7 +7,7 @@ summary: Makes a program a DDEML instance -- a client, a server or a monitor -- 
 versions:
   '3.1': exact
 probes: [ddemgmt, ddefail, ddeterm]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

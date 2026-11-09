@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [visfam]
 records: [intersect]
-source: src/win16/gdi/visible-region.ts
+source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
 

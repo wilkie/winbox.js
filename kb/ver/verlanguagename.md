@@ -7,7 +7,7 @@ summary: A language's name from VER's string table, "Unknown Language" for a num
 versions:
   '3.1': exact
 probes: [verinfo]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

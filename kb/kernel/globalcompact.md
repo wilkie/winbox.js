@@ -7,7 +7,7 @@ summary: The largest block DPMI could still give, compacting first where it is t
 versions:
   '3.1': partial
 probes: [freemem, galimit]
-source: src/win16/kernel/memory-info.ts
+source: crates/winbox-win16/src/pointers.rs
 topics: [global-and-local-memory]
 ---
 

@@ -7,7 +7,7 @@ summary: Takes one count off a string handle's atom; the atom goes with its last
 versions:
   '3.1': partial
 probes: [ddemgmt, ddeleft, ddehsz]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange, atoms]
 ---
 

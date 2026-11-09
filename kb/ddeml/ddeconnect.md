@@ -7,7 +7,7 @@ summary: Starts a conversation with the first server that answers for a service 
 versions:
   '3.1': exact
 probes: [ddemgmt, pmatom, ddelist]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

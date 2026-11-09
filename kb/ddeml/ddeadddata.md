@@ -7,7 +7,7 @@ summary: Writes bytes into a data handle at an offset, growing its block when th
 versions:
   '3.1': exact
 probes: [ddexact]
-source: src/win16/ddeml/data.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [ddeml-transactions]
 ---
 

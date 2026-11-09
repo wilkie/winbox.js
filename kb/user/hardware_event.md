@@ -7,7 +7,7 @@ summary: Puts a driver's event in the system queue from registers, reading the q
 versions:
   '3.1': exact
 probes: [hwevent]
-source: src/win16/user/internals.ts
+source: crates/winbox-win16/src/user_internals.rs
 topics: [user-internals, system-queue]
 ---
 

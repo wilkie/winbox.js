@@ -7,7 +7,7 @@ summary: "Paintbrush's `Draw`: its bitmap drawn."
 versions:
   '3.1': exact
 probes: [olehnd, oleemb, olepbd]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

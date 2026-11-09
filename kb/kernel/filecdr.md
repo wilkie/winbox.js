@@ -7,7 +7,7 @@ summary: Sets the one procedure KERNEL tells when a file is made, deleted, renam
 versions:
   '3.1': exact
 probes: [filecdr, mmioext]
-source: src/win16/kernel/FileCdr.ts
+source: crates/winbox-win16/src/kernel_calls/file_cdr.rs
 ---
 
 ## Observed behaviour

@@ -7,7 +7,7 @@ summary: Sets the drawing mode, how the pen and the brush mix with the pixels al
 versions:
   '3.1': exact
 probes: [mixmode, metafile]
-source: src/win16/gdi/SetROP2.ts
+source: crates/winbox-win16/src/gdi/dc.rs
 topics: [ellipses]
 ---
 

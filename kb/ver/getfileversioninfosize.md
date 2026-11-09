@@ -7,7 +7,7 @@ summary: The length of a file's version information — its version resource's r
 versions:
   '3.1': exact
 probes: [verinfo]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

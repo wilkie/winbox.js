@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [aboutdp]
 records: [made, answer]
-source: src/win16/shell/about.ts
+source: crates/winbox-win16/src/shell/about.rs
 topics: [user-internals]
 ---
 

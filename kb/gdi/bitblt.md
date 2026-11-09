@@ -7,7 +7,7 @@ summary: Copies a rectangle of pixels from one device context to another, combin
 versions:
   '3.1': exact
 probes: [bitblt, bitbits]
-source: src/win16/gdi/BitBlt.ts
+source: crates/winbox-win16/src/gdi/printer_blits.rs
 topics: [display-drivers, printer-drivers]
 ---
 

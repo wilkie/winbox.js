@@ -7,7 +7,7 @@ summary: Copies a rectangle of pixels into a rectangle of another size, stretchi
 versions:
   '3.1': partial
 probes: [stretch, prblt, prblt2]
-source: src/win16/gdi/StretchBlt.ts
+source: crates/winbox-win16/src/gdi/printer_blits.rs
 topics: [accessories, printer-drivers]
 ---
 

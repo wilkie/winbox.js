@@ -9,7 +9,7 @@ versions:
 probes: [usermisc]
 records: [desktop]
 topics: [small-queries]
-source: src/win16/user/GetDesktopWindow.ts
+source: crates/winbox-win16/src/user.rs
 ---
 
 ## Observed behaviour

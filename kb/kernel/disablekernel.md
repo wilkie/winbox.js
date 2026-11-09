@@ -6,7 +6,7 @@ ordinal: 125
 summary: KERNEL's hold on DOS let go as Windows ends — its DOS vectors and the processor's fault handlers put back, every program's prefix closed, DOS's current prefix KERNEL's own again.
 versions:
   '3.1': unrecorded
-source: src/win16/kernel/retail.ts
+source: crates/winbox-win16/src/kernel_calls/retail.rs
 topics: [kernel-internals]
 ---
 

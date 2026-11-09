@@ -7,7 +7,7 @@ summary: Answers one numbered question about the device behind a device context 
 versions:
   '3.1': partial
 probes: [devcaps, text, pric]
-source: src/win16/gdi/GetDeviceCaps.ts
+source: crates/winbox-win16/src/gdi/mod.rs
 topics: [display-drivers, printer-drivers]
 ---
 

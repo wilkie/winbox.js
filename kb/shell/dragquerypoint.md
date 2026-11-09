@@ -9,7 +9,7 @@ versions:
 probes: [dragq]
 records: [point]
 topics: [programs-and-their-files]
-source: src/win16/shell/drag.ts
+source: crates/winbox-win16/src/shell/drag.rs
 ---
 
 ## Observed behaviour

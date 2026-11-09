@@ -7,7 +7,7 @@ summary: Selects a pen, brush, font, bitmap or region into a device context and 
 versions:
   '3.1': exact
 probes: [selbmp, selrgn, stockdel, patmono, prdraw]
-source: src/win16/gdi/SelectObject.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 ---
 
 ## Observed behaviour

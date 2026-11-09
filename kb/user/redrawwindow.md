@@ -7,7 +7,7 @@ summary: Makes a rectangle or region of a window due, or valid, or due a paint o
 versions:
   '3.1': exact
 probes: [rdwwalk, rdw31, rdwmore]
-source: src/win16/user/RedrawWindow.ts
+source: crates/winbox-win16/src/user_calls/update_region.rs
 topics: [painting, visible-regions]
 ---
 

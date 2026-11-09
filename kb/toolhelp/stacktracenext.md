@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thtask]
 records: [stack]
-source: src/win16/toolhelp/stack.ts
+source: crates/winbox-win16/src/toolhelp/stack.rs
 topics: [tool-helper]
 ---
 

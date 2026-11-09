@@ -7,7 +7,7 @@ summary: A file copied into another, expanded where COMPRESS made it — the byt
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/lz.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

@@ -6,7 +6,7 @@ ordinal: 223
 summary: "An embedded or linked object's `ObjectConvert` method, which its table holds."
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

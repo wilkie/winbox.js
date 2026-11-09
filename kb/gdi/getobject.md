@@ -7,7 +7,7 @@ summary: Copies an object's description into a buffer, as far as it has room —
 versions:
   '3.1': exact
 probes: [brushobj, stockdel]
-source: src/win16/gdi/GetObject.ts
+source: crates/winbox-win16/src/gdi/objects.rs
 topics: [standard-controls]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [kgaps]
 records: [thhook, kernelpdb]
-source: src/win16/kernel/thhook.ts
+source: crates/winbox-win16/src/exported_data.rs
 topics: [kernel-internals, tool-helper]
 ---
 

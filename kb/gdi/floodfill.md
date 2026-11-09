@@ -7,7 +7,7 @@ summary: Fills outward from a point with the brush, to four neighbours at a time
 versions:
   '3.1': exact
 probes: [gdidraw, metarec]
-source: src/win16/gdi/gdi-draw.ts
+source: crates/winbox-win16/src/gdi/shapes.rs
 ---
 
 ## Observed behaviour

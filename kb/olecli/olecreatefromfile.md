@@ -6,7 +6,7 @@ ordinal: 38
 summary: "An embedded object made from a file by its class's server."
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 probes: [oledde, olepbd, olepbr]
 topics: [ole]
 ---

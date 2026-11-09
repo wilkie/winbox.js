@@ -9,7 +9,7 @@ versions:
 probes: [iconid]
 records: [icon, cursor, header]
 topics: [cursor]
-source: src/win16/user/cursor-make.ts
+source: crates/winbox-win16/src/cursor_make.rs
 ---
 
 ## Observed behaviour

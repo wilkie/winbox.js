@@ -7,7 +7,7 @@ summary: Answers what kind of GDI object a handle is — 1 a pen up to 7 a devic
 versions:
   '3.1': exact
 probes: [queries]
-source: src/win16/gdi/queries.ts
+source: crates/winbox-win16/src/gdi/objects.rs
 topics: [small-queries, gdi-objects]
 ---
 

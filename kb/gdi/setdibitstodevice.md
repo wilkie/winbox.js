@@ -7,7 +7,7 @@ summary: Draws some of a device-independent bitmap's scan lines straight onto a 
 versions:
   '3.1': partial
 probes: [dibdev, prblt, prblt2, rledib]
-source: src/win16/gdi/dib-to-device.ts
+source: crates/winbox-win16/src/gdi/printer_blits.rs
 topics: [painting, printer-drivers]
 ---
 

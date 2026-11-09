@@ -7,7 +7,7 @@ summary: Cascades the children of any window as the MDI client cascades its own;
 versions:
   '3.1': exact
 probes: [userwin, tasklist]
-source: src/win16/user/mdi.ts
+source: crates/winbox-win16/src/user_calls/arrange.rs
 topics: [mdi, window-calls, task-list]
 ---
 

@@ -7,7 +7,7 @@ summary: Where a file is and where it should go — looked for in the program's,
 versions:
   '3.1': exact
 probes: [verinst]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [prtt]
 records: [call]
-source: src/win16/gdi/engine-font.ts
+source: crates/winbox-win16/src/gdi/engine_font.rs
 topics: [printer-drivers]
 ---
 

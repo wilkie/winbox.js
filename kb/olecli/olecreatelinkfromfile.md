@@ -6,7 +6,7 @@ ordinal: 39
 summary: 'A linked object made from a file and an item.'
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 probes: [oledde, olepbd, olepbr]
 topics: [ole]
 ---

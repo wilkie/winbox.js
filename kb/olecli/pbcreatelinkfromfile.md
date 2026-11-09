@@ -7,7 +7,7 @@ summary: "Paintbrush's handler's `Dll` function for `OleCreateLinkFromFile`: its
 versions:
   '3.1': partial
 probes: [olehnd, olepbd]
-source: src/win16/olecli/handlers.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

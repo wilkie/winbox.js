@@ -7,7 +7,7 @@ summary: Asks a device's driver to do one of its own functions, by number; a pri
 versions:
   '3.1': partial
 probes: [pric, escapes, printing, prdoc, prabort, prband]
-source: src/win16/gdi/Escape.ts
+source: crates/winbox-win16/src/gdi/printing.rs
 topics: [printer-drivers]
 ---
 

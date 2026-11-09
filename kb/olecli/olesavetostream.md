@@ -7,7 +7,7 @@ summary: "An object written to the program's `OLESTREAM`, a field at a time thro
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

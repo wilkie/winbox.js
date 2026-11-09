@@ -7,7 +7,7 @@ summary: Moves what a window's client area shows by an amount, through what show
 versions:
   '3.1': exact
 probes: [scrolls, visscrl]
-source: src/win16/user/scroll-window.ts
+source: crates/winbox-win16/src/user_calls/scroll_window.rs
 topics: [painting, scroll-bars, visible-regions]
 ---
 

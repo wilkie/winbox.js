@@ -7,7 +7,7 @@ summary: "The next remote drive connected to a link's share: the drive's number 
 versions:
   '3.1': partial
 probes: [olenet]
-source: src/win16/olecli/network.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: GDI's own interface to Print Manager — an option and a parameter over
 versions:
   '3.1': exact
 probes: [spooljob, gdispool]
-source: src/win16/gdi/GetSpoolJob.ts
+source: crates/winbox-win16/src/gdi/spool_job.rs
 ---
 
 ## Observed behaviour

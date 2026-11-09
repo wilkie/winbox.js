@@ -7,7 +7,7 @@ summary: Copies a file's MMIOINFO back in, after a program has used its buffer.
 versions:
   '3.1': exact
 probes: [mmio]
-source: src/win16/mmsystem/mmio.ts
+source: crates/winbox-win16/src/mmsystem/mmio.rs
 topics: [multimedia-files]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [findrepl]
 topics: [common-dialogs, find-and-replace]
-source: src/win16/commdlg/find-replace.ts
+source: crates/winbox-win16/src/commdlg/find_replace.rs
 ---
 
 ## Observed behaviour

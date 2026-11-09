@@ -7,7 +7,7 @@ summary: Copies at most a given number of bytes of a string, its terminator amon
 versions:
   '3.1': exact
 probes: [strcpyn, enumfam]
-source: src/win16/kernel/lstrcpyn.ts
+source: crates/winbox-win16/src/kernel.rs
 ---
 
 The code is `KRNL386.EXE` segment 1, from `831f`. It takes the destination, the source and a count, pops ten bytes, and answers the destination in DX:AX.

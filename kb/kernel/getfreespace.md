@@ -7,7 +7,7 @@ summary: The bytes free in the global heap, counting what DPMI could still give 
 versions:
   '3.1': partial
 probes: [galimit, freemem]
-source: src/win16/kernel/GetFreeSpace.ts
+source: crates/winbox-win16/src/pointers.rs
 topics: [global-and-local-memory]
 ---
 

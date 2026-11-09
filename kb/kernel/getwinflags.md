@@ -7,7 +7,7 @@ summary: Says what Windows runs on — the mode, the processor, whether there is
 versions:
   '3.1': exact
 probes: [winflags]
-source: src/win16/kernel/GetWinFlags.ts
+source: crates/winbox-win16/src/kernel.rs
 ---
 
 ## Observed behaviour

@@ -4,7 +4,7 @@ module: KERNEL
 name: DisableDos
 ordinal: 42
 summary: Nothing, in the retail Windows 3.1: AX and DX are left as they were.
-source: src/win16/kernel/retail.ts
+source: crates/winbox-win16/src/kernel_calls/retail.rs
 topics: [kernel-queries]
 ---
 

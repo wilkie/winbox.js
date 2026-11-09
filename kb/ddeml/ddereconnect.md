@@ -7,7 +7,7 @@ summary: Starts a client conversation again with the window it was made through,
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/conv.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange]
 ---
 

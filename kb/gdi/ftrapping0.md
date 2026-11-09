@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ugaps]
 records: [ftrap]
-source: src/win16/gdi.ts
+source: crates/winbox-win16/src/exported_data.rs
 topics: [gdi-internals]
 ---
 

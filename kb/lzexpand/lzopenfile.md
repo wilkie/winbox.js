@@ -7,7 +7,7 @@ summary: A file opened with OpenFile -- its compressed name tried where it is no
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/lz.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

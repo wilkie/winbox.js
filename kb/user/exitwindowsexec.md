@@ -7,7 +7,7 @@ summary: Windows ended and a DOS program run after it: not here, nought.
 versions:
   '3.1': unrecorded
 topics: [window-states]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Inside Windows

@@ -7,7 +7,7 @@ summary: Appends one null-terminated string to the end of another, in the first 
 versions:
   '3.1': exact
 probes: [strings]
-source: src/win16/kernel/lstrcat.ts
+source: crates/winbox-win16/src/kernel.rs
 ---
 
 ## Observed behaviour

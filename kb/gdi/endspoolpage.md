@@ -7,7 +7,7 @@ summary: Ends a page of a print job; Print Manager is handed the page, and a job
 versions:
   '3.1': partial
 probes: [prspool]
-source: src/win16/gdi/spooler.ts
+source: crates/winbox-win16/src/gdi/spooler.rs
 topics: [printer-drivers]
 ---
 

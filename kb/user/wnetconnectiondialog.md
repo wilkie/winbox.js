@@ -9,7 +9,7 @@ versions:
 probes: [wnetall]
 records: [ok]
 topics: [small-queries]
-source: src/win16/user/wnet.ts
+source: crates/winbox-win16/src/wnet.rs
 ---
 
 ## Observed behaviour

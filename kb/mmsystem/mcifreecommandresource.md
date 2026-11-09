@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmcmd]
 records: [free, close]
-source: src/win16/mmsystem/mci-tables.ts
+source: crates/winbox-win16/src/mmsystem/mci_tables.rs
 topics: [sound-devices]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [ofnerr]
 topics: [common-dialogs, file-dialogs]
-source: src/win16/commdlg/file-init.ts
+source: crates/winbox-win16/src/commdlg/file_init.rs
 ---
 
 ## Observed behaviour

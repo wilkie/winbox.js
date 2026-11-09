@@ -7,7 +7,7 @@ summary: Counts the bytes of a null-terminated string, leaving the terminator ou
 versions:
   '3.1': exact
 probes: [strings]
-source: src/win16/kernel/lstrlen.ts
+source: crates/winbox-win16/src/kernel.rs
 ---
 
 ## Observed behaviour

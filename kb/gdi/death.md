@@ -7,7 +7,7 @@ summary: Calls the display driver's Disable through a device context's driver an
 versions:
   '3.1': unrecorded
 probes: []
-source: src/win16/gdi/visible-region.ts
+source: crates/winbox-win16/src/gdi/visible_region.rs
 topics: [visible-regions]
 ---
 

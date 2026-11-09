@@ -4,7 +4,7 @@ module: KERNEL
 name: IsROMModule
 ordinal: 323
 summary: Whether a module is in ROM — never, on a Windows run from the disk: nought.
-source: src/win16/kernel/misc.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-internals]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask, kevent]
 records: [task, pending]
-source: src/win16/kernel/task-calls.ts
+source: crates/winbox-win16/src/kernel_calls/tasks.rs
 topics: [kernel-queries]
 ---
 

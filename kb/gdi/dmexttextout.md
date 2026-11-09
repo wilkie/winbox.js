@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [gdidmdrw, prttstk, prttcw]
 records: [text, emboldened]
-source: src/win16/gdi/driver-bitmap.ts
+source: crates/winbox-win16/src/gdi/driver_helpers.rs
 topics: [gdi-internals, printer-drivers]
 ---
 

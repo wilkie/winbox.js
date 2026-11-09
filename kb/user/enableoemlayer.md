@@ -7,7 +7,7 @@ summary: Takes the screen and the input back after a full-screen DOS program: th
 versions:
   '3.1': exact
 probes: [oemlayer]
-source: src/win16/user/internals.ts
+source: crates/winbox-win16/src/user_internals.rs
 topics: [user-internals]
 ---
 

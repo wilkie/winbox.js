@@ -7,7 +7,7 @@ summary: "A link's network name told from its document's drive: the share a remo
 versions:
   '3.1': partial
 probes: [olenet]
-source: src/win16/olecli/network.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

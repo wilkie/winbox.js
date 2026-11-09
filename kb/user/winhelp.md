@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [winhelp]
 records: [quit]
-source: src/win16/user/WinHelp.ts
+source: crates/winbox-win16/src/user_calls/popups.rs
 ---
 
 ## Observed behaviour

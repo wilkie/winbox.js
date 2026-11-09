@@ -4,7 +4,7 @@ module: KERNEL
 name: IsROMFile
 ordinal: 326
 summary: Whether a file is in ROM — never, on a Windows run from the disk: nought.
-source: src/win16/kernel/misc.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-internals]
 ---
 

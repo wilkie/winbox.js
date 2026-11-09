@@ -6,7 +6,7 @@ ordinal: 106
 summary: Whether a key was down, and whether it is toggled, as of the keyboard message a program is handling rather than the keyboard now.
 versions:
   '3.1': unrecorded
-source: src/win16/user/accelerators.ts
+source: crates/winbox-win16/src/user_misc.rs
 ---
 
 ## Observed behaviour

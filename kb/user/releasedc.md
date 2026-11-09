@@ -7,7 +7,7 @@ summary: Gives a device context back to USER's entries; a common one's attribute
 versions:
   '3.1': exact
 probes: [dcentry, dcreuse, reldc, dcreset, visfam]
-source: src/win16/user/ReleaseDC.ts
+source: crates/winbox-win16/src/get_dc.rs
 topics: [visible-regions]
 ---
 

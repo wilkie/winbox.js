@@ -7,7 +7,7 @@ summary: "The Rename every kind's table shares: an object renamed."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/objects.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

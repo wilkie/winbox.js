@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 records: [instance]
 probes: [locinfo]
-source: src/win16/kernel/GetInstanceData.ts
+source: crates/winbox-win16/src/memory.rs
 topics: [global-and-local-memory]
 ---
 

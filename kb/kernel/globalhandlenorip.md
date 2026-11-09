@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ktask]
 records: [memory]
-source: src/win16/kernel/module-calls.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-queries]
 ---
 

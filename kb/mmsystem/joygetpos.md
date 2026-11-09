@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmmisc]
 records: [joy]
-source: src/win16/mmsystem/joystick.ts
+source: crates/winbox-win16/src/mmsystem/joystick.rs
 topics: [multimedia-services]
 ---
 

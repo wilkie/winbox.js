@@ -7,7 +7,7 @@ summary: The desktop's pattern made again from WIN.INI's.
 versions:
   '3.1': unrecorded
 topics: [system-parameters]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Inside Windows

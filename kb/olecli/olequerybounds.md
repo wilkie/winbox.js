@@ -7,7 +7,7 @@ summary: "An object's bounds in `MM_HIMETRIC`: nought, nought, its width and its
 versions:
   '3.1': partial
 probes: [oledde, olepbd, olepbr, olestat]
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

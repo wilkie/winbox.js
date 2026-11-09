@@ -5,7 +5,7 @@ name: LoadCursorIconHandler
 ordinal: 336
 summary: The resource handler KERNEL's LoadResource calls for a Windows 2 module's icons and cursors: the resource read and made USER's own block.
 probes: [iconhand]
-source: src/win16/user/icon-handlers.ts
+source: crates/winbox-win16/src/icon_handlers.rs
 topics: [user-internals]
 ---
 

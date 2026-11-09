@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [thtask]
 records: [class]
-source: src/win16/toolhelp/classes.ts
+source: crates/winbox-win16/src/toolhelp/classes.rs
 topics: [tool-helper]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmmisc]
 records: [drv]
-source: src/win16/mmsystem.ts
+source: crates/winbox-win16/src/drivers.rs
 topics: [installable-drivers]
 ---
 

@@ -7,7 +7,7 @@ summary: A module's handle, by its name, by its file's name, or by a number -- a
 versions:
   '3.1': partial
 probes: [modnum, freelib, loadname, modhand]
-source: src/win16/kernel/GetModuleHandle.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [dynamic-link-libraries]
 ---
 

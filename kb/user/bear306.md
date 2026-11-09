@@ -7,7 +7,7 @@ summary: The window procedure of USER's class #32768, the menus' pop-up windows.
 versions:
   '3.1': unrecorded
 probes: [userproc]
-source: src/win16/user.ts
+source: crates/winbox-win16/src/window_queries.rs
 topics: [user-internals]
 ---
 

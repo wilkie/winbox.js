@@ -7,7 +7,7 @@ summary: Takes one add of a font file away from GDI's font table; the file's fon
 versions:
   '3.1': exact
 probes: [fontres, fontdef]
-source: src/win16/gdi/AddFontResource.ts
+source: crates/winbox-win16/src/gdi/text/added.rs
 topics: [font-resources]
 ---
 

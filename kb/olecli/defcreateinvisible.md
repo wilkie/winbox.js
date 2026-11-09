@@ -7,7 +7,7 @@ summary: "An object handler's default for `OleCreateInvisible`: an embedded obje
 versions:
   '3.1': partial
 probes: [olehnd]
-source: src/win16/olecli/handlers.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

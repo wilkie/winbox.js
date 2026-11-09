@@ -7,7 +7,7 @@ summary: Locks the running program, so no other runs and its looks for messages 
 versions:
   '3.1': exact
 probes: [gmhook, lockinp, sysdlg]
-source: src/win16/user/lock-input.ts
+source: crates/winbox-win16/src/lock_input.rs
 topics: [system-queue]
 ---
 

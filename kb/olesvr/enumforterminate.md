@@ -77,7 +77,7 @@ records:
     window,
     WinExec,
   ]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

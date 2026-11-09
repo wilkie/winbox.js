@@ -7,7 +7,7 @@ summary: Draws text, or whatever a program's procedure draws, greyed through a b
 versions:
   '3.1': exact
 probes: [tabtext]
-source: src/win16/user/gray-string.ts
+source: crates/winbox-win16/src/draw_text.rs
 topics: [standard-controls]
 ---
 

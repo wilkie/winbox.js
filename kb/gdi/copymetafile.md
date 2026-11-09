@@ -7,7 +7,7 @@ summary: Copies a metafile to a file, answering one on disk, or to memory; a cop
 versions:
   '3.1': exact
 probes: [diskmeta, metafile]
-source: src/win16/gdi/metafile.ts
+source: crates/winbox-win16/src/gdi/metafile.rs
 topics: [metafiles]
 ---
 

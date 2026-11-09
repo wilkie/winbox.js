@@ -7,7 +7,7 @@ summary: 'A document renamed: its new name sent to each conversation that advise
 versions:
   '3.1': exact
 probes: [olesrv]
-source: src/win16/olesvr/server.ts
+source: crates/winbox-win16/src/olesvr/mod.rs
 topics: [ole]
 ---
 

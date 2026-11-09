@@ -7,7 +7,7 @@ summary: Draws a line of text with its tabs expanded to stops — every eight av
 versions:
   '3.1': exact
 probes: [tabtext, prtabs, prnote]
-source: src/win16/user/tabbed-text.ts
+source: crates/winbox-win16/src/draw_text.rs
 topics: [text-justification, printer-drivers]
 ---
 

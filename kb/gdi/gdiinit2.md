@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [ugaps]
 records: [gdiinit2]
-source: src/win16/gdi/system-exports.ts
+source: crates/winbox-win16/src/gdi/system_exports.rs
 topics: [gdi-internals]
 ---
 

@@ -7,7 +7,7 @@ summary: Starts a page of a printed document; on a Windows driver's context it o
 versions:
   '3.1': exact
 probes: [printing, prdoc, prabort]
-source: src/win16/gdi/printing.ts
+source: crates/winbox-win16/src/gdi/printing.rs
 topics: [printing, printer-drivers]
 ---
 

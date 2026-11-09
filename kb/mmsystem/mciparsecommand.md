@@ -6,7 +6,7 @@ ordinal: 704
 summary: Exported, but a near procedure of MMSYSTEM's command parser: a far call has no answer to follow, and WinBox answers nought.
 versions:
   '3.1': unrecorded
-source: src/win16/mmsystem/mci.ts
+source: crates/winbox-win16/src/mmsystem/mod.rs
 topics: [sound-devices]
 ---
 

@@ -6,7 +6,7 @@ ordinal: 55
 summary: 'A server kept running by [[fn:OLECLI.OleLockServer]] let go.'
 versions:
   '3.1': unrecorded
-source: src/win16/olecli/api.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 probes: [oledde, olepbd, olepbr]
 topics: [ole]
 ---

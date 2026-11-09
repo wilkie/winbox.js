@@ -7,7 +7,7 @@ summary: Replaces a bitmap's bits with bits from a buffer, in rows padded to 16-
 versions:
   '3.1': exact
 probes: [patmono]
-source: src/win16/gdi/SetBitmapBits.ts
+source: crates/winbox-win16/src/gdi/bitmaps.rs
 ---
 
 ## Observed behaviour

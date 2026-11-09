@@ -7,7 +7,7 @@ summary: "An embedded or linked object's `QueryProtocol` method, which its table
 versions:
   '3.1': partial
 probes: [oleemb]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [gdiint]
 records: [fixup]
-source: src/win16/gdi/system-exports.ts
+source: crates/winbox-win16/src/gdi/system_exports.rs
 topics: [gdi-internals, metafiles]
 ---
 

@@ -4,7 +4,7 @@ module: KERNEL
 name: FatalExit
 ordinal: 1
 summary: In the retail build, FatalAppExit with KERNEL's own text: the Application Error box, then the task ended.
-source: src/win16/kernel/FatalExit.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [kernel-queries]
 ---
 

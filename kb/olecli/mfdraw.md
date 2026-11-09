@@ -7,7 +7,7 @@ summary: "The Draw of a picture's table: drawn."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/draw.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

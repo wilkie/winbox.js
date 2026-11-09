@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [gdimisc, prtteng]
 records: [physfont, GetPhysicalFontHandle]
-source: src/win16/gdi/physical-font.ts
+source: crates/winbox-win16/src/gdi/physical_font.rs
 topics: [small-queries, printer-drivers]
 ---
 

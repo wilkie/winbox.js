@@ -4,7 +4,7 @@ module: KERNEL
 name: LocalHandleDelta
 ordinal: 310
 summary: How many handles the running data segment's local heap makes room for at a time — 32 until set; nought asks without setting.
-source: src/win16/kernel/memory-info.ts
+source: crates/winbox-win16/src/pointers.rs
 topics: [kernel-internals, global-and-local-memory]
 ---
 

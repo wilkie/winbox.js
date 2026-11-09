@@ -7,7 +7,7 @@ summary: "The CopyToClipboard of a DIB's table: a copy put on the clipboard."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

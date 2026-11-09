@@ -7,7 +7,7 @@ summary: Draws a chain of lines through a list of points with the selected pen, 
 versions:
   '3.1': exact
 probes: [polyline, prdraw]
-source: src/win16/gdi/Polyline.ts
+source: crates/winbox-win16/src/gdi/printer_output.rs
 topics: [line-drawing]
 ---
 

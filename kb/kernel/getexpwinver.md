@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 records: [expwinver]
 probes: [lbmark, modnum]
-source: src/win16/kernel/GetExpWinVer.ts
+source: crates/winbox-win16/src/kernel.rs
 topics: [list-boxes, combo-boxes]
 ---
 

@@ -7,7 +7,7 @@ summary: "An embedded or linked object's `QueryOpen` method, which its table hol
 versions:
   '3.1': partial
 probes: [oledde, olepbd]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

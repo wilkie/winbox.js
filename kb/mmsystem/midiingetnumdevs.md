@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmdevs]
 records: [count]
-source: src/win16/mmsystem/midi.ts
+source: crates/winbox-win16/src/mmsystem/wave.rs
 topics: [sound-devices]
 ---
 

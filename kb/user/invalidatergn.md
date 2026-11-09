@@ -7,7 +7,7 @@ summary: Adds a region to what a window is due to paint, and to the windows in i
 versions:
   '3.1': exact
 probes: [updrgn, invchild, uwleft]
-source: src/win16/user/update-region.ts
+source: crates/winbox-win16/src/user_calls/update_region.rs
 topics: [painting]
 ---
 

@@ -7,7 +7,7 @@ summary: Where a locked icon's mask and picture are, and their sizes — how Pro
 versions:
   '3.1': exact
 probes: [associco]
-source: src/win16/user/icon-api.ts
+source: crates/winbox-win16/src/icons.rs
 ---
 
 ## Observed behaviour

@@ -7,7 +7,7 @@ summary: USER's hook on the device contexts it lends, which GDI calls where the 
 versions:
   '3.1': exact
 probes: [visfam, dcentry, dchook]
-source: src/win16/user/dc-entries.ts
+source: crates/winbox-win16/src/dc_entries.rs
 topics: [visible-regions, device-context-internals]
 ---
 

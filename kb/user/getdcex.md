@@ -9,7 +9,7 @@ versions:
 probes: [getdcex, visrgn, visrule, dcentry]
 records: [dc, parentclip, region]
 topics: [painting, clip-regions, visible-regions]
-source: src/win16/user/get-dc-ex.ts
+source: crates/winbox-win16/src/get_dc.rs
 ---
 
 ## Observed behaviour

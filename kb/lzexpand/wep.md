@@ -6,7 +6,7 @@ ordinal: 11
 summary: LZEXPAND's exit procedure -- it does nothing, its blocks and buffers left as they are.
 versions:
   '3.1': unrecorded
-source: src/win16/lzexpand/index.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

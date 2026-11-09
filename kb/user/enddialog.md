@@ -7,7 +7,7 @@ summary: Ends a dialog at once -- its owner enabled, the dialog hidden and its o
 versions:
   '3.1': exact
 probes: [enddlg, comboesc, sysdlg]
-source: src/win16/user/dialogs.ts
+source: crates/winbox-win16/src/dialogs.rs
 topics: [dialog-boxes, activation-and-focus]
 ---
 

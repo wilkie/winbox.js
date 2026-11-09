@@ -9,7 +9,7 @@ versions:
 probes: [userint]
 records: [bear]
 topics: [small-queries]
-source: src/win16/user/small-calls.ts
+source: crates/winbox-win16/src/small_calls.rs
 ---
 
 ## Observed behaviour

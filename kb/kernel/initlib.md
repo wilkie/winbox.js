@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [kgaps]
 records: [initlib]
-source: src/win16/kernel/internals.ts
+source: crates/winbox-win16/src/kernel_calls/internals.rs
 topics: [kernel-internals, dynamic-link-libraries]
 ---
 

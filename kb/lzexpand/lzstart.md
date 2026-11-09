@@ -7,7 +7,7 @@ summary: The buffers LZCopy expands with made -- a ring and an input and an outp
 versions:
   '3.1': exact
 probes: [lzfiles]
-source: src/win16/lzexpand/lz.ts
+source: crates/winbox-win16/src/lzexpand/mod.rs
 topics: [compressed-files]
 ---
 

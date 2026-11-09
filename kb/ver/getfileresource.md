@@ -7,7 +7,7 @@ summary: A resource's bytes read from a file — found as GetFileResourceSize fi
 versions:
   '3.1': exact
 probes: [verinfo]
-source: src/win16/ver/ver.ts
+source: crates/winbox-win16/src/ver/mod.rs
 topics: [version-information]
 ---
 

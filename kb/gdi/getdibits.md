@@ -7,7 +7,7 @@ summary: Reads a device-dependent bitmap back as a DIB, at the bit count the hea
 versions:
   '3.1': exact
 probes: [getdib, prblt2]
-source: src/win16/gdi/GetDIBits.ts
+source: crates/winbox-win16/src/gdi/printer_stretch.rs
 topics: [palettes, printer-drivers]
 ---
 

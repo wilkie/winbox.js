@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmtaskc]
 records: [create, none]
-source: src/win16/mmsystem/mmtask.ts
+source: crates/winbox-win16/src/mmsystem/mmtask.rs
 topics: [multimedia-services]
 ---
 

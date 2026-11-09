@@ -7,7 +7,7 @@ summary: "An embedded or linked object's `SetHostNames` method, which its table 
 versions:
   '3.1': partial
 probes: [oledde, olepbd]
-source: src/win16/olecli/linked.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

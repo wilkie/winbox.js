@@ -6,7 +6,7 @@ ordinal: 34
 summary: Installs a driver's waveform, MIDI or auxiliary entry point, or removes one.
 versions:
   '3.1': unrecorded
-source: src/win16/mmsystem/devices.ts
+source: crates/winbox-win16/src/mmsystem/mod.rs
 topics: [sound-devices]
 ---
 

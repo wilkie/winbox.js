@@ -7,7 +7,7 @@ summary: A string handle's text, copied as far as it fits, or its length with no
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange, atoms]
 ---
 

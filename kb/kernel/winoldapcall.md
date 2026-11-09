@@ -8,7 +8,7 @@ versions:
   '3.1': partial
 probes: [kgaps]
 records: [winoldap, kernelpdb]
-source: src/win16/kernel/internals.ts
+source: crates/winbox-win16/src/kernel_calls/internals.rs
 topics: [kernel-internals, task-list]
 ---
 

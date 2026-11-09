@@ -8,7 +8,7 @@ versions:
   '3.1': exact
 probes: [mmnodev]
 records: [text]
-source: src/win16/mmsystem/midi.ts
+source: crates/winbox-win16/src/mmsystem/midi.rs
 topics: [sound-devices]
 ---
 

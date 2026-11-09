@@ -7,7 +7,7 @@ summary: Why the last of COMMDLG's dialogs failed — the one doubleword COMMDLG
 versions:
   '3.1': exact
 probes: [ofnerr, ftitle]
-source: src/win16/commdlg/state.ts
+source: crates/winbox-win16/src/commdlg/mod.rs
 topics: [common-dialogs]
 ---
 

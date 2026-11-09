@@ -7,7 +7,7 @@ summary: "The GetData of a bitmap's table: its data's handle in its format."
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/kinds.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

@@ -7,7 +7,7 @@ summary: '`DefCreateInvisible` without its protocol: the client, class, document
 versions:
   '3.1': partial
 probes: [olehnd]
-source: src/win16/olecli/handlers.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

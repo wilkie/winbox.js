@@ -7,7 +7,7 @@ summary: "A client's document registered: a block whose far pointer is its handl
 versions:
   '3.1': exact
 probes: [olemem, olestat]
-source: src/win16/olecli/docs.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

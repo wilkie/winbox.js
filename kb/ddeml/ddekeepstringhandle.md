@@ -7,7 +7,7 @@ summary: Adds a count to a string handle's atom, so that it outlives one more Dd
 versions:
   '3.1': exact
 probes: [ddemgmt]
-source: src/win16/ddeml/instance.ts
+source: crates/winbox-win16/src/ddeml/mod.rs
 topics: [dynamic-data-exchange, atoms]
 ---
 

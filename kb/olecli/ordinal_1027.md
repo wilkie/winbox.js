@@ -7,7 +7,7 @@ summary: "A method a static object's table holds where it has no export of its o
 versions:
   '3.1': exact
 probes: [olemem]
-source: src/win16/olecli/methods.ts
+source: crates/winbox-win16/src/olecli/mod.rs
 topics: [ole]
 ---
 

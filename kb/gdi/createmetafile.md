@@ -7,7 +7,7 @@ summary: Opens a metafile to draw into, in memory or in a file; its device conte
 versions:
   '3.1': exact
 probes: [metafile, diskmeta, metarec]
-source: src/win16/gdi/metafile.ts
+source: crates/winbox-win16/src/gdi/metafile.rs
 topics: [metafiles]
 ---
 
