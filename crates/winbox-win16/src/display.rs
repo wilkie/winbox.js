@@ -1,7 +1,7 @@
 //! The display winbox.js is: its size, its driver's capabilities, and its
 //! system metrics and colours, as the probes recorded them on each display
-//! Windows 3.1 ran on. The table is written from the TypeScript engine's
-//! by `npm run rust:modules`, as `data/displays.json`.
+//! Windows 3.1 ran on. The table is `data/displays.json`, which the page's
+//! `src/win16/display-modes.ts` reads too.
 
 use std::collections::HashMap;
 
