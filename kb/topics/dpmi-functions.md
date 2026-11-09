@@ -36,7 +36,7 @@ Every probe below was recorded in both modes (`record.mjs --mode enhanced`), and
 
 [[measured]] [[probe:dpmigro]] grows a block whose next is taken, and [[probe:dpmigrw]] one that is alone: each time the screen goes back to DOS with "Standard Mode: Fault in MS-DOS Extender.", `EC=2000` (the size's low word) and DOSX's CS:IP, `0053:2713` and `0053:2725`. Windows has ended. In [[probe:dpmigro]] a second program wrote a record every 200 ms until the call, and none after. [[probe:enhmode]]'s standard-mode recording ends at the same call. 0502h and 0101h given nought end Windows the same way, at 2734h (`EC=0A08`, [[probe:dpminul]]). In enhanced mode, WIN386 answers all of these.
 
-WinBox ends the session where DOSX does: no task runs again (the TypeScript engine's scheduler stops; the Rust engine's run stops as ended), and the reason is kept (`DPMI.hostFault`, `Host::fault`). That is what a program can see: nothing more of Windows runs. A 0503h of an unknown handle is refused, AX as it was, before any of that.
+WinBox ends the session where DOSX does: no task runs again (the Rust engine's run stops as ended), and the reason is kept (`Host::fault`). That is what a program can see: nothing more of Windows runs. A 0503h of an unknown handle is refused, AX as it was, before any of that.
 
 ## Descriptors: 0000h-000Dh
 

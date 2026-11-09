@@ -37,7 +37,7 @@ Every accessory's **Help > About** calls [[fn:SHELL.ShellAbout]] with its own na
 
 ## In winbox.js
 
-`crates/winbox-win16/src/shell/about.rs` is `ShellAbout`. The dialog template and SHELL's strings are winbox.js's own: `about-dialog.ts` and `strings.ts` beside it are generated from the installation by `scripts/oracle/dialog-template.mjs` and `scripts/oracle/strings-table.mjs`. The logo is read from the installation's `SHELL.DLL` when it is wanted, as the display's artwork is.
+`crates/winbox-win16/src/shell/about.rs` is `ShellAbout`. The dialog template and SHELL's strings are winbox.js's own, generated from the installation by `scripts/oracle/dialog-template.mjs` and `scripts/oracle/strings-table.mjs`. The logo is read from the installation's `SHELL.DLL` when it is wanted, as the display's artwork is.
 
 Not followed:
 

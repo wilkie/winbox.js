@@ -52,4 +52,4 @@ Cribbage selects a fixed font into its window's device context, gives it back, a
 
 ## In winbox.js
 
-The region is `crates/winbox-raster/src/clip_region.rs`: bands of rows, each a set of runs of columns, with bands that are alike joined, so a region that is only a rectangle is always one. The device context hands it to the context of the bitmap selected into it (`dcClip`), and every pixel that is drawn is checked against it. The functions are in `src/win16/gdi/clipping.ts` and `src/win16/gdi/SaveDC.ts`.
+The region is `crates/winbox-raster/src/clip_region.rs`: bands of rows, each a set of runs of columns, with bands that are alike joined, so a region that is only a rectangle is always one. The device context hands it to the context of the bitmap selected into it (`dcClip`), and every pixel that is drawn is checked against it. `save_dc` and `restore_dc` are in `crates/winbox-win16/src/gdi/dc.rs`.

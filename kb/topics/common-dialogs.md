@@ -186,7 +186,7 @@ Every dialog takes the same two ways for a program to change it, each asked for 
 The registration point is one entry per export:
 
 - `crates/winbox-win16/src/commdlg/mod.rs`, `implementation`, one arm per export by its name.
-- `crates/winbox-win16/src/kept.rs`, `COMMDLG`'s export table: an export WinBox answers is marked `stub: false`. The Rust test `commdlg::tests::ours_agree` holds the two to each other. The TypeScript engine's table, `src/win16/commdlg/index.ts`, wrote `kept.rs` until 2026-11-08 ([[guide:retire-typescript]]).
+- `crates/winbox-win16/src/kept.rs`, `COMMDLG`'s export table: an export WinBox answers is marked `stub: false`. The Rust test `commdlg::tests::ours_agree` holds the two to each other. `kept.rs` was written from the TypeScript engine's table until 2026-11-08 ([[guide:retire-typescript]]).
 
 Helpers both engines keep for the dialogs: the far address of an export WinBox answers (`procAddress`, `proc_address`), the extended error (`setError`, `set_error`), `COMMDLG`'s instance (`instance`), a hook called as `COMMDLG` calls one (`callHook`, `call_hook`), the wait cursor (`waitCursor`, `wait_cursor`) and the registered messages (`message`).
 

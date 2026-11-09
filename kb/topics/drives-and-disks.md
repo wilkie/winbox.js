@@ -61,7 +61,7 @@ File Manager asks each drive letter whether it exists, what kind it is, whether 
 
 - [[read out]] DOSBox installs its own MSCDEX whether or not a disc is mounted (`MSCDEX_Init`, `dos_mscdex.cpp` 1312-1322) and answers these as recorded (`MSCDEX_Handler`, 1069-1167). Its version is 2.23 (`MSCDEX_VERSION_HIGH`, `_LOW`, 37-38). 1100h also writes ADADh over a word of DADAh on the caller's stack (1071-1074): through Windows that stack is the DOS extender's. The calls that take a buffer at ES:BX -- 1501h, 150Dh, 1505h, 150Fh, 1510h -- are not recorded: through Windows they need DPMI's real-mode calls and a buffer below 1 MB.
 - [[read out]] File Manager asks MSCDEX of each drive. With no handler, `INT 2Fh` went through an empty vector. Then both engines left every register as it was, which to 1500h says "not installed".
-- Both engines now answer 1100h, 1500h, 150Bh and 150Ch as DOSBox does, a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `run.rs`, `DOS.multiplexInterrupt` in `src/dos.ts`). Any other function changes nothing. See [[topic:cd-rom]].
+- WinBox now answers 1100h, 1500h, 150Bh and 150Ch as DOSBox does, a CD-ROM drive being a drive removable and remote (`multiplex_interrupt` in `crates/winbox-win16/src/run.rs`). Any other function changes nothing. See [[topic:cd-rom]].
 
 ## Free space
 
@@ -273,7 +273,7 @@ The owner's decisions (2026-10-22):
 ## In winbox.js
 
 - `crates/winbox-win16/src/wnet.rs` hold the Windows calls; the Rust engine's `drive_type` is in `modules_kernel.rs`.
-- `src/dos/syscall/diskSpace.ts` and `src/dos/syscall/ioctl.ts` hold the DOS functions, and `DOS.absoluteDisk` and `DOS.multiplexInterrupt` the interrupts; the Rust engine's are `drive_ioctl` in `dos.rs` and `multiplex_interrupt` in `run.rs`.
+- `drive_ioctl` in `crates/winbox-win16/src/dos.rs` and `multiplex_interrupt` in `crates/winbox-win16/src/run.rs` hold them.
 - A FAT disk image is `FatVolume` (`crates/winbox-machine/src/files/fat.rs`, `crates/winbox-machine/src/files/mbr.rs`) and `FATImage` (`src/file-systems/fat-image.ts`), [[format:fat]]; what is written to it, an `Overlay` (`crates/winbox-machine/src/files/overlay.rs`) and an `OverlayDisk` (`src/file-systems/overlay-disk.ts`). An ISO 9660 disc is `IsoVolume` (`crates/winbox-machine/src/files/iso.rs`) and `ISO9660` (`src/file-systems/iso9660.ts`), [[topic:cd-rom]].
 - A drive's kind is the `Volume` trait's (`crates/winbox-machine/src/files.rs`): `removable`, `remote`, `label`, `media_byte`, `listing`; `Files::has_disk` and `Files::floppy_disks` from them. The TypeScript engine's `FileSystem` has the same getters (`src/file-system.ts`).
 - The page's drives are `src/run/drives.ts` (kinds, sets, letters, Windows' disks known, programs on a drive) and the Drives strip in `src/run/main.ts`; each engine's side is `Session::add_disk` and its kin (`crates/winbox-web/src/session.rs`, `ImageBytes` in `lib.rs`) and the TypeScript engine's `mount`, `insert` and `eject` (`src/run/engines/ts.ts`).

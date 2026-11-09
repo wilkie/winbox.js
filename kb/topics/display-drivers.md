@@ -59,7 +59,7 @@ A program reaches a driver's own functions through [[fn:GDI.Escape]], by number.
 - [[measured]] `MOUSETRAILS` answers 7 on the colour displays and nought on the Hercules. It writes nothing back.
 - [[measured]] An escape the driver has not got answers nought.
 - [[measured]] A memory device context's driver is GDI's own for bitmaps, and answers nought to everything, `QUERYESCSUPPORT` included.
-- winbox.js does not run the driver's code. It answers from each display's record in `display-modes.ts`. Not followed: what `GETCOLORTABLE` answers.
+- winbox.js does not run the driver's code. It answers from each display's record in `src/win16/display-modes.ts`. Not followed: what `GETCOLORTABLE` answers.
 
 ## Why fixtures are recorded per display
 

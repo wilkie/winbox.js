@@ -217,7 +217,7 @@ A dialog box is a window made from a template. The template gives the dialog's s
   - `CreateDialog` and `DialogBox` in all their forms;
   - `DefDlgProc`, the procedure of the dialog class `#32770`;
   - `IsDialogMessage`, and the rest of the dialog manager.
-- The modal frame is drawn in `frame.ts`.
+- The modal frame is drawn in `crates/winbox-win16/src/frame.rs`.
 
 The replay runs [[probe:dialogs]] and [[probe:dlgcolor]] through the exports. Getting there found a bug outside dialogs: every structure handed to a window procedure on the stack, such as `CREATESTRUCT` or `MINMAXINFO`, had been given a pointer using the stack's descriptor index instead of its selector. Character Map reads its `CREATESTRUCT`, and faulted.
 
@@ -230,4 +230,4 @@ Not yet done:
 - `SetSysModalWindow` and `ActivateWindow` refused for another task's system-modal window are read out; [[probe:sysdlg]]'s system-modal dialog is the program's own, and a send to the other program while its task is locked would wait for ever.
 - The word at `0DCh` of USER's data, which keeps a system-modal window from refusing another and from locking its task (seg1 `19e8`, seg24 `096d`), set and put back at seg5 `0319`-`0334`, is not followed; neither engine keeps it.
 - The dialog manager reads a control's text for its mnemonic with `WM_GETTEXT` (seg19 `010b`); both engines read the text the control keeps, which a control of a program's own class answering `WM_GETTEXT` itself would tell apart.
-- The TypeScript engine runs a window procedure another program's `SendMessage` reaches on the sender's stack, so a dialog procedure that sets its data segment from the stack -- one passed to `DialogBox` without [[fn:KERNEL.MakeProcInstance]] -- finds the wrong one there. [[probe:sysdlg]] passes its procedures through `MakeProcInstance`.
+- [[probe:sysdlg]] passes its procedures through `MakeProcInstance`.
