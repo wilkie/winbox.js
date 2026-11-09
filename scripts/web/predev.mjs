@@ -6,7 +6,7 @@
  *
  * "Older" is by the files' times: the module against the newest source of
  * the crates the page's module is built from (every crate but the native
- * front end and the hybrid core, their tests, examples and benches apart),
+ * front end, their tests, examples and benches apart),
  * the workspace's `Cargo.toml` and `Cargo.lock`. A build that fails is told
  * and the server started all the same; the page then says the engine is not
  * built, or runs the module built before.
@@ -21,7 +21,7 @@ const MODULE = join(ROOT, 'target', 'winbox-web', 'winbox_web_bg.wasm');
 const GLUE = join(ROOT, 'target', 'winbox-web', 'winbox_web.js');
 
 /** Crates the page's module does not take in. */
-const APART = new Set(['winbox-native', 'winbox-wasm']);
+const APART = new Set(['winbox-native']);
 
 /** Folders of a crate that are not built into its library. */
 const UNBUILT = new Set(['tests', 'examples', 'benches', 'target']);

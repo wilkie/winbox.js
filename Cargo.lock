@@ -2168,13 +2168,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "winbox-wasm"
-version = "0.1.0"
-dependencies = [
- "winbox-cpu",
-]
-
-[[package]]
 name = "winbox-web"
 version = "0.1.0"
 dependencies = [

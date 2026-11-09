@@ -2,9 +2,6 @@
 export default {
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
-  globalSetup: '<rootDir>/test/global-setup.ts',
-  globalTeardown: '<rootDir>/test/global-teardown.ts',
-  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   testMatch: ['**/*_test.ts'],
 
   transform: {
@@ -31,10 +28,6 @@ export default {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
 
-  collectCoverageFrom: ['src/**/*.ts', '!src/shim.ts'],
-  coverageDirectory: 'coverage',
-  /* Jasmine restored spies after every spec; `restoreMocks` is the equivalent,
-   * and matters because the suite spies on shared prototypes (ALU.prototype).
-   */
+  /* Each test's spies are put back after it, as Jasmine did. */
   restoreMocks: true,
 };

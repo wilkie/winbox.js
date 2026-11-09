@@ -1,27 +1,13 @@
 import { defineConfig } from 'vite';
 
-/* The build produces a single `winbox.js` bundle holding the emulator, which
- * sets `window.Win16`. The repository root doubles as the dev-server root, and
- * `pnpm dev` serves the page for running programs at `/run.html`.
+/* The repository root is the dev server's root: `pnpm dev` serves the page
+ * for running programs at `/run.html`.
  */
 export default defineConfig({
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    sourcemap: true,
-    target: 'es2022',
-    lib: {
-      entry: { winbox: 'src/shim.ts' },
-      formats: ['es'],
-      fileName: (_format, name) => `${name}.js`,
-    },
-  },
-
   /* `run.html` imports the Rust engine's module from where
    * `pnpm build:web` writes it, `/target/winbox-web/`, served from the root
-   * like any file; it is not bundled, and the page is not part of `pnpm
-   * build`. The rest of `target/` is cargo's, too large and too busy to
-   * watch, so it is not (`busy`).
+   * like any file; it is not bundled. The rest of `target/` is cargo's,
+   * too large and too busy to watch, so it is not (`busy`).
    *
    * That folder is watched all the same. The server keeps each module it
    * has transformed, the module's glue among them, until the watcher tells

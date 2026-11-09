@@ -15,6 +15,8 @@ export default tseslint.config(
       'test-results/**',
       /* cargo's, with the page's module that `pnpm build:web` writes. */
       'target/**',
+      /* Agents' worktrees, each a checkout of its own. */
+      '.claude/**',
     ],
   },
 
@@ -48,16 +50,6 @@ export default tseslint.config(
       'no-var': 'error',
       'no-case-declarations': 'error',
       'no-useless-assignment': 'error',
-    },
-  },
-
-  {
-    /* Opcode dispatch tables fall through on purpose, constantly: an 8086
-     * decoder is one big switch where shared tails are the point.
-     */
-    files: ['src/emulator/**/*.ts'],
-    rules: {
-      'no-fallthrough': 'off',
     },
   },
 
