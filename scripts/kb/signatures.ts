@@ -2,13 +2,12 @@
  * The "Signature" part of a function's page (`KNOWLEDGE_BASE_SPEC.md`): the
  * return type, and each parameter's type and name.
  *
- * They were read from the TypeScript engine's JSDoc (`@param {Type} name`,
- * `@returns {Type}`) until that engine was retired, and were frozen on
- * 2026-11-08 into `kb/data/signatures.json`, which is now where they are
- * kept: the Rust engine's functions read their arguments in their bodies and
- * carry no such tags. A function's summary is its Rust doc comment
- * (`rustdoc.ts`), or, where the Rust function has none, the TypeScript
- * description frozen beside its signature.
+ * They were read from JSDoc (`@param {Type} name`, `@returns {Type}`) and
+ * frozen on 2026-11-08 into `kb/data/signatures.json`, which is where they
+ * are kept: the Rust engine's functions read their arguments in their bodies
+ * and carry no such tags. A function's summary is its Rust doc comment
+ * (`rustdoc.ts`), or, where the Rust function has none, the description
+ * frozen beside its signature.
  */
 
 import { readFileSync } from 'node:fs';
@@ -20,7 +19,7 @@ export interface Signature {
 
   parameters: { type: string; name: string }[];
 
-  /** The TypeScript description, where the Rust function has no doc
+  /** The frozen description, where the Rust function has no doc
    * comment of its own. */
   summary?: string;
 }

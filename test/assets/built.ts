@@ -9,9 +9,7 @@ import { FAT16 } from '../../src/file-systems/fat16.js';
 
 /**
  * The asset bundle `pnpm assets` makes, and the bare disks the page's tests
- * put a drive on: page code alone, no engine (kb/guides/retire-typescript.md,
- * phase 1b). `test/win16/run-probe.ts` takes `bundle` and `bundleDrive` from
- * here.
+ * put a drive on: page code alone, no engine.
  */
 
 /** The asset bundle `pnpm assets` unpacks, as `bundle()` reads it. */
@@ -36,8 +34,7 @@ export function bundle(): Assets | null {
 
 /**
  * A bare disk to fill as the page fills its drive (`fillDrive` takes the
- * first of `disks`): 40 MB of 512-byte sectors in 32 KB blocks, the disk
- * the TypeScript machine was made with (`src/emulator/machine.ts`).
+ * first of `disks`): 40 MB of 512-byte sectors in 32 KB blocks.
  */
 export function bareDisks(): { disks: Disk[] } {
   return { disks: [new Disk(40 * 1024 * 1024, 512, 32 * 1024)] };

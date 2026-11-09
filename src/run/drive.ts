@@ -15,11 +15,11 @@ import { type Change, fat16Drive } from './changes.js';
 
 /**
  * Puts dropped archives onto the machine's C: drive. Where each file goes, and
- * its 8.3 name, is worked out once (`planDrive`), and each engine fills its
- * own drive from that: the TypeScript engine a FAT16 volume made in memory --
- * the same file system the tests and the oracle's drive image use --, the
- * Rust engine its drive held in memory, a file at a time. Either way a
- * program sees the same 8.3 names and the same directory structure.
+ * its 8.3 name, is worked out once (`planDrive`), and each kind of drive is
+ * filled from that: a FAT16 volume made in memory -- the same file system the
+ * tests and the oracle's drive image use --, or the Rust engine's drive held
+ * in memory, a file at a time. Either way a program sees the same 8.3 names
+ * and the same directory structure.
  *
  * A Windows installation is recognised by what it holds, a `SYSTEM` directory
  * of fonts, wherever it sits in its archive, and goes to `C:\WINDOWS`, which is
@@ -119,7 +119,7 @@ function windowsRoot(entries: ZipEntry[]) {
   return null;
 }
 
-/** A file as both engines put it on C:, from what was dropped. */
+/** A file as the engine puts it on C:, from what was dropped. */
 export interface Placement {
   /** Its DOS path's parts beneath `C:\`, as 8.3 names. */
   parts: string[];
@@ -132,7 +132,7 @@ export interface Placement {
   modified: number;
 }
 
-/** A folder both engines make on C:, whether or not anything is placed in it. */
+/** A folder the engine makes on C:, whether or not anything is placed in it. */
 export interface Folder {
   /** Its DOS path's parts beneath `C:\`. */
   parts: string[];
@@ -537,8 +537,7 @@ export interface ProgramLayer {
  * (`kb/formats/layer.md`): each of its files where `planDrive` places it
  * over the base, under the same 8.3 names, written when the archive says;
  * and each folder it makes, `C:\GAMES` and those beneath, at the page's
- * stamp, as the TypeScript engine's volume makes a folder for a file put in
- * it. The stack of the base and this layer is the drive with the archive
+ * stamp, as a FAT16 volume makes a folder for a file put in it. The stack of the base and this layer is the drive with the archive
  * dropped loose on it, file for file and stamp for stamp. Refused where it
  * would replace a file of the base's.
  */
@@ -600,7 +599,7 @@ export async function programLayer(
 /**
  * Formats the machine's first disk and fills it as the plan places
  * everything, each file written when its archive says, as the Rust engine
- * fills its drive: the TypeScript engine's C: drive.
+ * fills its drive.
  */
 export async function fillDrive(machine: any, { placements, ...plan }: Plan): Promise<Drive> {
   const fileSystem: any = new FAT16(machine.disks[0]);

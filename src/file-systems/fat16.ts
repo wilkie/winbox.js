@@ -41,7 +41,7 @@ export class FAT16 extends FileSystem {
   declare static MAX_ROOT_ENTRIES: any;
   /**
    * The root's stamp, which no entry holds: what its `.` and `..` are
-   * listed with, as DOSBox lists a host's folder's (`find.ts`). The stamp
+   * listed with, as DOSBox lists a host's folder's. The stamp
    * this file system gives what it makes, until DOS's clock changes what
    * the root holds (`FileManager.changed`).
    */

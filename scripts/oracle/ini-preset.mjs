@@ -2,8 +2,8 @@
  * A probe's `WIN.INI` preset: `oracle/probes/<probe>.<preset>.ini`, settings
  * made before Windows starts, for what Windows reads only as it starts --
  * `[TrueType]`, `[fonts]`. `record.mjs --ini <preset>` records the probe with
- * it, as the fixture `<probe>-<preset>`, and both engines' replays make the
- * same settings (`test/win16/ini-preset.ts`, the Rust engine's
+ * it, as the fixture `<probe>-<preset>`, and the replays make the same
+ * settings (`test/win16/ini-preset.ts`, the Rust engine's
  * `tests/support/mod.rs`).
  *
  * The file is an INI file. Each key of each section is set in `WIN.INI`: its

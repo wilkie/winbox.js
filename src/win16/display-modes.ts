@@ -159,9 +159,8 @@
  * the screen: the six dark colours show at C0h, the grey of 80h at 248 as
  * its entry. Its `GetDriverResourceID` (ordinal 450, seg1
  * `2d6e`) answers every number unchanged at the 96 dots an inch this mode
- * runs at; at 120 it would add 2000 to 1, 3 and the numbers above 7F87h. See
- * `display-resource-id.ts`. The extents of the fixed mapping modes are the
- * VGA's, not recorded.
+ * runs at; at 120 it would add 2000 to 1, 3 and the numbers above 7F87h. The
+ * extents of the fixed mapping modes are the VGA's, not recorded.
  *
  * `8514`: IBM's 8514/a, Windows 3.1's own `8514.DRV`, as Setup's "8514/a"
  * installs it: 1024x768, large fonts. **Read out** of the driver, as it

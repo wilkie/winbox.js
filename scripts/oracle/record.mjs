@@ -13,7 +13,7 @@
  * stops and DOS comes back to the script that launched it. The whole run is
  * unattended from `win` to a file on disk.
  *
- * Standard mode (`win /s`), the mode both engines run in. `--mode enhanced`
+ * Standard mode (`win /s`), the mode WinBox runs in. `--mode enhanced`
  * starts 386 enhanced mode (`win /3`) instead, which DOSBox runs with the
  * same settings, and keeps its recordings apart (`MODES`).
  *
@@ -1010,7 +1010,7 @@ async function main() {
       ? null
       : [
           ...JSON.parse(await readFile(join(ROOT, 'corpus', 'manifest.json'), 'utf8')).programs,
-          /* And those placed by hand, which git ignores (`survey_test.ts`). */
+          /* And those placed by hand, which git ignores. */
           ...JSON.parse(
             await readFile(join(ROOT, 'corpus', 'manifest.local.json'), 'utf8').catch(
               () => '{"programs":[]}'

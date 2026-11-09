@@ -22,7 +22,7 @@ const OFF = 'off';
 const BOTH = 'on+off';
 const NONE = '';
 
-/** `CheckHorizTopology`, as the pseudocode states it and `scan-walk.ts` implements it. */
+/** `CheckHorizTopology`, as the pseudocode states it. */
 function stated(x0: number, y0: number, x1: number, y1: number, x2: number, y2: number) {
   if (y2 > y1) {
     if (y1 > y0) return ON;

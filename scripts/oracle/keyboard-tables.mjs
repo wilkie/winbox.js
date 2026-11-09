@@ -12,8 +12,7 @@
  * `0000`-`0087`), and the driver's data that `Inquire`, `GetKeyboardType`
  * and `ToAscii` read (seg11). The ANSI and OEM translations (seg10 `06fe`,
  * `079e`), the scan codes' virtual keys (seg11 `0048`) and the layout
- * `VkKeyScan` reads are `keyboard.rs`'s own. Until 2026-11-08 this wrote the
- * TypeScript engine's `src/win16/keyboard/tables.ts` too.
+ * `VkKeyScan` reads are `keyboard.rs`'s own.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';

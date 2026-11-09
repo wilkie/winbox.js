@@ -6,10 +6,10 @@
  * from jest (`test/run/page_files_test.ts`); `browse.ts` reads the drives
  * through them.
  *
- * C: is read from what the page has of it, the same whichever engine runs
- * it: the plan both engines fill it from (`Plan`: its folders, its files,
- * the folders a stack stamps) and the changes the engine tells against it
- * (`Engine.changes`), each folder or file as both engines put it there.
+ * C: is read from what the page has of it: the plan the engine fills it from
+ * (`Plan`: its folders, its files, the folders a stack stamps) and the
+ * changes the engine tells against it (`Engine.changes`), each folder or
+ * file as the engine puts it there.
  * A drive of images is read from its disk's image, as programs have
  * written it, with the page's own readers (`volumeOf`).
  */
@@ -168,7 +168,7 @@ function same(one: Change, other: Change | undefined) {
  * stamped, files written -- each change marked `kept` where it is the
  * change put back as C: was made (`given`), `changed` where it is not.
  * Folders made on the way to a file take the stamp the volume gives what
- * it makes, as both engines' drives do.
+ * it makes, as the engine's drive does.
  */
 export function driveTree(
   plan: Pick<Plan, 'folders' | 'placements' | 'stamps' | 'renamed'>,

@@ -5,7 +5,7 @@
  * (https://github.com/SingleStepTests/80386, captured from a 386EX: every
  * opcode under every operand- and address-size prefix it takes). The 386's
  * are kept as the suite publishes them, `.MOO.gz`, in
- * test/conformance/vectors386/, and read by `test/conformance/moo.ts`.
+ * test/conformance/vectors386/, and read by `crates/winbox-cpu/tests/conformance.rs`.
  *
  *   node scripts/fetch-cpu-tests.mjs --cpu 386         # a subset
  *   node scripts/fetch-cpu-tests.mjs --cpu 386 --all   # all of it, ~600 MiB
