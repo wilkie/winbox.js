@@ -112,7 +112,7 @@ What [[probe:popmax]] recorded that neither engine follows yet:
 
 ## In winbox.js
 
-- `CreateWindow` in `src/win16/user/CreateWindow.ts` sends the making messages. `minMaxInfo` in `src/win16/user/window-state.ts` fills `MINMAXINFO`, and `maximizeMade` maximizes a window made so.
+- `CreateWindow` in `src/win16/user/CreateWindow.ts` sends the making messages. `minMaxInfo` in `crates/winbox-win16/src/create.rs` fills `MINMAXINFO`, and `maximizeMade` maximizes a window made so.
 - `showRaster` in `window-state.ts` sends a showing's or a hiding's messages. It works out the family, the window each goes after, and whether it moved. `deliverActivation` in `activation.ts` takes the second placing between its two halves.
 - `Desktop.show` brings an owned window's owner up beneath it. What a window comes to show or leaves showing is made due as `SetWindowPos`'s list makes it (`beginPlacing`, `endPlacing`; [[topic:visible-regions]]). `unpaintedWhere` hands out `WM_PAINT` from the top down.
 - `sendNcPaint` in `erase.ts` makes the region `WM_NCPAINT` carries when only part of a frame is due.

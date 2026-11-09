@@ -27,4 +27,4 @@ topics: [kernel-internals, dynamic-link-libraries]
 
 ## Implementation
 
-**Implemented (a).** Both engines take CX and DS as given, make the heap with their own `LocalInit(0, 0, CX)` where CX is not nought, and leave ES KERNEL's data and SI 842Ah (`InitLib` in `src/win16/kernel/internals.ts`). See [[topic:kernel-internals]].
+**Implemented (a).** Both engines take CX and DS as given, make the heap with their own `LocalInit(0, 0, CX)` where CX is not nought, and leave ES KERNEL's data and SI 842Ah (`InitLib` in `crates/winbox-win16/src/kernel_calls/internals.rs`). See [[topic:kernel-internals]].

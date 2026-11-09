@@ -15,4 +15,4 @@ topics: [kernel-internals]
 
 ## Implementation
 
-`AllocCSToDSAlias` in `src/win16/kernel/selector-aliases.ts`, as `AllocDStoCSAlias` with the alias made data. See [[topic:kernel-internals]].
+`AllocCSToDSAlias` in `crates/winbox-win16/src/modules_kernel.rs`, as `AllocDStoCSAlias` with the alias made data. See [[topic:kernel-internals]].
