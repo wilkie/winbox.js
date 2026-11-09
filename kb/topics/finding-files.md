@@ -45,7 +45,7 @@ The search is one function in each engine: `searchPlaces` and `searchFile` in `s
 
 The environment winbox.js gives a program has no PATH, only `windir` ([[topic:task-startup]]), so out of the box the search ends at the program's directory. Windows' directory is a constant in winbox.js, so a program that writes over its environment does not lose it. Nothing records a program doing that apart from the probe.
 
-A place is listed to find a library in it (`findIn`, `Files::read_from`) by the path KERNEL would open, the place and a `\`: a program's directory in a root, `C:`, is the root. The TypeScript engine's FAT drive listed no root by a folder's path of one empty name, as `C:\` and `C:` parse, and `_SETUP.EXE`'s libraries beside it were not found ([[probe:rootlib]]).
+A place is listed to find a library in it (`findIn`, `Files::read_from`) by the path KERNEL would open, the place and a `\`: a program's directory in a root, `C:`, is the root. A folder's path of one empty name, as `C:\` and `C:` parse, lists the root, and `_SETUP.EXE`'s libraries beside it are found ([[probe:rootlib]]).
 
 Not followed:
 

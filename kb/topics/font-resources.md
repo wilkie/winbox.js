@@ -116,7 +116,7 @@ GDI keeps the fonts it realises in a cache: a local block (`[36Ah]`), an entry o
 | Wingdings at 20 realised, `WINGDING.FOT` removed                                                      | Wingdings leaves the family list at once. The DC's `GetTextFace` is empty, its height still 20; a new request maps to Symbol. |
 | MS Serif at 26 in a DC of two units to a pixel, `SERIFE.FON` removed, the font taken out, added again | After Small Fonts: taken out of a scaled DC, the font left the cache, and the file went.                                      |
 
-[[measured]] [[probe:fontver]] copies `DOSAPP.FON` and writes another version into its first `FONTDIR` entry, on the VGA and on the Hercules; both engines agree with all 24 of each, and the TypeScript engine replays the VGA's.
+[[measured]] [[probe:fontver]] copies `DOSAPP.FON` and writes another version into its first `FONTDIR` entry, on the VGA and on the Hercules; WinBox agrees with all 24 of each.
 
 | `dfVersion`         | VGA (`RC_BIGFONT`) | Hercules |
 | ------------------- | ------------------ | -------- |

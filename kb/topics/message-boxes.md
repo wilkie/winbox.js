@@ -50,4 +50,4 @@ Message boxes were drawn only on winbox.js's old DOM desktop. On the raster desk
 
 ## In winbox.js
 
-`src/win16/user/message-box.ts` builds the box and runs it with `dialogBoxTemplate`; a system-modal box with no icon or the hand goes to `sysErrorBox` in `crates/winbox-win16/src/sys_error_box.rs` (`systemErrorBox`; in Rust `user_calls/message_box.rs` and `sys_error_box.rs`). USER's strings, the buttons' words and the default title among them, are winbox.js's own, in `src/win16/user/strings.ts`, since no Windows file is shipped. They match `USER.EXE`'s string table, which `scripts/oracle/strings-table.mjs` makes them from.
+`crates/winbox-win16/src/user_calls/message_box.rs` builds the box and runs it; a system-modal box with no icon or the hand goes to `crates/winbox-win16/src/sys_error_box.rs`. USER's strings, the buttons' words and the default title among them, are winbox.js's own, in `crates/winbox-win16/src/user_misc.rs`, since no Windows file is shipped. They match `USER.EXE`'s string table, which `scripts/oracle/strings-table.mjs` makes them from.

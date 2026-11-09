@@ -136,4 +136,4 @@ Media Player and Sound Recorder delete items from their menus, and Windows Help 
 
 ## Implementation
 
-`AppendMenu.ts` has `AppendMenu`, `InsertMenu`, `ModifyMenu` and `ChangeMenu`. `menus.ts` lays out and paints a pop-up, and `frame.ts` paints the bar's selected item and the inverted box. `menu-loop.ts` is the modal loop, and `queue.ts` holds the order a program's messages come in, for `GetMessage`, `PeekMessage` and the menu alike. `test/raster/menus_test.ts` holds the drawing to the captures, and the conformance suite replays the probe.
+`crates/winbox-win16/src/menu_api.rs` has `AppendMenu`, `InsertMenu`, `ModifyMenu` and `ChangeMenu`. `crates/winbox-win16/src/menus.rs` lays out and paints a pop-up, and `crates/winbox-win16/src/frame.rs` paints the bar's selected item and the inverted box. `crates/winbox-win16/src/menu_loop.rs` is the modal loop, and `crates/winbox-win16/src/queue.rs` holds the order a program's messages come in, for `GetMessage`, `PeekMessage` and the menu alike. The conformance suite replays the probe.

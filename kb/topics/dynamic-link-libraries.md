@@ -124,7 +124,7 @@ A module's header says whether it has one data segment for all its instances (fl
 - [[read out]] KERNEL counts every program as having multiple data, whatever its header says. As it loads a module that is not a library, it sets bit 1 of the flags it keeps (`KRNL386.EXE` seg2 `17ee`). So the prologues of a program linked with one data segment are patched as any program's are, to three `nop`s, and `MakeProcInstance` makes it thunks.
 - [[measured]] [[probe:solodata]] is linked with one data segment (`oneautodata`, flags 201h). In memory its flags are 243h. Its exported hook's prologue is three `nop`s, and `MakeProcInstance` answers a thunk whose `mov ax` names the program's data segment. Given to `GetOpenFileName`, the hook finds the program's own data, with DS its data segment. Given without the thunk, it ran with `COMMDLG`'s data segment, and Windows never came back from it.
 - [[read out]] `COMMDLG` calls a hook with its own data segment in DS (`COMMDLG.DLL` seg2 `42f4`), not with the stack's as USER calls a window procedure. A hook finds its program's data only through its thunk.
-- [[measured]] winbox.js patched to `nop`s, and made thunks for, only a program whose header says it has multiple data. Media Player's hook for its File Open kept `mov ax, ds` and got no thunk, so it ran with `COMMDLG`'s data segment. The hook enables the file name, the files, the directories, the directory's name and the drives for the type of file chosen, from Media Player's own table of devices (`MPLAYER.EXE` seg2 `023c`): it read `COMMDLG`'s data as that table and disabled them all. Nothing in the dialog answered a click, and only the types' list and the buttons took the keys. [[probe:mplopen]] opens the dialog under Windows from outside and finds them all enabled, with a sound card and without one. The Rust engine agrees with all its records on both installations; the TypeScript engine, which has no sound card, with all of them on the VGA's.
+- [[measured]] winbox.js patched to `nop`s, and made thunks for, only a program whose header says it has multiple data. Media Player's hook for its File Open kept `mov ax, ds` and got no thunk, so it ran with `COMMDLG`'s data segment. The hook enables the file name, the files, the directories, the directory's name and the drives for the type of file chosen, from Media Player's own table of devices (`MPLAYER.EXE` seg2 `023c`): it read `COMMDLG`'s data as that table and disabled them all. Nothing in the dialog answered a click, and only the types' list and the buttons took the keys. [[probe:mplopen]] opens the dialog under Windows from outside and finds them all enabled, with a sound card and without one. The Rust engine agrees with all its records on both installations.
 - winbox.js keeps no module's header in memory, so `solodata`'s reading of the flags there is nought on both engines.
 
 ## What USER and GDI put in AX
@@ -162,8 +162,8 @@ A program's exported function takes its data segment from AX, so what the caller
 
 ## In winbox.js
 
-- `src/win16/library.ts` finds, places, patches and links a library.
-- `src/win16/commdlg/` and `crates/winbox-win16/src/commdlg/` are WinBox's `COMMDLG` send its exports there.
-- `Win16.startLibraries` runs the entry points from `InitTask`.
-- `libraryInstance` in `library.ts` (`library_instance` in `crates/winbox-win16/src/loader.rs`) gives a library its instance; `useOwn` and `releaseOwn` (`own_modules::use_own`, `release_own`) count WinBox's own libraries with no file.
-- `src/win16/user/props.ts` holds the window properties.
+- `crates/winbox-win16/src/loader.rs` places a program or library, and `crates/winbox-win16/src/linker.rs` links it.
+- `crates/winbox-win16/src/commdlg/` is WinBox's `COMMDLG` send its exports there.
+- `start_libraries` in `crates/winbox-win16/src/kernel.rs` runs the entry points from `InitTask`.
+- `library_instance` in `crates/winbox-win16/src/loader.rs` gives a library its instance; `own_modules::use_own` and `release_own` count WinBox's own libraries with no file.
+- `crates/winbox-win16/src/user_calls/props.rs` holds the window properties.

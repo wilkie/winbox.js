@@ -76,8 +76,8 @@ probes: [curves, mixmode, wedges, inframe, drawgaps]
 ## In winbox.js
 
 - `crates/winbox-raster/src/curves.rs` makes the points and the shapes.
-- `crates/winbox-raster/src/wedges.rs` makes the ellipse's turning points and cuts them, and `src/win16/gdi/wedges.ts` draws them.
+- `crates/winbox-raster/src/wedges.rs` makes the ellipse's turning points and cuts them, and `crates/winbox-win16/src/gdi/shapes.rs` draws them.
 - `crates/winbox-raster/src/polygon.rs` is the polygon walk that `Surface.fillPolygon` also uses.
-- `src/win16/gdi/Ellipse.ts` has the pen's size and draws the result: the brush as a `PatBlt`, the pen in its colour.
+- `crates/winbox-win16/src/gdi/shapes.rs` has the pen's size and draws the result: the brush as a `PatBlt`, the pen in its colour.
 
 Calculator draws its keys with `RoundRect`.
