@@ -6,14 +6,14 @@
  *
  *   node scripts/oracle/keyboard-tables.mjs
  *
- * Out: `src/win16/keyboard/tables.ts` -- the ANSI and OEM translations
- * (`KEYBOARD.DRV` seg10 `06fe`, `079e`) and the layout `VkKeyScan` reads (the
- * tables in seg2, their header in seg3 `0000`, the shifts in seg5 `0000`);
- * and, in it and in `crates/winbox-win16/src/keyboard_tables.rs` for the
- * Rust engine, what the rest of the driver reads: the keys' names
- * `GetKeyNameText` answers (seg9), the segment of tables `GetTableSeg`
- * answers (seg2 `0000`-`0087`), and the driver's data that `Inquire`,
- * `GetKeyboardType` and `ToAscii` read (seg11).
+ * Out: `crates/winbox-win16/src/keyboard_tables.rs`, what the driver reads
+ * besides its translations and layout: the keys' names `GetKeyNameText`
+ * answers (seg9), the segment of tables `GetTableSeg` answers (seg2
+ * `0000`-`0087`), and the driver's data that `Inquire`, `GetKeyboardType`
+ * and `ToAscii` read (seg11). The ANSI and OEM translations (seg10 `06fe`,
+ * `079e`), the scan codes' virtual keys (seg11 `0048`) and the layout
+ * `VkKeyScan` reads are `keyboard.rs`'s own. Until 2026-11-08 this wrote the
+ * TypeScript engine's `src/win16/keyboard/tables.ts` too.
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -36,17 +36,6 @@ function segment(number) {
   return bytes.subarray(at, at + (bytes.readUInt16LE(entry + 2) || 0x10000));
 }
 
-const hex = (data) => {
-  const words = [...data].map((byte) => `0x${byte.toString(16).padStart(2, '0')}`);
-  const lines = [];
-
-  for (let at = 0; at < words.length; at += 12) {
-    lines.push(`  ${words.slice(at, at + 12).join(', ')},`);
-  }
-
-  return `[\n${lines.join('\n')}\n]`;
-};
-
 /* The driver's data as it has it once started: seg11, with what NewTable
  * copies over it from seg3 (seg3 `0194`). */
 const data = Buffer.from(segment(11));
@@ -54,74 +43,7 @@ const data = Buffer.from(segment(11));
 segment(3).copy(data, 0x14, 0x00, 0x30);
 segment(3).copy(data, 0x54, 0x30, 0x5a);
 
-const dataWord = (at) => data[at] | (data[at + 1] << 8);
-const scanTable = dataWord(0x44);
-const scanLimit = dataWord(0x46);
-const numpad = dataWord(0xf7);
-
-const translations = segment(10);
 const tables = segment(2);
-const header = segment(3);
-const shifts = segment(5);
-const word = (at) => header[at] | (header[at + 1] << 8);
-
-const layout = [0, 1, 2, 3].map((n) => {
-  const count = word(0x02 + n * 2);
-  const keys = word(0x12 + n * 2);
-  const characters = word(0x22 + n * 2);
-
-  return {
-    keys: tables.subarray(keys, keys + count),
-    characters: tables.subarray(characters, characters + (n === 0 ? count * 2 : count)),
-    shift: shifts[n * 2],
-  };
-});
-
-writeFileSync(
-  join(ROOT, 'src', 'win16', 'keyboard', 'tables.ts'),
-  `'use strict';
-
-/**
- * The US keyboard's tables, winbox.js's own as the keyboard module is: no
- * Windows file is shipped. Made to match the Windows 3.1 the recordings are
- * made on by \`scripts/oracle/keyboard-tables.mjs\`.
- */
-
-/** ANSI to OEM: 01h to 1Fh, then 80h to FFh. See \`oem.ts\`. */
-export const ANSI_TO_OEM = Uint8Array.from(${hex(translations.subarray(0x6fe, 0x6fe + 160))});
-
-/** OEM to ANSI: 01h to 1Fh, then 80h to FFh. */
-export const OEM_TO_ANSI = Uint8Array.from(${hex(translations.subarray(0x79e, 0x79e + 160))});
-
-/**
- * Each scan code's virtual key, from 0 to \`SCAN_LIMIT\` and the byte after,
- * which \`MapVirtualKey\` reads (\`KEYBOARD.DRV\` seg11 \`0048\`).
- */
-export const SCAN_TO_VK = Uint8Array.from(${hex(data.subarray(scanTable, scanTable + scanLimit + 1))});
-
-/** The last scan code \`SCAN_TO_VK\` answers for. */
-export const SCAN_LIMIT = ${scanLimit};
-
-/** The numeric keypad's virtual keys, for scan codes 47h to 53h (seg11 \`00ea\`). */
-export const NUMPAD_VK = Uint8Array.from(${hex(data.subarray(numpad, numpad + 13))});
-
-/**
- * The layout \`VkKeyScan\` reads, as four tables: each key's virtual key, the
- * characters it types -- table 0 unshifted and shifted, in pairs -- and the
- * table's shift state. See \`scan.ts\`.
- */
-export const LAYOUT: { keys: Uint8Array; characters: Uint8Array; shift: number }[] = [
-${layout
-  .map(
-    (table) =>
-      `  {\n    keys: Uint8Array.from(${hex(table.keys)}),\n    characters: Uint8Array.from(${hex(table.characters)}),\n    shift: ${table.shift},\n  },`
-  )
-  .join('\n')}
-];
-`
-);
-
-console.log('src/win16/keyboard/tables.ts');
 
 /* The keys' names (seg9): the strings each index names (`01c7`), the scan
  * codes with a name and each one's index -- plain (`0261`, 2Fh of them),
@@ -167,26 +89,6 @@ const functionKeys = data.subarray(0xe4, 0xe4 + 6);
 const shiftTables = data.subarray(0x112, 0x112 + 8);
 const padDigits = data.subarray(0x11a, 0x11a + 12);
 
-const tsArray = (name, bytes, comment) =>
-  `/** ${comment} */\nexport const ${name} = Uint8Array.from(${hex(bytes)});\n`;
-
-writeFileSync(
-  join(ROOT, 'src', 'win16', 'keyboard', 'tables.ts'),
-  readFileSync(join(ROOT, 'src', 'win16', 'keyboard', 'tables.ts'), 'latin1') +
-    `
-/** The keys' names \`GetKeyNameText\` answers, by index (seg9 \`01c7\`). */
-export const KEY_NAMES: string[] = ${JSON.stringify(keyNames)};
-
-${Object.entries(nameTables)
-  .map(([name, bytes]) => tsArray(name, bytes, `\`GetKeyNameText\`'s \`${name}\` (seg9).`))
-  .join('\n')}
-${tsArray('TABLE_SEGMENT', tableSegment, "What `GetTableSeg`'s segment holds: seg2 `0000`-`0087`.")}
-${tsArray('INQUIRE', inquire, "`Inquire`'s six bytes (seg11 `0131`).")}
-${tsArray('FUNCTION_KEYS', functionKeys, 'Function keys of each keyboard type from 1 (seg11 `00e4`).')}
-${tsArray('SHIFT_TABLES', shiftTables, "Each shift state's table, doubled, FFh for none (seg11 `0112`).")}
-${tsArray('PAD_DIGITS', padDigits, 'The keypad digits for scan codes 47h-52h, FFh for none (seg11 `011a`).')}`
-);
-
 const rsArray = (name, bytes, comment) => {
   const words = [...bytes].map((byte) => `0x${byte.toString(16).padStart(2, '0')}`);
 
@@ -197,8 +99,7 @@ writeFileSync(
   join(ROOT, 'crates', 'winbox-win16', 'src', 'keyboard_tables.rs'),
   `//! What the US keyboard driver reads besides its layout, WinBox's own as
 //! the keyboard module is: made to match the Windows 3.1 the recordings
-//! are made on by \`scripts/oracle/keyboard-tables.mjs\`, with
-//! \`src/win16/keyboard/tables.ts\` its TypeScript twin. Do not edit by
+//! are made on by \`scripts/oracle/keyboard-tables.mjs\`. Do not edit by
 //! hand.
 
 /// The keys' names \`GetKeyNameText\` answers, by index (seg9 \`01c7\`).

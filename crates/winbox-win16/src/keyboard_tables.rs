@@ -1,7 +1,6 @@
 //! What the US keyboard driver reads besides its layout, WinBox's own as
 //! the keyboard module is: made to match the Windows 3.1 the recordings
-//! are made on by `scripts/oracle/keyboard-tables.mjs`, with
-//! `src/win16/keyboard/tables.ts` its TypeScript twin. Do not edit by
+//! are made on by `scripts/oracle/keyboard-tables.mjs`. Do not edit by
 //! hand.
 
 /// The keys' names `GetKeyNameText` answers, by index (seg9 `01c7`).
