@@ -1794,11 +1794,12 @@ pub const KNOWN_GAPS: &[(&str, &str)] = &[
     ),
     // `environ` reads its own environment: DOSBox's `PATH`, `COMSPEC` and
     // `BLASTER` before `windir`, in Windows; WinBox's environment holds
-    // `windir` alone. And the program was started from `C:\WINDOWS` by the
+    // `windir` alone, by the owner's decision (2026-11-09): WinBox has no
+    // Z: and no COMMAND.COM for them to name. And the program was started from `C:\WINDOWS` by the
     // recorder, from `C:\` here; its prefix's selector is WinBox's.
     (
         "environ:variable",
-        "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER",
+        "WinBox's environment holds windir alone, not DOSBox's PATH, COMSPEC and BLASTER (the owner's decision, 2026-11-09)",
     ),
     (
         "environ:count",

@@ -21,9 +21,9 @@ fn a_task_environment_is_the_variables_a_zero_a_count_of_one_and_the_kernel_path
 /// `BLASTER` -- where the nought that ends them lands at 75 and the count
 /// after it, as `environ` recorded it.
 #[test]
-#[ignore = "finding: the Rust engine's task environment has no DOS host variables \
-            (task.rs's task_environment, `windir` alone), where Windows under DOSBox \
-            has PATH, COMSPEC and BLASTER before it (environ's records)"]
+#[ignore = "decided: WinBox's task environment holds `windir` alone (the owner, \
+            2026-11-09), where Windows under DOSBox has PATH, COMSPEC and BLASTER before \
+            it (environ's records): WinBox has no Z: and no COMMAND.COM for them to name"]
 fn a_task_environment_puts_windir_after_the_dos_hosts_variables() {
     let Some((_, records)) = support::run("environ") else {
         return;
