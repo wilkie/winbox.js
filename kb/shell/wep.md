@@ -15,4 +15,4 @@ source: crates/winbox-win16/src/shell.rs
 
 ## Implementation
 
-1. WinBox writes its registration database as it changes ([[topic:registration-database]]). `src/win16/shell.ts`'s table; the Rust engine's `shell.rs`.
+1. WinBox writes its registration database as it changes ([[topic:registration-database]]). `crates/winbox-win16/src/shell.rs`'s table; the Rust engine's `shell.rs`.

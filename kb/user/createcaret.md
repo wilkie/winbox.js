@@ -27,4 +27,4 @@ topics: [edit-controls]
 
 ## Implementation
 
-`src/win16/user/caret.ts` holds `CreateCaret`, `DestroyCaret`, `SetCaretPos`, `GetCaretPos`, `HideCaret`, `ShowCaret`, `SetCaretBlinkTime` and `GetCaretBlinkTime`. The caret inverts its rectangle of the window's client area with the raster operation `DSTINVERT`. Under a replay's virtual clock, where every timer is always due, it does not blink. Before this, all eight were stubs.
+`crates/winbox-win16/src/caret.rs` holds `CreateCaret`, `DestroyCaret`, `SetCaretPos`, `GetCaretPos`, `HideCaret`, `ShowCaret`, `SetCaretBlinkTime` and `GetCaretBlinkTime`. The caret inverts its rectangle of the window's client area with the raster operation `DSTINVERT`. Under a replay's virtual clock, where every timer is always due, it does not blink. Before this, all eight were stubs.

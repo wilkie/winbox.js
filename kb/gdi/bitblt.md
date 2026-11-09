@@ -28,7 +28,7 @@ topics: [display-drivers, printer-drivers]
 
 ## Implementation
 
-A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`src/raster/raster-op.ts`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
+A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`crates/winbox-raster/src/raster_op.rs`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
 
 A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. A source that is the destination's own pixels is read whole before anything is written, in both engines, as the driver's copy comes out. Not yet handled: the 256-colour index order, which is not recorded.
 

@@ -19,7 +19,7 @@ A program prints by asking WIN.INI for the default printer, making a device cont
 
 ## winbox.js's printer
 
-A Windows printer driver on the drive, such as the PostScript driver, is loaded and run as Windows' GDI runs it ([[topic:printer-drivers]]). For a machine with none, winbox.js brings its own: a driver called `WBPRINT`, the device "WinBox Printer" (`src/win16/printer.ts`). It draws a page as a bitmap of US Letter at 300 dots an inch in the sixteen colours, with GDI's own drawing. [[fn:GDI.GetDeviceCaps]] answers its sizes for its device context. At the end of a document it hands the pages on as a PDF: into the file its port names, or, for a port that is a device such as `LPT1:`, to the page the emulator runs in (`onPrinted`). It calls the abort procedure as it writes each page and the document. It is installed as Setup installs a printer, by its entries in WIN.INI (`installPrinter`).
+A Windows printer driver on the drive, such as the PostScript driver, is loaded and run as Windows' GDI runs it ([[topic:printer-drivers]]). For a machine with none, winbox.js brings its own: a driver called `WBPRINT`, the device "WinBox Printer" (`crates/winbox-win16/src/printer.rs`). It draws a page as a bitmap of US Letter at 300 dots an inch in the sixteen colours, with GDI's own drawing. [[fn:GDI.GetDeviceCaps]] answers its sizes for its device context. At the end of a document it hands the pages on as a PDF: into the file its port names, or, for a port that is a device such as `LPT1:`, to the page the emulator runs in (`onPrinted`). It calls the abort procedure as it writes each page and the document. It is installed as Setup installs a printer, by its entries in WIN.INI (`installPrinter`).
 
 ## Windows' printer drivers
 

@@ -95,4 +95,4 @@ The control's state is kept in the window's own bytes, whatever the class is cal
 
 ## Implementation
 
-`paintControl` in `src/win16/user/controls.ts` draws each control through the `Painter` that also paints window frames. `control-classes.ts` holds the classes' window procedures, and `test/raster/desktop_test.ts` holds each control's block of the capture to what the desktop paints. The conformance suite replays the whole window through the exports: `CreateWindow` for each control, [[fn:USER.SendDlgItemMessage]] for the checks and strings, and the probe's own message loop.
+`paintControl` in `crates/winbox-win16/src/controls.rs` draws each control through the `Painter` that also paints window frames. `control-classes.ts` holds the classes' window procedures, and `test/raster/desktop_test.ts` holds each control's block of the capture to what the desktop paints. The conformance suite replays the whole window through the exports: `CreateWindow` for each control, [[fn:USER.SendDlgItemMessage]] for the checks and strings, and the probe's own message loop.

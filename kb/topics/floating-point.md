@@ -27,4 +27,4 @@ A program built for floating point is written for the coprocessor. Each of its i
 
 ## In winbox.js
 
-`src/emulator/x87.ts` has the unit, and `test/emulator/x87_test.ts` has its instruction tests. `src/win16/win87em.ts` and `src/win16/win87em/emulator.ts` are WIN87EM, and `test/win16/win87em_test.ts` tests the fixups and the emulator. The machine's `coprocessor` option chooses. The first version indexed the physical registers where the 387 addresses them from `TOP`. It never read the control word's rounding, and it threw on most of the `D9`, `DB`, `DD` and `DF` groups. Calculator stopped at the first of those it reached.
+`src/emulator/x87.ts` has the unit, and `test/emulator/x87_test.ts` has its instruction tests. `crates/winbox-win16/src/win87em.rs` and `src/win16/win87em/emulator.ts` are WIN87EM, and `test/win16/win87em_test.ts` tests the fixups and the emulator. The machine's `coprocessor` option chooses. The first version indexed the physical registers where the 387 addresses them from `TOP`. It never read the control word's rounding, and it threw on most of the `D9`, `DB`, `DD` and `DF` groups. Calculator stopped at the first of those it reached.

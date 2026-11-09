@@ -31,7 +31,7 @@ The device layer itself -- how drivers are installed, numbered and sent messages
 ## Error texts
 
 - [[measured]] [[fn:MMSYSTEM.waveOutGetErrorText]] and [[fn:MMSYSTEM.waveInGetErrorText]] answer 0 and copy the error's text, for 0, 2, 6 and 32: "The specified command was carried out.", "A device ID has been used that is out of range for your system.", "There is no driver installed on your system." and the text for an unsupported format.
-- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js keeps them itself, with MCI's device types and words, since no Windows file is shipped (`src/win16/mmsystem/strings.ts`).
+- The texts are `MMSYSTEM.DLL`'s string table, numbered as the errors are: 0 to 11 for the general errors, 32 to 35 for the waveform ones, 64 to 69 for MIDI, and from 257 for MCI. winbox.js keeps them itself, with MCI's device types and words, since no Windows file is shipped (`crates/winbox-win16/src/mmsystem/strings.rs`).
 - Not yet measured: the text for an error outside those numbers, which the documentation says answers `MMSYSERR_BADERRNUM`, and a buffer too small for the text.
 
 ## Why it mattered
@@ -113,4 +113,4 @@ What the card plays is handed to the host with its rate, channels and bits: winb
 
 The device layer is `crates/winbox-win16/src/mmsystem/devices.rs`: the drivers installed and numbered, the handles, the messages. What MMSYSTEM checks first is `crates/winbox-win16/src/mmsystem/checks.rs`; the waveform, MIDI and auxiliary calls `wave`, `midi` and `auxiliary`; `DriverCallback` `callback`. The TypeScript engine has no driver of its own and installs only drivers from files, which run on the processor; the Rust engine has its own sound card as well (`wbsound`).
 
-MCI is `src/win16/mmsystem/mci.ts`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `src/win16/mmsystem/mci-drivers.ts`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.
+MCI is `crates/winbox-win16/src/mmsystem/mci.rs`. `MCIWAVE.DRV` and `MCISEQ.DRV` are winbox.js's own drivers, in `crates/winbox-win16/src/mmsystem/mci_drivers.rs`, as `TIMER.DRV` is. They are found by their files' names with no file on the drive, and their names are their own. They open files as recorded below.

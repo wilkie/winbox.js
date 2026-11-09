@@ -46,6 +46,6 @@ While a journal playback hook plays, the mouse's own moves are lost and the curs
 
 ## In winbox.js
 
-`RasterInput.nudge` in `src/win16/user/raster-input.ts` makes the move, as the mouse moving to where it already is would. It is called as `ShowWindow`, `SetWindowPos` and `CreateWindow`'s showing end, from `SetCursorPos`, as `ReleaseCapture` lets go of the mouse, as a menu's loop ends, and as a journal hook is put in. It puts the move in the system queue, over a move at its end not yet taken, as the mouse's own moves are ([[topic:system-queue]]).
+`RasterInput.nudge` in `crates/winbox-win16/src/raster_input.rs` makes the move, as the mouse moving to where it already is would. It is called as `ShowWindow`, `SetWindowPos` and `CreateWindow`'s showing end, from `SetCursorPos`, as `ReleaseCapture` lets go of the mouse, as a menu's loop ends, and as a journal hook is put in. It puts the move in the system queue, over a move at its end not yet taken, as the mouse's own moves are ([[topic:system-queue]]).
 
 The move is hit-tested as the mouse's own moves are, the window under it asked with `WM_NCHITTEST` ([[topic:hit-testing]]) and then for the cursor with `WM_SETCURSOR` ([[topic:cursor]]). A menu's pop-up taken off the screen as the menu ends is a window hidden too: [[probe:curerr]]'s window, its menu bar pressed and the menu cancelled, was sent a move on the bar after. winbox.js makes the move as its menu loop ends, if a pop-up was put up.

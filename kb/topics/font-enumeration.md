@@ -103,6 +103,6 @@ A program's exported procedure takes its data segment from AX ([[topic:dynamic-l
 
 - `src/win16/gdi/EnumFontFamilies.ts` walks the two tables.
 - `FontManager.listedEntries` and `trueTypeDirectory` in `src/win16/font-manager.ts` hold them.
-- `readFontResource` in `src/raster/font-resource.ts` reads a stub's directory entry and names.
+- `readFontResource` in `crates/winbox-raster/src/font_resource.rs` reads a stub's directory entry and names.
 - `fontDirectoryOrder` in `src/win16/font-directory.ts` puts the boot fonts in GDI's order.
 - `chosen` and `enum_font_families` in `crates/winbox-win16/src/gdi/text/enumerate.rs` are the Rust engine's walk. It runs [[probe:enumfam]] itself, where the TypeScript engine replays it through its exports. It agreed with only 29 records on each display until [[fn:KERNEL.lstrcpyn]] was more than a stub: the probe copies each face, full name and style with it. Now all four displays agree in full in both engines.

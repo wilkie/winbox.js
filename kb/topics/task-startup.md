@@ -66,6 +66,6 @@ A program started by another, and how the programs share the processor, are in [
 
 `initTask` in `src/win16.ts` hands `WinMain` its data segment's selector less one as the instance, and both selectors resolve to the task.
 
-`postQuit` in `src/win16/user/queue.ts` keeps the quit flag, and `Win16.exitTask` ends a task that returns to DOS. The conformance suite replays [[probe:quitord]] through the exports, and all six of its records agree. Before this, `DestroyWindow` sent nothing, and `WM_QUIT` had never been given a number, so no program ever stopped.
+`postQuit` in `crates/winbox-win16/src/queue.rs` keeps the quit flag, and `Win16.exitTask` ends a task that returns to DOS. The conformance suite replays [[probe:quitord]] through the exports, and all six of its records agree. Before this, `DestroyWindow` sent nothing, and `WM_QUIT` had never been given a number, so no program ever stopped.
 
 Two more things Notepad needed before it could open a window. It imports `SHELL.DLL` and `KEYBOARD.DRV`, and calls `DragAcceptFiles` early. Both are now modules in winbox.js, with the ordinals and names of the installation's own export tables. Only `DragAcceptFiles` does anything; the rest are stubs, and the trace marks them.

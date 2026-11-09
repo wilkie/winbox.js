@@ -50,4 +50,4 @@ An atom is a number that stands for a string. Two programs that agree on a strin
 
 ## In winbox.js
 
-`src/win16/atoms.ts` holds the tables and the eight functions. `src/win16/user/RegisterWindowMessage.ts` holds the table of registered names, which `RegisterClipboardFormat` shares.
+`crates/winbox-win16/src/atoms.rs` holds the tables and the eight functions. `src/win16/user/RegisterWindowMessage.ts` holds the table of registered names, which `RegisterClipboardFormat` shares.

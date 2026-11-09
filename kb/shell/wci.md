@@ -27,4 +27,4 @@ topics: [user-internals]
 
 ## Implementation
 
-**Not applicable (c), with the answer of a call.** Only SHELL's About box reaches it, through the subclass. Both engines answer `CallWindowProc` of nought, the procedure WinBox's About box never keeps, which is nought (`WCI` in `src/win16/shell/internal-procs.ts`). Not done: the About box's credits. See [[topic:user-internals]].
+**Not applicable (c), with the answer of a call.** Only SHELL's About box reaches it, through the subclass. Both engines answer `CallWindowProc` of nought, the procedure WinBox's About box never keeps, which is nought (`WCI` in `crates/winbox-win16/src/shell/internal_procs.rs`). Not done: the About box's credits. See [[topic:user-internals]].

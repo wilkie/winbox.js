@@ -133,7 +133,7 @@ Program Manager and File Manager are MDI programs. Each has a frame window with 
 
 ## In winbox.js
 
-- `src/win16/user/mdi.ts` holds the class, its messages and the default procedures.
+- `crates/winbox-win16/src/mdi.rs` holds the class, its messages and the default procedures.
 - `src/win16/user/placement.ts` holds `SetWindowPlacement`.
-- `showRaster` in `src/win16/user/window-state.ts` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
+- `showRaster` in `crates/winbox-win16/src/window_state.rs` (`show_raster` in `window_state.rs`) places a child minimized, maximized or restored as `MinMaximize` does and sends it `WM_CHILDACTIVATE`.
 - `Desktop.maximize` fills a child's parent.

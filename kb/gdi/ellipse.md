@@ -31,4 +31,4 @@ topics: [ellipses, polygon-fill, non-square-pixels]
 
 ## Implementation
 
-`Ellipse` and [[fn:GDI.RoundRect]] share `paintShape` in `src/win16/gdi/Ellipse.ts`. It works out the pen's size, has `shapeOf` in `src/raster/curves.ts` make the shape, paints the brush's rows as a `PatBlt` would, and sets the pen's pixels in its colour. Before this, `Ellipse` was a stub.
+`Ellipse` and [[fn:GDI.RoundRect]] share `paintShape` in `src/win16/gdi/Ellipse.ts`. It works out the pen's size, has `shapeOf` in `crates/winbox-raster/src/curves.rs` make the shape, paints the brush's rows as a `PatBlt` would, and sets the pen's pixels in its colour. Before this, `Ellipse` was a stub.

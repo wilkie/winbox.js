@@ -22,4 +22,4 @@ topics: [kernel-internals, programs-and-their-files]
 
 ## Implementation
 
-A retail no-op in both engines, popping two bytes (`nothing` in `crates/winbox-win16/src/kernel_calls/retail.rs`). WinBox's loader works from the module's image as given to it (`src/win16/loader.ts`), not through a DOS handle in KERNEL's prefix. [[inferred]] No handle of a module's file is left open for a program to run into. If WinBox's file layer turns out to hold a module's file open against writes, this should let it go instead. See [[topic:kernel-internals]].
+A retail no-op in both engines, popping two bytes (`nothing` in `crates/winbox-win16/src/kernel_calls/retail.rs`). WinBox's loader works from the module's image as given to it (`crates/winbox-win16/src/loader.rs`), not through a DOS handle in KERNEL's prefix. [[inferred]] No handle of a module's file is left open for a program to run into. If WinBox's file layer turns out to hold a module's file open against writes, this should let it go instead. See [[topic:kernel-internals]].

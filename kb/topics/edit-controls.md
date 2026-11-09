@@ -114,7 +114,7 @@ Password characters, and `EM_GETLINE` and the rest of the messages. A single-lin
 
 ## In winbox.js
 
-- `src/win16/user/edit.ts` handles the messages.
-- `src/win16/user/edit-undo.ts` keeps what both kinds of control have to undo.
-- `Desktop.editLayout` and `#paintEdit` in `src/win16/user/desktop.ts` lay the control out and draw it.
-- `src/win16/user/caret.ts` is the caret.
+- `crates/winbox-win16/src/edit.rs` handles the messages.
+- `crates/winbox-win16/src/edit_undo.rs` keeps what both kinds of control have to undo.
+- `Desktop.editLayout` and `#paintEdit` in `crates/winbox-win16/src/desktop.rs` lay the control out and draw it.
+- `crates/winbox-win16/src/caret.rs` is the caret.

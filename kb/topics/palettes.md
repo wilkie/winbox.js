@@ -87,4 +87,4 @@ USER's `SelectPalette` and `RealizePalette` are thin: each decides what USER dec
 
 ## In winbox.js
 
-`src/win16/gdi/palettes.ts`, and `src/raster/palette-colour.ts` for what a colour given as a palette index draws as.
+`crates/winbox-win16/src/gdi/palettes.rs`, and `crates/winbox-raster/src/palette_colour.rs` for what a colour given as a palette index draws as.

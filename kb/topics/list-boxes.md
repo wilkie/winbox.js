@@ -82,6 +82,6 @@ Through `SendMessage` it fills them, searches them, selects, keys, clicks and sc
 
 ## In winbox.js
 
-- `src/win16/user/listbox.ts` handles the messages.
+- `crates/winbox-win16/src/listbox.rs` handles the messages.
 - `control-classes.ts` gives it the desktop and its owner.
 - `Desktop.listText`, `listFocus` and `listErase` draw it.

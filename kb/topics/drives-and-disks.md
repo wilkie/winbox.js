@@ -272,7 +272,7 @@ The owner's decisions (2026-10-22):
 
 ## In winbox.js
 
-- `src/win16/kernel/GetDriveType.ts` and `src/win16/user/wnet.ts` hold the Windows calls; the Rust engine's `drive_type` is in `modules_kernel.rs`.
+- `src/win16/kernel/GetDriveType.ts` and `crates/winbox-win16/src/wnet.rs` hold the Windows calls; the Rust engine's `drive_type` is in `modules_kernel.rs`.
 - `src/dos/syscall/diskSpace.ts` and `src/dos/syscall/ioctl.ts` hold the DOS functions, and `DOS.absoluteDisk` and `DOS.multiplexInterrupt` in `src/dos.ts` the interrupts; the Rust engine's are `drive_ioctl` in `dos.rs` and `multiplex_interrupt` in `run.rs`.
 - A FAT disk image is `FatVolume` (`crates/winbox-machine/src/files/fat.rs`, `crates/winbox-machine/src/files/mbr.rs`) and `FATImage` (`src/file-systems/fat-image.ts`), [[format:fat]]; what is written to it, an `Overlay` (`crates/winbox-machine/src/files/overlay.rs`) and an `OverlayDisk` (`src/file-systems/overlay-disk.ts`). An ISO 9660 disc is `IsoVolume` (`crates/winbox-machine/src/files/iso.rs`) and `ISO9660` (`src/file-systems/iso9660.ts`), [[topic:cd-rom]].
 - A drive's kind is the `Volume` trait's (`crates/winbox-machine/src/files.rs`): `removable`, `remote`, `label`, `media_byte`, `listing`; `Files::has_disk` and `Files::floppy_disks` from them. The TypeScript engine's `FileSystem` has the same getters (`src/file-system.ts`).

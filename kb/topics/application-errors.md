@@ -66,6 +66,6 @@ How it is answered:
 
 ## In winbox.js
 
-`src/win16/kernel/fault.ts` takes the fault, `src/win16/kernel/instruction-length.ts` finds the instruction's length, and `src/win16/user/sys-error-box.ts` draws the box and waits for its answer. While it is up, the mouse and the keyboard go to it alone (`RasterInput.modal`), and no task has the processor. The processor now checks a segment register as it is loaded: an empty or unsuitable descriptor faults, as `FFF7h` does on Windows.
+`crates/winbox-win16/src/fault.rs` takes the fault, `crates/winbox-win16/src/instruction_length.rs` finds the instruction's length, and `crates/winbox-win16/src/sys_error_box.rs` draws the box and waits for its answer. While it is up, the mouse and the keyboard go to it alone (`RasterInput.modal`), and no task has the processor. The processor now checks a segment register as it is loaded: an empty or unsuitable descriptor faults, as `FFF7h` does on Windows.
 
 Not followed: a debugger's Cancel, Dr. Watson, the other faults' boxes (a stack fault, an illegal instruction), and a fault in KERNEL's or USER's own code, which winbox.js has none of.

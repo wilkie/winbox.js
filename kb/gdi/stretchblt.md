@@ -33,7 +33,7 @@ topics: [accessories, printer-drivers]
 
 ## Implementation
 
-`src/raster/stretch.ts` has the column and row rules, which USER's scroll bar arrows share. `StretchBlt` copies the source rectangle into a bitmap of its own format, builds the stretched bitmap in the destination's size by those rules and the stretch mode, and hands it to the same raster-operation engine as [[fn:GDI.BitBlt]], so the brush and the conversions between monochrome and colour are the same.
+`crates/winbox-raster/src/stretch.rs` has the column and row rules, which USER's scroll bar arrows share. `StretchBlt` copies the source rectangle into a bitmap of its own format, builds the stretched bitmap in the destination's size by those rules and the stretch mode, and hands it to the same raster-operation engine as [[fn:GDI.BitBlt]], so the brush and the conversions between monochrome and colour are the same.
 
 ## On a printer's context
 
