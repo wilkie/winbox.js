@@ -32,15 +32,15 @@ Some questions have no answer a program can read, such as how the TrueType inter
 
 ## Replaying it
 
-`test/oracle/replay.ts` turns each record back into a call on winbox.js. An adapter in `ADAPTERS`, keyed by the record's function name, takes the parsed arguments, calls the implementation, and returns the result formatted exactly as the probe formatted it. A record with no adapter is counted as not replayed, not as agreeing. The site shows those counts, so a probe without adapters is visible for what it is.
+The replay runs each fixture's probe whole on WinBox's engine, the Rust one, set up as the oracle ran it, and holds each function's records to the ones Windows wrote: `crates/winbox-win16/tests/conformance.rs`, one trial a fixture, its probe run once.
 
 ```shell
-npx jest test/oracle/conformance -t "<name> against"
+cargo test --release -p winbox-win16 --test conformance -- <name>
 ```
 
-A disagreement that cannot be fixed yet goes into `KNOWN_GAPS` in the same file. Its key is `probe:function`, or `probe-display:function` for one display. Its value says what is wrong and by how many records. The test then expects that function to fail, and it fails the suite once the function starts agreeing, so the entry must come out when the fix lands. A function with an open gap cannot be marked exact.
+A disagreement that cannot be fixed yet goes into `KNOWN_GAPS` in `crates/winbox-win16/tests/support/mod.rs`. Its key is `probe:function`, or `probe-display:function` for one display. Its value says what is wrong and by how many records. The trial then excuses that function, and fails once the function starts agreeing, so the entry must come out when the fix lands. A function with an open gap cannot be marked exact. A probe that cannot be built yet goes into `UNBUILT` there, with its reason.
 
-The full suite, `npx jest`, must pass before anything is committed. When it replays every fixture, it rewrites `kb/data/conformance.json`, the report the site's counts and badges come from. Commit that file with the fixture. Only fixtures git tracks are counted, so stage a new fixture before the run. A page that cites a new probe fails the knowledge base test in that first run, because the report gains the probe only when the run ends. The second full run is the one that must pass.
+The whole replay, `cargo test --release -p winbox-win16 --test conformance`, must pass before anything is committed. When it runs every fixture, it rewrites `kb/data/conformance.json`, the report the site's counts and badges come from. Commit that file with the fixture. Only fixtures git tracks are counted, so stage a new fixture before the run; a page that cites a probe the report lacks fails the knowledge base's build.
 
 ## Writing a page
 
@@ -48,7 +48,7 @@ Pages are Markdown files in `kb/`. `kb/README.md` has the full schema.
 
 - A function's page is `kb/<module>/<name>.md`. A topic is in `kb/topics/`, a file format in `kb/formats/`, and a guide in `kb/guides/`.
 - The front matter names the page, and a function's page gives its ordinal and its status for each Windows version. The build checks the ordinal against the Windows 3.1 binaries.
-- A status must be backed by the recordings. `exact` needs at least one cited probe, and every record of every cited probe must agree with no known gap. `partial` needs a cited probe that has been recorded. `unrecorded` means winbox.js implements the function but nothing has recorded Windows doing it. `stub` means winbox.js does not implement it. The build refuses a page whose status the conformance report does not support.
+- A status must be backed by the recordings. `exact` needs at least one cited probe, and every record of every cited probe must agree with no known gap. `partial` needs a cited probe that has been recorded. `unrecorded` means WinBox implements the function but nothing has recorded Windows doing it. `stub` means WinBox does not implement it. The build refuses a page whose status the conformance report does not support.
 - Put an evidence label before each claim: `[[measured]]` for a recording, `[[read out]]` for a binary (cite the module, segment and offset), `[[documented]]` for a published specification, `[[inferred]]` for reasoning nothing has confirmed, and `[[refused]]` for a reading that was tried and failed (give its count). Something nobody knows yet is written as "Not yet measured".
 - Link with references the build resolves, or it fails. The forms are `[[fn:GDI.TextOut]]`, `[[topic:turned-text]]`, `[[format:fnt]]`, `[[guide:reproducing]]`, `[[probe:smearmod]]`, and `[[fonts:8u]]` for a section of `FONTS.md`. Every page a reference lands on lists the pages that link to it.
 - `FONTS.md` is the long-form working notes behind the font pages. A font finding goes into both: the derivation in `FONTS.md`, and the rule with its evidence on the page.

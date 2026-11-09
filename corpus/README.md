@@ -1,14 +1,16 @@
 # The corpus
 
-Windows 3.x programs winbox.js is tried against, beyond the programs that come with Windows. They find what the probes do not think to ask.
+Windows 3.x programs WinBox is tried against, beyond the programs that come with Windows. They find what the probes do not think to ask.
 
-Nothing of theirs is stored here. `manifest.json` says where each is published — a URL, or an archive.org item and file from the [Windows 3.x games collection](https://archive.org/details/softwarelibrary_win3_games) — with the SHA-256 of the archive fetched, archive.org's own SHA-1 and MD5 where it has them, the program to run inside it, what it imports, and what kind of thing it exercises. That is enough to fetch the same bytes again, anywhere.
+Nothing of theirs is stored here. `manifest.json` says where each is published — a URL, or an archive.org item and file from the [Windows 3.x games collection](https://archive.org/details/softwarelibrary_win3_games) — with the SHA-256 of the archive fetched, archive.org's own SHA-1 and MD5 where it has them, the program to run inside it, what it imports, and what kind of thing it exercises. That is enough to fetch the same bytes again, anywhere. Programs of your own can be listed in `manifest.local.json`, which is never committed.
 
 ```sh
-node scripts/corpus/fetch.mjs            # fetch, check and unpack everything into corpus/programs/
+node scripts/corpus/fetch.mjs                # fetch, check and unpack everything into corpus/programs/
 node scripts/corpus/fetch.mjs skifree hearts # just these
-CORPUS=1 npx jest test/corpus --forceExit            # run each, and report
-CORPUS=skifree,hearts npx jest test/corpus --forceExit
+cargo build --release -p winbox-win16 --example trace --example corpus
+target/release/examples/corpus                         # run each, held to corpus/reports
+target/release/examples/corpus --write corpus/reports  # run each, and write its report
+target/release/examples/corpus --base assets           # on the asset bundle's base, not the installation
 ```
 
 What real Windows shows for a program is recorded under DOSBox, by the `launch` probe, which starts it from its own folder, as the survey does:
@@ -20,7 +22,7 @@ node scripts/oracle/record.mjs launch --corpus skifree --shoot starting:10   # a
 
 The screens go to `corpus/reports/windows/<id>.png`, beside the survey's own `corpus/reports/<id>.png`, so the two can be compared.
 
-The survey runs each program on the raster desktop from its own folder, `C:\CORPUS\<ID>`, as Program Manager starts a program, for ten seconds, as long as Windows' screen had run for. The seconds are the machine's virtual clock's (`src/emulator/clock.ts`) — the instructions run, not the host's time — so a program that reads the time sees the same each run, and a screen that changes changed because the code did. Its screen has the cursor drawn in, as the display driver draws it and DOSBox's screenshot shows it (`withCursor`, `src/win16/user/cursor-api.ts`). It writes `corpus/reports/<id>.json` — how many calls it made, which reach nothing yet, whether it faulted or ended, its last calls — and `<id>.png`, the screen. `corpus/reports/summary.md` ranks what is missing by how many programs want it.
+The survey runs each program on the Rust engine (`crates/winbox-win16/examples/corpus.rs`, each program a run of the `trace` example), on the raster desktop, from its own folder, `C:\CORPUS\<ID>`, as Program Manager starts a program, for ten seconds, as long as Windows' screen had run for. The seconds are the machine's virtual clock's (`crates/winbox-machine/src/clock.rs`) — the instructions run, not the host's time — so a program that reads the time sees the same each run, and a screen that changes changed because the code did. Its screen has the cursor drawn in, as the display driver draws it and DOSBox's screenshot shows it (`crates/winbox-win16/src/present.rs`). With `--write`, it writes `<id>.json` — how many calls it made, which reach nothing yet, whether it faulted or ended, its last calls — `<id>.calls.txt`, the calls it made in order, without their arguments, and `<id>.png`, the screen (`<id>.boxN.png` for each box USER put up). Without it, each run is held to the reports already in `corpus/reports`: its calls in order and its screens pixel for pixel. The reports are local, as the rest of the corpus is, and never committed.
 
 ## Choosing programs
 
@@ -34,6 +36,5 @@ An entry with `source.image` is a disc image (`"iso"`), fetched to `corpus/cache
 
 ```sh
 node scripts/corpus/fetch.mjs widget
-CORPUS=widget npx jest test/corpus --forceExit
-WIDGET_INSTALL=1 npx jest test/layers/widget_test.ts      # the install, held to Windows'
+WIDGET_INSTALL=1 cargo test --release -p winbox-win16 --test install_widget   # the install, held to Windows'
 ```

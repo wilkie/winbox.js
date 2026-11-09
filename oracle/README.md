@@ -12,7 +12,14 @@ one that made the CPU corpus worth having: **the expected answers come from the
 real thing, not from another implementation that might share our
 misconceptions.** So the pipeline installs an actual retail Windows 3.1, builds
 real 16-bit probe programs, runs them under real Windows to record what the API
-does, and then replays the identical programs against WinBox.js.
+does, and then replays the identical programs against WinBox.
+
+WinBox's engine is the Rust one (`crates/`), and the replay runs every probe on
+it ("7. Replay" below). Much of what follows is a log, in the order it was
+found, and its earlier parts were measured on WinBox's first engine, written in
+TypeScript and retired on 2026-11-08 (its last form is the branch
+`typescript-engine`): where the log tells what that engine did, or names its
+files, it is history.
 
 ## The pipeline
 
@@ -69,10 +76,11 @@ on disk that later stages can read without mounting anything.
 
 ### 4. Drive
 
-`mkfs.fat` and `mcopy` turn that tree into a FAT16 image. WinBox.js has FAT16
-support already (`src/file-systems/fat16.ts`), so the same image is what the
-emulator boots and what the recording stage hands to DOSBox — one artifact,
-both sides, no chance of the two diverging.
+`mkfs.fat` and `mcopy` turn that tree into a FAT16 image, which the recording
+stage hands to DOSBox. WinBox reads FAT images too -- the page with
+`src/file-systems/fat16.ts`, the Rust engine with
+`crates/winbox-machine/src/files/fat.rs` -- and the replay runs on the
+installed tree itself (`build/drive-c`).
 
 ### 5. Probes
 
@@ -93,17 +101,14 @@ the call filled in.
 Fixtures are committed. They are small, they are the whole point, and they are
 the only part of this pipeline that cannot be regenerated without the media.
 
-### 7. Replay, two ways
+### 7. Replay
 
-The **direct** replay calls our implementation of a function with the recorded
-arguments. It measures the function and nothing else, which is what makes it
-practical for a hundred of them at a time.
-
-The **end-to-end** replay runs the probe's own binary: the loader parses it,
-the linker relocates it, the CPU executes it, every API call arrives through a
-thunk, and the results are written through our filesystem to a drive we
-formatted. The file is then read back and compared with what the same binary
-wrote under real Windows.
+The replay runs the probe's own binary on the Rust engine: the loader parses
+it, the linker relocates it, the CPU executes it, every API call arrives
+through a thunk, and the records are written through the engine's own files.
+The file is then read back, and each function's records are compared with what
+the same binary wrote under real Windows
+(`crates/winbox-win16/tests/conformance.rs`, one trial a fixture).
 
 ## Comparing what gets drawn
 
@@ -126,19 +131,17 @@ device. Nothing in the API reports this -- `GetObject` still gives back the
 the pixels.
 
 Where that leaves a bitmap comparison depends on where in the pipeline each
-side dithers, and the two sides currently differ:
+side dithers. The two sides differed at first:
 
 - Windows dithers at **draw** time, into the destination surface. For a
   device-compatible bitmap the pattern is therefore in the bits, and a
   comparison would see it.
-- WinBox.js does not dither in the GDI path. It quantises at draw time,
+- WinBox did not dither in the GDI path. It quantised at draw time,
   as Windows does, but to the **nearest** palette colour rather than to a
   dither pattern: every device context's pixels are palette indices, and a
-  colour becomes an index as it is drawn. The `Ditherer` that `Surface`
-  builds in its constructor is used by one call, which is commented out; the
-  only live dithering in the project is decoration on the desktop background.
+  colour becomes an index as it is drawn.
 
-So a fill with a colour outside the sixteen produces a dither pattern on one
+So a fill with a colour outside the sixteen produced a dither pattern on one
 side and a flat nearest colour on the other, and a bitmap comparison would
 report every pixel of it. That is a true difference rather than a false alarm
 -- but it would swamp the geometry differences the comparison is for, and it
@@ -152,21 +155,20 @@ the same raster, with a mirror of the window tree for screen readers; everything
 on the screen goes through a raster we own.
 
 That raster is now the only one. Every device context's pixels are a
-`DeviceBitmap` (`src/raster/device-bitmap.ts`): one byte a pixel, an index into
+`DeviceBitmap` (`crates/winbox-raster/src/device_bitmap.rs`): one byte a pixel, an index into
 the palette for its depth, in the order the `bitblt` probe recorded. A memory
 device context draws into the bitmap selected into it, and a program's window
-draws into one the size of its client area, which a `Presenter`
-(`src/raster/presenter.ts`) shows on the window's canvas once a frame -- only
+draws into one the size of its client area, which the screen
+(`crates/winbox-win16/src/present.rs`) shows on the host's canvas once a frame -- only
 the rectangle written since the last frame, turned into colours through a
 table, and nothing ever read back from the canvas. `BitBlt` is index arithmetic
 on these bytes. A whole 640 by 480 frame presents in under two milliseconds in
 Chromium and Firefox; a frame normally presents far less.
 
-What is left open is dithering: a colour outside the palette becomes the
-nearest one, where Windows would dither a brush of it, and the 256-colour
-drivers' palette order is not recorded. A bitmap comparison therefore measures
-geometry, glyphs and the sixteen palette colours exactly, and a colour outside
-them only as far as the nearest colour is the answer.
+Dithering came later: a solid brush of a colour the display lacks is now
+drawn as the pattern the display driver realises it as, read off the `dither`
+probe's recordings on the VGA, the Super VGA, the EGA and the Hercules
+(`crates/winbox-raster/src/dither.rs`).
 
 ## Running it
 
@@ -242,10 +244,11 @@ install and the recording each need `dosbox`, and the drive image needs
 
 ### 7. Replay
 
-`test/win16/run_program_test.ts` does the end-to-end form. `strings`, `memory`
-and `handles` all agree record for record. `text` and `devcaps` cannot run this
-way: they ask for a device context, which means a display, so those two stay
-with the direct replay.
+The first replays were the TypeScript engine's, in two forms: an end-to-end
+one that ran the probe's binary (`strings`, `memory` and `handles` agreed
+record for record) and a direct one that called each function with the
+recorded arguments, for the probes that needed a display before the engine had
+one.
 
 Running the binaries found something calling the functions could not. Every
 probe formats its records with `wsprintf`, but only a running program passes
@@ -256,21 +259,13 @@ true for the string `'0'` as well. `%04X` printed `4X` as literal text and
 consumed no argument, so everything after it read from the wrong place: the
 memory probe reported allocations of 65538 bytes where it meant 1.
 
-`test/oracle/conformance.ts` does the direct form, reporting agreement
-per function in the shape the CPU oracle reports per opcode. Four outcomes, one
-of them good: **agreed**, **disagreed**,
-**unimplemented** for a stub or a function no module exports, and
-**unsupported** for a call the probes cover but the replay harness does not.
-That last one is deliberately not silent -- probe coverage outgrowing replay
-coverage would otherwise look like progress.
-
-It replays the calls rather than the probe's own binary. Running the binary
-would put the loader, the linker and the thunks under test as well, and is
-where this should end up, but it needs a Win16 system far enough up to schedule
-a task and it needs `_lcreat` and `_lwrite`, which are still stubs -- a probe
-with nowhere to write its answers records nothing. Everything the fixtures
-actually describe is measured either way: the arguments are marshalled the way
-the thunk layer marshals them, and the implementation is called with them.
+The replay now runs every fixture's probe whole on the Rust engine, as "7.
+Replay" above says, and reports agreement per function in the shape the CPU
+oracle reports per opcode: `cargo test --release -p winbox-win16 --test
+conformance` writes `kb/data/conformance.json`, which the knowledge base reads.
+A function that disagrees and cannot be fixed yet is a named gap with its
+reason (`KNOWN_GAPS` in `crates/winbox-win16/tests/support/mod.rs`), and its
+trial fails the moment every record agrees, so the list only shrinks.
 
 ## What it has found already
 
@@ -386,8 +381,8 @@ Two findings the probe surfaced that are not one-line fixes:
   program sees, part of what `AllocSelector` and `AllocDSToCSAlias` return, and
   part of any comparison of two selectors for identity.
 
-  Both facts are stated once now, in `src/win16/selectors.ts`, and segments
-  live in the LDT. The encoding used to be written out at fourteen call sites
+  Both facts are stated once now, in `crates/winbox-machine/src/descriptors.rs`
+  (`segment_selector`), and segments live in the LDT. The encoding used to be written out at fourteen call sites
   as `(index << 3) | 0x3`, which is how it came to disagree with Windows
   without anyone deciding that it should.
 
@@ -453,7 +448,7 @@ resolution is smaller. The driver capability bits -- `RASTERCAPS`, `TEXTCAPS`,
 driver.
 
 All three are implemented and all three agree, 37 records each.
-`src/win16/display-modes.ts` holds them, `GetDeviceCaps` and
+`crates/winbox-win16/data/displays.json` holds them, `GetDeviceCaps` and
 `GetSystemMetrics` answer from whichever is selected, and a machine picks one
 when it starts. Fixing that also fixed the `text` probe's ten capability
 records, taking it to 55/55: `GetDeviceCaps` used to report the browser it was
@@ -482,11 +477,11 @@ reserved colours rather than the palette. `RASTERCAPS` adds `RC_PALETTE`,
 drops `TC_EA_DOUBLE`. That is the `vga256` mode, now `recorded`. The 8514/a's
 and the XGA's modes, `8514` and `xga256`, are `read out` of their drivers
 (`kb/topics/display-drivers.md`). `install-windows.mjs --display 8514` and
-`--display xga256` install them for winbox.js to run on: Setup installs the VGA
+`--display xga256` install them for WinBox to run on: Setup installs the VGA
 and is then run again from DOS to change the display, since Setup's own second
 half would start Windows on a card DOSBox has not got. Nothing is recorded on
 them.
-`test/win16/display_modes_test.ts` checks what can be checked without a
+`crates/winbox-win16/tests/display_modes.rs` checks what can be checked without a
 recording -- that a mode claiming 256 colours does not also claim four one-bit
 planes, that palette capabilities appear only on palette devices, and that dot
 pitch and aspect agree about whether pixels are square.
@@ -529,7 +524,7 @@ font height.
 The replay needed more of a system than the earlier probes: a device context, a
 handle table, and real fonts. All three turned out to be reachable now that the
 filesystem works -- the fonts are `.FON` files on the drive the oracle builds,
-`BitmapFont` reads them straight off it, and measuring a bitmap font is
+read straight off it (`read_bitmap_font`, `crates/winbox-raster/src/bitmap_font.rs`), and measuring a bitmap font is
 arithmetic over its glyph table with no canvas involved.
 
 **Text reads 45/55.** Every metric, every extent, every character width and
@@ -582,7 +577,7 @@ itself. Nothing had used both paths before.
 **`GetDeviceCaps` is a decision, not a defect.** The oracle recorded a VGA
 driver: 640x480, one bit per pixel across four planes, sixteen colours, 96 dots
 per inch. Ours reports the browser it is running in -- 32 bits per pixel, 256
-colours -- and reads the desktop for its size. Which device WinBox.js should
+colours -- and reads the desktop for its size. Which device WinBox should
 present to a guest is a real question, since programs make layout and colour
 decisions from the answer, and it is not one to settle by quietly matching a
 fixture. Left unimplemented and recorded.

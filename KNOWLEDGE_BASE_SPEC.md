@@ -2,7 +2,7 @@
 
 2026-09-24
 
-A static, versioned website that documents every Windows 3.1 API winbox.js implements — each library, function, structure, message and file format — with what Microsoft documented, what Windows was measured to do, and where in its binaries that behaviour lives, every claim cited to a reproducible probe.
+A static, versioned website that documents every Windows 3.1 API WinBox implements — each library, function, structure, message and file format — with what Microsoft documented, what Windows was measured to do, and where in its binaries that behaviour lives, every claim cited to a reproducible probe.
 
 ## Audience and goals
 
@@ -13,7 +13,7 @@ They come with questions like these, and every page should answer them without o
 - What does `GetTextExtent` return for a turned bold string on a Hercules, and why?
 - Which parts of a function's behaviour are documented, which were measured, and which were read out of `GDI.EXE`?
 - Can I reproduce the measurement myself, and with what probe?
-- How complete is winbox.js's implementation, and where does it still disagree with Windows?
+- How complete is WinBox's implementation, and where does it still disagree with Windows?
 
 The site is **not** a copy of the Windows SDK reference, a tutorial for writing Win16 programs, or a mirror of disassembly. It links to the SDK's own wording where that exists and adds what the SDK leaves out.
 
@@ -58,14 +58,14 @@ Every function page has the same eight parts in the same order, so a reader lear
 
 | #   | Section            | What it holds                                                                                                         | Where it comes from today                                                                          |
 | --- | ------------------ | --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1   | Header             | Name, module, ordinal, argument bytes, and a status badge and conformance score for each of Windows 3.0, 3.1 and 3.11 | Export tables in `src/win16/*.ts`, the argument-bytes test, the conformance suite                  |
-| 2   | Signature          | C prototype and parameter table with Win16 types                                                                      | JSDoc `@param` / `@return` on each implementation                                                  |
+| 1   | Header             | Name, module, ordinal, argument bytes, and a status badge and conformance score for each of Windows 3.0, 3.1 and 3.11 | `kb/data/winbox-exports.json`, from the Rust engine's `kept.rs`; the conformance report            |
+| 2   | Signature          | C prototype and parameter table with Win16 types                                                                      | `kb/data/signatures.json`                                                                          |
 | 3   | Summary            | Two or three sentences on what the call is for                                                                        | The first paragraph of the `///` comment of the Rust function that answers a plain call            |
-| 4   | Observed behaviour | What Windows 3.1 was measured to do, rule by rule, each rule tagged with its evidence                                 | FONTS.md sections and the **Measured** / **Recorded** / **Read out** paragraphs in source comments |
+| 4   | Observed behaviour | What Windows 3.1 was measured to do, rule by rule, each rule tagged with its evidence                                 | FONTS.md sections and the **Measured** / **Recorded** / **Read out** paragraphs in the pages       |
 | 5   | Nuances            | Edge cases and divergences from the SDK text: display differences, rounding, undocumented quirks                      | Same, filtered to the surprising                                                                   |
 | 6   | Inside Windows     | Where the behaviour lives in the binaries, as module, segment and offset                                              | Offsets such as `GDI.EXE seg16:0030` already cited throughout                                      |
 | 7   | Evidence           | Probes that exercise it, fixtures, record counts, per-display agreement, refused alternatives with their counts       | `oracle/probes`, `oracle/fixtures`, the conformance summary                                        |
-| 8   | Implementation     | How winbox.js does it, with a link to the source file and to known gaps                                               | `src/`, `KNOWN_GAPS` in `test/oracle/replay.ts`                                                    |
+| 8   | Implementation     | How WinBox does it, with a link to the source file and to known gaps                                                  | `source:`, a Rust file under `crates/`; `KNOWN_GAPS` in `crates/winbox-win16/tests/support/mod.rs` |
 
 Each version's status badge takes one of four values: **Exact** (every recorded case agrees), **Partial** (implemented, with open gaps), **Stub** (declared, not implemented), **Unrecorded** (implemented but no probe asks it yet).
 
@@ -92,9 +92,9 @@ Recommendation: keep every word of content in this repository, next to the code 
 Four sources feed the build:
 
 1. **The survey of the binaries** — `scripts/kb/survey.mjs` reads the entry and name tables of the installed Windows libraries into `kb/data/exports-<version>.json`, committed so the site builds without the media. It decides which exports exist: our tables carry placeholders and a few wrong names, so they are not the authority.
-2. **Export tables and doc comments** — `kb/data/winbox-exports.json`, written from the Rust engine's `kept.rs`, says, where it names the same export at the same ordinal, whether it is implemented and how many bytes it pops; `kb/data/signatures.json` keeps each function's signature and parameters, frozen from the TypeScript engine's JSDoc; the page's summary is the first paragraph of the `///` comment of the Rust function that answers a plain call (`scripts/kb/rustdoc.ts`), never a summary frozen in `signatures.json`, and none where the comment only names the function. Where a table disagrees with the survey, the page says so.
+2. **Export tables and doc comments** — `kb/data/winbox-exports.json`, written from the Rust engine's `kept.rs`, says, where it names the same export at the same ordinal, whether it is implemented and how many bytes it pops; `kb/data/signatures.json` keeps each function's signature and parameters, the project's own text, frozen there from the first engine's comments when that engine was retired (2026-11-08) and kept by hand since; the page's summary is the first paragraph of the `///` comment of the Rust function that answers a plain call (`scripts/kb/rustdoc.ts`), never a summary frozen in `signatures.json`, and none where the comment only names the function. Where a table disagrees with the survey, the page says so.
 3. **Knowledge pages** — a new `kb/` directory of Markdown files, one per function, structure, format or topic, holding sections 4 to 6 and 8 of the page anatomy. FONTS.md is split into these rather than duplicated.
-4. **Evidence** — `oracle/probes/*.c` and `oracle/fixtures/*.json`, plus a JSON report the conformance suite writes on each run (per probe, function and display: agreed, disagreed, unsupported).
+4. **Evidence** — `oracle/probes/*.c` and `oracle/fixtures/*.json`, plus `kb/data/conformance.json`, the report the Rust engine's replay (`cargo test --release -p winbox-win16 --test conformance`) writes on each run: per probe, function and display, the records that agree and disagree, and the gaps named.
 
 Each knowledge page starts with front matter the build validates:
 
@@ -109,7 +109,7 @@ versions:
   '3.1': exact
   '3.11': unrecorded
 probes: [smearglf]
-source: src/win16/gdi/GetGlyphOutline.ts
+source: crates/winbox-win16/src/gdi/text/glyphs.rs
 topics: [turned-text, synthetic-bold]
 ---
 ```
@@ -117,7 +117,7 @@ topics: [turned-text, synthetic-bold]
 ```mermaid
 flowchart LR
   A[Export tables] --> B[kb build script]
-  C[JSDoc] --> B
+  C[Signatures and Rust doc comments] --> B
   D[kb Markdown] --> B
   E[Probes and fixtures] --> B
   F[Conformance report] --> B
@@ -138,11 +138,13 @@ The site publishes our own descriptions, measurements and citations. It never pu
 | Disassembly                                                                 | A few instructions quoted where they are the evidence (`cmp word [bp-0xe0],0x226`); never listings                                                          |
 | Third-party scaler sources (`fontinstructions.c`, `scanlist.c`, `spline.c`) | Never quoted or linked; they stay untracked and outside the build's inputs                                                                                  |
 | Probe sources and fixtures                                                  | Published under CC BY-SA; they are ours, and they are what makes every claim reproducible. Glyph bitmaps are shown where they are the evidence, as fair use |
-| winbox.js source                                                            | Linked from each page under the repository's licence                                                                                                        |
+| WinBox's source                                                             | Linked from each page under the repository's licence                                                                                                        |
 
 The build reads only tracked files, so an untracked source cannot leak into a page by accident.
 
-## What we can contribute today
+## What we could contribute (2026-09-24)
+
+This section and the phases below are the plan's record as it was written and built; the figures are of their day.
 
 The fonts-and-text part of GDI is ready to publish almost as it stands: FONTS.md alone is 20,199 lines in 260 sections, every rule in it measured or read out, and every recorded case agrees. The rest of the API has declarations and JSDoc but little behavioural material yet.
 
