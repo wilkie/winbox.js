@@ -1,10 +1,17 @@
 # Windows 3.1 fonts, as measured
 
-This is a specification of what Windows 3.1 does, not of what WinBox.js does.
+This is a specification of what Windows 3.1 does, not of what WinBox does.
 Everything in it was established by running real Windows under DOSBox, asking
 it, and writing down the answer -- the pipeline that does so is described in
 [oracle/README.md](oracle/README.md), and the answers live in
 `oracle/fixtures/`.
+
+WinBox's engine is the Rust one (`crates/`); its glyphs are drawn by
+`crates/winbox-raster` and the font mapper is in `crates/winbox-win16`. Much
+of what follows was first worked out in WinBox's first engine, written in
+TypeScript and retired on 2026-11-08 (its last form is the branch
+`typescript-engine`). Where these notes tell what that engine did, it is
+history; where they name a file that holds a rule, they name the Rust one.
 
 It exists because almost none of this is written down anywhere. The parts that
 _are_ documented are mostly the parts that turned out to be wrong or
@@ -2128,7 +2135,8 @@ row by row, across all four instruments -- 384 cells:
 
 **It steps every three rows.** A shear of one third, applied to the rendered
 bitmap a row at a time -- which is exactly what the `.FON` faces do at one half,
-and `bitmap-font.ts` has done all along. At twelve pixels the whole sequence is
+and the strike's drawing has done all along (`draw_strike`,
+`crates/winbox-raster/src/text_draw.rs`). At twelve pixels the whole sequence is
 `floor((baseline - 1 - row) / 3)`.
 
 The proof of it is in the two sizes that break the pattern. At thirteen and
@@ -2440,7 +2448,7 @@ resting on:
 
 - **The sample grid.** At `0x1216` and `0x1227` the test is `p & 0x3f == 0x20`:
   a coordinate lies on a sample line when it is 32 modulo 64. That is
-  `onScanline` in `scan-walk.ts`, to the constant -- sample lines through pixel
+  `on_scanline` in `crates/winbox-raster/src/scan_walk.rs`, to the constant -- sample lines through pixel
   centres at sixty-fourths, not through pixel edges. It had been derived from the
   recordings; it is now read off the shipped code.
 - **A step that goes nowhere emits nothing.** The early-out at `0x120b` compares
@@ -2487,12 +2495,12 @@ The identification is anchored by `0x150f`, where the batch path is entered on
 `[0x1bc] == [0x1c0]` -- the two endpoints on the same _row_ index, an edge that
 crosses no scanline -- and then walks the **column** array from `index(x1)` to
 `index(x2)` storing the row index into each. That is the `y1 === y2` branch of
-`calcLine` in `scan-walk.ts`, which emits one vertical entry per column crossed,
+`calc_line` in `scan_walk.rs`, which emits one vertical entry per column crossed,
 and the two agree on which array and which value.
 
 **And the rounding is `(v + 31) & -64`, which is the first sample line at or
 above `v`, taking `v` itself when `v` is exactly on one.** `above` in
-`scan-walk.ts` is `((p + 32) & -64) + 32`, which steps past `v` in that case: for
+`scan_walk.rs` is `((p + 32) & -64) + 32`, which steps past `v` in that case: for
 `v = 32` the shipped index is 0 and ours is 1. They agree for every coordinate
 that is not exactly on a sample line, which is every coordinate an unhinted
 outline produces and a great many that a hinted one does not.
@@ -2507,7 +2515,7 @@ one: it can only bite a coordinate lying exactly on a sample line.
 #### The three branches, and the frame confirmed
 
 `CalcLine` splits three ways on the two index comparisons, and all three are in
-`scan-walk.ts`:
+`scan_walk.rs`:
 
 - `0x150f`, on `index(y1) == index(y2)`: the edge crosses no scanline, so it
   batches the row index into every **column** list from `index(x1)` to
@@ -2564,7 +2572,7 @@ coordinate sits on; then, when the coordinate sits exactly on one, these bits
 make the walk step past it -- `inc [0x1bc]` with `si += 2` and the distance
 bumped by 64 in the oblique branch at `0x1645`, `inc ax` in the batch branches.
 **Inclusive rounding plus a step past an exact hit is a strict `above`**, which is
-what `scan-walk.ts` computes in one go, and the line the walk skips is the one
+what `scan_walk.rs` computes in one go, and the line the walk skips is the one
 the endpoint topology emits for instead. The two are the same rule factored
 differently, and the 106,192 wrong pixels that the half-pixel experiment cost are
 the measurement of a mis-factoring rather than of a different rule.
@@ -6225,7 +6233,7 @@ inversion had bracketed at -28 to -32. With the slots written as read:
     fabricated   26,057 -> 26,058 of 26,058 cells,   5 -> 0 wrong pixels
     recorded     font 5,057   glyphs 6,046   hinting 7,828   unchanged
 
-Nothing else moves. The rule is in `glyph-hinting.ts` where the phantoms are
+Nothing else moves. The rule is in `crates/winbox-raster/src/hinting.rs` where the phantoms are
 built, and the probe now reads the scaler's block past the size the census gave
 it, on both draws, so the arrays are in the recording.
 
@@ -6566,8 +6574,8 @@ Take the real font, rewrite the end of one glyph's program so that it moves the
 advance phantom onto a point of interest and multiplies, and `GetTextExtent` of
 that letter now reports that point's position, magnified, at every size in a
 single recording. `scripts/oracle/fabricate.mjs` builds them; the recordings
-live in `oracle/fixtures/fabricated/` and `test/raster/fabricated_test.ts`
-replays them.
+live in `oracle/fixtures/fabricated/` and
+`crates/winbox-raster/src/truetype/fabricated.rs` replays them.
 
 **Four things have to be right for a reading to mean anything**, and each was
 learned by getting it wrong first:
@@ -6972,7 +6980,7 @@ A driver that prints TrueType realizes a face into a `FONTINFO` with
   back (seg1 `3ff9`-`4094`, seg3 `0740`-`080b`); a font GDI's engine realized
   itself, 53Ah, sets 10h instead.
 - **The realization had failed for Wingdings** in the TypeScript engine,
-  which realized the face without the device's horizontal resolution: at
+  which had realized the face without the device's horizontal resolution: at
   96 by 300 Wingdings' `VDMX` has no group, and no size was found. The
   PostScript driver then printed Symbol in its place.
 
@@ -9834,9 +9842,10 @@ precision shift, and which this project does not have.
 
 ### The edge walk, implemented and not yet shipped
 
-`CalcLine`, `CalcSpline` and the endpoint topology are implemented in
-`src/raster/scan-walk.ts`, and `fillWalked` fills a glyph from the four lists
-they produce -- the scan converter's own method, where this project computes
+`CalcLine`, `CalcSpline` and the endpoint topology were implemented in the
+TypeScript engine's `scan-walk.ts` (`calc_line` and the topology are in
+`crates/winbox-raster/src/scan_walk.rs` now), and `fillWalked` (now
+`fill_walked`, `glyph_raster.rs`) fills a glyph from the four lists they produce -- the scan converter's own method, where this project computes
 where the outline crosses each scanline and rounds. It is behind a flag because
 it is not yet as good: **436 of the 846 recorded letters against 763**.
 
@@ -10125,7 +10134,7 @@ Courier New twenty-four, eleven at Arial twenty, then single figures down to
 nothing. Six of the twenty-two cells are perfect.
 
 So the scan converter is no longer the open question. **The remaining hundred
-pixels are the interpreter's**, and the next work is on `glyph-hinting.ts` rather
+pixels are the interpreter's**, and the next work is on the interpreter (`hinting.rs`) rather
 than here -- a point moved by one sixty-fourth puts a run's end in the next
 column, and both fill methods will follow it there together.
 
@@ -11063,7 +11072,7 @@ So the two readings can only diverge at a point that is a pixel centre in **both
 axes at once. On the fixtures that is not a rarity so much as an absence:
 `horizTopology` runs 716 times across the whole set and `vertTopology` 572, the
 two trees part company on 9 of those 716, and in none of the 9 is x on a
-scanline as well. Swapping the binary's tree into `scan-walk.ts` and rerunning
+scanline as well. Swapping the binary's tree into the walk (`scan_walk.rs` now) and rerunning
 leaves the totals at 6,165 of 7,050 cells and 2,180 wrong pixels, unchanged to
 the pixel.
 
@@ -11072,7 +11081,8 @@ standing rule asks for: there is a difference here, but no measurement that can
 choose between the two, and a tree transcribed by hand from a partly understood
 disassembly is the worse thing to trust when nothing distinguishes them. Both
 trees and the reason they agree are recorded in
-`test/raster/endpoint_topology_test.ts` so that a later change to one can be told
+`crates/winbox-raster/tests/endpoint_topology.rs` (and
+`test/raster/endpoint_topology_test.ts`) so that a later change to one can be told
 from a change to both. What this does settle is that the endpoint topology is not
 where the remaining pixels come from.
 
@@ -11259,9 +11269,10 @@ flattening looked like a wash.
 The turning-point splits went too. They exist in `EvaluateSpline` so that a conic
 walk can run over a monotone piece, and with no conic walk to feed they only cost
 accuracy: taking them out was worth a further 61 cells and 75 pixels. `calcSpline`
-stays in the file, exported and still checked against an independent
-transcription by `spline_walk_test.ts`, because it remains our reading of what
-the document says -- but nothing draws with it.
+stayed in the TypeScript engine's file, checked against an independent
+transcription by `spline_walk_test.ts`, as our reading of what the document
+says -- but nothing drew with it, and neither came to the Rust engine, whose
+`scan_walk.rs` keeps `evaluate_spline` alone.
 
 An earlier attempt at this in the previous section failed and it is worth saying
 why, because the failure looked conclusive. It flattened adaptively on chord
@@ -11275,8 +11286,8 @@ about the real one.
 ### The thirty-three that are left
 
 Named rather than counted, because a rate cannot say whether a change fixed four
-letters and broke three. `test/oracle/disputed_glyphs_test.ts` lists them and
-holds both counts as ceilings. (Since folded into the conformance suite, which
+letters and broke three. `test/oracle/disputed_glyphs_test.ts` listed them and
+held both counts as ceilings. (Since folded into the conformance suite, which
 accepts no disagreement at all and names each wrong cell with its count of
 wrong pixels.)
 
@@ -12930,8 +12941,8 @@ emit the same entries in the same order, and over twenty thousand generated
 shapes they fill the same lists. `ScanAbove`, `ScanBelow` and `OnScanline` match
 the document exactly, the initial conditions and stop values match, the
 precision reduction matches, both branches of the forward difference match, and
-the tails match. `test/raster/spline_walk_test.ts` keeps the two in step, and
-what it catches was checked rather than assumed -- displacing an emitted
+the tails match. `test/raster/spline_walk_test.ts` kept the two in step, while the TypeScript
+engine lasted, and what it caught was checked rather than assumed -- displacing an emitted
 coordinate by one fails it, adding one to `rZ` does not.
 
 So the walk is not where the last hundred pixels are, and neither is anything
@@ -13986,7 +13997,8 @@ adds one. It returns nought, one or two and never more; `HorizCrossings` in the
 pseudocode counts every occurrence. The two part only where one list holds a
 coordinate twice, which nothing recorded does: adopting the binary's form
 changes no cell of the recorded corpus and none of the 24,696 fabricated ones.
-It is in `glyph-raster.ts` now because it is what the binary does.
+It is in `crates/winbox-raster/src/glyph_raster.rs` now because it is what the
+binary does.
 
 One reading was **refused by measurement**. The per-candidate loop looks like a
 search rather than a walk in step -- for each `on` it appears to reset the
@@ -14412,7 +14424,7 @@ which is the offset this implementation already carries, and the two vertical
 terms are guarded by the box rather than skipping the decision. Placement then
 clamps to the box, and where it does not clamp it goes through `0x0c8a`, which
 is a **test-and-set**: it sets the pixel at `x - 1` only if the pixel at `x` is
-clear. All of that is in `glyph-raster.ts` as it stands.
+clear. All of that is in `glyph_raster.rs` as it stands.
 
 Nothing in any of it reads the outline. The loop, the pairing, the stub test,
 the placement and the test-and-set take the four crossing lists and the box and
@@ -16528,7 +16540,9 @@ this inks the marker's sixteen. The same character four sizes earlier, equally
 wrapped, inks the marker and nothing else on both sides. What makes the block
 itself appear once the height has gone negative is **not known**, and one cell
 of a deliberate arithmetic overflow is not enough to read it from.
-`test/raster/glyph_buffer_test.ts` holds it where it was measured.
+`refuses_the_glyphs_windows_refuses`
+(`crates/winbox-win16/src/gdi/text_out/tests/fabricated.rs`) holds it where it
+was measured.
 
 #### A parser bug worth writing down
 
@@ -16543,7 +16557,8 @@ recording is only as good as the thing that reads it back.
 #### Where that leaves the band recordings
 
 All seven, all 288 records each, stock and hairline: **exact**.
-`test/raster/tall_glyphs_test.ts` holds it where it was measured.
+`draws_glyphs_taller_than_a_cell_as_windows_does` (`fabricated.rs`) holds it
+where it was measured.
 
 #### The moral, which 8f then repeated
 
@@ -16638,7 +16653,7 @@ the same glyph, from the same file, at the same size, on the same display can
 disagree, and which answer a recording holds depends on the order of its own
 loops. The implementation models none of it -- there is no per-process state
 here to model it with -- so the five cold records are the five
-`test/raster/dropout_size_test.ts` does not claim.
+`stops_rescuing_a_dropout_where_windows_stops` (`fabricated.rs`) does not claim.
 
 #### And a correction to how this was nearly read
 
@@ -16704,7 +16719,8 @@ recordings and refused: stock Times New Roman falls from 36 of 36 to 26, 31 and
 
 #### What is left in those two recordings
 
-Two things, both named in `test/raster/tall_glyphs_test.ts` rather than chased.
+Two things, both named in `draws_glyphs_taller_than_a_cell_as_windows_does`
+rather than chased.
 
 **Times New Roman's first size, 26 records.** That is 8g's cold realization:
 `bands` draws four sizes of Courier New before it reaches Times, so Times' first
@@ -17998,7 +18014,8 @@ tenth of a degree at a time across half a right angle, and with the pen walked
 across a pixel: 286 records. `oracle/probes/rotpen.c` draws the same square as
 one, two and three glyphs at every five degrees off the axes at four sizes, on a
 canvas large enough that nothing leaves it: 816 records. Both live under
-`fabricated/` and are kept as a ratchet by `test/raster/turned_squares_test.ts`.
+`fabricated/` and are kept as a ratchet by `draws_a_turned_square_where_windows_does` and
+`walks_the_pen_along_a_turned_baseline_where_windows_does` (`fabricated.rs`).
 
 Four findings came out of them, each one separating something the others could
 not.
@@ -18608,10 +18625,11 @@ twice.
 
 #### A third thing about the export table
 
-8o names two. The third: **the type names available in `gdi.ts` are only the
-ones it imports.** `WORD` is not among them, and using it in a table row is a
-`ReferenceError` raised when the table is built -- which fails as nine tests
-about running Windows programs, none of which mentions the table. `UINT` is
+8o names two. The third, of the TypeScript engine's tables: **the type names
+available in its `gdi.ts` were only the ones it imported.** `WORD` was not
+among them, and using it in a table row was a `ReferenceError` raised when the
+table was built -- which fails as nine tests
+about running Windows programs, none of which mentions the table. `UINT` was
 there and is the same two bytes.
 
 ### 8q. The gap after every character
@@ -20114,7 +20132,7 @@ probe's own making with no prologue:
 - Refused: the read-out's guess for TrueType, GDI's data segment in DS and the
   font type in AX, which the recording does not bear out.
 
-The Rust engine runs `enumfam` itself, where the TypeScript engine replays it
+The Rust engine runs `enumfam` itself, where the TypeScript engine replayed it
 through its exports, and for a long time it agreed with 29 records on each
 display and no more. The walk was not at fault. The probe copies each face, full
 name and style out of what it is handed with `lstrcpyn`, which both engines had
