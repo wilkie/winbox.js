@@ -290,3 +290,175 @@ fn read_a_constant_back_unchanged_at_every_size() {
     assert!(values.len() > 40, "{}", values.len());
     assert!(values.iter().all(|reading| reading.windows == 16.0));
 }
+
+/// A reading of one `hinting` recording: the pixel size Windows reported,
+/// what Windows said, and what the interpreter says at that size.
+type Hinted = (f64, f64, Option<f64>);
+
+/// One `hinting` recording by name, read the way the TypeScript engine's
+/// `isect_parallel_test` and `round_state_test` read it: each pixel size
+/// Windows reports for Arial Italic's `m`, once, with the interpreter run at
+/// that size. `None` where the recording or its font has not been built.
+fn hinted(name: &str) -> Option<Vec<Hinted>> {
+    let text = std::fs::read_to_string(
+        root().join(format!("oracle/fixtures/fabricated/hinting-{name}.json")),
+    )
+    .ok()?;
+    let fixture: serde_json::Value = serde_json::from_str(&text).ok()?;
+    let directory = root().join("oracle/build/fonts").join(name);
+    let mut files: Vec<PathBuf> = std::fs::read_dir(&directory)
+        .ok()?
+        .flatten()
+        .map(|entry| entry.path())
+        .collect();
+
+    files.sort();
+
+    let font = TrueTypeFont::new(std::fs::read(files.first()?).ok()?);
+    let glyph = font.glyph_for(u32::from(b'm'));
+    let mut out: Vec<Hinted> = Vec::new();
+
+    for record in fixture["records"].as_array()? {
+        let args = record["args"].as_str().unwrap_or("");
+        let Some((face, _, italic, character)) = asked(args) else {
+            continue;
+        };
+
+        if face != "Arial" || italic != "1" || character != b'm' {
+            continue;
+        }
+
+        let Some((windows, ppem)) = said(record["result"].as_str().unwrap_or("")) else {
+            continue;
+        };
+
+        if out.iter().any(|(seen, _, _)| *seen == ppem) {
+            continue;
+        }
+
+        out.push((
+            ppem,
+            windows,
+            font.hinted_advance(glyph, ppem, true, 1.0).unwrap(),
+        ));
+    }
+
+    Some(out)
+}
+
+/// What Windows said and what the interpreter says, at a size.
+fn hinted_at(readings: &[Hinted], ppem: f64) -> Option<(f64, Option<f64>)> {
+    readings
+        .iter()
+        .find(|(size, _, _)| *size == ppem)
+        .map(|(_, windows, ours)| (*windows, *ours))
+}
+
+/// The sizes where two recordings' Windows answers differ: where the
+/// program ran, a size `hdmx` covers answering the letter's own width for
+/// both.
+fn differing(one: &[Hinted], other: &[Hinted]) -> Vec<f64> {
+    one.iter()
+        .filter(|(ppem, windows, _)| {
+            hinted_at(other, *ppem).map(|(said, _)| said) != Some(*windows)
+        })
+        .map(|(ppem, _, _)| *ppem)
+        .collect()
+}
+
+/// What `ISECT` does when the two lines barely cross: the TypeScript
+/// engine's `isect_parallel_test`. The same five points every time, only the
+/// second line's far end moving: at right angles, half a degree apart, and
+/// exactly parallel. Windows divides unless the denominator is exactly
+/// nought, so two lines a fraction of a degree apart put the point hundreds
+/// of pixels away -- on either side, as the rounding lands -- and the
+/// controls put it inside the glyph. Where they graze, matching at all is
+/// the surprise: dividing by a denominator near nought multiplies whatever
+/// the sixty-fourths disagree by.
+#[test]
+fn isect_divides_rather_than_taking_the_midpoint() {
+    let (Some(cross), Some(graze), Some(parallel)) = (
+        hinted("isect-crossing"),
+        hinted("isect-grazing"),
+        hinted("isect-parallel"),
+    ) else {
+        return;
+    };
+    let live = differing(&graze, &cross);
+
+    assert!(live.len() > 20, "{}", live.len());
+
+    let mut exact = 0;
+
+    for &ppem in &live {
+        let (crossed, ours_crossed) = hinted_at(&cross, ppem).unwrap();
+        let (level, ours_level) = hinted_at(&parallel, ppem).unwrap();
+        let (grazed, ours_grazed) = hinted_at(&graze, ppem).unwrap();
+
+        // In Windows: the controls inside the glyph, the grazing pair far out.
+        assert!(crossed.abs() < 40.0, "{ppem}: {crossed}");
+        assert!(level.abs() < 40.0, "{ppem}: {level}");
+        assert!(grazed.abs() > 60.0, "{ppem}: {grazed}");
+
+        // Exact where the lines properly cross, and where they do not at all.
+        assert_eq!(ours_crossed, Some(crossed), "crossing at {ppem}");
+        assert_eq!(ours_level, Some(level), "parallel at {ppem}");
+
+        if ours_grazed == Some(grazed) {
+            exact += 1;
+        }
+    }
+
+    // A floor: the sizes where the grazing answer matches to the pixel.
+    assert!(exact >= 10, "{exact}");
+}
+
+/// The round state a byte describes: the TypeScript engine's
+/// `round_state_test`. `SROUND` with a period of 999 masked with `~998`
+/// lands nowhere near a pixel boundary and the answer moves with the input,
+/// which is how the mask shows itself: a division by 999 would give the same
+/// answer every time. The forty-five degree period is a root and rounds two
+/// ways, so two sizes of `s45round-half` are left.
+#[test]
+fn rounds_with_a_mask_so_an_illegal_period_is_not_a_whole_pixel() {
+    let cases = [
+        ("sround-illegal", 0),
+        ("sround-quarter", 0),
+        ("s45round-half", 2),
+    ];
+    let mut all = Vec::new();
+
+    for (name, _) in cases {
+        let Some(readings) = hinted(name) else {
+            return;
+        };
+
+        all.push(readings);
+    }
+
+    let live = differing(&all[0], &all[1]);
+
+    assert!(live.len() > 20, "{}", live.len());
+
+    let mut answers: Vec<f64> = live
+        .iter()
+        .map(|&ppem| hinted_at(&all[0], ppem).unwrap().0)
+        .collect();
+
+    answers.sort_by(f64::total_cmp);
+    answers.dedup();
+    assert!(answers.len() > 1, "{answers:?}");
+
+    for ((name, left), readings) in cases.iter().zip(&all) {
+        let differ = live
+            .iter()
+            .filter(|&&ppem| {
+                let (windows, ours) = hinted_at(readings, ppem).unwrap();
+
+                ours != Some(windows)
+            })
+            .count();
+
+        assert!(differ <= *left, "{name}: {differ} differ");
+    }
+}

@@ -3,7 +3,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { Assets } from '../../src/assets/bundle.js';
 import { logo } from '../../src/win16/shell/about.js';
 import { PROBES, bundle, outputOf, recordsFrom, runProbe, type Base } from '../win16/run-probe.js';
 
@@ -86,16 +85,4 @@ async function run({ probe, display, ini }: (typeof RUNS)[number], base: Base) {
       300_000
     );
   }
-
-  it('reads the zip as the folder', async () => {
-    const zip = await Assets.fromZip(
-      new Uint8Array(readFileSync(join(ROOT, 'oracle', 'build', 'winbox-assets.zip')))
-    );
-    const folder = bundle()!;
-
-    expect(zip.id).toBe(folder.id);
-    expect([...zip.modules.keys()]).toEqual([...folder.modules.keys()]);
-    expect([...zip.pool.keys()]).toEqual([...folder.pool.keys()]);
-    expect(zip.module('vga.drv')).toEqual(folder.module('VGA.DRV'));
-  });
 });

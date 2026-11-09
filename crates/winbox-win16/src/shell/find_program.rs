@@ -591,6 +591,32 @@ mod tests {
 
         assert_eq!(template.caption, "Program Not Found");
         assert_eq!(template.items.len(), 7);
+        // As `test/win16/user_shell_dialogs_test.ts`: its items in order.
+        assert_eq!(
+            template
+                .items
+                .iter()
+                .map(|item| item.id)
+                .collect::<Vec<_>>(),
+            [205, 206, 203, 1, 2, 201, 204]
+        );
+    }
+
+    /// Laid out from named constants, it is `SHELL.DLL`'s dialog 200 byte
+    /// for byte, where the oracle's installation is here.
+    #[test]
+    fn the_template_is_in_shell_dlls_dialog_200() {
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../oracle/build/drive-c/WINDOWS/SYSTEM/SHELL.DLL");
+        let Ok(file) = std::fs::read(path) else {
+            return;
+        };
+        let template = build_template();
+
+        assert!(
+            file.windows(template.len())
+                .any(|window| window == template.as_slice())
+        );
     }
 
     #[test]

@@ -321,6 +321,42 @@ mod tests {
         assert_eq!(clock.host_ms(), 1250.75);
     }
 
+    /// The TypeScript engine's `test/emulator/clock_test.ts`, "calls what
+    /// is due only as its time is passed": earliest first, whatever order
+    /// they were set in.
+    #[test]
+    fn gives_what_is_due_only_as_its_time_is_passed_earliest_first() {
+        let mut clock = Clock::virtual_at(INSTRUCTIONS_PER_MS);
+        let ten = clock.after(0, 10.0);
+        let five = clock.after(0, 5.0);
+
+        assert!(clock.tick(0).is_empty());
+        assert_eq!(clock.tick(3000 * 20), vec![five, ten]);
+    }
+
+    /// `clock_test.ts`, "forgets what is cancelled", on a virtual clock.
+    #[test]
+    fn forgets_what_is_cancelled() {
+        let mut clock = Clock::virtual_at(INSTRUCTIONS_PER_MS);
+        let ten = clock.after(0, 10.0);
+
+        clock.cancel(ten);
+        assert!(clock.tick(3000 * 20).is_empty());
+    }
+
+    /// `clock_test.ts`, "real: does not move for instructions, calls or
+    /// idling".
+    #[test]
+    fn the_hosts_clock_does_not_move_for_instructions_calls_or_idling() {
+        let mut clock = Clock::real();
+        let instructions = 3000 * 100_000;
+
+        clock.charge(CALL_INSTRUCTIONS * 1000.0);
+        assert!(clock.advance(instructions, 100_000.0).is_empty());
+        assert_eq!(clock.idle(instructions), Some(vec![]));
+        assert!(clock.now(instructions) < 10_000.0);
+    }
+
     #[test]
     fn the_hosts_clock_keeps_its_timers_until_their_time() {
         let mut clock = Clock::real();

@@ -1,6 +1,5 @@
 'use strict';
 
-import { Machine } from '../../src/emulator/machine.js';
 import { fillDrive, planDrive, type Plan } from '../../src/run/drive.js';
 import {
   applyChanges,
@@ -9,9 +8,10 @@ import {
   Fat16Changes,
   sameChanges,
 } from '../../src/run/changes.js';
+import { bareDisks } from '../assets/built.js';
 
 /**
- * What programs write on the TypeScript engine's C: drive, told against the
+ * What programs write on the page's FAT16 C: drive, told against the
  * drive as the page planned it, and put back on a drive made afresh: the
  * FAT16 volume written through its own calls, as DOS writes it. The Rust
  * engine's drive is tested as its crate is (`MemoryDrive::changes_from`),
@@ -39,10 +39,9 @@ function plan(): Plan {
   });
 }
 
-/** A machine's C: filled from the plan, marked, and what was kept put back. */
+/** A bare disk's C: filled from the plan, marked, and what was kept put back. */
 async function made(kept: Change[] = []) {
-  const machine: any = new Machine();
-  const drive = await fillDrive(machine, plan());
+  const drive = await fillDrive(bareDisks(), plan());
   const changes = new Fat16Changes(drive.fileSystem, plan());
 
   await changes.mark();

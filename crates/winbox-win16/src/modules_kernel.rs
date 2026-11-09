@@ -970,3 +970,37 @@ mod load_error_tests {
         assert_eq!(load_error(b"MZ"), Some(11));
     }
 }
+
+#[cfg(test)]
+mod kept_tests {
+    use super::load_library_named;
+
+    /// The modules winbox.js keeps are found by their files' names with no
+    /// file on the drive: no Windows file is shipped. Each answers its
+    /// instance, as `LoadLibrary` answers it (`modhand`): 32 or more. A
+    /// driver it does not keep, with no file, answers an error. As
+    /// `test/win16/kept_modules_test.ts`.
+    #[test]
+    fn kept_modules_load_by_their_files_names_from_an_empty_drive() {
+        let engine = crate::mmsystem::device_tests::machine();
+
+        engine
+            .system()
+            .files
+            .mount('C', winbox_machine::MemoryDrive::new());
+
+        let instance = |name: &str| {
+            let system = engine.system();
+            let kept = system.kept_named(name).unwrap();
+
+            system.kept[kept].instance()
+        };
+        let load = |file: &str| engine.run_now(load_library_named(&engine, file)).unwrap();
+
+        assert_eq!(load("MCIWAVE.DRV"), instance("MCIWAVE"));
+        assert_eq!(load("mciseq.drv"), instance("MCISEQ"));
+        assert_eq!(load("C:\\WINDOWS\\SYSTEM\\TIMER.DRV"), instance("TIMER"));
+        assert!(instance("MCIWAVE") >= 32);
+        assert!(load("MCICDA.DRV") < 32);
+    }
+}

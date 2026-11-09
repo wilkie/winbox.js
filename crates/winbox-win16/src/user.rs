@@ -661,3 +661,80 @@ pub fn format_values(system: &System, format: &[u8], values: u32) -> Vec<u8> {
 
     out
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+
+    use super::{register_message, tick_count};
+    use crate::system::System;
+
+    /// `GetTickCount` at a millisecond of the machine's.
+    fn tick_at(system: &mut System, ms: u64) -> u32 {
+        system.instructions = ms;
+        tick_count(system)
+    }
+
+    fn system() -> System {
+        let mut system = System::new();
+
+        system.clock = winbox_machine::Clock::virtual_at(1.0);
+        system
+    }
+
+    /// `GetTickCount` steps by the timer's tick, as `tickstep` recorded
+    /// Windows': 55 milliseconds at a time, and 54 every thirteenth or
+    /// fourteenth. As `test/win16/tick_count_test.ts`.
+    #[test]
+    fn get_tick_count_steps_by_whole_ticks_54_or_55_milliseconds() {
+        let mut system = system();
+        let answers: BTreeSet<u32> = (0..2000).map(|ms| tick_at(&mut system, ms)).collect();
+        let sorted: Vec<u32> = answers.into_iter().collect();
+        let steps: Vec<u32> = sorted.windows(2).map(|pair| pair[1] - pair[0]).collect();
+
+        assert_eq!(
+            steps.iter().copied().collect::<BTreeSet<_>>(),
+            BTreeSet::from([54, 55])
+        );
+        assert!(steps.iter().filter(|&&step| step == 54).count() >= 2);
+        assert_eq!(sorted.len(), 37);
+    }
+
+    #[test]
+    fn get_tick_count_answers_54_short_once_every_13_or_14_steps() {
+        let mut system = system();
+        let steps: Vec<u32> = (1..200u64)
+            .map(|tick| {
+                let at = (tick * 65_536 * 1000).div_ceil(1_193_180);
+
+                tick_at(&mut system, at) - tick_at(&mut system, at - 1)
+            })
+            .collect();
+        let shorts: Vec<usize> = (0..steps.len()).filter(|&at| steps[at] == 54).collect();
+        let gaps: BTreeSet<usize> = shorts.windows(2).map(|pair| pair[1] - pair[0]).collect();
+
+        assert_eq!(gaps, BTreeSet::from([13, 14]));
+    }
+
+    /// `RegisterWindowMessage` gives one message a string, in any case, from
+    /// C000h. As `test/win16/task_test.ts`.
+    #[test]
+    fn register_window_message_gives_one_message_a_string_in_any_case() {
+        let mut system = System::new();
+        let first = register_message(&mut system, "commdlg_FindReplace".to_string());
+
+        assert!(first >= 0xc000);
+        assert_eq!(
+            register_message(&mut system, "commdlg_FindReplace".to_string()),
+            first
+        );
+        assert_eq!(
+            register_message(&mut system, "COMMDLG_FINDREPLACE".to_string()),
+            first
+        );
+        assert_ne!(
+            register_message(&mut system, "winbox_probe_message".to_string()),
+            first
+        );
+    }
+}

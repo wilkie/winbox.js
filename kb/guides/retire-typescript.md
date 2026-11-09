@@ -4,7 +4,7 @@ name: Retiring the TypeScript engine
 summary: A plan for taking the TypeScript engine out of WinBox and keeping the Rust engine as the one implementation — what uses the TypeScript engine today, which checks the Rust engine has to take over first so that no coverage is lost, which generated files become source, the phases in an order that keeps every gate meaningful, and the questions left for the owner.
 ---
 
-This page is a plan, and phase 1a of it is built (the replay's parity, under Phase 1). It follows the model of [[guide:enhanced-mode]].
+This page is a plan, in part built: phase 1, the replay's parity (1a) and the unit tests' audit and ports (1b, [[guide:retire-typescript-tests]]), is done (2026-11-08); phases 2 to 5 are not. It follows the model of [[guide:enhanced-mode]].
 
 On 2026-11-08 the owner decided to retire the TypeScript engine. Its current form is kept on the local branch `typescript-engine`, made at `9b221155` (develop's tip that day). From then on develop has one implementation, the Rust engine. The oracle's recordings stay the ground truth: `oracle/fixtures`, recorded under DOSBox. Keeping two engines twinned, with every fix made in both and the corpus compared between them, has stopped being worth what it costs.
 
@@ -199,8 +199,9 @@ Each phase is a branch of its own, merged when its gates pass. Until phase 4, bo
 - **Touches:** `crates/winbox-win16/tests/conformance.rs` (new), `tests/support/mod.rs` (`KNOWN_GAPS`, `UNBUILT`; `AGREEING` goes once the new test passes), `tests/probes.rs` (the survey against Rust's own report), `Cargo.toml` (`libtest-mimic`); `examples/corpus.rs` (`--write`); `crates/winbox-cpu/tests/conformance.rs` and two baseline files; Rust writers for `caribb-layer.json`, `widget-layer.json`, `widget-windows.json` and `accessible-trees/`; Rust ports of the unit cases the audit above names.
 - **Proved by:** the new trial passes on every fixture or names its gap. The two `conformance.json` files compare as above. `examples/corpus --write` into a scratch folder gives the same `.json`, `.calls.txt` and `.png` files as the TypeScript survey for all 38 programs (today's "whole runs alike: 38 of 38" says the calls already agree). The CPU vectors meet their baselines. Every gate as before.
 - **Size:** about 1,500 lines of Rust added, most of it the replay and its gap list. The ports depend on the audit; their count is part of this phase's report.
+- **Phase 1b, the unit tests: done** (2026-11-08). Every TypeScript test file that reaches the engine was read and given a disposition, and the cases no Rust test held were ported: [[guide:retire-typescript-tests]] has the table. The page's tests in `test/file-systems`, `test/layers`, `test/assets` and `test/run` no longer reach the engine, bar the `WindowsMode` type (phase 3). `dump-exports.mjs` reads `kept.rs`. The ports found five places where the Rust engine is behind the TypeScript tests; each is kept as an ignored Rust test (below, Not yet done).
 
-**Phase 1a, the replay's parity: built (2026-11-08).** Phase 1b, the unit tests' audit and ports, is separate.
+**Phase 1a, the replay's parity: built (2026-11-08).**
 
 - **The replay.** `crates/winbox-win16/tests/conformance.rs` (`harness = false`, `libtest-mimic`) makes one trial of each fixture, the top level's and `enhanced/`'s: 764 trials. Each runs its probe whole once and holds each function's records to the recording, as `conformance.ts` did: a record's answer is the run's own occurrence of its function and arguments, else the last it wrote (`support::answers`). A function `KNOWN_GAPS` names (`tests/support/mod.rs`) is excused, and fails its trial if every record agrees. A probe not built fails its trial unless `UNBUILT` names it (it is empty: every probe is built). `STUBBED` (`halftone-brush`) counts as `unimplemented`. `AGREEING` is gone; its 350 names are now `STEPPED` in `tests/stepped.rs`, the probes the debug `stepped` test steps.
 - **Gaps.** The 69 entries of `replay.ts`'s `KNOWN_GAPS` moved across with their reasons, keyed as before. A fifth form of key, `standard/<probe>:<function>`, names a gap of a standard-mode recording whose enhanced-mode recording agrees (`standard/stack:stack`). 51 new gaps are named, on 30 fixtures: see Not yet done.
@@ -257,7 +258,7 @@ The owner decided on 2026-11-08 to retire the TypeScript engine. Its last form i
 
 ## Not yet done
 
-Phase 1a is done; phase 1b (the audit and ports of the TypeScript unit tests) and phases 2 to 5 are not.
+Phase 1 is done; phases 2 to 5 are not.
 
 - **The named Rust gaps of 2026-11-08.** The records the TypeScript replay passed as "no adapter", and the enhanced recordings it did not replay, each function a gap with its reason in `tests/support/mod.rs`:
   - [[probe:adlibout]] (`at`, `capture`, `close`, `device`, `open`, `send`) and [[probe:adlibgap]] (`capture`, `device`, `open`, `part`): the probe finds the Ad Lib by its name, "Ad Lib"; WinBox's own synthesizer standing in for the recording's drivers is "WinBox MIDI Synthesizer", so the probe finds none and writes nothing more. `tests/adlib.rs` runs them with the name given, and their writes agree ([[topic:adlib]]).
@@ -277,4 +278,9 @@ Phase 1a is done; phase 1b (the audit and ports of the TypeScript unit tests) an
 - **The corpus's calls with their arguments.** `examples/corpus --write` writes each call without its arguments; the TypeScript survey's `.calls.txt` has them. Until the Rust engine logs a call's arguments by the export's types, the reports' `.calls.txt` change form when the Rust corpus writes them.
 - **`widget-layer.json`'s `WINDOWS` stamp**, 18 seconds later in the Rust run; which change in the folder moves it is not followed.
 - **`conformance.json` written twice.** Until phase 2, the full jest run writes it from the TypeScript replay and the Rust replay writes it from its own; the merge gates run the Rust replay last.
-- The audit of the TypeScript unit tests (the processor's, DOS's, the rasterizer's and the Win16 modules') is phase 1b's.
+- The unit tests' audit is done ([[guide:retire-typescript-tests]]). What its ports found is open, each a Rust test kept as `#[ignore = "finding: …"]` with its evidence, none fixed in phase 1b:
+  - an expand-down segment read above its limit stops the Rust engine, where the 80386 reads (Intel 386 manual; `crates/winbox-cpu/tests/units.rs`);
+  - an expand-down segment read below its limit stops it, where the 80386 raises #GP(13) (`crates/winbox-win16/src/fault_vector.rs`);
+  - an instruction fetched past CS's limit stops it, where the 80386 raises #GP(0) (`fault_vector.rs`);
+  - WIN87EM's emulator is not in the Rust engine, so a program with the coprocessor switched off stops at its first floating-point interrupt (`tests/win87em.rs`);
+  - the task's environment has no DOS host variables before `windir`, as [[probe:environ]] records (`tests/task_environment.rs`).

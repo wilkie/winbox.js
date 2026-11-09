@@ -33,8 +33,11 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const LIBRARY = join(ROOT, 'oracle', '.cache', 'watcom', 'lib286', 'win', 'windows.lib');
 
-/** The modules we reimplement, and the file each one's table lives in. */
-export const MODULES = { KERNEL: 'kernel.ts', USER: 'user.ts', GDI: 'gdi.ts' };
+/** Where our export tables live: the Rust engine's `KEPT`, one per module kept. */
+const KEPT = join(ROOT, 'crates', 'winbox-win16', 'src', 'kept.rs');
+
+/** The modules we reimplement, by the name `KEPT` keeps each under. */
+export const MODULES = ['KERNEL', 'USER', 'GDI'];
 
 function log(...args) {
   console.log(...args);
@@ -90,73 +93,68 @@ export async function readLibrary() {
 }
 
 /**
- * Reads the ordinals one of our modules declares.
+ * Reads the ordinals one of our modules declares, from `KEPT` in
+ * `crates/winbox-win16/src/kept.rs`.
  *
- * The table is positional: an entry's index in the array is its ordinal, and
- * index zero is a `null` placeholder because there is no ordinal zero. Counting
- * entries rather than parsing expressions keeps this out of the business of
- * understanding TypeScript, and the `// N //` markers scattered through the
- * table make the count check itself.
+ * The table is positional: an entry's index in the module's `exports` is
+ * its ordinal, `None` where the module has no export of that number (index
+ * zero among them, as there is no ordinal zero), else `Some(Export { name:
+ * "...", ... })`. Counting entries at the array's own depth rather than
+ * parsing Rust keeps this out of the business of understanding it.
  */
-export async function readOurs(file) {
-  const source = await readFile(join(ROOT, 'src', 'win16', file), 'utf8');
+export async function readOurs(module) {
+  const source = await readFile(KEPT, 'utf8');
+  const begin = source.indexOf('pub static KEPT');
+  const end = source.indexOf('pub static', begin + 1);
+  const table = source.slice(begin, end === -1 ? source.length : end);
+  const named = table.indexOf(`name: ${JSON.stringify(module)},`);
 
-  const start = source.indexOf('static get exports()');
-
-  if (start === -1) {
-    throw new Error(`no export table in ${file}`);
+  if (begin === -1 || named === -1) {
+    throw new Error(`no module ${module} in KEPT in ${KEPT}`);
   }
 
-  const open = source.indexOf('return [', start);
+  const open = table.indexOf('exports: &[', named);
 
   if (open === -1) {
-    throw new Error(`no export array in ${file}`);
+    throw new Error(`no export array for ${module} in ${KEPT}`);
   }
 
-  const entries = [];
+  const ours = new Map();
 
-  let at = open + 'return ['.length;
+  let at = open + 'exports: &['.length;
   let depth = 1;
-  let entry = '';
-  let quote = null;
+  let ordinal = 0;
+  let quote = false;
+  let name = null;
 
-  while (at < source.length) {
-    const character = source[at];
+  while (at < table.length && depth > 0) {
+    const character = table[at];
 
     if (quote) {
-      // Inside a string nothing is punctuation.
-      if (character === quote && source[at - 1] !== '\\') {
-        quote = null;
+      if (character === '"' && table[at - 1] !== '\\') {
+        quote = false;
       }
 
-      entry += character;
       at++;
       continue;
     }
 
-    if (character === "'" || character === '"' || character === '`') {
-      quote = character;
-      entry += character;
+    if (character === '"') {
+      quote = true;
       at++;
       continue;
     }
 
-    /* Entries wrap across lines once they get long enough for the formatter to
-     * break them, so this counts brackets rather than newlines.
-     */
-    if (character === '/' && source[at + 1] === '/') {
-      const end = source.indexOf('\n', at);
-      const comment = source.slice(at, end);
-      const marker = /^\/\/\s*(\d+)\s*\/\//.exec(comment);
+    if (character === '/' && table[at + 1] === '/') {
+      at = table.indexOf('\n', at);
+      continue;
+    }
 
-      // The markers count entries; disagreeing with them means misreading.
-      if (marker && depth === 1 && entries.length !== Number(marker[1])) {
-        throw new Error(
-          `${file}: counted ${entries.length} entries where the table says ${marker[1]}`
-        );
-      }
+    if (depth === 3 && table.startsWith('name: "', at)) {
+      const close = table.indexOf('"', at + 'name: "'.length);
 
-      at = end;
+      name = table.slice(at + 'name: "'.length, close);
+      at = close + 1;
       continue;
     }
 
@@ -164,36 +162,21 @@ export async function readOurs(file) {
       depth++;
     } else if (character === ']' || character === ')' || character === '}') {
       depth--;
-
-      if (depth === 0) {
-        break;
+    } else if (character === ',' && depth === 1) {
+      if (name !== null) {
+        ours.set(ordinal, name);
       }
+
+      ordinal++;
+      name = null;
     }
 
-    if (character === ',' && depth === 1) {
-      entries.push(entry);
-      entry = '';
-      at++;
-      continue;
-    }
-
-    entry += character;
     at++;
   }
 
-  if (entry.trim() !== '') {
-    entries.push(entry);
+  if (name !== null) {
+    ours.set(ordinal, name);
   }
-
-  const ours = new Map();
-
-  entries.forEach((text, ordinal) => {
-    const named = /'([^']+)'/.exec(text);
-
-    if (named) {
-      ours.set(ordinal, named[1]);
-    }
-  });
 
   return ours;
 }
@@ -245,9 +228,9 @@ async function main() {
   let checked = 0;
   let unknown = 0;
 
-  for (const [module, file] of Object.entries(MODULES)) {
+  for (const module of MODULES) {
     const theirs = library.get(module) ?? new Map();
-    const ours = await readOurs(file);
+    const ours = await readOurs(module);
     const wrong = [];
 
     for (const [ordinal, name] of ours) {

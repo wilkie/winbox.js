@@ -883,3 +883,5 @@ fn paints_a_rectangle_the_wrong_way_round_as_nothing_but_clips_to_it_put_right()
     assert_eq!(clipped, put_right);
     assert_ne!(clipped, white);
 }
+
+mod fabricated;

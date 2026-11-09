@@ -923,4 +923,30 @@ mod tests {
         assert_eq!(number_of("#"), None);
         assert_eq!(number_of("SIERRAD"), None);
     }
+
+    /// The resource of that number matches, and a name as a name, without
+    /// regard to case. As `test/win16/find_resource_named_test.ts`.
+    #[test]
+    fn a_number_matches_its_resource_and_a_name_its_name() {
+        use super::matches;
+        use winbox_ne::ResourceId;
+
+        let sierrad = "SIERRAD".to_string();
+
+        assert!(matches(
+            &ResourceId::Number(164),
+            None,
+            &named("#164".to_string())
+        ));
+        assert!(!matches(
+            &ResourceId::Number(165),
+            None,
+            &named("#164".to_string())
+        ));
+        assert!(matches(
+            &ResourceId::Name(sierrad.clone()),
+            Some(&sierrad),
+            &named("sierrad".to_string())
+        ));
+    }
 }

@@ -815,4 +815,133 @@ mod tests {
         winbox_machine::Memory::write16(&mut system.cpu.bus, (OTHER as u32) << 16, 0x0103);
         assert_eq!(system.fault_vector(Exit::Host), Some(13));
     }
+
+    /// The TypeScript engine's protected-mode faults
+    /// (`test/emulator/protected_mode_test.ts`, "faults", "accesses that do
+    /// not go through a `ModRM` operand" and "expand-down segments"): what a
+    /// 386 is specified to raise, as the core stops and this module names
+    /// the fault. Each runs one instruction, which the core must stop.
+    fn raised(system: &mut System) -> Option<u8> {
+        let (ran, exit) = system.cpu.run(1);
+
+        assert_eq!(ran, 0, "the instruction ran");
+        system.fault_vector(exit)
+    }
+
+    /// `mov al, [bx]` with DS `ds`.
+    fn read_through_bx(ds: usize, bx: u16) -> System {
+        let mut system = machine(&[0x8a, 0x07], ds, ds);
+
+        system.cpu.regs[BX] = bx;
+        system
+    }
+
+    #[test]
+    fn faults_when_an_access_runs_past_the_segment_limit() {
+        // One byte past a limit of 0Fh.
+        assert_eq!(raised(&mut read_through_bx(OTHER, 0x10)), Some(13));
+    }
+
+    #[test]
+    fn faults_when_a_null_selector_is_used_to_reach_memory() {
+        let mut system = read_through_bx(OTHER, 0);
+
+        system.cpu.load_segment(DS, 0).unwrap();
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    fn raises_a_segment_not_present_fault_when_the_segment_is_absent() {
+        let mut system = read_through_bx(OTHER, 0);
+
+        // The data segment's access byte, F3h, without its present bit.
+        winbox_machine::Descriptors::set_rights(&mut system.cpu.bus, OTHER, 0x0073);
+        system
+            .cpu
+            .load_segment(DS, segment_selector(OTHER))
+            .unwrap();
+        assert_eq!(raised(&mut system), Some(11));
+    }
+
+    #[test]
+    fn raises_a_stack_fault_rather_than_a_general_protection_fault_through_ss() {
+        // mov al, [bp] -- addressed through SS by default.
+        let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);
+
+        system.cpu.regs[winbox_cpu::BP] = 0x10;
+        assert_eq!(raised(&mut system), Some(12));
+    }
+
+    #[test]
+    fn faults_on_a_selector_past_the_end_of_the_table() {
+        // mov ds, ax with the global table's first selector past its 32
+        // entries: the load aborts rather than reading a descriptor out
+        // of thin air.
+        let mut system = machine(&[0x8e, 0xd8], OTHER, OTHER);
+
+        system.cpu.regs[winbox_cpu::AX] = 0x20 << 3;
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    fn faults_on_a_direct_offset_load_past_the_limit() {
+        // mov al, [0x0200] -- the moffs form, which carries its own address.
+        let mut system = machine(&[0xa0, 0x00, 0x02], OTHER, OTHER);
+
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    fn faults_on_a_string_operation_past_the_limit() {
+        // movsb, through ES:DI and DS:SI with no ModRM at all.
+        let mut system = machine(&[0xa4], OTHER, OTHER);
+
+        system.cpu.regs[SI] = 0;
+        system.cpu.regs[DI] = 0x0200;
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    fn faults_on_a_push_past_the_limit() {
+        // push ax, SP 1: it goes down to FFFFh, far outside the limit.
+        let mut system = machine(&[0x50], DATA, DATA);
+
+        system.cpu.regs[SP] = 1;
+        assert_eq!(raised(&mut system), Some(12));
+    }
+
+    #[test]
+    #[ignore = "finding: `decode` reads the instruction's bytes only within CS's limit, \
+                so for a fetch that runs past it `fault_vector` answers None and the \
+                engine stops (`processor_stop`) where the 80386 raises #GP(0) and the \
+                TypeScript engine 13 (Intel 386 manual, instruction fetch past the limit)"]
+    fn faults_when_instruction_fetch_runs_past_the_code_segment() {
+        // mov al, [bp] -- three bytes in a segment with room for two.
+        let mut system = machine(&[0x8a, 0x46, 0x00], DATA, DATA);
+
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, CODE, 0x0001);
+        system.cpu.load_segment(CS, segment_selector(CODE)).unwrap();
+        assert_eq!(raised(&mut system), Some(13));
+    }
+
+    #[test]
+    #[ignore = "finding: a segment that expands down is given no room by the Rust core \
+                and `segment_fault` answers None for it, so the engine stops; the 80386 \
+                raises #GP below the limit (Intel 386 manual, expand-down segments)"]
+    fn an_expand_down_segment_faults_below_the_limit() {
+        let mut system = read_through_bx(OTHER, 0x0800);
+
+        system
+            .descriptors
+            .set_limit(&mut system.cpu.bus, OTHER, 0x0fff);
+        // F3h made to expand down: F7h.
+        winbox_machine::Descriptors::set_rights(&mut system.cpu.bus, OTHER, 0x00f7);
+        system
+            .cpu
+            .load_segment(DS, segment_selector(OTHER))
+            .unwrap();
+        assert_eq!(raised(&mut system), Some(13));
+    }
 }

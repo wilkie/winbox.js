@@ -408,4 +408,20 @@ mod tests {
         assert_eq!(string(0x10b), Some(&b"No command was specified."[..]));
         assert_eq!(string(0x0c), None);
     }
+
+    /// MMSYSTEM carries its own strings, with no installation. As
+    /// `test/win16/kept_modules_test.ts`.
+    #[test]
+    fn its_own_strings_with_no_installation() {
+        assert_eq!(
+            string(0),
+            Some(&b"The specified command was carried out."[..])
+        );
+        assert_eq!(
+            string(0x10a),
+            Some(&b"There is an undetectable problem in loading the specified device driver."[..])
+        );
+        assert_eq!(string(0x20a), Some(&b"waveaudio"[..]));
+        assert_eq!(string(0x100), None);
+    }
 }

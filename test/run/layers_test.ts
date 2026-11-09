@@ -4,7 +4,6 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { type Composed } from '../../src/assets/compose.js';
-import { Machine } from '../../src/emulator/machine.js';
 import { baseLayer, layerFromChanges, sha256, type Layer } from '../../src/layers/layer.js';
 import { type Change, Fat16Changes } from '../../src/run/changes.js';
 import {
@@ -17,11 +16,11 @@ import {
 } from '../../src/run/drive.js';
 import { changesKey, programChangesKey, programIdentity } from '../../src/run/store.js';
 import { type ZipEntry } from '../../src/zip.js';
-import { bundle } from '../win16/run-probe.js';
+import { bareDisks, bundle } from '../assets/built.js';
 
 /**
  * The page's C: from a stack of layers (`kb/formats/layer.md`,
- * `planDrive`'s `stack`): the TypeScript engine's volume filled from it
+ * `planDrive`'s `stack`): the page's FAT16 volume filled from it
  * holds what the stack flattened holds, folders, files and stamps, as
  * `test/layers/stack.json` has it; and a program's archive kept as a layer
  * over the base makes the drive the archive dropped loose made before,
@@ -88,7 +87,7 @@ function stackOf(made: Map<string, Layer>, names: string[]): Stack {
   };
 }
 
-/** What a TypeScript engine's volume holds, as a flattened stack's lines: every folder and file, each stamp. */
+/** What the page's FAT16 volume holds, as a flattened stack's lines: every folder and file, each stamp. */
 async function listed(machine: any, plan: Plan) {
   const drive = await fillDrive(machine, plan);
 
@@ -144,7 +143,7 @@ function archive(): Archive {
   };
 }
 
-test('the TypeScript volume filled from a stack holds what the stack flattened holds', async () => {
+test('the page volume filled from a stack holds what the stack flattened holds', async () => {
   const made = await layers();
   const plan = planDrive([], null, base(), stackOf(made, fixture.stacks[0].layers));
 
@@ -152,7 +151,7 @@ test('the TypeScript volume filled from a stack holds what the stack flattened h
   const toTwoSeconds = (line: string) =>
     line.replace(/ (\d+)$/, (_, stamp) => ` ${Number(stamp) - (Number(stamp) % 2)}`);
 
-  expect(await listed(new Machine(), plan)).toEqual(fixture.expected.flat.map(toTwoSeconds));
+  expect(await listed(bareDisks(), plan)).toEqual(fixture.expected.flat.map(toTwoSeconds));
 
   /* The plan the Rust engine's drive is filled from, as the page fills it. */
   const now = {
@@ -200,8 +199,8 @@ describe("a program's archive kept as a layer", () => {
       base: name,
       layers: [{ layer: made.layer, order: made.order }],
     });
-    const before: any = new Machine();
-    const after: any = new Machine();
+    const before = bareDisks();
+    const after = bareDisks();
 
     await fillDrive(before, loose);
     await fillDrive(after, stacked);

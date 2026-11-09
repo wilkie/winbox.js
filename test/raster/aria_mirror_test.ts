@@ -3,202 +3,172 @@
  */
 'use strict';
 
-import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { AriaMirror } from '../../src/run/aria-mirror.js';
-import { accessibleTree, plainLabel } from '../../src/win16/user/accessible-tree.js';
-import { Desktop } from '../../src/win16/user/desktop.js';
-import { MF_CHECKED, MF_GRAYED, MenuData } from '../../src/win16/user/menu-data.js';
-import { chromeReady, displayEnvironment } from './chrome.js';
 
 /**
- * The raster desktop's windows as a screen reader is given them: the tree
- * `accessibleTree` makes of USER's windows, and the elements `AriaMirror`
- * keeps of it.
+ * The elements `AriaMirror` keeps of the desktop's accessibility tree, given
+ * trees the engine made: the committed `accessible-trees` recordings, which
+ * `crates/winbox-win16/tests/accessible_parity.rs` holds the Rust engine to.
+ * What the tree says of USER's windows is the engine's, held there and in
+ * `crates/winbox-win16/tests/accessible_tree.rs`; this is the page's half,
+ * the elements a screen reader reads.
  */
 
-const COLOR_WINDOW = 5;
-const OVERLAPPED = 0x00cf0000;
-const CHILD = 0x50000000;
+/** A recording's trees, each as the JSON text the engine hands the page. */
+function treesOf(name: string): string[] {
+  return JSON.parse(readFileSync(join(__dirname, 'accessible-trees', `${name}.json`), 'utf8'))
+    .trees;
+}
 
-(chromeReady('vga') ? describe : describe.skip)('the accessible desktop', () => {
-  let setup: any;
+/** A mirror on a host in the document, and a way to take it away again. */
+function mirrored() {
+  const host = document.createElement('div');
+  const root = document.createElement('div');
 
-  beforeAll(async () => {
-    setup = await displayEnvironment('vga');
-  });
+  host.append(root);
+  document.body.append(host);
 
-  const desktopOf = () =>
-    new Desktop(
-      new DeviceBitmap(setup.mode.width, setup.mode.height, setup.depth, undefined, setup.palette),
-      setup.environment
-    );
+  return { host, root, mirror: new AriaMirror(root, host), done: () => host.remove() };
+}
 
-  const background = () => ({ colorref: setup.environment.sysColor(COLOR_WINDOW) });
-
-  const control = (
-    desktop: Desktop,
-    parent: any,
-    className: string,
-    style: number,
-    text: string,
-    extra = {}
-  ) => {
-    const window = desktop.create(
-      10,
-      10,
-      80,
-      20,
-      CHILD | style,
-      text,
-      undefined,
-      background(),
-      parent
-    );
-
-    window.control = { className, style, text, checked: 0, items: [], ...extra };
-    desktop.show(window);
-
-    return window;
-  };
-
-  /** A window with a menu bar and one of each control. */
-  const notepadish = () => {
-    const desktop = desktopOf();
-    const window = desktop.create(
-      40,
-      40,
-      300,
-      200,
-      OVERLAPPED,
-      'Notepad - (Untitled)',
-      ['&File', '&Edit'],
-      background()
-    );
-
-    desktop.show(window);
-
-    const edit = control(desktop, window, 'EDIT', 0x4, 'hello');
-
-    control(desktop, window, 'BUTTON', 0x0, '&OK');
-    control(desktop, window, 'BUTTON', 0x3, '&Wrap', { checked: 1 });
-    control(desktop, window, 'BUTTON', 0x9, 'Up');
-    control(desktop, window, 'STATIC', 0x0, 'Find what:');
-    control(desktop, window, 'LISTBOX', 0x0, '', { items: ['one', 'two'] });
-    control(desktop, window, 'SCROLLBAR', 0x1, '');
-
-    return { desktop, window, edit };
-  };
+describe('the accessible desktop', () => {
+  /* Notepad, untitled: its edit control has the focus and is empty, and then
+   * holds what was typed into it. */
+  const notepad = treesOf('notepad');
 
   it('names a window by its caption, and says it is active', () => {
-    const { desktop, window } = notepadish();
-    const [node] = accessibleTree(desktop).nodes;
+    const { mirror, done } = mirrored();
 
-    expect(node).toMatchObject({
-      key: `w${window.id}`,
-      role: 'group',
-      roleDescription: 'window',
-      name: 'Notepad - (Untitled)',
-      description: 'active',
-    });
+    mirror.updateFrom(notepad[0]);
+
+    const element = document.getElementById('mirror-w4')!;
+
+    expect(element.getAttribute('role')).toBe('group');
+    expect(element.getAttribute('aria-roledescription')).toBe('window');
+    expect(element.getAttribute('aria-label')).toBe('Notepad - (Untitled)');
+    expect(element.getAttribute('aria-description')).toBe('active');
+    done();
   });
 
   it('gives the system menu, the menu bar and each control a role', () => {
-    const { desktop } = notepadish();
-    const [node] = accessibleTree(desktop).nodes;
+    const { mirror, done } = mirrored();
 
-    expect(node.children.map((child) => [child.role, child.name ?? child.value])).toEqual([
+    mirror.updateFrom(notepad[0]);
+
+    const window = document.getElementById('mirror-w4')!;
+
+    expect(
+      (Array.from(window.children) as HTMLElement[]).map((child) => [
+        child.getAttribute('role'),
+        child.getAttribute('aria-label') ?? child.textContent,
+      ])
+    ).toEqual([
       ['button', 'System menu'],
       ['menubar', 'Notepad - (Untitled) menu'],
-      ['textbox', 'hello'],
-      ['button', 'OK'],
-      ['checkbox', 'Wrap'],
-      ['radio', 'Up'],
-      ['text', 'Find what:'],
-      ['listbox', undefined],
-      ['scrollbar', undefined],
+      ['textbox', ''],
     ]);
-    expect(node.children[1].children.map((item) => [item.name, item.shortcut])).toEqual([
-      ['File', 'Alt+F'],
-      ['Edit', 'Alt+E'],
-    ]);
-    expect(node.children[2].multiline).toBe(true);
-    expect(node.children[4].checked).toBe(true);
-    expect(node.children[5].checked).toBe(false);
-    expect(node.children[7].children.map((option) => option.name)).toEqual(['one', 'two']);
-    expect(node.children[8].orientation).toBe('vertical');
+    expect(document.getElementById('mirror-w4-sys')!.getAttribute('aria-haspopup')).toBe('menu');
+
+    const file = document.getElementById('mirror-w4-bar-0')!;
+
+    expect(file.getAttribute('role')).toBe('menuitem');
+    expect(file.getAttribute('aria-keyshortcuts')).toBe('Alt+F');
+    expect(file.getAttribute('aria-expanded')).toBe('false');
+    expect(document.getElementById('mirror-w5')!.getAttribute('aria-multiline')).toBe('true');
+    done();
   });
 
   it('puts an open menu under the item that opened it, and the focus on its selection', () => {
-    const { desktop, window } = notepadish();
-    const menu = new MenuData();
+    const { host, mirror, done } = mirrored();
 
-    menu.items.push({ flags: 0, id: 1, text: '&New' });
-    menu.items.push({ flags: 0, id: 0, text: null });
-    menu.items.push({ flags: MF_CHECKED, id: 2, text: '&Word Wrap' });
-    menu.items.push({ flags: MF_GRAYED, id: 3, text: '&Undo\tCtrl+Z' });
+    // The File menu opened, its first item selected.
+    mirror.updateFrom(notepad[2]);
 
-    desktop.menuOwner = window;
-    window.menuSelected = 0;
-    const popup = desktop.openPopup(menu, 40, 80, 2);
+    const file = document.getElementById('mirror-w4-bar-0')!;
+    const menu = document.getElementById('mirror-p1')!;
 
-    const tree = accessibleTree(desktop);
-    const file = tree.nodes[0].children[1].children[0];
-
-    expect(tree.nodes).toHaveLength(1);
-    expect(file.expanded).toBe(true);
-    expect(file.children[0].children.map((item) => [item.role, item.name])).toEqual([
+    expect(file.getAttribute('aria-expanded')).toBe('true');
+    expect(menu.parentElement).toBe(file);
+    expect(menu.getAttribute('role')).toBe('menu');
+    expect(
+      (Array.from(menu.children) as HTMLElement[]).map((item) => [
+        item.getAttribute('role'),
+        item.getAttribute('aria-label'),
+      ])
+    ).toEqual([
       ['menuitem', 'New'],
-      ['separator', undefined],
-      ['menuitemcheckbox', 'Word Wrap'],
-      ['menuitem', 'Undo'],
+      ['menuitem', 'Open...'],
+      ['menuitem', 'Save'],
+      ['menuitem', 'Save As...'],
+      ['menuitem', 'Print'],
+      ['menuitem', 'Page Setup...'],
+      ['menuitem', 'Print Setup...'],
+      ['separator', null],
+      ['menuitem', 'Exit'],
     ]);
-    expect(file.children[0].children[3]).toMatchObject({ disabled: true, shortcut: 'Control+Z' });
-    expect(tree.focus).toBe(`p${popup.id}-2`);
-  });
+    expect(document.getElementById('mirror-p1-4')!.getAttribute('aria-disabled')).toBe('true');
+    expect(host.getAttribute('aria-activedescendant')).toBe('mirror-p1-0');
 
-  it('shows a minimized window as its title alone', () => {
-    const { desktop, window } = notepadish();
+    // The selection moved down one, and the menu closed again.
+    mirror.updateFrom(notepad[3]);
+    expect(host.getAttribute('aria-activedescendant')).toBe('mirror-p1-1');
 
-    desktop.minimize(window);
-
-    const [node] = accessibleTree(desktop).nodes;
-
-    expect(node.children).toEqual([]);
-    expect(node.description).toContain('minimized');
+    mirror.updateFrom(notepad[5]);
+    expect(document.getElementById('mirror-p1')).toBeNull();
+    expect(file.getAttribute('aria-expanded')).toBe('false');
+    done();
   });
 
   it('points the host at the focused control, and keeps elements across updates', () => {
-    const { desktop, edit } = notepadish();
-    const host = document.createElement('div');
-    const root = document.createElement('div');
+    const { host, mirror, done } = mirrored();
 
-    host.append(root);
-    document.body.append(host);
+    expect(mirror.updateFrom(notepad[0])).toBe(true);
 
-    const mirror = new AriaMirror(root, host);
-
-    desktop.focus = edit;
-    mirror.update(accessibleTree(desktop));
-
-    const element = document.getElementById(`mirror-w${edit.id}`)!;
+    const element = document.getElementById('mirror-w5')!;
 
     expect(element.getAttribute('role')).toBe('textbox');
-    expect(element.textContent).toBe('hello');
+    expect(element.textContent).toBe('');
     expect(host.getAttribute('aria-activedescendant')).toBe(element.id);
 
-    edit.control!.text = 'hello, world';
-    mirror.update(accessibleTree(desktop));
+    // The same tree again changes nothing.
+    expect(mirror.updateFrom(notepad[0])).toBe(false);
 
-    expect(document.getElementById(`mirror-w${edit.id}`)).toBe(element);
-    expect(element.textContent).toBe('hello, world');
-
-    host.remove();
+    // Typed into: the same element, its text changed.
+    mirror.updateFrom(notepad[1]);
+    expect(document.getElementById('mirror-w5')).toBe(element);
+    expect(element.textContent).toBe('hi');
+    done();
   });
-});
 
-describe('a label, as a reader hears it', () => {
-  it('drops the mnemonic and the accelerator', () => {
-    expect(plainLabel('&Undo\tCtrl+Z')).toBe('Undo');
-    expect(plainLabel('Fish && &Chips')).toBe('Fish & Chips');
+  it('reads controls of every kind a dialog box has', () => {
+    const { mirror, done } = mirrored();
+    const ctlcolor = treesOf('ctlcolor');
+
+    mirror.updateFrom(ctlcolor[0]);
+
+    const roles = new Set(
+      (Array.from(document.querySelectorAll('[data-key]')) as HTMLElement[]).map(
+        (element) => element.getAttribute('role') ?? '(text)'
+      )
+    );
+
+    for (const role of ['checkbox', 'radio', 'listbox', 'option', 'scrollbar', '(text)']) {
+      expect(roles).toContain(role);
+    }
+
+    // Static text is read as content, not given a role.
+    const text = (Array.from(document.querySelectorAll('[data-key]')) as HTMLElement[]).find(
+      (element) => element.getAttribute('role') === null
+    )!;
+
+    expect(text.textContent).not.toBe('');
+    expect(text.getAttribute('aria-label')).toBeNull();
+    expect(
+      document.querySelector('[role="scrollbar"]')!.getAttribute('aria-orientation')
+    ).not.toBeNull();
+    done();
   });
 });
