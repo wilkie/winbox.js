@@ -141,7 +141,7 @@ Microsoft's setup toolkit (SimTower's `SETUP.EXE`) asks 4300h of a destination, 
 - [[read out]] `DOS_MakeName` makes the path whole before the drive sees it (`dos_files.cpp` 107-184): an empty part, as a trailing backslash leaves, is passed over; `.` is passed over; `..` takes the last part off; a path with no backslash first starts from the drive's current folder, as `C:` and `C:.` do. The root is the empty name. `localDrive::GetFileAttr` then answers the host's `stat` of it: 20h, the archive bit, with 10h added for a folder, and nothing of the host's own attributes (`drive_local.cpp` 287-302). Where `stat` fails, `DOS_GetFileAttr` answers error 2 whatever the reason (632-641).
 - [[read out]] 4301h changes nothing on any drive: `DOS_SetFileAttr` only asks the drive for the attributes (643-656).
 
-### In each engine
+### How WinBox keeps them
 
 - WinBox lists a folder as DOSBox does: `files.rs`'s `Files::list`. Before, the Rust engine sorted by name, files and folders together, with no `.` or `..` in the root.
 - WinBox keeps each search as DOSBox does: the names as it began, in up to 2,048 numbered searches, the number in the record's bytes 13 and 14 (`Searches` in `dos.rs`). USER's `DlgDirList` and COMMDLG's own lists take the same order. COMMDLG passes over names starting with `.`, and USER keeps `..`, so the root's list box now shows `[..]`.

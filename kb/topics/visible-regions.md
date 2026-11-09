@@ -196,7 +196,7 @@ Each phase is mergeable on its own together, with the probes and the corpus as s
 
 - **Time on the host.** On the development machine the Rust engine's raster spends 6 ns on a pixel drawn with no test, 8 with one test -- the window's pixels or a region alike -- 9.5 with a region of eight holes, and 11.3 with both of today's tests. One region in place of two is a little faster. Working a region out is a few region operations for each context handed out, and once more for each context made stale. Neither needs a test of its own; drawing a run of a row at a time against the region's bands, rather than a pixel at a time, is a later gain open to both.
 - **SimTower's clock.** The faithful clock charges a call what Windows ran for it, whatever winbox.js does inside; [[probe:viscost]] shows a region's rectangles add next to nothing in Windows, so nothing is to be charged for them. USER's hook is WinBox's own code and runs no instructions; only a program's own hook would. SimTower makes none of the family's calls, nor `GetClipBox` nor `RectVisible`. Predicted unchanged at every phase; checked with the faithful-clock survey.
-- **The two engines.** Every phase landed in both, as twins; the Rust engine's stubs answering what was in AX go in phase 1.
+- **The engine.** Every phase lands in the Rust engine; its stubs answering what was in AX go in phase 1.
 - **USER's own drawing** into windows -- frames, menus, controls -- goes through the same contexts and changes with them in phase 3; the probes of [[topic:painting]] and [[topic:window-frames]] are the check. As built, it goes through views of its own kept to the same rule, and no probe of either moved.
 
 ### What stays out

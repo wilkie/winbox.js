@@ -40,7 +40,7 @@ As the VGA's driver has it, a pixel at a time. On the Super VGA and the EGA as o
 
 **Recommendation:** done for the VGA, the Super VGA, the EGA, the Hercules and the 256-colour display.
 
-On the Hercules and the 256-colour display their own (`herculesScanLR` and `monoScan` in `scanLR`, and the Rust twins), [[probe:gdidmpx]] agreeing on all three displays.
+On the Hercules and the 256-colour display their own (`hercules_scan_lr` and `mono_scan` in `crates/winbox-win16/src/gdi/driver_hercules.rs`, `scan_lr` in `crates/winbox-win16/src/gdi/driver_vga256.rs`), [[probe:gdidmpx]] agreeing on all three displays.
 
 ## Not yet done
 
