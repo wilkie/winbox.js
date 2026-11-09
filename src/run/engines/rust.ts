@@ -8,8 +8,8 @@
  * not committed; `pnpm dev` builds it first where it is missing or older than
  * the crates (`scripts/web/predev.mjs`). `pnpm dev` serves the repository's
  * root, so the page imports it from there, at run time, once it has found it
- * built; nothing of it is bundled. The page is not part of `pnpm build`, which builds the library
- * alone, so there is no production build of it to place the module in.
+ * built; nothing of it is bundled. `pnpm build` copies it into the built
+ * page's folder at the same path (`vite.config.ts`, `dist/web`).
  *
  * Programs run beside one another on the one machine, as on the TypeScript
  * engine: running another, or the same again, while any runs starts it as

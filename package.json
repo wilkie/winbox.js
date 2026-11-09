@@ -12,6 +12,8 @@
   "scripts": {
     "predev": "node scripts/web/predev.mjs",
     "dev": "vite",
+    "build": "pnpm build:web && vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
